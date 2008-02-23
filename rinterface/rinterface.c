@@ -49,6 +49,7 @@
 #include <Rinternals.h>
 #include <Rdefines.h>
 #include <Rinterface.h>
+#include <R_ext/Complex.h>
 #include <Rembedded.h>
 
 /* FIXME: consider the use of parsing */
@@ -75,8 +76,6 @@ interrupt_R(int signum)
 }
 
 
-
-
 /* The Python original SIGINT handler */
 PyOS_sighandler_t python_sigint;
 
@@ -95,7 +94,10 @@ hist = rinterface.findVarEmbeddedR(\"hist\")\
 rnorm = rinterface.findVarEmbeddedR(\"rnorm\")\
 x = rnorm(n)\
 hist(x)\
-");
+\
+len(x)\
+\n\
+$Id$");
 //FIXME: check example above
 
 
@@ -224,6 +226,7 @@ Sexp_dealloc(SexpObject *self)
 static PyObject*
 Sexp_repr(PyObject *self)
 {
+  //FIXME: make sure this is making any sense
   return PyString_FromFormat("<%s - Python:\%p / R:\%p>",
 			     self->ob_type->tp_name,
 			     self,
@@ -430,6 +433,7 @@ PyDoc_STRVAR(ClosureSexp_Type_doc,
 "A R object that is a closure, that is a function. \
 In R a function a function is defined in an enclosing \
 environement, thus the name of closure. \
+In Python, 'nested scopes' could be the closest similar thing.\
 \n\
 The closure can be accessed with the method 'closureEnv'.\
 ");
@@ -439,7 +443,7 @@ static PyTypeObject ClosureSexp_Type = {
 	 * to be portable to Windows without using C++. */
 	PyObject_HEAD_INIT(NULL)
 	0,			/*ob_size*/
-	"rinterface.ClosureSexp",	/*tp_name*/
+	"rinterface.SexpClosure",	/*tp_name*/
 	sizeof(SexpObject),	/*tp_basicsize*/
 	0,			/*tp_itemsize*/
 	/* methods */
@@ -459,7 +463,7 @@ static PyTypeObject ClosureSexp_Type = {
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
-        0,                      /*tp_doc*/
+        ClosureSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
         0,                      /*tp_clear*/
         0,                      /*tp_richcompare*/
@@ -498,24 +502,79 @@ VectorSexp_new(PyTypeObject *type, PyObject *args)
   return res;
 }
 
+/* len(x) */
 static Py_ssize_t VectorSexp_len(PyObject *object)
 {
   Py_ssize_t len;
   //FIXME: sanity checks.
-  len = (Py_ssize_t)LENGTH(((SexpObject *)object)->sexp);
+  len = (Py_ssize_t)GET_LENGTH(((SexpObject *)object)->sexp);
   return len;
 }
 
+/* a[i] */
+static PyObject *
+VectorSexp_item(PyObject *object, Py_ssize_t i)
+{
+  PyObject* res;
+  R_len_t i_R;
+  SEXP *sexp = &(((SexpObject *)object)->sexp);
+  /* R is still with int for indexes */
+  if (i >= R_LEN_T_MAX) {
+    PyErr_Format(PyExc_IndexError, "Index value exceeds what R can handle.");
+    res = NULL;
+  }
+  else if (i >= GET_LENGTH(*sexp)) {
+    PyErr_Format(PyExc_IndexError, "Index out of range.");
+    res = NULL;
+  }
+  else {
+    double vd;
+    int vi;
+    Rcomplex vc;
+    char *vs;
+    i_R = (R_len_t)i;
+    switch (TYPEOF(*sexp)) {
+    case REALSXP:
+      vd = (NUMERIC_POINTER(*sexp))[i_R];
+      res = PyFloat_FromDouble(vd);
+      break;
+    case INTSXP:
+      vi = INTEGER_POINTER(*sexp)[i_R];
+      res = PyInt_FromLong((long)vi);
+      break;
+    case LGLSXP:
+      vi = LOGICAL_POINTER(*sexp)[i_R];
+      res = PyBool_FromLong((long)vi);
+      break;
+    case CPLXSXP:
+      vc = COMPLEX_POINTER(*sexp)[i_R];
+      res = PyComplex_FromDoubles(vc.r, vc.i);
+      break;
+    case STRSXP:
+      vs = CHARACTER_POINTER(STRING_ELT(*sexp, i_R));
+      res = PyString_FromString(vs);
+      break;
+    default:
+      PyErr_Format(PyExc_ValueError, "cannot handle type %d", 
+		   TYPEOF(*sexp));
+      res = NULL;
+      break;
+    }
+  }
+  return res;
+}
+
+
 static PySequenceMethods VectorSexp_sequenceMethods = {
-  (inquiry)VectorSexp_len,              /* sq_length */
+  (lenfunc)VectorSexp_len,              /* sq_length */
   0,                              /* sq_concat */
   0,                              /* sq_repeat */
   //FIXME: implement
-  0, //(ssizeargfunc)Sexp_item,        /* sq_item */
+  (ssizeargfunc)VectorSexp_item,        /* sq_item */
   //FIXME: implement
-  0, //(ssizessizeargfunc)Sexp_slice,  /* sq_slice */
+  0, //(ssizessizeargfunc)VectorSexp_slice,  /* sq_slice */
   //FIXME: implement
-  0, //(ssizeobjargproc)Sexp_ass_item,   /* sq_ass_item */
+  0, //(ssizeobjargproc)VectorSexp_ass_item,   /* sq_ass_item */
   0,                              /* sq_ass_slice */
   0,                              /* sq_contains */
   0,                              /* sq_inplace_concat */
@@ -542,7 +601,7 @@ static PyTypeObject VectorSexp_Type = {
 	 * to be portable to Windows without using C++. */
 	PyObject_HEAD_INIT(NULL)
 	0,			/*ob_size*/
-	"rinterface.VectorSexp",	/*tp_name*/
+	"rinterface.SexpVector",	/*tp_name*/
 	sizeof(SexpObject),	/*tp_basicsize*/
 	0,			/*tp_itemsize*/
 	/* methods */
@@ -585,7 +644,47 @@ static PyTypeObject VectorSexp_Type = {
 };
 
 
-//FIXME: write more doc
+/* --- */
+
+static SexpObject*
+EnvironmentSexp_findVar(PyObject *self, PyObject *args)
+{
+  char *name;
+  SEXP res_R;
+
+  if (!PyArg_ParseTuple(args, "s", &name)) { 
+    return NULL; 
+  }
+
+  const SEXP rho_R = ((SexpObject *)self)->sexp;
+  res_R = findVar(install(name), rho_R);
+
+
+  if (res_R != R_UnboundValue) {
+    return newSexpObject(res_R);
+  }
+  PyErr_Format(PyExc_LookupError, "'%s' not found", name);
+  return NULL;
+}
+PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
+	     "Find an R object in the environment.");
+
+static PyMethodDef EnvironmentSexp_methods[] = {
+  {"get", (PyCFunction)EnvironmentSexp_findVar, METH_O,
+  EnvironmentSexp_findVar_doc},
+  {NULL, NULL}          /* sentinel */
+};
+
+
+//FIXME: Is this still needed ?
+static PyMappingMethods EnvironmentSexp_mappignMethods = {
+  0, /* mp_length */
+  0, /* mp_subscript */
+  0  /* mp_ass_subscript */
+};
+
+//FIXME: write more doc - should the environments
+// be made like mappings at the Python level ?
 PyDoc_STRVAR(EnvironmentSexp_Type_doc,
 "An R object that is an environment.\
  R environments can be seen as similar to Python\
@@ -594,8 +693,8 @@ PyDoc_STRVAR(EnvironmentSexp_Type_doc,
  environment whenever the key is not found.\
 \n\
  The subsetting operator is made to match Python's\
- behavior, that is the enclosing environment are not\
- inspect upon absence of a given key.\
+ behavior, that is the enclosing environments are not\
+ inspected upon absence of a given key.\
 ");
 
 static PyTypeObject EnvironmentSexp_Type = {
@@ -603,7 +702,7 @@ static PyTypeObject EnvironmentSexp_Type = {
 	 * to be portable to Windows without using C++. */
 	PyObject_HEAD_INIT(NULL)
 	0,			/*ob_size*/
-	"rinterface.EnvironmentSexp",	/*tp_name*/
+	"rinterface.SexpEnvironment",	/*tp_name*/
 	sizeof(SexpObject),	/*tp_basicsize*/
 	0,			/*tp_itemsize*/
 	/* methods */
@@ -630,7 +729,7 @@ static PyTypeObject EnvironmentSexp_Type = {
         0,                      /*tp_weaklistoffset*/
         0,                      /*tp_iter*/
         0,                      /*tp_iternext*/
-        0,           /*tp_methods*/
+        EnvironmentSexp_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,//Sexp_getset,            /*tp_getset*/
         &Sexp_Type,             /*tp_base*/
@@ -657,7 +756,7 @@ static PyTypeObject S4Sexp_Type = {
 	 * to be portable to Windows without using C++. */
 	PyObject_HEAD_INIT(NULL)
 	0,			/*ob_size*/
-	"rinterface.S4Sexp",	/*tp_name*/
+	"rinterface.SexpS4",	/*tp_name*/
 	sizeof(SexpObject),	/*tp_basicsize*/
 	0,			/*tp_itemsize*/
 	/* methods */
@@ -734,7 +833,9 @@ newSexpObject(SEXP sexp)
     //break;
   case REALSXP: 
   case INTSXP: 
-  case LGLSXP: 
+  case LGLSXP:
+  case CPLXSXP:
+  case LISTSXP:
   case STRSXP:
     object = (SexpObject *)_PyObject_New(&VectorSexp_Type);
     break;
@@ -767,10 +868,7 @@ newSEXP(PyObject *object, int rType)
     return NULL;
   
   const Py_ssize_t length = PySequence_Fast_GET_SIZE(seq_object);
-  //FIXME: PROTECT THIS
-  #ifdef VERBOSE
-  printf("size: %i", length);
-  #endif
+  //FIXME: PROTECT THIS ?
   sexp = allocVector(rType, length);
 
   int i;
@@ -829,6 +927,7 @@ newSEXP(PyObject *object, int rType)
       }
     }
     break;
+    //FIXME: add complex 
   default:
     PyErr_Format(PyExc_ValueError, "cannot handle type %d", rType);
     sexp = NULL;
@@ -837,7 +936,7 @@ newSEXP(PyObject *object, int rType)
 }
 
 
-
+//FIXME: finish this
 static PyObject*
 EmbeddedR_newSexpObject(SEXP sexp)
 {
@@ -868,21 +967,20 @@ Sexp_GlobalEnv(PyTypeObject* type)
 
 static SexpObject*
 EmbeddedR_findVar(PyObject *self, PyObject *args)
-//EmbeddedR_findVar(PyTypeObject *type, PyObject *args)
 {
   char *name;
-  SEXP rho = R_GlobalEnv, res;
+  SEXP rho_R = R_GlobalEnv, res;
+  PyObject rho;
   PyObject *ErrorObject;
 
-  if (!PyArg_ParseTuple(args, "s", &name)) { 
-    //, "s|O&", &name, Get_SEXP, &rho)) {
+  if (!PyArg_ParseTuple(args, "s", &name, &rho)) { 
     return NULL; 
   }
-  res = findVar(install(name), rho);
+
+  res = findVar(install(name), rho_R);
+
+
   if (res != R_UnboundValue) {
-    #ifdef VERBOSE
-    printf("found.\n");
-    #endif
     return newSexpObject(res);
   }
   PyErr_Format(ErrorObject, "'%s' not found", name);
@@ -928,6 +1026,10 @@ initrinterface(void)
     return;
   if (PyType_Ready(&VectorSexp_Type) < 0)
     return;
+  if (PyType_Ready(&EnvironmentSexp_Type) < 0)
+    return;
+  if (PyType_Ready(&S4Sexp_Type) < 0)
+    return;
 
   PyObject *m;
   m = Py_InitModule3("rinterface", EmbeddedR_methods, module_doc);
@@ -937,6 +1039,8 @@ initrinterface(void)
   PyModule_AddObject(m, "Sexp", (PyObject *)&Sexp_Type);
   PyModule_AddObject(m, "SexpClosure", (PyObject *)&ClosureSexp_Type);
   PyModule_AddObject(m, "SexpVector", (PyObject *)&VectorSexp_Type);
+  PyModule_AddObject(m, "SexpEnvironment", (PyObject *)&EnvironmentSexp_Type);
+  PyModule_AddObject(m, "SexpS4", (PyObject *)&S4Sexp_Type);
 
   //FIXME: clean the exception stuff
   if (ErrorObject == NULL) {
@@ -967,10 +1071,10 @@ initrinterface(void)
   ADD_INT_CONSTANT(m, DOTSXP);
   ADD_INT_CONSTANT(m, ANYSXP);
   ADD_INT_CONSTANT(m, VECSXP);
-  ADD_INT_CONSTANT(m, VECSXP);
   ADD_INT_CONSTANT(m, EXPRSXP);
   ADD_INT_CONSTANT(m, BCODESXP);
   ADD_INT_CONSTANT(m, EXTPTRSXP);
   ADD_INT_CONSTANT(m, RAWSXP);
   ADD_INT_CONSTANT(m, S4SXP);
+
 }
