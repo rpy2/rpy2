@@ -6,7 +6,7 @@
  * of RPy.
  *
  * The authors for the original RPy code, as well as
- * belopolsky's contributed code, are listed here as authors;
+ * belopolsky for his contributed code, are listed here as authors;
  * parts of this code is (sometimes shamelessly but with great 
  * respect for the work) "inspired" from their contributions. 
  * 
@@ -28,6 +28,13 @@
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
  * for the specific language governing rights and limitations under the
  * License.
+ *
+ * original RPy Authors: Walter Moreira.
+ *                       Gregory R. Warnes <greg@warnes.net> (Maintainer)
+ * Original code from wrapping R's C-level SEXPs:   belopolsky
+ *
+ * This code: Laurent Gautier
+ *
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -86,18 +93,18 @@ PyDoc_STRVAR(module_doc,
  Check the documentation for the module this is bundled into if\
  you only wish to have an off-the-shelf interface with R.\
 \n\
- Example of usage:\
-import rinterface\
-rinterface.initEmbeddedR(\"foo\", \"--verbose\")\
-n = rinterface.SexpVector((100, ), rinterface.REALSXP)\
-hist = rinterface.findVarEmbeddedR(\"hist\")\
-rnorm = rinterface.findVarEmbeddedR(\"rnorm\")\
-x = rnorm(n)\
-hist(x)\
+ Example of usage:n\
+import rinterface\n\
+rinterface.initEmbeddedR(\"foo\", \"--verbose\")\n\
+n = rinterface.SexpVector((100, ), rinterface.REALSXP)\n\
+hist = rinterface.globalEnv.get(\"hist\")\n\
+rnorm = rinterface.globalEnv.get(\"rnorm\")\n\
+x = rnorm(n)\n\
+hist(x)\n\
 \
-len(x)\
+len(x)\n\
 \n\
-$Id$");
+");
 //FIXME: check example above
 
 
@@ -110,6 +117,7 @@ typedef struct {
 
 
 static SexpObject* globalEnv;
+static SexpObject* baseNameSpaceEnv;
 
 /* --- Initialize and terminate an embedded R --- */
 /* Should having multiple threads of R become possible, 
@@ -117,6 +125,7 @@ static SexpObject* globalEnv;
  */
 static PyObject* EmbeddedR_init(PyObject *self, PyObject *args) 
 {
+  //FIXME: arbitrary number of options
   //char *defaultargv[] = {"rpython", "--verbose"};
   char *options[5] = {"", "", "", "", ""};
 
@@ -154,7 +163,7 @@ static PyObject* EmbeddedR_end(PyObject *self, PyObject *arg)
   //ending R will not be possible until all such objects are already
   //deallocated in Python ?
   //other possibility would be to have a fallback for "unreachable" objects ?
-  //FIXME: rpy has something to terminate R. Check the details of what it is. 
+  //FIXME: rpy has something to terminate R. Check the details of what they are. 
   if (! PyInt_Check(arg)) {
   } else {
     /* sanity checks needed ? */
@@ -216,6 +225,21 @@ EmbeddedR_exception_from_errmessage(void)
 /*
  * Access to R objects through Python objects
  */
+
+/* static PyObject* */
+/* Sexp_new(PyTypeObject *type, PyObject *args) */
+/* { */
+/*   PyObject object, res; */
+/*   if (!PyArg_ParseTuple(args, "O:new", */
+/* 			&object)) */
+/*     PyErr_Format(PyExc_ValueError, "Can only instanciate from SexpObject"); */
+/*   return NULL; */
+/*   res = (SexpObject *)_PyObject_New(&Sexp_Type); */
+/*   if (!res) */
+/*     PyErr_NoMemory(); */
+/*   res->sexp = sexp; */
+/*   return res; */
+/* } */
 
 static void
 Sexp_dealloc(SexpObject *self)
@@ -299,7 +323,7 @@ static PyTypeObject Sexp_Type = {
         0,                      /*tp_dictoffset*/
         0,                      /*tp_init*/
         0,                      /*tp_alloc*/
-        0,//Sexp_new,               /*tp_new*/
+        0, //Sexp_new,               /*tp_new*/
         0,                      /*tp_free*/
         0,                      /*tp_is_gc*/
 };
@@ -387,24 +411,49 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   PyObject *tmp_obj;
   int is_SexpObject;
   for (arg_i=0; arg_i<largs; arg_i++) {
-    //FIXME: assert that all are SexpObjects
     tmp_obj = PyTuple_GetItem(args, arg_i);
     is_SexpObject = PyObject_TypeCheck(tmp_obj, &Sexp_Type);
     if (! is_SexpObject) {
       PyErr_Format(PyExc_ValueError, "All parameters must be of type Sexp_Type.");
-      return NULL;
+      goto fail;
     }
     tmp_R = ((SexpObject *)tmp_obj)->sexp;
     SETCAR(c_R, tmp_R);
     c_R = CDR(c_R);
   }
-  
-  //FIXME: implement named parameters.
-/*   if (!make_kwds(lkwds, kwds, &e)) { */
-/*     UNPROTECT(1); */
-/*     return NULL; */
-/*   } */
 
+  /* named args */
+  PyObject *citems, *argValue, *argName;
+  char *argNameString;
+
+  if (kwds) {
+    citems = PyMapping_Items(kwds);
+  }
+  for (arg_i=0; arg_i<lkwds; arg_i++) {
+    tmp_obj = PySequence_GetItem(citems, arg_i);
+    if (! tmp_obj)
+      goto fail;
+    argName = PyTuple_GetItem(tmp_obj, 0);
+    if (! PyString_Check(argName)) {
+      PyErr_SetString(PyExc_TypeError, "keywords must be strings");
+      goto fail;
+    }
+    argValue = PyTuple_GetItem(tmp_obj, 1);
+    is_SexpObject = PyObject_TypeCheck(argValue, &Sexp_Type);
+    if (! is_SexpObject) {
+      PyErr_Format(PyExc_ValueError, "All parameters must be of type Sexp_Type.");
+      goto fail;
+    }
+    Py_DECREF(tmp_obj);
+    tmp_R = ((SexpObject *)argValue)->sexp;
+    SETCAR(c_R, tmp_R);
+    argNameString = PyString_AsString(argName);
+    SET_TAG(c_R, install(argNameString));
+    //printf("PyMem_Free...");
+    //PyMem_Free(argNameString);
+  }
+  Py_XDECREF(citems);
+  
 //FIXME: R_GlobalContext ?
   PROTECT(res_R = do_eval_expr(call_R));
 
@@ -416,9 +465,17 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   //FIXME: standardize R outputs
   extern void Rf_PrintWarnings(void);
   Rf_PrintWarnings(); /* show any warning messages */
-
+  
   PyObject *res = (PyObject *)newSexpObject(res_R);
   return res;
+  
+ fail:
+  printf("failed.\n");
+  Py_XDECREF(citems);
+  Py_DECREF(tmp_obj);
+  UNPROTECT(1);
+  return NULL;
+
 }
 
 
@@ -506,9 +563,6 @@ VectorSexp_new(PyTypeObject *type, PyObject *args)
   if (!PyArg_ParseTuple(args, "Oi:new",
 			&seq, &rType))
     return NULL;
-  #ifdef VERBOSE
-  printf("type: %i\n", rType);
-  #endif
   const SEXP sexp = newSEXP(seq, rType);
   PyObject *res = (PyObject *)newSexpObject(sexp);
   return res;
@@ -670,8 +724,8 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args)
 
   const SEXP rho_R = ((SexpObject *)self)->sexp;
 
-  if (rho_R == NULL) {
-    PyErr_Format(PyExc_LookupError, "Fatal error: NULL environment.");
+  if (rho_R == R_EmptyEnv) {
+    PyErr_Format(PyExc_LookupError, "Fatal error: R_UnboundValue.");
   }
 
   res_R = findVar(install(name), rho_R);
@@ -708,8 +762,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
   name = PyString_AsString(key);
   
   SEXP rho_R = ((SexpObject *)self)->sexp;
-  res_R = findVarInFrame(install(name), rho_R);
-
+  res_R = findVarInFrame(rho_R, install(name));
 
   if (res_R != R_UnboundValue) {
     return newSexpObject(res_R);
@@ -733,14 +786,17 @@ static PyMappingMethods EnvironmentSexp_mappignMethods = {
 // be made like mappings at the Python level ?
 PyDoc_STRVAR(EnvironmentSexp_Type_doc,
 "R object that is an environment.\
- R environments can be seen as similar to Python\n\
- dictionnaries, with the twist that looking for\
- a key can be recursively propagated to the enclosing\n\
- environment whenever the key is not found.\
+ R environments can be seen as similar to Python\
+ dictionnaries, with the following twists:\n\
+ - an environment can be a list of frames to sequentially\
+ search into\n\
+-  the search can be recursively propagated to the enclosing\
+ environment whenever the key is not found (in that respect\
+ they can be seen as scopings).\n\
 \n\
- The subsetting operator is made to match Python's\n\
+ The subsetting operator \"[\" is made to match Python's\
  behavior, that is the enclosing environments are not\
- inspected upon absence of a given key.\
+ inspected upon absence of a given key.\n\
 ");
 
 static PyTypeObject EnvironmentSexp_Type = {
@@ -976,6 +1032,18 @@ newSEXP(PyObject *object, int rType)
       }
     }
     break;
+  case LISTSXP:
+    for (i = 0; i < length; ++i) {
+      if(item = PySequence_Fast_GET_ITEM(seq_object, i)) {
+	int is_SexpObject = PyObject_TypeCheck(item, &Sexp_Type);
+	if (! is_SexpObject) {
+	  PyErr_Format(PyExc_ValueError, "All elements of the list must be of "
+		       "type 'Sexp_Type'.");
+	  return NULL;
+	}
+	SET_ELEMENT(sexp, i, ((SexpObject *)item)->sexp);
+      }
+    }
     //FIXME: add complex 
   default:
     PyErr_Format(PyExc_ValueError, "cannot handle type %d", rType);
@@ -1092,12 +1160,19 @@ initrinterface(void)
   Py_INCREF(ErrorObject);
   PyModule_AddObject(m, "RobjectNotFound", ErrorObject);
 
-  globalEnv = (SexpObject*)_PyObject_New(&EnvironmentSexp_Type);
-  globalEnv->sexp = NULL;
-  if (PyDict_SetItemString(d, "globalEnv", (PyObject*)globalEnv) < 0)
+  globalEnv = (SexpObject *)_PyObject_New(&EnvironmentSexp_Type);
+  globalEnv->sexp = R_EmptyEnv;
+  if (PyDict_SetItemString(d, "globalEnv", (PyObject *)globalEnv) < 0)
     return;
   //FIXME: DECREF ?
-  //Py_DECREF(globalEnv);
+  Py_DECREF(globalEnv);
+
+  baseNameSpaceEnv = (SexpObject*)_PyObject_New(&EnvironmentSexp_Type);
+  globalEnv->sexp = R_EmptyEnv;
+  if (PyDict_SetItemString(d, "baseNameSpaceEnv", (PyObject *)baseNameSpaceEnv) < 0)
+    return;
+  //FIXME: DECREF ?
+  Py_DECREF(baseNameSpaceEnv);
 
   /* Add some symbolic constants to the module */
   ADD_INT_CONSTANT(m, NILSXP);
@@ -1124,4 +1199,27 @@ initrinterface(void)
   ADD_INT_CONSTANT(m, RAWSXP);
   ADD_INT_CONSTANT(m, S4SXP);
 
+  /* "Logical" (boolean) values */
+  ADD_INT_CONSTANT(m, TRUE);
+  ADD_INT_CONSTANT(m, FALSE);
+
+  /* R_ext/Arith.h */
+  ADD_INT_CONSTANT(m, NA_LOGICAL);
+  ADD_INT_CONSTANT(m, NA_INTEGER);
+  PyObject *na_real = PyFloat_FromDouble(NA_REAL);
+  if (PyDict_SetItemString(d, "NA_REAL", (PyObject *)na_real) < 0)
+    return;
+  //FIXME: DECREF ?
+  Py_DECREF(na_real);
+
+  
+  /* Rinternals.h */
+  SexpObject *na_string = (SexpObject *)_PyObject_New(&VectorSexp_Type);
+  na_string->sexp = NA_STRING;
+  if (PyDict_SetItemString(d, "NA_STRING", (PyObject *)na_string) < 0)
+    return;
+  //FIXME: DECREF ?
+  Py_DECREF(na_string);
+
+   
 }

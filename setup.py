@@ -9,7 +9,7 @@ if RHOME is None:
 
 print('R\'s home is:%s' %RHOME)
 
-r_libs = [os.path.join(RHOME, 'lib')]
+r_libs = [os.path.join(RHOME, 'lib'), os.path.join(RHOME, 'modules')]
 
 
 rinterface = Extension(
@@ -26,7 +26,7 @@ setup(name="rpython",
       version="0.0.1",
       description="Python interface to the R language",
       url="http://rpy.sourceforge.net",
-      license="GPL",
+      license="(L)GPL",
       ext_modules=[rinterface],
-      #py_modules=['rpython']
+      py_modules=['robjects']
       )
