@@ -9,13 +9,15 @@ import rinterface
 def defaultPy2RMapper(self, o):
     if isinstance(o, Robject):
         return o._sexp
+    if isinstance(o, rinterface.Sexp):
+        return o
     if isinstance(o, array.array):
         if o.typecode in ('h', 'H', 'i', 'I'):
             res = rinterface.SexpVector(o, rinterface.INTSXP)
         elif o.typecode in ('f', 'd'):
             res = rinterface.SexpVector(o, rinterface.REALSXP)
         else:
-            raise("Nothing can be done for this array type at the moment.")
+            raise(ValueError("Nothing can be done for this array type at the moment."))
     elif isinstance(o, int):
         res = rinterface.SexpVector([o, ], rinterface.INTSXP)
     elif isinstance(o, float):
@@ -25,7 +27,7 @@ def defaultPy2RMapper(self, o):
     elif isinstance(o, str):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
     else:
-        raise("Nothing can be done for this type at the moment.")
+        raise(ValueError("Nothing can be done for this type at the moment."))
     return res
     
 def defaultR2PyMapper(o):
@@ -33,6 +35,8 @@ def defaultR2PyMapper(o):
         res = Rvector(o)
     elif isinstance(o, rinterface.SexpClosure):
         res = Rfunction(o)
+    elif isinstance(o, rinterface.SexpEnvironment):
+        res = Renvironment(o)
     else:
         res = o
     return res
@@ -60,7 +64,7 @@ class Rvector(Robject):
         for a in args:
             if not isinstance(a, rinterface.SexpVector):
                 raise(TypeError("Subset only take R vectors"))
-        res = r.globalEnv.get("[")([self._sexp, ] + args)#, drop=drop)
+        res = rinterface.globalEnv.get("[")([self._sexp, ] + args)#, drop=drop)
         return res
 
     def __getitem__(self, i):
@@ -68,31 +72,31 @@ class Rvector(Robject):
         return res
 
     def __add__(self, x):
-        res = r.globalEnv.get("+")(self._sexp, x)
+        res = r.__getattribute__("+")(self, x)
         return res
 
     def __sub__(self, x):
-        res = r.globalEnv.get("-")(self._sexp, x)
+        res = r.__getattribute__("-")(self, x)
         return res
 
     def __mul__(self, x):
-        res = r.globalEnv.get("*")(self._sexp, x)
+        res = r.__getattribute__("*")(self, x)
         return res
 
     def __div__(self, x):
-        res = r.globalEnv.get("/")(self._sexp, x)
+        res = r.__getattribute__("/")(self, x)
         return res
 
     def __divmod__(self, x):
-        res = r.globalEnv.get("%%")(self._sexp, x)
+        res = r.__getattribute__("%%")(self, x)
         return res
 
     def __or__(self, x):
-        res = r.globalEnv.get("|")(self._sexp, x)
+        res = r.__getattribute__("|")(self, x)
         return res
 
     def __and__(self, x):
-        res = r.globalEnv.get("&")(self._sexp, x)
+        res = r.__getattribute__("&")(self, x)
         return res
 
 
@@ -104,7 +108,7 @@ class Rfunction(Robject):
         if (isinstance(o, rinterface.SexpClosure)):
             self._sexp = o
         else:
-            raise("Cannot instantiate.")
+            raise(ValueError("Cannot instantiate."))
 
     def __call__(self, *args, **kwargs):
         new_args = [self.mapper(a) for a in args]
@@ -121,10 +125,10 @@ class Renvironment(Robject):
         if (isinstance(o, rinterface.SexpEnvironment)):
             self._sexp = o
         else:
-            raise("Cannot instantiate")
+            raise(ValueError("Cannot instantiate"))
 
     def __getattr__(self, attr):
-        res = self._sexp.get(attr)
+        res = self._sexp[attr]
         return res
 
 
@@ -138,7 +142,7 @@ class R(object):
             rinterface.initEmbeddedR(*args)
             R._instance = self
         else:
-            raise("Only one instance of R can be created")
+            raise(ValueError("Only one instance of R can be created"))
         
     def __getattribute__(self, attr):
         res = rinterface.globalEnv.get(attr)
