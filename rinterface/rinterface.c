@@ -8,7 +8,7 @@
  * The authors for the original RPy code, as well as
  * belopolsky for his contributed code, are listed here as authors;
  * parts of this code is (sometimes shamelessly but with great 
- * respect for the work) "inspired" from their contributions. 
+ * respect for the work) "inspired/copied" from their contributions. 
  * 
  * FIXME: get everyone's name in the license block
  *
@@ -157,19 +157,19 @@ PyDoc_STRVAR(EmbeddedR_init_doc,
 Initialize an embedded R.");
 
 
-static PyObject* EmbeddedR_end(PyObject *self, PyObject *arg)
+static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
 {
   //FIXME: Have a reference count for R objects known to Python.
   //ending R will not be possible until all such objects are already
   //deallocated in Python ?
   //other possibility would be to have a fallback for "unreachable" objects ?
   //FIXME: rpy has something to terminate R. Check the details of what they are. 
-  if (! PyInt_Check(arg)) {
-  } else {
-    /* sanity checks needed ? */
-    const long fatal = PyInt_AsLong(arg);
-    Rf_endEmbeddedR((int)fatal);
-  }
+  /* sanity checks needed ? */
+
+  Rf_endEmbeddedR((int)fatal);
+  globalEnv->sexp = R_EmptyEnv;
+  baseNameSpaceEnv->sexp = R_EmptyEnv;
+
   Py_RETURN_NONE;
 }
 PyDoc_STRVAR(EmbeddedR_end_doc,
@@ -397,8 +397,10 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     largs = PyObject_Length(args);
   if (kwds)
     lkwds = PyObject_Length(kwds);
-  if ((largs<0) || (lkwds<0))
+  if ((largs<0) || (lkwds<0)) {
+    PyErr_Format(PyExc_ValueError, "Negative number of parameters !?.");
     return NULL;
+  }
 
   /* A SEXP with the function to call and the arguments and keywords. */
   PROTECT(c_R = call_R = allocList(largs+lkwds+1));
@@ -431,8 +433,10 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   }
   for (arg_i=0; arg_i<lkwds; arg_i++) {
     tmp_obj = PySequence_GetItem(citems, arg_i);
-    if (! tmp_obj)
+    if (! tmp_obj) {
+      PyErr_Format(PyExc_ValueError, "No un-named item %i !?", arg_i);      
       goto fail;
+    }
     argName = PyTuple_GetItem(tmp_obj, 0);
     if (! PyString_Check(argName)) {
       PyErr_SetString(PyExc_TypeError, "keywords must be strings");
@@ -465,7 +469,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   //FIXME: standardize R outputs
   extern void Rf_PrintWarnings(void);
   Rf_PrintWarnings(); /* show any warning messages */
-  
+
   PyObject *res = (PyObject *)newSexpObject(res_R);
   return res;
   
@@ -501,8 +505,8 @@ static PyMethodDef ClosureSexp_methods[] = {
 //FIXME: write more doc
 PyDoc_STRVAR(ClosureSexp_Type_doc,
 "A R object that is a closure, that is a function. \
-In R a function a function is defined in an enclosing \
-environement, thus the name of closure. \
+In R a function is defined within an enclosing \
+environment, thus the name closure. \
 In Python, 'nested scopes' could be the closest similar thing.\
 \n\
 The closure can be accessed with the method 'closureEnv'.\
@@ -619,6 +623,9 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     case STRSXP:
       vs = CHARACTER_POINTER(STRING_ELT(*sexp, i_R));
       res = PyString_FromString(vs);
+      break;
+    case VECSXP:
+      res = (PyObject *)newSexpObject(VECTOR_ELT(*sexp, i_R));
       break;
     default:
       PyErr_Format(PyExc_ValueError, "cannot handle type %d", 
@@ -924,9 +931,12 @@ newSexpObject(const SEXP sexp)
   else {
     sexp_ok = sexp;
   }
+  if (sexp_ok)
+    R_PreserveObject(sexp_ok);
 
   switch (TYPEOF(sexp_ok)) {
   case CLOSXP:
+  case BUILTINSXP:
     object  = (SexpObject *)_PyObject_New(&ClosureSexp_Type); 
     break;
     //FIXME: handle other callable types ?
@@ -940,7 +950,7 @@ newSexpObject(const SEXP sexp)
   case INTSXP: 
   case LGLSXP:
   case CPLXSXP:
-  case LISTSXP:
+  case VECSXP:
   case STRSXP:
     object = (SexpObject *)_PyObject_New(&VectorSexp_Type);
     break;
@@ -954,11 +964,14 @@ newSexpObject(const SEXP sexp)
     object  = (SexpObject *)_PyObject_New(&Sexp_Type); 
     break;
   }
-  if (!object)
+  if (!object) {
+    R_ReleaseObject(sexp_ok);
     PyErr_NoMemory();
+    return NULL;
+  }
   object->sexp = sexp_ok;
-  if (sexp)
-    R_PreserveObject(sexp_ok);
+  //FIXME: Increment reference ?
+  //Py_INCREF(object);
   return object;
 }
 
@@ -974,7 +987,7 @@ newSEXP(PyObject *object, int rType)
   }
   const Py_ssize_t length = PySequence_Fast_GET_SIZE(seq_object);
   //FIXME: PROTECT THIS ?
-  sexp = allocVector(rType, length);
+  PROTECT(sexp = allocVector(rType, length));
 
   int i;
   
@@ -1032,9 +1045,9 @@ newSEXP(PyObject *object, int rType)
       }
     }
     break;
-  case LISTSXP:
+  case VECSXP:
     for (i = 0; i < length; ++i) {
-      if(item = PySequence_Fast_GET_ITEM(seq_object, i)) {
+      if((item = PySequence_Fast_GET_ITEM(seq_object, i))) {
 	int is_SexpObject = PyObject_TypeCheck(item, &Sexp_Type);
 	if (! is_SexpObject) {
 	  PyErr_Format(PyExc_ValueError, "All elements of the list must be of "
@@ -1046,9 +1059,11 @@ newSEXP(PyObject *object, int rType)
     }
     //FIXME: add complex 
   default:
+    UNPROTECT(1);
     PyErr_Format(PyExc_ValueError, "cannot handle type %d", rType);
     sexp = NULL;
   }
+  UNPROTECT(1);
   return sexp;
 }
 
@@ -1168,7 +1183,7 @@ initrinterface(void)
   Py_DECREF(globalEnv);
 
   baseNameSpaceEnv = (SexpObject*)_PyObject_New(&EnvironmentSexp_Type);
-  globalEnv->sexp = R_EmptyEnv;
+  baseNameSpaceEnv->sexp = R_EmptyEnv;
   if (PyDict_SetItemString(d, "baseNameSpaceEnv", (PyObject *)baseNameSpaceEnv) < 0)
     return;
   //FIXME: DECREF ?
