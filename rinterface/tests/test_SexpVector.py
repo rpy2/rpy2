@@ -2,7 +2,7 @@ import unittest
 import rinterface
 
 #FIXME: can starting and stopping an embedded R be done several times ?
-rinterface.initEmbeddedR("foo", "--vanilla", "--no-save")
+rinterface.initEmbeddedR("foo", "--vanilla", "--no-save", "--quiet")
 
 class SexpVectorTestCase(unittest.TestCase):
     #def setUpt(self):
@@ -22,12 +22,12 @@ class SexpVectorTestCase(unittest.TestCase):
         seq_R = rinterface.globalEnv.get("seq")
         
         mySeq = seq_R(rinterface.SexpVector([0, ], rinterface.INTSXP),
-                     rinterface.SexpVector([10, ], rinterface.INTSXP))
+                      rinterface.SexpVector([10, ], rinterface.INTSXP))
         
         myList = as_list_R(mySeq)
         
-        for i, li in enumerate(Rlist):
-            self.assertEquals(i, Rlist[i][0])
+        for i, li in enumerate(myList):
+            self.assertEquals(i, myList[i][0])
 
 if __name__ == '__main__':
      unittest.main()
