@@ -2,7 +2,7 @@ import unittest
 import rinterface
 
 #FIXME: can starting and stopping an embedded R be done several times ?
-rinterface.initEmbeddedR("foo", "--vanilla", "--no-save")
+rinterface.initEmbeddedR("foo", "--vanilla", "--no-save", "--quiet")
 
 class SexpEnvironmentTestCase(unittest.TestCase):
     #def setUpt(self):
