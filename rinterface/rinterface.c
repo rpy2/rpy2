@@ -65,8 +65,11 @@
 
 #include <signal.h>
 
-//FIXME: get this out ASAP
-#define VERBOSE
+/* Back-compatibility with Python 2.4 */
+#if (PY_VERSION_HEX < 0x02050000)
+typedef int Py_ssize_t;
+#endif
+
 
 //FIXME: see the details of error handling
 static PyObject *ErrorObject;
@@ -455,6 +458,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     SET_TAG(c_R, install(argNameString));
     //printf("PyMem_Free...");
     //PyMem_Free(argNameString);
+    c_R = CDR(c_R);
   }
   Py_XDECREF(citems);
   
@@ -778,9 +782,9 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
   return NULL;
 }
 PyDoc_STRVAR(EnvironmentSexp_subscript_doc,
-	     "Find an R object in the environment.\
- Not all R environment are hash tables, and this may\n\
-influence performances when doing repeated lookups.");
+	     "Find an R object in the environment.\n\
+ Not all R environment are hash tables, and this may\
+ influence performances when doing repeated lookups.");
 
 //FIXME: Is this still needed ?
 static PyMappingMethods EnvironmentSexp_mappignMethods = {
@@ -919,14 +923,8 @@ newSexpObject(const SEXP sexp)
   
   //FIXME: let the possibility to manipulate un-evaluated promises ?
   if (TYPEOF(sexp) == PROMSXP) {
-    #ifdef VERBOSE
-    printf("evaluating promise...");
-    #endif
     env_R = PRENV(sexp);
     sexp_ok = eval(sexp, env_R);
-    #ifdef VERBOSE
-    printf("done.\n");
-    #endif
   } 
   else {
     sexp_ok = sexp;
@@ -937,15 +935,10 @@ newSexpObject(const SEXP sexp)
   switch (TYPEOF(sexp_ok)) {
   case CLOSXP:
   case BUILTINSXP:
+  case SPECIALSXP:
     object  = (SexpObject *)_PyObject_New(&ClosureSexp_Type); 
     break;
-    //FIXME: handle other callable types ?
-    //case SPECIALSXP:
-    //callable type
-    //break;
-    //case BUILTINSXP:
-    //callable type
-    //break;
+    //FIXME: BUILTINSXP and SPECIALSXP really like CLOSXP ?
   case REALSXP: 
   case INTSXP: 
   case LGLSXP:
