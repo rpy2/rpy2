@@ -68,6 +68,8 @@
 /* Back-compatibility with Python 2.4 */
 #if (PY_VERSION_HEX < 0x02050000)
 typedef int Py_ssize_t;
+typedef inquiry lenfunc;
+typedef intargfunc ssizeargfunc;
 #endif
 
 
