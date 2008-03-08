@@ -95,9 +95,9 @@ class Rvector(Robject):
            - an index is itself a vector of elements to select
         """
         for a in args:
-            if not isinstance(a, rinterface.SexpVector):
+            if not isinstance(a, Rvector):
                 raise(TypeError("Subset only take R vectors"))
-        res = rinterface.globalEnv.get("[")([self._sexp, ] + args, **kwargs)
+        res = r["["](*([self._sexp, ] + list(args)), **kwargs)
         return res
 
     def __getitem__(self, i):
