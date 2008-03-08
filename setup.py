@@ -13,8 +13,8 @@ r_libs = [os.path.join(RHOME, 'lib'), os.path.join(RHOME, 'modules')]
 
 
 rinterface = Extension(
-        "rinterface",
-        ["rinterface/rinterface.c", ],
+        "rpy.rinterface",
+        ["rpy/rinterface/rinterface.c", ],
         include_dirs=[ os.path.join(RHOME, 'include'),],
         libraries=['R', 'Rlapack', 'Rblas'],
         library_dirs=r_libs,
@@ -28,5 +28,5 @@ setup(name="rpython",
       url="http://rpy.sourceforge.net",
       license="(L)GPL",
       ext_modules = [rinterface],
-      packages = ['robjects']
+      packages = ['rpy', 'rpy.robjects']
       )
