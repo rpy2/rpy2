@@ -74,6 +74,7 @@ class Robject(object):
         s = str.join(os.linesep, s)
         return s
 
+
 class Rvector(Robject):
     """ R vector-like object. Items in those instances can
        be accessed with the method "__getitem__" ("[" operator),
@@ -85,12 +86,18 @@ class Rvector(Robject):
         else:
             self._sexp = defaultPy2RMapper(self, o)
 
-    def subset(self, *args):
-        """ Subset the "R-way.", using R's "[" function """
+    def subset(self, *args, **kwargs):
+        """ Subset the "R-way.", using R's "[" function. 
+           In a nutshell, R indexing differs from Python's with
+           - indexing can be done with integers or strings (that are 'names')
+           - integer indexing starts at one
+           - negative integer indexing means exclusion of the given integers
+           - an index is itself a vector of elements to select
+        """
         for a in args:
             if not isinstance(a, rinterface.SexpVector):
                 raise(TypeError("Subset only take R vectors"))
-        res = rinterface.globalEnv.get("[")([self._sexp, ] + args)#, drop=drop)
+        res = rinterface.globalEnv.get("[")([self._sexp, ] + args, **kwargs)
         return res
 
     def __getitem__(self, i):
@@ -98,31 +105,31 @@ class Rvector(Robject):
         return res
 
     def __add__(self, x):
-        res = r.__getattribute__("+")(self, x)
+        res = r.get("+")(self, x)
         return res
 
     def __sub__(self, x):
-        res = r.__getattribute__("-")(self, x)
+        res = r.get("-")(self, x)
         return res
 
     def __mul__(self, x):
-        res = r.__getattribute__("*")(self, x)
+        res = r.get("*")(self, x)
         return res
 
     def __div__(self, x):
-        res = r.__getattribute__("/")(self, x)
+        res = r.get("/")(self, x)
         return res
 
     def __divmod__(self, x):
-        res = r.__getattribute__("%%")(self, x)
+        res = r.get("%%")(self, x)
         return res
 
     def __or__(self, x):
-        res = r.__getattribute__("|")(self, x)
+        res = r.get("|")(self, x)
         return res
 
     def __and__(self, x):
-        res = r.__getattribute__("&")(self, x)
+        res = r.get("&")(self, x)
         return res
 
 
@@ -175,6 +182,7 @@ class RS4(Robject):
         res = r.get("@")(self, attr)
         return res
 
+    
 class R(object):
     _instance = None
 
