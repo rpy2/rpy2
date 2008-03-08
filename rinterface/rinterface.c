@@ -116,7 +116,7 @@ len(x)\n\
 /* Representation of R objects (instances) as instances in Python.
  */
 typedef struct {
-  PyObject_HEAD
+  PyObject_HEAD 
   SEXP sexp;
 } SexpObject;
 
@@ -251,7 +251,8 @@ Sexp_dealloc(SexpObject *self)
 {
   if (self->sexp)
     R_ReleaseObject(self->sexp);
-  self->ob_type->tp_free((PyObject*)self);
+  //self->ob_type->tp_free((PyObject*)self);
+  PyObject_Del(self);
 }
 
 
@@ -260,6 +261,10 @@ Sexp_repr(PyObject *self)
 {
   //FIXME: make sure this is making any sense
   SEXP sexp = ((SexpObject *)self)->sexp;
+  if (! sexp) {
+      PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+      return NULL;;
+    }
   return PyString_FromFormat("<%s - Python:\%p / R:\%p>",
 			     self->ob_type->tp_name,
 			     self,
@@ -270,7 +275,12 @@ Sexp_repr(PyObject *self)
 static PyObject*
 Sexp_typeof(PyObject *self)
 {
-  return PyInt_FromLong(TYPEOF(((SexpObject*)self)->sexp));
+  SEXP sexp =((SexpObject*)self)->sexp;
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;;
+  }
+  return PyInt_FromLong(TYPEOF(sexp));
 }
 PyDoc_STRVAR(Sexp_typeof_doc,
 "\n\
@@ -344,7 +354,7 @@ static SEXP newSEXP(PyObject *object, const int rType);
 /* Evaluate a SEXP. It must be constructed by hand. It raises a Python
    exception if an error ocurred in the evaluation */
 SEXP do_eval_expr(SEXP expr_R) {
-  SEXP res_R;
+  SEXP res_R = NULL;
   int error = 0;
   PyOS_sighandler_t old_int;
   
@@ -396,6 +406,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 {
   SEXP call_R, c_R, res_R;
   int largs, lkwds;
+  SEXP tmp_R;
   
   largs = lkwds = 0;
   if (args)
@@ -410,11 +421,15 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   /* A SEXP with the function to call and the arguments and keywords. */
   PROTECT(c_R = call_R = allocList(largs+lkwds+1));
   SET_TYPEOF(c_R, LANGSXP);
-  SETCAR(c_R, ((SexpObject *)self)->sexp);
+  tmp_R = ((SexpObject *)self)->sexp;
+  if (! tmp_R) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    goto fail;
+  }
+  SETCAR(c_R, tmp_R);
   c_R = CDR(c_R);
 
   int arg_i;
-  SEXP tmp_R;
   PyObject *tmp_obj;
   int is_SexpObject;
   for (arg_i=0; arg_i<largs; arg_i++) {
@@ -425,6 +440,10 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       goto fail;
     }
     tmp_R = ((SexpObject *)tmp_obj)->sexp;
+    if (! tmp_R) {
+      PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+      goto fail;
+    }
     SETCAR(c_R, tmp_R);
     c_R = CDR(c_R);
   }
@@ -435,34 +454,48 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 
   if (kwds) {
     citems = PyMapping_Items(kwds);
-  }
-  for (arg_i=0; arg_i<lkwds; arg_i++) {
-    tmp_obj = PySequence_GetItem(citems, arg_i);
-    if (! tmp_obj) {
-      PyErr_Format(PyExc_ValueError, "No un-named item %i !?", arg_i);      
-      goto fail;
-    }
-    argName = PyTuple_GetItem(tmp_obj, 0);
-    if (! PyString_Check(argName)) {
-      PyErr_SetString(PyExc_TypeError, "keywords must be strings");
-      goto fail;
-    }
-    argValue = PyTuple_GetItem(tmp_obj, 1);
-    is_SexpObject = PyObject_TypeCheck(argValue, &Sexp_Type);
-    if (! is_SexpObject) {
-      PyErr_Format(PyExc_ValueError, "All parameters must be of type Sexp_Type.");
-      goto fail;
-    }
-    Py_DECREF(tmp_obj);
-    tmp_R = ((SexpObject *)argValue)->sexp;
-    SETCAR(c_R, tmp_R);
-    argNameString = PyString_AsString(argName);
-    SET_TAG(c_R, install(argNameString));
+
+    for (arg_i=0; arg_i<lkwds; arg_i++) {
+      tmp_obj = PySequence_GetItem(citems, arg_i);
+      if (! tmp_obj) {
+	PyErr_Format(PyExc_ValueError, "No un-named item %i !?", arg_i);
+	
+	Py_XDECREF(citems);
+	goto fail;
+      }
+      argName = PyTuple_GetItem(tmp_obj, 0);
+      if (! PyString_Check(argName)) {
+	PyErr_SetString(PyExc_TypeError, "keywords must be strings");
+
+	Py_XDECREF(citems);
+	goto fail;
+      }
+      argValue = PyTuple_GetItem(tmp_obj, 1);
+      is_SexpObject = PyObject_TypeCheck(argValue, &Sexp_Type);
+      if (! is_SexpObject) {
+	PyErr_Format(PyExc_ValueError, 
+		     "All parameters must be of type Sexp_Type.");
+	
+	Py_XDECREF(citems);
+	goto fail;
+      }
+      Py_DECREF(tmp_obj);
+      tmp_R = ((SexpObject *)argValue)->sexp;
+      if (! tmp_R) {
+	PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+
+	Py_XDECREF(citems);
+	goto fail;
+      }
+      SETCAR(c_R, tmp_R);
+      argNameString = PyString_AsString(argName);
+      SET_TAG(c_R, install(argNameString));
     //printf("PyMem_Free...");
     //PyMem_Free(argNameString);
-    c_R = CDR(c_R);
+      c_R = CDR(c_R);
+    }
+    Py_XDECREF(citems);
   }
-  Py_XDECREF(citems);
   
 //FIXME: R_GlobalContext ?
   PROTECT(res_R = do_eval_expr(call_R));
@@ -481,7 +514,6 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   
  fail:
   printf("failed.\n");
-  Py_XDECREF(citems);
   Py_DECREF(tmp_obj);
   UNPROTECT(1);
   return NULL;
@@ -494,7 +526,13 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 static SexpObject*
 Sexp_closureEnv(PyObject *self)
 {
-  SEXP closureEnv = CLOENV(((SexpObject*)self)->sexp);
+  SEXP closureEnv, sexp;
+  sexp = ((SexpObject*)self)->sexp;
+  if (! sexp) {
+      PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+      return NULL;
+  }
+  closureEnv = CLOENV(sexp);
   return newSexpObject(closureEnv);
 }
 PyDoc_STRVAR(Sexp_closureEnv_doc,
@@ -583,7 +621,12 @@ static Py_ssize_t VectorSexp_len(PyObject *object)
 {
   Py_ssize_t len;
   //FIXME: sanity checks.
-  len = (Py_ssize_t)GET_LENGTH(((SexpObject *)object)->sexp);
+  SEXP sexp = ((SexpObject *)object)->sexp;
+  if (! sexp) {
+      PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+      return NULL;
+  }
+  len = (Py_ssize_t)GET_LENGTH(sexp);
   return len;
 }
 
@@ -594,6 +637,12 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
   PyObject* res;
   R_len_t i_R;
   SEXP *sexp = &(((SexpObject *)object)->sexp);
+
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;
+  }
+
   /* R is still with int for indexes */
   if (i >= R_LEN_T_MAX) {
     PyErr_Format(PyExc_IndexError, "Index value exceeds what R can handle.");
@@ -729,13 +778,17 @@ static SexpObject*
 EnvironmentSexp_findVar(PyObject *self, PyObject *args)
 {
   char *name;
-  SEXP res_R;
+  SEXP res_R = NULL;
 
   if (!PyArg_ParseTuple(args, "s", &name)) { 
     return NULL; 
   }
 
   const SEXP rho_R = ((SexpObject *)self)->sexp;
+  if (! rho_R) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;
+  }
 
   if (rho_R == R_EmptyEnv) {
     PyErr_Format(PyExc_LookupError, "Fatal error: R_UnboundValue.");
@@ -765,7 +818,7 @@ static SexpObject*
 EnvironmentSexp_subscript(PyObject *self, PyObject *key)
 {
   char *name;
-  SEXP res_R;
+  SEXP res_R = NULL;
 
   if (!PyString_Check(key)) {
     PyErr_Format(PyExc_ValueError, "Keys must be string objects.");
@@ -775,6 +828,10 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
   name = PyString_AsString(key);
   
   SEXP rho_R = ((SexpObject *)self)->sexp;
+  if (! rho_R) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;
+  }
   res_R = findVarInFrame(rho_R, install(name));
 
   if (res_R != R_UnboundValue) {
@@ -788,7 +845,6 @@ PyDoc_STRVAR(EnvironmentSexp_subscript_doc,
  Not all R environment are hash tables, and this may\
  influence performances when doing repeated lookups.");
 
-//FIXME: Is this still needed ?
 static PyMappingMethods EnvironmentSexp_mappignMethods = {
   0, /* mp_length */
   EnvironmentSexp_subscript, /* mp_subscript */
@@ -922,7 +978,11 @@ newSexpObject(const SEXP sexp)
 {
   SexpObject *object;
   SEXP sexp_ok, env_R;
-  
+
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;
+  }
   //FIXME: let the possibility to manipulate un-evaluated promises ?
   if (TYPEOF(sexp) == PROMSXP) {
     env_R = PRENV(sexp);
@@ -938,7 +998,8 @@ newSexpObject(const SEXP sexp)
   case CLOSXP:
   case BUILTINSXP:
   case SPECIALSXP:
-    object  = (SexpObject *)_PyObject_New(&ClosureSexp_Type); 
+    object  = (SexpObject *)PyObject_New(SexpObject,
+					 &ClosureSexp_Type);
     break;
     //FIXME: BUILTINSXP and SPECIALSXP really like CLOSXP ?
   case REALSXP: 
@@ -947,16 +1008,20 @@ newSexpObject(const SEXP sexp)
   case CPLXSXP:
   case VECSXP:
   case STRSXP:
-    object = (SexpObject *)_PyObject_New(&VectorSexp_Type);
+    object = (SexpObject *)PyObject_New(SexpObject,
+					&VectorSexp_Type);
     break;
   case ENVSXP:
-    object = (SexpObject *)_PyObject_New(&EnvironmentSexp_Type);
+    object = (SexpObject *)PyObject_New(SexpObject,
+					&EnvironmentSexp_Type);
     break;
   case S4SXP:
-    object = (SexpObject *)_PyObject_New(&S4Sexp_Type);
+    object = (SexpObject *)PyObject_New(SexpObject,
+					&S4Sexp_Type);
     break;
   default:
-    object  = (SexpObject *)_PyObject_New(&Sexp_Type); 
+    object  = (SexpObject *)PyObject_New(SexpObject,
+					 &Sexp_Type); 
     break;
   }
   if (!object) {
@@ -964,6 +1029,7 @@ newSexpObject(const SEXP sexp)
     PyErr_NoMemory();
     return NULL;
   }
+  //PyObject_Init(&object, &ClosureSexp_Type);
   object->sexp = sexp_ok;
   //FIXME: Increment reference ?
   //Py_INCREF(object);
@@ -1028,10 +1094,12 @@ newSEXP(PyObject *object, int rType)
       if((item = PyObject_Str(PySequence_Fast_GET_ITEM(seq_object, i)))) {
 	SEXP str_R = mkChar(PyString_AS_STRING(item));
 	if (!str_R) {
+	  Py_DECREF(item);
 	  PyErr_NoMemory();
 	  sexp = NULL;
 	  break;
 	}
+	Py_DECREF(item);
 	SET_STRING_ELT(sexp, i, str_R);
       }
       else {
@@ -1045,11 +1113,13 @@ newSEXP(PyObject *object, int rType)
       if((item = PySequence_Fast_GET_ITEM(seq_object, i))) {
 	int is_SexpObject = PyObject_TypeCheck(item, &Sexp_Type);
 	if (! is_SexpObject) {
+	  Py_DECREF(item);
 	  PyErr_Format(PyExc_ValueError, "All elements of the list must be of "
 		       "type 'Sexp_Type'.");
 	  return NULL;
 	}
 	SET_ELEMENT(sexp, i, ((SexpObject *)item)->sexp);
+	Py_DECREF(item);
       }
     }
     //FIXME: add complex 
@@ -1170,14 +1240,16 @@ initrinterface(void)
   Py_INCREF(ErrorObject);
   PyModule_AddObject(m, "RobjectNotFound", ErrorObject);
 
-  globalEnv = (SexpObject *)_PyObject_New(&EnvironmentSexp_Type);
+  globalEnv = (SexpObject *)PyObject_New(SexpObject, 
+					 &EnvironmentSexp_Type);
   globalEnv->sexp = R_EmptyEnv;
   if (PyDict_SetItemString(d, "globalEnv", (PyObject *)globalEnv) < 0)
     return;
   //FIXME: DECREF ?
   Py_DECREF(globalEnv);
 
-  baseNameSpaceEnv = (SexpObject*)_PyObject_New(&EnvironmentSexp_Type);
+  baseNameSpaceEnv = (SexpObject*)PyObject_New(SexpObject, 
+					       &EnvironmentSexp_Type);
   baseNameSpaceEnv->sexp = R_EmptyEnv;
   if (PyDict_SetItemString(d, "baseNameSpaceEnv", (PyObject *)baseNameSpaceEnv) < 0)
     return;
@@ -1224,7 +1296,8 @@ initrinterface(void)
 
   
   /* Rinternals.h */
-  SexpObject *na_string = (SexpObject *)_PyObject_New(&VectorSexp_Type);
+  SexpObject *na_string = (SexpObject *)PyObject_New(SexpObject,
+						     &VectorSexp_Type);
   na_string->sexp = NA_STRING;
   if (PyDict_SetItemString(d, "NA_STRING", (PyObject *)na_string) < 0)
     return;
