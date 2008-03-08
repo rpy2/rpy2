@@ -5,7 +5,7 @@ Running this through ipython ends in a memory map
 dump and a segfault.
 """
 
-import robjects
+import rpy.robjects as robjects
 import array
 
 r = robjects.r
