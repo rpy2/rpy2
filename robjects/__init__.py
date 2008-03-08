@@ -6,6 +6,7 @@ that represents an embedded R.
 
 """
 
+import os
 import array
 import rinterface
 
@@ -58,9 +59,20 @@ mapper = defaultR2PyMapper
 
 #FIXME: Looks hackish. inheritance should be used ?
 class Robject(object):
-    def __repr__(self):
+    def __str__(self):
+        tmp = r.fifo("")
+        r.sink(tmp)
         r.show(self)
+        r.sink()
+        s = r.readLines(tmp)
+        r.close(tmp)
+        s = str.join(os.linesep, s)
+        return s
 
+    def __repr__(self):
+        s = r.deparse(self)
+        s = str.join(os.linesep, s)
+        return s
 
 class Rvector(Robject):
     """ R vector-like object. Items in those instances can
