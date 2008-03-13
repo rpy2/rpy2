@@ -474,7 +474,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       is_SexpObject = PyObject_TypeCheck(argValue, &Sexp_Type);
       if (! is_SexpObject) {
 	PyErr_Format(PyExc_ValueError, 
-		     "All parameters must be of type Sexp_Type.");
+		     "All named parameters must be of type Sexp_Type.");
 	
 	Py_XDECREF(citems);
 	goto fail;
