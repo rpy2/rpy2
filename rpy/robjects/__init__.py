@@ -13,12 +13,29 @@ import rinterface
 
 #FIXME: close everything when leaving (check RPy for that).
 
-def defaultPy2RMapper(self, o):
+def defaultRobjects2PyMapper(o):
+    if isinstance(o, rinterface.SexpVector):
+        res = Rvector(o)
+    elif isinstance(o, rinterface.SexpClosure):
+        res = Rfunction(o)
+    elif isinstance(o, rinterface.SexpEnvironment):
+        res = Renvironment(o)
+    elif isinstance(o, rinterface.SexpS4):
+        res = RS4(o)
+    else:
+        res = o
+    return res
+
+#FIXME: clean and nice mechanism to allow user-specifier mapping function
+#FIXME: better names for the functions
+mapperR2Py = defaultRobjects2PyMapper
+
+def defaultPy2Rinterface(o):
     if isinstance(o, Robject):
         return o._sexp
     if isinstance(o, rinterface.Sexp):
-        return o
-    if isinstance(o, array.array):
+        res = o
+    elif isinstance(o, array.array):
         if o.typecode in ('h', 'H', 'i', 'I'):
             res = rinterface.SexpVector(o, rinterface.INTSXP)
         elif o.typecode in ('f', 'd'):
@@ -33,32 +50,23 @@ def defaultPy2RMapper(self, o):
         res = rinterface.SexpVector([o, ], rinterface.LGLSXP)
     elif isinstance(o, str):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
+    elif isinstance(o, list):
+        res = r.list(*[defaultPy2RobjectsMapper(x) for x in o])
     else:
         raise(ValueError("Nothing can be done for this type at the moment."))
     return res
-    
-def defaultR2PyMapper(o):
-    if isinstance(o, rinterface.SexpVector):
-        res = Rvector(o)
-    elif isinstance(o, rinterface.SexpClosure):
-        res = Rfunction(o)
-    elif isinstance(o, rinterface.SexpEnvironment):
-        res = Renvironment(o)
-    elif isinstance(o, rinterface.SexpS4):
-        res = RS4(o)
-    else:
-        res = o
-    return res
 
+def defaultPy2RobjectsMapper(o):
+    res = defaultPy2Rinterface(o)
+    return mapperR2Py(res)
 
-#FIXME: clean and nice mechanism to allow user-specifier mapping function
-mapper = defaultR2PyMapper
-
-
+mapperPy2R = defaultPy2RobjectsMapper
 
 
 #FIXME: Looks hackish. inheritance should be used ?
 class Robject(object):
+    name = None
+
     def __str__(self):
         tmp = r.fifo("")
         r.sink(tmp)
@@ -84,20 +92,23 @@ class Rvector(Robject):
         if (isinstance(o, rinterface.SexpVector)):
             self._sexp = o
         else:
-            self._sexp = defaultPy2RMapper(self, o)
+            self._sexp = mapperPy2R(o)._sexp
 
     def subset(self, *args, **kwargs):
         """ Subset the "R-way.", using R's "[" function. 
            In a nutshell, R indexing differs from Python's with
            - indexing can be done with integers or strings (that are 'names')
+           - an index equal to TRUE will mean everything selected (because of the recycling rule)
            - integer indexing starts at one
            - negative integer indexing means exclusion of the given integers
            - an index is itself a vector of elements to select
         """
+        
         for a in args:
             if not isinstance(a, Rvector):
                 raise(TypeError("Subset only take R vectors"))
-        res = r["["](*([self._sexp, ] + list(args)), **kwargs)
+        
+        res = r["["](*([self._sexp, ] + [x._sexp for x in args]), **kwargs)
         return res
 
     def __getitem__(self, i):
@@ -133,14 +144,13 @@ class Rvector(Robject):
         return res
 
 
+
+
 class Rfunction(Robject):
     """ An R function (aka "closure").
     
-    The attribute "mapper" is a function that will
-    transform Python objects into Sexp objects.
     """
 
-    mapper = defaultPy2RMapper
 
     def __init__(self, o):
         if (isinstance(o, rinterface.SexpClosure)):
@@ -149,12 +159,12 @@ class Rfunction(Robject):
             raise(ValueError("Cannot instantiate."))
 
     def __call__(self, *args, **kwargs):
-        new_args = [self.mapper(a) for a in args]
+        new_args = [mapperPy2R(a)._sexp for a in args]
 	new_kwargs = {}
         for k, v in kwargs.iteritems():
-            new_kwargs[k] = self.mapper(v)
+            new_kwargs[k] = mapperPy2R(v)._sexp
         res = self._sexp(*new_args, **new_kwargs)
-        res = mapper(res)
+        res = mapperR2Py(res)
         return res
 
 
@@ -168,7 +178,7 @@ class Renvironment(Robject):
 
     def __getitem__(self, item):
         res = self._sexp[item]
-        res = mapper(res)
+        res = mapperR2Py(res)
         return res
 
 class RS4(Robject):
@@ -199,8 +209,13 @@ class R(object):
 
     def __getitem__(self, item):
         res = rinterface.globalEnv.get(item)
-	res = mapper(res)
+	res = mapperR2Py(res)
         return res
+
+    #FIXME: check that this is properly working
+    def __cleanup__(self):
+        rinterface.endEmbeddedR()
+        del(self)
 
 r = R(["--no-save", "--quiet"])
 
