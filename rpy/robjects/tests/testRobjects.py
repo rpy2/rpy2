@@ -1,5 +1,6 @@
 import unittest
 import rpy.robjects as robjects
+rinterface = robjects.rinterface
 import array
 
 class RvectorTestCase(unittest.TestCase):
@@ -32,6 +33,7 @@ class RvectorTestCase(unittest.TestCase):
         for i, li in enumerate(mySeq):
             self.assertEquals(mySeq[i] * 2, mySeqAdd[i])
 
+        
     def testSubset(self):
         seq_R = robjects.r["seq"]
         mySeq = seq_R(0, 10)
@@ -42,6 +44,23 @@ class RvectorTestCase(unittest.TestCase):
         for i, si in enumerate(myIndex):
             self.assertEquals(mySeq[si-1], mySubset[i])
 
+    def testMapperR2Python(self):
+        sexp = rinterface.globalEnv.get("letters")
+        self.assertTrue(isinstance(robjects.defaultRobjects2PyMapper(sexp), robjects.Rvector))
+        
+        sexp = rinterface.globalEnv.get("plot")
+        self.assertTrue(isinstance(robjects.defaultRobjects2PyMapper(sexp), robjects.Rfunction))
+
+        sexp = rinterface.globalEnv.get(".GlobalEnv")
+        self.assertTrue(isinstance(robjects.defaultRobjects2PyMapper(sexp), robjects.Renvironment))
+
+        #FIXME: test S4
+
+    def testMapperPy2R(self):
+        py = 1
+        self.assertTrue(isinstance(robjects.defaultPy2RobjectsMapper(py), robjects.Rvector))
+        
+        #FIXME: more tests
 
 if __name__ == '__main__':
      unittest.main()
