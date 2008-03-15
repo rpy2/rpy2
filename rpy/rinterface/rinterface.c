@@ -131,7 +131,7 @@ static SEXP newSEXP(PyObject *object, const int rType);
 
 /* --- Initialize and terminate an embedded R --- */
 /* Should having multiple threads of R become possible, 
- * Useful routines deal with can could appear here...
+ * useful routines could appear here...
  */
 static PyObject* EmbeddedR_init(PyObject *self, PyObject *args) 
 {
@@ -883,7 +883,7 @@ PyDoc_STRVAR(EnvironmentSexp_subscript_doc,
 
 static PyMappingMethods EnvironmentSexp_mappignMethods = {
   0, /* mp_length */
-  EnvironmentSexp_subscript, /* mp_subscript */
+  (binaryfunc)EnvironmentSexp_subscript, /* mp_subscript */
   0  /* mp_ass_subscript */
 };
 
