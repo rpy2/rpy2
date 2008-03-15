@@ -4,6 +4,9 @@ import rpy.rinterface as rinterface
 #FIXME: can starting and stopping an embedded R be done several times ?
 rinterface.initEmbeddedR("foo", "--vanilla", "--no-save", "--quiet")
 
+def floatEqual(x, y, epsilon = 0.00000001):
+    return abs(x - y) < epsilon
+
 class SexpVectorTestCase(unittest.TestCase):
     #def setUpt(self):
     #    rinterface.initEmbeddedR("foo", "--no-save")
@@ -59,6 +62,7 @@ class SexpVectorTestCase(unittest.TestCase):
         ok = isList(sexp)[0]
         self.assertTrue(ok)
 
+        self.assertEquals(2, len(sexp))
         
 
     def testNew_InvalidType(self):
@@ -83,6 +87,71 @@ class SexpVectorTestCase(unittest.TestCase):
         
         for i, li in enumerate(myList):
             self.assertEquals(i, myList[i][0])
+
+    def testAssignItemDifferentType(self):
+        c_R = rinterface.globalEnv.get("c")
+        myVec = c_R(rinterface.SexpVector([0, 1, 2, 3, 4, 5], rinterface.INTSXP))
+        self.assertRaises(ValueError, myVec.__setitem__, 0, rinterface.SexpVector(["a", ], rinterface.STRSXP))
+        
+    def testAssignItemOutOfBound(self):
+        c_R = rinterface.globalEnv.get("c")
+        myVec = c_R(rinterface.SexpVector([0, 1, 2, 3, 4, 5], rinterface.INTSXP))
+        self.assertRaises(ValueError, myVec.__setitem__, 10, rinterface.SexpVector([1, ], rinterface.INTSXP))
+
+    def testAssignItemInt(self):
+        c_R = rinterface.globalEnv.get("c")
+        myVec = c_R(rinterface.SexpVector([0, 1, 2, 3, 4, 5], rinterface.INTSXP))
+        myVec[0] = rinterface.SexpVector([100, ], rinterface.INTSXP)
+        self.assertTrue(myVec[0] == 100)
+
+        myVec[3] = rinterface.SexpVector([100, ], rinterface.INTSXP)
+        self.assertTrue(myVec[3] == 100)
+
+    def testAssignItemReal(self):
+        c_R = rinterface.globalEnv.get("c")
+        myVec = c_R(rinterface.SexpVector([0.0, 1.0, 2.0, 3.0, 4.0, 5.0], rinterface.REALSXP))
+        myVec[0] = rinterface.SexpVector([100.0, ], rinterface.REALSXP)
+        self.assertTrue(floatEqual(myVec[0], 100.0))
+
+        myVec[3] = rinterface.SexpVector([100.0, ], rinterface.REALSXP)
+        self.assertTrue(floatEqual(myVec[3], 100.0))
+
+    def testAssignItemLogical(self):
+        c_R = rinterface.globalEnv.get("c")
+        myVec = c_R(rinterface.SexpVector([True, False, True, True, False], rinterface.LGLSXP))
+        myVec[0] = rinterface.SexpVector([False, ], rinterface.LGLSXP)
+        self.assertFalse(myVec[0])
+
+        myVec[3] = rinterface.SexpVector([False, ], rinterface.LGLSXP)
+        self.assertFalse(myVec[3])
+
+    def testAssignItemComplex(self):
+        c_R = rinterface.globalEnv.get("c")
+        myVec = c_R(rinterface.SexpVector([1.0+2.0j, 2.0+2.0j, 3.0+2.0j, 4.0+2.0j, 5.0+2.0j], rinterface.CPLXSXP))
+        myVec[0] = rinterface.SexpVector([100.0+200.0j, ], rinterface.CPLXSXP)
+        self.assertTrue(floatEqual(myVec[0].real, 100.0))
+        self.assertTrue(floatEqual(myVec[0].imag, 200.0))
+
+        myVec[3] = rinterface.SexpVector([100.0+200.0j, ], rinterface.CPLXSXP)
+        self.assertTrue(floatEqual(myVec[3].real, 100.0))
+        self.assertTrue(floatEqual(myVec[3].imag, 200.0))
+
+    def testAssignItemList(self):
+        myVec = rinterface.SexpVector([rinterface.SexpVector(["a", ], rinterface.STRSXP), 
+                                       rinterface.SexpVector([1, ], rinterface.INTSXP),
+                                       rinterface.SexpVector([3, ], rinterface.INTSXP)], rinterface.VECSXP)
+        
+        myVec[0] = rinterface.SexpVector([rinterface.SexpVector([100.0, ], rinterface.REALSXP), ], rinterface.VECSXP)
+        self.assertTrue(floatEqual(myVec[0][0][0], 100.0))
+        
+        myVec[2] = rinterface.SexpVector([rinterface.SexpVector(["a", ], rinterface.STRSXP), ], rinterface.VECSXP) 
+        self.assertTrue(myVec[2][0][0] == "a")
+        
+    def testAssignItemString(self):
+        letters_R = rinterface.globalEnv.get("letters")
+        #FIXME: segfaults
+        #letters_R[0] = rinterface.SexpVector(["z", ], rinterface.STRSXP)
+        self.assertTrue(letters_R[0] == "z")
 
 if __name__ == '__main__':
      unittest.main()

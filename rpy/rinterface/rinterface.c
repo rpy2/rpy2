@@ -730,6 +730,80 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
   return res;
 }
 
+/* a[i] = val */
+static PyObject *
+VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
+{
+  PyObject* res;
+  R_len_t i_R;
+
+  /* R is still with int for indexes */
+  if (i >= R_LEN_T_MAX) {
+    PyErr_Format(PyExc_IndexError, "Index value exceeds what R can handle.");
+    return NULL;
+  }
+
+  SEXP *sexp = &(((SexpObject *)object)->sexp);
+  if (i >= GET_LENGTH(*sexp)) {
+    PyErr_Format(PyExc_IndexError, "Index out of range.");
+    return NULL;
+  }
+
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;
+  }
+
+  int is_SexpObject = PyObject_TypeCheck(val, &Sexp_Type);
+  if (! is_SexpObject) {
+    PyErr_Format(PyExc_ValueError, "Any new value must be of "
+		 "type 'Sexp_Type'.");
+    return NULL;
+  }
+  SEXP *sexp_val = &(((SexpObject *)val)->sexp);
+  if (! sexp_val) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;
+  }
+
+  if (TYPEOF(*sexp_val) != TYPEOF(*sexp)) {
+    PyErr_Format(PyExc_ValueError, "The type for the new value cannot be different.");
+    return NULL;
+  }
+
+  if ((TYPEOF(*sexp_val) != VECSXP) & (LENGTH(*sexp_val) != 1)) {
+    PyErr_Format(PyExc_ValueError, "The new value must be of length 1.");
+    return NULL;
+  }
+
+  i_R = (R_len_t)i;
+  switch (TYPEOF(*sexp)) {
+  case REALSXP:
+    (NUMERIC_POINTER(*sexp))[i_R] = (NUMERIC_POINTER(*sexp_val))[0];
+    break;
+  case INTSXP:
+    (INTEGER_POINTER(*sexp))[i_R] = (INTEGER_POINTER(*sexp_val))[0];
+    break;
+  case LGLSXP:
+    (LOGICAL_POINTER(*sexp))[i_R] = (LOGICAL_POINTER(*sexp_val))[0];
+    break;
+  case CPLXSXP:
+    (COMPLEX_POINTER(*sexp))[i_R] = (COMPLEX_POINTER(*sexp_val))[0];
+    break;
+  case STRSXP:
+    SET_STRING_ELT(*sexp, i_R, *sexp_val);
+    break;
+  case VECSXP:
+    SET_VECTOR_ELT(*sexp, i_R, *sexp_val);
+    break;
+  default:
+    PyErr_Format(PyExc_ValueError, "cannot handle type %d", 
+		 TYPEOF(*sexp));
+    res = NULL;
+    break;
+  }
+  return res;
+}
 
 static PySequenceMethods VectorSexp_sequenceMethods = {
   (lenfunc)VectorSexp_len,              /* sq_length */
@@ -740,7 +814,7 @@ static PySequenceMethods VectorSexp_sequenceMethods = {
   //FIXME: implement
   0, //(ssizessizeargfunc)VectorSexp_slice,  /* sq_slice */
   //FIXME: implement
-  0, //(ssizeobjargproc)VectorSexp_ass_item,   /* sq_ass_item */
+  (ssizeobjargproc)VectorSexp_ass_item,   /* sq_ass_item */
   0,                              /* sq_ass_slice */
   0,                              /* sq_contains */
   0,                              /* sq_inplace_concat */
@@ -1178,7 +1252,6 @@ newSEXP(PyObject *object, int rType)
         }
     }
     break;
-    //FIXME: add complex 
   default:
     PyErr_Format(PyExc_ValueError, "cannot handle type %d", rType);
     sexp = NULL;
