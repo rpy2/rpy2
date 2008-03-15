@@ -124,6 +124,11 @@ typedef struct {
 static SexpObject* globalEnv;
 static SexpObject* baseNameSpaceEnv;
 
+/* early definition of functions */
+static SexpObject* newSexpObject(const SEXP sexp);
+static SEXP newSEXP(PyObject *object, const int rType);
+
+
 /* --- Initialize and terminate an embedded R --- */
 /* Should having multiple threads of R become possible, 
  * Useful routines deal with can could appear here...
@@ -286,9 +291,40 @@ PyDoc_STRVAR(Sexp_typeof_doc,
 "\n\
 Returns the R internal SEXPREC type.");
 
+static PyObject*
+Sexp_do_slot(PyObject *self, PyObject *name)
+{
+  SEXP sexp =((SexpObject*)self)->sexp;
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;;
+  }
+  if (! PyString_Check(name)) {
+    PyErr_SetString(PyExc_TypeError, "The name must be a string.");
+    return NULL;
+  }
+  char *name_str = PyString_AS_STRING(name);
+  SEXP res_R = GET_SLOT(sexp, install(name_str));
+  if (!res_R) {
+    PyErr_Format(PyExc_ValueError, "R Error.");
+    return NULL;;
+  }
+  
+  SexpObject *res = newSexpObject(res_R);
+  return res;
+}
+PyDoc_STRVAR(Sexp_do_slot_doc,
+"\n\
+Returns the attribute/slot for an R object.\n\
+The name of the slot as a string is the only parameter for\
+ the method.\n");
+
+
 static PyMethodDef Sexp_methods[] = {
   {"typeof", (PyCFunction)Sexp_typeof, METH_NOARGS,
   Sexp_typeof_doc},
+  {"do_slot", (PyCFunction)Sexp_do_slot, METH_O,
+  Sexp_do_slot_doc},
   {NULL, NULL}          /* sentinel */
 };
 
@@ -348,8 +384,6 @@ static PyTypeObject Sexp_Type = {
  * Closure-type Sexp.
  */
 
-static SexpObject* newSexpObject(const SEXP sexp);
-static SEXP newSEXP(PyObject *object, const int rType);
 
 /* Evaluate a SEXP. It must be constructed by hand. It raises a Python
    exception if an error ocurred in the evaluation */
