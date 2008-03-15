@@ -291,6 +291,10 @@ PyDoc_STRVAR(Sexp_typeof_doc,
 "\n\
 Returns the R internal SEXPREC type.");
 
+/*FIXME: own definition. It should probably be in one of
+  R's includes*/
+extern int R_has_slot(SEXP obj, SEXP name);
+
 static PyObject*
 Sexp_do_slot(PyObject *self, PyObject *name)
 {
@@ -304,12 +308,13 @@ Sexp_do_slot(PyObject *self, PyObject *name)
     return NULL;
   }
   char *name_str = PyString_AS_STRING(name);
-  SEXP res_R = GET_SLOT(sexp, install(name_str));
-  if (!res_R) {
-    PyErr_Format(PyExc_ValueError, "R Error.");
-    return NULL;;
+
+  if (! R_has_slot(sexp, install(name_str))) {
+    PyErr_SetString(PyExc_LookupError, "The object has no such attribute.");
+    return NULL;
   }
-  
+  SEXP res_R = GET_SLOT(sexp, install(name_str));
+
   PyObject *res = (PyObject *)newSexpObject(res_R);
   return res;
 }

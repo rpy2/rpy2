@@ -33,7 +33,7 @@ class SexpTestCase(unittest.TestCase):
         for i, n in enumerate(iris_names):
             self.assertEquals(iris_names[i], names[i])
 
-        missing = sexp.do_slot("foo")       
+        self.assertRaises(LookupError, sexp.do_slot, "foo")       
 
 if __name__ == '__main__':
      unittest.main()
