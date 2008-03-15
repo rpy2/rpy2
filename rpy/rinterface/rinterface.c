@@ -1079,7 +1079,8 @@ newSEXP(PyObject *object, int rType)
 {
   SEXP sexp;
   PyObject *seq_object, *item; 
-  seq_object = PySequence_Fast(object, "Cannot create R object from non-sequence Python object.");
+  seq_object = PySequence_Fast(object, 
+			       "Cannot create R object from non-sequence Python object.");
   //FIXME: Isn't the call above supposed to fire an Exception ?
   if (! seq_object) {
     return NULL;
@@ -1160,6 +1161,23 @@ newSEXP(PyObject *object, int rType)
 	Py_DECREF(item);
       }
     }
+    break;
+  case CPLXSXP:
+    for (i = 0; i < length; ++i) {
+        item = PySequence_Fast_GET_ITEM(seq_object, i);
+        if (PyComplex_Check(item)) {
+ 	  Py_complex cplx = PyComplex_AsCComplex(item);
+	  COMPLEX(sexp)[i].r = cplx.real;
+	  COMPLEX(sexp)[i].i = cplx.imag;
+	  Py_DECREF(item);
+        }
+        else {
+	  PyErr_Clear();
+	  COMPLEX(sexp)[i].r = NA_REAL;
+          COMPLEX(sexp)[i].i = NA_REAL;
+        }
+    }
+    break;
     //FIXME: add complex 
   default:
     PyErr_Format(PyExc_ValueError, "cannot handle type %d", rType);
