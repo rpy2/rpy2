@@ -648,6 +648,8 @@ VectorSexp_new(PyTypeObject *type, PyObject *args)
 			&seq, &rType))
     return NULL;
   const SEXP sexp = newSEXP(seq, rType);
+  if (! sexp)
+    return NULL;
   PyObject *res = (PyObject *)newSexpObject(sexp);
   return res;
 }
@@ -1160,7 +1162,6 @@ newSEXP(PyObject *object, int rType)
     }
     //FIXME: add complex 
   default:
-    UNPROTECT(1);
     PyErr_Format(PyExc_ValueError, "cannot handle type %d", rType);
     sexp = NULL;
   }
