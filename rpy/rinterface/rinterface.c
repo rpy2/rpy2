@@ -310,7 +310,7 @@ Sexp_do_slot(PyObject *self, PyObject *name)
     return NULL;;
   }
   
-  SexpObject *res = newSexpObject(res_R);
+  PyObject *res = (PyObject *)newSexpObject(res_R);
   return res;
 }
 PyDoc_STRVAR(Sexp_do_slot_doc,
