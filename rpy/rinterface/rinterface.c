@@ -470,12 +470,15 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     tmp_obj = PyTuple_GetItem(args, arg_i);
     is_SexpObject = PyObject_TypeCheck(tmp_obj, &Sexp_Type);
     if (! is_SexpObject) {
-      PyErr_Format(PyExc_ValueError, "All parameters must be of type Sexp_Type.");
+      PyErr_Format(PyExc_ValueError, 
+		   "All parameters must be of type Sexp_Type.");
+      Py_DECREF(tmp_obj);
       goto fail;
     }
     tmp_R = ((SexpObject *)tmp_obj)->sexp;
     if (! tmp_R) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+      Py_DECREF(tmp_obj);
       goto fail;
     }
     SETCAR(c_R, tmp_R);
@@ -493,14 +496,14 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       tmp_obj = PySequence_GetItem(citems, arg_i);
       if (! tmp_obj) {
 	PyErr_Format(PyExc_ValueError, "No un-named item %i !?", arg_i);
-	
+	Py_DECREF(tmp_obj);
 	Py_XDECREF(citems);
 	goto fail;
       }
       argName = PyTuple_GetItem(tmp_obj, 0);
       if (! PyString_Check(argName)) {
 	PyErr_SetString(PyExc_TypeError, "keywords must be strings");
-
+	Py_DECREF(tmp_obj);
 	Py_XDECREF(citems);
 	goto fail;
       }
@@ -509,7 +512,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       if (! is_SexpObject) {
 	PyErr_Format(PyExc_ValueError, 
 		     "All named parameters must be of type Sexp_Type.");
-	
+	Py_DECREF(tmp_obj);	
 	Py_XDECREF(citems);
 	goto fail;
       }
@@ -517,7 +520,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       tmp_R = ((SexpObject *)argValue)->sexp;
       if (! tmp_R) {
 	PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-
+	Py_DECREF(tmp_obj);
 	Py_XDECREF(citems);
 	goto fail;
       }
@@ -548,7 +551,6 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   
  fail:
   printf("failed.\n");
-  Py_DECREF(tmp_obj);
   UNPROTECT(1);
   return NULL;
 
