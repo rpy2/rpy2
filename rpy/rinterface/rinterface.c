@@ -1169,21 +1169,6 @@ newSEXP(PyObject *object, int rType)
 }
 
 
-//FIXME: finish this
-static PyObject*
-EmbeddedR_newSexpObject(SEXP sexp)
-{
-  SexpObject *res;
-
-  return (PyObject *)res;
-}
-
-//ClosureSexp_Type.tp_call = &Sexp_call; 
-//ClosureSexp_Type.tp_call = 0; 
-
-
-//(PyTypeObject *)ClosureSexp_Type.tp_new = 0;//ClosureSexp_methods; 
-
 
 /* --- Find a variable in an environment --- */
 
