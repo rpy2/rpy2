@@ -658,7 +658,7 @@ static Py_ssize_t VectorSexp_len(PyObject *object)
   SEXP sexp = ((SexpObject *)object)->sexp;
   if (! sexp) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-      return NULL;
+      return -1;
   }
   len = (Py_ssize_t)GET_LENGTH(sexp);
   return len;
