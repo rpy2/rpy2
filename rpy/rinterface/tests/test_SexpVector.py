@@ -11,6 +11,61 @@ class SexpVectorTestCase(unittest.TestCase):
     #def tearDown(self):
     #    rinterface.endEmbeddedR(1);
 
+    def testNewInt(self):
+        sexp = rinterface.SexpVector([1, ], rinterface.INTSXP)
+        isInteger = rinterface.globalEnv.get("is.integer")
+        ok = isInteger(sexp)[0]
+        self.assertTrue(ok)
+
+        sexp = rinterface.SexpVector(["a", ], rinterface.INTSXP)
+        isNA = rinterface.globalEnv.get("is.na")
+        ok = isNA(sexp)[0]
+        self.assertTrue(ok)
+
+    def testNewReal(self):
+        sexp = rinterface.SexpVector([1.0, ], rinterface.REALSXP)
+        isNumeric = rinterface.globalEnv.get("is.numeric")
+        ok = isNumeric(sexp)[0]
+        self.assertTrue(ok)
+
+        sexp = rinterface.SexpVector(["a", ], rinterface.REALSXP)
+        isNA = rinterface.globalEnv.get("is.na")
+        ok = isNA(sexp)[0]
+        self.assertTrue(ok)
+
+    def testNewComplex(self):
+        sexp = rinterface.SexpVector([1.0 + 1.0j, ], rinterface.CPLXSXP)
+        isComplex = rinterface.globalEnv.get("is.complex")
+        ok = isComplex(sexp)[0]
+        self.assertTrue(ok)
+
+    def testNewString(self):
+        sexp = rinterface.SexpVector(["abc", ], rinterface.STRSXP)
+        isCharacter = rinterface.globalEnv.get("is.character")
+        ok = isCharacter(sexp)[0]
+        self.assertTrue(ok)
+
+        #FIXME: elucidate what is happening here
+        sexp = rinterface.SexpVector([1, ], rinterface.STRSXP)
+        isNA = rinterface.globalEnv.get("is.na")
+        ok = isNA(sexp)[0]
+        self.assertTrue(ok)
+
+    def testNewVector(self):
+        sexp_char = rinterface.SexpVector(["abc", ], rinterface.STRSXP)
+        sexp_int = rinterface.SexpVector([1, ], rinterface.INTSXP)
+        sexp = rinterface.SexpVector([sexp_char, sexp_int], rinterface.VECSXP)
+        isList = rinterface.globalEnv.get("is.list")
+        ok = isList(sexp)[0]
+        self.assertTrue(ok)
+
+        
+
+    def testNew_InvalidType(self):
+        self.assertTrue(False)
+        #FIXME
+        self.assertRaises(ValueError, rinterface.SexpVector, [1, ], -1)
+
     def testGetItem(self):
         letters_R = rinterface.globalEnv.get("letters")
         self.assertTrue(isinstance(letters_R, rinterface.SexpVector))
