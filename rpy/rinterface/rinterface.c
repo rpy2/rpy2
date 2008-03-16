@@ -291,9 +291,6 @@ PyDoc_STRVAR(Sexp_typeof_doc,
 "\n\
 Returns the R internal SEXPREC type.");
 
-/*FIXME: own definition. It should probably be in one of
-  R's includes*/
-extern int R_has_slot(SEXP obj, SEXP name);
 
 static PyObject*
 Sexp_do_slot(PyObject *self, PyObject *name)
