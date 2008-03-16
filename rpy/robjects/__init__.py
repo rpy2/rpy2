@@ -74,12 +74,12 @@ class Robject(object):
         r.sink()
         s = r.readLines(tmp)
         r.close(tmp)
-        s = str.join(os.linesep, s)
+        s = str.join(os.linesep, s._sexp)
         return s
 
     def __repr__(self):
         s = r.deparse(self)
-        s = str.join(os.linesep, s)
+        s = str.join(os.linesep, s._sexp)
         return s
 
 
@@ -112,7 +112,7 @@ class Rvector(Robject):
         return res
 
     def __getitem__(self, i):
-        res = self._sexp[i]
+        res = mapperPy2R(self._sexp[i])
         return res
 
     def __add__(self, x):
