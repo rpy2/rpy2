@@ -8,7 +8,7 @@ that represents an embedded R.
 
 import os
 import array
-import rinterface
+import rpy.rinterface as rinterface
 
 
 #FIXME: close everything when leaving (check RPy for that).
@@ -216,6 +216,12 @@ class R(object):
     def __cleanup__(self):
         rinterface.endEmbeddedR()
         del(self)
+
+    def __str__(self):
+        s = super(R, self).__str__()
+        s += str(self["version"])
+        return s
+
 
 r = R(["--no-save", "--quiet"])
 
