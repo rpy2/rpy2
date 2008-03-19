@@ -104,9 +104,12 @@ class Rvector(Robject):
            - an index is itself a vector of elements to select
         """
         
-        for a in args:
-            if not isinstance(a, Rvector):
-                raise(TypeError("Subset only take R vectors"))
+        #for a in args:
+        #    if not isinstance(a, Rvector):
+        #        raise(TypeError("Subset only take R vectors"))
+        args = [mapperPy2R(x) for x in args]
+        for k, v in kwargs.itervalues():
+            args[k] = mapperPy2R(v)
         
         res = r["["](*([self._sexp, ] + [x._sexp for x in args]), **kwargs)
         return res
