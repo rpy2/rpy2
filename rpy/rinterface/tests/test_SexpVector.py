@@ -14,6 +14,18 @@ class SexpVectorTestCase(unittest.TestCase):
     #def tearDown(self):
     #    rinterface.endEmbeddedR(1);
 
+    def testNewBool(self):
+        sexp = rinterface.SexpVector([True, ], rinterface.LGLSXP)
+        isLogical = rinterface.globalEnv.get("is.logical")
+        ok = isLogical(sexp)[0]
+        self.assertTrue(ok)
+
+        sexp = rinterface.SexpVector(["a", ], rinterface.LGLSXP)
+        isNA = rinterface.globalEnv.get("is.na")
+        ok = isNA(sexp)[0]
+        self.assertTrue(ok)
+
+
     def testNewInt(self):
         sexp = rinterface.SexpVector([1, ], rinterface.INTSXP)
         isInteger = rinterface.globalEnv.get("is.integer")
