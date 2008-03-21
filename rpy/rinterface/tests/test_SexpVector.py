@@ -165,5 +165,9 @@ class SexpVectorTestCase(unittest.TestCase):
         #letters_R[0] = rinterface.SexpVector(["z", ], rinterface.STRSXP)
         self.assertTrue(letters_R[0] == "z")
 
+def suite():
+    suite = unittest.TestLoader().loadTestsFromTestCase(SexpVectorTestCase)
+    return suite
+
 if __name__ == '__main__':
      unittest.main()

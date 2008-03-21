@@ -22,7 +22,7 @@ for RHOME in RHOMES:
 
 
     rinterface = Extension(
-            "rpy2.rinterface",
+            "rpy2.rinterface.rinterface",
             ["rpy/rinterface/rinterface.c", ],
             include_dirs=[ os.path.join(RHOME, 'include'),],
             libraries=['R', 'Rlapack', 'Rblas'],
@@ -38,7 +38,8 @@ for RHOME in RHOMES:
           license="(L)GPL",
           ext_modules = [rinterface],
           package_dir = {'rpy2': 'rpy'},
-          packages = ['rpy2', 'rpy2.robjects']
+          packages = ['rpy2', 'rpy2.robjects', 'rpy2.robjects.tests',
+                      'rpy2.rinterface', 'rpy2.rinterface.tests']
           )
 
 

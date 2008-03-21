@@ -87,5 +87,9 @@ class RvectorTestCase(unittest.TestCase):
 
         #FIXME: more tests
 
+def suite():
+    suite = unittest.TestLoader().loadTestsFromTestCase(RvectorTestCase)
+    return suite
+
 if __name__ == '__main__':
      unittest.main()

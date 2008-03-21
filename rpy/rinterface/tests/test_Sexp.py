@@ -35,5 +35,9 @@ class SexpTestCase(unittest.TestCase):
 
         self.assertRaises(LookupError, sexp.do_slot, "foo")       
 
+def suite():
+    suite = unittest.TestLoader().loadTestsFromTestCase(SexpTestCase)
+    return suite
+
 if __name__ == '__main__':
      unittest.main()

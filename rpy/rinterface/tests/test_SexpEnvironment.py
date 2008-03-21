@@ -35,5 +35,9 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         ok = isinstance(sfit_R, rinterface.SexpClosure)
         self.assertTrue(ok)
 
+def suite():
+    suite = unittest.TestLoader().loadTestsFromTestCase(SexpEnvironmentTestCase)
+    return suite
+
 if __name__ == '__main__':
      unittest.main()
