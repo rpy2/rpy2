@@ -87,6 +87,7 @@ interrupt_R(int signum)
   error("Interrupted");
 }
 
+static PyObject *embeddedR_isInitialized;
 
 /* The Python original SIGINT handler */
 PyOS_sighandler_t python_sigint;
@@ -135,6 +136,12 @@ static SEXP newSEXP(PyObject *object, const int rType);
  */
 static PyObject* EmbeddedR_init(PyObject *self, PyObject *args) 
 {
+
+  if (PyObject_IsTrue(embeddedR_isInitialized)) {
+    PyErr_Format(PyExc_RuntimeError, "Already initialized.");
+    return NULL;
+  }
+
   //FIXME: arbitrary number of options
   //char *defaultargv[] = {"rpython", "--verbose"};
   char *options[5] = {"", "", "", "", ""};
@@ -156,9 +163,12 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args)
   
   int status = Rf_initEmbeddedR(n_opt, options);
 
+  embeddedR_isInitialized = PyBool_FromLong((long)1);
+
   globalEnv->sexp = R_GlobalEnv;
 
   PyObject *res = PyInt_FromLong(status);
+
   return res;
 }
 PyDoc_STRVAR(EmbeddedR_init_doc,
@@ -1354,6 +1364,12 @@ initrinterface(void)
   }
   Py_INCREF(ErrorObject);
   PyModule_AddObject(m, "RobjectNotFound", ErrorObject);
+
+  embeddedR_isInitialized = PyBool_FromLong((long)0);
+  if (PyModule_AddObject(m, "isInitialized", embeddedR_isInitialized) < 0)
+    return;
+  //FIXME: DECREF ?
+  //Py_DECREF(embeddedR_isInitialized);
 
   globalEnv = (SexpObject *)PyObject_New(SexpObject, 
 					 &EnvironmentSexp_Type);
