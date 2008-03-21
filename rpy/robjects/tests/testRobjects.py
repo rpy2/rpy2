@@ -10,7 +10,7 @@ class RvectorTestCase(unittest.TestCase):
         self.assertTrue(isinstance(letters_R, robjects.Rvector))
         letters = (('a', 0), ('b', 1), ('c', 2), ('x', 23), ('y', 24), ('z', 25))
         for l, i in letters:
-            self.assertTrue(letters_R[i] == l)
+            self.assertTrue(letters_R[i]._sexp[0] == l)
         
         as_list_R = robjects.r["as.list"]
         seq_R = robjects.r["seq"]
@@ -20,18 +20,18 @@ class RvectorTestCase(unittest.TestCase):
         myList = as_list_R(mySeq)
         
         for i, li in enumerate(myList):
-            self.assertEquals(i, myList[i][0])
+            self.assertEquals(i, myList[i][0]._sexp[0])
 
     def testOperators(self):
         seq_R = robjects.r["seq"]
         mySeq = seq_R(0, 10)
         mySeqAdd = mySeq + 2
         for i, li in enumerate(mySeq):
-            self.assertEquals(i + 2, mySeqAdd[i])
+            self.assertEquals(i + 2, mySeqAdd[i]._sexp[0])
 
         mySeqAdd = mySeq + mySeq
         for i, li in enumerate(mySeq):
-            self.assertEquals(mySeq[i] * 2, mySeqAdd[i])
+            self.assertEquals(mySeq[i]._sexp[0] * 2, mySeqAdd[i]._sexp[0])
 
         
     def testSubset(self):
@@ -41,15 +41,34 @@ class RvectorTestCase(unittest.TestCase):
         myIndex = robjects.Rvector(array.array('i', range(1, 11, 2)))
 
         mySubset = mySeq.subset(myIndex)
+        #import pdb; pdb.set_trace()
         for i, si in enumerate(myIndex):
-            self.assertEquals(mySeq[si-1], mySubset[i])
+            self.assertEquals(mySeq[si._sexp[0]-1]._sexp[0], mySubset[i]._sexp[0])
+
+        # recycling rule
+        v = robjects.Rvector(array.array('i', range(1, 23)))
+        m = robjects.r.matrix(v, ncol = 2)
+        col = m.subset(True, 1)
+        #import pdb; pdb.set_trace()
+        self.assertEquals(11, len(col))
+        
+        
 
     def testMapperR2Python(self):
         sexp = rinterface.globalEnv.get("letters")
-        self.assertTrue(isinstance(robjects.defaultRobjects2PyMapper(sexp), robjects.Rvector))
-        
+        ob = robjects.defaultRobjects2PyMapper(sexp)
+        self.assertTrue(isinstance(ob, 
+                                   robjects.Rvector))
+
+        sexp = rinterface.globalEnv.get("T")
+        ob = robjects.defaultRobjects2PyMapper(sexp)
+        self.assertTrue(isinstance(ob, 
+                                   robjects.Rvector))
+
         sexp = rinterface.globalEnv.get("plot")
-        self.assertTrue(isinstance(robjects.defaultRobjects2PyMapper(sexp), robjects.Rfunction))
+        ob = robjects.defaultRobjects2PyMapper(sexp)
+        self.assertTrue(isinstance(ob, 
+                                   robjects.Rfunction))
 
         sexp = rinterface.globalEnv.get(".GlobalEnv")
         self.assertTrue(isinstance(robjects.defaultRobjects2PyMapper(sexp), robjects.Renvironment))
@@ -58,8 +77,14 @@ class RvectorTestCase(unittest.TestCase):
 
     def testMapperPy2R(self):
         py = 1
-        self.assertTrue(isinstance(robjects.defaultPy2RobjectsMapper(py), robjects.Rvector))
+        rob = robjects.defaultPy2RobjectsMapper(py)
+        self.assertTrue(isinstance(rob, robjects.Rvector))
         
+        py = True
+        rob = robjects.defaultPy2RobjectsMapper(py)
+        self.assertTrue(isinstance(rob, robjects.Rvector))
+        self.assertEquals(rinterface.LGLSXP, rob._sexp.typeof())
+
         #FIXME: more tests
 
 if __name__ == '__main__':

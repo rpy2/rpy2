@@ -42,12 +42,12 @@ def defaultPy2Rinterface(o):
             res = rinterface.SexpVector(o, rinterface.REALSXP)
         else:
             raise(ValueError("Nothing can be done for this array type at the moment."))
+    elif isinstance(o, bool):
+        res = rinterface.SexpVector([o, ], rinterface.LGLSXP)
     elif isinstance(o, int):
         res = rinterface.SexpVector([o, ], rinterface.INTSXP)
     elif isinstance(o, float):
         res = rinterface.SexpVector([o, ], rinterface.REALSXP)
-    elif isinstance(o, bool):
-        res = rinterface.SexpVector([o, ], rinterface.LGLSXP)
     elif isinstance(o, str):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
     elif isinstance(o, list):
@@ -146,8 +146,8 @@ class Rvector(Robject):
         res = r.get("&")(self, x)
         return res
 
-
-
+    def __len__(self):
+        return len(self._sexp)
 
 class Rfunction(Robject):
     """ An R function (aka "closure").
