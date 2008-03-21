@@ -8,7 +8,7 @@ that represents an embedded R.
 
 import os
 import array
-import rpy.rinterface as rinterface
+import rpy2.rinterface as rinterface
 
 
 #FIXME: close everything when leaving (check RPy for that).

@@ -1,5 +1,5 @@
 import unittest
-import rpy.robjects as robjects
+import rpy2.robjects as robjects
 rinterface = robjects.rinterface
 import array
 

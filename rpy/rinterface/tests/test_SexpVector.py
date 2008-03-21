@@ -1,5 +1,5 @@
 import unittest
-import rpy.rinterface as rinterface
+import rpy2.rinterface as rinterface
 
 #FIXME: can starting and stopping an embedded R be done several times ?
 rinterface.initEmbeddedR("foo", "--vanilla", "--no-save", "--quiet")
