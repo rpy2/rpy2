@@ -1,8 +1,11 @@
 import unittest
 import rpy2.rinterface as rinterface
 
-#FIXME: can starting and stopping an embedded R be done several times ?
-rinterface.initEmbeddedR("foo", "--vanilla", "--no-save", "--quiet")
+try:
+    #FIXME: can starting and stopping an embedded R be done several times ?
+    rinterface.initEmbeddedR("foo", "--vanilla", "--no-save", "--quiet")
+except:
+    pass
 
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon
