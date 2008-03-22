@@ -10,6 +10,10 @@ RHOMES = os.getenv('RHOMES')
 
 if RHOMES is None:
     RHOMES = [Popen(["R", "RHOME"], stdout=PIPE).communicate()[0].strip(), ]
+    #Twist if 'R RHOME' spits out a warning
+    if RHOMES[:6] == "WARNING":
+        i = s.find(os.linesep)
+        RHOMES = RHOMES[i:]
 else:
     RHOMES = RHOMES.split(os.pathsep)
 
