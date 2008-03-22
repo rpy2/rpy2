@@ -70,6 +70,7 @@
 typedef int Py_ssize_t;
 typedef inquiry lenfunc;
 typedef intargfunc ssizeargfunc;
+typedef intobjargproc ssizeobjargproc;
 #endif
 
 
