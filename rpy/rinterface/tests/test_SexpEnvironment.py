@@ -1,8 +1,11 @@
 import unittest
 import rpy2.rinterface as rinterface
 
-#FIXME: can starting and stopping an embedded R be done several times ?
-rinterface.initEmbeddedR("foo", "--vanilla", "--no-save", "--quiet")
+try:
+    #FIXME: can starting and stopping an embedded R be done several times ?
+    rinterface.initEmbeddedR("foo", "--vanilla", "--no-save", "--quiet")
+except:
+    pass
 
 class SexpEnvironmentTestCase(unittest.TestCase):
     #def setUpt(self):
@@ -34,6 +37,13 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         sfit_R = rinterface.globalEnv.get("survfit")
         ok = isinstance(sfit_R, rinterface.SexpClosure)
         self.assertTrue(ok)
+
+    def testSubscript(self):
+        ge = rinterface.globalEnv
+        obj = rinterface.globalEnv.get("letters")
+        ge["a"] = obj
+        a = rinterface.globalEnv["a"]
+        self.assertTrue(False) #FIXME: write proper unit test here
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpEnvironmentTestCase)

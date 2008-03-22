@@ -937,7 +937,6 @@ static PyMethodDef EnvironmentSexp_methods[] = {
 };
 
 
-//FIXME: segfault :/
 static SexpObject*
 EnvironmentSexp_subscript(PyObject *self, PyObject *key)
 {
@@ -969,10 +968,49 @@ PyDoc_STRVAR(EnvironmentSexp_subscript_doc,
  Not all R environment are hash tables, and this may\
  influence performances when doing repeated lookups.");
 
+static int
+EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
+{
+  char *name;
+
+  if (!PyString_Check(key)) {
+    PyErr_Format(PyExc_ValueError, "Keys must be string objects.");
+    return -1;
+  }
+
+  int is_SexpObject = PyObject_TypeCheck(value, &Sexp_Type);
+  if (! is_SexpObject) {
+    PyErr_Format(PyExc_ValueError, 
+		 "All parameters must be of type Sexp_Type.");
+    //PyDecRef(value);
+    return -1;
+  }
+
+  name = PyString_AsString(key);
+  
+  SEXP rho_R = ((SexpObject *)self)->sexp;
+  if (! rho_R) {
+    PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
+    return -1;
+  }
+
+  SEXP sexp_copy;
+  SEXP sexp = ((SexpObject *)value)->sexp;
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "The value has NULL SEXP.");
+    return -1;
+  }
+  SEXP sym = Rf_install(name);
+  PROTECT(sexp_copy = Rf_duplicate(sexp));
+  Rf_defineVar(sym, sexp_copy, rho_R);
+  UNPROTECT(1);
+  return 0;
+}
+
 static PyMappingMethods EnvironmentSexp_mappignMethods = {
   0, /* mp_length */
   (binaryfunc)EnvironmentSexp_subscript, /* mp_subscript */
-  0  /* mp_ass_subscript */
+  (objobjargproc)EnvironmentSexp_ass_subscript  /* mp_ass_subscript */
 };
 
 //FIXME: write more doc - should the environments
