@@ -1,0 +1,542 @@
+\input texinfo  @c -*-texinfo-*-
+
+@c %**start of header
+@setfilename rpy.info
+@settitle @RPy{} Reference Manual
+@c %**end of header
+@dircategory Programming
+@direntry
+* RPy v2: (rpy2).               RPy2, Python extension module for R.
+@end direntry
+
+@macro version
+2.0.0-dev
+@end macro
+
+@macro Python
+Python
+@end macro
+
+@macro RPy
+RPy
+@end macro
+@macro RPy2
+RPy2
+@end macro
+
+@macro R
+R
+@end macro
+
+@macro C
+C
+@end macro
+
+@ifinfo
+This file documents @RPy2{} @version{}
+
+Copyright -
+Permission is granted to make and distribute verbatim
+copies of this manual provided the copyright notice and
+this permission notice are preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX
+and print the results, provided the printed document
+carries a copying permission notice identical to this
+one except for the removal of this paragraph (this
+paragraph not being relevant to the printed manual).
+@end ignore
+
+Permission is granted to copy and distribute modified
+versions of this manual under the conditions for
+verbatim copying, provided also that the sections
+entitled ``Copying'' and ``GNU General Public License''
+are included exactly as in the original, and provided
+that the entire resulting derived work is distributed
+under the terms of a permission notice identical to this
+one.
+
+Permission is granted to copy and distribute
+translations of this manual into another language,
+under the above conditions for modified versions,
+except that this permission notice may be stated in a
+translation approved by the Free Software Foundation.
+@end ifinfo
+
+@titlepage
+@title @RPy2{} Reference Manual
+@subtitle (version @version{})
+@author Laurent Gautier
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 2008
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided also that
+the sections entitled ``Copying'' and ``GNU General Public License''
+are included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that this permission notice may be stated in a
+translation approved by the Free Software Foundation.
+@end titlepage
+
+@ifnottex
+@node Top, Overview, (dir), (dir)
+@top @RPy{} Reference Manual (version @version{})
+
+This is the reference manual for @RPy{} version @version{}, a @Python{}
+extension module for using the @R{} programming language.
+@end ifnottex
+
+@menu
+* Preface::
+* Overview::
+* robjects::
+* rinterface::
+* Acknowledgements::
+@end menu
+
+
+@iftex
+@contents
+@end iftex
+
+@node Preface, Overview, , Top
+@chapter Preface
+
+This presentation describes @RPy2{}, a close-to-complete rewrite of
+the @RPy{} package.
+
+It is developped for R-2.7 (and is not expected to work
+with a previous version), together with @Python{} 2.5. Compatibility
+with @Python{} 2.4 is expected but not tested when writing
+those lines.
+
+The contributed code of Alexander Belopolsky, who contributed
+a rewrite to @RPy{} is acknowledged.
+The original work of Walter Moreira, and Gregory Warnes, is also
+acknowledged here.
+
+
+@node Overview, , Preface, Top
+@chapter Overview
+
+
+@uref{http://www.python.org, @Python{}} is a popular 
+all-purpose scripting language, while @uref{http://www.r-project.org, @R{}}
+is a scripting language mostly popular for data analysis, statistics, and
+graphics.
+
+
+The @RPy{} project is an effort to have access to @R{} from within @Python{}, 
+
+The @RPy{} code is initially inspired in RSPython, which is part of
+the @uref{http://www.omegahat.org/RSPython, Omegahat project}.
+
+@RPy2{} is inspired by @RPy{} and A. Belopolskys's contributions to @RPy.
+Backward compatibility with @RPy{} is limited.
+
+FIXME: write a section about what changed
+
+
+
+The package is made of several elements:
+@table @code
+@item robjects
+Higher-level interface, for when ease-of-use matters most
+(@xref{robjects})
+
+@item rinterface
+How-level interface to R, for when speed and flexibility
+matter most (@xref{rinterface})
+
+@end table
+
+@node robjects
+@chapter robjects
+
+@section Overview
+This module is intended for casual and general use.
+Its aim is to abstracts some of the details and provide an
+intuitive interface to R.
+
+@example
+>>> import rpy2.robjects as robjects
+@end example
+
+@code{robjects} is written on the top of @code{rinterface}, and one
+not satisfied with it could easily build one's own flavor of a
+@Python{}-@R{} interface by modifying it.
+
+
+@section Classes
+@table @code
+@item Robject
+Parent class for @R{} objects.
+
+@item Rvector
+An @R{} vector
+
+@item Renvironment
+An @R{} environment.
+
+@item Rfunction
+An @R{} function.
+@end table
+
+@subsection R
+
+This class is currently a singleton, with
+its one representation instanciated when the
+module is loaded:
+
+@example
+>>> robjects.r
+>>> print(robjects.r)
+@end example
+
+The instance can be seen as a window to an
+embedded @R{} process.
+Readers familiar with the ctypes module for @Python
+
+@R{} vectors:
+@example
+>>> pi = robjects.r.pi
+>>> letters = robjects.r.letters
+@end example
+
+@R{} functions:
+
+@example
+>>> plot = robjects.r.plot
+>>> dir = robjects.r.dir
+@end example
+
+The evaluation of @R{} code in a string can also be performed
+FIXME: (not yet implemented/tested)
+
+@subsection Robject
+
+
+@subsection Rvector
+
+Outside enviromnents and functions, most of the objects
+an @R{} user is interacting with are vector-like.
+For example, this means that any scalar is in fact a vector
+of length one.
+
+The class @code{Rvector} has a constructor:
+@example
+>>> x = robjects.Rvector(3)
+@end example
+
+Operations on vectors:
+@table @code
+@item +
+Add
+@item -
+Subtract
+@item *
+Multiply
+@item /
+Divide
+@end table
+
+FIXME:
+Indexing
+
+This class is using the class @code{rinterface.SexpVector}
+(@xref{SexpVector}).
+
+
+
+@subsection Renvironment
+
+@R{} environments can be described to the @Python user as
+an hybrid of a dictionary and a scope.
+
+The first of all environments is called the Global Environment,
+that can also be referred to as the R workspace (@xref{globalEnv}).
+@example
+>>> globalEnv = robjects.globalEnv
+@end example
+
+Assigning a value to a symbol in an environment has been
+made as simple as assign a value to a key in a @Python{}
+dictionary:
+@example
+>>> robjects.r.ls(globalEnv)
+>>> globalEnv["a"] = 123
+>>> robjects.r.ls(globalEnv)
+@end example
+
+Care must be taken when assigning objects into an environment
+such as the Global Environment, as it can hide other objects
+with an identical name.
+For example
+@example
+>>> globalEnv["pi"] = 123
+>>> robjects.r.pi
+123L
+@end example
+
+@example
+>>> robjects.r.rm("pi")
+>>> robjects.r.pi
+3.1415926535897931
+@end example
+
+This class is using the class @code{rinterface.SexpEnvironment}
+(@xref{SexpEnvironment}).
+
+
+@subsection Rfunction
+
+@example
+>>> plot = robjects.r.plot
+>>> rnorm = robjects.r.rnorm
+>>> plot(rnorm(100), ylab="random")
+@end example
+
+This class is using the class @code{rinterface.SexpClosure}
+(@xref{SexpClosure}).
+
+
+@subsection Mapping
+
+The mapping between low-level objects is performed by the
+functions XXX and XXX.
+
+A developper can easily add his own mapping XXX.
+
+@section Examples
+
+@example
+>>> import array
+
+>>> r = robjects.r
+
+>>> x = array.array('i', range(10))
+>>> y = r.rnorm(10)
+
+>>> r.X11()
+
+>>> r.par(mfrow=array.array('i', [2,2]))
+>>> r.plot(x, y, ylab="foo/bar", col="red")
+
+>>> kwargs = {'ylab':"foo/bar", 'type':"b", 'col':"blue", 'log':"x"}
+>>> r.plot(x, y, **kwargs)
+
+>>> m = r.matrix(r.rnorm(100), ncol=5)
+>>> pca = r.princomp(m)
+>>> r.plot(pca, main="Eigen values")
+>>> r.biplot(pca, main="biplot")
+
+>>> if not r.require("GO")[0]:
+...     raise(Exception("Bioconductor Package GO missing"))
+...
+
+>>> goItem = r.GOTERM["GO:0000001"]
+@end example
+
+@node rinterface
+@chapter rinterface
+
+@section Overview
+A lower-level interface is provided for cases where
+the use-cases addressed by @code{robjects} are not covered,
+and for the cases where the layer in @code{robjects}
+has an excessive cost on the performances.
+
+@example
+>>> import rpy2.rinterface as rinterface
+@end example
+
+@node initEmbeddedR
+@subsection initEmbeddedR
+
+One has to initialize R before much can be done.
+The function @code{initEmbeddedR} lets one initialize
+the embedded R, and take the same parameters as one
+would give when starting an R terminal from the command
+line:
+@example
+>>> rinterface.initEmbeddedR("--no-save", "--quiet")
+@end example
+
+Initialization should only be performed once and in the case
+of a second call to initEmbeddedR, to avoid unpredictable results
+when using the embedded R, an exception is be fired.
+
+@node Rspace
+@subsection @R{} space and @Python{} space
+
+When using the @RPy2{} package, two realms are co-existing: @R{} and @Python{}.
+
+The @code{Sexp_Type} objects can be considered as @Python{} shells pointing
+to data stored and administered in the @R{} space.
+
+
+@node globalEnv
+@section globalEnv
+
+The global environment can be seen as the topmost environment,
+and is in fact a list, that is a sequence, of environments.
+
+When an @R{} library (package in @R{}'s terminology) is loaded,
+is it added to the existing sequence of environments. Unless
+specified, it is inserted in second position. The first position
+always remains attributed to the global environment
+(FIXME: there is a bit of circulariry in this definition - check
+how to present it a clear(er) way).
+The library is said to be attached to the current search path.
+
+@node Sexp
+@section Sexp
+
+Methods:
+@table @code
+@item do_slot([name])
+Access attribute @code{name} for the object
+@item typeof()
+Type of the object
+@end table
+
+@node do_slot
+@subsection do_slot
+
+@R{} objects can be geiven attributes. In @R{} the function
+@code{attr} lets one access attribute, while called @code{do_slot}
+in the @C{} interface to @R{}. 
+
+@example
+>>> matrix = rinterface.globalEnv.get("matrix")
+>>> letters = rinterface.globalEnv.get("letters")
+>>> ncol = rinterface.SexpVector([2, ], rinterface.INTSXP)
+>>> m = matrix(letters, ncol = ncol)
+>>> [x for x in m.do_slot("dim")]
+[13, 2]
+@end example
+
+
+@node SexpVector
+@section SexpVector
+
+In @R{} all scalars are in fact vectors.
+
+To use again the constant @code{pi}:
+@example
+>>> pi = rinterface.globalEnv.get("pi")
+>>> len(pi)
+1
+>>> pi
+<rinterface.SexpVector - Python:0x2b20325d2660 / R:0x16d5248>
+>>> pi[0]
+3.1415926535897931
+@end example
+
+@example
+>>> letters = rinterface.globalEnv.get("letters") 
+>>> len(letters)
+26
+>>> LETTERS = rinterface.globalEnv.get("LETTERS") 
+@end example
+
+
+@example
+>>> options = rinterface.globalEnv.get("options")()
+>>> option_names = options.do_slot("names")
+>>> [x for x in options_names]
+@end example
+(to know more about @code{do_slot}, @xref{do_slot}).
+
+
+@node SexpEnvironment
+@section SexpEnvironment
+
+@subsection get
+Whenever a search for a symbol is performed, the whole
+search path is considered: the environments in the list
+are inspected in sequence and the value for the first symbol found
+matching is returned.
+
+@example
+>>> rinterface.globalEnv.get("pi")
+@end example
+
+The constant pi is defined in the package base, that
+is by default in the search path.
+
+
+@subsection __getitem__, __setitem__
+
+The @code{[} operator will only look for a symbol in the environment
+(FIXME: first in the list then ?),
+without looking into other elements in the list.
+
+The following will return an expection @code{LookupError}:
+@example
+>>> rinterface.globalEnv["pi"]
+@end example
+The constant @code{pi} is defined in @R{}'s @code{base} package,
+and therefore cannot be found in the Global Environment.
+
+The assignment of a value to a symbol in an environment is as
+simple as assigning a value to a key in a @Python{} dictionary:
+@example
+>>> x = rinterface.Sexp_Vector([123, ], rinterface.INTSXP)
+>>> rinterface.globalEnv["x"] = x
+@end example
+note: a copy of the @R{} object is made in the @R{} space.
+
+
+@node SexpClosure
+@section SexpClosure
+
+In @R{} terminology, a closure is a function (with its enclosing
+environment).
+
+@subsection closureEnv
+
+In the example below, we inspect the environment for the
+function @code{plot}, that is the namespace for the
+package @code{graphics}.
+@example
+>>> plot = rinterface.globalEnv.get("plot")
+>>> ls = rinterface.globalEnv.get("ls")
+>>> envplot_list = ls(plot.closureEnv())
+>>> [x for x in envplot_ls]
+@end example
+
+
+@node Acknowledgements, , , Top
+@chapter Acknowledgements
+
+This is an attempt at rewritting and extending 
+the @RPy{} project. Acknowledgements go to:
+(FIXME: names are probably forgotten)
+
+@table @asis
+
+@item Walter Moreira
+for the orignal implementation of @RPy{}.
+
+@item Gregory Warnes
+for maintaining @RPy{} across the years, bringing it
+a version 1.0, and fixing it to accomodate changes in R.
+
+@item Alexander Belopolsky
+for his very nice contributed code to RPy (that code was a cornerstone
+in rewriting RPy).
+@end table
+
+@bye
