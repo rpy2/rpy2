@@ -168,6 +168,8 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args)
 
   globalEnv->sexp = R_GlobalEnv;
 
+  baseNameSpaceEnv->sexp = R_BaseNamespace;
+
   PyObject *res = PyInt_FromLong(status);
 
   return res;
@@ -1008,14 +1010,24 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   return 0;
 }
 
+static Py_ssize_t EnvironmentSexp_length(PyObject *self) 
+{
+  SEXP rho_R = ((SexpObject *)self)->sexp;
+  if (! rho_R) {
+    PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
+    return -1;
+  }
+  SEXP symbols = R_lsInternal(rho_R, TRUE);
+  Py_ssize_t len = (Py_ssize_t)GET_LENGTH(symbols);
+  return len;
+}
+
 static PyMappingMethods EnvironmentSexp_mappignMethods = {
-  0, /* mp_length */
+  (lenfunc)EnvironmentSexp_length, /* mp_length */
   (binaryfunc)EnvironmentSexp_subscript, /* mp_subscript */
   (objobjargproc)EnvironmentSexp_ass_subscript  /* mp_ass_subscript */
 };
 
-//FIXME: write more doc - should the environments
-// be made like mappings at the Python level ?
 PyDoc_STRVAR(EnvironmentSexp_Type_doc,
 "R object that is an environment.\
  R environments can be seen as similar to Python\

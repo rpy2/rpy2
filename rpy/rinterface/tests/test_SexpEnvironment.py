@@ -45,6 +45,15 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         a = rinterface.globalEnv["a"]
         self.assertTrue(False) #FIXME: write proper unit test here
 
+    def testLength(self):
+        newEnv = rinterface.globalEnv.get("new.env")
+        env = newEnv()
+        self.assertEquals(0, len(env))
+        env["a"] = rinterface.SexpVector([123, ], rinterface.INTSXP)
+        self.assertEquals(1, len(env))
+        env["b"] = rinterface.SexpVector([123, ], rinterface.INTSXP)
+        self.assertEquals(2, len(env))
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpEnvironmentTestCase)
     return suite
