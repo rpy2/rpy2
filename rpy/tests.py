@@ -6,7 +6,7 @@ import rpy2.rinterface.tests
 def suite():
     suite_robjects = rpy2.robjects.tests.suite()
     suite_rinterface = rpy2.rinterface.tests.suite()
-    alltests = unittest.TestSuite([suite_robjects, ])
+    alltests = unittest.TestSuite([suite_robjects, suite_rinterface])
     return alltests
 
 if __name__ == "__main__":

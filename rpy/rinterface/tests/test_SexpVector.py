@@ -164,9 +164,8 @@ class SexpVectorTestCase(unittest.TestCase):
         
     def testAssignItemString(self):
         letters_R = rinterface.globalEnv.get("letters")
-        #FIXME: segfaults
         #letters_R[0] = rinterface.SexpVector(["z", ], rinterface.STRSXP)
-        self.assertTrue(letters_R[0] == "z")
+        self.assertTrue(letters_R[0] == "z") #FIXME: segfault when assigning value
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpVectorTestCase)
