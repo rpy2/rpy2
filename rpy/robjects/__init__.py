@@ -184,6 +184,10 @@ class Renvironment(Robject):
         res = mapperR2Py(res)
         return res
 
+    def __setitem__(self, item, value):
+        robj = mapperPy2R(value)
+        self._sexp[item] = robj._sexp
+
 class RS4(Robject):
     def __init__(self, o):
         if (isinstance(o, rinterface.SexpS4)):
@@ -228,4 +232,5 @@ class R(object):
 
 r = R(["--no-save", "--quiet"])
 
+globalEnv = mapperR2Py(rinterface.globalEnv)
 
