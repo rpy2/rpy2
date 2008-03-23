@@ -9,11 +9,12 @@ from subprocess import Popen, PIPE
 RHOMES = os.getenv('RHOMES')
 
 if RHOMES is None:
-    RHOMES = [Popen(["R", "RHOME"], stdout=PIPE).communicate()[0].strip(), ]
+    RHOMES = Popen(["R", "RHOME"], stdout=PIPE).communicate()[0].strip()
     #Twist if 'R RHOME' spits out a warning
-    if RHOMES[:6] == "WARNING":
-        i = s.find(os.linesep)
+    if RHOMES.startswith("WARNING"):
+        i = RHOMES.find(os.linesep)
         RHOMES = RHOMES[i:]
+    RHOMES = [RHOMES, ]
 else:
     RHOMES = RHOMES.split(os.pathsep)
 
