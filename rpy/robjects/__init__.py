@@ -23,7 +23,7 @@ def defaultRobjects2PyMapper(o):
     elif isinstance(o, rinterface.SexpS4):
         res = RS4(o)
     else:
-        res = o
+        res = Robject(o)
     return res
 
 #FIXME: clean and nice mechanism to allow user-specifier mapping function
@@ -66,6 +66,9 @@ mapperPy2R = defaultPy2RobjectsMapper
 #FIXME: Looks hackish. inheritance should be used ?
 class Robject(object):
     name = None
+
+    def __init__(self, o):
+        self._sexp = o
 
     def __str__(self):
         tmp = r.fifo("")
@@ -188,6 +191,9 @@ class Renvironment(Robject):
         robj = mapperPy2R(value)
         self._sexp[item] = robj._sexp
 
+    def __iter__(self):
+        return iter(self._sexp)
+
 class RS4(Robject):
     def __init__(self, o):
         if (isinstance(o, rinterface.SexpS4)):
@@ -229,6 +235,10 @@ class R(object):
         s += str(self["version"])
         return s
 
+    def __call__(self, string):
+        p = self.parse(text=string)
+        res = self.eval(p)
+        return res
 
 r = R(["--no-save", "--quiet"])
 
