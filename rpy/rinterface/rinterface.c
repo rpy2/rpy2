@@ -1017,8 +1017,10 @@ static Py_ssize_t EnvironmentSexp_length(PyObject *self)
     PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
     return -1;
   }
-  SEXP symbols = R_lsInternal(rho_R, TRUE);
+  SEXP symbols;
+  PROTECT(symbols = R_lsInternal(rho_R, TRUE));
   Py_ssize_t len = (Py_ssize_t)GET_LENGTH(symbols);
+  UNPROTECT(1);
   return len;
 }
 
@@ -1027,6 +1029,26 @@ static PyMappingMethods EnvironmentSexp_mappignMethods = {
   (binaryfunc)EnvironmentSexp_subscript, /* mp_subscript */
   (objobjargproc)EnvironmentSexp_ass_subscript  /* mp_ass_subscript */
 };
+
+static PyObject* 
+EnvironmentSexp_iter(PyObject *sexpEnvironment)
+{
+  SEXP rho_R = ((SexpObject *)sexpEnvironment)->sexp;
+
+  if (! rho_R) {
+    PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
+    return NULL;
+  }
+  SEXP symbols;
+  PROTECT(symbols = R_lsInternal(rho_R, TRUE));
+  SexpObject *seq = newSexpObject(symbols);
+  Py_INCREF(seq);
+  UNPROTECT(1);
+ 
+  PyObject *it = PyObject_GetIter((PyObject *)seq);
+  Py_DECREF(seq);
+  return it;
+}
 
 PyDoc_STRVAR(EnvironmentSexp_Type_doc,
 "R object that is an environment.\
@@ -1073,7 +1095,7 @@ static PyTypeObject EnvironmentSexp_Type = {
         0,                      /*tp_clear*/
         0,                      /*tp_richcompare*/
         0,                      /*tp_weaklistoffset*/
-        0,                      /*tp_iter*/
+        EnvironmentSexp_iter,                      /*tp_iter*/
         0,                      /*tp_iternext*/
         EnvironmentSexp_methods,           /*tp_methods*/
         0,                      /*tp_members*/
