@@ -746,49 +746,48 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
 }
 
 /* a[i] = val */
-static PyObject *
+static int
 VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
 {
-  PyObject* res;
   R_len_t i_R;
 
   /* R is still with int for indexes */
   if (i >= R_LEN_T_MAX) {
     PyErr_Format(PyExc_IndexError, "Index value exceeds what R can handle.");
-    return NULL;
+    return -1;
   }
 
   SEXP *sexp = &(((SexpObject *)object)->sexp);
   if (i >= GET_LENGTH(*sexp)) {
     PyErr_Format(PyExc_IndexError, "Index out of range.");
-    return NULL;
+    return -1;
   }
 
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;
+    return -1;
   }
 
   int is_SexpObject = PyObject_TypeCheck(val, &Sexp_Type);
   if (! is_SexpObject) {
     PyErr_Format(PyExc_ValueError, "Any new value must be of "
 		 "type 'Sexp_Type'.");
-    return NULL;
+    return -1;
   }
   SEXP *sexp_val = &(((SexpObject *)val)->sexp);
   if (! sexp_val) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;
+    return -1;
   }
 
   if (TYPEOF(*sexp_val) != TYPEOF(*sexp)) {
     PyErr_Format(PyExc_ValueError, "The type for the new value cannot be different.");
-    return NULL;
+    return -1;
   }
 
   if ((TYPEOF(*sexp_val) != VECSXP) & (LENGTH(*sexp_val) != 1)) {
     PyErr_Format(PyExc_ValueError, "The new value must be of length 1.");
-    return NULL;
+    return -1;
   }
 
   i_R = (R_len_t)i;
@@ -814,10 +813,10 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
   default:
     PyErr_Format(PyExc_ValueError, "cannot handle type %d", 
 		 TYPEOF(*sexp));
-    res = NULL;
+    return -1;
     break;
   }
-  return res;
+  return 0;
 }
 
 static PySequenceMethods VectorSexp_sequenceMethods = {

@@ -22,12 +22,13 @@ class SexpVectorTestCase(unittest.TestCase):
         isLogical = rinterface.globalEnv.get("is.logical")
         ok = isLogical(sexp)[0]
         self.assertTrue(ok)
+        self.assertTrue(sexp[0])
 
         sexp = rinterface.SexpVector(["a", ], rinterface.LGLSXP)
-        isNA = rinterface.globalEnv.get("is.na")
-        ok = isNA(sexp)[0]
+        isLogical = rinterface.globalEnv.get("is.logical")
+        ok = isLogical(sexp)[0]
         self.assertTrue(ok)
-
+        self.assertTrue(sexp[0])
 
     def testNewInt(self):
         sexp = rinterface.SexpVector([1, ], rinterface.INTSXP)
@@ -63,10 +64,9 @@ class SexpVectorTestCase(unittest.TestCase):
         ok = isCharacter(sexp)[0]
         self.assertTrue(ok)
 
-        #FIXME: elucidate what is happening here
         sexp = rinterface.SexpVector([1, ], rinterface.STRSXP)
-        isNA = rinterface.globalEnv.get("is.na")
-        ok = isNA(sexp)[0]
+        isCharacter = rinterface.globalEnv.get("is.character")
+        ok = isCharacter(sexp)[0]
         self.assertTrue(ok)
 
     def testNewVector(self):
@@ -81,8 +81,7 @@ class SexpVectorTestCase(unittest.TestCase):
         
 
     def testNew_InvalidType(self):
-        self.assertTrue(False)
-        #FIXME
+        self.assertTrue(False) #FIXME: invalid type causes a segfault
         self.assertRaises(ValueError, rinterface.SexpVector, [1, ], -1)
 
     def testGetItem(self):
@@ -106,12 +105,13 @@ class SexpVectorTestCase(unittest.TestCase):
     def testAssignItemDifferentType(self):
         c_R = rinterface.globalEnv.get("c")
         myVec = c_R(rinterface.SexpVector([0, 1, 2, 3, 4, 5], rinterface.INTSXP))
+        #import pdb; pdb.set_trace()
         self.assertRaises(ValueError, myVec.__setitem__, 0, rinterface.SexpVector(["a", ], rinterface.STRSXP))
         
     def testAssignItemOutOfBound(self):
         c_R = rinterface.globalEnv.get("c")
         myVec = c_R(rinterface.SexpVector([0, 1, 2, 3, 4, 5], rinterface.INTSXP))
-        self.assertRaises(ValueError, myVec.__setitem__, 10, rinterface.SexpVector([1, ], rinterface.INTSXP))
+        self.assertRaises(IndexError, myVec.__setitem__, 10, rinterface.SexpVector([1, ], rinterface.INTSXP))
 
     def testAssignItemInt(self):
         c_R = rinterface.globalEnv.get("c")
