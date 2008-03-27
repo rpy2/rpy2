@@ -43,7 +43,8 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         obj = rinterface.globalEnv.get("letters")
         ge["a"] = obj
         a = rinterface.globalEnv["a"]
-        self.assertTrue(False) #FIXME: write proper unit test here
+        ok = ge.get("identical")(obj, a)
+        self.assertTrue(ok[0])
 
     def testLength(self):
         newEnv = rinterface.globalEnv.get("new.env")
