@@ -709,7 +709,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     double vd;
     int vi;
     Rcomplex vc;
-    char *vs;
+    const char *vs;
     i_R = (R_len_t)i;
     switch (TYPEOF(*sexp)) {
     case REALSXP:
@@ -729,7 +729,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       res = PyComplex_FromDoubles(vc.r, vc.i);
       break;
     case STRSXP:
-      vs = CHARACTER_POINTER(STRING_ELT(*sexp, i_R));
+      vs = translateChar(STRING_ELT(*sexp, i_R));
       res = PyString_FromString(vs);
       break;
     case VECSXP:
