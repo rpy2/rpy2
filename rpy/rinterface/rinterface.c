@@ -1459,7 +1459,7 @@ initrinterface(void)
   //FIXME: DECREF ?
   Py_DECREF(baseNameSpaceEnv);
 
-  /* Add some symbolic constants to the module */
+  /* Add SXP types */
   ADD_INT_CONSTANT(m, NILSXP);
   ADD_INT_CONSTANT(m, SYMSXP);
   ADD_INT_CONSTANT(m, LISTSXP);
@@ -1483,6 +1483,8 @@ initrinterface(void)
   ADD_INT_CONSTANT(m, EXTPTRSXP);
   ADD_INT_CONSTANT(m, RAWSXP);
   ADD_INT_CONSTANT(m, S4SXP);
+
+  ADD_INT_CONSTANT(m, R_LEN_T_MAX);
 
   /* "Logical" (boolean) values */
   ADD_INT_CONSTANT(m, TRUE);
