@@ -102,6 +102,11 @@ class SexpVectorTestCase(unittest.TestCase):
         for i, li in enumerate(myList):
             self.assertEquals(i, myList[i][0])
 
+    def testGetItemOutOfBound(self):
+        myVec = rinterface.SexpVector([0, 1, 2, 3, 4, 5], rinterface.INTSXP)
+        self.assertRaises(IndexError, myVec.__getitem__, 10)
+        self.assertRaises(IndexError, myVec.__getitem__, rinterface.R_LEN_T_MAX+1)
+
     def testAssignItemDifferentType(self):
         c_R = rinterface.globalEnv.get("c")
         myVec = c_R(rinterface.SexpVector([0, 1, 2, 3, 4, 5], rinterface.INTSXP))
@@ -165,6 +170,7 @@ class SexpVectorTestCase(unittest.TestCase):
     def testAssignItemString(self):
         letters_R = rinterface.globalEnv.get("letters")
         #letters_R[0] = rinterface.SexpVector(["z", ], rinterface.STRSXP)
+        #import pdb; pdb.set_trace()
         self.assertTrue(letters_R[0] == "z") #FIXME: segfault when assigning value
 
 def suite():
