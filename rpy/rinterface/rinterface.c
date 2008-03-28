@@ -790,6 +790,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
     return -1;
   }
 
+  SEXP sexp_copy;
   i_R = (R_len_t)i;
   switch (TYPEOF(*sexp)) {
   case REALSXP:
@@ -805,10 +806,12 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
     (COMPLEX_POINTER(*sexp))[i_R] = (COMPLEX_POINTER(*sexp_val))[0];
     break;
   case STRSXP:
-    SET_STRING_ELT(*sexp, i_R, *sexp_val);
+    SET_STRING_ELT(*sexp, i_R, STRING_ELT(*sexp_val, 0));
     break;
   case VECSXP:
-    SET_VECTOR_ELT(*sexp, i_R, *sexp_val);
+    PROTECT(sexp_copy = Rf_duplicate(*sexp_val));
+    SET_VECTOR_ELT(*sexp, i_R, sexp_copy);
+    UNPROTECT(1);
     break;
   default:
     PyErr_Format(PyExc_ValueError, "cannot handle type %d", 

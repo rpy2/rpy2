@@ -168,8 +168,10 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertTrue(myVec[2][0][0] == "a")
         
     def testAssignItemString(self):
-        letters_R = rinterface.globalEnv.get("letters")
-        #letters_R[0] = rinterface.SexpVector(["z", ], rinterface.STRSXP)
+        letters_R = rinterface.SexpVector("abcdefghij", rinterface.STRSXP)
+        self.assertRaises(ValueError, letters_R.__setitem__, 0, rinterface.SexpVector([1, ], rinterface.INTSXP))
+
+        letters_R[0] = rinterface.SexpVector(["z", ], rinterface.STRSXP)
         #import pdb; pdb.set_trace()
         self.assertTrue(letters_R[0] == "z") #FIXME: segfault when assigning value
 
