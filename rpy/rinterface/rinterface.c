@@ -655,7 +655,7 @@ static PyTypeObject ClosureSexp_Type = {
 };
 
 static PyObject*
-VectorSexp_new(PyTypeObject *type, PyObject *args)
+VectorSexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
   int rType = -1;
   PyObject *seq = 0;
