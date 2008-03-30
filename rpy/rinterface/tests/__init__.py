@@ -1,8 +1,8 @@
 import unittest
 
-from . import test_SexpVector
-from . import test_SexpEnvironment
-from . import test_Sexp
+import test_SexpVector
+import test_SexpEnvironment
+import test_Sexp
 
 def suite():
     suite_SexpVector = test_SexpVector.suite()

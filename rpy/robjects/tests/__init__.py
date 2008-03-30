@@ -1,6 +1,5 @@
 import unittest
-
-from . import testRobjects
+import testRobjects
 
 def suite():
     suite_Robjects = testRobjects.suite()
