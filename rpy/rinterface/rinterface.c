@@ -31,7 +31,9 @@
  *
  * original RPy Authors: Walter Moreira.
  *                       Gregory R. Warnes <greg@warnes.net> (Maintainer)
- * Original code from wrapping R's C-level SEXPs:   belopolsky
+ *
+ * Original code for wrapping R's C-level SEXPs:   Alexander Belopolsky
+ * (this code borrows a *lot* from it)
  *
  * This code: Laurent Gautier
  *
@@ -143,26 +145,21 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args)
     return NULL;
   }
 
-  //FIXME: arbitrary number of options
+  const Py_ssize_t n_args = PyTuple_Size(args);
   //char *defaultargv[] = {"rpython", "--verbose"};
-  char *options[5] = {"", "", "", "", ""};
-
-  if (!PyArg_ParseTuple(args, "s|ssss", 
-			&options[0], &options[1],
-			&options[2], &options[3],
-			&options[4]
-			)) { 
-    return NULL; 
-  }
-  
-  int n_opt;
-  for (n_opt=0; n_opt<5; n_opt++) {
-    if (options[n_opt] == "") {
-      break;
+  char *options[n_args];
+  PyObject *opt_string;
+  Py_ssize_t ii;
+  for (ii = 0; ii < n_args; ii++) {
+    opt_string = PyTuple_GetItem(args, ii);
+    if (! PyString_Check(opt_string)) {
+      PyErr_SetString(PyExc_TypeError, "All options must be strings.");
+      return NULL;
     }
+    options[ii] = PyString_AS_STRING(opt_string);
   }
-  
-  int status = Rf_initEmbeddedR(n_opt, options);
+
+  int status = Rf_initEmbeddedR(n_args, options);
 
   embeddedR_isInitialized = PyBool_FromLong((long)1);
 
@@ -455,7 +452,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 {
   SEXP call_R, c_R, res_R;
   int largs, lkwds;
-  SEXP tmp_R;
+  SEXP tmp_R, fun_R;
   
   largs = lkwds = 0;
   if (args)
@@ -470,12 +467,12 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   /* A SEXP with the function to call and the arguments and keywords. */
   PROTECT(c_R = call_R = allocList(largs+lkwds+1));
   SET_TYPEOF(c_R, LANGSXP);
-  tmp_R = ((SexpObject *)self)->sexp;
-  if (! tmp_R) {
+  fun_R = ((SexpObject *)self)->sexp;
+  if (! fun_R) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     goto fail;
   }
-  SETCAR(c_R, tmp_R);
+  SETCAR(c_R, fun_R);
   c_R = CDR(c_R);
 
   int arg_i;
@@ -551,6 +548,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   
 //FIXME: R_GlobalContext ?
   PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
+  //PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
 
 /*   if (!res) { */
 /*     UNPROTECT(2); */
@@ -1393,6 +1391,104 @@ static PyMethodDef EmbeddedR_methods[] = {
   {NULL,		NULL}		/* sentinel */
 };
 
+
+/* A. Belopolsky's callback */
+
+/* R representation of a PyObject */
+
+static SEXP R_PyObject_type_tag;
+
+static SEXP
+R_PyObject_decref(SEXP s)
+{
+	PyObject* pyo = (PyObject*)R_ExternalPtrAddr(s);
+	if (pyo) {
+		Py_DECREF(pyo);
+		R_ClearExternalPtr(s);
+	}
+	return R_NilValue;
+}
+
+static SEXP
+mkPyObject(PyObject* pyo)
+{
+	SEXP res;
+	Py_INCREF(pyo);
+	res = R_MakeExternalPtr(pyo, R_PyObject_type_tag, R_NilValue);
+	R_RegisterCFinalizer(res, (R_CFinalizer_t)R_PyObject_decref);
+	return res;
+}
+
+#define R_PyObject_TYPE_CHECK(s) \
+  (TYPEOF(s) == EXTPTRSXP && R_ExternalPtrTag(s) == R_PyObject_type_tag)
+
+static SEXP
+do_Python(SEXP args)
+{
+  SEXP sexp = CADR(args);
+  SEXP res;
+  if (!R_PyObject_TYPE_CHECK(sexp)) {
+    error(".Python: invalid python type");
+    return R_NilValue;
+  }
+  //PyTypeObject* type = R_ExternalPtrAddr(sexp);
+  args = CDDR(args);
+  sexp = CAR(args);
+  if (!R_PyObject_TYPE_CHECK(sexp)) {
+    error(".Python: invalid function");
+    return R_NilValue;
+  }
+  PyObject *pyf = R_ExternalPtrAddr(sexp);
+  
+  /* create argument list */
+  PyObject *pyargs = PyList_New(0);
+  PyObject *pyres;
+  for (args = CDR(args); args != R_NilValue; args = CDR(args)) {
+    sexp = CAR(args);
+    if (R_PyObject_TYPE_CHECK(sexp)) {
+      PyList_Append(pyargs, (PyObject *)R_ExternalPtrAddr(sexp));
+    }
+    else {
+      PyList_Append(pyargs, (PyObject *)newSexpObject(sexp));
+    }
+  }
+  PyObject *pyargstup = PyList_AsTuple(pyargs);
+  /*FIXME: named arguments are not supported yet */
+  pyres = PyObject_Call(pyf, pyargstup, NULL);
+  if (!pyres) {
+    PyObject *exctype;
+    PyObject *excvalue; 
+    PyObject *exctraceback;
+    PyObject *excstr;
+    PyErr_Fetch(&exctype, &excvalue, &exctraceback);
+    excstr = PyObject_Str(excvalue);
+    if (excstr) {
+      error(PyString_AS_STRING(excstr));
+      Py_DECREF(excstr);
+    } 
+    else {
+      error("Python error");
+    }
+    PyErr_Clear();
+  }
+  Py_DECREF(pyargs);
+  Py_DECREF(pyargstup);
+  if (PyObject_IsInstance((PyObject*)pyres, 
+			  (PyObject*)&Sexp_Type)) {
+    res = ((SexpObject*)pyres)->sexp;
+  }
+  else {
+    res = mkPyObject(pyres);
+  }
+  Py_DECREF(pyres);
+  
+  return res;
+}
+
+static R_ExternalMethodDef externalMethods[] = { 
+	{".Python", (DL_FUNC)&do_Python, -1},
+	{NULL, NULL, 0} 
+};
 
 
 
