@@ -2,7 +2,7 @@
 
 @c %**start of header
 @setfilename rpy.info
-@settitle @RPy{} Reference Manual
+@settitle @RP2{} Reference Manual
 @c %**end of header
 @dircategory Programming
 @direntry
@@ -121,11 +121,16 @@ with a previous version), together with @Python{} 2.5. Compatibility
 with @Python{} 2.4 is expected but not tested when writing
 those lines.
 
+@table @asis
+@item Walter Moreira, and Gregory Warnes
+For the original @RPy{} and its maintainance through the years.
+I realized through my work that it was then truly uncharted territories,
+and that you got there first. 
+@item Alexander Belopolsky. 
 The contributed code of Alexander Belopolsky, who contributed
-a rewrite to @RPy{} is acknowledged.
-The original work of Walter Moreira, and Gregory Warnes, is also
-acknowledged here.
-
+a first rewrite to @RPy{} is acknowledged. I have found great
+inspiration in reading that code.
+@end table
 
 @node Overview, , Preface, Top
 @chapter Overview
@@ -229,7 +234,7 @@ FIXME: (not yet implemented/tested)
 
 @subsection Rvector
 
-Outside enviromnents and functions, most of the objects
+Outside functions, and environemnts, most of the objects
 an @R{} user is interacting with are vector-like.
 For example, this means that any scalar is in fact a vector
 of length one.
@@ -257,6 +262,14 @@ Indexing
 This class is using the class @code{rinterface.SexpVector}
 (@xref{SexpVector}).
 
+@subsubsection Numpy
+
+Vectors can also be readily converted to Numpy arrays:
+@example
+>>> import numpy
+>>> ltr = robjects.r.letters
+>>> ltr_np = numpy.array(ltr)
+@end example
 
 
 @subsection Renvironment
@@ -269,6 +282,9 @@ that can also be referred to as the R workspace (@xref{globalEnv}).
 @example
 >>> globalEnv = robjects.globalEnv
 @end example
+
+An @R{} environment in @RPy2{} can be seen as a kind of @Python{}
+dictionnary.
 
 Assigning a value to a symbol in an environment has been
 made as simple as assign a value to a key in a @Python{}
@@ -297,6 +313,14 @@ For example
 
 This class is using the class @code{rinterface.SexpEnvironment}
 (@xref{SexpEnvironment}).
+
+An environment is also iter-able, returning all the symbols
+(keys) it contains:
+
+@example
+>>> env = robjects.r.baseenv()
+>>> len([x for x in env])
+@end example
 
 
 @subsection Rfunction
