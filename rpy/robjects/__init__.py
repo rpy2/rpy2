@@ -243,4 +243,5 @@ class R(object):
 r = R(["--no-save", "--quiet"])
 
 globalEnv = mapperR2Py(rinterface.globalEnv)
+baseNameSpaceEnv = mapperR2Py(rinterface.baseNameSpaceEnv)
 
