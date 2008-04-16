@@ -70,9 +70,12 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertTrue(ok)
 
     def testNewVector(self):
-        sexp_char = rinterface.SexpVector(["abc", ], rinterface.STRSXP)
-        sexp_int = rinterface.SexpVector([1, ], rinterface.INTSXP)
-        sexp = rinterface.SexpVector([sexp_char, sexp_int], rinterface.VECSXP)
+        sexp_char = rinterface.SexpVector(["abc", ], 
+                                          rinterface.STRSXP)
+        sexp_int = rinterface.SexpVector([1, ], 
+                                         rinterface.INTSXP)
+        sexp = rinterface.SexpVector([sexp_char, sexp_int], 
+                                     rinterface.VECSXP)
         isList = rinterface.globalEnv.get("is.list")
         ok = isList(sexp)[0]
         self.assertTrue(ok)
@@ -111,12 +114,14 @@ class SexpVectorTestCase(unittest.TestCase):
         c_R = rinterface.globalEnv.get("c")
         myVec = c_R(rinterface.SexpVector([0, 1, 2, 3, 4, 5], rinterface.INTSXP))
         #import pdb; pdb.set_trace()
-        self.assertRaises(ValueError, myVec.__setitem__, 0, rinterface.SexpVector(["a", ], rinterface.STRSXP))
+        self.assertRaises(ValueError, myVec.__setitem__, 0, 
+                          rinterface.SexpVector(["a", ], rinterface.STRSXP))
         
     def testAssignItemOutOfBound(self):
         c_R = rinterface.globalEnv.get("c")
         myVec = c_R(rinterface.SexpVector([0, 1, 2, 3, 4, 5], rinterface.INTSXP))
-        self.assertRaises(IndexError, myVec.__setitem__, 10, rinterface.SexpVector([1, ], rinterface.INTSXP))
+        self.assertRaises(IndexError, myVec.__setitem__, 10, 
+                          rinterface.SexpVector([1, ], rinterface.INTSXP))
 
     def testAssignItemInt(self):
         c_R = rinterface.globalEnv.get("c")
@@ -129,7 +134,8 @@ class SexpVectorTestCase(unittest.TestCase):
 
     def testAssignItemReal(self):
         c_R = rinterface.globalEnv.get("c")
-        myVec = c_R(rinterface.SexpVector([0.0, 1.0, 2.0, 3.0, 4.0, 5.0], rinterface.REALSXP))
+        myVec = c_R(rinterface.SexpVector([0.0, 1.0, 2.0, 3.0, 4.0, 5.0], 
+                                          rinterface.REALSXP))
         myVec[0] = rinterface.SexpVector([100.0, ], rinterface.REALSXP)
         self.assertTrue(floatEqual(myVec[0], 100.0))
 
@@ -138,7 +144,8 @@ class SexpVectorTestCase(unittest.TestCase):
 
     def testAssignItemLogical(self):
         c_R = rinterface.globalEnv.get("c")
-        myVec = c_R(rinterface.SexpVector([True, False, True, True, False], rinterface.LGLSXP))
+        myVec = c_R(rinterface.SexpVector([True, False, True, True, False], 
+                                          rinterface.LGLSXP))
         myVec[0] = rinterface.SexpVector([False, ], rinterface.LGLSXP)
         self.assertFalse(myVec[0])
 
@@ -147,7 +154,8 @@ class SexpVectorTestCase(unittest.TestCase):
 
     def testAssignItemComplex(self):
         c_R = rinterface.globalEnv.get("c")
-        myVec = c_R(rinterface.SexpVector([1.0+2.0j, 2.0+2.0j, 3.0+2.0j, 4.0+2.0j, 5.0+2.0j], rinterface.CPLXSXP))
+        myVec = c_R(rinterface.SexpVector([1.0+2.0j, 2.0+2.0j, 3.0+2.0j, 4.0+2.0j, 5.0+2.0j], 
+                                          rinterface.CPLXSXP))
         myVec[0] = rinterface.SexpVector([100.0+200.0j, ], rinterface.CPLXSXP)
         self.assertTrue(floatEqual(myVec[0].real, 100.0))
         self.assertTrue(floatEqual(myVec[0].imag, 200.0))
@@ -159,21 +167,24 @@ class SexpVectorTestCase(unittest.TestCase):
     def testAssignItemList(self):
         myVec = rinterface.SexpVector([rinterface.SexpVector(["a", ], rinterface.STRSXP), 
                                        rinterface.SexpVector([1, ], rinterface.INTSXP),
-                                       rinterface.SexpVector([3, ], rinterface.INTSXP)], rinterface.VECSXP)
+                                       rinterface.SexpVector([3, ], rinterface.INTSXP)], 
+                                      rinterface.VECSXP)
         
-        myVec[0] = rinterface.SexpVector([rinterface.SexpVector([100.0, ], rinterface.REALSXP), ], rinterface.VECSXP)
+        myVec[0] = rinterface.SexpVector([rinterface.SexpVector([100.0, ], rinterface.REALSXP), ], 
+                                         rinterface.VECSXP)
         self.assertTrue(floatEqual(myVec[0][0][0], 100.0))
         
-        myVec[2] = rinterface.SexpVector([rinterface.SexpVector(["a", ], rinterface.STRSXP), ], rinterface.VECSXP) 
+        myVec[2] = rinterface.SexpVector([rinterface.SexpVector(["a", ], rinterface.STRSXP), ], 
+                                         rinterface.VECSXP) 
         self.assertTrue(myVec[2][0][0] == "a")
         
     def testAssignItemString(self):
         letters_R = rinterface.SexpVector("abcdefghij", rinterface.STRSXP)
-        self.assertRaises(ValueError, letters_R.__setitem__, 0, rinterface.SexpVector([1, ], rinterface.INTSXP))
+        self.assertRaises(ValueError, letters_R.__setitem__, 0, rinterface.SexpVector([1, ], 
+                                                                                      rinterface.INTSXP))
 
         letters_R[0] = rinterface.SexpVector(["z", ], rinterface.STRSXP)
-        #import pdb; pdb.set_trace()
-        self.assertTrue(letters_R[0] == "z") #FIXME: segfault when assigning value
+        self.assertTrue(letters_R[0] == "z")
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpVectorTestCase)
