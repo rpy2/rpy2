@@ -29,6 +29,9 @@ def get_rversion(RHOME):
     r_exec = os.path.join(RHOME, 'bin', 'R')
     rp = os.popen(r_exec+' --version')
     rversion = rp.readline()
+    #Twist if 'R RHOME' spits out a warning
+    if rversion.startswith("WARNING"):
+        rversion = rp.readline()
     m = re.match('^R version ([^ ]+) .+$', rversion)
     rversion = m.groups()[0]
     rversion = [int(x) for x in rversion.split('.')]
@@ -48,7 +51,6 @@ rnewest = [0, 0, 0]
 rversions = []
 for RHOME in RHOMES:
     RHOME = RHOME.strip()
-    print('R\'s home is:%s' %RHOME)
     rversion = get_rversion(RHOME)
     if (cmp_version(rversion, rnewest) == +1):
         rnewest = rversion
@@ -91,7 +93,7 @@ def doSetup(RHOME, r_packversion):
 
 
 for rversion, RHOME in itertools.izip(rversions, RHOMES):        
-
+    RHOME = RHOME.strip()
     if (cmp_version(rversion, rnewest) == 0):
         r_packversion = None
         doSetup(RHOME, r_packversion)
