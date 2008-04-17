@@ -102,19 +102,7 @@ PyDoc_STRVAR(module_doc,
  Check the documentation for the module this is bundled into if\
  you only wish to have an off-the-shelf interface with R.\
 \n\
- Example of usage:n\
-import rinterface\n\
-rinterface.initEmbeddedR(\"foo\", \"--verbose\")\n\
-n = rinterface.SexpVector((100, ), rinterface.REALSXP)\n\
-hist = rinterface.globalEnv.get(\"hist\")\n\
-rnorm = rinterface.globalEnv.get(\"rnorm\")\n\
-x = rnorm(n)\n\
-hist(x)\n\
-\
-len(x)\n\
-\n\
 ");
-//FIXME: check example above
 
 
 /* Representation of R objects (instances) as instances in Python.
@@ -141,7 +129,7 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args)
 {
 
   if (PyObject_IsTrue(embeddedR_isInitialized)) {
-    PyErr_Format(PyExc_RuntimeError, "Already initialized.");
+    PyErr_Format(PyExc_RuntimeError, "R can only be initialized once.");
     return NULL;
   }
 
@@ -185,6 +173,18 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   //other possibility would be to have a fallback for "unreachable" objects ?
   //FIXME: rpy has something to terminate R. Check the details of what they are. 
   /* sanity checks needed ? */
+
+  /* snatched from trunk/rpy (v. 1.0) */
+  //FIXME: check all that
+  R_dot_Last();           
+  R_RunExitFinalizers();  
+  //CleanEd();              
+  //KillAllDevices();
+  
+  R_CleanTempDir();
+  //PrintWarnings();
+  R_gc();
+  /* */
 
   Rf_endEmbeddedR((int)fatal);
   globalEnv->sexp = R_EmptyEnv;
@@ -1392,6 +1392,8 @@ static PyMethodDef EmbeddedR_methods[] = {
 };
 
 
+
+
 /* A. Belopolsky's callback */
 
 /* R representation of a PyObject */
@@ -1583,6 +1585,7 @@ initrinterface(void)
   ADD_INT_CONSTANT(m, RAWSXP);
   ADD_INT_CONSTANT(m, S4SXP);
 
+  /* longuest integer for R indexes */
   ADD_INT_CONSTANT(m, R_LEN_T_MAX);
 
   /* "Logical" (boolean) values */
