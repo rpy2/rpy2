@@ -1,0 +1,4 @@
+import os
+os.environ["R_HOME"]="%R_HOME%"
+
+from rinterface import *
