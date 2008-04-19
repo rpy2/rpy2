@@ -9,34 +9,48 @@
 #define ARRAY_INTERFACE_VERSION 2
 
 /* Array Interface flags */
+#define CONTIGUOUS    0x001
 #define FORTRAN       0x002
 #define ALIGNED       0x100
 #define NOTSWAPPED    0x200
 #define WRITEABLE     0x400
 
 typedef struct {
-	int version;
-	int nd;
-	char typekind;
-	int itemsize;
-	int flags;
-	Py_intptr_t *shape;
-	Py_intptr_t *strides;
-	void *data;
+  int version;
+  int nd;
+  char typekind;
+  int itemsize;
+  int flags;
+  Py_intptr_t *shape;
+  Py_intptr_t *strides;
+  void *data;
 } PyArrayInterface;
 
-static int
+static char
 sexp_typekind(SEXP sexp)
 {
   switch (TYPEOF(sexp)) {
-  case REALSXP: return 'f';
-  case INTSXP: return 'i';
-  case STRSXP: return 'S';
-  case CPLXSXP: return 'c';
-    //FIXME: correct type ?
-  case LGLSXP: return 'b';
+  case REALSXP: return 'd';
+  case INTSXP: return 'l';
+    //FIXME: handle strings ?
+    //case STRSXP: return 'S';
+  case CPLXSXP: return 'D';
+    //case LGLSXP: return 'b';
   }
   return 0;
+}
+
+static void*
+sexp_typepointer(SEXP sexp)
+{
+  switch (TYPEOF(sexp)) {
+  case REALSXP: return (void *)NUMERIC_POINTER(sexp);
+  case INTSXP: return (void *)INTEGER_POINTER(sexp);
+    //case STRSXP: return (void *)CHARACTER_POINTER(;
+  case CPLXSXP: return (void *)COMPLEX_POINTER(sexp);
+  case LGLSXP: return (void *)LOGICAL_POINTER(sexp);
+  }
+  return NULL;
 }
 
 
@@ -84,7 +98,7 @@ array_struct_free(void *ptr, void *arr)
 }
 
 
-static PyObject* 
+PyObject* 
 array_struct_get(SexpObject *self)
 {
   SEXP sexp = self->sexp;
@@ -93,7 +107,7 @@ array_struct_get(SexpObject *self)
     return NULL;
   }
   PyArrayInterface *inter;
-  int typekind =  sexp_typekind(sexp);
+  char typekind =  sexp_typekind(sexp);
   if (!typekind) {
     PyErr_SetString(PyExc_AttributeError, "Unsupported SEXP type");
     return NULL;
@@ -118,7 +132,11 @@ array_struct_get(SexpObject *self)
     stride *= inter->shape[i-1];
     inter->strides[i] = stride;
   }
-  inter->data = RAW(sexp);
+  inter->data = sexp_typepointer(sexp);
+  if (inter->data == NULL) {
+    PyErr_SetString(PyExc_RuntimeError, "Error while mapping type.");
+    return NULL;
+  }
   Py_INCREF(self);
   return PyCObject_FromVoidPtrAndDesc(inter, self, array_struct_free);
 }
