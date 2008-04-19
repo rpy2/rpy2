@@ -148,7 +148,8 @@ The @RPy{} code is initially inspired in RSPython, which is part of
 the @uref{http://www.omegahat.org/RSPython, Omegahat project}.
 
 @RPy2{} is inspired by @RPy{} and A. Belopolskys's contributions to @RPy.
-Backward compatibility with @RPy{} is limited.
+Backward compatibility with @RPy{} is somewhat limited, but rinterface
+is providing the basic blocks to re-implement @RPy{} if needed. 
 
 FIXME: write a section about what changed
 
@@ -157,12 +158,13 @@ FIXME: write a section about what changed
 The package is made of several elements:
 @table @code
 @item robjects
-Higher-level interface, for when ease-of-use matters most
+Higher-level interface, when ease-of-use matters most
 (@xref{robjects})
 
 @item rinterface
-How-level interface to R, for when speed and flexibility
-matter most (@xref{rinterface})
+Low-level interface to R, when speed and flexibility
+matter most (@xref{rinterface}). Here the programmer gets close
+to @R{}'s C API, and can use R's function faster than within an R session.
 
 @end table
 
@@ -429,11 +431,24 @@ The library is said to be attached to the current search path.
 
 Methods:
 @table @code
-@item do_slot([name])
-Access attribute @code{name} for the object
 @item typeof()
 Type of the object
+@item do_slot([name])
+Access attribute @code{name} for the object
 @end table
+
+@node typeof
+@subsection typeof
+
+The internal @R{} type in which an object is stored can be
+accessed with the function @code{typeof}.
+
+@example
+>>> letters.typeof()
+@end example
+
+FIXME: talk about the all the types.
+
 
 @node do_slot
 @subsection do_slot
@@ -452,10 +467,14 @@ in the @C{} interface to @R{}.
 @end example
 
 
+
 @node SexpVector
 @section SexpVector
 
+@subsection Overview
 In @R{} all scalars are in fact vectors.
+Anything like a one-value variable is a vector of
+length 1.
 
 To use again the constant @code{pi}:
 @example
@@ -468,6 +487,12 @@ To use again the constant @code{pi}:
 3.1415926535897931
 @end example
 
+Important note: The @code{__getitem__} operator @code{[}
+is returning a @Python{} scalar. Because of that casting
+an @code{SexpVector} into a list is only a matter of calling
+the constructor @code{list}.
+
+The letters of the (western) alphabet are:
 @example
 >>> letters = rinterface.globalEnv.get("letters") 
 >>> len(letters)
@@ -475,13 +500,37 @@ To use again the constant @code{pi}:
 >>> LETTERS = rinterface.globalEnv.get("LETTERS") 
 @end example
 
-
+@subsection Names
+In @R{}, vectors can be named, that is each value in the vector
+can be given a name (that is be associated a string).
+The names are added to the other as an attribute (conveniently
+called names), and can be accessed as such:
 @example
 >>> options = rinterface.globalEnv.get("options")()
 >>> option_names = options.do_slot("names")
 >>> [x for x in options_names]
 @end example
 (to know more about @code{do_slot}, @xref{do_slot}).
+
+@subsection Numeric, numarray, numpy (and future possible names)
+
+The SexpVector objects are made to behave like arrays as defined
+in the @Python{} packages Numeric, numarray, and numpy.
+
+The functions @code{array} and @code{asarray} is all that is needed:
+@example
+>>> import Numeric
+>>> rx = rinterface.SexpVector([1,2,3,4], rinterface.INTSXP)
+>>> nx = Numeric.array(rx)
+>>> nx_nc = Numeric.asarray(rx)
+@end example
+
+Important note: when using @code{asarray}, the data are not copied.
+@example
+>>> nx_nc[2] = 42
+>>> rx[2]
+42
+@end example
 
 
 @node SexpEnvironment
@@ -501,7 +550,7 @@ The constant pi is defined in the package base, that
 is by default in the search path.
 
 
-@subsection __getitem__, __setitem__
+@subsection __getitem__ / __setitem__
 
 The @code{[} operator will only look for a symbol in the environment
 (FIXME: first in the list then ?),
@@ -522,12 +571,36 @@ simple as assigning a value to a key in a @Python{} dictionary:
 @end example
 note: a copy of the @R{} object is made in the @R{} space.
 
+@subsection __iter__
+
+The object is made iter-able.
+
+For example, we take the base name space (that is the environment
+that contains @R{}'s base objects:
+@example
+>>> base = rinterface.baseNameSpace
+>>> basetypes = [x.typeof() for x in base]
+@end example
+
+Note that in the current implementation the content of the environment
+is evaluated only once, when the iterator is created, and that adding 
+or removing elements to the environment after will not have any effect.
 
 @node SexpClosure
 @section SexpClosure
 
+@subsection A function with a context
 In @R{} terminology, a closure is a function (with its enclosing
-environment).
+environment). That enclosing environment can be thought of as
+a context to the function.
+
+@example
+>>> sum = rinterface.globalEnv.get("sum")
+>>> x = rinterface.SexpVector([1,2,3], rinterface.INTSXP)
+>>> s = sum(x)
+>>> s[0]
+6
+@end example
 
 @subsection closureEnv
 
