@@ -4,6 +4,7 @@ from distutils.core import setup, Extension
 from subprocess import Popen, PIPE
 
 
+#FIXME: still needed ?
 try:
     import ctypes
 except Exception, e:
@@ -80,8 +81,8 @@ def doSetup(RHOME, r_packversion):
 
     rinterface = Extension(
             pack_name + ".rinterface.rinterface",
-            [os.path.join('rpy', 'rinterface', 'rinterface.c'), 
-             os.path.join('rpy', 'rinterface', 'array.c')],
+            [os.path.join('rpy', 'rinterface', 'array.c'), 
+             os.path.join('rpy', 'rinterface', 'rinterface.c')],
             include_dirs=[ os.path.join(RHOME, 'include'), 
                            os.path.join('rpy', 'rinterface')],
             libraries=['R', 'Rlapack', 'Rblas'],

@@ -67,6 +67,10 @@
 
 #include <signal.h>
 
+#include "rinterface.h"
+#include "array.h"
+
+
 /* Back-compatibility with Python 2.4 */
 #if (PY_VERSION_HEX < 0x02050000)
 typedef int Py_ssize_t;
@@ -103,14 +107,6 @@ PyDoc_STRVAR(module_doc,
  you only wish to have an off-the-shelf interface with R.\
 \n\
 ");
-
-
-/* Representation of R objects (instances) as instances in Python.
- */
-typedef struct {
-  PyObject_HEAD 
-  SEXP sexp;
-} SexpObject;
 
 
 static SexpObject* globalEnv;
@@ -824,17 +820,24 @@ static PySequenceMethods VectorSexp_sequenceMethods = {
   (lenfunc)VectorSexp_len,              /* sq_length */
   0,                              /* sq_concat */
   0,                              /* sq_repeat */
-  //FIXME: implement
   (ssizeargfunc)VectorSexp_item,        /* sq_item */
-  //FIXME: implement
   0, //(ssizessizeargfunc)VectorSexp_slice,  /* sq_slice */
-  //FIXME: implement
   (ssizeobjargproc)VectorSexp_ass_item,   /* sq_ass_item */
   0,                              /* sq_ass_slice */
   0,                              /* sq_contains */
   0,                              /* sq_inplace_concat */
   0                               /* sq_inplace_repeat */
 };
+
+
+static PyGetSetDef VectorSexp_getsets[] = {
+  {"__array_struct__", 
+   (getter)array_struct_get,
+   (setter)0,
+   "Array protocol: struct"},
+  {NULL, NULL, NULL, NULL}          /* sentinel */
+};
+
 
 //FIXME: write more doc
 PyDoc_STRVAR(VectorSexp_Type_doc,
@@ -883,9 +886,9 @@ static PyTypeObject VectorSexp_Type = {
         0,                      /*tp_weaklistoffset*/
         0,                      /*tp_iter*/
         0,                      /*tp_iternext*/
-        0,           /*tp_methods*/
+	0,           /*tp_methods*/
         0,                      /*tp_members*/
-        0,//Sexp_getset,            /*tp_getset*/
+        VectorSexp_getsets,            /*tp_getset*/
         &Sexp_Type,             /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
