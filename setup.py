@@ -1,8 +1,6 @@
 
 import os, os.path, sys, shutil, re, itertools
 from distutils.core import setup, Extension
-from subprocess import Popen, PIPE
-
 
 #FIXME: still needed ?
 try:
@@ -16,11 +14,13 @@ except Exception, e:
 RHOMES = os.getenv('RHOMES')
 
 if RHOMES is None:
-    RHOMES = Popen(["R", "RHOME"], stdout=PIPE).communicate()[0].strip()
+    
+    RHOMES = os.popen("R RHOME").readlines()
     #Twist if 'R RHOME' spits out a warning
-    if RHOMES.startswith("WARNING"):
-        i = RHOMES.find(os.linesep)
-        RHOMES = RHOMES[i:]
+    if RHOMES[0].startswith("WARNING"):
+        RHOMES = RHOMES[1]
+    else:
+        RHOMES = RHOMES[0]
     RHOMES = [RHOMES, ]
 else:
     RHOMES = RHOMES.split(os.pathsep)
@@ -28,7 +28,11 @@ else:
 
 def get_rversion(RHOME):
     r_exec = os.path.join(RHOME, 'bin', 'R')
-    rp = os.popen(r_exec+' --version')
+    # Twist if Win32
+    if sys.platform=="win32":
+        rp = os.popen3('"'+r_exec+'" --version')[2]
+    else:
+        rp = os.popen('"'+r_exec+'" --version')
     rversion = rp.readline()
     #Twist if 'R RHOME' spits out a warning
     if rversion.startswith("WARNING"):
