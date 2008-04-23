@@ -15,6 +15,23 @@ class SexpTestCase(unittest.TestCase):
     #def tearDown(self):
     #    rinterface.endEmbeddedR(1);
 
+    def testNew(self):
+
+        x = "a"
+        self.assertRaises(ValueError, rinterface.Sexp, x)
+        
+        sexp = rinterface.globalEnv.get("letters")
+        sexp_new = rinterface.Sexp(sexp)
+
+        idem = rinterface.globalEnv.get("identical")
+        self.assertTrue(idem(sexp, sexp_new)[0])
+
+        sexp_new2 = rinterface.Sexp(sexp)
+        self.assertTrue(idem(sexp, sexp_new2)[0])
+        del(sexp)
+        self.assertTrue(idem(sexp_new, sexp_new2)[0])
+
+
     def testTypeof(self):
         sexp = rinterface.globalEnv.get("letters")
         self.assertEquals(sexp.typeof(), rinterface.STRSXP)

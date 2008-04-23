@@ -26,7 +26,7 @@ def defaultRobjects2PyMapper(o):
         res = Robject(o)
     return res
 
-#FIXME: clean and nice mechanism to allow user-specifier mapping function
+#FIXME: clean and nice mechanism to allow user-specified mapping function
 #FIXME: better names for the functions
 mapperR2Py = defaultRobjects2PyMapper
 
@@ -63,12 +63,17 @@ def defaultPy2RobjectsMapper(o):
 mapperPy2R = defaultPy2RobjectsMapper
 
 
-#FIXME: Looks hackish. inheritance should be used ?
-class Robject(object):
+def repr_robject(o):
+    s = r.deparse(o)
+    s = str.join(os.linesep, o)
+    return s
+
+
+class Robject(rinterface.Sexp):
     name = None
 
-    def __init__(self, o):
-        self._sexp = o
+    def __init__(self, sexp, copy=True):
+        super(Robject, self).__init__(sexp, copy=copy)
 
     def __str__(self):
         tmp = r.fifo("")
@@ -77,25 +82,22 @@ class Robject(object):
         r.sink()
         s = r.readLines(tmp)
         r.close(tmp)
-        s = str.join(os.linesep, s._sexp)
+        s = str.join(os.linesep, self)
         return s
 
     def __repr__(self):
-        s = r.deparse(self)
-        s = str.join(os.linesep, s._sexp)
-        return s
+        return repr_robject(self)
 
-
-class Rvector(Robject):
+class Rvector(rinterface.SexpVector):
     """ R vector-like object. Items in those instances can
        be accessed with the method "__getitem__" ("[" operator),
        or with the method "subset"."""
 
     def __init__(self, o):
-        if (isinstance(o, rinterface.SexpVector)):
-            self._sexp = o
-        else:
-            self._sexp = mapperPy2R(o)._sexp
+        if not isinstance(o, rinterface.SexpVector):
+            o = mapperPy2R(o)
+        super(Rvector, self).__init__(o)
+            
 
     def subset(self, *args, **kwargs):
         """ Subset the "R-way.", using R's "[" function. 
@@ -114,13 +116,12 @@ class Rvector(Robject):
         for k, v in kwargs.itervalues():
             args[k] = mapperPy2R(v)
         
-        res = r["["](*([self._sexp, ] + [x._sexp for x in args]), **kwargs)
+        res = r["["](*([self, ] + [x for x in args]), **kwargs)
         return res
 
-    def __getitem__(self, i):
-        res = mapperPy2R(self._sexp[i])
-        return res
-
+    def __repr__(self):
+        return repr_robject(self)
+        
     def __add__(self, x):
         res = r.get("+")(self, x)
         return res
@@ -150,19 +151,14 @@ class Rvector(Robject):
         return res
 
     def __len__(self):
-        return len(self._sexp)
+        return len(sexp)
 
-class Rfunction(Robject):
+class Rfunction(rinterface.SexpClosure):
     """ An R function (aka "closure").
     
     """
-
-
     def __init__(self, o):
-        if (isinstance(o, rinterface.SexpClosure)):
-            self._sexp = o
-        else:
-            raise(ValueError("Cannot instantiate."))
+        super(Rfunction, self).__init__(o)
 
     def __call__(self, *args, **kwargs):
         new_args = [mapperPy2R(a)._sexp for a in args]
@@ -174,25 +170,20 @@ class Rfunction(Robject):
         return res
 
 
-class Renvironment(Robject):
+class Renvironment(rinterface.SexpEnvironment):
     """ An R environement. """
+    
     def __init__(self, o):
-        if (isinstance(o, rinterface.SexpEnvironment)):
-            self._sexp = o
-        else:
-            raise(ValueError("Cannot instantiate"))
+        super(Renvironment, self).__init__(o)
 
     def __getitem__(self, item):
-        res = self._sexp[item]
+        res = super(Renvironment, self).__getitem__(item)
         res = mapperR2Py(res)
         return res
 
     def __setitem__(self, item, value):
-        robj = mapperPy2R(value)
-        self._sexp[item] = robj._sexp
+        self[item] = robj
 
-    def __iter__(self):
-        return iter(self._sexp)
 
 class RS4(Robject):
     def __init__(self, o):

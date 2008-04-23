@@ -3,14 +3,14 @@ import rpy2.robjects as robjects
 rinterface = robjects.rinterface
 import array
 
-class RvectorTestCase(unittest.TestCase):
+class RObjectTestCase(unittest.TestCase):
 
     def testGetItem(self):
         letters_R = robjects.r["letters"]
         self.assertTrue(isinstance(letters_R, robjects.Rvector))
         letters = (('a', 0), ('b', 1), ('c', 2), ('x', 23), ('y', 24), ('z', 25))
         for l, i in letters:
-            self.assertTrue(letters_R[i]._sexp[0] == l)
+            self.assertTrue(letters_R[i] == l)
         
         as_list_R = robjects.r["as.list"]
         seq_R = robjects.r["seq"]
@@ -20,18 +20,18 @@ class RvectorTestCase(unittest.TestCase):
         myList = as_list_R(mySeq)
         
         for i, li in enumerate(myList):
-            self.assertEquals(i, myList[i][0]._sexp[0])
+            self.assertEquals(i, myList[i][0])
 
     def testOperators(self):
         seq_R = robjects.r["seq"]
         mySeq = seq_R(0, 10)
         mySeqAdd = mySeq + 2
         for i, li in enumerate(mySeq):
-            self.assertEquals(i + 2, mySeqAdd[i]._sexp[0])
+            self.assertEquals(i + 2, mySeqAdd[i])
 
         mySeqAdd = mySeq + mySeq
         for i, li in enumerate(mySeq):
-            self.assertEquals(mySeq[i]._sexp[0] * 2, mySeqAdd[i]._sexp[0])
+            self.assertEquals(mySeq[i] * 2, mySeqAdd[i])
 
         
     def testSubset(self):
@@ -43,7 +43,7 @@ class RvectorTestCase(unittest.TestCase):
         mySubset = mySeq.subset(myIndex)
         #import pdb; pdb.set_trace()
         for i, si in enumerate(myIndex):
-            self.assertEquals(mySeq[si._sexp[0]-1]._sexp[0], mySubset[i]._sexp[0])
+            self.assertEquals(mySeq[si-1], mySubset[i])
 
         # recycling rule
         v = robjects.Rvector(array.array('i', range(1, 23)))
@@ -83,12 +83,12 @@ class RvectorTestCase(unittest.TestCase):
         py = True
         rob = robjects.defaultPy2RobjectsMapper(py)
         self.assertTrue(isinstance(rob, robjects.Rvector))
-        self.assertEquals(rinterface.LGLSXP, rob._sexp.typeof())
+        self.assertEquals(rinterface.LGLSXP, rob.typeof())
 
         #FIXME: more tests
 
 def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(RvectorTestCase)
+    suite = unittest.TestLoader().loadTestsFromTestCase(RObjectTestCase)
     return suite
 
 if __name__ == '__main__':

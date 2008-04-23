@@ -17,6 +17,9 @@ class SexpVectorTestCase(unittest.TestCase):
     #def tearDown(self):
     #    rinterface.endEmbeddedR(1);
 
+    def testMissinfType(self):
+        self.assertRaises(ValueError, rinterface.SexpVector, [2, ])
+
     def testNewBool(self):
         sexp = rinterface.SexpVector([True, ], rinterface.LGLSXP)
         isLogical = rinterface.globalEnv.get("is.logical")

@@ -14,6 +14,20 @@ class SexpEnvironmentTestCase(unittest.TestCase):
     #def tearDown(self):
     #    rinterface.endEmbeddedR(0);
 
+    def testNew(self):
+        sexp = rinterface.globalEnv
+        sexp_new = rinterface.SexpEnvironment(sexp)
+
+        idem = rinterface.globalEnv.get("identical")
+        self.assertTrue(idem(sexp, sexp_new)[0])
+
+        sexp_new2 = rinterface.Sexp(sexp)
+        self.assertTrue(idem(sexp, sexp_new2)[0])
+        del(sexp)
+        self.assertTrue(idem(sexp_new, sexp_new2)[0])
+
+        self.assertRaises(ValueError, rinterface.SexpEnvironment, '2')
+
     def testGlobalEnv(self):
         ok = isinstance(rinterface.globalEnv, rinterface.SexpEnvironment) 
         self.assertTrue(ok)
