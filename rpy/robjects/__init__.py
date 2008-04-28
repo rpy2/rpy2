@@ -65,15 +65,16 @@ mapperPy2R = defaultPy2RobjectsMapper
 
 def repr_robject(o):
     s = r.deparse(o)
-    s = str.join(os.linesep, o)
+    s = str.join(os.linesep, s)
     return s
 
 
-class Robject(rinterface.Sexp):
+class Robject(object):
     name = None
+    _sexp = None
 
     def __init__(self, sexp, copy=True):
-        super(Robject, self).__init__(sexp, copy=copy)
+        self._sexp = rinterface.Sexp(sexp, copy=copy)
 
     def __str__(self):
         tmp = r.fifo("")
@@ -88,7 +89,24 @@ class Robject(rinterface.Sexp):
     def __repr__(self):
         return repr_robject(self)
 
-class Rvector(rinterface.SexpVector):
+    def __setattr__(self, name, value):
+        if name == '_sexp':
+            if not isinstance(value, rinterface.Sexp):
+                raise ValueError("_attr must contain an object " +\
+                                     "that inherits from rinterface.Sexp" +\
+                                     "(not from %s)" %type(value))
+        super(Robject, self).__setattr__(name, value)
+
+    def getSexp(self):
+        return self._sexp
+
+    def typeof(self):
+        return self._sexp.typeof()
+
+    def do_slot(self, name):
+        return self._sexp.do_slot(name)
+
+class Rvector(Robject):
     """ R vector-like object. Items in those instances can
        be accessed with the method "__getitem__" ("[" operator),
        or with the method "subset"."""
@@ -96,7 +114,8 @@ class Rvector(rinterface.SexpVector):
     def __init__(self, o):
         if not isinstance(o, rinterface.SexpVector):
             o = mapperPy2R(o)
-        super(Rvector, self).__init__(o)
+            o = o.getSexp()
+        self._sexp = o
             
 
     def subset(self, *args, **kwargs):
@@ -119,71 +138,85 @@ class Rvector(rinterface.SexpVector):
         res = r["["](*([self, ] + [x for x in args]), **kwargs)
         return res
 
+    def __getitem__(self, i):
+        res = self._sexp[i]
+        if isinstance(res, rinterface.Sexp):
+            res = mapperR2Py(res)
+        return res
+
     def __repr__(self):
         return repr_robject(self)
         
     def __add__(self, x):
-        res = r.get("+")(self, x)
+        res = r.get("+")(self.getSexp(), x)
         return res
 
     def __sub__(self, x):
-        res = r.get("-")(self, x)
+        res = r.get("-")(self.getSexp(), x)
         return res
 
     def __mul__(self, x):
-        res = r.get("*")(self, x)
+        res = r.get("*")(self.getSexp(), x)
         return res
 
     def __div__(self, x):
-        res = r.get("/")(self, x)
+        res = r.get("/")(self.getSexp(), x)
         return res
 
     def __divmod__(self, x):
-        res = r.get("%%")(self, x)
+        res = r.get("%%")(self.getSexp(), x)
         return res
 
     def __or__(self, x):
-        res = r.get("|")(self, x)
+        res = r.get("|")(self.getSexp(), x)
         return res
 
     def __and__(self, x):
-        res = r.get("&")(self, x)
+        res = r.get("&")(self.getSexp(), x)
         return res
 
     def __len__(self):
-        return len(sexp)
+        return len(self._sexp)
 
-class Rfunction(rinterface.SexpClosure):
+class Rfunction(Robject):
     """ An R function (aka "closure").
     
     """
-    def __init__(self, o):
-        super(Rfunction, self).__init__(o)
+    def __init__(self, sexp):
+        # arbirtary python functions for v-2.1
+        self._sexp = rinterface.SexpClosure(sexp)
 
     def __call__(self, *args, **kwargs):
-        new_args = [mapperPy2R(a)._sexp for a in args]
+        new_args = [mapperPy2R(a).getSexp() for a in args]
 	new_kwargs = {}
         for k, v in kwargs.iteritems():
-            new_kwargs[k] = mapperPy2R(v)._sexp
-        res = self._sexp(*new_args, **new_kwargs)
+            new_kwargs[k] = mapperPy2R(v).getSexp()
+        res = self.getSexp()(*new_args, **new_kwargs)
         res = mapperR2Py(res)
         return res
 
+    #def getSexp(self):
+    #    return super(rinterface.SexpClosure, self).__init__(self)
 
-class Renvironment(rinterface.SexpEnvironment):
+class Renvironment(Robject):
     """ An R environement. """
     
-    def __init__(self, o):
-        super(Renvironment, self).__init__(o)
+    def __init__(self, o=None):
+        if o is None:
+            o = rinterface.baseNameSpaceEnv["new.env"](hash=rinterface.SexpVector([True, ], rinterface.LGLSXP))
+        self._sexp = rinterface.SexpEnvironment(o)
 
     def __getitem__(self, item):
-        res = super(Renvironment, self).__getitem__(item)
+        res = self._sexp[item]
         res = mapperR2Py(res)
         return res
 
     def __setitem__(self, item, value):
-        self[item] = robj
+        robj = mapperPy2R(value)
+        self._sexp[item] = robj.getSexp()
 
+    def __iter__(self):
+        return iter(self._sexp)
 
 class RS4(Robject):
     def __init__(self, o):

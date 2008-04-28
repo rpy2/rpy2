@@ -24,9 +24,9 @@ typedef struct {
 } PySexpObject;
 
 
-#define RPY_GETCOUNT(obj) (((obj)->sObj)->count)
-#define RPY_GETSEXP(obj) (((obj)->sObj)->sexp)
-//#define RPY_GETSEXP(obj) ((obj)->sexp)
+#define RPY_COUNT(obj) (((obj)->sObj)->count)
+#define RPY_SEXP(obj) (((obj)->sObj)->sexp)
+//#define RPY_SEXP(obj) ((obj)->sexp)
 
 #define RPY_INCREF(obj) ((obj->sObj)->count++)
 #define RPY_DECREF(obj) ((obj->sObj)->count--)

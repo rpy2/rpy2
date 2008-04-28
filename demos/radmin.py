@@ -1,3 +1,8 @@
+"""
+A front-end to R's packags, and help/documentation systems
+"""
+
+import os
 import pygtk
 pygtk.require('2.0')
 import gtk
@@ -63,7 +68,7 @@ class LibraryPanel(gtk.VBox):
         installedLibraries = robjects.r["installed.packages"]()
         nrows = robjects.r.nrow(installedLibraries)[0]
         ncols = robjects.r.ncol(installedLibraries)[0]
-        for i in range(1, nrows._sexp[0]+1):
+        for i in range(1, nrows + 1):
             row = []
             pack = installedLibraries.subset(i, 1)._sexp[0]
             row.append(pack)
@@ -114,6 +119,8 @@ class VignetteExplorer(gtk.VBox):
 
     PACKAGE_I = 0
     ITEM_I = 1
+    _vignettes = None
+
     def __init__(self):
         super(VignetteExplorer, self).__init__()
         self._table = gtk.ListStore(str, str, str)
@@ -156,10 +163,12 @@ class VignetteExplorer(gtk.VBox):
 
     def updateKnownVignettes(self):
         self._table.clear()
+
         vignettes = robjects.r["vignette"]().subset("results")[0]
-        nrows = robjects.r.nrow(vignettes)[0]
-        ncols = robjects.r.ncol(vignettes)[0]
-        for i in range(1, nrows._sexp[0]+1):
+
+        nrows = robjects.baseNameSpaceEnv["nrow"](vignettes)[0]
+        ncols = robjects.baseNameSpaceEnv["ncol"](vignettes)[0]
+        for i in range(1, nrows + 1):
             row = []
             pack = vignettes.subset(i, 1)._sexp[0]
             row.append(pack)
@@ -168,6 +177,8 @@ class VignetteExplorer(gtk.VBox):
             pack = vignettes.subset(i, 4)._sexp[0]
             row.append(pack)
             self._table.append(row)
+        
+        self._vignettes = vignettes
 
     def viewAction(self, widget, data=None):
         # Get the selection in the gtk.TreeView
@@ -179,8 +190,13 @@ class VignetteExplorer(gtk.VBox):
                                              self.PACKAGE_I)
             vigName = self._table.get_value(selection_iter, 
                                             self.ITEM_I)
-            robjects.r.vignette(vigName, package = packName)
-    
+            
+            pdffile = robjects.r.vignette(vigName, package = packName)
+            pdffile = pdffile.subset("file")[0][0]
+            pdfviewer = robjects.baseNameSpaceEnv["options"]("pdfviewer")[0][0]
+
+            pid = os.spawnl(os.P_NOWAIT, pdfviewer, pdffile)
+            
 
 class GraphicalDeviceExplorer(gtk.VBox):
 
@@ -223,17 +239,17 @@ class GraphicalDeviceExplorer(gtk.VBox):
         self._table.clear()
         devices = robjects.r["dev.list"]()
         names = robjects.r["names"](devices)
-        current_device = robjects.r["dev.cur"]()._sexp[0]
+        current_device = robjects.r["dev.cur"]()[0]
         try:
             nrows = len(devices)
         except:
             return
         for dev, name in itertools.izip(devices, names):
-            if current_device == dev._sexp[0]:
+            if current_device == dev[0]:
                 cur = "X"
             else:
                 cur = ""
-            row = [cur, dev._sexp[0], name._sexp[0], ""]
+            row = [cur, dev[0], name[0], ""]
             self._table.append(row)
 
     def searchOpenedDevices(self, widget, data = None):
@@ -293,7 +309,7 @@ class HelpExplorer(gtk.VBox):
         #import pdb; pdb.set_trace()
         nrows = robjects.r.nrow(matches)[0]
         ncols = robjects.r.ncol(matches)[0]
-        for i in range(1, nrows._sexp[0]+1):
+        for i in range(1, nrows + 1):
             row = []
             pack = matches.subset(i, 1)._sexp[0]
             row.append(pack)

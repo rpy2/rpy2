@@ -1,4 +1,5 @@
 import unittest
+import sys
 import rpy2.rinterface as rinterface
 
 try:
@@ -87,8 +88,8 @@ class SexpVectorTestCase(unittest.TestCase):
         
 
     def testNew_InvalidType(self):
-        self.assertTrue(False) #FIXME: invalid type causes a segfault
         self.assertRaises(ValueError, rinterface.SexpVector, [1, ], -1)
+        self.assertRaises(ValueError, rinterface.SexpVector, [1, ], 250)
 
     def testGetItem(self):
         letters_R = rinterface.globalEnv.get("letters")
@@ -97,21 +98,24 @@ class SexpVectorTestCase(unittest.TestCase):
         for l, i in letters:
             self.assertTrue(letters_R[i] == l)
         
-        as_list_R = rinterface.globalEnv.get("as.list")
+        Rlist = rinterface.globalEnv.get("list")
         seq_R = rinterface.globalEnv.get("seq")
         
         mySeq = seq_R(rinterface.SexpVector([0, ], rinterface.INTSXP),
                       rinterface.SexpVector([10, ], rinterface.INTSXP))
         
-        myList = as_list_R(mySeq)
-        
-        for i, li in enumerate(myList):
-            self.assertEquals(i, myList[i][0])
+        myList = Rlist(s=mySeq, l=letters_R)
+        idem = rinterface.globalEnv.get("identical")
+
+        self.assertTrue(idem(mySeq, myList[0]))
+        self.assertTrue(idem(letters_R, myList[1]))
 
     def testGetItemOutOfBound(self):
         myVec = rinterface.SexpVector([0, 1, 2, 3, 4, 5], rinterface.INTSXP)
         self.assertRaises(IndexError, myVec.__getitem__, 10)
-        self.assertRaises(IndexError, myVec.__getitem__, rinterface.R_LEN_T_MAX+1)
+        if (sys.maxint > rinterface.R_LEN_T_MAX):
+            self.assertRaises(IndexError, myVec.__getitem__, 
+                              rinterface.R_LEN_T_MAX+1)
 
     def testAssignItemDifferentType(self):
         c_R = rinterface.globalEnv.get("c")

@@ -99,9 +99,9 @@ array_struct_free(void *ptr, void *arr)
 
 
 PyObject* 
-array_struct_get(SexpObject *self)
+array_struct_get(PySexpObject *self)
 {
-  SEXP sexp = self->sexp;
+  SEXP sexp = RPY_SEXP(self);
   if (!sexp) {
     PyErr_SetString(PyExc_AttributeError, "Null sexp");
     return NULL;

@@ -22,36 +22,7 @@ class RObjectTestCase(unittest.TestCase):
         for i, li in enumerate(myList):
             self.assertEquals(i, myList[i][0])
 
-    def testOperators(self):
-        seq_R = robjects.r["seq"]
-        mySeq = seq_R(0, 10)
-        mySeqAdd = mySeq + 2
-        for i, li in enumerate(mySeq):
-            self.assertEquals(i + 2, mySeqAdd[i])
 
-        mySeqAdd = mySeq + mySeq
-        for i, li in enumerate(mySeq):
-            self.assertEquals(mySeq[i] * 2, mySeqAdd[i])
-
-        
-    def testSubset(self):
-        seq_R = robjects.r["seq"]
-        mySeq = seq_R(0, 10)
-        # R indexing starts at one
-        myIndex = robjects.Rvector(array.array('i', range(1, 11, 2)))
-
-        mySubset = mySeq.subset(myIndex)
-        #import pdb; pdb.set_trace()
-        for i, si in enumerate(myIndex):
-            self.assertEquals(mySeq[si-1], mySubset[i])
-
-        # recycling rule
-        v = robjects.Rvector(array.array('i', range(1, 23)))
-        m = robjects.r.matrix(v, ncol = 2)
-        col = m.subset(True, 1)
-        #import pdb; pdb.set_trace()
-        self.assertEquals(11, len(col))
-        
         
 
     def testMapperR2Python(self):

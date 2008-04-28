@@ -79,6 +79,8 @@ typedef intargfunc ssizeargfunc;
 typedef intobjargproc ssizeobjargproc;
 #endif
 
+static const int maxValidSexpType = 99;
+static char **validSexpType;
 
 //FIXME: see the details of error handling
 static PyObject *ErrorObject;
@@ -147,9 +149,9 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args)
 
   embeddedR_isInitialized = PyBool_FromLong((long)1);
 
-  RPY_GETSEXP(globalEnv) = R_GlobalEnv;
+  RPY_SEXP(globalEnv) = R_GlobalEnv;
 
-  RPY_GETSEXP(baseNameSpaceEnv) = R_BaseNamespace;
+  RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
 
   PyObject *res = PyInt_FromLong(status);
 
@@ -183,8 +185,8 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   /* */
 
   Rf_endEmbeddedR((int)fatal);
-  RPY_GETSEXP(globalEnv) = R_EmptyEnv;
-  RPY_GETSEXP(baseNameSpaceEnv) = R_EmptyEnv;
+  RPY_SEXP(globalEnv) = R_EmptyEnv;
+  RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
 
   Py_RETURN_NONE;
 }
@@ -249,16 +251,16 @@ Sexp_dealloc(PySexpObject *self)
   RPY_DECREF(self);
   
 #ifdef RPY_VERBOSE
-  printf("%p: sexp count is %i\n", self, RPY_GETCOUNT(self));
+  printf("%p: sexp count is %i\n", self, RPY_COUNT(self));
 #endif
 
-  if ((RPY_GETCOUNT(self) == 0) && RPY_GETSEXP(self)) {
+  if ((RPY_COUNT(self) == 0) && RPY_SEXP(self)) {
 #ifdef RPY_VERBOSE
     printf("freeing SEXP resources...");
 #endif 
 
-    if (RPY_GETSEXP(self) != R_NilValue) {
-      R_ReleaseObject(RPY_GETSEXP(self));
+    if (RPY_SEXP(self) != R_NilValue) {
+      R_ReleaseObject(RPY_SEXP(self));
     }
     free(self->sObj);
     ////self->ob_type->tp_free((PyObject*)self);
@@ -274,7 +276,7 @@ static PyObject*
 Sexp_repr(PyObject *self)
 {
   //FIXME: make sure this is making any sense
-  SEXP sexp = RPY_GETSEXP((PySexpObject *)self);
+  SEXP sexp = RPY_SEXP((PySexpObject *)self);
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;
@@ -289,7 +291,7 @@ Sexp_repr(PyObject *self)
 static PyObject*
 Sexp_typeof(PyObject *self)
 {
-  SEXP sexp = RPY_GETSEXP(((PySexpObject*)self));
+  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;;
@@ -304,7 +306,7 @@ Returns the R internal SEXPREC type.");
 static PyObject*
 Sexp_do_slot(PyObject *self, PyObject *name)
 {
-  SEXP sexp = RPY_GETSEXP(((PySexpObject*)self));
+  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;;
@@ -329,6 +331,7 @@ PyDoc_STRVAR(Sexp_do_slot_doc,
 Returns the attribute/slot for an R object.\n\
 The name of the slot as a string is the only parameter for\
  the method.\n");
+
 
 
 static PyMethodDef Sexp_methods[] = {
@@ -430,8 +433,8 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   if (! self->sObj)
     PyErr_NoMemory();
 
-  RPY_GETCOUNT(self) = 1;
-  RPY_GETSEXP(self) = R_NilValue;
+  RPY_COUNT(self) = 1;
+  RPY_SEXP(self) = R_NilValue;
 
   #ifdef RPY_VERBOSE
   printf("done.\n");
@@ -472,11 +475,11 @@ Sexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 
   if (PyObject_IsTrue(copy)) {
     SEXP oldSexp;
-    oldSexp = RPY_GETSEXP((PySexpObject *)sourceObject);
-    RPY_GETSEXP(self) = oldSexp;
+    oldSexp = RPY_SEXP((PySexpObject *)sourceObject);
+    RPY_SEXP(self) = oldSexp;
     RPY_INCREF(self);
 #ifdef RPY_VERBOSE
-    printf("%p: sexp count is increased to %i.\n", self, RPY_GETCOUNT(self));
+    printf("%p: sexp count is increased to %i.\n", self, RPY_COUNT(self));
 #endif 
 
   } else {
@@ -571,7 +574,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   /* A SEXP with the function to call and the arguments and keywords. */
   PROTECT(c_R = call_R = allocList(largs+lkwds+1));
   SET_TYPEOF(c_R, LANGSXP);
-  fun_R = RPY_GETSEXP((PySexpObject *)self);
+  fun_R = RPY_SEXP((PySexpObject *)self);
   if (! fun_R) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     goto fail;
@@ -591,7 +594,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       Py_DECREF(tmp_obj);
       goto fail;
     }
-    tmp_R = RPY_GETSEXP((PySexpObject *)tmp_obj);
+    tmp_R = RPY_SEXP((PySexpObject *)tmp_obj);
     if (! tmp_R) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       Py_DECREF(tmp_obj);
@@ -633,7 +636,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 	goto fail;
       }
       Py_DECREF(tmp_obj);
-      tmp_R = RPY_GETSEXP((PySexpObject *)argValue);
+      tmp_R = RPY_SEXP((PySexpObject *)argValue);
       if (! tmp_R) {
 	PyErr_Format(PyExc_ValueError, "NULL SEXP.");
 	Py_DECREF(tmp_obj);
@@ -680,7 +683,7 @@ static PySexpObject*
 Sexp_closureEnv(PyObject *self)
 {
   SEXP closureEnv, sexp;
-  sexp = RPY_GETSEXP((PySexpObject*)self);
+  sexp = RPY_SEXP((PySexpObject*)self);
   if (! sexp) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       return NULL;
@@ -753,7 +756,7 @@ static PyTypeObject ClosureSexp_Type = {
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
         0,                      /*tp_dictoffset*/
-        ClosureSexp_init,                      /*tp_init*/
+        (initproc)ClosureSexp_init,                      /*tp_init*/
         0,                      /*tp_alloc*/
         0,//Sexp_new,               /*tp_new*/
         0,                      /*tp_free*/
@@ -765,7 +768,6 @@ static int
 ClosureSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 {
   PyObject *object;
-  int sexptype = -1;
   PyObject *copy;
   static char *kwlist[] = {"sexpclos", "copy", NULL};
   //FIXME: handle the copy argument
@@ -797,7 +799,7 @@ static Py_ssize_t VectorSexp_len(PyObject *object)
 {
   Py_ssize_t len;
   //FIXME: sanity checks.
-  SEXP sexp = RPY_GETSEXP((PySexpObject *)object);
+  SEXP sexp = RPY_SEXP((PySexpObject *)object);
   if (! sexp) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       return -1;
@@ -812,7 +814,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
 {
   PyObject* res;
   R_len_t i_R;
-  SEXP *sexp = &(RPY_GETSEXP((PySexpObject *)object));
+  SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
 
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
@@ -880,7 +882,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
     return -1;
   }
 
-  SEXP *sexp = &(RPY_GETSEXP((PySexpObject *)object));
+  SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
   if (i >= GET_LENGTH(*sexp)) {
     PyErr_Format(PyExc_IndexError, "Index out of range.");
     return -1;
@@ -897,7 +899,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
 		 "type 'Sexp_Type'.");
     return -1;
   }
-  SEXP *sexp_val = &(RPY_GETSEXP((PySexpObject *)val));
+  SEXP *sexp_val = &(RPY_SEXP((PySexpObject *)val));
   if (! sexp_val) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return -1;
@@ -1054,6 +1056,12 @@ VectorSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 				    &PyBool_Type, &copy)) {
     return -1;
   }
+
+  if ((sexptype < 0) || (sexptype > maxValidSexpType) || 
+      (! validSexpType[sexptype])) {
+    PyErr_Format(PyExc_ValueError, "Invalid SEXP type.");
+    return -1;
+  }
   if (PyObject_IsInstance(object, 
 			  (PyObject*)&VectorSexp_Type)) {
 
@@ -1070,7 +1078,7 @@ VectorSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
       PyErr_Format(PyExc_ValueError, "Missing type.");
       return -1;
     }
-    RPY_GETSEXP(self) = newSEXP(object, sexptype);
+    RPY_SEXP(self) = newSEXP(object, sexptype);
   }
 #ifdef RPY_VERBOSE
   printf("done.\n");
@@ -1092,7 +1100,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args)
     return NULL; 
   }
 
-  const SEXP rho_R = RPY_GETSEXP((PySexpObject *)self);
+  const SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;
@@ -1134,7 +1142,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
 
   name = PyString_AsString(key);
   
-  SEXP rho_R = RPY_GETSEXP((PySexpObject *)self);
+  SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;
@@ -1172,14 +1180,14 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 
   name = PyString_AsString(key);
   
-  SEXP rho_R = RPY_GETSEXP((PySexpObject *)self);
+  SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
     return -1;
   }
 
   SEXP sexp_copy;
-  SEXP sexp = RPY_GETSEXP((PySexpObject *)value);
+  SEXP sexp = RPY_SEXP((PySexpObject *)value);
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "The value has NULL SEXP.");
     return -1;
@@ -1193,7 +1201,7 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 
 static Py_ssize_t EnvironmentSexp_length(PyObject *self) 
 {
-  SEXP rho_R = RPY_GETSEXP((PySexpObject *)self);
+  SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
     return -1;
@@ -1205,7 +1213,7 @@ static Py_ssize_t EnvironmentSexp_length(PyObject *self)
   return len;
 }
 
-static PyMappingMethods EnvironmentSexp_mappignMethods = {
+static PyMappingMethods EnvironmentSexp_mappingMethods = {
   (lenfunc)EnvironmentSexp_length, /* mp_length */
   (binaryfunc)EnvironmentSexp_subscript, /* mp_subscript */
   (objobjargproc)EnvironmentSexp_ass_subscript  /* mp_ass_subscript */
@@ -1214,7 +1222,7 @@ static PyMappingMethods EnvironmentSexp_mappignMethods = {
 static PyObject* 
 EnvironmentSexp_iter(PyObject *sexpEnvironment)
 {
-  SEXP rho_R = RPY_GETSEXP((PySexpObject *)sexpEnvironment);
+  SEXP rho_R = RPY_SEXP((PySexpObject *)sexpEnvironment);
 
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
@@ -1267,7 +1275,7 @@ static PyTypeObject EnvironmentSexp_Type = {
 	0,		        /*tp_repr*/
 	0,			/*tp_as_number*/
 	0,			/*tp_as_sequence*/
-	&EnvironmentSexp_mappignMethods,			/*tp_as_mapping*/
+	&EnvironmentSexp_mappingMethods,/*tp_as_mapping*/
 	0,			/*tp_hash*/
 	0,              /*tp_call*/
         0,//Sexp_str,               /*tp_str*/
@@ -1290,7 +1298,7 @@ static PyTypeObject EnvironmentSexp_Type = {
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
         0,                      /*tp_dictoffset*/
-        EnvironmentSexp_init,                      /*tp_init*/
+        (initproc)EnvironmentSexp_init,                      /*tp_init*/
         0,                      /*tp_alloc*/
 	//FIXME: add new method
         0, //EnvironmentSexp_new,               /*tp_new*/
@@ -1302,7 +1310,6 @@ static int
 EnvironmentSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 {
   PyObject *object;
-  int sexptype = -1;
   PyObject *copy;
   static char *kwlist[] = {"sexpenv", "copy", NULL};
   //FIXME: handle the copy argument
@@ -1442,7 +1449,7 @@ newPySexpObject(const SEXP sexp)
     return NULL;
   }
   //PyObject_Init(&object, &ClosureSexp_Type);
-  RPY_GETSEXP(object) = sexp_ok;
+  RPY_SEXP(object) = sexp_ok;
   //FIXME: Increment reference ?
   //Py_INCREF(object);
   return object;
@@ -1531,7 +1538,7 @@ newSEXP(PyObject *object, int rType)
 		       "type 'Sexp_Type'.");
 	  return NULL;
 	}
-	SET_ELEMENT(sexp, i, RPY_GETSEXP((PySexpObject *)item));
+	SET_ELEMENT(sexp, i, RPY_SEXP((PySexpObject *)item));
 	Py_DECREF(item);
       }
     }
@@ -1564,7 +1571,7 @@ newSEXP(PyObject *object, int rType)
 
 /* --- Find a variable in an environment --- */
 
-
+//FIXME: is this any longer useful ?
 static PySexpObject*
 EmbeddedR_findVar(PyObject *self, PyObject *args)
 {
@@ -1589,7 +1596,29 @@ EmbeddedR_findVar(PyObject *self, PyObject *args)
 PyDoc_STRVAR(EmbeddedR_findVar_doc,
 	     "Find a variable in R's .GlobalEnv.");
 
+static PyObject*
+EmbeddedR_sexpType(PyObject *self, PyObject *args)
+{
 
+  int sexp_i;
+
+  if (! PyArg_ParseTuple(args, "i", &sexp_i)) {
+    //PyErr_Format(PyExc_LookupError, "Value should be an integer");
+    return NULL;
+  }
+
+  const char *sexp_type = validSexpType[sexp_i];
+
+  if ((sexp_i < 0) || (sexp_i > maxValidSexpType) || (! sexp_type)) {
+
+    PyErr_Format(PyExc_LookupError, "'%i' is not a valid SEXP value.", sexp_i);
+    return NULL;
+  }
+  //FIXME: store python strings when initializing validSexpType instead
+  PyObject *res = PyString_FromString(sexp_type);
+  return res;
+
+}
 
 
 /* --- List of functions defined in the module --- */
@@ -1603,6 +1632,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_setWriteConsole_doc},
   {"findVarEmbeddedR",	(PyCFunction)EmbeddedR_findVar,	 METH_VARARGS,
    EmbeddedR_findVar_doc},
+  {"sexpTypeEmbeddedR",	(PyCFunction)EmbeddedR_sexpType, METH_VARARGS,
+   "Return the SEXP name tag corresponding to an integer."},
   {NULL,		NULL}		/* sentinel */
 };
 
@@ -1692,7 +1723,7 @@ do_Python(SEXP args)
   Py_DECREF(pyargstup);
   if (PyObject_IsInstance((PyObject*)pyres, 
 			  (PyObject*)&Sexp_Type)) {
-    res = RPY_GETSEXP((PySexpObject*)pyres);
+    res = RPY_SEXP((PySexpObject*)pyres);
   }
   else {
     res = mkPyObject(pyres);
@@ -1711,7 +1742,10 @@ static R_ExternalMethodDef externalMethods[] = {
 
 /* --- Initialize the module ---*/
 
-#define ADD_INT_CONSTANT(module, name) PyModule_AddIntConstant(module, #name, name)
+#define ADD_INT_CONSTANT(module, name) \
+  PyModule_AddIntConstant(module, #name, name)
+#define ADD_VALID_SEXP(name) \
+  validSexpType[name] = #name
 
 
 PyMODINIT_FUNC
@@ -1761,7 +1795,7 @@ initrinterface(void)
 
   globalEnv = (PySexpObject *)Sexp_new(&EnvironmentSexp_Type, 
 				       Py_None, Py_None);
-  RPY_GETSEXP(globalEnv) = R_EmptyEnv;
+  RPY_SEXP(globalEnv) = R_EmptyEnv;
   //SexpObject *sObj = globalEnv->sObj;
   //SEXP sexp = sObj->sexp;
   //sexp = R_EmptyEnv;
@@ -1773,36 +1807,65 @@ initrinterface(void)
 
   baseNameSpaceEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
 					     Py_None, Py_None);
-  RPY_GETSEXP(baseNameSpaceEnv) = R_EmptyEnv;
+  RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
   if (PyDict_SetItemString(d, "baseNameSpaceEnv", (PyObject *)baseNameSpaceEnv) < 0)
     return;
 /*   //FIXME: DECREF ? */
 /*   Py_DECREF(baseNameSpaceEnv); */
 
+
   /* Add SXP types */
+  validSexpType = calloc(maxValidSexpType, sizeof(char *));
+  if (! validSexpType) {
+    PyErr_NoMemory();
+    return;
+  }
   ADD_INT_CONSTANT(m, NILSXP);
+  ADD_VALID_SEXP(NILSXP);
   ADD_INT_CONSTANT(m, SYMSXP);
+  ADD_VALID_SEXP(SYMSXP);
   ADD_INT_CONSTANT(m, LISTSXP);
+  ADD_VALID_SEXP(LISTSXP);
   ADD_INT_CONSTANT(m, CLOSXP);
+  ADD_VALID_SEXP(CLOSXP);
   ADD_INT_CONSTANT(m, ENVSXP);
+  ADD_VALID_SEXP(ENVSXP);
   ADD_INT_CONSTANT(m, PROMSXP);
+  ADD_VALID_SEXP(PROMSXP);
   ADD_INT_CONSTANT(m, LANGSXP);
+  ADD_VALID_SEXP(LANGSXP);
   ADD_INT_CONSTANT(m, SPECIALSXP);
+  ADD_VALID_SEXP(SPECIALSXP);
   ADD_INT_CONSTANT(m, BUILTINSXP);
+  ADD_VALID_SEXP(BUILTINSXP);
   ADD_INT_CONSTANT(m, CHARSXP);
+  ADD_VALID_SEXP(CHARSXP);
   ADD_INT_CONSTANT(m, STRSXP);
+  ADD_VALID_SEXP(STRSXP);
   ADD_INT_CONSTANT(m, LGLSXP);
+  ADD_VALID_SEXP(LGLSXP);
   ADD_INT_CONSTANT(m, INTSXP);
+  ADD_VALID_SEXP(INTSXP);
   ADD_INT_CONSTANT(m, REALSXP);
+  ADD_VALID_SEXP(REALSXP);
   ADD_INT_CONSTANT(m, CPLXSXP);
+  ADD_VALID_SEXP(CPLXSXP);
   ADD_INT_CONSTANT(m, DOTSXP);
+  ADD_VALID_SEXP(DOTSXP);
   ADD_INT_CONSTANT(m, ANYSXP);
+  ADD_VALID_SEXP(ANYSXP);
   ADD_INT_CONSTANT(m, VECSXP);
+  ADD_VALID_SEXP(VECSXP);
   ADD_INT_CONSTANT(m, EXPRSXP);
+  ADD_VALID_SEXP(EXPRSXP);
   ADD_INT_CONSTANT(m, BCODESXP);
+  ADD_VALID_SEXP(BCODESXP);
   ADD_INT_CONSTANT(m, EXTPTRSXP);
+  ADD_VALID_SEXP(EXTPTRSXP);
   ADD_INT_CONSTANT(m, RAWSXP);
+  ADD_VALID_SEXP(RAWSXP);
   ADD_INT_CONSTANT(m, S4SXP);
+  ADD_VALID_SEXP(S4SXP);
 
   /* longuest integer for R indexes */
   ADD_INT_CONSTANT(m, R_LEN_T_MAX);
@@ -1825,7 +1888,7 @@ initrinterface(void)
   PySexpObject *na_string = (PySexpObject *)Sexp_new(&VectorSexp_Type,
 						     Py_None, Py_None);
 
-  RPY_GETSEXP(na_string) = NA_STRING;
+  RPY_SEXP(na_string) = NA_STRING;
   if (PyDict_SetItemString(d, "NA_STRING", (PyObject *)na_string) < 0)
     return;
 /*   //FIXME: DECREF ? */
