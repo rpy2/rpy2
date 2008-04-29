@@ -2,6 +2,7 @@ import unittest
 
 import testRObject
 import testRVector
+import testRArray
 import testRFunction
 import testREnvironment
 import testRobjects
@@ -9,11 +10,13 @@ import testRobjects
 def suite():
     suite_RObject = testRObject.suite()
     suite_RVector = testRVector.suite()
+    suite_RArray = testRArray.suite()
     suite_RFunction = testRFunction.suite()
     suite_REnvironment = testREnvironment.suite()
     suite_Robjects = testRobjects.suite()
     alltests = unittest.TestSuite([suite_RObject,
-                                   suite_RVector,
+                                   suite_RVector,                   
+                                   suite_RArray,
                                    suite_RFunction,
                                    suite_REnvironment,
                                    suite_Robjects ])

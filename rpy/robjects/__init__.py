@@ -106,6 +106,9 @@ class Robject(object):
     def do_slot(self, name):
         return self._sexp.do_slot(name)
 
+    def rclass(self):
+        return baseNameSpaceEnv["class"](self.getSexp())
+
 class Rvector(Robject):
     """ R vector-like object. Items in those instances can
        be accessed with the method "__getitem__" ("[" operator),
@@ -176,7 +179,42 @@ class Rvector(Robject):
         return res
 
     def __len__(self):
-        return len(self._sexp)
+        return len(self.getSexp())
+
+class RArray(Rvector):
+
+    def __init__(self, o):
+        super(RArray, self).__init__(o)
+        if not r["is.array"](self.getSexp())[0]:
+            raise(TypeError("The object must be reflecting an R array"))
+
+    def __getattr__(self, name):
+        if name == 'dim':
+            res = r.dim(self.getSexp())
+            res = mapperR2Py(res)
+            return res
+
+    def __setattr__(self, name, value):
+        if name == 'dim':
+            value = mapperPy2R
+            res = r["dim<-"](value)
+        
+class RMatrix(RArray):
+    
+    def nrow(self):
+        """ Number of rows """
+        return r.nrow(self.getSexp())
+
+    def ncol(self):
+        """ Number of columns """
+        return r.nrow(self.getSexp())
+
+class DataFrame(Rvector):
+    #FIXME: not implemented
+    def __init__(self, o):
+        raise(RuntimeError("Not implemented."))
+
+
 
 class Rfunction(Robject):
     """ An R function (aka "closure").
@@ -217,6 +255,11 @@ class Renvironment(Robject):
 
     def __iter__(self):
         return iter(self._sexp)
+
+    def get(self, item):
+        res = self.getSexp().get(item)
+        res = mapperR2Py(res)
+        return res
 
 class RS4(Robject):
     def __init__(self, o):
