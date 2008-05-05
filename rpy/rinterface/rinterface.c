@@ -79,6 +79,16 @@ typedef intargfunc ssizeargfunc;
 typedef intobjargproc ssizeobjargproc;
 #endif
 
+/* A sequence that holds options to initialize R */
+static PyObject *initOptions;
+
+/* Helper variables to quickly resolve SEXP types.
+ * The first variable gives the highest possible
+ * SEXP type.
+ * The second in an array of strings giving either
+ * the SEXP name (INTSXP, REALSXP, etc...), or a NULL
+ * if there is no such valid SEXP.
+ */
 static const int maxValidSexpType = 99;
 static char **validSexpType;
 
@@ -96,6 +106,9 @@ interrupt_R(int signum)
   error("Interrupted");
 }
 
+/* Helper variable to store whether the embedded R is initialized
+ * or not. 
+ */
 static PyObject *embeddedR_isInitialized;
 
 /* The Python original SIGINT handler */
@@ -123,7 +136,7 @@ static SEXP newSEXP(PyObject *object, const int rType);
 /* Should having multiple threads of R become possible, 
  * useful routines could appear here...
  */
-static PyObject* EmbeddedR_init(PyObject *self, PyObject *args) 
+static PyObject* EmbeddedR_init(PyObject *self) 
 {
 
   if (PyObject_IsTrue(embeddedR_isInitialized)) {
@@ -131,18 +144,14 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args)
     return NULL;
   }
 
-  const Py_ssize_t n_args = PyTuple_Size(args);
-  //char *defaultargv[] = {"rpython", "--verbose"};
+  const Py_ssize_t n_args = PySequence_Size(initOptions);
   char *options[n_args];
+
   PyObject *opt_string;
   Py_ssize_t ii;
   for (ii = 0; ii < n_args; ii++) {
-    opt_string = PyTuple_GetItem(args, ii);
-    if (! PyString_Check(opt_string)) {
-      PyErr_SetString(PyExc_TypeError, "All options must be strings.");
-      return NULL;
-    }
-    options[ii] = PyString_AS_STRING(opt_string);
+    opt_string = PyList_GetItem(initOptions, ii);
+    options[ii] = PyString_AsString(opt_string);
   }
 
   int status = Rf_initEmbeddedR(n_args, options);
@@ -155,12 +164,16 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args)
 
   PyObject *res = PyInt_FromLong(status);
 
+#ifdef RPY_VERBOSE
+  printf("R initialized - status: %i\n", status);
+#endif
+
   return res;
 }
 PyDoc_STRVAR(EmbeddedR_init_doc,
 	     "initEmbeddedR()\n\
-\n\
-Initialize an embedded R.");
+	     \n\
+	     Initialize an embedded R.");
 
 
 static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
@@ -192,8 +205,8 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
 }
 PyDoc_STRVAR(EmbeddedR_end_doc,
 	     "endEmbeddedR()\n\
-\n\
-Terminate an embedded R.");
+	     \n\
+	     Terminate an embedded R.");
 
 
 /* --- set output from the R console ---*/
@@ -225,8 +238,8 @@ static PyObject* EmbeddedR_setWriteConsole(PyObject *self)
 }
 PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
 	     "setWriteConsoleEmbeddedR()\n\
-\n\
-Set the R console output to the Python console.");
+	     \n\
+	     Set the R console output to the Python console.");
 
 
 static PyObject*
@@ -256,7 +269,7 @@ Sexp_dealloc(PySexpObject *self)
 
   if ((RPY_COUNT(self) == 0) && RPY_SEXP(self)) {
 #ifdef RPY_VERBOSE
-    printf("freeing SEXP resources...");
+    printf("freeing SEXP resources...\n");
 #endif 
 
     if (RPY_SEXP(self) != R_NilValue) {
@@ -277,10 +290,10 @@ Sexp_repr(PyObject *self)
 {
   //FIXME: make sure this is making any sense
   SEXP sexp = RPY_SEXP((PySexpObject *)self);
-  if (! sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;
-  }
+  //if (! sexp) {
+  //  PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+  //  return NULL;
+  //}
   return PyString_FromFormat("<%s - Python:\%p / R:\%p>",
 			     self->ob_type->tp_name,
 			     self,
@@ -299,8 +312,8 @@ Sexp_typeof(PyObject *self)
   return PyInt_FromLong(TYPEOF(sexp));
 }
 PyDoc_STRVAR(Sexp_typeof_doc,
-"\n\
-Returns the R internal SEXPREC type.");
+	     "\n\
+	     Returns the R internal SEXPREC type.");
 
 
 static PyObject*
@@ -421,11 +434,15 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
   PySexpObject *self;
   #ifdef RPY_VERBOSE
-  printf("new object @ %p...", self);
+  printf("new object @...\n");
   #endif 
 
   //self = (PySexpObject *)_PyObject_New(&type);
   self = (PySexpObject *)type->tp_alloc(type, 0);
+  #ifdef RPY_VERBOSE
+  printf("  %p...\n", self);
+  #endif 
+
   if (! self)
     PyErr_NoMemory();
 
@@ -449,7 +466,7 @@ static int
 Sexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 {
 #ifdef RPY_VERBOSE
-  printf("%p: Sexp initializing...", self);
+  printf("%p: Sexp initializing...\n", self);
 #endif 
 
   PyObject *sourceObject;
@@ -662,6 +679,12 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 /*     return NULL; */
 /*   } */
   UNPROTECT(2);
+
+  if (! res_R) {
+    PyErr_Format(PyExc_RuntimeError, "Error while running R code");
+    return NULL;
+  }
+
   //FIXME: standardize R outputs
   extern void Rf_PrintWarnings(void);
   Rf_PrintWarnings(); /* show any warning messages */
@@ -670,7 +693,6 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   return res;
   
  fail:
-  printf("failed.\n");
   UNPROTECT(1);
   return NULL;
 
@@ -972,14 +994,13 @@ static PyGetSetDef VectorSexp_getsets[] = {
 
 //FIXME: write more doc
 PyDoc_STRVAR(VectorSexp_Type_doc,
-"R object that is a vector.\
- R vectors start their indexing at one,\
- while Python lists or arrays start indexing\
- at zero.\
-\n\
-In the hope to avoid confusion, the indexing\
- from the Python subset operator (__getitem__)\
- is done at zero.");
+	     "R object that is a vector."
+	     " R vectors start their indexing at one,"
+	     " while Python lists or arrays start indexing"
+	     " at zero.\n"
+	     "In the hope to avoid confusion, the indexing"
+	     " from the Python subset operator (__getitem__)"
+	     " is done at zero.");
 /* ", while an other method to perform\ */
 /*  it at one is provided (_not yet implemented_).\ */
 /*  That other method is also performing indexing."); */
@@ -1040,7 +1061,7 @@ static int
 VectorSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 {
 #ifdef RPY_VERBOSE
-  printf("%p: VectorSexp initializing...", self);
+  printf("%p: VectorSexp initializing...\n", self);
 #endif 
 
   PyObject *object;
@@ -1156,9 +1177,9 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
   return NULL;
 }
 PyDoc_STRVAR(EnvironmentSexp_subscript_doc,
-	     "Find an R object in the environment.\n\
- Not all R environment are hash tables, and this may\
- influence performances when doing repeated lookups.");
+	     "Find an R object in the environment.\n"
+	     "Not all R environment are hash tables, and this may"
+	     " influence performances when doing repeated lookups.");
 
 static int
 EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
@@ -1624,7 +1645,7 @@ EmbeddedR_sexpType(PyObject *self, PyObject *args)
 /* --- List of functions defined in the module --- */
 
 static PyMethodDef EmbeddedR_methods[] = {
-  {"initEmbeddedR",     (PyCFunction)EmbeddedR_init,   METH_VARARGS,
+  {"initEmbeddedR",     (PyCFunction)EmbeddedR_init,   METH_NOARGS,
    EmbeddedR_init_doc},
   {"endEmbeddedR",	(PyCFunction)EmbeddedR_end,    METH_O,
    EmbeddedR_end_doc},
@@ -1746,7 +1767,8 @@ static R_ExternalMethodDef externalMethods[] = {
   PyModule_AddIntConstant(module, #name, name)
 #define ADD_VALID_SEXP(name) \
   validSexpType[name] = #name
-
+#define PYASSERT_ZERO(code) \
+  if ((code) != 0) {return ; }
 
 PyMODINIT_FUNC
 initrinterface(void)
@@ -1771,6 +1793,25 @@ initrinterface(void)
   if (m == NULL)
     return;
   d = PyModule_GetDict(m);
+
+  initOptions = PyList_New(4);
+  PYASSERT_ZERO(
+		PyList_SetItem(initOptions, 0, 
+			       PyString_FromString("rpy2"))
+		);
+  PYASSERT_ZERO(
+		PyList_SetItem(initOptions, 1, 
+			       PyString_FromString("--quiet"))
+		);
+  PYASSERT_ZERO(
+		PyList_SetItem(initOptions, 2, 
+			       PyString_FromString("--vanilla"))
+		);
+  PYASSERT_ZERO(
+		PyList_SetItem(initOptions, 3, 
+			       PyString_FromString("--no-save"))
+		);
+  PyModule_AddObject(m, "initOptions", initOptions);
 
   PyModule_AddObject(m, "Sexp", (PyObject *)&Sexp_Type);
   PyModule_AddObject(m, "SexpClosure", (PyObject *)&ClosureSexp_Type);

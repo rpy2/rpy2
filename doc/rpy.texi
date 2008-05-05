@@ -9,9 +9,7 @@
 * RPy v2: (rpy2).               RPy2, Python extension module for R.
 @end direntry
 
-@macro version
-2.0.0-dev
-@end macro
+@set VERSIONno 2.0.0-dev
 
 @macro Python
 Python
@@ -33,9 +31,10 @@ C
 @end macro
 
 @ifinfo
-This file documents @RPy2{} @version{}
+This file documents @RPy2{} @value{VERSIONno}
 
-Copyright -
+Copyright @copyright{} 2008 L.@: Gautier@
+
 Permission is granted to make and distribute verbatim
 copies of this manual provided the copyright notice and
 this permission notice are preserved on all copies.
@@ -110,8 +109,8 @@ extension module for using the @R{} programming language.
 @contents
 @end iftex
 
-@node Preface, Overview, , Top
-@chapter Preface
+@node Preface, Overview, Top, Top
+@unnumbered Preface
 
 This presentation describes @RPy2{}, a close-to-complete rewrite of
 the @RPy{} package.
@@ -392,16 +391,17 @@ has an excessive cost on the performances.
 
 One has to initialize R before much can be done.
 The function @code{initEmbeddedR} lets one initialize
-the embedded R, and take the same parameters as one
-would give when starting an R terminal from the command
-line:
+the embedded R:
 @example
->>> rinterface.initEmbeddedR("--no-save", "--quiet")
+>>> rinterface.initEmbeddedR()
 @end example
 
 Initialization should only be performed once and in the case
 of a second call to initEmbeddedR, to avoid unpredictable results
 when using the embedded R, an exception is be fired.
+
+Parameters for the initialization are in the module varible
+@code{initOptions}.
 
 @node Rspace
 @subsection @R{} space and @Python{} space

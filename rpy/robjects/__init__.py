@@ -77,13 +77,13 @@ class Robject(object):
         self._sexp = rinterface.Sexp(sexp, copy=copy)
 
     def __str__(self):
-        tmp = r.fifo("")
-        r.sink(tmp)
+        tmp = baseNameSpaceEnv["fifo"]("")
+        baseNameSpaceEnv["sink"](tmp)
         r.show(self)
-        r.sink()
-        s = r.readLines(tmp)
+        baseNameSpaceEnv["sink"]()
+        s = baseNameSpaceEnv["readLines"](tmp)
         r.close(tmp)
-        s = str.join(os.linesep, self)
+        s = str.join(os.linesep, s)
         return s
 
     def __repr__(self):
@@ -181,8 +181,13 @@ class Rvector(Robject):
     def __len__(self):
         return len(self.getSexp())
 
-class RArray(Rvector):
+    def getNames(self):
+        res = r.names(self.getSexp())
+        import pdb; pdb.set_trace()
+        return res
 
+class RArray(Rvector):
+    """ An R array """
     def __init__(self, o):
         super(RArray, self).__init__(o)
         if not r["is.array"](self.getSexp())[0]:
@@ -199,20 +204,25 @@ class RArray(Rvector):
             value = mapperPy2R
             res = r["dim<-"](value)
         
+
 class RMatrix(RArray):
-    
+    """ An R matrix """
+
     def nrow(self):
         """ Number of rows """
-        return r.nrow(self.getSexp())
+        return self.dim[0]
 
     def ncol(self):
         """ Number of columns """
-        return r.nrow(self.getSexp())
+        return self.dim[1]
 
 class DataFrame(Rvector):
     #FIXME: not implemented
     def __init__(self, o):
-        raise(RuntimeError("Not implemented."))
+        if not isinstance(o, rinterface.SexpVector):
+            o = mapperPy2R(o)
+            o = o.getSexp()
+        self._sexp = o
 
 
 
@@ -276,10 +286,9 @@ class RS4(Robject):
 class R(object):
     _instance = None
 
-    def __init__(self, options):
+    def __init__(self):
         if R._instance is None:
-	    args = ["robjects", ] + options
-            rinterface.initEmbeddedR(*args)
+            rinterface.initEmbeddedR()
             R._instance = self
         else:
             raise(ValueError("Only one instance of R can be created"))
@@ -307,7 +316,7 @@ class R(object):
         res = self.eval(p)
         return res
 
-r = R(["--no-save", "--quiet"])
+r = R()
 
 globalEnv = mapperR2Py(rinterface.globalEnv)
 baseNameSpaceEnv = mapperR2Py(rinterface.baseNameSpaceEnv)

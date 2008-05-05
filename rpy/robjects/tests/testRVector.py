@@ -1,25 +1,25 @@
 import unittest
 import rpy2.robjects as robjects
-rinterface = robjects.rinterface
+ri = robjects.rinterface
 import array
 
 rlist = robjects.baseNameSpaceEnv["list"]
 
 class RvectorTestCase(unittest.TestCase):
     def testNew(self):
-        identical = rinterface.baseNameSpaceEnv["identical"]
+        identical = ri.baseNameSpaceEnv["identical"]
         py_a = array.array('i', [1,2,3])
         ro_v = robjects.Rvector(py_a)
-        self.assertEquals(ro_v.typeof(), rinterface.INTSXP)
+        self.assertEquals(ro_v.typeof(), ri.INTSXP)
         
-        ri_v = rinterface.SexpVector(py_a, rinterface.INTSXP)
+        ri_v = ri.SexpVector(py_a, ri.INTSXP)
         ro_v = robjects.Rvector(ri_v)
 
         self.assertTrue(identical(ro_v._sexp, ri_v)[0])
 
         #FIXME: why isn't this working ?
         #del(ri_v)
-        self.assertEquals(rinterface.INTSXP, ro_v.typeof())
+        self.assertEquals(ri.INTSXP, ro_v.typeof())
         
     def testOperators(self):
         seq_R = robjects.r["seq"]
@@ -66,6 +66,16 @@ class RvectorTestCase(unittest.TestCase):
         idem = robjects.baseNameSpaceEnv["identical"]
         self.assertTrue(idem(letters, mylist[0]))
         self.assertTrue(idem("foo", mylist[1]))
+
+    def testGetNames(self):
+        vec = robjects.Rvector(array.array('i', [1,2,3]))
+        v_names = [robjects.baseNameSpaceEnv["letters"][x] for x in (0,1,2)]
+        #FIXME: simplify this
+        r_names = robjects.baseNameSpaceEnv["c"](*v_names)
+        robjects.r["names<-"](vec, r_names)
+        
+        for i in xrange(len(vec)):
+            self.assertEquals(v_names[i], vec.getNames()[i])
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RvectorTestCase)
