@@ -6,6 +6,7 @@ import array
 rlist = robjects.baseNameSpaceEnv["list"]
 
 class RvectorTestCase(unittest.TestCase):
+
     def testNew(self):
         identical = ri.baseNameSpaceEnv["identical"]
         py_a = array.array('i', [1,2,3])
@@ -17,8 +18,7 @@ class RvectorTestCase(unittest.TestCase):
 
         self.assertTrue(identical(ro_v._sexp, ri_v)[0])
 
-        #FIXME: why isn't this working ?
-        #del(ri_v)
+        del(ri_v)
         self.assertEquals(ri.INTSXP, ro_v.typeof())
         
     def testOperators(self):
@@ -72,8 +72,7 @@ class RvectorTestCase(unittest.TestCase):
         v_names = [robjects.baseNameSpaceEnv["letters"][x] for x in (0,1,2)]
         #FIXME: simplify this
         r_names = robjects.baseNameSpaceEnv["c"](*v_names)
-        robjects.r["names<-"](vec, r_names)
-        
+        vec = robjects.r["names<-"](vec, r_names)
         for i in xrange(len(vec)):
             self.assertEquals(v_names[i], vec.getNames()[i])
 

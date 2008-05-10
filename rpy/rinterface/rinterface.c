@@ -124,12 +124,85 @@ PyDoc_STRVAR(module_doc,
 ");
 
 
-static PySexpObject* globalEnv;
-static PySexpObject* baseNameSpaceEnv;
+static PySexpObject *globalEnv;
+static PySexpObject *baseNameSpaceEnv;
+static PySexpObject *na_string;
 
 /* early definition of functions */
 static PySexpObject* newPySexpObject(const SEXP sexp);
 static SEXP newSEXP(PyObject *object, const int rType);
+
+
+/* --- set output from the R console ---*/
+
+
+static PyObject* writeConsoleCallback = NULL;
+
+static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
+					   PyObject *args)
+{
+  
+  PyObject *result = NULL;
+  PyObject *function;
+  
+  if ( PyArg_ParseTuple(args, "O:console", 
+			 &function)) {
+    
+    if (!PyCallable_Check(function)) {
+      PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+      return NULL;
+    }
+
+    Py_XDECREF(writeConsoleCallback);
+    Py_XINCREF(function);
+    writeConsoleCallback = function;
+    Py_INCREF(Py_None);
+    result = Py_None;
+  } else {
+    PyErr_SetString(PyExc_TypeError, "The only parameter should be a callable.");
+  }
+  return result;
+  
+}
+
+PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
+            "setWriteConsoleEmbeddedR()\n\
+            \n\
+            Set the R console output.");
+
+
+
+static void
+EmbeddedR_WriteConsole(char *buf, int len)
+{
+  PyOS_sighandler_t old_int;
+  PyObject *arglist;
+  PyObject *result;
+
+  /* It is necessary to restore the Python handler when using a Python
+     function for I/O. */
+  old_int = PyOS_getsig(SIGINT);
+  PyOS_setsig(SIGINT, python_sigint);
+  arglist = Py_BuildValue("(s)", buf);
+  if (! arglist) {
+    PyErr_NoMemory();
+    signal(SIGINT, old_int);
+    //return NULL;
+  }
+
+  result = PyEval_CallObject(writeConsoleCallback, arglist);
+
+  Py_DECREF(arglist);
+  signal(SIGINT, old_int);
+  
+  if (result == NULL) {
+    return;
+    //return NULL;
+  }
+
+  Py_DECREF(result);
+  
+}
 
 
 /* --- Initialize and terminate an embedded R --- */
@@ -154,13 +227,28 @@ static PyObject* EmbeddedR_init(PyObject *self)
     options[ii] = PyString_AsString(opt_string);
   }
 
+
   int status = Rf_initEmbeddedR(n_args, options);
+  /* FIXME: setup_Rmainloop causes ipython to crash 
+   *(bug in ipython ?)
+   */
+/*   int status = 1; */
+/*   Rf_initialize_R(n_args, options); */
+/*   R_Interactive = TRUE;  Rf_initialize_R set this based on isatty */
+/*   setup_Rmainloop(); */
 
   embeddedR_isInitialized = PyBool_FromLong((long)1);
 
-  RPY_SEXP(globalEnv) = R_GlobalEnv;
+  /* Redirect R console output */
+  R_Outputfile = NULL;
+  
+  extern void (*ptr_R_WriteConsole)(char *, int);
+  ptr_R_WriteConsole = EmbeddedR_WriteConsole;
 
+
+  RPY_SEXP(globalEnv) = R_GlobalEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
+  RPY_SEXP(na_string) = NA_STRING;
 
   PyObject *res = PyInt_FromLong(status);
 
@@ -209,37 +297,6 @@ PyDoc_STRVAR(EmbeddedR_end_doc,
 	     Terminate an embedded R.");
 
 
-/* --- set output from the R console ---*/
-
-static void
-EmbeddedR_WriteConsole(char *buf, int len)
-{
-  PyOS_sighandler_t old_int;
-
-  /* It is necessary to restore the Python handler when using a Python
-     function for I/O. */
-  old_int = PyOS_getsig(SIGINT);
-  PyOS_setsig(SIGINT, python_sigint);
-  PySys_WriteStdout(buf);
-  signal(SIGINT, old_int);
-}
-
-
-/* Redirect R console output */
-//  R_Outputfile = NULL;
-
-
-/* FIXME: implement possibility to specify arbitrary callback functions */
-extern void (*ptr_R_WriteConsole)(char *, int);
-static PyObject* EmbeddedR_setWriteConsole(PyObject *self)
-{
-  ptr_R_WriteConsole = EmbeddedR_WriteConsole;
-  Py_RETURN_NONE;
-}
-PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
-	     "setWriteConsoleEmbeddedR()\n\
-	     \n\
-	     Set the R console output to the Python console.");
 
 
 static PyObject*
@@ -879,11 +936,15 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       vs = translateChar(STRING_ELT(*sexp, i_R));
       res = PyString_FromString(vs);
       break;
+/*     case CHARSXP: */
+/*       //FIXME: implement handling of single char (if possible ?) */
+/*       vs = (CHAR(*sexp)[i_R]); */
+/*       res = PyString_FromStringAndSize(vs, 1); */
     case VECSXP:
       res = (PyObject *)newPySexpObject(VECTOR_ELT(*sexp, i_R));
       break;
     default:
-      PyErr_Format(PyExc_ValueError, "cannot handle type %d", 
+      PyErr_Format(PyExc_ValueError, "Cannot handle type %d", 
 		   TYPEOF(*sexp));
       res = NULL;
       break;
@@ -1649,7 +1710,7 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_init_doc},
   {"endEmbeddedR",	(PyCFunction)EmbeddedR_end,    METH_O,
    EmbeddedR_end_doc},
-  {"setWriteConsole",	(PyCFunction)EmbeddedR_setWriteConsole,	 METH_NOARGS,
+  {"setWriteConsole",	(PyCFunction)EmbeddedR_setWriteConsole,	 METH_VARARGS,
    EmbeddedR_setWriteConsole_doc},
   {"findVarEmbeddedR",	(PyCFunction)EmbeddedR_findVar,	 METH_VARARGS,
    EmbeddedR_findVar_doc},
@@ -1926,8 +1987,8 @@ initrinterface(void)
 
   
 /*   /\* Rinternals.h *\/ */
-  PySexpObject *na_string = (PySexpObject *)Sexp_new(&VectorSexp_Type,
-						     Py_None, Py_None);
+  na_string = (PySexpObject *)Sexp_new(&VectorSexp_Type,
+				       Py_None, Py_None);
 
   RPY_SEXP(na_string) = NA_STRING;
   if (PyDict_SetItemString(d, "NA_STRING", (PyObject *)na_string) < 0)

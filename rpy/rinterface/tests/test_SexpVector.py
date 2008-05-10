@@ -73,6 +73,8 @@ class SexpVectorTestCase(unittest.TestCase):
         ok = isCharacter(sexp)[0]
         self.assertTrue(ok)
 
+        ri.NA_STRING[0]
+
     def testNewVector(self):
         sexp_char = ri.SexpVector(["abc", ], 
                                           ri.STRSXP)

@@ -5,6 +5,7 @@ import test_SexpEnvironment
 import test_Sexp
 import test_SexpClosure
 import test_SexpVectorNumeric
+import test_EmbeddedR
 
 
 def suite():
@@ -13,11 +14,13 @@ def suite():
     suite_Sexp = test_Sexp.suite()
     suite_SexpClosure = test_SexpClosure.suite()
     suite_SexpVectorNumeric = test_SexpVectorNumeric.suite()
+    suite_EmbeddedR = test_EmbeddedR.suite()
     alltests = unittest.TestSuite([suite_SexpVector, 
                                    suite_SexpEnvironment, 
                                    suite_Sexp, 
                                    suite_SexpClosure,
-                                   suite_SexpVectorNumeric])
+                                   suite_SexpVectorNumeric,
+                                   suite_EmbeddedR])
     return alltests
 
 def main():

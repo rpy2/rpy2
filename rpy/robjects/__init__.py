@@ -183,7 +183,6 @@ class Rvector(Robject):
 
     def getNames(self):
         res = r.names(self.getSexp())
-        import pdb; pdb.set_trace()
         return res
 
 class RArray(Rvector):
