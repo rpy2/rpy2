@@ -271,16 +271,14 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   //deallocated in Python ?
   //other possibility would be to have a fallback for "unreachable" objects ?
   //FIXME: rpy has something to terminate R. Check the details of what they are. 
-  /* sanity checks needed ? */
+  /* taken from the tests/Embedded/shutdown.c in the R source tree */
 
-  /* snatched from trunk/rpy (v. 1.0) */
-  //FIXME: check all that
   R_dot_Last();           
   R_RunExitFinalizers();  
   //CleanEd();              
-  //KillAllDevices();
+  Rf_KillAllDevices();
   
-  R_CleanTempDir();
+  //R_CleanTempDir();
   //PrintWarnings();
   R_gc();
   /* */
@@ -544,6 +542,7 @@ Sexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 			    (PyObject*)&Sexp_Type)) {
     PyErr_Format(PyExc_ValueError, 
 		 "Can only instanciate from Sexp objects.");
+    Py_DECREF(Py_True);
     return -1;
   }
 
@@ -1173,39 +1172,52 @@ VectorSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 /* --- */
 
 static PySexpObject*
-EnvironmentSexp_findVar(PyObject *self, PyObject *args)
+EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
 {
   char *name;
   SEXP res_R = NULL;
-
-  if (!PyArg_ParseTuple(args, "s", &name)) { 
+  PyObject *wantFun = Py_False;
+  Py_INCREF(Py_False);
+  static char *kwlist[] = {"name", "wantFun", NULL};
+ 
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|O!",
+				   kwlist,
+				   &name, 
+				   &PyBool_Type, &wantFun)) { 
+    Py_DECREF(Py_False);
     return NULL; 
   }
 
   const SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    Py_DECREF(Py_False);
     return NULL;
   }
 
   if (rho_R == R_EmptyEnv) {
-    PyErr_Format(PyExc_LookupError, "Fatal error: R_UnboundValue.");
+    PyErr_Format(PyExc_LookupError, "Fatal error: R_EmptyEnv.");
   }
 
-  res_R = findVar(install(name), rho_R);
-
+  if (wantFun == Py_True) {
+    res_R = findFun(install(name), rho_R);
+  } else {
+    res_R = findVar(install(name), rho_R);
+  }
 
   if (res_R != R_UnboundValue) {
+    Py_DECREF(Py_False);
     return newPySexpObject(res_R);
   }
   PyErr_Format(PyExc_LookupError, "'%s' not found", name);
+    Py_DECREF(Py_False);
   return NULL;
 }
 PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
-	     "Find an R object in the environment.");
+	     "Find an R object in a given environment.");
 
 static PyMethodDef EnvironmentSexp_methods[] = {
-  {"get", (PyCFunction)EnvironmentSexp_findVar, METH_VARARGS,
+  {"get", (PyCFunction)EnvironmentSexp_findVar, METH_VARARGS | METH_KEYWORDS,
   EnvironmentSexp_findVar_doc},
   {NULL, NULL}          /* sentinel */
 };
