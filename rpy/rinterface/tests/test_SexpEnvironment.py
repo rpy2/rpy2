@@ -52,6 +52,14 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         ok = isinstance(sfit_R, rinterface.SexpClosure)
         self.assertTrue(ok)
 
+        # now with the function-only option
+        plot = rinterface.globalEnv.get("plot", wantFun = False)
+        self.assertEquals(rinterface.CLOSXP, plot.typeof())
+        rinterface.globalEnv["plot"] = rinterface.SexpVector(["foo", ], 
+                                                             rinterface.CHARSXP)
+        plot = rinterface.globalEnv.get("plot", wantFun = True)
+        self.assertEquals(rinterface.CLOSXP, plot.typeof())
+
     def testSubscript(self):
         ge = rinterface.globalEnv
         obj = rinterface.globalEnv.get("letters")

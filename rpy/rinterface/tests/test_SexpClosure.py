@@ -16,7 +16,6 @@ class SexpClosureTestCase(unittest.TestCase):
     #    rinterface.endEmbeddedR(1);
 
     def testNew(self):
-
         x = "a"
         self.assertRaises(ValueError, rinterface.SexpClosure, x)
         
@@ -28,6 +27,7 @@ class SexpClosureTestCase(unittest.TestCase):
         sum = rinterface.baseNameSpaceEnv["sum"]
         letters = rinterface.baseNameSpaceEnv["letters"]
         self.assertRaises(RuntimeError, sum, letters)
+
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpClosureTestCase)
