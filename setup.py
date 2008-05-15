@@ -29,7 +29,7 @@ else:
 def get_rversion(RHOME):
     r_exec = os.path.join(RHOME, 'bin', 'R')
     # Twist if Win32
-    if sys.platform=="win32":
+    if sys.platform == "win32":
         rp = os.popen3('"'+r_exec+'" --version')[2]
     else:
         rp = os.popen('"'+r_exec+'" --version')
@@ -51,6 +51,20 @@ def cmp_version(x, y):
         if len(x) == 1 or len(y) == 1:
             return 0
         return cmp_version(x[1:], y[1:])
+
+def get_rconfig(RHOME, about):
+    r_exec = os.path.join(RHOME, 'bin', 'R')
+    # Twist if Win32
+    if sys.platform == "win32":
+        rp = os.popen3('"'+r_exec+'" CMD config '+about)[2]
+    else:
+        rp = os.popen('"'+r_exec+'" CMD config '+about)
+    rconfig = rp.readline()
+    #Twist if 'R RHOME' spits out a warning
+    if rconfig.startswith("WARNING"):
+        rconfig = rp.readline()
+    rconfig = rconfig.strip()
+    return rconfig
 
 rnewest = [0, 0, 0]
 rversions = []
@@ -92,7 +106,8 @@ def doSetup(RHOME, r_packversion):
             libraries=['R', 'Rlapack', 'Rblas'],
             library_dirs=r_libs,
             runtime_library_dirs=r_libs,
-            #extra_link_args=[],
+            extra_link_args=[get_rconfig(RHOME, 'LAPACK_LIBS'),
+                             get_rconfig(RHOME, 'BLAS_LIBS')],
             )
 
     setup(name = "rpython",
