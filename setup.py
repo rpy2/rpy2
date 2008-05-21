@@ -54,16 +54,14 @@ def cmp_version(x, y):
 
 def get_rconfig(RHOME, about):
     r_exec = os.path.join(RHOME, 'bin', 'R')
-    # Twist if Win32
-    if sys.platform == "win32":
-        rp = os.popen3('"'+r_exec+'" CMD config '+about)[2]
-    else:
-        rp = os.popen('"'+r_exec+'" CMD config '+about)
+    cmd = '"'+r_exec+'" CMD config '+about
+    rp = os.popen(cmd)
     rconfig = rp.readline()
     #Twist if 'R RHOME' spits out a warning
     if rconfig.startswith("WARNING"):
         rconfig = rp.readline()
     rconfig = rconfig.strip()
+    rconfig = re.match('^(-L.+) (-l.+)$', rconfig).groups()
     return rconfig
 
 rnewest = [0, 0, 0]
@@ -106,8 +104,9 @@ def doSetup(RHOME, r_packversion):
             libraries=['R', 'Rlapack', 'Rblas'],
             library_dirs=r_libs,
             runtime_library_dirs=r_libs,
-            extra_link_args=[get_rconfig(RHOME, 'LAPACK_LIBS'),
-                             get_rconfig(RHOME, 'BLAS_LIBS')],
+            extra_link_args=get_rconfig(RHOME, '--ldflags') +\
+                            get_rconfig(RHOME, 'LAPACK_LIBS') +\
+                            get_rconfig(RHOME, 'BLAS_LIBS'),
             )
 
     setup(name = "rpython",
@@ -115,7 +114,7 @@ def doSetup(RHOME, r_packversion):
           description = "Python interface to the R language",
           url = "http://rpy.sourceforge.net",
           license = "(L)GPL",
-          ext_modules = [rinterface],
+          ext_modules = [rinterface, ],
           package_dir = {pack_name: 'rpy'},
           packages = [pack_name, 
                       pack_name+'.robjects', 

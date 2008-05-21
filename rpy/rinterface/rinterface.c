@@ -239,12 +239,13 @@ static PyObject* EmbeddedR_init(PyObject *self)
 
   embeddedR_isInitialized = PyBool_FromLong((long)1);
 
+#ifdef R_INTERFACE_PTRS
   /* Redirect R console output */
-  R_Outputfile = NULL;
-  
   extern void (*ptr_R_WriteConsole)(char *, int);
   ptr_R_WriteConsole = EmbeddedR_WriteConsole;
-
+  R_Outputfile = NULL;
+  R_Consolefile = NULL;
+#endif
 
   RPY_SEXP(globalEnv) = R_GlobalEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
