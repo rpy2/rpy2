@@ -1,4 +1,28 @@
 import os
 os.environ["R_HOME"]="%R_HOME%"
 
+# Win32-specific code copied from RPy-1.x
+# FIXME: isnt't it possible to have conditional code
+# at build time ?
+import sys
+if sys.platform == 'win32':
+    import win32api
+    R_HOME = os.environ["R_HOME"]
+    os.environ['PATH'] += ';' + os.path.join(R_HOME, 'bin')
+    os.environ['PATH'] += ';' + os.path.join(R_HOME, 'modules')
+    os.environ['PATH'] += ';' + os.path.join(R_HOME, 'lib')
+
+    # Load the R dll using the explicit path
+    # First try the bin dir:
+    Rlib = os.path.join(R_HOME, 'bin', 'R.dll')
+    # Then the lib dir:
+    if not os.path.exists(Rlib):
+        Rlib = os.path.join(R_HOME, 'lib', 'R.dll')
+    # Otherwise fail out!
+    if not os.path.exists(Rlib):
+        raise RuntimeError("Unable to locate R.dll within %s" % R_HOME)
+
+    win32api.LoadLibrary( Rlib )
+    del(R_HOME)
+    
 from rinterface import *
