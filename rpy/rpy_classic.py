@@ -5,7 +5,8 @@ Implementation of RPy 1.x (for compatibility)
 import rpy2.rinterface as ri
 import array
 
-
+#
+RPY_VERSION = '1.x'
 
 # --- options in 'rpy_options.py'
 
@@ -67,24 +68,8 @@ get_rpy_input = None
 # --- "CONVERSION" system
 
 
-class ModuleMode(object):
-    # same default as in "rpymodule.c"
-    __mode = -1
-
-    def __init__(self):
-        pass
-
-    @classmethod
-    def __eq__(self, val):
-        return ModuleMode.__mode == val
-    @classmethod
-    def set_mode(val):
-        ModuleMode.__mode == val
-    @classmethod
-    def get_mode():
-        return ModuleMode.__mode
-
-default_mode = ModuleMode()
+# same default as in "rpymodule.c"
+default_mode = -1
 
 # Wrap a function in safe modes to avoid infinite recursion when
 # called from within the conversion system
@@ -104,10 +89,12 @@ def set_default_mode(mode):
         raise ValueError("mode should be an int.")
     if (mode < -1) or (mode > TOP_MODE):
         raise ValueError("wrong mode.")
-    default_mode.set_mode(mode)
+    global default_mode
+    default_mode = mode
 
 def get_default_mode():
-    return default_mode.get_mode()
+    global default_mode
+    return default_mode
 
 
 
@@ -161,19 +148,24 @@ def py2rpy(obj):
 
 def rpy2py_basic(obj):    
     if hasattr(obj, '__len__'):
-        if obj.typeof() in [ri.INTSXP, ri.REALSXP, ri.CPLSXP, 
+        if obj.typeof() in [ri.INTSXP, ri.REALSXP, ri.CPLXSXP, 
                             ri.STRSXP]:
             res = [x for x in obj]
         elif obj.typeof() in [ri.VECSXP]:
-            res = [rpy2py for x in obj]
+            res = [rpy2py(x) for x in obj]
         else:
             raise ValueError("Invalid type for 'obj'.")
-        return res
-    raise ValueError("Invalid type for 'obj'.")
+    else:
+        res = Robj(obj)
+    return res
+    #raise ValueError("Invalid type for 'obj'.")
 
-def rpy2py(obj, mode=default_mode):
+def rpy2py(obj, mode=None):
+    """ Transform RPy objects into pure python objects. """
+    if mode is None:
+        mode = default_mode
     if mode == NO_CONVERSION:
-        res = obj
+        res = Robj(obj)
         return res
     if mode == BASIC_CONVERSION:
         res = rpy2py_basic(obj)
@@ -217,6 +209,7 @@ class Robj(object):
             kwargs_r[a_n] = a
         #import pdb; pdb.set_trace()
         res = self.__sexp(*args_r, **kwargs_r)
+        res = rpy2py(res)
         return res
 
     def __getitem__(self, item):
@@ -228,9 +221,9 @@ class Robj(object):
     def getSexp(self):
         return self.__sexp
     
-    def __repr__(self):
-        res = rpy2r(self)
-        return res
+    #def __repr__(self):
+    #    res = rpy2py(self)
+    #    return res
 
     def as_py(mode = default_mode):
         res = rpy2py(self, mode)
@@ -258,6 +251,7 @@ class R(object):
 
     def __getitem__(self, name):
         #FIXME: "get function only" vs "get anything"
+        # wantFun = True ?
         res = ri.globalEnv.get(name)
         res = rpy2py(res)
         return res
@@ -269,8 +263,9 @@ class R(object):
         helpobj.helpfun(*arg, **kw)
         
     def __repr__(self):
-        rversion = self.__getitem__('R.version.sting')
-        res = 'RPy version %s [%s]' %(rpy_version, r_version)
+        r_version = ri.baseNameSpaceEnv['R.version.string'][0]
+        res = 'RPy version %s with %s' %(RPY_VERSION, r_version)
+        return res
 
     def __str__(self):
         return repr(self)

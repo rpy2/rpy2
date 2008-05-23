@@ -197,7 +197,6 @@ EmbeddedR_WriteConsole(char *buf, int len)
   
   if (result == NULL) {
     return;
-    //return NULL;
   }
 
   Py_DECREF(result);
@@ -237,7 +236,9 @@ static PyObject* EmbeddedR_init(PyObject *self)
 /*   R_Interactive = TRUE;  Rf_initialize_R set this based on isatty */
 /*   setup_Rmainloop(); */
 
-  embeddedR_isInitialized = PyBool_FromLong((long)1);
+  Py_XDECREF(embeddedR_isInitialized);
+  embeddedR_isInitialized = Py_True;
+  Py_INCREF(Py_True);
 
 #ifdef R_INTERFACE_PTRS
   /* Redirect R console output */
@@ -287,6 +288,11 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   Rf_endEmbeddedR((int)fatal);
   RPY_SEXP(globalEnv) = R_EmptyEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
+
+  //FIXME: Is it possible to reinitialize R later ?
+  //Py_XDECREF(embeddedR_isInitialized);
+  //embeddedR_isInitialized = Py_False;
+  //Py_INCREF(Py_False);
 
   Py_RETURN_NONE;
 }
@@ -728,8 +734,8 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   }
   
 //FIXME: R_GlobalContext ?
-  PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
-  //PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
+  //PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
+  PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
 
 /*   if (!res) { */
 /*     UNPROTECT(2); */
@@ -781,7 +787,6 @@ static PyMethodDef ClosureSexp_methods[] = {
   {NULL, NULL}          /* sentinel */
 };
 
-//FIXME: write more doc
 PyDoc_STRVAR(ClosureSexp_Type_doc,
 "A R object that is a closure, that is a function. \
 In R a function is defined within an enclosing \
@@ -1053,7 +1058,6 @@ static PyGetSetDef VectorSexp_getsets[] = {
 };
 
 
-//FIXME: write more doc
 PyDoc_STRVAR(VectorSexp_Type_doc,
 	     "R object that is a vector."
 	     " R vectors start their indexing at one,"
@@ -1062,10 +1066,6 @@ PyDoc_STRVAR(VectorSexp_Type_doc,
 	     "In the hope to avoid confusion, the indexing"
 	     " from the Python subset operator (__getitem__)"
 	     " is done at zero.");
-/* ", while an other method to perform\ */
-/*  it at one is provided (_not yet implemented_).\ */
-/*  That other method is also performing indexing."); */
-//FIXME: implement offset-one indexing.
 
 static int
 VectorSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds);
@@ -1902,7 +1902,9 @@ initrinterface(void)
   Py_INCREF(ErrorObject);
   PyModule_AddObject(m, "RobjectNotFound", ErrorObject);
 
-  embeddedR_isInitialized = PyBool_FromLong((long)0);
+  embeddedR_isInitialized = Py_False;
+  Py_INCREF(Py_False);
+
   if (PyModule_AddObject(m, "isInitialized", embeddedR_isInitialized) < 0)
     return;
   //FIXME: DECREF ?
