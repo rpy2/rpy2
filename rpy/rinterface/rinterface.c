@@ -1845,7 +1845,7 @@ static R_ExternalMethodDef externalMethods[] = {
   if ((code) != 0) {return ; }
 
 PyMODINIT_FUNC
-initrinterface(void)
+RPY_RINTERFACE_INIT(void)
 {
 
   /* Finalize the type object including setting type of the new type
