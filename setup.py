@@ -47,7 +47,6 @@ def get_rversion(RHOME):
     rversion[1] = int(rversion[1])
     return rversion
 
-# FIXME: not neeeded anymore ?
 def cmp_version(x, y):
     if (x[0] < y[0]):
         return -1
@@ -67,14 +66,18 @@ def get_rconfig(RHOME, about):
     if rconfig.startswith("WARNING"):
         rconfig = rp.readline()
     rconfig = rconfig.strip()
-    rconfig = re.match('^(-L.+) (-l.+)$', rconfig).groups()
-    return rconfig
+    rconfig_m = re.match('^(-L.+) (-l.+)$', rconfig)
+    if rconfig_m is None:
+        raise Exception(cmd + '\nreturned\n' + rconfig)
+    return rconfig_m.groups()
 
 rnewest = [0, 0, 0]
 rversions = []
 for RHOME in RHOMES:
     RHOME = RHOME.strip()
     rversion = get_rversion(RHOME)
+    if cmp_version(rversion[:2], [2, 7]) == -1:
+        raise Exception("R >= 2.7 required.")
     rversions.append(rversion)
 
 def getRinterface_ext(RHOME, r_packversion):
@@ -94,14 +97,14 @@ def getRinterface_ext(RHOME, r_packversion):
     #f_out.close()
 
     rinterface_ext = Extension(
-            pack_name + ".rinterface.rinterface_" + r_packversion,
+            pack_name + '.rinterface.rinterface',
             [os.path.join('rpy', 'rinterface', 'array.c'), 
              os.path.join('rpy', 'rinterface', 'rinterface.c')],
             include_dirs = [ os.path.join(RHOME, 'include'), 
                             os.path.join('rpy', 'rinterface')],
             libraries = ['R', 'Rlapack', 'Rblas'],
             library_dirs = r_libs,
-            define_macros = [('RPY_RINTERFACE_INIT', 'initrinterface_' + r_packversion), ],
+            #define_macros = [('RPY_RINTERFACE_INIT', 'initrinterface_' + r_packversion), ],
             runtime_library_dirs = r_libs,
             extra_link_args = get_rconfig(RHOME, '--ldflags') +\
                               get_rconfig(RHOME, 'LAPACK_LIBS') +\
@@ -123,13 +126,15 @@ for rversion, RHOME in itertools.izip(rversions, RHOMES):
     rinterface_exts.append(ri_ext)
     rinterface_rversions.append(r_packversion)
 
+pack_dir = {pack_name: 'rpy'}
+
 setup(name = "rpython",
       version = pack_version,
       description = "Python interface to the R language",
       url = "http://rpy.sourceforge.net",
       license = "(L)GPL",
       ext_modules = rinterface_exts,
-      package_dir = {pack_name: 'rpy'},
+      package_dir = pack_dir,
       packages = [pack_name,
                   pack_name+'.robjects',
                   pack_name+'.robjects.tests'] + \
