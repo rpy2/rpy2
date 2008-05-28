@@ -1169,9 +1169,35 @@ VectorSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   return 0;
 }
 
+static SEXP rpy_findFun(SEXP symbol, SEXP rho)
+{
+    SEXP vl;
+    while (rho != R_EmptyEnv) {
+        /* This is not really right.  Any variable can mask a function */
+        vl = findVarInFrame3(rho, symbol, TRUE);
+
+        if (vl != R_UnboundValue) {
+            if (TYPEOF(vl) == PROMSXP) {
+                PROTECT(vl);
+                vl = eval(vl, rho);
+                UNPROTECT(1);
+            }
+            if (TYPEOF(vl) == CLOSXP || TYPEOF(vl) == BUILTINSXP ||
+                TYPEOF(vl) == SPECIALSXP)
+               return (vl);
+
+            if (vl == R_MissingArg)
+	      printf("R_MissingArg in rpy_FindFun.\n");
+	    return R_UnboundValue;
+        }
+        rho = ENCLOS(rho);
+    }
+    return R_UnboundValue;
+}
+
+
 
 /* --- */
-
 static PySexpObject*
 EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -1201,7 +1227,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   }
 
   if (wantFun == Py_True) {
-    res_R = findFun(install(name), rho_R);
+    res_R = rpy_findFun(install(name), rho_R);
   } else {
     res_R = findVar(install(name), rho_R);
   }
@@ -1429,15 +1455,10 @@ EnvironmentSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 }
 
 
-
-
-
-
-
-
 //FIXME: write more doc
 PyDoc_STRVAR(S4Sexp_Type_doc,
 "R object that is an 'S4 object'.\
+Attributes can be accessed using the method 'do_slot'.\
 ");
 
 
@@ -1844,9 +1865,17 @@ static R_ExternalMethodDef externalMethods[] = {
 #define PYASSERT_ZERO(code) \
   if ((code) != 0) {return ; }
 
+
+#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
+#define PyMODINIT_FUNC void
+#endif
+
 PyMODINIT_FUNC
-RPY_RINTERFACE_INIT(void)
+initrinterface(void)
 {
+//PyMODINIT_FUNC
+//RPY_RINTERFACE_INIT(void)
+//{
 
   /* Finalize the type object including setting type of the new type
 	 * object; doing it here is required for portability to Windows 
@@ -2011,5 +2040,5 @@ RPY_RINTERFACE_INIT(void)
 /*   //FIXME: DECREF ? */
   //Py_DECREF(na_string);
 
-   
+
 }
