@@ -18,7 +18,7 @@ The package can be imported with:
 >>> import rpy2.rinterface as rinterface
 
 .. index::
-   single: initialize
+   single: initEmbeddedR
 
 :func:`initEmbeddedR`
 ---------------------
@@ -44,6 +44,9 @@ When using the RPy2 package, two realms are co-existing: R and Python.
 The :class:`Sexp_Type` objects can be considered as Python enveloppes pointing
 to data stored and administered in the R space.
 
+.. index::
+   single: globalEnv
+
 globalEnv
 ---------
 
@@ -57,6 +60,20 @@ always remains attributed to the global environment
 (FIXME: there is a bit of circulariry in this definition - check
 how to present it a clear(er) way).
 The library is said to be attached to the current search path.
+
+.. index::
+   single: baseNamespaceEnv
+
+baseNamespaceEnv
+----------------
+
+The base package has a namespace, that can be accessed as an environment.
+
+.. note::
+   Depending on what is in globalEnv and on the attached packages, base
+   objects can be masked when starting the search from globalEnv. Use this
+   environment when you want to be sure to access a function you know to be
+   in the base namespace.
 
 .. index::
    single: Sexp
@@ -260,4 +277,48 @@ package *graphics*.
 >>> envplot_list = ls(plot.closureEnv())
 >>> [x for x in envplot_ls]
 >>>
+
+
+Misc. variables
+===============
+
+.. index::
+   single: R_LEN_T_MAX
+
+
+R_HOME
+  R HOME
+
+R_LEN_T_MAX
+  largest usable integer for indexing R vectors
+
+TRUE/FALSE
+  R's TRUE and FALSE
+
+NA_INTEGER
+  NA value for integers
+
+NA_LOGICAL
+  NA value for booleans
+
+NA_REAL
+  NA value for numerical values (float / double)
+
+INTSXP
+  Integer
+
+REALSXP
+  Numerical value (float / double)
+
+LGLSXP
+  Boolean (logical in the R terminology)
+
+STRSXP
+  String
+
+ENVSXP
+  Environment
+
+CPLXSXP
+  Complex 
 

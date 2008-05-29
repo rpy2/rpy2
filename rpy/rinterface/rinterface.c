@@ -590,7 +590,13 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
   SEXP res_R = NULL;
   int error = 0;
   PyOS_sighandler_t old_int;
-  
+
+
+  //FIXME: if env_R is null, use R_BaseEnv
+  if (isNull(env_R)) {
+    env_R = R_BaseEnv;
+  }
+
   /* Enable our handler for SIGINT inside the R
      interpreter. Otherwise, we cannot stop R calculations, since
      SIGINT is only processed between Python bytecodes. Also, save the
@@ -1715,7 +1721,7 @@ PyDoc_STRVAR(EmbeddedR_findVar_doc,
 static PyObject*
 EmbeddedR_sexpType(PyObject *self, PyObject *args)
 {
-
+  /* Return the C-defined name for R types */
   int sexp_i;
 
   if (! PyArg_ParseTuple(args, "i", &sexp_i)) {
@@ -1735,7 +1741,6 @@ EmbeddedR_sexpType(PyObject *self, PyObject *args)
   return res;
 
 }
-
 
 /* --- List of functions defined in the module --- */
 
