@@ -11,13 +11,14 @@ except:
 class EmbeddedRTestCase(unittest.TestCase):
     def testSetWriteConsole(self):
         buf = ""
-        def f(x, buf=buf):
+        def f(x):
+            global buf
             buf = buf + x
 
         rinterface.setWriteConsole(f)
-        code = rinterface.SexpVector(["1+2", ], rinterface.STRSXP)
-        rinterface.baseNameSpaceEnv["eval"](code)
-        self.assertEquals("[1] 3", buf)
+        code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
+        rinterface.baseNameSpaceEnv["print"](code)
+        self.assertEquals('[1] "3"', buf)
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(EmbeddedRTestCase)
