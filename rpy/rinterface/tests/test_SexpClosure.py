@@ -26,7 +26,7 @@ class SexpClosureTestCase(unittest.TestCase):
     def testRError(self):
         sum = rinterface.baseNameSpaceEnv["sum"]
         letters = rinterface.baseNameSpaceEnv["letters"]
-        self.assertRaises(RuntimeError, sum, letters)
+        self.assertRaises(rinterface.RRuntimeError, sum, letters)
 
     def testClosureEnv(self):
         parse = rinterface.baseNameSpaceEnv["parse"]
@@ -34,7 +34,7 @@ class SexpClosureTestCase(unittest.TestCase):
                                                  rinterface.STRSXP))
         fun = rinterface.baseNameSpaceEnv["eval"](exp)
         vec = rinterface.baseNameSpaceEnv["letters"]
-        self.assertRaises(RuntimeError, fun, vec)
+        self.assertRaises(rinterface.RRuntimeError, fun, vec)
 
         fun.closureEnv()["y"] = rinterface.SexpVector([1, ], 
                                                       rinterface.INTSXP)

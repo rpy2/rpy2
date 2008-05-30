@@ -92,8 +92,8 @@ static PyObject *initOptions;
 static const int maxValidSexpType = 99;
 static char **validSexpType;
 
-//FIXME: see the details of error handling
-static PyObject *ErrorObject;
+static SEXP GetErrMessage_SEXP;
+static PyObject *RPyExc_RuntimeError = NULL;
 
 //FIXME: see the details of interruption
 /* Indicates whether the R interpreter was interrupted by a SIGINT */
@@ -146,7 +146,7 @@ static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
   PyObject *function;
   
   if ( PyArg_ParseTuple(args, "O:console", 
-			 &function)) {
+			&function)) {
     
     if (!PyCallable_Check(function)) {
       PyErr_SetString(PyExc_TypeError, "parameter must be callable");
@@ -159,7 +159,7 @@ static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
     Py_INCREF(Py_None);
     result = Py_None;
   } else {
-    PyErr_SetString(PyExc_TypeError, "The only parameter should be a callable.");
+    PyErr_SetString(PyExc_TypeError, "The parameter should be a callable.");
   }
   return result;
   
@@ -190,6 +190,7 @@ EmbeddedR_WriteConsole(char *buf, int len)
     //return NULL;
   }
 
+  printf("--->\n");
   result = PyEval_CallObject(writeConsoleCallback, arglist);
 
   Py_DECREF(arglist);
@@ -252,6 +253,9 @@ static PyObject* EmbeddedR_init(PyObject *self)
   RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
   RPY_SEXP(na_string) = NA_STRING;
 
+  GetErrMessage_SEXP = findVar(install("geterrmessage"), 
+			       R_BaseNamespace);
+
   PyObject *res = PyInt_FromLong(status);
 
 #ifdef RPY_VERBOSE
@@ -288,6 +292,7 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   Rf_endEmbeddedR((int)fatal);
   RPY_SEXP(globalEnv) = R_EmptyEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
+  GetErrMessage_SEXP = R_NilValue; 
 
   //FIXME: Is it possible to reinitialize R later ?
   //Py_XDECREF(embeddedR_isInitialized);
@@ -304,12 +309,12 @@ PyDoc_STRVAR(EmbeddedR_end_doc,
 
 
 
-static PyObject*
+static void
 EmbeddedR_exception_from_errmessage(void)
 {
-  //FIXME: sort the error message thing geterrmessage
-  PyErr_SetString(ErrorObject, "Error.");
-  return NULL;
+  char *message = CHARACTER_VALUE(eval(GetErrMessage_SEXP,
+				       R_GlobalEnv));
+  PyErr_SetString(RPyExc_RuntimeError, message);
 }
 
 
@@ -750,7 +755,8 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   UNPROTECT(2);
 
   if (! res_R) {
-    PyErr_Format(PyExc_RuntimeError, "Error while running R code");
+    EmbeddedR_exception_from_errmessage();
+    //PyErr_Format(PyExc_RuntimeError, "Error while running R code");
     return NULL;
   }
 
@@ -1700,7 +1706,6 @@ EmbeddedR_findVar(PyObject *self, PyObject *args)
   char *name;
   SEXP rho_R = R_GlobalEnv, res;
   PyObject rho;
-  PyObject *ErrorObject;
 
   if (!PyArg_ParseTuple(args, "s", &name, &rho)) { 
     return NULL; 
@@ -1921,20 +1926,24 @@ initrinterface(void)
 		);
   PyModule_AddObject(m, "initOptions", initOptions);
 
+
+
   PyModule_AddObject(m, "Sexp", (PyObject *)&Sexp_Type);
   PyModule_AddObject(m, "SexpClosure", (PyObject *)&ClosureSexp_Type);
   PyModule_AddObject(m, "SexpVector", (PyObject *)&VectorSexp_Type);
   PyModule_AddObject(m, "SexpEnvironment", (PyObject *)&EnvironmentSexp_Type);
   PyModule_AddObject(m, "SexpS4", (PyObject *)&S4Sexp_Type);
 
-  //FIXME: clean the exception stuff
-  if (ErrorObject == NULL) {
-    ErrorObject = PyErr_NewException("rinterface.error", NULL, NULL);
-    if (ErrorObject == NULL)
+
+  if (RPyExc_RuntimeError == NULL) {
+    RPyExc_RuntimeError = PyErr_NewException("rinterface.RRuntimeError", 
+					     NULL, NULL);
+    if (RPyExc_RuntimeError == NULL)
       return;
   }
-  Py_INCREF(ErrorObject);
-  PyModule_AddObject(m, "RobjectNotFound", ErrorObject);
+  
+  Py_INCREF(RPyExc_RuntimeError);
+  PyModule_AddObject(m, "RRuntimeError", RPyExc_RuntimeError);
 
   embeddedR_isInitialized = Py_False;
   Py_INCREF(Py_False);
@@ -1947,10 +1956,7 @@ initrinterface(void)
   globalEnv = (PySexpObject *)Sexp_new(&EnvironmentSexp_Type, 
 				       Py_None, Py_None);
   RPY_SEXP(globalEnv) = R_EmptyEnv;
-  //SexpObject *sObj = globalEnv->sObj;
-  //SEXP sexp = sObj->sexp;
-  //sexp = R_EmptyEnv;
-  //(globalEnv->sObj)->sexp = R_EmptyEnv;
+
   if (PyDict_SetItemString(d, "globalEnv", (PyObject *)globalEnv) < 0)
     return;
   //FIXME: DECREF ?
@@ -1959,7 +1965,8 @@ initrinterface(void)
   baseNameSpaceEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
 					     Py_None, Py_None);
   RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
-  if (PyDict_SetItemString(d, "baseNameSpaceEnv", (PyObject *)baseNameSpaceEnv) < 0)
+  if (PyDict_SetItemString(d, "baseNameSpaceEnv", 
+			   (PyObject *)baseNameSpaceEnv) < 0)
     return;
 /*   //FIXME: DECREF ? */
 /*   Py_DECREF(baseNameSpaceEnv); */
