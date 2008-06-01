@@ -3,8 +3,6 @@ import os, sys
 try:
     R_HOME = os.environ["R_HOME"]
 except KeyError:
-    if sys.platform == 'win32':
-        raise Exception("The variable R_HOME is not defined.")
     R_HOME = os.popen("R RHOME").readlines()
     #Twist if 'R RHOME' spits out a warning
     if R_HOME[0].startswith("WARNING"):

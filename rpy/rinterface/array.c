@@ -30,12 +30,13 @@ static char
 sexp_typekind(SEXP sexp)
 {
   switch (TYPEOF(sexp)) {
-  case REALSXP: return 'd';
-  case INTSXP: return 'l';
+  case REALSXP: return 'f';
+  case INTSXP: return 'i';
     //FIXME: handle strings ?
     //case STRSXP: return 'S';
-  case CPLXSXP: return 'D';
-    //case LGLSXP: return 'b';
+	//FIXME: handle 'O' (as R list ?)
+  case CPLXSXP: return 'c';
+  case LGLSXP: return 'b';
   }
   return 0;
 }
