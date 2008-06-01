@@ -1210,11 +1210,12 @@ static SEXP rpy_findFun(SEXP symbol, SEXP rho)
 
 
 /* --- */
-static PySexpObject*
+static PyObject*
 EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
 {
   char *name;
   SEXP res_R = NULL;
+  PySexpObject *res;
   PyObject *wantFun = Py_False;
   Py_INCREF(Py_False);
   static char *kwlist[] = {"name", "wantFun", NULL};
@@ -1245,12 +1246,13 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   }
 
   if (res_R != R_UnboundValue) {
-    Py_DECREF(Py_False);
-    return newPySexpObject(res_R);
+    res = newPySexpObject(res_R);
+  } else {
+    PyErr_Format(PyExc_LookupError, "'%s' not found", name);
+    res = NULL;
   }
-  PyErr_Format(PyExc_LookupError, "'%s' not found", name);
-    Py_DECREF(Py_False);
-  return NULL;
+  Py_DECREF(Py_False);
+  return res;
 }
 PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
 	     "Find an R object in a given environment.");
