@@ -1,41 +1,60 @@
 Overview
 ========
 
+Background
+----------
+
 `Python`_ is a popular 
-all-purpose scripting language, while `R`_
+all-purpose scripting language, while `R`_ (an open source implementation
+of the S/Splus language)
 is a scripting language mostly popular for data analysis, statistics, and
-graphics.
+graphics. If you are reading this, there are good chances that you are
+at least familiar with one of the two.
 
 .. _Python: http://www.python.org
 .. _R: http://www.r-project.org
 
-The RPy project is an effort to have access to R from within Python, 
+Having an interface between both languages, and benefit from the respective
+libraries of one language while working in the other language, appeared
+desirable and an early option to achieve it was the RSPython project, 
+itself part of the `Omegahat project`_. 
 
-The RPy code was initially inspired in RSPython, which is part of
-the `Omegahat project`_.
+A bit later, the RPy project appeared and focused on providing simple and
+robust access to R from within Python, with the initial Unix-only releases
+quickly followed by Microsoft and MacOS compatible versions.
+This project is referred to as RPy-1.x in the
+rest of this document.
 
 .. _Omegahat project: http://www.omegahat.org/RSPython
 
-RPy2 is inspired by RPy, as well as A. Belopolskys's contributions to RPy.
-A compatibility layer with RPy is provided.
+The present documentation covers RPy2, an evolution of RPy-1.x.
+Naturally RPy2 is inspired by RPy, but also by A. Belopolskys's contributions
+that were waiting to be included into RPy.
 
-FIXME: write a section about what changed
+Contents
+--------
+
+The package is made of several sub-packages or modules:
+
+:mod:`rpy2.rpy_classic`
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Higher-level interface similar to the one in RPy-1.x.
+This is provided for compatibility reasons, and facilitate the migration
+to RPy2.
 
 
+:mod:`rpy2.robjects`
+^^^^^^^^^^^^^^^^^^^^
 
-The package is made of several elements:
-
-
-:mod:`rpy_classic`
-    Higher-level interface similar to the one in RPy-1.x
-
-:mod:`robjects`
-    Higher-level interface, when ease-of-use matters most
+Higher-level interface, when ease-of-use matters most.
 
 
-:mod:`rinterface`
-    Low-level interface to R, when speed and flexibility
-    matter most. Here the programmer gets close to R's C
-    API, and can use R's function faster than within an R session.
+:mod:`rpy2.rinterface`
+^^^^^^^^^^^^^^^^^^^^^^
+
+Low-level interface to R, when speed and flexibility
+matter most. Here the programmer gets close(r) to R's C
+API.
 
 

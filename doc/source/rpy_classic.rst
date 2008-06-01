@@ -1,21 +1,40 @@
+.. index::
+   module: rpy2.rpy_classic
+
+
 ***********
 rpy_classic
 ***********
 
-The module aims at providing an API similar to
-the one in RPy-1.x.
+.. module:: rpy2.rpy_classic
+   :synopsis: Provide compatibility with rpy
 
-Loading the module can be done as:
+This module provides an API similar to the one 
+in RPy-1.x (*rpy*).
+
+To match examples and documentation for *rpy*,
+we load the module as:
 
 >>> from rpy2.rpy_classic import *
 
+.. index::
+   single: conversion
 
-The conversion system is still around:
+Conversion
+----------
+
+Although the proposed high-level interface in :mod:`rpy2.robjects`
+does not need explicit conversion settings, the conversion system 
+existing in *rpy* is provided, and the default
+mode can be set with :func:`set_default_mode`:
 
 >>> set_default_mode(NO_CONVERSION)
 >>> set_default_mode(BASIC_CONVERSION)
 
-The ``r`` instance behaves like before:
+R instance
+----------
+
+The ``r`` instance of class :class:`R` behaves like before:
 
 >>> r.help
 
@@ -51,14 +70,18 @@ True
 True
 >>>
 
+If an object is not a R function, a :class:`RuntimeError`
+is thrown by R whenever called:
+
+>>> r.pi()
+
+The function are called like regular Python functions:
+
 >>> r.seq(1, 3)
 >>> r.seq(1, 3, by=0.5)
 >>> r['options'](show_coef_Pvalues=0)
 
-Whenever object is not a function, a runtime error
-is thrown by R.
 
->>> r.pi()
 
   
 

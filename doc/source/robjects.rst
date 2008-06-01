@@ -1,6 +1,14 @@
+.. index::
+   module: rpy2.robjects
+
+
 *************
 rpy2.robjects
 *************
+
+.. module:: rpy2.robjects
+   :synopsis: High-level interface with R
+
 
 Overview
 ========
@@ -105,8 +113,6 @@ Vectors are understood as Numpy or Numeric arrays::
   ltr_np = numpy.array(ltr)
 
 
-
-
 :class:`Renvironment`
 ---------------------
 
@@ -196,12 +202,16 @@ Example::
 Principal component analysis
 ----------------------------
 
+The R code is
+
 .. code-block:: r
 
   m <- matrix(rnorm(100), ncol=5)
   pca <- princomp(m)
   plot(pca, main="Eigen values")
   biplot(pca, main="biplot")
+
+The :mod:`rpy2.robjects` code is
 
 .. code-block:: python
 

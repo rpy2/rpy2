@@ -1,9 +1,13 @@
 .. index::
-   module: rinterface
+   module: rpy2.rinterface
 
 **********
 rinterface
 **********
+
+.. module:: rpy2.rinterface
+   :synopsis: Low-level interface with R
+
 
 Overview
 ========
@@ -19,6 +23,7 @@ The package can be imported with:
 
 .. index::
    single: initEmbeddedR
+   single: initialize
 
 :func:`initEmbeddedR`
 ---------------------
@@ -46,6 +51,7 @@ to data stored and administered in the R space.
 
 .. index::
    single: globalEnv
+   single: SexpEnvironment; globalEnv
 
 globalEnv
 ---------
@@ -63,6 +69,7 @@ The library is said to be attached to the current search path.
 
 .. index::
    single: baseNamespaceEnv
+   single: SexpEnvironment; baseNamespaceEnv
 
 baseNamespaceEnv
 ----------------
@@ -90,6 +97,9 @@ typeof()
 do_slot([name])
     Access attribute *name* for the object
 
+.. index::
+   single: Sexp; typeof
+
 :meth:`typeof`
 --------------
 
@@ -100,6 +110,8 @@ accessed with the method :meth:`typeof`.
 
 FIXME: talk about the all the types.
 
+.. index::
+   single: Sexp; do_slot
 
 :meth:`do_slot`
 ---------------
@@ -141,10 +153,11 @@ To use again the constant *pi*:
 3.1415926535897931
 >>>
 
-Important note: The *__getitem__* operator *[*
-is returning a Python scalar. Because of that casting
-an *SexpVector* into a list is only a matter of calling
-the constructor *list*.
+.. note::
+   The *__getitem__* operator *[*
+   is returning a Python scalar. Because of that casting
+   an *SexpVector* into a list is only a matter of calling
+   the constructor *list*.
 
 The letters of the (western) alphabet are:
 
@@ -284,41 +297,59 @@ Misc. variables
 
 .. index::
    single: R_LEN_T_MAX
+   single: R_HOME
+   single: TRUE
+   single: FALSE
 
 
 R_HOME
   R HOME
 
-R_LEN_T_MAX
+:const:`R_LEN_T_MAX`
   largest usable integer for indexing R vectors
 
-TRUE/FALSE
+:const:`TRUE`/:const:`FALSE`
   R's TRUE and FALSE
 
-NA_INTEGER
-  NA value for integers
+:const:`NA_INTEGER`
+  Missing value for integers
 
-NA_LOGICAL
-  NA value for booleans
+:const:`NA_LOGICAL`
+  Missing value for booleans
 
-NA_REAL
-  NA value for numerical values (float / double)
+:const:`NA_REAL`
+  Missing value for numerical values (float / double)
 
-INTSXP
+.. index::
+   single: ENVSXP
+   single: type; ENVSXP
+   single: INTSXP
+   single: type; INTSXP
+   single: LGLSXP
+   single: type; LGLSXP
+   single: STRSXP
+   single: type; STRSXP
+   single: REALSXP
+   single: type; REALSXP
+
+R types
+-------
+
+:const:`INTSXP`
   Integer
 
-REALSXP
+:const:`REALSXP`
   Numerical value (float / double)
 
-LGLSXP
+:const:`LGLSXP`
   Boolean (logical in the R terminology)
 
-STRSXP
+:const:`STRSXP`
   String
 
-ENVSXP
+:const:`ENVSXP`
   Environment
 
-CPLXSXP
+:const:`CPLXSXP`
   Complex 
 
