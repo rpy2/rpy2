@@ -2,11 +2,6 @@ import unittest
 import itertools
 import rpy2.rinterface as rinterface
 
-try:
-    import Numeric
-    has_Numeric = True
-except ImportError:
-    hasNumeric = False
 
 try:
     import numpy
@@ -14,11 +9,6 @@ try:
 except ImportError:
     hasNumpy = False
 
-try:
-    import numarray
-    has_Numarray = True
-except ImportError:
-    has_Numarray = False
 
 try:
     #FIXME: can starting and stopping an embedded R be done several times ?
@@ -64,32 +54,15 @@ def testArrayStructComplex(self, numericModule):
 
 class SexpVectorNumericTestCase(unittest.TestCase):
 
-    def testArrayStructNumericInt(self):
-        testArrayStructInt(self, Numeric)
 
     def testArrayStructNumpyInt(self):
         testArrayStructInt(self, numpy)
 
-    def testArrayStructNumarrayInt(self):
-        testArrayStructInt(self, numarray)
-        
-    def testArrayStructNumericDouble(self):
-        testArrayStructDouble(self, Numeric)
-
     def testArrayStructNumpyDouble(self):
         testArrayStructDouble(self, numpy)
 
-    def testArrayStructNumarrayDouble(self):
-        testArrayStructDouble(self, numarray)
-
-    def testArrayStructNumericComplex(self):
-        testArrayStructComplex(self, Numeric)
-
     def testArrayStructNumpyComplex(self):
         testArrayStructComplex(self, numpy)
-
-    def testArrayStructNumarrayComplex(self):
-        testArrayStructComplex(self, numarray)
 
 
 
