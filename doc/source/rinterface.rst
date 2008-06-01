@@ -179,22 +179,25 @@ called names), and can be accessed as such:
 >>> [x for x in options_names]
 
 
+.. index::
+   single: numpy
 
-Numeric, numarray, numpy (and future possible names)
-----------------------------------------------------
+Numpy
+-----
 
 The SexpVector objects are made to behave like arrays as defined
-in the Python packages Numeric, numarray, and numpy.
+in the Python package numpy.
 
 The functions *array* and *asarray* is all that is needed:
 
->>> import Numeric
+>>> import numpy
 >>> rx = rinterface.SexpVector([1,2,3,4], rinterface.INTSXP)
->>> nx = Numeric.array(rx)
->>> nx_nc = Numeric.asarray(rx)
+>>> nx = numpy.array(rx)
+>>> nx_nc = numpy.asarray(rx)
 
 
-Important note: when using *asarray*, the data are not copied.
+.. note::
+   when using *asarray*, the data are not copied.
 
 >>> nx_nc[2] = 42
 >>> rx[2]

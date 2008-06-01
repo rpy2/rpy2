@@ -21,12 +21,12 @@ intuitive interface to R.
 >>> import rpy2.robjects as robjects
 
 
-:mod:`robjects` is written on the top of :mod:`rinterface`, and one
+:mod:`rpy2.robjects` is written on the top of :mod:`rpy2.rinterface`, and one
 not satisfied with it could easily build one's own flavor of a
-Python-R interface by modifying it.
+Python-R interface by modifying it (:mod:`rpy2.rpy_classic` is an other
+example of a Python interface built on the top :mod:`rpy2.rinterface`).
 
-Classes
-=======
+Classes:
 
 :class:`Robject`
   Parent class for R objects.
@@ -41,8 +41,8 @@ Classes
   An R function.
 
 
-R
--
+Class R
+=======
 
 This class is currently a singleton, with
 its one representation instanciated when the
@@ -51,9 +51,12 @@ module is loaded:
 >>> robjects.r
 >>> print(robjects.r)
 
-The instance can be seen as a window to an
-embedded R process.
-Readers familiar with the ctypes module for Python
+The instance can be seen as the entry point to an
+embedded R process, and the elements that would be accessible
+from an equivalent R environment are accessible as attributes
+of the instance.
+Readers familiar with the ctypes module for Python will note
+the similarity with ctypes.
 
 R vectors:
 
@@ -66,14 +69,25 @@ R functions:
 >>> plot = robjects.r.plot
 >>> dir = robjects.r.dir
 
-The evaluation of R code in a string can also be performed
-FIXME: (not yet implemented/tested)
+Just like it was the case with RPy-1.x, on-the-fly
+evaluation of R code contained in a string can be performed
+by calling the r instance:
 
-:class:`Robject`
-----------------
+>>> robjects.r('1:2')
+3
+>>> sqr = ro.r('function(x) x^2)
+>>> sqr
+function (x)
+x^2
+>>> sqr(2)
+4
 
-:class:`Rvector`
-----------------
+
+Class :class:`Robject`
+======================
+
+Class :class:`Rvector`
+======================
 
 Beside functions, and environemnts, most of the objects
 an R user is interacting with are vector-like.
@@ -99,12 +113,40 @@ necessary.
 | ``/`` | Divide  |
 +-------+---------+
 
-FIXME:
+.. index::
+   single: indexing
+
 Indexing
+--------
 
-This class is using the class :class:`rinterface.SexpVector`.
+Indexing can become a thorny issue, since Python indexing starts at zero
+and R indexing starts at one.
 
-Numpy, Numeric
+The python :meth:`__getitem__` method behaves like a Python user would expect
+it for a vector (and indexing starts at zero),
+while the method :meth:`subset` behaves like a R user would expect it
+(indexing starts at one, and a vector of integers, booleans, or strings can
+be given to subset elements).
+
+>>> x = robjects.r.seq(1, 10)
+>>> x[0]
+1
+>>> x.subset(0)
+integer(0)
+>>> x.subset(1)
+1L
+>>> x.subset(-1)
+2:10
+>>> x.subset(True)
+1:10
+
+This class is using the class :class:`rinterface.SexpVector`, 
+and its documentation can be referred to for details of what is happenening
+at the low-level.
+
+
+Numpy
+-----
 
 Vectors are understood as Numpy or Numeric arrays::
 
@@ -113,8 +155,8 @@ Vectors are understood as Numpy or Numeric arrays::
   ltr_np = numpy.array(ltr)
 
 
-:class:`Renvironment`
----------------------
+Class :class:`REnvironment`
+===========================
 
 R environments can be described to the Python user as
 an hybrid of a dictionary and a scope.
@@ -160,8 +202,8 @@ An environment is also iter-able, returning all the symbols
 >>> len([x for x in env])
 
 
-:class:`Rfunction`
-------------------
+Class :class:`Rfunction`
+========================
 
 >>> plot = robjects.r.plot
 >>> rnorm = robjects.r.rnorm
@@ -170,8 +212,8 @@ An environment is also iter-able, returning all the symbols
 This class is using the class :class:`rinterface.SexpClosure`
 
 
-Mapping
--------
+Mapping between rpy2 objects and other python objects
+=====================================================
 
 The mapping between low-level objects is performed by the
 functions XXX and XXX.
@@ -219,10 +261,12 @@ The :mod:`rpy2.robjects` code is
   pca = r.princomp(m)
   r.plot(pca, main="Eigen values")
   r.biplot(pca, main="biplot")
+   
 
 
 S4 classes
 ----------
+
 
 .. code-block:: python
 
