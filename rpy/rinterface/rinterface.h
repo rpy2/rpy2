@@ -13,6 +13,7 @@
 
 typedef struct {
   int count;
+  //unsigned short int rpy_only;
   SEXP sexp;
 } SexpObject;
 
@@ -27,6 +28,7 @@ typedef struct {
 #define RPY_COUNT(obj) (((obj)->sObj)->count)
 #define RPY_SEXP(obj) (((obj)->sObj)->sexp)
 //#define RPY_SEXP(obj) ((obj)->sexp)
+//#define RPY_RPYONLY(obj) (((obj)->sObj)->rpy_only)
 
 #define RPY_INCREF(obj) ((obj->sObj)->count++)
 #define RPY_DECREF(obj) ((obj->sObj)->count--)

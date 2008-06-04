@@ -99,6 +99,7 @@ def getRinterface_ext(RHOME, r_packversion):
     rinterface_ext = Extension(
             pack_name + '.rinterface.rinterface',
             [os.path.join('rpy', 'rinterface', 'array.c'), 
+             os.path.join('rpy', 'rinterface', 'r_utils.c'),
              os.path.join('rpy', 'rinterface', 'rinterface.c')],
             include_dirs = [ os.path.join(RHOME, 'include'), 
                             os.path.join('rpy', 'rinterface')],

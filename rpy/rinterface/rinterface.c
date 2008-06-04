@@ -69,7 +69,9 @@
 
 #include "rinterface.h"
 #include "array.h"
+#include "r_utils.h"
 
+#define RPY_VERBOSE
 
 /* Back-compatibility with Python 2.4 */
 #if (PY_VERSION_HEX < 0x02050000)
@@ -331,9 +333,11 @@ Sexp_dealloc(PySexpObject *self)
   RPY_DECREF(self);
   
 #ifdef RPY_VERBOSE
-  printf("%p: sexp count is %i\n", self, RPY_COUNT(self));
+  printf("Python:%p / R:%p -- sexp count is %i\n", 
+	 self, RPY_SEXP(self), RPY_COUNT(self));
 #endif
 
+  printf("dealloc-count--->\n");
   if ((RPY_COUNT(self) == 0) && RPY_SEXP(self)) {
 #ifdef RPY_VERBOSE
     printf("freeing SEXP resources...\n");
@@ -348,7 +352,9 @@ Sexp_dealloc(PySexpObject *self)
     printf("done.\n");
 #endif 
   }
+  printf("dealloc-del--->\n");
   PyObject_Del(self);
+  printf("dealloc-ok--->\n");
 }
 
 
@@ -500,6 +506,8 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
 
   PySexpObject *self;
+  //unsigned short int rpy_only = 1;
+
   #ifdef RPY_VERBOSE
   printf("new object @...\n");
   #endif 
@@ -507,7 +515,7 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   //self = (PySexpObject *)_PyObject_New(&type);
   self = (PySexpObject *)type->tp_alloc(type, 0);
   #ifdef RPY_VERBOSE
-  printf("  %p...\n", self);
+  printf("  Python:%p / R:%p  ...\n", self, R_NilValue);
   #endif 
 
   if (! self)
@@ -519,6 +527,7 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
   RPY_COUNT(self) = 1;
   RPY_SEXP(self) = R_NilValue;
+  //RPY_RPYONLY(self) = rpy_only;
 
   #ifdef RPY_VERBOSE
   printf("done.\n");
@@ -530,10 +539,11 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
 
 static int
-Sexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
+Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
 #ifdef RPY_VERBOSE
-  printf("%p: Sexp initializing...\n", self);
+  printf("Python:%p / R:%p - Sexp initializing...\n", 
+	 self, RPY_SEXP((PySexpObject *)self));
 #endif 
 
   PyObject *sourceObject;
@@ -559,12 +569,15 @@ Sexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   }
 
   if (PyObject_IsTrue(copy)) {
-    SEXP oldSexp;
-    oldSexp = RPY_SEXP((PySexpObject *)sourceObject);
-    RPY_SEXP(self) = oldSexp;
+    //SEXP oldSexp;
+    //oldSexp = RPY_SEXP((PySexpObject *)sourceObject);
+    //RPY_SEXP(self) = oldSexp;
+    free(((PySexpObject *)self)->sObj);
+    self->sObj = ((PySexpObject *)sourceObject)->sObj;
     RPY_INCREF(self);
 #ifdef RPY_VERBOSE
-    printf("%p: sexp count is increased to %i.\n", self, RPY_COUNT(self));
+    printf("%p: sexp count is increased to %i.\n", 
+	   (PySexpObject *)self, RPY_COUNT((PySexpObject *)self));
 #endif 
 
   } else {
@@ -1142,6 +1155,7 @@ VectorSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   PyObject *copy;
   static char *kwlist[] = {"sexpvector", "sexptype", "copy", NULL};
 
+
   //FIXME: handle the copy argument
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|iO!", 
 				    kwlist,
@@ -1160,8 +1174,8 @@ VectorSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 			  (PyObject*)&VectorSexp_Type)) {
 
     //call parent's constructor
-    if (Sexp_init(self, args, kwds) == -1) {
-      PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
+    if (Sexp_init(self, args, NULL) == -1) {
+      //PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
       return -1;
     }
   } else {
@@ -1180,33 +1194,6 @@ VectorSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   
   return 0;
 }
-
-static SEXP rpy_findFun(SEXP symbol, SEXP rho)
-{
-    SEXP vl;
-    while (rho != R_EmptyEnv) {
-        /* This is not really right.  Any variable can mask a function */
-        vl = findVarInFrame3(rho, symbol, TRUE);
-
-        if (vl != R_UnboundValue) {
-            if (TYPEOF(vl) == PROMSXP) {
-                PROTECT(vl);
-                vl = eval(vl, rho);
-                UNPROTECT(1);
-            }
-            if (TYPEOF(vl) == CLOSXP || TYPEOF(vl) == BUILTINSXP ||
-                TYPEOF(vl) == SPECIALSXP)
-               return (vl);
-
-            if (vl == R_MissingArg)
-	      printf("R_MissingArg in rpy_FindFun.\n");
-	    return R_UnboundValue;
-        }
-        rho = ENCLOS(rho);
-    }
-    return R_UnboundValue;
-}
-
 
 
 /* --- */
@@ -1246,6 +1233,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   }
 
   if (res_R != R_UnboundValue) {
+    //FIXME rpy_only
     res = newPySexpObject(res_R);
   } else {
     PyErr_Format(PyExc_LookupError, "'%s' not found", name);

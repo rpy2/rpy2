@@ -15,11 +15,12 @@ class SexpTestCase(unittest.TestCase):
     #def tearDown(self):
     #    rinterface.endEmbeddedR(1);
 
-    def testNew(self):
+    def testNew_invalid(self):
 
         x = "a"
         self.assertRaises(ValueError, rinterface.Sexp, x)
-        
+
+    def testNew(self):        
         sexp = rinterface.globalEnv.get("letters")
         sexp_new = rinterface.Sexp(sexp)
 
