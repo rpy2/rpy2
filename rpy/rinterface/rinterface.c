@@ -434,7 +434,7 @@ static PyObject*
 Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
 static int
-Sexp_init(PySexpObject *self, PyObject *args, PyObject *kwds);
+Sexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 
 /*
  * Generic Sexp_Type. It represents SEXP objects at large.
@@ -573,8 +573,8 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     //oldSexp = RPY_SEXP((PySexpObject *)sourceObject);
     //RPY_SEXP(self) = oldSexp;
     free(((PySexpObject *)self)->sObj);
-    self->sObj = ((PySexpObject *)sourceObject)->sObj;
-    RPY_INCREF(self);
+    ((PySexpObject *)self)->sObj = ((PySexpObject *)sourceObject)->sObj;
+    RPY_INCREF((PySexpObject *)self);
 #ifdef RPY_VERBOSE
     printf("%p: sexp count is increased to %i.\n", 
 	   (PySexpObject *)self, RPY_COUNT((PySexpObject *)self));
@@ -1904,7 +1904,7 @@ initrinterface(void)
 		);
   PYASSERT_ZERO(
 		PyList_SetItem(initOptions, 1, 
-			       PyString_FromString("--quiet"))
+			       PyString_FromString("--verbose"))
 		);
   PYASSERT_ZERO(
 		PyList_SetItem(initOptions, 2, 
@@ -1915,7 +1915,7 @@ initrinterface(void)
 			       PyString_FromString("--no-save"))
 		);
   PyModule_AddObject(m, "initOptions", initOptions);
-
+			       //			       PyString_FromString("--quiet"))
 
 
   PyModule_AddObject(m, "Sexp", (PyObject *)&Sexp_Type);

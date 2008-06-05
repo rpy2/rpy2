@@ -30,8 +30,8 @@ typedef struct {
 //#define RPY_SEXP(obj) ((obj)->sexp)
 //#define RPY_RPYONLY(obj) (((obj)->sObj)->rpy_only)
 
-#define RPY_INCREF(obj) ((obj->sObj)->count++)
-#define RPY_DECREF(obj) ((obj->sObj)->count--)
+#define RPY_INCREF(obj) (((obj)->sObj)->count++)
+#define RPY_DECREF(obj) (((obj)->sObj)->count--)
 
 
 #endif /* !RPY_RI_H */
