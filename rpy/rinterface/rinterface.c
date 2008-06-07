@@ -71,7 +71,7 @@
 #include "array.h"
 #include "r_utils.h"
 
-#define RPY_VERBOSE
+//#define RPY_VERBOSE
 
 /* Back-compatibility with Python 2.4 */
 #if (PY_VERSION_HEX < 0x02050000)
@@ -230,14 +230,11 @@ static PyObject* EmbeddedR_init(PyObject *self)
   }
 
 
-  int status = Rf_initEmbeddedR(n_args, options);
-  /* FIXME: setup_Rmainloop causes ipython to crash 
-   *(bug in ipython ?)
-   */
-/*   int status = 1; */
-/*   Rf_initialize_R(n_args, options); */
-/*   R_Interactive = TRUE;  Rf_initialize_R set this based on isatty */
-/*   setup_Rmainloop(); */
+  /* int status = Rf_initEmbeddedR(n_args, options);*/
+  int status = 1;
+  Rf_initialize_R(n_args, options);
+  R_Interactive = TRUE;
+  setup_Rmainloop();
 
   Py_XDECREF(embeddedR_isInitialized);
   embeddedR_isInitialized = Py_True;
@@ -326,18 +323,15 @@ EmbeddedR_exception_from_errmessage(void)
  * Access to R objects through Python objects
  */
 
-
 static void
-Sexp_dealloc(PySexpObject *self)
+Sexp_clear(PySexpObject *self)
 {
   RPY_DECREF(self);
-  
 #ifdef RPY_VERBOSE
   printf("Python:%p / R:%p -- sexp count is %i\n", 
 	 self, RPY_SEXP(self), RPY_COUNT(self));
 #endif
 
-  printf("dealloc-count--->\n");
   if ((RPY_COUNT(self) == 0) && RPY_SEXP(self)) {
 #ifdef RPY_VERBOSE
     printf("freeing SEXP resources...\n");
@@ -352,9 +346,17 @@ Sexp_dealloc(PySexpObject *self)
     printf("done.\n");
 #endif 
   }
-  printf("dealloc-del--->\n");
-  PyObject_Del(self);
-  printf("dealloc-ok--->\n");
+
+}
+
+
+static void
+Sexp_dealloc(PySexpObject *self)
+{
+  Sexp_clear(self);
+  self->ob_type->tp_free((PyObject*)self);
+
+  //PyObject_Del(self);
 }
 
 
@@ -429,12 +431,106 @@ static PyMethodDef Sexp_methods[] = {
 };
 
 
+staticforward PyTypeObject Sexp_Type;
 
 static PyObject*
-Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
+Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+
+  PySexpObject *self;
+  //unsigned short int rpy_only = 1;
+
+  #ifdef RPY_VERBOSE
+  printf("new '%s' object @...\n", type->tp_name);
+  #endif 
+
+  //self = (PySexpObject *)PyObject_New(PySexpObject, type);
+  self = (PySexpObject *)type->tp_alloc(type, 0);
+  #ifdef RPY_VERBOSE
+  printf("  Python:%p / R:%p (R_NilValue) ...\n", self, R_NilValue);
+  #endif 
+
+  if (! self)
+    PyErr_NoMemory();
+
+  self->sObj = (SexpObject *)calloc(1, sizeof(SexpObject));
+  if (! self->sObj) {
+    Py_DECREF(self);
+    PyErr_NoMemory();
+  }
+
+  RPY_COUNT(self) = 1;
+  RPY_SEXP(self) = R_NilValue;
+  //RPY_RPYONLY(self) = rpy_only;
+
+  #ifdef RPY_VERBOSE
+  printf("done.\n");
+  #endif 
+
+  return (PyObject *)self;
+
+}
 
 static int
-Sexp_init(PyObject *self, PyObject *args, PyObject *kwds);
+Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+#ifdef RPY_VERBOSE
+  printf("Python:%p / R:%p - Sexp initializing...\n", 
+	 self, RPY_SEXP((PySexpObject *)self));
+#endif 
+
+  PyObject *sourceObject;
+
+  Py_INCREF(Py_True);
+  PyObject *copy = Py_True;
+
+  SexpObject *tmpSexpObject;
+
+
+  static char *kwlist[] = {"sexp", "copy", NULL};
+  //FIXME: handle the copy argument
+
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", 
+				    kwlist,
+				    &sourceObject,
+				    &PyBool_Type, &copy)) {
+    Py_DECREF(Py_True);
+    return -1;
+  }
+
+  if (! PyObject_IsInstance(sourceObject, 
+			    (PyObject*)&Sexp_Type)) {
+    PyErr_Format(PyExc_ValueError, 
+		 "Can only instanciate from Sexp objects.");
+    Py_DECREF(Py_True);
+    return -1;
+  }
+
+  if (PyObject_IsTrue(copy)) {
+    tmpSexpObject = ((PySexpObject *)self)->sObj;
+    ((PySexpObject *)self)->sObj = ((PySexpObject *)sourceObject)->sObj;
+    free(tmpSexpObject);
+    RPY_INCREF((PySexpObject *)self);
+#ifdef RPY_VERBOSE
+    printf("Python: %p / R: %p - sexp count is now %i.\n", 
+	   (PySexpObject *)self, RPY_SEXP((PySexpObject *)self), RPY_COUNT((PySexpObject *)self));
+#endif 
+
+  } else {
+    PyErr_Format(PyExc_ValueError, "Cast without copy is not yet implemented.");
+    Py_DECREF(Py_True);
+    return -1;
+  }
+  Py_DECREF(Py_True);
+
+#ifdef RPY_VERBOSE
+  printf("done.\n");
+#endif 
+
+
+  return 0;
+}
+
 
 /*
  * Generic Sexp_Type. It represents SEXP objects at large.
@@ -466,7 +562,7 @@ static PyTypeObject Sexp_Type = {
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
         0,                      /*tp_doc*/
         0,                      /*tp_traverse*/
-        0,                      /*tp_clear*/
+        Sexp_clear,                      /*tp_clear*/
         0,                      /*tp_richcompare*/
         0,                      /*tp_weaklistoffset*/
         0,                      /*tp_iter*/
@@ -501,99 +597,7 @@ static PyTypeObject Sexp_Type = {
 /*   res->sexp = sexp; */
 /*   return res; */
 /* } */
-static PyObject*
-Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-{
 
-  PySexpObject *self;
-  //unsigned short int rpy_only = 1;
-
-  #ifdef RPY_VERBOSE
-  printf("new object @...\n");
-  #endif 
-
-  //self = (PySexpObject *)_PyObject_New(&type);
-  self = (PySexpObject *)type->tp_alloc(type, 0);
-  #ifdef RPY_VERBOSE
-  printf("  Python:%p / R:%p  ...\n", self, R_NilValue);
-  #endif 
-
-  if (! self)
-    PyErr_NoMemory();
-
-  self->sObj = (SexpObject *)calloc(1, sizeof(SexpObject));
-  if (! self->sObj)
-    PyErr_NoMemory();
-
-  RPY_COUNT(self) = 1;
-  RPY_SEXP(self) = R_NilValue;
-  //RPY_RPYONLY(self) = rpy_only;
-
-  #ifdef RPY_VERBOSE
-  printf("done.\n");
-  #endif 
-
-  return (PyObject *)self;
-
-}
-
-
-static int
-Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
-{
-#ifdef RPY_VERBOSE
-  printf("Python:%p / R:%p - Sexp initializing...\n", 
-	 self, RPY_SEXP((PySexpObject *)self));
-#endif 
-
-  PyObject *sourceObject;
-  PyObject *copy = Py_True;
-  Py_INCREF(Py_True);
-  static char *kwlist[] = {"sexp", "copy", NULL};
-  //FIXME: handle the copy argument
-
-  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", 
-				    kwlist,
-				    &sourceObject,
-				    &PyBool_Type, &copy)) {
-    Py_DECREF(Py_True);
-    return -1;
-  }
-
-  if (! PyObject_IsInstance(sourceObject, 
-			    (PyObject*)&Sexp_Type)) {
-    PyErr_Format(PyExc_ValueError, 
-		 "Can only instanciate from Sexp objects.");
-    Py_DECREF(Py_True);
-    return -1;
-  }
-
-  if (PyObject_IsTrue(copy)) {
-    //SEXP oldSexp;
-    //oldSexp = RPY_SEXP((PySexpObject *)sourceObject);
-    //RPY_SEXP(self) = oldSexp;
-    free(((PySexpObject *)self)->sObj);
-    ((PySexpObject *)self)->sObj = ((PySexpObject *)sourceObject)->sObj;
-    RPY_INCREF((PySexpObject *)self);
-#ifdef RPY_VERBOSE
-    printf("%p: sexp count is increased to %i.\n", 
-	   (PySexpObject *)self, RPY_COUNT((PySexpObject *)self));
-#endif 
-
-  } else {
-    PyErr_Format(PyExc_ValueError, "Cast without copy is not yet implemented.");
-    Py_DECREF(Py_True);
-    return -1;
-  }
-  Py_DECREF(Py_True);
-
-#ifdef RPY_VERBOSE
-  printf("done\n.");
-#endif 
-
-
-  return 0;
-}
 
 
 
@@ -822,7 +826,7 @@ The closure can be accessed with the method 'closureEnv'.\
 ");
 
 static int
-ClosureSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds);
+ClosureSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 
 
 static PyTypeObject ClosureSexp_Type = {
@@ -874,7 +878,7 @@ static PyTypeObject ClosureSexp_Type = {
 
 
 static int
-ClosureSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
+ClosureSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
   PyObject *object;
   PyObject *copy;
@@ -889,7 +893,7 @@ ClosureSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   if (PyObject_IsInstance(object, 
 			  (PyObject*)&ClosureSexp_Type)) {
     //call parent's constructor
-    if (Sexp_init(self, args, kwds) == -1) {
+    if (Sexp_init(self, args, NULL) == -1) {
       PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
       return -1;
     }
@@ -1093,7 +1097,7 @@ PyDoc_STRVAR(VectorSexp_Type_doc,
 	     " is done at zero.");
 
 static int
-VectorSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds);
+VectorSexp_init(SexpObject *self, PyObject *args, PyObject *kwds);
 
 static PyTypeObject VectorSexp_Type = {
 	/* The ob_type field must be initialized in the module init function
@@ -1144,7 +1148,7 @@ static PyTypeObject VectorSexp_Type = {
  
 
 static int
-VectorSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
+VectorSexp_init(SexpObject *self, PyObject *args, PyObject *kwds)
 {
 #ifdef RPY_VERBOSE
   printf("%p: VectorSexp initializing...\n", self);
@@ -1165,31 +1169,30 @@ VectorSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
     return -1;
   }
 
-  if ((sexptype < 0) || (sexptype > maxValidSexpType) || 
-      (! validSexpType[sexptype])) {
-    PyErr_Format(PyExc_ValueError, "Invalid SEXP type.");
-    return -1;
-  }
   if (PyObject_IsInstance(object, 
 			  (PyObject*)&VectorSexp_Type)) {
-
     //call parent's constructor
     if (Sexp_init(self, args, NULL) == -1) {
       //PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
       return -1;
     }
-  } else {
-    if (sexptype == -1) {
-      //FIXME: implemement automagic type
-      //(RPy has something).
-
-      PyErr_Format(PyExc_ValueError, "Missing type.");
+  } else if (PySequence_Check(object)) {
+    if ((sexptype < 0) || (sexptype > maxValidSexpType) || 
+	(! validSexpType[sexptype])) {
+      PyErr_Format(PyExc_ValueError, "Invalid SEXP type.");
       return -1;
     }
-    RPY_SEXP(self) = newSEXP(object, sexptype);
+    //FIXME: implemement automagic type ?
+    //(RPy has something)... or leave it to extensions ?
+
+    RPY_SEXP((PySexpObject *)self) = newSEXP(object, sexptype);
+  } else {
+    PyErr_Format(PyExc_ValueError, "Invalid sexpvector.");
+    return -1;
   }
+
 #ifdef RPY_VERBOSE
-  printf("done.\n");
+  printf("done (VectorSexp_init).\n");
 #endif 
   
   return 0;
@@ -1445,7 +1448,7 @@ EnvironmentSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   if (PyObject_IsInstance(object, 
 			  (PyObject*)&EnvironmentSexp_Type)) {
     //call parent's constructor
-    if (Sexp_init(self, args, kwds) == -1) {
+    if (Sexp_init(self, args, NULL) == -1) {
       PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
       return -1;
     }
@@ -1578,9 +1581,15 @@ newSEXP(PyObject *object, int rType)
 {
   SEXP sexp;
   PyObject *seq_object, *item; 
+
+#ifdef RPY_VERBOSE
+  printf("  new SEXP for Python:%p.\n", object);
+#endif 
+
   seq_object = PySequence_Fast(object, 
 			       "Cannot create R object from non-sequence Python object.");
   //FIXME: Isn't the call above supposed to fire an Exception ?
+
   if (! seq_object) {
     return NULL;
   }
@@ -1589,7 +1598,6 @@ newSEXP(PyObject *object, int rType)
   PROTECT(sexp = allocVector(rType, length));
 
   int i;
-  
   switch(rType) {
   case REALSXP:
     for (i = 0; i < length; ++i) {
@@ -1682,6 +1690,10 @@ newSEXP(PyObject *object, int rType)
     sexp = NULL;
   }
   UNPROTECT(1);
+#ifdef RPY_VERBOSE
+  printf("  new SEXP for Python:%p is %p.\n", object, sexp);
+#endif 
+
   return sexp;
 }
 
@@ -1904,7 +1916,7 @@ initrinterface(void)
 		);
   PYASSERT_ZERO(
 		PyList_SetItem(initOptions, 1, 
-			       PyString_FromString("--verbose"))
+			       PyString_FromString("--quiet"))
 		);
   PYASSERT_ZERO(
 		PyList_SetItem(initOptions, 2, 
