@@ -311,8 +311,13 @@ PyDoc_STRVAR(EmbeddedR_end_doc,
 static void
 EmbeddedR_exception_from_errmessage(void)
 {
-  char *message = CHARACTER_VALUE(eval(GetErrMessage_SEXP,
-				       R_GlobalEnv));
+  SEXP expr, res;
+  //PROTECT(GetErrMessage_SEXP);
+  PROTECT(expr = allocVector(LANGSXP, 1));
+  SETCAR(expr, GetErrMessage_SEXP);
+  PROTECT(res = Rf_eval(expr, R_GlobalEnv));
+  char *message = CHARACTER_VALUE(res);
+  UNPROTECT(2);
   PyErr_SetString(RPyExc_RuntimeError, message);
 }
 
