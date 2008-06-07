@@ -19,6 +19,7 @@ we load the module as:
 
 .. index::
    single: conversion
+   single: rpy_classic; conversion
 
 Conversion
 ----------
@@ -58,6 +59,9 @@ An example::
   r.library('splines')
 
   type(r.seq)
+
+.. index::
+   pair: rpy_classic; function
 
 Functions
 ---------

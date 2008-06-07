@@ -39,7 +39,16 @@ of a second call to :func:`initEmbeddedR`, to avoid unpredictable results
 when using the embedded R, an exception is be fired.
 
 Parameters for the initialization are in the module variable
-initOptions.
+`initOptions`.
+
+.. index::
+   single: initialize R_HOME
+
+.. note::
+   If calling :func:`initEmbeddedR` returns an error stating that
+   `R_HOME` is defined, you should either have the R executable in
+   your path ($PATH on unix-alikes, %Path% on Microsoft Windows) or
+   have the environment variable `R_HOME` defined. 
 
 R space and Python space
 ------------------------
@@ -68,7 +77,7 @@ how to present it a clear(er) way).
 The library is said to be attached to the current search path.
 
 .. index::
-   single: baseNamespaceEnv
+   pair: rinterface; baseNamespaceEnv
    single: SexpEnvironment; baseNamespaceEnv
 
 baseNamespaceEnv
@@ -153,18 +162,31 @@ To use again the constant *pi*:
 3.1415926535897931
 >>>
 
-.. note::
-   The *__getitem__* operator *[*
-   is returning a Python scalar. Because of that casting
-   an *SexpVector* into a list is only a matter of calling
-   the constructor *list*.
-
 The letters of the (western) alphabet are:
 
 >>> letters = rinterface.globalEnv.get("letters") 
 >>> len(letters)
 26
 >>> LETTERS = rinterface.globalEnv.get("LETTERS") 
+
+
+.. index::
+   pair: rinterface;indexing
+
+Indexing
+--------
+
+The indexing is working like it would on regular `Python`
+tuples or lists.
+The indexing starts at 0 (zero), which differs from `R`, 
+where indexing start at 1 (one).
+
+.. note::
+   The *__getitem__* operator *[*
+   is returning a Python scalar. Casting
+   an *SexpVector* into a list is only a matter of calling
+   the constructor *list*.
+
 
 Names
 -----
@@ -264,6 +286,10 @@ Note that in the current implementation the content of the environment
 is evaluated only once, when the iterator is created, and that adding 
 or removing elements to the environment after will not have any effect.
 
+.. index::
+   single: closure
+   pair: rinterface; function
+
 :class:`SexpClosure`
 ====================
 
@@ -313,6 +339,12 @@ R_HOME
 
 :const:`TRUE`/:const:`FALSE`
   R's TRUE and FALSE
+
+.. index::
+   single: missing values
+
+Missing values
+--------------
 
 :const:`NA_INTEGER`
   Missing value for integers

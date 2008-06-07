@@ -24,20 +24,20 @@ intuitive interface to R.
 :mod:`rpy2.robjects` is written on the top of :mod:`rpy2.rinterface`, and one
 not satisfied with it could easily build one's own flavor of a
 Python-R interface by modifying it (:mod:`rpy2.rpy_classic` is an other
-example of a Python interface built on the top :mod:`rpy2.rinterface`).
+example of a Python interface built on the top of :mod:`rpy2.rinterface`).
 
 Classes:
 
-:class:`Robject`
+:class:`RObject`
   Parent class for R objects.
 
-:class:`Rvector`
+:class:`RVector`
   An R vector
 
-:class:`Renvironment`
+:class:`REnvironment`
   An R environment.
 
-:class:`Rfunction`
+:class:`RFunction`
   An R function.
 
 
@@ -82,22 +82,40 @@ x^2
 >>> sqr(2)
 4
 
+.. index::
+   pair: robjects;RObject
 
-Class :class:`Robject`
-======================
+R objects
+=========
 
-Class :class:`Rvector`
-======================
+The class :class:`rpy2.robjects.RObject`
+represents an arbitray R object, meaning than object
+cannot be represented by any of the classes :class:`RVector`,
+:class:`RFunction`, :class:`REnvironment`. 
+
+The class inherits from the class
+:class:`rpy2.rinterface.Sexp`.
+
+.. index::
+   pair: robjects;RVector
+
+R vectors
+=========
 
 Beside functions, and environemnts, most of the objects
 an R user is interacting with are vector-like.
 For example, this means that any scalar is in fact a vector
 of length one.
 
-The class :class:`Rvector` has a constructor:
+The class :class:`RVector` has a constructor:
 
->>> x = robjects.Rvector(3)
+>>> x = robjects.RVector(3)
 
+The class inherits from the class
+:class:`rpy2.rinterface.VectorSexp`.
+
+Operators
+---------
 
 Mathematical operations on vectors: the following operations
 are performed element-wise, recycling the shortest vector if
@@ -114,7 +132,7 @@ necessary.
 +-------+---------+
 
 .. index::
-   single: indexing
+   pair: RVector;indexing
 
 Indexing
 --------
@@ -154,9 +172,12 @@ Vectors are understood as Numpy or Numeric arrays::
   ltr = robjects.r.letters
   ltr_np = numpy.array(ltr)
 
+.. index::
+   pair: robjects;REnvironment
+   pair: robjects;globalEnv
 
-Class :class:`REnvironment`
-===========================
+R environments
+==============
 
 R environments can be described to the Python user as
 an hybrid of a dictionary and a scope.
@@ -193,7 +214,9 @@ For example:
 >>> robjects.r.pi
 3.1415926535897931
 
-This class is using the class :class:`rinterface.SexpEnvironment`
+The class inherits from the class
+:class:`rpy2.rinterface.SexpEnvironment`.
+
 
 An environment is also iter-able, returning all the symbols
 (keys) it contains:
@@ -201,15 +224,20 @@ An environment is also iter-able, returning all the symbols
 >>> env = robjects.r.baseenv()
 >>> len([x for x in env])
 
+.. index::
+   pair: robjects; RFunction
+   pair: robjects; function
 
-Class :class:`Rfunction`
-========================
+R functions
+===========
 
 >>> plot = robjects.r.plot
 >>> rnorm = robjects.r.rnorm
 >>> plot(rnorm(100), ylab="random")
 
-This class is using the class :class:`rinterface.SexpClosure`
+
+The class inherits from the class
+:class:`rpy2.rinterface.SexpClosure`.
 
 
 Mapping between rpy2 objects and other python objects
@@ -223,6 +251,11 @@ A developper can easily add his own mapping XXX.
 
 Examples
 ========
+
+The following section demonstrates some of the features of
+rpy2 by the example. The wiki on the sourceforge website
+will hopefully be used as a cookbook.
+
 
 Example::
 
@@ -240,6 +273,40 @@ Example::
 
   kwargs = {'ylab':"foo/bar", 'type':"b", 'col':"blue", 'log':"x"}
   r.plot(x, y, **kwargs)
+
+Linear models
+-------------
+
+The R code is:
+
+.. code-block:: r
+
+   ctl <- c(4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14)
+   trt <- c(4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69)
+   group <- gl(2, 10, 20, labels = c("Ctl","Trt"))
+   weight <- c(ctl, trt)
+
+   anova(lm.D9 <- lm(weight ~ group))
+
+   summary(lm.D90 <- lm(weight ~ group - 1))# omitting intercept
+
+The :mod:`rpy2.robjects` code is
+
+.. code-block:: python
+
+   ctl = [4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14]
+   trt = [4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69]
+   group = r.gl(2, 10, 20, labels = ["Ctl","Trt"])
+   weight = ctl + trt
+
+   robjects.globalEnv["weight"] = weight
+   robjects.globalEnv["group"] = group
+   lm_D9 = r.lm("weight ~ group")
+   r.anova(lm_D9)
+
+   lm.D90 = r.lm("weight ~ group - 1"))
+   summary(lm.D90)
+   
 
 Principal component analysis
 ----------------------------
