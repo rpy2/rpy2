@@ -5,18 +5,18 @@ import array
 
 rlist = robjects.baseNameSpaceEnv["list"]
 
-class RvectorTestCase(unittest.TestCase):
+class RVectorTestCase(unittest.TestCase):
 
     def testNew(self):
         identical = ri.baseNameSpaceEnv["identical"]
         py_a = array.array('i', [1,2,3])
-        ro_v = robjects.Rvector(py_a)
+        ro_v = robjects.RVector(py_a)
         self.assertEquals(ro_v.typeof(), ri.INTSXP)
         
         ri_v = ri.SexpVector(py_a, ri.INTSXP)
-        ro_v = robjects.Rvector(ri_v)
+        ro_v = robjects.RVector(ri_v)
 
-        self.assertTrue(identical(ro_v._sexp, ri_v)[0])
+        self.assertTrue(identical(ro_v, ri_v)[0])
 
         del(ri_v)
         self.assertEquals(ri.INTSXP, ro_v.typeof())
@@ -37,14 +37,14 @@ class RvectorTestCase(unittest.TestCase):
         seq_R = robjects.baseNameSpaceEnv["seq"]
         mySeq = seq_R(0, 10)
         # R indexing starts at one
-        myIndex = robjects.Rvector(array.array('i', range(1, 11, 2)))
+        myIndex = robjects.RVector(array.array('i', range(1, 11, 2)))
 
         mySubset = mySeq.subset(myIndex)
         for i, si in enumerate(myIndex):
             self.assertEquals(mySeq[si-1], mySubset[i])
 
         # recycling rule
-        v = robjects.Rvector(array.array('i', range(1, 23)))
+        v = robjects.RVector(array.array('i', range(1, 23)))
         m = robjects.r.matrix(v, ncol = 2)
         col = m.subset(True, 1)
         self.assertEquals(11, len(col))
@@ -68,7 +68,7 @@ class RvectorTestCase(unittest.TestCase):
         self.assertTrue(idem("foo", mylist[1]))
 
     def testGetNames(self):
-        vec = robjects.Rvector(array.array('i', [1,2,3]))
+        vec = robjects.RVector(array.array('i', [1,2,3]))
         v_names = [robjects.baseNameSpaceEnv["letters"][x] for x in (0,1,2)]
         #FIXME: simplify this
         r_names = robjects.baseNameSpaceEnv["c"](*v_names)
@@ -77,7 +77,7 @@ class RvectorTestCase(unittest.TestCase):
             self.assertEquals(v_names[i], vec.getNames()[i])
 
 def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(RvectorTestCase)
+    suite = unittest.TestLoader().loadTestsFromTestCase(RVectorTestCase)
     return suite
 
 if __name__ == '__main__':

@@ -5,12 +5,12 @@ import array
 
 class REnvironmentTestCase(unittest.TestCase):
     def testNew(self):
-        env = robjects.Renvironment()
-        self.assertEquals(rinterface.ENVSXP, env.getSexp().typeof())
-        self.assertRaises(ValueError, robjects.Renvironment, 'a')
+        env = robjects.REnvironment()
+        self.assertEquals(rinterface.ENVSXP, env.typeof())
+        self.assertRaises(ValueError, robjects.REnvironment, 'a')
 
     def testSetItem(self):
-        env = robjects.Renvironment()
+        env = robjects.REnvironment()
         env['a'] = 123
         self.assertTrue('a' in env)
 

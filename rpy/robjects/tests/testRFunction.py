@@ -6,19 +6,19 @@ import array
 class RFunctionTestCase(unittest.TestCase):
     def testNew(self):
         identical = rinterface.baseNameSpaceEnv["identical"]
-        self.assertRaises(ValueError, robjects.Rfunction, 'a')
+        self.assertRaises(ValueError, robjects.RFunction, 'a')
 
         ri_f = rinterface.baseNameSpaceEnv.get('help')
         
-        ro_f = robjects.Rfunction(ri_f)
+        ro_f = robjects.RFunction(ri_f)
         
-        self.assertTrue(identical(ri_f, ro_f.getSexp()))
+        self.assertTrue(identical(ri_f, ro_f))
 
     def testCall(self):
         ri_f = rinterface.baseNameSpaceEnv.get('sum')
-        ro_f = robjects.Rfunction(ri_f)
+        ro_f = robjects.RFunction(ri_f)
         
-        ro_v = robjects.Rvector(array.array('i', [1,2,3]))
+        ro_v = robjects.RVector(array.array('i', [1,2,3]))
         
         s = ro_f(ro_v)
 

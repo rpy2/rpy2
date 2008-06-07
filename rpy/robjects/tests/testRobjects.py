@@ -7,7 +7,7 @@ class RObjectTestCase(unittest.TestCase):
 
     def testGetItem(self):
         letters_R = robjects.r["letters"]
-        self.assertTrue(isinstance(letters_R, robjects.Rvector))
+        self.assertTrue(isinstance(letters_R, robjects.RVector))
         letters = (('a', 0), ('b', 1), ('c', 2), ('x', 23), ('y', 24), ('z', 25))
         for l, i in letters:
             self.assertTrue(letters_R[i] == l)
@@ -22,41 +22,64 @@ class RObjectTestCase(unittest.TestCase):
         for i, li in enumerate(myList):
             self.assertEquals(i, myList[i][0])
 
-
         
 
-    def testMapperR2Python(self):
+    def testMapperR2Python_string(self):
         sexp = rinterface.globalEnv.get("letters")
-        ob = robjects.defaultRobjects2PyMapper(sexp)
+        ob = robjects.default_ri2py(sexp)
         self.assertTrue(isinstance(ob, 
-                                   robjects.Rvector))
+                                   robjects.RVector))
 
+    def testMapperR2Python_boolean(self):
         sexp = rinterface.globalEnv.get("T")
-        ob = robjects.defaultRobjects2PyMapper(sexp)
+        ob = robjects.default_ri2py(sexp)
         self.assertTrue(isinstance(ob, 
-                                   robjects.Rvector))
+                                   robjects.RVector))
 
+    def testMapperR2Python_function(self):
         sexp = rinterface.globalEnv.get("plot")
-        ob = robjects.defaultRobjects2PyMapper(sexp)
+        ob = robjects.default_ri2py(sexp)
         self.assertTrue(isinstance(ob, 
-                                   robjects.Rfunction))
+                                   robjects.RFunction))
 
+    def testMapperR2Python_environment(self):
         sexp = rinterface.globalEnv.get(".GlobalEnv")
-        self.assertTrue(isinstance(robjects.defaultRobjects2PyMapper(sexp), robjects.Renvironment))
+        self.assertTrue(isinstance(robjects.default_ri2py(sexp), 
+                                   robjects.Renvironment))
 
         #FIXME: test S4
 
-    def testMapperPy2R(self):
+    def testMapperPy2R_integer(self):
         py = 1
-        rob = robjects.defaultPy2RobjectsMapper(py)
-        self.assertTrue(isinstance(rob, robjects.Rvector))
-        
+        rob = robjects.default_py2ro(py)
+        self.assertTrue(isinstance(rob, robjects.RVector))
+
+    def testMapperPy2R_boolean(self):        
         py = True
-        rob = robjects.defaultPy2RobjectsMapper(py)
-        self.assertTrue(isinstance(rob, robjects.Rvector))
+        rob = robjects.default_py2ro(py)
+        self.assertTrue(isinstance(rob, robjects.RVector))
         self.assertEquals(rinterface.LGLSXP, rob.typeof())
 
         #FIXME: more tests
+
+    def testOverride_ri2py(self):
+        class Density(object):
+            def __init__(self, x):
+                self._x = x
+
+        def f(obj):
+            pyobj = robjects.default_ri2py(obj)
+            inherits = rinterface.baseNameSpaceEnv["inherits"]
+            classname = rinterface.SexpVector(["density", ], 
+                                              rinterface.STRSXP)
+            if inherits(pyobj, classname)[0]:
+                pyobj = Density(pyobj)
+            return pyobj
+        robjects.ri2py = f
+        x = robjects.r.rnorm(100)
+        d = robjects.r.density(x)
+
+        self.assertTrue(isinstance(d, Density))
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RObjectTestCase)

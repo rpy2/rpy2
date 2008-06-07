@@ -10,7 +10,8 @@ class RArrayTestCase(unittest.TestCase):
         self.assertRaises(TypeError, robjects.RArray, letters)
         m = robjects.r.matrix(1, nrow=5, ncol=3)
         a = robjects.RArray(m)
-        
+        # only tests that it runs.
+
     def testDim(self):
         m = robjects.r.matrix(1, nrow=5, ncol=3)
         a = robjects.RArray(m)
