@@ -70,11 +70,11 @@ class LibraryPanel(gtk.VBox):
         ncols = robjects.r.ncol(installedLibraries)[0]
         for i in range(1, nrows + 1):
             row = []
-            pack = installedLibraries.subset(i, 1)._sexp[0]
+            pack = installedLibraries.subset(i, 1)[0]
             row.append(pack)
-            pack = installedLibraries.subset(i, 3)._sexp[0]
+            pack = installedLibraries.subset(i, 3)[0]
             row.append(pack)
-            pack = installedLibraries.subset(i, 4)._sexp[0]
+            pack = installedLibraries.subset(i, 4)[0]
             row.append(pack)
             self._table.append(row)
 
@@ -84,7 +84,7 @@ class LibraryPanel(gtk.VBox):
         if string is None:
             return
         matches = robjects.r["help.search"](string).subset("matches")[0]
-        spacks = [x for x in matches.subset(True, "Package")._sexp]
+        spacks = [x for x in matches.subset(True, "Package")]
         spacks = set(spacks)
         toremove = []
         for ii, row in enumerate(self._table):
@@ -170,11 +170,11 @@ class VignetteExplorer(gtk.VBox):
         ncols = robjects.baseNameSpaceEnv["ncol"](vignettes)[0]
         for i in range(1, nrows + 1):
             row = []
-            pack = vignettes.subset(i, 1)._sexp[0]
+            pack = vignettes.subset(i, 1)[0]
             row.append(pack)
-            pack = vignettes.subset(i, 3)._sexp[0]
+            pack = vignettes.subset(i, 3)[0]
             row.append(pack)
-            pack = vignettes.subset(i, 4)._sexp[0]
+            pack = vignettes.subset(i, 4)[0]
             row.append(pack)
             self._table.append(row)
         
@@ -311,11 +311,11 @@ class HelpExplorer(gtk.VBox):
         ncols = robjects.r.ncol(matches)[0]
         for i in range(1, nrows + 1):
             row = []
-            pack = matches.subset(i, 1)._sexp[0]
+            pack = matches.subset(i, 1)[0]
             row.append(pack)
-            pack = matches.subset(i, 2)._sexp[0]
+            pack = matches.subset(i, 2)[0]
             row.append(pack)
-            pack = matches.subset(i, 3)._sexp[0]
+            pack = matches.subset(i, 3)[0]
             row.append(pack)
             self._table.append(row)
 
