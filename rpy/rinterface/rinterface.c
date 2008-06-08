@@ -59,7 +59,6 @@
 #include <Rinternals.h>
 #include <Rdefines.h>
 
-#define R_INTERFACE_PTRS
 #include <Rinterface.h>
 #include <R_ext/Complex.h>
 #include <Rembedded.h>

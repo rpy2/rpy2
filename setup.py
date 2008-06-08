@@ -96,6 +96,10 @@ def getRinterface_ext(RHOME, r_packversion):
     #f_in.close()
     #f_out.close()
 
+    define_macros = []
+    if sys.platform != 'win32':
+        define_macros.append(('R_INTERFACE_PTRS', 1))
+    
     rinterface_ext = Extension(
             pack_name + '.rinterface.rinterface',
             [os.path.join('rpy', 'rinterface', 'array.c'), 
@@ -105,7 +109,7 @@ def getRinterface_ext(RHOME, r_packversion):
                             os.path.join('rpy', 'rinterface')],
             libraries = ['R', 'Rlapack', 'Rblas'],
             library_dirs = r_libs,
-            #define_macros = [('RPY_RINTERFACE_INIT', 'initrinterface_' + r_packversion), ],
+            define_macros = define_macros,
             runtime_library_dirs = r_libs,
             extra_link_args = get_rconfig(RHOME, '--ldflags') +\
                               get_rconfig(RHOME, 'LAPACK_LIBS') +\
