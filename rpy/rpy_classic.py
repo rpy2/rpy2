@@ -111,6 +111,25 @@ proc_table = Dict_With_Mode({})
 class_table = Dict_With_Mode({})
 
 
+def seq2vec(seq):
+    types = [bool, int, float, str]
+    has_type = [False, False, False, False]
+    for tp_i, tp in enumerate(types):
+        for elt in seq:
+            if isinstance(elt, tp):
+                has_type[tp_i] = True
+    r_type = None
+    if has_type[3]:
+        r_type = ri.STRSXP
+    elif has_type[2]:
+        r_type = ri.REALSXP
+    elif has_type[1]:
+        r_type = ri.INTSXP
+    elif has_type[0]:
+        r_type = ri.LGLSXP
+    if r_type is not None:
+        vec = ri.SexpVector(seq, r_type)
+    return vec
             
 def py2rpy(obj):
     if isinstance(obj, int):
@@ -125,25 +144,9 @@ def py2rpy(obj):
     if isinstance(obj, complex):
         robj = ri.SexpVector([obj, ], ri.CPLSXP)
         return robj 
-    if isinstance(obj, list):
-        types = [bool, int, float, str]
-        has_type = [False, False, False, False]
-        for tp_i, tp in enumerate(types):
-            for elt in obj:
-                if isinstance(elt, tp):
-                    has_type[tp_i] = True
-        r_type = None
-        if has_type[3]:
-            r_type = ri.STRSXP
-        elif has_type[2]:
-            r_type = ri.REALSXP
-        elif has_type[1]:
-            r_type = ri.INTSXP
-        elif has_type[0]:
-            r_type = ri.LGLSXP
-        if r_type is not None:
-            robj = ri.SexpVector(obj, r_type)
-            return robj
+    if isinstance(obj, list) or isinstance(obj, tuple):
+        robj = seq2vec(obj)
+        return robj
     raise ValueError("Don't know what to do with 'obj'.")
 
 def rpy2py_basic(obj):    

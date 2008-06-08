@@ -15,8 +15,7 @@ class RObjectTestCase(unittest.TestCase):
 
         self.assertTrue(identical(ro_v, ri_v)[0])
 
-        #FIXME: why isn't this working ?
-        #del(ri_v)
+        del(ri_v)
         self.assertEquals(rinterface.INTSXP, ro_v.typeof())
 
     def testRepr(self):

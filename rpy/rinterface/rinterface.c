@@ -54,9 +54,12 @@
 
 #include "Python.h"
 
+
 #include <R.h>
 #include <Rinternals.h>
 #include <Rdefines.h>
+
+#define R_INTERFACE_PTRS
 #include <Rinterface.h>
 #include <R_ext/Complex.h>
 #include <Rembedded.h>
@@ -192,7 +195,10 @@ EmbeddedR_WriteConsole(char *buf, int len)
     //return NULL;
   }
 
-  printf("--->\n");
+  if (writeConsoleCallback == NULL) {
+    return;
+  }
+
   result = PyEval_CallObject(writeConsoleCallback, arglist);
 
   Py_DECREF(arglist);
@@ -240,13 +246,12 @@ static PyObject* EmbeddedR_init(PyObject *self)
   embeddedR_isInitialized = Py_True;
   Py_INCREF(Py_True);
 
-#ifdef R_INTERFACE_PTRS
+  #ifdef R_INTERFACE_PTRS
   /* Redirect R console output */
-  extern void (*ptr_R_WriteConsole)(char *, int);
   ptr_R_WriteConsole = EmbeddedR_WriteConsole;
   R_Outputfile = NULL;
   R_Consolefile = NULL;
-#endif
+  #endif
 
   RPY_SEXP(globalEnv) = R_GlobalEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
@@ -560,7 +565,7 @@ static PyTypeObject Sexp_Type = {
 	0,			/*tp_as_mapping*/
 	0,			/*tp_hash*/
 	0,                      /*tp_call*/
-        0,//Sexp_str,               /*tp_str*/
+        0,                      /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
@@ -580,7 +585,7 @@ static PyTypeObject Sexp_Type = {
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
         0,                      /*tp_dictoffset*/
-        (initproc)Sexp_init,                      /*tp_init*/
+        (initproc)Sexp_init,    /*tp_init*/
         0,                      /*tp_alloc*/
         Sexp_new,               /*tp_new*/
         0,                      /*tp_free*/

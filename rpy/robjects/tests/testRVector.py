@@ -43,12 +43,14 @@ class RVectorTestCase(unittest.TestCase):
         for i, si in enumerate(myIndex):
             self.assertEquals(mySeq[si-1], mySubset[i])
 
+    def testSubsetRecyclingRule(self):
         # recycling rule
         v = robjects.RVector(array.array('i', range(1, 23)))
         m = robjects.r.matrix(v, ncol = 2)
         col = m.subset(True, 1)
         self.assertEquals(11, len(col))
 
+    def testSubsetLiet(self):
         # list
         letters = robjects.baseNameSpaceEnv["letters"]
         myList = rlist(l=letters, f="foo")
@@ -60,8 +62,12 @@ class RVectorTestCase(unittest.TestCase):
         letters = robjects.baseNameSpaceEnv["letters"]
         self.assertEquals('a', letters[0])
         self.assertEquals('z', letters[25])
+
+    def testGetItemOutOfBounds(self):
+        letters = robjects.baseNameSpaceEnv["letters"]
         self.assertRaises(IndexError, letters.__getitem__, 26)
-        
+
+    def getItemList(self):
         mylist = rlist(letters, "foo")
         idem = robjects.baseNameSpaceEnv["identical"]
         self.assertTrue(idem(letters, mylist[0]))

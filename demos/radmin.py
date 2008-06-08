@@ -457,7 +457,7 @@ class ConsolePanel(gtk.VBox):
     def actionKeyPress(self, view, event):
         pass
 
-    def append(self, text, tag):
+    def append(self, text, tag="input"):
         tag = self.tag_table.lookup(tag)
         buffer = self._buffer
         end_iter = buffer.get_end_iter()
@@ -473,8 +473,18 @@ class ConsolePanel(gtk.VBox):
         stop_iter = buffer.get_iter_at_offset(buffer.get_char_count())
         rcode = buffer.get_text(start_iter, stop_iter)
 
-        res = robjects.r(rcode)
-        
+        rbuf = []
+        def f(x):
+            rbuf.append(x)
+
+        robjects.rinterface.setWriteConsole(f)
+
+        try:
+            res = robjects.r(rcode)
+        except robjects.rinterface.RRuntimeError, rre:
+            res = str(rre)
+
+        #self.append(str.join('', rbuf), "output")
         self.append(str(res), "output")
 
         self.append("\n> ", "input")

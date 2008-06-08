@@ -140,6 +140,7 @@ in the C interface to R.
 
 .. index::
    single: SexpVector
+   single: rinterface; SexpVector
 
 :class:`SexpVector`
 ===================
@@ -202,7 +203,7 @@ called names), and can be accessed as such:
 
 
 .. index::
-   single: numpy
+   pair: SexpVector; numpy
 
 Numpy
 -----
@@ -228,6 +229,7 @@ The functions *array* and *asarray* is all that is needed:
 
 .. index::
    single: SexpEnvironment
+   single: rinterface; SexpEnvironment
 
 :class:`SexpEnvironment`
 ========================
@@ -288,6 +290,8 @@ or removing elements to the environment after will not have any effect.
 
 .. index::
    single: closure
+   single: SexpClosure
+   single: rinterface; SexpClosure
    pair: rinterface; function
 
 :class:`SexpClosure`

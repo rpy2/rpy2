@@ -26,23 +26,13 @@ not satisfied with it could easily build one's own flavor of a
 Python-R interface by modifying it (:mod:`rpy2.rpy_classic` is an other
 example of a Python interface built on the top of :mod:`rpy2.rinterface`).
 
-Classes:
+Visible differences with RPy-1.x are:
 
-:class:`RObject`
-  Parent class for R objects.
-
-:class:`RVector`
-  An R vector
-
-:class:`REnvironment`
-  An R environment.
-
-:class:`RFunction`
-  An R function.
+- no CONVERSION mode in :mod:`rpy2`, the design has made this unnecessary
 
 
-Class R
-=======
+`r`: the instance of `R`
+==============================
 
 This class is currently a singleton, with
 its one representation instanciated when the
@@ -121,15 +111,17 @@ Mathematical operations on vectors: the following operations
 are performed element-wise, recycling the shortest vector if
 necessary.
 
-+-------+---------+
-| ``+`` | Add     |
-+-------+---------+
-| ``-`` | Subtract|
-+-------+---------+
-| ``*`` | Multiply|
-+-------+---------+
-| ``/`` | Divide  |
-+-------+---------+
++--------+---------+
+| ``+``  | Add     |
++--------+---------+
+| ``-``  | Subtract|
++--------+---------+
+| ``*``  | Multiply|
++--------+---------+
+| ``/``  | Divide  |
++--------+---------+
+| ``**`` | Power   |
++--------+---------+
 
 .. index::
    pair: RVector;indexing
@@ -163,14 +155,21 @@ and its documentation can be referred to for details of what is happenening
 at the low-level.
 
 
+.. index::
+   pair: RVector; numpy
+
 Numpy
 -----
 
-Vectors are understood as Numpy or Numeric arrays::
+Vectors can be converted to :mod:`numpy` arrays using
+:meth:`array` or :meth:`asarray`::
 
   import numpy
   ltr = robjects.r.letters
   ltr_np = numpy.array(ltr)
+
+Refer to the documentation for :class:`rinterface.SexpVector`
+for further details.
 
 .. index::
    pair: robjects;REnvironment
@@ -290,22 +289,23 @@ The R code is:
 
    summary(lm.D90 <- lm(weight ~ group - 1))# omitting intercept
 
-The :mod:`rpy2.robjects` code is
+One way to achieve the same with :mod:`rpy2.robjects` is
 
 .. code-block:: python
 
-   ctl = [4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14]
-   trt = [4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69]
+   ctl = array.array('f', [4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14])
+   trt = array.array('f', [4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69])
    group = r.gl(2, 10, 20, labels = ["Ctl","Trt"])
    weight = ctl + trt
 
    robjects.globalEnv["weight"] = weight
    robjects.globalEnv["group"] = group
    lm_D9 = r.lm("weight ~ group")
-   r.anova(lm_D9)
+   print(r.anova(lm_D9))
 
-   lm.D90 = r.lm("weight ~ group - 1"))
-   summary(lm.D90)
+   lm_D90 = r.lm("weight ~ group - 1")
+   r.summary(lm_D90)
+
    
 
 Principal component analysis

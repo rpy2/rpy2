@@ -7,6 +7,8 @@ class REnvironmentTestCase(unittest.TestCase):
     def testNew(self):
         env = robjects.REnvironment()
         self.assertEquals(rinterface.ENVSXP, env.typeof())
+
+    def testNewValueError(self):
         self.assertRaises(ValueError, robjects.REnvironment, 'a')
 
     def testSetItem(self):
