@@ -17,7 +17,11 @@ def default_ri2py(o):
     if isinstance(o, RObject):
         res = o
     elif isinstance(o, rinterface.SexpVector):
-        res = RVector(o)
+        try:
+            dim = o.do_slot("dim")
+            res = RArray(o)
+        except LookupError, le:
+            res = RVector(o)
     elif isinstance(o, rinterface.SexpClosure):
         res = RFunction(o)
     elif isinstance(o, rinterface.SexpEnvironment):
@@ -90,17 +94,11 @@ class RObjectMixin(object):
     def __repr__(self):
         return repr_robject(self)
 
-    def typeof(self):
-        return super(rinterface.Sexp, self).typeof()
-
-    def do_slot(self, name):
-        return super(rinterface.Sexp, self).do_slot(name)
-
     def rclass(self):
         return baseNameSpaceEnv["class"](self)
 
 
-class RObject(rinterface.Sexp, RObjectMixin):
+class RObject(RObjectMixin, rinterface.Sexp):
     def __setattr__(self, name, value):
         if name == '_sexp':
             if not isinstance(value, rinterface.Sexp):
@@ -111,7 +109,7 @@ class RObject(rinterface.Sexp, RObjectMixin):
     
 
 
-class RVector(rinterface.SexpVector, RObjectMixin):
+class RVector(RObjectMixin, rinterface.SexpVector):
     """ R vector-like object. Items in those instances can
        be accessed with the method "__getitem__" ("[" operator),
        or with the method "subset"."""
@@ -218,7 +216,7 @@ class DataFrame(RVector):
 
 
 
-class RFunction(rinterface.SexpClosure, RObjectMixin):
+class RFunction(RObjectMixin, rinterface.SexpClosure):
     """ An R function (aka "closure").
     
     """
@@ -232,10 +230,8 @@ class RFunction(rinterface.SexpClosure, RObjectMixin):
         res = ri2py(res)
         return res
 
-    #def getSexp(self):
-    #    return super(rinterface.SexpClosure, self).__init__(self)
 
-class REnvironment(rinterface.SexpEnvironment, RObjectMixin):
+class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
     """ An R environement. """
     
     def __init__(self, o=None):
@@ -257,10 +253,10 @@ class REnvironment(rinterface.SexpEnvironment, RObjectMixin):
         res = ri2py(res)
         return res
 
-class RS4(rinterface.SexpS4, RObjectMixin):
+class RS4(RObjectMixin, rinterface.SexpS4):
 
     def __getattr__(self, attr):
-        res = r.get("@")(self, attr)
+        res = self.do_slot(attr)
         return res
 
     

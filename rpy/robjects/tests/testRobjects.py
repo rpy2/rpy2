@@ -45,7 +45,7 @@ class RObjectTestCase(unittest.TestCase):
     def testMapperR2Python_environment(self):
         sexp = rinterface.globalEnv.get(".GlobalEnv")
         self.assertTrue(isinstance(robjects.default_ri2py(sexp), 
-                                   robjects.Renvironment))
+                                   robjects.REnvironment))
 
         #FIXME: test S4
 
