@@ -12,7 +12,7 @@ except Exception, e:
 
 
 pack_name = 'rpy2'
-pack_version = '1.0-dev'
+pack_version = '1.0-a0'
 
 RHOMES = os.getenv('RHOMES')
 
