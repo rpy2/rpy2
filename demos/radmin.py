@@ -427,6 +427,7 @@ class ConsolePanel(gtk.VBox):
         tag_out=gtk.TextTag("output")
         tag_out.set_property("foreground","blue")
         tag_out.set_property("font","monospace 10")
+        tag_out.set_property("editable", False)
         t_table.add(tag_out)
         
         tag_in=gtk.TextTag("input")
@@ -434,20 +435,53 @@ class ConsolePanel(gtk.VBox):
         tag_in.set_property("font","monospace 10")
         t_table.add(tag_in)
 
+        self.tag_table = t_table
+
         self._buffer = gtk.TextBuffer(t_table)
         self._view = gtk.TextView(buffer = self._buffer)
         self._view.connect("key_press_event", self.actionKeyPress)
         self._view.show()
         s_window.add(self._view)
         self.add(s_window)
-        self.append("> ")
+        evalButton = gtk.Button("Evaluate")
+        evalButton.connect("clicked", self.evaluateAction, "evaluate")
+        evalButton.show()
+        self.pack_start(evalButton, False, False, 0)
+        self._evalButton = evalButton
+        self.append("> ", "input")
+
+        location = self._buffer.get_end_iter()
+        self._start_mark = self._buffer.create_mark("beginCode",
+                                                    location, left_gravity=True)
 
     def actionKeyPress(self, view, event):
         pass
 
-    def append(self, text):
-        pos=self._buffer.get_end_iter()
-        self._buffer.insert(pos, text)
+    def append(self, text, tag):
+        tag = self.tag_table.lookup(tag)
+        buffer = self._buffer
+        end_iter = buffer.get_end_iter()
+        mark = buffer.create_mark("beginMark", end_iter, left_gravity=True)
+        self._buffer.insert(end_iter, text)
+        self._buffer.apply_tag(tag, buffer.get_iter_at_mark(mark), 
+                               buffer.get_end_iter())
+        buffer.delete_mark(mark)
+
+    def evaluateAction(self, widget, data=None):
+        buffer = self._buffer
+        start_iter = buffer.get_iter_at_mark(self._start_mark)
+        stop_iter = buffer.get_iter_at_offset(buffer.get_char_count())
+        rcode = buffer.get_text(start_iter, stop_iter)
+
+        res = robjects.r(rcode)
+        
+        self.append(str(res), "output")
+
+        self.append("\n> ", "input")
+
+        buffer.move_mark(self._start_mark,
+                         buffer.get_iter_at_offset(buffer.get_char_count()))
+
 
 class Main(object):
 
