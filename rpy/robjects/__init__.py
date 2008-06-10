@@ -84,14 +84,15 @@ class RObjectMixin(object):
     def __str__(self):
         if sys.platform == 'win32':
             tfile = baseNameSpaceEnv["tempfile"]()
-            tmp = baseNameSpaceEnv["file"](tfile)
+            tmp = baseNameSpaceEnv["file"](tfile, open="w")
         else:
             tmp = baseNameSpaceEnv["fifo"]("")
         baseNameSpaceEnv["sink"](tmp)
         r.show(self)
         baseNameSpaceEnv["sink"]()
         if sys.platform == 'win32':
-            baseNameSpaceEnv["close"](tfile)
+            baseNameSpaceEnv["close"](tmp)
+            tmp = baseNameSpaceEnv["file"](tfile, open="r")
         s = baseNameSpaceEnv["readLines"](tmp)
         if sys.platform == 'win32':
             baseNameSpaceEnv["unlink"](tfile)
