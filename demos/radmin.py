@@ -2,7 +2,7 @@
 A front-end to R's packags, and help/documentation systems
 """
 
-import os
+import os, sys
 import pygtk
 pygtk.require('2.0')
 import gtk
@@ -103,12 +103,19 @@ class LibraryPanel(gtk.VBox):
             packName = self._table.get_value(selection_iter, 
                                             self.PACKAGE_I)
             self._console.append('library("%s")\n' %packName)
-            
-            tmp = robjects.baseNameSpaceEnv["fifo"]("")
+
+            if sys.platform == 'win32':
+                tfile = robjects.baseNameSpaceEnv["tempfile"]()
+                tmp = robjects.baseNameSpaceEnv["file"](tfile, open="w")
+            else:
+                tmp = robjects.baseNameSpaceEnv["fifo"]("")
             robjects.baseNameSpaceEnv["sink"](tmp)
             
             robjects.baseNameSpaceEnv["library"](packName)
 
+            if sys.platform == 'win32':
+                robjects.baseNameSpaceEnv["close"](tmp)
+                tmp = robjects.baseNameSpaceEnv["file"](tfile, open="r")
             out = robjects.baseNameSpaceEnv["readLines"](tmp)
             for line in out:
                 self._console.append(str(line)+"\n")
