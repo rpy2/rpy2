@@ -19,8 +19,16 @@ class RObjectTestCase(unittest.TestCase):
         self.assertEquals(rinterface.INTSXP, ro_v.typeof())
 
     def testRepr(self):
-        prt = rinterface.baseNameSpaceEnv["print"]
+        prt = robjects.baseNameSpaceEnv["pi"]
         s = prt.__repr__()
+        #import pdb; pdb.set_trace()
+        self.assertTrue(s.startswith('3.14'))
+
+    def testStr(self):
+        prt = robjects.baseNameSpaceEnv["pi"]
+        s = prt.__str__()
+        self.assertTrue(s.startswith('[1] 3.14'))
+
 
     def testRclass(self):
         self.assertEquals("character",

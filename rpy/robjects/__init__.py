@@ -6,7 +6,7 @@ that represents an embedded R.
 
 """
 
-import os
+import os, sys
 import array
 import rpy2.rinterface as rinterface
 
@@ -82,12 +82,21 @@ class RObjectMixin(object):
     name = None
 
     def __str__(self):
-        tmp = baseNameSpaceEnv["fifo"]("")
+        if sys.platform == 'win32':
+            tfile = baseNameSpaceEnv["tempfile"]()
+            tmp = baseNameSpaceEnv["file"](tfile)
+        else:
+            tmp = baseNameSpaceEnv["fifo"]("")
         baseNameSpaceEnv["sink"](tmp)
         r.show(self)
         baseNameSpaceEnv["sink"]()
+        if sys.platform == 'win32':
+            baseNameSpaceEnv["close"](tfile)
         s = baseNameSpaceEnv["readLines"](tmp)
-        r.close(tmp)
+        if sys.platform == 'win32':
+            baseNameSpaceEnv["unlink"](tfile)
+        else:
+            r.close(tmp)
         s = str.join(os.linesep, s)
         return s
 
