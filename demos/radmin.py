@@ -252,11 +252,11 @@ class GraphicalDeviceExplorer(gtk.VBox):
         except:
             return
         for dev, name in itertools.izip(devices, names):
-            if current_device == dev[0]:
+            if current_device == dev:
                 cur = "X"
             else:
                 cur = ""
-            row = [cur, dev[0], name[0], ""]
+            row = [cur, dev, name, ""]
             self._table.append(row)
 
     def searchOpenedDevices(self, widget, data = None):
@@ -354,7 +354,7 @@ class CodePanel(gtk.VBox):
         self._rpad.show()
         s_window.add(self._rpad)
         self.add(s_window)
-        evalButton = gtk.Button("Evaluate")
+        evalButton = gtk.Button("Evaluate highlighted code")
         evalButton.connect("clicked", self.evaluateAction, "evaluate")
         evalButton.show()
         self.pack_start(evalButton, False, False, 0)
@@ -422,6 +422,12 @@ class EnvExplorer(gtk.VBox):
 
 class ConsolePanel(gtk.VBox):
 
+    tag_table = None
+    _buffer = None
+    _view = None
+    _evalButton = None
+    _start_mark = None
+
     def __init__(self):
         super(ConsolePanel, self).__init__()
         s_window = gtk.ScrolledWindow()
@@ -452,7 +458,7 @@ class ConsolePanel(gtk.VBox):
         self.add(s_window)
         evalButton = gtk.Button("Evaluate")
         evalButton.connect("clicked", self.evaluateAction, "evaluate")
-        evalButton.show()
+        #evalButton.show()
         self.pack_start(evalButton, False, False, 0)
         self._evalButton = evalButton
         self.append("> ", "input")
@@ -461,8 +467,13 @@ class ConsolePanel(gtk.VBox):
         self._start_mark = self._buffer.create_mark("beginCode",
                                                     location, left_gravity=True)
 
+        self._firstEnter = False
+
     def actionKeyPress(self, view, event):
-        pass
+        if (event.keyval == gtk.gdk.keyval_from_name("Return")):
+            self.append("\n", "input")
+            self.evaluateAction(self._evalButton)
+            return True
 
     def append(self, text, tag="input"):
         tag = self.tag_table.lookup(tag)
@@ -477,6 +488,7 @@ class ConsolePanel(gtk.VBox):
     def evaluateAction(self, widget, data=None):
         buffer = self._buffer
         start_iter = buffer.get_iter_at_mark(self._start_mark)
+
         stop_iter = buffer.get_iter_at_offset(buffer.get_char_count())
         rcode = buffer.get_text(start_iter, stop_iter)
 
@@ -496,9 +508,12 @@ class ConsolePanel(gtk.VBox):
 
         self.append("\n> ", "input")
 
-        buffer.move_mark(self._start_mark,
-                         buffer.get_iter_at_offset(buffer.get_char_count()))
-
+        textIter = buffer.get_iter_at_offset(buffer.get_char_count())
+        buffer.move_mark(self._start_mark, textIter)
+        buffer.move_mark_by_name("insert",
+                                 textIter)
+        buffer.move_mark_by_name("selection_bound",
+                                 textIter)
 
 class Main(object):
 

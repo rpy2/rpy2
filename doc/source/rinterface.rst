@@ -185,21 +185,44 @@ where indexing start at 1 (one).
 .. note::
    The *__getitem__* operator *[*
    is returning a Python scalar. Casting
-   an *SexpVector* into a list is only a matter of calling
-   the constructor *list*.
+   an *SexpVector* into a list is only a matter 
+   either iterating through it, or simply calling
+   the constructor :func:`list`.
 
+
+Common attributes
+-----------------
+
+.. index::
+   single: names
 
 Names
------
+^^^^^
 
 In R, vectors can be named, that is each value in the vector
 can be given a name (that is be associated a string).
 The names are added to the other as an attribute (conveniently
-called names), and can be accessed as such:
+called `names`), and can be accessed as such:
 
 >>> options = rinterface.globalEnv.get("options")()
 >>> option_names = options.do_slot("names")
 >>> [x for x in options_names]
+
+.. note::
+   Elements in a vector of names do not have to be unique.
+
+.. index::
+   single: dim
+   single: dimnames
+
+
+Dim and dimnames
+^^^^^^^^^^^^^^^^
+
+In the case of an `array`, the names across the
+respective dimensions of the object are accessible
+through the slot named `dimnames`.
+
 
 
 .. index::
@@ -208,8 +231,8 @@ called names), and can be accessed as such:
 Numpy
 -----
 
-The SexpVector objects are made to behave like arrays as defined
-in the Python package numpy.
+The :class:`SexpVector` objects are made to behave like arrays as defined
+in the Python package :mod:`numpy`.
 
 The functions *array* and *asarray* is all that is needed:
 
@@ -220,7 +243,7 @@ The functions *array* and *asarray* is all that is needed:
 
 
 .. note::
-   when using *asarray*, the data are not copied.
+   when using :meth:`asarray`, the data are not copied.
 
 >>> nx_nc[2] = 42
 >>> rx[2]
@@ -323,6 +346,9 @@ package *graphics*.
 >>> envplot_list = ls(plot.closureEnv())
 >>> [x for x in envplot_ls]
 >>>
+
+
+
 
 
 Misc. variables

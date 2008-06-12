@@ -20,7 +20,16 @@ class RArrayTestCase(unittest.TestCase):
         self.assertEquals(5, d[0])
         self.assertEquals(3, d[1])
 
-
+    def testGetNames(self):
+        dimnames = robjects.r.list(['a', 'b', 'c'],
+                                   ['d', 'e'])
+        m = robjects.r.matrix(1, nrow=3, ncol=2,
+                              dimnames = dimnames)
+        a = robjects.RArray(m)
+        res = a.getNames()
+        r_identical = robjects.r.identical
+        self.assertTrue(r_identical(dimnames[0], res[0]))
+        self.assertTrue(r_identical(dimnames[1], res[1]))
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RArrayTestCase)

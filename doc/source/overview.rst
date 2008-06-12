@@ -58,3 +58,21 @@ matter most. Here the programmer gets close(r) to R's C
 API.
 
 
+
+Design notes
+------------
+
+:mod:`rpy2.robjects` implements an extension to the interface in
+:mod:`rpy2.rinterface` by extending the classes for R
+objects defined there with child classes.
+
+The choice of inheritance was made to facilitate the implementation
+of mostly inter-exchangeable classes between :mod:`rpy2.rinterface`
+and :mod:`rpy2.robjects`: an :class:`rpy2.rinterface.SexpClosure`
+can be given any :class:`rpy2.robjects.RObject` as a parameter while
+any :class:`rpy2.robjects.RFunction` can be given any 
+:class:`rpy2.rinterface.Sexp`.
+
+The module :mod:`rpy2.rpy_classic` is using delegation, letting us
+demonstrate how to extend :mod:`rpy2.rinterface` with an alternative
+to inheritance.

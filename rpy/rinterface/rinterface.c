@@ -771,8 +771,8 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   }
   
 //FIXME: R_GlobalContext ?
-  //PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
-  PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
+  PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
+  //PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
 
 /*   if (!res) { */
 /*     UNPROTECT(2); */

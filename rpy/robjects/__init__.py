@@ -105,6 +105,7 @@ class RObjectMixin(object):
         return repr_robject(self)
 
     def rclass(self):
+        """ Return the name of the R class for the object. """
         return baseNameSpaceEnv["class"](self)
 
 
@@ -150,11 +151,23 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         res = r["["](*([self, ] + [x for x in args]), **kwargs)
         return res
 
+    def assign(self, *args):
+        #FIXME: value must be the last argument, but this can be
+        # challenging in since python kwargs do not enforce any order
+        args = [py2ro(x) for x in args]
+        res = r["[<-"](*([self, ] + [x for x in args]))
+
+        return res
+
     def __getitem__(self, i):
         res = super(RVector, self).__getitem__(i)
         if isinstance(res, rinterface.Sexp):
             res = ri2py(res)
         return res
+
+    def __setitem__(self, i, value):
+        value = py2ri(value)
+        res = super(RVector, self).__setitem__(i, value)
 
     def __add__(self, x):
         res = r.get("+")(self, x)
@@ -188,13 +201,20 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         res = r.names(self)
         return res
 
+    def setNames(self, value):
+        """ Return a vector of names
+        (like the R function 'names' does it)."""
+
+        res = r["names<-"](self, value)
+        return res
+
 class RArray(RVector):
     """ An R array """
     def __init__(self, o):
         super(RArray, self).__init__(o)
         #import pdb; pdb.set_trace()
         if not r["is.array"](self)[0]:
-            raise(TypeError("The object must be reflecting an R array"))
+            raise(TypeError("The object must be representing an R array"))
 
     def __getattr__(self, name):
         if name == 'dim':
@@ -206,6 +226,13 @@ class RArray(RVector):
         if name == 'dim':
             value = py2ro(value)
             res = r["dim<-"](value)
+
+    def getNames(self):
+        """ Return a list of name vectors
+        (like the R function 'dimnames' does it)."""
+
+        res = r.dimnames(self)
+        return res
         
 
 class RMatrix(RArray):

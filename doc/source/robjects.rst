@@ -31,6 +31,8 @@ Visible differences with RPy-1.x are:
 - no CONVERSION mode in :mod:`rpy2`, the design has made this unnecessary
 
 
+
+
 `r`: the instance of `R`
 ==============================
 
@@ -45,8 +47,8 @@ The instance can be seen as the entry point to an
 embedded R process, and the elements that would be accessible
 from an equivalent R environment are accessible as attributes
 of the instance.
-Readers familiar with the ctypes module for Python will note
-the similarity with ctypes.
+Readers familiar with the :mod:`ctypes` module for Python will note
+the similarity with it.
 
 R vectors:
 
@@ -59,18 +61,32 @@ R functions:
 >>> plot = robjects.r.plot
 >>> dir = robjects.r.dir
 
-Just like it was the case with RPy-1.x, on-the-fly
-evaluation of R code contained in a string can be performed
-by calling the r instance:
 
->>> robjects.r('1:2')
+Strings as R code
+-----------------
+
+Just like it is the case with RPy-1.x, on-the-fly
+evaluation of R code contained in a string can be performed
+by calling the `r` instance:
+
+>>> robjects.r('1+2')
 3
 >>> sqr = ro.r('function(x) x^2)
+
 >>> sqr
 function (x)
 x^2
 >>> sqr(2)
 4
+
+The astute reader will quickly realize that R objects named
+by python variables can
+be plugged into code by their string representation:
+
+>>> x = robjects.r.rnorm(100)
+>>> robjects.r('hist(%s, xlab="x", main="hist(x)")' %x.__repr__())
+
+
 
 .. index::
    pair: robjects;RObject
@@ -107,9 +123,9 @@ The class inherits from the class
 Operators
 ---------
 
-Mathematical operations on vectors: the following operations
-are performed element-wise, recycling the shortest vector if
-necessary.
+Mathematical operations on two vectors: the following operations
+are performed element-wise, recycling the shortest vector if, and
+as much as, necessary.
 
 +--------+---------+
 | ``+``  | Add     |
@@ -121,6 +137,10 @@ necessary.
 | ``/``  | Divide  |
 +--------+---------+
 | ``**`` | Power   |
++--------+---------+
+| ``or`` | Or      |
++--------+---------+
+| ``and``| And     |
 +--------+---------+
 
 .. index::
@@ -145,6 +165,9 @@ be given to subset elements).
 integer(0)
 >>> x.subset(1)
 1L
+
+The two next examples demonstrate features of `R` regarding indexing,
+respectively element exclusion and recycling rule:
 >>> x.subset(-1)
 2:10
 >>> x.subset(True)
@@ -175,6 +198,19 @@ for further details.
    pair: robjects;REnvironment
    pair: robjects;globalEnv
 
+:class:`RArray`
+---------------
+
+In `R`, arrays are simply vectors with a dimension attribute. That fact
+was reflected in the class hierarchy with :class:`robjects.RArray` inheriting
+from :class:`robjects.RVector`.
+
+:class:`RMatrix`
+----------------
+
+A :class:`RMatrix` is a special case of :class:`RArray`.
+
+
 R environments
 ==============
 
@@ -200,15 +236,15 @@ dictionary:
 
 
 Care must be taken when assigning objects into an environment
-such as the Global Environment, as it can hide other objects
+such as the Global Environment, as this can hide other objects
 with an identical name.
-For example:
+The following example should make one measure that this can mean
+trouble if no care is taken:
 
 >>> globalEnv["pi"] = 123
 >>> robjects.r.pi
 123L
 >>>
-
 >>> robjects.r.rm("pi")
 >>> robjects.r.pi
 3.1415926535897931
