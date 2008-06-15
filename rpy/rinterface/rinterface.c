@@ -177,7 +177,7 @@ PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
 
 
 static void
-EmbeddedR_WriteConsole(char *buf, int len)
+EmbeddedR_WriteConsole(const char *buf, int len)
 {
   PyOS_sighandler_t old_int;
   PyObject *arglist;
@@ -571,7 +571,7 @@ static PyTypeObject Sexp_Type = {
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
         0,                      /*tp_doc*/
         0,                      /*tp_traverse*/
-        Sexp_clear,                      /*tp_clear*/
+        (inquiry)Sexp_clear,                      /*tp_clear*/
         0,                      /*tp_richcompare*/
         0,                      /*tp_weaklistoffset*/
         0,                      /*tp_iter*/
@@ -1106,7 +1106,7 @@ PyDoc_STRVAR(VectorSexp_Type_doc,
 	     " is done at zero.");
 
 static int
-VectorSexp_init(SexpObject *self, PyObject *args, PyObject *kwds);
+VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 
 static PyTypeObject VectorSexp_Type = {
 	/* The ob_type field must be initialized in the module init function
@@ -1157,7 +1157,7 @@ static PyTypeObject VectorSexp_Type = {
  
 
 static int
-VectorSexp_init(SexpObject *self, PyObject *args, PyObject *kwds)
+VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
 #ifdef RPY_VERBOSE
   printf("%p: VectorSexp initializing...\n", self);
@@ -1252,7 +1252,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
     res = NULL;
   }
   Py_DECREF(Py_False);
-  return res;
+  return (PyObject *)res;
 }
 PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
 	     "Find an R object in a given environment.");
@@ -1391,7 +1391,7 @@ PyDoc_STRVAR(EnvironmentSexp_Type_doc,
 
 
 static int
-EnvironmentSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds);
+EnvironmentSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 
 static PyTypeObject EnvironmentSexp_Type = {
 	/* The ob_type field must be initialized in the module init function
@@ -1442,7 +1442,7 @@ static PyTypeObject EnvironmentSexp_Type = {
 };
 
 static int
-EnvironmentSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
+EnvironmentSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
   PyObject *object;
   PyObject *copy;
