@@ -10,6 +10,10 @@ import os, sys
 import array
 import rpy2.rinterface as rinterface
 
+StrSexpVector = rinterface.StrSexpVector
+IntSexpVector = rinterface.IntSexpVector
+FloatSexpVector = rinterface.FloatSexpVector
+
 
 #FIXME: close everything when leaving (check RPy for that).
 
@@ -28,6 +32,8 @@ def default_ri2py(o):
         res = REnvironment(o)
     elif isinstance(o, rinterface.SexpS4):
         res = RS4(o)
+    elif rinterface.baseNameSpaceEnv['class'](o)[0] == 'formula':
+        res = RFormula(o)
     else:
         res = RObject(o)
     return res
@@ -290,11 +296,32 @@ class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
         res = ri2py(res)
         return res
 
+
 class RS4(RObjectMixin, rinterface.SexpS4):
 
     def __getattr__(self, attr):
         res = self.do_slot(attr)
         return res
+
+
+class RFormula(RObjectMixin, rinterface.Sexp):
+
+    def __init__(self, formula, environment = rinterface.globalEnv):
+        inpackage = rinterface.baseNameSpaceEnv["::"]
+        asformula = inpackage(StrSexpVector(['stats', ]), 
+                              StrSexpVector(['as.formula', ]))
+        robj = asformula(rinterface.SexpVector(StrSexpVector([formula, ])),
+                         env = environment)
+        super(RFormula, self).__init__(robj)
+        
+    def getenvironment(self):
+        """ Return the R environment in which the formula will look for
+        its variables. """
+        res = self.do_slot(".Environment")
+        res = ri2py(res)
+        return res
+
+    
 
     
 class R(object):

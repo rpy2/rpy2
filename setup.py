@@ -2,17 +2,9 @@
 import os, os.path, sys, shutil, re, itertools
 from distutils.core import setup, Extension
 
-#FIXME: still needed ?
-try:
-    import ctypes
-except Exception, e:
-    print(e)
-    print("A working 'ctypes' module is required.")
-    sys.exit(1)
-
 
 pack_name = 'rpy2'
-pack_version = '1.0-a0'
+pack_version = '1.0-a1'
 
 RHOMES = os.getenv('RHOMES')
 
@@ -133,7 +125,7 @@ for rversion, RHOME in itertools.izip(rversions, RHOMES):
 
 pack_dir = {pack_name: 'rpy'}
 
-setup(name = "rpython",
+setup(name = pack_name,
       version = pack_version,
       description = "Python interface to the R language",
       url = "http://rpy.sourceforge.net",
@@ -141,6 +133,8 @@ setup(name = "rpython",
       ext_modules = rinterface_exts,
       package_dir = pack_dir,
       packages = [pack_name,
+                  pack_name+'.rlike',
+                  pack_name+'.rlike.tests',
                   pack_name+'.robjects',
                   pack_name+'.robjects.tests'] + \
                  [pack_name + '.rinterface', pack_name + '.rinterface.tests']

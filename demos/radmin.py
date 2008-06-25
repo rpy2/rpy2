@@ -1,5 +1,6 @@
 """
-A front-end to R's packags, and help/documentation systems
+An R frontend
+
 """
 
 import os, sys

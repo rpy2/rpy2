@@ -592,22 +592,6 @@ static PyTypeObject Sexp_Type = {
 };
 
 
-/* static PyObject* */
-/* Sexp_new(PyTypeObject *type, PyObject *args) */
-/* { */
-/*   PyObject object, res; */
-/*   if (!PyArg_ParseTuple(args, "O:new", */
-/* 			&object)) */
-/*     PyErr_Format(PyExc_ValueError, "Can only instanciate from PySexpObject"); */
-/*   return NULL; */
-/*   res = (PySexpObject *)_PyObject_New(&Sexp_Type); */
-/*   if (!res) */
-/*     PyErr_NoMemory(); */
-/*   res->sexp = sexp; */
-/*   return res; */
-/* } */
-
-
 
 
 /*
@@ -624,8 +608,11 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 
 
   //FIXME: if env_R is null, use R_BaseEnv
+  //shouldn't it be R_GlobalContext (but then it throws a NULL error) ?
   if (isNull(env_R)) {
-    env_R = R_BaseEnv;
+    //env_R = R_BaseEnv;
+    env_R = R_GlobalEnv;
+    //env_R = R_GlobalContext;
   }
 
   /* Enable our handler for SIGINT inside the R
@@ -771,8 +758,8 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   }
   
 //FIXME: R_GlobalContext ?
-  PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
-  //PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
+  //PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
+  PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
 
 /*   if (!res) { */
 /*     UNPROTECT(2); */

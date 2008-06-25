@@ -54,7 +54,7 @@ Higher-level interface, when ease-of-use matters most.
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Low-level interface to R, when speed and flexibility
-matter most. Here the programmer gets close(r) to R's C
+matter most. Here the programmer gets close(r) to R's C-level
 API.
 
 
@@ -71,8 +71,11 @@ of mostly inter-exchangeable classes between :mod:`rpy2.rinterface`
 and :mod:`rpy2.robjects`: an :class:`rpy2.rinterface.SexpClosure`
 can be given any :class:`rpy2.robjects.RObject` as a parameter while
 any :class:`rpy2.robjects.RFunction` can be given any 
-:class:`rpy2.rinterface.Sexp`.
+:class:`rpy2.rinterface.Sexp`. Choosing inheritance does not only
+come with advantages: `setters` on `R` objects would be more intuitive
+with a container/delegation approach.
 
 The module :mod:`rpy2.rpy_classic` is using delegation, letting us
 demonstrate how to extend :mod:`rpy2.rinterface` with an alternative
 to inheritance.
+

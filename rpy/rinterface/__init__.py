@@ -35,3 +35,19 @@ del(sys)
 
 from rpy2.rinterface.rinterface import *
 
+
+
+class StrSexpVector(SexpVector):
+    def __init__(self, v):        
+        super(StrSexpVector, self).__init__(v, STRSXP)
+
+
+class IntSexpVector(SexpVector):
+    def __init__(self, v):        
+        super(StrSexpVector, self).__init__(v, INTSXP)
+
+
+class FloatSexpVector(SexpVector):
+    def __init__(self, v):        
+        super(StrSexpVector, self).__init__(v, REALSXP)
+

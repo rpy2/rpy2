@@ -46,8 +46,8 @@ Parameters for the initialization are in the module variable
 
 .. note::
    If calling :func:`initEmbeddedR` returns an error stating that
-   `R_HOME` is defined, you should either have the R executable in
-   your path ($PATH on unix-alikes, %Path% on Microsoft Windows) or
+   `R_HOME` is not defined, you should either have the R executable in
+   your path (`$PATH` on unix-alikes, `%Path%` on Microsoft Windows) or
    have the environment variable `R_HOME` defined. 
 
 R space and Python space
@@ -86,8 +86,8 @@ baseNamespaceEnv
 The base package has a namespace, that can be accessed as an environment.
 
 .. note::
-   Depending on what is in globalEnv and on the attached packages, base
-   objects can be masked when starting the search from globalEnv. Use this
+   Depending on what is in `globalEnv` and on the attached packages, base
+   objects can be masked when starting the search from `globalEnv`. Use this
    environment when you want to be sure to access a function you know to be
    in the base namespace.
 

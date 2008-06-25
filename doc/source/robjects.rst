@@ -1,4 +1,4 @@
-.. index::
+. index::
    module: rpy2.robjects
 
 
@@ -274,14 +274,65 @@ R functions
 The class inherits from the class
 :class:`rpy2.rinterface.SexpClosure`.
 
+.. index::
+   pair: robjects; RFormula
+   single: formula
+
+Formulae
+========
+
+For tasks such as modelling and plotting, an R formula can be
+a terse, yet readable, way of expressing what is wanted.
+
+In R, it generally looks like:
+
+.. code-block:: r
+
+  x <- 1:10
+  y <- x + rnorm(10, sd=0.2)
+
+  fit <- lm(y ~ x) 
+
+In the call to `lm`, the argument is a `formula`.
+A formula is a `R` language object, and the terms in the formula
+are evaluated in the environment it was defined in. Without further
+specification, that environment is the environment in which the
+the formula is created.
+
+The class :class:`robjects.RFormula` is representing an `R` formula,
+and represents a convenient way of specifying your code.
+
+.. code-block:: python
+
+  x = robjects.RVector(array.array('i', range(1, 11)))
+  y = x + robjects.r.rnorm(10, sd=0.2)
+
+  fmla = robjects.RFormula('y ~ x')
+  env = fmla.getenvironment()
+  env['x'] = x
+  env['y'] = y
+
+  fit = robjects.r.lm(fmla)
+
+One drawback with that approach is that pretty printing of
+the `fit` object is note quite as clear as what one would
+expect when working in `R`.
+However, by evaluating R code on
+the fly, we can obtain a `fit` object that will display
+nicely:
+
+.. code-block:: python
+
+  fit = robjects.r('lm(%s)' %fmla.__repr__())
+
 
 Mapping between rpy2 objects and other python objects
 =====================================================
 
-The mapping between low-level objects is performed by the
-functions XXX and XXX.
+The mapping between low-level objects is performed on
+the fly by functions XXX
 
-A developper can easily add his own mapping XXX.
+Those functions can be modifyied to satisfy all requirements.
 
 
 Examples
