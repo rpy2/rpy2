@@ -123,8 +123,51 @@ class RObject(RObjectMixin, rinterface.Sexp):
                                      "that inherits from rinterface.Sexp" +\
                                      "(not from %s)" %type(value))
         super(RObject, self).__setattr__(name, value)
-    
 
+class RVectorDelegator(object):
+    """
+    Delegate operations such as __getitem__, __add__, etc..
+    to an R call of the corresponding function on its parent
+    attribute.
+    This permits a convenient coexistence between
+    operators on Python sequence object with their R conterparts.
+    """
+
+    def __init__(self, parent):
+        """ The parent in expected to inherit from RVector. """
+        self._parent = parent
+
+    def __getitem__(self, *args, **kwargs):
+        res = self._parent.subset(*args, **kwargs)
+        return res
+
+    def __add__(self, x):
+        res = r.get("+")(self._parent, x)
+        return res
+
+    def __sub__(self, x):
+        res = r.get("-")(self._parent, x)
+        return res
+
+    def __mul__(self, x):
+        res = r.get("*")(self._parent, x)
+        return res
+
+    def __div__(self, x):
+        res = r.get("/")(self._parent, x)
+        return res
+
+    def __divmod__(self, x):
+        res = r.get("%%")(self._parent, x)
+        return res
+
+    def __or__(self, x):
+        res = r.get("|")(self._parent, x)
+        return res
+
+    def __and__(self, x):
+        res = r.get("&")(self._parent, x)
+        return res
 
 class RVector(RObjectMixin, rinterface.SexpVector):
     """ R vector-like object. Items in those instances can
@@ -135,6 +178,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         if not isinstance(o, rinterface.SexpVector):
             o = py2ri(o)
         super(RVector, self).__init__(o)
+        self.r = RVectorDelegator(self)
             
 
     def subset(self, *args, **kwargs):
@@ -160,9 +204,14 @@ class RVector(RObjectMixin, rinterface.SexpVector):
     def assign(self, *args):
         #FIXME: value must be the last argument, but this can be
         # challenging in since python kwargs do not enforce any order
+        #(an ordered dictionary class will therefore be implemented)
         args = [py2ro(x) for x in args]
         res = r["[<-"](*([self, ] + [x for x in args]))
 
+        return res
+
+    def __add__(self, x):
+        res = r.get("c")(self, x)
         return res
 
     def __getitem__(self, i):
@@ -175,39 +224,11 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         value = py2ri(value)
         res = super(RVector, self).__setitem__(i, value)
 
-    def __add__(self, x):
-        res = r.get("+")(self, x)
-        return res
-
-    def __sub__(self, x):
-        res = r.get("-")(self, x)
-        return res
-
-    def __mul__(self, x):
-        res = r.get("*")(self, x)
-        return res
-
-    def __div__(self, x):
-        res = r.get("/")(self, x)
-        return res
-
-    def __divmod__(self, x):
-        res = r.get("%%")(self, x)
-        return res
-
-    def __or__(self, x):
-        res = r.get("|")(self, x)
-        return res
-
-    def __and__(self, x):
-        res = r.get("&")(self, x)
-        return res
-
-    def getNames(self):
+    def getnames(self):
         res = r.names(self)
         return res
 
-    def setNames(self, value):
+    def setnames(self, value):
         """ Return a vector of names
         (like the R function 'names' does it)."""
 
@@ -233,7 +254,7 @@ class RArray(RVector):
             value = py2ro(value)
             res = r["dim<-"](value)
 
-    def getNames(self):
+    def getnames(self):
         """ Return a list of name vectors
         (like the R function 'dimnames' does it)."""
 
@@ -301,6 +322,7 @@ class RS4(RObjectMixin, rinterface.SexpS4):
 
     def __getattr__(self, attr):
         res = self.do_slot(attr)
+        res = ri2py(res)
         return res
 
 

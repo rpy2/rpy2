@@ -20,17 +20,33 @@ class RVectorTestCase(unittest.TestCase):
 
         del(ri_v)
         self.assertEquals(ri.INTSXP, ro_v.typeof())
-        
-    def testOperators(self):
+
+    def testAddOperators(self):
+        seq_R = robjects.r["seq"]
+        mySeqA = seq_R(0, 3)
+        mySeqB = seq_R(5, 7)
+        mySeqAdd = mySeqA + mySeqB
+
+        self.assertEquals(len(mySeqA)+len(mySeqB), len(mySeqAdd))
+
+        for i, li in enumerate(mySeqA):
+            self.assertEquals(li, mySeqAdd[i])       
+        for j, li in enumerate(mySeqB):
+            self.assertEquals(li, mySeqAdd[i+j+1])
+
+    def testRAddOperators(self):
         seq_R = robjects.r["seq"]
         mySeq = seq_R(0, 10)
-        mySeqAdd = mySeq + 2
+        mySeqAdd = mySeq.r + 2
         for i, li in enumerate(mySeq):
-            self.assertEquals(i + 2, mySeqAdd[i])
+            self.assertEquals(li + 2, mySeqAdd[i])
 
-        mySeqAdd = mySeq + mySeq
+    def testRMultOperators(self):
+        seq_R = robjects.r["seq"]
+        mySeq = seq_R(0, 10)
+        mySeqAdd = mySeq.r + mySeq
         for i, li in enumerate(mySeq):
-            self.assertEquals(mySeq[i] * 2, mySeqAdd[i])
+            self.assertEquals(li * 2, mySeqAdd[i])
 
         
     def testSubsetByIndex(self):
@@ -43,6 +59,11 @@ class RVectorTestCase(unittest.TestCase):
         for i, si in enumerate(myIndex):
             self.assertEquals(mySeq[si-1], mySubset[i])
 
+        # same with the delegator
+        mySubset = mySeq.r[myIndex]
+        for i, si in enumerate(myIndex):
+            self.assertEquals(mySeq[si-1], mySubset[i])
+        
     def testSubsetByName(self):
         seq_R = robjects.baseNameSpaceEnv["seq"]
         mySeq = seq_R(0, 25)
@@ -122,17 +143,17 @@ class RVectorTestCase(unittest.TestCase):
         r_names = robjects.baseNameSpaceEnv["c"](*v_names)
         vec = robjects.baseNameSpaceEnv["names<-"](vec, r_names)
         for i in xrange(len(vec)):
-            self.assertEquals(v_names[i], vec.getNames()[i])
+            self.assertEquals(v_names[i], vec.getnames()[i])
 
-        vec.getNames()[0] = 'x'
+        vec.getnames()[0] = 'x'
 
     def testSetNames(self):
         vec = robjects.RVector(array.array('i', [1,2,3]))
         names = ['x', 'y', 'z']
         #FIXME: simplify this
-        vec = vec.setNames(names)
+        vec = vec.setnames(names)
         for i in xrange(len(vec)):
-            self.assertEquals(names[i], vec.getNames()[i])
+            self.assertEquals(names[i], vec.getnames()[i])
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RVectorTestCase)

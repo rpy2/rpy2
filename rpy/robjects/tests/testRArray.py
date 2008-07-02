@@ -26,7 +26,7 @@ class RArrayTestCase(unittest.TestCase):
         m = robjects.r.matrix(1, nrow=3, ncol=2,
                               dimnames = dimnames)
         a = robjects.RArray(m)
-        res = a.getNames()
+        res = a.getnames()
         r_identical = robjects.r.identical
         self.assertTrue(r_identical(dimnames[0], res[0]))
         self.assertTrue(r_identical(dimnames[1], res[1]))
