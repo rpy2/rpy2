@@ -6,6 +6,7 @@ import test_Sexp
 import test_SexpClosure
 import test_SexpVectorNumeric
 import test_EmbeddedR
+import test_EmbeddedR_multithreaded
 
 
 def suite():
@@ -15,12 +16,15 @@ def suite():
     suite_SexpClosure = test_SexpClosure.suite()
     suite_SexpVectorNumeric = test_SexpVectorNumeric.suite()
     suite_EmbeddedR = test_EmbeddedR.suite()
-    alltests = unittest.TestSuite([suite_SexpVector, 
-                                   suite_SexpEnvironment, 
-                                   suite_Sexp, 
-                                   suite_SexpClosure,
-                                   suite_SexpVectorNumeric,
-                                   suite_EmbeddedR])
+    #suite_EmbeddedR_multithreaded = test_EmbeddedR_multithreaded.suite()
+    alltests = unittest.TestSuite([suite_SexpVector 
+                                   ,suite_SexpEnvironment 
+                                   ,suite_Sexp
+                                   ,suite_SexpClosure
+                                   ,suite_SexpVectorNumeric
+                                   ,suite_EmbeddedR
+    #                               suite_EmbeddedR_multithreaded
+                                  ])
     return alltests
 
 def main():

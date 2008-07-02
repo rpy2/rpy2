@@ -9,7 +9,7 @@ except:
 
 
 class SexpClosureTestCase(unittest.TestCase):
-    #def setUpt(self):
+    #def setUp(self):
     #    rinterface.initEmbeddedR("foo", "--no-save")
 
     #def tearDown(self):
@@ -44,6 +44,22 @@ class SexpClosureTestCase(unittest.TestCase):
                                                       rinterface.INTSXP)
         self.assertEquals('b', fun(vec)[0])
 
+
+    def testCallS4SetClass(self):
+        # R's package "methods" can perform uncommon operations
+        r_setClass = rinterface.globalEnv.get('setClass')
+        r_representation = rinterface.globalEnv.get('representation')
+        attrnumeric = rinterface.SexpVector(["numeric", ],
+                                            rinterface.STRSXP)
+        classname = rinterface.SexpVector(['Track', ], rinterface.STRSXP)
+        classrepr = r_representation(x = attrnumeric,
+                                     y = attrnumeric)
+        r_setClass(classname,
+                   classrepr)
+
+
+                 
+                 
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpClosureTestCase)

@@ -110,10 +110,17 @@ interrupt_R(int signum)
   error("Interrupted");
 }
 
-/* Helper variable to store whether the embedded R is initialized
- * or not. 
+/* Helper variable to store R's status
  */
+static unsigned int embeddedR_status = 0;
 static PyObject *embeddedR_isInitialized;
+
+inline void embeddedR_setlock() {
+  embeddedR_status = embeddedR_status | RPY_R_BUSY;
+}
+inline void embeddedR_freelock() {
+  embeddedR_status = embeddedR_status ^ RPY_R_BUSY;
+}
 
 /* The Python original SIGINT handler */
 PyOS_sighandler_t python_sigint;
@@ -219,7 +226,7 @@ EmbeddedR_WriteConsole(const char *buf, int len)
 static PyObject* EmbeddedR_init(PyObject *self) 
 {
 
-  if (PyObject_IsTrue(embeddedR_isInitialized)) {
+  if (embeddedR_status & RPY_R_INITIALIZED) {
     PyErr_Format(PyExc_RuntimeError, "R can only be initialized once.");
     return NULL;
   }
@@ -242,6 +249,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   setup_Rmainloop();
 
   Py_XDECREF(embeddedR_isInitialized);
+  embeddedR_status = RPY_R_INITIALIZED;
   embeddedR_isInitialized = Py_True;
   Py_INCREF(Py_True);
 
@@ -316,7 +324,7 @@ static void
 EmbeddedR_exception_from_errmessage(void)
 {
   SEXP expr, res;
-  //PROTECT(GetErrMessage_SEXP);
+  //PROTECT(GetErrMessage_SEXP)
   PROTECT(expr = allocVector(LANGSXP, 1));
   SETCAR(expr, GetErrMessage_SEXP);
   PROTECT(res = Rf_eval(expr, R_GlobalEnv));
@@ -606,7 +614,6 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
   int error = 0;
   PyOS_sighandler_t old_int;
 
-
   //FIXME: if env_R is null, use R_BaseEnv
   //shouldn't it be R_GlobalContext (but then it throws a NULL error) ?
   if (isNull(env_R)) {
@@ -630,19 +637,17 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
   python_sigint = old_int;
   
   signal(SIGINT, interrupt_R);
-  
+
   interrupted = 0;
   //FIXME: evaluate expression in the given
   res_R = R_tryEval(expr_R, env_R, &error);
-
 #ifdef _WIN32
   PyOS_setsig(SIGBREAK, old_int);   
 #else 
   PyOS_setsig(SIGINT, old_int);
 #endif
-  
   /* start_events(); */
-  
+
   if (error) {
     if (interrupted) {
       PyErr_SetNone(PyExc_KeyboardInterrupt);
@@ -652,7 +657,6 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
     }
     return NULL;
   }
-
   return res_R;
 }
 
@@ -661,6 +665,13 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 static PyObject *
 Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 {
+
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+
   SEXP call_R, c_R, res_R;
   int largs, lkwds;
   SEXP tmp_R, fun_R;
@@ -672,6 +683,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     lkwds = PyObject_Length(kwds);
   if ((largs<0) || (lkwds<0)) {
     PyErr_Format(PyExc_ValueError, "Negative number of parameters !?.");
+    embeddedR_freelock();
     return NULL;
   }
 
@@ -756,10 +768,10 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     }
     Py_XDECREF(citems);
   }
-  
+
 //FIXME: R_GlobalContext ?
-  //PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
-  PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
+  PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
+  //PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
 
 /*   if (!res) { */
 /*     UNPROTECT(2); */
@@ -770,6 +782,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   if (! res_R) {
     EmbeddedR_exception_from_errmessage();
     //PyErr_Format(PyExc_RuntimeError, "Error while running R code");
+    embeddedR_freelock();
     return NULL;
   }
 
@@ -778,10 +791,12 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   Rf_PrintWarnings(); /* show any warning messages */
 
   PyObject *res = (PyObject *)newPySexpObject(res_R);
+  embeddedR_freelock();
   return res;
   
  fail:
   UNPROTECT(1);
+  embeddedR_freelock();
   return NULL;
 
 }
@@ -798,7 +813,13 @@ Sexp_closureEnv(PyObject *self)
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       return NULL;
   }
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
   closureEnv = CLOENV(sexp);
+  embeddedR_freelock();
   return newPySexpObject(closureEnv);
 }
 PyDoc_STRVAR(Sexp_closureEnv_doc,
@@ -1242,7 +1263,11 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   return (PyObject *)res;
 }
 PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
-	     "Find an R object in a given environment.");
+	     "Find a name/symbol in the environment, following the chain of enclosing\n"
+	     " environment until either the topmost environment is reached or the name\n"
+	     "is found, and returned the associated object. \n"
+	     "The optional parameter `wantFun` indicates whether functions should be\n"
+	     "returned or not.");
 
 static PyMethodDef EnvironmentSexp_methods[] = {
   {"get", (PyCFunction)EnvironmentSexp_findVar, METH_VARARGS | METH_KEYWORDS,
@@ -1277,10 +1302,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
   PyErr_Format(PyExc_LookupError, "'%s' not found", name);
   return NULL;
 }
-PyDoc_STRVAR(EnvironmentSexp_subscript_doc,
-	     "Find an R object in the environment.\n"
-	     "Not all R environment are hash tables, and this may"
-	     " influence performances when doing repeated lookups.");
+
 
 static int
 EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
@@ -1362,19 +1384,20 @@ EnvironmentSexp_iter(PyObject *sexpEnvironment)
 }
 
 PyDoc_STRVAR(EnvironmentSexp_Type_doc,
-"R object that is an environment.\
- R environments can be seen as similar to Python\
- dictionnaries, with the following twists:\n\
- - an environment can be a list of frames to sequentially\
- search into\n\
--  the search can be recursively propagated to the enclosing\
- environment whenever the key is not found (in that respect\
- they can be seen as scopings).\n\
-\n\
- The subsetting operator \"[\" is made to match Python's\
- behavior, that is the enclosing environments are not\
- inspected upon absence of a given key.\n\
-");
+"R object that is an environment.\n"
+"R environments can be seen as similar to Python\n"
+"dictionnaries, with the following twists:\n"
+"\n"
+"- an environment can be a list of frames to sequentially\n"
+"search into\n"
+"\n"
+"- the search can be recursively propagated to the enclosing\n"
+"environment whenever the key is not found (in that respect\n"
+"they can be seen as scopings).\n"
+"\n"
+"The subsetting operator \"[\" is made to match Python's\n"
+"behavior, that is the enclosing environments are not\n"
+"inspected upon absence of a given key.\n");
 
 
 static int
