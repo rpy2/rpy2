@@ -2,8 +2,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to rpy2's documentation!
-================================
+Documentation for rpy2
+======================
 
 Contents:
 
@@ -12,9 +12,12 @@ Contents:
 
    preface
    overview
-   rpy_classic
    robjects
    rinterface
+   rpy_classic
+
+   changes
+
 
 Indices and tables
 ==================

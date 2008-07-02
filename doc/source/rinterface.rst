@@ -1,18 +1,16 @@
-.. index::
-   module: rpy2.rinterface
-
 **********
 rinterface
 **********
 
 .. module:: rpy2.rinterface
+   :platform: Unix, Windows
    :synopsis: Low-level interface with R
 
 
 Overview
 ========
 
-A lower-level interface is provided for cases where
+A lower-level interface is provided for situations where
 the use-cases addressed by :mod:`robjects` are not covered,
 and for the cases where the layer in :mod:`robjects`
 has an excessive cost in term of performances.
@@ -46,9 +44,9 @@ Parameters for the initialization are in the module variable
 
 .. note::
    If calling :func:`initEmbeddedR` returns an error stating that
-   `R_HOME` is not defined, you should either have the R executable in
-   your path (`$PATH` on unix-alikes, `%Path%` on Microsoft Windows) or
-   have the environment variable `R_HOME` defined. 
+   :envvar:`R_HOME` is not defined, you should either have the :program:`R` executable in
+   your path (:envvar:`PATH` on unix-alikes, or :envvar:`Path` on Microsoft Windows) or
+   have the environment variable :envvar:`R_HOME` defined. 
 
 R space and Python space
 ------------------------
@@ -93,6 +91,26 @@ The base package has a namespace, that can be accessed as an environment.
 
 .. index::
    single: Sexp
+
+Ouput from the R console
+------------------------
+
+The function :meth:`setWriteConsole` let one specify what do with
+output from the R console with a callback function.
+
+An example should make it obvious::
+
+   buf = []
+   def f(x):
+       # function that append its argument to the list 'buf'
+       buf.append(x)
+
+   # output from the R console will now be appended to the list 'buf'
+   rinterface.setWriteConsole(f)
+
+
+
+
 
 :class:`Sexp`
 =============
@@ -257,6 +275,7 @@ The functions *array* and *asarray* is all that is needed:
 :class:`SexpEnvironment`
 ========================
 
+
 :meth:`get`
 -----------
 
@@ -269,8 +288,6 @@ matching is returned.
 
 The constant pi is defined in the package base, that
 is by default in the search path.
-
-FIXME: get functions only
 
 
 :meth:`__getitem__` / :meth:`__setitem__`
@@ -293,7 +310,13 @@ simple as assigning a value to a key in a Python dictionary:
 >>> x = rinterface.Sexp_Vector([123, ], rinterface.INTSXP)
 >>> rinterface.globalEnv["x"] = x
 
-note: a copy of the R object is made in the R space.
+
+.. note::
+   Not all R environment are hash tables, and this may
+   influence performances when doing repeated lookups
+
+.. note::
+  a copy of the R object is made in the R space.
 
 :meth:`__iter__`
 ----------------
@@ -307,9 +330,12 @@ that contains R's base objects:
 >>> basetypes = [x.typeof() for x in base]
 
 
-Note that in the current implementation the content of the environment
-is evaluated only once, when the iterator is created, and that adding 
-or removing elements to the environment after will not have any effect.
+.. warning::
+
+   In the current implementation the content of the environment
+   is evaluated only once, when the iterator is created. Adding 
+   or removing elements to the environment will not update the iterator
+   (this is a problem, that will be solved in the near future).
 
 .. index::
    single: closure

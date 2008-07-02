@@ -31,6 +31,46 @@ The present documentation covers RPy2, an evolution of RPy-1.x.
 Naturally RPy2 is inspired by RPy, but also by A. Belopolskys's contributions
 that were waiting to be included into RPy.
 
+Installation
+------------
+
+Requirements
+^^^^^^^^^^^^
+
+Python version 2.4 or higher, and R-2.7.0 or higher are required.
+
+
+
+Download
+^^^^^^^^
+
+Source Python packages, as well as pre-compiled binaries for Microsoft's Windows are available
+on the Sourceforge page.
+
+
+.. note::
+  MacOSX binaries may appear in the future (contributions to build them are welcome)
+
+
+Microsoft's Windows precompiled binaries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The executable can be ran; they will install the package in the default Python installation
+on the system.
+
+
+Install from source
+^^^^^^^^^^^^^^^^^^^
+
+To install from a source package `<rpy_package>` do in a shell:
+
+.. code-block:: bash
+
+  tar -xzf <rpy_package>.tar.gz
+  cd <rpy_package>
+  python setup.py install
+
+
 Contents
 --------
 

@@ -1,13 +1,9 @@
-.. index::
-   module: rpy2.rpy_classic
-
 
 ***********
 rpy_classic
 ***********
 
-.. module:: rpy2.rpy_classic
-   :synopsis: Provide compatibility with rpy
+
 
 This module provides an API similar to the one 
 in RPy-1.x (*rpy*).
@@ -22,7 +18,7 @@ we load the module as:
    single: rpy_classic; conversion
 
 Conversion
-----------
+==========
 
 Although the proposed high-level interface in :mod:`rpy2.robjects`
 does not need explicit conversion settings, the conversion system 
@@ -33,7 +29,7 @@ mode can be set with :func:`set_default_mode`:
 >>> set_default_mode(BASIC_CONVERSION)
 
 R instance
-----------
+==========
 
 The ``r`` instance of class :class:`R` behaves like before:
 
@@ -61,10 +57,10 @@ An example::
   type(r.seq)
 
 .. index::
-   pair: rpy_classic; function
+   pair: rpy_classic;function
 
 Functions
----------
+=========
 
 As in RPy-1.x, all R objects are callable:
 
@@ -84,7 +80,7 @@ The function are called like regular Python functions:
 >>> r.seq(1, 3)
 >>> r.seq(1, 3, by=0.5)
 >>> r['options'](show_coef_Pvalues=0)
-
+>>>
 
 
   
@@ -93,4 +89,4 @@ The function are called like regular Python functions:
 >>> m = r.matrix(r.rnorm(100), 20, 5)
 >>> pca = r.princomp(m)
 >>> r.plot(pca, main = "PCA")
-
+>>>

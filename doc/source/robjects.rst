@@ -1,14 +1,14 @@
-. index::
-   module: rpy2.robjects
-
 
 *************
 rpy2.robjects
 *************
 
 .. module:: rpy2.robjects
+   :platform: Unix, Windows
    :synopsis: High-level interface with R
 
+.. testsetup:: robjects
+   import rpy2.robjects as robjects
 
 Overview
 ========
@@ -30,6 +30,7 @@ Visible differences with RPy-1.x are:
 
 - no CONVERSION mode in :mod:`rpy2`, the design has made this unnecessary
 
+- easy to modify or rewrite with an all-Python implementation
 
 
 
@@ -39,6 +40,7 @@ Visible differences with RPy-1.x are:
 This class is currently a singleton, with
 its one representation instanciated when the
 module is loaded:
+
 
 >>> robjects.r
 >>> print(robjects.r)
@@ -84,7 +86,7 @@ by python variables can
 be plugged into code by their string representation:
 
 >>> x = robjects.r.rnorm(100)
->>> robjects.r('hist(%s, xlab="x", main="hist(x)")' %x.__repr__())
+>>> robjects.r('hist(%s, xlab="x", main="hist(x)")' %repr(x))
 
 
 
@@ -120,28 +122,6 @@ The class :class:`RVector` has a constructor:
 The class inherits from the class
 :class:`rpy2.rinterface.VectorSexp`.
 
-Operators
----------
-
-Mathematical operations on two vectors: the following operations
-are performed element-wise, recycling the shortest vector if, and
-as much as, necessary.
-
-+--------+---------+
-| ``+``  | Add     |
-+--------+---------+
-| ``-``  | Subtract|
-+--------+---------+
-| ``*``  | Multiply|
-+--------+---------+
-| ``/``  | Divide  |
-+--------+---------+
-| ``**`` | Power   |
-+--------+---------+
-| ``or`` | Or      |
-+--------+---------+
-| ``and``| And     |
-+--------+---------+
 
 .. index::
    pair: RVector;indexing
@@ -166,17 +146,58 @@ integer(0)
 >>> x.subset(1)
 1L
 
+Rather than calling :meth:`subset`, and to still have the conveniently
+short `[` operator available, a syntactic sugar is available in
+the form of delegating-like attribute :attr:`r`.
+
+>>> x.r[0]
+integer(0)
+>>> x.r[1]
+1L
+
 The two next examples demonstrate features of `R` regarding indexing,
 respectively element exclusion and recycling rule:
->>> x.subset(-1)
+
+>>> x.r[-1]
 2:10
->>> x.subset(True)
+>>> x.r[True]
 1:10
 
 This class is using the class :class:`rinterface.SexpVector`, 
 and its documentation can be referred to for details of what is happenening
 at the low-level.
 
+Operators
+---------
+
+Mathematical operations on two vectors: the following operations
+are performed element-wise in R, recycling the shortest vector if, and
+as much as, necessary.
+
+The delegating attribute mention in the Indexing section can also
+be used with the following operators:
+
++----------+---------+
+| operator | R (.r)  |
++----------+---------+
+| ``+``    | Add     |
++----------+---------+
+| ``-``    | Subtract|
++----------+---------+
+| ``*``    | Multiply|
++----------+---------+
+| ``/``    | Divide  |
++----------+---------+
+| ``**``   | Power   |
++----------+---------+
+| ``or``   | Or      |
++----------+---------+
+| ``and``  | And     |
++----------+---------+
+
+>>> x = robjects.r.seq(1, 10)
+>>> x.r + 1
+2:11
 
 .. index::
    pair: RVector; numpy
@@ -323,14 +344,31 @@ nicely:
 
 .. code-block:: python
 
-  fit = robjects.r('lm(%s)' %fmla.__repr__())
+  fit = robjects.r('lm(%s)' %repr(fmla))
 
 
 Mapping between rpy2 objects and other python objects
 =====================================================
 
-The mapping between low-level objects is performed on
-the fly by functions XXX
+The conversion, as often needed with RPy-1.x, is no longer
+necessary as the R objects can be either passed on to R functions
+or used in Python. T
+
+There is a low-level mapping between `R` and `Python` objects
+performed behind the (Python-level) scene.
+
+The mapping between low-level objects and higher-level objects
+is performed by the functions.
+
+:meth:`ri2py`
+   :mod:`rpy2.rinterface` to Python
+
+:meth:`py2ri`
+   Python to :mod:`rpy2.rinterface`
+
+:meth:`py2ro`
+   Python to :mod:`rpy2.robjects`. That one function
+   is merely a call to py2ri followed by a call to ri2py.
 
 Those functions can be modifyied to satisfy all requirements.
 
@@ -343,8 +381,8 @@ rpy2 by the example. The wiki on the sourceforge website
 will hopefully be used as a cookbook.
 
 
-Example::
-
+.. testcode:: robjects
+  import rpy2.robjects as robjects
   import array
 
   r = robjects.r
@@ -380,6 +418,11 @@ One way to achieve the same with :mod:`rpy2.robjects` is
 
 .. code-block:: python
 
+   import rpy2.robjects as robjects
+   import array
+
+   r = robjects.r
+
    ctl = array.array('f', [4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14])
    trt = array.array('f', [4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69])
    group = r.gl(2, 10, 20, labels = ["Ctl","Trt"])
@@ -409,7 +452,11 @@ The R code is
 
 The :mod:`rpy2.robjects` code is
 
-.. code-block:: python
+.. testcode::
+
+  import rpy2.robjects as robjects
+
+  r = robjects.r
 
   m = r.matrix(r.rnorm(100), ncol=5)
   pca = r.princomp(m)
@@ -421,11 +468,16 @@ The :mod:`rpy2.robjects` code is
 S4 classes
 ----------
 
-
 .. code-block:: python
 
-  if not r.require("GO")[0]:
-      raise(Exception("Bioconductor Package GO missing"))
+   import rpy2.robjects as robjects
+   import array
 
-  goItem = r.GOTERM["GO:0000001"]
+   r = robjects.r
 
+   r.setClass("Track",
+              r.representation(x="numeric", y="numeric"))
+
+   a = r.new("Track", x=0, y=1)
+
+   a.x

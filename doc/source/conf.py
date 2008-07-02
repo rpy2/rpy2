@@ -23,7 +23,8 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['doctest', ]
+
+extensions = ['sphinx.ext.doctest', ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -42,9 +43,9 @@ copyright = '2008, Laurent Gautier'
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '1.0'
+version = '2.0'
 # The full version, including alpha/beta/rc tags.
-release = '1.0a1'
+release = '2.0a1'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -90,6 +91,10 @@ html_style = 'default.css'
 # the sidebar.
 html_logo = 'rpy_logo_header.png'
 
+
+
+html_favicon = 'rpy.ico'
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -132,7 +137,7 @@ htmlhelp_basename = 'rpy2doc'
 # ------------------------
 
 # The paper size ('letter' or 'a4').
-#latex_paper_size = 'letter'
+latex_paper_size = 'a4'
 
 # The font size ('10pt', '11pt' or '12pt').
 #latex_font_size = '10pt'
