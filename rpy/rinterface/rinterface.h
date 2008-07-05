@@ -9,8 +9,8 @@
 //#define RPY_VERBOSE
 
 
-const unsigned int RPY_R_INITIALIZED = 0x01;
-const unsigned int RPY_R_BUSY = 0x02;
+extern const unsigned int const RPY_R_INITIALIZED;
+extern const unsigned int const RPY_R_BUSY;
 
 /* Representation of R objects (instances) as instances in Python.
  */

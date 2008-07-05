@@ -112,6 +112,9 @@ interrupt_R(int signum)
 
 /* Helper variable to store R's status
  */
+const unsigned int const RPY_R_INITIALIZED = 0x01;
+const unsigned int const RPY_R_BUSY = 0x02;
+
 static unsigned int embeddedR_status = 0;
 static PyObject *embeddedR_isInitialized;
 
