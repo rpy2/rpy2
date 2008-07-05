@@ -45,8 +45,7 @@ Download
 ^^^^^^^^
 
 Source Python packages, as well as pre-compiled binaries for Microsoft's Windows are available
-on the Sourceforge page.
-
+on the `Sourceforge page <http://downloads.sourceforge.net/rpy>`_.
 
 .. note::
   MacOSX binaries may appear in the future (contributions to build them are welcome)
@@ -119,3 +118,15 @@ The module :mod:`rpy2.rpy_classic` is using delegation, letting us
 demonstrate how to extend :mod:`rpy2.rinterface` with an alternative
 to inheritance.
 
+
+Acknowledgements
+----------------
+
+Acknowledgements go to:
+
+Walter Moreira, and Gregory Warnes
+    For the original RPy and its maintainance through the years.
+ 
+Alexander Belopolsky. 
+    His code contribution to RPy is acknowledged. I have found great
+    inspiration in reading that code.

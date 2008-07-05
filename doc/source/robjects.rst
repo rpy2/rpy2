@@ -83,7 +83,7 @@ x^2
 
 The astute reader will quickly realize that R objects named
 by python variables can
-be plugged into code by their string representation:
+be plugged into code through their string representation:
 
 >>> x = robjects.r.rnorm(100)
 >>> robjects.r('hist(%s, xlab="x", main="hist(x)")' %repr(x))
@@ -155,7 +155,7 @@ integer(0)
 >>> x.r[1]
 1L
 
-The two next examples demonstrate features of `R` regarding indexing,
+The two next examples demonstrate some of `R`'s features regarding indexing,
 respectively element exclusion and recycling rule:
 
 >>> x.r[-1]
@@ -174,7 +174,7 @@ Mathematical operations on two vectors: the following operations
 are performed element-wise in R, recycling the shortest vector if, and
 as much as, necessary.
 
-The delegating attribute mention in the Indexing section can also
+The delegating attribute mentioned in the Indexing section can also
 be used with the following operators:
 
 +----------+---------+
@@ -231,6 +231,14 @@ from :class:`robjects.RVector`.
 
 A :class:`RMatrix` is a special case of :class:`RArray`.
 
+
+:class:`RDataFrame`
+-------------------
+
+A :class:`RDataFrame` represents the `R` class `data.frame'.
+
+Currently, the constructor is flagged as experimental. It accepts either a :class:`rinterface.SexpVector`
+or a dictonnary which elements will be the columns of the `data.frame`.
 
 R environments
 ==============
@@ -350,27 +358,52 @@ nicely:
 Mapping between rpy2 objects and other python objects
 =====================================================
 
-The conversion, as often needed with RPy-1.x, is no longer
+The conversion, often present when working with RPy-1.x, is no longer
 necessary as the R objects can be either passed on to R functions
-or used in Python. T
+or used in Python. 
 
-There is a low-level mapping between `R` and `Python` objects
-performed behind the (Python-level) scene.
-
-The mapping between low-level objects and higher-level objects
-is performed by the functions.
+However, there is a low-level mapping between `R` and `Python` objects
+performed behind the (Python-level) scene, done by the :mod:`rpy2.rinterface`,
+while an higher-level mapping is done between low-level objects and
+higher-level objects using the functions:
 
 :meth:`ri2py`
-   :mod:`rpy2.rinterface` to Python
+   :mod:`rpy2.rinterface` to Python. By default, this function
+   is just an alias for the function :meth:`default_ri2py`.
 
 :meth:`py2ri`
-   Python to :mod:`rpy2.rinterface`
+   Python to :mod:`rpy2.rinterface`. By default, this function
+   is just an alias for the function :meth:`default_py2ri`.
 
 :meth:`py2ro`
    Python to :mod:`rpy2.robjects`. That one function
-   is merely a call to py2ri followed by a call to ri2py.
+   is merely a call to :meth:`py2ri` followed by a call to :meth:`ri2py`.
 
-Those functions can be modifyied to satisfy all requirements.
+Those functions can be modifyied to satisfy all requirements, with
+the easiest option being to write a custom function calling itself
+the default function.
+As an example, let's assume that one want to return atomic values
+whenever an R numerical vector is of length one. This is only a matter
+of writing a new function `ri2py` that handles this, as shown below:
+
+.. code-block:: python
+
+   import rpy2.robjects as robjects
+
+   def my_ri2py(obj):
+       res = robjects.default_ri2py(obj)
+       if isinstance(res, robjects.RVector) and (len(res) == 1):
+           res = res[0]
+       return res
+
+   robjects.ri2py = my_ri2py
+
+Once this is done, we can verify immediately that this is working with:
+
+>>> pi = robjects.r.pi
+>>  type(pi)
+<type 'float'>
+>>> 
 
 
 Examples
@@ -381,7 +414,8 @@ rpy2 by the example. The wiki on the sourceforge website
 will hopefully be used as a cookbook.
 
 
-.. testcode:: robjects
+.. code-block:: python
+
   import rpy2.robjects as robjects
   import array
 
@@ -434,7 +468,7 @@ One way to achieve the same with :mod:`rpy2.robjects` is
    print(r.anova(lm_D9))
 
    lm_D90 = r.lm("weight ~ group - 1")
-   r.summary(lm_D90)
+   print(r.summary(lm_D90))
 
    
 

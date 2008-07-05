@@ -5,12 +5,23 @@
 Documentation for rpy2
 ======================
 
+
+This document describes RPy2, a rewrite of
+the RPy package.
+
+It is developped for R-2.7 (and is not expected to work
+with a previous version), together with Python 2.5. Compatibility
+with Python 2.4 is expected but it was observed to segfault at rare occasions
+(and the cause is not yet identified).
+
+
+
+
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-   preface
    overview
    robjects
    rinterface

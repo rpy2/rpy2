@@ -32,9 +32,9 @@ the embedded R:
 
 >>> rinterface.initEmbeddedR()
 
-Initialization should only be performed once and in the case
-of a second call to :func:`initEmbeddedR`, to avoid unpredictable results
-when using the embedded R, an exception is be fired.
+Initialization should only be performed once. In the unfortunate event
+of a second call to :func:`initEmbeddedR`, and to avoid unpredictable results
+when using the embedded R, an exception will be fired.
 
 Parameters for the initialization are in the module variable
 `initOptions`.
@@ -254,6 +254,7 @@ in the Python package :mod:`numpy`.
 
 The functions *array* and *asarray* is all that is needed:
 
+
 >>> import numpy
 >>> rx = rinterface.SexpVector([1,2,3,4], rinterface.INTSXP)
 >>> nx = numpy.array(rx)
@@ -263,6 +264,8 @@ The functions *array* and *asarray* is all that is needed:
 .. note::
    when using :meth:`asarray`, the data are not copied.
 
+>>> rx[2]
+3
 >>> nx_nc[2] = 42
 >>> rx[2]
 42
