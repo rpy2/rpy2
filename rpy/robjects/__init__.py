@@ -18,14 +18,22 @@ FloatSexpVector = rinterface.FloatSexpVector
 #FIXME: close everything when leaving (check RPy for that).
 
 def default_ri2py(o):
+    res = None
     if isinstance(o, RObject):
         res = o
     elif isinstance(o, rinterface.SexpVector):
         try:
-            dim = o.do_slot("dim")
-            res = RArray(o)
+           cl = o.do_slot("class")[0]
+           if cl == 'data.frame':
+               res = RDataFrame(o)
         except LookupError, le:
-            res = RVector(o)
+            pass
+        if res is None:
+            try:
+                dim = o.do_slot("dim")
+                res = RArray(o)
+            except LookupError, le:
+                res = RVector(o)
     elif isinstance(o, rinterface.SexpClosure):
         res = RFunction(o)
     elif isinstance(o, rinterface.SexpEnvironment):
@@ -41,6 +49,7 @@ def default_ri2py(o):
 #FIXME: clean and nice mechanism to allow user-specified mapping function
 #FIXME: better names for the functions
 ri2py = default_ri2py
+
 
 def default_py2ri(o):
     if isinstance(o, RObject):
@@ -252,7 +261,9 @@ class RArray(RVector):
     def __setattr__(self, name, value):
         if name == 'dim':
             value = py2ro(value)
-            res = r["dim<-"](value)
+            res = r["dim<-"](self, value)
+            #FIXME: not properly done
+            raise(Exception("Not yet implemented"))
 
     def getnames(self):
         """ Return a list of name vectors
@@ -261,6 +272,7 @@ class RArray(RVector):
         res = r.dimnames(self)
         return res
         
+
 
 class RMatrix(RArray):
     """ An R matrix """
@@ -273,10 +285,40 @@ class RMatrix(RArray):
         """ Number of columns """
         return self.dim[1]
 
-class DataFrame(RVector):
-    #FIXME: not implemented
-    def __init__(self, o):
-        raise Exception("not implemented.")
+class RDataFrame(RVector):
+    def __init__(self, *args, **kwargs):
+
+        if len(args) > 1:
+            raise(ValueError("Only one unnamed parameter is allowed."))
+
+        if len(args) == 1:
+            if len(kwargs) != 0:
+                raise(ValueError("No named parameters allowed when there is an unnamed parameter."))
+            else:
+                super(RDataFrame, self).__init__(args[0])
+        else:
+            if len(kwargs) == 0:
+                raise(ValueError("Initialization parameters needed."))
+            df = baseNameSpaceEnv["data.frame"](**kwargs)
+            super(RDataFrame, self).__init__(df)
+
+        #import pdb; pdb.set_trace()
+        if not baseNameSpaceEnv["is.data.frame"](self)[0]:
+            raise(TypeError("The object must be representing an R data.frame"))
+    
+    def nrow(self):
+        """ Number of rows """
+        return baseNameSpaceEnv["nrow"](self)[0]
+
+    def ncol(self):
+        """ Number of columns """
+        return baseNameSpaceEnv["ncol"](self)[0]
+    
+    def rownames(self):
+        return baseNameSpaceEnv["colnames"](self)[0]
+
+    def colnames(self):
+        return baseNameSpaceEnv["colnames"](self)[0]
 
 
 

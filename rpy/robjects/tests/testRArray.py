@@ -20,7 +20,11 @@ class RArrayTestCase(unittest.TestCase):
         self.assertEquals(5, d[0])
         self.assertEquals(3, d[1])
 
-    def testGetNames(self):
+#         rd = robjects.r.rev(d)
+#         a.dim = rd
+
+
+    def testGetnames(self):
         dimnames = robjects.r.list(['a', 'b', 'c'],
                                    ['d', 'e'])
         m = robjects.r.matrix(1, nrow=3, ncol=2,
