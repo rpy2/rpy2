@@ -6,7 +6,7 @@ import test_Sexp
 import test_SexpClosure
 import test_SexpVectorNumeric
 import test_EmbeddedR
-import test_EmbeddedR_multithreaded
+#import test_EmbeddedR_multithreaded
 
 
 def suite():

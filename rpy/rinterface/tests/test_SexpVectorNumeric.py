@@ -20,7 +20,7 @@ def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon
 
 def testArrayStructInt(self, numericModule):
-    px = [1,-2,3]
+    px = [1, -2, 3]
     x = rinterface.SexpVector(px, rinterface.INTSXP)
     nx = numericModule.asarray(x)
     self.assertEquals(nx.dtype.kind, 'i')
