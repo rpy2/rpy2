@@ -1,0 +1,58 @@
+
+Release 2.0a1
+=============
+
+New features
+------------
+
+:mod:`rpy2.robjects`:
+
+- method :meth:`getnames` for :class:`RVector`
+
+- experimental methods :meth:`__setitem__` and :meth:`setnames` for :class:`RVector`
+
+- method 'getnames' for :class:`RArray`
+
+- new class :class:`RFormula`
+
+- new helper class :class:`RVectorDelegator` (see below)
+
+- indexing RVector the "R way" with subset is now possible through a delegating attribute (e.g., myvec.r[True] rather than myvec.subset(True)). #suggested by Michael Sorich
+
+- new class :class:`RDataFrame`. The constructor :meth:`__init__` is still experimental (need for an ordered dictionnary, that will be in before the beta
+
+- filled documentation about mapping between objects
+
+Changes
+-------
+
+- many fixes and additions to the documentation
+
+- improved GTK console in the demos
+
+- changed the major version number to 2 in order to avoid confusion with rpy 1.x # Suggested by Peter and Gregory Warnes
+
+- moved test.py to demos/example01.py
+
+:mod:`rpy2.robjects`:
+
+- changed method name `getNames` to `getnames` where available (all lower-case names for methods seems to be the accepted norm in Python).
+
+
+Bugs fixed
+----------
+
+:mod:`rpy2.robjects`:
+
+- Fixed string representation of R object on Microsoft Windows (using fifo, not available on win32)
+
+- :meth:`__getattr__` for :class:`RS4` is now using :meth:`ri2py` 
+
+:mod:`rpy2.rinterface`:
+
+- fixed context of evaluation for R functions (now R_GlobalEnv)
+
+Release 1.0a0
+=============
+
+- First public release
