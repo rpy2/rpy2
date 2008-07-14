@@ -3,6 +3,9 @@
 rpy_classic
 ***********
 
+.. module:: rpy2.rpy_classix
+   :platform: Unix, Windows
+   :synopsis: Emulate the orignal rpy
 
 
 This module provides an API similar to the one 

@@ -133,8 +133,8 @@ setup(name = pack_name,
       ext_modules = rinterface_exts,
       package_dir = pack_dir,
       packages = [pack_name,
-                 # pack_name+'.rlike',
-                 # pack_name+'.rlike.tests',
+                  pack_name+'.rlike',
+                  pack_name+'.rlike.tests',
                   pack_name+'.robjects',
                   pack_name+'.robjects.tests'] + \
                  [pack_name + '.rinterface', pack_name + '.rinterface.tests']

@@ -1,6 +1,20 @@
 
-Release 2.0a1
-=============
+SVN
+===
+
+New features
+------------
+
+:mod:`rpy2.rlike`:
+
+- new package for R-like features in Python
+
+- new module :mod:`rpy2.rlike.container` with the class :class:`NamedList`.
+
+
+
+Release 2.0.0a1
+===============
 
 New features
 ------------

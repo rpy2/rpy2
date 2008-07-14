@@ -26,6 +26,7 @@ Contents:
    robjects
    rinterface
    rpy_classic
+   rlike
 
    changes
 

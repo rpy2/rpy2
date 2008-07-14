@@ -289,6 +289,7 @@ class HelpExplorer(gtk.VBox):
         slabel.show()
         sbox.pack_start(slabel, True, True, 0)
         self.sentry = gtk.Entry()
+        self.sentry.connect("key_press_event", self.actionKeyPress)
         self.sentry.show()
         sbox.add(self.sentry)
         fbutton = gtk.CheckButton("fuzzy")
@@ -299,6 +300,7 @@ class HelpExplorer(gtk.VBox):
         sbutton.connect("clicked", self.searchAction, "search")
 
         sbutton.show()
+        self._sbutton = sbutton
         sbox.add(sbutton)
         self.pack_start(sbox, expand=False, fill=False, padding=0)
         s_window = gtk.ScrolledWindow()
@@ -326,6 +328,10 @@ class HelpExplorer(gtk.VBox):
             pack = matches.subset(i, 3)[0]
             row.append(pack)
             self._table.append(row)
+
+    def actionKeyPress(self, view, event):
+        if (event.keyval == gtk.gdk.keyval_from_name("Return")):
+            self.searchAction(self._sbutton)
 
     def searchAction(self, widget, data=None):
          self.updateRelevantHelp(self.sentry.get_text())
@@ -475,6 +481,10 @@ class ConsolePanel(gtk.VBox):
             self.append("\n", "input")
             self.evaluateAction(self._evalButton)
             return True
+        if (event.keyval == gtk.gdk.keyval_from_name("Up")):
+            print('up')
+        if (event.keyval == gtk.gdk.keyval_from_name("Down")):
+            print('down')
 
     def append(self, text, tag="input"):
         tag = self.tag_table.lookup(tag)

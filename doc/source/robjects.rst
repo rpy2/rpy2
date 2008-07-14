@@ -328,13 +328,12 @@ are evaluated in the environment it was defined in. Without further
 specification, that environment is the environment in which the
 the formula is created.
 
-The class :class:`robjects.RFormula` is representing an `R` formula,
-and represents a convenient way of specifying your code.
+The class :class:`robjects.RFormula` is representing an `R` formula.
 
 .. code-block:: python
 
   x = robjects.RVector(array.array('i', range(1, 11)))
-  y = x + robjects.r.rnorm(10, sd=0.2)
+  y = x.r + robjects.r.rnorm(10, sd=0.2)
 
   fmla = robjects.RFormula('y ~ x')
   env = fmla.getenvironment()
@@ -426,8 +425,8 @@ will hopefully be used as a cookbook.
 
   r.X11()
 
-  r.par(mfrow=array.array('i', [2,2]))
-  r.plot(x, y, ylab="foo/bar", col="red")
+  r.layout(r.matrix(array.array('i', [1,2,3,2]), nrow=2, ncol=2))
+  r.plot(r.runif(10), y, xlab="runif", ylab="foo/bar", col="red")
 
   kwargs = {'ylab':"foo/bar", 'type':"b", 'col':"blue", 'log':"x"}
   r.plot(x, y, **kwargs)
