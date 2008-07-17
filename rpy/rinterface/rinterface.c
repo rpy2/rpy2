@@ -75,6 +75,11 @@
 
 //#define RPY_VERBOSE
 
+#if Win32
+extern __declspec(dllimport) uintptr_t R_CStackLimit; /* C stack limit */
+#endif
+
+
 /* Back-compatibility with Python 2.4 */
 #if (PY_VERSION_HEX < 0x02050000)
 typedef int Py_ssize_t;
@@ -249,6 +254,14 @@ static PyObject* EmbeddedR_init(PyObject *self)
   int status = 1;
   Rf_initialize_R(n_args, options);
   R_Interactive = TRUE;
+
+  /* Taken from JRI:
+   * disable stack checking, because threads will thow it off */
+  R_CStackLimit = (uintptr_t) -1;
+  
+  #ifdef Win32
+  setup_term_ui();
+  #endif
   setup_Rmainloop();
 
   Py_XDECREF(embeddedR_isInitialized);

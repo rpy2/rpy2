@@ -4,7 +4,7 @@ from distutils.core import setup, Extension
 
 
 pack_name = 'rpy2'
-pack_version = '2.0.0-a1'
+pack_version = '2.0.0-dev'
 
 RHOMES = os.getenv('RHOMES')
 
@@ -87,10 +87,18 @@ def getRinterface_ext(RHOME, r_packversion):
 
     #f_in.close()
     #f_out.close()
+    
 
+    #FIXME: crude way (will break in many cases)
+    #check how to get how to have a configure step
     define_macros = []
-    if sys.platform != 'win32':
+
+    if sys.platform == 'win32':
+        define_macros.append(('Win32', 1))
+    else:
         define_macros.append(('R_INTERFACE_PTRS', 1))
+
+    define_macros.append(('CSTACK_DEFNS', 1))
     
     rinterface_ext = Extension(
             pack_name + '.rinterface.rinterface',
@@ -130,6 +138,7 @@ setup(name = pack_name,
       description = "Python interface to the R language",
       url = "http://rpy.sourceforge.net",
       license = "(L)GPL",
+      author = "Laurent Gautier <lgautier@gmail.com>",
       ext_modules = rinterface_exts,
       package_dir = pack_dir,
       packages = [pack_name,

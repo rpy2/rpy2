@@ -35,8 +35,6 @@ del(sys)
 
 from rpy2.rinterface.rinterface import *
 
-
-
 class StrSexpVector(SexpVector):
     def __init__(self, v):        
         super(StrSexpVector, self).__init__(v, STRSXP)
@@ -51,3 +49,10 @@ class FloatSexpVector(SexpVector):
     def __init__(self, v):        
         super(StrSexpVector, self).__init__(v, REALSXP)
 
+
+# wrapper because print is strangely not a function
+# Python prior to version 3.0
+def consolePrint(x):
+    print(x)
+
+setWriteConsole(consolePrint)
