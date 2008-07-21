@@ -123,10 +123,10 @@ const unsigned int const RPY_R_BUSY = 0x02;
 static unsigned int embeddedR_status = 0;
 static PyObject *embeddedR_isInitialized;
 
-inline void embeddedR_setlock() {
+inline void embeddedR_setlock(void) {
   embeddedR_status = embeddedR_status | RPY_R_BUSY;
 }
-inline void embeddedR_freelock() {
+inline void embeddedR_freelock(void) {
   embeddedR_status = embeddedR_status ^ RPY_R_BUSY;
 }
 
@@ -361,19 +361,22 @@ Sexp_clear(PySexpObject *self)
 {
   RPY_DECREF(self);
 #ifdef RPY_VERBOSE
-  printf("Python:%p / R:%p -- sexp count is %i\n", 
+  printf("Python:%p / R:%p -- sexp count is %i...", 
 	 self, RPY_SEXP(self), RPY_COUNT(self));
 #endif
 
   if ((RPY_COUNT(self) == 0) && RPY_SEXP(self)) {
 #ifdef RPY_VERBOSE
-    printf("freeing SEXP resources...\n");
+    printf("freeing SEXP resources...");
 #endif 
 
     if (RPY_SEXP(self) != R_NilValue) {
-      R_ReleaseObject(RPY_SEXP(self));
+#ifdef RPY_DEBUG_PRESERVE
+      printf("  Sexp_clear: R_ReleaseObject( %p )\n", RPY_SEXP(self));
+#endif 
+    R_ReleaseObject(RPY_SEXP(self));
     }
-    free(self->sObj);
+    PyMem_Free(self->sObj);
     ////self->ob_type->tp_free((PyObject*)self);
 #ifdef RPY_VERBOSE
     printf("done.\n");
@@ -412,7 +415,8 @@ Sexp_repr(PyObject *self)
 static PyObject*
 Sexp_typeof(PyObject *self)
 {
-  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
+  PySexpObject *pso = (PySexpObject*)self;
+  SEXP sexp = RPY_SEXP(pso);
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;;
@@ -450,9 +454,24 @@ Sexp_do_slot(PyObject *self, PyObject *name)
 PyDoc_STRVAR(Sexp_do_slot_doc,
 "\n\
 Returns the attribute/slot for an R object.\n\
-The name of the slot as a string is the only parameter for\
+The name of the slot (a string) is the only parameter for\
  the method.\n");
 
+static PyObject*
+Sexp_named(PyObject *self)
+{
+  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;;
+  }
+  unsigned int res = NAMED(sexp);
+  return PyInt_FromLong((long)res);
+}
+PyDoc_STRVAR(Sexp_named_doc,
+"Return the integer code for the R object reference-pseudo counting.\n\
+This method corresponds to the macro NAMED.\n\
+See the R-extensions manual for further details.");
 
 
 static PyMethodDef Sexp_methods[] = {
@@ -460,6 +479,8 @@ static PyMethodDef Sexp_methods[] = {
   Sexp_typeof_doc},
   {"do_slot", (PyCFunction)Sexp_do_slot, METH_O,
   Sexp_do_slot_doc},
+  {"named", (PyCFunction)Sexp_named, METH_NOARGS,
+  Sexp_named_doc},
   {NULL, NULL}          /* sentinel */
 };
 
@@ -486,7 +507,7 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   if (! self)
     PyErr_NoMemory();
 
-  self->sObj = (SexpObject *)calloc(1, sizeof(SexpObject));
+  self->sObj = (SexpObject *)PyMem_Malloc(1 * sizeof(SexpObject));
   if (! self->sObj) {
     Py_DECREF(self);
     PyErr_NoMemory();
@@ -560,7 +581,7 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   printf("done.\n");
 #endif 
 
-
+  //SET_NAMED(RPY_SEXP((PySexpObject *)self), (unsigned int)2);
   return 0;
 }
 
@@ -626,6 +647,7 @@ static PyTypeObject Sexp_Type = {
 /* Evaluate a SEXP. It must be constructed by hand. It raises a Python
    exception if an error ocurred in the evaluation */
 SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
+
   SEXP res_R = NULL;
   int error = 0;
   PyOS_sighandler_t old_int;
@@ -727,6 +749,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       goto fail;
     }
     tmp_R = RPY_SEXP((PySexpObject *)tmp_obj);
+    //tmp_R = Rf_duplicate(tmp_R);
     if (! tmp_R) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       Py_DECREF(tmp_obj);
@@ -769,6 +792,8 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       }
       Py_DECREF(tmp_obj);
       tmp_R = RPY_SEXP((PySexpObject *)argValue);
+      //SET_NAMED(tmp_R, 2);
+      //tmp_R = Rf_duplicate(tmp_R);
       if (! tmp_R) {
 	PyErr_Format(PyExc_ValueError, "NULL SEXP.");
 	Py_DECREF(tmp_obj);
@@ -779,6 +804,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       argNameString = PyString_AsString(argName);
       SET_TAG(c_R, install(argNameString));
     //printf("PyMem_Free...");
+      //FIXME: probably memory leak with argument names.
     //PyMem_Free(argNameString);
       c_R = CDR(c_R);
     }
@@ -1219,6 +1245,10 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     //(RPy has something)... or leave it to extensions ?
 
     RPY_SEXP((PySexpObject *)self) = newSEXP(object, sexptype);
+    #ifdef RPY_DEBUG_OBJECTINIT
+    printf("  SEXP vector is %p.\n", RPY_SEXP((PySexpObject *)self));
+    #endif
+    //SET_NAMED(RPY_SEXP((PySexpObject *)self), 2);
   } else {
     PyErr_Format(PyExc_ValueError, "Invalid sexpvector.");
     return -1;
@@ -1285,9 +1315,37 @@ PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
 	     "The optional parameter `wantFun` indicates whether functions should be\n"
 	     "returned or not.");
 
+static PyObject*
+EnvironmentSexp_frame(PyObject *self)
+{
+  SEXP res_R = NULL;
+  PySexpObject *res;
+  res_R = FRAME(RPY_SEXP((PySexpObject *)self));
+  res = newPySexpObject(res_R);
+  return (PyObject *)res;
+}
+PyDoc_STRVAR(EnvironmentSexp_frame_doc,
+	     "Return the frame the environment is in.");
+
+static PyObject*
+EnvironmentSexp_enclos(PyObject *self)
+{
+  SEXP res_R = NULL;
+  PySexpObject *res;
+  res_R = ENCLOS(RPY_SEXP((PySexpObject *)self));
+  res = newPySexpObject(res_R);
+  return (PyObject *)res;
+}
+PyDoc_STRVAR(EnvironmentSexp_enclos_doc,
+	     "Return the enclosure the environment is in.");
+
 static PyMethodDef EnvironmentSexp_methods[] = {
   {"get", (PyCFunction)EnvironmentSexp_findVar, METH_VARARGS | METH_KEYWORDS,
   EnvironmentSexp_findVar_doc},
+  {"frame", (PyCFunction)EnvironmentSexp_frame, METH_NOARGS,
+  EnvironmentSexp_frame_doc},
+  {"enclos", (PyCFunction)EnvironmentSexp_frame, METH_NOARGS,
+  EnvironmentSexp_enclos_doc},
   {NULL, NULL}          /* sentinel */
 };
 
@@ -1567,12 +1625,19 @@ newPySexpObject(const SEXP sexp)
   if (TYPEOF(sexp) == PROMSXP) {
     env_R = PRENV(sexp);
     sexp_ok = eval(sexp, env_R);
+#ifdef RPY_DEBUG_PROMISE
+    printf("  evaluating promise %p into %p.\n", sexp, sexp_ok);
+#endif 
   } 
   else {
     sexp_ok = sexp;
   }
-  if (sexp_ok)
+  if (sexp_ok) {
     R_PreserveObject(sexp_ok);
+#ifdef RPY_DEBUG_PRESERVE
+    printf("  R_PreserveObject( %p ).\n", sexp_ok);
+#endif 
+  }
 
   switch (TYPEOF(sexp_ok)) {
   case CLOSXP:
@@ -1600,6 +1665,9 @@ newPySexpObject(const SEXP sexp)
     break;
   }
   if (!object) {
+#ifdef RPY_DEBUG_PRESERVE
+    printf("  R_ReleaseObject( %p )\n", sexp_ok);
+#endif
     R_ReleaseObject(sexp_ok);
     PyErr_NoMemory();
     return NULL;
@@ -1724,10 +1792,15 @@ newSEXP(PyObject *object, int rType)
     PyErr_Format(PyExc_ValueError, "Cannot handle type %d", rType);
     sexp = NULL;
   }
+
+  R_PreserveObject(sexp);
+#ifdef RPY_DEBUG_PRESERVE
+  printf("  R_PreserveObject( %p ).\n", sexp);
+#endif 
   UNPROTECT(1);
 #ifdef RPY_VERBOSE
   printf("  new SEXP for Python:%p is %p.\n", object, sexp);
-#endif 
+#endif
 
   return sexp;
 }
