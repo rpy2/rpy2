@@ -6,9 +6,6 @@
 #include <Python.h>
 
 
-//#define RPY_VERBOSE
-
-
 extern const unsigned int const RPY_R_INITIALIZED;
 extern const unsigned int const RPY_R_BUSY;
 
@@ -16,7 +13,7 @@ extern const unsigned int const RPY_R_BUSY;
  */
 
 typedef struct {
-  int count;
+  Py_ssize_t count;
   //unsigned short int rpy_only;
   SEXP sexp;
 } SexpObject;
