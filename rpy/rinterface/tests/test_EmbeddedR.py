@@ -18,6 +18,9 @@ class EmbeddedRTestCase(unittest.TestCase):
         code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
         rinterface.baseNameSpaceEnv["print"](code)
         self.assertEquals('[1] "3"\n', str.join('', buf))
+        rinterface.setWriteConsole(rinterface.consolePrint)
+
+
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(EmbeddedRTestCase)
