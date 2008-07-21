@@ -99,6 +99,12 @@ def getRinterface_ext(RHOME, r_packversion):
         define_macros.append(('R_INTERFACE_PTRS', 1))
 
     define_macros.append(('CSTACK_DEFNS', 1))
+
+    # defines for debugging
+    #define_macros.append(('RPY_DEBUG_PRESERVE', 1))
+    #define_macros.append(('RPY_DEBUG_PROMISE', 1))
+    #define_macros.append(('RPY_DEBUG_OBJECTINIT', 1))
+
     
     rinterface_ext = Extension(
             pack_name + '.rinterface.rinterface',
@@ -111,6 +117,7 @@ def getRinterface_ext(RHOME, r_packversion):
             library_dirs = r_libs,
             define_macros = define_macros,
             runtime_library_dirs = r_libs,
+            #extra_compile_args=['-O0', '-g'],
             extra_link_args = get_rconfig(RHOME, '--ldflags') +\
                               get_rconfig(RHOME, 'LAPACK_LIBS') +\
                               get_rconfig(RHOME, 'BLAS_LIBS'),

@@ -196,6 +196,13 @@ ri.REALSXP), ],
         letters_R[0] = ri.SexpVector(["z", ], ri.STRSXP)
         self.assertTrue(letters_R[0] == "z")
 
+    def testMissingRPreserveObjectBug(self):
+        rgc = ri.baseNameSpaceEnv['gc']
+        xx = range(100000)
+        x = ri.SexpVector(xx, ri.INTSXP)
+        rgc()    
+        self.assertEquals(0, x[0])
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpVectorTestCase)
     return suite
