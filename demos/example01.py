@@ -1,8 +1,6 @@
 """
 short demo.
 
-Running this through ipython ends in a memory map
-dump and a segfault.
 """
 
 import rpy2.robjects as robjects
