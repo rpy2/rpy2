@@ -775,8 +775,17 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 	goto fail;
       }
       argName = PyTuple_GetItem(tmp_obj, 0);
+
+      if (argName == Py_None) {
+	PyErr_SetString(PyExc_TypeError, 
+			"None/missing keywords not yet supported.");
+	Py_DECREF(tmp_obj);
+	Py_XDECREF(citems);
+	goto fail;
+      }
+
       if (! PyString_Check(argName)) {
-	PyErr_SetString(PyExc_TypeError, "keywords must be strings");
+	PyErr_SetString(PyExc_TypeError, "All keywords must be strings.");
 	Py_DECREF(tmp_obj);
 	Py_XDECREF(citems);
 	goto fail;
