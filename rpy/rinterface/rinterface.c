@@ -317,6 +317,8 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   /* */
 
   Rf_endEmbeddedR((int)fatal);
+  embeddedR_status = embeddedR_status & (! RPY_R_INITIALIZED);
+
   RPY_SEXP(globalEnv) = R_EmptyEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
   GetErrMessage_SEXP = R_NilValue; 
@@ -703,6 +705,12 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 static PyObject *
 Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 {
+
+  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+    PyErr_Format(PyExc_RuntimeError, 
+		 "R must be initialized before any call to R functions is possible.");
+    return NULL;
+  }
 
   if (embeddedR_status & RPY_R_BUSY) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
