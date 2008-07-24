@@ -2,16 +2,16 @@ import unittest
 import itertools
 import rpy2.rlike.container as rlc
 
-class NamedListTestCase(unittest.TestCase):
+class ArgsDictTestCase(unittest.TestCase):
 
     def testNew(self):
-        nl = rlc.NamedList()
+        nl = rlc.ArgsDict()
 
         x = (('a', 123), ('b', 456), ('c', 789))
-        nl = rlc.NamedList(x)
+        nl = rlc.ArgsDict(x)
 
     def testLen(self):
-        x = rlc.NamedList()
+        x = rlc.ArgsDict()
         self.assertEquals(0, len(x))
 
         x['a'] = 2
@@ -20,7 +20,7 @@ class NamedListTestCase(unittest.TestCase):
         self.assertEquals(2, len(x))
 
     def testGetSetitem(self):
-        x = rlc.NamedList()
+        x = rlc.ArgsDict()
         
         x['a'] = 1
         self.assertEquals(1, len(x))
@@ -36,7 +36,7 @@ class NamedListTestCase(unittest.TestCase):
         self.assertEquals(1, x.index('b'))
         
     def testGetSetitemWithNone(self):
-        x = rlc.NamedList()
+        x = rlc.ArgsDict()
         
         x['a'] = 1
         x[None] = 2
@@ -49,7 +49,7 @@ class NamedListTestCase(unittest.TestCase):
         self.assertEquals(2, x.index('b'))
         
     def testReverse(self):
-        x = rlc.NamedList()
+        x = rlc.ArgsDict()
         x['a'] = 3
         x['b'] = 2
         x['c'] = 1
@@ -66,7 +66,7 @@ class NamedListTestCase(unittest.TestCase):
         def f(**kwargs):
             return [k for k in kwargs]
                 
-        x = rlc.NamedList()
+        x = rlc.ArgsDict()
         x['a'] = 3
         x['b'] = 2
         x['c'] = 1
@@ -76,7 +76,7 @@ class NamedListTestCase(unittest.TestCase):
             self.assertTrue(ki, ko)
 
 def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(NamedListTestCase)
+    suite = unittest.TestLoader().loadTestsFromTestCase(ArgsDictTestCase)
     return suite
 
 if __name__ == '__main__':

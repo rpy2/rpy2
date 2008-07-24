@@ -9,7 +9,7 @@ New features
 
 - package for R-like features in Python
 
-- module :mod:`rpy2.rlike.container` with the class :class:`NamedList`.
+- module :mod:`rpy2.rlike.container` with the class :class:`ArgsDict`.
 
 
 :mod:`rpy2.rinterface`:

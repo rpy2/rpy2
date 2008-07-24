@@ -1,4 +1,4 @@
-class NamedList(dict):
+class ArgsDict(dict):
     """ Implements the Ordered Dict API defined in PEP 372.
     When `odict` becomes part of collections, this class 
     should inherit from it rather than from `dict`.
@@ -16,11 +16,11 @@ class NamedList(dict):
     def __init__(self, c=[]):
 
         if isinstance(c, dict):
-            #FIXME: allow instance from NamedList ?
+            #FIXME: allow instance from ArgsDict ?
             raise ValueError('A regular dictionnary does not ' +\
                                  'conserve the order of its keys.')
 
-        super(NamedList, self).__init__()
+        super(ArgsDict, self).__init__()
         self.__l = []
         l = self.__l
 
@@ -37,7 +37,7 @@ class NamedList(dict):
     def __getitem__(self, key):
         if key is None:
             raise ValueError("Unnamed items cannot be retrieved by key.")
-        i = super(NamedList, self).__getitem__(key)
+        i = super(ArgsDict, self).__getitem__(key)
         return self.__l[i][1]
 
     def __iter__(self):
@@ -79,7 +79,7 @@ class NamedList(dict):
             self.__l[i] = (key, value)
         else:
             self.__l.append((key, value))
-            super(NamedList, self).__setitem__(key, len(self.__l)-1)
+            super(ArgsDict, self).__setitem__(key, len(self.__l)-1)
             
     def byindex(self, i):
         """ Fetch a value by index (rank), rather than by key."""
@@ -87,7 +87,7 @@ class NamedList(dict):
 
     def index(self, k):
         """ Return the index (rank) for the key 'k' """
-        return super(NamedList, self).__getitem__(k)
+        return super(ArgsDict, self).__getitem__(k)
 
     def items(self):
         """ Return an ordered list of all key/value pairs """
@@ -106,11 +106,11 @@ class NamedList(dict):
             l[i] = l[n-i-1]
             kv = l[i]
             if kv is not None:
-                super(NamedList, self).__setitem__(kv[0], i)
+                super(ArgsDict, self).__setitem__(kv[0], i)
             l[n-i-1] = tmp
             kv = tmp
             if kv is not None:
-                super(NamedList, self).__setitem__(kv[0], n-i-1)
+                super(ArgsDict, self).__setitem__(kv[0], n-i-1)
             
 
     def sort(self, cmp=None, key=None, reverse=False):
