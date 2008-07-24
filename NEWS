@@ -11,7 +11,8 @@ New features
 
 - module :mod:`rpy2.rlike.container` with the class :class:`NamedList`.
 
-:mode:`rpy2.rinterface`:
+
+:mod:`rpy2.rinterface`:
 
 - method :meth:`named`, corresponding to R's C-level NAMED
 
@@ -22,9 +23,9 @@ Bugs fixed
 
 - R stack checking is disabled (no longer crashes when multithreading)
 
-- Fixed missing R_PreserveObject for vectors (causing R part of the object to sometimes vanish
-during garbage collection)
+- Fixed missing R_PreserveObject for vectors (causing R part of the object to sometimes vanish during garbage collection)
 
+- Prevents calling an R function when R has been ended (raise :class:`RuntimeException`).
 
 
 Release 2.0.0a1

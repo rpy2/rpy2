@@ -20,7 +20,11 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEquals('[1] "3"\n', str.join('', buf))
         rinterface.setWriteConsole(rinterface.consolePrint)
 
-
+    def testCallWhenEndedR(self):
+        t = rinterface.baseNameSpaceEnv['date']
+        rinterface.endEmbeddedR(1)
+        self.assertRaises(RuntimeError, t)
+        rinterface.initEmbeddedR()
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(EmbeddedRTestCase)
