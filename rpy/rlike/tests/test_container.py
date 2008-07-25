@@ -65,16 +65,25 @@ class ArgsDictTestCase(unittest.TestCase):
 
         def f(**kwargs):
             return [k for k in kwargs]
-                
-        x = rlc.ArgsDict()
-        x['a'] = 3
-        x['b'] = 2
-        x['c'] = 1
-        
-        k = f(**x)
-        for ki, ko in itertools.izip(x, k):
-            self.assertTrue(ki, ko)
 
+        args = (('a', 5), ('b', 4), ('c', 3),
+                ('d', 2), ('e', 1))
+        x = rlc.ArgsDict(args)
+        k = f(**x)
+        for ki, ko in itertools.izip(args, k):
+            self.assertEquals(ki[0], ko)
+
+    def testItems(self):
+
+        args = (('a', 5), ('b', 4), ('c', 3),
+                ('d', 2), ('e', 1))
+        x = rlc.ArgsDict(args)
+        it = x.items()
+        for ki, ko in itertools.izip(args, it):
+            self.assertEquals(ki[0], ko[0])
+            self.assertEquals(ki[1], ko[1])
+
+    
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(ArgsDictTestCase)
     return suite
