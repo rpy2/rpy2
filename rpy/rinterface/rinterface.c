@@ -770,6 +770,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   /* named args */
   PyObject *citems, *argValue, *argName;
   char *argNameString;
+  unsigned int addArgName;
 
   if (kwds) {
     citems = PyMapping_Items(kwds);
@@ -778,26 +779,28 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       tmp_obj = PySequence_GetItem(citems, arg_i);
       if (! tmp_obj) {
 	PyErr_Format(PyExc_ValueError, "No un-named item %i !?", arg_i);
-	Py_DECREF(tmp_obj);
+	Py_XDECREF(tmp_obj);
 	Py_XDECREF(citems);
 	goto fail;
       }
       argName = PyTuple_GetItem(tmp_obj, 0);
 
       if (argName == Py_None) {
+	addArgName = 0;
 	PyErr_SetString(PyExc_TypeError, 
 			"None/missing keywords not yet supported.");
 	Py_DECREF(tmp_obj);
 	Py_XDECREF(citems);
 	goto fail;
-      }
-
-      if (! PyString_Check(argName)) {
+      } else if (PyString_Check(argName)) {
+	addArgName = 1;
+      } else {
 	PyErr_SetString(PyExc_TypeError, "All keywords must be strings.");
 	Py_DECREF(tmp_obj);
 	Py_XDECREF(citems);
 	goto fail;
       }
+      
       argValue = PyTuple_GetItem(tmp_obj, 1);
       is_PySexpObject = PyObject_TypeCheck(argValue, &Sexp_Type);
       if (! is_PySexpObject) {
@@ -818,11 +821,13 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 	goto fail;
       }
       SETCAR(c_R, tmp_R);
-      argNameString = PyString_AsString(argName);
-      SET_TAG(c_R, install(argNameString));
+      if (addArgName) {
+	argNameString = PyString_AsString(argName);
+	SET_TAG(c_R, install(argNameString));
     //printf("PyMem_Free...");
       //FIXME: probably memory leak with argument names.
     //PyMem_Free(argNameString);
+      }
       c_R = CDR(c_R);
     }
     Py_XDECREF(citems);
@@ -861,6 +866,151 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 
+/* This is the method to call when invoking an 'Sexp' */
+static PyObject *
+Sexp_rcall(PyObject *self, PyObject *args)
+{
+  
+  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+    PyErr_Format(PyExc_RuntimeError, 
+		 "R must be initialized before any call to R functions is possible.");
+    return NULL;
+  }
+  
+
+  if (! PyTuple_Check(args)) {
+    PyErr_Format(PyExc_ValueError, "Parameter must be a tuple.");
+    return NULL;
+  }
+
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+  
+  SEXP call_R, c_R, res_R;
+  int largs;
+  SEXP tmp_R, fun_R;
+  
+  largs = 0;
+  if (args)
+    largs = PyObject_Length(args);
+  if (args<0) {
+    PyErr_Format(PyExc_ValueError, "Negative number of parameters !?.");
+    embeddedR_freelock();
+    return NULL;
+  }
+  
+  /* A SEXP with the function to call and the arguments and keywords. */
+  PROTECT(c_R = call_R = allocList(largs+1));
+  SET_TYPEOF(c_R, LANGSXP);
+  fun_R = RPY_SEXP((PySexpObject *)self);
+  if (! fun_R) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    goto fail;
+  }
+  SETCAR(c_R, fun_R);
+  c_R = CDR(c_R);
+
+  int arg_i;
+  PyObject *tmp_obj;
+  int is_PySexpObject;
+
+  /* named args */
+  PyObject *citems, *argValue, *argName;
+  char *argNameString;
+  unsigned int addArgName;
+  Py_ssize_t itemLength;
+  //citems = PyMapping_Items(args);
+  for (arg_i=0; arg_i<largs; arg_i++) {
+    //printf("item: %i\n", arg_i);
+    tmp_obj = PyTuple_GetItem(args, arg_i);
+    if (! tmp_obj) {
+      PyErr_Format(PyExc_ValueError, "No un-named item %i !?", arg_i);
+      //Py_XDECREF(citems);
+      goto fail;
+    }
+    itemLength = PyObject_Length(tmp_obj);
+    if (itemLength != 2) {
+      PyErr_Format(PyExc_ValueError, "Item %i does not have two elements.", 
+		   arg_i);
+      goto fail;
+    }
+    argName = PyTuple_GetItem(tmp_obj, 0);
+    if (argName == Py_None) {
+      addArgName = 0;
+    } else if (PyString_Check(argName)) {
+      addArgName = 1;
+    } else {
+      PyErr_SetString(PyExc_TypeError, "All keywords must be strings.");
+      Py_XDECREF(citems);
+      goto fail;
+    }
+    argValue = PyTuple_GetItem(tmp_obj, 1);
+    is_PySexpObject = PyObject_TypeCheck(argValue, &Sexp_Type);
+    if (! is_PySexpObject) {
+      PyErr_Format(PyExc_ValueError, 
+		   "All parameters must be of type Sexp_Type.");
+      //Py_XDECREF(citems);
+      goto fail;
+    }
+    tmp_R = RPY_SEXP((PySexpObject *)argValue);
+    //tmp_R = Rf_duplicate(tmp_R);
+    if (! tmp_R) {
+      PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+      //Py_XDECREF(citems);
+      goto fail;
+    }
+    SETCAR(c_R, tmp_R);
+    if (addArgName) {
+      argNameString = PyString_AsString(argName);
+      SET_TAG(c_R, install(argNameString));
+      //printf("PyMem_Free...");
+      //FIXME: probably memory leak with argument names.
+      //PyMem_Free(argNameString);
+    }
+    c_R = CDR(c_R);
+  }
+
+  //Py_XDECREF(citems);
+
+//FIXME: R_GlobalContext ?
+  PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
+  //PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
+
+/*   if (!res) { */
+/*     UNPROTECT(2); */
+/*     return NULL; */
+/*   } */
+  UNPROTECT(2);
+
+  if (! res_R) {
+    EmbeddedR_exception_from_errmessage();
+    //PyErr_Format(PyExc_RuntimeError, "Error while running R code");
+    embeddedR_freelock();
+    return NULL;
+  }
+
+  //FIXME: standardize R outputs
+  extern void Rf_PrintWarnings(void);
+  Rf_PrintWarnings(); /* show any warning messages */
+
+  PyObject *res = (PyObject *)newPySexpObject(res_R);
+  embeddedR_freelock();
+  return res;
+  
+ fail:
+  UNPROTECT(1);
+  embeddedR_freelock();
+  return NULL;
+
+}
+
+PyDoc_STRVAR(SexpClosure_rcall_doc,
+"Call using the items of the object passed as Python \n\
+argument to build the list of parameters passed to the \n\
+R function.");
 
 
 static PySexpObject*
@@ -888,7 +1038,9 @@ This corresponds to the C-level function CLOENV(SEXP).");
 
 static PyMethodDef ClosureSexp_methods[] = {
   {"closureEnv", (PyCFunction)Sexp_closureEnv, METH_NOARGS,
-  Sexp_closureEnv_doc},
+   Sexp_closureEnv_doc},
+  {"rcall", (PyCFunction)Sexp_rcall, METH_O,
+   SexpClosure_rcall_doc},
   {NULL, NULL}          /* sentinel */
 };
 

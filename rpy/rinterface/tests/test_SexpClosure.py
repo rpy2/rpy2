@@ -1,5 +1,6 @@
 import unittest
 import rpy2.rinterface as rinterface
+import rpy2.rlike.container as rlc
 
 try:
     #FIXME: can starting and stopping an embedded R be done several times ?
@@ -44,7 +45,6 @@ class SexpClosureTestCase(unittest.TestCase):
                                                       rinterface.INTSXP)
         self.assertEquals('b', fun(vec)[0])
 
-
     def testCallS4SetClass(self):
         # R's package "methods" can perform uncommon operations
         r_setClass = rinterface.globalEnv.get('setClass')
@@ -58,8 +58,14 @@ class SexpClosureTestCase(unittest.TestCase):
                    classrepr)
 
 
-                 
-                 
+
+    def testRcall(self):
+        ad = rlc.ArgsDict((('a', rinterface.SexpVector([2, ], rinterface.INTSXP)), 
+                           ('b', rinterface.SexpVector([1, ], rinterface.INTSXP)),
+                           ('c', rinterface.SexpVector([0, ], rinterface.INTSXP))))
+        
+        mylist = rinterface.baseNameSpaceEnv['list'].rcall(ad.items())
+
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpClosureTestCase)
