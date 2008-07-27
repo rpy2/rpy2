@@ -1,3 +1,5 @@
+import itertools
+
 class ArgsDict(dict):
     """ Implements the Ordered Dict API defined in PEP 372.
     When `odict` becomes part of collections, this class 
@@ -14,6 +16,9 @@ class ArgsDict(dict):
     """
 
     def __init__(self, c=[]):
+
+        if isinstance(c, TaggedList):
+            c = c.items()
 
         if isinstance(c, dict):
             #FIXME: allow instance from ArgsDict ?
@@ -92,7 +97,7 @@ class ArgsDict(dict):
     def items(self):
         """ Return an ordered list of all key/value pairs """
         res = [self.byindex(i) for i in xrange(len(self.__l))]
-        return res 
+        return tuple(res)
 
     def iteritems(self):
         return iter(self.__l)
@@ -117,3 +122,125 @@ class ArgsDict(dict):
         raise(Exception("Not yet implemented."))
 
     
+class TaggedList(list):
+    """ A list for which each item has a 'tag'. """
+
+    def __add__(self, tl):
+        try:
+            tags = tl.tags()
+        except AttributeError, ae:
+            raise ValueError('Can only concatenate TaggedLists.')
+        res = TaggedList(list(self) + list(tl), 
+                         tags = self.tags() + tl.tags())
+        return res
+
+    def __delitem__(self, y):
+        super(TaggedList, self).__delitem__(y)
+        self.__tags.__delitem__(y)
+
+    def __delslice__(self, i, j):
+        super(TaggedList, self).__delslice__(i, j)
+        self.__tags.__delslice__(i, j)
+
+    def __iadd__(self, y):
+        super(TaggedList, self).__iadd__(y)
+        if isinstance(y, TaggedList):
+            self.__tags.__iadd__(y.tags())
+        else:
+            self.__tags.__iadd__([None, ] * len(y))
+        return self
+
+    def __imul__(self, y):
+        restags = self.__tags.__imul__(y)
+        resitems = super(TaggedList, self).__imul__(y)
+        return self
+
+    def __init__(self, l, tags = None):
+
+        super(TaggedList, self).__init__(l)
+
+        if tags is None:
+            tags = [None, ] * len(l)
+        tags = list(tags)
+
+        if isinstance(tags, list):
+            if len(tags) != len(l):
+                raise ValueError("When a list, the parameter 'tags' must be of same length as the given list.")
+            self.__tags = tags
+        else:
+            raise ValueError("Parameter 'tags' must be either a list or 'None'.")
+
+    def __setslice__(self, i, j, y):
+        #FIXME: implement
+        raise Exception("Not yet implemented.")
+
+    def append(self, obj, tag = None):
+        super(TaggedList, self).append(obj)
+        self.__tags.append(tag)
+
+    def extend(self, iterable):
+        if isinstance(iterable, TaggedList):
+            itertags = iterable.itertags()
+        else:
+            itertags = [None, ] * len(iterable)
+
+        for tag, item in itertools.izip(itertags, iterable):
+            self.append(item, tag=tag)
+
+
+    def insert(self, index, obj, tag=None):
+        super(TaggedList, self).insert(index, obj)
+        self.__tags.insert(index, tag)
+
+    def items(self):
+        """ Return a tuple of all pairs (tag, item). """
+        res = [(tag, item) for tag, item in itertools.izip(self.__tags, self)]
+        return tuple(res)
+
+    def iterontag(self, tag):
+        """ iterate on items marked with one given tag. """
+        i = 0
+        for onetag in self.__tags:
+            if tag == onetag:
+                yield self[i]
+            i += 1
+
+    def itertags(self):
+        """ iterate on tags. """
+        for tag in self.__tags:
+            yield tag
+
+    def pop(self, index=None):
+        if index is None:
+            index = len(self) - 1
+        
+        super(TaggedList, self).pop(index)
+        self.__tags.pop(index)
+
+    def remove(self, value):
+        found = False
+        for i in xrange(len(self)):
+            if self[i] == value:
+                found = True
+                break
+        if found:
+            self.pop(i)
+
+    def reverse(self):
+        super(TaggedList, self).reverse()
+        self.__tags.reverse()
+
+    def sort(self):
+        #FIXME: implement
+        raise Exception("Not yet implemented.")
+
+    
+    def tags(self):
+        """ Return a tuple of all tags """
+        res = [x for x in self.__tags]
+        return tuple(res)
+
+
+    def settag(self, i, t):
+        """ Set tag 't' for item 'i'. """
+        self.__tags[i] = t

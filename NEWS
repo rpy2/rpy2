@@ -1,6 +1,6 @@
 
-SVN
-===
+Release 2.0.0a2
+===============
 
 New features
 ------------
@@ -9,8 +9,11 @@ New features
 
 - package for R-like features in Python
 
-- module :mod:`rpy2.rlike.container` with the class :class:`ArgsDict`.
+- module :mod:`rpy2.rlike.container` 
 
+- class :class:`ArgsDict` in :mod:`rpy2.rlike.container`
+
+- class :class:`TaggedList` in :mod:`rpy2.rlike.container`
 
 :mod:`rpy2.rinterface`:
 
