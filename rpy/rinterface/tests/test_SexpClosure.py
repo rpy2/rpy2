@@ -62,9 +62,20 @@ class SexpClosureTestCase(unittest.TestCase):
     def testRcall(self):
         ad = rlc.ArgsDict((('a', rinterface.SexpVector([2, ], rinterface.INTSXP)), 
                            ('b', rinterface.SexpVector([1, ], rinterface.INTSXP)),
+                           (None, rinterface.SexpVector([5, ], rinterface.INTSXP)),
                            ('c', rinterface.SexpVector([0, ], rinterface.INTSXP))))
         
         mylist = rinterface.baseNameSpaceEnv['list'].rcall(ad.items())
+        
+        names = [x for x in mylist.do_slot("names")]
+        
+        for i in range(4):
+            self.assertEquals(('a', 'b', '', 'c')[i], names[i])
+
+    def testErrorInCall(self):
+        mylist = rinterface.baseNameSpaceEnv['list']
+        
+        self.assertRaises(ValueError, mylist, 'foo')
 
 
 def suite():
