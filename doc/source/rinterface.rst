@@ -157,6 +157,17 @@ in the C interface to R.
 >>>
 
 .. index::
+   single: Sexp; named
+
+:meth:`named`
+---------------
+
+`R` does not count references for its object. This method
+returns the `NAMED` value (see the R-extensions manual).
+
+
+
+.. index::
    single: SexpVector
    single: rinterface; SexpVector
 
@@ -204,7 +215,7 @@ where indexing start at 1 (one).
    The *__getitem__* operator *[*
    is returning a Python scalar. Casting
    an *SexpVector* into a list is only a matter 
-   either iterating through it, or simply calling
+   of either iterating through it, or simply calling
    the constructor :func:`list`.
 
 
@@ -212,7 +223,7 @@ Common attributes
 -----------------
 
 .. index::
-   single: names
+   single: names;rinterface
 
 Names
 ^^^^^
@@ -362,6 +373,28 @@ a context to the function.
 >>> s[0]
 6
 >>>
+
+
+.. rubric:: Order for named parameters
+
+One point where function calls in R can differ from the ones in 
+Python is that
+all parameters in R are passed in the order they are in the call
+(no matter whether the parameter is named or not),
+while in Python only parameters without a name are passed in order.
+Using the class :class:`ArgsDict` in the module :mod:`rpy2.rlike.container`
+permits calling a function the same way it would in R. For example::
+
+   import rpy2.rlike.container as rpc
+   args = rpc.ArgsDict()
+   args['x'] = rinterface.SexpVector([1,2,3], rinterface.INTSXP)
+   args[None] = rinterface.SexpVector([4,5], rinterface.INTSXP)
+   args['y'] = rinterface.SexpVector([6, ], rinterface.INTSXP)
+   rlist = rinterface.baseNameSpaceEnv['list']
+   rl = rlist.rcall(args.items())
+
+>>> [x for x in rl.do_slot("names")]
+['x', '', 'y']
 
 closureEnv
 ----------

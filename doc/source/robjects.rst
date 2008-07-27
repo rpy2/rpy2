@@ -28,7 +28,7 @@ example of a Python interface built on the top of :mod:`rpy2.rinterface`).
 
 Visible differences with RPy-1.x are:
 
-- no CONVERSION mode in :mod:`rpy2`, the design has made this unnecessary
+- no ``CONVERSION`` mode in :mod:`rpy2`, the design has made this unnecessary
 
 - easy to modify or rewrite with an all-Python implementation
 
@@ -198,6 +198,21 @@ be used with the following operators:
 >>> x = robjects.r.seq(1, 10)
 >>> x.r + 1
 2:11
+
+
+.. note::
+   In Python, the operator ``+`` concatenate sequence object, and this behavior
+   has been conserved.
+
+.. index::
+   single: names; robjects
+
+Names
+-----
+
+``R`` vectors can have a name given to all or some of the items.
+The method :meth:`getnames` retrieve those names.
+
 
 .. index::
    pair: RVector; numpy
@@ -408,7 +423,7 @@ Once this is done, we can verify immediately that this is working with:
 Examples
 ========
 
-The following section demonstrates some of the features of
+This section demonstrates some of the features of
 rpy2 by the example. The wiki on the sourceforge website
 will hopefully be used as a cookbook.
 
@@ -430,6 +445,11 @@ will hopefully be used as a cookbook.
 
   kwargs = {'ylab':"foo/bar", 'type':"b", 'col':"blue", 'log':"x"}
   r.plot(x, y, **kwargs)
+
+.. note::
+   Since the named parameters are a Python :class:`dict`, 
+   the order of the parameters is lost. Check :meth:`rpy2.rinterface.rcall`
+   to know how to keep the order of parameters.
 
 Linear models
 -------------

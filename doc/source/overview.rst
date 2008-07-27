@@ -31,6 +31,8 @@ The present documentation covers RPy2, an evolution of RPy-1.x.
 Naturally RPy2 is inspired by RPy, but also by A. Belopolskys's contributions
 that were waiting to be included into RPy.
 
+
+
 Installation
 ------------
 
@@ -48,15 +50,24 @@ Source Python packages, as well as pre-compiled binaries for Microsoft's Windows
 on the `Sourceforge page <http://downloads.sourceforge.net/rpy>`_.
 
 .. note::
-  MacOSX binaries may appear in the future (contributions to build them are welcome)
+   Choose files from the `rpy2` package, not `rpy`.
+
+.. note::
+   MacOSX binaries may appear in the future (contributions to build them are welcome)
+
+
+.. index::
+  single: install;win32
 
 
 Microsoft's Windows precompiled binaries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The executable can be ran; they will install the package in the default Python installation
+The executable can be ran; it will install the package in the default Python installation
 on the system.
 
+.. index::
+  single: install;source
 
 Install from source
 ^^^^^^^^^^^^^^^^^^^
@@ -68,6 +79,24 @@ To install from a source package `<rpy_package>` do in a shell:
   tar -xzf <rpy_package>.tar.gz
   cd <rpy_package>
   python setup.py install
+
+.. index::
+  single: test;whole installation
+
+Test an installation
+^^^^^^^^^^^^^^^^^^^^
+
+An installation can be tested as follows:
+
+.. code-block:: python
+
+  import rpy2.tests
+  import unittest
+
+  # the verbosity level can be increased if needed
+  tr = unittest.TextTestRunner(verbosity = 1)
+  suite = rpy2.tests.suite()
+  tr.run(suite)
 
 
 Contents
@@ -100,6 +129,15 @@ API.
 
 Design notes
 ------------
+
+
+When designing ryp2, attention was given to make:
+
+- the use of the module simple from both a Python or R user's perspective
+
+- minimize the need for knowledge about R, and the need for tricks are workaround.
+- the possibility to customize a lot only with Python (without having to go to C-level).
+
 
 :mod:`rpy2.robjects` implements an extension to the interface in
 :mod:`rpy2.rinterface` by extending the classes for R

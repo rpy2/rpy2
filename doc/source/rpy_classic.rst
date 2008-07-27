@@ -3,7 +3,7 @@
 rpy_classic
 ***********
 
-.. module:: rpy2.rpy_classix
+.. module:: rpy2.rpy_classic
    :platform: Unix, Windows
    :synopsis: Emulate the orignal rpy
 
