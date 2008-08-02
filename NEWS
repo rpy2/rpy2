@@ -21,6 +21,8 @@ New features
 
 - experimental methods :meth:`frame` and :meth:`enclos` for SexpEnvironment corresponding to R's C-level FRAME and ENCLOS
 
+- method :meth:`rcall` for :class:`ClosureSexp`
+
 Bugs fixed
 ----------
 
