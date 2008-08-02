@@ -1777,6 +1777,58 @@ static PyTypeObject S4Sexp_Type = {
         0                      /*tp_is_gc*/
 };
 
+//FIXME: write more doc
+PyDoc_STRVAR(LangSexp_Type_doc,
+"Language object.");
+
+
+static PyTypeObject LangSexp_Type = {
+	/* The ob_type field must be initialized in the module init function
+	 * to be portable to Windows without using C++. */
+	PyObject_HEAD_INIT(NULL)
+	0,			/*ob_size*/
+	"rinterface.SexpLang",	/*tp_name*/
+	sizeof(PySexpObject),	/*tp_basicsize*/
+	0,			/*tp_itemsize*/
+	/* methods */
+	0, /*tp_dealloc*/
+	0,			/*tp_print*/
+	0,                      /*tp_getattr*/
+	0,                      /*tp_setattr*/
+	0,			/*tp_compare*/
+	0,		        /*tp_repr*/
+	0,			/*tp_as_number*/
+	0,			/*tp_as_sequence*/
+	0,			/*tp_as_mapping*/
+	0,			/*tp_hash*/
+	0,              /*tp_call*/
+        0,//Sexp_str,               /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
+        LangSexp_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,//Sexp_getset,            /*tp_getset*/
+        &Sexp_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        0,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+	//FIXME: add new method
+        0, //S4Sexp_new,               /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
 
 
 /* --- Create a SEXP object --- */
@@ -1828,6 +1880,9 @@ newPySexpObject(const SEXP sexp)
     break;
   case S4SXP:
     object = (PySexpObject *)Sexp_new(&S4Sexp_Type, Py_None, Py_None);
+    break;
+  case LANGSXP:
+    object = (PySexpObject *)Sexp_new(&LangSexp_Type, Py_None, Py_None);
     break;
   default:
     object = (PySexpObject *)Sexp_new(&Sexp_Type, Py_None, Py_None);
@@ -2179,6 +2234,8 @@ initrinterface(void)
     return;
   if (PyType_Ready(&S4Sexp_Type) < 0)
     return;
+  if (PyType_Ready(&LangSexp_Type) < 0)
+    return;
 
   PyObject *m, *d;
   m = Py_InitModule3("rinterface", EmbeddedR_methods, module_doc);
@@ -2212,6 +2269,7 @@ initrinterface(void)
   PyModule_AddObject(m, "SexpVector", (PyObject *)&VectorSexp_Type);
   PyModule_AddObject(m, "SexpEnvironment", (PyObject *)&EnvironmentSexp_Type);
   PyModule_AddObject(m, "SexpS4", (PyObject *)&S4Sexp_Type);
+  PyModule_AddObject(m, "SexpLang", (PyObject *)&LangSexp_Type);
 
 
   if (RPyExc_RuntimeError == NULL) {
