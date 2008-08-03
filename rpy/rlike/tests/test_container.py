@@ -93,7 +93,13 @@ class TaggedListTestCase(unittest.TestCase):
         self.assertEquals(tuple(tl), (1, 3))
 
     def test__delslice__(self):
-        self.assertTrue(False) # no test (yet)
+        tn = ['a', 'b', 'c', 'd']
+        tv = [1,2,3,4]
+        tl = rlc.TaggedList(tv, tags = tn)
+        del tl[1:3]
+        self.assertEquals(2, len(tl))
+        self.assertEquals(tl.tags(), ('a', 'd'))
+        self.assertEquals(tuple(tl), (1, 4))
 
     def test__iadd__(self):
         tn = ['a', 'b', 'c']
@@ -119,11 +125,16 @@ class TaggedListTestCase(unittest.TestCase):
         tl = rlc.TaggedList(tv, tags = tn)
 
         self.assertRaises(TypeError, rlc.TaggedList, tv, tags=123)
-        self.assertRaises(ValueError, rlc.TaggedList, tv, tags=('a', 'b'))
-        
+        self.assertRaises(ValueError, rlc.TaggedList, tv, tags=('a', 'b'))        
 
     def test__setslice__(self):
-        self.assertTrue(False) # no test (yet)
+        tn = ['a', 'b', 'c', 'd']
+        tv = [1,2,3,4]
+        tl = rlc.TaggedList(tv, tags = tn)
+        tl[1:3] = [5, 6]
+        self.assertEquals(4, len(tl))
+        self.assertEquals(tl.tags(), ('a', 'b', 'c', 'd'))
+        self.assertEquals(tuple(tl), (1, 5, 6, 4))
 
     def testappend(self):
         tn = ['a', 'b', 'c']
@@ -204,7 +215,7 @@ class TaggedListTestCase(unittest.TestCase):
         self.assertEquals(tuple(tl), (3, 2, 1))
 
     def testsort(self):
-        self.assertTrue(False) # no test (yet)
+        self.assertTrue(False) # not implemented (yet)
     
     def testtags(self):
         tn = ['a', 'b', 'c']

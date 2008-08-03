@@ -171,8 +171,9 @@ class TaggedList(list):
             raise ValueError("Parameter 'tags' must be either a list or 'None'.")
 
     def __setslice__(self, i, j, y):
-        #FIXME: implement
-        raise Exception("Not yet implemented.")
+        super(TaggedList, self).__setslice__(i, j, y)
+        #FIXME: handle TaggedList ?
+        #self.__tags.__setslice__(i, j, [None, ])
 
     def append(self, obj, tag = None):
         super(TaggedList, self).append(obj)
