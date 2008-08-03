@@ -23,6 +23,9 @@ New features
 
 - method :meth:`rcall` for :class:`ClosureSexp`
 
+- new experimental class :class:`SexpLang` for R language objects.
+
+
 Bugs fixed
 ----------
 
