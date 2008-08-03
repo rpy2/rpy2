@@ -374,7 +374,8 @@ class RFormula(RObjectMixin, rinterface.Sexp):
         inpackage = rinterface.baseNameSpaceEnv["::"]
         asformula = inpackage(StrSexpVector(['stats', ]), 
                               StrSexpVector(['as.formula', ]))
-        robj = asformula(rinterface.SexpVector(StrSexpVector([formula, ])),
+        formula = rinterface.SexpVector(StrSexpVector([formula, ]))
+        robj = asformula(formula,
                          env = environment)
         super(RFormula, self).__init__(robj)
         
