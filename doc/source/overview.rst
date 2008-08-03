@@ -32,12 +32,6 @@ Naturally RPy2 is inspired by RPy, but also by A. Belopolskys's contributions
 that were waiting to be included into RPy.
 
 This effort can be seen as a rewrite of the RPy package.
-It is developped for R-2.7 (and it will not work
-with a previous version), together with Python 2.5. Compatibility
-with Python 2.4 is expected but it was observed to segfault on rare occasions
-(and the cause is not yet identified).
-  
-
 
 Installation
 ------------
@@ -47,6 +41,11 @@ Requirements
 
 Python version 2.4 or higher, and R-2.7.0 or higher are required.
 
+This is developped with R-2.7.1 and Python-2.5.2.
+R-2.8.0-dev is sometimes tested, and it does seem to work well.
+
+Compatibility with Python 2.4 is expected but it was observed to segfault on rare occasions
+(and the cause is not yet identified).
 
 
 Download
