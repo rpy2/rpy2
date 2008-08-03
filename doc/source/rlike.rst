@@ -21,6 +21,10 @@ Containers
 
 >>> import rpy2.rlike.container as rlc
 
+
+.. index::
+   single: ArgsDict
+
 ArgsDict
 --------
 
@@ -47,11 +51,35 @@ to `None` indicates a value for which no name is associated.
 
 >>> nl[None] = 'no name'
 
-
+.. index::
+   single: TaggedList
 
 TaggedList
 ----------
 
-A :class:`TaggedList` is a Python list in which each item has
-an associated tag.
+A :class:`TaggedList` is a Python :class:`list` in which each item has
+an associated `tag`.
 This is similar to `named` vectors in R.
+
+>>> tl = rlc.TaggedList([1,2,3])
+>>> tl
+[1, 2, 3]
+>>> tl.tags()
+(None, None, None)
+>>> tl.settag(0, 'a')
+>>> tl.tags()
+('a', None, None)
+
+
+>>> tl = rlc.TaggedList([1,2,3], tags=('a', 'b', 'c'))
+>>> tl
+[1, 2, 3]
+>>> tl.tags()
+('a', 'b', 'c')
+>>> tl.settag(0, 'c')
+>>> tl.tags()
+('c', 'b', 'c')
+>>> it = tl.iterontag('c')
+>>> [x for x in it]
+[1, 3]
+

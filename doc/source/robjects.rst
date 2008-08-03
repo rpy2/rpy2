@@ -7,8 +7,6 @@ rpy2.robjects
    :platform: Unix, Windows
    :synopsis: High-level interface with R
 
-.. testsetup:: robjects
-   import rpy2.robjects as robjects
 
 Overview
 ========
@@ -107,8 +105,8 @@ The class inherits from the class
 .. index::
    pair: robjects;RVector
 
-R vectors
-=========
+Vectors
+=======
 
 Beside functions, and environemnts, most of the objects
 an R user is interacting with are vector-like.
@@ -255,8 +253,8 @@ A :class:`RDataFrame` represents the `R` class `data.frame`.
 Currently, the constructor is flagged as experimental. It accepts either a :class:`rinterface.SexpVector`
 or a dictonnary which elements will be the columns of the `data.frame`.
 
-R environments
-==============
+Environments
+============
 
 R environments can be described to the Python user as
 an hybrid of a dictionary and a scope.
@@ -307,8 +305,8 @@ An environment is also iter-able, returning all the symbols
    pair: robjects; RFunction
    pair: robjects; function
 
-R functions
-===========
+Functions
+=========
 
 >>> plot = robjects.r.plot
 >>> rnorm = robjects.r.rnorm

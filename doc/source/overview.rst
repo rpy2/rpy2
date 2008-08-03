@@ -27,10 +27,16 @@ rest of this document.
 
 .. _Omegahat project: http://www.omegahat.org/RSPython
 
-The present documentation covers RPy2, an evolution of RPy-1.x.
+The present documentation describes RPy2, an evolution of RPy-1.x.
 Naturally RPy2 is inspired by RPy, but also by A. Belopolskys's contributions
 that were waiting to be included into RPy.
 
+This effort can be seen as a rewrite of the RPy package.
+It is developped for R-2.7 (and it will not work
+with a previous version), together with Python 2.5. Compatibility
+with Python 2.4 is expected but it was observed to segfault on rare occasions
+(and the cause is not yet identified).
+  
 
 
 Installation
@@ -86,7 +92,7 @@ To install from a source package `<rpy_package>` do in a shell:
 Test an installation
 ^^^^^^^^^^^^^^^^^^^^
 
-An installation can be tested as follows:
+At any time, an installation can be tested as follows:
 
 .. code-block:: python
 
@@ -108,7 +114,7 @@ The package is made of several sub-packages or modules:
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 Higher-level interface similar to the one in RPy-1.x.
-This is provided for compatibility reasons, and facilitate the migration
+This is provided for compatibility reasons, as well as to facilitate the migration
 to RPy2.
 
 

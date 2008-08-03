@@ -24,7 +24,7 @@ import sys, os
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 
-extensions = ['sphinx.ext.doctest', ]
+extensions = ['sphinx.ext.doctest', 'sphinx.ext.autodoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -46,6 +46,7 @@ copyright = '2008, Laurent Gautier'
 version = '2.0'
 # The full version, including alpha/beta/rc tags.
 release = '2.0.0a2'
+releaselevel = 'alpha'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

@@ -1,10 +1,12 @@
-**********
-rinterface
-**********
-
 .. module:: rpy2.rinterface
    :platform: Unix, Windows
    :synopsis: Low-level interface with R
+
+
+
+**********
+rinterface
+**********
 
 
 Overview
@@ -19,16 +21,22 @@ The package can be imported with:
 
 >>> import rpy2.rinterface as rinterface
 
-.. index::
-   single: initEmbeddedR
-   single: initialize
 
-:func:`initEmbeddedR`
----------------------
+.. index::
+   single: initialization
+
+Initialization
+--------------
 
 One has to initialize R before much can be done.
 The function :func:`initEmbeddedR` lets one initialize
-the embedded R:
+the embedded R.
+
+This is done with the function :meth:`initEmbeddedR`.
+
+
+.. autofunction:: initEmbeddedR()
+
 
 >>> rinterface.initEmbeddedR()
 
@@ -47,6 +55,7 @@ Parameters for the initialization are in the module variable
    :envvar:`R_HOME` is not defined, you should either have the :program:`R` executable in
    your path (:envvar:`PATH` on unix-alikes, or :envvar:`Path` on Microsoft Windows) or
    have the environment variable :envvar:`R_HOME` defined. 
+
 
 R space and Python space
 ------------------------
@@ -108,62 +117,64 @@ An example should make it obvious::
    # output from the R console will now be appended to the list 'buf'
    rinterface.setWriteConsole(f)
 
+.. autofunction:: setWriteConsole(function)
+
+   :param function: function
 
 
 
-
-:class:`Sexp`
-=============
-
-Methods:
+Classes
+=======
 
 
-typeof()
-    Type of the object
+Sexp
+----
 
-do_slot([name])
-    Access attribute *name* for the object
-
-.. index::
-   single: Sexp; typeof
-
-:meth:`typeof`
---------------
-
-The internal R type in which an object is stored can be
-accessed with the method :meth:`typeof`.
-
->>> letters.typeof()
-
-FIXME: talk about the all the types.
-
-.. index::
-   single: Sexp; do_slot
-
-:meth:`do_slot`
----------------
-
-R objects can be given attributes. In R the function
-*attr* lets one access attribute, while called :meth:`do_slot`
-in the C interface to R. 
+The class :class:`Sexp` is the base class for all R objects.
 
 
->>> matrix = rinterface.globalEnv.get("matrix")
->>> letters = rinterface.globalEnv.get("letters")
->>> ncol = rinterface.SexpVector([2, ], rinterface.INTSXP)
->>> m = matrix(letters, ncol = ncol)
->>> [x for x in m.do_slot("dim")]
-[13, 2]
->>>
+.. class:: Sexp
 
-.. index::
-   single: Sexp; named
+   .. method:: typeof()
 
-:meth:`named`
----------------
+      The internal R type in which an object is stored can be
+      accessed with the method :meth:`typeof`.
 
-`R` does not count references for its object. This method
-returns the `NAMED` value (see the R-extensions manual).
+      :rtype: integer
+
+
+      .. doctest::
+
+         >>> letters.typeof()
+         16
+
+
+   .. method:: do_slot(name)
+
+      R objects can be given attributes. In R the function
+      *attr* lets one access attribute, while called :meth:`do_slot`
+      in the C interface to R. 
+
+      :param name: string
+      :rtype: Sexp (or Sexp-inheriting) object
+
+      >>> matrix = rinterface.globalEnv.get("matrix")
+      >>> letters = rinterface.globalEnv.get("letters")
+      >>> ncol = rinterface.SexpVector([2, ], rinterface.INTSXP)
+      >>> m = matrix(letters, ncol = ncol)
+      >>> [x for x in m.do_slot("dim")]
+      [13, 2]
+      >>>
+
+   .. method:: named()
+
+      `R` does not count references for its object. This method
+      returns the `NAMED` value (see the R-extensions manual).
+
+      :rtype: integer
+
+.. .. autoclass:: rpy2.rinterface.Sexp
+..   :members:
 
 
 
@@ -171,11 +182,12 @@ returns the `NAMED` value (see the R-extensions manual).
    single: SexpVector
    single: rinterface; SexpVector
 
+
 :class:`SexpVector`
-===================
+-------------------
 
 Overview
---------
+^^^^^^^^
 
 In R all scalars are in fact vectors.
 Anything like a one-value variable is a vector of
@@ -204,7 +216,7 @@ The letters of the (western) alphabet are:
    pair: rinterface;indexing
 
 Indexing
---------
+^^^^^^^^
 
 The indexing is working like it would on regular `Python`
 tuples or lists.
@@ -220,13 +232,13 @@ where indexing start at 1 (one).
 
 
 Common attributes
------------------
+^^^^^^^^^^^^^^^^^
 
 .. index::
    single: names;rinterface
 
-Names
-^^^^^
+.. rubric:: Names
+
 
 In R, vectors can be named, that is each value in the vector
 can be given a name (that is be associated a string).
@@ -245,8 +257,7 @@ called `names`), and can be accessed as such:
    single: dimnames
 
 
-Dim and dimnames
-^^^^^^^^^^^^^^^^
+.. rubric:: Dim and dimnames
 
 In the case of an `array`, the names across the
 respective dimensions of the object are accessible
@@ -258,7 +269,7 @@ through the slot named `dimnames`.
    pair: SexpVector; numpy
 
 Numpy
------
+^^^^^
 
 The :class:`SexpVector` objects are made to behave like arrays as defined
 in the Python package :mod:`numpy`.
@@ -282,16 +293,21 @@ The functions *array* and *asarray* is all that is needed:
 42
 >>>
 
+.. .. autoclass:: rpy2.rinterface.SexpVector
+..   :members:
+
+
+
 .. index::
    single: SexpEnvironment
    single: rinterface; SexpEnvironment
 
 :class:`SexpEnvironment`
-========================
+------------------------
 
 
 :meth:`get`
------------
+^^^^^^^^^^^
 
 Whenever a search for a symbol is performed, the whole
 search path is considered: the environments in the list
@@ -305,7 +321,7 @@ is by default in the search path.
 
 
 :meth:`__getitem__` / :meth:`__setitem__`
------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The *[* operator will only look for a symbol in the environment
 (FIXME: first in the list then ?),
@@ -333,7 +349,7 @@ simple as assigning a value to a key in a Python dictionary:
   a copy of the R object is made in the R space.
 
 :meth:`__iter__`
-----------------
+^^^^^^^^^^^^^^^^
 
 The object is made iter-able.
 
@@ -358,10 +374,9 @@ that contains R's base objects:
    pair: rinterface; function
 
 :class:`SexpClosure`
-====================
+--------------------
 
-A function with a context
--------------------------
+.. rubric:: A function with a context
 
 In R terminology, a closure is a function (with its enclosing
 environment). That enclosing environment can be thought of as
@@ -375,6 +390,9 @@ a context to the function.
 >>>
 
 
+.. index::
+   single: rcall
+
 .. rubric:: Order for named parameters
 
 One point where function calls in R can differ from the ones in 
@@ -382,7 +400,8 @@ Python is that
 all parameters in R are passed in the order they are in the call
 (no matter whether the parameter is named or not),
 while in Python only parameters without a name are passed in order.
-Using the class :class:`ArgsDict` in the module :mod:`rpy2.rlike.container`
+Using the class :class:`ArgsDict` in the module :mod:`rpy2.rlike.container`,
+together with the method :meth:`rcall`,
 permits calling a function the same way it would in R. For example::
 
    import rpy2.rlike.container as rpc
@@ -396,8 +415,11 @@ permits calling a function the same way it would in R. For example::
 >>> [x for x in rl.do_slot("names")]
 ['x', '', 'y']
 
-closureEnv
-----------
+
+.. index::
+   single: closureEnv
+
+.. rubric:: closureEnv
 
 In the example below, we inspect the environment for the
 function *plot*, that is the namespace for the
@@ -408,9 +430,6 @@ package *graphics*.
 >>> envplot_list = ls(plot.closureEnv())
 >>> [x for x in envplot_ls]
 >>>
-
-
-
 
 
 Misc. variables
