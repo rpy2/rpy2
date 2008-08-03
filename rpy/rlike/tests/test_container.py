@@ -60,18 +60,6 @@ class ArgsDictTestCase(unittest.TestCase):
         self.assertEquals(1, x.index('b'))
         self.assertEquals(3, x['a'])
         self.assertEquals(2, x.index('a'))
-        
-    def testCall(self):
-
-        def f(**kwargs):
-            return [k for k in kwargs]
-
-        args = (('a', 5), ('b', 4), ('c', 3),
-                ('d', 2), ('e', 1))
-        x = rlc.ArgsDict(args)
-        k = f(**x)
-        for ki, ko in itertools.izip(args, k):
-            self.assertEquals(ki[0], ko)
 
     def testItems(self):
 
