@@ -185,10 +185,7 @@ static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
-            "setWriteConsoleEmbeddedR()\n\
-            \n\
-            Set the R console output.");
-
+            "Use the function to handle R console output.");
 
 
 static void
@@ -292,9 +289,9 @@ static PyObject* EmbeddedR_init(PyObject *self)
   return res;
 }
 PyDoc_STRVAR(EmbeddedR_init_doc,
-	     "initEmbeddedR()\n\
-	     \n\
-	     Initialize an embedded R.");
+	     "\
+Initialize an embedded R.\
+");
 
 
 static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
@@ -918,17 +915,15 @@ Sexp_rcall(PyObject *self, PyObject *args)
   int is_PySexpObject;
 
   /* named args */
-  PyObject *citems, *argValue, *argName;
+  PyObject *argValue, *argName;
   char *argNameString;
   unsigned int addArgName;
   Py_ssize_t itemLength;
-  //citems = PyMapping_Items(args);
   for (arg_i=0; arg_i<largs; arg_i++) {
     //printf("item: %i\n", arg_i);
     tmp_obj = PyTuple_GetItem(args, arg_i);
     if (! tmp_obj) {
       PyErr_Format(PyExc_ValueError, "No un-named item %i !?", arg_i);
-      //Py_XDECREF(citems);
       goto fail;
     }
     itemLength = PyObject_Length(tmp_obj);
@@ -944,7 +939,6 @@ Sexp_rcall(PyObject *self, PyObject *args)
       addArgName = 1;
     } else {
       PyErr_SetString(PyExc_TypeError, "All keywords must be strings.");
-      Py_XDECREF(citems);
       goto fail;
     }
     argValue = PyTuple_GetItem(tmp_obj, 1);
@@ -952,14 +946,12 @@ Sexp_rcall(PyObject *self, PyObject *args)
     if (! is_PySexpObject) {
       PyErr_Format(PyExc_ValueError, 
 		   "All parameters must be of type Sexp_Type.");
-      //Py_XDECREF(citems);
       goto fail;
     }
     tmp_R = RPY_SEXP((PySexpObject *)argValue);
     //tmp_R = Rf_duplicate(tmp_R);
     if (! tmp_R) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-      //Py_XDECREF(citems);
       goto fail;
     }
     SETCAR(c_R, tmp_R);
@@ -973,7 +965,6 @@ Sexp_rcall(PyObject *self, PyObject *args)
     c_R = CDR(c_R);
   }
 
-  //Py_XDECREF(citems);
 
 //FIXME: R_GlobalContext ?
   PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
