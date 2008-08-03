@@ -36,16 +36,25 @@ del(sys)
 from rpy2.rinterface.rinterface import *
 
 class StrSexpVector(SexpVector):
-    def __init__(self, v):        
+    """ 
+    Vector of strings.
+    """
+    def __init__(self, v):
         super(StrSexpVector, self).__init__(v, STRSXP)
 
 
 class IntSexpVector(SexpVector):
+    """ 
+    Vector of integers.
+    """
     def __init__(self, v):        
         super(StrSexpVector, self).__init__(v, INTSXP)
 
 
 class FloatSexpVector(SexpVector):
+    """ 
+    Vector of floats.
+    """
     def __init__(self, v):        
         super(StrSexpVector, self).__init__(v, REALSXP)
 
@@ -53,6 +62,7 @@ class FloatSexpVector(SexpVector):
 # wrapper because print is strangely not a function
 # Python prior to version 3.0
 def consolePrint(x):
+    """ Wrapper around Python's print. This is the default callback for R's console. """
     print(x)
 
 setWriteConsole(consolePrint)
