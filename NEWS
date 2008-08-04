@@ -1,3 +1,21 @@
+SVN
+===
+
+New features
+------------
+
+:mod:`rpy2.rinterface`:
+
+- :func:`setReadConsole`: specify Python callback for console input
+
+Changes
+-------
+
+:mod:`rpy2.rinterface`:
+
+- underlying handling of interruptions is being worked on
+
+
 
 Release 2.0.0a2
 ===============

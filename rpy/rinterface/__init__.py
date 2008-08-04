@@ -66,3 +66,11 @@ def consolePrint(x):
     print(x)
 
 setWriteConsole(consolePrint)
+
+def consoleRead(prompt):
+    input = raw_input(prompt)
+    input += "\n"
+    return input
+
+setReadConsole(consoleRead)
+

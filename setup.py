@@ -4,7 +4,7 @@ from distutils.core import setup, Extension
 
 
 pack_name = 'rpy2'
-pack_version = '2.0.0-a2'
+pack_version = '2.0.0-dev'
 
 RHOMES = os.getenv('RHOMES')
 
@@ -99,11 +99,13 @@ def getRinterface_ext(RHOME, r_packversion):
         define_macros.append(('R_INTERFACE_PTRS', 1))
 
     define_macros.append(('CSTACK_DEFNS', 1))
+    define_macros.append(('RIF_HAS_RSIGHAND', 1))
 
     # defines for debugging
     #define_macros.append(('RPY_DEBUG_PRESERVE', 1))
     #define_macros.append(('RPY_DEBUG_PROMISE', 1))
     #define_macros.append(('RPY_DEBUG_OBJECTINIT', 1))
+    #define_macros.append(('RPY_DEBUG_CONSOLE', 1))
 
     
     rinterface_ext = Extension(

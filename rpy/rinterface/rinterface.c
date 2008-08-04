@@ -202,7 +202,7 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   arglist = Py_BuildValue("(s)", buf);
   if (! arglist) {
     PyErr_NoMemory();
-    signal(SIGINT, old_int);
+/*     signal(SIGINT, old_int); */
     //return NULL;
   }
 
@@ -213,13 +213,101 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   result = PyEval_CallObject(writeConsoleCallback, arglist);
 
   Py_DECREF(arglist);
-  signal(SIGINT, old_int);
+/*   signal(SIGINT, old_int); */
   
   if (result == NULL) {
     return;
   }
 
   Py_DECREF(result);
+  
+}
+
+static PyObject* readConsoleCallback = NULL;
+
+static PyObject* EmbeddedR_setReadConsole(PyObject *self,
+					  PyObject *args)
+{
+  
+  PyObject *result = NULL;
+  PyObject *function;
+  
+  if ( PyArg_ParseTuple(args, "O:console", 
+			&function)) {
+    
+    if (!PyCallable_Check(function)) {
+      PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+      return NULL;
+    }
+
+    Py_XDECREF(readConsoleCallback);
+    Py_XINCREF(function);
+    readConsoleCallback = function;
+    Py_INCREF(Py_None);
+    result = Py_None;
+  } else {
+    PyErr_SetString(PyExc_TypeError, "The parameter should be a callable.");
+  }
+  return result;
+  
+}
+
+PyDoc_STRVAR(EmbeddedR_setReadConsole_doc,
+	     "Use the function to handle R console input.");
+
+
+static void
+EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf, 
+		      int len, int addtohistory)
+{
+  PyOS_sighandler_t old_int;
+  PyObject *arglist;
+  PyObject *result;
+
+  /* It is necessary to restore the Python handler when using a Python
+     function for I/O. */
+/*   old_int = PyOS_getsig(SIGINT); */
+/*   PyOS_setsig(SIGINT, python_sigint); */
+  arglist = Py_BuildValue("(s)", prompt);
+  if (! arglist) {
+    PyErr_NoMemory();
+/*     signal(SIGINT, old_int); */
+    //return NULL;
+  }
+
+  if (readConsoleCallback == NULL) {
+    Py_DECREF(arglist);
+    return;
+  }
+
+  #ifdef RPY_DEBUG_CONSOLE
+  printf("Callback for console input...");
+  #endif
+  result = PyEval_CallObject(readConsoleCallback, arglist);
+  #ifdef RPY_DEBUG_CONSOLE
+  printf("done.(%p)\n", result);
+  #endif
+  Py_XDECREF(arglist);
+
+  if (result == NULL) {
+/*     signal(SIGINT, old_int); */
+    return;
+  }
+
+  char *input_str = PyString_AsString(result);
+  if (! input_str) {
+    Py_XDECREF(arglist);
+    return;
+  }
+
+  /* Snatched from Rcallbacks.c in JRI */
+  int l=strlen(input_str);
+  strncpy((char *)buf, input_str, (l>len-1)?len-1:l);
+  buf[(l>len-1)?len-1:l]=0;
+  /* --- */
+  
+  Py_XDECREF(result);
+/*   signal(SIGINT, old_int); */
   
 }
 
@@ -247,18 +335,23 @@ static PyObject* EmbeddedR_init(PyObject *self)
   }
 
 
+#ifdef RIF_HAS_RSIGHAND
+  R_SignalHandlers=0;
+#endif  
   /* int status = Rf_initEmbeddedR(n_args, options);*/
-  int status = 1;
-  Rf_initialize_R(n_args, options);
+  int status = Rf_initialize_R(n_args, options);
   R_Interactive = TRUE;
+#ifdef RIF_HAS_RSIGHAND
+  R_SignalHandlers=0;
+#endif  
 
   /* Taken from JRI:
    * disable stack checking, because threads will thow it off */
   R_CStackLimit = (uintptr_t) -1;
   
-  #ifdef Win32
+#ifdef Win32
   setup_term_ui();
-  #endif
+#endif
   setup_Rmainloop();
 
   Py_XDECREF(embeddedR_isInitialized);
@@ -271,6 +364,8 @@ static PyObject* EmbeddedR_init(PyObject *self)
   ptr_R_WriteConsole = EmbeddedR_WriteConsole;
   R_Outputfile = NULL;
   R_Consolefile = NULL;
+  /* Redirect R console input */
+  ptr_R_ReadConsole = EmbeddedR_ReadConsole;
   #endif
 
   RPY_SEXP(globalEnv) = R_GlobalEnv;
@@ -673,7 +768,7 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 #endif
   python_sigint = old_int;
   
-  signal(SIGINT, interrupt_R);
+/*   signal(SIGINT, interrupt_R); */
 
   interrupted = 0;
   //FIXME: evaluate expression in the given
@@ -2081,6 +2176,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_end_doc},
   {"setWriteConsole",	(PyCFunction)EmbeddedR_setWriteConsole,	 METH_VARARGS,
    EmbeddedR_setWriteConsole_doc},
+  {"setReadConsole",	(PyCFunction)EmbeddedR_setReadConsole,	 METH_VARARGS,
+   EmbeddedR_setReadConsole_doc},
   {"findVarEmbeddedR",	(PyCFunction)EmbeddedR_findVar,	 METH_VARARGS,
    EmbeddedR_findVar_doc},
   {"sexpTypeEmbeddedR",	(PyCFunction)EmbeddedR_sexpType, METH_VARARGS,

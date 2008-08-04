@@ -20,6 +20,15 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEquals('[1] "3"\n', str.join('', buf))
         rinterface.setWriteConsole(rinterface.consolePrint)
 
+    def testSetReadConsole(self):
+        yes = "yes\n"
+        def sayyes(prompt):
+            return(yes)
+        rinterface.setReadConsole(sayyes)
+        res = rinterface.baseNameSpaceEnv["readline"]()
+        self.assertEquals(yes.strip(), res[0])
+        rinterface.setReadConsole(rinterface.consoleRead)
+
     def testCallErrorWhenEndedR(self):
         t = rinterface.baseNameSpaceEnv['date']
         rinterface.endEmbeddedR(1)
