@@ -123,7 +123,12 @@ class ArgsDict(dict):
 
     
 class TaggedList(list):
-    """ A list for which each item has a 'tag'. """
+    """ A list for which each item has a 'tag'. 
+
+    :param l: list
+    :param tag: optional sequence of tags
+
+    """
 
     def __add__(self, tl):
         try:
@@ -176,10 +181,19 @@ class TaggedList(list):
         #self.__tags.__setslice__(i, j, [None, ])
 
     def append(self, obj, tag = None):
+        """ Append an object to the list
+        :param obj: object
+        :param tag: object
+        """
         super(TaggedList, self).append(obj)
         self.__tags.append(tag)
 
     def extend(self, iterable):
+        """ Extend the list with an iterable object.
+
+        :param iterable: iterable object
+        """
+
         if isinstance(iterable, TaggedList):
             itertags = iterable.itertags()
         else:
@@ -190,16 +204,34 @@ class TaggedList(list):
 
 
     def insert(self, index, obj, tag=None):
+        """
+        Insert an object in the list
+
+        :param index: integer
+        :param obj: object
+        :param tag: object
+
+        """
         super(TaggedList, self).insert(index, obj)
         self.__tags.insert(index, tag)
 
     def items(self):
-        """ Return a tuple of all pairs (tag, item). """
+        """
+        Return a tuple of all pairs (tag, item).
+
+        :rtype: tuple of 2-element tuples (tag, item)
+        """
+
         res = [(tag, item) for tag, item in itertools.izip(self.__tags, self)]
         return tuple(res)
 
     def iterontag(self, tag):
-        """ iterate on items marked with one given tag. """
+        """
+        iterate on items marked with one given tag.
+        
+        :param tag: object
+        """
+
         i = 0
         for onetag in self.__tags:
             if tag == onetag:
@@ -207,7 +239,11 @@ class TaggedList(list):
             i += 1
 
     def itertags(self):
-        """ iterate on tags. """
+        """
+        iterate on tags.
+        
+        :rtype: iterator
+        """
         for tag in self.__tags:
             yield tag
 
@@ -237,11 +273,21 @@ class TaggedList(list):
 
     
     def tags(self):
-        """ Return a tuple of all tags """
+        """
+        Return a tuple of all tags
+        
+        :rtype: tuple
+        """
         res = [x for x in self.__tags]
         return tuple(res)
 
 
     def settag(self, i, t):
-        """ Set tag 't' for item 'i'. """
+        """
+        Set tag 't' for item 'i'.
+        
+        :param i: integer (index)
+
+        :param t: object (tag)
+        """
         self.__tags[i] = t
