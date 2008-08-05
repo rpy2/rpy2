@@ -15,7 +15,9 @@ Changes
 
 - :func:`initEmbeddedR` is only initializing if R is not started (no effect otherwise, and no exception thrown anymore)
 
+:mod:`rpy2.robjects`:
 
+- :class:`R` remains a singleton, but does not throw an exception when multiple instances are requested
 
 Release 2.0.0a2
 ===============

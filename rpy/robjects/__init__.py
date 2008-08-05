@@ -18,6 +18,13 @@ FloatSexpVector = rinterface.FloatSexpVector
 #FIXME: close everything when leaving (check RPy for that).
 
 def default_ri2py(o):
+    """ Convert :class:`rpy2.rinterface.Sexp` to higher-level objects,
+    without copying the R objects.
+
+    :param o: object
+    :rtype: :class:`rpy2.robjects.RObject (and subclasses)`
+    """
+
     res = None
     if isinstance(o, RObject):
         res = o
@@ -52,6 +59,14 @@ ri2py = default_ri2py
 
 
 def default_py2ri(o):
+    """ Convert arbitrary Python object to :class:`rpy2.rinterface.Sexp` to objects,
+    creating an R object with the content of the Python object in the process
+    (wichi means data copying).
+
+    :param o: object
+    :rtype: :class:`rpy2.rinterface.Sexp` (and subclasses)
+
+    """
     if isinstance(o, RObject):
         res = rinterface.Sexp(o)
     if isinstance(o, rinterface.Sexp):
@@ -81,6 +96,10 @@ py2ri = default_py2ri
 
 
 def default_py2ro(o):
+    """ Convert any Python object into an robject.
+    :param o: object
+    :rtype: :class:`rpy2.robjects.RObject (and subclasses)`
+    """
     res = default_py2ri(o)
     return default_ri2py(res)
 
@@ -397,7 +416,8 @@ class R(object):
             rinterface.initEmbeddedR()
             R._instance = self
         else:
-            raise(ValueError("Only one instance of R can be created"))
+            pass
+            #raise(RuntimeError("Only one instance of R can be created"))
         
     def __getattribute__(self, attr):
         return self[attr]
