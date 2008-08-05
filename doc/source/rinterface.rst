@@ -4,18 +4,18 @@
 
 
 
-**********
-rinterface
-**********
+*******************
+Low-level interface
+*******************
 
 
 Overview
 ========
 
-A lower-level interface is provided for situations where
-the use-cases addressed by :mod:`robjects` are not covered,
-and for the cases where the layer in :mod:`robjects`
-has an excessive cost in term of performances.
+The package :mod:`rinterface` is provided as a lower-level interface,
+for situations where either the use-cases addressed by :mod:`robjects`
+are not covered, or for the cases where the layer in :mod:`robjects`
+has an excessive cost in terms of performances.
 
 The package can be imported with:
 
@@ -40,9 +40,9 @@ This is done with the function :meth:`initEmbeddedR`.
 
 >>> rinterface.initEmbeddedR()
 
-Initialization should only be performed once. In the unfortunate event
-of a second call to :func:`initEmbeddedR`, and to avoid unpredictable results
-when using the embedded R, an exception will be fired.
+Initialization should only be performed once. 
+To avoid unpredictable results when using the embedded R, 
+subsequent calls to :func:`initEmbeddedR` will not have any effect.
 
 Parameters for the initialization are in the module variable
 `initOptions`.
@@ -65,12 +65,32 @@ When using the RPy2 package, two realms are co-existing: R and Python.
 The :class:`Sexp_Type` objects can be considered as Python enveloppes pointing
 to data stored and administered in the R space.
 
+R variables are existing within an embedded R workspace, and can be accessed
+from Python through their python object representations.
+
+We distinguish two kind of R objects: named objects and anonymous objects. 
+Named objects have an associated symbol in the R workspace.
+
+Named objects
+^^^^^^^^^^^^^
+
+For example, the following R code is creating two objects, named `x` and `hyp`
+respectively, in the `global environment`.
+Those two objects could be accessed from Python using their names.
+
+.. code-block:: r
+
+   x <- c(1,2,3)
+
+   hyp <- function(x, y) sqrt(x^2 + y^2)
+
+Two environments are provided as :class:`rpy2.rinterface.SexpEnvironment`
+
 .. index::
    single: globalEnv
    single: SexpEnvironment; globalEnv
 
-globalEnv
----------
+.. rubric:: globalEnv
 
 The global environment can be seen as the root (or topmost) environment,
 and is in fact a list, that is a sequence, of environments.
@@ -87,25 +107,51 @@ The library is said to be attached to the current search path.
    pair: rinterface; baseNamespaceEnv
    single: SexpEnvironment; baseNamespaceEnv
 
-baseNamespaceEnv
-----------------
+.. rubric:: baseNamespaceEnv
 
 The base package has a namespace, that can be accessed as an environment.
 
 .. note::
    Depending on what is in `globalEnv` and on the attached packages, base
-   objects can be masked when starting the search from `globalEnv`. Use this
-   environment when you want to be sure to access a function you know to be
+   objects can be masked when starting the search from `globalEnv`. 
+   Use `baseNamespaceEnv`
+   when you want to be sure to access a function you know to be
    in the base namespace.
 
-.. index::
-   single: Sexp
 
-Ouput from the R console
-------------------------
+Anonymous objects
+^^^^^^^^^^^^^^^^^
+
+Anonymous R objects do not have an associated symbol, yet are protected
+from garbage collection.
+
+Such objects can be created when using the constructor for an `Sexp*` class.
+
+
+
+Interacting with the R console
+------------------------------
+
+Two functions can be used to set callbacks.
+
+.. autofunction:: setWriteConsole(function)
+
+   :param function: function
+
+.. autofunction:: setReadConsole(function)
+
+   :param function: function
+
+
+Output from the console
+^^^^^^^^^^^^^^^^^^^^^^^
 
 The function :meth:`setWriteConsole` let one specify what do with
 output from the R console with a callback function.
+
+The callback function should accept one argument of type string
+(that is the string output to the console)
+
 
 An example should make it obvious::
 
@@ -117,10 +163,20 @@ An example should make it obvious::
    # output from the R console will now be appended to the list 'buf'
    rinterface.setWriteConsole(f)
 
-.. autofunction:: setWriteConsole(function)
+   rprint = rinterface.baseNamespaceEnv['print']
+   rprint(rinterface.baseNamespaceEnv['date'])
 
-   :param function: function
+   # restore default function
+   rinterface.setWriteConsole(rinterface.consolePrint)
 
+
+Input to the console
+^^^^^^^^^^^^^^^^^^^^
+
+User input to the console can be can be customized the very same way.
+
+The callback function should accept one argument of type string (that is the
+prompt string), and return a string (what was returned by the user).
 
 
 Classes
@@ -297,6 +353,19 @@ The functions *array* and *asarray* is all that is needed:
 ..   :members:
 
 
+Convenience classes are provided to create vectors of a given type:
+
+.. autoclass:: rpy2.rinterface.StrSexpVector
+   :show-inheritance:
+   :members:
+
+.. autoclass:: rpy2.rinterface.IntSexpVector
+   :show-inheritance:
+   :members:
+
+.. autoclass:: rpy2.rinterface.FloatSexpVector
+   :show-inheritance:
+   :members:
 
 .. index::
    single: SexpEnvironment

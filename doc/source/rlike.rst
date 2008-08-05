@@ -17,6 +17,7 @@ context, that is without an embedded R running.
 
 Containers
 ==========
+
 .. module:: rpy2.rlike.container
 
 >>> import rpy2.rlike.container as rlc
@@ -83,3 +84,8 @@ This is similar to `named` vectors in R.
 >>> [x for x in it]
 [1, 3]
 
+
+The Python docstring for the class is:
+
+.. autoclass:: rpy2.rlike.container.TaggedList
+   :members:

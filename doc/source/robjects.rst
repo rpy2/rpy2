@@ -1,7 +1,7 @@
 
-*************
-rpy2.robjects
-*************
+********************
+High-level interface
+********************
 
 .. module:: rpy2.robjects
    :platform: Unix, Windows
@@ -33,7 +33,7 @@ Visible differences with RPy-1.x are:
 
 
 `r`: the instance of `R`
-==============================
+========================
 
 This class is currently a singleton, with
 its one representation instanciated when the
@@ -335,7 +335,8 @@ In R, it generally looks like:
 
   fit <- lm(y ~ x) 
 
-In the call to `lm`, the argument is a `formula`.
+In the call to `lm`, the argument is a `formula`, and it can read like
+*model y using x*.
 A formula is a `R` language object, and the terms in the formula
 are evaluated in the environment it was defined in. Without further
 specification, that environment is the environment in which the
@@ -416,6 +417,13 @@ Once this is done, we can verify immediately that this is working with:
 >>  type(pi)
 <type 'float'>
 >>> 
+
+
+The docstrings for :meth:`default_ri2py`, :meth:`default_py2ri`, and :meth:`ri2py` are:
+
+.. autofunction:: rpy2.robjects.default_ri2py
+.. autofunction:: rpy2.robjects.default_py2ri
+.. autofunction:: rpy2.robjects.default_py2ro
 
 
 Examples

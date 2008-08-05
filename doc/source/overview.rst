@@ -58,7 +58,7 @@ on the `Sourceforge page <http://downloads.sourceforge.net/rpy>`_.
    Choose files from the `rpy2` package, not `rpy`.
 
 .. note::
-   MacOSX binaries may appear in the future (contributions to build them are welcome)
+   MacOSX binaries may appear in the future (help to build them is welcome)
 
 
 .. index::
@@ -173,3 +173,4 @@ Walter Moreira, and Gregory Warnes
 Alexander Belopolsky. 
     His code contribution to RPy is acknowledged. I have found great
     inspiration in reading that code.
+

@@ -94,7 +94,7 @@ html_logo = 'rpy_logo_header.png'
 
 
 
-html_favicon = 'rpy.ico'
+html_favicon = 'rpy_fav.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
