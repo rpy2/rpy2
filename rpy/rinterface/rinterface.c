@@ -319,9 +319,12 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
 static PyObject* EmbeddedR_init(PyObject *self) 
 {
 
+  static int status;
+  
   if (embeddedR_status & RPY_R_INITIALIZED) {
-    PyErr_Format(PyExc_RuntimeError, "R can only be initialized once.");
-    return NULL;
+    return PyInt_FromLong(status);
+/*     PyErr_Format(PyExc_RuntimeError, "R can only be initialized once."); */
+/*     return NULL; */
   }
 
   const Py_ssize_t n_args = PySequence_Size(initOptions);
@@ -339,7 +342,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   R_SignalHandlers=0;
 #endif  
   /* int status = Rf_initEmbeddedR(n_args, options);*/
-  int status = Rf_initialize_R(n_args, options);
+  status = Rf_initialize_R(n_args, options);
   R_Interactive = TRUE;
 #ifdef RIF_HAS_RSIGHAND
   R_SignalHandlers=0;
@@ -348,7 +351,8 @@ static PyObject* EmbeddedR_init(PyObject *self)
   /* Taken from JRI:
    * disable stack checking, because threads will thow it off */
   R_CStackLimit = (uintptr_t) -1;
-  
+  /* --- */
+
 #ifdef Win32
   setup_term_ui();
 #endif

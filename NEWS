@@ -13,7 +13,7 @@ Changes
 
 :mod:`rpy2.rinterface`:
 
-- underlying handling of interruptions is being worked on
+- :func:`initEmbeddedR` is only initializing if R is not started (no effect otherwise, and no exception thrown anymore)
 
 
 

@@ -10,11 +10,7 @@ except ImportError:
     hasNumpy = False
 
 
-try:
-    #FIXME: can starting and stopping an embedded R be done several times ?
-    rinterface.initEmbeddedR()
-except:
-    pass
+rinterface.initEmbeddedR()
 
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon

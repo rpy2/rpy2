@@ -2,11 +2,7 @@ import unittest
 import sys
 import rpy2.rinterface as ri
 
-try:
-    #FIXME: can starting and stopping an embedded R be done several times ?
-    ri.initEmbeddedR()
-except:
-    pass
+ri.initEmbeddedR()
 
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon

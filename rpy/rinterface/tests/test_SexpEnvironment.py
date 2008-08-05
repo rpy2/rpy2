@@ -1,11 +1,7 @@
 import unittest
 import rpy2.rinterface as rinterface
 
-try:
-    #FIXME: can starting and stopping an embedded R be done several times ?
-    rinterface.initEmbeddedR()
-except:
-    pass
+rinterface.initEmbeddedR()
 
 class SexpEnvironmentTestCase(unittest.TestCase):
     #def setUpt(self):
