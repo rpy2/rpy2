@@ -5,6 +5,14 @@
 #include <R.h>
 #include <Python.h>
 
+/* Back-compatibility with Python 2.4 */
+#if (PY_VERSION_HEX < 0x02050000)
+typedef int Py_ssize_t;
+typedef inquiry lenfunc;
+typedef intargfunc ssizeargfunc;
+typedef intobjargproc ssizeobjargproc;
+#endif
+
 
 extern const unsigned int const RPY_R_INITIALIZED;
 extern const unsigned int const RPY_R_BUSY;
