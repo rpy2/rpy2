@@ -60,6 +60,9 @@ def get_rconfig(RHOME, about):
     rconfig = rconfig.strip()
     rconfig_m = re.match('^(-L.+) (-l.+)$', rconfig)
     if rconfig_m is None:
+        # MacOSX
+        rconfig_m = re.match('^(-F.+) (-framework.+)$', rconfig)
+    if rconfig_m is None:
         raise Exception(cmd + '\nreturned\n' + rconfig)
     return rconfig_m.groups()
 
