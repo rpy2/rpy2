@@ -108,6 +108,14 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertTrue(idem(mySeq, myList[0]))
         self.assertTrue(idem(letters_R, myList[1]))
 
+        letters_R = ri.globalEnv.get("letters")
+        self.assertEquals('z', letters_R[-1])
+
+    def testGetItemNegativeOutOfBound(self):
+        letters_R = ri.globalEnv.get("letters")
+        self.assertRaises(IndexError, letters_R.__getitem__,
+                          -100)
+
     def testGetItemOutOfBound(self):
         myVec = ri.SexpVector([0, 1, 2, 3, 4, 5], ri.INTSXP)
         self.assertRaises(IndexError, myVec.__getitem__, 10)
@@ -118,10 +126,9 @@ class SexpVectorTestCase(unittest.TestCase):
     def testAssignItemDifferentType(self):
         c_R = ri.globalEnv.get("c")
         myVec = c_R(ri.SexpVector([0, 1, 2, 3, 4, 5], ri.INTSXP))
-        #import pdb; pdb.set_trace()
         self.assertRaises(ValueError, myVec.__setitem__, 0, 
                           ri.SexpVector(["a", ], ri.STRSXP))
-        
+
     def testAssignItemOutOfBound(self):
         c_R = ri.globalEnv.get("c")
         myVec = c_R(ri.SexpVector([0, 1, 2, 3, 4, 5], ri.INTSXP))
@@ -136,6 +143,9 @@ class SexpVectorTestCase(unittest.TestCase):
 
         myVec[3] = ri.SexpVector([100, ], ri.INTSXP)
         self.assertTrue(myVec[3] == 100)
+
+        myVec[-1] = ri.SexpVector([200, ], ri.INTSXP)
+        self.assertTrue(myVec[5] == 200)
 
     def testAssignItemReal(self):
         c_R = ri.globalEnv.get("c")

@@ -19,6 +19,16 @@ Changes
 
 - :class:`R` remains a singleton, but does not throw an exception when multiple instances are requested
 
+Bugs fixed
+----------
+
+- Unable to compile on Python2.4 (definition of aliases to Python2.5-specific were not where they should be).
+
+- Overflow issues on Python 2.4/64 bits when indexing R vector with very large integers.
+
+- Handling of negative indexes for :class:`SexpVector`'s :meth:`__getitem__` and :meth:`__setitem__` was missing
+
+
 Release 2.0.0a2
 ===============
 

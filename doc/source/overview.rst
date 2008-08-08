@@ -44,10 +44,6 @@ Python version 2.4 or higher, and R-2.7.0 or higher are required.
 This is developped with R-2.7.1 and Python-2.5.2.
 R-2.8.0-dev is sometimes tested, and it does seem to work well.
 
-Compatibility with Python 2.4 is expected but it was observed to segfault on rare occasions
-(and the cause is not yet identified).
-
-
 Download
 ^^^^^^^^
 

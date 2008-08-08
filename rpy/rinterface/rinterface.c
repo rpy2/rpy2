@@ -1237,7 +1237,7 @@ static PyObject *
 VectorSexp_item(PyObject *object, Py_ssize_t i)
 {
   PyObject* res;
-  R_len_t i_R;
+  R_len_t i_R, len_R;
   SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
 
   if (! sexp) {
@@ -1245,12 +1245,27 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     return NULL;
   }
 
-  /* R is still with int for indexes */
+  /* On 64bits, Python is apparently able to use larger integer
+   * than R for indexing. */
   if (i >= R_LEN_T_MAX) {
     PyErr_Format(PyExc_IndexError, "Index value exceeds what R can handle.");
     res = NULL;
+    return;
   }
-  else if (i >= GET_LENGTH(*sexp)) {
+
+  len_R = GET_LENGTH(*sexp);
+  
+  if (i < 0) {
+    i = len_R - i;
+  }
+
+  if (i < 0) {
+    PyErr_Format(PyExc_IndexError, 
+		 "Mysterious error: likely an integer overflow.");
+    res = NULL;
+    return;
+  }
+  if ((i >= GET_LENGTH(*sexp))) {
     PyErr_Format(PyExc_IndexError, "Index out of range.");
     res = NULL;
   }
@@ -1302,16 +1317,22 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
 static int
 VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
 {
-  R_len_t i_R;
+  R_len_t i_R, len_R;
 
-  /* R is still with int for indexes */
+  /* Check for 64 bits platforms */
   if (i >= R_LEN_T_MAX) {
     PyErr_Format(PyExc_IndexError, "Index value exceeds what R can handle.");
     return -1;
   }
 
   SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
-  if (i >= GET_LENGTH(*sexp)) {
+  len_R = GET_LENGTH(*sexp);
+  
+  if (i < 0) {
+    i = len_R - i;
+  }
+
+  if (i >= len_R) {
     PyErr_Format(PyExc_IndexError, "Index out of range.");
     return -1;
   }
