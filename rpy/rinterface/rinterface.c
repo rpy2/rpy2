@@ -253,7 +253,6 @@ static void
 EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf, 
 		      int len, int addtohistory)
 {
-  PyOS_sighandler_t old_int;
   PyObject *arglist;
   PyObject *result;
 
