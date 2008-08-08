@@ -1249,7 +1249,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
   if (i >= R_LEN_T_MAX) {
     PyErr_Format(PyExc_IndexError, "Index value exceeds what R can handle.");
     res = NULL;
-    return;
+    return res;
   }
 
   len_R = GET_LENGTH(*sexp);
@@ -1262,7 +1262,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     PyErr_Format(PyExc_IndexError, 
 		 "Mysterious error: likely an integer overflow.");
     res = NULL;
-    return;
+    return res;
   }
   if ((i >= GET_LENGTH(*sexp))) {
     PyErr_Format(PyExc_IndexError, "Index out of range.");
