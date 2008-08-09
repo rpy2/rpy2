@@ -54,11 +54,15 @@ class SexpClosureTestCase(unittest.TestCase):
 
 
 
-    def testRcall(self):
-        ad = rlc.ArgsDict((('a', rinterface.SexpVector([2, ], rinterface.INTSXP)), 
-                           ('b', rinterface.SexpVector([1, ], rinterface.INTSXP)),
-                           (None, rinterface.SexpVector([5, ], rinterface.INTSXP)),
-                           ('c', rinterface.SexpVector([0, ], rinterface.INTSXP))))
+    def testRcallArgsDict(self):
+        ad = rlc.ArgsDict((('a', rinterface.SexpVector([2, ], 
+                                                       rinterface.INTSXP)), 
+                           ('b', rinterface.SexpVector([1, ], 
+                                                       rinterface.INTSXP)),
+                           (None, rinterface.SexpVector([5, ], 
+                                                        rinterface.INTSXP)),
+                           ('c', rinterface.SexpVector([0, ], 
+                                                       rinterface.INTSXP))))
         
         mylist = rinterface.baseNameSpaceEnv['list'].rcall(ad.items())
         

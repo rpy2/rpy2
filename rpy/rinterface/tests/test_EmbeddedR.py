@@ -24,7 +24,9 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEquals(yes.strip(), res[0])
         rinterface.setReadConsole(rinterface.consoleRead)
 
+#FIXME: end and initializing again causes currently a lot a trouble...
     def testCallErrorWhenEndedR(self):
+        self.assertTrue(False) # worked when tested, but calling endEmbeddedR causes trouble
         t = rinterface.baseNameSpaceEnv['date']
         rinterface.endEmbeddedR(1)
         self.assertRaises(RuntimeError, t)

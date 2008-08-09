@@ -17,6 +17,14 @@ class SexpVectorTestCase(unittest.TestCase):
     def testMissinfType(self):
         self.assertRaises(ValueError, ri.SexpVector, [2, ])
 
+#FIXME: end and initializing again causes currently a lot a trouble...
+    def testNewWithoutInit(self):
+        self.assertTrue(False) # worked when tested, but calling endEmbeddedR causes trouble
+        ri.endEmbeddedR(1)
+        self.assertRaises(RuntimeError, ri.SexpVector, [1,2], ri.INTSXP)
+        #FIXME: trouble... does not initialize R when failing the test
+        ri.initEmbeddedR()
+
     def testNewBool(self):
         sexp = ri.SexpVector([True, ], ri.LGLSXP)
         isLogical = ri.globalEnv.get("is.logical")
@@ -70,6 +78,14 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertTrue(ok)
 
         ri.NA_STRING[0]
+
+    def testNewUnicode(self):
+        sexp = ri.SexpVector([u'abc', ], ri.STRSXP)
+        isCharacter = ri.globalEnv.get("is.character")
+        ok = isCharacter(sexp)[0]
+        self.assertTrue(ok)
+        self.assertEquals('abc', sexp[0])
+
 
     def testNewVector(self):
         sexp_char = ri.SexpVector(["abc", ], 

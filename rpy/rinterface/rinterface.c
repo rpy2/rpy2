@@ -2013,6 +2013,7 @@ static SEXP
 newSEXP(PyObject *object, int rType)
 {
   SEXP sexp;
+  SEXP str_R; /* used whenever there a string / unicode */
   PyObject *seq_object, *item; 
 
 #ifdef RPY_VERBOSE
@@ -2071,7 +2072,18 @@ newSEXP(PyObject *object, int rType)
   case STRSXP:
     for (i = 0; i < length; ++i) {
       if((item = PyObject_Str(PySequence_Fast_GET_ITEM(seq_object, i)))) {
-	SEXP str_R = mkChar(PyString_AS_STRING(item));
+	str_R = mkChar(PyString_AS_STRING(item));
+	if (!str_R) {
+	  Py_DECREF(item);
+	  PyErr_NoMemory();
+	  sexp = NULL;
+	  break;
+	}
+	Py_DECREF(item);
+	SET_STRING_ELT(sexp, i, str_R);
+      }
+      else if ((item = PyObject_Unicode(PySequence_Fast_GET_ITEM(seq_object, i)))) {
+	str_R = mkChar(PyUnicode_AS_DATA(item));
 	if (!str_R) {
 	  Py_DECREF(item);
 	  PyErr_NoMemory();

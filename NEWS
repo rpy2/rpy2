@@ -8,6 +8,9 @@ New features
 
 - :func:`setReadConsole`: specify Python callback for console input
 
+- R string vectors can now be built from Python unicode objects
+
+
 Changes
 -------
 
@@ -27,6 +30,8 @@ Bugs fixed
 - Overflow issues on Python 2.4/64 bits when indexing R vector with very large integers.
 
 - Handling of negative indexes for :class:`SexpVector`'s :meth:`__getitem__` and :meth:`__setitem__` was missing
+
+- Trying to create an instance of :class:`SexpVector` before initializing R raises a RuntimeException (used to segfault)
 
 
 Release 2.0.0a2
