@@ -305,9 +305,6 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
 
 
 /* --- Initialize and terminate an embedded R --- */
-/* Should having multiple threads of R become possible, 
- * useful routines could appear here...
- */
 static PyObject* EmbeddedR_init(PyObject *self) 
 {
 
@@ -1484,6 +1481,12 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 #ifdef RPY_VERBOSE
   printf("%p: VectorSexp initializing...\n", self);
 #endif 
+
+  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+    PyErr_Format(PyExc_RuntimeError, 
+		 "R must be initialized before any instance can be created.");
+    return -1;
+  }
 
   PyObject *object;
   int sexptype = -1;
