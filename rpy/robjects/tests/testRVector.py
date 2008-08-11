@@ -2,6 +2,7 @@ import unittest
 import rpy2.robjects as robjects
 ri = robjects.rinterface
 import array
+import rpy2.rlike.container as rlc
 
 rlist = robjects.baseNameSpaceEnv["list"]
 
@@ -91,12 +92,21 @@ class RVectorTestCase(unittest.TestCase):
 
     def testAssign(self):
         vec = robjects.r.seq(1, 10)
-        vec = vec.assign(array.array('i', [1, 3, 5]), 20)
+        i = array.array('i', [1, 3])
+        vec = vec.assign(i, 20)
         self.assertEquals(20, vec[0])
+        self.assertEquals(2, vec[1])
         self.assertEquals(20, vec[2])
-        self.assertEquals(20, vec[4])
+        self.assertEquals(4, vec[3])
 
-    
+        i = array.array('i', [1, 5])
+        vec = vec.assign(rlc.TaggedList([i, ]), 50)
+        self.assertEquals(50, vec[0])
+        self.assertEquals(2, vec[1])
+        self.assertEquals(20, vec[2])
+        self.assertEquals(4, vec[3])
+        self.assertEquals(50, vec[4])
+                         
     def testSubsetRecyclingRule(self):
         # recycling rule
         v = robjects.RVector(array.array('i', range(1, 23)))

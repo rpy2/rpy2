@@ -9,6 +9,7 @@ that represents an embedded R.
 import os, sys
 import array
 import rpy2.rinterface as rinterface
+import rpy2.rlike.container as rlc
 
 StrSexpVector = rinterface.StrSexpVector
 IntSexpVector = rinterface.IntSexpVector
@@ -89,7 +90,7 @@ def default_py2ri(o):
     elif isinstance(o, list):
         res = r.list(*[ri2py(py2ri(x)) for x in o])
     else:
-        raise(ValueError("Nothing can be done for this type at the moment."))
+        raise(ValueError("Nothing can be done for the type %s at the moment." %(type(o))))
     return res
 
 py2ri = default_py2ri
@@ -211,17 +212,19 @@ class RVector(RObjectMixin, rinterface.SexpVector):
 
     def subset(self, *args, **kwargs):
         """ Subset the "R-way.", using R's "[" function. 
-           In a nutshell, R indexing differs from Python's with
+           In a nutshell, R indexing differs from Python's on:
+
            - indexing can be done with integers or strings (that are 'names')
+
            - an index equal to TRUE will mean everything selected (because of the recycling rule)
+
            - integer indexing starts at one
+
            - negative integer indexing means exclusion of the given integers
+
            - an index is itself a vector of elements to select
         """
         
-        #for a in args:
-        #    if not isinstance(a, Rvector):
-        #        raise(TypeError("Subset only take R vectors"))
         args = [py2ro(x) for x in args]
         for k, v in kwargs.itervalues():
             args[k] = py2ro(v)
@@ -229,13 +232,18 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         res = r["["](*([self, ] + [x for x in args]), **kwargs)
         return res
 
-    def assign(self, *args):
-        #FIXME: value must be the last argument, but this can be
-        # challenging in since python kwargs do not enforce any order
-        #(an ordered dictionary class will therefore be implemented)
-        args = [py2ro(x) for x in args]
-        res = r["[<-"](*([self, ] + [x for x in args]))
-
+    def assign(self, index, value):
+        if not (isinstance(index, rlc.TaggedList) | \
+                    isinstance(index, rlc.ArgsDict)):
+            args = rlc.TaggedList([py2ro(index), ])
+        else:
+            for i in xrange(len(index)):
+                index[i] = py2ro(index[i])
+            args = index
+        args.append(py2ro(value))
+        args.insert(0, self)
+        res = r["[<-"].rcall(args.items())
+        res = ri2py(res)
         return res
 
     def __add__(self, x):
@@ -297,11 +305,13 @@ class RMatrix(RArray):
     """ An R matrix """
 
     def nrow(self):
-        """ Number of rows """
+        """ Number of rows.
+        :rtype: integer """
         return self.dim[0]
 
     def ncol(self):
-        """ Number of columns """
+        """ Number of columns.
+        :rtype: integer """
         return self.dim[1]
 
 class RDataFrame(RVector):
@@ -326,17 +336,25 @@ class RDataFrame(RVector):
             raise(TypeError("The object must be representing an R data.frame"))
     
     def nrow(self):
-        """ Number of rows """
+        """ Number of rows. 
+        :rtype: integer """
         return baseNameSpaceEnv["nrow"](self)[0]
 
     def ncol(self):
-        """ Number of columns """
+        """ Number of columns.
+        :rtype: integer """
         return baseNameSpaceEnv["ncol"](self)[0]
     
     def rownames(self):
+        """ Row names
+        :rype: SexpVector
+        """
         return baseNameSpaceEnv["colnames"](self)[0]
 
     def colnames(self):
+        """ Column names
+        :rype: SexpVector
+        """
         return baseNameSpaceEnv["colnames"](self)[0]
 
 
@@ -374,6 +392,10 @@ class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
         super(REnvironment, self).__setitem__(item, robj)
 
     def get(self, item):
+        """ Get a object from its R name/symol
+        :param item: string (name/symbol)
+        :rtype: object (as returned by :func:`ri2py`)
+        """
         res = super(REnvironment, self).get(item)
         res = ri2py(res)
         return res
