@@ -249,7 +249,7 @@ PyDoc_STRVAR(EmbeddedR_setReadConsole_doc,
 	     "Use the function to handle R console input.");
 
 
-static void
+static int
 EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf, 
 		      int len, int addtohistory)
 {
@@ -269,7 +269,7 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
 
   if (readConsoleCallback == NULL) {
     Py_DECREF(arglist);
-    return;
+    return -1;
   }
 
   #ifdef RPY_DEBUG_CONSOLE
@@ -283,13 +283,13 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
 
   if (result == NULL) {
 /*     signal(SIGINT, old_int); */
-    return;
+    return -1;
   }
 
   char *input_str = PyString_AsString(result);
   if (! input_str) {
     Py_XDECREF(arglist);
-    return;
+    return -1;
   }
 
   /* Snatched from Rcallbacks.c in JRI */
@@ -300,7 +300,7 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   
   Py_XDECREF(result);
 /*   signal(SIGINT, old_int); */
-  
+  return 1;
 }
 
 
