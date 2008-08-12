@@ -1421,8 +1421,8 @@ PyDoc_STRVAR(VectorSexp_Type_doc,
 	     " while Python lists or arrays start indexing"
 	     " at zero.\n"
 	     "In the hope to avoid confusion, the indexing"
-	     " from the Python subset operator (__getitem__)"
-	     " is done at zero.");
+	     " in Python (e.g., :meth:`__getitem__` / :meth:`__setitem__`)"
+	     " starts at zero.");
 
 static int
 VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
@@ -1585,7 +1585,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
 }
 PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
 	     "Find a name/symbol in the environment, following the chain of enclosing\n"
-	     " environment until either the topmost environment is reached or the name\n"
+	     " environments until either the topmost environment is reached or the name\n"
 	     "is found, and returned the associated object. \n"
 	     "The optional parameter `wantFun` indicates whether functions should be\n"
 	     "returned or not.");
@@ -1619,7 +1619,7 @@ static PyMethodDef EnvironmentSexp_methods[] = {
   EnvironmentSexp_findVar_doc},
   {"frame", (PyCFunction)EnvironmentSexp_frame, METH_NOARGS,
   EnvironmentSexp_frame_doc},
-  {"enclos", (PyCFunction)EnvironmentSexp_frame, METH_NOARGS,
+  {"enclos", (PyCFunction)EnvironmentSexp_enclos, METH_NOARGS,
   EnvironmentSexp_enclos_doc},
   {NULL, NULL}          /* sentinel */
 };
