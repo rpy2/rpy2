@@ -306,7 +306,8 @@ called `names`), and can be accessed as such:
 >>> [x for x in options_names]
 
 .. note::
-   Elements in a vector of names do not have to be unique.
+   Elements in a name vector do not have to be unique. A Python
+   counterpart is provided as :class:`rpy2.rlike.container.TaggedList`.
 
 .. index::
    single: dim
@@ -349,8 +350,9 @@ The functions *array* and *asarray* is all that is needed:
 42
 >>>
 
-.. .. autoclass:: rpy2.rinterface.SexpVector
-..   :members:
+.. autoclass:: rpy2.rinterface.SexpVector(obj, sexptype, copy)
+   :show-inheritance:
+   :members:
 
 
 Convenience classes are provided to create vectors of a given type:
@@ -375,26 +377,12 @@ Convenience classes are provided to create vectors of a given type:
 ------------------------
 
 
-:meth:`get`
-^^^^^^^^^^^
-
-Whenever a search for a symbol is performed, the whole
-search path is considered: the environments in the list
-are inspected in sequence and the value for the first symbol found
-matching is returned.
-
->>> rinterface.globalEnv.get("pi")
-
-The constant pi is defined in the package base, that
-is by default in the search path.
-
 
 :meth:`__getitem__` / :meth:`__setitem__`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The *[* operator will only look for a symbol in the environment
-(FIXME: first in the list then ?),
-without looking into other elements in the list.
+without looking further in the path of enclosing environments.
 
 The following will return an exception :class:`LookupError`:
 
@@ -435,6 +423,69 @@ that contains R's base objects:
    is evaluated only once, when the iterator is created. Adding 
    or removing elements to the environment will not update the iterator
    (this is a problem, that will be solved in the near future).
+
+
+:meth:`get`
+^^^^^^^^^^^
+
+Whenever a search for a symbol is performed, the whole
+search path is considered: the environments in the list
+are inspected in sequence and the value for the first symbol found
+matching is returned.
+
+Let's start with an example:
+
+>>> rinterface.globalEnv.get("pi")[0]
+3.1415926535897931
+
+The constant pi is defined in the package base, that
+is by default in the search path. The call to :meth:`get` will
+look for `pi` first in `globalEnv`, then in the next environment
+in the search path and repeat this until an object is found or the
+sequence of environments to explore is exhausted.
+
+We know that `pi` is in the base namespace and we could have gotten
+here directly from there:
+
+>>> ri.baseNameSpaceEnv.get("pi")[0]
+3.1415926535897931
+>>> ri.baseNameSpaceEnv["pi"][0]
+3.1415926535897931
+>>> ri.globalEnv["pi"][0]
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+LookupError: 'pi' not found
+
+`R` can look specifically for functions, this is the case when
+a function call is performed.
+The following example of an `R` interactive session should demonstrate it:
+
+.. code-block:: r
+
+   > mydate <- "hohoho"
+   > mydate()
+   Error: could not find function "mydate"
+   >
+   > date <- "hohoho"
+   > date()
+   [1] "Sat Aug  9 15:27:40 2008"
+
+The base function `date` is still found, although a non-function object
+is present earlier on the search path.
+
+The same behavior can be obtained from :mod:`rpy2`
+with the optional parameter `wantFun` (specify that :meth:`get`
+should return an R function).
+
+>>> ri.globalEnv["date"] = ri.StrSexpVector(["hohoho", ])
+>>> ri.globalEnv.get("date")[0]
+'hohoho'
+>>> ri.globalEnv.get("date", wantFun=True)
+<rinterface.SexpClosure - Python:0x7f142aa96198 / R:0x16e9500>
+>>> ri.globalEnv.get("date", wantFun=True)()[0]
+'Sat Aug  9 15:48:42 2008'
+
+
 
 .. index::
    single: closure
@@ -500,6 +551,21 @@ package *graphics*.
 >>> [x for x in envplot_ls]
 >>>
 
+
+:class:`SexpS4`
+---------------
+
+Object-Oriented programming in R exists in several flavours, and one
+of those is called `S4`.
+It has its own type at R's C-API level, and because of that specificity
+we defined a class.
+
+An instance's attributes can be accessed through the :class:`Sexp` method
+:meth:`do_slot`.
+
+.. autoclass:: rpy2.rinterface.SexpS4(obj)
+   :show-inheritance:
+   :members:
 
 Misc. variables
 ===============

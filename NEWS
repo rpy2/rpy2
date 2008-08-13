@@ -33,6 +33,9 @@ Bugs fixed
 
 - Trying to create an instance of :class:`SexpVector` before initializing R raises a RuntimeException (used to segfault)
 
+- experimental method :meth:`enclos` was not properly exported
+
+
 
 Release 2.0.0a2
 ===============

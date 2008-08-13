@@ -253,6 +253,10 @@ A :class:`RDataFrame` represents the `R` class `data.frame`.
 Currently, the constructor is flagged as experimental. It accepts either a :class:`rinterface.SexpVector`
 or a dictonnary which elements will be the columns of the `data.frame`.
 
+.. autoclass:: rpy2.robjects.RDataFrame
+   :show-inheritance:
+   :members:
+
 Environments
 ============
 
@@ -540,3 +544,5 @@ S4 classes
    a = r.new("Track", x=0, y=1)
 
    a.x
+
+
