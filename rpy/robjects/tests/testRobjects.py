@@ -54,7 +54,14 @@ class MappingTestCase(unittest.TestCase):
         self.assertTrue(isinstance(robjects.default_ri2py(sexp), 
                                    robjects.REnvironment))
 
-        #FIXME: test S4
+    def testMapperR2Python_s4(self):
+        robjects.r('setClass("A", representation(x="integer"))')
+        classname = rinterface.StrSexpVector(["A", ])
+        one = rinterface.IntSexpVector([1, ])
+        sexp = rinterface.globalEnv.get("new")(classname, 
+                                               x=one)
+        self.assertTrue(isinstance(robjects.default_ri2py(sexp), 
+                                   robjects.RS4))
 
     def testMapperPy2R_integer(self):
         py = 1
