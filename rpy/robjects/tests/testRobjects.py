@@ -3,7 +3,7 @@ import rpy2.robjects as robjects
 rinterface = robjects.rinterface
 import array
 
-class RObjectTestCase(unittest.TestCase):
+class RInstanceTestCase(unittest.TestCase):
 
     def testGetItem(self):
         letters_R = robjects.r["letters"]
@@ -22,7 +22,14 @@ class RObjectTestCase(unittest.TestCase):
         for i, li in enumerate(myList):
             self.assertEquals(i, myList[i][0])
 
+
+    def testEval(self):
+        # vector long enough to span across more than one line
+        x = robjects.baseNameSpaceEnv['seq'](1, 50, 2)
+        res = robjects.r('sum(%s)' %repr(x))
+        self.assertEquals(625, res[0])
         
+class MappingTestCase(unittest.TestCase):
 
     def testMapperR2Python_string(self):
         sexp = rinterface.globalEnv.get("letters")
@@ -82,7 +89,8 @@ class RObjectTestCase(unittest.TestCase):
         self.assertTrue(isinstance(d, Density))
 
 def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(RObjectTestCase)
+    suite = unittest.TestLoader().loadTestsFromTestCase(RInstanceTestCase)
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(MappingTestCase))
     return suite
 
 if __name__ == '__main__':
