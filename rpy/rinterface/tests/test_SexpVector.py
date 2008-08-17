@@ -7,6 +7,26 @@ ri.initEmbeddedR()
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon
 
+
+class WrapperSexpVectorTestCase(unittest.TestCase):
+    def testInt(self):
+        sexp = ri.IntSexpVector([1, ])
+        isInteger = ri.globalEnv.get("is.integer")
+        ok = isInteger(sexp)[0]
+        self.assertTrue(ok)
+
+    def testFloat(self):
+        sexp = ri.IntSexpVector([1.0, ])
+        isNumeric = ri.globalEnv.get("is.numeric")
+        ok = isNumeric(sexp)[0]
+        self.assertTrue(ok)
+
+    def testStr(self):
+        sexp = ri.StrSexpVector(["a", ])
+        isStr = ri.globalEnv.get("is.character")
+        ok = isStr(sexp)[0]
+        self.assertTrue(ok)
+
 class SexpVectorTestCase(unittest.TestCase):
     #def setUpt(self):
     #    ri.initEmbeddedR("foo", "--no-save")
@@ -227,6 +247,7 @@ ri.REALSXP), ],
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpVectorTestCase)
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(WrapperSexpVectorTestCase))
     return suite
 
 if __name__ == '__main__':

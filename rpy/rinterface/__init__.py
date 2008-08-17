@@ -48,7 +48,7 @@ class IntSexpVector(SexpVector):
     Vector of integers.
     """
     def __init__(self, v):        
-        super(StrSexpVector, self).__init__(v, INTSXP)
+        super(IntSexpVector, self).__init__(v, INTSXP)
 
 
 class FloatSexpVector(SexpVector):
@@ -56,7 +56,7 @@ class FloatSexpVector(SexpVector):
     Vector of floats.
     """
     def __init__(self, v):        
-        super(StrSexpVector, self).__init__(v, REALSXP)
+        super(FloatSexpVector, self).__init__(v, REALSXP)
 
 
 # wrapper because print is strangely not a function
