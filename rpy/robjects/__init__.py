@@ -107,9 +107,9 @@ def default_py2ro(o):
 py2ro = default_py2ro
 
 
-def repr_robject(o):
+def repr_robject(o, linesep=os.linesep):
     s = r.deparse(o)
-    s = str.join(os.linesep, s)
+    s = str.join(linesep, s)
     return s
 
 
@@ -137,7 +137,7 @@ class RObjectMixin(object):
         return s
 
     def __repr__(self):
-        return repr_robject(self)
+        return repr_robject(self, linesep='\n')
 
     def rclass(self):
         """ Return the name of the R class for the object. """
