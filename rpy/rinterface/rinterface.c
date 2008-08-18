@@ -539,10 +539,11 @@ Sexp_do_slot(PyObject *self, PyObject *name)
   return res;
 }
 PyDoc_STRVAR(Sexp_do_slot_doc,
-"\n\
-Returns the attribute/slot for an R object.\n\
-The name of the slot (a string) is the only parameter for\
- the method.\n");
+	     "Returns the attribute/slot for an R object.\n"
+	     " The name of the slot (a string) is the only parameter for\n"
+	     "the method.\n"
+	     ":param name: string\n"
+	     ":rtype: instance of type or subtype :class:`rpy2.rinterface.Sexp`");
 
 static PyObject*
 Sexp_named(PyObject *self)
@@ -1087,10 +1088,12 @@ Sexp_rcall(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(SexpClosure_rcall_doc,
-"Call using the items of the object passed as Python \n\
-argument to build the list of parameters passed to the \n\
-R function.");
-
+	     "Call using the items of the object passed as Python \n"
+	     "argument to build the list of parameters passed to the \n"
+	     "R function.\n\n"
+	     ":param args: tuple of two-elements items"
+	     " or class::`rlike.container.ArgsDict`\n\n"
+	     ":rtype: instance of type or subtype :class:`rinterface.Sexp`\n");
 
 static PySexpObject*
 Sexp_closureEnv(PyObject *self)
@@ -1112,8 +1115,10 @@ Sexp_closureEnv(PyObject *self)
 }
 PyDoc_STRVAR(Sexp_closureEnv_doc,
 	     "\n\
-Returns the environment the object is defined in.\
-This corresponds to the C-level function CLOENV(SEXP).");
+Returns the environment the object is defined in.\n\
+This corresponds to the C-level function CLOENV(SEXP).\n\
+\n\
+:rtype: :class:`rinterface.SexpEnvironment`\n");
 
 static PyMethodDef ClosureSexp_methods[] = {
   {"closureEnv", (PyCFunction)Sexp_closureEnv, METH_NOARGS,
@@ -1585,10 +1590,11 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
 }
 PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
 	     "Find a name/symbol in the environment, following the chain of enclosing\n"
-	     " environments until either the topmost environment is reached or the name\n"
+	     "environments until either the topmost environment is reached or the name\n"
 	     "is found, and returned the associated object. \n"
 	     "The optional parameter `wantFun` indicates whether functions should be\n"
-	     "returned or not.");
+	     "returned or not.\n"
+	     ":rtype: instance of type of subtype :class:`rpy2.rinterface.Sexp`");
 
 static PyObject*
 EnvironmentSexp_frame(PyObject *self)
