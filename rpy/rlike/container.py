@@ -7,11 +7,8 @@ class ArgsDict(dict):
 
     This class differs a little from the Ordered Dict
     proposed in PEP 372 by the fact that:
-
-    - not all elements have to be named. None has key value means
+    not all elements have to be named. None as a key value means
     an absence of name for the element.
-
-    - unlike in R, all names are unique.
 
     """
 
@@ -291,3 +288,4 @@ class TaggedList(list):
         :param t: object (tag)
         """
         self.__tags[i] = t
+
