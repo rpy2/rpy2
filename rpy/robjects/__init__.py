@@ -54,7 +54,6 @@ def default_ri2py(o):
         res = RObject(o)
     return res
 
-#FIXME: clean and nice mechanism to allow user-specified mapping function
 #FIXME: better names for the functions
 ri2py = default_ri2py
 
@@ -87,8 +86,12 @@ def default_py2ri(o):
         res = rinterface.SexpVector([o, ], rinterface.REALSXP)
     elif isinstance(o, str):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
+    elif isinstance(o, unicode):
+        res = rinterface.SexpVector([o, ], rinterface.STRSXP)
     elif isinstance(o, list):
         res = r.list(*[ri2py(py2ri(x)) for x in o])
+    elif isinstance(o, complex):
+        res = rinterface.SexpVector([o, ], rinterface.CPLXSXP)
     else:
         raise(ValueError("Nothing can be done for the type %s at the moment." %(type(o))))
     return res
