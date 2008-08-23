@@ -17,7 +17,7 @@ class SexpClosureTestCase(unittest.TestCase):
         
     def testTypeof(self):
         sexp = rinterface.globalEnv.get("plot")
-        self.assertEquals(sexp.typeof(), rinterface.CLOSXP)
+        self.assertEquals(sexp.typeof, rinterface.CLOSXP)
 
     def testRError(self):
         sum = rinterface.baseNameSpaceEnv["sum"]

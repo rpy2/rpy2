@@ -57,12 +57,12 @@ class SexpEnvironmentTestCase(unittest.TestCase):
 
     def testGet_functionOnly(self):
         hist = rinterface.globalEnv.get("hist", wantFun = False)
-        self.assertEquals(rinterface.CLOSXP, hist.typeof())
+        self.assertEquals(rinterface.CLOSXP, hist.typeof)
         rinterface.globalEnv["hist"] = rinterface.SexpVector(["foo", ], 
                                                              rinterface.STRSXP)
 
         hist = rinterface.globalEnv.get("hist", wantFun = True)
-        self.assertEquals(rinterface.CLOSXP, hist.typeof())
+        self.assertEquals(rinterface.CLOSXP, hist.typeof)
         
 
     def testSubscript(self):

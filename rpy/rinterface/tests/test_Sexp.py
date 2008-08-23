@@ -28,15 +28,15 @@ class SexpTestCase(unittest.TestCase):
         self.assertTrue(idem(sexp_new, sexp_new2)[0])
 
 
-    def testTypeof(self):
+    def testTypeof_get(self):
         sexp = rinterface.globalEnv.get("letters")
-        self.assertEquals(sexp.typeof(), rinterface.STRSXP)
+        self.assertEquals(sexp.typeof, rinterface.STRSXP)
         
         sexp = rinterface.globalEnv.get("pi")
-        self.assertEquals(sexp.typeof(), rinterface.REALSXP)
+        self.assertEquals(sexp.typeof, rinterface.REALSXP)
         
         sexp = rinterface.globalEnv.get("plot")
-        self.assertEquals(sexp.typeof(), rinterface.CLOSXP)
+        self.assertEquals(sexp.typeof, rinterface.CLOSXP)
 
     def testDo_slot(self):
         data_func = rinterface.globalEnv.get("data")
@@ -51,6 +51,21 @@ class SexpTestCase(unittest.TestCase):
             self.assertEquals(iris_names[i], names[i])
 
         self.assertRaises(LookupError, sexp.do_slot, "foo")       
+
+    def testSexp_rsame_true(self):
+        sexp_a = rinterface.globalEnv.get("letters")
+        sexp_b = rinterface.globalEnv.get("letters")
+        self.assertTrue(sexp_a.rsame(sexp_b))
+
+    def testSexp_rsame_false(self):
+        sexp_a = rinterface.globalEnv.get("letters")
+        sexp_b = rinterface.globalEnv.get("pi")
+        self.assertFalse(sexp_a.rsame(sexp_b))
+
+    def testSexp_rsame_wrongType(self):
+        sexp_a = rinterface.globalEnv.get("letters")
+        self.assertRaises(ValueError, sexp_a.rsame, 'foo')
+        
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpTestCase)

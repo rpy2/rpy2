@@ -15,10 +15,16 @@ context, that is without an embedded R running.
 
 
 
+.. module:: rpy2.rlike.container
+
 Containers
 ==========
 
-.. module:: rpy2.rlike.container
+The module contains data collection-type data structures. 
+:class:`ArgsDict` and :class:`TaggedList` are structures
+with which containeed items/elements can be tagged.
+
+The module can be imported as follows:
 
 >>> import rpy2.rlike.container as rlc
 

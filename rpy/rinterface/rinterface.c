@@ -443,6 +443,8 @@ EmbeddedR_exception_from_errmessage(void)
  * Access to R objects through Python objects
  */
 
+staticforward PyTypeObject Sexp_Type;
+
 static void
 Sexp_clear(PySexpObject *self)
 {
@@ -500,7 +502,7 @@ Sexp_repr(PyObject *self)
 
 
 static PyObject*
-Sexp_typeof(PyObject *self)
+Sexp_typeof_get(PyObject *self)
 {
   PySexpObject *pso = (PySexpObject*)self;
   SEXP sexp = RPY_SEXP(pso);
@@ -511,8 +513,7 @@ Sexp_typeof(PyObject *self)
   return PyInt_FromLong(TYPEOF(sexp));
 }
 PyDoc_STRVAR(Sexp_typeof_doc,
-	     "\n\
-	     Returns the R internal SEXPREC type.");
+	     "R internal SEXPREC type.");
 
 
 static PyObject*
@@ -561,19 +562,75 @@ PyDoc_STRVAR(Sexp_named_doc,
 This method corresponds to the macro NAMED.\n\
 See the R-extensions manual for further details.");
 
+static PyObject*
+Sexp_sexp_get(PyObject *self)
+{
+  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
+
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;;
+  }
+
+  PyObject *res = PyCObject_FromVoidPtr(sexp, NULL);
+  return res;
+}
+PyDoc_STRVAR(Sexp_sexp_doc,
+	     "Opaque C pointer to the underlying R object");
+
+static PyObject*
+Sexp_rsame(PyObject *self, PyObject *other)
+{
+
+ if (! PyObject_IsInstance(other, 
+			   (PyObject*)&Sexp_Type)) {
+    PyErr_Format(PyExc_ValueError, 
+		 "Can only compare Sexp objects.");
+    return NULL;
+ }
+
+ SEXP sexp_self = RPY_SEXP(((PySexpObject*)self));
+ if (! sexp_self) {
+   PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+   return NULL;;
+ }
+ 
+ SEXP sexp_other = RPY_SEXP(((PySexpObject*)other));
+ if (! sexp_other) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;;
+ }
+ 
+ long same = (sexp_self == sexp_other);
+ return PyBool_FromLong(same);
+}
+PyDoc_STRVAR(Sexp_rsame_doc,
+	     "Are the two object representing the same underlying R object.");
+
 
 static PyMethodDef Sexp_methods[] = {
-  {"typeof", (PyCFunction)Sexp_typeof, METH_NOARGS,
-  Sexp_typeof_doc},
   {"do_slot", (PyCFunction)Sexp_do_slot, METH_O,
   Sexp_do_slot_doc},
+  {"rsame", (PyCFunction)Sexp_rsame, METH_O,
+  Sexp_rsame_doc},
   {"named", (PyCFunction)Sexp_named, METH_NOARGS,
   Sexp_named_doc},
   {NULL, NULL}          /* sentinel */
 };
 
 
-staticforward PyTypeObject Sexp_Type;
+static PyGetSetDef Sexp_getsets[] = {
+  {"typeof", 
+   (getter)Sexp_typeof_get,
+   (setter)0,
+   Sexp_typeof_doc},
+  {"__sexp__",
+   (getter)Sexp_sexp_get,
+   (setter)0,
+   Sexp_sexp_doc},
+  {NULL, NULL, NULL, NULL}          /* sentinel */
+};
+
 
 static PyObject*
 Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -711,7 +768,7 @@ static PyTypeObject Sexp_Type = {
         0,                      /*tp_iternext*/
         Sexp_methods,           /*tp_methods*/
         0,                      /*tp_members*/
-        0,//Sexp_getset,            /*tp_getset*/
+        Sexp_getsets,            /*tp_getset*/
         0,                      /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/

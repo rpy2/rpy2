@@ -8,6 +8,14 @@ New features
 
 - :func:`setReadConsole`: specify Python callback for console input
 
+- `R` string vectors can now be built from Python unicode objects
+
+- getter :attr:`__sexp__` to return an opaque C pointer to the underlying R object
+
+- method :meth:`rsame` to test if the underlying R objects for two :class:`Sexp` are the same.
+ 
+:mod:`rpy2.robjects`:
+
 - R string vectors can now be built from Python unicode objects
 
 
@@ -18,9 +26,12 @@ Changes
 
 - :func:`initEmbeddedR` is only initializing if R is not started (no effect otherwise, and no exception thrown anymore)
 
+- the method :meth:`typeof` was replaced by a Python `getter` :attr:`typeof`.
+ 
 :mod:`rpy2.robjects`:
 
 - :class:`R` remains a singleton, but does not throw an exception when multiple instances are requested
+
 
 Bugs fixed
 ----------
@@ -35,6 +46,9 @@ Bugs fixed
 
 - experimental method :meth:`enclos` was not properly exported
 
+- setup.py was exiting prematurely when R was compiled against an existing BLAS library
+
+- complex vectors should now be handled properly by :mod:`rpy2.rinterface.robjects`.
 
 
 Release 2.0.0a2

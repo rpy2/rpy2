@@ -418,12 +418,12 @@ of writing a new function `ri2py` that handles this, as shown below:
 Once this is done, we can verify immediately that this is working with:
 
 >>> pi = robjects.r.pi
->>  type(pi)
+>>>  type(pi)
 <type 'float'>
 >>> 
 
 
-The docstrings for :meth:`default_ri2py`, :meth:`default_py2ri`, and :meth:`ri2py` are:
+The docstrings for :meth:`default_ri2py`, :meth:`default_py2ri`, and :meth:`py2ro` are:
 
 .. autofunction:: rpy2.robjects.default_ri2py
 .. autofunction:: rpy2.robjects.default_py2ri
@@ -458,7 +458,8 @@ will hopefully be used as a cookbook.
 
 .. note::
    Since the named parameters are a Python :class:`dict`, 
-   the order of the parameters is lost. Check :meth:`rpy2.rinterface.rcall`
+   the order of the parameters is lost. 
+   Check :meth:`rpy2.rinterface.SexpClosure.rcall`
    to know how to keep the order of parameters.
 
 Linear models

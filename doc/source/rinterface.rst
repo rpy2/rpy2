@@ -163,8 +163,13 @@ An example should make it obvious::
    # output from the R console will now be appended to the list 'buf'
    rinterface.setWriteConsole(f)
 
+   date = rinterface.baseNamespaceEnv['date']
    rprint = rinterface.baseNamespaceEnv['print']
-   rprint(rinterface.baseNamespaceEnv['date'])
+   rprint(date())
+
+   # the output is in our list (as defined in the function f above)
+   print(buf)
+
 
    # restore default function
    rinterface.setWriteConsole(rinterface.consolePrint)
@@ -191,19 +196,18 @@ The class :class:`Sexp` is the base class for all R objects.
 
 .. class:: Sexp
 
-   .. method:: typeof()
+   .. attribute:: __sexp__
 
-      The internal R type in which an object is stored can be
-      accessed with the method :meth:`typeof`.
+      Opaque C pointer to the underlying R object
 
-      :rtype: integer
+   .. attribute:: typeof
 
+      Internal R type for the underlying R object
 
       .. doctest::
 
-         >>> letters.typeof()
+         >>> letters.typeof
          16
-
 
    .. method:: do_slot(name)
 
@@ -228,6 +232,13 @@ The class :class:`Sexp` is the base class for all R objects.
       returns the `NAMED` value (see the R-extensions manual).
 
       :rtype: integer
+
+   .. method:: rsame(sexp_obj)
+
+      Tell whether the underlying R object for sexp_obj is the same or not.
+
+      :rtype: boolean
+
 
 .. .. autoclass:: rpy2.rinterface.Sexp
 ..   :members:
@@ -414,7 +425,7 @@ For example, we take the base name space (that is the environment
 that contains R's base objects:
 
 >>> base = rinterface.baseNameSpace
->>> basetypes = [x.typeof() for x in base]
+>>> basetypes = [x.typeof for x in base]
 
 
 .. warning::
@@ -438,8 +449,9 @@ Let's start with an example:
 >>> rinterface.globalEnv.get("pi")[0]
 3.1415926535897931
 
-The constant pi is defined in the package base, that
-is by default in the search path. The call to :meth:`get` will
+The constant `pi` is defined in the package `base`, that
+is always in the search path (and in the last position, as it is
+attached first). The call to :meth:`get` will
 look for `pi` first in `globalEnv`, then in the next environment
 in the search path and repeat this until an object is found or the
 sequence of environments to explore is exhausted.
@@ -456,8 +468,8 @@ Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 LookupError: 'pi' not found
 
-`R` can look specifically for functions, this is the case when
-a function call is performed.
+`R` can look specifically for functions, which is happening when
+a parsed function call is evaluated.
 The following example of an `R` interactive session should demonstrate it:
 
 .. code-block:: r
@@ -482,16 +494,89 @@ should return an R function).
 'hohoho'
 >>> ri.globalEnv.get("date", wantFun=True)
 <rinterface.SexpClosure - Python:0x7f142aa96198 / R:0x16e9500>
->>> ri.globalEnv.get("date", wantFun=True)()[0]
+>>> date = ri.globalEnv.get("date", wantFun=True)
+>>> date()[0]
 'Sat Aug  9 15:48:42 2008'
 
 
+R packages as environments
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In a `Python` programmer's perspective, it would be nice to map loaded `R`
+packages as modules and provide access to `R` objects in packages the
+same way than `Python` object in modules are accessed.
+
+This is unfortunately not possible in a robust way: the dot character `.`
+can be used for symbol names in R (like pretty much any character), and
+this can prevent an exact correspondance between `R` and `Python` names.
+`rpy` uses transformation functions that translates '.' to '_' and back,
+but this can lead to complications since '_' can also be used for R symbols. 
+
+There is a way to provide explict access to object in R packages, since
+loaded packages can be considered as environments.
+
+For example, we can reimplement in `Python` the `R` function 
+returning the search path (`search`).
+
+.. code-block:: python
+
+   def rsearch():
+       """ Return a list of package environments corresponding to the
+       R search path. """
+       emptyenv = ri.baseNameSpaceEnv.get('emptyenv')()
+       spath = [ri.globalEnv, ]
+       item = ri.globalEnv.enclos()
+       while not item.rsame(emptyenv):
+           spath.append(item)
+	   item = item.enclos()
+       spath.append(ri.baseNameSpaceEnv)
+       return spath
+
+
+As an other example, one can implement simply a function that
+returns from which environment an object called by :meth:`get` comes
+from.
+
+.. code-block:: python
+
+   def wherefrom(name, startenv=ri.globalEnv):
+       """ when calling 'get', where the R object is coming from. """
+       emptyenv = ri.baseNameSpaceEnv.get('emptyenv')()
+       env = startenv
+       obj = None
+       retry = True
+       while retry:
+           try:
+               obj = env[name]
+               retry = False
+           except LookupError, knf:
+               env = env.enclos()
+	       if env.rsame(emptyenv):
+                   retry = False
+               else:
+                   retry = True
+       return env       
+
+
+>>> wherefrom('plot').do_slot('name')[0]
+'package:graphics'
+>>> wherefrom('help').do_slot('name')[0]
+'package:utils'
+
+.. note::
+   There is a gotcha: the base package does not have a name.
+
+   >>> wherefrom('get').do_slot('name')[0]
+   Traceback (most recent call last):
+   File "<stdin>", line 1, in <module>
+   LookupError: The object has no such attribute.
 
 .. index::
    single: closure
    single: SexpClosure
    single: rinterface; SexpClosure
    pair: rinterface; function
+
 
 :class:`SexpClosure`
 --------------------
@@ -511,7 +596,7 @@ a context to the function.
 
 
 .. index::
-   single: rcall
+   single: rcall; order of parameters
 
 .. rubric:: Order for named parameters
 
@@ -535,7 +620,6 @@ permits calling a function the same way it would in R. For example::
 >>> [x for x in rl.do_slot("names")]
 ['x', '', 'y']
 
-
 .. index::
    single: closureEnv
 
@@ -550,7 +634,6 @@ package *graphics*.
 >>> envplot_list = ls(plot.closureEnv())
 >>> [x for x in envplot_ls]
 >>>
-
 
 :class:`SexpS4`
 ---------------

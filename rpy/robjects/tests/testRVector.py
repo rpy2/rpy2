@@ -12,7 +12,7 @@ class RVectorTestCase(unittest.TestCase):
         identical = ri.baseNameSpaceEnv["identical"]
         py_a = array.array('i', [1,2,3])
         ro_v = robjects.RVector(py_a)
-        self.assertEquals(ro_v.typeof(), ri.INTSXP)
+        self.assertEquals(ro_v.typeof, ri.INTSXP)
         
         ri_v = ri.SexpVector(py_a, ri.INTSXP)
         ro_v = robjects.RVector(ri_v)
@@ -20,7 +20,7 @@ class RVectorTestCase(unittest.TestCase):
         self.assertTrue(identical(ro_v, ri_v)[0])
 
         del(ri_v)
-        self.assertEquals(ri.INTSXP, ro_v.typeof())
+        self.assertEquals(ri.INTSXP, ro_v.typeof)
 
     def testAddOperators(self):
         seq_R = robjects.r["seq"]

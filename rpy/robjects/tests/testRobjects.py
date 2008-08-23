@@ -67,39 +67,39 @@ class MappingTestCase(unittest.TestCase):
         py = 1
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.RVector))
-        self.assertEquals(rinterface.INTSXP, rob.typeof())
+        self.assertEquals(rinterface.INTSXP, rob.typeof)
 
     def testMapperPy2R_boolean(self):        
         py = True
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.RVector))
-        self.assertEquals(rinterface.LGLSXP, rob.typeof())
+        self.assertEquals(rinterface.LGLSXP, rob.typeof)
 
     def testMapperPy2R_str(self):        
         py = 'houba'
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.RVector))
-        self.assertEquals(rinterface.STRSXP, rob.typeof())
+        self.assertEquals(rinterface.STRSXP, rob.typeof)
 
     def testMapperPy2R_unicode(self):        
         py = u'houba'
         self.assertTrue(isinstance(py, unicode))
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.RVector))
-        self.assertEquals(rinterface.STRSXP, rob.typeof())
+        self.assertEquals(rinterface.STRSXP, rob.typeof)
         #FIXME: more tests
 
     def testMapperPy2R_float(self):
         py = 1.0
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.RVector))
-        self.assertEquals(rinterface.REALSXP, rob.typeof())
+        self.assertEquals(rinterface.REALSXP, rob.typeof)
 
     def testMapperPy2R_complex(self):
         py = 1.0 + 2j
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.RVector))
-        self.assertEquals(rinterface.CPLXSXP, rob.typeof())
+        self.assertEquals(rinterface.CPLXSXP, rob.typeof)
 
 
     def testOverride_ri2py(self):
