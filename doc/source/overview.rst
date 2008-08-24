@@ -42,7 +42,10 @@ Requirements
 Python version 2.4 or higher, and R-2.7.0 or higher are required.
 
 This is developped with R-2.7.1 and Python-2.5.2.
-R-2.8.0-dev is sometimes tested, and it does seem to work well.
+
+R-2.8.0-dev is sometimes tested, and it does seem to play well with `rpy2`.
+Python-2.6.0-dev is sometimes tested as well, and it seems to pass the same
+unit tests Python-2.5 is passing.
 
 Download
 ^^^^^^^^

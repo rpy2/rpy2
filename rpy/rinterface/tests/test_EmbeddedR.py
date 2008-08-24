@@ -24,7 +24,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEquals(yes.strip(), res[0])
         rinterface.setReadConsole(rinterface.consoleRead)
 
-#FIXME: end and initializing again causes currently a lot a trouble...
+#FIXME: end and initialize again causes currently a lot a trouble...
     def testCallErrorWhenEndedR(self):
         self.assertTrue(False) # worked when tested, but calling endEmbeddedR causes trouble
         t = rinterface.baseNameSpaceEnv['date']
@@ -37,7 +37,8 @@ class ObjectDispatchTestCase(unittest.TestCase):
     def testObjectDispatchLang(self):
         formula = rinterface.globalEnv.get('formula')
         obj = formula(rinterface.StrSexpVector(['y ~ x', ]))
-        self.assertTrue(isinstance(obj, rinterface.SexpLang))
+        self.assertTrue(isinstance(obj, rinterface.SexpVector))
+        self.assertEquals(rinterface.LANGSXP, obj.typeof)
 
     def testObjectDispatchVector(self):
         letters = rinterface.globalEnv.get('letters')

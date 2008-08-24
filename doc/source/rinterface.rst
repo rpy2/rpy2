@@ -200,6 +200,12 @@ The class :class:`Sexp` is the base class for all R objects.
 
       Opaque C pointer to the underlying R object
 
+   .. attribute:: named
+
+      `R` does not count references for its object. This method
+      returns the `NAMED` value (an integer). 
+      See the R-extensions manual for further details.
+
    .. attribute:: typeof
 
       Internal R type for the underlying R object
@@ -211,9 +217,9 @@ The class :class:`Sexp` is the base class for all R objects.
 
    .. method:: do_slot(name)
 
-      R objects can be given attributes. In R the function
-      *attr* lets one access attribute, while called :meth:`do_slot`
-      in the C interface to R. 
+      R objects can be given attributes. In R, the function
+      *attr* lets one access an object's attribute; it is
+      called :meth:`do_slot` in the C interface to R. 
 
       :param name: string
       :rtype: Sexp (or Sexp-inheriting) object
@@ -225,13 +231,6 @@ The class :class:`Sexp` is the base class for all R objects.
       >>> [x for x in m.do_slot("dim")]
       [13, 2]
       >>>
-
-   .. method:: named()
-
-      `R` does not count references for its object. This method
-      returns the `NAMED` value (see the R-extensions manual).
-
-      :rtype: integer
 
    .. method:: rsame(sexp_obj)
 
@@ -508,8 +507,9 @@ same way than `Python` object in modules are accessed.
 
 This is unfortunately not possible in a robust way: the dot character `.`
 can be used for symbol names in R (like pretty much any character), and
-this can prevent an exact correspondance between `R` and `Python` names.
-`rpy` uses transformation functions that translates '.' to '_' and back,
+this can make an exact correspondance between `R` and `Python` names 
+rather difficult.
+:mod:`rpy` uses transformation functions that translates '.' to '_' and back,
 but this can lead to complications since '_' can also be used for R symbols. 
 
 There is a way to provide explict access to object in R packages, since
@@ -699,21 +699,46 @@ Missing values
 R types
 -------
 
-:const:`INTSXP`
-  Integer
+Vector types
+^^^^^^^^^^^^
 
-:const:`REALSXP`
-  Numerical value (float / double)
+:const:`CPLXSXP`
+  Complex 
+
+:const:`INTSXP`
+  Integer.
 
 :const:`LGLSXP`
   Boolean (logical in the R terminology)
 
+:const:`REALSXP`
+  Numerical value (float / double)
+
 :const:`STRSXP`
   String
 
-:const:`ENVSXP`
-  Environment
+:const:`VECSXP`
+  List
 
-:const:`CPLXSXP`
-  Complex 
+:const:`LANGSXP`
+  Language object.
+
+Other types
+^^^^^^^^^^^
+
+:const:`CLOSXP`
+  Function with an enclosure. Represented by :class:`rpy2.rinterface.SexpClosure`.
+
+:const:`ENVSXP`
+  Environment. Represented by :class:`rpy2.rinterface.SexpEnvironment`.
+
+:const:`S4SXP`
+  Instance of class S4. Represented by :class:`rpy2.rinterface.SexpS4`.
+
+
+Types you should not meet
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:const:`PROMSXP`
+  Promise.
 

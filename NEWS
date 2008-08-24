@@ -13,12 +13,20 @@ New features
 - getter :attr:`__sexp__` to return an opaque C pointer to the underlying R object
 
 - method :meth:`rsame` to test if the underlying R objects for two :class:`Sexp` are the same.
- 
+
 :mod:`rpy2.robjects`:
 
 - R string vectors can now be built from Python unicode objects
 
+:mod:`rpy2.rlike`:
 
+- module :mod:`functional` with the functions :func:`tapply`, :func:`listify`, :func:`iterify`.
+
+- module :mod:`indexing` with the function :func:`order`
+
+- method :meth:`TaggedList.sort` now implemented
+
+ 
 Changes
 -------
 
@@ -26,8 +34,14 @@ Changes
 
 - :func:`initEmbeddedR` is only initializing if R is not started (no effect otherwise, and no exception thrown anymore)
 
-- the method :meth:`typeof` was replaced by a Python `getter` :attr:`typeof`.
- 
+- the method :meth:`Sexp.typeof` was replaced by a Python `getter` :attr:`typeof`.
+
+- the method :meth:`Sexp.named` was replaced by a Python `getter` :attr:`named`.
+
+- R objects of type LANGSXP are now one kind of vector (... but this may change again)
+
+- R objects of type EXPRSXP are now handled as vectors (... but this may change again)
+
 :mod:`rpy2.robjects`:
 
 - :class:`R` remains a singleton, but does not throw an exception when multiple instances are requested
@@ -36,13 +50,13 @@ Changes
 Bugs fixed
 ----------
 
-- Unable to compile on Python2.4 (definition of aliases to Python2.5-specific were not where they should be).
+- unable to compile on Python2.4 (definition of aliases to Python2.5-specific were not where they should be).
 
-- Overflow issues on Python 2.4/64 bits when indexing R vector with very large integers.
+- overflow issues on Python 2.4/64 bits when indexing R vector with very large integers.
 
-- Handling of negative indexes for :class:`SexpVector`'s :meth:`__getitem__` and :meth:`__setitem__` was missing
+- handling of negative indexes for :class:`SexpVector`'s :meth:`__getitem__` and :meth:`__setitem__` was missing
 
-- Trying to create an instance of :class:`SexpVector` before initializing R raises a RuntimeException (used to segfault)
+- trying to create an instance of :class:`SexpVector` before initializing R raises a RuntimeException (used to segfault)
 
 - experimental method :meth:`enclos` was not properly exported
 
@@ -83,9 +97,9 @@ Bugs fixed
 
 - R stack checking is disabled (no longer crashes when multithreading)
 
-- Fixed missing R_PreserveObject for vectors (causing R part of the object to sometimes vanish during garbage collection)
+- fixed missing R_PreserveObject for vectors (causing R part of the object to sometimes vanish during garbage collection)
 
-- Prevents calling an R function when R has been ended (raise :class:`RuntimeException`).
+- prevents calling an R function when R has been ended (raise :class:`RuntimeException`).
 
 
 Release 2.0.0a1
@@ -133,7 +147,7 @@ Bugs fixed
 
 :mod:`rpy2.robjects`:
 
-- Fixed string representation of R object on Microsoft Windows (using fifo, not available on win32)
+- fixed string representation of R object on Microsoft Windows (using fifo, not available on win32)
 
 - :meth:`__getattr__` for :class:`RS4` is now using :meth:`ri2py` 
 
@@ -144,4 +158,4 @@ Bugs fixed
 Release 1.0a0
 =============
 
-- First public release
+- first public release

@@ -215,8 +215,14 @@ class TaggedListTestCase(unittest.TestCase):
         self.assertEquals(tuple(tl), (3, 2, 1))
 
     def testsort(self):
-        self.assertTrue(False) # not implemented (yet)
-    
+        tn = ['a', 'c', 'b']
+        tv = [1,3,2]
+        tl = rlc.TaggedList(tv, tags = tn)
+        tl.sort()
+
+        self.assertEquals(tl.tags(), ('a', 'b', 'c'))
+        self.assertEquals(tuple(tl), (1, 2, 3))
+        
     def testtags(self):
         tn = ['a', 'b', 'c']
         tv = [1,2,3]

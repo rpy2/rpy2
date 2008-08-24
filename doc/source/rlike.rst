@@ -95,3 +95,22 @@ The Python docstring for the class is:
 
 .. autoclass:: rpy2.rlike.container.TaggedList
    :members:
+
+Tools for working with sequences
+================================
+
+.. autofunction:: rpy2.rlike.functional.tapply
+
+>>> import rpy2.rlike.functional as rlf
+>>> rlf.tapply((1,2,3), ('a', 'b', 'a'), sum)
+[('a', 4), ('b', 2)]
+
+
+Indexing
+========
+
+.. function:: rpy2.rlike.indexing.order
+
+>>> import rpy2.rlike.indexing as rli
+>>> rli.order(('a', 'c', 'b'))
+[0, 2, 1]

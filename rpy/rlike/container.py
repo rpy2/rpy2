@@ -1,4 +1,5 @@
 import itertools
+import rpy2.rlike.indexing as rli
 
 class ArgsDict(dict):
     """ Implements the Ordered Dict API defined in PEP 372.
@@ -264,11 +265,15 @@ class TaggedList(list):
         super(TaggedList, self).reverse()
         self.__tags.reverse()
 
-    def sort(self):
-        #FIXME: implement
-        raise Exception("Not yet implemented.")
+    def sort(self, reverse = False):
+        """ 
+        Sort in place
+        """
+        o = rli.order(self, reverse = reverse)
+        super(TaggedList, self).sort(reverse = reverse)
+        self.__tags = [self.__tags[i] for i in o]
 
-    
+
     def tags(self):
         """
         Return a tuple of all tags
@@ -288,4 +293,5 @@ class TaggedList(list):
         :param t: object (tag)
         """
         self.__tags[i] = t
+
 

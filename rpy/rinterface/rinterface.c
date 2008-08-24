@@ -547,7 +547,7 @@ PyDoc_STRVAR(Sexp_do_slot_doc,
 	     ":rtype: instance of type or subtype :class:`rpy2.rinterface.Sexp`");
 
 static PyObject*
-Sexp_named(PyObject *self)
+Sexp_named_get(PyObject *self)
 {
   SEXP sexp = RPY_SEXP(((PySexpObject*)self));
   if (! sexp) {
@@ -558,7 +558,7 @@ Sexp_named(PyObject *self)
   return PyInt_FromLong((long)res);
 }
 PyDoc_STRVAR(Sexp_named_doc,
-"Return the integer code for the R object reference-pseudo counting.\n\
+"Integer code for the R object reference-pseudo counting.\n\
 This method corresponds to the macro NAMED.\n\
 See the R-extensions manual for further details.");
 
@@ -613,13 +613,15 @@ static PyMethodDef Sexp_methods[] = {
   Sexp_do_slot_doc},
   {"rsame", (PyCFunction)Sexp_rsame, METH_O,
   Sexp_rsame_doc},
-  {"named", (PyCFunction)Sexp_named, METH_NOARGS,
-  Sexp_named_doc},
   {NULL, NULL}          /* sentinel */
 };
 
 
 static PyGetSetDef Sexp_getsets[] = {
+  {"named", 
+   (getter)Sexp_named_get,
+   (setter)0,
+   Sexp_named_doc},
   {"typeof", 
    (getter)Sexp_typeof_get,
    (setter)0,
@@ -1332,6 +1334,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     int vi;
     Rcomplex vc;
     const char *vs;
+    SEXP tmp, sexp_item; /* needed by LANGSXP */
     i_R = (R_len_t)i;
     switch (TYPEOF(*sexp)) {
     case REALSXP:
@@ -1359,7 +1362,15 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
 /*       vs = (CHAR(*sexp)[i_R]); */
 /*       res = PyString_FromStringAndSize(vs, 1); */
     case VECSXP:
-      res = (PyObject *)newPySexpObject(VECTOR_ELT(*sexp, i_R));
+    case EXPRSXP:
+      sexp_item = VECTOR_ELT(*sexp, i_R);
+      res = (PyObject *)newPySexpObject(sexp_item);
+      break;
+    case LANGSXP:
+      tmp = nthcdr(*sexp, i_R);
+      SETCAR(sexp_item, CAR(tmp));
+      SET_TAG(sexp_item, TAG(tmp));
+      res = (PyObject *)newPySexpObject(sexp_item);
       break;
     default:
       PyErr_Format(PyExc_ValueError, "Cannot handle type %d", 
@@ -2041,6 +2052,8 @@ newPySexpObject(const SEXP sexp)
   case LGLSXP:
   case CPLXSXP:
   case VECSXP:
+  case LANGSXP:
+  case EXPRSXP:
   case STRSXP:
     object = (PySexpObject *)Sexp_new(&VectorSexp_Type, Py_None, Py_None);
     break;
@@ -2049,9 +2062,6 @@ newPySexpObject(const SEXP sexp)
     break;
   case S4SXP:
     object = (PySexpObject *)Sexp_new(&S4Sexp_Type, Py_None, Py_None);
-    break;
-  case LANGSXP:
-    object = (PySexpObject *)Sexp_new(&LangSexp_Type, Py_None, Py_None);
     break;
   default:
     object = (PySexpObject *)Sexp_new(&Sexp_Type, Py_None, Py_None);

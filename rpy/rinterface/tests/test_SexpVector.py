@@ -147,6 +147,21 @@ class SexpVectorTestCase(unittest.TestCase):
         letters_R = ri.globalEnv.get("letters")
         self.assertEquals('z', letters_R[-1])
 
+    def testGetItemLang(self):
+        formula = ri.baseNameSpaceEnv.get('formula')
+        f = formula(ri.StrSexpVector(['y ~ x', ]))
+        y = f[0]
+        self.assertEquals(ri.LANGSXP, y.typeof)
+        self.assertEquals(1, len(y))
+
+    def testGetItemExpression(self):
+        expression = ri.baseNameSpaceEnv.get('expression')
+        e = expression(ri.StrSexpVector(['a', ]),
+                       ri.StrSexpVector(['b', ]))
+        y = e[0]
+        self.assertEquals(ri.STRSXP, y.typeof)
+
+        
     def testGetItemNegativeOutOfBound(self):
         letters_R = ri.globalEnv.get("letters")
         self.assertRaises(IndexError, letters_R.__getitem__,
