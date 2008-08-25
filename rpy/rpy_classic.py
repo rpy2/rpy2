@@ -42,7 +42,7 @@ TOP_MODE = 4
 
 # --- init R
 
-ri.initEmbeddedR()
+ri.initr()
 
 class RPyException(Exception):
     """ Generic exeception for RPy """

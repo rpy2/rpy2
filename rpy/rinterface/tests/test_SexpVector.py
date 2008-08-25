@@ -2,7 +2,7 @@ import unittest
 import sys
 import rpy2.rinterface as ri
 
-ri.initEmbeddedR()
+ri.initr()
 
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon
@@ -28,11 +28,6 @@ class WrapperSexpVectorTestCase(unittest.TestCase):
         self.assertTrue(ok)
 
 class SexpVectorTestCase(unittest.TestCase):
-    #def setUpt(self):
-    #    ri.initEmbeddedR("foo", "--no-save")
-
-    #def tearDown(self):
-    #    ri.endEmbeddedR(1);
 
     def testMissinfType(self):
         self.assertRaises(ValueError, ri.SexpVector, [2, ])
@@ -40,10 +35,10 @@ class SexpVectorTestCase(unittest.TestCase):
 #FIXME: end and initializing again causes currently a lot a trouble...
     def testNewWithoutInit(self):
         self.assertTrue(False) # worked when tested, but calling endEmbeddedR causes trouble
-        ri.endEmbeddedR(1)
+        ri.endr(1)
         self.assertRaises(RuntimeError, ri.SexpVector, [1,2], ri.INTSXP)
         #FIXME: trouble... does not initialize R when failing the test
-        ri.initEmbeddedR()
+        ri.initr()
 
     def testNewBool(self):
         sexp = ri.SexpVector([True, ], ri.LGLSXP)

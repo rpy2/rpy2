@@ -10,7 +10,7 @@ except ImportError:
     hasNumpy = False
 
 
-rinterface.initEmbeddedR()
+rinterface.initr()
 
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon

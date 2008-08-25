@@ -46,6 +46,10 @@ Changes
 
 - R objects of type EXPRSXP are now handled as vectors (... but this may change again)
 
+- :func:`initEmbeddedR` renamed to :func:`initr`
+
+- :func:`endEmbeddedR` renamed to :func:`endr`
+
 
 :mod:`rpy2.robjects`:
 

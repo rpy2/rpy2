@@ -2341,9 +2341,9 @@ EmbeddedR_sexpType(PyObject *self, PyObject *args)
 /* --- List of functions defined in the module --- */
 
 static PyMethodDef EmbeddedR_methods[] = {
-  {"initEmbeddedR",     (PyCFunction)EmbeddedR_init,   METH_NOARGS,
+  {"initr",     (PyCFunction)EmbeddedR_init,   METH_NOARGS,
    EmbeddedR_init_doc},
-  {"endEmbeddedR",	(PyCFunction)EmbeddedR_end,    METH_O,
+  {"endr",	(PyCFunction)EmbeddedR_end,    METH_O,
    EmbeddedR_end_doc},
   {"setWriteConsole",	(PyCFunction)EmbeddedR_setWriteConsole,	 METH_VARARGS,
    EmbeddedR_setWriteConsole_doc},

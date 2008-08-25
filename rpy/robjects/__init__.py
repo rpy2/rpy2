@@ -440,7 +440,7 @@ class R(object):
 
     def __init__(self):
         if R._instance is None:
-            rinterface.initEmbeddedR()
+            rinterface.initr()
             R._instance = self
         else:
             pass

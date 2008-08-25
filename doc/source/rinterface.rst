@@ -29,20 +29,20 @@ Initialization
 --------------
 
 One has to initialize R before much can be done.
-The function :func:`initEmbeddedR` lets one initialize
+The function :func:`initr` lets one initialize
 the embedded R.
 
-This is done with the function :meth:`initEmbeddedR`.
+This is done with the function :meth:`initr`.
 
 
-.. autofunction:: initEmbeddedR()
+.. autofunction:: initr()
 
 
->>> rinterface.initEmbeddedR()
+>>> rinterface.initr()
 
 Initialization should only be performed once. 
 To avoid unpredictable results when using the embedded R, 
-subsequent calls to :func:`initEmbeddedR` will not have any effect.
+subsequent calls to :func:`initr` will not have any effect.
 
 Parameters for the initialization are in the module variable
 `initOptions`.
@@ -51,7 +51,7 @@ Parameters for the initialization are in the module variable
    single: initialize R_HOME
 
 .. note::
-   If calling :func:`initEmbeddedR` returns an error stating that
+   If calling :func:`initr` returns an error stating that
    :envvar:`R_HOME` is not defined, you should either have the :program:`R` executable in
    your path (:envvar:`PATH` on unix-alikes, or :envvar:`Path` on Microsoft Windows) or
    have the environment variable :envvar:`R_HOME` defined. 

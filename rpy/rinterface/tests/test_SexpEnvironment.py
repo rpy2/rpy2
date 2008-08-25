@@ -1,14 +1,9 @@
 import unittest
 import rpy2.rinterface as rinterface
 
-rinterface.initEmbeddedR()
+rinterface.initr()
 
 class SexpEnvironmentTestCase(unittest.TestCase):
-    #def setUpt(self):
-    #    rinterface.initEmbeddedR("foo", "--vanilla", "--no-save")
-
-    #def tearDown(self):
-    #    rinterface.endEmbeddedR(0);
 
     def testNew(self):
         sexp = rinterface.globalEnv

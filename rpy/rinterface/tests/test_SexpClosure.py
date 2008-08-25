@@ -2,14 +2,9 @@ import unittest
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
-rinterface.initEmbeddedR()
+rinterface.initr()
 
 class SexpClosureTestCase(unittest.TestCase):
-    #def setUp(self):
-    #    rinterface.initEmbeddedR("foo", "--no-save")
-
-    #def tearDown(self):
-    #    rinterface.endEmbeddedR(1);
 
     def testNew(self):
         x = "a"

@@ -1,14 +1,9 @@
 import unittest
 import rpy2.rinterface as rinterface
 
-rinterface.initEmbeddedR()
+rinterface.initr()
 
 class SexpTestCase(unittest.TestCase):
-    #def setUpt(self):
-    #    rinterface.initEmbeddedR("foo", "--no-save")
-
-    #def tearDown(self):
-    #    rinterface.endEmbeddedR(1);
 
     def testNew_invalid(self):
 

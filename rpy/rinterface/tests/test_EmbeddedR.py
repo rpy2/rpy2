@@ -1,7 +1,7 @@
 import unittest
 import rpy2.rinterface as rinterface
 
-rinterface.initEmbeddedR()
+rinterface.initr()
 
 class EmbeddedRTestCase(unittest.TestCase):
     def testSetWriteConsole(self):
@@ -28,9 +28,9 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testCallErrorWhenEndedR(self):
         self.assertTrue(False) # worked when tested, but calling endEmbeddedR causes trouble
         t = rinterface.baseNameSpaceEnv['date']
-        rinterface.endEmbeddedR(1)
+        rinterface.endr(1)
         self.assertRaises(RuntimeError, t)
-        rinterface.initEmbeddedR()
+        rinterface.initr()
 
 
 class ObjectDispatchTestCase(unittest.TestCase):
