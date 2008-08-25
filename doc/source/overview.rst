@@ -139,8 +139,9 @@ When designing ryp2, attention was given to make:
 
 - the use of the module simple from both a Python or R user's perspective
 
-- minimize the need for knowledge about R, and the need for tricks are workaround.
-- the possibility to customize a lot only with Python (without having to go to C-level).
+- minimize the need for knowledge about R, and the need for tricks and workarounds.
+
+- the possibility to customize a lot while remaining at the Python level (without having to go down to C-level).
 
 
 :mod:`rpy2.robjects` implements an extension to the interface in

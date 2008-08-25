@@ -14,6 +14,10 @@ New features
 
 - method :meth:`rsame` to test if the underlying R objects for two :class:`Sexp` are the same.
 
+- added `emptyEnv` (R's C-level `R_EmptyEnv`)
+
+- added method :meth:`Sexp.do_slot_assign`
+
 :mod:`rpy2.robjects`:
 
 - R string vectors can now be built from Python unicode objects
@@ -42,6 +46,7 @@ Changes
 
 - R objects of type EXPRSXP are now handled as vectors (... but this may change again)
 
+
 :mod:`rpy2.robjects`:
 
 - :class:`R` remains a singleton, but does not throw an exception when multiple instances are requested
@@ -64,6 +69,7 @@ Bugs fixed
 
 - complex vectors should now be handled properly by :mod:`rpy2.rinterface.robjects`.
 
+- methods :meth:`rownames` and :meth:`colnames` for :class:`RDataFrame` were incorrect.
 
 Release 2.0.0a2
 ===============

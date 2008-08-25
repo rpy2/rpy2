@@ -50,7 +50,16 @@ class SexpTestCase(unittest.TestCase):
         for i, n in enumerate(iris_names):
             self.assertEquals(iris_names[i], names[i])
 
-        self.assertRaises(LookupError, sexp.do_slot, "foo")       
+        self.assertRaises(LookupError, sexp.do_slot, "foo")  
+
+    def testDo_slot_assign(self):
+        data_func = rinterface.globalEnv.get("data")
+        data_func(rinterface.SexpVector(["iris", ], rinterface.STRSXP))
+        sexp = rinterface.globalEnv.get("iris")
+        iris_names = rinterface.StrSexpVector(['a', 'b', 'c', 'd', 'e'])
+        sexp.do_slot_assign("names", iris_names)
+        names = [x for x in sexp.do_slot("names")]
+        self.assertEquals(['a', 'b', 'c', 'd', 'e'], names)
 
     def testSexp_rsame_true(self):
         sexp_a = rinterface.globalEnv.get("letters")

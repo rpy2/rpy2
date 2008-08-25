@@ -54,7 +54,6 @@ def default_ri2py(o):
         res = RObject(o)
     return res
 
-#FIXME: better names for the functions
 ri2py = default_ri2py
 
 
@@ -350,20 +349,23 @@ class RDataFrame(RVector):
     
     def rownames(self):
         """ Row names
-        :rype: SexpVector
+        
+        :rtype: SexpVector
         """
-        return baseNameSpaceEnv["colnames"](self)[0]
+        res = baseNameSpaceEnv["rownames"](self)
+        return ri2py(res)
 
     def colnames(self):
         """ Column names
-        :rype: SexpVector
-        """
-        return baseNameSpaceEnv["colnames"](self)[0]
 
+        :rtype: SexpVector
+        """
+        res = baseNameSpaceEnv["colnames"](self)
+        return ri2py(res)
 
 
 class RFunction(RObjectMixin, rinterface.SexpClosure):
-    """ An R function (aka "closure").
+    """ An R function.
     
     """
 

@@ -257,6 +257,7 @@ or a dictonnary which elements will be the columns of the `data.frame`.
    :show-inheritance:
    :members:
 
+
 Environments
 ============
 
@@ -304,6 +305,10 @@ An environment is also iter-able, returning all the symbols
 
 >>> env = robjects.r.baseenv()
 >>> len([x for x in env])
+<a long list returned>
+
+For further information, read the documentation for the
+class :class:`rpy2.rinterface.SexpEnvironment`.
 
 .. index::
    pair: robjects; RFunction

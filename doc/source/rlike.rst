@@ -96,21 +96,52 @@ The Python docstring for the class is:
 .. autoclass:: rpy2.rlike.container.TaggedList
    :members:
 
+
+.. module:: rpy2.rlike.functional
+
 Tools for working with sequences
 ================================
 
-.. autofunction:: rpy2.rlike.functional.tapply
+.. autofunction:: tapply
 
 >>> import rpy2.rlike.functional as rlf
 >>> rlf.tapply((1,2,3), ('a', 'b', 'a'), sum)
 [('a', 4), ('b', 2)]
 
 
+.. module:: rpy2.rlike.indexing
+
 Indexing
 ========
 
-.. function:: rpy2.rlike.indexing.order
+Much of the R-style indexing can be achieved with Python's list comprehension:
+
+>>> x = ('a', 'b', 'c')
+>>> x_i = (0, 2)
+>>> [x[i] for i in x_i]
+['a', 'c']
+
+In `R`, negative indexes mean that values should be excluded. Again,
+list comprehension can be used:
+
+>>> x = ('a', 'b', 'c') 
+>>> x_i = (0, 2)
+
+.. function:: order(seq, cmp = default_cmp, reverse = False)
+
+   Give the order in which to take the items in the sequence `seq` and
+   have them sorted.
+   The optional function cmp should return +1, -1, or 0.
+
+   :param seq: sequence
+   :param cmp: function
+   :param reverse: boolean
+   :rtype: list of integers
 
 >>> import rpy2.rlike.indexing as rli
->>> rli.order(('a', 'c', 'b'))
+>>> x = ('a', 'c', 'b')
+>>> o = rli.order(x)
+>>> o
 [0, 2, 1]
+>>> [x[i] for i in o]
+['a', 'b', 'c']

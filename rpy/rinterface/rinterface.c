@@ -138,6 +138,7 @@ PyDoc_STRVAR(module_doc,
 
 static PySexpObject *globalEnv;
 static PySexpObject *baseNameSpaceEnv;
+static PySexpObject *emptyEnv;
 static PySexpObject *na_string;
 
 /* early definition of functions */
@@ -363,6 +364,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
 
   RPY_SEXP(globalEnv) = R_GlobalEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
+  RPY_SEXP(emptyEnv) = R_EmptyEnv;
   RPY_SEXP(na_string) = NA_STRING;
 
   GetErrMessage_SEXP = findVar(install("geterrmessage"), 
@@ -406,6 +408,7 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
 
   RPY_SEXP(globalEnv) = R_EmptyEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
+  RPY_SEXP(emptyEnv) = R_EmptyEnv;
   GetErrMessage_SEXP = R_NilValue; 
 
   //FIXME: Is it possible to reinitialize R later ?
@@ -547,6 +550,50 @@ PyDoc_STRVAR(Sexp_do_slot_doc,
 	     ":rtype: instance of type or subtype :class:`rpy2.rinterface.Sexp`");
 
 static PyObject*
+Sexp_do_slot_assign(PyObject *self, PyObject *args)
+{
+
+  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;;
+  }
+
+  char *name_str;
+  PyObject *value;
+  if (! PyArg_ParseTuple(args, "sO", 
+			 &name_str,
+			 &value)) {
+    return NULL;
+  }
+
+  if (! PyObject_IsInstance(value, 
+			  (PyObject*)&Sexp_Type)) {
+      PyErr_Format(PyExc_ValueError, "Value must be an instance of Sexp.");
+      return NULL;
+  }
+
+  if (! R_has_slot(sexp, install(name_str))) {
+    PyErr_SetString(PyExc_LookupError, "The object has no such attribute.");
+    return NULL;
+  }
+  SEXP value_sexp = RPY_SEXP((PySexpObject *)value);
+  if (! value_sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;;
+  }
+
+  SET_SLOT(sexp, install(name_str), value_sexp);
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+PyDoc_STRVAR(Sexp_do_slot_assign_doc,
+	     "Set the attribute/slot for an R object.\n"
+	     "\n"
+	     ":param name: string\n"
+	     ":param value: instance of rpy2.rinterface.Sexp");
+
+static PyObject*
 Sexp_named_get(PyObject *self)
 {
   SEXP sexp = RPY_SEXP(((PySexpObject*)self));
@@ -563,7 +610,7 @@ This method corresponds to the macro NAMED.\n\
 See the R-extensions manual for further details.");
 
 static PyObject*
-Sexp_sexp_get(PyObject *self)
+Sexp_sexp_get(PyObject *self, void *closure)
 {
   SEXP sexp = RPY_SEXP(((PySexpObject*)self));
 
@@ -575,6 +622,23 @@ Sexp_sexp_get(PyObject *self)
   PyObject *res = PyCObject_FromVoidPtr(sexp, NULL);
   return res;
 }
+
+/* static PyObject* */
+/* Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure) */
+/* { */
+/*   if (! PyCObject_Check(obj)) { */
+/*     PyErr_SetString(PyExc_TypeError, "The value must be a CObject."); */
+/*     return -1; */
+/*   } */
+/*   SEXP sexp = (SEXP) PyCObject_AsVoidPtr(PyObject* obj); */
+/*   if (! sexp) { */
+/*     PyErr_Format(PyExc_ValueError, "NULL SEXP."); */
+/*     return -1; */
+/*   } */
+/*   RPY_SEXP(((PySexpObject*)self)) = sexp; */
+
+/*   return 0; */
+/* } */
 PyDoc_STRVAR(Sexp_sexp_doc,
 	     "Opaque C pointer to the underlying R object");
 
@@ -611,6 +675,8 @@ PyDoc_STRVAR(Sexp_rsame_doc,
 static PyMethodDef Sexp_methods[] = {
   {"do_slot", (PyCFunction)Sexp_do_slot, METH_O,
   Sexp_do_slot_doc},
+  {"do_slot_assign", (PyCFunction)Sexp_do_slot_assign, METH_VARARGS,
+   Sexp_do_slot_assign_doc},
   {"rsame", (PyCFunction)Sexp_rsame, METH_O,
   Sexp_rsame_doc},
   {NULL, NULL}          /* sentinel */
@@ -2501,6 +2567,12 @@ initrinterface(void)
 /*   //FIXME: DECREF ? */
 /*   Py_DECREF(baseNameSpaceEnv); */
 
+  emptyEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
+				     Py_None, Py_None);
+  RPY_SEXP(emptyEnv) = R_EmptyEnv;
+  if (PyDict_SetItemString(d, "emptyEnv", 
+			   (PyObject *)emptyEnv) < 0)
+    return;
 
   /* Add SXP types */
   validSexpType = calloc(maxValidSexpType, sizeof(char *));

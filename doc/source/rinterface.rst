@@ -222,7 +222,7 @@ The class :class:`Sexp` is the base class for all R objects.
       called :meth:`do_slot` in the C interface to R. 
 
       :param name: string
-      :rtype: Sexp (or Sexp-inheriting) object
+      :rtype: instance of :class:`Sexp`
 
       >>> matrix = rinterface.globalEnv.get("matrix")
       >>> letters = rinterface.globalEnv.get("letters")
@@ -231,6 +231,14 @@ The class :class:`Sexp` is the base class for all R objects.
       >>> [x for x in m.do_slot("dim")]
       [13, 2]
       >>>
+
+   .. method:: do_slot_assign(name, value)
+
+      Assign value to the slot with the given name
+
+      :param name: string
+      :param value: instance of :class:`Sexp`
+
 
    .. method:: rsame(sexp_obj)
 
@@ -523,10 +531,9 @@ returning the search path (`search`).
    def rsearch():
        """ Return a list of package environments corresponding to the
        R search path. """
-       emptyenv = ri.baseNameSpaceEnv.get('emptyenv')()
        spath = [ri.globalEnv, ]
        item = ri.globalEnv.enclos()
-       while not item.rsame(emptyenv):
+       while not item.rsame(ri.emptyEnv):
            spath.append(item)
 	   item = item.enclos()
        spath.append(ri.baseNameSpaceEnv)
@@ -541,7 +548,6 @@ from.
 
    def wherefrom(name, startenv=ri.globalEnv):
        """ when calling 'get', where the R object is coming from. """
-       emptyenv = ri.baseNameSpaceEnv.get('emptyenv')()
        env = startenv
        obj = None
        retry = True
@@ -551,7 +557,7 @@ from.
                retry = False
            except LookupError, knf:
                env = env.enclos()
-	       if env.rsame(emptyenv):
+	       if env.rsame(ri.emptyEnv):
                    retry = False
                else:
                    retry = True
@@ -723,6 +729,9 @@ Vector types
 :const:`LANGSXP`
   Language object.
 
+:const:`EXPRSXP`
+  Unevaluated expression.
+
 Other types
 ^^^^^^^^^^^
 
@@ -736,7 +745,7 @@ Other types
   Instance of class S4. Represented by :class:`rpy2.rinterface.SexpS4`.
 
 
-Types you should not meet
+Types one should not meet
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :const:`PROMSXP`
