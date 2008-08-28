@@ -448,32 +448,39 @@ EmbeddedR_exception_from_errmessage(void)
 
 staticforward PyTypeObject Sexp_Type;
 
-static void
-Sexp_clear(PySexpObject *self)
+void SexpObject_clear(SexpObject *sexpobj)
 {
-  RPY_DECREF(self);
+
+  (*sexpobj).count--;
+
 #ifdef RPY_VERBOSE
   printf("Python:%p / R:%p -- sexp count is %i...", 
-	 self, RPY_SEXP(self), RPY_COUNT(self));
+	 self, sexpobj->sexp, sexpobj->count);
 #endif
-
-  if ((RPY_COUNT(self) == 0) && RPY_SEXP(self)) {
+  if (((*sexpobj).count == 0) && (*sexpobj).sexp) {
 #ifdef RPY_VERBOSE
     printf("freeing SEXP resources...");
 #endif 
 
-    if (RPY_SEXP(self) != R_NilValue) {
+    if (sexpobj->sexp != R_NilValue) {
 #ifdef RPY_DEBUG_PRESERVE
-      printf("  Sexp_clear: R_ReleaseObject( %p )\n", RPY_SEXP(self));
+      printf("  Sexp_clear: R_ReleaseObject( %p )\n", sexpobj->sexp);
 #endif 
-    R_ReleaseObject(RPY_SEXP(self));
+    R_ReleaseObject(sexpobj->sexp);
     }
-    PyMem_Free(self->sObj);
+    PyMem_Free(sexpobj);
     ////self->ob_type->tp_free((PyObject*)self);
 #ifdef RPY_VERBOSE
     printf("done.\n");
 #endif 
-  }
+  }  
+}
+
+static void
+Sexp_clear(PySexpObject *self)
+{
+  
+  SexpObject_clear(self->sObj);
 
 }
 
@@ -609,17 +616,24 @@ PyDoc_STRVAR(Sexp_named_doc,
 This method corresponds to the macro NAMED.\n\
 See the R-extensions manual for further details.");
 
+void SexpObject_CObject_destroy(void *cobj)
+{
+  SexpObject* sexpobj_ptr = (SexpObject *)cobj;
+  SexpObject_clear(sexpobj_ptr);
+}
+
 static PyObject*
 Sexp_sexp_get(PyObject *self, void *closure)
 {
-  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
+  PySexpObject* rpyobj = (PySexpObject*)self;
 
-  if (! sexp) {
+  if (! RPY_SEXP(rpyobj)) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;;
   }
-
-  PyObject *res = PyCObject_FromVoidPtr(sexp, NULL);
+  
+  RPY_INCREF(rpyobj);
+  PyObject *res = PyCObject_FromVoidPtr(&rpyobj, SexpObject_CObject_destroy);
   return res;
 }
 
@@ -873,6 +887,7 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
     //env_R = R_GlobalContext;
   }
 
+  /* From Alexander's original code: */
   /* Enable our handler for SIGINT inside the R
      interpreter. Otherwise, we cannot stop R calculations, since
      SIGINT is only processed between Python bytecodes. Also, save the
@@ -1733,6 +1748,11 @@ PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
 static PyObject*
 EnvironmentSexp_frame(PyObject *self)
 {
+  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+    PyErr_Format(PyExc_RuntimeError, 
+		 "R must be initialized before environments can be accessed.");
+    return NULL;
+  }
   SEXP res_R = NULL;
   PySexpObject *res;
   res_R = FRAME(RPY_SEXP((PySexpObject *)self));
@@ -1745,6 +1765,11 @@ PyDoc_STRVAR(EnvironmentSexp_frame_doc,
 static PyObject*
 EnvironmentSexp_enclos(PyObject *self)
 {
+  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+    PyErr_Format(PyExc_RuntimeError, 
+		 "R must be initialized before environments can be accessed.");
+    return NULL;
+  }
   SEXP res_R = NULL;
   PySexpObject *res;
   res_R = ENCLOS(RPY_SEXP((PySexpObject *)self));
