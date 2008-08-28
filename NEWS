@@ -1,3 +1,16 @@
+SVN
+===
+
+Bugs fixed
+---------
+
+- Crash of :meth:`Sexp.enclos` when R not yet initialized (bug report #2078176)
+
+- Potential crash of :meth:`Sexp.frame` when R not yet initialized
+
+- Proper reference counting when handling, and deleting, :attr:`Sexp.__sexp__` instances
+
+
 Release 2.0.0a3
 ===============
 
