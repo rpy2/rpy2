@@ -13,6 +13,14 @@ class RFormulaTestCase(unittest.TestCase):
         env = fml.getenvironment()
         self.assertEquals("environment", env.rclass()[0])
 
+    def testSetenvironment(self):
+        fml = robjects.RFormula("y ~ x")
+        newenv = robjects.baseNameSpaceEnv['new.env']()
+        env = fml.getenvironment()
+        self.assertFalse(newenv.rsame(env))
+        fml.setenvironment(newenv)
+        env = fml.getenvironment()
+        self.assertTrue(newenv.rsame(env))
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RFormulaTestCase)

@@ -32,6 +32,12 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertRaises(RuntimeError, t)
         rinterface.initr()
 
+    def testStr_typeint(self):
+        t = rinterface.baseNameSpaceEnv['letters']
+        self.assertEquals('STRSXP', rinterface.str_typeint(t.typeof))
+        t = rinterface.baseNameSpaceEnv['pi']
+        self.assertEquals('REALSXP', rinterface.str_typeint(t.typeof))
+
 
 class ObjectDispatchTestCase(unittest.TestCase):
     def testObjectDispatchLang(self):

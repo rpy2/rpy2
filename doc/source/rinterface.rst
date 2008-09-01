@@ -286,6 +286,21 @@ The letters of the (western) alphabet are:
 >>> LETTERS = rinterface.globalEnv.get("LETTERS") 
 
 
+R types
+^^^^^^^
+
+R vectors all have a `type`, sometimes referred to in R as a `mode`.
+This information is encoded as an integer by R, but it can sometimes be
+better for human reader to be able to provide a string.
+
+.. function:: str_typeint(typeint)
+
+   Return a string corresponding to a integer-encoded R type.
+
+   :param typeint: integer (as returned by :attr:`Sexp.typeof`)
+   :rtype: string
+
+
 .. index::
    pair: rinterface;indexing
 

@@ -1,7 +1,16 @@
+This is the source tree or distribution for the rpy2 package.
 
-All this is under development, getting quickly to an alpha stage.
+Installation
+============
 
-The development is currently done with Python 2.5.2 and R-2.7.0-devel
+The disutils mechanism can be used:
 
-Compatibility with Python 2.4.x should be ok, now or later (might already be ok).
+python setup.py install
+
+Documentation
+=============
+
+Documentation is available either in the source tree (to be built),
+or as built HTML online (see the rpy home page on sourceforge).
+
 

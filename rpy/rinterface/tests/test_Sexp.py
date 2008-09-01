@@ -70,6 +70,13 @@ class SexpTestCase(unittest.TestCase):
         sexp_a = rinterface.globalEnv.get("letters")
         self.assertRaises(ValueError, sexp_a.rsame, 'foo')
         
+    def testSexp_sexp_destroyCobj(self):
+        sexp = rinterface.IntSexpVector([1,2,3])
+        cobj = sexp.__sexp__
+        del(cobj)
+        # no real test, just make sure that it does
+        # not create a segfault
+
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpTestCase)

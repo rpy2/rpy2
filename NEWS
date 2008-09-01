@@ -1,14 +1,36 @@
 SVN
 ===
 
+New features
+------------
+
+:mod:`rpy2.robjects`:
+
+- added :meth:`setenvironment` for :class:`RFormula`, and defined `environment` as a property
+
+- defined `names` as a property for :class:`RVector`
+
+
+Changes
+-------
+
+:mod:`rpy2.robjects`:
+
+- constructor for RDataFrame now now accepts either :class:`rlike.container.TaggedList` or :class:`rinterface.SexpEnvironment`
+
+:mod:`rpy2.rinterface`:
+
+- :func:`sexpTypeEmbeddedR` is now called :func:`str_typeint`.
+
 Bugs fixed
----------
+----------
 
-- Crash of :meth:`Sexp.enclos` when R not yet initialized (bug report #2078176)
+- crash of :meth:`Sexp.enclos` when R not yet initialized (bug report #2078176)
 
-- Potential crash of :meth:`Sexp.frame` when R not yet initialized
+- potential crash of :meth:`Sexp.frame` when R not yet initialized
 
-- Proper reference counting when handling, and deleting, :attr:`Sexp.__sexp__` instances
+- proper reference counting when handling, and deleting, :attr:`Sexp.__sexp__` generated CObjects
+
 
 
 Release 2.0.0a3

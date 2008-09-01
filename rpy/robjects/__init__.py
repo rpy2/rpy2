@@ -8,6 +8,7 @@ that represents an embedded R.
 
 import os, sys
 import array
+import itertools
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
@@ -281,18 +282,19 @@ class RArray(RVector):
         if not r["is.array"](self)[0]:
             raise(TypeError("The object must be representing an R array"))
 
-    def __getattr__(self, name):
-        if name == 'dim':
-            res = r.dim(self)
-            res = ri2py(res)
-            return res
+    def getdim(self):
+        res = r.dim(self)
+        res = ri2py(res)
+        return res
 
-    def __setattr__(self, name, value):
-        if name == 'dim':
-            value = py2ro(value)
-            res = r["dim<-"](self, value)
+    def setdim(self, value):
+        value = py2ro(value)
+        res = r["dim<-"](self, value)
             #FIXME: not properly done
-            raise(Exception("Not yet implemented"))
+        raise(Exception("Not yet implemented"))
+
+    dim = property(getdim, setdim, 
+                   "Dimension of the array.")
 
     def getnames(self):
         """ Return a list of name vectors
@@ -301,6 +303,7 @@ class RArray(RVector):
         res = r.dimnames(self)
         return res
         
+    names = property(getnames)
 
 
 class RMatrix(RArray):
@@ -317,25 +320,19 @@ class RMatrix(RArray):
         return self.dim[1]
 
 class RDataFrame(RVector):
-    def __init__(self, *args, **kwargs):
-
-        if len(args) > 1:
-            raise(ValueError("Only one unnamed parameter is allowed."))
-
-        if len(args) == 1:
-            if len(kwargs) != 0:
-                raise(ValueError("No named parameters allowed when there is an unnamed parameter."))
-            else:
-                super(RDataFrame, self).__init__(args[0])
-        else:
-            if len(kwargs) == 0:
-                raise(ValueError("Initialization parameters needed."))
-            df = baseNameSpaceEnv["data.frame"](**kwargs)
+    def __init__(self, tlist):
+        if isinstance(tlist, rlc.TaggedList):
+            df = baseNameSpaceEnv["data.frame"].rcall(tlist.items())
             super(RDataFrame, self).__init__(df)
-
-        #import pdb; pdb.set_trace()
-        if not baseNameSpaceEnv["is.data.frame"](self)[0]:
-            raise(TypeError("The object must be representing an R data.frame"))
+        elif isinstance(tlist, rinterface.SexpVector):
+            if tlist.typeof != rinterface.VECSXP:
+                raise ValueError("tlist should of typeof VECSXP")
+            super(RDataFrame, self).__init__(tlist)
+        else:
+            raise ValueError("tlist can be either"+
+                             " an instance of rpy2.rlike.container.TaggedList" +
+                             " or an instance of rpy2.rinterface.SexpVector" +
+                             " of type VECSXP.")
     
     def nrow(self):
         """ Number of rows. 
@@ -426,13 +423,19 @@ class RFormula(RObjectMixin, rinterface.Sexp):
         super(RFormula, self).__init__(robj)
         
     def getenvironment(self):
-        """ Return the R environment in which the formula will look for
-        its variables. """
         res = self.do_slot(".Environment")
         res = ri2py(res)
         return res
 
-    
+    def setenvironment(self, val):
+        if not isinstance(val, rinterface.SexpEnvironment):
+            raise ValueError("The environment must be an instance of" +
+                             " rpy2.rinterface.Sexp.environment")
+        self.do_slot_assign(".Environment", val)
+
+    environment = property(getenvironment, setenvironment,
+                           "R environment in which the formula will look for" +
+                           " its variables.")
 
     
 class R(object):
@@ -461,7 +464,10 @@ class R(object):
 
     def __str__(self):
         s = super(R, self).__str__()
-        s += str(self["version"])
+        s += os.linesep
+        version = self["version"]
+        tmp = [n+': '+val[0] for n, val in itertools.izip(version.getnames(), version)]
+        s += str.join(os.linesep, tmp)
         return s
 
     def __call__(self, string):
@@ -473,4 +479,4 @@ r = R()
 
 globalEnv = ri2py(rinterface.globalEnv)
 baseNameSpaceEnv = ri2py(rinterface.baseNameSpaceEnv)
-
+emptyEnv = ri2py(rinterface.emptyEnv)

@@ -250,8 +250,10 @@ A :class:`RMatrix` is a special case of :class:`RArray`.
 
 A :class:`RDataFrame` represents the `R` class `data.frame`.
 
-Currently, the constructor is flagged as experimental. It accepts either a :class:`rinterface.SexpVector`
-or a dictonnary which elements will be the columns of the `data.frame`.
+Currently, the constructor is flagged as experimental.
+It accepts either a :class:`rinterface.SexpVector` 
+(with :attr:`typeof` equal to *VECSXP*)
+or an instance of class :class:`rpy2.rlike.container.TaggedList`.
 
 .. autoclass:: rpy2.robjects.RDataFrame
    :show-inheritance:

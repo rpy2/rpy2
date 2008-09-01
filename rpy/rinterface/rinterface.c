@@ -2376,8 +2376,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_setReadConsole_doc},
   {"findVarEmbeddedR",	(PyCFunction)EmbeddedR_findVar,	 METH_VARARGS,
    EmbeddedR_findVar_doc},
-  {"sexpTypeEmbeddedR",	(PyCFunction)EmbeddedR_sexpType, METH_VARARGS,
-   "Return the SEXP name tag corresponding to an integer."},
+  {"str_typeint",	(PyCFunction)EmbeddedR_sexpType, METH_VARARGS,
+   "Return the SEXP name tag (string) corresponding to an integer."},
   {NULL,		NULL}		/* sentinel */
 };
 
@@ -2545,7 +2545,6 @@ initrinterface(void)
 			       PyString_FromString("--no-save"))
 		);
   PyModule_AddObject(m, "initOptions", initOptions);
-			       //			       PyString_FromString("--quiet"))
 
 
   PyModule_AddObject(m, "Sexp", (PyObject *)&Sexp_Type);
