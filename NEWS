@@ -31,6 +31,7 @@ Bugs fixed
 
 - proper reference counting when handling, and deleting, :attr:`Sexp.__sexp__` generated CObjects
 
+- get properly the include directories (no matter where they are) #bug report and fix adapted from Robert Nuske
 
 
 Release 2.0.0a3
