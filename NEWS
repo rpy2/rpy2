@@ -31,7 +31,9 @@ Bugs fixed
 
 - proper reference counting when handling, and deleting, :attr:`Sexp.__sexp__` generated CObjects
 
-- get properly the include directories (no matter where they are) #bug report and fix adapted from Robert Nuske
+- setup.py: get properly the include directories (no matter where they are) #bug report and fix adapted from Robert Nuske
+
+- setup.py: link to external lapack or blas library when relevant
 
 
 Release 2.0.0a3

@@ -113,7 +113,7 @@ def getRinterface_ext(RHOME, r_packversion):
              os.path.join('rpy', 'rinterface', 'rinterface.c')],
             include_dirs = include_dirs + 
                             [os.path.join('rpy', 'rinterface'),],
-            libraries = ['R', 'Rlapack', 'Rblas'],
+            libraries = ['R', ],
             library_dirs = r_libs,
             define_macros = define_macros,
             runtime_library_dirs = r_libs,
