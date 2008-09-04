@@ -35,6 +35,8 @@ Bugs fixed
 
 - setup.py: link to external lapack or blas library when relevant
 
+- added a MANIFEST.in ensuring that headers get included in the source distribution
+
 
 Release 2.0.0a3
 ===============
