@@ -683,7 +683,7 @@ Sexp_rsame(PyObject *self, PyObject *other)
  return PyBool_FromLong(same);
 }
 PyDoc_STRVAR(Sexp_rsame_doc,
-	     "Are the two object representing the same underlying R object.");
+	     "Is the given object representing the same underlying R object as the instance.");
 
 
 static PyMethodDef Sexp_methods[] = {
@@ -1449,6 +1449,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       break;
     case LANGSXP:
       tmp = nthcdr(*sexp, i_R);
+      sexp_item = allocVector(LANGSXP, 1);
       SETCAR(sexp_item, CAR(tmp));
       SET_TAG(sexp_item, TAG(tmp));
       res = (PyObject *)newPySexpObject(sexp_item);
@@ -2352,7 +2353,7 @@ EmbeddedR_sexpType(PyObject *self, PyObject *args)
 
   const char *sexp_type = validSexpType[sexp_i];
 
-  if ((sexp_i < 0) || (sexp_i > maxValidSexpType) || (! sexp_type)) {
+  if ((sexp_i < 0) || (sexp_i >= maxValidSexpType) || (! sexp_type)) {
 
     PyErr_Format(PyExc_LookupError, "'%i' is not a valid SEXP value.", sexp_i);
     return NULL;

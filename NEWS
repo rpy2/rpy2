@@ -37,6 +37,10 @@ Bugs fixed
 
 - added a MANIFEST.in ensuring that headers get included in the source distribution
 
+- :func:`rinterface.str_typeint` was causing segfault when called with 99
+
+- fixed subsetting for LANGSXP objects
+
 
 Release 2.0.0a3
 ===============
