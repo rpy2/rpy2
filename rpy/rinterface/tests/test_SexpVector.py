@@ -123,7 +123,8 @@ class SexpVectorTestCase(unittest.TestCase):
     def testGetItem(self):
         letters_R = ri.globalEnv.get("letters")
         self.assertTrue(isinstance(letters_R, ri.SexpVector))
-        letters = (('a', 0), ('b', 1), ('c', 2), ('x', 23), ('y', 24), ('z', 25))
+        letters = (('a', 0), ('b', 1), ('c', 2), 
+                   ('x', 23), ('y', 24), ('z', 25))
         for l, i in letters:
             self.assertTrue(letters_R[i] == l)
         
@@ -215,7 +216,8 @@ class SexpVectorTestCase(unittest.TestCase):
 
     def testAssignItemComplex(self):
         c_R = ri.globalEnv.get("c")
-        myVec = c_R(ri.SexpVector([1.0+2.0j, 2.0+2.0j, 3.0+2.0j, 4.0+2.0j, 5.0+2.0j], 
+        myVec = c_R(ri.SexpVector([1.0+2.0j, 2.0+2.0j, 3.0+2.0j, 
+                                   4.0+2.0j, 5.0+2.0j], 
                                           ri.CPLXSXP))
         myVec[0] = ri.SexpVector([100.0+200.0j, ], ri.CPLXSXP)
         self.assertTrue(floatEqual(myVec[0].real, 100.0))
@@ -242,7 +244,8 @@ ri.REALSXP), ],
         
     def testAssignItemString(self):
         letters_R = ri.SexpVector("abcdefghij", ri.STRSXP)
-        self.assertRaises(ValueError, letters_R.__setitem__, 0, ri.SexpVector([1, ], 
+        self.assertRaises(ValueError, letters_R.__setitem__, 0, 
+                          ri.SexpVector([1, ], 
                                                                                       ri.INTSXP))
 
         letters_R[0] = ri.SexpVector(["z", ], ri.STRSXP)
