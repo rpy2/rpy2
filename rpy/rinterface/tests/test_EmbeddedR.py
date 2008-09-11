@@ -1,4 +1,5 @@
 import unittest
+import itertools
 import rpy2.rinterface as rinterface
 
 rinterface.initr()
@@ -41,6 +42,16 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testStr_typeint_invalid(self):
         self.assertRaises(LookupError, rinterface.str_typeint, 99)
 
+    def testGet_initoptions(self):
+        options = rinterface.get_initoptions()
+        self.assertEquals(len(rinterface.initoptions),
+                          len(options))
+        for o1, o2 in itertools.izip(rinterface.initoptions, options):
+            self.assertEquals(o1, o2)
+        
+    def testSet_initoptions(self):
+        self.assertRaises(RuntimeError, rinterface.set_initoptions, 
+                          ('aa', '--verbose', '--no-save'))
 
 class ObjectDispatchTestCase(unittest.TestCase):
     def testObjectDispatchLang(self):

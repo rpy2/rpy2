@@ -44,8 +44,12 @@ Initialization should only be performed once.
 To avoid unpredictable results when using the embedded R, 
 subsequent calls to :func:`initr` will not have any effect.
 
-Parameters for the initialization are in the module variable
-`initOptions`.
+The functions :func:`get_initoptions` and :func:`set_initoptions`
+can be used to modify the options.
+Default parameters for the initialization are otherwise
+in the module variable `initoptions`.
+
+
 
 .. index::
    single: initialize R_HOME

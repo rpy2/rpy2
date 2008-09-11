@@ -81,7 +81,7 @@ extern __declspec(dllimport) uintptr_t R_CStackLimit; /* C stack limit */
 
 
 
-/* A sequence that holds options to initialize R */
+/* A tuple that holds options to initialize R */
 static PyObject *initOptions;
 
 /* Helper variables to quickly resolve SEXP types.
@@ -306,6 +306,39 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
 
 
 /* --- Initialize and terminate an embedded R --- */
+static PyObject* EmbeddedR_getinitoptions(PyObject *self) 
+{
+  return initOptions;
+}
+PyDoc_STRVAR(EmbeddedR_get_initoptions_doc,
+	     "\
+Get the options used to initialize R.\
+");
+
+static PyObject* EmbeddedR_setinitoptions(PyObject *self, PyObject *tuple) 
+{
+
+  if (embeddedR_status & RPY_R_INITIALIZED) {
+    PyErr_Format(PyExc_RuntimeError, 
+		 "Options cannot be set once R has been initialized.");
+    return NULL;
+  }
+
+  int istuple = PyTuple_Check(tuple);
+  if (! istuple) {
+    PyErr_Format(PyExc_ValueError, "Parameter should be a tuple.");
+    return NULL;
+  }
+  Py_DECREF(initOptions);
+  Py_INCREF(tuple);
+  initOptions = tuple;
+  return Py_None;
+}
+PyDoc_STRVAR(EmbeddedR_set_initoptions_doc,
+	     "\
+Set the options used to initialize R.\
+");
+
 static PyObject* EmbeddedR_init(PyObject *self) 
 {
 
@@ -323,7 +356,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   PyObject *opt_string;
   Py_ssize_t ii;
   for (ii = 0; ii < n_args; ii++) {
-    opt_string = PyList_GetItem(initOptions, ii);
+    opt_string = PyTuple_GetItem(initOptions, ii);
     options[ii] = PyString_AsString(opt_string);
   }
 
@@ -2367,6 +2400,12 @@ EmbeddedR_sexpType(PyObject *self, PyObject *args)
 /* --- List of functions defined in the module --- */
 
 static PyMethodDef EmbeddedR_methods[] = {
+  {"get_initoptions",     (PyCFunction)EmbeddedR_getinitoptions,   
+   METH_NOARGS,
+   EmbeddedR_get_initoptions_doc},
+  {"set_initoptions",     (PyCFunction)EmbeddedR_setinitoptions,   
+   METH_O,
+   EmbeddedR_set_initoptions_doc},
   {"initr",     (PyCFunction)EmbeddedR_init,   METH_NOARGS,
    EmbeddedR_init_doc},
   {"endr",	(PyCFunction)EmbeddedR_end,    METH_O,
@@ -2528,25 +2567,28 @@ initrinterface(void)
     return;
   d = PyModule_GetDict(m);
 
-  initOptions = PyList_New(4);
-  PYASSERT_ZERO(
-		PyList_SetItem(initOptions, 0, 
-			       PyString_FromString("rpy2"))
-		);
-  PYASSERT_ZERO(
-		PyList_SetItem(initOptions, 1, 
-			       PyString_FromString("--quiet"))
-		);
-  PYASSERT_ZERO(
-		PyList_SetItem(initOptions, 2, 
-			       PyString_FromString("--vanilla"))
-		);
-  PYASSERT_ZERO(
-		PyList_SetItem(initOptions, 3, 
-			       PyString_FromString("--no-save"))
-		);
-  PyModule_AddObject(m, "initOptions", initOptions);
+  initOptions = PyTuple_New(4);
 
+  /* Add an extra ref. It should remain impossible to delete it */
+  PYASSERT_ZERO(
+		PyTuple_SetItem(initOptions, 0, 
+				PyString_FromString("rpy2"))
+		);
+  PYASSERT_ZERO(
+		PyTuple_SetItem(initOptions, 1, 
+				PyString_FromString("--quiet"))
+		);
+  PYASSERT_ZERO(
+		PyTuple_SetItem(initOptions, 2,
+				PyString_FromString("--vanilla"))
+		);
+  PYASSERT_ZERO(
+		PyTuple_SetItem(initOptions, 3, 
+				PyString_FromString("--no-save"))
+		);
+
+  PyModule_AddObject(m, "initoptions", initOptions);
+  Py_INCREF(initOptions);
 
   PyModule_AddObject(m, "Sexp", (PyObject *)&Sexp_Type);
   PyModule_AddObject(m, "SexpClosure", (PyObject *)&ClosureSexp_Type);

@@ -10,6 +10,9 @@ New features
 
 - defined `names` as a property for :class:`RVector`
 
+:mod:`rpy2.rinterface`:
+
+- added functions :func:`get_initoptions` and :func:`set_initoptions`.
 
 Changes
 -------
@@ -21,6 +24,9 @@ Changes
 :mod:`rpy2.rinterface`:
 
 - :func:`sexpTypeEmbeddedR` is now called :func:`str_typeint`.
+
+- :attr:`initOptions` is now called :attr:`initoptions`. Changes of options can only be done through :func:`set_initoptions`.
+
 
 Bugs fixed
 ----------
