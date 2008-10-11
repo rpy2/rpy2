@@ -440,6 +440,7 @@ class RFormula(RObjectMixin, rinterface.Sexp):
     
 class R(object):
     _instance = None
+    _dotter = False
 
     def __init__(self):
         if R._instance is None:
@@ -450,10 +451,28 @@ class R(object):
             #raise(RuntimeError("Only one instance of R can be created"))
         
     def __getattribute__(self, attr):
-        return self[attr]
+        try:
+            return super(R, self).__getattribute__(attr)
+        except AttributeError, ae:
+            orig_ae = ae
+
+        try:
+            return self[attr]
+        except LookupError, le:
+            pass
+
+        if self._dotter:
+            attr = attr.replace('_', '.')
+            try:
+                return self[attr]
+            except LookupError, le:
+                pass
+
+        raise orig_ae
 
     def __getitem__(self, item):
         res = rinterface.globalEnv.get(item)
+            
 	res = ri2py(res)
         return res
 

@@ -44,7 +44,9 @@ module is loaded:
 >>> print(robjects.r)
 
 The instance can be seen as the entry point to an
-embedded R process, and the elements that would be accessible
+embedded R process.
+
+The elements that would be accessible
 from an equivalent R environment are accessible as attributes
 of the instance.
 Readers familiar with the :mod:`ctypes` module for Python will note
@@ -60,6 +62,22 @@ R functions:
 
 >>> plot = robjects.r.plot
 >>> dir = robjects.r.dir
+
+This approach has limitation as:
+
+  * The actual Python attributes for the object masks the R elements 
+
+  * '.' (dot) is syntactically valid name for R objects, but not for
+    python objects.
+
+That last limitation can partly be removed by setting the attribute
+:attr:`_dotter` from False to True.
+
+>>> robjects.r.as_null
+# AttributeError raised
+>>> robjects.r._dotter = True
+>>> robjects.r.as_null
+# R function as.null() returned
 
 
 Strings as R code

@@ -14,6 +14,8 @@ New features
 
 - added functions :func:`get_initoptions` and :func:`set_initoptions`.
 
+- new attribute :attr:`_dotter` for :class:`R` singleton. Setting it to True will translate '_' into '.' if the attribute is not found 
+
 Changes
 -------
 
