@@ -3,9 +3,15 @@ This is the source tree or distribution for the rpy2 package.
 Installation
 ============
 
-The disutils mechanism can be used:
+The distutils mechanism can be used:
 
 python setup.py install
+
+The package is known to compile on Linux, WinXp and MacOSX
+(provided that developper tools are provided).
+In the case you find yourself with this source without an idea
+of what it takes to compile anything on your platform, do
+consider looking for pre-compiled binaries.
 
 Documentation
 =============
