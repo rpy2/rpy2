@@ -41,24 +41,45 @@ Requirements
 
 Python version 2.4 or higher, and R-2.7.0 or higher are required.
 
-This is developped with R-2.7.1 and Python-2.5.2.
+Although the development was done with R-2.7.2 and Python-2.5.2,
+it has also been tested with:
 
-R-2.8.0-dev is sometimes tested, and it does seem to play well with `rpy2`.
-Python-2.6.0-dev is sometimes tested as well, and it seems to pass the same
-unit tests Python-2.5 is passing.
+  * R-2.8.0
+
+  * Python-2.6.0 (numpy-support not tested)
+
+Gcc-4.2.3 was used for compiling the C parts.
+
 
 Download
 ^^^^^^^^
 
-Source Python packages, as well as pre-compiled binaries for Microsoft's Windows are available
-on the `Sourceforge page <http://downloads.sourceforge.net/rpy>`_.
+In theory we could have available for download:
+
+  * Source packages.
+
+  * Pre-compiled binary packages for
+
+    * Microsoft's Windows
+
+    * Apple's MacOS X
+
+    * Linux distributions
+
+`rpy2` has been reported compiling successfully on all 3 platforms, provided
+that development items such as Python headers and a C compiler are installed.
+
+Check on the `Sourceforge download page <http://downloads.sourceforge.net/rpy>`_
+what is available..
 
 .. note::
    Choose files from the `rpy2` package, not `rpy`.
 
 .. note::
-   MacOSX binaries may appear in the future (help to build them is welcome)
-
+   I have limited time, and at the time of writing no easy access to either
+   Microsoft's windows or Apple's MacOS X. There will no be compiled binaries
+   for the coming month at very least (unless I receive donations of either
+   compiled packages or computers equiped with the mentionned OSes).
 
 .. index::
   single: install;win32
@@ -67,8 +88,8 @@ on the `Sourceforge page <http://downloads.sourceforge.net/rpy>`_.
 Microsoft's Windows precompiled binaries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The executable can be ran; it will install the package in the default Python installation
-on the system.
+If available, the executable can be run; this will install the package
+in the default Python installation.
 
 .. index::
   single: install;source
