@@ -273,7 +273,6 @@ class TaggedList(list):
         super(TaggedList, self).sort(reverse = reverse)
         self.__tags = [self.__tags[i] for i in o]
 
-
     def tags(self):
         """
         Return a tuple of all tags
@@ -295,3 +294,15 @@ class TaggedList(list):
         self.__tags[i] = t
 
 
+# class DataFrame(ArgsDict):
+
+#     def __init__(self, s):
+#         super(ArgsDict, self).__init__(s)
+        
+#         if len(self) > 0:
+#             nrows = len(self[0])
+#             for i, v in enumerate(self):
+#                 if len(v) != nrows:
+#                     raise ValueError("Expected length %i for element %i" 
+#                                      %(nrows, i))
+                

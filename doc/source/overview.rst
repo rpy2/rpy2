@@ -31,7 +31,7 @@ The present documentation describes RPy2, an evolution of RPy-1.x.
 Naturally RPy2 is inspired by RPy, but also by A. Belopolskys's contributions
 that were waiting to be included into RPy.
 
-This effort can be seen as a rewrite of the RPy package.
+This effort can be seen as a redesign and rewrite of the RPy package.
 
 Installation
 ------------
@@ -150,12 +150,11 @@ objects defined there with child classes.
 
 The choice of inheritance was made to facilitate the implementation
 of mostly inter-exchangeable classes between :mod:`rpy2.rinterface`
-and :mod:`rpy2.robjects`: an :class:`rpy2.rinterface.SexpClosure`
+and :mod:`rpy2.robjects`. For example, an :class:`rpy2.rinterface.SexpClosure`
 can be given any :class:`rpy2.robjects.RObject` as a parameter while
 any :class:`rpy2.robjects.RFunction` can be given any 
-:class:`rpy2.rinterface.Sexp`. Choosing inheritance does not only
-come with advantages: `setters` on `R` objects would be more intuitive
-with a container/delegation approach.
+:class:`rpy2.rinterface.Sexp`. Because of R's functional basis, 
+a container-like extension is also present.
 
 The module :mod:`rpy2.rpy_classic` is using delegation, letting us
 demonstrate how to extend :mod:`rpy2.rinterface` with an alternative

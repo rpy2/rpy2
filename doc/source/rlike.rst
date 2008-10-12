@@ -83,13 +83,16 @@ This is similar to `named` vectors in R.
 [1, 2, 3]
 >>> tl.tags()
 ('a', 'b', 'c')
->>> tl.settag(0, 'c')
+>>> tl.settag(2, 'a')
 >>> tl.tags()
-('c', 'b', 'c')
->>> it = tl.iterontag('c')
+('a', 'b', 'a')
+>>> it = tl.iterontag('a')
 >>> [x for x in it]
 [1, 3]
 
+
+>>> [(t, sum([i for i in tl.iterontag(t)])) for t in set(tl.itertags())]
+[('a', 4), ('b', 2)]
 
 The Python docstring for the class is:
 
@@ -102,10 +105,24 @@ The Python docstring for the class is:
 Tools for working with sequences
 ================================
 
+Tools for working with objects implementing the
+the sequence protocol can be found here.
+
+
 .. autofunction:: tapply
 
 >>> import rpy2.rlike.functional as rlf
 >>> rlf.tapply((1,2,3), ('a', 'b', 'a'), sum)
+[('a', 4), ('b', 2)]
+
+:class:`TaggedList` objects can be used with their tags
+(although more flexibility can be achieved using their
+method :meth:`iterontags`):
+
+
+>>> import rpy2.rlike.container as rlc
+>>> tl = rlc.TaggedList([1, 2, 3], tags = ('a', 'b', 'a'))
+>>> rlf.tapply(tl, tl.tags(), sum)
 [('a', 4), ('b', 2)]
 
 

@@ -434,9 +434,15 @@ class ConsolePanel(gtk.VBox):
     _view = None
     _evalButton = None
     _start_mark = None
+    _history = None #[]
+    _history_i = None #0
 
     def __init__(self):
         super(ConsolePanel, self).__init__()
+
+        self._history = [None, ] * 20
+        self._history_i = 0
+
         s_window = gtk.ScrolledWindow()
         s_window.set_policy(gtk.POLICY_AUTOMATIC, 
                             gtk.POLICY_AUTOMATIC)
@@ -476,15 +482,23 @@ class ConsolePanel(gtk.VBox):
 
         self._firstEnter = False
 
+        
     def actionKeyPress(self, view, event):
         if (event.keyval == gtk.gdk.keyval_from_name("Return")):
             self.append("\n", "input")
             self.evaluateAction(self._evalButton)
+            self._history_i = len(self._history) - 1
             return True
         if (event.keyval == gtk.gdk.keyval_from_name("Up")):
-            print('up')
+            self._history_i -= 1
+            if self._history_i == -1:
+                self._history_i = len(self._history)
+            return True
         if (event.keyval == gtk.gdk.keyval_from_name("Down")):
-            print('down')
+            self._history_i += 1
+            if self._history_i == len(self._history):
+                self._history_i = 0
+            return True
 
     def append(self, text, tag="input"):
         tag = self.tag_table.lookup(tag)
@@ -495,6 +509,10 @@ class ConsolePanel(gtk.VBox):
         self._buffer.apply_tag(tag, buffer.get_iter_at_mark(mark), 
                                buffer.get_end_iter())
         buffer.delete_mark(mark)
+
+        if tag == "input":
+            self._history[self._history_i] = text
+            self._history_i += 1
 
     def evaluateAction(self, widget, data=None):
         buffer = self._buffer

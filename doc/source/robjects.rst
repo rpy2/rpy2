@@ -67,7 +67,7 @@ This approach has limitation as:
 
   * The actual Python attributes for the object masks the R elements 
 
-  * '.' (dot) is syntactically valid name for R objects, but not for
+  * '.' (dot) is syntactically valid in names for R objects, but not for
     python objects.
 
 That last limitation can partly be removed by setting the attribute
@@ -78,6 +78,26 @@ That last limitation can partly be removed by setting the attribute
 >>> robjects.r._dotter = True
 >>> robjects.r.as_null
 # R function as.null() returned
+
+.. warning::
+   In the case there are R objects which name only differ by '.' and '_'
+   (e.g., 'my_variable' and 'my.variable'), setting :attr:`_dotter` to True
+   can result in confusing results at runtime.
+
+Behind the scene, the steps for getting an attribute of `r` are
+rather straightforward:
+ 
+  1. Check if the attribute is defined as such in the python definition for
+     `r`
+
+  2. Check if the attribute is can be accessed in R, starting from `globalEnv`
+
+  3. If :attr:`_dotter` is True, turn all `_` into `.` and repeat the step above
+
+When safety matters most, we recommed using :meth:`__getitem__` to get
+and R object (and store it in a python variable if wanted):
+
+>>> as_null = robjects.r['as.null']
 
 
 Strings as R code
@@ -215,10 +235,13 @@ be used with the following operators:
 >>> x.r + 1
 2:11
 
-
 .. note::
    In Python, the operator ``+`` concatenate sequence object, and this behavior
    has been conserved.
+
+.. note::
+   The boolean operator ``not`` cannot be redefined in Python (at least up to
+   version 2.5), and its behavior could be made to mimic R's behavior
 
 .. index::
    single: names; robjects
@@ -272,6 +295,8 @@ Currently, the constructor is flagged as experimental.
 It accepts either a :class:`rinterface.SexpVector` 
 (with :attr:`typeof` equal to *VECSXP*)
 or an instance of class :class:`rpy2.rlike.container.TaggedList`.
+
+>>> robjects.RDataFrame()
 
 .. autoclass:: rpy2.robjects.RDataFrame
    :show-inheritance:
@@ -397,7 +422,7 @@ nicely:
   fit = robjects.r('lm(%s)' %repr(fmla))
 
 
-Mapping between rpy2 objects and other python objects
+Mapping rpy2 objects to arbitrary python objects
 =====================================================
 
 The conversion, often present when working with RPy-1.x, is no longer
@@ -447,6 +472,9 @@ Once this is done, we can verify immediately that this is working with:
 <type 'float'>
 >>> 
 
+The default behavoir can be restored with:
+
+>>> robjects.ri2py = default_ri2py
 
 The docstrings for :meth:`default_ri2py`, :meth:`default_py2ri`, and :meth:`py2ro` are:
 

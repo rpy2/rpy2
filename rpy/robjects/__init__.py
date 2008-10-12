@@ -320,7 +320,14 @@ class RMatrix(RArray):
         return self.dim[1]
 
 class RDataFrame(RVector):
+    """ R 'data.frame'.
+    """
+
     def __init__(self, tlist):
+        """ Create a new data frame.
+
+        :param tlist: TaggedList
+        """
         if isinstance(tlist, rlc.TaggedList):
             df = baseNameSpaceEnv["data.frame"].rcall(tlist.items())
             super(RDataFrame, self).__init__(df)
