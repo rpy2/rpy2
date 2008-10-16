@@ -76,6 +76,9 @@
 //#define RPY_VERBOSE
 
 #if Win32
+#if !defined(uintptr_t)
+typedef unsigned int *uintptr_t;
+#endif
 extern __declspec(dllimport) uintptr_t R_CStackLimit; /* C stack limit */
 #endif
 

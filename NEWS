@@ -1,3 +1,12 @@
+SVN
+===
+
+Bugs fixed
+----------
+
+- conditional typedef in rinterface.c to compile under win32 # reported and initial proposed fix from Paul Harrington
+
+
 Release 2.0.0b1
 ===============
 
