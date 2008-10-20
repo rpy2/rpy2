@@ -6,6 +6,8 @@ Bugs fixed
 
 - conditional typedef in rinterface.c to compile under win32 # reported and initial proposed fix from Paul Harrington
 
+- __pow__ was missing from the delegator object for robjects.RVector (while the documentation was claiming it was there) # bug report by Robert Nuske
+
 
 Release 2.0.0b1
 ===============

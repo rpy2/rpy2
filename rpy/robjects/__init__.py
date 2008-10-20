@@ -185,6 +185,10 @@ class RVectorDelegator(object):
         res = r.get("*")(self._parent, x)
         return res
 
+    def __pow__(self, x):
+        res = r.get("^")(self._parent, x)
+        return res
+
     def __div__(self, x):
         res = r.get("/")(self._parent, x)
         return res

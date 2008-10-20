@@ -49,6 +49,13 @@ class RVectorTestCase(unittest.TestCase):
         for i, li in enumerate(mySeq):
             self.assertEquals(li * 2, mySeqAdd[i])
 
+    def testRPowerOperator(self):
+        seq_R = robjects.r["seq"]
+        mySeq = seq_R(0, 10)
+        mySeqPow = mySeq.r ** 2
+        for i, li in enumerate(mySeq):
+            self.assertEquals(li ** 2, mySeqPow[i])
+
         
     def testSubsetByIndex(self):
         seq_R = robjects.baseNameSpaceEnv["seq"]
