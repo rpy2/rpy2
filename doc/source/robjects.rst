@@ -286,17 +286,55 @@ from :class:`robjects.RVector`.
 A :class:`RMatrix` is a special case of :class:`RArray`.
 
 
-:class:`RDataFrame`
--------------------
+Data frames
+-----------
 
-A :class:`RDataFrame` represents the `R` class `data.frame`.
 
-Currently, the constructor is flagged as experimental.
-It accepts either a :class:`rinterface.SexpVector` 
-(with :attr:`typeof` equal to *VECSXP*)
+Data frames are important data structures in R, as they are used to
+represent a data to analyze in a study in a relatively 
+large nunmber of cases.
+
+A data frame can be thought of as a tabular representation of data,
+with one variable per column, and one data point per row. Each column
+is an R vector, which implies one type for all elements
+in one given column, and which allows for possibly different types across
+different columns.
+
+
+In :mod:`rpy2.robjects`, 
+:class:`RDataFrame` represents the `R` class `data.frame`.
+
+Creating an :class:`RDataFrame` can be done by:
+
+* Using the constructor for the class
+
+* Create the data.frame through R
+
+The constructor for :class:`RDataFrame` accepts either a 
+:class:`rinterface.SexpVector` 
+(with :attr:`typeof` equal to *VECSXP*, that is an R `list`)
 or an instance of class :class:`rpy2.rlike.container.TaggedList`.
 
 >>> robjects.RDataFrame()
+
+
+Creating the data.frame in R can be achieved in numerous ways,
+as many R functions do return a data.frame.
+In this example, will use the R function `data.frame()`, that
+constructs a data.frame from named arguments
+
+>>> import array
+>>> d = {'value': robjects.IntSexpVector((1,2,3)),
+         'letter': robjects.StrSexpVector(('x', 'y', 'z'))}
+>>> dataf = robjects.r['data.frame'](**d)
+>>> dataf.colnames()
+c("letter", "value")
+
+.. note::
+   The order of the columns `value` and `letter` cannot be conserved,
+   since we are using a Python dictionnary. This difference between
+   R and Python can be resolved by using TaggedList instances
+   (XXX add material about that).
 
 .. autoclass:: rpy2.robjects.RDataFrame
    :show-inheritance:

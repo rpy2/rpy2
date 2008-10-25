@@ -330,7 +330,7 @@ class RDataFrame(RVector):
     def __init__(self, tlist):
         """ Create a new data frame.
 
-        :param tlist: TaggedList
+        :param tlist: rpy2.rlike.container.TaggedList or rpy2.rinterface.SexpVector (and of class 'data.frame' for R)
         """
         if isinstance(tlist, rlc.TaggedList):
             df = baseNameSpaceEnv["data.frame"].rcall(tlist.items())
@@ -338,6 +338,8 @@ class RDataFrame(RVector):
         elif isinstance(tlist, rinterface.SexpVector):
             if tlist.typeof != rinterface.VECSXP:
                 raise ValueError("tlist should of typeof VECSXP")
+            if not r['inherits'](tlist, 'data.frame')[0]:
+                raise ValueError('tlist should of R class "data.frame"')
             super(RDataFrame, self).__init__(tlist)
         else:
             raise ValueError("tlist can be either"+

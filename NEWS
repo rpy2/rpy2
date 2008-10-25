@@ -1,6 +1,13 @@
 SVN
 ===
 
+Changes
+-------
+
+:mod:`rpy2.robjects`:
+
+- Constructor for :class:`rpy2.robjects.RDataFrame` checks that R lists are data.frames (not all lists are data.frame)
+
 Bugs fixed
 ----------
 
@@ -32,7 +39,7 @@ Changes
 
 :mod:`rpy2.robjects`:
 
-- constructor for RDataFrame now now accepts either :class:`rlike.container.TaggedList` or :class:`rinterface.SexpEnvironment`
+- constructor for RDataFrame now now accepts either :class:`rlike.container.TaggedList` or :class:`rinterface.SexpVector`
 
 :mod:`rpy2.rinterface`:
 

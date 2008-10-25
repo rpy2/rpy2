@@ -15,6 +15,17 @@ class RDataFrameTestCase(unittest.TestCase):
 
         self.assertEquals("data.frame", df.rclass()[0])
 
+    def testNewFromRObject(self):
+        numbers = robjects.r('1:5')
+        self.assertRaises(ValueError, robjects.RDataFrame, numbers)
+
+        rlist = robjects.r('list(a=1, b=2, c=3)')
+        self.assertRaises(ValueError, robjects.RDataFrame, rlist)
+
+        rdataf = robjects.r('data.frame(a=1:2, b=c("a", "b"))')
+        dataf = robjects.RDataFrame(rdataf)
+        
+
     def testDim(self):
         letters = robjects.r.letters        
         numbers = robjects.r('1:26')
