@@ -159,6 +159,20 @@ The class inherits from the class
 :class:`rpy2.rinterface.VectorSexp`.
 
 
+Creating vectors
+----------------
+
+Creating vectors can be achieved either from R or from Python.
+
+When the vectors are created from R, one should not worry much
+as they will be exposed as they should by :mod:`rpy2.robjects`.
+
+When one wants to create a vector from Python, either the 
+class :class:`RVector` or the convenience classes
+:class:`IntVector`, :class:`FloatVector`, :class:`BoolVector`, :class:`StrVector` can
+used.
+
+
 .. index::
    pair: RVector;indexing
 

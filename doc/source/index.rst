@@ -6,6 +6,7 @@ Documentation for rpy2
    :maxdepth: 2
 
    overview
+   introduction
    robjects
    rinterface
    rpy_classic

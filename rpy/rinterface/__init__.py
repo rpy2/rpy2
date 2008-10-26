@@ -58,6 +58,13 @@ class FloatSexpVector(SexpVector):
     def __init__(self, v):        
         super(FloatSexpVector, self).__init__(v, REALSXP)
 
+class BoolSexpVector(SexpVector):
+    """ 
+    Vector of floats.
+    """
+    def __init__(self, v):        
+        super(BoolSexpVector, self).__init__(v, LGLSXP)
+
 
 # wrapper because print is strangely not a function
 # Python prior to version 3.0

@@ -22,6 +22,30 @@ class RVectorTestCase(unittest.TestCase):
         del(ri_v)
         self.assertEquals(ri.INTSXP, ro_v.typeof)
 
+    def testNewStrVector(self):
+        vec = robjects.StrVector(['abc', 'def'])
+        self.assertEquals('abc', vec[0])
+        self.assertEquals('def', vec[1])
+        self.assertEquals(2, len(vec))
+
+    def testNewIntVector(self):
+        vec = robjects.IntVector([123, 456])
+        self.assertEquals(123, vec[0])
+        self.assertEquals(456, vec[1])
+        self.assertEquals(2, len(vec))
+
+    def testNewFloatVector(self):
+        vec = robjects.FloatVector([123.0, 456.0])
+        self.assertEquals(123.0, vec[0])
+        self.assertEquals(456.0, vec[1])
+        self.assertEquals(2, len(vec))
+
+    def testNewBoolVector(self):
+        vec = robjects.BoolVector([True, False])
+        self.assertEquals(True, vec[0])
+        self.assertEquals(False, vec[1])
+        self.assertEquals(2, len(vec))
+
     def testAddOperators(self):
         seq_R = robjects.r["seq"]
         mySeqA = seq_R(0, 3)

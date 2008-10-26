@@ -27,6 +27,12 @@ class WrapperSexpVectorTestCase(unittest.TestCase):
         ok = isStr(sexp)[0]
         self.assertTrue(ok)
 
+    def testBool(self):
+        sexp = ri.BoolSexpVector([True, ])
+        isBool = ri.globalEnv.get("is.logical")
+        ok = isBool(sexp)[0]
+        self.assertTrue(ok)
+
 class SexpVectorTestCase(unittest.TestCase):
 
     def testMissinfType(self):

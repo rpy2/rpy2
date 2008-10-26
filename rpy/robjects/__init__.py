@@ -12,11 +12,6 @@ import itertools
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
-StrSexpVector = rinterface.StrSexpVector
-IntSexpVector = rinterface.IntSexpVector
-FloatSexpVector = rinterface.FloatSexpVector
-
-
 #FIXME: close everything when leaving (check RPy for that).
 
 def default_ri2py(o):
@@ -278,6 +273,27 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         res = r["names<-"](self, value)
         return res
 
+class StrVector(RVector):
+    def __init__(self, obj):
+        obj = rinterface.StrSexpVector(obj)
+        super(StrVector, self).__init__(obj)
+
+class IntVector(RVector):
+    def __init__(self, obj):
+        obj = rinterface.IntSexpVector(obj)
+        super(IntVector, self).__init__(obj)
+
+class BoolVector(RVector):
+    def __init__(self, obj):
+        obj = rinterface.BoolSexpVector(obj)
+        super(BoolVector, self).__init__(obj)
+
+class FloatVector(RVector):
+    def __init__(self, obj):
+        obj = rinterface.FloatSexpVector(obj)
+        super(FloatVector, self).__init__(obj)
+
+
 class RArray(RVector):
     """ An R array """
     def __init__(self, o):
@@ -428,9 +444,9 @@ class RFormula(RObjectMixin, rinterface.Sexp):
 
     def __init__(self, formula, environment = rinterface.globalEnv):
         inpackage = rinterface.baseNameSpaceEnv["::"]
-        asformula = inpackage(StrSexpVector(['stats', ]), 
-                              StrSexpVector(['as.formula', ]))
-        formula = rinterface.SexpVector(StrSexpVector([formula, ]))
+        asformula = inpackage(rinterface.StrSexpVector(['stats', ]), 
+                              rinterface.StrSexpVector(['as.formula', ]))
+        formula = rinterface.SexpVector(rinterface.StrSexpVector([formula, ]))
         robj = asformula(formula,
                          env = environment)
         super(RFormula, self).__init__(robj)

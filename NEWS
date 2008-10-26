@@ -8,6 +8,27 @@ Changes
 
 - Constructor for :class:`rpy2.robjects.RDataFrame` checks that R lists are data.frames (not all lists are data.frame)
 
+New features
+------------
+
+- added :data:`__version__` to rpy2/__init__.py
+
+:mod:`rpy2.robjects`:
+
+- added classes :class:`StrVector`, :class:`IntVector`, :class:`FloatVector`, :class:`BoolVector`
+
+:mod:`rpy2.rinterface`:
+
+- added missing class :class:`BoolSexpVector`.
+
+
+Changes
+-------
+
+:mod:`rpy2.robjects`:
+
+- does not alias :class:`rinterface.StrSexpVector`, :class:`rinterface.IntSexpVector`, :class:`rinterface.FloatSexpVector` anymore
+
 Bugs fixed
 ----------
 
@@ -61,7 +82,7 @@ Bugs fixed
 
 - setup.py: link to external lapack or blas library when relevant
 
-- added a MANIFEST.in ensuring that headers get included in the source distribution
+- added a MANIFEST.in ensuring that headers get included in the source distribution #missing headers reported by Nicholas Lewin-Koh
 
 - :func:`rinterface.str_typeint` was causing segfault when called with 99
 
