@@ -151,10 +151,10 @@ def py2rpy(obj):
 
 def rpy2py_basic(obj):    
     if hasattr(obj, '__len__'):
-        if obj.typeof() in [ri.INTSXP, ri.REALSXP, ri.CPLXSXP, 
+        if obj.typeof in [ri.INTSXP, ri.REALSXP, ri.CPLXSXP, 
                             ri.STRSXP]:
             res = [x for x in obj]
-        elif obj.typeof() in [ri.VECSXP]:
+        elif obj.typeof in [ri.VECSXP]:
             res = [rpy2py(x) for x in obj]
         else:
             raise ValueError("Invalid type for 'obj'.")

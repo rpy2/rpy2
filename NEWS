@@ -36,7 +36,8 @@ Bugs fixed
 
 - __pow__ was missing from the delegator object for robjects.RVector (while the documentation was claiming it was there) # bug report by Robert Nuske
 
-
+- Earlier change from Sexp.typeof() to getter Sexp.typeof was not reflected in :mod:`rpy2.rpy_classic` # bug report by Robert Denham
+ 
 Release 2.0.0b1
 ===============
 
