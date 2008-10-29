@@ -274,21 +274,25 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         return res
 
 class StrVector(RVector):
+    """ Vector of string elements """
     def __init__(self, obj):
         obj = rinterface.StrSexpVector(obj)
         super(StrVector, self).__init__(obj)
 
 class IntVector(RVector):
+    """ Vector of integer elements """
     def __init__(self, obj):
         obj = rinterface.IntSexpVector(obj)
         super(IntVector, self).__init__(obj)
 
 class BoolVector(RVector):
+    """ Vector of boolean (logical) elements """
     def __init__(self, obj):
         obj = rinterface.BoolSexpVector(obj)
         super(BoolVector, self).__init__(obj)
 
 class FloatVector(RVector):
+    """ Vector of float (double) elements """
     def __init__(self, obj):
         obj = rinterface.FloatSexpVector(obj)
         super(FloatVector, self).__init__(obj)

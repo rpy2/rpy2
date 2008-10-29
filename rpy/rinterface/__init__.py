@@ -60,7 +60,7 @@ class FloatSexpVector(SexpVector):
 
 class BoolSexpVector(SexpVector):
     """ 
-    Vector of floats.
+    Vector of booleans (logical in R terminology).
     """
     def __init__(self, v):        
         super(BoolSexpVector, self).__init__(v, LGLSXP)

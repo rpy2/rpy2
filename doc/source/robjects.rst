@@ -274,7 +274,7 @@ be used with the following operators:
 
 .. note::
    The boolean operator ``not`` cannot be redefined in Python (at least up to
-   version 2.5), and its behavior could be made to mimic R's behavior
+   version 2.5), and its behavior could not be made to mimic R's behavior
 
 .. index::
    single: names; robjects
