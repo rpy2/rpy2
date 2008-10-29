@@ -406,6 +406,10 @@ Convenience classes are provided to create vectors of a given type:
    :show-inheritance:
    :members:
 
+.. autoclass:: rpy2.rinterface.BoolSexpVector
+   :show-inheritance:
+   :members:
+
 .. index::
    single: SexpEnvironment
    single: rinterface; SexpEnvironment
@@ -603,8 +607,10 @@ from.
    pair: rinterface; function
 
 
-:class:`SexpClosure`
---------------------
+.. _rinterface-functions:
+
+Functions
+---------
 
 .. rubric:: A function with a context
 

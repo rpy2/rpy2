@@ -143,6 +143,8 @@ The class inherits from the class
 .. index::
    pair: robjects;RVector
 
+.. _robjects-vectors:
+
 Vectors
 =======
 
@@ -171,6 +173,23 @@ When one wants to create a vector from Python, either the
 class :class:`RVector` or the convenience classes
 :class:`IntVector`, :class:`FloatVector`, :class:`BoolVector`, :class:`StrVector` can
 used.
+
+.. autoclass:: rpy2.robjects.BoolVector
+   :show-inheritance:
+   :members:
+
+.. autoclass:: rpy2.robjects.IntVector
+   :show-inheritance:
+   :members:
+
+.. autoclass:: rpy2.robjects.FloatVector
+   :show-inheritance:
+   :members:
+
+.. autoclass:: rpy2.robjects.StrVector
+   :show-inheritance:
+   :members:
+
 
 
 .. index::
@@ -300,6 +319,8 @@ from :class:`robjects.RVector`.
 A :class:`RMatrix` is a special case of :class:`RArray`.
 
 
+.. _robjects-dataframes:
+
 Data frames
 -----------
 
@@ -337,9 +358,8 @@ as many R functions do return a data.frame.
 In this example, will use the R function `data.frame()`, that
 constructs a data.frame from named arguments
 
->>> import array
->>> d = {'value': robjects.IntSexpVector((1,2,3)),
-         'letter': robjects.StrSexpVector(('x', 'y', 'z'))}
+>>> d = {'value': robjects.IntVector((1,2,3)),
+         'letter': robjects.StrVector(('x', 'y', 'z'))}
 >>> dataf = robjects.r['data.frame'](**d)
 >>> dataf.colnames()
 c("letter", "value")
@@ -411,16 +431,32 @@ class :class:`rpy2.rinterface.SexpEnvironment`.
    pair: robjects; RFunction
    pair: robjects; function
 
+.. _robjects-functions:
+
 Functions
 =========
+
+R functions are callable objects, and be called almost like any regular
+Python function:
 
 >>> plot = robjects.r.plot
 >>> rnorm = robjects.r.rnorm
 >>> plot(rnorm(100), ylab="random")
 
+In Python, arguments to a function are split into two groups:
+
+* A first group for which parameters are in defined order
+
+* A second group for which parameters are associated a name/keyword,
+  and a default value. In that second group the order is lost, as it is
+  passed as a Python dictionary.
+
+Those two groups can be used in function calls.
+
 
 The class inherits from the class
-:class:`rpy2.rinterface.SexpClosure`.
+:class:`rpy2.rinterface.SexpClosure`, and further documentation
+on the behavior of function can be found in Section :ref:`rinterface-functions`.
 
 .. index::
    pair: robjects; RFormula
@@ -588,12 +624,11 @@ One way to achieve the same with :mod:`rpy2.robjects` is
 .. code-block:: python
 
    import rpy2.robjects as robjects
-   import array
 
    r = robjects.r
 
-   ctl = array.array('f', [4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14])
-   trt = array.array('f', [4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69])
+   ctl = robjects.FloatVector([4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14])
+   trt = robjects.FloatVector([4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69])
    group = r.gl(2, 10, 20, labels = ["Ctl","Trt"])
    weight = ctl + trt
 
