@@ -25,6 +25,7 @@ Changes
 
 - Constructor for :class:`rpy2.robjects.RDataFrame` checks that R lists are data.frames (not all lists are data.frame)
 
+- Formerly new attribute :attr:`_dotter` for :class:`R` is now gone. The documentaion now points to :mod:`rpy2.rpy_classic` for this sort of things.
 
 Bugs fixed
 ----------

@@ -124,6 +124,12 @@ At any time, an installation can be tested as follows:
   tr.run(suite)
 
 
+.. warning::
+
+   Win32 versions are still lacking some of the functionalities in the
+   UNIX-alike versions, most notably the callback function for console
+   input and output.
+
 Contents
 --------
 
