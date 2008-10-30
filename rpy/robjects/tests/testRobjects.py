@@ -27,13 +27,6 @@ class RInstanceTestCase(unittest.TestCase):
         for i, li in enumerate(myList):
             self.assertEquals(i, myList[i][0])
 
-
-    def testGetAttr(self):
-        robjects.r._dotter = True
-        self.assertRaises(LookupError, robjects.r.__getitem__, 'as_null')
-        res = robjects.r.as_null
-        self.assertTrue(isinstance(res, rinterface.SexpClosure))
-
     def testEval(self):
         # vector long enough to span across more than one line
         x = robjects.baseNameSpaceEnv['seq'](1, 50, 2)

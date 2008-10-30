@@ -65,18 +65,19 @@ R functions:
 
 This approach has limitation as:
 
-  * The actual Python attributes for the object masks the R elements 
+* The actual Python attributes for the object masks the R elements 
 
-  * '.' (dot) is syntactically valid in names for R objects, but not for
+* '.' (dot) is syntactically valid in names for R objects, but not for
     python objects.
 
-That last limitation can partly be removed by setting the attribute
-:attr:`_dotter` from False to True.
+That last limitation can partly be removed by using :mod:`rpy.rpy_classic` if
+this feature matters most to you.
 
 >>> robjects.r.as_null
 # AttributeError raised
->>> robjects.r._dotter = True
->>> robjects.r.as_null
+>>> import rpy2.rpy_classic as rpy
+>>> rpy.set_default_mode(NO_CONVERSION)
+>>> rpy.r.as_null
 # R function as.null() returned
 
 .. warning::
@@ -92,10 +93,9 @@ rather straightforward:
 
   2. Check if the attribute is can be accessed in R, starting from `globalEnv`
 
-  3. If :attr:`_dotter` is True, turn all `_` into `.` and repeat the step above
-
-When safety matters most, we recommed using :meth:`__getitem__` to get
-and R object (and store it in a python variable if wanted):
+When safety matters most, or when getting extraordinary funds for a bailout
+is unlikely, we recommed using :meth:`__getitem__` to get
+a given R object (and store it in a python variable if wanted):
 
 >>> as_null = robjects.r['as.null']
 
@@ -124,7 +124,10 @@ be plugged into code through their string representation:
 >>> x = robjects.r.rnorm(100)
 >>> robjects.r('hist(%s, xlab="x", main="hist(x)")' %repr(x))
 
+.. warning::
 
+   Doing this with large objects might not be the best use of
+   your computing power.
 
 .. index::
    pair: robjects;RObject
@@ -569,121 +572,5 @@ The docstrings for :meth:`default_ri2py`, :meth:`default_py2ri`, and :meth:`py2r
 .. autofunction:: rpy2.robjects.default_ri2py
 .. autofunction:: rpy2.robjects.default_py2ri
 .. autofunction:: rpy2.robjects.default_py2ro
-
-
-Examples
-========
-
-This section demonstrates some of the features of
-rpy2 by the example. The wiki on the sourceforge website
-will hopefully be used as a cookbook.
-
-
-.. code-block:: python
-
-  import rpy2.robjects as robjects
-  import array
-
-  r = robjects.r
-
-  x = array.array('i', range(10))
-  y = r.rnorm(10)
-
-  r.X11()
-
-  r.layout(r.matrix(array.array('i', [1,2,3,2]), nrow=2, ncol=2))
-  r.plot(r.runif(10), y, xlab="runif", ylab="foo/bar", col="red")
-
-  kwargs = {'ylab':"foo/bar", 'type':"b", 'col':"blue", 'log':"x"}
-  r.plot(x, y, **kwargs)
-
-.. note::
-   Since the named parameters are a Python :class:`dict`, 
-   the order of the parameters is lost. 
-   Check :meth:`rpy2.rinterface.SexpClosure.rcall`
-   to know how to keep the order of parameters.
-
-Linear models
--------------
-
-The R code is:
-
-.. code-block:: r
-
-   ctl <- c(4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14)
-   trt <- c(4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69)
-   group <- gl(2, 10, 20, labels = c("Ctl","Trt"))
-   weight <- c(ctl, trt)
-
-   anova(lm.D9 <- lm(weight ~ group))
-
-   summary(lm.D90 <- lm(weight ~ group - 1))# omitting intercept
-
-One way to achieve the same with :mod:`rpy2.robjects` is
-
-.. code-block:: python
-
-   import rpy2.robjects as robjects
-
-   r = robjects.r
-
-   ctl = robjects.FloatVector([4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14])
-   trt = robjects.FloatVector([4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69])
-   group = r.gl(2, 10, 20, labels = ["Ctl","Trt"])
-   weight = ctl + trt
-
-   robjects.globalEnv["weight"] = weight
-   robjects.globalEnv["group"] = group
-   lm_D9 = r.lm("weight ~ group")
-   print(r.anova(lm_D9))
-
-   lm_D90 = r.lm("weight ~ group - 1")
-   print(r.summary(lm_D90))
-
-   
-
-Principal component analysis
-----------------------------
-
-The R code is
-
-.. code-block:: r
-
-  m <- matrix(rnorm(100), ncol=5)
-  pca <- princomp(m)
-  plot(pca, main="Eigen values")
-  biplot(pca, main="biplot")
-
-The :mod:`rpy2.robjects` code is
-
-.. testcode::
-
-  import rpy2.robjects as robjects
-
-  r = robjects.r
-
-  m = r.matrix(r.rnorm(100), ncol=5)
-  pca = r.princomp(m)
-  r.plot(pca, main="Eigen values")
-  r.biplot(pca, main="biplot")
-   
-
-
-S4 classes
-----------
-
-.. code-block:: python
-
-   import rpy2.robjects as robjects
-   import array
-
-   r = robjects.r
-
-   r.setClass("Track",
-              r.representation(x="numeric", y="numeric"))
-
-   a = r.new("Track", x=0, y=1)
-
-   a.x
 
 

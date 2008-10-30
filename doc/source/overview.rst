@@ -41,14 +41,12 @@ Requirements
 
 Python version 2.4 or higher, and R-2.7.0 or higher are required.
 
-Although the development was done with R-2.7.2 and Python-2.5.2,
-it has also been tested with:
-
-  * R-2.8.0
+Although the development was first done with R-2.7.2 (now with R-2.8.0)
+and Python-2.5.2, it has also been tested with:
 
   * Python-2.6.0 (numpy-support not tested)
 
-Gcc-4.2.3 was used for compiling the C parts.
+Gcc-4.2.3, then gcc-4.2.4 were used for compiling the C parts.
 
 
 Download
