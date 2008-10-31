@@ -60,6 +60,13 @@ in the module variable `initoptions`.
    your path (:envvar:`PATH` on unix-alikes, or :envvar:`Path` on Microsoft Windows) or
    have the environment variable :envvar:`R_HOME` defined. 
 
+Ending R
+^^^^^^^^
+
+Ending the R process is possible, but starting it again with
+:func:`initr` does appear to lead to an R process that is hardly usable.
+For that reason, the use of :func:`endEmbeddedR` should be considered
+carefully.
 
 R space and Python space
 ------------------------
@@ -672,9 +679,11 @@ package *graphics*.
 Object-Oriented programming in R exists in several flavours, and one
 of those is called `S4`.
 It has its own type at R's C-API level, and because of that specificity
-we defined a class.
+we defined a class. Beside that, the class does not provide much specific
+features (see the pydoc for the class below). 
 
-An instance's attributes can be accessed through the :class:`Sexp` method
+An instance's attributes can be accessed through the parent
+class :class:`Sexp` method
 :meth:`do_slot`.
 
 .. autoclass:: rpy2.rinterface.SexpS4(obj)

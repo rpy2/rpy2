@@ -123,6 +123,11 @@ At any time, an installation can be tested as follows:
   suite = rpy2.tests.suite()
   tr.run(suite)
 
+.. note::
+
+   At the time of writing, 2 unit tests will fail. Their failure
+   is forced, because the terminating then starting again an
+   embbeded R is causing problems.
 
 .. warning::
 
