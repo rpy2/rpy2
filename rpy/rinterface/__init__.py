@@ -4,6 +4,10 @@ try:
     R_HOME = os.environ["R_HOME"]
 except KeyError:
     R_HOME = os.popen("R RHOME").readlines()
+    if len(R_HOME) == 0:
+        raise RuntimeError(
+            "Calling the command 'R RHOME' does not return anything.\n" +\
+                "This might be because R.exe is nowhere in your Path.")
     #Twist if 'R RHOME' spits out a warning
     if R_HOME[0].startswith("WARNING"):
         R_HOME = R_HOME[1]
