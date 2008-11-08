@@ -67,7 +67,7 @@ In theory we could have available for download:
 `rpy2` has been reported compiling successfully on all 3 platforms, provided
 that development items such as Python headers and a C compiler are installed.
 
-At the time of writing, Microsoft Windows binaries are contributed by Laurent Oget.
+At the time of writing, Microsoft Windows binaries are contributed by Laurent Oget (from Predictix).
 
 Check on the `Sourceforge download page <http://downloads.sourceforge.net/rpy>`_
 what is available..
