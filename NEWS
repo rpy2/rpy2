@@ -1,6 +1,11 @@
 SVN
 ===
 
+Bugs fixed
+----------
+
+- Informative message returned as RuntimeError when `R RHOME` does not return
+  anything
 
 
 Release 2.0.0rc1
