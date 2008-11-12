@@ -1398,6 +1398,12 @@ ClosureSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 /* len(x) */
 static Py_ssize_t VectorSexp_len(PyObject *object)
 {
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return -1;
+  }
+  embeddedR_setlock();
+
   Py_ssize_t len;
   //FIXME: sanity checks.
   SEXP sexp = RPY_SEXP((PySexpObject *)object);
@@ -1406,6 +1412,8 @@ static Py_ssize_t VectorSexp_len(PyObject *object)
       return -1;
   }
   len = (Py_ssize_t)GET_LENGTH(sexp);
+
+  embeddedR_freelock();
   return len;
 }
 
@@ -1415,10 +1423,17 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
 {
   PyObject* res;
   R_len_t i_R, len_R;
+
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
   SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
 
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    embeddedR_freelock();
     return NULL;
   }
 
@@ -1426,6 +1441,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
    * than R for indexing. */
   if (i >= R_LEN_T_MAX) {
     PyErr_Format(PyExc_IndexError, "Index value exceeds what R can handle.");
+    embeddedR_freelock();
     res = NULL;
     return res;
   }
@@ -1440,6 +1456,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     PyErr_Format(PyExc_IndexError, 
 		 "Mysterious error: likely an integer overflow.");
     res = NULL;
+    embeddedR_freelock();
     return res;
   }
   if ((i >= GET_LENGTH(*sexp))) {
@@ -1497,6 +1514,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       break;
     }
   }
+  embeddedR_freelock();
   return res;
 }
 
@@ -1694,17 +1712,25 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     return -1;
   }
 
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return -1;
+  }
+  embeddedR_setlock();
+
   if (PyObject_IsInstance(object, 
 			  (PyObject*)&VectorSexp_Type)) {
     //call parent's constructor
     if (Sexp_init(self, args, NULL) == -1) {
       //PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
+      embeddedR_freelock();
       return -1;
     }
   } else if (PySequence_Check(object)) {
     if ((sexptype < 0) || (sexptype > maxValidSexpType) || 
 	(! validSexpType[sexptype])) {
       PyErr_Format(PyExc_ValueError, "Invalid SEXP type.");
+      embeddedR_freelock();
       return -1;
     }
     //FIXME: implemement automagic type ?
@@ -1717,13 +1743,15 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     //SET_NAMED(RPY_SEXP((PySexpObject *)self), 2);
   } else {
     PyErr_Format(PyExc_ValueError, "Invalid sexpvector.");
+    embeddedR_freelock();
     return -1;
   }
 
 #ifdef RPY_VERBOSE
   printf("done (VectorSexp_init).\n");
 #endif 
-  
+
+  embeddedR_freelock();
   return 0;
 }
 
@@ -1747,10 +1775,17 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
     return NULL; 
   }
 
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+
   const SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     Py_DECREF(Py_False);
+    embeddedR_freelock();
     return NULL;
   }
 
@@ -1772,6 +1807,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
     res = NULL;
   }
   Py_DECREF(Py_False);
+  embeddedR_freelock();
   return (PyObject *)res;
 }
 PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
@@ -1792,6 +1828,13 @@ EnvironmentSexp_frame(PyObject *self)
   }
   SEXP res_R = NULL;
   PySexpObject *res;
+
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+
   res_R = FRAME(RPY_SEXP((PySexpObject *)self));
   res = newPySexpObject(res_R);
   return (PyObject *)res;
@@ -1807,10 +1850,17 @@ EnvironmentSexp_enclos(PyObject *self)
 		 "R must be initialized before environments can be accessed.");
     return NULL;
   }
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+
   SEXP res_R = NULL;
   PySexpObject *res;
   res_R = ENCLOS(RPY_SEXP((PySexpObject *)self));
   res = newPySexpObject(res_R);
+  embeddedR_freelock();
   return (PyObject *)res;
 }
 PyDoc_STRVAR(EnvironmentSexp_enclos_doc,
@@ -1839,18 +1889,27 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
   }
 
   name = PyString_AsString(key);
-  
+
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+
   SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    embeddedR_freelock();
     return NULL;
   }
   res_R = findVarInFrame(rho_R, install(name));
 
   if (res_R != R_UnboundValue) {
+    embeddedR_freelock();
     return newPySexpObject(res_R);
   }
   PyErr_Format(PyExc_LookupError, "'%s' not found", name);
+  embeddedR_freelock();
   return NULL;
 }
 
@@ -1874,10 +1933,17 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   }
 
   name = PyString_AsString(key);
-  
+
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return -1;
+  }
+  embeddedR_setlock();
+
   SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
+    embeddedR_freelock();
     return -1;
   }
 
@@ -1885,26 +1951,36 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   SEXP sexp = RPY_SEXP((PySexpObject *)value);
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "The value has NULL SEXP.");
+    embeddedR_freelock();
     return -1;
   }
   SEXP sym = Rf_install(name);
   PROTECT(sexp_copy = Rf_duplicate(sexp));
   Rf_defineVar(sym, sexp_copy, rho_R);
   UNPROTECT(1);
+  embeddedR_freelock();
   return 0;
 }
 
 static Py_ssize_t EnvironmentSexp_length(PyObject *self) 
 {
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return -1;
+  }
+  embeddedR_setlock();
+
   SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
+    embeddedR_freelock();
     return -1;
   }
   SEXP symbols;
   PROTECT(symbols = R_lsInternal(rho_R, TRUE));
   Py_ssize_t len = (Py_ssize_t)GET_LENGTH(symbols);
   UNPROTECT(1);
+  embeddedR_freelock();
   return len;
 }
 
@@ -1917,10 +1993,17 @@ static PyMappingMethods EnvironmentSexp_mappingMethods = {
 static PyObject* 
 EnvironmentSexp_iter(PyObject *sexpEnvironment)
 {
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+
   SEXP rho_R = RPY_SEXP((PySexpObject *)sexpEnvironment);
 
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
+    embeddedR_freelock();
     return NULL;
   }
   SEXP symbols;
@@ -1931,6 +2014,7 @@ EnvironmentSexp_iter(PyObject *sexpEnvironment)
  
   PyObject *it = PyObject_GetIter((PyObject *)seq);
   Py_DECREF(seq);
+  embeddedR_freelock();
   return it;
 }
 
@@ -2015,17 +2099,27 @@ EnvironmentSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 				    &PyBool_Type, &copy)) {
     return -1;
   }
+
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return -1;
+  }
+  embeddedR_setlock();
+
   if (PyObject_IsInstance(object, 
 			  (PyObject*)&EnvironmentSexp_Type)) {
     //call parent's constructor
     if (Sexp_init(self, args, NULL) == -1) {
       PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
+      embeddedR_freelock();
       return -1;
     }
   } else {
     PyErr_Format(PyExc_ValueError, "Cannot instantiate from this type.");
+    embeddedR_freelock();
     return -1;
   }
+  embeddedR_freelock();
   return 0;
 }
 
