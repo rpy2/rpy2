@@ -46,7 +46,7 @@ and Python-2.5.2, it has also been tested with:
 
   * Python-2.6.0 (numpy-support not tested)
 
-Gcc-4.2.3, then gcc-4.2.4 were used for compiling the C parts.
+`gcc-4.2.3`, then `gcc-4.2.4` were used for compiling the C parts.
 
 
 Download
@@ -67,19 +67,14 @@ In theory we could have available for download:
 `rpy2` has been reported compiling successfully on all 3 platforms, provided
 that development items such as Python headers and a C compiler are installed.
 
-At the time of writing, Microsoft Windows binaries are contributed by Laurent Oget.
 
 Check on the `Sourceforge download page <http://downloads.sourceforge.net/rpy>`_
-what is available..
+what is available.
+
 
 .. note::
    Choose files from the `rpy2` package, not `rpy`.
 
-.. note::
-   I have limited time, and at the time of writing no easy access to either
-   Microsoft's windows or Apple's MacOS X. There will no be compiled binaries
-   for the coming month at very least (unless I receive donations of either
-   compiled packages or computers equiped with the mentionned OSes).
 
 .. index::
   single: install;win32
@@ -90,6 +85,9 @@ Microsoft's Windows precompiled binaries
 
 If available, the executable can be run; this will install the package
 in the default Python installation.
+
+At the time of writing, Microsoft Windows binaries are contributed 
+by Laurent Oget (from Predictix) since version 2.0.0b1.
 
 .. index::
   single: install;source

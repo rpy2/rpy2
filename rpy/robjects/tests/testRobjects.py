@@ -30,7 +30,7 @@ class RInstanceTestCase(unittest.TestCase):
     def testEval(self):
         # vector long enough to span across more than one line
         x = robjects.baseNameSpaceEnv['seq'](1, 50, 2)
-        res = robjects.r('sum(%s)' %repr(x))
+        res = robjects.r('sum(%s)' %x.r_repr())
         self.assertEquals(625, res[0])
         
 class MappingTestCase(unittest.TestCase):
