@@ -4,17 +4,35 @@ try:
     R_HOME = os.environ["R_HOME"]
 except KeyError:
     R_HOME = os.popen("R RHOME").readlines()
-    if len(R_HOME) == 0:
+
+if len(R_HOME) == 0:
+    if sys.platform == 'win32':
+        try:
+            import win32api
+            import win32con
+            hkey = win32api.RegOpenKeyEx(win32con.HKEY_LOCAL_MACHINE,
+                                         "Software\\R-core\\R",
+                                         0, win32con.KEY_QUERY_VALUE )
+            R_HOME = win32api.RegQueryValueEx(hkey, "InstallPath")[0]
+            win32api.RegCloseKey( hkey )
+        except:
+            raise RuntimeError(
+                "Unable to determine R version from the registery." +\
+                "Calling the command 'R RHOME' does not return anything.\n" +\
+                    "This might be because R.exe is nowhere in your Path.")
+    else:
         raise RuntimeError(
-            "Calling the command 'R RHOME' does not return anything.\n" +\
-                "This might be because R.exe is nowhere in your Path.")
-    #Twist if 'R RHOME' spits out a warning
+            "R_HOME define, and no R command in the PATH."
+            )
+else:
+#Twist if 'R RHOME' spits out a warning
     if R_HOME[0].startswith("WARNING"):
         R_HOME = R_HOME[1]
     else:
         R_HOME = R_HOME[0]
-    R_HOME = R_HOME.strip()
-    os.environ['R_HOME'] = R_HOME
+        R_HOME = R_HOME.strip()
+
+os.environ['R_HOME'] = R_HOME
 
 # Win32-specific code copied from RPy-1.x
 if sys.platform == 'win32':
@@ -35,7 +53,16 @@ if sys.platform == 'win32':
 
     win32api.LoadLibrary( Rlib )
 
+
+# cleanup the namespace
 del(sys)
+del(os)
+try:
+    del(win32api)
+    del(win32con)
+except:
+    pass
+
 
 from rpy2.rinterface.rinterface import *
 

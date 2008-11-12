@@ -4,8 +4,10 @@ SVN
 Bugs fixed
 ----------
 
-- Informative message returned as RuntimeError when `R RHOME` does not return
-  anything
+- Informative message returned as RuntimeError when failing to find R's HOME
+
+- Use the registry to find the R's HOME on win32
+  # snatched from Peter's earlier contribution to rpy-1.x
 
 
 Release 2.0.0rc1
