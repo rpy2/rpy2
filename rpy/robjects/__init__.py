@@ -134,7 +134,11 @@ class RObjectMixin(object):
         s = str.join(os.linesep, s)
         return s
 
-    def __repr__(self):
+    def r_repr(self):
+        """ R string representation for an object.
+        This string representation can be used directed
+        in R code.
+        """
         return repr_robject(self, linesep='\n')
 
     def rclass(self):

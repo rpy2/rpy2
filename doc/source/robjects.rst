@@ -119,10 +119,10 @@ x^2
 
 The astute reader will quickly realize that R objects named
 by python variables can
-be plugged into code through their string representation:
+be plugged into code through their `R` representation:
 
 >>> x = robjects.r.rnorm(100)
->>> robjects.r('hist(%s, xlab="x", main="hist(x)")' %repr(x))
+>>> robjects.r('hist(%s, xlab="x", main="hist(x)")' %x.r_repr())
 
 .. warning::
 
@@ -510,7 +510,7 @@ nicely:
 
 .. code-block:: python
 
-  fit = robjects.r('lm(%s)' %repr(fmla))
+  fit = robjects.r('lm(%s)' %fmla.r_repr())
 
 
 Mapping rpy2 objects to arbitrary python objects

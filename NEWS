@@ -1,6 +1,12 @@
 SVN
 ===
 
+Changes
+-------
+
+- :meth:`RObject.__repr__` moved to :meth:`RObject.r_repr`
+
+
 Bugs fixed
 ----------
 

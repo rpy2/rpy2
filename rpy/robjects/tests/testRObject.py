@@ -18,9 +18,9 @@ class RObjectTestCase(unittest.TestCase):
         del(ri_v)
         self.assertEquals(rinterface.INTSXP, ro_v.typeof)
 
-    def testRepr(self):
+    def testR_repr(self):
         obj = robjects.baseNameSpaceEnv["pi"]
-        s = obj.__repr__()
+        s = obj.r_repr()
         self.assertTrue(s.startswith('3.14'))
 
 
