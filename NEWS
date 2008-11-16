@@ -4,6 +4,9 @@ SVN
 Changes
 -------
 
+- :meth:`rpy_classic.RObj.getSexp` moved to a 
+  property :attr:`rpy_classic.Robj.sexp`.
+
 - :meth:`RObject.__repr__` moved to :meth:`RObject.r_repr`
 
 
