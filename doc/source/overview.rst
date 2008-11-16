@@ -124,7 +124,7 @@ At any time, an installation can be tested as follows:
 .. note::
 
    At the time of writing, 2 unit tests will fail. Their failure
-   is forced, because the terminating then starting again an
+   is forced, because terminating then starting again an
    embbeded R is causing problems.
 
 .. warning::
@@ -200,6 +200,10 @@ Walter Moreira, and Gregory Warnes
     For the original RPy and its maintainance through the years.
  
 Alexander Belopolsky. 
-    His code contribution to RPy is acknowledged. I have found great
-    inspiration in reading that code.
+    His code contribution of an alternative RPy is acknowledged.
+    I have found great inspiration in reading that code.
 
+JRI
+    The Java-R Interface, and its authors, as answered to some
+    of the implementation questions were found there.
+ 

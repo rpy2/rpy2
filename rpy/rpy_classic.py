@@ -221,8 +221,10 @@ class Robj(object):
         return res
 
     ##FIXME: not part of RPy-1.x.
-    def getSexp(self):
+    def get_sexp(self):
         return self.__sexp
+
+    sexp = property(fget = get_sexp)
     
     #def __repr__(self):
     #    res = rpy2py(self)

@@ -93,3 +93,55 @@ The function are called like regular Python functions:
 >>> pca = rpy.r.princomp(m)
 >>> rpy.r.plot(pca, main = "PCA")
 >>>
+
+
+Partial use of :mod:`rpy_classic`
+==================================
+
+The use of rpy_classic does not need to be
+exclusive of the other interface(s) proposed
+in rpy2.
+
+Chaining code designed for either of the interfaces
+is rather easy and, among other possible use-cases,
+should make the inclusion of legacy rpy code into newly
+written rpy2 code a simple take.
+
+The link between :mod:`rpy_classic` and the rest
+of :mod:`rpy2` is the property :attr:`RObj.sexp`,
+that give the representation of the underlying R object
+in the low-level :mod:`rpy2.rinterface` definition.
+This representation can then be used in function calls
+with :mod:`rpy2.rinterface` and :mod:`rpy2.robjects`.
+With :mod:`rpy2.robjects`, a conversion using 
+:func:`rpy2.robjects.default_ri2py` can be considered.
+
+.. note::
+
+   Obviously, that property `sexp` is not part of the original
+   `Robj` in rpy.
+
+
+An example:
+
+.. code-block:: python
+
+   import rpy2.robjects as ro
+   import rpy2.rpy_classic as rpy
+   rpy.set_default_mode(rpy.NO_CONVERSION)
+
+
+   def legacy_paste(v):
+       # legacy rpy code
+       res = rpy.r.paste(v, collapse = '-')
+       return res
+
+
+   rletters = ro.r['letters']
+
+   # the legaxy code is called using an rpy2.robjects object
+   alphabet_rpy = legacy_paste(rletters)
+
+   # convert the resulting rpy2.rpy_classic object to
+   # an rpy2.robjects object
+   alphabet = ro.default_ri2py(alphabet_rpy.sexp)
