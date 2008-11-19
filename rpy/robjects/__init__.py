@@ -11,8 +11,10 @@ import array
 import itertools
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
+import rpy2.robjects.conversion
 
 #FIXME: close everything when leaving (check RPy for that).
+
 
 def default_ri2py(o):
     """ Convert :class:`rpy2.rinterface.Sexp` to higher-level objects,
@@ -50,7 +52,7 @@ def default_ri2py(o):
         res = RObject(o)
     return res
 
-ri2py = default_ri2py
+conversion.ri2py = default_ri2py
 
 
 def default_py2ri(o):
@@ -84,14 +86,14 @@ def default_py2ri(o):
     elif isinstance(o, unicode):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
     elif isinstance(o, list):
-        res = r.list(*[ri2py(py2ri(x)) for x in o])
+        res = r.list(*[conversion.ri2py(conversion.py2ri(x)) for x in o])
     elif isinstance(o, complex):
         res = rinterface.SexpVector([o, ], rinterface.CPLXSXP)
     else:
         raise(ValueError("Nothing can be done for the type %s at the moment." %(type(o))))
     return res
 
-py2ri = default_py2ri
+conversion.py2ri = default_py2ri
 
 
 def default_py2ro(o):
@@ -102,7 +104,7 @@ def default_py2ro(o):
     res = default_py2ri(o)
     return default_ri2py(res)
 
-py2ro = default_py2ro
+conversion.py2ro = default_py2ro
 
 
 def repr_robject(o, linesep=os.linesep):
@@ -211,7 +213,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
 
     def __init__(self, o):
         if not isinstance(o, rinterface.SexpVector):
-            o = py2ri(o)
+            o = conversion.py2ri(o)
         super(RVector, self).__init__(o)
         self.r = RVectorDelegator(self)
             
@@ -231,9 +233,9 @@ class RVector(RObjectMixin, rinterface.SexpVector):
            - an index is itself a vector of elements to select
         """
         
-        args = [py2ro(x) for x in args]
+        args = [conversion.py2ro(x) for x in args]
         for k, v in kwargs.itervalues():
-            args[k] = py2ro(v)
+            args[k] = conversion.py2ro(v)
         
         res = r["["](*([self, ] + [x for x in args]), **kwargs)
         return res
@@ -241,15 +243,15 @@ class RVector(RObjectMixin, rinterface.SexpVector):
     def assign(self, index, value):
         if not (isinstance(index, rlc.TaggedList) | \
                     isinstance(index, rlc.ArgsDict)):
-            args = rlc.TaggedList([py2ro(index), ])
+            args = rlc.TaggedList([conversion.py2ro(index), ])
         else:
             for i in xrange(len(index)):
-                index[i] = py2ro(index[i])
+                index[i] = conversion.py2ro(index[i])
             args = index
-        args.append(py2ro(value))
+        args.append(conversion.py2ro(value))
         args.insert(0, self)
         res = r["[<-"].rcall(args.items())
-        res = ri2py(res)
+        res = conversion.ri2py(res)
         return res
 
     def __add__(self, x):
@@ -259,11 +261,11 @@ class RVector(RObjectMixin, rinterface.SexpVector):
     def __getitem__(self, i):
         res = super(RVector, self).__getitem__(i)
         if isinstance(res, rinterface.Sexp):
-            res = ri2py(res)
+            res = conversion.ri2py(res)
         return res
 
     def __setitem__(self, i, value):
-        value = py2ri(value)
+        value = conversion.py2ri(value)
         res = super(RVector, self).__setitem__(i, value)
 
     def getnames(self):
@@ -312,11 +314,11 @@ class RArray(RVector):
 
     def getdim(self):
         res = r.dim(self)
-        res = ri2py(res)
+        res = conversion.ri2py(res)
         return res
 
     def setdim(self, value):
-        value = py2ro(value)
+        value = conversion.py2ro(value)
         res = r["dim<-"](self, value)
             #FIXME: not properly done
         raise(Exception("Not yet implemented"))
@@ -387,7 +389,7 @@ class RDataFrame(RVector):
         :rtype: SexpVector
         """
         res = baseNameSpaceEnv["rownames"](self)
-        return ri2py(res)
+        return conversion.ri2py(res)
 
     def colnames(self):
         """ Column names
@@ -395,7 +397,7 @@ class RDataFrame(RVector):
         :rtype: SexpVector
         """
         res = baseNameSpaceEnv["colnames"](self)
-        return ri2py(res)
+        return conversion.ri2py(res)
 
 
 class RFunction(RObjectMixin, rinterface.SexpClosure):
@@ -404,12 +406,12 @@ class RFunction(RObjectMixin, rinterface.SexpClosure):
     """
 
     def __call__(self, *args, **kwargs):
-        new_args = [py2ri(a) for a in args]
+        new_args = [conversion.py2ri(a) for a in args]
 	new_kwargs = {}
         for k, v in kwargs.iteritems():
-            new_kwargs[k] = py2ri(v)
+            new_kwargs[k] = conversion.py2ri(v)
         res = super(RFunction, self).__call__(*new_args, **new_kwargs)
-        res = ri2py(res)
+        res = conversion.ri2py(res)
         return res
 
 
@@ -423,20 +425,20 @@ class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
 
     def __getitem__(self, item):
         res = super(REnvironment, self).__getitem__(item)
-        res = ri2py(res)
+        res = conversion.ri2py(res)
         return res
 
     def __setitem__(self, item, value):
-        robj = py2ro(value)
+        robj = conversion.py2ro(value)
         super(REnvironment, self).__setitem__(item, robj)
 
     def get(self, item):
         """ Get a object from its R name/symol
         :param item: string (name/symbol)
-        :rtype: object (as returned by :func:`ri2py`)
+        :rtype: object (as returned by :func:`conversion.ri2py`)
         """
         res = super(REnvironment, self).get(item)
-        res = ri2py(res)
+        res = conversion.ri2py(res)
         return res
 
 
@@ -444,7 +446,7 @@ class RS4(RObjectMixin, rinterface.SexpS4):
 
     def __getattr__(self, attr):
         res = self.do_slot(attr)
-        res = ri2py(res)
+        res = conversion.ri2py(res)
         return res
 
 
@@ -461,7 +463,7 @@ class RFormula(RObjectMixin, rinterface.Sexp):
         
     def getenvironment(self):
         res = self.do_slot(".Environment")
-        res = ri2py(res)
+        res = conversion.ri2py(res)
         return res
 
     def setenvironment(self, val):
@@ -500,7 +502,7 @@ class R(object):
     def __getitem__(self, item):
         res = rinterface.globalEnv.get(item)
             
-	res = ri2py(res)
+	res = conversion.ri2py(res)
         return res
 
     #FIXME: check that this is properly working
@@ -523,6 +525,6 @@ class R(object):
 
 r = R()
 
-globalEnv = ri2py(rinterface.globalEnv)
-baseNameSpaceEnv = ri2py(rinterface.baseNameSpaceEnv)
-emptyEnv = ri2py(rinterface.emptyEnv)
+globalEnv = conversion.ri2py(rinterface.globalEnv)
+baseNameSpaceEnv = conversion.ri2py(rinterface.baseNameSpaceEnv)
+emptyEnv = conversion.ri2py(rinterface.emptyEnv)

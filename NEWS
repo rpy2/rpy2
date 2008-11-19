@@ -1,13 +1,31 @@
 SVN
 ===
 
+New features
+------------
+
+- New module :mod:`rpy2.robjects.conversion`.
+
+- New module :mod:`rpy2.robjects.numpy2ri` to convert :mod:`numpy` objects
+  into :mod:`rpy2` objects. 
+  # adapted from a patch contributed by Nathaniel Smith
+
+
 Changes
 -------
+
+:mod:`rpy2.rpy_classic`:
 
 - :meth:`rpy_classic.RObj.getSexp` moved to a 
   property :attr:`rpy_classic.Robj.sexp`.
 
+:mod:`rpy2.robjects`:
+
 - :meth:`RObject.__repr__` moved to :meth:`RObject.r_repr`
+
+- :meth:`ri2py`, :meth:`ro2py`, and :meth:`py2ri` moved to the new module
+  :mod:`conversion`. Adding the prefix `conversion.` to calls
+  to those functions will be enough to update existing code
 
 
 Bugs fixed

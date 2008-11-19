@@ -94,6 +94,7 @@ The function are called like regular Python functions:
 >>> rpy.r.plot(pca, main = "PCA")
 >>>
 
+.. _rpy_classic-mix:
 
 Partial use of :mod:`rpy_classic`
 ==================================

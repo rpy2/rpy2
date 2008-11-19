@@ -70,7 +70,7 @@ This approach has limitation as:
 * '.' (dot) is syntactically valid in names for R objects, but not for
     python objects.
 
-That last limitation can partly be removed by using :mod:`rpy.rpy_classic` if
+That last limitation can partly be removed by using :mod:`rpy2.rpy_classic` if
 this feature matters most to you.
 
 >>> robjects.r.as_null
@@ -80,10 +80,11 @@ this feature matters most to you.
 >>> rpy.r.as_null
 # R function as.null() returned
 
-.. warning::
-   In the case there are R objects which name only differ by '.' and '_'
-   (e.g., 'my_variable' and 'my.variable'), setting :attr:`_dotter` to True
-   can result in confusing results at runtime.
+.. note::
+
+   The section :ref:`rpy_classic-mix` outlines how to integrate
+   :mod:`rpy2.rpy_classic` code.
+
 
 Behind the scene, the steps for getting an attribute of `r` are
 rather straightforward:
@@ -93,11 +94,31 @@ rather straightforward:
 
   2. Check if the attribute is can be accessed in R, starting from `globalEnv`
 
-When safety matters most, or when getting extraordinary funds for a bailout
-is unlikely, we recommed using :meth:`__getitem__` to get
-a given R object (and store it in a python variable if wanted):
+When safety matters most, we recommend using :meth:`__getitem__` to get
+a given R object.
 
 >>> as_null = robjects.r['as.null']
+
+Storing the object in a python variable will protect it from garbage
+collection, even if deleted from the objects visible to an R user.
+
+>>> robjects.globalEnv['foo'] = 1.2
+>>> foo = robjects.r['foo']
+>>> foo[0]
+1.2
+
+Here we `remove` the symbol `foo` from the R Global Environment.
+
+>>> robjects.r['rm']('foo')
+>>> robjects.r['foo']
+LookupError: 'foo' not found
+
+The object itself remains available, and protected from R's
+garbage collection until `foo` is deleted from Python
+
+>>> foo[0]
+1.2
+
 
 
 Strings as R code
@@ -525,15 +546,15 @@ performed behind the (Python-level) scene, done by the :mod:`rpy2.rinterface`,
 while an higher-level mapping is done between low-level objects and
 higher-level objects using the functions:
 
-:meth:`ri2py`
+:meth:`conversion.ri2py`
    :mod:`rpy2.rinterface` to Python. By default, this function
    is just an alias for the function :meth:`default_ri2py`.
 
-:meth:`py2ri`
+:meth:`conversion.py2ri`
    Python to :mod:`rpy2.rinterface`. By default, this function
    is just an alias for the function :meth:`default_py2ri`.
 
-:meth:`py2ro`
+:meth:`conversion.py2ro`
    Python to :mod:`rpy2.robjects`. That one function
    is merely a call to :meth:`py2ri` followed by a call to :meth:`ri2py`.
 
@@ -554,7 +575,7 @@ of writing a new function `ri2py` that handles this, as shown below:
            res = res[0]
        return res
 
-   robjects.ri2py = my_ri2py
+   robjects.conversion.ri2py = my_ri2py
 
 Once this is done, we can verify immediately that this is working with:
 
@@ -565,7 +586,7 @@ Once this is done, we can verify immediately that this is working with:
 
 The default behavoir can be restored with:
 
->>> robjects.ri2py = default_ri2py
+>>> robjects.conversion.ri2py = default_ri2py
 
 The docstrings for :meth:`default_ri2py`, :meth:`default_py2ri`, and :meth:`py2ro` are:
 
