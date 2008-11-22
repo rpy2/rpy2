@@ -9,6 +9,9 @@ import testRFunction
 import testREnvironment
 import testRobjects
 
+# wrap this nicely so a warning is issued if no numpy present
+import testNumpyConversions
+
 def suite():
     suite_RObject = testRObject.suite()
     suite_RVector = testRVector.suite()
@@ -18,6 +21,7 @@ def suite():
     suite_REnvironment = testREnvironment.suite()
     suite_RFormula = testRFormula.suite()
     suite_Robjects = testRobjects.suite()
+    suite_NumpyConversions = testNumpyConversions.suite()
     alltests = unittest.TestSuite([suite_RObject,
                                    suite_RVector,                   
                                    suite_RArray,
@@ -25,7 +29,9 @@ def suite():
                                    suite_RFunction,
                                    suite_REnvironment,
                                    suite_RFormula,
-                                   suite_Robjects ])
+                                   suite_Robjects,
+                                   suite_NumpyConversions
+                                   ])
     return alltests
 
 def main():

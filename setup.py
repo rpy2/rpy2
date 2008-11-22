@@ -11,6 +11,11 @@ RHOMES = os.getenv('RHOMES')
 if RHOMES is None:
     
     RHOMES = os.popen("R RHOME").readlines()
+    if len(RHOMES) == 0:
+        raise RuntimeError(
+            "R_HOME not defined, and no R command in the PATH."
+            )
+
     #Twist if 'R RHOME' spits out a warning
     if RHOMES[0].startswith("WARNING"):
         RHOMES = RHOMES[1]

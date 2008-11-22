@@ -1,6 +1,7 @@
 import unittest
 
 import rpy2.rpy_classic as rpy
+import rpy2.rinterface
 
 
 class RpyClassicTestCase(unittest.TestCase):
@@ -26,6 +27,12 @@ class RpyClassicTestCase(unittest.TestCase):
         #in rpy-1.x, everything is callable
         self.assertTrue(callable(rpy.r.seq))
         self.assertTrue(callable(rpy.r.pi))
+
+    def testSexp(self):
+        rpy.set_default_mode(rpy.NO_CONVERSION)
+        pi = rpy.r.pi
+        self.assertTrue(isinstance(pi.sexp, rpy2.rinterface.Sexp))
+        self.assertRaises(AttributeError, setattr, pi, 'sexp', None)
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RpyClassicTestCase)

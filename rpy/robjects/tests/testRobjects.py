@@ -119,7 +119,7 @@ class MappingTestCase(unittest.TestCase):
             if inherits(pyobj, classname)[0]:
                 pyobj = Density(pyobj)
             return pyobj
-        robjects.ri2py = f
+        robjects.conversion.ri2py = f
         x = robjects.r.rnorm(100)
         d = robjects.r.density(x)
 

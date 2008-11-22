@@ -70,7 +70,7 @@ This approach has limitation as:
 * '.' (dot) is syntactically valid in names for R objects, but not for
     python objects.
 
-That last limitation can partly be removed by using :mod:`rpy.rpy_classic` if
+That last limitation can partly be removed by using :mod:`rpy2.rpy_classic` if
 this feature matters most to you.
 
 >>> robjects.r.as_null
@@ -80,10 +80,11 @@ this feature matters most to you.
 >>> rpy.r.as_null
 # R function as.null() returned
 
-.. warning::
-   In the case there are R objects which name only differ by '.' and '_'
-   (e.g., 'my_variable' and 'my.variable'), setting :attr:`_dotter` to True
-   can result in confusing results at runtime.
+.. note::
+
+   The section :ref:`rpy_classic-mix` outlines how to integrate
+   :mod:`rpy2.rpy_classic` code.
+
 
 Behind the scene, the steps for getting an attribute of `r` are
 rather straightforward:
@@ -93,11 +94,31 @@ rather straightforward:
 
   2. Check if the attribute is can be accessed in R, starting from `globalEnv`
 
-When safety matters most, or when getting extraordinary funds for a bailout
-is unlikely, we recommed using :meth:`__getitem__` to get
-a given R object (and store it in a python variable if wanted):
+When safety matters most, we recommend using :meth:`__getitem__` to get
+a given R object.
 
 >>> as_null = robjects.r['as.null']
+
+Storing the object in a python variable will protect it from garbage
+collection, even if deleted from the objects visible to an R user.
+
+>>> robjects.globalEnv['foo'] = 1.2
+>>> foo = robjects.r['foo']
+>>> foo[0]
+1.2
+
+Here we `remove` the symbol `foo` from the R Global Environment.
+
+>>> robjects.r['rm']('foo')
+>>> robjects.r['foo']
+LookupError: 'foo' not found
+
+The object itself remains available, and protected from R's
+garbage collection until `foo` is deleted from Python
+
+>>> foo[0]
+1.2
+
 
 
 Strings as R code
@@ -295,6 +316,17 @@ The method :meth:`getnames` retrieve those names.
 Numpy
 -----
 
+A popular solution for scientific computing with Python is :mod:`numpy` 
+(previous instances were :mod:`Numpy` and :mod:`numarray`).
+
+:mod:`rpy2` has features for facilitating the integration with code using
+:mod:`numpy` in both directions: from `rpy2` to `numpy`, and from `numpy`
+to `rpy2`.
+
+
+From `rpy2` to `numpy`:
+^^^^^^^^^^^^^^^^^^^^^^^
+
 Vectors can be converted to :mod:`numpy` arrays using
 :meth:`array` or :meth:`asarray`::
 
@@ -304,6 +336,31 @@ Vectors can be converted to :mod:`numpy` arrays using
 
 Refer to the documentation for :class:`rinterface.SexpVector`
 for further details.
+
+From `numpy` to `rpy2`:
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The conversion of `numpy` objects to `rpy2` objects can be 
+activated by importing the module :mod:`numpy2ri`::
+
+  import rpy2.robjects.numpy2ri
+
+That import alone is sufficient to switch an automatic conversion
+of `numpy` objects into `rpy2` objects.
+
+
+.. note::
+
+   Why make this an optional import, while it could have been included
+   in the function :func:`py2ri` (as done in the original patch 
+   submitted for that function) ?
+
+   Although both are valid and reasonable options, the design decision
+   was taken in order to decouple `rpy2` from `numpy` the most, and
+   do not assume that having `numpy` installed automatically
+   meant that a programmer wanted to use it.
+
+
 
 .. index::
    pair: robjects;REnvironment
@@ -525,21 +582,25 @@ performed behind the (Python-level) scene, done by the :mod:`rpy2.rinterface`,
 while an higher-level mapping is done between low-level objects and
 higher-level objects using the functions:
 
-:meth:`ri2py`
+:meth:`conversion.ri2py`
    :mod:`rpy2.rinterface` to Python. By default, this function
    is just an alias for the function :meth:`default_ri2py`.
 
-:meth:`py2ri`
+:meth:`conversion.py2ri`
    Python to :mod:`rpy2.rinterface`. By default, this function
    is just an alias for the function :meth:`default_py2ri`.
 
-:meth:`py2ro`
-   Python to :mod:`rpy2.robjects`. That one function
-   is merely a call to :meth:`py2ri` followed by a call to :meth:`ri2py`.
+:meth:`conversion.py2ro`
+   Python to :mod:`rpy2.robjects`. By default, that one function
+   is merely a call to :meth:`conversion.py2ri` 
+   followed by a call to :meth:`conversion.ri2py`.
 
-Those functions can be modifyied to satisfy all requirements, with
+Those functions can be re-routed to satisfy all requirements, with
 the easiest option being to write a custom function calling itself
-the default function.
+the default functions.
+
+Switching to `numpy`-to-`rpy2` is using this mechanism.
+
 As an example, let's assume that one want to return atomic values
 whenever an R numerical vector is of length one. This is only a matter
 of writing a new function `ri2py` that handles this, as shown below:
@@ -554,7 +615,7 @@ of writing a new function `ri2py` that handles this, as shown below:
            res = res[0]
        return res
 
-   robjects.ri2py = my_ri2py
+   robjects.conversion.ri2py = my_ri2py
 
 Once this is done, we can verify immediately that this is working with:
 
@@ -563,9 +624,9 @@ Once this is done, we can verify immediately that this is working with:
 <type 'float'>
 >>> 
 
-The default behavoir can be restored with:
+The default behavior can be restored with:
 
->>> robjects.ri2py = default_ri2py
+>>> robjects.conversion.ri2py = default_ri2py
 
 The docstrings for :meth:`default_ri2py`, :meth:`default_py2ri`, and :meth:`py2ro` are:
 

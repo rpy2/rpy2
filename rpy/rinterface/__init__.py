@@ -22,7 +22,7 @@ if len(R_HOME) == 0:
                     "This might be because R.exe is nowhere in your Path.")
     else:
         raise RuntimeError(
-            "R_HOME define, and no R command in the PATH."
+            "R_HOME not defined, and no R command in the PATH."
             )
 else:
 #Twist if 'R RHOME' spits out a warning
