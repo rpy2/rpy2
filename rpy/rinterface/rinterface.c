@@ -1095,6 +1095,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     Py_XDECREF(citems);
   }
 
+  //Py_BEGIN_ALLOW_THREADS
 //FIXME: R_GlobalContext ?
   PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
   //PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
@@ -1104,6 +1105,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 /*     return NULL; */
 /*   } */
   UNPROTECT(2);
+  //Py_END_ALLOW_THREADS
 
   if (! res_R) {
     EmbeddedR_exception_from_errmessage();
@@ -1230,7 +1232,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
     c_R = CDR(c_R);
   }
 
-
+  // Py_BEGIN_ALLOW_THREADS
 //FIXME: R_GlobalContext ?
   PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
   //PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
@@ -1240,6 +1242,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
 /*     return NULL; */
 /*   } */
   UNPROTECT(2);
+  //Py_END_ALLOW_THREADS
 
   if (! res_R) {
     EmbeddedR_exception_from_errmessage();
