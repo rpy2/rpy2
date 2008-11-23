@@ -8,6 +8,7 @@ Documentation for rpy2
    overview
    introduction
    robjects
+   numpy
    rinterface
    rpy_classic
    rlike
