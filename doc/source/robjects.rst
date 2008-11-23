@@ -316,6 +316,17 @@ The method :meth:`getnames` retrieve those names.
 Numpy
 -----
 
+A popular solution for scientific computing with Python is :mod:`numpy` 
+(previous instances were :mod:`Numpy` and :mod:`numarray`).
+
+:mod:`rpy2` has features for facilitating the integration with code using
+:mod:`numpy` in both directions: from `rpy2` to `numpy`, and from `numpy`
+to `rpy2`.
+
+
+From `rpy2` to `numpy`:
+^^^^^^^^^^^^^^^^^^^^^^^
+
 Vectors can be converted to :mod:`numpy` arrays using
 :meth:`array` or :meth:`asarray`::
 
@@ -325,6 +336,31 @@ Vectors can be converted to :mod:`numpy` arrays using
 
 Refer to the documentation for :class:`rinterface.SexpVector`
 for further details.
+
+From `numpy` to `rpy2`:
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The conversion of `numpy` objects to `rpy2` objects can be 
+activated by importing the module :mod:`numpy2ri`::
+
+  import rpy2.robjects.numpy2ri
+
+That import alone is sufficient to switch an automatic conversion
+of `numpy` objects into `rpy2` objects.
+
+
+.. note::
+
+   Why make this an optional import, while it could have been included
+   in the function :func:`py2ri` (as done in the original patch 
+   submitted for that function) ?
+
+   Although both are valid and reasonable options, the design decision
+   was taken in order to decouple `rpy2` from `numpy` the most, and
+   do not assume that having `numpy` installed automatically
+   meant that a programmer wanted to use it.
+
+
 
 .. index::
    pair: robjects;REnvironment
@@ -555,12 +591,16 @@ higher-level objects using the functions:
    is just an alias for the function :meth:`default_py2ri`.
 
 :meth:`conversion.py2ro`
-   Python to :mod:`rpy2.robjects`. That one function
-   is merely a call to :meth:`py2ri` followed by a call to :meth:`ri2py`.
+   Python to :mod:`rpy2.robjects`. By default, that one function
+   is merely a call to :meth:`conversion.py2ri` 
+   followed by a call to :meth:`conversion.ri2py`.
 
-Those functions can be modifyied to satisfy all requirements, with
+Those functions can be re-routed to satisfy all requirements, with
 the easiest option being to write a custom function calling itself
-the default function.
+the default functions.
+
+Switching to `numpy`-to-`rpy2` is using this mechanism.
+
 As an example, let's assume that one want to return atomic values
 whenever an R numerical vector is of length one. This is only a matter
 of writing a new function `ri2py` that handles this, as shown below:
@@ -584,7 +624,7 @@ Once this is done, we can verify immediately that this is working with:
 <type 'float'>
 >>> 
 
-The default behavoir can be restored with:
+The default behavior can be restored with:
 
 >>> robjects.conversion.ri2py = default_ri2py
 

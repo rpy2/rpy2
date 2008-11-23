@@ -204,6 +204,9 @@ Alexander Belopolsky.
     I have found great inspiration in reading that code.
 
 JRI
-    The Java-R Interface, and its authors, as answered to some
+    The Java-R Interface, and its authors, as answers to some
     of the implementation questions were found there.
  
+Contributors
+    Their names are in Section Changes.
+
