@@ -366,33 +366,7 @@ through the slot named `dimnames`.
 
 
 
-.. index::
-   pair: SexpVector; numpy
-
-Numpy
-^^^^^
-
-The :class:`SexpVector` objects are made to behave like arrays as defined
-in the Python package :mod:`numpy`.
-
-The functions *array* and *asarray* is all that is needed:
-
-
->>> import numpy
->>> rx = rinterface.SexpVector([1,2,3,4], rinterface.INTSXP)
->>> nx = numpy.array(rx)
->>> nx_nc = numpy.asarray(rx)
-
-
-.. note::
-   when using :meth:`asarray`, the data are not copied.
-
->>> rx[2]
-3
->>> nx_nc[2] = 42
->>> rx[2]
-42
->>>
+.. rubric:: Constructors
 
 .. autoclass:: rpy2.rinterface.SexpVector(obj, sexptype, copy)
    :show-inheritance:
