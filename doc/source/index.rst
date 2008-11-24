@@ -9,6 +9,7 @@ Documentation for rpy2
    introduction
    robjects
    numpy
+   robjects_convert
    rinterface
    rpy_classic
    rlike

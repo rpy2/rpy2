@@ -50,12 +50,12 @@ of `numpy` objects into `rpy2` objects.
    Although both are valid and reasonable options, the design decision
    was taken in order to decouple `rpy2` from `numpy` the most, and
    do not assume that having `numpy` installed automatically
-   meant that a programmer wanted to use it.
+   meant that a programmer wanted to use it. 
 
+.. note::
 
-.. literalinclude:: ../../rpy/robjects/numpy2ri.py
-
-
+   The module :mod:`numpy2ri` is an example of how custom conversion to
+   and from :mod:`rpy2.robjects` can be performed.
 
 Low-level interface
 -------------------
