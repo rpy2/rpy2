@@ -1,7 +1,7 @@
 import os, sys
 
 try:
-    R_HOME = os.environ["R_HOME"]
+    R_HOME = (os.environ["R_HOME"], )
 except KeyError:
     R_HOME = os.popen("R RHOME").readlines()
 
