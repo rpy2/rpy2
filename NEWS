@@ -1,5 +1,12 @@
-SVN
-===
+
+Release 2.0.1
+=============
+
+Bugs fixed
+----------
+
+- Having the environment variable R_HOME specified resulted in an error
+  when importing :mod:`rpy2.rinterface` # root of the problem spotted by Peter
 
 
 Release 2.0.0

@@ -208,4 +208,7 @@ JRI
     of the implementation questions were found there.
  
 Contributors
-    Their names are in Section Changes.
+    The help of people, donating time, ideas or software patches
+    is much appreciated.
+    Their names can be found in this documentation (mostly around the
+    section Changes).
