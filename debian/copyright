@@ -1,0 +1,18 @@
+This is the Debian GNU/Linux python-rpy2 package of RPy2, a package
+providing an interface between the R and the Python languages and
+environments. RPy (v1) was initially written by Walter Moreira, and is
+now maintained by Gregory R. Warnes. RPy (v2) was written by Laurent
+Gautier.
+
+This package was created by Dirk Eddelbuettel <edd@debian.org>.
+The sources where downloaded from a sourceforge mirror website at 
+	http://umn.dl.sourceforge.net/sourceforge/rpy2/
+
+Copyright (C) 2002 - 2003 Walter Moreira
+Copyright (C) 2003 - 2008 Gregory R. Warnes
+Copyright (C) 2008 Laurent Gautier    
+
+License: MPL | GPL | LGPL
+
+On a Debian GNU/Linux system, the LGPL, GPL and MPL licenses are 
+included in the directory /usr/share/common-licenses/.

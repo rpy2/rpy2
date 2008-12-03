@@ -1,0 +1,7 @@
+rpy2 (2.0.0-1) unstable; urgency=low
+
+  [ not YET uploaded to Debian ]
+  * Initial Debianisation 				(Closes: #507622)
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 02 Dec 2008 19:43:00 -0600
+
