@@ -1,7 +1,17 @@
+rpy2 (2.0.1-1) unstable; urgency=low
+
+  * New upstream version (taken as revision 712 from svn)
+  
+  * Initial upload to Debian 				(Closes: #507622)
+
+  * debian/control: Added Build-Depends: on python-sphinx (>= 0.4.3) so that
+    we can build the documentation. Thanks to Piotr for 0.4.3 in unstable!
+  
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 03 Dec 2008 18:16:22 -0600
+
 rpy2 (2.0.0-1) unstable; urgency=low
 
-  [ not YET uploaded to Debian ]
-  * Initial Debianisation 				(Closes: #507622)
+  * Initial Debianisation 
 
  -- Dirk Eddelbuettel <edd@debian.org>  Tue, 02 Dec 2008 19:43:00 -0600
 

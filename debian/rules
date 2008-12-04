@@ -38,7 +38,7 @@ build-stamp:
 		do CFLAGS="$(compilerflags)" $$python setup.py build \
 			build_ext --include-dirs=/usr/share/R/include ; \
 	done
-#	(cd doc && make all)
+	(cd doc && make html latex && cd build/latex && make all-pdf && cd ../.. && ls -lR )
 	touch build-stamp
 
 clean:
@@ -81,8 +81,8 @@ binary-arch: build install
 	dh_testdir -a
 	dh_testroot -a
 #	dh_installdebconf -a
-	dh_installdocs -a	README NEWS	
-	dh_installexamples -a	demos
+	dh_installdocs -a	README NEWS doc/build/latex/rpy2.pdf doc/build/html/
+	dh_installexamples -a	demos/*.py demos/*.png
 #	dh_installmenu -a
 #	dh_installemacsen -a
 #	dh_installpam -a
@@ -96,7 +96,7 @@ binary-arch: build install
 	dh_installchangelogs -a
 	dh_strip -a
 	dh_link -a
-	dh_compress -a
+	dh_compress -a -X.txt -X.json -X.js
 	dh_fixperms -a
 #	dh_suidregister -a
 #	dh_makeshlibs -a
