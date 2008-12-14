@@ -4,7 +4,7 @@ from distutils.core import setup, Extension
 
 
 pack_name = 'rpy2'
-pack_version = '2.0.0'
+pack_version = '2.0.x-dev'
 
 RHOMES = os.getenv('RHOMES')
 

@@ -228,9 +228,18 @@ and R indexing starts at one.
 
 The python :meth:`__getitem__` method behaves like a Python user would expect
 it for a vector (and indexing starts at zero),
-while the method :meth:`subset` behaves like a R user would expect it
-(indexing starts at one, and a vector of integers, booleans, or strings can
-be given to subset elements).
+while the method :meth:`subset` behaves like a R user would expect subsetting
+to happen that is:
+
+* indexing starts at one
+
+* the parameter to subset on can be a vector of 
+
+  - integers (negative integers meaning exlusion of the element)
+
+  - booleans
+
+  - strings
 
 >>> x = robjects.r.seq(1, 10)
 >>> x[0]
@@ -257,7 +266,7 @@ respectively element exclusion and recycling rule:
 >>> x.r[True]
 1:10
 
-This class is using the class :class:`rinterface.SexpVector`, 
+This class is extending the class :class:`rinterface.SexpVector`, 
 and its documentation can be referred to for details of what is happenening
 at the low-level.
 

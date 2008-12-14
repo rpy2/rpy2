@@ -126,7 +126,7 @@ directly into R code to be evaluated.
 Simple example:
 
 >>> letters = robjects.r['letters']
->>> rcode = 'paste(%s, collapse="-")' %(repr(letters))
+>>> rcode = 'paste(%s, collapse="-")' %(letters.r_repr())
 >>> robjects.r(rcode)
 "a-b-c-d-e-f-g-h-i-j-k-l-m-n-o-p-q-r-s-t-u-v-w-x-y-z"
 
@@ -214,23 +214,24 @@ Examples
 ========
 
 This section demonstrates some of the features of
-rpy2 by the example. The wiki on the sourceforge website
-will hopefully be used as a cookbook.
+rpy2 by the example.
 
+
+Function calls and plotting
+---------------------------
 
 .. code-block:: python
 
   import rpy2.robjects as robjects
-  import array
 
   r = robjects.r
 
-  x = array.array('i', range(10))
+  x = robjects.IntVector(range(10))
   y = r.rnorm(10)
 
   r.X11()
 
-  r.layout(r.matrix(array.array('i', [1,2,3,2]), nrow=2, ncol=2))
+  r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
   r.plot(r.runif(10), y, xlab="runif", ylab="foo/bar", col="red")
 
   kwargs = {'ylab':"foo/bar", 'type':"b", 'col':"blue", 'log':"x"}
@@ -306,22 +307,5 @@ The :mod:`rpy2.robjects` code is
   r.biplot(pca, main="biplot")
    
 
-
-S4 classes
-----------
-
-.. code-block:: python
-
-   import rpy2.robjects as robjects
-   import array
-
-   r = robjects.r
-
-   r.setClass("Track",
-              r.representation(x="numeric", y="numeric"))
-
-   a = r.new("Track", x=0, y=1)
-
-   a.x
 
 
