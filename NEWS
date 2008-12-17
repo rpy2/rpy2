@@ -8,6 +8,8 @@ Bugs fixed
 - Having the environment variable R_HOME specified resulted in an error
   when importing :mod:`rpy2.rinterface` # root of the problem spotted by Peter
 
+- Setup.py has no longer a (possibly outdated) static hardcoded version number
+  for rpy2
 
 Release 2.0.0
 =============
