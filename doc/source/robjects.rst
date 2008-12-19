@@ -461,18 +461,29 @@ Python function:
 >>> rnorm = robjects.r.rnorm
 >>> plot(rnorm(100), ylab="random")
 
-In Python, arguments to a function are split into two groups:
+This is all looking fine and simple until R parameters with names 
+such as `na.rm` are encountered. In those cases, using the special
+syntax `**kwargs` is one way to go.
 
-* A first group for which parameters are in defined order
+Let's take an example in R:
 
-* A second group for which parameters are associated a name/keyword,
-  and a default value. In that second group the order is lost, as it is
-  passed as a Python dictionary.
+.. code-block:: r
 
-Those two groups can be used in function calls.
+   sum(0, na.rm = TRUE)
 
+In Python it can then write:
 
-The class inherits from the class
+.. code-block:: python
+
+   from rpy2 import robjects
+
+   myparams = {'na.rm': True}
+   robjects.r.sum(0, **myparams)
+
+Things are also not always that simple, as the use of dictionary does
+ensure that the order in which the parameters are passed is conserved.
+
+The R functions as defined in :mod:`rpy2.robjects` inherit from the class
 :class:`rpy2.rinterface.SexpClosure`, and further documentation
 on the behavior of function can be found in Section :ref:`rinterface-functions`.
 
