@@ -50,6 +50,12 @@ With :mod:`rpy2`:
 >>> robjects.r['pi']
 3.14159265358979
 
+.. note::
+
+   Under the hood, the variable `pi` is gotten by default from the
+   R *base* package, unless an other variable with the name `pi` was
+   created in the `globalEnv`. The Section :ref:`robjects-environments`
+   tells more about that.
 
 
 Evaluating R code
@@ -106,6 +112,13 @@ but first also creates an R function
 `f`. That function `f` is present in the R `Global Environement`, and can
 be accessed with the `__getitem__` mechanism outlined above:
 
+>>> robjects.globalEnv['f']
+function (r) 
+{
+    2 * pi * r
+}
+
+or 
 
 >>> robjects.r['f']
 function (r) 
@@ -207,7 +220,7 @@ c(3L, 2L, 1L)
    By default, calling R functions will return R objects.
 
 
-More information on functions is in Section :ref:`robjects-functions`
+More information on functions is in Section :ref:`robjects-functions`.
 
 
 Examples
@@ -234,12 +247,18 @@ Function calls and plotting
   r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
   r.plot(r.runif(10), y, xlab="runif", ylab="foo/bar", col="red")
 
+Setting dynamically the number of arguments in a function call can be
+done the usual way in python
+
+.. code-block:: python
+
+  args = [x, y]
   kwargs = {'ylab':"foo/bar", 'type':"b", 'col':"blue", 'log':"x"}
-  r.plot(x, y, **kwargs)
+  r.plot(*args, **kwargs)
 
 .. note::
    Since the named parameters are a Python :class:`dict`, 
-   the order of the parameters is lost. 
+   the order of the parameters is lost for `**kwargs` arguments. 
 
 
 Linear models
@@ -279,8 +298,37 @@ One way to achieve the same with :mod:`rpy2.robjects` is
    lm_D90 = r.lm("weight ~ group - 1")
    print(r.summary(lm_D90))
 
-   
+Q:
+   Now how extract data from the resulting objects ?
 
+A:
+   The same, never it is. On the R object all depends.
+
+When taking the results from the code above, one could go like:
+
+>>> print(lm_D9.rclass)
+[1] "lm" 
+
+Here the resulting object is a list structure, as either inspecting
+the data structure or reading the R man pages for `lm` would tell us.
+Checking its element names is then trivial:
+
+>>> print(lm_D9.names)
+ [1] "coefficients"  "residuals"     "effects"       "rank"         
+ [5] "fitted.values" "assign"        "qr"            "df.residual"  
+ [9] "contrasts"     "xlevels"       "call"          "terms"        
+[13] "model" 
+
+And so is extracting a particular element:
+
+>>> print(lm_D9.r['coefficients'])
+$coefficients
+(Intercept)    groupTrt 
+      5.032      -0.371 
+
+More about extracting elements from vectors is available
+at :ref:`robjects-vectors-indexing`.
+   
 Principal component analysis
 ----------------------------
 

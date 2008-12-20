@@ -144,10 +144,11 @@ class RObjectMixin(object):
         """
         return repr_robject(self, linesep='\n')
 
-    def rclass(self):
+    def getrclass(self):
         """ Return the name of the R class for the object. """
         return baseNameSpaceEnv["class"](self)
 
+    rclass = property(getrclass)
 
 class RObject(RObjectMixin, rinterface.Sexp):
     """ Base class for all R objects. """
@@ -282,6 +283,10 @@ class RVector(RObjectMixin, rinterface.SexpVector):
 
         res = r["names<-"](self, value)
         return res
+
+    names = property(getnames, setnames, 
+                     "Names for the items in the vector.")
+
 
 class StrVector(RVector):
     """ Vector of string elements """

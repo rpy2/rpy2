@@ -246,13 +246,26 @@ class TaggedList(list):
             yield tag
 
     def pop(self, index=None):
+        """
+        Pop the item at a given index out of the list
+
+        :param index: integer
+        
+        """
         if index is None:
             index = len(self) - 1
         
-        super(TaggedList, self).pop(index)
+        res = super(TaggedList, self).pop(index)
         self.__tags.pop(index)
+        return res
 
     def remove(self, value):
+        """ 
+        Remove a given value from the list.
+        
+        :param value: object
+        
+        """
         found = False
         for i in xrange(len(self)):
             if self[i] == value:
@@ -262,6 +275,7 @@ class TaggedList(list):
             self.pop(i)
 
     def reverse(self):
+        """ Reverse the order of the elements in the list. """
         super(TaggedList, self).reverse()
         self.__tags.reverse()
 

@@ -220,6 +220,8 @@ used.
 .. index::
    pair: RVector;indexing
 
+.. _robjects-vectors-indexing:
+
 Indexing
 --------
 
@@ -392,6 +394,8 @@ c("letter", "value")
    :show-inheritance:
    :members:
 
+
+.. _robjects-environments:
 
 Environments
 ============

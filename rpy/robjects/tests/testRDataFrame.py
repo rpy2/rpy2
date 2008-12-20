@@ -13,7 +13,7 @@ class RDataFrameTestCase(unittest.TestCase):
         df = robjects.RDataFrame(rlc.TaggedList((letters, numbers),
                                                 tags = ('letters', 'numbers')))
 
-        self.assertEquals("data.frame", df.rclass()[0])
+        self.assertEquals("data.frame", df.rclass[0])
 
     def testNewFromRObject(self):
         numbers = robjects.r('1:5')

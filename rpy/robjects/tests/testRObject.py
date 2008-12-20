@@ -32,11 +32,11 @@ class RObjectTestCase(unittest.TestCase):
 
     def testRclass(self):
         self.assertEquals("character",
-                          robjects.baseNameSpaceEnv["letters"].rclass()[0])
+                          robjects.baseNameSpaceEnv["letters"].rclass[0])
         self.assertEquals("numeric",
-                          robjects.baseNameSpaceEnv["pi"].rclass()[0])
+                          robjects.baseNameSpaceEnv["pi"].rclass[0])
         self.assertEquals("function",
-                          robjects.globalEnv.get("help").rclass()[0])
+                          robjects.globalEnv.get("help").rclass[0])
 
     def testDo_slot(self):
         self.assertEquals("A1.4, p. 270",

@@ -159,6 +159,11 @@ Low-level interface to R, when speed and flexibility
 matter most. Here the programmer gets close(r) to R's C-level
 API.
 
+:mod:`rpy2.rlike`
+^^^^^^^^^^^^^^^^^
+
+Data structures and functions to mimic some of R's features and specificities
+
 
 
 Design notes

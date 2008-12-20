@@ -186,12 +186,14 @@ class TaggedListTestCase(unittest.TestCase):
         tv = [1,2,3]
         tl = rlc.TaggedList(tv, tags = tn)
         self.assertEquals(3, len(tl))
-        tl.pop()
+        elt = tl.pop()
+        self.assertEquals(3, elt)
         self.assertEquals(2, len(tl))
         self.assertEquals(tl.tags(), ('a', 'b'))
         self.assertEquals(tuple(tl), (1, 2))
 
-        tl.pop(0)
+        elt = tl.pop(0)
+        self.assertEquals(1, elt)
         self.assertEquals(1, len(tl))
         self.assertEquals(tl.tags(), ('b', ))
 
