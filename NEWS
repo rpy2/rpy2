@@ -2,11 +2,38 @@
 Release 2.0.1
 =============
 
+New features
+------------
+
+:mod:`rpy2.robjects`:
+
+- Property `names` for the :class:`RVector` methods :meth:`getnames` 
+  and :meth:`setnames` (this was likely forgotten for Release 2.0.0).
+
+- Property `rclass` for :class:`RObjectMixin` 
+
+Changes
+-------
+
+:mod:`rpy2.robjects`:
+
+- :meth:`rclass` becomes :meth:`getrclass`
+
 Bugs fixed
 ----------
 
 - Having the environment variable R_HOME specified resulted in an error
   when importing :mod:`rpy2.rinterface` # root of the problem spotted by Peter
+
+- Setup.py has no longer a (possibly outdated) static hardcoded version number
+  for rpy2
+
+- Testing no longer stops with an error in the absence of the third-party
+  module :mod:`numpy`
+
+- :meth:`rpy2.rlike.container.TaggedList.pop` is now returning the element
+  matching the given index
+
 
 
 Release 2.0.0

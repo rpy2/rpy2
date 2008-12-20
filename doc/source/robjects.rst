@@ -220,6 +220,8 @@ used.
 .. index::
    pair: RVector;indexing
 
+.. _robjects-vectors-indexing:
+
 Indexing
 --------
 
@@ -228,9 +230,18 @@ and R indexing starts at one.
 
 The python :meth:`__getitem__` method behaves like a Python user would expect
 it for a vector (and indexing starts at zero),
-while the method :meth:`subset` behaves like a R user would expect it
-(indexing starts at one, and a vector of integers, booleans, or strings can
-be given to subset elements).
+while the method :meth:`subset` behaves like a R user would expect subsetting
+to happen that is:
+
+* indexing starts at one
+
+* the parameter to subset on can be a vector of 
+
+  - integers (negative integers meaning exlusion of the element)
+
+  - booleans
+
+  - strings
 
 >>> x = robjects.r.seq(1, 10)
 >>> x[0]
@@ -257,7 +268,7 @@ respectively element exclusion and recycling rule:
 >>> x.r[True]
 1:10
 
-This class is using the class :class:`rinterface.SexpVector`, 
+This class is extending the class :class:`rinterface.SexpVector`, 
 and its documentation can be referred to for details of what is happenening
 at the low-level.
 
@@ -384,6 +395,8 @@ c("letter", "value")
    :members:
 
 
+.. _robjects-environments:
+
 Environments
 ============
 
@@ -452,18 +465,29 @@ Python function:
 >>> rnorm = robjects.r.rnorm
 >>> plot(rnorm(100), ylab="random")
 
-In Python, arguments to a function are split into two groups:
+This is all looking fine and simple until R parameters with names 
+such as `na.rm` are encountered. In those cases, using the special
+syntax `**kwargs` is one way to go.
 
-* A first group for which parameters are in defined order
+Let's take an example in R:
 
-* A second group for which parameters are associated a name/keyword,
-  and a default value. In that second group the order is lost, as it is
-  passed as a Python dictionary.
+.. code-block:: r
 
-Those two groups can be used in function calls.
+   sum(0, na.rm = TRUE)
 
+In Python it can then write:
 
-The class inherits from the class
+.. code-block:: python
+
+   from rpy2 import robjects
+
+   myparams = {'na.rm': True}
+   robjects.r.sum(0, **myparams)
+
+Things are also not always that simple, as the use of dictionary does
+ensure that the order in which the parameters are passed is conserved.
+
+The R functions as defined in :mod:`rpy2.robjects` inherit from the class
 :class:`rpy2.rinterface.SexpClosure`, and further documentation
 on the behavior of function can be found in Section :ref:`rinterface-functions`.
 

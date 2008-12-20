@@ -1,17 +1,11 @@
 /* A python-R interface*/
 
 /* 
- * This is an attempt at cleaning up RPy, while adding features
- * at the same time. In other words, this can be seen as a rewrite 
- * of RPy.
- *
  * The authors for the original RPy code, as well as
  * belopolsky for his contributed code, are listed here as authors;
- * parts of this code is (sometimes shamelessly but with great 
- * respect for the work) "inspired/copied" from their contributions. 
+ * although the design is largely new, parts of this code is
+ * derived from their contributions. 
  * 
- * FIXME: get everyone's name in the license block
- *
  * Laurent Gautier - 2008
  */
 
@@ -28,15 +22,17 @@
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
  * for the specific language governing rights and limitations under the
  * License.
+ * 
+ * Copyright (C) 2008 Laurent Gautier
  *
- * original RPy Authors: Walter Moreira.
- *                       Gregory R. Warnes <greg@warnes.net> (Maintainer)
+ * Portions created by Alexander Belopolsky are 
+ * Copyright (C) 2006 Alexander Belopolsky.
  *
- * Original code for wrapping R's C-level SEXPs:   Alexander Belopolsky
- * (this code borrows a *lot* from it)
+ * Portions created by Gregory R. Warnes are
+ * Copyright (C) 2003-2008 Gregory Warnes.
  *
- * This code: Laurent Gautier
- *
+ * Portions created by Walter Moreira are 
+ * Copyright (C) 2002-2003
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or

@@ -604,10 +604,26 @@ a context to the function.
 >>> s = sum(x)
 >>> s[0]
 6
->>>
+
+.. rubric:: Named arguments
+
+Named arguments to an R function can be specified just the way
+they would be with any other regular Python function.
+
+>>> rnorm = rinterface.globalEnv.get("rnorm")
+>>> rnorm(rinterface.SexpVector([1, ], rinterface.INTSXP), 
+          mean = rinterface.SexpVector([2, ], rinterface.INTSXP))[0]
+0.32796768001636134
+
+There are however frequent names for R parameters causing problems: all the names with a *dot*. using such parameters for an R function will either require
+to:
+
+* use the special syntax `**kwargs` on a dictionary with the named parameters
+
+* use the method :meth:`rcall`.  
 
 
-.. index::
+.. Index::
    single: rcall; order of parameters
 
 .. rubric:: Order for named parameters
@@ -623,14 +639,16 @@ permits calling a function the same way it would in R. For example::
 
    import rpy2.rlike.container as rpc
    args = rpc.ArgsDict()
-   args['x'] = rinterface.SexpVector([1,2,3], rinterface.INTSXP)
-   args[None] = rinterface.SexpVector([4,5], rinterface.INTSXP)
-   args['y'] = rinterface.SexpVector([6, ], rinterface.INTSXP)
+   args['x'] = rinterface.IntSexpVector([1,2,3], rinterface.INTSXP)
+   args[None] = rinterface.IntSexpVector([4,5], rinterface.INTSXP)
+   args['y'] = rinterface.IntSexpVector([6, ], rinterface.INTSXP)
    rlist = rinterface.baseNameSpaceEnv['list']
    rl = rlist.rcall(args.items())
 
 >>> [x for x in rl.do_slot("names")]
 ['x', '', 'y']
+
+
 
 .. index::
    single: closureEnv

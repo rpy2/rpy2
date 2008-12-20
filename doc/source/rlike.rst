@@ -119,12 +119,10 @@ the sequence protocol can be found here.
 (although more flexibility can be achieved using their
 method :meth:`iterontags`):
 
-
 >>> import rpy2.rlike.container as rlc
 >>> tl = rlc.TaggedList([1, 2, 3], tags = ('a', 'b', 'a'))
 >>> rlf.tapply(tl, tl.tags(), sum)
 [('a', 4), ('b', 2)]
-
 
 .. module:: rpy2.rlike.indexing
 
@@ -133,16 +131,18 @@ Indexing
 
 Much of the R-style indexing can be achieved with Python's list comprehension:
 
->>> x = ('a', 'b', 'c')
->>> x_i = (0, 2)
->>> [x[i] for i in x_i]
+>>> l = ('a', 'b', 'c')
+>>> l_i = (0, 2)
+>>> [l[i] for i in l_i]
 ['a', 'c']
 
 In `R`, negative indexes mean that values should be excluded. Again,
-list comprehension can be used:
+list comprehension can be used (although this is not the most efficient way):
 
->>> x = ('a', 'b', 'c') 
->>> x_i = (0, 2)
+>>> l = ('a', 'b', 'c') 
+>>> l_i = (-1, -2)
+>>> [x for i, x in enumerate(l) if -i not in l_i]
+['a']
 
 .. function:: order(seq, cmp = default_cmp, reverse = False)
 

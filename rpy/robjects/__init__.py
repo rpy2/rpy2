@@ -114,6 +114,7 @@ def repr_robject(o, linesep=os.linesep):
 
 
 class RObjectMixin(object):
+    """ Class to provide methods common to all RObject instances """
     name = None
 
     def __str__(self):
@@ -143,12 +144,14 @@ class RObjectMixin(object):
         """
         return repr_robject(self, linesep='\n')
 
-    def rclass(self):
+    def getrclass(self):
         """ Return the name of the R class for the object. """
         return baseNameSpaceEnv["class"](self)
 
+    rclass = property(getrclass)
 
 class RObject(RObjectMixin, rinterface.Sexp):
+    """ Base class for all R objects. """
     def __setattr__(self, name, value):
         if name == '_sexp':
             if not isinstance(value, rinterface.Sexp):
@@ -241,6 +244,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         return res
 
     def assign(self, index, value):
+        """ Assign a given value to a given index position in the vector """
         if not (isinstance(index, rlc.TaggedList) | \
                     isinstance(index, rlc.ArgsDict)):
             args = rlc.TaggedList([conversion.py2ro(index), ])
@@ -269,15 +273,20 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         res = super(RVector, self).__setitem__(i, value)
 
     def getnames(self):
+        """ Get the element names, calling the R function names(). """
         res = r.names(self)
         return res
 
     def setnames(self, value):
-        """ Return a vector of names
-        (like the R function 'names' does it)."""
+        """ Set the element names
+        (like the R function 'names<-' does it)."""
 
         res = r["names<-"](self, value)
         return res
+
+    names = property(getnames, setnames, 
+                     "Names for the items in the vector.")
+
 
 class StrVector(RVector):
     """ Vector of string elements """
@@ -462,11 +471,13 @@ class RFormula(RObjectMixin, rinterface.Sexp):
         super(RFormula, self).__init__(robj)
         
     def getenvironment(self):
+        """ Get the environment in which the formula is finding its symbols."""
         res = self.do_slot(".Environment")
         res = conversion.ri2py(res)
         return res
 
     def setenvironment(self, val):
+        """ Set the environment in which a formula will find its symbols."""
         if not isinstance(val, rinterface.SexpEnvironment):
             raise ValueError("The environment must be an instance of" +
                              " rpy2.rinterface.Sexp.environment")

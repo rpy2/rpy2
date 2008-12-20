@@ -2,9 +2,17 @@ import unittest
 import rpy2.robjects as robjects
 r = robjects.r
 
-import numpy
-import rpy2.robjects.numpy2ri as rpyn
+try:
+    import numpy
+    has_numpy = True
+    import rpy2.robjects.numpy2ri as rpyn
+except:
+    has_numpy = False
 
+
+class MissingNumpyDummyTestCase(unittest.TestCase):
+    def testMissingNumpy(self):
+        self.assertTrue(False) # numpy is missing. No tests.
 
 class NumpyConversionsTestCase(unittest.TestCase):
 
@@ -87,7 +95,10 @@ class NumpyConversionsTestCase(unittest.TestCase):
         self.assertRaises(ValueError, robjects.conversion.py2ri, u)
 
 def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(NumpyConversionsTestCase)
+    if has_numpy:
+        return unittest.TestLoader().loadTestsFromTestCase(NumpyConversionsTestCase)
+    else:
+        return unittest.TestLoader().loadTestsFromTestCase(MissingNumpyDummyTestCase)
 
 if __name__ == '__main__':
     unittest.main()
