@@ -1,3 +1,11 @@
+rpy2 (2.0.1-2) unstable; urgency=low
+
+  * Second try uploading to Debian			(Closes: #507622)
+
+  * debian/copyright: Added MPL as it is not in /usr/share/common-licenses
+  
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 25 Dec 2008 11:37:38 -0600
+
 rpy2 (2.0.1-1) unstable; urgency=low
 
   * New upstream version (taken as revision 712 from svn)
