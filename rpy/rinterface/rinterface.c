@@ -32,7 +32,7 @@
  * Copyright (C) 2003-2008 Gregory Warnes.
  *
  * Portions created by Walter Moreira are 
- * Copyright (C) 2002-2003
+ * Copyright (C) 2002-2003 Walter Moreira
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
