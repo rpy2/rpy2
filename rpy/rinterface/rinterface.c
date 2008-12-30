@@ -217,6 +217,73 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   
 }
 
+static PyObject* showConsoleCallback = NULL;
+
+static PyObject* EmbeddedR_setShowConsole(PyObject *self,
+					  PyObject *args)
+{
+  
+  PyObject *result = NULL;
+  PyObject *function;
+  
+  if ( PyArg_ParseTuple(args, "O:console", 
+			&function)) {
+    
+    if (!PyCallable_Check(function)) {
+      PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+      return NULL;
+    }
+
+    Py_XDECREF(showConsoleCallback);
+    Py_XINCREF(function);
+    showConsoleCallback = function;
+    Py_INCREF(Py_None);
+    result = Py_None;
+  } else {
+    PyErr_SetString(PyExc_TypeError, "The parameter should be a callable.");
+  }
+  return result;
+  
+}
+
+PyDoc_STRVAR(EmbeddedR_setShowConsole_doc,
+            "Use the function to handle R console output.");
+
+static void
+EmbeddedR_ShowMessage(const char *buf)
+{
+  PyOS_sighandler_t old_int;
+  PyObject *arglist;
+  PyObject *result;
+
+  /* It is necessary to restore the Python handler when using a Python
+     function for I/O. */
+  old_int = PyOS_getsig(SIGINT);
+  PyOS_setsig(SIGINT, python_sigint);
+  arglist = Py_BuildValue("(s)", buf);
+  if (! arglist) {
+    PyErr_NoMemory();
+/*     signal(SIGINT, old_int); */
+    //return NULL;
+  }
+
+  if (showConsoleCallback == NULL) {
+    return;
+  }
+
+  result = PyEval_CallObject(showConsoleCallback, arglist);
+
+  Py_DECREF(arglist);
+/*   signal(SIGINT, old_int); */
+  
+  if (result == NULL) {
+    return;
+  }
+
+  Py_DECREF(result);
+  
+}
+
 static PyObject* readConsoleCallback = NULL;
 
 static PyObject* EmbeddedR_setReadConsole(PyObject *self,
@@ -415,6 +482,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
 
   #ifdef R_INTERFACE_PTRS
   /* Redirect R console output */
+  ptr_R_ShowMessage = EmbeddedR_ShowMessage;
   ptr_R_WriteConsole = EmbeddedR_WriteConsole;
   R_Outputfile = NULL;
   R_Consolefile = NULL;
