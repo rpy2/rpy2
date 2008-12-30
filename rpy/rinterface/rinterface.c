@@ -62,6 +62,7 @@
 /* FIXME: consider the use of parsing */
 /* #include <R_ext/Parse.h> */
 #include <R_ext/Rdynload.h>
+#include <R_ext/Rstartup.h>
 
 #include <signal.h>
 
@@ -360,6 +361,36 @@ static PyObject* EmbeddedR_init(PyObject *self)
   }
 
 
+#ifdef Win32
+  structRstart rp;
+  Rstart Rp = &rp;
+  R_DefParams(Rp);
+
+  char *RHome; 
+  if (getenv("R_HOME")) {
+    strcpy(RHome, getenv("R_HOME"));
+  } else {
+    PyErr_Format(PyExc_RuntimeError, "R_HOME not defined.");
+    return NULL;
+  }
+  Rp->rhome = RHome;
+
+  char *RHome; 
+  if (getenv("R_USER")) {
+    strcpy(RHome, getenv("R_USER"));
+  } else {
+    PyErr_Format(PyExc_RuntimeError, "R_USER not defined.");
+    return NULL;
+  }
+  Rp->home = RUser;
+
+  Rp->ReadConsole = EmbeddedR_ReadConsole;
+  Rp->WriteConsole = NULL;
+  Rp->WriteConsoleEx = EmbeddedR_WriteConsole;
+  Rp->R_Interactive = TRUE;
+  setup_term_ui();
+#endif
+
 #ifdef RIF_HAS_RSIGHAND
   R_SignalHandlers=0;
 #endif  
@@ -375,9 +406,6 @@ static PyObject* EmbeddedR_init(PyObject *self)
   R_CStackLimit = (uintptr_t) -1;
   /* --- */
 
-#ifdef Win32
-  setup_term_ui();
-#endif
   setup_Rmainloop();
 
   Py_XDECREF(embeddedR_isInitialized);
