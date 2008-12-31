@@ -148,11 +148,9 @@ static SEXP newSEXP(PyObject *object, const int rType);
 
 /* --- set output from the R console ---*/
 
-
-static PyObject* writeConsoleCallback = NULL;
-
-static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
-					   PyObject *args)
+static inline PyObject* EmbeddedR_setAnyCallback(PyObject *self,
+						 PyObject *args,
+						 PyObject **target)
 {
   
   PyObject *result = NULL;
@@ -166,9 +164,9 @@ static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
       return NULL;
     }
 
-    Py_XDECREF(writeConsoleCallback);
+    Py_XDECREF(*target);
     Py_XINCREF(function);
-    writeConsoleCallback = function;
+    *target = function;
     Py_INCREF(Py_None);
     result = Py_None;
   } else {
@@ -176,6 +174,14 @@ static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
   }
   return result;
   
+}
+
+static PyObject* writeConsoleCallback = NULL;
+
+static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
+					   PyObject *args)
+{
+  return EmbeddedR_setAnyCallback(self, args, &writeConsoleCallback);  
 }
 
 PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
@@ -222,28 +228,7 @@ static PyObject* showMessageCallback = NULL;
 static PyObject* EmbeddedR_setShowMessage(PyObject *self,
 					  PyObject *args)
 {
-  
-  PyObject *result = NULL;
-  PyObject *function;
-  
-  if ( PyArg_ParseTuple(args, "O:console", 
-			&function)) {
-    
-    if (!PyCallable_Check(function)) {
-      PyErr_SetString(PyExc_TypeError, "parameter must be callable");
-      return NULL;
-    }
-
-    Py_XDECREF(showMessageCallback);
-    Py_XINCREF(function);
-    showMessageCallback = function;
-    Py_INCREF(Py_None);
-    result = Py_None;
-  } else {
-    PyErr_SetString(PyExc_TypeError, "The parameter should be a callable.");
-  }
-  return result;
-  
+  return EmbeddedR_setAnyCallback(self, args, &showMessageCallback);  
 }
 
 PyDoc_STRVAR(EmbeddedR_setShowMessage_doc,
@@ -289,28 +274,7 @@ static PyObject* readConsoleCallback = NULL;
 static PyObject* EmbeddedR_setReadConsole(PyObject *self,
 					  PyObject *args)
 {
-  
-  PyObject *result = NULL;
-  PyObject *function;
-  
-  if ( PyArg_ParseTuple(args, "O:console", 
-			&function)) {
-    
-    if (!PyCallable_Check(function)) {
-      PyErr_SetString(PyExc_TypeError, "parameter must be callable");
-      return NULL;
-    }
-
-    Py_XDECREF(readConsoleCallback);
-    Py_XINCREF(function);
-    readConsoleCallback = function;
-    Py_INCREF(Py_None);
-    result = Py_None;
-  } else {
-    PyErr_SetString(PyExc_TypeError, "The parameter should be a callable.");
-  }
-  return result;
-  
+  return EmbeddedR_setAnyCallback(self, args, &readConsoleCallback); 
 }
 
 PyDoc_STRVAR(EmbeddedR_setReadConsole_doc,
@@ -370,6 +334,7 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
 /*   signal(SIGINT, old_int); */
   return 1;
 }
+
 
 
 /* --- Initialize and terminate an embedded R --- */
