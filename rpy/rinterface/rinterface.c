@@ -217,9 +217,9 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   
 }
 
-static PyObject* showConsoleCallback = NULL;
+static PyObject* showMessageCallback = NULL;
 
-static PyObject* EmbeddedR_setShowConsole(PyObject *self,
+static PyObject* EmbeddedR_setShowMessage(PyObject *self,
 					  PyObject *args)
 {
   
@@ -234,9 +234,9 @@ static PyObject* EmbeddedR_setShowConsole(PyObject *self,
       return NULL;
     }
 
-    Py_XDECREF(showConsoleCallback);
+    Py_XDECREF(showMessageCallback);
     Py_XINCREF(function);
-    showConsoleCallback = function;
+    showMessageCallback = function;
     Py_INCREF(Py_None);
     result = Py_None;
   } else {
@@ -246,8 +246,8 @@ static PyObject* EmbeddedR_setShowConsole(PyObject *self,
   
 }
 
-PyDoc_STRVAR(EmbeddedR_setShowConsole_doc,
-            "Use the function to handle R console output.");
+PyDoc_STRVAR(EmbeddedR_setShowMessage_doc,
+            "Use the function to handle R's alert messages.");
 
 static void
 EmbeddedR_ShowMessage(const char *buf)
@@ -267,11 +267,11 @@ EmbeddedR_ShowMessage(const char *buf)
     //return NULL;
   }
 
-  if (showConsoleCallback == NULL) {
+  if (showMessageCallback == NULL) {
     return;
   }
 
-  result = PyEval_CallObject(showConsoleCallback, arglist);
+  result = PyEval_CallObject(showMessageCallback, arglist);
 
   Py_DECREF(arglist);
 /*   signal(SIGINT, old_int); */
@@ -428,7 +428,10 @@ static PyObject* EmbeddedR_init(PyObject *self)
   }
 
 
-#ifdef Win32
+#ifndef Win32
+
+#else
+  /* --- Win32 --- */
   structRstart rp;
   Rstart Rp = &rp;
   R_DefParams(Rp);
@@ -468,6 +471,17 @@ static PyObject* EmbeddedR_init(PyObject *self)
   R_SignalHandlers=0;
 #endif  
 
+#ifdef R_INTERFACE_PTRS
+  /* Redirect R console output */
+  ptr_R_ShowMessage = EmbeddedR_ShowMessage;
+  ptr_R_WriteConsole = EmbeddedR_WriteConsole;
+  R_Outputfile = NULL;
+  R_Consolefile = NULL;
+  /* Redirect R console input */
+  ptr_R_ReadConsole = EmbeddedR_ReadConsole;
+
+#endif
+
   /* Taken from JRI:
    * disable stack checking, because threads will thow it off */
   R_CStackLimit = (uintptr_t) -1;
@@ -479,16 +493,6 @@ static PyObject* EmbeddedR_init(PyObject *self)
   embeddedR_status = RPY_R_INITIALIZED;
   embeddedR_isInitialized = Py_True;
   Py_INCREF(Py_True);
-
-  #ifdef R_INTERFACE_PTRS
-  /* Redirect R console output */
-  ptr_R_ShowMessage = EmbeddedR_ShowMessage;
-  ptr_R_WriteConsole = EmbeddedR_WriteConsole;
-  R_Outputfile = NULL;
-  R_Consolefile = NULL;
-  /* Redirect R console input */
-  ptr_R_ReadConsole = EmbeddedR_ReadConsole;
-  #endif
 
   RPY_SEXP(globalEnv) = R_GlobalEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
@@ -2606,6 +2610,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_setWriteConsole_doc},
   {"setReadConsole",	(PyCFunction)EmbeddedR_setReadConsole,	 METH_VARARGS,
    EmbeddedR_setReadConsole_doc},
+  {"setShowMessage",	(PyCFunction)EmbeddedR_setShowMessage,	 METH_VARARGS,
+   EmbeddedR_setShowMessage_doc},
   {"findVarEmbeddedR",	(PyCFunction)EmbeddedR_findVar,	 METH_VARARGS,
    EmbeddedR_findVar_doc},
   {"str_typeint",	(PyCFunction)EmbeddedR_sexpType, METH_VARARGS,

@@ -24,6 +24,9 @@ class EmbeddedRTestCase(unittest.TestCase):
         res = rinterface.baseNameSpaceEnv["readline"]()
         self.assertEquals(yes.strip(), res[0])
         rinterface.setReadConsole(rinterface.consoleRead)
+        
+    def testSetShowMessage(self):
+        self.assertTrue(False) # no unit test (yet)
 
 #FIXME: end and initialize again causes currently a lot a trouble...
     def testCallErrorWhenEndedR(self):
