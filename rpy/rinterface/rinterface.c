@@ -431,6 +431,11 @@ static PyObject* EmbeddedR_init(PyObject *self)
 #endif  
   /* int status = Rf_initEmbeddedR(n_args, options);*/
   status = Rf_initialize_R(n_args, options);
+  if (status < 0) {
+    PyErr_SetString(PyExc_RuntimeError, "Error while initializing R.");
+    return NULL;
+  }
+
   R_Interactive = TRUE;
 #ifdef RIF_HAS_RSIGHAND
   R_SignalHandlers=0;
