@@ -94,7 +94,7 @@ static PyObject *initOptions;
 static const int maxValidSexpType = 99;
 static char **validSexpType;
 
-static SEXP GetErrMessage_SEXP;
+static SEXP errMessage_SEXP;
 static PyObject *RPyExc_RuntimeError = NULL;
 
 //FIXME: see the details of interruption
@@ -469,8 +469,8 @@ static PyObject* EmbeddedR_init(PyObject *self)
   RPY_SEXP(emptyEnv) = R_EmptyEnv;
   RPY_SEXP(na_string) = NA_STRING;
 
-  GetErrMessage_SEXP = findVar(install("geterrmessage"), 
-			       R_BaseNamespace);
+  errMessage_SEXP = findVar(install("geterrmessage"), 
+			    R_BaseNamespace);
 
   PyObject *res = PyInt_FromLong(status);
 
@@ -511,7 +511,7 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   RPY_SEXP(globalEnv) = R_EmptyEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
   RPY_SEXP(emptyEnv) = R_EmptyEnv;
-  GetErrMessage_SEXP = R_NilValue; 
+  errMessage_SEXP = R_NilValue; 
 
   //FIXME: Is it possible to reinitialize R later ?
   //Py_XDECREF(embeddedR_isInitialized);
@@ -532,9 +532,9 @@ static void
 EmbeddedR_exception_from_errmessage(void)
 {
   SEXP expr, res;
-  //PROTECT(GetErrMessage_SEXP)
+  //PROTECT(errMessage_SEXP)
   PROTECT(expr = allocVector(LANGSXP, 1));
-  SETCAR(expr, GetErrMessage_SEXP);
+  SETCAR(expr, errMessage_SEXP);
   PROTECT(res = Rf_eval(expr, R_GlobalEnv));
   char *message = CHARACTER_VALUE(res);
   UNPROTECT(2);
