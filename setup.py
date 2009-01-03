@@ -109,8 +109,10 @@ def getRinterface_ext(RHOME, r_packversion):
     #define_macros.append(('RPY_DEBUG_CONSOLE', 1))
 
     include_dirs = get_rconfig(RHOME, '--cppflags')[0].split()
-    include_dirs = [x.lstrip('-I') for x in include_dirs]
-        
+    for i, d in enumerate(include_dirs):
+        if d.startswith('-I'):
+           include_dirs[i] = d[2:]
+    
     rinterface_ext = Extension(
             pack_name + '.rinterface.rinterface',
             [os.path.join('rpy', 'rinterface', 'array.c'), 
