@@ -58,15 +58,16 @@ class EmbeddedRTestCase(unittest.TestCase):
                           ('aa', '--verbose', '--no-save'))
 
     def testInterruptR(self):
-        rpy_code = tempfile.NamedTemporaryFile(mode='w', suffix='py')
+        rpy_code = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
+                                               delete = False)
         rpy_code_str = os.linesep.join(['''import rpy2.robjects as ro''',
                                         '''ro.r('i <- 0''',
                                         '''while(TRUE) {''',
                                         '''    i <- i+1''',
-                                        '''    f = file("%s", mode="w")''',
-                                        '''close(f); Sys.sleep(0.01)''',
+                                        '''    Sys.sleep(0.01)''',
                                         '''}') '''])
         rpy_code.write(rpy_code_str)
+        rpy_code.close()
         child_proc = subprocess.Popen(rpy_code.name, executable='python')
         child_proc.send_signal(signal.SIGINT)
         ret_code = child_proc.poll()
