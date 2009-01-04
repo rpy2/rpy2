@@ -1004,11 +1004,13 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 #endif
   python_sigint = old_int;
   
-/*   signal(SIGINT, interrupt_R); */
+  /*  signal(SIGINT, interrupt_R); */
 
   interrupted = 0;
+  // Py_BEGIN_ALLOW_THREADS
   //FIXME: evaluate expression in the given
   res_R = R_tryEval(expr_R, env_R, &error);
+  // Py_END_ALLOW_THREADS
 #ifdef _WIN32
   PyOS_setsig(SIGBREAK, old_int);   
 #else 
@@ -1161,7 +1163,6 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     Py_XDECREF(citems);
   }
 
-  //Py_BEGIN_ALLOW_THREADS
 //FIXME: R_GlobalContext ?
   PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
   //PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
@@ -1171,7 +1172,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 /*     return NULL; */
 /*   } */
   UNPROTECT(2);
-  //Py_END_ALLOW_THREADS
+
 
   if (! res_R) {
     EmbeddedR_exception_from_errmessage();
