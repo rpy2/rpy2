@@ -1,6 +1,7 @@
 import unittest
 import itertools
 import rpy2.rinterface as rinterface
+import os, subprocess, tempfile, signal
 
 rinterface.initr()
 
@@ -55,6 +56,21 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testSet_initoptions(self):
         self.assertRaises(RuntimeError, rinterface.set_initoptions, 
                           ('aa', '--verbose', '--no-save'))
+
+    def testInterruptR(self):
+        rpy_code = tempfile.NamedTemporaryFile(mode='w', suffix='py')
+        rpy_code_str = os.linesep.join(['''import rpy2.robjects as ro''',
+                                        '''ro.r('i <- 0''',
+                                        '''while(TRUE) {''',
+                                        '''    i <- i+1''',
+                                        '''    f = file("%s", mode="w")''',
+                                        '''close(f); Sys.sleep(0.01)''',
+                                        '''}') '''])
+        rpy_code.write(rpy_code_str)
+        child_proc = subprocess.Popen(rpy_code.name, executable='python')
+        child_proc.send_signal(signal.SIGINT)
+        ret_code = child_proc.poll()
+        self.assertTrue(ret_code is not None) # Interruption failed
 
 class ObjectDispatchTestCase(unittest.TestCase):
     def testObjectDispatchLang(self):
