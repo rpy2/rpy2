@@ -64,16 +64,15 @@ def get_rconfig(RHOME, about):
         rconfig = rp.readline()
     rconfig = rconfig.strip()
     #sanity check of what is returned into rconfig
-    rconfig_m = re.match('^(-L.+) (-l.+)$', rconfig)
-    #cheap fix for the case -lblas is returned
-    #FIXME: clean/unify that at one point
-    if rconfig_m is None:
-        rconfig_m = re.match('^(-l.+)$', rconfig)
-    if rconfig_m is None:
-        # MacOSX
-        rconfig_m = re.match('^(-F.+) (-framework.+)$', rconfig)
-    if rconfig_m is None:
-        rconfig_m = re.match('^(-I.+)$', rconfig)
+    rconfig_m = None
+    possible_patterns = ('^(-L.+) (-l.+)$',
+                         '^(-l.+)$',  # fix for the case -lblas is returned
+                         '^(-F.+) (-framework.+)$', # fix for MacOS X
+                         '^(-I.+)$')
+    for pattern in possible_patterns:
+        rconfig_m = re.match(pattern, rconfig)
+        if rconfig_m is not None:
+            break
     if rconfig_m is None:
         raise Exception(cmd + '\nreturned\n' + rconfig)
     return rconfig_m.groups()
@@ -111,7 +110,9 @@ def getRinterface_ext(RHOME, r_packversion):
     include_dirs = get_rconfig(RHOME, '--cppflags')[0].split()
     for i, d in enumerate(include_dirs):
         if d.startswith('-I'):
-           include_dirs[i] = d[2:]
+            include_dirs[i] = d[2:]
+        else:
+            raise ValueError('Trouble with R configuration %s' %d)
     
     rinterface_ext = Extension(
             pack_name + '.rinterface.rinterface',
