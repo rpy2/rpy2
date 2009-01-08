@@ -140,7 +140,8 @@ Simple example:
 
 >>> letters = robjects.r['letters']
 >>> rcode = 'paste(%s, collapse="-")' %(letters.r_repr())
->>> robjects.r(rcode)
+>>> res = robjects.r(rcode)
+>>> print(res)
 "a-b-c-d-e-f-g-h-i-j-k-l-m-n-o-p-q-r-s-t-u-v-w-x-y-z"
 
 
@@ -177,13 +178,15 @@ Creating rpy2 vectors
 
 Creating R vectors can be achieved simply:
 
->>> robjects.StrVector(['abc', 'def'])
+>>> res = robjects.StrVector(['abc', 'def'])
+>>> print(res.r_repr())
 c("abc", "def")
->>> robjects.IntVector([1, 2, 3])
+>>> res = robjects.IntVector([1, 2, 3])
+>>> print(res.r_repr())
 1:3
->>> robjects.FloatVector([1.1, 2.2, 3.3])
+>>> res = robjects.FloatVector([1.1, 2.2, 3.3])
+>>> print(res.r_repr())
 c(1.1, 2.2, 3.3)
-
 
 R matrixes and arrays are just vectors with a `dim` attribute.
 
@@ -205,13 +208,14 @@ Calling R functions will be disappointingly similar to calling
 Python functions:
 
 >>> rsum = robjects.r['sum']
->>> rsum(robjects.IntVector([1,2,3]))
+>>> rsum(robjects.IntVector([1,2,3]))[0]
 6L
 
 Keywords can be used with the same ease:
 
 >>> rsort = robjects.r['sort']
->>> rsort(robjects.IntVector([1,2,3]), decreasing=True)
+>>> res = rsort(robjects.IntVector([1,2,3]), decreasing=True)
+>>> print(res.r_repr())
 c(3L, 2L, 1L)
 
 
