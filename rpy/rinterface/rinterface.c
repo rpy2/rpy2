@@ -761,28 +761,28 @@ PyDoc_STRVAR(Sexp_sexp_doc,
 static PyObject*
 Sexp_rsame(PyObject *self, PyObject *other)
 {
-
- if (! PyObject_IsInstance(other, 
-			   (PyObject*)&Sexp_Type)) {
+  
+  if (! PyObject_IsInstance(other, 
+			    (PyObject*)&Sexp_Type)) {
     PyErr_Format(PyExc_ValueError, 
 		 "Can only compare Sexp objects.");
     return NULL;
- }
-
- SEXP sexp_self = RPY_SEXP(((PySexpObject*)self));
- if (! sexp_self) {
-   PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-   return NULL;;
- }
- 
- SEXP sexp_other = RPY_SEXP(((PySexpObject*)other));
- if (! sexp_other) {
+  }
+  
+  SEXP sexp_self = RPY_SEXP(((PySexpObject*)self));
+  if (! sexp_self) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;;
- }
- 
- long same = (sexp_self == sexp_other);
- return PyBool_FromLong(same);
+  }
+  
+  SEXP sexp_other = RPY_SEXP(((PySexpObject*)other));
+  if (! sexp_other) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;;
+  }
+  
+  long same = (sexp_self == sexp_other);
+  return PyBool_FromLong(same);
 }
 PyDoc_STRVAR(Sexp_rsame_doc,
 	     "Is the given object representing the same underlying R object as the instance.");
