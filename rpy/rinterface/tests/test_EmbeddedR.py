@@ -1,7 +1,7 @@
 import unittest
 import itertools
 import rpy2.rinterface as rinterface
-import os, subprocess, tempfile, signal
+import os, subprocess, time, tempfile, signal
 
 rinterface.initr()
 
@@ -68,10 +68,14 @@ class EmbeddedRTestCase(unittest.TestCase):
                                         '''}') '''])
         rpy_code.write(rpy_code_str)
         rpy_code.close()
-        child_proc = subprocess.Popen(rpy_code.name, executable='python')
+        child_proc = subprocess.Popen(('python', rpy_code.name))
+        #child_proc = subprocess.Popen(('sleep', '113'))
+        #import pdb; pdb.set_trace()
         child_proc.send_signal(signal.SIGINT)
         ret_code = child_proc.poll()
-        self.assertTrue(ret_code is not None) # Interruption failed
+        #print(ret_code)
+        #import pdb; pdb.set_trace()
+        self.assertFalse(ret_code is None) # Interruption failed
 
 class ObjectDispatchTestCase(unittest.TestCase):
     def testObjectDispatchLang(self):
