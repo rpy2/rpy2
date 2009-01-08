@@ -16,7 +16,8 @@ ALLSPHINXOPTS   = -d build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html      to make standalone HTML files"
-	@echo "  pickle    to make pickle files (usable by e.g. sphinx-web)"
+	@echo "  pickle    to make pickle files"
+	@echo "  json      to make JSON files"
 	@echo "  htmlhelp  to make HTML files and a HTML help project"
 	@echo "  latex     to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
 	@echo "  changes   to make an overview over all changed/added/deprecated items"
@@ -35,11 +36,15 @@ pickle:
 	mkdir -p build/pickle build/doctrees
 	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) build/pickle
 	@echo
-	@echo "Build finished; now you can process the pickle files or run"
-	@echo "  sphinx-web build/pickle"
-	@echo "to start the sphinx-web server."
+	@echo "Build finished; now you can process the pickle files."
 
 web: pickle
+
+json:
+	mkdir -p build/json build/doctrees
+	$(SPHINXBUILD) -b json $(ALLSPHINXOPTS) build/json
+	@echo
+	@echo "Build finished; now you can process the JSON files."
 
 htmlhelp:
 	mkdir -p build/htmlhelp build/doctrees
