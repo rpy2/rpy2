@@ -47,7 +47,8 @@ Example in R:
 
 With :mod:`rpy2`:
 
->>> robjects.r['pi']
+>>> pi = robjects.r['pi']
+>>> pi[0]
 3.14159265358979
 
 .. note::
@@ -56,6 +57,8 @@ With :mod:`rpy2`:
    R *base* package, unless an other variable with the name `pi` was
    created in the `globalEnv`. The Section :ref:`robjects-environments`
    tells more about that.
+
+   Also note that pi is not a scalar but a vector of length 1
 
 
 Evaluating R code
@@ -75,7 +78,8 @@ Example in R:
 
 With :mod:`rpy2`:
 
->>> robjects.r('pi')
+>>> pi = robjects.r('pi')
+>>> pi[0]
 3.14159265358979
 
 
@@ -85,9 +89,11 @@ With :mod:`rpy2`:
    :ref:`introduction-vectors` is recommended as it will provide explanations
    for the following behavior:
    
-   >>> robjects.r('pi') + 2
+   >>> piplus2 = robjects.r('pi') + 2
+   >>> piplus2.r_repr()
    c(3.14159265358979, 2)
-   >>> robjects.r('pi')[0] + 2
+   >>> pi0plus2 = robjects.r('pi')[0] + 2
+   >>> print(pi0plus2)
    5.1415926535897931
 
 
@@ -112,7 +118,8 @@ but first also creates an R function
 `f`. That function `f` is present in the R `Global Environement`, and can
 be accessed with the `__getitem__` mechanism outlined above:
 
->>> robjects.globalEnv['f']
+>>> r_f = robjects.globalEnv['f']
+>>> r_f.r_repr()
 function (r) 
 {
     2 * pi * r
@@ -120,7 +127,8 @@ function (r)
 
 or 
 
->>> robjects.r['f']
+>>> r_f = robjects.r['f']
+>>> r_f.r_repr()
 function (r) 
 {
     2 * pi * r
