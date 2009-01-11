@@ -80,8 +80,6 @@ typedef unsigned int *uintptr_t;
 extern __declspec(dllimport) uintptr_t R_CStackLimit; /* C stack limit */
 #endif
 
-/* A tuple that holds options to initialize R */
-static PyObject *initOptions;
 
 /* Helper variables to quickly resolve SEXP types.
  * The first variable gives the highest possible
@@ -90,8 +88,11 @@ static PyObject *initOptions;
  * the SEXP name (INTSXP, REALSXP, etc...), or a NULL
  * if there is no such valid SEXP.
  */
-static const int maxValidSexpType = 99;
+#define RPY_MAX_VALIDSEXTYPE 99
 static char **validSexpType;
+
+/* A tuple that holds options to initialize R */
+static PyObject *initOptions;
 
 static SEXP errMessage_SEXP;
 static PyObject *RPyExc_RuntimeError = NULL;
@@ -1806,7 +1807,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
       return -1;
     }
   } else if (PySequence_Check(object)) {
-    if ((sexptype < 0) || (sexptype > maxValidSexpType) || 
+    if ((sexptype < 0) || (sexptype > RPY_MAX_VALIDSEXTYPE) || 
 	(! validSexpType[sexptype])) {
       PyErr_Format(PyExc_ValueError, "Invalid SEXP type.");
       embeddedR_freelock();
@@ -2562,7 +2563,7 @@ EmbeddedR_sexpType(PyObject *self, PyObject *args)
 
   const char *sexp_type = validSexpType[sexp_i];
 
-  if ((sexp_i < 0) || (sexp_i >= maxValidSexpType) || (! sexp_type)) {
+  if ((sexp_i < 0) || (sexp_i >= RPY_MAX_VALIDSEXTYPE) || (! sexp_type)) {
 
     PyErr_Format(PyExc_LookupError, "'%i' is not a valid SEXP value.", sexp_i);
     return NULL;
@@ -2703,13 +2704,18 @@ static R_ExternalMethodDef externalMethods[] = {
 
 
 /* --- Initialize the module ---*/
+static char **validSexpType;
+
 
 #define ADD_INT_CONSTANT(module, name) \
-  PyModule_AddIntConstant(module, #name, name)
-#define ADD_VALID_SEXP(name) \
-  validSexpType[name] = #name
+  PyModule_AddIntConstant(module, #name, name);	\
+
+#define ADD_SEXP_CONSTANT(module, name)		\
+  ADD_INT_CONSTANT(module, name);		\
+  validSexpType[name] = #name ;			\
+
 #define PYASSERT_ZERO(code) \
-  if ((code) != 0) {return ; }
+  if ((code) != 0) {return ; } \
 
 
 #ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
@@ -2744,6 +2750,48 @@ initrinterface(void)
   if (m == NULL)
     return;
   d = PyModule_GetDict(m);
+
+  /* Add SXP types */
+  validSexpType = calloc(RPY_MAX_VALIDSEXTYPE, sizeof(char *));
+  if (! validSexpType) {
+    PyErr_NoMemory();
+    return;
+  }
+
+  ADD_SEXP_CONSTANT(m, NILSXP);
+  ADD_SEXP_CONSTANT(m, SYMSXP);
+  ADD_SEXP_CONSTANT(m, LISTSXP);
+  ADD_SEXP_CONSTANT(m, CLOSXP);
+  ADD_SEXP_CONSTANT(m, ENVSXP);
+  ADD_SEXP_CONSTANT(m, PROMSXP);
+  ADD_SEXP_CONSTANT(m, LANGSXP);
+  ADD_SEXP_CONSTANT(m, SPECIALSXP);
+  ADD_SEXP_CONSTANT(m, BUILTINSXP);
+  ADD_SEXP_CONSTANT(m, CHARSXP);
+  ADD_SEXP_CONSTANT(m, STRSXP);
+  ADD_SEXP_CONSTANT(m, LGLSXP);
+  ADD_SEXP_CONSTANT(m, INTSXP);
+  ADD_SEXP_CONSTANT(m, REALSXP);
+  ADD_SEXP_CONSTANT(m, CPLXSXP);
+  ADD_SEXP_CONSTANT(m, DOTSXP);
+  ADD_SEXP_CONSTANT(m, ANYSXP);
+  ADD_SEXP_CONSTANT(m, VECSXP);
+  ADD_SEXP_CONSTANT(m, EXPRSXP);
+  ADD_SEXP_CONSTANT(m, BCODESXP);
+  ADD_SEXP_CONSTANT(m, EXTPTRSXP);
+  ADD_SEXP_CONSTANT(m, RAWSXP);
+  ADD_SEXP_CONSTANT(m, S4SXP);
+
+  /* longuest integer for R indexes */
+  ADD_INT_CONSTANT(m, R_LEN_T_MAX);
+
+  /* "Logical" (boolean) values */
+  ADD_INT_CONSTANT(m, TRUE);
+  ADD_INT_CONSTANT(m, FALSE);
+
+  /* R_ext/Arith.h */
+  ADD_INT_CONSTANT(m, NA_LOGICAL);
+  ADD_INT_CONSTANT(m, NA_INTEGER);
 
   initOptions = PyTuple_New(4);
 
@@ -2819,69 +2867,7 @@ initrinterface(void)
 			   (PyObject *)emptyEnv) < 0)
     return;
 
-  /* Add SXP types */
-  validSexpType = calloc(maxValidSexpType, sizeof(char *));
-  if (! validSexpType) {
-    PyErr_NoMemory();
-    return;
-  }
-  ADD_INT_CONSTANT(m, NILSXP);
-  ADD_VALID_SEXP(NILSXP);
-  ADD_INT_CONSTANT(m, SYMSXP);
-  ADD_VALID_SEXP(SYMSXP);
-  ADD_INT_CONSTANT(m, LISTSXP);
-  ADD_VALID_SEXP(LISTSXP);
-  ADD_INT_CONSTANT(m, CLOSXP);
-  ADD_VALID_SEXP(CLOSXP);
-  ADD_INT_CONSTANT(m, ENVSXP);
-  ADD_VALID_SEXP(ENVSXP);
-  ADD_INT_CONSTANT(m, PROMSXP);
-  ADD_VALID_SEXP(PROMSXP);
-  ADD_INT_CONSTANT(m, LANGSXP);
-  ADD_VALID_SEXP(LANGSXP);
-  ADD_INT_CONSTANT(m, SPECIALSXP);
-  ADD_VALID_SEXP(SPECIALSXP);
-  ADD_INT_CONSTANT(m, BUILTINSXP);
-  ADD_VALID_SEXP(BUILTINSXP);
-  ADD_INT_CONSTANT(m, CHARSXP);
-  ADD_VALID_SEXP(CHARSXP);
-  ADD_INT_CONSTANT(m, STRSXP);
-  ADD_VALID_SEXP(STRSXP);
-  ADD_INT_CONSTANT(m, LGLSXP);
-  ADD_VALID_SEXP(LGLSXP);
-  ADD_INT_CONSTANT(m, INTSXP);
-  ADD_VALID_SEXP(INTSXP);
-  ADD_INT_CONSTANT(m, REALSXP);
-  ADD_VALID_SEXP(REALSXP);
-  ADD_INT_CONSTANT(m, CPLXSXP);
-  ADD_VALID_SEXP(CPLXSXP);
-  ADD_INT_CONSTANT(m, DOTSXP);
-  ADD_VALID_SEXP(DOTSXP);
-  ADD_INT_CONSTANT(m, ANYSXP);
-  ADD_VALID_SEXP(ANYSXP);
-  ADD_INT_CONSTANT(m, VECSXP);
-  ADD_VALID_SEXP(VECSXP);
-  ADD_INT_CONSTANT(m, EXPRSXP);
-  ADD_VALID_SEXP(EXPRSXP);
-  ADD_INT_CONSTANT(m, BCODESXP);
-  ADD_VALID_SEXP(BCODESXP);
-  ADD_INT_CONSTANT(m, EXTPTRSXP);
-  ADD_VALID_SEXP(EXTPTRSXP);
-  ADD_INT_CONSTANT(m, RAWSXP);
-  ADD_VALID_SEXP(RAWSXP);
-  ADD_INT_CONSTANT(m, S4SXP);
-  ADD_VALID_SEXP(S4SXP);
 
-  /* longuest integer for R indexes */
-  ADD_INT_CONSTANT(m, R_LEN_T_MAX);
-
-  /* "Logical" (boolean) values */
-  ADD_INT_CONSTANT(m, TRUE);
-  ADD_INT_CONSTANT(m, FALSE);
-
-  /* R_ext/Arith.h */
-  ADD_INT_CONSTANT(m, NA_LOGICAL);
-  ADD_INT_CONSTANT(m, NA_INTEGER);
   PyObject *na_real = PyFloat_FromDouble(NA_REAL);
   if (PyDict_SetItemString(d, "NA_REAL", (PyObject *)na_real) < 0)
     return;
