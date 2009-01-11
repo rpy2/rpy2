@@ -48,8 +48,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include "Python.h"
+#include <signal.h>
+#include <setjmp.h>
 
+#include "Python.h"
 
 #include <R.h>
 #include <Rinternals.h>
@@ -64,8 +66,6 @@
 #include <R_ext/Rdynload.h>
 #include <R_ext/Rstartup.h>
 
-#include <signal.h>
-
 #include "rinterface.h"
 #include "array.h"
 #include "r_utils.h"
@@ -78,8 +78,6 @@ typedef unsigned int *uintptr_t;
 #endif
 extern __declspec(dllimport) uintptr_t R_CStackLimit; /* C stack limit */
 #endif
-
-
 
 /* A tuple that holds options to initialize R */
 static PyObject *initOptions;
@@ -123,8 +121,24 @@ inline void embeddedR_freelock(void) {
   embeddedR_status = embeddedR_status ^ RPY_R_BUSY;
 }
 
-/* The Python original SIGINT handler */
-PyOS_sighandler_t python_sigint;
+sigjmp_buf env_sigjmp;
+/* Python's signal handler */
+static PyOS_sighandler_t python_sighandler, last_sighandler;
+
+/* In SAGE, explicit defintions */
+/* /\* Python handler (definition varies across platforms) *\/ */
+/* #if defined(__CYGWIN32__) /\* Windows XP *\/ */
+/*   _sig_func_ptr python_sighandler; */
+/* #elif defined(__FreeBSD__) /\* FreeBSD *\/ */
+/*   sig_t python_sighandler; */
+/* #elif defined(__APPLE__) /\* OSX *\/ */
+/*   sig_t python_sighandler; */
+/* #elif defined (__sun__) || defined (__sun) /\* Solaris *\/ */
+/*   __sighandler_t python_sighandler; */
+/* #else /\* Other, e.g., Linux *\/ */
+/*   __sighandler_t python_sighandler; */
+/* #endif   */
+
 
 PyDoc_STRVAR(module_doc,
 	     "Low-level functions to interface with R.\n\
@@ -191,14 +205,12 @@ PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
 static void
 EmbeddedR_WriteConsole(const char *buf, int len)
 {
-  PyOS_sighandler_t old_int;
   PyObject *arglist;
   PyObject *result;
 
   /* It is necessary to restore the Python handler when using a Python
      function for I/O. */
-  old_int = PyOS_getsig(SIGINT);
-  PyOS_setsig(SIGINT, python_sigint);
+  PyOS_setsig(SIGINT, python_sighandler);
   arglist = Py_BuildValue("(s)", buf);
   if (! arglist) {
     PyErr_NoMemory();
@@ -244,7 +256,7 @@ EmbeddedR_ShowMessage(const char *buf)
   /* It is necessary to restore the Python handler when using a Python
      function for I/O. */
   old_int = PyOS_getsig(SIGINT);
-  PyOS_setsig(SIGINT, python_sigint);
+  PyOS_setsig(SIGINT, python_sighandler);
   arglist = Py_BuildValue("(s)", buf);
   if (! arglist) {
     PyErr_NoMemory();
@@ -291,7 +303,7 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   /* It is necessary to restore the Python handler when using a Python
      function for I/O. */
 /*   old_int = PyOS_getsig(SIGINT); */
-/*   PyOS_setsig(SIGINT, python_sigint); */
+/*   PyOS_setsig(SIGINT, python_sighandler); */
   arglist = Py_BuildValue("(s)", prompt);
   if (! arglist) {
     PyErr_NoMemory();
@@ -427,7 +439,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
 #endif
 
 #ifdef RIF_HAS_RSIGHAND
-  R_SignalHandlers=0;
+  R_SignalHandlers = 0;
 #endif  
   /* int status = Rf_initEmbeddedR(n_args, options);*/
   status = Rf_initialize_R(n_args, options);
@@ -438,7 +450,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
 
   R_Interactive = TRUE;
 #ifdef RIF_HAS_RSIGHAND
-  R_SignalHandlers=0;
+  R_SignalHandlers = 0;
 #endif  
 
 #ifdef R_INTERFACE_PTRS
@@ -973,6 +985,8 @@ static PyTypeObject Sexp_Type = {
  */
 
 
+static int __sig__n;
+
 /* Evaluate a SEXP. It must be constructed by hand. It raises a Python
    exception if an error ocurred in the evaluation */
 SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
@@ -989,28 +1003,28 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
     //env_R = R_GlobalContext;
   }
 
-  /* From Alexander's original code: */
-  /* Enable our handler for SIGINT inside the R
-     interpreter. Otherwise, we cannot stop R calculations, since
-     SIGINT is only processed between Python bytecodes. Also, save the
-     Python SIGINT handler because it is necessary to temporally
-	   restore it in user defined I/O Python functions. */
-  /* stop_events(); */
-  
-#ifdef _WIN32
-  old_int = PyOS_getsig(SIGBREAK);
-#else
-  old_int = PyOS_getsig(SIGINT);
-#endif
-  python_sigint = old_int;
-  
-  /*  signal(SIGINT, interrupt_R); */
-
   interrupted = 0;
-  // Py_BEGIN_ALLOW_THREADS
+  //Py_BEGIN_ALLOW_THREADS
+
+  last_sighandler = signal(SIGINT, interrupt_R);
+  if (last_sighandler != interrupt_R)
+    python_sighandler = last_sighandler;
+  __sig__n = sigsetjmp(env_sigjmp, 1);
+  if (__sig__n) {
+    if (__sig__n == SIGINT) {
+      PyErr_SetString(PyExc_KeyboardInterrupt, "");
+    } else {
+      PyErr_SetString(PyExc_RuntimeError, "");
+    }
+    return(0);
+  }
+
   //FIXME: evaluate expression in the given
   res_R = R_tryEval(expr_R, env_R, &error);
-  // Py_END_ALLOW_THREADS
+  
+  signal(SIGINT, python_sighandler);
+
+  //Py_END_ALLOW_THREADS
 #ifdef _WIN32
   PyOS_setsig(SIGBREAK, old_int);   
 #else 

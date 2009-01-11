@@ -19,6 +19,7 @@ typedef intobjargproc ssizeobjargproc;
 extern const unsigned int const RPY_R_INITIALIZED;
 extern const unsigned int const RPY_R_BUSY;
 
+
 /* Representation of R objects (instances) as instances in Python.
  */
 
