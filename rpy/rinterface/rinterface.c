@@ -61,6 +61,7 @@
 #include <R_ext/Complex.h>
 #include <Rembedded.h>
 
+
 /* FIXME: consider the use of parsing */
 /* #include <R_ext/Parse.h> */
 #include <R_ext/Rdynload.h>
@@ -102,6 +103,7 @@ int interrupted = 0;
 static void
 interrupt_R(int signum)
 {
+  //printf('interrupted.\n');
   interrupted = 1;
   error("Interrupted");
 }
@@ -1002,26 +1004,19 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
     //env_R = R_GlobalContext;
   }
 
-  interrupted = 0;
   //Py_BEGIN_ALLOW_THREADS
 
-  last_sighandler = signal(SIGINT, interrupt_R);
-  if (last_sighandler != interrupt_R)
-    python_sighandler = last_sighandler;
-  __sig__n = sigsetjmp(env_sigjmp, 1);
-  if (__sig__n) {
-    if (__sig__n == SIGINT) {
-      interrupted = 1;
-    } else {
-      //PyErr_SetString(PyExc_RuntimeError, "");
-    }
-    return(0);
-  }
-  
+#ifdef _WIN32  
+  last_sighandler = PyOS_setsig(SIGBREAK, interrupt_R);
+#else
+  last_sighandler = PyOS_setsig(SIGINT, interrupt_R);
+#endif
+
+  python_sighandler = last_sighandler;
+
   //FIXME: evaluate expression in the given
+  interrupted = 0;
   res_R = R_tryEval(expr_R, env_R, &error);
-  
-  signal(SIGINT, python_sighandler);
   
   //Py_END_ALLOW_THREADS
 #ifdef _WIN32
@@ -1029,9 +1024,11 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 #else 
   PyOS_setsig(SIGINT, python_sighandler);
 #endif
-  /* start_events(); */
+
+  //printf("interrupted: %i\n", interrupted);
   if (error) {
     if (interrupted) {
+      printf("Keyboard interrupt.\n");
       PyErr_SetNone(PyExc_KeyboardInterrupt);
     //FIXME: handling of interruptions
     } else {
@@ -1187,7 +1184,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 
 
   if (! res_R) {
-    EmbeddedR_exception_from_errmessage();
+    //EmbeddedR_exception_from_errmessage();
     //PyErr_Format(PyExc_RuntimeError, "Error while running R code");
     embeddedR_freelock();
     return NULL;
@@ -1324,7 +1321,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
   //Py_END_ALLOW_THREADS
 
   if (! res_R) {
-    EmbeddedR_exception_from_errmessage();
+    //EmbeddedR_exception_from_errmessage();
     //PyErr_Format(PyExc_RuntimeError, "Error while running R code");
     embeddedR_freelock();
     return NULL;
