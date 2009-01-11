@@ -350,6 +350,58 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   return 1;
 }
 
+static PyObject* chooseFileCallback = NULL;
+
+static PyObject* EmbeddedR_setChooseFile(PyObject *self,
+					 PyObject *args)
+{
+  return EmbeddedR_setAnyCallback(self, args, &chooseFileCallback);  
+}
+
+PyDoc_STRVAR(EmbeddedR_setChooseFile_doc,
+	     "Use the function to handle R's requests for choosing a file.");
+
+
+static int
+EmbeddedR_ChooseFile(int new, char *buf, int len)
+{
+  PyObject *arglist;
+  PyObject *result;
+
+  arglist = Py_BuildValue("(s)", buf);
+  if (! arglist) {
+    PyErr_NoMemory();
+  }
+
+  if (chooseFileCallback == NULL) {
+    Py_DECREF(arglist);
+    return 0;
+  }
+
+  result = PyEval_CallObject(chooseFileCallback, arglist);
+
+  Py_DECREF(arglist);
+  
+  if (result == NULL) {
+    return 0;
+  }
+
+  char *path_str = PyString_AsString(result);
+  if (! path_str) {
+    Py_DECREF(result);
+    return 0;
+  }
+
+  /* As shown in gnomeGUI */
+  int l=strlen(path_str);
+  strncpy((char *)buf, path_str, (l>len-1)?len-1:l);
+  buf[(l>len-1)?len-1:l] = '\0';
+  /* --- */
+  
+  Py_DECREF(result);
+
+  return l;
+}
 
 
 /* --- Initialize and terminate an embedded R --- */
@@ -438,6 +490,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   Rp->WriteConsole = NULL;
   Rp->WriteConsoleEx = EmbeddedR_WriteConsole;
   Rp->R_Interactive = TRUE;
+  Rp->ChooseFile = EmbeddedR_ChooseFile;
   setup_term_ui();
 #endif
 
@@ -464,7 +517,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   R_Consolefile = NULL;
   /* Redirect R console input */
   ptr_R_ReadConsole = EmbeddedR_ReadConsole;
-
+  ptr_R_ChooseFile = EmbeddedR_ChooseFile;
 #endif
 
   /* Taken from JRI:

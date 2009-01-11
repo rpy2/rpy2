@@ -29,6 +29,9 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testSetShowMessage(self):
         self.assertTrue(False) # no unit test (yet)
 
+    def testSetChooseFile(self):
+        self.assertTrue(False) # no unit test (yet)
+
 #FIXME: end and initialize again causes currently a lot a trouble...
     def testCallErrorWhenEndedR(self):
         self.assertTrue(False) # worked when tested, but calling endEmbeddedR causes trouble
