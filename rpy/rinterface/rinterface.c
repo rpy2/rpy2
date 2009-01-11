@@ -2711,7 +2711,7 @@ static char **validSexpType;
   PyModule_AddIntConstant(module, #name, name);	\
 
 #define ADD_SEXP_CONSTANT(module, name)		\
-  ADD_INT_CONSTANT(module, name);		\
+  PyModule_AddIntConstant(module, #name, name);	\
   validSexpType[name] = #name ;			\
 
 #define PYASSERT_ZERO(code) \
