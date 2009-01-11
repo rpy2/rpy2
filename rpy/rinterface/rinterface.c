@@ -993,7 +993,6 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 
   SEXP res_R = NULL;
   int error = 0;
-  PyOS_sighandler_t old_int;
 
   //FIXME: if env_R is null, use R_BaseEnv
   //shouldn't it be R_GlobalContext (but then it throws a NULL error) ?
@@ -1012,26 +1011,25 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
   __sig__n = sigsetjmp(env_sigjmp, 1);
   if (__sig__n) {
     if (__sig__n == SIGINT) {
-      PyErr_SetString(PyExc_KeyboardInterrupt, "");
+      interrupted = 1;
     } else {
-      PyErr_SetString(PyExc_RuntimeError, "");
+      //PyErr_SetString(PyExc_RuntimeError, "");
     }
     return(0);
   }
-
+  
   //FIXME: evaluate expression in the given
   res_R = R_tryEval(expr_R, env_R, &error);
   
   signal(SIGINT, python_sighandler);
-
+  
   //Py_END_ALLOW_THREADS
 #ifdef _WIN32
-  PyOS_setsig(SIGBREAK, old_int);   
+  PyOS_setsig(SIGBREAK, python_sighandler);   
 #else 
-  PyOS_setsig(SIGINT, old_int);
+  PyOS_setsig(SIGINT, python_sighandler);
 #endif
   /* start_events(); */
-
   if (error) {
     if (interrupted) {
       PyErr_SetNone(PyExc_KeyboardInterrupt);
