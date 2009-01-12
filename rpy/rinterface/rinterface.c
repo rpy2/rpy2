@@ -2646,6 +2646,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_setReadConsole_doc},
   {"setShowMessage",	(PyCFunction)EmbeddedR_setShowMessage,	 METH_VARARGS,
    EmbeddedR_setShowMessage_doc},
+  {"setChooseFile",	(PyCFunction)EmbeddedR_setChooseFile,	 METH_VARARGS,
+   EmbeddedR_setChooseFile_doc},
   {"findVarEmbeddedR",	(PyCFunction)EmbeddedR_findVar,	 METH_VARARGS,
    EmbeddedR_findVar_doc},
   {"str_typeint",	(PyCFunction)EmbeddedR_sexpType, METH_VARARGS,
