@@ -117,3 +117,7 @@ def consoleMessage(x):
 setShowMessage(consoleMessage)
 
 
+def chooseFile(x):
+    res = raw_input('File to select:')
+    return res
+setChooseFile(chooseFile)
