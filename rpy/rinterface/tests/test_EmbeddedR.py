@@ -20,7 +20,7 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testSetReadConsole(self):
         yes = "yes\n"
         def sayyes(prompt):
-            return(yes)
+            return yes
         rinterface.setReadConsole(sayyes)
         res = rinterface.baseNameSpaceEnv["readline"]()
         self.assertEquals(yes.strip(), res[0])
@@ -30,7 +30,12 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertTrue(False) # no unit test (yet)
 
     def testSetChooseFile(self):
-        self.assertTrue(False) # no unit test (yet)
+        me = "me"
+        def chooseMe(prompt):
+            return me
+        rinterface.setChooseFile(chooseMe)
+        res = rinterface.baseNameSpaceEnv["file.choose"]()
+        self.assertEquals(me, res[0])
 
 #FIXME: end and initialize again causes currently a lot a trouble...
     def testCallErrorWhenEndedR(self):
