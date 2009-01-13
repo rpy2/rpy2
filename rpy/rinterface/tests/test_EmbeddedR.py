@@ -25,6 +25,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         rinterface.setFlushConsole(f)
         rinterface.baseNameSpaceEnv["flush.console"]()
         self.assertEquals(1, flush['count'])
+        rinterface.setWriteConsole(rinterface.consoleFlush)
 
     def testSetReadConsole(self):
         yes = "yes\n"
@@ -45,6 +46,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         rinterface.setChooseFile(chooseMe)
         res = rinterface.baseNameSpaceEnv["file.choose"]()
         self.assertEquals(me, res[0])
+        rinterface.setChooseFile(rinterface.chooseFile)
 
     def testSetShowFiles(self):
         self.assertTrue(False) # no unit test (yet)
