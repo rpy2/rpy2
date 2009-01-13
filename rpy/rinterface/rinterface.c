@@ -214,7 +214,7 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   /* It is necessary to restore the Python handler when using a Python
      function for I/O. */
   PyOS_setsig(SIGINT, python_sighandler);
-  arglist = Py_BuildValue("(s)", buf);
+  arglist = Py_BuildValue("s", buf);
   if (! arglist) {
     PyErr_NoMemory();
 /*     signal(SIGINT, old_int); */
@@ -348,6 +348,29 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   Py_XDECREF(result);
 /*   signal(SIGINT, old_int); */
   return 1;
+}
+
+static PyObject* flushConsoleCallback = NULL;
+
+static PyObject* EmbeddedR_setFlushConsole(PyObject *self,
+					   PyObject *args)
+{
+  return EmbeddedR_setAnyCallback(self, args, &flushConsoleCallback);  
+}
+
+PyDoc_STRVAR(EmbeddedR_setFlushConsole_doc,
+	     "Set the behavior for ensuring that the console buffer is flushed.");
+
+static void
+EmbeddedR_FlushConsole(void)
+{
+  PyObject *result;
+
+  result = PyEval_CallObject(flushConsoleCallback, NULL);
+
+  //FIXME: what if an exception is raised during callback ?
+  return;
+
 }
 
 static PyObject* chooseFileCallback = NULL;
@@ -565,6 +588,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   Rp->ReadConsole = EmbeddedR_ReadConsole;
   Rp->WriteConsole = NULL;
   Rp->WriteConsoleEx = EmbeddedR_WriteConsole;
+  Rp->FlushConsole = EmbeddedR_FlushConsole;
   Rp->R_Interactive = TRUE;
   Rp->ChooseFile = EmbeddedR_ChooseFile;
   Rp->ShowFiles = EmbeddedR_ShowFiles;
@@ -590,6 +614,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   /* Redirect R console output */
   ptr_R_ShowMessage = EmbeddedR_ShowMessage;
   ptr_R_WriteConsole = EmbeddedR_WriteConsole;
+  ptr_R_FlushConsole = EmbeddedR_FlushConsole;
   R_Outputfile = NULL;
   R_Consolefile = NULL;
   /* Redirect R console input */
@@ -2722,6 +2747,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_setWriteConsole_doc},
   {"setReadConsole",	(PyCFunction)EmbeddedR_setReadConsole,	 METH_VARARGS,
    EmbeddedR_setReadConsole_doc},
+  {"setFlushConsole",	(PyCFunction)EmbeddedR_setFlushConsole,	 METH_VARARGS,
+   EmbeddedR_setFlushConsole_doc},
   {"setShowMessage",	(PyCFunction)EmbeddedR_setShowMessage,	 METH_VARARGS,
    EmbeddedR_setShowMessage_doc},
   {"setChooseFile",	(PyCFunction)EmbeddedR_setChooseFile,	 METH_VARARGS,

@@ -17,6 +17,15 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEquals('[1] "3"\n', str.join('', buf))
         rinterface.setWriteConsole(rinterface.consolePrint)
 
+    def testSetFlushConsole(self):
+        flush = {'count': 0}
+        def f():
+            flush['count'] = flush['count'] + 1
+
+        rinterface.setFlushConsole(f)
+        rinterface.baseNameSpaceEnv["flush.console"]()
+        self.assertEquals(1, flush['count'])
+
     def testSetReadConsole(self):
         yes = "yes\n"
         def sayyes(prompt):

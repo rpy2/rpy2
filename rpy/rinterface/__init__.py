@@ -105,6 +105,11 @@ def consolePrint(x):
 
 setWriteConsole(consolePrint)
 
+def consoleFlush():
+    pass
+
+setFlushConsole(consoleFlush)
+
 def consoleRead(prompt):
     input = raw_input(prompt)
     input += "\n"
