@@ -403,6 +403,82 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   return l;
 }
 
+static PyObject* showFilesCallback = NULL;
+
+static PyObject* EmbeddedR_setShowFiles(PyObject *self,
+					PyObject *args)
+{
+  return EmbeddedR_setAnyCallback(self, args, &showFilesCallback);  
+}
+
+PyDoc_STRVAR(EmbeddedR_setShowFiles_doc,
+	     "Use the function to display files.");
+
+
+static int
+EmbeddedR_ShowFiles(int nfile, const char **file, const char **title,
+		    const char *wtitle, Rboolean del, const char *pager)
+{
+  PyObject *arglist;
+  PyObject *result;
+   
+  if (nfile < 1)
+    return 0;
+
+  PyObject *titlefile_tuple = PyTuple_New(nfile);
+  //FIXME: INCREF needed ? (if not, that's a memory leak)
+  Py_INCREF(titlefile_tuple);
+  PyObject *titlefile;
+  int f_i;
+  for (f_i = 0; f_i < nfile; f_i++) {
+    titlefile = PyTuple_New(2);
+    //FIXME: INCREF for titlefile ?
+    if (PyTuple_SetItem(titlefile, 0,
+			PyString_FromString(title[f_i])) != 0) {
+      Py_DECREF(titlefile_tuple);
+      return 0;
+    }
+    if (PyTuple_SetItem(titlefile, 1,
+			PyString_FromString(file[f_i])) != 0) {
+      Py_DECREF(titlefile_tuple);
+      return 0;
+    }
+    if (PyTuple_SetItem(titlefile_tuple, f_i,
+			titlefile) != 0) {
+      Py_DECREF(titlefile_tuple);
+      return 0;
+    }
+  }
+
+  arglist = Py_BuildValue("o", wtitle, titlefile_tuple);
+  if (! arglist) {
+    PyErr_NoMemory();
+  }
+
+  if (showFilesCallback == NULL) {
+    Py_DECREF(arglist);
+    return 0;
+  }
+
+  result = PyEval_CallObject(showFilesCallback, arglist);
+
+  Py_DECREF(arglist);
+  
+  if (result == NULL) {
+    return 0;
+  }
+
+  char *path_str = PyString_AsString(result);
+  if (! path_str) {
+    Py_DECREF(result);
+    return 0;
+  }
+
+  Py_DECREF(result);
+
+  return 0;
+}
+
 
 /* --- Initialize and terminate an embedded R --- */
 static PyObject* EmbeddedR_getinitoptions(PyObject *self) 
@@ -491,6 +567,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   Rp->WriteConsoleEx = EmbeddedR_WriteConsole;
   Rp->R_Interactive = TRUE;
   Rp->ChooseFile = EmbeddedR_ChooseFile;
+  Rp->ShowFiles = EmbeddedR_ShowFiles;
   setup_term_ui();
 #endif
 
@@ -518,6 +595,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   /* Redirect R console input */
   ptr_R_ReadConsole = EmbeddedR_ReadConsole;
   ptr_R_ChooseFile = EmbeddedR_ChooseFile;
+  ptr_R_ShowFiles = EmbeddedR_ShowFiles;
 #endif
 
   /* Taken from JRI:
@@ -2648,6 +2726,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_setShowMessage_doc},
   {"setChooseFile",	(PyCFunction)EmbeddedR_setChooseFile,	 METH_VARARGS,
    EmbeddedR_setChooseFile_doc},
+  {"setShowFiles",	(PyCFunction)EmbeddedR_setShowFiles,	 METH_VARARGS,
+   EmbeddedR_setShowFiles_doc},
   {"findVarEmbeddedR",	(PyCFunction)EmbeddedR_findVar,	 METH_VARARGS,
    EmbeddedR_findVar_doc},
   {"str_typeint",	(PyCFunction)EmbeddedR_sexpType, METH_VARARGS,

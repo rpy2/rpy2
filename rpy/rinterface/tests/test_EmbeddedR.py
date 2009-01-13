@@ -37,6 +37,9 @@ class EmbeddedRTestCase(unittest.TestCase):
         res = rinterface.baseNameSpaceEnv["file.choose"]()
         self.assertEquals(me, res[0])
 
+    def testSetShowFiles(self):
+        self.assertTrue(False) # no unit test (yet)
+
 #FIXME: end and initialize again causes currently a lot a trouble...
     def testCallErrorWhenEndedR(self):
         self.assertTrue(False) # worked when tested, but calling endEmbeddedR causes trouble

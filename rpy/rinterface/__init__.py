@@ -121,3 +121,9 @@ def chooseFile(prompt):
     res = raw_input(prompt)
     return res
 setChooseFile(chooseFile)
+
+def showFiles(wtitle, titlefiles):
+    #FIXME: not implemented
+    Exception("Not implemented")
+    return 0
+setShowFiles(showFiles)
