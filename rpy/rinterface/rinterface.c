@@ -216,7 +216,7 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   /* It is necessary to restore the Python handler when using a Python
      function for I/O. */
   PyOS_setsig(SIGINT, python_sighandler);
-  arglist = Py_BuildValue("s", buf);
+  arglist = Py_BuildValue("(s)", buf);
   if (! arglist) {
     PyErr_NoMemory();
 /*     signal(SIGINT, old_int); */
