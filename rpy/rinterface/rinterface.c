@@ -202,7 +202,9 @@ static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
-            "Use the function to handle R console output.");
+            "Set how to handle output from the R console.\n\n"
+	     ":param f: callback function such as"
+	     "None <- f(output)\n");
 
 
 static void
@@ -293,7 +295,9 @@ static PyObject* EmbeddedR_setReadConsole(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_setReadConsole_doc,
-	     "Use the function to handle R console input.");
+	     "Set the function handling input to the R console.\n\n"
+	     ":param f: a callback function such as "
+	     "result <- f(prompt) \n");
 
 
 static int
@@ -359,7 +363,9 @@ static PyObject* EmbeddedR_setFlushConsole(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_setFlushConsole_doc,
-	     "Set the behavior for ensuring that the console buffer is flushed.");
+	     "Set the behavior for ensuring that the console buffer is flushed.\n\n"
+	     ":param f: callback function such as "
+	     "None <- f()\n");
 
 static void
 EmbeddedR_FlushConsole(void)
