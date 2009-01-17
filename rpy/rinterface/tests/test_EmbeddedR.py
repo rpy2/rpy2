@@ -1,7 +1,7 @@
 import unittest
 import itertools
 import rpy2.rinterface as rinterface
-import os, subprocess, time, tempfile, signal
+import sys, os, subprocess, time, tempfile, signal
 
 rinterface.initr()
 
@@ -80,6 +80,8 @@ class EmbeddedRTestCase(unittest.TestCase):
                           ('aa', '--verbose', '--no-save'))
 
     def testInterruptR(self):
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # Test unit currently requires Python >= 2.6
         rpy_code = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
                                                delete = False)
         rpy_code_str = os.linesep.join(['''import rpy2.robjects as ro''',
