@@ -84,12 +84,13 @@ class EmbeddedRTestCase(unittest.TestCase):
             self.assertTrue(False) # Test unit currently requires Python >= 2.6
         rpy_code = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
                                                delete = False)
-        rpy_code_str = os.linesep.join(['''import rpy2.robjects as ro''',
-                                        '''ro.r('i <- 0''',
-                                        '''while(TRUE) {''',
-                                        '''    i <- i+1''',
-                                        '''    Sys.sleep(0.01)''',
-                                        '''}') '''])
+        rpy_code_str = os.linesep.join(['import rpy2.robjects as ro',
+                                        'rcode = "i <- 0\n"',
+                                        'rcode += "while(TRUE) {"',
+                                        'rcode += "i <- i+1"',
+                                        'rcode += "Sys.sleep(0.01)"',
+                                        'rcode += "}"',
+                                        'ro.r(rcode)'])
         rpy_code.write(rpy_code_str)
         rpy_code.close()
         child_proc = subprocess.Popen(('python', rpy_code.name))
