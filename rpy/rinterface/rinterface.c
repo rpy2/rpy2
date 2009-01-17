@@ -65,7 +65,7 @@
 /* FIXME: consider the use of parsing */
 /* #include <R_ext/Parse.h> */
 #include <R_ext/Rdynload.h>
-#include <R_ext/Rstartup.h>
+#include <R_ext/RStartup.h>
 
 #include "rinterface.h"
 #include "array.h"
