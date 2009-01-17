@@ -39,14 +39,24 @@ Installation
 Requirements
 ^^^^^^^^^^^^
 
-Python version 2.4 or higher, and R-2.7.0 or higher are required.
+Python version 2.4 or higher, as well as R-2.7.0 or higher are required.
 
-Although the development was first done with R-2.7.2 (now with R-2.8.0)
-and Python-2.5.2, it has also been tested with:
+Currently the development is mostly done on Linux and MacOS X with the
+following versions of the softwares:
 
-  * Python-2.6.0 (numpy-support not tested)
++-------+---------+
+|       | version |
++-------+---------+
+| Python| 2.5     |
+|       +---------+
+|       | 2.6     |
++-------+---------+
+| R     | 2.8     |
+|       +---------+
+|       | 2.9     |
++-------+---------+
 
-`gcc-4.2.3`, then `gcc-4.2.4` were used for compiling the C parts.
+gcc-4.3 is used for compiling the C parts.
 
 
 Download
@@ -85,7 +95,6 @@ distributions will also have it in their repositories.
 
 .. index::
   single: install;win32
-
 
 Microsoft's Windows precompiled binaries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
