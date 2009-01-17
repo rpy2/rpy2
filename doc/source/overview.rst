@@ -76,6 +76,13 @@ what is available.
    Choose files from the `rpy2` package, not `rpy`.
 
 
+Linux precompiled binaries
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Debian packages are available thanks to Dirk Eddelbuettel.
+This is likely to mean that Ubuntu and other Debian-based
+distributions will also have it in their repositories.
+
 .. index::
   single: install;win32
 
