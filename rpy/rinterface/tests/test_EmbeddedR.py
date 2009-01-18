@@ -23,7 +23,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             flush['count'] = flush['count'] + 1
 
         rinterface.setFlushConsole(f)
-        rinterface.baseNameSpaceEnv["flush.console"]()
+        rinterface.baseNameSpaceEnv.get("flush.console")()
         self.assertEquals(1, flush['count'])
         rinterface.setWriteConsole(rinterface.consoleFlush)
 
