@@ -46,8 +46,9 @@ class NumpyConversionsTestCase(unittest.TestCase):
         s = numpy.array(["a", "b", "c"], dtype="S")
         self.checkHomogeneous(s, "character", "character")
 
-        u = numpy.array([u"a", u"b", u"c"], dtype="U")
-        self.checkHomogeneous(u, "character", "character")
+        self.assertTrue(False) # arrays of unicode characters causing segfault
+#         u = numpy.array([u"a", u"b", u"c"], dtype="U")
+#         self.checkHomogeneous(u, "character", "character")
 
     def testArray(self):
 
