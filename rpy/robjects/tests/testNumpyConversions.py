@@ -40,8 +40,9 @@ class NumpyConversionsTestCase(unittest.TestCase):
         f = numpy.array([1, 2, 3], dtype="f")
         self.checkHomogeneous(f, "numeric", "double")
 
-        c = numpy.array([1j, 2j, 3j], dtype=numpy.complex_)
-        self.checkHomogeneous(c, "complex", "complex")
+        self.assertTrue(False) # arrays of complex causing segfault
+#         c = numpy.array([1j, 2j, 3j], dtype=numpy.complex_)
+#         self.checkHomogeneous(c, "complex", "complex")
 
         s = numpy.array(["a", "b", "c"], dtype="S")
         self.checkHomogeneous(s, "character", "character")
