@@ -29,21 +29,24 @@ class NumpyConversionsTestCase(unittest.TestCase):
         self.assertEquals(list(obj), list(converted))
         self.assertTrue(r["is.array"](converted)[0])
 
-    def testVector(self):
-
+    def testVectorBoolean(self):
         b = numpy.array([True, False, True], dtype=numpy.bool_)
         self.checkHomogeneous(b, "logical", "logical")
 
+    def testVectorInteger(self):
         i = numpy.array([1, 2, 3], dtype="i")
         self.checkHomogeneous(i, "numeric", "integer")
 
+    def testVectorFloat(self):
         f = numpy.array([1, 2, 3], dtype="f")
         self.checkHomogeneous(f, "numeric", "double")
 
+    def testVectorComplex(self):
         self.assertTrue(False) # arrays of complex causing segfault
 #         c = numpy.array([1j, 2j, 3j], dtype=numpy.complex_)
 #         self.checkHomogeneous(c, "complex", "complex")
 
+    def testVectorString(self):
         s = numpy.array(["a", "b", "c"], dtype="S")
         self.checkHomogeneous(s, "character", "character")
 
