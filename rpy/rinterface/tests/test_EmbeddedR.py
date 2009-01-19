@@ -85,7 +85,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         rpy_code = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
                                                delete = False)
         rpy_code_str = os.linesep.join(['import rpy2.robjects as ro',
-                                        'rcode = "i <- 0\n"',
+                                        'rcode = "i <- 0"',
                                         'rcode += "while(TRUE) {"',
                                         'rcode += "i <- i+1"',
                                         'rcode += "Sys.sleep(0.01)"',
