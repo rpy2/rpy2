@@ -9,6 +9,7 @@ New Features
 - New functions for specifying callback functions for R's front-ends:
   :func:`setShowMessage`, :func:`setFlushConsole`, :func:`setChooseFile`, :func:`setShowFiles`
 
+- Wrapper for R_ProcessEvents (# suggested by June Kim to help with issues related to interactive display)
 
 Bugs fixed
 ----------

@@ -543,6 +543,30 @@ PyDoc_STRVAR(EmbeddedR_set_initoptions_doc,
 Set the options used to initialize R.\
 ");
 
+
+/* --- R_ProcessEvents ---*/
+
+static PyObject* EmbeddedR_ProcessEvents(PyObject *self)
+{
+  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+    PyErr_Format(PyExc_RuntimeError, 
+		 "R should not process events before being initialized.");
+    return NULL;
+  }
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+  /* Can the call to R_ProcessEvents somehow fail ? */
+  R_ProcessEvents();
+  embeddedR_freelock();
+  return Py_None;
+}
+PyDoc_STRVAR(EmbeddedR_ProcessEvents_doc,
+	     "Process R events. This function is a simple wrapper around R_ProcessEvents.");
+
+
 static PyObject* EmbeddedR_init(PyObject *self) 
 {
 
@@ -2763,6 +2787,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_setShowFiles_doc},
   {"findVarEmbeddedR",	(PyCFunction)EmbeddedR_findVar,	 METH_VARARGS,
    EmbeddedR_findVar_doc},
+  {"process_revents", (PyCFunction)EmbeddedR_ProcessEvents, METH_NOARGS,
+   EmbeddedR_ProcessEvents_doc},
   {"str_typeint",	(PyCFunction)EmbeddedR_sexpType, METH_VARARGS,
    "Return the SEXP name tag (string) corresponding to an integer."},
   {NULL,		NULL}		/* sentinel */
