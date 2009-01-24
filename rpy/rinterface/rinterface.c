@@ -536,6 +536,7 @@ static PyObject* EmbeddedR_setinitoptions(PyObject *self, PyObject *tuple)
   Py_DECREF(initOptions);
   Py_INCREF(tuple);
   initOptions = tuple;
+  Py_INCREF(Py_None);
   return Py_None;
 }
 PyDoc_STRVAR(EmbeddedR_set_initoptions_doc,
@@ -561,6 +562,7 @@ static PyObject* EmbeddedR_ProcessEvents(PyObject *self)
   /* Can the call to R_ProcessEvents somehow fail ? */
   R_ProcessEvents();
   embeddedR_freelock();
+  Py_INCREF(Py_None);
   return Py_None;
 }
 PyDoc_STRVAR(EmbeddedR_ProcessEvents_doc,
