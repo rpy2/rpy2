@@ -46,10 +46,11 @@ class NumpyConversionsTestCase(unittest.TestCase):
 #         c = numpy.array([1j, 2j, 3j], dtype=numpy.complex_)
 #         self.checkHomogeneous(c, "complex", "complex")
 
-    def testVectorString(self):
+    def testVectorCharacter(self):
         s = numpy.array(["a", "b", "c"], dtype="S")
         self.checkHomogeneous(s, "character", "character")
 
+    def testVectorUnicodeCharacter(self):
         self.assertTrue(False) # arrays of unicode characters causing segfault
 #         u = numpy.array([u"a", u"b", u"c"], dtype="U")
 #         self.checkHomogeneous(u, "character", "character")
