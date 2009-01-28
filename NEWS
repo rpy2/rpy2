@@ -11,6 +11,14 @@ New Features
 
 - Wrapper for R_ProcessEvents (# suggested by June Kim to help with issues related to interactive display)
 
+Changes
+-------
+
+:mod:`rpy2.rinterface`:
+
+- the default for reading and writing the console are now using sys.stdin and sys.stdout 
+  (# patch submitted by Nathaniel Smith)
+ 
 Bugs fixed
 ----------
 

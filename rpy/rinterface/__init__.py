@@ -97,16 +97,15 @@ class BoolSexpVector(SexpVector):
         super(BoolSexpVector, self).__init__(v, LGLSXP)
 
 
-# wrapper because 'print' is strangely not a function
-# Python prior to version 3.0
+# wrapper in case someone changes sys.stdout:
 def consolePrint(x):
-    """ Wrapper around Python's print. This is the default callback for R's console. """
-    print(x)
+    """This is the default callback for R's console. It simply writes to stdout."""
+    sys.stdout.write(x)
 
 setWriteConsole(consolePrint)
 
 def consoleFlush():
-    pass
+    sys.stdout.flush()
 
 setFlushConsole(consoleFlush)
 
@@ -118,7 +117,7 @@ def consoleRead(prompt):
 setReadConsole(consoleRead)
 
 def consoleMessage(x):
-    print(x)
+    sys.stdout.write(x)
 setShowMessage(consoleMessage)
 
 
