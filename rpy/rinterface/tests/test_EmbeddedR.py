@@ -12,6 +12,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             buf.append(x)
 
         rinterface.setWriteConsole(f)
+        self.assertEquals(rinterface.getWriteConsole(), f)
         code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
         rinterface.baseNameSpaceEnv["print"](code)
         self.assertEquals('[1] "3"\n', str.join('', buf))
@@ -23,6 +24,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             flush['count'] = flush['count'] + 1
 
         rinterface.setFlushConsole(f)
+        self.assertEquals(rinterface.getFlushConsole(), f)
         rinterface.baseNameSpaceEnv.get("flush.console")()
         self.assertEquals(1, flush['count'])
         rinterface.setWriteConsole(rinterface.consoleFlush)
@@ -32,6 +34,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         def sayyes(prompt):
             return yes
         rinterface.setReadConsole(sayyes)
+        self.assertEquals(rinterface.getReadConsole(), sayyes)
         res = rinterface.baseNameSpaceEnv["readline"]()
         self.assertEquals(yes.strip(), res[0])
         rinterface.setReadConsole(rinterface.consoleRead)
@@ -44,6 +47,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         def chooseMe(prompt):
             return me
         rinterface.setChooseFile(chooseMe)
+        self.assertEquals(rinterface.getChooseFile(), chooseMe)
         res = rinterface.baseNameSpaceEnv["file.choose"]()
         self.assertEquals(me, res[0])
         rinterface.setChooseFile(rinterface.chooseFile)

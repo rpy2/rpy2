@@ -176,14 +176,18 @@ static inline PyObject* EmbeddedR_setAnyCallback(PyObject *self,
   if ( PyArg_ParseTuple(args, "O:console", 
 			&function)) {
     
-    if (!PyCallable_Check(function)) {
+    if (function != Py_None && !PyCallable_Check(function)) {
       PyErr_SetString(PyExc_TypeError, "parameter must be callable");
       return NULL;
     }
 
     Py_XDECREF(*target);
-    Py_XINCREF(function);
-    *target = function;
+    if (function == Py_None) {
+      *target = NULL;
+    } else {
+      Py_XINCREF(function);
+      *target = function;
+    }
     Py_INCREF(Py_None);
     result = Py_None;
   } else {
@@ -192,6 +196,23 @@ static inline PyObject* EmbeddedR_setAnyCallback(PyObject *self,
   return result;
   
 }
+
+static inline PyObject* EmbeddedR_getAnyCallback(PyObject *self,
+                                                 PyObject *args,
+                                                 PyObject *target)
+{
+  PyObject *result = NULL;
+
+  if (PyArg_ParseTuple(args, "")) {
+    if (target == NULL)
+      result = NULL;
+    else
+      result = target;
+    Py_INCREF(result);
+  }
+  return result;
+}
+
 
 static PyObject* writeConsoleCallback = NULL;
 
@@ -203,8 +224,18 @@ static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
 
 PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
             "Set how to handle output from the R console.\n\n"
-	     ":param f: callback function such as"
-	     "None <- f(output)\n");
+             ":param f: callback function such as"
+             "None <- f(output), or None.\n");
+
+static PyObject * EmbeddedR_getWriteConsole(PyObject *self,
+                                            PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, writeConsoleCallback);
+}
+
+PyDoc_STRVAR(EmbeddedR_getWriteConsole_doc,
+             "Retrieve current R console output handler (see setWriteConsole).");
+
 
 
 static void
@@ -250,6 +281,15 @@ static PyObject* EmbeddedR_setShowMessage(PyObject *self,
 
 PyDoc_STRVAR(EmbeddedR_setShowMessage_doc,
             "Use the function to handle R's alert messages.");
+
+static PyObject * EmbeddedR_getShowMessage(PyObject *self,
+                                            PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, showMessageCallback);
+}
+
+PyDoc_STRVAR(EmbeddedR_getShowMessage_doc,
+             "Retrieve current R console output handler (see setShowMessage).");
 
 static void
 EmbeddedR_ShowMessage(const char *buf)
@@ -299,6 +339,14 @@ PyDoc_STRVAR(EmbeddedR_setReadConsole_doc,
 	     ":param f: a callback function such as "
 	     "result <- f(prompt) \n");
 
+static PyObject * EmbeddedR_getReadConsole(PyObject *self,
+                                            PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, readConsoleCallback);
+}
+
+PyDoc_STRVAR(EmbeddedR_getReadConsole_doc,
+             "Retrieve current R console output handler (see setReadConsole).");
 
 static int
 EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf, 
@@ -363,9 +411,18 @@ static PyObject* EmbeddedR_setFlushConsole(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_setFlushConsole_doc,
-	     "Set the behavior for ensuring that the console buffer is flushed.\n\n"
-	     ":param f: callback function such as "
-	     "None <- f()\n");
+             "Set the behavior for ensuring that the console buffer is flushed.\n\n"
+             ":param f: callback function such as "
+             "None <- f()\n");
+
+static PyObject * EmbeddedR_getFlushConsole(PyObject *self,
+                                            PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, flushConsoleCallback);
+}
+
+PyDoc_STRVAR(EmbeddedR_getFlushConsole_doc,
+             "Retrieve current R console output handler (see setFlushConsole).");
 
 static void
 EmbeddedR_FlushConsole(void)
@@ -390,6 +447,14 @@ static PyObject* EmbeddedR_setChooseFile(PyObject *self,
 PyDoc_STRVAR(EmbeddedR_setChooseFile_doc,
 	     "Use the function to handle R's requests for choosing a file.");
 
+static PyObject * EmbeddedR_getChooseFile(PyObject *self,
+                                            PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, chooseFileCallback);
+}
+
+PyDoc_STRVAR(EmbeddedR_getChooseFile_doc,
+             "Retrieve current R console output handler (see setChooseFile).");
 
 static int
 EmbeddedR_ChooseFile(int new, char *buf, int len)
@@ -443,6 +508,14 @@ static PyObject* EmbeddedR_setShowFiles(PyObject *self,
 PyDoc_STRVAR(EmbeddedR_setShowFiles_doc,
 	     "Use the function to display files.");
 
+static PyObject * EmbeddedR_getShowFiles(PyObject *self,
+                                            PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, showFilesCallback);
+}
+
+PyDoc_STRVAR(EmbeddedR_getShowFiles_doc,
+             "Retrieve current R console output handler (see setShowFiles).");
 
 static int
 EmbeddedR_ShowFiles(int nfile, const char **file, const char **title,
@@ -2777,17 +2850,29 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_end_doc},
   {"setWriteConsole",	(PyCFunction)EmbeddedR_setWriteConsole,	 METH_VARARGS,
    EmbeddedR_setWriteConsole_doc},
-  {"setReadConsole",	(PyCFunction)EmbeddedR_setReadConsole,	 METH_VARARGS,
+  {"getWriteConsole",   (PyCFunction)EmbeddedR_getWriteConsole,  METH_VARARGS,
+   EmbeddedR_getWriteConsole_doc},
+  {"setReadConsole",    (PyCFunction)EmbeddedR_setReadConsole,   METH_VARARGS,
    EmbeddedR_setReadConsole_doc},
-  {"setFlushConsole",	(PyCFunction)EmbeddedR_setFlushConsole,	 METH_VARARGS,
+  {"getReadConsole",    (PyCFunction)EmbeddedR_getReadConsole,   METH_VARARGS,
+   EmbeddedR_getReadConsole_doc},
+  {"setFlushConsole",   (PyCFunction)EmbeddedR_setFlushConsole,  METH_VARARGS,
    EmbeddedR_setFlushConsole_doc},
-  {"setShowMessage",	(PyCFunction)EmbeddedR_setShowMessage,	 METH_VARARGS,
+  {"getFlushConsole",   (PyCFunction)EmbeddedR_getFlushConsole,  METH_VARARGS,
+   EmbeddedR_getFlushConsole_doc},
+  {"setShowMessage",    (PyCFunction)EmbeddedR_setShowMessage,   METH_VARARGS,
    EmbeddedR_setShowMessage_doc},
-  {"setChooseFile",	(PyCFunction)EmbeddedR_setChooseFile,	 METH_VARARGS,
+  {"getShowMessage",    (PyCFunction)EmbeddedR_getShowMessage,   METH_VARARGS,
+   EmbeddedR_getShowMessage_doc},
+  {"setChooseFile",     (PyCFunction)EmbeddedR_setChooseFile,    METH_VARARGS,
    EmbeddedR_setChooseFile_doc},
-  {"setShowFiles",	(PyCFunction)EmbeddedR_setShowFiles,	 METH_VARARGS,
+  {"getChooseFile",     (PyCFunction)EmbeddedR_getChooseFile,    METH_VARARGS,
+   EmbeddedR_getChooseFile_doc},
+  {"setShowFiles",      (PyCFunction)EmbeddedR_setShowFiles,     METH_VARARGS,
    EmbeddedR_setShowFiles_doc},
-  {"findVarEmbeddedR",	(PyCFunction)EmbeddedR_findVar,	 METH_VARARGS,
+  {"getShowFiles",      (PyCFunction)EmbeddedR_getShowFiles,     METH_VARARGS,
+   EmbeddedR_getShowFiles_doc},
+  {"findVarEmbeddedR",  (PyCFunction)EmbeddedR_findVar,  METH_VARARGS,
    EmbeddedR_findVar_doc},
   {"process_revents", (PyCFunction)EmbeddedR_ProcessEvents, METH_NOARGS,
    EmbeddedR_ProcessEvents_doc},

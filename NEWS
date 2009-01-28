@@ -11,6 +11,9 @@ New Features
 
 - Wrapper for R_ProcessEvents (# suggested by June Kim to help with issues related to interactive display)
 
+- All callbacks are getting a get<callback> to complement the set<callback>.
+  (# patch submitted by Nathaniel Smith) 
+
 Changes
 -------
 
