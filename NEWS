@@ -31,6 +31,17 @@ Bugs fixed
   #spotted by James Yoo
 
 
+Release 2.0.2
+=============
+
+Bugs fixed
+----------
+
+- Copying an R "NA" into Python returns a None (and no longer a True)
+  (#fixes a bug reported by Jeff Gentry)
+
+
+
 Release 2.0.1
 =============
 

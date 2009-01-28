@@ -149,6 +149,11 @@ class SexpVectorTestCase(unittest.TestCase):
         letters_R = ri.globalEnv.get("letters")
         self.assertEquals('z', letters_R[-1])
 
+    def testGetItemBooleanNA(self):
+        vec = ri.StrSexpVector(["a", ])
+        vec = ri.baseNameSpaceEnv['as.logical'](vec)
+        self.assertEquals(None, vec[0])
+        
     def testGetItemLang(self):
         formula = ri.baseNameSpaceEnv.get('formula')
         f = formula(ri.StrSexpVector(['y ~ x', ]))
