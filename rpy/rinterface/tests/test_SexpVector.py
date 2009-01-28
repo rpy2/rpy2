@@ -213,10 +213,10 @@ class SexpVectorTestCase(unittest.TestCase):
     def testAssignItemLogical(self):
         c_R = ri.globalEnv.get("c")
         myVec = c_R(ri.SexpVector([True, False, True, True, False], 
-                                          ri.LGLSXP))
+                                  ri.LGLSXP))
         myVec[0] = ri.SexpVector([False, ], ri.LGLSXP)
         self.assertFalse(myVec[0])
-
+        
         myVec[3] = ri.SexpVector([False, ], ri.LGLSXP)
         self.assertFalse(myVec[3])
 
@@ -224,7 +224,7 @@ class SexpVectorTestCase(unittest.TestCase):
         c_R = ri.globalEnv.get("c")
         myVec = c_R(ri.SexpVector([1.0+2.0j, 2.0+2.0j, 3.0+2.0j, 
                                    4.0+2.0j, 5.0+2.0j], 
-                                          ri.CPLXSXP))
+                                  ri.CPLXSXP))
         myVec[0] = ri.SexpVector([100.0+200.0j, ], ri.CPLXSXP)
         self.assertTrue(floatEqual(myVec[0].real, 100.0))
         self.assertTrue(floatEqual(myVec[0].imag, 200.0))
