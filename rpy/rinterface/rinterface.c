@@ -1460,7 +1460,12 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       break;
     case LGLSXP:
       vi = LOGICAL_POINTER(*sexp)[i_R];
-      res = PyBool_FromLong((long)vi);
+      if (vi == NA_LOGICAL) {
+	Py_INCREF(Py_None);
+	res = Py_None;
+      } else {
+	res = PyBool_FromLong((long)vi);
+      }
       break;
     case CPLXSXP:
       vc = COMPLEX_POINTER(*sexp)[i_R];
