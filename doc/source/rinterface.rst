@@ -707,6 +707,10 @@ R_HOME
 Missing values
 --------------
 
+.. warning::
+
+   The following constants for missing values are currently all broken. Do not use them.
+
 :const:`NA_INTEGER`
   Missing value for integers
 
