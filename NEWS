@@ -1,41 +1,14 @@
-Release 2.1-dev
-===============
-
-New Features
-------------
-
-:mod:`rpy2.rinterface`:
-
-- New functions for specifying callback functions for R's front-ends:
-  :func:`setShowMessage`, :func:`setFlushConsole`, :func:`setChooseFile`, :func:`setShowFiles`
-
-- Wrapper for R_ProcessEvents (# suggested by June Kim to help with issues related to interactive display)
-
-- All callbacks are getting a get<callback> to complement the set<callback>.
-  (# patch submitted by Nathaniel Smith) 
-
-Changes
--------
-
-:mod:`rpy2.rinterface`:
-
-- the default for reading and writing the console are now using sys.stdin and sys.stdout 
-  (# patch submitted by Nathaniel Smith)
- 
-Bugs fixed
-----------
-
-- Failing to initialize R now throws a RuntimeError
-
-- Fix installation bug when the include directories contain either '-' or 'I'
-  #spotted by James Yoo
-
 
 Release 2.0.2
 =============
 
 Bugs fixed
 ----------
+
+- Fix installation bug when the include directories contain either '-' or 'I'
+  #spotted by James Yoo
+
+- Failing to initialize R now throws a RuntimeError
 
 - Copying an R "NA" into Python returns a None (and no longer a True)
   (#fixes a bug reported by Jeff Gentry)
