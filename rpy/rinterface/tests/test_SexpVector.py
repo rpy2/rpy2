@@ -149,6 +149,11 @@ class SexpVectorTestCase(unittest.TestCase):
         letters_R = ri.globalEnv.get("letters")
         self.assertEquals('z', letters_R[-1])
 
+    def testGetItemBooleanNA(self):
+        vec = ri.StrSexpVector(["a", ])
+        vec = ri.baseNameSpaceEnv['as.logical'](vec)
+        self.assertEquals(None, vec[0])
+        
     def testGetItemLang(self):
         formula = ri.baseNameSpaceEnv.get('formula')
         f = formula(ri.StrSexpVector(['y ~ x', ]))
@@ -213,10 +218,10 @@ class SexpVectorTestCase(unittest.TestCase):
     def testAssignItemLogical(self):
         c_R = ri.globalEnv.get("c")
         myVec = c_R(ri.SexpVector([True, False, True, True, False], 
-                                          ri.LGLSXP))
+                                  ri.LGLSXP))
         myVec[0] = ri.SexpVector([False, ], ri.LGLSXP)
         self.assertFalse(myVec[0])
-
+        
         myVec[3] = ri.SexpVector([False, ], ri.LGLSXP)
         self.assertFalse(myVec[3])
 
@@ -224,7 +229,7 @@ class SexpVectorTestCase(unittest.TestCase):
         c_R = ri.globalEnv.get("c")
         myVec = c_R(ri.SexpVector([1.0+2.0j, 2.0+2.0j, 3.0+2.0j, 
                                    4.0+2.0j, 5.0+2.0j], 
-                                          ri.CPLXSXP))
+                                  ri.CPLXSXP))
         myVec[0] = ri.SexpVector([100.0+200.0j, ], ri.CPLXSXP)
         self.assertTrue(floatEqual(myVec[0].real, 100.0))
         self.assertTrue(floatEqual(myVec[0].imag, 200.0))
@@ -251,7 +256,7 @@ class SexpVectorTestCase(unittest.TestCase):
         letters_R = ri.SexpVector("abcdefghij", ri.STRSXP)
         self.assertRaises(ValueError, letters_R.__setitem__, 0, 
                           ri.SexpVector([1, ], 
-                                                                                      ri.INTSXP))
+                                        ri.INTSXP))
 
         letters_R[0] = ri.SexpVector(["z", ], ri.STRSXP)
         self.assertTrue(letters_R[0] == "z")
