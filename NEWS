@@ -4,7 +4,7 @@ Release 2.0.2
 Known problems
 --------------
 
-- Numpy arrays of with complex or unicode elements seem to be now causing a
+- Numpy arrays with complex or unicode elements seem to be now causing a
   segfault
 
 Bugs fixed
