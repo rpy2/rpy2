@@ -157,6 +157,9 @@ static PySexpObject *globalEnv;
 static PySexpObject *baseNameSpaceEnv;
 static PySexpObject *emptyEnv;
 static PySexpObject *na_string;
+static PyObject *na_logical;
+static PyObject *na_integer;
+static PyObject *na_real;
 
 /* early definition of functions */
 static PySexpObject* newPySexpObject(const SEXP sexp);
@@ -3076,8 +3079,8 @@ initrinterface(void)
   ADD_INT_CONSTANT(m, FALSE);
 
   /* R_ext/Arith.h */
-  ADD_INT_CONSTANT(m, NA_LOGICAL);
-  ADD_INT_CONSTANT(m, NA_INTEGER);
+  //ADD_INT_CONSTANT(m, NA_LOGICAL);
+  //ADD_INT_CONSTANT(m, NA_INTEGER);
 
   initOptions = PyTuple_New(4);
 
@@ -3171,5 +3174,19 @@ initrinterface(void)
 /*   //FIXME: DECREF ? */
   //Py_DECREF(na_string);
 
+  Py_INCREF(Py_None);
+  na_logical = Py_None;
+  if (PyDict_SetItemString(d, "NA_LOGICAL", (PyObject *)na_logical) < 0)
+    return;
+
+  Py_INCREF(Py_None);
+  na_integer = Py_None;
+  if (PyDict_SetItemString(d, "NA_INTEGER", (PyObject *)na_integer) < 0)
+    return;  
+
+  Py_INCREF(Py_None);
+  na_real = Py_None;
+  if (PyDict_SetItemString(d, "NA_REAL", (PyObject *)na_real) < 0)
+    return; 
 
 }
