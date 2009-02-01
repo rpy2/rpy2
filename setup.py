@@ -118,7 +118,8 @@ def getRinterface_ext(RHOME, r_packversion):
             pack_name + '.rinterface.rinterface',
             [os.path.join('rpy', 'rinterface', 'array.c'), 
              os.path.join('rpy', 'rinterface', 'r_utils.c'),
-             os.path.join('rpy', 'rinterface', 'rinterface.c')],
+             os.path.join('rpy', 'rinterface', 'rinterface.c')
+             ],
             include_dirs = include_dirs + 
                             [os.path.join('rpy', 'rinterface'),],
             libraries = ['R', ],
@@ -131,7 +132,24 @@ def getRinterface_ext(RHOME, r_packversion):
                               get_rconfig(RHOME, 'BLAS_LIBS'),
             )
 
-    return rinterface_ext
+    rpy_device_ext = Extension(
+        pack_name + '.rinterface.rpy_device',
+            [
+            os.path.join('rpy', 'rinterface', 'rpy_device.c'),
+             ],
+            include_dirs = include_dirs + 
+                            [os.path.join('rpy', 'rinterface'), ],
+            libraries = ['R', ],
+            library_dirs = r_libs,
+            define_macros = define_macros,
+            runtime_library_dirs = r_libs,
+            #extra_compile_args=['-O0', '-g'],
+            extra_link_args = get_rconfig(RHOME, '--ldflags') +\
+                              get_rconfig(RHOME, 'LAPACK_LIBS') +\
+                              get_rconfig(RHOME, 'BLAS_LIBS'),
+        )
+
+    return [rinterface_ext, rpy_device_ext]
 
 
 rinterface_exts = []
@@ -154,7 +172,7 @@ setup(name = pack_name,
       url = "http://rpy.sourceforge.net",
       license = "(L)GPL",
       author = "Laurent Gautier <lgautier@gmail.com>",
-      ext_modules = rinterface_exts,
+      ext_modules = rinterface_exts[0],
       package_dir = pack_dir,
       packages = [pack_name,
                   pack_name+'.rlike',
