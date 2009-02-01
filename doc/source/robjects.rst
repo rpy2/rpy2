@@ -129,15 +129,15 @@ Just like it is the case with RPy-1.x, on-the-fly
 evaluation of R code contained in a string can be performed
 by calling the `r` instance:
 
->>> robjects.r('1+2')
-3
->>> sqr = ro.r('function(x) x^2)
+>>> print(robjects.r('1+2'))
+[1] 3
+>>> sqr = robjects.r('function(x) x^2')
 
->>> sqr
+>>> print(sqr)
 function (x)
 x^2
->>> sqr(2)
-4
+>>> print(sqr(2))
+[1] 4
 
 The astute reader will quickly realize that R objects named
 by python variables can
@@ -246,26 +246,26 @@ to happen that is:
 >>> x = robjects.r.seq(1, 10)
 >>> x[0]
 1
->>> x.subset(0)
+>>> print(x.subset(0))
 integer(0)
->>> x.subset(1)
-1L
+>>> print(x.subset(1))
+[1] 1
 
 Rather than calling :meth:`subset`, and to still have the conveniently
 short `[` operator available, a syntactic sugar is available in
 the form of delegating-like attribute :attr:`r`.
 
->>> x.r[0]
+>>> print(x.r[0])
 integer(0)
->>> x.r[1]
-1L
+>>> print(x.r[1])
+[1] 1
 
 The two next examples demonstrate some of `R`'s features regarding indexing,
 respectively element exclusion and recycling rule:
 
->>> x.r[-1]
+>>> print(x.r[-1])
 2:10
->>> x.r[True]
+>>> print(x.r[True])
 1:10
 
 This class is extending the class :class:`rinterface.SexpVector`, 
@@ -301,7 +301,7 @@ be used with the following operators:
 +----------+---------+
 
 >>> x = robjects.r.seq(1, 10)
->>> x.r + 1
+>>> print(x.r + 1)
 2:11
 
 .. note::
@@ -381,8 +381,8 @@ constructs a data.frame from named arguments
 >>> d = {'value': robjects.IntVector((1,2,3)),
          'letter': robjects.StrVector(('x', 'y', 'z'))}
 >>> dataf = robjects.r['data.frame'](**d)
->>> dataf.colnames()
-c("letter", "value")
+>>> print(dataf.colnames())
+[1] "letter" "value"
 
 .. note::
    The order of the columns `value` and `letter` cannot be conserved,
@@ -418,7 +418,7 @@ dictionary:
 
 >>> robjects.r.ls(globalEnv)
 >>> globalEnv["a"] = 123
->>> robjects.r.ls(globalEnv)
+>>> print(robjects.r.ls(globalEnv))
 
 
 Care must be taken when assigning objects into an environment
@@ -428,12 +428,12 @@ The following example should make one measure that this can mean
 trouble if no care is taken:
 
 >>> globalEnv["pi"] = 123
->>> robjects.r.pi
-123L
+>>> print(robjects.r.pi)
+[1] 123
 >>>
 >>> robjects.r.rm("pi")
->>> robjects.r.pi
-3.1415926535897931
+>>> print(robjects.r.pi)
+[1] 3.1415926535897931
 
 The class inherits from the class
 :class:`rpy2.rinterface.SexpEnvironment`.
