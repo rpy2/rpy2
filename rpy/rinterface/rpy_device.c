@@ -157,7 +157,7 @@ static void rpy_Clip(double x0, double x1, double y0, double y1, pDevDesc dd)
 				      NULL);
 
   //FIXME: check that the method only returns None ?
-  Py_DECREF(result);  
+  Py_DECREF(result);
 }
 
 PyDoc_STRVAR(GrDev_clip_doc,
@@ -165,7 +165,7 @@ PyDoc_STRVAR(GrDev_clip_doc,
 static PyObject* GrDev_clip(PyObject *self, PyObject *args)
 {
   printf("FIXME: clip.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -625,27 +625,27 @@ void configureDevice(pDevDesc dd, PyObject *self)
 
   /* starting parameters */
   dd->startfont = 1; 
-  //dd->startps = ps;
-  //dd->startcol = R_RGB(0, 0, 0);
-  //dd->startfill = R_TRANWHITE;
-  //dd->startlty = LTY_SOLID; 
-  //dd->startgamma = 1;
+  dd->startps = 12.0; // ps * 
+  dd->startcol = R_RGB(0, 0, 0);
+  dd->startfill = R_TRANWHITE;
+  dd->startlty = LTY_SOLID; 
+  dd->startgamma = 1;
         
-  //dd->cra[0] = cw;
-  //dd->cra[1] = ascent + descent;
+  //dd->cra[0] = 0.9 * 12;
+  //dd->cra[1] = 1.2 * 12;
         
   /* character addressing offsets */
-  //dd->xCharOffset = 0.4900;
-  //dd->yCharOffset = 0.3333;
-  //dd->yLineBias = 0.1;
+  dd->xCharOffset = 0.4900;
+  dd->yCharOffset = 0.3333;
+  dd->yLineBias = 0.1;
 
   /* inches per raster unit */
-  //dd->ipr[0] = pixelWidth();
-  //dd->ipr[1] = pixelHeight();
+  dd->ipr[0] = 1;
+  dd->ipr[1] = 1;
 
   /* device capabilities */
-  dd->canClip = TRUE;
-  dd->canHAdj = 0; //FIXME: what is this ? 
+  dd->canClip = FALSE;
+  dd->canHAdj = 0; /* text adjustment 0, 1, or 2 */
   dd->canChangeGamma = FALSE; //FIXME: what is this ? 
 
   dd->canGenMouseDown = TRUE; /* can the device generate mousedown events */
@@ -1189,9 +1189,8 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   configureDevice(dd, self);
   pGEDevDesc gdd = GEcreateDevDesc(dd);
-  printf("here\n");
+
   GEaddDevice2(gdd, self->ob_type->tp_name);
-  //GEaddDevice2(gdd, "Foo");
 
   ((PyGrDevObject *)self)->devnum = ScalarInteger(ndevNumber(dd) + 1);
   R_PreserveObject(((PyGrDevObject *)self)->devnum);
