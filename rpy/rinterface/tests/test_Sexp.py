@@ -77,6 +77,16 @@ class SexpTestCase(unittest.TestCase):
         # no real test, just make sure that it does
         # not create a segfault
 
+    def testSexp_duplicate(self):
+        sexp = rinterface.IntSexpVector([1,2,3])
+        self.assertEquals(0, sexp.named)
+        rinterface.baseNameSpaceEnv["identity"](sexp)
+        self.assertEquals(2, sexp.named)
+        sexp2 = sexp.duplicate()
+        self.assertEquals(sexp.typeof, sexp2.typeof)
+        self.assertEquals(list(sexp), list(sexp2))
+        self.assertFalse(sexp.rsame(sexp2))
+        self.assertEquals(0, sexp2.named)
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpTestCase)

@@ -1066,6 +1066,24 @@ Sexp_rsame(PyObject *self, PyObject *other)
 PyDoc_STRVAR(Sexp_rsame_doc,
 	     "Is the given object representing the same underlying R object as the instance.");
 
+static PyObject*
+Sexp_duplicate(PyObject *self)
+{
+  SEXP sexp_self, sexp_copy;
+  PyObject *res;
+  
+  sexp_self = RPY_SEXP((PySexpObject*)self);
+  if (! sexp_self) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;;
+  }
+  PROTECT(sexp_copy = Rf_duplicate(sexp_self));
+  res = (PyObject *) newPySexpObject(sexp_copy);
+  UNPROTECT(1);
+  return res;
+}
+PyDoc_STRVAR(Sexp_duplicate_doc,
+             "Makes a copy of the underlying Sexp object, and returns it.");
 
 static PyMethodDef Sexp_methods[] = {
   {"do_slot", (PyCFunction)Sexp_do_slot, METH_O,
@@ -1074,6 +1092,8 @@ static PyMethodDef Sexp_methods[] = {
    Sexp_do_slot_assign_doc},
   {"rsame", (PyCFunction)Sexp_rsame, METH_O,
   Sexp_rsame_doc},
+  {"duplicate", (PyCFunction)Sexp_duplicate, METH_NOARGS,
+  Sexp_duplicate_doc},
   {NULL, NULL}          /* sentinel */
 };
 
