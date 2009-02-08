@@ -625,6 +625,11 @@ Set the options used to initialize R.\
 
 static PyObject* EmbeddedR_ProcessEvents(PyObject *self)
 {
+  #if  !( defined(HAVE_AQUA) || defined(Win32) )
+  PyErr_Format(PyExc_RuntimeError,
+	       "ProcessEvents is currently only defined on Win32 and MacOS X-Aqua");
+  return NULL;
+  #endif
   if (! (embeddedR_status & RPY_R_INITIALIZED)) {
     PyErr_Format(PyExc_RuntimeError, 
 		 "R should not process events before being initialized.");
