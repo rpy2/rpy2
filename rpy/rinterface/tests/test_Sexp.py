@@ -78,6 +78,8 @@ class SexpTestCase(unittest.TestCase):
         # not create a segfault
 
     def testSexp_duplicate(self):
+        # move to test .__copy__ in the case
+        # .duplicate goes away
         sexp = rinterface.IntSexpVector([1,2,3])
         self.assertEquals(0, sexp.named)
         rinterface.baseNameSpaceEnv["identity"](sexp)

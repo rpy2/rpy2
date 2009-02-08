@@ -1094,6 +1094,8 @@ static PyMethodDef Sexp_methods[] = {
   Sexp_rsame_doc},
   {"duplicate", (PyCFunction)Sexp_duplicate, METH_NOARGS,
   Sexp_duplicate_doc},
+  {"__copy__", (PyCFunction)Sexp_duplicate, METH_NOARGS,
+  Sexp_duplicate_doc},
   {NULL, NULL}          /* sentinel */
 };
 

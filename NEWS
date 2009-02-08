@@ -23,6 +23,10 @@ New Features
 - Initial commit of a callback-based implementation of an R graphical device
   (this is for the moment very experimental - and not fully working)
 
+- :meth:`Sexp.__copy__` to copy an object (calling Rf_Duplicate).
+  The method is also available as :meth:`Sexp.duplicate` for the time being
+  (but only one name will likely make it to the release)
+ 
 Changes
 -------
 
