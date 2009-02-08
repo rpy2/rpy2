@@ -47,6 +47,14 @@ def testArrayStructComplex(self, numericModule):
     for orig, new in itertools.izip(px, nx):
         self.assertEquals(orig, new)
     
+def testArrayStructBoolean(self, numericModule):
+    px = [True, False, True]
+    x = rinterface.SexpVector(px, rinterface.LGLSXP)
+    nx = numericModule.asarray(x)
+    self.assertEquals('i', nx.dtype.kind) # not 'b', see comments in array.c
+    for orig, new in itertools.izip(px, nx):
+        self.assertEquals(orig, new)
+
 
 class SexpVectorNumericTestCase(unittest.TestCase):
 
@@ -60,16 +68,8 @@ class SexpVectorNumericTestCase(unittest.TestCase):
     def testArrayStructNumpyComplex(self):
         testArrayStructComplex(self, numpy)
 
-
-
-#     def testArrayStructBoolean(self):
-#         px = [True, False, True]
-#         x = rinterface.SexpVector(px, rinterface.REALSXP)
-#         nx = Numeric.asarray(x)
-#         self.assertEquals('b', nx.typecode())
-#         for orig, new in itertools.izip(px, nx):
-#             self.assertEquals(orig, new)
-#         self.assertTrue(False)
+    def testArrayStructNumpyBoolean(self):
+        testArrayStructBoolean(self, numpy)
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpVectorNumericTestCase)
