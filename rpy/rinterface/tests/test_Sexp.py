@@ -11,10 +11,10 @@ class SexpTestCase(unittest.TestCase):
         self.assertRaises(ValueError, rinterface.Sexp, x)
 
     def testNew(self):        
-        sexp = rinterface.globalEnv.get("letters")
+        sexp = rinterface.baseNameSpaceEnv.get("letters")
         sexp_new = rinterface.Sexp(sexp)
 
-        idem = rinterface.globalEnv.get("identical")
+        idem = rinterface.baseNameSpaceEnv.get("identical")
         self.assertTrue(idem(sexp, sexp_new)[0])
 
         sexp_new2 = rinterface.Sexp(sexp)
@@ -24,17 +24,17 @@ class SexpTestCase(unittest.TestCase):
 
 
     def testTypeof_get(self):
-        sexp = rinterface.globalEnv.get("letters")
+        sexp = rinterface.baseNameSpaceEnv.get("letters")
         self.assertEquals(sexp.typeof, rinterface.STRSXP)
         
-        sexp = rinterface.globalEnv.get("pi")
+        sexp = rinterface.baseNameSpaceEnv.get("pi")
         self.assertEquals(sexp.typeof, rinterface.REALSXP)
         
-        sexp = rinterface.globalEnv.get("plot")
+        sexp = rinterface.baseNameSpaceEnv.get("plot")
         self.assertEquals(sexp.typeof, rinterface.CLOSXP)
 
     def testDo_slot(self):
-        data_func = rinterface.globalEnv.get("data")
+        data_func = rinterface.baseNameSpaceEnv.get("data")
         data_func(rinterface.SexpVector(["iris", ], rinterface.STRSXP))
         sexp = rinterface.globalEnv.get("iris")
         names = sexp.do_slot("names")
@@ -48,7 +48,7 @@ class SexpTestCase(unittest.TestCase):
         self.assertRaises(LookupError, sexp.do_slot, "foo")  
 
     def testDo_slot_assign(self):
-        data_func = rinterface.globalEnv.get("data")
+        data_func = rinterface.baseNameSpaceEnv.get("data")
         data_func(rinterface.SexpVector(["iris", ], rinterface.STRSXP))
         sexp = rinterface.globalEnv.get("iris")
         iris_names = rinterface.StrSexpVector(['a', 'b', 'c', 'd', 'e'])
@@ -57,17 +57,17 @@ class SexpTestCase(unittest.TestCase):
         self.assertEquals(['a', 'b', 'c', 'd', 'e'], names)
 
     def testSexp_rsame_true(self):
-        sexp_a = rinterface.globalEnv.get("letters")
-        sexp_b = rinterface.globalEnv.get("letters")
+        sexp_a = rinterface.baseNameSpaceEnv.get("letters")
+        sexp_b = rinterface.baseNameSpaceEnv.get("letters")
         self.assertTrue(sexp_a.rsame(sexp_b))
 
     def testSexp_rsame_false(self):
-        sexp_a = rinterface.globalEnv.get("letters")
-        sexp_b = rinterface.globalEnv.get("pi")
+        sexp_a = rinterface.baseNameSpaceEnv.get("letters")
+        sexp_b = rinterface.baseNameSpaceEnv.get("pi")
         self.assertFalse(sexp_a.rsame(sexp_b))
 
     def testSexp_rsame_wrongType(self):
-        sexp_a = rinterface.globalEnv.get("letters")
+        sexp_a = rinterface.baseNameSpaceEnv.get("letters")
         self.assertRaises(ValueError, sexp_a.rsame, 'foo')
         
     def testSexp_sexp_destroyCobj(self):
@@ -82,7 +82,7 @@ class SexpTestCase(unittest.TestCase):
         # .duplicate goes away
         sexp = rinterface.IntSexpVector([1,2,3])
         self.assertEquals(0, sexp.named)
-        rinterface.baseNameSpaceEnv["identity"](sexp)
+        rinterface.baseNameSpaceEnv.get("identity")(sexp)
         self.assertEquals(2, sexp.named)
         sexp2 = sexp.duplicate()
         self.assertEquals(sexp.typeof, sexp2.typeof)
