@@ -26,6 +26,9 @@ New Features
 - :meth:`Sexp.__copy__` to copy an object (calling Rf_Duplicate).
   The method is also available as :meth:`Sexp.duplicate` for the time being
   (but only one name will likely make it to the release)
+
+- :meth:`process_revents` now work on UNIX systems (letting one refresh interactive plots)
+  (# patch by Nathaniel Smith)
  
 Changes
 -------
