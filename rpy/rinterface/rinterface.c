@@ -61,6 +61,7 @@
 #include <R_ext/Complex.h>
 #include <Rembedded.h>
 
+#include <R_ext/eventloop.h>
 
 /* FIXME: consider the use of parsing */
 /* #include <R_ext/Parse.h> */
@@ -625,11 +626,6 @@ Set the options used to initialize R.\
 
 static PyObject* EmbeddedR_ProcessEvents(PyObject *self)
 {
-  #if  !( defined(HAVE_AQUA) || defined(Win32) )
-  PyErr_Format(PyExc_RuntimeError,
-               "ProcessEvents is currently only defined on Win32 and MacOS X-Aqua");
-  return NULL;
-  #else
   if (! (embeddedR_status & RPY_R_INITIALIZED)) {
     PyErr_Format(PyExc_RuntimeError, 
 		 "R should not process events before being initialized.");
@@ -640,15 +636,21 @@ static PyObject* EmbeddedR_ProcessEvents(PyObject *self)
     return NULL;
   }
   embeddedR_setlock();
+#if defined(HAVE_AQUA) || defined(Win32)
   /* Can the call to R_ProcessEvents somehow fail ? */
   R_ProcessEvents();
+#endif
+#if !defined(Win32)
+  R_runHandlers(R_InputHandlers, R_checkActivity(0, 1));
+#endif
   embeddedR_freelock();
   Py_INCREF(Py_None);
   return Py_None;
-  #endif
 }
 PyDoc_STRVAR(EmbeddedR_ProcessEvents_doc,
-	     "Process R events. This function is a simple wrapper around R_ProcessEvents.");
+	     "Process R events. This function is a simple wrapper around\n"
+	     "R_ProcessEvents (on win32 and MacOS X-Aqua)\n"
+	     "and R_runHandlers (on other platforms).");
 
 
 static PyObject* EmbeddedR_init(PyObject *self) 
