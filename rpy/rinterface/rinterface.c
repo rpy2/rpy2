@@ -629,7 +629,7 @@ static PyObject* EmbeddedR_ProcessEvents(PyObject *self)
   PyErr_Format(PyExc_RuntimeError,
 	       "ProcessEvents is currently only defined on Win32 and MacOS X-Aqua");
   return NULL;
-  #endif
+  #else
   if (! (embeddedR_status & RPY_R_INITIALIZED)) {
     PyErr_Format(PyExc_RuntimeError, 
 		 "R should not process events before being initialized.");
@@ -645,6 +645,7 @@ static PyObject* EmbeddedR_ProcessEvents(PyObject *self)
   embeddedR_freelock();
   Py_INCREF(Py_None);
   return Py_None;
+  #endif
 }
 PyDoc_STRVAR(EmbeddedR_ProcessEvents_doc,
 	     "Process R events. This function is a simple wrapper around R_ProcessEvents.");
