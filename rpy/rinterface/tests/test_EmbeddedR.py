@@ -5,7 +5,28 @@ import sys, os, subprocess, time, tempfile, signal
 
 rinterface.initr()
 
+
+
 class EmbeddedRTestCase(unittest.TestCase):
+
+    def testConsolePrint(self):
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # cannot be tested with Python < 2.6
+            return None
+
+        outfile = tempfile.NamedTemporaryFile(mode = 'w', 
+                                            delete=False)
+        stdout = sys.stdout
+        sys.stdout = outfile
+        try:
+            rinterface.consolePrint('haha')
+        except Exception, e:
+            sys.stdout = stdout
+            raise e
+        outfile.close()
+        infile = file(outfile.name, mode="r")
+        self.assertEquals('haha', ''.join(infile.readlines()))
+
     def testSetWriteConsole(self):
         buf = []
         def f(x):
