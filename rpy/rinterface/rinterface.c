@@ -1071,7 +1071,7 @@ PyDoc_STRVAR(Sexp_rsame_doc,
 	     "Is the given object representing the same underlying R object as the instance.");
 
 static PyObject*
-Sexp_duplicate(PyObject *self)
+Sexp_duplicate(PyObject *self, PyObject *kwargs)
 {
   SEXP sexp_self, sexp_copy;
   PyObject *res;
@@ -1096,9 +1096,7 @@ static PyMethodDef Sexp_methods[] = {
    Sexp_do_slot_assign_doc},
   {"rsame", (PyCFunction)Sexp_rsame, METH_O,
   Sexp_rsame_doc},
-  {"duplicate", (PyCFunction)Sexp_duplicate, METH_NOARGS,
-  Sexp_duplicate_doc},
-  {"__copy__", (PyCFunction)Sexp_duplicate, METH_NOARGS,
+  {"__deepcopy__", (PyCFunction)Sexp_duplicate, METH_KEYWORDS,
   Sexp_duplicate_doc},
   {NULL, NULL}          /* sentinel */
 };

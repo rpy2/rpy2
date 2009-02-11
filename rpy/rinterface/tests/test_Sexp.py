@@ -1,4 +1,5 @@
 import unittest
+import copy
 import rpy2.rinterface as rinterface
 
 rinterface.initr()
@@ -77,18 +78,22 @@ class SexpTestCase(unittest.TestCase):
         # no real test, just make sure that it does
         # not create a segfault
 
-    def testSexp_duplicate(self):
-        # move to test .__copy__ in the case
-        # .duplicate goes away
+    def testSexp_deepcopy(self):
         sexp = rinterface.IntSexpVector([1,2,3])
         self.assertEquals(0, sexp.named)
         rinterface.baseNameSpaceEnv.get("identity")(sexp)
         self.assertEquals(2, sexp.named)
-        sexp2 = sexp.duplicate()
+        sexp2 = sexp.__deepcopy__()
         self.assertEquals(sexp.typeof, sexp2.typeof)
         self.assertEquals(list(sexp), list(sexp2))
         self.assertFalse(sexp.rsame(sexp2))
         self.assertEquals(0, sexp2.named)
+        # should be the same as above, but just in case:
+        sexp3 = copy.deepcopy(sexp)
+        self.assertEquals(sexp.typeof, sexp3.typeof)
+        self.assertEquals(list(sexp), list(sexp3))
+        self.assertFalse(sexp.rsame(sexp3))
+        self.assertEquals(0, sexp3.named)
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpTestCase)
