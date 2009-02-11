@@ -55,7 +55,6 @@ if sys.platform == 'win32':
 
 
 # cleanup the namespace
-del(sys)
 del(os)
 try:
     del(win32api)
