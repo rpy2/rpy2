@@ -15,7 +15,9 @@ New Features
 - New functions for specifying callback functions for R's front-ends:
   :func:`setShowMessage`, :func:`setFlushConsole`, :func:`setChooseFile`, :func:`setShowFiles`
 
-- Wrapper for R_ProcessEvents (# suggested by June Kim to help with issues related to interactive display)
+- :meth:`process_revents`, a Wrapper for R_ProcessEvents (# suggested by June Kim to help with issues related to 
+  interactive display on win32), and for R_RunHandlers on UNIX-like systems 
+  (# patch by Nathaniel Smith).
 
 - All callbacks are getting a get<callback> to complement the set<callback>.
   (# patch submitted by Nathaniel Smith) 
@@ -27,8 +29,6 @@ New Features
   The method is also available as :meth:`Sexp.duplicate` for the time being
   (but only one name will likely make it to the release)
 
-- :meth:`process_revents` now work on UNIX systems (letting one refresh interactive plots)
-  (# patch by Nathaniel Smith)
  
 Changes
 -------
