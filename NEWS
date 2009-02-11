@@ -36,7 +36,9 @@ Changes
 
 - the default for reading and writing the console are now using sys.stdin and sys.stdout 
   (# patch submitted by Nathaniel Smith)
- 
+
+- :meth:`Sexp.do_slot_assign` now creates the slot if missing
+  (can also count as a bug-fix - # patch by Nathaniel Smith)
 
 Bugs fixed
 ----------
