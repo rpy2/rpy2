@@ -91,6 +91,8 @@ static void rpy_Size(double *left, double *right,
   /* Restore the Python handler */
   //FIXME
   //PyOS_setsig(SIGINT, python_sighandler);
+  printf("FIXME: size(left=%f, right=%f, bottom=%f, top=%f)\n", 
+	 *left, *right, *bottom, *top);
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
   //FIXME: pass the current left/right/bottom/top
@@ -103,7 +105,7 @@ PyDoc_STRVAR(GrDev_size_doc,
 static PyObject* GrDev_size(PyObject *self, PyObject *args)
 {
   printf("FIXME: size.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -155,7 +157,7 @@ static void rpy_Clip(double x0, double x1, double y0, double y1, pDevDesc dd)
 				      py_x0, py_x1,
 				      py_y0, py_y1,
 				      NULL);
-
+  
   //FIXME: check that the method only returns None ?
   Py_DECREF(result);
 }
@@ -196,7 +198,7 @@ PyDoc_STRVAR(GrDev_strwidth_doc,
 static PyObject* GrDev_strwidth(PyObject *self, PyObject *args)
 {
   printf("FIXME: strwidth.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -233,7 +235,7 @@ PyDoc_STRVAR(GrDev_text_doc,
 static PyObject* GrDev_text(PyObject *self, PyObject *args)
 {
   printf("FIXME: text.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -269,7 +271,7 @@ PyDoc_STRVAR(GrDev_rect_doc,
 static PyObject* GrDev_rect(PyObject *self, PyObject *args)
 {
   printf("FIXME: rect.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -303,7 +305,7 @@ PyDoc_STRVAR(GrDev_circle_doc,
 static PyObject* GrDev_circle(PyObject *self, PyObject *args)
 {
   printf("FIXME: circle.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -339,7 +341,7 @@ PyDoc_STRVAR(GrDev_line_doc,
 static PyObject* GrDev_line(PyObject *self, PyObject *args)
 {
   printf("FIXME: line.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -373,7 +375,7 @@ PyDoc_STRVAR(GrDev_polyline_doc,
 static PyObject* GrDev_polyline(PyObject *self, PyObject *args)
 {
   printf("FIXME: line.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -406,7 +408,7 @@ PyDoc_STRVAR(GrDev_polygon_doc,
 static PyObject* GrDev_polygon(PyObject *self, PyObject *args)
 {
   printf("FIXME: polygon.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -460,7 +462,7 @@ PyDoc_STRVAR(GrDev_locator_doc,
 static PyObject* GrDev_locator(PyObject *self, PyObject *args)
 {
   printf("FIXME: locator.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -488,7 +490,7 @@ PyDoc_STRVAR(GrDev_mode_doc,
 static PyObject* GrDev_mode(PyObject *self)
 {
   printf("FIXME: mode.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -543,7 +545,7 @@ PyDoc_STRVAR(GrDev_metricinfo_doc,
 static PyObject* GrDev_metricinfo(PyObject *self, PyObject *args)
 {
   printf("FIXME: metricinfo.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -583,7 +585,7 @@ PyDoc_STRVAR(GrDev_getevent_doc,
 static PyObject* GrDev_getevent(PyObject *self, PyObject *args)
 {
   printf("FIXME: getevent.\n");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
