@@ -19,9 +19,9 @@ SEXP rpy_findFun(SEXP symbol, SEXP rho)
                return (vl);
 
             if (vl == R_MissingArg) {
-	      printf("R_MissingArg in rpy_FindFun.\n");
-	      return R_UnboundValue;
-	    }
+              printf("R_MissingArg in rpy_FindFun.\n");
+              return R_UnboundValue;
+            }
         }
         rho = ENCLOS(rho);
     }

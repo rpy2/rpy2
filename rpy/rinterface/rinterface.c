@@ -126,7 +126,7 @@ inline void embeddedR_freelock(void) {
 PyOS_sighandler_t python_sigint;
 
 PyDoc_STRVAR(module_doc,
-	     "Low-level functions to interface with R.\n\
+             "Low-level functions to interface with R.\n\
  One should mostly consider calling the functions defined here when\
  writing a higher level interface between python and R.\
  Check the documentation for the module this is bundled into if\
@@ -151,14 +151,14 @@ static SEXP newSEXP(PyObject *object, const int rType);
 static PyObject* writeConsoleCallback = NULL;
 
 static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
-					   PyObject *args)
+                                           PyObject *args)
 {
   
   PyObject *result = NULL;
   PyObject *function;
   
   if ( PyArg_ParseTuple(args, "O:console", 
-			&function)) {
+                        &function)) {
     
     if (!PyCallable_Check(function)) {
       PyErr_SetString(PyExc_TypeError, "parameter must be callable");
@@ -219,14 +219,14 @@ EmbeddedR_WriteConsole(const char *buf, int len)
 static PyObject* readConsoleCallback = NULL;
 
 static PyObject* EmbeddedR_setReadConsole(PyObject *self,
-					  PyObject *args)
+                                          PyObject *args)
 {
   
   PyObject *result = NULL;
   PyObject *function;
   
   if ( PyArg_ParseTuple(args, "O:console", 
-			&function)) {
+                        &function)) {
     
     if (!PyCallable_Check(function)) {
       PyErr_SetString(PyExc_TypeError, "parameter must be callable");
@@ -246,12 +246,12 @@ static PyObject* EmbeddedR_setReadConsole(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_setReadConsole_doc,
-	     "Use the function to handle R console input.");
+             "Use the function to handle R console input.");
 
 
 static int
 EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf, 
-		      int len, int addtohistory)
+                      int len, int addtohistory)
 {
   PyObject *arglist;
   PyObject *result;
@@ -310,7 +310,7 @@ static PyObject* EmbeddedR_getinitoptions(PyObject *self)
   return initOptions;
 }
 PyDoc_STRVAR(EmbeddedR_get_initoptions_doc,
-	     "\
+             "\
 Get the options used to initialize R.\
 ");
 
@@ -319,7 +319,7 @@ static PyObject* EmbeddedR_setinitoptions(PyObject *self, PyObject *tuple)
 
   if (embeddedR_status & RPY_R_INITIALIZED) {
     PyErr_Format(PyExc_RuntimeError, 
-		 "Options cannot be set once R has been initialized.");
+                 "Options cannot be set once R has been initialized.");
     return NULL;
   }
 
@@ -334,7 +334,7 @@ static PyObject* EmbeddedR_setinitoptions(PyObject *self, PyObject *tuple)
   return Py_None;
 }
 PyDoc_STRVAR(EmbeddedR_set_initoptions_doc,
-	     "\
+             "\
 Set the options used to initialize R.\
 ");
 
@@ -400,7 +400,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   RPY_SEXP(na_string) = NA_STRING;
 
   GetErrMessage_SEXP = findVar(install("geterrmessage"), 
-			       R_BaseNamespace);
+                               R_BaseNamespace);
 
   PyObject *res = PyInt_FromLong(status);
 
@@ -411,7 +411,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   return res;
 }
 PyDoc_STRVAR(EmbeddedR_init_doc,
-	     "\
+             "\
 Initialize an embedded R.\
 ");
 
@@ -451,9 +451,9 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   Py_RETURN_NONE;
 }
 PyDoc_STRVAR(EmbeddedR_end_doc,
-	     "endEmbeddedR()\n\
-	     \n\
-	     Terminate an embedded R.");
+             "endEmbeddedR()\n\
+             \n\
+             Terminate an embedded R.");
 
 
 
@@ -487,7 +487,7 @@ void SexpObject_clear(SexpObject *sexpobj)
 
 #ifdef RPY_VERBOSE
   printf("Python:%p / R:%p -- sexp count is %i...", 
-	 self, sexpobj->sexp, sexpobj->count);
+         self, sexpobj->sexp, sexpobj->count);
 #endif
   if (((*sexpobj).count == 0) && (*sexpobj).sexp) {
 #ifdef RPY_VERBOSE
@@ -537,9 +537,9 @@ Sexp_repr(PyObject *self)
   //  return NULL;
   //}
   return PyString_FromFormat("<%s - Python:\%p / R:\%p>",
-			     self->ob_type->tp_name,
-			     self,
-			     sexp);
+                             self->ob_type->tp_name,
+                             self,
+                             sexp);
 }
 
 
@@ -555,7 +555,7 @@ Sexp_typeof_get(PyObject *self)
   return PyInt_FromLong(TYPEOF(sexp));
 }
 PyDoc_STRVAR(Sexp_typeof_doc,
-	     "R internal SEXPREC type.");
+             "R internal SEXPREC type.");
 
 
 static PyObject*
@@ -582,11 +582,11 @@ Sexp_do_slot(PyObject *self, PyObject *name)
   return res;
 }
 PyDoc_STRVAR(Sexp_do_slot_doc,
-	     "Returns the attribute/slot for an R object.\n"
-	     " The name of the slot (a string) is the only parameter for\n"
-	     "the method.\n"
-	     ":param name: string\n"
-	     ":rtype: instance of type or subtype :class:`rpy2.rinterface.Sexp`");
+             "Returns the attribute/slot for an R object.\n"
+             " The name of the slot (a string) is the only parameter for\n"
+             "the method.\n"
+             ":param name: string\n"
+             ":rtype: instance of type or subtype :class:`rpy2.rinterface.Sexp`");
 
 static PyObject*
 Sexp_do_slot_assign(PyObject *self, PyObject *args)
@@ -601,13 +601,13 @@ Sexp_do_slot_assign(PyObject *self, PyObject *args)
   char *name_str;
   PyObject *value;
   if (! PyArg_ParseTuple(args, "sO", 
-			 &name_str,
-			 &value)) {
+                         &name_str,
+                         &value)) {
     return NULL;
   }
 
   if (! PyObject_IsInstance(value, 
-			  (PyObject*)&Sexp_Type)) {
+                          (PyObject*)&Sexp_Type)) {
       PyErr_Format(PyExc_ValueError, "Value must be an instance of Sexp.");
       return NULL;
   }
@@ -627,10 +627,10 @@ Sexp_do_slot_assign(PyObject *self, PyObject *args)
   return Py_None;
 }
 PyDoc_STRVAR(Sexp_do_slot_assign_doc,
-	     "Set the attribute/slot for an R object.\n"
-	     "\n"
-	     ":param name: string\n"
-	     ":param value: instance of rpy2.rinterface.Sexp");
+             "Set the attribute/slot for an R object.\n"
+             "\n"
+             ":param name: string\n"
+             ":param value: instance of rpy2.rinterface.Sexp");
 
 static PyObject*
 Sexp_named_get(PyObject *self)
@@ -686,16 +686,16 @@ Sexp_sexp_get(PyObject *self, void *closure)
 /*   return 0; */
 /* } */
 PyDoc_STRVAR(Sexp_sexp_doc,
-	     "Opaque C pointer to the underlying R object");
+             "Opaque C pointer to the underlying R object");
 
 static PyObject*
 Sexp_rsame(PyObject *self, PyObject *other)
 {
 
  if (! PyObject_IsInstance(other, 
-			   (PyObject*)&Sexp_Type)) {
+                           (PyObject*)&Sexp_Type)) {
     PyErr_Format(PyExc_ValueError, 
-		 "Can only compare Sexp objects.");
+                 "Can only compare Sexp objects.");
     return NULL;
  }
 
@@ -715,7 +715,7 @@ Sexp_rsame(PyObject *self, PyObject *other)
  return PyBool_FromLong(same);
 }
 PyDoc_STRVAR(Sexp_rsame_doc,
-	     "Is the given object representing the same underlying R object as the instance.");
+             "Is the given object representing the same underlying R object as the instance.");
 
 
 static PyMethodDef Sexp_methods[] = {
@@ -789,7 +789,7 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
 #ifdef RPY_VERBOSE
   printf("Python:%p / R:%p - Sexp initializing...\n", 
-	 self, RPY_SEXP((PySexpObject *)self));
+         self, RPY_SEXP((PySexpObject *)self));
 #endif 
 
   PyObject *sourceObject;
@@ -804,17 +804,17 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   //FIXME: handle the copy argument
 
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", 
-				    kwlist,
-				    &sourceObject,
-				    &PyBool_Type, &copy)) {
+                                    kwlist,
+                                    &sourceObject,
+                                    &PyBool_Type, &copy)) {
     Py_DECREF(Py_True);
     return -1;
   }
 
   if (! PyObject_IsInstance(sourceObject, 
-			    (PyObject*)&Sexp_Type)) {
+                            (PyObject*)&Sexp_Type)) {
     PyErr_Format(PyExc_ValueError, 
-		 "Can only instanciate from Sexp objects.");
+                 "Can only instanciate from Sexp objects.");
     Py_DECREF(Py_True);
     return -1;
   }
@@ -826,7 +826,7 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     RPY_INCREF((PySexpObject *)self);
 #ifdef RPY_VERBOSE
     printf("Python: %p / R: %p - sexp count is now %i.\n", 
-	   (PySexpObject *)self, RPY_SEXP((PySexpObject *)self), RPY_COUNT((PySexpObject *)self));
+           (PySexpObject *)self, RPY_SEXP((PySexpObject *)self), RPY_COUNT((PySexpObject *)self));
 #endif 
 
   } else {
@@ -849,25 +849,25 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
  * Generic Sexp_Type. It represents SEXP objects at large.
  */
 static PyTypeObject Sexp_Type = {
-	/* The ob_type field must be initialized in the module init function
-	 * to be portable to Windows without using C++. */
-	PyObject_HEAD_INIT(NULL)
-	0,			/*ob_size*/
-	"rinterface.Sexp",	/*tp_name*/
-	sizeof(PySexpObject),	/*tp_basicsize*/
-	0,			/*tp_itemsize*/
-	/* methods */
-	(destructor)Sexp_dealloc, /*tp_dealloc*/
-	0,			/*tp_print*/
-	0,                      /*tp_getattr*/
-	0,                      /*tp_setattr*/
-	0,			/*tp_compare*/
-	Sexp_repr,		/*tp_repr*/
-	0,			/*tp_as_number*/
-	0,			/*tp_as_sequence*/
-	0,			/*tp_as_mapping*/
-	0,			/*tp_hash*/
-	0,                      /*tp_call*/
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rinterface.Sexp",      /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        (destructor)Sexp_dealloc, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        Sexp_repr,              /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,                      /*tp_call*/
         0,                      /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
@@ -924,7 +924,7 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
      interpreter. Otherwise, we cannot stop R calculations, since
      SIGINT is only processed between Python bytecodes. Also, save the
      Python SIGINT handler because it is necessary to temporally
-	   restore it in user defined I/O Python functions. */
+           restore it in user defined I/O Python functions. */
   /* stop_events(); */
   
 #ifdef _WIN32
@@ -966,7 +966,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 
   if (! (embeddedR_status & RPY_R_INITIALIZED)) {
     PyErr_Format(PyExc_RuntimeError, 
-		 "R must be initialized before any call to R functions is possible.");
+                 "R must be initialized before any call to R functions is possible.");
     return NULL;
   }
 
@@ -1010,7 +1010,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     is_PySexpObject = PyObject_TypeCheck(tmp_obj, &Sexp_Type);
     if (! is_PySexpObject) {
       PyErr_Format(PyExc_ValueError, 
-		   "All parameters must be of type Sexp_Type.");
+                   "All parameters must be of type Sexp_Type.");
       Py_DECREF(tmp_obj);
       goto fail;
     }
@@ -1036,52 +1036,52 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     for (arg_i=0; arg_i<lkwds; arg_i++) {
       tmp_obj = PySequence_GetItem(citems, arg_i);
       if (! tmp_obj) {
-	PyErr_Format(PyExc_ValueError, "No un-named item %i !?", arg_i);
-	Py_XDECREF(tmp_obj);
-	Py_XDECREF(citems);
-	goto fail;
+        PyErr_Format(PyExc_ValueError, "No un-named item %i !?", arg_i);
+        Py_XDECREF(tmp_obj);
+        Py_XDECREF(citems);
+        goto fail;
       }
       argName = PyTuple_GetItem(tmp_obj, 0);
 
       if (argName == Py_None) {
-	addArgName = 0;
-	PyErr_SetString(PyExc_TypeError, 
-			"None/missing keywords not yet supported.");
-	Py_DECREF(tmp_obj);
-	Py_XDECREF(citems);
-	goto fail;
+        addArgName = 0;
+        PyErr_SetString(PyExc_TypeError, 
+                        "None/missing keywords not yet supported.");
+        Py_DECREF(tmp_obj);
+        Py_XDECREF(citems);
+        goto fail;
       } else if (PyString_Check(argName)) {
-	addArgName = 1;
+        addArgName = 1;
       } else {
-	PyErr_SetString(PyExc_TypeError, "All keywords must be strings.");
-	Py_DECREF(tmp_obj);
-	Py_XDECREF(citems);
-	goto fail;
+        PyErr_SetString(PyExc_TypeError, "All keywords must be strings.");
+        Py_DECREF(tmp_obj);
+        Py_XDECREF(citems);
+        goto fail;
       }
       
       argValue = PyTuple_GetItem(tmp_obj, 1);
       is_PySexpObject = PyObject_TypeCheck(argValue, &Sexp_Type);
       if (! is_PySexpObject) {
-	PyErr_Format(PyExc_ValueError, 
-		     "All named parameters must be of type Sexp_Type.");
-	Py_DECREF(tmp_obj);	
-	Py_XDECREF(citems);
-	goto fail;
+        PyErr_Format(PyExc_ValueError, 
+                     "All named parameters must be of type Sexp_Type.");
+        Py_DECREF(tmp_obj);     
+        Py_XDECREF(citems);
+        goto fail;
       }
       Py_DECREF(tmp_obj);
       tmp_R = RPY_SEXP((PySexpObject *)argValue);
       //SET_NAMED(tmp_R, 2);
       //tmp_R = Rf_duplicate(tmp_R);
       if (! tmp_R) {
-	PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-	Py_DECREF(tmp_obj);
-	Py_XDECREF(citems);
-	goto fail;
+        PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+        Py_DECREF(tmp_obj);
+        Py_XDECREF(citems);
+        goto fail;
       }
       SETCAR(c_R, tmp_R);
       if (addArgName) {
-	argNameString = PyString_AsString(argName);
-	SET_TAG(c_R, install(argNameString));
+        argNameString = PyString_AsString(argName);
+        SET_TAG(c_R, install(argNameString));
     //printf("PyMem_Free...");
       //FIXME: probably memory leak with argument names.
     //PyMem_Free(argNameString);
@@ -1131,7 +1131,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
   
   if (! (embeddedR_status & RPY_R_INITIALIZED)) {
     PyErr_Format(PyExc_RuntimeError, 
-		 "R must be initialized before any call to R functions is possible.");
+                 "R must be initialized before any call to R functions is possible.");
     return NULL;
   }
   
@@ -1190,7 +1190,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
     itemLength = PyObject_Length(tmp_obj);
     if (itemLength != 2) {
       PyErr_Format(PyExc_ValueError, "Item %i does not have two elements.", 
-		   arg_i);
+                   arg_i);
       goto fail;
     }
     argName = PyTuple_GetItem(tmp_obj, 0);
@@ -1206,7 +1206,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
     is_PySexpObject = PyObject_TypeCheck(argValue, &Sexp_Type);
     if (! is_PySexpObject) {
       PyErr_Format(PyExc_ValueError, 
-		   "All parameters must be of type Sexp_Type.");
+                   "All parameters must be of type Sexp_Type.");
       goto fail;
     }
     tmp_R = RPY_SEXP((PySexpObject *)argValue);
@@ -1260,12 +1260,12 @@ Sexp_rcall(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(SexpClosure_rcall_doc,
-	     "Call using the items of the object passed as Python \n"
-	     "argument to build the list of parameters passed to the \n"
-	     "R function.\n\n"
-	     ":param args: tuple of two-elements items"
-	     " or class::`rlike.container.ArgsDict`\n\n"
-	     ":rtype: instance of type or subtype :class:`rinterface.Sexp`\n");
+             "Call using the items of the object passed as Python \n"
+             "argument to build the list of parameters passed to the \n"
+             "R function.\n\n"
+             ":param args: tuple of two-elements items"
+             " or class::`rlike.container.ArgsDict`\n\n"
+             ":rtype: instance of type or subtype :class:`rinterface.Sexp`\n");
 
 static PySexpObject*
 Sexp_closureEnv(PyObject *self)
@@ -1286,7 +1286,7 @@ Sexp_closureEnv(PyObject *self)
   return newPySexpObject(closureEnv);
 }
 PyDoc_STRVAR(Sexp_closureEnv_doc,
-	     "\n\
+             "\n\
 Returns the environment the object is defined in.\n\
 This corresponds to the C-level function CLOENV(SEXP).\n\
 \n\
@@ -1314,25 +1314,25 @@ ClosureSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 
 
 static PyTypeObject ClosureSexp_Type = {
-	/* The ob_type field must be initialized in the module init function
-	 * to be portable to Windows without using C++. */
-	PyObject_HEAD_INIT(NULL)
-	0,			/*ob_size*/
-	"rinterface.SexpClosure",	/*tp_name*/
-	sizeof(PySexpObject),	/*tp_basicsize*/
-	0,			/*tp_itemsize*/
-	/* methods */
-	0, /*tp_dealloc*/
-	0,			/*tp_print*/
-	0,                      /*tp_getattr*/
-	0,                      /*tp_setattr*/
-	0,			/*tp_compare*/
-	0,		        /*tp_repr*/
-	0,			/*tp_as_number*/
-	0,			/*tp_as_sequence*/
-	0,			/*tp_as_mapping*/
-	0,			/*tp_hash*/
-	Sexp_call,              /*tp_call*/
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rinterface.SexpClosure",       /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        0,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        Sexp_call,              /*tp_call*/
         0,//Sexp_str,               /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
@@ -1369,13 +1369,13 @@ ClosureSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   static char *kwlist[] = {"sexpclos", "copy", NULL};
   //FIXME: handle the copy argument
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", 
-				    kwlist,
-				    &object,
-				    &PyBool_Type, &copy)) {
+                                    kwlist,
+                                    &object,
+                                    &PyBool_Type, &copy)) {
     return -1;
   }
   if (PyObject_IsInstance(object, 
-			  (PyObject*)&ClosureSexp_Type)) {
+                          (PyObject*)&ClosureSexp_Type)) {
     //call parent's constructor
     if (Sexp_init(self, args, NULL) == -1) {
       PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
@@ -1434,7 +1434,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
 
   if (i < 0) {
     PyErr_Format(PyExc_IndexError, 
-		 "Mysterious error: likely an integer overflow.");
+                 "Mysterious error: likely an integer overflow.");
     res = NULL;
     return res;
   }
@@ -1461,10 +1461,10 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     case LGLSXP:
       vi = LOGICAL_POINTER(*sexp)[i_R];
       if (vi == NA_LOGICAL) {
-	Py_INCREF(Py_None);
-	res = Py_None;
+        Py_INCREF(Py_None);
+        res = Py_None;
       } else {
-	res = PyBool_FromLong((long)vi);
+        res = PyBool_FromLong((long)vi);
       }
       break;
     case CPLXSXP:
@@ -1493,7 +1493,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       break;
     default:
       PyErr_Format(PyExc_ValueError, "Cannot handle type %d", 
-		   TYPEOF(*sexp));
+                   TYPEOF(*sexp));
       res = NULL;
       break;
     }
@@ -1533,7 +1533,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
   int is_PySexpObject = PyObject_TypeCheck(val, &Sexp_Type);
   if (! is_PySexpObject) {
     PyErr_Format(PyExc_ValueError, "Any new value must be of "
-		 "type 'Sexp_Type'.");
+                 "type 'Sexp_Type'.");
     return -1;
   }
   SEXP *sexp_val = &(RPY_SEXP((PySexpObject *)val));
@@ -1577,7 +1577,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
     break;
   default:
     PyErr_Format(PyExc_ValueError, "cannot handle type %d", 
-		 TYPEOF(*sexp));
+                 TYPEOF(*sexp));
     return -1;
     break;
   }
@@ -1608,37 +1608,37 @@ static PyGetSetDef VectorSexp_getsets[] = {
 
 
 PyDoc_STRVAR(VectorSexp_Type_doc,
-	     "R object that is a vector."
-	     " R vectors start their indexing at one,"
-	     " while Python lists or arrays start indexing"
-	     " at zero.\n"
-	     "In the hope to avoid confusion, the indexing"
-	     " in Python (e.g., :meth:`__getitem__` / :meth:`__setitem__`)"
-	     " starts at zero.");
+             "R object that is a vector."
+             " R vectors start their indexing at one,"
+             " while Python lists or arrays start indexing"
+             " at zero.\n"
+             "In the hope to avoid confusion, the indexing"
+             " in Python (e.g., :meth:`__getitem__` / :meth:`__setitem__`)"
+             " starts at zero.");
 
 static int
 VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 
 static PyTypeObject VectorSexp_Type = {
-	/* The ob_type field must be initialized in the module init function
-	 * to be portable to Windows without using C++. */
-	PyObject_HEAD_INIT(NULL)
-	0,			/*ob_size*/
-	"rinterface.SexpVector",	/*tp_name*/
-	sizeof(PySexpObject),	/*tp_basicsize*/
-	0,			/*tp_itemsize*/
-	/* methods */
-	0, /*tp_dealloc*/
-	0,			/*tp_print*/
-	0,                      /*tp_getattr*/
-	0,                      /*tp_setattr*/
-	0,			/*tp_compare*/
-	0,		        /*tp_repr*/
-	0,			/*tp_as_number*/
-	&VectorSexp_sequenceMethods,			/*tp_as_sequence*/
-	0,			/*tp_as_mapping*/
-	0,			/*tp_hash*/
-	0,              /*tp_call*/
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rinterface.SexpVector",        /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        0,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        &VectorSexp_sequenceMethods,                    /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,              /*tp_call*/
         0,//Sexp_str,               /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
@@ -1651,7 +1651,7 @@ static PyTypeObject VectorSexp_Type = {
         0,                      /*tp_weaklistoffset*/
         0,                      /*tp_iter*/
         0,                      /*tp_iternext*/
-	0,           /*tp_methods*/
+        0,           /*tp_methods*/
         0,                      /*tp_members*/
         VectorSexp_getsets,            /*tp_getset*/
         &Sexp_Type,             /*tp_base*/
@@ -1676,7 +1676,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   if (! (embeddedR_status & RPY_R_INITIALIZED)) {
     PyErr_Format(PyExc_RuntimeError, 
-		 "R must be initialized before any instance can be created.");
+                 "R must be initialized before any instance can be created.");
     return -1;
   }
 
@@ -1688,15 +1688,15 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   //FIXME: handle the copy argument
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|iO!", 
-				    kwlist,
-				    &object,
-				    &sexptype,
-				    &PyBool_Type, &copy)) {
+                                    kwlist,
+                                    &object,
+                                    &sexptype,
+                                    &PyBool_Type, &copy)) {
     return -1;
   }
 
   if (PyObject_IsInstance(object, 
-			  (PyObject*)&VectorSexp_Type)) {
+                          (PyObject*)&VectorSexp_Type)) {
     //call parent's constructor
     if (Sexp_init(self, args, NULL) == -1) {
       //PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
@@ -1704,7 +1704,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     }
   } else if (PySequence_Check(object)) {
     if ((sexptype < 0) || (sexptype > maxValidSexpType) || 
-	(! validSexpType[sexptype])) {
+        (! validSexpType[sexptype])) {
       PyErr_Format(PyExc_ValueError, "Invalid SEXP type.");
       return -1;
     }
@@ -1741,9 +1741,9 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   static char *kwlist[] = {"name", "wantFun", NULL};
  
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|O!",
-				   kwlist,
-				   &name, 
-				   &PyBool_Type, &wantFun)) { 
+                                   kwlist,
+                                   &name, 
+                                   &PyBool_Type, &wantFun)) { 
     Py_DECREF(Py_False);
     return NULL; 
   }
@@ -1776,19 +1776,19 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   return (PyObject *)res;
 }
 PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
-	     "Find a name/symbol in the environment, following the chain of enclosing\n"
-	     "environments until either the topmost environment is reached or the name\n"
-	     "is found, and returned the associated object. \n"
-	     "The optional parameter `wantFun` indicates whether functions should be\n"
-	     "returned or not.\n"
-	     ":rtype: instance of type of subtype :class:`rpy2.rinterface.Sexp`");
+             "Find a name/symbol in the environment, following the chain of enclosing\n"
+             "environments until either the topmost environment is reached or the name\n"
+             "is found, and returned the associated object. \n"
+             "The optional parameter `wantFun` indicates whether functions should be\n"
+             "returned or not.\n"
+             ":rtype: instance of type of subtype :class:`rpy2.rinterface.Sexp`");
 
 static PyObject*
 EnvironmentSexp_frame(PyObject *self)
 {
   if (! (embeddedR_status & RPY_R_INITIALIZED)) {
     PyErr_Format(PyExc_RuntimeError, 
-		 "R must be initialized before environments can be accessed.");
+                 "R must be initialized before environments can be accessed.");
     return NULL;
   }
   SEXP res_R = NULL;
@@ -1798,14 +1798,14 @@ EnvironmentSexp_frame(PyObject *self)
   return (PyObject *)res;
 }
 PyDoc_STRVAR(EnvironmentSexp_frame_doc,
-	     "Return the frame the environment is in.");
+             "Return the frame the environment is in.");
 
 static PyObject*
 EnvironmentSexp_enclos(PyObject *self)
 {
   if (! (embeddedR_status & RPY_R_INITIALIZED)) {
     PyErr_Format(PyExc_RuntimeError, 
-		 "R must be initialized before environments can be accessed.");
+                 "R must be initialized before environments can be accessed.");
     return NULL;
   }
   SEXP res_R = NULL;
@@ -1815,7 +1815,7 @@ EnvironmentSexp_enclos(PyObject *self)
   return (PyObject *)res;
 }
 PyDoc_STRVAR(EnvironmentSexp_enclos_doc,
-	     "Return the enclosure the environment is in.");
+             "Return the enclosure the environment is in.");
 
 static PyMethodDef EnvironmentSexp_methods[] = {
   {"get", (PyCFunction)EnvironmentSexp_findVar, METH_VARARGS | METH_KEYWORDS,
@@ -1869,7 +1869,7 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   int is_PySexpObject = PyObject_TypeCheck(value, &Sexp_Type);
   if (! is_PySexpObject) {
     PyErr_Format(PyExc_ValueError, 
-		 "All parameters must be of type Sexp_Type.");
+                 "All parameters must be of type Sexp_Type.");
     //PyDecRef(value);
     return -1;
   }
@@ -1956,25 +1956,25 @@ static int
 EnvironmentSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 
 static PyTypeObject EnvironmentSexp_Type = {
-	/* The ob_type field must be initialized in the module init function
-	 * to be portable to Windows without using C++. */
-	PyObject_HEAD_INIT(NULL)
-	0,			/*ob_size*/
-	"rinterface.SexpEnvironment",	/*tp_name*/
-	sizeof(PySexpObject),	/*tp_basicsize*/
-	0,			/*tp_itemsize*/
-	/* methods */
-	0, /*tp_dealloc*/
-	0,			/*tp_print*/
-	0,                      /*tp_getattr*/
-	0,                      /*tp_setattr*/
-	0,			/*tp_compare*/
-	0,		        /*tp_repr*/
-	0,			/*tp_as_number*/
-	0,			/*tp_as_sequence*/
-	&EnvironmentSexp_mappingMethods,/*tp_as_mapping*/
-	0,			/*tp_hash*/
-	0,              /*tp_call*/
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rinterface.SexpEnvironment",   /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        0,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        &EnvironmentSexp_mappingMethods,/*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,              /*tp_call*/
         0,//Sexp_str,               /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
@@ -1997,7 +1997,7 @@ static PyTypeObject EnvironmentSexp_Type = {
         0,                      /*tp_dictoffset*/
         (initproc)EnvironmentSexp_init,                      /*tp_init*/
         0,                      /*tp_alloc*/
-	//FIXME: add new method
+        //FIXME: add new method
         0, //EnvironmentSexp_new,               /*tp_new*/
         0,                      /*tp_free*/
         0                      /*tp_is_gc*/
@@ -2011,13 +2011,13 @@ EnvironmentSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   static char *kwlist[] = {"sexpenv", "copy", NULL};
   //FIXME: handle the copy argument
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", 
-				    kwlist,
-				    &object,
-				    &PyBool_Type, &copy)) {
+                                    kwlist,
+                                    &object,
+                                    &PyBool_Type, &copy)) {
     return -1;
   }
   if (PyObject_IsInstance(object, 
-			  (PyObject*)&EnvironmentSexp_Type)) {
+                          (PyObject*)&EnvironmentSexp_Type)) {
     //call parent's constructor
     if (Sexp_init(self, args, NULL) == -1) {
       PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
@@ -2039,25 +2039,25 @@ Attributes can be accessed using the method 'do_slot'.\
 
 
 static PyTypeObject S4Sexp_Type = {
-	/* The ob_type field must be initialized in the module init function
-	 * to be portable to Windows without using C++. */
-	PyObject_HEAD_INIT(NULL)
-	0,			/*ob_size*/
-	"rinterface.SexpS4",	/*tp_name*/
-	sizeof(PySexpObject),	/*tp_basicsize*/
-	0,			/*tp_itemsize*/
-	/* methods */
-	0, /*tp_dealloc*/
-	0,			/*tp_print*/
-	0,                      /*tp_getattr*/
-	0,                      /*tp_setattr*/
-	0,			/*tp_compare*/
-	0,		        /*tp_repr*/
-	0,			/*tp_as_number*/
-	0,			/*tp_as_sequence*/
-	0,			/*tp_as_mapping*/
-	0,			/*tp_hash*/
-	0,              /*tp_call*/
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rinterface.SexpS4",    /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        0,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,              /*tp_call*/
         0,//Sexp_str,               /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
@@ -2080,7 +2080,7 @@ static PyTypeObject S4Sexp_Type = {
         0,                      /*tp_dictoffset*/
         0,                      /*tp_init*/
         0,                      /*tp_alloc*/
-	//FIXME: add new method
+        //FIXME: add new method
         0, //S4Sexp_new,               /*tp_new*/
         0,                      /*tp_free*/
         0                      /*tp_is_gc*/
@@ -2092,25 +2092,25 @@ PyDoc_STRVAR(LangSexp_Type_doc,
 
 
 static PyTypeObject LangSexp_Type = {
-	/* The ob_type field must be initialized in the module init function
-	 * to be portable to Windows without using C++. */
-	PyObject_HEAD_INIT(NULL)
-	0,			/*ob_size*/
-	"rinterface.SexpLang",	/*tp_name*/
-	sizeof(PySexpObject),	/*tp_basicsize*/
-	0,			/*tp_itemsize*/
-	/* methods */
-	0, /*tp_dealloc*/
-	0,			/*tp_print*/
-	0,                      /*tp_getattr*/
-	0,                      /*tp_setattr*/
-	0,			/*tp_compare*/
-	0,		        /*tp_repr*/
-	0,			/*tp_as_number*/
-	0,			/*tp_as_sequence*/
-	0,			/*tp_as_mapping*/
-	0,			/*tp_hash*/
-	0,              /*tp_call*/
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rinterface.SexpLang",  /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        0,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,              /*tp_call*/
         0,//Sexp_str,               /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
@@ -2133,7 +2133,7 @@ static PyTypeObject LangSexp_Type = {
         0,                      /*tp_dictoffset*/
         0,                      /*tp_init*/
         0,                      /*tp_alloc*/
-	//FIXME: add new method
+        //FIXME: add new method
         0, //S4Sexp_new,               /*tp_new*/
         0,                      /*tp_free*/
         0                      /*tp_is_gc*/
@@ -2223,7 +2223,7 @@ newSEXP(PyObject *object, int rType)
 #endif 
 
   seq_object = PySequence_Fast(object, 
-			       "Cannot create R object from non-sequence Python object.");
+                               "Cannot create R object from non-sequence Python object.");
   //FIXME: Isn't the call above supposed to fire an Exception ?
 
   if (! seq_object) {
@@ -2238,25 +2238,25 @@ newSEXP(PyObject *object, int rType)
   case REALSXP:
     for (i = 0; i < length; ++i) {
       if((item = PyNumber_Float(PySequence_Fast_GET_ITEM(seq_object, i)))) {
-	REAL(sexp)[i] = PyFloat_AS_DOUBLE(item);
-	Py_DECREF(item);
+        REAL(sexp)[i] = PyFloat_AS_DOUBLE(item);
+        Py_DECREF(item);
       }
       else {
-	PyErr_Clear();
-	REAL(sexp)[i] = NA_REAL;
+        PyErr_Clear();
+        REAL(sexp)[i] = NA_REAL;
       }
     }
     break;
   case INTSXP:
     for (i = 0; i < length; ++i) {
       if((item = PyNumber_Int(PySequence_Fast_GET_ITEM(seq_object, i)))) {
-	long l = PyInt_AS_LONG(item);
-	INTEGER(sexp)[i] = (l<=INT_MAX && l>=INT_MIN)?l:NA_INTEGER;
-	Py_DECREF(item);
+        long l = PyInt_AS_LONG(item);
+        INTEGER(sexp)[i] = (l<=INT_MAX && l>=INT_MIN)?l:NA_INTEGER;
+        Py_DECREF(item);
       }
       else {
-	PyErr_Clear();
-	INTEGER(sexp)[i] = NA_INTEGER;
+        PyErr_Clear();
+        INTEGER(sexp)[i] = NA_INTEGER;
       }
     }
     break;
@@ -2264,55 +2264,55 @@ newSEXP(PyObject *object, int rType)
     for (i = 0; i < length; ++i) {
       int q = PyObject_IsTrue(PySequence_Fast_GET_ITEM(seq_object, i));
       if (q != -1)
-	LOGICAL(sexp)[i] = q;
+        LOGICAL(sexp)[i] = q;
       else {
-	PyErr_Clear();
-	LOGICAL(sexp)[i] = NA_LOGICAL;
+        PyErr_Clear();
+        LOGICAL(sexp)[i] = NA_LOGICAL;
       }
     }
     break;
   case STRSXP:
     for (i = 0; i < length; ++i) {
       if((item = PyObject_Str(PySequence_Fast_GET_ITEM(seq_object, i)))) {
-	str_R = mkChar(PyString_AS_STRING(item));
-	if (!str_R) {
-	  Py_DECREF(item);
-	  PyErr_NoMemory();
-	  sexp = NULL;
-	  break;
-	}
-	Py_DECREF(item);
-	SET_STRING_ELT(sexp, i, str_R);
+        str_R = mkChar(PyString_AS_STRING(item));
+        if (!str_R) {
+          Py_DECREF(item);
+          PyErr_NoMemory();
+          sexp = NULL;
+          break;
+        }
+        Py_DECREF(item);
+        SET_STRING_ELT(sexp, i, str_R);
       }
       else if ((item = PyObject_Unicode(PySequence_Fast_GET_ITEM(seq_object, i)))) {
-	str_R = mkChar(PyUnicode_AS_DATA(item));
-	if (!str_R) {
-	  Py_DECREF(item);
-	  PyErr_NoMemory();
-	  sexp = NULL;
-	  break;
-	}
-	Py_DECREF(item);
-	SET_STRING_ELT(sexp, i, str_R);
+        str_R = mkChar(PyUnicode_AS_DATA(item));
+        if (!str_R) {
+          Py_DECREF(item);
+          PyErr_NoMemory();
+          sexp = NULL;
+          break;
+        }
+        Py_DECREF(item);
+        SET_STRING_ELT(sexp, i, str_R);
       }
       else {
-	PyErr_Clear();
-	SET_STRING_ELT(sexp, i, NA_STRING);
+        PyErr_Clear();
+        SET_STRING_ELT(sexp, i, NA_STRING);
       }
     }
     break;
   case VECSXP:
     for (i = 0; i < length; ++i) {
       if((item = PySequence_Fast_GET_ITEM(seq_object, i))) {
-	int is_PySexpObject = PyObject_TypeCheck(item, &Sexp_Type);
-	if (! is_PySexpObject) {
-	  Py_DECREF(item);
-	  PyErr_Format(PyExc_ValueError, "All elements of the list must be of "
-		       "type 'Sexp_Type'.");
-	  return NULL;
-	}
-	SET_ELEMENT(sexp, i, RPY_SEXP((PySexpObject *)item));
-	Py_DECREF(item);
+        int is_PySexpObject = PyObject_TypeCheck(item, &Sexp_Type);
+        if (! is_PySexpObject) {
+          Py_DECREF(item);
+          PyErr_Format(PyExc_ValueError, "All elements of the list must be of "
+                       "type 'Sexp_Type'.");
+          return NULL;
+        }
+        SET_ELEMENT(sexp, i, RPY_SEXP((PySexpObject *)item));
+        Py_DECREF(item);
       }
     }
     break;
@@ -2320,14 +2320,14 @@ newSEXP(PyObject *object, int rType)
     for (i = 0; i < length; ++i) {
         item = PySequence_Fast_GET_ITEM(seq_object, i);
         if (PyComplex_Check(item)) {
- 	  Py_complex cplx = PyComplex_AsCComplex(item);
-	  COMPLEX(sexp)[i].r = cplx.real;
-	  COMPLEX(sexp)[i].i = cplx.imag;
-	  Py_DECREF(item);
+          Py_complex cplx = PyComplex_AsCComplex(item);
+          COMPLEX(sexp)[i].r = cplx.real;
+          COMPLEX(sexp)[i].i = cplx.imag;
+          Py_DECREF(item);
         }
         else {
-	  PyErr_Clear();
-	  COMPLEX(sexp)[i].r = NA_REAL;
+          PyErr_Clear();
+          COMPLEX(sexp)[i].r = NA_REAL;
           COMPLEX(sexp)[i].i = NA_REAL;
         }
     }
@@ -2375,7 +2375,7 @@ EmbeddedR_findVar(PyObject *self, PyObject *args)
   return NULL;
 }
 PyDoc_STRVAR(EmbeddedR_findVar_doc,
-	     "Find a variable in R's .GlobalEnv.");
+             "Find a variable in R's .GlobalEnv.");
 
 static PyObject*
 EmbeddedR_sexpType(PyObject *self, PyObject *args)
@@ -2412,17 +2412,17 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_set_initoptions_doc},
   {"initr",     (PyCFunction)EmbeddedR_init,   METH_NOARGS,
    EmbeddedR_init_doc},
-  {"endr",	(PyCFunction)EmbeddedR_end,    METH_O,
+  {"endr",      (PyCFunction)EmbeddedR_end,    METH_O,
    EmbeddedR_end_doc},
-  {"setWriteConsole",	(PyCFunction)EmbeddedR_setWriteConsole,	 METH_VARARGS,
+  {"setWriteConsole",   (PyCFunction)EmbeddedR_setWriteConsole,  METH_VARARGS,
    EmbeddedR_setWriteConsole_doc},
-  {"setReadConsole",	(PyCFunction)EmbeddedR_setReadConsole,	 METH_VARARGS,
+  {"setReadConsole",    (PyCFunction)EmbeddedR_setReadConsole,   METH_VARARGS,
    EmbeddedR_setReadConsole_doc},
-  {"findVarEmbeddedR",	(PyCFunction)EmbeddedR_findVar,	 METH_VARARGS,
+  {"findVarEmbeddedR",  (PyCFunction)EmbeddedR_findVar,  METH_VARARGS,
    EmbeddedR_findVar_doc},
-  {"str_typeint",	(PyCFunction)EmbeddedR_sexpType, METH_VARARGS,
+  {"str_typeint",       (PyCFunction)EmbeddedR_sexpType, METH_VARARGS,
    "Return the SEXP name tag (string) corresponding to an integer."},
-  {NULL,		NULL}		/* sentinel */
+  {NULL,                NULL}           /* sentinel */
 };
 
 
@@ -2437,22 +2437,22 @@ static SEXP R_PyObject_type_tag;
 static SEXP
 R_PyObject_decref(SEXP s)
 {
-	PyObject* pyo = (PyObject*)R_ExternalPtrAddr(s);
-	if (pyo) {
-		Py_DECREF(pyo);
-		R_ClearExternalPtr(s);
-	}
-	return R_NilValue;
+        PyObject* pyo = (PyObject*)R_ExternalPtrAddr(s);
+        if (pyo) {
+                Py_DECREF(pyo);
+                R_ClearExternalPtr(s);
+        }
+        return R_NilValue;
 }
 
 static SEXP
 mkPyObject(PyObject* pyo)
 {
-	SEXP res;
-	Py_INCREF(pyo);
-	res = R_MakeExternalPtr(pyo, R_PyObject_type_tag, R_NilValue);
-	R_RegisterCFinalizer(res, (R_CFinalizer_t)R_PyObject_decref);
-	return res;
+        SEXP res;
+        Py_INCREF(pyo);
+        res = R_MakeExternalPtr(pyo, R_PyObject_type_tag, R_NilValue);
+        R_RegisterCFinalizer(res, (R_CFinalizer_t)R_PyObject_decref);
+        return res;
 }
 
 #define R_PyObject_TYPE_CHECK(s) \
@@ -2510,7 +2510,7 @@ do_Python(SEXP args)
   Py_DECREF(pyargs);
   Py_DECREF(pyargstup);
   if (PyObject_IsInstance((PyObject*)pyres, 
-			  (PyObject*)&Sexp_Type)) {
+                          (PyObject*)&Sexp_Type)) {
     res = RPY_SEXP((PySexpObject*)pyres);
   }
   else {
@@ -2522,8 +2522,8 @@ do_Python(SEXP args)
 }
 
 static R_ExternalMethodDef externalMethods[] = { 
-	{".Python", (DL_FUNC)&do_Python, -1},
-	{NULL, NULL, 0} 
+        {".Python", (DL_FUNC)&do_Python, -1},
+        {NULL, NULL, 0} 
 };
 
 
@@ -2538,7 +2538,7 @@ static R_ExternalMethodDef externalMethods[] = {
   if ((code) != 0) {return ; }
 
 
-#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
+#ifndef PyMODINIT_FUNC  /* declarations for DLL import/export */
 #define PyMODINIT_FUNC void
 #endif
 
@@ -2550,8 +2550,8 @@ initrinterface(void)
 //{
 
   /* Finalize the type object including setting type of the new type
-	 * object; doing it here is required for portability to Windows 
-	 * without requiring C++. */
+         * object; doing it here is required for portability to Windows 
+         * without requiring C++. */
   if (PyType_Ready(&Sexp_Type) < 0)
     return;
   if (PyType_Ready(&ClosureSexp_Type) < 0)
@@ -2575,21 +2575,21 @@ initrinterface(void)
 
   /* Add an extra ref. It should remain impossible to delete it */
   PYASSERT_ZERO(
-		PyTuple_SetItem(initOptions, 0, 
-				PyString_FromString("rpy2"))
-		);
+                PyTuple_SetItem(initOptions, 0, 
+                                PyString_FromString("rpy2"))
+                );
   PYASSERT_ZERO(
-		PyTuple_SetItem(initOptions, 1, 
-				PyString_FromString("--quiet"))
-		);
+                PyTuple_SetItem(initOptions, 1, 
+                                PyString_FromString("--quiet"))
+                );
   PYASSERT_ZERO(
-		PyTuple_SetItem(initOptions, 2,
-				PyString_FromString("--vanilla"))
-		);
+                PyTuple_SetItem(initOptions, 2,
+                                PyString_FromString("--vanilla"))
+                );
   PYASSERT_ZERO(
-		PyTuple_SetItem(initOptions, 3, 
-				PyString_FromString("--no-save"))
-		);
+                PyTuple_SetItem(initOptions, 3, 
+                                PyString_FromString("--no-save"))
+                );
 
   PyModule_AddObject(m, "initoptions", initOptions);
   Py_INCREF(initOptions);
@@ -2604,7 +2604,7 @@ initrinterface(void)
 
   if (RPyExc_RuntimeError == NULL) {
     RPyExc_RuntimeError = PyErr_NewException("rinterface.RRuntimeError", 
-					     NULL, NULL);
+                                             NULL, NULL);
     if (RPyExc_RuntimeError == NULL)
       return;
   }
@@ -2621,7 +2621,7 @@ initrinterface(void)
   //Py_DECREF(embeddedR_isInitialized);
 
   globalEnv = (PySexpObject *)Sexp_new(&EnvironmentSexp_Type, 
-				       Py_None, Py_None);
+                                       Py_None, Py_None);
   RPY_SEXP(globalEnv) = R_EmptyEnv;
 
   if (PyDict_SetItemString(d, "globalEnv", (PyObject *)globalEnv) < 0)
@@ -2630,19 +2630,19 @@ initrinterface(void)
   //Py_DECREF(globalEnv);
 
   baseNameSpaceEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
-					     Py_None, Py_None);
+                                             Py_None, Py_None);
   RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
   if (PyDict_SetItemString(d, "baseNameSpaceEnv", 
-			   (PyObject *)baseNameSpaceEnv) < 0)
+                           (PyObject *)baseNameSpaceEnv) < 0)
     return;
 /*   //FIXME: DECREF ? */
 /*   Py_DECREF(baseNameSpaceEnv); */
 
   emptyEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
-				     Py_None, Py_None);
+                                     Py_None, Py_None);
   RPY_SEXP(emptyEnv) = R_EmptyEnv;
   if (PyDict_SetItemString(d, "emptyEnv", 
-			   (PyObject *)emptyEnv) < 0)
+                           (PyObject *)emptyEnv) < 0)
     return;
 
   /* Add SXP types */
@@ -2717,7 +2717,7 @@ initrinterface(void)
   
 /*   /\* Rinternals.h *\/ */
   na_string = (PySexpObject *)Sexp_new(&VectorSexp_Type,
-				       Py_None, Py_None);
+                                       Py_None, Py_None);
 
   RPY_SEXP(na_string) = NA_STRING;
   if (PyDict_SetItemString(d, "NA_STRING", (PyObject *)na_string) < 0)
