@@ -34,9 +34,14 @@ sexp_typekind(SEXP sexp)
   case INTSXP: return 'i';
     //FIXME: handle strings ?
     //case STRSXP: return 'S';
-        //FIXME: handle 'O' (as R list ?)
+	//FIXME: handle 'O' (as R list ?)
   case CPLXSXP: return 'c';
-  case LGLSXP: return 'b';
+  // It would be more logical (hah) to return 'b' here, but 1) R booleans are
+  // full integer width, and Numpy for example can only handle 8-bit booleans,
+  // not 32-bit, 2) R actually uses this width; NA_LOGICAL is the same as
+  // NA_INTEGER, i.e. INT_MIN, i.e. 0x80000000. So this also lets us preserve
+  // NA's:
+  case LGLSXP: return 'i';
   }
   return 0;
 }
@@ -92,7 +97,7 @@ sexp_shape(SEXP sexp, Py_intptr_t* shape, int nd)
 static void
 array_struct_free(void *ptr, void *arr)
 {
-  PyArrayInterface *inter       = (PyArrayInterface *)ptr;
+  PyArrayInterface *inter	= (PyArrayInterface *)ptr;
   free(inter->shape);
   free(inter);
   Py_DECREF((PyObject *)arr);

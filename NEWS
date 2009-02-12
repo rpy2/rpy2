@@ -1,3 +1,15 @@
+
+Release 2.0.3-dev
+=================
+
+Bugs fixed
+----------
+
+- fixed problem with numpy interface with R boolean vectors. 
+  They are now presented as 'i' rather than 'b' to numpy
+  (# patch submitted by Nathaniel Smith)
+
+
 Release 2.0.2
 =============
 
