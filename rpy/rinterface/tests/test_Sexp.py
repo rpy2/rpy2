@@ -1,5 +1,6 @@
 import unittest
 import copy
+import gc
 import rpy2.rinterface as rinterface
 
 rinterface.initr()
@@ -75,6 +76,7 @@ class SexpTestCase(unittest.TestCase):
         sexp = rinterface.IntSexpVector([1,2,3])
         cobj = sexp.__sexp__
         del(cobj)
+        gc.collect()
         # no real test, just make sure that it does
         # not create a segfault
 
