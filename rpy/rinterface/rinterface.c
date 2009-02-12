@@ -823,7 +823,7 @@ EmbeddedR_exception_from_errmessage(void)
   PROTECT(expr = allocVector(LANGSXP, 1));
   SETCAR(expr, errMessage_SEXP);
   PROTECT(res = Rf_eval(expr, R_GlobalEnv));
-  char *message = CHARACTER_VALUE(res);
+  const char *message = CHARACTER_VALUE(res);
   UNPROTECT(2);
   PyErr_SetString(RPyExc_RuntimeError, message);
 }
