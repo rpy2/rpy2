@@ -2,6 +2,21 @@
 Release 2.0.3-dev
 =================
 
+Changes
+-------
+
+:mod:`rpy2.rinterface`:
+
+- the default for reading and writing the console are now using sys.stdin and sys.stdout 
+  (# patch submitted by Nathaniel Smith)
+
+- console IO callbacks (reading and writing) are complemented by 
+  one to flush the console
+  (# backport from 2.1-dev) 
+
+- All callbacks are getting a get<callback> to complement the set<callback>.
+  (# patch submitted by Nathaniel Smith) 
+
 Bugs fixed
 ----------
 

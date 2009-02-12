@@ -147,27 +147,29 @@ static SEXP newSEXP(PyObject *object, const int rType);
 
 /* --- set output from the R console ---*/
 
-
-static PyObject* writeConsoleCallback = NULL;
-
-static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
-                                           PyObject *args)
+static inline PyObject* EmbeddedR_setAnyCallback(PyObject *self,
+                                                PyObject *args,
+                                                PyObject **target)
 {
   
   PyObject *result = NULL;
   PyObject *function;
   
   if ( PyArg_ParseTuple(args, "O:console", 
-                        &function)) {
+                       &function)) {
     
-    if (!PyCallable_Check(function)) {
+    if (function != Py_None && !PyCallable_Check(function)) {
       PyErr_SetString(PyExc_TypeError, "parameter must be callable");
       return NULL;
     }
 
-    Py_XDECREF(writeConsoleCallback);
-    Py_XINCREF(function);
-    writeConsoleCallback = function;
+    Py_XDECREF(*target);
+    if (function == Py_None) {
+      *target = NULL;
+    } else {
+      Py_XINCREF(function);
+      *target = function;
+    }
     Py_INCREF(Py_None);
     result = Py_None;
   } else {
@@ -177,8 +179,43 @@ static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
   
 }
 
+static inline PyObject* EmbeddedR_getAnyCallback(PyObject *self,
+                                                 PyObject *args,
+                                                 PyObject *target)
+{
+  PyObject *result = NULL;
+
+  if (PyArg_ParseTuple(args, "")) {
+    if (target == NULL)
+      result = NULL;
+    else
+      result = target;
+    Py_INCREF(result);
+  }
+  return result;
+}
+
+static PyObject* writeConsoleCallback = NULL;
+
+static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
+                                           PyObject *args)
+{
+  return EmbeddedR_setAnyCallback(self, args, &writeConsoleCallback);
+}
+
 PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
-            "Use the function to handle R console output.");
+             "Set how to handle output from the R console.\n\n"
+             ":param f: callback function such as"
+             "None <- f(output), or None.\n");
+
+static PyObject * EmbeddedR_getWriteConsole(PyObject *self,
+                                            PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, writeConsoleCallback);
+}
+
+PyDoc_STRVAR(EmbeddedR_getWriteConsole_doc,
+             "Retrieve current R console output handler (see setWriteConsole).");
 
 
 static void
@@ -221,32 +258,22 @@ static PyObject* readConsoleCallback = NULL;
 static PyObject* EmbeddedR_setReadConsole(PyObject *self,
                                           PyObject *args)
 {
-  
-  PyObject *result = NULL;
-  PyObject *function;
-  
-  if ( PyArg_ParseTuple(args, "O:console", 
-                        &function)) {
-    
-    if (!PyCallable_Check(function)) {
-      PyErr_SetString(PyExc_TypeError, "parameter must be callable");
-      return NULL;
-    }
-
-    Py_XDECREF(readConsoleCallback);
-    Py_XINCREF(function);
-    readConsoleCallback = function;
-    Py_INCREF(Py_None);
-    result = Py_None;
-  } else {
-    PyErr_SetString(PyExc_TypeError, "The parameter should be a callable.");
-  }
-  return result;
-  
+  return EmbeddedR_setAnyCallback(self, args, &readConsoleCallback); 
 }
 
 PyDoc_STRVAR(EmbeddedR_setReadConsole_doc,
-             "Use the function to handle R console input.");
+             "Set the function handling input to the R console.\n\n"
+             ":param f: a callback function such as "
+             "result <- f(prompt) \n");
+
+static PyObject * EmbeddedR_getReadConsole(PyObject *self,
+                                           PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, readConsoleCallback);
+}
+
+PyDoc_STRVAR(EmbeddedR_getReadConsole_doc,
+             "Retrieve current R console output handler (see setReadConsole).");
 
 
 static int
@@ -301,6 +328,40 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   Py_XDECREF(result);
 /*   signal(SIGINT, old_int); */
   return 1;
+}
+
+static PyObject* flushConsoleCallback = NULL;
+
+static PyObject* EmbeddedR_setFlushConsole(PyObject *self,
+                                          PyObject *args)
+{
+  return EmbeddedR_setAnyCallback(self, args, &flushConsoleCallback);  
+}
+
+PyDoc_STRVAR(EmbeddedR_setFlushConsole_doc,
+             "Set the behavior for ensuring that the console buffer is flushed.\n\n"
+             ":param f: callback function such as "
+             "None <- f()\n");
+
+static PyObject * EmbeddedR_getFlushConsole(PyObject *self,
+                                            PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, flushConsoleCallback);
+}
+
+PyDoc_STRVAR(EmbeddedR_getFlushConsole_doc,
+             "Retrieve current R console output handler (see setFlushConsole).");
+
+static void
+EmbeddedR_FlushConsole(void)
+{
+  PyObject *result;
+
+  result = PyEval_CallObject(flushConsoleCallback, NULL);
+
+  //FIXME: what if an exception is raised during callback ?
+  return;
+
 }
 
 
@@ -388,6 +449,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   #ifdef R_INTERFACE_PTRS
   /* Redirect R console output */
   ptr_R_WriteConsole = EmbeddedR_WriteConsole;
+  ptr_R_FlushConsole = EmbeddedR_FlushConsole;
   R_Outputfile = NULL;
   R_Consolefile = NULL;
   /* Redirect R console input */
@@ -2416,8 +2478,16 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_end_doc},
   {"setWriteConsole",   (PyCFunction)EmbeddedR_setWriteConsole,  METH_VARARGS,
    EmbeddedR_setWriteConsole_doc},
+  {"getWriteConsole",   (PyCFunction)EmbeddedR_getWriteConsole,  METH_VARARGS,
+   EmbeddedR_getWriteConsole_doc},
   {"setReadConsole",    (PyCFunction)EmbeddedR_setReadConsole,   METH_VARARGS,
    EmbeddedR_setReadConsole_doc},
+  {"getReadConsole",    (PyCFunction)EmbeddedR_getReadConsole,   METH_VARARGS,
+   EmbeddedR_getReadConsole_doc},
+  {"setFlushConsole",   (PyCFunction)EmbeddedR_setFlushConsole,  METH_VARARGS,
+   EmbeddedR_setFlushConsole_doc},
+  {"getFlushConsole",   (PyCFunction)EmbeddedR_getFlushConsole,  METH_VARARGS,
+   EmbeddedR_getFlushConsole_doc},
   {"findVarEmbeddedR",  (PyCFunction)EmbeddedR_findVar,  METH_VARARGS,
    EmbeddedR_findVar_doc},
   {"str_typeint",       (PyCFunction)EmbeddedR_sexpType, METH_VARARGS,

@@ -55,7 +55,6 @@ if sys.platform == 'win32':
 
 
 # cleanup the namespace
-del(sys)
 del(os)
 try:
     del(win32api)
@@ -100,10 +99,16 @@ class BoolSexpVector(SexpVector):
 # wrapper because print is strangely not a function
 # Python prior to version 3.0
 def consolePrint(x):
-    """ Wrapper around Python's print. This is the default callback for R's console. """
-    print(x)
+    """This is the default callback for R's console. It simply writes to stdout."""
+    sys.stdout.write(x)
 
 setWriteConsole(consolePrint)
+
+def consoleFlush():
+    sys.stdout.flush()
+
+setFlushConsole(consoleFlush)
+
 
 def consoleRead(prompt):
     input = raw_input(prompt)
