@@ -2,6 +2,12 @@
 Release 2.0.3-dev
 =================
 
+New features
+------------
+
+- All callbacks are getting a get<callback> to complement the set<callback>.
+  (# patch submitted by Nathaniel Smith) 
+
 Changes
 -------
 
@@ -13,9 +19,6 @@ Changes
 - console IO callbacks (reading and writing) are complemented by 
   one to flush the console
   (# backport from 2.1-dev) 
-
-- All callbacks are getting a get<callback> to complement the set<callback>.
-  (# patch submitted by Nathaniel Smith) 
 
 Bugs fixed
 ----------
