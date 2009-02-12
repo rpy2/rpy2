@@ -13,6 +13,9 @@ New features
   and for R_RunHandlers on UNIX-like systems 
   (# patch by Nathaniel Smith).
 
+- :meth:`Sexp.__deepcopy__` to copy an object (calling Rf_Duplicate) 
+  (# from a patch by Nathaniel Smith)
+
 Changes
 -------
 
