@@ -59,6 +59,8 @@
 #include <R_ext/Complex.h>
 #include <Rembedded.h>
 
+#include <R_ext/eventloop.h>
+
 /* FIXME: consider the use of parsing */
 /* #include <R_ext/Parse.h> */
 #include <R_ext/Rdynload.h>
@@ -398,6 +400,38 @@ PyDoc_STRVAR(EmbeddedR_set_initoptions_doc,
              "\
 Set the options used to initialize R.\
 ");
+
+
+/* --- R_ProcessEvents ---*/
+
+static PyObject* EmbeddedR_ProcessEvents(PyObject *self)
+{
+  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+    PyErr_Format(PyExc_RuntimeError, 
+                 "R should not process events before being initialized.");
+    return NULL;
+  }
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+#if defined(HAVE_AQUA) || defined(Win32)
+  /* Can the call to R_ProcessEvents somehow fail ? */
+  R_ProcessEvents();
+#endif
+#if !defined(Win32)
+  R_runHandlers(R_InputHandlers, R_checkActivity(0, 1));
+#endif
+  embeddedR_freelock();
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+PyDoc_STRVAR(EmbeddedR_ProcessEvents_doc,
+             "Process R events. This function is a simple wrapper around\n"
+             "R_ProcessEvents (on win32 and MacOS X-Aqua)\n"
+             "and R_runHandlers (on other platforms).");
+
 
 static PyObject* EmbeddedR_init(PyObject *self) 
 {
@@ -2490,6 +2524,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_getFlushConsole_doc},
   {"findVarEmbeddedR",  (PyCFunction)EmbeddedR_findVar,  METH_VARARGS,
    EmbeddedR_findVar_doc},
+  {"process_revents", (PyCFunction)EmbeddedR_ProcessEvents, METH_NOARGS,
+   EmbeddedR_ProcessEvents_doc},
   {"str_typeint",       (PyCFunction)EmbeddedR_sexpType, METH_VARARGS,
    "Return the SEXP name tag (string) corresponding to an integer."},
   {NULL,                NULL}           /* sentinel */

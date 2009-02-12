@@ -8,6 +8,11 @@ New features
 - All callbacks are getting a get<callback> to complement the set<callback>.
   (# patch submitted by Nathaniel Smith) 
 
+- :meth:`process_revents`, a wrapper for R_ProcessEvents 
+  (# suggested by June Kim to help with issues related to interactive display on win32), 
+  and for R_RunHandlers on UNIX-like systems 
+  (# patch by Nathaniel Smith).
+
 Changes
 -------
 
