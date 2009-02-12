@@ -5,7 +5,7 @@
 #include <R.h>
 #include <Python.h>
 
-static PyObject* 
+PyObject* 
 array_struct_get(SexpObject *self);
 
 #endif /* !RPY_AR_H */
