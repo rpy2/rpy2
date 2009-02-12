@@ -1,4 +1,5 @@
 import unittest
+import copy
 import gc
 import rpy2.rinterface as rinterface
 
