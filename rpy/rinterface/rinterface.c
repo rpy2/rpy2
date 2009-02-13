@@ -212,8 +212,8 @@ static inline PyObject* EmbeddedR_getAnyCallback(PyObject *self,
       result = NULL;
     else
       result = target;
-    Py_INCREF(result);
   }
+  Py_XINCREF(result);
   return result;
 }
 
