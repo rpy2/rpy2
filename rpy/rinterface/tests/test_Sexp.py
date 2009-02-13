@@ -58,6 +58,14 @@ class SexpTestCase(unittest.TestCase):
         names = [x for x in sexp.do_slot("names")]
         self.assertEquals(['a', 'b', 'c', 'd', 'e'], names)
 
+    def testDo_slot_assign_create(self):
+        #test that assigning slots is also creating the slot
+        x = rinterface.IntSexpVector([1,2,3])
+        x.do_slot_assign("foo", rinterface.StrSexpVector(["bar", ]))
+        slot = x.do_slot("foo")
+        self.assertEquals(1, len(slot))
+        self.assertEquals("bar", slot[0])
+
     def testSexp_rsame_true(self):
         sexp_a = rinterface.baseNameSpaceEnv.get("letters")
         sexp_b = rinterface.baseNameSpaceEnv.get("letters")
