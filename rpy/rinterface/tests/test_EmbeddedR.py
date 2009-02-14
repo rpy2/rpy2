@@ -6,12 +6,23 @@ import sys, os, subprocess, time, tempfile, signal
 rinterface.initr()
 
 
+def onlyAQUAorWindows(function):
+    def res(self):
+        platform = rinterface.baseNameSpaceEnv.get('.Platform')
+        platform_gui = [e for i, e in enumerate(platform.do_slot('names')) if e == 'GUI'][0]
+        platform_ostype = [e for i, e in enumerate(platform.do_slot('names')) if e == 'OS.type'][0]
+        if (platform_gui != 'AQUA') and (platform_ostype != 'windows'):
+            self.assertTrue(False) # cannot be tested outside GUI==AQUA or OS.type==windows
+            return None
+        else:
+            return function(self)
 
 class EmbeddedRTestCase(unittest.TestCase):
 
     def tearDown(self):
         rinterface.setWriteConsole(rinterface.consolePrint)
         rinterface.setReadConsole(rinterface.consoleRead)
+        rinterface.setReadConsole(rinterface.consoleFlush)
 
     def testConsolePrint(self):
         if sys.version_info[0] == 2 and sys.version_info[1] < 6:
@@ -67,6 +78,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         errorstring = ''.join(infile.readlines())
         self.assertTrue(errorstring.startswith('Traceback'))
 
+    @onlyAQUAorWindows
     def testSetFlushConsole(self):
         flush = {'count': 0}
         def f():
@@ -77,6 +89,30 @@ class EmbeddedRTestCase(unittest.TestCase):
         rinterface.baseNameSpaceEnv.get("flush.console")()
         self.assertEquals(1, flush['count'])
         rinterface.setWriteConsole(rinterface.consoleFlush)
+
+    @onlyAQUAorWindows
+    def testFlushConsoleWithError(self):
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # cannot be tested with Python < 2.6
+            return None
+        def f(prompt):
+            raise Exception("Doesn't work.")
+        rinterface.setFlushConsole(f)
+
+        outfile = tempfile.NamedTemporaryFile(mode = 'w', 
+                                              delete=False)
+        stderr = sys.stderr
+        sys.stderr = outfile
+        try:
+            res = rinterface.baseNameSpaceEnv.get("flush.console")()
+        except Exception, e:
+            sys.stderr = stderr
+            raise e
+        outfile.close()
+        sys.stderr = stderr
+        infile = file(outfile.name, mode="r")
+        errorstring = ''.join(infile.readlines())
+        self.assertTrue(errorstring.startswith('Traceback'))
 
     def testSetReadConsole(self):
         yes = "yes\n"

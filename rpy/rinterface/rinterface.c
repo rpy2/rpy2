@@ -450,10 +450,15 @@ EmbeddedR_FlushConsole(void)
   PyObject *result;
 
   result = PyEval_CallObject(flushConsoleCallback, NULL);
-
-  //FIXME: what if an exception is raised during callback ?
+  PyObject* pythonerror = PyErr_Occurred();
+  if (pythonerror != NULL) {
+    /* All R actions should be stopped since the Python callback failed,
+     and the Python exception raised up.*/
+    //FIXME: Print the exception in the meanwhile
+    PyErr_Print();
+    PyErr_Clear();
+  }
   return;
-
 }
 
 static PyObject* chooseFileCallback = NULL;
