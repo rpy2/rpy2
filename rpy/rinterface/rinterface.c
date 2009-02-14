@@ -263,16 +263,19 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   }
 
   result = PyEval_CallObject(writeConsoleCallback, arglist);
+  PyObject* pythonerror = PyErr_Occurred();
+  if (pythonerror != NULL) {
+    /* All R actions should be stopped since the Python callback failed,
+     and the Python exception raised up.*/
+    //FIXME: Print the exception in the meanwhile
+    PyErr_Print();
+    PyErr_Clear();
+  }
 
   Py_DECREF(arglist);
 /*   signal(SIGINT, old_int); */
   
-  if (result == NULL) {
-    return;
-  }
-
-  Py_DECREF(result);
-  
+  Py_XDECREF(result);  
 }
 
 static PyObject* showMessageCallback = NULL;

@@ -9,6 +9,9 @@ rinterface.initr()
 
 class EmbeddedRTestCase(unittest.TestCase):
 
+    def tearDown(self):
+        rinterface.setWriteConsole(rinterface.consolePrint)
+
     def testConsolePrint(self):
         if sys.version_info[0] == 2 and sys.version_info[1] < 6:
             self.assertTrue(False) # cannot be tested with Python < 2.6
@@ -37,7 +40,30 @@ class EmbeddedRTestCase(unittest.TestCase):
         code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
         rinterface.baseNameSpaceEnv["print"](code)
         self.assertEquals('[1] "3"\n', str.join('', buf))
-        rinterface.setWriteConsole(rinterface.consolePrint)
+
+    def testWriteConsoleWithError(self):
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # cannot be tested with Python < 2.6
+            return None
+        def f(x):
+            raise Exception("Doesn't work.")
+        rinterface.setWriteConsole(f)
+
+        outfile = tempfile.NamedTemporaryFile(mode = 'w', 
+                                            delete=False)
+        stderr = sys.stderr
+        sys.stderr = outfile
+        try:
+            code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
+            rinterface.baseNameSpaceEnv["print"](code)
+        except Exception, e:
+            sys.stderr = stderr
+            raise e
+        outfile.close()
+        sys.stderr = stderr
+        infile = file(outfile.name, mode="r")
+        errorstring = ''.join(infile.readlines())
+        self.assertTrue(errorstring.startswith('Traceback'))
 
     def testSetFlushConsole(self):
         flush = {'count': 0}
