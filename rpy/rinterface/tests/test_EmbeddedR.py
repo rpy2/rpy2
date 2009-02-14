@@ -11,6 +11,7 @@ class EmbeddedRTestCase(unittest.TestCase):
 
     def tearDown(self):
         rinterface.setWriteConsole(rinterface.consolePrint)
+        rinterface.setReadConsole(rinterface.consoleRead)
 
     def testConsolePrint(self):
         if sys.version_info[0] == 2 and sys.version_info[1] < 6:
@@ -51,7 +52,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         rinterface.setWriteConsole(f)
 
         outfile = tempfile.NamedTemporaryFile(mode = 'w', 
-                                            delete=False)
+                                              delete=False)
         stderr = sys.stderr
         sys.stderr = outfile
         try:
@@ -86,6 +87,29 @@ class EmbeddedRTestCase(unittest.TestCase):
         res = rinterface.baseNameSpaceEnv["readline"]()
         self.assertEquals(yes.strip(), res[0])
         rinterface.setReadConsole(rinterface.consoleRead)
+
+    def testReadConsoleWithError(self):
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # cannot be tested with Python < 2.6
+            return None
+        def f(prompt):
+            raise Exception("Doesn't work.")
+        rinterface.setReadConsole(f)
+
+        outfile = tempfile.NamedTemporaryFile(mode = 'w', 
+                                              delete=False)
+        stderr = sys.stderr
+        sys.stderr = outfile
+        try:
+            res = rinterface.baseNameSpaceEnv["readline"]()
+        except Exception, e:
+            sys.stderr = stderr
+            raise e
+        outfile.close()
+        sys.stderr = stderr
+        infile = file(outfile.name, mode="r")
+        errorstring = ''.join(infile.readlines())
+        self.assertTrue(errorstring.startswith('Traceback'))
         
     def testSetShowMessage(self):
         self.assertTrue(False) # no unit test (yet)

@@ -385,17 +385,30 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   #ifdef RPY_DEBUG_CONSOLE
   printf("done.(%p)\n", result);
   #endif
-  Py_XDECREF(arglist);
+
+  PyObject* pythonerror = PyErr_Occurred();
+  if (pythonerror != NULL) {
+    /* All R actions should be stopped since the Python callback failed,
+     and the Python exception raised up.*/
+    //FIXME: Print the exception in the meanwhile
+    PyErr_Print();
+    PyErr_Clear();
+    Py_XDECREF(arglist);
+    return 0;
+  }
+
 
   if (result == NULL) {
+    //FIXME: can this be reached ? result == NULL while no error ?
 /*     signal(SIGINT, old_int); */
-    return -1;
+    Py_XDECREF(arglist);
+    return 0;
   }
 
   char *input_str = PyString_AsString(result);
   if (! input_str) {
     Py_XDECREF(arglist);
-    return -1;
+    return 0;
   }
 
   /* Snatched from Rcallbacks.c in JRI */
