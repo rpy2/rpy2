@@ -1,10 +1,29 @@
 import unittest
 import itertools
 import rpy2.rinterface as rinterface
+import sys, os, tempfile
 
 rinterface.initr()
 
+def onlyAQUAorWindows(function):
+    def res(self):
+        platform = rinterface.baseNameSpaceEnv.get('.Platform')
+        platform_gui = [e for i, e in enumerate(platform.do_slot('names')) if e == 'GUI'][0]
+        platform_ostype = [e for i, e in enumerate(platform.do_slot('names')) if e == 'OS.type'][0]
+        if (platform_gui != 'AQUA') and (platform_ostype != 'windows'):
+            self.assertTrue(False) # cannot be tested outside GUI==AQUA or OS.type==windows
+            return None
+        else:
+            return function(self)
+
+
 class EmbeddedRTestCase(unittest.TestCase):
+
+    def tearDown(self):
+        rinterface.setWriteConsole(rinterface.consolePrint)
+        rinterface.setReadConsole(rinterface.consoleRead)
+        rinterface.setReadConsole(rinterface.consoleFlush)
+
     def testSetWriteConsole(self):
         buf = []
         def f(x):
@@ -15,8 +34,32 @@ class EmbeddedRTestCase(unittest.TestCase):
         code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
         rinterface.baseNameSpaceEnv["print"](code)
         self.assertEquals('[1] "3"\n', str.join('', buf))
-        rinterface.setWriteConsole(rinterface.consolePrint)
 
+    def testWriteConsoleWithError(self):
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # cannot be tested with Python < 2.6
+            return None
+        def f(x):
+            raise Exception("Doesn't work.")
+        rinterface.setWriteConsole(f)
+
+        outfile = tempfile.NamedTemporaryFile(mode = 'w', 
+                                              delete=False)
+        stderr = sys.stderr
+        sys.stderr = outfile
+        try:
+            code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
+            rinterface.baseNameSpaceEnv["print"](code)
+        except Exception, e:
+            sys.stderr = stderr
+            raise e
+        outfile.close()
+        sys.stderr = stderr
+        infile = file(outfile.name, mode="r")
+        errorstring = ''.join(infile.readlines())
+        self.assertTrue(errorstring.startswith('Traceback'))
+
+    @onlyAQUAorWindows
     def testSetFlushConsole(self):
         flush = {'count': 0}
         def f():
@@ -28,6 +71,30 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEquals(1, flush['count'])
         rinterface.setWriteConsole(rinterface.consoleFlush)
 
+    @onlyAQUAorWindows
+    def testFlushConsoleWithError(self):
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # cannot be tested with Python < 2.6
+            return None
+        def f(prompt):
+            raise Exception("Doesn't work.")
+        rinterface.setFlushConsole(f)
+
+        outfile = tempfile.NamedTemporaryFile(mode = 'w', 
+                                              delete=False)
+        stderr = sys.stderr
+        sys.stderr = outfile
+        try:
+            res = rinterface.baseNameSpaceEnv.get("flush.console")()
+        except Exception, e:
+            sys.stderr = stderr
+            raise e
+        outfile.close()
+        sys.stderr = stderr
+        infile = file(outfile.name, mode="r")
+        errorstring = ''.join(infile.readlines())
+        self.assertTrue(errorstring.startswith('Traceback'))
+
     def testSetReadConsole(self):
         yes = "yes\n"
         def sayyes(prompt):
@@ -38,6 +105,29 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEquals(yes.strip(), res[0])
         rinterface.setReadConsole(rinterface.consoleRead)
 
+    def testReadConsoleWithError(self):
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # cannot be tested with Python < 2.6
+            return None
+        def f(prompt):
+            raise Exception("Doesn't work.")
+        rinterface.setReadConsole(f)
+
+        outfile = tempfile.NamedTemporaryFile(mode = 'w', 
+                                              delete=False)
+        stderr = sys.stderr
+        sys.stderr = outfile
+        try:
+            res = rinterface.baseNameSpaceEnv["readline"]()
+        except Exception, e:
+            sys.stderr = stderr
+            raise e
+        outfile.close()
+        sys.stderr = stderr
+        infile = file(outfile.name, mode="r")
+        errorstring = ''.join(infile.readlines())
+        self.assertTrue(errorstring.startswith('Traceback'))
+        
 #FIXME: end and initialize again causes currently a lot a trouble...
     def testCallErrorWhenEndedR(self):
         self.assertTrue(False) # worked when tested, but calling endEmbeddedR causes trouble
