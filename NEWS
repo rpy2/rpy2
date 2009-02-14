@@ -28,6 +28,9 @@ Changes
   one to flush the console
   (# backport from 2.1-dev) 
 
+- :meth:`Sexp.do_slot_assign` now creates the slot if missing
+  (design-fix - # patch by Nathaniel Smith)
+
 Bugs fixed
 ----------
 

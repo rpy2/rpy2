@@ -708,10 +708,6 @@ Sexp_do_slot_assign(PyObject *self, PyObject *args)
       return NULL;
   }
 
-  if (! R_has_slot(sexp, install(name_str))) {
-    PyErr_SetString(PyExc_LookupError, "The object has no such attribute.");
-    return NULL;
-  }
   SEXP value_sexp = RPY_SEXP((PySexpObject *)value);
   if (! value_sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
