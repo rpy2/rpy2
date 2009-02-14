@@ -27,6 +27,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             sys.stdout = stdout
             raise e
         outfile.close()
+        sys.stdout = stdout
         infile = file(outfile.name, mode="r")
         self.assertEquals('haha', ''.join(infile.readlines()))
 
