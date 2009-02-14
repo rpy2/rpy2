@@ -41,7 +41,8 @@ Bugs fixed
 - The mechanism for setting arbitrary callaback functions for console I/O 
   now ensures that a traceback is printed to stderr whenever an error
   occurs during the evalutation of the callback (the raised exception used
-  be silently propagated to the next python call, leading to problems).
+  to be silently propagated to the next python call, leading to problems).
+
 
 Release 2.0.2
 =============
