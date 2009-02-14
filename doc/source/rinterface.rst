@@ -66,7 +66,7 @@ Ending R
 Ending the R process is possible, but starting it again with
 :func:`initr` does appear to lead to an R process that is hardly usable.
 For that reason, the use of :func:`endEmbeddedR` should be considered
-carefully.
+carefully, if at all.
 
 R space and Python space
 ------------------------
@@ -140,18 +140,29 @@ Such objects can be created when using the constructor for an `Sexp*` class.
 
 
 
-Interacting with the R console
-------------------------------
+Interactive features of the R session
+=====================================
 
-Two functions can be used to set callbacks.
 
-.. autofunction:: setWriteConsole(function)
+I/O with the R console
+----------------------
 
-   :param function: function
+Interaction with the R console is performed by default by the following functions:
 
-.. autofunction:: setReadConsole(function)
+.. autofunction:: consolePrint(x)
 
-   :param function: function
+   :param x: :class:`str`
+
+.. autofunction:: consoleRead(prompt)
+
+   :param prompt: :class:`str`
+   :rtype: :class:`str`
+
+.. autofunction:: consoleFlush()
+
+   .. versionadded:: 2.0.3
+
+Callbacks can be otherwise be specified and used in place of those functions.
 
 
 Output from the console
@@ -195,6 +206,8 @@ The callback function should accept one argument of type string (that is the
 prompt string), and return a string (what was returned by the user).
 
 
+
+
 Classes
 =======
 
@@ -226,6 +239,13 @@ The class :class:`Sexp` is the base class for all R objects.
          >>> letters.typeof
          16
 
+   .. method:: __deepcopy__(self)
+
+      Make a *deep* copy of the object, calling the R-API C function
+      :cfunc:`Rf_duplicate()` for copying the R object wrapped.
+
+      .. versionadded:: 2.0.3
+
    .. method:: do_slot(name)
 
       R objects can be given attributes. In R, the function
@@ -245,7 +265,8 @@ The class :class:`Sexp` is the base class for all R objects.
 
    .. method:: do_slot_assign(name, value)
 
-      Assign value to the slot with the given name
+      Assign value to the slot with the given name, creating the slot whenver
+      not already existing.
 
       :param name: string
       :param value: instance of :class:`Sexp`
@@ -574,7 +595,7 @@ from.
 'package:utils'
 
 .. note::
-   There is a gotcha: the base package does not have a name.
+   Unfortunately this does not generalize to all cases: the base package does not have a name.
 
    >>> wherefrom('get').do_slot('name')[0]
    Traceback (most recent call last):
