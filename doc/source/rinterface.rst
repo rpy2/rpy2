@@ -66,7 +66,7 @@ Ending R
 Ending the R process is possible, but starting it again with
 :func:`initr` does appear to lead to an R process that is hardly usable.
 For that reason, the use of :func:`endEmbeddedR` should be considered
-carefully.
+carefully, if at all.
 
 R space and Python space
 ------------------------
@@ -140,29 +140,39 @@ Such objects can be created when using the constructor for an `Sexp*` class.
 
 
 
-Interacting with the R console
-------------------------------
+Interactive features
+====================
 
-Two functions can be used to set callbacks.
+The embedded R started from :mod:`rpy2` is interactive, which 
+means that a number of interactive features present when working
+in an interactive R console will be available for use.
 
-.. autofunction:: setWriteConsole(function)
+Such features can be called explicitly by the :mod:`rpy2` user, but
+can also be triggered indirectly, as some on the R functions will behave
+differently when run interactively compared to when run in the so-called
+*BATCH mode*.
 
-   :param function: function
-
-.. autofunction:: setReadConsole(function)
-
-   :param function: function
+I/O with the R console
+----------------------
 
 
 Output from the console
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The function :meth:`setWriteConsole` let one specify what do with
-output from the R console with a callback function.
+The default callback function, called :func:`rinterface.consolePrint`
+is a simple write to :data:`sys.stdout`
+
+.. autofunction:: consolePrint(x)
+
+   :param x: :class:`str`
+   :rtype: None
+
+This can be changed with the function :meth:`setWriteConsole`,
+letting one specify what do with output from the R console 
+by a function.
 
 The callback function should accept one argument of type string
-(that is the string output to the console)
-
+(that is the string output to the console) and not return anything.
 
 An example should make it obvious::
 
@@ -185,14 +195,80 @@ An example should make it obvious::
    # restore default function
    rinterface.setWriteConsole(rinterface.consolePrint)
 
+.. autofunction:: setWriteConsole(f)
+
+.. autofunction:: getWriteConsole()
+
+   :rtype: a callable
+
+   .. versionadded:: 2.0.3
+
+Flushing output from the console will be handlded with
+
+.. autofunction:: setFlushConsole(f)
+
+   .. versionadded:: 2.0.3
+
+.. autofunction:: getFlushConsole()
+
+   :rtype: a callable
+
+   .. versionadded:: 2.0.3
+
 
 Input to the console
 ^^^^^^^^^^^^^^^^^^^^
+
+The default callback for inputing data is :func:`rinterface.consoleRead`
+
+.. autofunction:: consoleRead(prompt)
+
+   :param prompt: :class:`str`
+   :rtype: :class:`str`
 
 User input to the console can be can be customized the very same way.
 
 The callback function should accept one argument of type string (that is the
 prompt string), and return a string (what was returned by the user).
+
+.. autofunction:: setReadConsole(f)
+
+.. autofunction:: getReadConsole()
+
+   :rtype: a callable
+
+
+Graphical devices
+-----------------
+
+Interactive graphical devices can be resized and the information they display
+refreshed, provided that the embedded R process is instructed to process
+pending interactive events.
+
+Currently, the way to achieve this is to call the function
+:func:`rinterface.process_revents` at regular intervals.
+
+This can be taken care of by an higher-level interface, or can
+be hacked quickly as::
+
+   import rpy2.rinterface as rinterface
+   import time
+
+   def refresh():
+       # Ctrl-C to interrupt
+       while True:
+           rinterface.process_revents()
+           time.sleep(0.1)
+
+The module :mod:`threading` offers a trivial way to dispatch the work
+to a thread whenever a script is running::
+
+   import threading
+   
+   t = threading.Timer(0.1, refresh)
+   t.start()
+   
+.. autofunction:: process_revents()
 
 
 Classes
@@ -226,6 +302,13 @@ The class :class:`Sexp` is the base class for all R objects.
          >>> letters.typeof
          16
 
+   .. method:: __deepcopy__(self)
+
+      Make a *deep* copy of the object, calling the R-API C function
+      :cfunc:`Rf_duplicate()` for copying the R object wrapped.
+
+      .. versionadded:: 2.0.3
+
    .. method:: do_slot(name)
 
       R objects can be given attributes. In R, the function
@@ -245,7 +328,8 @@ The class :class:`Sexp` is the base class for all R objects.
 
    .. method:: do_slot_assign(name, value)
 
-      Assign value to the slot with the given name
+      Assign value to the slot with the given name, creating the slot whenver
+      not already existing.
 
       :param name: string
       :param value: instance of :class:`Sexp`
@@ -574,7 +658,7 @@ from.
 'package:utils'
 
 .. note::
-   There is a gotcha: the base package does not have a name.
+   Unfortunately this does not generalize to all cases: the base package does not have a name.
 
    >>> wherefrom('get').do_slot('name')[0]
    Traceback (most recent call last):
