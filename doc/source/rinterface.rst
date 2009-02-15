@@ -140,23 +140,22 @@ Such objects can be created when using the constructor for an `Sexp*` class.
 
 
 
-Interactive features of the R session
-=====================================
+Interactive feature
+===================
 
+The embedded R started from :mod:`rpy2` is interactive, which 
+means that a number of interactive features present when working
+in an interactive R console will be available for use.
+
+Such features can be called explicitly by the :mod:`rpy2` user, but
+can also be triggered indirectly, as some on the R functions will behave
+differently when run interactively compared to when run in the so-called
+*BATCH mode*.
 
 I/O with the R console
 ----------------------
 
 Interaction with the R console is performed by default by the following functions:
-
-.. autofunction:: consolePrint(x)
-
-   :param x: :class:`str`
-
-.. autofunction:: consoleRead(prompt)
-
-   :param prompt: :class:`str`
-   :rtype: :class:`str`
 
 .. autofunction:: consoleFlush()
 
@@ -168,12 +167,20 @@ Callbacks can be otherwise be specified and used in place of those functions.
 Output from the console
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The function :meth:`setWriteConsole` let one specify what do with
-output from the R console with a callback function.
+The default callback function, called :func:`rinterface.consolePrint`
+is a simple write to :data:`sys.stdout`
+
+.. autofunction:: consolePrint(x)
+
+   :param x: :class:`str`
+   :rtype: None
+
+This can be changed with the function :meth:`setWriteConsole`,
+letting one specify what do with output from the R console 
+by a function.
 
 The callback function should accept one argument of type string
-(that is the string output to the console)
-
+(that is the string output to the console) and not return anything.
 
 An example should make it obvious::
 
@@ -197,15 +204,77 @@ An example should make it obvious::
    rinterface.setWriteConsole(rinterface.consolePrint)
 
 
+.. autofunction:: setWriteConsole(f)
+
+.. autofunction:: getWriteConsole()
+
+   :rtype: a callable
+
+
+Flushing output from the console will be handlded with
+
+.. autofunction:: setFlushConsole(f)
+
+.. autofunction:: getFlushConsole()
+
+   :rtype: a callable
+
+
+
+
 Input to the console
 ^^^^^^^^^^^^^^^^^^^^
+
+The default callback for inputing data is :func:`rinterface.consoleRead`
+
+.. autofunction:: consoleRead(prompt)
+
+   :param prompt: :class:`str`
+   :rtype: :class:`str`
 
 User input to the console can be can be customized the very same way.
 
 The callback function should accept one argument of type string (that is the
 prompt string), and return a string (what was returned by the user).
 
+.. autofunction:: setReadConsole(f)
 
+.. autofunction:: getReadConsole()
+
+   :rtype: a callable
+
+
+Graphical devices
+-----------------
+
+Interactive graphical devices can be resized and the information they display
+refreshed, provided that the embedded R process is instructed to process
+pending interactive events.
+
+Currently, the way to achieve this is to call the function
+:func:`rinterface.process_revents` at regular intervals.
+
+This can be taken care of by an higher-level interface, or can
+be hacked quickly as::
+
+   import rpy2.rinterface as rinterface
+   import time
+
+   def refresh():
+       # Ctrl-C to interrupt
+       while True:
+           rinterface.process_revents()
+           time.sleep(0.1)
+
+The module :mod:`threading` offers a trivial way to dispatch the work
+to a thread whenever a script is running::
+
+   import threading
+   
+   t = threading.Timer(0.1, refresh)
+   t.start()
+   
+.. autofunction:: process_revents()
 
 
 Classes
