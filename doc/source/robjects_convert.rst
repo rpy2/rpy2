@@ -51,13 +51,14 @@ of writing a new function `ri2py` that handles this, as shown below:
 Once this is done, we can verify immediately that this is working with:
 
 >>> pi = robjects.r.pi
->>>  type(pi)
+>>> type(pi)
 <type 'float'>
 >>> 
 
 The default behavior can be restored with:
 
 >>> robjects.conversion.ri2py = default_ri2py
+
 
 Default functions
 -----------------
