@@ -111,7 +111,16 @@ by Laurent Oget (from Predictix) since version 2.0.0b1.
 Install from source
 ^^^^^^^^^^^^^^^^^^^
 
-To install from a source package `<rpy_package>` do in a shell:
+The source package is on the PYthon Package Index (PYPI), and the 
+*easy_install* script can be used whenever available.
+The shell command will then just be:
+
+.. code-block:: bash
+
+   easy_install rpy2
+
+
+To install from a downloaded source archive `<rpy_package>` do in a shell:
 
 .. code-block:: bash
 
