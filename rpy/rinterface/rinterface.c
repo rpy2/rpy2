@@ -503,15 +503,31 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
 
   result = PyEval_CallObject(chooseFileCallback, arglist);
 
-  Py_DECREF(arglist);
+  PyObject* pythonerror = PyErr_Occurred();
+  if (pythonerror != NULL) {
+    /* All R actions should be stopped since the Python callback failed,
+     and the Python exception raised up.*/
+    //FIXME: Print the exception in the meanwhile
+    PyErr_Print();
+    PyErr_Clear();
+    Py_XDECREF(arglist);
+    return 0;
+  }
   
   if (result == NULL) {
+    //FIXME: can this be reached ? result == NULL while no error ?
+    Py_XDECREF(arglist);
     return 0;
   }
 
   char *path_str = PyString_AsString(result);
   if (! path_str) {
     Py_DECREF(result);
+    PyErr_SetString(PyExc_TypeError, 
+		    "Returned value should have a string representation");
+    PyErr_Print();
+    PyErr_Clear();
+    Py_DECREF(arglist);
     return 0;
   }
 
@@ -520,7 +536,8 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   strncpy((char *)buf, path_str, (l>len-1)?len-1:l);
   buf[(l>len-1)?len-1:l] = '\0';
   /* --- */
-  
+
+  Py_DECREF(arglist);  
   Py_DECREF(result);
 
   return l;

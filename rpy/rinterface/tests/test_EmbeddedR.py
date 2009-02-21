@@ -23,6 +23,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         rinterface.setWriteConsole(rinterface.consolePrint)
         rinterface.setReadConsole(rinterface.consoleRead)
         rinterface.setReadConsole(rinterface.consoleFlush)
+        rinterface.setChooseFile(rinterface.chooseFile)
 
     def testConsolePrint(self):
         if sys.version_info[0] == 2 and sys.version_info[1] < 6:
@@ -162,6 +163,31 @@ class EmbeddedRTestCase(unittest.TestCase):
         res = rinterface.baseNameSpaceEnv["file.choose"]()
         self.assertEquals(me, res[0])
         rinterface.setChooseFile(rinterface.chooseFile)
+
+    def testChooseFileWithError(self):
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # cannot be tested with Python < 2.6
+            return None
+        def f(prompt):
+            raise Exception("Doesn't work.")
+        rinterface.setChooseFile(f)
+
+        outfile = tempfile.NamedTemporaryFile(mode = 'w', 
+                                              delete=False)
+        stderr = sys.stderr
+        sys.stderr = outfile
+        try:
+            res = rinterface.baseNameSpaceEnv["file.choose"]()
+        except rinterface.RRuntimeError, rre:
+            pass
+        except Exception, e:
+            sys.stderr = stderr
+            raise e
+        outfile.close()
+        sys.stderr = stderr
+        infile = file(outfile.name, mode="r")
+        errorstring = ''.join(infile.readlines())
+        self.assertTrue(errorstring.startswith('Traceback'))
 
     def testSetShowFiles(self):
         self.assertTrue(False) # no unit test (yet)
