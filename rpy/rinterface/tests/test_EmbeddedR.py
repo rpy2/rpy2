@@ -150,6 +150,9 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testSetShowMessage(self):
         self.assertTrue(False) # no unit test (yet)
 
+    def testShowMessageWithError(self):
+        self.assertTrue(False) # no unit test (yet)
+
     def testSetChooseFile(self):
         me = "me"
         def chooseMe(prompt):
