@@ -140,8 +140,8 @@ Such objects can be created when using the constructor for an `Sexp*` class.
 
 
 
-Interactive feature
-===================
+Interactive features
+====================
 
 The embedded R started from :mod:`rpy2` is interactive, which 
 means that a number of interactive features present when working
@@ -154,14 +154,6 @@ differently when run interactively compared to when run in the so-called
 
 I/O with the R console
 ----------------------
-
-Interaction with the R console is performed by default by the following functions:
-
-.. autofunction:: consoleFlush()
-
-   .. versionadded:: 2.0.3
-
-Callbacks can be otherwise be specified and used in place of those functions.
 
 
 Output from the console
@@ -210,8 +202,13 @@ An example should make it obvious::
 
    :rtype: a callable
 
+The default callback function is
 
-Flushing output from the console will be handlded with
+.. autofunction:: consolePrint(x)
+
+On a restricted number of platforms
+(Win32 and OS X with Aqua), 
+flushing output from the console will be handlded with
 
 .. autofunction:: setFlushConsole(f)
 
@@ -219,7 +216,11 @@ Flushing output from the console will be handlded with
 
    :rtype: a callable
 
+The default callback function is
 
+.. autofunction:: consoleFlush()
+
+   .. versionadded:: 2.0.3
 
 
 Input to the console
