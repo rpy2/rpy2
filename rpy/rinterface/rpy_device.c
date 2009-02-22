@@ -15,6 +15,17 @@
 PyDoc_STRVAR(module_doc,
 	     "Graphical output devices for R.");
 
+static inline void rpy_printandclear_error(void)
+{
+  PyObject* pythonerror = PyErr_Occurred();
+  if (pythonerror != NULL) {
+    /* All R actions should be stopped since the Python callback failed,
+     and the Python exception raised up.*/
+    //FIXME: Print the exception in the meanwhile
+    PyErr_Print();
+    PyErr_Clear();
+  }
+}
 
 static inline void rpy_GrDev_CallBack(pDevDesc dd, PyObject *name)
 {
@@ -27,8 +38,9 @@ static inline void rpy_GrDev_CallBack(pDevDesc dd, PyObject *name)
   PyObject *self = (PyObject *)dd->deviceSpecific;
   result = PyObject_CallMethodObjArgs(self, name, NULL);
 
-  //FIXME: check that the method only returns None ?
-  Py_DECREF(result);  
+  rpy_printandclear_error();
+
+  Py_XDECREF(result);  
 }
 
 static PyObject *GrDev_close_name;
@@ -59,8 +71,8 @@ static PyObject* GrDev_activate(PyObject *self)
 {
   printf("FIXME: activate.\n");
   //error("Not implemented.");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
-  printf("done.\n");
+  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  //printf("done.\n");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -97,7 +109,10 @@ static void rpy_Size(double *left, double *right,
   PyObject *self = (PyObject *)dd->deviceSpecific;
   //FIXME: pass the current left/right/bottom/top
   result = PyObject_CallMethodObjArgs(self, GrDev_size_name, NULL);
-  Py_DECREF(result);  
+
+  rpy_printandclear_error();
+
+  Py_XDECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_size_doc,
@@ -123,8 +138,9 @@ static void rpy_NewPage(const pGEcontext gc, pDevDesc dd)
   PyObject *self = (PyObject *)dd->deviceSpecific;
   result = PyObject_CallMethodObjArgs(self, GrDev_newpage_name, NULL);
 
-  //FIXME: check that the method only returns None ?
-  Py_DECREF(result);  
+  rpy_printandclear_error();
+
+  Py_XDECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_newpage_doc,
@@ -157,9 +173,9 @@ static void rpy_Clip(double x0, double x1, double y0, double y1, pDevDesc dd)
 				      py_x0, py_x1,
 				      py_y0, py_y1,
 				      NULL);
-  
-  //FIXME: check that the method only returns None ?
-  Py_DECREF(result);
+
+  rpy_printandclear_error();
+  Py_XDECREF(result);
 }
 
 PyDoc_STRVAR(GrDev_clip_doc,
@@ -186,7 +202,8 @@ static double rpy_StrWidth(const char *str, const pGEcontext gc, pDevDesc dd)
   PyObject *py_str = PyString_FromString(str);
   result = PyObject_CallMethodObjArgs(self, GrDev_strwidth_name, py_str);
 
-  //FIXME: check that the method only returns double ?
+  rpy_printandclear_error();
+
   double r_res = PyFloat_AsDouble(result);
   Py_DECREF(result);  
 
@@ -226,7 +243,8 @@ static void rpy_Text(double x, double y, const char *str,
 				      py_str, py_rot, py_hadj,
 				      NULL);
 
-  //FIXME: check that the method only returns None ?
+  rpy_printandclear_error();
+
   Py_DECREF(result);  
 }
 
@@ -262,7 +280,8 @@ static void rpy_Rect(double x0, double x1, double y0, double y1,
 				      py_y0, py_y1,
 				      NULL);
 
-  //FIXME: check that the method only returns None ?
+  rpy_printandclear_error();
+
   Py_DECREF(result);  
 }
 
@@ -296,7 +315,7 @@ static void rpy_Circle(double x, double y, double r,
 				      py_x, py_y, py_r,
 				      NULL);
 
-  //FIXME: check that the method only returns None ?
+  rpy_printandclear_error();
   Py_DECREF(result);  
 }
 
@@ -332,7 +351,7 @@ static void rpy_Line(double x1, double y1,
 				      py_x1, py_y1, py_x2, py_y2,
 				      NULL);
 
-  //FIXME: check that the method only returns None ?
+  rpy_printandclear_error();
   Py_DECREF(result);  
 }
 
@@ -366,7 +385,7 @@ static void rpy_PolyLine(int n, double *x, double *y,
 				      py_x, py_y,
 				      NULL);
 
-  //FIXME: check that the method only returns None ?
+  rpy_printandclear_error();
   Py_DECREF(result);  
 }
 
@@ -399,7 +418,7 @@ static void rpy_Polygon(int n, double *x, double *y,
   result = PyObject_CallMethodObjArgs(self, GrDev_polygon_name, 
 				      py_x, py_y,
 				      NULL);
-  //FIXME: check that the method only returns None ?
+  rpy_printandclear_error();
   Py_DECREF(result);  
 }
 
@@ -433,9 +452,10 @@ static Rboolean rpy_Locator(double *x, double *y,
 				      py_x, py_y,
 				      NULL);
 
-  //FIXME: check that the method only returns None ?
+  rpy_printandclear_error();
   Py_ssize_t nbytes, nitems;
   double *vector;
+  //FIXME: what if result is NULL ?
   int buffer_ok = PyObject_AsReadBuffer(result, (const void **)&vector,
 					&nbytes);
   if (buffer_ok) {
@@ -481,7 +501,7 @@ static void rpy_Mode(int mode, pDevDesc dd)
   printf("FIXME: Mode.\n");
   result = PyObject_CallMethodObjArgs(self, GrDev_mode_name, 
 				      NULL);
-  //FIXME: check that the method only returns None ?
+  rpy_printandclear_error();
   Py_DECREF(result);  
 }
 
@@ -517,7 +537,7 @@ static void rpy_MetricInfo(int c, const pGEcontext gc,
 				      py_ascent, py_descent, py_width,
 				      NULL);
 
-  //FIXME: check that the method only returns None ?
+  rpy_printandclear_error();
   Py_ssize_t nbytes, nitems;
   double *vector;
   int buffer_ok = PyObject_AsReadBuffer(result, (const void **)&vector,
@@ -570,6 +590,7 @@ static SEXP rpy_GetEvent(SEXP rho, const char *prompt)
 				      py_prompt,
 				      NULL);
 
+  rpy_printandclear_error();
   //FIXME: check that the method only returns PySexp ?
   printf("FIXME: check that only PySexp returned.\n");
 
