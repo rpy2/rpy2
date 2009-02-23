@@ -46,7 +46,6 @@ static inline void rpy_GrDev_CallBack(pDevDesc dd, PyObject *name)
 static PyObject *GrDev_close_name;
 static void rpy_Close(pDevDesc dd)
 {
-  printf("FIXME: closing the device.\n");
   rpy_GrDev_CallBack(dd, GrDev_close_name);
 }
 
@@ -54,7 +53,7 @@ PyDoc_STRVAR(GrDev_close_doc,
 	     "Close the graphical output device.");
 static PyObject* GrDev_close(PyObject *self)
 {
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device closing not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -69,9 +68,8 @@ PyDoc_STRVAR(GrDev_activate_doc,
 	     "Activate the graphical output device.");
 static PyObject* GrDev_activate(PyObject *self)
 {
-  printf("FIXME: activate.\n");
   //error("Not implemented.");
-  PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device activation not implemented.");
   //printf("done.\n");
   Py_INCREF(Py_None);
   return Py_None;
@@ -87,8 +85,7 @@ PyDoc_STRVAR(GrDev_deactivate_doc,
 	     "Deactivate the graphical output device.");
 static PyObject* GrDev_deactivate(PyObject *self)
 {
-  printf("FIXME: deactivate.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device deactivation not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -119,8 +116,7 @@ PyDoc_STRVAR(GrDev_size_doc,
 	     "Set the size of the graphical device.");
 static PyObject* GrDev_size(PyObject *self, PyObject *args)
 {
-  printf("FIXME: size.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device size not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -182,8 +178,7 @@ PyDoc_STRVAR(GrDev_clip_doc,
 	     "Clip the graphical device.");
 static PyObject* GrDev_clip(PyObject *self, PyObject *args)
 {
-  printf("FIXME: clip.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device clip not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -214,8 +209,7 @@ PyDoc_STRVAR(GrDev_strwidth_doc,
 	     "String width on the graphical device.");
 static PyObject* GrDev_strwidth(PyObject *self, PyObject *args)
 {
-  printf("FIXME: strwidth.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device strwidth not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -252,8 +246,7 @@ PyDoc_STRVAR(GrDev_text_doc,
 	     "String width on the graphical device.");
 static PyObject* GrDev_text(PyObject *self, PyObject *args)
 {
-  printf("FIXME: text.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device text not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -289,8 +282,7 @@ PyDoc_STRVAR(GrDev_rect_doc,
 	     "Draw a rectangle on the graphical device.");
 static PyObject* GrDev_rect(PyObject *self, PyObject *args)
 {
-  printf("FIXME: rect.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device rect not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -323,8 +315,7 @@ PyDoc_STRVAR(GrDev_circle_doc,
 	     "Draw a circle on the graphical device.");
 static PyObject* GrDev_circle(PyObject *self, PyObject *args)
 {
-  printf("FIXME: circle.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device circle not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -359,8 +350,7 @@ PyDoc_STRVAR(GrDev_line_doc,
 	     "Draw a line on the graphical device.");
 static PyObject* GrDev_line(PyObject *self, PyObject *args)
 {
-  printf("FIXME: line.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device line not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -393,8 +383,7 @@ PyDoc_STRVAR(GrDev_polyline_doc,
 	     "Draw a polyline on the graphical device.");
 static PyObject* GrDev_polyline(PyObject *self, PyObject *args)
 {
-  printf("FIXME: line.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device polyline not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -426,8 +415,7 @@ PyDoc_STRVAR(GrDev_polygon_doc,
 	     "Draw a polygon on the graphical device.");
 static PyObject* GrDev_polygon(PyObject *self, PyObject *args)
 {
-  printf("FIXME: polygon.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device polygon not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -481,8 +469,7 @@ PyDoc_STRVAR(GrDev_locator_doc,
 	     "Locator on the graphical device.");
 static PyObject* GrDev_locator(PyObject *self, PyObject *args)
 {
-  printf("FIXME: locator.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device locator not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -509,8 +496,7 @@ PyDoc_STRVAR(GrDev_mode_doc,
 	     "Mode on the graphical device.");
 static PyObject* GrDev_mode(PyObject *self)
 {
-  printf("FIXME: mode.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device mode not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -564,8 +550,7 @@ PyDoc_STRVAR(GrDev_metricinfo_doc,
 	     "MetricInfo on the graphical device.");
 static PyObject* GrDev_metricinfo(PyObject *self, PyObject *args)
 {
-  printf("FIXME: metricinfo.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device metricinfo not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -605,8 +590,7 @@ PyDoc_STRVAR(GrDev_getevent_doc,
 	     "Get even on the graphical device.");
 static PyObject* GrDev_getevent(PyObject *self, PyObject *args)
 {
-  printf("FIXME: getevent.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, "Device getevent not implemented.");
   Py_INCREF(Py_None);
   return Py_None;
 }

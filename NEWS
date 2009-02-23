@@ -18,7 +18,6 @@ New Features
 - Initial commit of a callback-based implementation of an R graphical device
   (this is for the moment very experimental - and not fully working)
 
- 
 Changes
 -------
 
