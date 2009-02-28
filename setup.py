@@ -179,7 +179,14 @@ setup(name = pack_name,
                   pack_name+'.rlike.tests',
                   pack_name+'.robjects',
                   pack_name+'.robjects.tests'] + \
-                 [pack_name + '.rinterface', pack_name + '.rinterface.tests']
+                 [pack_name + '.rinterface', pack_name + '.rinterface.tests'],
+      classifiers = ['Programming Language :: Python',
+                     'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
+                     'Intended Audience :: Developers',
+                     'Intended Audience :: Science/Research',
+                     'Development Status :: 3 - Alpha'
+                    ]
+
                  #[pack_name + '.rinterface_' + x for x in rinterface_rversions] + \
                  #[pack_name + '.rinterface_' + x + '.tests' for x in rinterface_rversions]
       )
