@@ -15,6 +15,9 @@ New Features
 - New functions for specifying callback functions for R's front-ends:
   :func:`setShowMessage`, :func:`setFlushConsole`, :func:`setChooseFile`, :func:`setShowFiles`
 
+- New function :func:`getMissingArgSexp` for getting R's special representation
+  for a "missing" parameter in a function call. (# patch submitted by Nathaniel Smith)
+
 - Initial commit of a callback-based implementation of an R graphical device
   (this is for the moment very experimental - and not fully working)
 

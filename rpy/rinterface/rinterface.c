@@ -2926,6 +2926,20 @@ EmbeddedR_sexpType(PyObject *self, PyObject *args)
 
 }
 
+static PyObject* EmbeddedR_getMissingArgSexp(PyObject *self)
+{
+  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+    PyErr_Format(PyExc_RuntimeError, 
+                 "R is not yet initialized.");
+    return NULL;
+  }
+  return (PyObject *)newPySexpObject(R_MissingArg);
+}
+
+PyDoc_STRVAR(EmbeddedR_getMissingArgSexp_doc,
+             "Return the special Sexp that R uses to indicate missing arguments.");
+
+
 /* --- List of functions defined in the module --- */
 
 static PyMethodDef EmbeddedR_methods[] = {
@@ -2969,6 +2983,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_ProcessEvents_doc},
   {"str_typeint",       (PyCFunction)EmbeddedR_sexpType, METH_VARARGS,
    "Return the SEXP name tag (string) corresponding to an integer."},
+  {"getMissingArgSexp", (PyCFunction)EmbeddedR_getMissingArgSexp, METH_NOARGS,
+   EmbeddedR_getMissingArgSexp_doc},
   {NULL,                NULL}           /* sentinel */
 };
 

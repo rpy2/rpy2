@@ -71,6 +71,15 @@ class SexpClosureTestCase(unittest.TestCase):
         
         self.assertRaises(ValueError, mylist, 'foo')
 
+    def testMissingArg(self):
+        parse = rinterface.baseNameSpaceEnv["parse"]
+        exp = parse(text=rinterface.SexpVector(["function(x) { missing(x) }"],
+                                               rinterface.STRSXP))
+        fun = rinterface.baseNameSpaceEnv["eval"](exp)
+        nonmissing = rinterface.SexpVector([0, ], rinterface.INTSXP)
+        missing = rinterface.getMissingArgSexp()
+        self.assertEquals(False, fun(nonmissing)[0])
+        self.assertEquals(True, fun(missing)[0])
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpClosureTestCase)
