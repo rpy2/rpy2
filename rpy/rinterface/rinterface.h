@@ -45,5 +45,12 @@ typedef struct {
 #define RPY_INCREF(obj) (((obj)->sObj)->count++)
 #define RPY_DECREF(obj) (((obj)->sObj)->count--)
 
+#define RPY_PY_FROM_RBOOL(res, rbool)			\
+  if (rbool == NA_LOGICAL) {				\
+    Py_INCREF(Py_None);					\
+    res = Py_None;					\
+  } else {						\
+    res = PyBool_FromLong((long)(rbool));		\
+  }
 
 #endif /* !RPY_RI_H */

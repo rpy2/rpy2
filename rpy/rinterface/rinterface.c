@@ -158,6 +158,7 @@ static PySexpObject *globalEnv;
 static PySexpObject *baseNameSpaceEnv;
 static PySexpObject *emptyEnv;
 static PySexpObject *na_string;
+
 static PyObject *na_logical;
 static PyObject *na_integer;
 static PyObject *na_real;
@@ -581,13 +582,7 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
 
   PyObject *py_wtitle = PyString_FromString(wtitle);
   PyObject *py_del;
-  /*FIXME: duplicated code - move that out to MACRO or inline function*/
-  if (del == NA_LOGICAL) {
-        Py_INCREF(Py_None);
-        py_del = Py_None;
-      } else {
-    py_del = PyBool_FromLong((long)del);
-  } 
+  RPY_PY_FROM_RBOOL(py_del, del);
   PyObject *py_pager = PyString_FromString(pager);
 
   PyObject *py_fileheaders_tuple = PyTuple_New(nfile);
@@ -1923,12 +1918,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       break;
     case LGLSXP:
       vi = LOGICAL_POINTER(*sexp)[i_R];
-      if (vi == NA_LOGICAL) {
-        Py_INCREF(Py_None);
-        res = Py_None;
-      } else {
-        res = PyBool_FromLong((long)vi);
-      }
+      RPY_PY_FROM_RBOOL(res, vi);
       break;
     case CPLXSXP:
       vc = COMPLEX_POINTER(*sexp)[i_R];
@@ -3302,5 +3292,6 @@ initrinterface(void)
   na_real = Py_None;
   if (PyDict_SetItemString(d, "NA_REAL", (PyObject *)na_real) < 0)
     return; 
+
 
 }
