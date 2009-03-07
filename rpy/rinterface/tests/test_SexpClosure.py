@@ -77,7 +77,7 @@ class SexpClosureTestCase(unittest.TestCase):
                                                rinterface.STRSXP))
         fun = rinterface.baseNameSpaceEnv["eval"](exp)
         nonmissing = rinterface.SexpVector([0, ], rinterface.INTSXP)
-        missing = rinterface.getMissingArgSexp()
+        missing = rinterface.R_MissingArg
         self.assertEquals(False, fun(nonmissing)[0])
         self.assertEquals(True, fun(missing)[0])
 

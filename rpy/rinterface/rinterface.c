@@ -158,6 +158,8 @@ static PySexpObject *globalEnv;
 static PySexpObject *baseNameSpaceEnv;
 static PySexpObject *emptyEnv;
 static PySexpObject *na_string;
+static PySexpObject *rpy_R_MissingArg;
+static PySexpObject *na_string;
 
 static PyObject *na_logical;
 static PyObject *na_integer;
@@ -824,6 +826,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
   RPY_SEXP(emptyEnv) = R_EmptyEnv;
   RPY_SEXP(na_string) = NA_STRING;
+  RPY_SEXP(rpy_R_MissingArg) = R_MissingArg;
 
   errMessage_SEXP = findVar(install("geterrmessage"), 
                             R_BaseNamespace);
@@ -2931,19 +2934,6 @@ EmbeddedR_sexpType(PyObject *self, PyObject *args)
 
 }
 
-static PyObject* EmbeddedR_getMissingArgSexp(PyObject *self)
-{
-  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
-    PyErr_Format(PyExc_RuntimeError, 
-                 "R is not yet initialized.");
-    return NULL;
-  }
-  return (PyObject *)newPySexpObject(R_MissingArg);
-}
-
-PyDoc_STRVAR(EmbeddedR_getMissingArgSexp_doc,
-             "Return the special Sexp that R uses to indicate missing arguments.");
-
 
 /* --- List of functions defined in the module --- */
 
@@ -3267,7 +3257,13 @@ initrinterface(void)
   //FIXME: DECREF ?
   Py_DECREF(na_real);
 
-  
+  rpy_R_MissingArg = (PySexpObject*)Sexp_new(&Sexp_Type,
+					     Py_None, Py_None);
+  if (PyDict_SetItemString(d, "R_MissingArg", (PyObject *)rpy_R_MissingArg) < 0)
+    return;
+  //FIXME: DECREF ?
+  Py_DECREF(rpy_R_MissingArg);  
+
 /*   /\* Rinternals.h *\/ */
   na_string = (PySexpObject *)Sexp_new(&VectorSexp_Type,
                                        Py_None, Py_None);
