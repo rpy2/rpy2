@@ -12,13 +12,12 @@ High-level interface
 Overview
 ========
 
-This module is intended for casual and general use.
-Its aim is to abstracts some of the details and provide an
-intuitive interface to R.
+This module should be the right pick for casual and general use.
+Its aim is to abstract some of the details and provide an
+intuitive interface to both Python and R programmers.
 
 
 >>> import rpy2.robjects as robjects
-
 
 :mod:`rpy2.robjects` is written on the top of :mod:`rpy2.rinterface`, and one
 not satisfied with it could easily build one's own flavor of a
