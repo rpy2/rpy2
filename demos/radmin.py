@@ -438,11 +438,12 @@ class ConsolePanel(gtk.VBox):
     _start_mark = None
     _history = None #[]
     _history_i = None #0
+    MAX_HISTORY = 20
 
     def __init__(self):
         super(ConsolePanel, self).__init__()
 
-        self._history = [None, ] * 20
+        self._history = ['', ] * ConsolePanel.MAX_HISTORY
         self._history_i = 0
 
         s_window = gtk.ScrolledWindow()
@@ -476,6 +477,11 @@ class ConsolePanel(gtk.VBox):
         #evalButton.show()
         self.pack_start(evalButton, False, False, 0)
         self._evalButton = evalButton
+        console_info = gtk.Label('')
+        self._console_info = console_info
+        self.update_consoleinfo()
+        console_info.show()
+        self.pack_start(console_info, False, False, 0)
         self.append("> ", "input")
 
         location = self._buffer.get_end_iter()
@@ -484,22 +490,35 @@ class ConsolePanel(gtk.VBox):
 
         self._firstEnter = False
 
-        
+    def update_consoleinfo(self):
+        self._console_info.set_text('history: %i / %i' %(self._history_i, self.MAX_HISTORY))
+
     def actionKeyPress(self, view, event):
+        buffer = self._buffer
+        start_iter = buffer.get_iter_at_mark(self._start_mark)
+        stop_iter = buffer.get_iter_at_offset(buffer.get_char_count())
         if (event.keyval == gtk.gdk.keyval_from_name("Return")):
+            self._history[self._history_i] = buffer.get_text(start_iter, stop_iter)
             self.append("\n", "input")
             self.evaluateAction(self._evalButton)
             self._history_i = len(self._history) - 1
+            self.update_consoleinfo()
             return True
-        if (event.keyval == gtk.gdk.keyval_from_name("Up")):
+        if (event.keyval == gtk.gdk.keyval_from_name("Down")):
             self._history_i -= 1
             if self._history_i == -1:
                 self._history_i = len(self._history)
+            self._buffer.delete(start_iter, stop_iter)
+            self.append(self._history[self._history_i], tag="input")
+            self.update_consoleinfo()
             return True
-        if (event.keyval == gtk.gdk.keyval_from_name("Down")):
+        if (event.keyval == gtk.gdk.keyval_from_name("Up")):
             self._history_i += 1
             if self._history_i == len(self._history):
                 self._history_i = 0
+            self._buffer.delete(start_iter, stop_iter)
+            self.append(self._history[self._history_i], tag="input")
+            self.update_consoleinfo()
             return True
 
     def append(self, text, tag="input"):
