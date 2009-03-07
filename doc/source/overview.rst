@@ -44,13 +44,12 @@ Python version 2.4 or higher, as well as R-2.7.0 or higher are required.
 Currently the development is mostly done on Linux and MacOS X with the
 following version for the softwares:
 
-+-------+----------+
-|       | versions |
-+-------+----------+
-| Python| 2.5; 2.6 |
-+-------+----------+
-| R     | 2.8; 2.9 |
-+-------+----------+
+======== ========
+Software Versions 
+======== ========
+ Python   2.5; 2.6 
+ R        2.8; 2.9 
+======== ========
 
 gcc-4.3 is used for compiling the C parts.
 
