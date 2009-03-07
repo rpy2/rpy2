@@ -154,6 +154,9 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testShowMessageWithError(self):
         self.assertTrue(False) # no unit test (yet)
 
+    def testShowMessageWithError(self):
+        self.assertTrue(False) # no unit test (yet)
+
     def testSetChooseFile(self):
         me = "me"
         def chooseMe(prompt):
@@ -190,7 +193,20 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertTrue(errorstring.startswith('Traceback'))
 
     def testSetShowFiles(self):
-        self.assertTrue(False) # no unit test (yet)
+        sf = []
+        def f(fileheaders, wtitle, fdel, pager):
+            sf.append(wtitle)
+            for tf in fileheaders:
+                sf.append(tf)
+
+        rinterface.setShowFiles(f)
+        file_path = rinterface.baseNameSpaceEnv["file.path"]
+        r_home = rinterface.baseNameSpaceEnv["R.home"]
+        filename = file_path(r_home(rinterface.StrSexpVector(("doc", ))), 
+                             rinterface.StrSexpVector(("COPYRIGHTS", )))
+        res = rinterface.baseNameSpaceEnv["file.show"](filename)
+        self.assertEquals(filename[0], sf[1][1])
+        self.assertEquals('R Information', sf[0])
 
     def testShowFilesWithError(self):
         self.assertTrue(False) # no unit test (yet)

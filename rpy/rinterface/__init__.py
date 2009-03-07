@@ -126,7 +126,13 @@ def chooseFile(prompt):
 setChooseFile(chooseFile)
 
 def showFiles(wtitle, titlefiles):
-    #FIXME: not implemented
-    Exception("Not implemented")
+    sys.stdout.write(wtitle)
+
+    for tf in titlefiles:
+        sys.stdout.write(tf)
+        f = open(tf)
+        for row in f:
+            sys.stdout.write(row)
+        f.close()
     return 0
 setShowFiles(showFiles)

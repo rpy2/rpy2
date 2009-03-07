@@ -564,47 +564,62 @@ PyDoc_STRVAR(EmbeddedR_getShowFiles_doc,
              "Retrieve current R console output handler (see setShowFiles).");
 
 static int
-EmbeddedR_ShowFiles(int nfile, const char **file, const char **title,
+EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
                     const char *wtitle, Rboolean del, const char *pager)
 {
-  PyObject *arglist;
-  PyObject *result;
+
+  if (showFilesCallback == NULL) {
+    return 0;
+  }
    
   if (nfile < 1)
     return 0;
 
-  PyObject *titlefile_tuple = PyTuple_New(nfile);
-  //FIXME: INCREF needed ? (if not, that's a memory leak)
-  Py_INCREF(titlefile_tuple);
-  PyObject *titlefile;
+
+  PyObject *arglist;
+  PyObject *result;
+
+  PyObject *py_wtitle = PyString_FromString(wtitle);
+  PyObject *py_del;
+  /*FIXME: duplicated code - move that out to MACRO or inline function*/
+  if (del == NA_LOGICAL) {
+        Py_INCREF(Py_None);
+        py_del = Py_None;
+      } else {
+    py_del = PyBool_FromLong((long)del);
+  } 
+  PyObject *py_pager = PyString_FromString(pager);
+
+  PyObject *py_fileheaders_tuple = PyTuple_New(nfile);
+  PyObject *py_fileheader;
   int f_i;
   for (f_i = 0; f_i < nfile; f_i++) {
-    titlefile = PyTuple_New(2);
-    //FIXME: INCREF for titlefile ?
-    if (PyTuple_SetItem(titlefile, 0,
-                        PyString_FromString(title[f_i])) != 0) {
-      Py_DECREF(titlefile_tuple);
+    py_fileheader = PyTuple_New(2);
+    if (PyTuple_SetItem(py_fileheader, 0,
+                        PyString_FromString(headers[f_i])) != 0) {
+      Py_DECREF(py_fileheaders_tuple);
+      /*FIXME: decref other PyObject arguments */
       return 0;
     }
-    if (PyTuple_SetItem(titlefile, 1,
+    if (PyTuple_SetItem(py_fileheader, 1,
                         PyString_FromString(file[f_i])) != 0) {
-      Py_DECREF(titlefile_tuple);
+      Py_DECREF(py_fileheaders_tuple);
+      /*FIXME: decref other PyObject arguments */
       return 0;
     }
-    if (PyTuple_SetItem(titlefile_tuple, f_i,
-                        titlefile) != 0) {
-      Py_DECREF(titlefile_tuple);
+    if (PyTuple_SetItem(py_fileheaders_tuple, f_i,
+                        py_fileheader) != 0) {
+      Py_DECREF(py_fileheaders_tuple);
+      /*FIXME: decref other PyObject arguments */
       return 0;
     }
   }
 
-  arglist = Py_BuildValue("o", wtitle, titlefile_tuple);
+  arglist = Py_BuildValue("OOOO", py_fileheaders_tuple, py_wtitle, py_del, py_pager);
   if (! arglist) {
+    PyErr_Print();
     PyErr_NoMemory();
-  }
-
-  if (showFilesCallback == NULL) {
-    Py_DECREF(arglist);
+    /*FIXME: decref PyObject arguments */
     return 0;
   }
 
@@ -627,11 +642,11 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **title,
     return 0;
   }
 
-  char *path_str = PyString_AsString(result);
-  if (! path_str) {
+  /*FIXME: check that nothing is returned ? */
+  if (! 1) {
     Py_DECREF(result);
     PyErr_SetString(PyExc_TypeError, 
-		    "Returned value should have a string representation");
+		    "Returned value should be None");
     PyErr_Print();
     PyErr_Clear();
     Py_DECREF(arglist);
@@ -641,7 +656,7 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **title,
   Py_DECREF(arglist);
   Py_DECREF(result);
 
-  return 0;
+  return 1;
 }
 
 
