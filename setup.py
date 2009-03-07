@@ -166,6 +166,10 @@ for rversion, RHOME in itertools.izip(rversions, RHOMES):
 
 pack_dir = {pack_name: 'rpy'}
 
+import distutils.command.install
+for scheme in distutils.command.install.INSTALL_SCHEMES.values():
+    scheme['data'] = scheme['purelib']
+
 setup(name = pack_name,
       version = pack_version,
       description = "Python interface to the R language",
@@ -185,7 +189,8 @@ setup(name = pack_name,
                      'Intended Audience :: Developers',
                      'Intended Audience :: Science/Research',
                      'Development Status :: 3 - Alpha'
-                    ]
+                    ],
+      data_files = [('rpy2/images/', ['doc/source/rpy2_logo.png'])]
 
                  #[pack_name + '.rinterface_' + x for x in rinterface_rversions] + \
                  #[pack_name + '.rinterface_' + x + '.tests' for x in rinterface_rversions]
