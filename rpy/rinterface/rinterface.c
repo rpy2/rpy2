@@ -2978,8 +2978,6 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_ProcessEvents_doc},
   {"str_typeint",       (PyCFunction)EmbeddedR_sexpType, METH_VARARGS,
    "Return the SEXP name tag (string) corresponding to an integer."},
-  {"getMissingArgSexp", (PyCFunction)EmbeddedR_getMissingArgSexp, METH_NOARGS,
-   EmbeddedR_getMissingArgSexp_doc},
   {NULL,                NULL}           /* sentinel */
 };
 
