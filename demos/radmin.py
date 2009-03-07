@@ -7,6 +7,8 @@ import os, sys
 import pygtk
 pygtk.require('2.0')
 import gtk
+
+import rpy2
 import rpy2.robjects as robjects
 import itertools
 import gobject
@@ -528,12 +530,17 @@ class ConsolePanel(gtk.VBox):
         robjects.rinterface.setWriteConsole(f)
 
         try:
-            res = robjects.r(rcode)
+            res = robjects.r('withVisible( ' + rcode + ' )')
+            visible = res.r["visible"][0][0]
+            if visible:
+                res = res.r["value"][0]
+            else:
+                res = None
         except robjects.rinterface.RRuntimeError, rre:
             res = str(rre)
 
-        #self.append(str.join('', rbuf), "output")
-        self.append(str(res), "output")
+        if res is not None:
+            self.append(str(res), "output")
 
         self.append("\n> ", "input")
 
@@ -623,7 +630,7 @@ def get_splash():
     eb.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse("white"))
     image = gtk.Image()
     image.show()
-    image.set_from_file("rpy2_logo.png")
+    image.set_from_file(os.path.join(rpy2.__path__[0], "images", "rpy2_logo.png"))
     splashVBox = gtk.VBox()
 
     splashVBox.pack_start(image, True, True, 0)
