@@ -527,13 +527,21 @@ class ConsolePanel(gtk.VBox):
 
         robjects.rinterface.setWriteConsole(f)
 
-        try:
-            res = robjects.r(rcode)
-        except robjects.rinterface.RRuntimeError, rre:
-            res = str(rre)
+        if rcode.strip() == '':
+            res = None
+        else:
+            try:            
+                res = robjects.r('withVisible( ' + rcode + ' )')
+                visible = res.r["visible"][0][0]
+                if visible:
+                    res = res.r["value"][0]
+                else:
+                    res = None
+            except robjects.rinterface.RRuntimeError, rre:
+                res = str(rre)
 
-        #self.append(str.join('', rbuf), "output")
-        self.append(str(res), "output")
+        if res is not None:
+            self.append(str(res), "output")
 
         self.append("\n> ", "input")
 
@@ -646,6 +654,12 @@ gtk.window_set_auto_startup_notification(False)
 splash = get_splash()
 splash.show_all()
 gobject.idle_add(create_application, splash)
+
+def gobject_process_revents():
+    robjects.rinterface.process_revents()
+    return True
+
+gobject.idle_add(gobject_process_revents)
 gtk.main()
 
 
