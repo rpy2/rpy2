@@ -90,7 +90,7 @@ html_style = 'default.css'
 
 # The name of an image file (within the static path) to place at the top of
 # the sidebar.
-html_logo = 'rpy_logo_header.png'
+html_logo = 'rpy2_logo.png'
 
 
 
@@ -151,7 +151,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = 'rpy_logo_header.png'
+latex_logo = 'rpy2_logo.png'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
