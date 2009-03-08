@@ -631,7 +631,7 @@ def get_splash():
     eb.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse("white"))
     image = gtk.Image()
     image.show()
-    image.set_from_file("rpy2_logo.png")
+    image.set_from_file(os.path.join(rpy2.__path__[0], "images", "rpy2_logo.png"))
     splashVBox = gtk.VBox()
 
     splashVBox.pack_start(image, True, True, 0)
