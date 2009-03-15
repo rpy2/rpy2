@@ -8,6 +8,7 @@ Documentation for rpy2
    overview
    introduction
    robjects
+   graphics
    numpy
    callbacks
    robjects_convert
