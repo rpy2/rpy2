@@ -25,6 +25,9 @@ New Features
 Changes
 -------
 
+:mod:`rpy2.robjects`:
+
+- RS4 no longer makes R's slots as Python attributes through :meth:`__attr__`
 
 Bugs fixed
 ----------

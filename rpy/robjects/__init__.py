@@ -13,6 +13,9 @@ import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 import rpy2.robjects.conversion
 
+from rpy2.robjects.robject import RObjectMixin, RObject
+from rpy2.robjects.methods import RS4
+
 #FIXME: close everything when leaving (check RPy for that).
 
 
@@ -107,58 +110,6 @@ def default_py2ro(o):
 conversion.py2ro = default_py2ro
 
 
-def repr_robject(o, linesep=os.linesep):
-    s = r.deparse(o)
-    s = str.join(linesep, s)
-    return s
-
-
-class RObjectMixin(object):
-    """ Class to provide methods common to all RObject instances """
-    name = None
-
-    def __str__(self):
-        if sys.platform == 'win32':
-            tfile = baseNameSpaceEnv["tempfile"]()
-            tmp = baseNameSpaceEnv["file"](tfile, open="w")
-        else:
-            tmp = baseNameSpaceEnv["fifo"]("")
-        baseNameSpaceEnv["sink"](tmp)
-        r.show(self)
-        baseNameSpaceEnv["sink"]()
-        if sys.platform == 'win32':
-            baseNameSpaceEnv["close"](tmp)
-            tmp = baseNameSpaceEnv["file"](tfile, open="r")
-        s = baseNameSpaceEnv["readLines"](tmp)
-        if sys.platform == 'win32':
-            baseNameSpaceEnv["unlink"](tfile)
-        else:
-            r.close(tmp)
-        s = str.join(os.linesep, s)
-        return s
-
-    def r_repr(self):
-        """ R string representation for an object.
-        This string representation can be used directed
-        in R code.
-        """
-        return repr_robject(self, linesep='\n')
-
-    def getrclass(self):
-        """ Return the name of the R class for the object. """
-        return baseNameSpaceEnv["class"](self)
-
-    rclass = property(getrclass)
-
-class RObject(RObjectMixin, rinterface.Sexp):
-    """ Base class for all R objects. """
-    def __setattr__(self, name, value):
-        if name == '_sexp':
-            if not isinstance(value, rinterface.Sexp):
-                raise ValueError("_attr must contain an object " +\
-                                     "that inherits from rinterface.Sexp" +\
-                                     "(not from %s)" %type(value))
-        super(RObject, self).__setattr__(name, value)
 
 class RVectorDelegator(object):
     """
@@ -451,12 +402,6 @@ class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
         return res
 
 
-class RS4(RObjectMixin, rinterface.SexpS4):
-
-    def __getattr__(self, attr):
-        res = self.do_slot(attr)
-        res = conversion.ri2py(res)
-        return res
 
 
 class RFormula(RObjectMixin, rinterface.Sexp):
