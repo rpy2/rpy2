@@ -35,7 +35,15 @@ class RFunctionTestCase(unittest.TestCase):
         res = ri_f(ro_vec)
         self.assertEquals(6, res[0])
 
-
+    def testFormals(self):
+        ri_f = robjects.r('function(x, y) TRUE')
+        res = ri_f.formals()
+        #FIXME: no need for as.list when paired list are handled
+        res = robjects.r['as.list'](res)
+        self.assertEquals(2, len(res))
+        n = res.getnames()
+        self.assertEquals("x", n[0])
+        self.assertEquals("y", n[1])
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RFunctionTestCase)

@@ -10,6 +10,10 @@ Known problems
 New Features
 ------------
 
+:mod:`rpy2.robjects`:
+
+- Method :meth:`formals` for :class:`RFunction`
+
 :mod:`rpy2.rinterface`:
 
 - New functions for specifying callback functions for R's front-ends:
@@ -22,12 +26,15 @@ New Features
 - Initial commit of a callback-based implementation of an R graphical device
   (this is for the moment very experimental - and not fully working)
 
+
 Changes
 -------
 
 :mod:`rpy2.robjects`:
 
 - RS4 no longer makes R's slots as Python attributes through :meth:`__attr__`
+
+- the package is split into modules
 
 Bugs fixed
 ----------

@@ -365,6 +365,8 @@ class RFunction(RObjectMixin, rinterface.SexpClosure):
     
     """
 
+    __formals = rinterface.baseNameSpaceEnv.get('formals')
+
     def __call__(self, *args, **kwargs):
         new_args = [conversion.py2ri(a) for a in args]
 	new_kwargs = {}
@@ -374,6 +376,12 @@ class RFunction(RObjectMixin, rinterface.SexpClosure):
         res = conversion.ri2py(res)
         return res
 
+    def formals(self):
+        """ Return the signature of the underlying R function 
+        (as the R function 'formals' would). """
+        res = self.__formals(self)
+        res = conversion.ri2py(res)
+        return res
 
 class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
     """ An R environement. """
