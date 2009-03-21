@@ -211,13 +211,29 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testShowFilesWithError(self):
         self.assertTrue(False) # no unit test (yet)
 
-#FIXME: end and initialize again causes currently a lot a trouble...
     def testCallErrorWhenEndedR(self):
-        self.assertTrue(False) # worked when tested, but calling endEmbeddedR causes trouble
-        t = rinterface.baseNameSpaceEnv['date']
-        rinterface.endr(1)
-        self.assertRaises(RuntimeError, t)
-        rinterface.initr()
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # cannot be tested with Python < 2.6
+            return None
+        import multiprocessing
+        def foo(queue):
+            import rpy2.rinterface as rinterface
+            rdate = rinterface.baseNameSpaceEnv['date']
+            rinterface.endr(1)
+            try:
+                tmp = rdate()
+                res = (False, None)
+            except RuntimeError, re:
+                res = (True, re)
+            except Exception, e:
+                res = (False, e)
+            queue.put(res)
+        q = multiprocessing.Queue()
+        p = multiprocessing.Process(target = foo, args = (q,))
+        p.start()
+        res = q.get()
+        p.join()
+        self.assertTrue(res[0])
 
     def testStr_typeint(self):
         t = rinterface.baseNameSpaceEnv['letters']
