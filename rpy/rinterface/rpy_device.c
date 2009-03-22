@@ -455,24 +455,18 @@ static Rboolean rpy_Locator(double *x, double *y,
 				      NULL);
 
   rpy_printandclear_error();
-  Py_ssize_t nbytes, nitems;
-  double *vector;
-  //FIXME: what if result is NULL ?
-  int buffer_ok = PyObject_AsReadBuffer(result, (const void **)&vector,
-					&nbytes);
-  if (buffer_ok) {
-    nitems = nbytes/sizeof(double);
-    if (nitems == 2) {
-      *x = vector[0];
-      *y = vector[1];
-    } else {
-      //FIXME
-      printf("FIXME: invalid length\n");
-    }
+
+  if (! PyTuple_Check(result) ) {
+    PyErr_Format(PyExc_ValueError, "Callback 'size' should return a tuple.");
+    rpy_printandclear_error();
+  } else if (PyTuple_Size(result) != 2) {
+    PyErr_Format(PyExc_ValueError, "Callback 'size' should return a tuple of length 2.");
+    rpy_printandclear_error();    
   } else {
-    //FIXME
-    printf("FIXME: invalid buffer\n");
+    *x = PyFloat_AsDouble(PyTuple_GetItem(result, 0));
+    *y = PyFloat_AsDouble(PyTuple_GetItem(result, 1));
   }
+
   Rboolean res_r = TRUE;
   printf("FIXME: return TRUE or FALSE");
   Py_DECREF(result);
@@ -498,9 +492,9 @@ static void rpy_Mode(int mode, pDevDesc dd)
   //PyOS_setsig(SIGINT, python_sighandler);
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  //FIXME optimize ?
-  printf("FIXME: Mode.\n");
+  PyObject *py_mode = PyInt_FromLong((long)mode);
   result = PyObject_CallMethodObjArgs(self, GrDev_mode_name, 
+				      py_mode,
 				      NULL);
   rpy_printandclear_error();
   Py_DECREF(result);  
@@ -529,32 +523,29 @@ static void rpy_MetricInfo(int c, const pGEcontext gc,
   PyObject *self = (PyObject *)dd->deviceSpecific;
   //FIXME optimize ?
   printf("FIXME: MetricInfo.\n");
+  PyObject *py_c = PyInt_FromLong((long)c);
   PyObject *py_ascent = PyFloat_FromDouble(*ascent);
   PyObject *py_descent = PyFloat_FromDouble(*descent);
   PyObject *py_width = PyFloat_FromDouble(*width);
   //FIXME pass gc ?
   result = PyObject_CallMethodObjArgs(self, GrDev_metricinfo_name, 
+				      py_c,
 				      py_ascent, py_descent, py_width,
 				      NULL);
 
   rpy_printandclear_error();
-  Py_ssize_t nbytes, nitems;
-  double *vector;
-  int buffer_ok = PyObject_AsReadBuffer(result, (const void **)&vector,
-					&nbytes);
-  if (buffer_ok) {
-    nitems = nbytes/sizeof(double);
-    if (nitems == 2) {
-      *ascent  = vector[0];
-      *descent = vector[1];
-      *width   = vector[2];
-    } else {
-      //FIXME
-      printf("FIXME: invalid length\n");
-    }
+
+
+  if (! PyTuple_Check(result) ) {
+    PyErr_Format(PyExc_ValueError, "Callback 'size' should return a tuple.");
+    rpy_printandclear_error();
+  } else if (PyTuple_Size(result) != 3) {
+    PyErr_Format(PyExc_ValueError, "Callback 'metricinfo' should return a tuple of length 3.");
+    rpy_printandclear_error();    
   } else {
-    //FIXME
-    printf("FIXME: invalid buffer\n");
+    *ascent = PyFloat_AsDouble(PyTuple_GetItem(result, 0));
+    *descent = PyFloat_AsDouble(PyTuple_GetItem(result, 1));
+    *width = PyFloat_AsDouble(PyTuple_GetItem(result, 2));
   }
   Py_DECREF(result);
 
