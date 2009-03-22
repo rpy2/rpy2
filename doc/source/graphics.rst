@@ -180,3 +180,4 @@ Adding graphical elements
    stat_smooth = robjects.globalEnv.get("stat_smooth")
 
    p = radd(xy, stat_smooth(method=dparse(lm)))
+

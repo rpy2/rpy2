@@ -104,10 +104,24 @@ static void rpy_Size(double *left, double *right,
 	 *left, *right, *bottom, *top);
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  //FIXME: pass the current left/right/bottom/top
-  result = PyObject_CallMethodObjArgs(self, GrDev_size_name, NULL);
 
+  PyObject *lrbt = Py_BuildValue("(dddd)", *left, *right, *bottom, *top);
+  result = PyObject_CallMethodObjArgs(self, GrDev_size_name, 
+				      lrbt, NULL);
   rpy_printandclear_error();
+
+  if (! PyTuple_Check(result) ) {
+    PyErr_Format(PyExc_ValueError, "Callback 'size' should return a tuple.");
+    rpy_printandclear_error();
+  } else if (PyTuple_Size(result) != 4) {
+    PyErr_Format(PyExc_ValueError, "Callback 'size' should return a tuple of length 4.");
+    rpy_printandclear_error();    
+  } else {
+    *left = PyFloat_AsDouble(PyTuple_GetItem(result, 0));
+    *right = PyFloat_AsDouble(PyTuple_GetItem(result, 1));
+    *bottom = PyFloat_AsDouble(PyTuple_GetItem(result, 2));
+    *top = PyFloat_AsDouble(PyTuple_GetItem(result, 3));
+  }
 
   Py_XDECREF(result);  
 }
@@ -730,6 +744,7 @@ static PyMethodDef GrDev_methods[] = {
    GrDev_metricinfo_doc},
   {"getevent", (PyCFunction)GrDev_getevent, METH_VARARGS,
    GrDev_getevent_doc},
+  /* */
   {NULL, NULL}          /* sentinel */
 };
 
@@ -1116,6 +1131,22 @@ GrDev_displayListOn_set(PyObject *self, PyObject *value)
 }
 
 
+PyDoc_STRVAR(GrDev_devnum_doc,
+	     "Device number.");
+static PyObject* GrDev_devnum_get(PyObject* self)
+{
+  PyObject* res;
+  if ( ((PyGrDevObject *)self)->devnum == R_NilValue) {
+    Py_INCREF(Py_None);
+    res = Py_None;
+  } else {
+    res = PyInt_FromLong((long)RPY_DEV_NUM(self));
+  }
+  return res;
+
+}
+
+ 
 static PyGetSetDef GrDev_getsets[] = {
   {"hasTextUTF8", 
    (getter)GrDev_hasTextUTF8_get,
@@ -1161,6 +1192,12 @@ static PyGetSetDef GrDev_getsets[] = {
    (getter)GrDev_displayListOn_get,
    (setter)GrDev_displayListOn_set,
    GrDev_displayListOn_doc},
+  /* */
+  {"devnum",
+   (getter)GrDev_devnum_get,
+   NULL,
+   GrDev_devnum_doc},
+  /* */
   {NULL, NULL, NULL, NULL}          /* sentinel */
 };
 

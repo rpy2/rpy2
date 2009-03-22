@@ -58,10 +58,54 @@ class AbstractDeviceTestCase(unittest.TestCase):
 
     def testDisplayListOn(self):
         self._testGetSetBooleanAttr("displayListOn")
+  
    
         
 class ConcreteDeviceTestCase(unittest.TestCase):
-    pass
+    
+    class FooDevice(rdevice.GraphicalDevice):
+        
+        def __init__(self):
+            super(ConcreteDeviceTestCase.FooDevice, self).__init__()
+            self._activated = None
+            self._open = True
+            self._pagecount = 0
+
+        def activate(self):
+            self._activated = True
+
+        def deactivate(self):
+            self._activated = False
+
+        def close(self):
+            self._activated = None
+            self._open = False
+
+        def size(self, lrbt):
+            return (1,2,3,4)
+
+        def newpage(self):
+            self._pagecount = self._pagecount + 1
+        def clip(self):
+            pass
+
+    def setUp(self):
+        self.gd = ConcreteDeviceTestCase.FooDevice()
+
+    def tearDown(self):
+        self.gd.close()
+
+    def testActivate(self):
+        self.assertTrue(self.gd._activated)
+        other_gd = ConcreteDeviceTestCase.FooDevice()
+        self.assertFalse(self.gd._activated)
+
+    def testClose(self):
+        self.gd.close()
+        self.assertFalse(self.gd._open)
+
+    def testSize(self):
+        pass
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(AbstractDeviceTestCase)

@@ -10,5 +10,6 @@ typedef struct {
   pDevDesc grdev;
 } PyGrDevObject;
 
+#define RPY_DEV_NUM(obj) (((PyGrDevObject *)obj)->devnum)
 
 #endif /* !RPY_RD_H */
