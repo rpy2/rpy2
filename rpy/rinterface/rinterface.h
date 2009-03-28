@@ -53,4 +53,16 @@ typedef struct {
     res = PyBool_FromLong((long)(rbool));		\
   }
 
+
+#define RPY_GIL_ENSURE(is_threaded, gstate)  \
+  is_threaded = PyEval_ThreadsInitialized(); \
+  if (is_threaded) { \
+    gstate = PyGILState_Ensure(); \
+  }
+
+#define RPY_GIL_RELEASE(is_threaded, gstate) \
+  if (is_threaded) { \
+    PyGILState_Release(gstate);			\
+  }
+
 #endif /* !RPY_RI_H */

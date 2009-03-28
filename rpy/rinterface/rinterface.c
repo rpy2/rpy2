@@ -251,6 +251,10 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   PyObject *arglist;
   PyObject *result;
 
+  int is_threaded ;
+  PyGILState_STATE gstate;
+  RPY_GIL_ENSURE(is_threaded, gstate);
+
   /* It is necessary to restore the Python handler when using a Python
      function for I/O. */
   PyOS_setsig(SIGINT, python_sighandler);
@@ -279,6 +283,7 @@ EmbeddedR_WriteConsole(const char *buf, int len)
 /*   signal(SIGINT, old_int); */
   
   Py_XDECREF(result);  
+  RPY_GIL_RELEASE(is_threaded, gstate);
 }
 
 static PyObject* showMessageCallback = NULL;
@@ -307,6 +312,10 @@ EmbeddedR_ShowMessage(const char *buf)
   PyOS_sighandler_t old_int;
   PyObject *arglist;
   PyObject *result;
+
+  int is_threaded ;
+  PyGILState_STATE gstate;
+  RPY_GIL_ENSURE(is_threaded, gstate);
 
   /* It is necessary to restore the Python handler when using a Python
      function for I/O. */
@@ -337,7 +346,7 @@ EmbeddedR_ShowMessage(const char *buf)
 /*   signal(SIGINT, old_int); */
   
   Py_XDECREF(result);
-  
+  RPY_GIL_RELEASE(is_threaded, gstate);
 }
 
 static PyObject* readConsoleCallback = NULL;
@@ -369,6 +378,10 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   PyObject *arglist;
   PyObject *result;
 
+  int is_threaded ;
+  PyGILState_STATE gstate;
+  RPY_GIL_ENSURE(is_threaded, gstate);
+
   /* It is necessary to restore the Python handler when using a Python
      function for I/O. */
 /*   old_int = PyOS_getsig(SIGINT); */
@@ -382,6 +395,7 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
 
   if (readConsoleCallback == NULL) {
     Py_DECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return -1;
   }
 
@@ -401,6 +415,7 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
     PyErr_Print();
     PyErr_Clear();
     Py_XDECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
 
@@ -409,12 +424,14 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
     //FIXME: can this be reached ? result == NULL while no error ?
 /*     signal(SIGINT, old_int); */
     Py_XDECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
 
   char *input_str = PyString_AsString(result);
   if (! input_str) {
     Py_XDECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
 
@@ -426,6 +443,8 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   
   Py_XDECREF(result);
 /*   signal(SIGINT, old_int); */
+
+  RPY_GIL_RELEASE(is_threaded, gstate);
   return 1;
 }
 
@@ -456,6 +475,10 @@ EmbeddedR_FlushConsole(void)
 {
   PyObject *result;
 
+  int is_threaded ;
+  PyGILState_STATE gstate;
+  RPY_GIL_ENSURE(is_threaded, gstate);
+
   result = PyEval_CallObject(flushConsoleCallback, NULL);
   PyObject* pythonerror = PyErr_Occurred();
   if (pythonerror != NULL) {
@@ -465,6 +488,8 @@ EmbeddedR_FlushConsole(void)
     PyErr_Print();
     PyErr_Clear();
   }
+
+  RPY_GIL_RELEASE(is_threaded, gstate);
   return;
 }
 
@@ -494,6 +519,10 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   PyObject *arglist;
   PyObject *result;
 
+  int is_threaded ;
+  PyGILState_STATE gstate;
+  RPY_GIL_ENSURE(is_threaded, gstate);
+
   arglist = Py_BuildValue("(s)", buf);
   if (! arglist) {
     PyErr_NoMemory();
@@ -501,6 +530,7 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
 
   if (chooseFileCallback == NULL) {
     Py_DECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
 
@@ -514,12 +544,14 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
     PyErr_Print();
     PyErr_Clear();
     Py_XDECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
   
   if (result == NULL) {
     //FIXME: can this be reached ? result == NULL while no error ?
     Py_XDECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
 
@@ -531,6 +563,7 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
     PyErr_Print();
     PyErr_Clear();
     Py_DECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
 
@@ -543,6 +576,7 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   Py_DECREF(arglist);  
   Py_DECREF(result);
 
+  RPY_GIL_RELEASE(is_threaded, gstate);
   return l;
 }
 
@@ -571,13 +605,19 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
                     const char *wtitle, Rboolean del, const char *pager)
 {
 
+  int is_threaded ;
+  PyGILState_STATE gstate;
+  RPY_GIL_ENSURE(is_threaded, gstate);
+
   if (showFilesCallback == NULL) {
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
    
-  if (nfile < 1)
+  if (nfile < 1) {
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
-
+  }
 
   PyObject *arglist;
   PyObject *result;
@@ -596,18 +636,21 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
                         PyString_FromString(headers[f_i])) != 0) {
       Py_DECREF(py_fileheaders_tuple);
       /*FIXME: decref other PyObject arguments */
+      RPY_GIL_RELEASE(is_threaded, gstate);
       return 0;
     }
     if (PyTuple_SetItem(py_fileheader, 1,
                         PyString_FromString(file[f_i])) != 0) {
       Py_DECREF(py_fileheaders_tuple);
       /*FIXME: decref other PyObject arguments */
+      RPY_GIL_RELEASE(is_threaded, gstate);
       return 0;
     }
     if (PyTuple_SetItem(py_fileheaders_tuple, f_i,
                         py_fileheader) != 0) {
       Py_DECREF(py_fileheaders_tuple);
       /*FIXME: decref other PyObject arguments */
+      RPY_GIL_RELEASE(is_threaded, gstate);
       return 0;
     }
   }
@@ -617,6 +660,7 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
     PyErr_Print();
     PyErr_NoMemory();
     /*FIXME: decref PyObject arguments */
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
 
@@ -630,12 +674,14 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
     PyErr_Print();
     PyErr_Clear();
     Py_XDECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
   
   if (result == NULL) {
     //FIXME: can this be reached ? result == NULL while no error ?
     Py_XDECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
 
@@ -647,12 +693,13 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
     PyErr_Print();
     PyErr_Clear();
     Py_DECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
 
   Py_DECREF(arglist);
   Py_DECREF(result);
-
+  RPY_GIL_RELEASE(is_threaded, gstate);
   return 1;
 }
 
