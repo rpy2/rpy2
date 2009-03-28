@@ -394,6 +394,7 @@ class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
     def __getitem__(self, item):
         res = super(REnvironment, self).__getitem__(item)
         res = conversion.ri2py(res)
+        res.name = item
         return res
 
     def __setitem__(self, item, value):
