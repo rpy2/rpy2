@@ -1613,6 +1613,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 
 }
 
+static PyTypeObject EnvironmentSexp_Type;
 
 /* This is the method to call when invoking an 'Sexp' */
 static PyObject *
@@ -1624,10 +1625,22 @@ Sexp_rcall(PyObject *self, PyObject *args)
                  "R must be initialized before any call to R functions is possible.");
     return NULL;
   }
-  
+
+  PyObject *params, *env;
+
+  if (! PyArg_ParseTuple(args, "OO",
+			 &params, &env)) {
+    return NULL;
+  }
 
   if (! PyTuple_Check(args)) {
-    PyErr_Format(PyExc_ValueError, "Parameter must be a tuple.");
+    PyErr_Format(PyExc_ValueError, "The first parameter must be a tuple.");
+    return NULL;
+  }
+  if (! PyObject_IsInstance(env,
+			    (PyObject*)&EnvironmentSexp_Type)) {
+    PyErr_Format(PyExc_ValueError, 
+		 "The second parameter must be an EnvironmentSexp_Type.");
     return NULL;
   }
 
@@ -1636,22 +1649,21 @@ Sexp_rcall(PyObject *self, PyObject *args)
     return NULL;
   }
   embeddedR_setlock();
-  
+    
   SEXP call_R, c_R, res_R;
-  int largs;
+  int nparams;
   SEXP tmp_R, fun_R;
   
-  largs = 0;
-  if (args)
-    largs = PyObject_Length(args);
-  if (args<0) {
-    PyErr_Format(PyExc_ValueError, "Negative number of parameters !?.");
+  if (! PySequence_Check(args)) {
+    PyErr_Format(PyExc_ValueError, 
+                 "The one argument to the function must implement the sequence protocol.");
     embeddedR_freelock();
     return NULL;
   }
+  nparams = PySequence_Length(params);
   
   /* A SEXP with the function to call and the arguments and keywords. */
-  PROTECT(c_R = call_R = allocList(largs+1));
+  PROTECT(c_R = call_R = allocList(nparams+1));
   SET_TYPEOF(c_R, LANGSXP);
   fun_R = RPY_SEXP((PySexpObject *)self);
   if (! fun_R) {
@@ -1670,28 +1682,36 @@ Sexp_rcall(PyObject *self, PyObject *args)
   char *argNameString;
   unsigned int addArgName;
   Py_ssize_t itemLength;
-  for (arg_i=0; arg_i<largs; arg_i++) {
+  /* Loop through the elements in the sequence "args"
+   * and build the R call.
+   * Each element in the sequence is expected to be a tuple
+   * of length 2 (name, value).
+   */
+  for (arg_i=0; arg_i<nparams; arg_i++) {
     //printf("item: %i\n", arg_i);
-    tmp_obj = PyTuple_GetItem(args, arg_i);
+    tmp_obj = PyTuple_GetItem(params, arg_i);
     if (! tmp_obj) {
       PyErr_Format(PyExc_ValueError, "No un-named item %i !?", arg_i);
       goto fail;
     }
     itemLength = PyObject_Length(tmp_obj);
     if (itemLength != 2) {
-      PyErr_Format(PyExc_ValueError, "Item %i does not have two elements.", 
+      PyErr_Format(PyExc_ValueError, "Item %i in the sequence passed as an argument"
+                   "should have two elements.", 
                    arg_i);
       goto fail;
     }
+    /* First check the name for the parameter */
     argName = PyTuple_GetItem(tmp_obj, 0);
     if (argName == Py_None) {
       addArgName = 0;
     } else if (PyString_Check(argName)) {
       addArgName = 1;
     } else {
-      PyErr_SetString(PyExc_TypeError, "All keywords must be strings.");
+      PyErr_SetString(PyExc_TypeError, "All keywords must be strings (or None).");
       goto fail;
     }
+    /* Then take care of the value associated with that name. */
     argValue = PyTuple_GetItem(tmp_obj, 1);
     is_PySexpObject = PyObject_TypeCheck(argValue, &Sexp_Type);
     if (! is_PySexpObject) {
@@ -1705,20 +1725,20 @@ Sexp_rcall(PyObject *self, PyObject *args)
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       goto fail;
     }
+    /* Put the value into the R call being built
+    * (adding the name of the argument if relevant)
+    */
     SETCAR(c_R, tmp_R);
     if (addArgName) {
       argNameString = PyString_AsString(argName);
       SET_TAG(c_R, install(argNameString));
-      //printf("PyMem_Free...");
-      //FIXME: probably memory leak with argument names.
-      //PyMem_Free(argNameString);
     }
     c_R = CDR(c_R);
   }
 
   // Py_BEGIN_ALLOW_THREADS
 //FIXME: R_GlobalContext ?
-  PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
+  PROTECT(res_R = do_eval_expr(call_R, RPY_SEXP((PySexpObject *)env)));
   //PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
 
 /*   if (!res) { */
@@ -1786,7 +1806,7 @@ This corresponds to the C-level function CLOENV(SEXP).\n\
 static PyMethodDef ClosureSexp_methods[] = {
   {"closureEnv", (PyCFunction)Sexp_closureEnv, METH_NOARGS,
    Sexp_closureEnv_doc},
-  {"rcall", (PyCFunction)Sexp_rcall, METH_O,
+  {"rcall", (PyCFunction)Sexp_rcall, METH_VARARGS,
    SexpClosure_rcall_doc},
   {NULL, NULL}          /* sentinel */
 };

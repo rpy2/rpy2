@@ -59,13 +59,32 @@ class SexpClosureTestCase(unittest.TestCase):
                            ('c', rinterface.SexpVector([0, ], 
                                                        rinterface.INTSXP))))
         
-        mylist = rinterface.baseNameSpaceEnv['list'].rcall(ad.items())
+        mylist = rinterface.baseNameSpaceEnv['list'].rcall(ad.items(), 
+                                                           rinterface.globalEnv)
         
         names = [x for x in mylist.do_slot("names")]
         
         for i in range(4):
             self.assertEquals(('a', 'b', '', 'c')[i], names[i])
 
+    def testRcallArgsDictEnv(self):
+        def parse(x):
+            rparse = rinterface.baseNameSpaceEnv.get('parse')
+            res = rparse(text = rinterface.StrSexpVector((x,)))
+            return res
+            
+        ad = rlc.ArgsDict( ((None, parse('sum(x)')),) )
+        env_a = rinterface.baseNameSpaceEnv['new.env']()
+        env_a['x'] = rinterface.IntSexpVector([1,2,3])
+        sum_a = rinterface.baseNameSpaceEnv['eval'].rcall(ad.items(), 
+                                                          env_a)
+        self.assertEquals(6, sum_a[0])
+        env_b = rinterface.baseNameSpaceEnv['new.env']()
+        env_b['x'] = rinterface.IntSexpVector([4,5,6])
+        sum_b = rinterface.baseNameSpaceEnv['eval'].rcall(ad.items(), 
+                                                          env_b)
+        self.assertEquals(15, sum_b[0])        
+        
     def testErrorInCall(self):
         mylist = rinterface.baseNameSpaceEnv['list']
         

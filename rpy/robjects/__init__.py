@@ -205,7 +205,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
             args = index
         args.append(conversion.py2ro(value))
         args.insert(0, self)
-        res = r["[<-"].rcall(args.items())
+        res = r["[<-"].rcall(args.items(), globalEnv)
         res = conversion.ri2py(res)
         return res
 
@@ -319,7 +319,7 @@ class RDataFrame(RVector):
         :param tlist: rpy2.rlike.container.TaggedList or rpy2.rinterface.SexpVector (and of class 'data.frame' for R)
         """
         if isinstance(tlist, rlc.TaggedList):
-            df = baseNameSpaceEnv["data.frame"].rcall(tlist.items())
+            df = baseNameSpaceEnv["data.frame"].rcall(tlist.items(), globalEnv)
             super(RDataFrame, self).__init__(df)
         elif isinstance(tlist, rinterface.SexpVector):
             if tlist.typeof != rinterface.VECSXP:
@@ -366,6 +366,16 @@ class RFunction(RObjectMixin, rinterface.SexpClosure):
     """
 
     __formals = rinterface.baseNameSpaceEnv.get('formals')
+    __local = rinterface.baseNameSpaceEnv.get('local')
+    __call = rinterface.baseNameSpaceEnv.get('call')
+    __parse = rinterface.baseNameSpaceEnv.get('parse')
+    _parse = __parse
+
+    _local_env = None
+
+    def __init__(self, *args, **kwargs):
+        super(RFunction, self).__init__(*args, **kwargs)
+        self._local_env = REnvironment()
 
     def __call__(self, *args, **kwargs):
         new_args = [conversion.py2ri(a) for a in args]
@@ -375,6 +385,7 @@ class RFunction(RObjectMixin, rinterface.SexpClosure):
         res = super(RFunction, self).__call__(*new_args, **new_kwargs)
         res = conversion.ri2py(res)
         return res
+
 
     def formals(self):
         """ Return the signature of the underlying R function 
@@ -466,8 +477,8 @@ class R(object):
 
     def __getitem__(self, item):
         res = rinterface.globalEnv.get(item)
-            
 	res = conversion.ri2py(res)
+        res.name = item
         return res
 
     #FIXME: check that this is properly working

@@ -26,6 +26,8 @@ New Features
 - Initial commit of a callback-based implementation of an R graphical device
   (this is for the moment very experimental - and not fully working)
 
+- :meth:`SexpClosure.rcall` is now taking 2 parameters, a tuple with the parameters and
+   an :class:`SexpEnvironment` in which the call is to be evaluated.
 
 Changes
 -------
