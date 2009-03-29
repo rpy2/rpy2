@@ -41,6 +41,8 @@ Changes
 Bugs fixed
 ----------
 
+- :meth:`REnvironment.get` now accepts a named parameter *wantFun*
+  (like :meth:`rinterface.SexpEnvironment` does)
 
 
 Release 2.0.3

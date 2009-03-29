@@ -299,7 +299,7 @@ class RArray(RVector):
 class RMatrix(RArray):
     """ An R matrix """
 
-    def nrow(self):
+   def nrow(self):
         """ Number of rows.
         :rtype: integer """
         return self.dim[0]
@@ -368,8 +368,7 @@ class RFunction(RObjectMixin, rinterface.SexpClosure):
     __formals = rinterface.baseNameSpaceEnv.get('formals')
     __local = rinterface.baseNameSpaceEnv.get('local')
     __call = rinterface.baseNameSpaceEnv.get('call')
-    __parse = rinterface.baseNameSpaceEnv.get('parse')
-    _parse = __parse
+    __assymbol = rinterface.baseNameSpaceEnv.get('as.symbol')
 
     _local_env = None
 
@@ -385,7 +384,6 @@ class RFunction(RObjectMixin, rinterface.SexpClosure):
         res = super(RFunction, self).__call__(*new_args, **new_kwargs)
         res = conversion.ri2py(res)
         return res
-
 
     def formals(self):
         """ Return the signature of the underlying R function 
@@ -412,12 +410,12 @@ class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
         robj = conversion.py2ro(value)
         super(REnvironment, self).__setitem__(item, robj)
 
-    def get(self, item):
+    def get(self, item, wantFun = False):
         """ Get a object from its R name/symol
         :param item: string (name/symbol)
         :rtype: object (as returned by :func:`conversion.ri2py`)
         """
-        res = super(REnvironment, self).get(item)
+        res = super(REnvironment, self).get(item, wantFun = wantFun)
         res = conversion.ri2py(res)
         return res
 
