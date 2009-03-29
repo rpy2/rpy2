@@ -441,12 +441,13 @@ class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
         robj = conversion.py2ro(value)
         super(REnvironment, self).__setitem__(item, robj)
 
-    def get(self, item):
+    def get(self, item, wantFun = False):
         """ Get a object from its R name/symol
         :param item: string (name/symbol)
+        :param wantFun: boolean (fetch preferably a function or not)
         :rtype: object (as returned by :func:`conversion.ri2py`)
         """
-        res = super(REnvironment, self).get(item)
+        res = super(REnvironment, self).get(item, wantFun = wantFun)
         res = conversion.ri2py(res)
         return res
 
