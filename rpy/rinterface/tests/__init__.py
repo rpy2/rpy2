@@ -26,7 +26,7 @@ def suite():
                                    ,suite_SexpClosure
                                    ,suite_SexpVectorNumeric
                                    ,suite_EmbeddedR
-                                   ,suite_Device
+    #                               ,suite_Device
     #                               suite_EmbeddedR_multithreaded
                                   ])
     return alltests
