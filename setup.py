@@ -102,10 +102,12 @@ def getRinterface_ext(RHOME, r_packversion):
     define_macros.append(('RIF_HAS_RSIGHAND', 1))
 
     # defines for debugging
+    #define_macros.append(('RPY_VERBOSE', 1))
     #define_macros.append(('RPY_DEBUG_PRESERVE', 1))
     #define_macros.append(('RPY_DEBUG_PROMISE', 1))
     #define_macros.append(('RPY_DEBUG_OBJECTINIT', 1))
     #define_macros.append(('RPY_DEBUG_CONSOLE', 1))
+    define_macros.append(('RPY_DEBUG_COBJECT', 1))
 
     include_dirs = get_rconfig(RHOME, '--cppflags')[0].split()
     for i, d in enumerate(include_dirs):

@@ -29,6 +29,11 @@ New Features
 - :meth:`SexpClosure.rcall` is now taking 2 parameters, a tuple with the parameters and
    an :class:`SexpEnvironment` in which the call is to be evaluated.
 
+- :attr:`Sexp.__sexp__` now has a setter method. This permits the rebinding
+  of the underlying R SEXP, and allows to expose `foo<-` type of R methods
+  as Python function/methods with side effects.
+
+
 Changes
 -------
 
