@@ -48,6 +48,17 @@ Bugs fixed
 
 
 
+Release 2.0.4
+=============
+
+Bugs fixed
+----------
+
+- Added missing named parameter *wantfun* to method :meth:`Renvironment.get`
+  (making it similar to :meth:`SexpEnvironment.get`)
+
+
+
 Release 2.0.3
 =============
 
