@@ -49,6 +49,11 @@ Bugs fixed
 - :meth:`REnvironment.get` now accepts a named parameter *wantFun*
   (like :meth:`rinterface.SexpEnvironment` does)
 
+- `R CMD config LAPACK_LIBS` could return an empty string when R was compiled
+  with the veclib framework, causing the setup.py script to raise an exception.
+  setup.py now only print a message about an empty string returned from 
+  R CMD config
+
 
 Release 2.0.4
 =============
@@ -105,10 +110,6 @@ Bugs fixed
   occurs during the evalutation of the callback (the raised exception used
   to be silently propagated to the next python call, leading to problems).
 
-- `R CMD config LAPACK_LIBS` could return an empty string when R was compiled
-  with the veclib framework, causing the setup.py script to raise an exception.
-  setup.py now only print a message about an empty string returned from 
-  R CMD config
 
 
 Release 2.0.2
