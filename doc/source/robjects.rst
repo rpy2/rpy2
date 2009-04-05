@@ -541,3 +541,4 @@ nicely:
 
   fit = robjects.r('lm(%s)' %fmla.r_repr())
 
+

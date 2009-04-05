@@ -281,7 +281,6 @@ to a thread whenever a script is running::
 Classes
 =======
 
-.. inheritance-diagram::
 
 Sexp
 ----
