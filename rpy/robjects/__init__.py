@@ -206,8 +206,9 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         args.append(conversion.py2ro(value))
         args.insert(0, self)
         res = r["[<-"].rcall(args.items(), globalEnv)
-        res = conversion.ri2py(res)
-        return res
+        #FIXME: check that the R class remains the same ?
+        self.__sexp__ = res.__sexp__
+
 
     def __add__(self, x):
         res = r.get("c")(self, x)
@@ -299,7 +300,7 @@ class RArray(RVector):
 class RMatrix(RArray):
     """ An R matrix """
 
-   def nrow(self):
+    def nrow(self):
         """ Number of rows.
         :rtype: integer """
         return self.dim[0]

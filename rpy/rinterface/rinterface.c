@@ -962,8 +962,8 @@ void SexpObject_clear(SexpObject *sexpobj)
   (*sexpobj).count--;
 
 #ifdef RPY_VERBOSE
-  printf("Python:%p / R:%p -- sexp count is %i...", 
-         self, sexpobj->sexp, sexpobj->count);
+  printf("R:%p -- sexp count is %i...", 
+         sexpobj->sexp, sexpobj->count);
 #endif
   if (((*sexpobj).count == 0) && (*sexpobj).sexp) {
 #ifdef RPY_VERBOSE
@@ -1137,26 +1137,50 @@ Sexp_sexp_get(PyObject *self, void *closure)
   }
   
   RPY_INCREF(rpyobj);
-  PyObject *res = PyCObject_FromVoidPtr(&rpyobj, SexpObject_CObject_destroy);
+  PyObject *res = PyCObject_FromVoidPtr(rpyobj->sObj, 
+					SexpObject_CObject_destroy);
   return res;
 }
 
-/* static PyObject* */
-/* Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure) */
-/* { */
-/*   if (! PyCObject_Check(obj)) { */
-/*     PyErr_SetString(PyExc_TypeError, "The value must be a CObject."); */
-/*     return -1; */
-/*   } */
-/*   SEXP sexp = (SEXP) PyCObject_AsVoidPtr(PyObject* obj); */
-/*   if (! sexp) { */
-/*     PyErr_Format(PyExc_ValueError, "NULL SEXP."); */
-/*     return -1; */
-/*   } */
-/*   RPY_SEXP(((PySexpObject*)self)) = sexp; */
+static int
+Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure)
+{
+  if (! PyCObject_Check(obj)) {
+    PyErr_SetString(PyExc_TypeError, "The value must be a CObject.");
+    return -1;
+  }
 
-/*   return 0; */
-/* } */
+  SexpObject *sexpobj_orig = ((PySexpObject*)self)->sObj;
+  SexpObject *sexpobj = (SexpObject *)(PyCObject_AsVoidPtr(obj));
+  #ifdef RPY_DEBUG_COBJECT
+  printf("Setting %p (count: %i) to %p (count: %i)\n", 
+	 sexpobj_orig, (int)sexpobj_orig->count,
+	 sexpobj, (int)sexpobj->count);
+  #endif
+
+  if ( (sexpobj_orig->sexp != R_NilValue) &
+       (TYPEOF(sexpobj_orig->sexp) != TYPEOF(sexpobj->sexp))
+      ) {
+    PyErr_Format(PyExc_ValueError, 
+		 "Mismatch in SEXP type (as returned by typeof)");
+    return -1;
+  }
+
+  SEXP sexp = sexpobj->sexp;
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return -1;
+  }
+
+  /*FIXME: increment count seems needed, but is this leak free ? */
+  sexpobj->count += 2;
+  sexpobj_orig->count += 1;
+
+  SexpObject_clear(sexpobj_orig);
+  RPY_SEXP(((PySexpObject*)self)) = sexp;
+
+  return 0;
+}
 PyDoc_STRVAR(Sexp_sexp_doc,
              "Opaque C pointer to the underlying R object");
 
@@ -1232,7 +1256,7 @@ static PyGetSetDef Sexp_getsets[] = {
    Sexp_typeof_doc},
   {"__sexp__",
    (getter)Sexp_sexp_get,
-   (setter)0,
+   (setter)Sexp_sexp_set,
    Sexp_sexp_doc},
   {NULL, NULL, NULL, NULL}          /* sentinel */
 };

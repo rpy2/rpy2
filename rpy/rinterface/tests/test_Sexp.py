@@ -79,15 +79,32 @@ class SexpTestCase(unittest.TestCase):
     def testSexp_rsame_wrongType(self):
         sexp_a = rinterface.baseNameSpaceEnv.get("letters")
         self.assertRaises(ValueError, sexp_a.rsame, 'foo')
-        
+
+    def testSexp_sexp(self):
+        sexp = rinterface.IntSexpVector([1,2,3])
+        cobj = sexp.__sexp__
+        sexp = rinterface.IntSexpVector([4,5,6,7])
+        self.assertEquals(4, len(sexp))
+        sexp.__sexp__ = cobj
+        self.assertEquals(3, len(sexp))
+
+    def testSexp_sexp_wrongtypeof(self):
+        sexp = rinterface.IntSexpVector([1,2,3])
+        cobj = sexp.__sexp__
+        sexp = rinterface.StrSexpVector(['a', 'b'])
+        self.assertEquals(2, len(sexp))
+        self.assertRaises(ValueError, sexp.__setattr__, '__sexp__', cobj)
+
+
     def testSexp_sexp_destroyCobj(self):
         sexp = rinterface.IntSexpVector([1,2,3])
         cobj = sexp.__sexp__
         del(cobj)
         gc.collect()
         # no real test, just make sure that it does
-        # not create a segfault
+        # not cause a segfault
 
+        
     def testSexp_deepcopy(self):
         sexp = rinterface.IntSexpVector([1,2,3])
         self.assertEquals(0, sexp.named)
