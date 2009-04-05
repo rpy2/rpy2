@@ -27,7 +27,8 @@ import sys, os
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.doctest', 'sphinx.ext.autodoc', 
-              'sphinx.ext.intersphinx']
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.graphviz', 'sphinx.ext.inheritance_diagram']
 
 intersphinx_mapping = {'http://docs.python.org/dev': None}
 
