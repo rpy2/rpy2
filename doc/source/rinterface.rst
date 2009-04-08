@@ -628,6 +628,7 @@ returning the search path (`search`).
        return spath
 
 
+
 As an other example, one can implement simply a function that
 returns from which environment an object called by :meth:`get` comes
 from.
@@ -765,6 +766,15 @@ class :class:`Sexp` method
 .. autoclass:: rpy2.rinterface.SexpS4(obj)
    :show-inheritance:
    :members:
+
+
+.. digraph:: rinterface_graph
+
+   "Sexp" -> "SexpVector";
+   "Sexp" -> "SexpEnvironment";
+   "Sexp" -> "SexpClosure";
+   "Sexp" -> "SexpS4";
+
 
 Misc. variables
 ===============
