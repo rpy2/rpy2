@@ -311,7 +311,7 @@ One way to achieve the same with :mod:`rpy2.robjects` is
    print(r.summary(lm_D90))
 
 Q:
-   Now how extract data from the resulting objects ?
+   Now how to extract data from the resulting objects ?
 
 A:
    The same, never it is. On the R object all depends.
