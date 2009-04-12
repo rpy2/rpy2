@@ -1,33 +1,134 @@
 
 import os, os.path, sys, shutil, re, itertools
+from distutils.command.build_ext import build_ext as _build_ext
+from distutils.command.build import build as _build
 from distutils.core import setup, Extension
 
 
 pack_name = 'rpy2'
 pack_version = __import__('rpy').__version__
 
-RHOMES = os.getenv('RHOMES')
 
-if RHOMES is None:
-    
-    RHOMES = os.popen("R RHOME").readlines()
-    if len(RHOMES) == 0:
-        raise RuntimeError(
-            "R_HOME not defined, and no R command in the PATH."
-            )
+class build(_build):
+    user_options = _build.user_options + \
+        [('r-autoconfig', None,
+          "guess all configuration paths from " +\
+              "the R executable found in the PATH " +\
+              "(this overrides r-home)"),
+        ('r-home=', None, 
+         "full path for the R home to compile against " +\
+             "(see r-autoconfig for an automatic configuration)"),
+        ('r-home-lib=', None,
+         "full path for the R shared lib/ directory " +\
+             "(<r-home>/lib otherwise)"),
+        ('r-home-modules=', None,
+         "full path for the R shared modules/ directory " +\
+             "(<r-home>/modules otherwise)")]
+    boolean_options = _build.boolean_options + \
+        ['r-autoconfig', ]
+
+
+    def initialize_options(self):
+        _build.initialize_options(self)
+        self.r_autoconfig = None
+        self.r_home = None
+        self.r_home_lib = None
+        self.r_home_modules = None
+
+
+class build_ext(_build_ext):
+    user_options = _build_ext.user_options + \
+        [('r-autoconfig', None,
+          "guess all configuration paths from " +\
+              "the R executable found in the PATH " +\
+              "(this overrides r-home)"),
+        ('r-home=', None, 
+         "full path for the R home to compile against " +\
+             "(see r-autoconfig for an automatic configuration)"),
+        ('r-home-lib=', None,
+         "full path for the R shared lib/ directory" +\
+             "(<r-home>/lib otherwise)"),
+        ('r-home-modules=', None,
+         "full path for the R shared modules/ directory" +\
+             "(<r-home>/modules otherwise)")]
+
+    boolean_options = _build_ext.boolean_options + \
+        ['r-autoconfig', ]
+
+    def initialize_options(self):
+        _build_ext.initialize_options(self)
+        self.r_autoconfig = None
+        self.r_home = None
+        self.r_home_lib = None
+        self.r_home_modules = None
+
+    def finalize_options(self):
+        self.set_undefined_options('build',
+                                   ('r_autoconfig', 'r_autoconfig'),
+                                   ('r_home', 'r_home'))
+        _build_ext.finalize_options(self)
+        if self.r_autoconfig:
+            self.r_home = os.popen("R RHOME").readlines()
+            if len(self.r_home) == 0:
+                raise RuntimeError("no R command in the PATH.")
 
     #Twist if 'R RHOME' spits out a warning
-    if RHOMES[0].startswith("WARNING"):
-        RHOMES = RHOMES[1]
-    else:
-        RHOMES = RHOMES[0]
-    RHOMES = [RHOMES, ]
-else:
-    RHOMES = RHOMES.split(os.pathsep)
+            if self.r_home[0].startswith("WARNING"):
+                self.r_home = self.r_home[1]
+            else:
+                self.r_home = self.r_home[0]
+            self.r_home = [self.r_home, ]
+
+        if self.r_home is None:
+            raise SystemExit("Error: --r-home not specified.")
+        else:
+            self.r_home = self.r_home.split(os.pathsep)
+
+        rversions = []
+        for r_home in self.r_home:
+            r_home = r_home.strip()
+        rversion = get_rversion(r_home)
+        if cmp_version(rversion[:2], [2, 7]) == -1:
+            raise Exception("R >= 2.7 required.")
+        rversions.append(rversion)
+
+        r_libs = []
+        if self.r_home_lib is None:
+            r_libs.extend([os.path.join(r_home, 'lib'), ])
+        else:
+            r_libs.extend([self.r_home_lib, ])
+
+        if self.r_home_modules is None:
+            r_libs.extend([os.path.join(r_home, 'modules'), ])
+        else:
+            r_libs.extends([self.r_home_modules, ])
+            
+        self.library_dirs.extend(r_libs)
+
+        include_dirs = get_rconfig(r_home, '--cppflags')[0].split()
+        
+        for i, d in enumerate(include_dirs):
+            if d.startswith('-I'):
+                include_dirs[i] = d[2:]
+            else:
+                raise ValueError('Trouble with R configuration %s' %d)
+        self.include_dirs.extend(include_dirs)
+
+        extra_link_args = get_rconfig(r_home, '--ldflags') +\
+            get_rconfig(r_home, 'LAPACK_LIBS', 
+                        allow_empty=True) +\
+                        get_rconfig(r_home, 'BLAS_LIBS')
+
+        for e in self.extensions:
+            e.extra_compile_args.extend(extra_link_args)
+
+    def run(self):
+        _build_ext.run(self)
 
 
-def get_rversion(RHOME):
-    r_exec = os.path.join(RHOME, 'bin', 'R')
+
+def get_rversion(r_home):
+    r_exec = os.path.join(r_home, 'bin', 'R')
     # Twist if Win32
     if sys.platform == "win32":
         rp = os.popen3('"'+r_exec+'" --version')[2]
@@ -54,8 +155,8 @@ def cmp_version(x, y):
             return 0
         return cmp_version(x[1:], y[1:])
 
-def get_rconfig(RHOME, about, allow_empty = False):
-    r_exec = os.path.join(RHOME, 'bin', 'R')
+def get_rconfig(r_home, about, allow_empty = False):
+    r_exec = os.path.join(r_home, 'bin', 'R')
     cmd = '"'+r_exec+'" CMD config '+about
     rp = os.popen(cmd)
     rconfig = rp.readline()
@@ -80,17 +181,10 @@ def get_rconfig(RHOME, about, allow_empty = False):
             raise Exception(cmd + '\nreturned\n' + rconfig)
     return rconfig_m.groups()
 
-rnewest = [0, 0, 0]
-rversions = []
-for RHOME in RHOMES:
-    RHOME = RHOME.strip()
-    rversion = get_rversion(RHOME)
-    if cmp_version(rversion[:2], [2, 7]) == -1:
-        raise Exception("R >= 2.7 required.")
-    rversions.append(rversion)
 
-def getRinterface_ext(RHOME, r_packversion):
-    r_libs = [os.path.join(RHOME, 'lib'), os.path.join(RHOME, 'modules')]
+def getRinterface_ext(r_packversion):
+    #r_libs = [os.path.join(RHOME, 'lib'), os.path.join(RHOME, 'modules')]
+    r_libs = []
 
     #FIXME: crude way (will break in many cases)
     #check how to get how to have a configure step
@@ -112,12 +206,7 @@ def getRinterface_ext(RHOME, r_packversion):
     #define_macros.append(('RPY_DEBUG_CONSOLE', 1))
     define_macros.append(('RPY_DEBUG_COBJECT', 1))
 
-    include_dirs = get_rconfig(RHOME, '--cppflags')[0].split()
-    for i, d in enumerate(include_dirs):
-        if d.startswith('-I'):
-            include_dirs[i] = d[2:]
-        else:
-            raise ValueError('Trouble with R configuration %s' %d)
+    include_dirs = []
     
     rinterface_ext = Extension(
             pack_name + '.rinterface.rinterface',
@@ -132,10 +221,7 @@ def getRinterface_ext(RHOME, r_packversion):
             define_macros = define_macros,
             runtime_library_dirs = r_libs,
             #extra_compile_args=['-O0', '-g'],
-            extra_link_args = get_rconfig(RHOME, '--ldflags') +\
-                              get_rconfig(RHOME, 'LAPACK_LIBS', 
-                                          allow_empty=True) +\
-                              get_rconfig(RHOME, 'BLAS_LIBS'),
+           
             )
 
     rpy_device_ext = Extension(
@@ -150,9 +236,6 @@ def getRinterface_ext(RHOME, r_packversion):
             define_macros = define_macros,
             runtime_library_dirs = r_libs,
             #extra_compile_args=['-O0', '-g'],
-            extra_link_args = get_rconfig(RHOME, '--ldflags') +\
-                              get_rconfig(RHOME, 'LAPACK_LIBS') +\
-                              get_rconfig(RHOME, 'BLAS_LIBS'),
         )
 
     return [rinterface_ext, rpy_device_ext]
@@ -161,14 +244,21 @@ def getRinterface_ext(RHOME, r_packversion):
 rinterface_exts = []
 rinterface_rversions = []
 
-for rversion, RHOME in itertools.izip(rversions, RHOMES):        
-    RHOME = RHOME.strip()
-    #if (cmp_version(rversion, rnewest) == 0):
-    #r_packversion = None
-    r_packversion = '%i%02i%s' %(rversion[0], rversion[1], rversion[2])
-    ri_ext = getRinterface_ext(RHOME, r_packversion)
-    rinterface_exts.append(ri_ext)
-    rinterface_rversions.append(r_packversion)
+# for rversion, RHOME in itertools.izip(rversions, RHOMES):        
+#     RHOME = RHOME.strip()
+#     #if (cmp_version(rversion, rnewest) == 0):
+#     #r_packversion = None
+#     r_packversion = '%i%02i%s' %(rversion[0], rversion[1], rversion[2])
+#     ri_ext = getRinterface_ext(RHOME, r_packversion)
+#     rinterface_exts.append(ri_ext)
+#     rinterface_rversions.append(r_packversion)
+
+
+rversion = [2,8,2]
+r_packversion = '%i%02i%s' %(rversion[0], rversion[1], rversion[2])
+ri_ext = getRinterface_ext(r_packversion)
+rinterface_exts.append(ri_ext)
+rinterface_rversions.append(r_packversion)
 
 pack_dir = {pack_name: 'rpy'}
 
@@ -176,29 +266,32 @@ import distutils.command.install
 for scheme in distutils.command.install.INSTALL_SCHEMES.values():
     scheme['data'] = scheme['purelib']
 
-setup(name = pack_name,
-      version = pack_version,
-      description = "Python interface to the R language",
-      url = "http://rpy.sourceforge.net",
-      license = "(L)GPL",
-      author = "Laurent Gautier <lgautier@gmail.com>",
-      ext_modules = rinterface_exts[0],
-      package_dir = pack_dir,
-      packages = [pack_name,
-                  pack_name+'.rlike',
-                  pack_name+'.rlike.tests',
-                  pack_name+'.robjects',
-                  pack_name+'.robjects.tests'] + \
-                 [pack_name + '.rinterface', pack_name + '.rinterface.tests'],
-      classifiers = ['Programming Language :: Python',
-                     'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
-                     'Intended Audience :: Developers',
-                     'Intended Audience :: Science/Research',
-                     'Development Status :: 3 - Alpha'
-                    ],
-      data_files = [('rpy2/images/', ['doc/source/rpy2_logo.png'])]
-
-                 #[pack_name + '.rinterface_' + x for x in rinterface_rversions] + \
-                 #[pack_name + '.rinterface_' + x + '.tests' for x in rinterface_rversions]
-      )
+setup(
+    cmdclass = {'build': build,
+                'build_ext': build_ext},
+    name = pack_name,
+    version = pack_version,
+    description = "Python interface to the R language",
+    url = "http://rpy.sourceforge.net",
+    license = "(L)GPL",
+    author = "Laurent Gautier <lgautier@gmail.com>",
+    ext_modules = rinterface_exts[0],
+    package_dir = pack_dir,
+    packages = [pack_name,
+                pack_name+'.rlike',
+                pack_name+'.rlike.tests',
+                pack_name+'.robjects',
+                pack_name+'.robjects.tests'] + \
+        [pack_name + '.rinterface', pack_name + '.rinterface.tests'],
+    classifiers = ['Programming Language :: Python',
+                   'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
+                   'Intended Audience :: Developers',
+                   'Intended Audience :: Science/Research',
+                   'Development Status :: 3 - Alpha'
+                   ],
+    data_files = [('rpy2/images/', ['doc/source/rpy2_logo.png'])]
+    
+    #[pack_name + '.rinterface_' + x for x in rinterface_rversions] + \
+        #[pack_name + '.rinterface_' + x + '.tests' for x in rinterface_rversions]
+    )
 

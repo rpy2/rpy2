@@ -37,6 +37,10 @@ New Features
 Changes
 -------
 
+- The setup.py script is now taking command-line arguments when specifying
+  R library-related paths are wished. python setup.py --help build_ext will
+  list them
+  
 :mod:`rpy2.robjects`:
 
 - RS4 no longer makes R's slots as Python attributes through :meth:`__attr__`
