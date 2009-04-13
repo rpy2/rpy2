@@ -1232,6 +1232,7 @@ Sexp_duplicate(PyObject *self, PyObject *kwargs)
 PyDoc_STRVAR(Sexp_duplicate_doc,
              "Makes a copy of the underlying Sexp object, and returns it.");
 
+
 static PyMethodDef Sexp_methods[] = {
   {"do_slot", (PyCFunction)Sexp_do_slot, METH_O,
   Sexp_do_slot_doc},
@@ -2808,6 +2809,7 @@ newPySexpObject(const SEXP sexp)
   case LANGSXP:
   case EXPRSXP:
   case STRSXP:
+  case RAWSXP:
     object = (PySexpObject *)Sexp_new(&VectorSexp_Type, Py_None, Py_None);
     break;
   case ENVSXP:

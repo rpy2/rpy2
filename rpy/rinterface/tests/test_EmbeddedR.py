@@ -294,6 +294,11 @@ class ObjectDispatchTestCase(unittest.TestCase):
         help = rinterface.globalEnv.get('sum')
         self.assertTrue(isinstance(help, rinterface.SexpClosure))
 
+    def testObjectDispatchRawVector(self):
+        raw = rinterface.baseNameSpaceEnv.get('raw')
+        rawvec = raw(rinterface.IntSexpVector((10, )))
+        self.assertEquals(rinterface.RAWSXP, rawvec.typeof)
+                     
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(EmbeddedRTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ObjectDispatchTestCase))
