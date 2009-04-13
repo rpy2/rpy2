@@ -70,7 +70,7 @@ class build_ext(_build_ext):
         if self.r_autoconfig:
             self.r_home = os.popen("R RHOME").readlines()
             if len(self.r_home) == 0:
-                raise RuntimeError("no R command in the PATH.")
+                raise SystemExit("Error: --r-autoconfig asked but no R command in the PATH.")
 
     #Twist if 'R RHOME' spits out a warning
             if self.r_home[0].startswith("WARNING"):
@@ -89,7 +89,7 @@ class build_ext(_build_ext):
             r_home = r_home.strip()
         rversion = get_rversion(r_home)
         if cmp_version(rversion[:2], [2, 7]) == -1:
-            raise Exception("R >= 2.7 required.")
+            raise SystemExit("Error: R >= 2.7 required.")
         rversions.append(rversion)
 
         r_libs = []
@@ -111,7 +111,7 @@ class build_ext(_build_ext):
             if d.startswith('-I'):
                 include_dirs[i] = d[2:]
             else:
-                raise ValueError('Trouble with R configuration %s' %d)
+                raise SystemExit('Error: trouble with R configuration %s' %d)
         self.include_dirs.extend(include_dirs)
 
         extra_link_args = get_rconfig(r_home, '--ldflags') +\
