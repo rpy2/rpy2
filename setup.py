@@ -182,7 +182,7 @@ def get_rconfig(r_home, about, allow_empty = False):
     return rconfig_m.groups()
 
 
-def getRinterface_ext(r_packversion):
+def getRinterface_ext():
     #r_libs = [os.path.join(RHOME, 'lib'), os.path.join(RHOME, 'modules')]
     r_libs = []
 
@@ -242,23 +242,8 @@ def getRinterface_ext(r_packversion):
 
 
 rinterface_exts = []
-rinterface_rversions = []
-
-# for rversion, RHOME in itertools.izip(rversions, RHOMES):        
-#     RHOME = RHOME.strip()
-#     #if (cmp_version(rversion, rnewest) == 0):
-#     #r_packversion = None
-#     r_packversion = '%i%02i%s' %(rversion[0], rversion[1], rversion[2])
-#     ri_ext = getRinterface_ext(RHOME, r_packversion)
-#     rinterface_exts.append(ri_ext)
-#     rinterface_rversions.append(r_packversion)
-
-
-rversion = [2,8,2]
-r_packversion = '%i%02i%s' %(rversion[0], rversion[1], rversion[2])
-ri_ext = getRinterface_ext(r_packversion)
+ri_ext = getRinterface_ext()
 rinterface_exts.append(ri_ext)
-rinterface_rversions.append(r_packversion)
 
 pack_dir = {pack_name: 'rpy'}
 
