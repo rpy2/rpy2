@@ -77,7 +77,7 @@ class build_ext(_build_ext):
                 self.r_home = self.r_home[1]
             else:
                 self.r_home = self.r_home[0]
-            self.r_home = [self.r_home, ]
+            #self.r_home = [self.r_home, ]
 
         if self.r_home is None:
             raise SystemExit("Error: --r-home not specified.")
