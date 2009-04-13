@@ -33,6 +33,7 @@ New Features
   of the underlying R SEXP, and allows to expose `foo<-` type of R methods
   as Python function/methods with side effects.
 
+- Objects of R type RAWSXP are now exposed as :class:`SexpVector`.
 
 Changes
 -------
