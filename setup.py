@@ -204,7 +204,7 @@ def getRinterface_ext():
     #define_macros.append(('RPY_DEBUG_PROMISE', 1))
     #define_macros.append(('RPY_DEBUG_OBJECTINIT', 1))
     #define_macros.append(('RPY_DEBUG_CONSOLE', 1))
-    define_macros.append(('RPY_DEBUG_COBJECT', 1))
+    #define_macros.append(('RPY_DEBUG_COBJECT', 1))
 
     include_dirs = []
     
