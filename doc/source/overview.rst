@@ -121,7 +121,17 @@ To install from a downloaded source archive `<rpy_package>` do in a shell:
 
   tar -xzf <rpy_package>.tar.gz
   cd <rpy_package>
-  python setup.py install
+  python setup.py build install
+
+This will build the package, guessing the R HOME from
+the R executable found in the PATH.
+
+It is otherwise possible to give explicitly the location for the R HOME:
+
+.. code-block:: bash
+
+   python setup.py build --r-home /opt/packages/R/lib install
+
 
 .. index::
   single: test;whole installation
