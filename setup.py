@@ -11,10 +11,11 @@ pack_version = __import__('rpy').__version__
 
 class build(_build):
     user_options = _build.user_options + \
-        [('r-autoconfig', None,
-          "guess all configuration paths from " +\
-              "the R executable found in the PATH " +\
-              "(this overrides r-home)"),
+        [
+        #('r-autoconfig', None,
+        # "guess all configuration paths from " +\
+        #     "the R executable found in the PATH " +\
+        #     "(this overrides r-home)"),
         ('r-home=', None, 
          "full path for the R home to compile against " +\
              "(see r-autoconfig for an automatic configuration)"),
@@ -24,8 +25,8 @@ class build(_build):
         ('r-home-modules=', None,
          "full path for the R shared modules/ directory " +\
              "(<r-home>/modules otherwise)")]
-    boolean_options = _build.boolean_options + \
-        ['r-autoconfig', ]
+    boolean_options = _build.boolean_options #+ \
+        #['r-autoconfig', ]
 
 
     def initialize_options(self):
@@ -38,10 +39,11 @@ class build(_build):
 
 class build_ext(_build_ext):
     user_options = _build_ext.user_options + \
-        [('r-autoconfig', None,
-          "guess all configuration paths from " +\
-              "the R executable found in the PATH " +\
-              "(this overrides r-home)"),
+        [
+        #('r-autoconfig', None,
+        #  "guess all configuration paths from " +\
+        #      "the R executable found in the PATH " +\
+        #      "(this overrides r-home)"),
         ('r-home=', None, 
          "full path for the R home to compile against " +\
              "(see r-autoconfig for an automatic configuration)"),
@@ -52,8 +54,8 @@ class build_ext(_build_ext):
          "full path for the R shared modules/ directory" +\
              "(<r-home>/modules otherwise)")]
 
-    boolean_options = _build_ext.boolean_options + \
-        ['r-autoconfig', ]
+    boolean_options = _build_ext.boolean_options #+ \
+        #['r-autoconfig', ]
 
     def initialize_options(self):
         _build_ext.initialize_options(self)
@@ -64,13 +66,13 @@ class build_ext(_build_ext):
 
     def finalize_options(self):
         self.set_undefined_options('build',
-                                   ('r_autoconfig', 'r_autoconfig'),
+                                   #('r_autoconfig', 'r_autoconfig'),
                                    ('r_home', 'r_home'))
         _build_ext.finalize_options(self)
-        if self.r_autoconfig:
+        if self.r_home is None:
             self.r_home = os.popen("R RHOME").readlines()
             if len(self.r_home) == 0:
-                raise SystemExit("Error: --r-autoconfig asked but no R command in the PATH.")
+                raise SystemExit("Error: Tried to guess R's HOME but no R command in the PATH.")
 
     #Twist if 'R RHOME' spits out a warning
             if self.r_home[0].startswith("WARNING"):
