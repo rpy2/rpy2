@@ -27,3 +27,29 @@ SEXP rpy_findFun(SEXP symbol, SEXP rho)
     }
     return R_UnboundValue;
 }
+
+SEXP rpy_serialize(SEXP object, SEXP rho)
+{
+  SEXP c_R, call_R, res, fun_R;
+
+  PROTECT(fun_R = rpy_findFun(install("serialize"), rho));
+  if(!isEnvironment(rho)) error("'rho' should be an environment");
+  /* obscure incatation to summon R */
+  PROTECT(c_R = call_R = allocList(3));
+  SET_TYPEOF(c_R, LANGSXP);
+  SETCAR(c_R, fun_R);
+  c_R = CDR(c_R);
+
+  /* first argument is the SEXP object to serialize */
+  SETCAR(c_R, object);
+  c_R = CDR(c_R);
+
+  /* second argument is NULL */
+  SETCAR(c_R, R_NilValue);
+  c_R = CDR(c_R);
+
+  PROTECT(res = do_eval_expr(call_R, rho));
+  UNPROTECT(3);
+  return(res);
+}
+

@@ -5,5 +5,6 @@
 
 SEXP rpy_findFun(SEXP symbol, SEXP rho);
 
+SEXP rpy_serialize(SEXP object, SEXP rho);
 
 #endif

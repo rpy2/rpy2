@@ -1232,6 +1232,38 @@ Sexp_duplicate(PyObject *self, PyObject *kwargs)
 PyDoc_STRVAR(Sexp_duplicate_doc,
              "Makes a copy of the underlying Sexp object, and returns it.");
 
+static PyObject*
+Sexp___getstate__(PyObject *self)
+{
+
+  PyObject *res;
+
+  SEXP sexp = RPY_SEXP((PySexpObject *)self);
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;
+  }
+
+  SEXP sexp_ser;
+  PROTECT(sexp_ser = rpy_serialize(sexp, R_GlobalEnv));
+  if (TYPEOF(sexp_ser) != RAWSXP) {
+    UNPROTECT(1);
+    PyErr_Format(PyExc_RuntimeError, 
+		 "R's serialize did not return a raw vector.");
+    return NULL;
+  }
+  /* PyByteArray is only available with Python >= 2.6 */
+	  /* res = PyByteArray_FromStringAndSize(sexp_ser, len); */
+  res = PyString_FromStringAndSize(RAW_POINTER(sexp_ser),
+				   GET_LENGTH(sexp_ser));
+  UNPROTECT(1);
+  return res;
+}
+
+PyDoc_STRVAR(Sexp___getstate___doc,
+	     "Returns a serialized object for the underlying R object");
+
+
 
 static PyMethodDef Sexp_methods[] = {
   {"do_slot", (PyCFunction)Sexp_do_slot, METH_O,
@@ -1242,6 +1274,8 @@ static PyMethodDef Sexp_methods[] = {
   Sexp_rsame_doc},
   {"__deepcopy__", (PyCFunction)Sexp_duplicate, METH_KEYWORDS,
   Sexp_duplicate_doc},
+  {"__getstate__", (PyCFunction)Sexp___getstate__, METH_NOARGS,
+  Sexp___getstate___doc},
   {NULL, NULL}          /* sentinel */
 };
 
