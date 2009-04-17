@@ -47,9 +47,28 @@ SEXP rpy_serialize(SEXP object, SEXP rho)
   /* second argument is NULL */
   SETCAR(c_R, R_NilValue);
   c_R = CDR(c_R);
-
-  PROTECT(res = do_eval_expr(call_R, rho));
+  PROTECT(res = eval(call_R, rho));
   UNPROTECT(3);
-  return(res);
+  return res;
+}
+
+SEXP rpy_unserialize(SEXP connection, SEXP rho)
+{
+  SEXP c_R, call_R, res, fun_R;
+  PROTECT(fun_R = rpy_findFun(install("unserialize"), rho));
+  if(!isEnvironment(rho)) error("'rho' should be an environment");
+  /* obscure incatation to summon R */
+  PROTECT(c_R = call_R = allocList(2));
+  SET_TYPEOF(c_R, LANGSXP);
+  SETCAR(c_R, fun_R);
+  c_R = CDR(c_R);
+
+  /* first argument is a RAWSXP representation of the object to unserialize */
+  SETCAR(c_R, connection);
+  c_R = CDR(c_R);
+  
+  PROTECT(res = eval(call_R, rho));
+  UNPROTECT(2);
+  return res;
 }
 

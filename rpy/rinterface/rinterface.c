@@ -1236,7 +1236,7 @@ static PyObject*
 Sexp___getstate__(PyObject *self)
 {
 
-  PyObject *res;
+  PyObject *res_string;
 
   SEXP sexp = RPY_SEXP((PySexpObject *)self);
   if (! sexp) {
@@ -1254,28 +1254,156 @@ Sexp___getstate__(PyObject *self)
   }
   /* PyByteArray is only available with Python >= 2.6 */
 	  /* res = PyByteArray_FromStringAndSize(sexp_ser, len); */
-  res = PyString_FromStringAndSize(RAW_POINTER(sexp_ser),
-				   GET_LENGTH(sexp_ser));
+
+  /*FIXME: is this working on 64bit archs ? */
+  res_string = PyString_FromStringAndSize((void *)RAW_POINTER(sexp_ser), 
+					  (Py_ssize_t)LENGTH(sexp_ser));
   UNPROTECT(1);
-  return res;
+  return res_string;
 }
 
 PyDoc_STRVAR(Sexp___getstate___doc,
 	     "Returns a serialized object for the underlying R object");
 
+static PyObject*
+Sexp___setstate__(PyObject *self, PyObject *state)
+{
 
+  SEXP sexp = RPY_SEXP((PySexpObject *)self);
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;
+  }
+
+  char *raw = PyString_AsString(state);
+  Py_ssize_t raw_size = PyString_Size(state);
+
+  if (! PyString_Check(state)) {
+    PyErr_Format(PyExc_ValueError, "The state must be a string.");
+    return NULL;
+  }
+
+  if ( RPY_SEXP((PySexpObject *)self) != R_NilValue ) {
+    PyErr_Format(PyExc_ValueError, 
+		 "The state can only be set when the Sexp is R_NilValue");
+    return NULL;
+  }
+
+
+  /* Not the most memory-efficient; an other option would
+  * be to create a dummy RAW and rebind "raw" as its content
+  * (wich seems clearly off the charts).
+  */
+  SEXP raw_sexp, sexp_ser;
+  PROTECT(raw_sexp = NEW_RAW((int)raw_size));
+
+  /*FIXME: use of the memcpy seems to point in the direction of
+  * using the option mentioned above anyway. */
+  int raw_i;
+  for (raw_i = 0; raw_i < raw_size; raw_i++) {
+    RAW_POINTER(raw_sexp)[raw_i] = raw[raw_i];
+  }
+  PROTECT(sexp_ser = rpy_unserialize(raw_sexp, R_GlobalEnv));
+  SexpObject *so = (SexpObject *)PyMem_Malloc(1 * sizeof(SexpObject));
+  /*FIXME: catch out-of-memory error */
+  RPY_DECREF((PySexpObject *)self);
+  so->count = 1;
+  so->sexp = sexp_ser;
+  
+  ((PySexpObject *)self)->sObj = so;
+
+  UNPROTECT(2);
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+PyDoc_STRVAR(Sexp___setstate___doc,
+	     "Sets the state of the object");
+
+static PyObject*
+EmbeddedR_unserialize(PyObject* self, PyObject* args)
+{
+  PyObject *res;
+
+  char *raw;
+  Py_ssize_t raw_size;
+  int rtype;
+  if (! PyArg_ParseTuple(args, "s#i",
+			 &raw, &raw_size,
+			 &rtype)) {
+    return NULL;
+  }
+
+  /* Not the most memory-efficient; an other option would
+  * be to create a dummy RAW and rebind "raw" as its content
+  * (wich seems clearly off the charts).
+  */
+  SEXP raw_sexp, sexp_ser;
+  PROTECT(raw_sexp = NEW_RAW((int)raw_size));
+
+  /*FIXME: use of the memcpy seems to point in the direction of
+  * using the option mentioned above anyway. */
+  int raw_i;
+  for (raw_i = 0; raw_i < raw_size; raw_i++) {
+    RAW_POINTER(raw_sexp)[raw_i] = raw[raw_i];
+  }
+  PROTECT(sexp_ser = rpy_unserialize(raw_sexp, R_GlobalEnv));
+
+  if (TYPEOF(sexp_ser) != rtype) {
+    UNPROTECT(2);
+    PyErr_Format(PyExc_ValueError, 
+		 "Mismatch between the serialized object"
+		 " and the expected R type"
+		 " (expected %i but got %i)", rtype, TYPEOF(raw_sexp));
+    return NULL;
+  }
+  res = (PyObject*)newPySexpObject(sexp_ser);
+  
+  UNPROTECT(2);
+  return res;
+}
+
+static PyObject*
+Sexp___reduce__(PyObject* self)
+{
+  PyObject *dict, *result;
+  
+  dict = PyObject_GetAttrString((PyObject *)self,
+				"__dict__");
+  if (dict == NULL) {
+    PyErr_Clear();
+    dict = Py_None;
+    Py_INCREF(dict);
+  }
+  result = Py_BuildValue("O(sO)O",
+			 EmbeddedR_unserialize, /* constructor */
+			 self->ob_type->tp_name, /* args for the constructor */
+			 Sexp___getstate__,
+			 dict);
+  
+  Py_DECREF(dict);
+  return result;
+
+}
+
+PyDoc_STRVAR(Sexp___reduce___doc,
+	     "");
 
 static PyMethodDef Sexp_methods[] = {
   {"do_slot", (PyCFunction)Sexp_do_slot, METH_O,
-  Sexp_do_slot_doc},
+   Sexp_do_slot_doc},
   {"do_slot_assign", (PyCFunction)Sexp_do_slot_assign, METH_VARARGS,
    Sexp_do_slot_assign_doc},
   {"rsame", (PyCFunction)Sexp_rsame, METH_O,
-  Sexp_rsame_doc},
+   Sexp_rsame_doc},
   {"__deepcopy__", (PyCFunction)Sexp_duplicate, METH_KEYWORDS,
-  Sexp_duplicate_doc},
+   Sexp_duplicate_doc},
   {"__getstate__", (PyCFunction)Sexp___getstate__, METH_NOARGS,
-  Sexp___getstate___doc},
+   Sexp___getstate___doc},
+  {"__setstate__", (PyCFunction)Sexp___setstate__, METH_O,
+   Sexp___setstate___doc},
+  {"__reduce__", (PyCFunction)Sexp___reduce__, METH_NOARGS,
+   Sexp___reduce___doc},
   {NULL, NULL}          /* sentinel */
 };
 
@@ -3105,6 +3233,9 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_ProcessEvents_doc},
   {"str_typeint",       (PyCFunction)EmbeddedR_sexpType, METH_VARARGS,
    "Return the SEXP name tag (string) corresponding to an integer."},
+  {"unserialize",       (PyCFunction)EmbeddedR_unserialize, METH_VARARGS,
+   "unserialize(str, rtype)\n"
+   "Unserialize an R object from its string representation."},
   {NULL,                NULL}           /* sentinel */
 };
 
