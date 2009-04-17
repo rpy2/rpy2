@@ -298,6 +298,15 @@ class ObjectDispatchTestCase(unittest.TestCase):
         raw = rinterface.baseNameSpaceEnv.get('raw')
         rawvec = raw(rinterface.IntSexpVector((10, )))
         self.assertEquals(rinterface.RAWSXP, rawvec.typeof)
+
+class SerializeTestCase(unittest.TestCase):
+    def testUnserialize(self):
+        x = rinterface.IntSexpVector([1,2,3])
+        x_serialized = x.__getstate__()
+        x_again = rinterface.unserialize(x_serialized, x.typeof)
+        identical = rinterface.baseNameSpaceEnv["identical"]
+        self.assertFalse(x.rsame(x_again))
+        self.assertTrue(identical(x,x_again)[0])
                      
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(EmbeddedRTestCase)
