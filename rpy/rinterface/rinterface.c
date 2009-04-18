@@ -161,6 +161,8 @@ static PySexpObject *na_string;
 static PySexpObject *rpy_R_MissingArg;
 static PySexpObject *na_string;
 
+static PyObject *rinterface_unserialize;
+
 static PyObject *na_logical;
 static PyObject *na_integer;
 static PyObject *na_real;
@@ -1375,12 +1377,13 @@ Sexp___reduce__(PyObject* self)
     dict = Py_None;
     Py_INCREF(dict);
   }
-  result = Py_BuildValue("O(sO)O",
-			 EmbeddedR_unserialize, /* constructor */
-			 self->ob_type->tp_name, /* args for the constructor */
-			 Sexp___getstate__,
+
+  result = Py_BuildValue("O(Oi)O",
+			 rinterface_unserialize, /* constructor */
+			 Sexp___getstate__(self),
+			 TYPEOF(RPY_SEXP((PySexpObject *)self)),
 			 dict);
-  
+
   Py_DECREF(dict);
   return result;
 
@@ -1400,8 +1403,8 @@ static PyMethodDef Sexp_methods[] = {
    Sexp_duplicate_doc},
   {"__getstate__", (PyCFunction)Sexp___getstate__, METH_NOARGS,
    Sexp___getstate___doc},
-  {"__setstate__", (PyCFunction)Sexp___setstate__, METH_O,
-   Sexp___setstate___doc},
+/*   {"__setstate__", (PyCFunction)Sexp___setstate__, METH_O, */
+/*    Sexp___setstate___doc}, */
   {"__reduce__", (PyCFunction)Sexp___reduce__, METH_NOARGS,
    Sexp___reduce___doc},
   {NULL, NULL}          /* sentinel */
@@ -3545,5 +3548,6 @@ initrinterface(void)
   if (PyDict_SetItemString(d, "NA_REAL", (PyObject *)na_real) < 0)
     return; 
 
+  rinterface_unserialize = PyDict_GetItemString(d, "unserialize");
 
 }
