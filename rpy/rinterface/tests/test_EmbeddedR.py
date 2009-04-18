@@ -306,7 +306,17 @@ class SerializeTestCase(unittest.TestCase):
         x_again = rinterface.unserialize(x_serialized, x.typeof)
         identical = rinterface.baseNameSpaceEnv["identical"]
         self.assertFalse(x.rsame(x_again))
-        self.assertTrue(identical(x,x_again)[0])
+        self.assertTrue(identical(x, x_again)[0])
+
+    def testPickle(self):
+        x = rinterface.IntSexpVector([1,2,3])
+        f = tempfile.NamedTemporaryFile()
+        pickle.dump(x, f)
+        f.flush()
+        f.seek(0)
+        x_again = pickle.load(f)
+        f.close()
+        self.assertTrue(identical(x, x_again)[0])
                      
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(EmbeddedRTestCase)
