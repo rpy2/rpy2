@@ -35,6 +35,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             sys.stdout = stdout
             raise e
         sys.stdout = stdout
+        tmp_file.flush()
         tmp_file.seek(0)
         self.assertEquals('haha', ''.join(tmp_file.readlines()))
         tmp_file.close()
@@ -65,6 +66,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             sys.stderr = stderr
             raise e
         sys.stderr = stderr
+        tmp_file.flush()
         tmp_file.seek(0)
         errorstring = ''.join(tmp_file.readlines())
         self.assertTrue(errorstring.startswith('Traceback'))
@@ -97,6 +99,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             sys.stderr = stderr
             raise e
         sys.stderr = stderr
+        tmp_file.flush()
         tmp_file.seek(0)
         errorstring = ''.join(tmp_file.readlines())
         self.assertTrue(errorstring.startswith('Traceback'))
@@ -127,6 +130,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             sys.stderr = stderr
             raise e
         sys.stderr = stderr
+        tmp_file.flush()
         tmp_file.seek(0)
         errorstring = ''.join(tmp_file.readlines())
         self.assertTrue(errorstring.startswith('Traceback'))
@@ -167,6 +171,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             sys.stderr = stderr
             raise e
         sys.stderr = stderr
+        tmp_file.flush()
         tmp_file.seek(0)
         errorstring = ''.join(tmp_file.readlines())
         self.assertTrue(errorstring.startswith('Traceback'))
