@@ -1327,6 +1327,13 @@ EmbeddedR_unserialize(PyObject* self, PyObject* args)
 {
   PyObject *res;
 
+  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+    PyErr_Format(PyExc_RuntimeError, 
+                 "R cannot evaluate code before being initialized.");
+    return NULL;
+  }
+  
+
   char *raw;
   Py_ssize_t raw_size;
   int rtype;
@@ -1335,6 +1342,12 @@ EmbeddedR_unserialize(PyObject* self, PyObject* args)
 			 &rtype)) {
     return NULL;
   }
+
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
 
   /* Not the most memory-efficient; an other option would
   * be to create a dummy RAW and rebind "raw" as its content
@@ -1362,6 +1375,7 @@ EmbeddedR_unserialize(PyObject* self, PyObject* args)
   res = (PyObject*)newPySexpObject(sexp_ser);
   
   UNPROTECT(2);
+  embeddedR_freelock();
   return res;
 }
 
@@ -1369,6 +1383,12 @@ static PyObject*
 Sexp___reduce__(PyObject* self)
 {
   PyObject *dict, *result;
+
+  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+    PyErr_Format(PyExc_RuntimeError, 
+                 "R cannot evaluate code before being initialized.");
+    return NULL;
+  }
   
   dict = PyObject_GetAttrString((PyObject *)self,
 				"__dict__");
@@ -1378,11 +1398,19 @@ Sexp___reduce__(PyObject* self)
     Py_INCREF(dict);
   }
 
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+
   result = Py_BuildValue("O(Oi)O",
 			 rinterface_unserialize, /* constructor */
 			 Sexp___getstate__(self),
 			 TYPEOF(RPY_SEXP((PySexpObject *)self)),
 			 dict);
+
+  embeddedR_freelock();
 
   Py_DECREF(dict);
   return result;
@@ -3549,5 +3577,5 @@ initrinterface(void)
     return; 
 
   rinterface_unserialize = PyDict_GetItemString(d, "unserialize");
-
+  
 }
