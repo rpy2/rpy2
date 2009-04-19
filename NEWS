@@ -35,6 +35,12 @@ New Features
 
 - Objects of R type RAWSXP are now exposed as :class:`SexpVector`.
 
+- Factory function :func:`unserialize` to build Sexp* instances from byte
+  string serialized with R's own 'serialize'.
+
+- Method :meth:`Sexp.__reduce__` for pickling/unpickling
+
+
 Changes
 -------
 
