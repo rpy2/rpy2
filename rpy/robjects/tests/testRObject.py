@@ -2,6 +2,7 @@ import unittest
 import rpy2.robjects as robjects
 rinterface = robjects.rinterface
 import array
+import tempfile
 
 class RObjectTestCase(unittest.TestCase):
     def testNew(self):
@@ -43,8 +44,23 @@ class RObjectTestCase(unittest.TestCase):
                           robjects.globalEnv.get("BOD").do_slot("reference")[0])
 
 
+import pickle
+
+class RObjectPicklingTestCase(unittest.TestCase):
+    def testPickle(self):
+        tmp_file = tempfile.NamedTemporaryFile()
+        robj = robjects.baseNameSpaceEnv["pi"]
+        pickle.dump(robj, tmp_file)
+        tmp_file.flush()
+        tmp_file.seek(0)
+        robj_again = pickle.load(tmp_file)
+        self.assertTrue(robjects.baseNameSpaceEnv["identical"](robj,
+                                                               robj_again)[0])
+        tmp_file.close()
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RObjectTestCase)
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(RObjectPicklingTestCase))
     return suite
 
 if __name__ == '__main__':
