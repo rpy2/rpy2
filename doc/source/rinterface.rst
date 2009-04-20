@@ -773,6 +773,10 @@ class :class:`Sexp` method
    :show-inheritance:
    :members:
 
+
+.. .. inheritance-diagram:: rpy2.rinterface.SexpVector
+
+
 Misc. variables
 ===============
 

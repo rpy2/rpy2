@@ -65,7 +65,7 @@ Choosing files
 
 File choosing a on basic R console has very little bells and whistles.
 
-.. code:: python
+.. code-block:: python
 
    def choose_csv(prompt):
        print(prompt)
