@@ -908,7 +908,7 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   //CleanEd();              
   Rf_KillAllDevices();
   
-  //R_CleanTempDir();
+  R_CleanTempDir();
   //PrintWarnings();
   R_gc();
   /* */
