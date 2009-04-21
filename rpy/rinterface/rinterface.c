@@ -705,6 +705,56 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
   return 1;
 }
 
+static PyObject* cleanUpCallback = NULL;
+static PyObject* EmbeddedR_setCleanUp(PyObject *self,
+				       PyObject *args)
+{
+  return EmbeddedR_setAnyCallback(self, args, &cleanUpCallback);  
+}
+
+PyDoc_STRVAR(EmbeddedR_setCleanUp_doc,
+             "Set the function called to clean up when exiting R.");
+
+static PyObject * EmbeddedR_getCleanUp(PyObject *self,
+				       PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, cleanUpCallback);
+}
+
+PyDoc_STRVAR(EmbeddedR_getCleanUp_doc,
+             "Get the function called to clean up when exiting R.");
+
+static void
+EmbeddedR_CleanUp(SA_TYPE saveact, int status, int runLast)
+{
+  int is_threaded ;
+  PyGILState_STATE gstate;
+
+  printf("--->FIXME: dummy cleanup.\n");
+  if (cleanUpCallback == NULL)
+    return;
+
+  RPY_GIL_ENSURE(is_threaded, gstate);
+
+  PyObject *arglist = Py_BuildValue("ii", status, runLast);
+  PyObject *result = PyEval_CallObject(cleanUpCallback, arglist);
+  PyObject* pythonerror = PyErr_Occurred();
+
+  if (pythonerror != NULL) {
+    /* All R actions should be stopped since the Python callback failed,
+     and the Python exception raised up.*/
+    //FIXME: Print the exception in the meanwhile
+    PyErr_Print();
+    PyErr_Clear();
+    Py_XDECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
+    return;
+  }
+
+  Py_DECREF(arglist);
+  RPY_GIL_RELEASE(is_threaded, gstate);
+  return;
+}
 
 /* --- Initialize and terminate an embedded R --- */
 static PyObject* EmbeddedR_getinitoptions(PyObject *self) 
@@ -847,6 +897,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
 #endif  
 
 #ifdef R_INTERFACE_PTRS
+  ptr_R_CleanUp = EmbeddedR_CleanUp;
   /* Redirect R console output */
   ptr_R_ShowMessage = EmbeddedR_ShowMessage;
   ptr_R_WriteConsole = EmbeddedR_WriteConsole;
@@ -3258,6 +3309,10 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_setShowFiles_doc},
   {"getShowFiles",      (PyCFunction)EmbeddedR_getShowFiles,     METH_VARARGS,
    EmbeddedR_getShowFiles_doc},
+  {"setCleanUp",      (PyCFunction)EmbeddedR_setCleanUp,     METH_VARARGS,
+   EmbeddedR_getCleanUp_doc},
+  {"getCleanUp",      (PyCFunction)EmbeddedR_getCleanUp,     METH_VARARGS,
+   EmbeddedR_getCleanUp_doc},
   {"findVarEmbeddedR",  (PyCFunction)EmbeddedR_findVar,  METH_VARARGS,
    EmbeddedR_findVar_doc},
   {"process_revents", (PyCFunction)EmbeddedR_ProcessEvents, METH_NOARGS,

@@ -40,6 +40,8 @@ New Features
 
 - Method :meth:`Sexp.__reduce__` for pickling/unpickling
 
+- Ability to specify a callback function for R_CleanUp (called upon exiting R)
+  [very experimental]
 
 Changes
 -------
