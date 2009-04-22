@@ -752,6 +752,7 @@ EmbeddedR_CleanUp(SA_TYPE saveact, int status, int runLast)
   }
 
   Py_DECREF(arglist);
+  Py_XDECREF(result);
   RPY_GIL_RELEASE(is_threaded, gstate);
   return;
 }
