@@ -1610,8 +1610,6 @@ static PyTypeObject Sexp_Type = {
  */
 
 
-static int __sig__n;
-
 /* Evaluate a SEXP. It must be constructed by hand. It raises a Python
    exception if an error ocurred in the evaluation */
 SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
