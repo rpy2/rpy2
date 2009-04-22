@@ -852,9 +852,11 @@ static PyObject* EmbeddedR_init(PyObject *self)
   /* --- Win32 --- */
   structRstart rp;
   Rstart Rp = &rp;
-  R_DefParams(Rp);
 
-  char *RHome; 
+  char *RHome;
+
+  R_SetStartTime();
+  R_DefParams(Rp);
   if (getenv("R_HOME")) {
     strcpy(RHome, getenv("R_HOME"));
   } else {
@@ -870,15 +872,14 @@ static PyObject* EmbeddedR_init(PyObject *self)
     PyErr_Format(PyExc_RuntimeError, "R_USER not defined.");
     return NULL;
   }
-  Rp->home = RUser;
-
+  Rp->home = getRUser();
+  /* Rp->CharacterMode = LinkDLL; */
   Rp->ReadConsole = EmbeddedR_ReadConsole;
-  Rp->WriteConsole = NULL;
-  Rp->WriteConsoleEx = EmbeddedR_WriteConsole;
+  Rp->WriteConsole = EmbeddedR_WriteConsole;
+  /* Rp->WriteConsoleEx = EmbeddedR_WriteConsole; */
+  Rp->ShowMessage = EmbeddedR_ShowMessage;
   Rp->FlushConsole = EmbeddedR_FlushConsole;
   Rp->R_Interactive = TRUE;
-  Rp->ChooseFile = EmbeddedR_ChooseFile;
-  Rp->ShowFiles = EmbeddedR_ShowFiles;
   setup_term_ui();
 #endif
 
