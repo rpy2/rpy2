@@ -1320,60 +1320,6 @@ Sexp___getstate__(PyObject *self)
 PyDoc_STRVAR(Sexp___getstate___doc,
              "Returns a serialized object for the underlying R object");
 
-static PyObject*
-Sexp___setstate__(PyObject *self, PyObject *state)
-{
-
-  SEXP sexp = RPY_SEXP((PySexpObject *)self);
-  if (! sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;
-  }
-
-  char *raw = PyString_AsString(state);
-  Py_ssize_t raw_size = PyString_Size(state);
-
-  if (! PyString_Check(state)) {
-    PyErr_Format(PyExc_ValueError, "The state must be a string.");
-    return NULL;
-  }
-
-  if ( RPY_SEXP((PySexpObject *)self) != R_NilValue ) {
-    PyErr_Format(PyExc_ValueError, 
-                 "The state can only be set when the Sexp is R_NilValue");
-    return NULL;
-  }
-
-
-  /* Not the most memory-efficient; an other option would
-  * be to create a dummy RAW and rebind "raw" as its content
-  * (wich seems clearly off the charts).
-  */
-  SEXP raw_sexp, sexp_ser;
-  PROTECT(raw_sexp = NEW_RAW((int)raw_size));
-
-  /*FIXME: use of the memcpy seems to point in the direction of
-  * using the option mentioned above anyway. */
-  int raw_i;
-  for (raw_i = 0; raw_i < raw_size; raw_i++) {
-    RAW_POINTER(raw_sexp)[raw_i] = raw[raw_i];
-  }
-  PROTECT(sexp_ser = rpy_unserialize(raw_sexp, R_GlobalEnv));
-  SexpObject *so = (SexpObject *)PyMem_Malloc(1 * sizeof(SexpObject));
-  /*FIXME: catch out-of-memory error */
-  RPY_DECREF((PySexpObject *)self);
-  so->count = 1;
-  so->sexp = sexp_ser;
-  
-  ((PySexpObject *)self)->sObj = so;
-
-  UNPROTECT(2);
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-PyDoc_STRVAR(Sexp___setstate___doc,
-             "Sets the state of the object");
 
 static PyObject*
 EmbeddedR_unserialize(PyObject* self, PyObject* args)
@@ -1484,8 +1430,6 @@ static PyMethodDef Sexp_methods[] = {
    Sexp_duplicate_doc},
   {"__getstate__", (PyCFunction)Sexp___getstate__, METH_NOARGS,
    Sexp___getstate___doc},
-/*   {"__setstate__", (PyCFunction)Sexp___setstate__, METH_O, */
-/*    Sexp___setstate___doc}, */
   {"__reduce__", (PyCFunction)Sexp___reduce__, METH_NOARGS,
    Sexp___reduce___doc},
   {NULL, NULL}          /* sentinel */
