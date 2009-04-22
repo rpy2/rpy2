@@ -561,7 +561,7 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   if (! path_str) {
     Py_DECREF(result);
     PyErr_SetString(PyExc_TypeError, 
-		    "Returned value should have a string representation");
+                    "Returned value should have a string representation");
     PyErr_Print();
     PyErr_Clear();
     Py_DECREF(arglist);
@@ -691,7 +691,7 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
   if (! 1) {
     Py_DECREF(result);
     PyErr_SetString(PyExc_TypeError, 
-		    "Returned value should be None");
+                    "Returned value should be None");
     PyErr_Print();
     PyErr_Clear();
     Py_DECREF(arglist);
@@ -707,7 +707,7 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
 
 static PyObject* cleanUpCallback = NULL;
 static PyObject* EmbeddedR_setCleanUp(PyObject *self,
-				       PyObject *args)
+                                       PyObject *args)
 {
   return EmbeddedR_setAnyCallback(self, args, &cleanUpCallback);  
 }
@@ -716,7 +716,7 @@ PyDoc_STRVAR(EmbeddedR_setCleanUp_doc,
              "Set the function called to clean up when exiting R.");
 
 static PyObject * EmbeddedR_getCleanUp(PyObject *self,
-				       PyObject *args)
+                                       PyObject *args)
 {
   return EmbeddedR_getAnyCallback(self, args, cleanUpCallback);
 }
@@ -1191,7 +1191,7 @@ Sexp_sexp_get(PyObject *self, void *closure)
   
   RPY_INCREF(rpyobj);
   PyObject *res = PyCObject_FromVoidPtr(rpyobj->sObj, 
-					SexpObject_CObject_destroy);
+                                        SexpObject_CObject_destroy);
   return res;
 }
 
@@ -1207,15 +1207,15 @@ Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure)
   SexpObject *sexpobj = (SexpObject *)(PyCObject_AsVoidPtr(obj));
   #ifdef RPY_DEBUG_COBJECT
   printf("Setting %p (count: %i) to %p (count: %i)\n", 
-	 sexpobj_orig, (int)sexpobj_orig->count,
-	 sexpobj, (int)sexpobj->count);
+         sexpobj_orig, (int)sexpobj_orig->count,
+         sexpobj, (int)sexpobj->count);
   #endif
 
   if ( (sexpobj_orig->sexp != R_NilValue) &
        (TYPEOF(sexpobj_orig->sexp) != TYPEOF(sexpobj->sexp))
       ) {
     PyErr_Format(PyExc_ValueError, 
-		 "Mismatch in SEXP type (as returned by typeof)");
+                 "Mismatch in SEXP type (as returned by typeof)");
     return -1;
   }
 
@@ -1302,21 +1302,21 @@ Sexp___getstate__(PyObject *self)
   if (TYPEOF(sexp_ser) != RAWSXP) {
     UNPROTECT(1);
     PyErr_Format(PyExc_RuntimeError, 
-		 "R's serialize did not return a raw vector.");
+                 "R's serialize did not return a raw vector.");
     return NULL;
   }
   /* PyByteArray is only available with Python >= 2.6 */
-	  /* res = PyByteArray_FromStringAndSize(sexp_ser, len); */
+          /* res = PyByteArray_FromStringAndSize(sexp_ser, len); */
 
   /*FIXME: is this working on 64bit archs ? */
   res_string = PyString_FromStringAndSize((void *)RAW_POINTER(sexp_ser), 
-					  (Py_ssize_t)LENGTH(sexp_ser));
+                                          (Py_ssize_t)LENGTH(sexp_ser));
   UNPROTECT(1);
   return res_string;
 }
 
 PyDoc_STRVAR(Sexp___getstate___doc,
-	     "Returns a serialized object for the underlying R object");
+             "Returns a serialized object for the underlying R object");
 
 static PyObject*
 Sexp___setstate__(PyObject *self, PyObject *state)
@@ -1338,7 +1338,7 @@ Sexp___setstate__(PyObject *self, PyObject *state)
 
   if ( RPY_SEXP((PySexpObject *)self) != R_NilValue ) {
     PyErr_Format(PyExc_ValueError, 
-		 "The state can only be set when the Sexp is R_NilValue");
+                 "The state can only be set when the Sexp is R_NilValue");
     return NULL;
   }
 
@@ -1371,7 +1371,7 @@ Sexp___setstate__(PyObject *self, PyObject *state)
 }
 
 PyDoc_STRVAR(Sexp___setstate___doc,
-	     "Sets the state of the object");
+             "Sets the state of the object");
 
 static PyObject*
 EmbeddedR_unserialize(PyObject* self, PyObject* args)
@@ -1389,8 +1389,8 @@ EmbeddedR_unserialize(PyObject* self, PyObject* args)
   Py_ssize_t raw_size;
   int rtype;
   if (! PyArg_ParseTuple(args, "s#i",
-			 &raw, &raw_size,
-			 &rtype)) {
+                         &raw, &raw_size,
+                         &rtype)) {
     return NULL;
   }
 
@@ -1418,9 +1418,9 @@ EmbeddedR_unserialize(PyObject* self, PyObject* args)
   if (TYPEOF(sexp_ser) != rtype) {
     UNPROTECT(2);
     PyErr_Format(PyExc_ValueError, 
-		 "Mismatch between the serialized object"
-		 " and the expected R type"
-		 " (expected %i but got %i)", rtype, TYPEOF(raw_sexp));
+                 "Mismatch between the serialized object"
+                 " and the expected R type"
+                 " (expected %i but got %i)", rtype, TYPEOF(raw_sexp));
     return NULL;
   }
   res = (PyObject*)newPySexpObject(sexp_ser);
@@ -1442,7 +1442,7 @@ Sexp___reduce__(PyObject* self)
   }
   
   dict = PyObject_GetAttrString((PyObject *)self,
-				"__dict__");
+                                "__dict__");
   if (dict == NULL) {
     PyErr_Clear();
     dict = Py_None;
@@ -1456,10 +1456,10 @@ Sexp___reduce__(PyObject* self)
   embeddedR_setlock();
 
   result = Py_BuildValue("O(Oi)O",
-			 rinterface_unserialize, /* constructor */
-			 Sexp___getstate__(self),
-			 TYPEOF(RPY_SEXP((PySexpObject *)self)),
-			 dict);
+                         rinterface_unserialize, /* constructor */
+                         Sexp___getstate__(self),
+                         TYPEOF(RPY_SEXP((PySexpObject *)self)),
+                         dict);
 
   embeddedR_freelock();
 
@@ -1469,7 +1469,7 @@ Sexp___reduce__(PyObject* self)
 }
 
 PyDoc_STRVAR(Sexp___reduce___doc,
-	     "");
+             "");
 
 static PyMethodDef Sexp_methods[] = {
   {"do_slot", (PyCFunction)Sexp_do_slot, METH_O,
@@ -1898,7 +1898,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
   PyObject *params, *env;
 
   if (! PyArg_ParseTuple(args, "OO",
-			 &params, &env)) {
+                         &params, &env)) {
     return NULL;
   }
 
@@ -1907,9 +1907,9 @@ Sexp_rcall(PyObject *self, PyObject *args)
     return NULL;
   }
   if (! PyObject_IsInstance(env,
-			    (PyObject*)&EnvironmentSexp_Type)) {
+                            (PyObject*)&EnvironmentSexp_Type)) {
     PyErr_Format(PyExc_ValueError, 
-		 "The second parameter must be an EnvironmentSexp_Type.");
+                 "The second parameter must be an EnvironmentSexp_Type.");
     return NULL;
   }
 
@@ -3600,7 +3600,7 @@ initrinterface(void)
   Py_DECREF(na_real);
 
   rpy_R_MissingArg = (PySexpObject*)Sexp_new(&Sexp_Type,
-					     Py_None, Py_None);
+                                             Py_None, Py_None);
   if (PyDict_SetItemString(d, "R_MissingArg", (PyObject *)rpy_R_MissingArg) < 0)
     return;
   //FIXME: DECREF ?
