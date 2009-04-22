@@ -456,6 +456,33 @@ respective dimensions of the object are accessible
 through the slot named `dimnames`.
 
 
+.. index::
+   single: missing values
+
+.. rubric:: Missing values
+
+In R missing the symbol *NA* represents a missing value.
+The general rule that R scalars are in fact vectors applies here again,
+and the following R code is creating a vector of length 1.
+
+.. code-block:: r
+
+   x <- NA
+
+The type of NA is logical (boolean), and one can specify a different
+type with the symbols
+*NA_character_*, *NA_integer_*, *NA_real_*, and *NA_complex_*.
+
+To keep things a little challenging, those symbol are little
+peculiar and cannot be retrieved with :meth:`SexpEnvironment.get`.
+The following incantation can be used instead.
+
+.. code-block:: python
+
+   parse = ri.baseNameSpaceEnv.get("parse")
+   NA_character = parse(text = ri.StrSexpVector(("NA_character_", )))
+
+
 
 .. rubric:: Constructors
 
@@ -795,25 +822,6 @@ R_HOME
 
 :const:`TRUE`/:const:`FALSE`
   R's TRUE and FALSE
-
-.. index::
-   single: missing values
-
-Missing values
---------------
-
-.. warning::
-
-   The following constants for missing values are currently all broken. Do not use them.
-
-:const:`NA_INTEGER`
-  Missing value for integers
-
-:const:`NA_LOGICAL`
-  Missing value for booleans
-
-:const:`NA_REAL`
-  Missing value for numerical values (float / double)
 
 .. index::
    single: ENVSXP

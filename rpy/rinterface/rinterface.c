@@ -157,15 +157,9 @@ PyDoc_STRVAR(module_doc,
 static PySexpObject *globalEnv;
 static PySexpObject *baseNameSpaceEnv;
 static PySexpObject *emptyEnv;
-static PySexpObject *na_string;
 static PySexpObject *rpy_R_MissingArg;
-static PySexpObject *na_string;
 
 static PyObject *rinterface_unserialize;
-
-static PyObject *na_logical;
-static PyObject *na_integer;
-static PyObject *na_real;
 
 /* early definition of functions */
 static PySexpObject* newPySexpObject(const SEXP sexp);
@@ -927,7 +921,6 @@ static PyObject* EmbeddedR_init(PyObject *self)
   RPY_SEXP(globalEnv) = R_GlobalEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
   RPY_SEXP(emptyEnv) = R_EmptyEnv;
-  RPY_SEXP(na_string) = NA_STRING;
   RPY_SEXP(rpy_R_MissingArg) = R_MissingArg;
 
   errMessage_SEXP = findVar(install("geterrmessage"), 
@@ -3537,43 +3530,12 @@ initrinterface(void)
     return;
 
 
-  PyObject *na_real = PyFloat_FromDouble(NA_REAL);
-  if (PyDict_SetItemString(d, "NA_REAL", (PyObject *)na_real) < 0)
-    return;
-  //FIXME: DECREF ?
-  Py_DECREF(na_real);
-
   rpy_R_MissingArg = (PySexpObject*)Sexp_new(&Sexp_Type,
                                              Py_None, Py_None);
   if (PyDict_SetItemString(d, "R_MissingArg", (PyObject *)rpy_R_MissingArg) < 0)
     return;
   //FIXME: DECREF ?
   Py_DECREF(rpy_R_MissingArg);  
-
-/*   /\* Rinternals.h *\/ */
-  na_string = (PySexpObject *)Sexp_new(&VectorSexp_Type,
-                                       Py_None, Py_None);
-
-  RPY_SEXP(na_string) = NA_STRING;
-  if (PyDict_SetItemString(d, "NA_STRING", (PyObject *)na_string) < 0)
-    return;
-/*   //FIXME: DECREF ? */
-  //Py_DECREF(na_string);
-
-  Py_INCREF(Py_None);
-  na_logical = Py_None;
-  if (PyDict_SetItemString(d, "NA_LOGICAL", (PyObject *)na_logical) < 0)
-    return;
-
-  Py_INCREF(Py_None);
-  na_integer = Py_None;
-  if (PyDict_SetItemString(d, "NA_INTEGER", (PyObject *)na_integer) < 0)
-    return;  
-
-  Py_INCREF(Py_None);
-  na_real = Py_None;
-  if (PyDict_SetItemString(d, "NA_REAL", (PyObject *)na_real) < 0)
-    return; 
 
   rinterface_unserialize = PyDict_GetItemString(d, "unserialize");
   

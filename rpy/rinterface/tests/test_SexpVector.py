@@ -98,8 +98,6 @@ class SexpVectorTestCase(unittest.TestCase):
         ok = isCharacter(sexp)[0]
         self.assertTrue(ok)
 
-        self.assertRaises(ValueError, ri.NA_STRING.__getitem__, 0)
-
     def testNewUnicode(self):
         sexp = ri.SexpVector([u'abc', ], ri.STRSXP)
         isCharacter = ri.globalEnv.get("is.character")

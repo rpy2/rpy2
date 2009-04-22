@@ -95,7 +95,6 @@ class BoolSexpVector(SexpVector):
     def __init__(self, v):        
         super(BoolSexpVector, self).__init__(v, LGLSXP)
 
-
 # wrapper in case someone changes sys.stdout:
 def consolePrint(x):
     """This is the default callback for R's console. It simply writes to stdout."""
