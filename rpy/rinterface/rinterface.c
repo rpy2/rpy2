@@ -2449,7 +2449,15 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     //FIXME: implemement automagic type ?
     //(RPy has something)... or leave it to extensions ?
 
-    RPY_SEXP((PySexpObject *)self) = newSEXP(object, sexptype);
+    SEXP sexp = newSEXP(object, sexptype);
+    if (sexp == NULL) {
+      /* newSEXP returning NULL will also have raised an exception
+       * (not-so-clear design :/ )
+       */
+      embeddedR_freelock();
+      return -1;
+    }
+    RPY_SEXP((PySexpObject *)self) = sexp;
     #ifdef RPY_DEBUG_OBJECTINIT
     printf("  SEXP vector is %p.\n", RPY_SEXP((PySexpObject *)self));
     #endif
