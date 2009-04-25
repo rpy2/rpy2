@@ -3152,15 +3152,17 @@ newSEXP(PyObject *object, int rType)
     sexp = NULL;
   }
 
-  R_PreserveObject(sexp);
+  if (sexp != NULL) {
+    R_PreserveObject(sexp);
 #ifdef RPY_DEBUG_PRESERVE
-  printf("  R_PreserveObject( %p ).\n", sexp);
+    printf("  R_PreserveObject( %p ).\n", sexp);
 #endif 
+  }
   UNPROTECT(1);
+
 #ifdef RPY_VERBOSE
   printf("  new SEXP for Python:%p is %p.\n", object, sexp);
 #endif
-
   return sexp;
 }
 
