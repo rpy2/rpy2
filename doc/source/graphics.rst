@@ -158,14 +158,12 @@ Adding graphical elements
 
    geom_abline = robjects.globalEnv.get("geom_abline")
 
-   line = geom_abline(intercept = 20) 
+   xy = qplot(dparse("wt"), dparse("mpg"), 
+              data = mtcars,
+              xlab = "wt", ylab = "mpg")
 
-   def radd(x, y):
-       res = robjects.baseNameSpaceEnv.get("+")(x, y)
-       return res
-
+   line = geom_abline(intercept = 30) 
    p = radd(xy, line)
-
    rprint(p)
    
    p = radd(p, geom_abline(intercept = 15))
@@ -173,11 +171,21 @@ Adding graphical elements
 
    stat_smooth = robjects.globalEnv.get("stat_smooth")
 
-   p = radd(p, stat_smooth(method = "lm"))
+   p = radd(xy, stat_smooth(method = "lm"))
+   rprint(p)
 
-   p = radd(p, stat_smooth(method = "lm", fill="blue", colour="#e03030d0", size=3))
-   
-   stat_smooth = robjects.globalEnv.get("stat_smooth")
+   p = radd(xy, stat_smooth(method = "lm", 
+            fill="blue", colour="#e03030d0", size=3))
+   rprint(p)
 
-   p = radd(xy, stat_smooth(method=dparse(lm)))
+   geom_smooth = robjects.globalEnv.get("geom_smooth")
+   p = radd(xy, geom_smooth(aes(group=dparse("cyl")), method = "lm"))
+   rprint(p)
+
+
+   xy = ggplot(mtcars, aes(y = dparse('wt'), x = dparse('mpg')))
+   facet_grid = robjects.globalEnv.get("facet_grid")
+   p = radd(xy, geom_point())
+   p = radd(p, facet_grid(robjects.RFormula('. ~ cyl')))
+   p = radd(p, geom_smooth(aes(group=dparse("cyl")), method = "lm", data = mtcars))
 
