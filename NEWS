@@ -11,6 +11,11 @@ Bugs fixed
   (the symptom was a process growing in size when creating R vector from
   Python list or numpy arrays)
 
+- `R CMD config LAPACK_LIBS` could return an empty string when R was compiled
+  with the veclib framework, causing the setup.py script to raise an exception.
+  setup.py now only print a message about an empty string returned from 
+  R CMD config
+
 
 Release 2.0.3
 =============

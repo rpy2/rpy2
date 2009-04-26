@@ -54,7 +54,7 @@ def cmp_version(x, y):
             return 0
         return cmp_version(x[1:], y[1:])
 
-def get_rconfig(RHOME, about):
+def get_rconfig(RHOME, about, allow_empty = False):
     r_exec = os.path.join(RHOME, 'bin', 'R')
     cmd = '"'+r_exec+'" CMD config '+about
     rp = os.popen(cmd)
@@ -74,7 +74,7 @@ def get_rconfig(RHOME, about):
         rconfig_m = re.match('^(-F.+) (-framework.+)$', rconfig)
     if rconfig_m is None:
         rconfig_m = re.match('^(-I.+)$', rconfig)
-    if rconfig_m is None:
+    if (rconfig_m is None) and not allow_empty:
         raise Exception(cmd + '\nreturned\n' + rconfig)
     return rconfig_m.groups()
 
@@ -126,7 +126,8 @@ def getRinterface_ext(RHOME, r_packversion):
             runtime_library_dirs = r_libs,
             #extra_compile_args=['-O0', '-g'],
             extra_link_args = get_rconfig(RHOME, '--ldflags') +\
-                              get_rconfig(RHOME, 'LAPACK_LIBS') +\
+                              get_rconfig(RHOME, 'LAPACK_LIBS',
+                                          allow_empty = True) +\
                               get_rconfig(RHOME, 'BLAS_LIBS'),
             )
 
