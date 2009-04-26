@@ -3046,11 +3046,12 @@ newSEXP(PyObject *object, int rType)
   }
   const Py_ssize_t length = PySequence_Fast_GET_SIZE(seq_object);
   //FIXME: PROTECT THIS ?
-  PROTECT(sexp = allocVector(rType, length));
+
 
   int i;
   switch(rType) {
   case REALSXP:
+    PROTECT(sexp = NEW_NUMERIC(length));      
     for (i = 0; i < length; ++i) {
       if((item = PyNumber_Float(PySequence_Fast_GET_ITEM(seq_object, i)))) {
         REAL(sexp)[i] = PyFloat_AS_DOUBLE(item);
@@ -3063,6 +3064,7 @@ newSEXP(PyObject *object, int rType)
     }
     break;
   case INTSXP:
+    PROTECT(sexp = NEW_INTEGER(length));
     for (i = 0; i < length; ++i) {
       if((item = PyNumber_Int(PySequence_Fast_GET_ITEM(seq_object, i)))) {
         long l = PyInt_AS_LONG(item);
@@ -3076,6 +3078,7 @@ newSEXP(PyObject *object, int rType)
     }
     break;
   case LGLSXP:
+    PROTECT(sexp = NEW_LOGICAL(length));
     for (i = 0; i < length; ++i) {
       int q = PyObject_IsTrue(PySequence_Fast_GET_ITEM(seq_object, i));
       if (q != -1)
@@ -3087,6 +3090,7 @@ newSEXP(PyObject *object, int rType)
     }
     break;
   case STRSXP:
+    PROTECT(sexp = NEW_CHARACTER(length));
     for (i = 0; i < length; ++i) {
       if((item = PyObject_Str(PySequence_Fast_GET_ITEM(seq_object, i)))) {
         str_R = mkChar(PyString_AS_STRING(item));
@@ -3117,6 +3121,7 @@ newSEXP(PyObject *object, int rType)
     }
     break;
   case VECSXP:
+    PROTECT(sexp = NEW_LIST(length));
     for (i = 0; i < length; ++i) {
       if((item = PySequence_Fast_GET_ITEM(seq_object, i))) {
         int is_PySexpObject = PyObject_TypeCheck(item, &Sexp_Type);
@@ -3132,6 +3137,7 @@ newSEXP(PyObject *object, int rType)
     }
     break;
   case CPLXSXP:
+    PROTECT(sexp = NEW_COMPLEX(length));
     for (i = 0; i < length; ++i) {
         item = PySequence_Fast_GET_ITEM(seq_object, i);
         if (PyComplex_Check(item)) {

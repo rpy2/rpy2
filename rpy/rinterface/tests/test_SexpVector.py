@@ -124,8 +124,11 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertRaises(ValueError, ri.SexpVector, [1, ], -1)
         self.assertRaises(ValueError, ri.SexpVector, [1, ], 250)
 
-    def testNew_InvalidType_NotAVector(self):
+    def testNew_InvalidType_NotAVectorType(self):
         self.assertRaises(ValueError, ri.SexpVector, [1, ], ri.ENVSXP)
+
+    def testNew_InvalidType_NotASequence(self):
+        self.assertRaises(ValueError, ri.SexpVector, 1, ri.INTSXP)
 
     def testGetItem(self):
         letters_R = ri.globalEnv.get("letters")

@@ -65,4 +65,5 @@ typedef struct {
     PyGILState_Release(gstate);			\
   }
 
+
 #endif /* !RPY_RI_H */
