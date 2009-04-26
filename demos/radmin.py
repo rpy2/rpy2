@@ -13,6 +13,36 @@ import rpy2.robjects as robjects
 import itertools
 import gobject
 
+
+class FunctionPanel(gtk.VBox):
+    _as_list = robjects.r['as.list']
+    def __init__(self, rfunction):
+        super(FunctionPanel, self).__init__()
+        self._rfunction = rfunction
+        formals = self._as_list(rfunction.formals())
+        formals_value = [x for x in formals.r[-1]]
+        formals_name = [x for x in formals.r[-1].names]
+        self._table = gtk.ListStore(str, str)
+        self._treeView = gtk.TreeView(model = self._table)
+        self._treeView.show()
+        self._valueColumns = [gtk.TreeViewColumn('parameter'),
+                              gtk.TreeViewColumn('value'),]
+        self._valueCells = []
+        for col_i, col in enumerate(self._valueColumns):
+            self._treeView.append_column(col)
+            cr = gtk.CellRendererText()
+            col.pack_start(cr, True)
+            self._valueCells.append(cr)
+            col.set_attributes(cr, text=col_i)
+
+        for name, value in itertools.izip(formals_name, formals_value):
+            row = (name, value)
+            self._table.append(row)
+            
+        sbox = gtk.HBox(homogeneous=False, spacing=0)
+        sbox.show()
+
+        
 class LibraryPanel(gtk.VBox):
 
     cell = gtk.CellRendererText()
