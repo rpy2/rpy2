@@ -73,6 +73,9 @@ Bugs fixed
   setup.py now only print a message about an empty string returned from 
   R CMD config
 
+- :class:`rinterface.SexpVector` will now properly raise an exception
+  when trying to create vector-like object of impossible type.
+
 
 Release 2.0.4
 =============
