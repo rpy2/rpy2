@@ -3043,14 +3043,11 @@ newSEXP(PyObject *object, int rType)
 
   seq_object = PySequence_Fast(object, 
                                "Cannot create R object from non-sequence Python object.");
-  //FIXME: Isn't the call above supposed to fire an Exception ?
 
   if (! seq_object) {
     return NULL;
   }
   const Py_ssize_t length = PySequence_Fast_GET_SIZE(seq_object);
-  //FIXME: PROTECT THIS ?
-
 
   int i;
   switch(rType) {
