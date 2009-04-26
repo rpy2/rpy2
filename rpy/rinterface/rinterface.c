@@ -1025,9 +1025,10 @@ void SexpObject_clear(SexpObject *sexpobj)
 
     if (sexpobj->sexp != R_NilValue) {
 #ifdef RPY_DEBUG_PRESERVE
-      printf("  Sexp_clear: R_ReleaseObject( %p )\n", sexpobj->sexp);
+      printf("  PRESERVE -- Sexp_clear: R_ReleaseObject -- %p ", 
+	     sexpobj->sexp);
       preserved_robjects -= 1;
-      printf("  Total preserved objects: %i\n", preserved_robjects);
+      printf("-- %i\n", preserved_robjects);
 #endif 
     R_ReleaseObject(sexpobj->sexp);
     }
@@ -2987,8 +2988,8 @@ newPySexpObject(const SEXP sexp)
     R_PreserveObject(sexp_ok);
 #ifdef RPY_DEBUG_PRESERVE
     preserved_robjects += 1;
-    printf("  R_PreserveObject( %p ).\n", sexp_ok);
-    printf("  Total preserved objects: %i\n", preserved_robjects);
+    printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
+	   sexp_ok, preserved_robjects);
 #endif 
   }
 
@@ -3022,7 +3023,10 @@ newPySexpObject(const SEXP sexp)
   }
   if (!object) {
 #ifdef RPY_DEBUG_PRESERVE
-    printf("  R_ReleaseObject( %p )\n", sexp_ok);
+    printf("  PRESERVE -- Sexp_clear: R_ReleaseObject -- %p ", 
+	   sexp_ok);
+    preserved_robjects -= 1;
+    printf("-- %i\n", preserved_robjects);
 #endif
     R_ReleaseObject(sexp_ok);
     PyErr_NoMemory();
@@ -3172,8 +3176,8 @@ newSEXP(PyObject *object, int rType)
     R_PreserveObject(sexp);
 #ifdef RPY_DEBUG_PRESERVE
     preserved_robjects += 1;
-    printf("  R_PreserveObject( %p ).\n", sexp);
-    printf("  Total preserved objects: %i\n", preserved_robjects);
+    printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
+	   sexp, preserved_robjects);
 #endif 
   }
   UNPROTECT(1);
