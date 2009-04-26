@@ -99,8 +99,8 @@ array_struct_free(void *ptr, void *arr)
 {
   PyArrayInterface *inter       = (PyArrayInterface *)ptr;
   PyMem_Free(inter->shape);
-  PyMem_Free(inter);
   Py_DECREF((PyObject *)arr);
+  PyMem_Free(inter);
 }
 
 
