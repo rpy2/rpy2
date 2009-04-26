@@ -98,8 +98,8 @@ static void
 array_struct_free(void *ptr, void *arr)
 {
   PyArrayInterface *inter       = (PyArrayInterface *)ptr;
-  free(inter->shape);
-  free(inter);
+  PyMem_Free(inter->shape);
+  PyMem_Free(inter);
   Py_DECREF((PyObject *)arr);
 }
 
@@ -118,7 +118,7 @@ array_struct_get(PySexpObject *self)
     PyErr_SetString(PyExc_AttributeError, "Unsupported SEXP type");
     return NULL;
   }
-  inter = (PyArrayInterface *)malloc(sizeof(PyArrayInterface));
+  inter = (PyArrayInterface *)PyMem_Malloc(sizeof(PyArrayInterface));
   if (!inter) {
     return PyErr_NoMemory();
   }
@@ -129,7 +129,7 @@ array_struct_get(PySexpObject *self)
   inter->typekind = typekind;
   inter->itemsize = sexp_itemsize(sexp);
   inter->flags = FORTRAN|ALIGNED|NOTSWAPPED|WRITEABLE;
-  inter->shape = (Py_intptr_t*)malloc(sizeof(Py_intptr_t)*nd*2);
+  inter->shape = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t)*nd*2);
   sexp_shape(sexp, inter->shape, nd);
   inter->strides = inter->shape + nd;
   Py_intptr_t stride = inter->itemsize;
