@@ -3026,6 +3026,10 @@ newPySexpObject(const SEXP sexp)
   return object;
 }
 
+
+/* This function is only able to create a R-Python object 
+   for an R vector-like 'rType', and from an 'object'
+   that is a sequence. */
 static SEXP
 newSEXP(PyObject *object, int rType)
 {
