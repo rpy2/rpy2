@@ -76,8 +76,8 @@ Scatter plot
    formula.getenvironment()['wt'] = mtcars.r['wt'][0]
    formula.getenvironment()['cyl'] = mtcars.r['cyl'][0]
 
-   p = xyplot(formula)
-   rprint(p, layout=robjects.IntVector((3, 1)))
+   p = xyplot(formula, layout=robjects.IntVector((3, 1)))
+   rprint(p)
 
 .. image:: _static/graphics_lattice_xyplot_3.png
    :scale: 50
