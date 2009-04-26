@@ -161,6 +161,11 @@ static PySexpObject *rpy_R_MissingArg;
 
 static PyObject *rinterface_unserialize;
 
+#ifdef RPY_DEBUG_PRESERVE
+static int preserved_robjects = 0;
+#endif
+
+
 /* early definition of functions */
 static PySexpObject* newPySexpObject(const SEXP sexp);
 static SEXP newSEXP(PyObject *object, const int rType);
@@ -1021,6 +1026,8 @@ void SexpObject_clear(SexpObject *sexpobj)
     if (sexpobj->sexp != R_NilValue) {
 #ifdef RPY_DEBUG_PRESERVE
       printf("  Sexp_clear: R_ReleaseObject( %p )\n", sexpobj->sexp);
+      preserved_robjects -= 1;
+      printf("  Total preserved object: %i\n", preserved_robjects);
 #endif 
     R_ReleaseObject(sexpobj->sexp);
     }
@@ -2979,7 +2986,9 @@ newPySexpObject(const SEXP sexp)
   if (sexp_ok) {
     R_PreserveObject(sexp_ok);
 #ifdef RPY_DEBUG_PRESERVE
+    preserved_robjects += 1;
     printf("  R_PreserveObject( %p ).\n", sexp_ok);
+    printf("  Total preserved object: %i\n", preserved_robjects);
 #endif 
   }
 
@@ -3162,7 +3171,9 @@ newSEXP(PyObject *object, int rType)
   if (sexp != NULL) {
     R_PreserveObject(sexp);
 #ifdef RPY_DEBUG_PRESERVE
+    preserved_robjects += 1;
     printf("  R_PreserveObject( %p ).\n", sexp);
+    printf("  Total preserved object: %i\n", preserved_robjects);
 #endif 
   }
   UNPROTECT(1);
