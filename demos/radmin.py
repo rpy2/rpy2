@@ -659,7 +659,7 @@ def gobject_process_revents():
     robjects.rinterface.process_revents()
     return True
 
-gobject.idle_add(gobject_process_revents)
+gobject.timeout_add(300, gobject_process_revents)
 gtk.main()
 
 
