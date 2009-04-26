@@ -7,6 +7,10 @@ Bugs fixed
 - Added missing named parameter *wantfun* to method :meth:`Renvironment.get`
   (making it similar to :meth:`SexpEnvironment.get`)
 
+- Leak in reference counting when creating SexpVector objects fixed
+  (the symptom was a process growing in size when creating R vector from
+  Python list or numpy arrays)
+
 
 Release 2.0.3
 =============

@@ -2469,6 +2469,8 @@ newSEXP(PyObject *object, int rType)
     sexp = NULL;
   }
 
+  Py_DECREF(seq_object);
+
   R_PreserveObject(sexp);
 #ifdef RPY_DEBUG_PRESERVE
   printf("  R_PreserveObject( %p ).\n", sexp);
