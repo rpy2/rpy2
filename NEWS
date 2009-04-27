@@ -4,7 +4,7 @@ Release 2.1-dev
 Known problems
 --------------
 
-- Numpy arrays with complex or unicode elements seem to be now causing a
+- Numpy arrays with unicode elements seem to be now causing a
   segfault
 
 New Features
@@ -70,6 +70,8 @@ Bugs fixed
 
 - :class:`rinterface.SexpVector` will now properly raise an exception
   when trying to create vector-like object of impossible type.
+
+- Numpy arrays with complex elements are now longer causing segfaults
 
 
 Release 2.0.4
