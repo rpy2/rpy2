@@ -240,17 +240,17 @@ class SexpVectorTestCase(unittest.TestCase):
 
     def testAssignItemList(self):
         myVec = ri.SexpVector([ri.SexpVector(["a", ], ri.STRSXP), 
-                                       ri.SexpVector([1, ], ri.INTSXP),
-                                       ri.SexpVector([3, ], ri.INTSXP)], 
-                                      ri.VECSXP)
+                               ri.SexpVector([1, ], ri.INTSXP),
+                               ri.SexpVector([3, ], ri.INTSXP)], 
+                              ri.VECSXP)
         
         myVec[0] = ri.SexpVector([ri.SexpVector([100.0, ], 
-ri.REALSXP), ], 
-                                         ri.VECSXP)
+                                                ri.REALSXP), ], 
+                                 ri.VECSXP)
         self.assertTrue(floatEqual(myVec[0][0][0], 100.0))
         
         myVec[2] = ri.SexpVector([ri.SexpVector(["a", ], ri.STRSXP), ], 
-                                         ri.VECSXP) 
+                                 ri.VECSXP) 
         self.assertTrue(myVec[2][0][0] == "a")
         
     def testAssignItemString(self):
