@@ -256,9 +256,9 @@ class SexpVectorTestCase(unittest.TestCase):
     def testAssignItemString(self):
         letters_R = ri.SexpVector("abcdefghij", ri.STRSXP)
         self.assertRaises(ValueError, letters_R.__setitem__, 0, 
-                          ri.SexpVector([1, ], 
-                                                                                      ri.INTSXP))
-
+                          ri.SexpVector([1, ],
+                                        ri.INTSXP))
+        
         letters_R[0] = ri.SexpVector(["z", ], ri.STRSXP)
         self.assertTrue(letters_R[0] == "z")
 
