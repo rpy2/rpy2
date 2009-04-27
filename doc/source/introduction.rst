@@ -367,5 +367,8 @@ The :mod:`rpy2.robjects` code is
   r.biplot(pca, main="biplot")
    
 
+One more example
+----------------
 
+.. literalinclude:: _static/demos/example01.py
 
