@@ -3146,7 +3146,6 @@ newSEXP(PyObject *object, int rType)
           return NULL;
         }
         SET_ELEMENT(sexp, i, RPY_SEXP((PySexpObject *)item));
-        Py_DECREF(item);
       }
     }
     break;
