@@ -2454,7 +2454,6 @@ newSEXP(PyObject *object, int rType)
           Py_complex cplx = PyComplex_AsCComplex(item);
           COMPLEX(sexp)[i].r = cplx.real;
           COMPLEX(sexp)[i].i = cplx.imag;
-          Py_DECREF(item);
         }
         else {
           PyErr_Clear();
