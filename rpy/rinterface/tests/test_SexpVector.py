@@ -118,7 +118,7 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertTrue(ok)
 
         self.assertEquals(2, len(sexp))
-        
+
 
     def testNew_InvalidType_NotAType(self):
         self.assertRaises(ValueError, ri.SexpVector, [1, ], -1)
@@ -137,13 +137,13 @@ class SexpVectorTestCase(unittest.TestCase):
                    ('x', 23), ('y', 24), ('z', 25))
         for l, i in letters:
             self.assertTrue(letters_R[i] == l)
-        
+
         Rlist = ri.globalEnv.get("list")
         seq_R = ri.globalEnv.get("seq")
-        
+
         mySeq = seq_R(ri.SexpVector([0, ], ri.INTSXP),
                       ri.SexpVector([10, ], ri.INTSXP))
-        
+
         myList = Rlist(s=mySeq, l=letters_R)
         idem = ri.globalEnv.get("identical")
 
@@ -157,7 +157,7 @@ class SexpVectorTestCase(unittest.TestCase):
         vec = ri.StrSexpVector(["a", ])
         vec = ri.baseNameSpaceEnv['as.logical'](vec)
         self.assertEquals(None, vec[0])
-        
+
     def testGetItemLang(self):
         formula = ri.baseNameSpaceEnv.get('formula')
         f = formula(ri.StrSexpVector(['y ~ x', ]))
@@ -172,7 +172,7 @@ class SexpVectorTestCase(unittest.TestCase):
         y = e[0]
         self.assertEquals(ri.STRSXP, y.typeof)
 
-        
+
     def testGetItemNegativeOutOfBound(self):
         letters_R = ri.globalEnv.get("letters")
         self.assertRaises(IndexError, letters_R.__getitem__,
@@ -225,7 +225,7 @@ class SexpVectorTestCase(unittest.TestCase):
                                   ri.LGLSXP))
         myVec[0] = ri.SexpVector([False, ], ri.LGLSXP)
         self.assertFalse(myVec[0])
-        
+
         myVec[3] = ri.SexpVector([False, ], ri.LGLSXP)
         self.assertFalse(myVec[3])
 
@@ -247,15 +247,15 @@ class SexpVectorTestCase(unittest.TestCase):
                                ri.IntSexpVector([1, ]),
                                ri.IntSexpVector([3, ])], 
                               ri.VECSXP)
-        
+
         myVec[0] = ri.SexpVector([ri.FloatSexpVector([100.0, ]), ], 
                                  ri.VECSXP)
         self.assertTrue(floatEqual(myVec[0][0][0], 100.0))
-        
+
         myVec[2] = ri.SexpVector([ri.StrSexpVector(["a", ]), ], 
                                  ri.VECSXP) 
         self.assertTrue(myVec[2][0][0] == "a")
-        
+
     def testAssignItemString(self):
         letters_R = ri.SexpVector("abcdefghij", ri.STRSXP)
         self.assertRaises(ValueError, letters_R.__setitem__, 0, 
@@ -278,4 +278,4 @@ def suite():
     return suite
 
 if __name__ == '__main__':
-     unittest.main()
+    unittest.main()
