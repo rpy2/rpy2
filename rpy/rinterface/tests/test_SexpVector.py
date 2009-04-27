@@ -143,8 +143,8 @@ class SexpVectorTestCase(unittest.TestCase):
         myList = Rlist(s=mySeq, l=letters_R)
         idem = ri.globalEnv.get("identical")
 
-        self.assertTrue(idem(mySeq, myList[0]))
-        self.assertTrue(idem(letters_R, myList[1]))
+        self.assertTrue(idem(mySeq, myList[0])[0])
+        self.assertTrue(idem(letters_R, myList[1])[0])
 
         letters_R = ri.globalEnv.get("letters")
         self.assertEquals('z', letters_R[-1])
