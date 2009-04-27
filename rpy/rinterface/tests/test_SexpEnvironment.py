@@ -23,22 +23,24 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         ok = isinstance(rinterface.globalEnv, rinterface.SexpEnvironment) 
         self.assertTrue(ok)
 
-    def testGet(self):
+    def testGetClosure(self):
         help_R = rinterface.globalEnv.get("help")
         ok = isinstance(help_R, rinterface.SexpClosure)
         self.assertTrue(ok)
 
+    def testGetVector(self):
         pi_R = rinterface.globalEnv.get("pi")
         ok = isinstance(pi_R, rinterface.SexpVector)
         self.assertTrue(ok)
 
+    def testGetEnvironment(self):
         ge_R = rinterface.globalEnv.get(".GlobalEnv")
         ok = isinstance(ge_R, rinterface.SexpEnvironment)
         self.assertTrue(ok)
 
+    def testGetOnlyFromLoadedLibrary(self):
         self.assertRaises(LookupError, rinterface.globalEnv.get, "survfit")
-        rinterface.globalEnv.get("library")(rinterface.SexpVector(["survival", ],
-                                            rinterface.STRSXP))
+        rinterface.globalEnv.get("library")(rinterface.StrSexpVector(["survival", ]))
         sfit_R = rinterface.globalEnv.get("survfit")
         ok = isinstance(sfit_R, rinterface.SexpClosure)
         self.assertTrue(ok)
