@@ -72,8 +72,6 @@
 #include "array.h"
 #include "r_utils.h"
 
-//#define RPY_VERBOSE
-
 #if Win32
 #if !defined(uintptr_t)
 typedef unsigned int *uintptr_t;
@@ -98,14 +96,14 @@ static PyObject *initOptions;
 static SEXP errMessage_SEXP;
 static PyObject *RPyExc_RuntimeError = NULL;
 
-//FIXME: see the details of interruption
+/* FIXME: see the details of interruption */
 /* Indicates whether the R interpreter was interrupted by a SIGINT */
 int interrupted = 0;
 /* Abort the current R computation due to a SIGINT */
 static void
 interrupt_R(int signum)
 {
-  //printf('interrupted.\n');
+  /* printf('interrupted.\n'); */
   interrupted = 1;
   error("Interrupted");
 }
@@ -263,7 +261,7 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   if (! arglist) {
     PyErr_NoMemory();
 /*     signal(SIGINT, old_int); */
-    //return NULL;
+/*     return NULL; */
   }
 
   if (writeConsoleCallback == NULL) {
@@ -275,7 +273,7 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
      and the Python exception raised up.*/
-    //FIXME: Print the exception in the meanwhile
+    /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
     PyErr_Clear();
   }
@@ -326,7 +324,7 @@ EmbeddedR_ShowMessage(const char *buf)
   if (! arglist) {
     PyErr_NoMemory();
 /*     signal(SIGINT, old_int); */
-    //return NULL;
+/*     return NULL;  */
   }
 
   if (showMessageCallback == NULL) {
@@ -338,7 +336,7 @@ EmbeddedR_ShowMessage(const char *buf)
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
      and the Python exception raised up.*/
-    //FIXME: Print the exception in the meanwhile
+    /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
     PyErr_Clear();
   }
@@ -391,7 +389,7 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   if (! arglist) {
     PyErr_NoMemory();
 /*     signal(SIGINT, old_int); */
-    //return NULL;
+/* return NULL; */
   }
 
   if (readConsoleCallback == NULL) {
@@ -412,7 +410,7 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
      and the Python exception raised up.*/
-    //FIXME: Print the exception in the meanwhile
+    /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
     PyErr_Clear();
     Py_XDECREF(arglist);
@@ -422,7 +420,7 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
 
 
   if (result == NULL) {
-    //FIXME: can this be reached ? result == NULL while no error ?
+    /* FIXME: can this be reached ? result == NULL while no error ? */
 /*     signal(SIGINT, old_int); */
     Py_XDECREF(arglist);
     RPY_GIL_RELEASE(is_threaded, gstate);
@@ -485,7 +483,7 @@ EmbeddedR_FlushConsole(void)
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
      and the Python exception raised up.*/
-    //FIXME: Print the exception in the meanwhile
+    /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
     PyErr_Clear();
   }
@@ -541,7 +539,7 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
      and the Python exception raised up.*/
-    //FIXME: Print the exception in the meanwhile
+    /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
     PyErr_Clear();
     Py_XDECREF(arglist);
@@ -550,7 +548,7 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   }
   
   if (result == NULL) {
-    //FIXME: can this be reached ? result == NULL while no error ?
+    /* FIXME: can this be reached ? result == NULL while no error ? */
     Py_XDECREF(arglist);
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
@@ -671,7 +669,7 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
      and the Python exception raised up.*/
-    //FIXME: Print the exception in the meanwhile
+    /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
     PyErr_Clear();
     Py_XDECREF(arglist);
@@ -680,7 +678,7 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
   }
   
   if (result == NULL) {
-    //FIXME: can this be reached ? result == NULL while no error ?
+    /* FIXME: can this be reached ? result == NULL while no error ? */
     Py_XDECREF(arglist);
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
@@ -742,7 +740,7 @@ EmbeddedR_CleanUp(SA_TYPE saveact, int status, int runLast)
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
      and the Python exception raised up.*/
-    //FIXME: Print the exception in the meanwhile
+    /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
     PyErr_Clear();
     Py_XDECREF(arglist);
@@ -947,20 +945,21 @@ Initialize an embedded R.\
 
 static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
 {
-  //FIXME: Have a reference count for R objects known to Python.
-  //ending R will not be possible until all such objects are already
-  //deallocated in Python ?
-  //other possibility would be to have a fallback for "unreachable" objects ?
-  //FIXME: rpy has something to terminate R. Check the details of what they are. 
+  /* FIXME: Have a reference count for R objects known to Python.
+   * ending R will not be possible until all such objects are already
+   * deallocated in Python ?
+   *other possibility would be to have a fallback for "unreachable" objects ? 
+   */
+  /*FIXME: rpy has something to terminate R. Check the details of what they are. */
   /* taken from the tests/Embedded/shutdown.c in the R source tree */
 
   R_dot_Last();           
   R_RunExitFinalizers();  
-  //CleanEd();              
+  /* CleanEd(); */
   Rf_KillAllDevices();
   
   R_CleanTempDir();
-  //PrintWarnings();
+  /* PrintWarnings(); */
   R_gc();
   /* */
 
@@ -972,10 +971,11 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   RPY_SEXP(emptyEnv) = R_EmptyEnv;
   errMessage_SEXP = R_NilValue; 
 
-  //FIXME: Is it possible to reinitialize R later ?
-  //Py_XDECREF(embeddedR_isInitialized);
-  //embeddedR_isInitialized = Py_False;
-  //Py_INCREF(Py_False);
+  /* FIXME: Is it possible to reinitialize R later ?
+   * Py_XDECREF(embeddedR_isInitialized);
+   * embeddedR_isInitialized = Py_False;
+   *Py_INCREF(Py_False); 
+   */
 
   Py_RETURN_NONE;
 }
@@ -991,7 +991,7 @@ static void
 EmbeddedR_exception_from_errmessage(void)
 {
   SEXP expr, res;
-  //PROTECT(errMessage_SEXP)
+  /* PROTECT(errMessage_SEXP) */
   PROTECT(expr = allocVector(LANGSXP, 1));
   SETCAR(expr, errMessage_SEXP);
   PROTECT(res = Rf_eval(expr, R_GlobalEnv));
@@ -1026,14 +1026,14 @@ void SexpObject_clear(SexpObject *sexpobj)
     if (sexpobj->sexp != R_NilValue) {
 #ifdef RPY_DEBUG_PRESERVE
       printf("  PRESERVE -- Sexp_clear: R_ReleaseObject -- %p ", 
-	     sexpobj->sexp);
+             sexpobj->sexp);
       preserved_robjects -= 1;
       printf("-- %i\n", preserved_robjects);
 #endif 
     R_ReleaseObject(sexpobj->sexp);
     }
     PyMem_Free(sexpobj);
-    ////self->ob_type->tp_free((PyObject*)self);
+    /* self->ob_type->tp_free((PyObject*)self); */
 #ifdef RPY_VERBOSE
     printf("done.\n");
 #endif 
@@ -1055,19 +1055,20 @@ Sexp_dealloc(PySexpObject *self)
   Sexp_clear(self);
   self->ob_type->tp_free((PyObject*)self);
 
-  //PyObject_Del(self);
+  /* PyObject_Del(self); */
 }
 
 
 static PyObject*
 Sexp_repr(PyObject *self)
 {
-  //FIXME: make sure this is making any sense
+  /* FIXME: make sure this is making any sense */
   SEXP sexp = RPY_SEXP((PySexpObject *)self);
-  //if (! sexp) {
-  //  PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-  //  return NULL;
-  //}
+  /* if (! sexp) {
+   *  PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+   *  return NULL;
+   *}
+   */
   return PyString_FromFormat("<%s - Python:\%p / R:\%p>",
                              self->ob_type->tp_name,
                              self,
@@ -1459,13 +1460,13 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
 
   PySexpObject *self;
-  //unsigned short int rpy_only = 1;
+  /* unsigned short int rpy_only = 1; */
 
   #ifdef RPY_VERBOSE
   printf("new '%s' object @...\n", type->tp_name);
   #endif 
 
-  //self = (PySexpObject *)PyObject_New(PySexpObject, type);
+  /* self = (PySexpObject *)PyObject_New(PySexpObject, type); */
   self = (PySexpObject *)type->tp_alloc(type, 0);
   #ifdef RPY_VERBOSE
   printf("  Python:%p / R:%p (R_NilValue) ...\n", self, R_NilValue);
@@ -1482,7 +1483,7 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
   RPY_COUNT(self) = 1;
   RPY_SEXP(self) = R_NilValue;
-  //RPY_RPYONLY(self) = rpy_only;
+  /* RPY_RPYONLY(self) = rpy_only; */
 
   #ifdef RPY_VERBOSE
   printf("done.\n");
@@ -1509,7 +1510,7 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
 
   static char *kwlist[] = {"sexp", "copy", NULL};
-  //FIXME: handle the copy argument
+  /* FIXME: handle the copy argument */
 
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", 
                                     kwlist,
@@ -1548,7 +1549,7 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   printf("done.\n");
 #endif 
 
-  //SET_NAMED(RPY_SEXP((PySexpObject *)self), (unsigned int)2);
+  /* SET_NAMED(RPY_SEXP((PySexpObject *)self), (unsigned int)2); */
   return 0;
 }
 
@@ -1618,15 +1619,15 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
   SEXP res_R = NULL;
   int error = 0;
 
-  //FIXME: if env_R is null, use R_BaseEnv
-  //shouldn't it be R_GlobalContext (but then it throws a NULL error) ?
+  /* FIXME: if env_R is null, use R_BaseEnv
+   * shouldn't it be R_GlobalContext (but then it throws a NULL error) ? */
   if (isNull(env_R)) {
-    //env_R = R_BaseEnv;
+    /* env_R = R_BaseEnv; */
     env_R = R_GlobalEnv;
-    //env_R = R_GlobalContext;
+    /* env_R = R_GlobalContext; */
   }
 
-  //Py_BEGIN_ALLOW_THREADS
+  /* Py_BEGIN_ALLOW_THREADS */
 
 #ifdef _WIN32  
   last_sighandler = PyOS_setsig(SIGBREAK, interrupt_R);
@@ -1636,23 +1637,23 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 
   python_sighandler = last_sighandler;
 
-  //FIXME: evaluate expression in the given
+  /* FIXME: evaluate expression in the given */
   interrupted = 0;
   res_R = R_tryEval(expr_R, env_R, &error);
   
-  //Py_END_ALLOW_THREADS
+  /* Py_END_ALLOW_THREADS */
 #ifdef _WIN32
   PyOS_setsig(SIGBREAK, python_sighandler);   
 #else 
   PyOS_setsig(SIGINT, python_sighandler);
 #endif
 
-  //printf("interrupted: %i\n", interrupted);
+  /* printf("interrupted: %i\n", interrupted); */
   if (error) {
     if (interrupted) {
       printf("Keyboard interrupt.\n");
       PyErr_SetNone(PyExc_KeyboardInterrupt);
-    //FIXME: handling of interruptions
+      /* FIXME: handling of interruptions */
     } else {
       EmbeddedR_exception_from_errmessage();
     }
@@ -1718,7 +1719,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       goto fail;
     }
     tmp_R = RPY_SEXP((PySexpObject *)tmp_obj);
-    //tmp_R = Rf_duplicate(tmp_R);
+    /* tmp_R = Rf_duplicate(tmp_R); */
     if (! tmp_R) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       Py_DECREF(tmp_obj);
@@ -1773,8 +1774,8 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       }
       Py_DECREF(tmp_obj);
       tmp_R = RPY_SEXP((PySexpObject *)argValue);
-      //SET_NAMED(tmp_R, 2);
-      //tmp_R = Rf_duplicate(tmp_R);
+      /* SET_NAMED(tmp_R, 2); */
+      /* tmp_R = Rf_duplicate(tmp_R); */
       if (! tmp_R) {
         PyErr_Format(PyExc_ValueError, "NULL SEXP.");
         Py_DECREF(tmp_obj);
@@ -1785,18 +1786,18 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       if (addArgName) {
         argNameString = PyString_AsString(argName);
         SET_TAG(c_R, install(argNameString));
-    //printf("PyMem_Free...");
-      //FIXME: probably memory leak with argument names.
-    //PyMem_Free(argNameString);
+        /* printf("PyMem_Free..."); */
+        /* FIXME: probably memory leak with argument names. */
+        /* PyMem_Free(argNameString); */
       }
       c_R = CDR(c_R);
     }
     Py_XDECREF(citems);
   }
 
-//FIXME: R_GlobalContext ?
+  /* FIXME: R_GlobalContext ? */
   PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
-  //PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
+  /* PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R))); */
 
 /*   if (!res) { */
 /*     UNPROTECT(2); */
@@ -1806,13 +1807,13 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 
 
   if (! res_R) {
-    //EmbeddedR_exception_from_errmessage();
-    //PyErr_Format(PyExc_RuntimeError, "Error while running R code");
+    /* EmbeddedR_exception_from_errmessage(); */
+    /* PyErr_Format(PyExc_RuntimeError, "Error while running R code"); */
     embeddedR_freelock();
     return NULL;
   }
 
-  //FIXME: standardize R outputs
+  /* FIXME: standardize R outputs */
   extern void Rf_PrintWarnings(void);
   Rf_PrintWarnings(); /* show any warning messages */
 
@@ -1902,7 +1903,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
    * of length 2 (name, value).
    */
   for (arg_i=0; arg_i<nparams; arg_i++) {
-    //printf("item: %i\n", arg_i);
+    /* printf("item: %i\n", arg_i); */
     tmp_obj = PyTuple_GetItem(params, arg_i);
     if (! tmp_obj) {
       PyErr_Format(PyExc_ValueError, "No un-named item %i !?", arg_i);
@@ -1934,7 +1935,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
       goto fail;
     }
     tmp_R = RPY_SEXP((PySexpObject *)argValue);
-    //tmp_R = Rf_duplicate(tmp_R);
+    /* tmp_R = Rf_duplicate(tmp_R); */
     if (! tmp_R) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       goto fail;
@@ -1950,26 +1951,26 @@ Sexp_rcall(PyObject *self, PyObject *args)
     c_R = CDR(c_R);
   }
 
-  // Py_BEGIN_ALLOW_THREADS
-//FIXME: R_GlobalContext ?
+  /* Py_BEGIN_ALLOW_THREADS */
+  /* FIXME: R_GlobalContext ? */
   PROTECT(res_R = do_eval_expr(call_R, RPY_SEXP((PySexpObject *)env)));
-  //PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R)));
+  /* PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R))); */
 
 /*   if (!res) { */
 /*     UNPROTECT(2); */
 /*     return NULL; */
 /*   } */
   UNPROTECT(2);
-  //Py_END_ALLOW_THREADS
+  /* Py_END_ALLOW_THREADS */
 
   if (! res_R) {
-    //EmbeddedR_exception_from_errmessage();
-    //PyErr_Format(PyExc_RuntimeError, "Error while running R code");
+    /* EmbeddedR_exception_from_errmessage(); */
+    /* PyErr_Format(PyExc_RuntimeError, "Error while running R code"); */
     embeddedR_freelock();
     return NULL;
   }
 
-  //FIXME: standardize R outputs
+  /* FIXME: standardize R outputs */
   extern void Rf_PrintWarnings(void);
   Rf_PrintWarnings(); /* show any warning messages */
 
@@ -2058,7 +2059,7 @@ static PyTypeObject ClosureSexp_Type = {
         0,                      /*tp_as_mapping*/
         0,                      /*tp_hash*/
         Sexp_call,              /*tp_call*/
-        0,//Sexp_str,               /*tp_str*/
+        0,                      /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
@@ -2072,7 +2073,7 @@ static PyTypeObject ClosureSexp_Type = {
         0,                      /*tp_iternext*/
         ClosureSexp_methods,           /*tp_methods*/
         0,                      /*tp_members*/
-        0,//Sexp_getset,            /*tp_getset*/
+        0,                      /*tp_getset*/
         &Sexp_Type,             /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
@@ -2080,7 +2081,7 @@ static PyTypeObject ClosureSexp_Type = {
         0,                      /*tp_dictoffset*/
         (initproc)ClosureSexp_init,                      /*tp_init*/
         0,                      /*tp_alloc*/
-        0,//Sexp_new,               /*tp_new*/
+        0,                      /*tp_new*/
         0,                      /*tp_free*/
         0                      /*tp_is_gc*/
 };
@@ -2092,7 +2093,7 @@ ClosureSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   PyObject *object;
   PyObject *copy;
   static char *kwlist[] = {"sexpclos", "copy", NULL};
-  //FIXME: handle the copy argument
+  /* FIXME: handle the copy argument */
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", 
                                     kwlist,
                                     &object,
@@ -2101,7 +2102,7 @@ ClosureSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   }
   if (PyObject_IsInstance(object, 
                           (PyObject*)&ClosureSexp_Type)) {
-    //call parent's constructor
+    /* call parent's constructor */
     if (Sexp_init(self, args, NULL) == -1) {
       PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
       return -1;
@@ -2126,7 +2127,7 @@ static Py_ssize_t VectorSexp_len(PyObject *object)
   embeddedR_setlock();
 
   Py_ssize_t len;
-  //FIXME: sanity checks.
+  /* FIXME: sanity checks. */
   SEXP sexp = RPY_SEXP((PySexpObject *)object);
   if (! sexp) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
@@ -2213,7 +2214,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       res = PyString_FromString(vs);
       break;
 /*     case CHARSXP: */
-/*       //FIXME: implement handling of single char (if possible ?) */
+      /*       FIXME: implement handling of single char (if possible ?) */
 /*       vs = (CHAR(*sexp)[i_R]); */
 /*       res = PyString_FromStringAndSize(vs, 1); */
     case VECSXP:
@@ -2327,7 +2328,7 @@ static PySequenceMethods VectorSexp_sequenceMethods = {
   0,                              /* sq_concat */
   0,                              /* sq_repeat */
   (ssizeargfunc)VectorSexp_item,        /* sq_item */
-  0, //(ssizessizeargfunc)VectorSexp_slice,  /* sq_slice */
+  0, /*(ssizessizeargfunc)VectorSexp_slice,  sq_slice */
   (ssizeobjargproc)VectorSexp_ass_item,   /* sq_ass_item */
   0,                              /* sq_ass_slice */
   0,                              /* sq_contains */
@@ -2377,7 +2378,7 @@ static PyTypeObject VectorSexp_Type = {
         0,                      /*tp_as_mapping*/
         0,                      /*tp_hash*/
         0,              /*tp_call*/
-        0,//Sexp_str,               /*tp_str*/
+        0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
@@ -2424,7 +2425,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   static char *kwlist[] = {"sexpvector", "sexptype", "copy", NULL};
 
 
-  //FIXME: handle the copy argument
+  /* FIXME: handle the copy argument */
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|iO!", 
                                     kwlist,
                                     &object,
@@ -2441,9 +2442,9 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   if (PyObject_IsInstance(object, 
                           (PyObject*)&VectorSexp_Type)) {
-    //call parent's constructor
+    /* call parent's constructor */
     if (Sexp_init(self, args, NULL) == -1) {
-      //PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
+      /* PyErr_Format(PyExc_RuntimeError, "Error initializing instance."); */
       embeddedR_freelock();
       return -1;
     }
@@ -2454,8 +2455,9 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
       embeddedR_freelock();
       return -1;
     }
-    //FIXME: implemement automagic type ?
-    //(RPy has something)... or leave it to extensions ?
+    /* FIXME: implemement automagic type ?
+     *(RPy has something)... or leave it to extensions ? 
+     */
 
     SEXP sexp = newSEXP(object, sexptype);
     if (sexp == NULL) {
@@ -2469,7 +2471,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     #ifdef RPY_DEBUG_OBJECTINIT
     printf("  SEXP vector is %p.\n", RPY_SEXP((PySexpObject *)self));
     #endif
-    //SET_NAMED(RPY_SEXP((PySexpObject *)self), 2);
+    /* SET_NAMED(RPY_SEXP((PySexpObject *)self), 2); */
   } else {
     PyErr_Format(PyExc_ValueError, "Invalid sexpvector.");
     embeddedR_freelock();
@@ -2529,7 +2531,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   }
 
   if (res_R != R_UnboundValue) {
-    //FIXME rpy_only
+    /* FIXME rpy_only */
     res = newPySexpObject(res_R);
   } else {
     PyErr_Format(PyExc_LookupError, "'%s' not found", name);
@@ -2657,7 +2659,7 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   if (! is_PySexpObject) {
     PyErr_Format(PyExc_ValueError, 
                  "All parameters must be of type Sexp_Type.");
-    //PyDecRef(value);
+    /* PyDecRef(value); */
     return -1;
   }
 
@@ -2787,7 +2789,7 @@ static PyTypeObject EnvironmentSexp_Type = {
         &EnvironmentSexp_mappingMethods,/*tp_as_mapping*/
         0,                      /*tp_hash*/
         0,              /*tp_call*/
-        0,//Sexp_str,               /*tp_str*/
+        0,                      /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
@@ -2801,7 +2803,7 @@ static PyTypeObject EnvironmentSexp_Type = {
         0,                      /*tp_iternext*/
         EnvironmentSexp_methods,           /*tp_methods*/
         0,                      /*tp_members*/
-        0,//Sexp_getset,            /*tp_getset*/
+        0,                      /*tp_getset*/
         &Sexp_Type,             /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
@@ -2809,8 +2811,8 @@ static PyTypeObject EnvironmentSexp_Type = {
         0,                      /*tp_dictoffset*/
         (initproc)EnvironmentSexp_init,                      /*tp_init*/
         0,                      /*tp_alloc*/
-        //FIXME: add new method
-        0, //EnvironmentSexp_new,               /*tp_new*/
+        /* FIXME: add new method */
+        0,                      /*tp_new*/
         0,                      /*tp_free*/
         0                      /*tp_is_gc*/
 };
@@ -2821,7 +2823,7 @@ EnvironmentSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   PyObject *object;
   PyObject *copy;
   static char *kwlist[] = {"sexpenv", "copy", NULL};
-  //FIXME: handle the copy argument
+  /* FIXME: handle the copy argument */
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", 
                                     kwlist,
                                     &object,
@@ -2837,7 +2839,7 @@ EnvironmentSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   if (PyObject_IsInstance(object, 
                           (PyObject*)&EnvironmentSexp_Type)) {
-    //call parent's constructor
+    /* call parent's constructor */
     if (Sexp_init(self, args, NULL) == -1) {
       PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
       embeddedR_freelock();
@@ -2853,7 +2855,7 @@ EnvironmentSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 
-//FIXME: write more doc
+/* FIXME: write more doc */
 PyDoc_STRVAR(S4Sexp_Type_doc,
 "R object that is an 'S4 object'.\
 Attributes can be accessed using the method 'do_slot'.\
@@ -2880,7 +2882,7 @@ static PyTypeObject S4Sexp_Type = {
         0,                      /*tp_as_mapping*/
         0,                      /*tp_hash*/
         0,              /*tp_call*/
-        0,//Sexp_str,               /*tp_str*/
+        0,                      /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
@@ -2894,7 +2896,7 @@ static PyTypeObject S4Sexp_Type = {
         0,                      /*tp_iternext*/
         0,           /*tp_methods*/
         0,                      /*tp_members*/
-        0,//Sexp_getset,            /*tp_getset*/
+        0,                      /*tp_getset*/
         &Sexp_Type,             /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
@@ -2902,13 +2904,13 @@ static PyTypeObject S4Sexp_Type = {
         0,                      /*tp_dictoffset*/
         0,                      /*tp_init*/
         0,                      /*tp_alloc*/
-        //FIXME: add new method
-        0, //S4Sexp_new,               /*tp_new*/
+        /*FIXME: add new method */
+        0,                     /*tp_new*/
         0,                      /*tp_free*/
         0                      /*tp_is_gc*/
 };
 
-//FIXME: write more doc
+/* FIXME: write more doc */
 PyDoc_STRVAR(LangSexp_Type_doc,
 "Language object.");
 
@@ -2933,7 +2935,7 @@ static PyTypeObject LangSexp_Type = {
         0,                      /*tp_as_mapping*/
         0,                      /*tp_hash*/
         0,              /*tp_call*/
-        0,//Sexp_str,               /*tp_str*/
+        0,                      /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
@@ -2947,7 +2949,7 @@ static PyTypeObject LangSexp_Type = {
         0,                      /*tp_iternext*/
         0,           /*tp_methods*/
         0,                      /*tp_members*/
-        0,//Sexp_getset,            /*tp_getset*/
+        0,                      /*tp_getset*/
         &Sexp_Type,             /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
@@ -2955,8 +2957,8 @@ static PyTypeObject LangSexp_Type = {
         0,                      /*tp_dictoffset*/
         0,                      /*tp_init*/
         0,                      /*tp_alloc*/
-        //FIXME: add new method
-        0, //S4Sexp_new,               /*tp_new*/
+        /* FIXME: add new method */
+        0,                      /*tp_new*/
         0,                      /*tp_free*/
         0                      /*tp_is_gc*/
 };
@@ -2973,7 +2975,7 @@ newPySexpObject(const SEXP sexp)
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;
   }
-  //FIXME: let the possibility to manipulate un-evaluated promises ?
+  /* FIXME: let the possibility to manipulate un-evaluated promises ? */
   if (TYPEOF(sexp) == PROMSXP) {
     env_R = PRENV(sexp);
     sexp_ok = eval(sexp, env_R);
@@ -2989,7 +2991,7 @@ newPySexpObject(const SEXP sexp)
 #ifdef RPY_DEBUG_PRESERVE
     preserved_robjects += 1;
     printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
-	   sexp_ok, preserved_robjects);
+           sexp_ok, preserved_robjects);
 #endif 
   }
 
@@ -2999,7 +3001,7 @@ newPySexpObject(const SEXP sexp)
   case SPECIALSXP:
     object  = (PySexpObject *)Sexp_new(&ClosureSexp_Type, Py_None, Py_None);
     break;
-    //FIXME: BUILTINSXP and SPECIALSXP really like CLOSXP ?
+    /*FIXME: BUILTINSXP and SPECIALSXP really like CLOSXP ? */
   case REALSXP: 
   case INTSXP: 
   case LGLSXP:
@@ -3024,7 +3026,7 @@ newPySexpObject(const SEXP sexp)
   if (!object) {
 #ifdef RPY_DEBUG_PRESERVE
     printf("  PRESERVE -- Sexp_clear: R_ReleaseObject -- %p ", 
-	   sexp_ok);
+           sexp_ok);
     preserved_robjects -= 1;
     printf("-- %i\n", preserved_robjects);
 #endif
@@ -3032,10 +3034,10 @@ newPySexpObject(const SEXP sexp)
     PyErr_NoMemory();
     return NULL;
   }
-  //PyObject_Init(&object, &ClosureSexp_Type);
+  /* PyObject_Init(&object, &ClosureSexp_Type); */
   RPY_SEXP(object) = sexp_ok;
-  //FIXME: Increment reference ?
-  //Py_INCREF(object);
+  /* FIXME: Increment reference ? */
+  /* Py_INCREF(object); */
   return object;
 }
 
@@ -3177,7 +3179,7 @@ newSEXP(PyObject *object, int rType)
 #ifdef RPY_DEBUG_PRESERVE
     preserved_robjects += 1;
     printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
-	   sexp, preserved_robjects);
+           sexp, preserved_robjects);
 #endif 
   }
   UNPROTECT(1);
@@ -3192,7 +3194,7 @@ newSEXP(PyObject *object, int rType)
 
 /* --- Find a variable in an environment --- */
 
-//FIXME: is this any longer useful ?
+/* FIXME: is this any longer useful ? */
 static PySexpObject*
 EmbeddedR_findVar(PyObject *self, PyObject *args)
 {
@@ -3223,7 +3225,7 @@ EmbeddedR_sexpType(PyObject *self, PyObject *args)
   int sexp_i;
 
   if (! PyArg_ParseTuple(args, "i", &sexp_i)) {
-    //PyErr_Format(PyExc_LookupError, "Value should be an integer");
+    /* PyErr_Format(PyExc_LookupError, "Value should be an integer"); */
     return NULL;
   }
 
@@ -3234,7 +3236,7 @@ EmbeddedR_sexpType(PyObject *self, PyObject *args)
     PyErr_Format(PyExc_LookupError, "'%i' is not a valid SEXP value.", sexp_i);
     return NULL;
   }
-  //FIXME: store python strings when initializing validSexpType instead
+  /* FIXME: store python strings when initializing validSexpType instead */
   PyObject *res = PyString_FromString(sexp_type);
   return res;
 
@@ -3336,7 +3338,7 @@ do_Python(SEXP args)
     error(".Python: invalid python type");
     return R_NilValue;
   }
-  //PyTypeObject* type = R_ExternalPtrAddr(sexp);
+  /* PyTypeObject* type = R_ExternalPtrAddr(sexp); */
   args = CDDR(args);
   sexp = CAR(args);
   if (!R_PyObject_TYPE_CHECK(sexp)) {
@@ -3419,9 +3421,9 @@ static char **validSexpType;
 PyMODINIT_FUNC
 initrinterface(void)
 {
-//PyMODINIT_FUNC
-//RPY_RINTERFACE_INIT(void)
-//{
+  /* PyMODINIT_FUNC */
+  /* RPY_RINTERFACE_INIT(void) */
+  /* { */
 
   /* Finalize the type object including setting type of the new type
          * object; doing it here is required for portability to Windows 
@@ -3484,8 +3486,8 @@ initrinterface(void)
   ADD_INT_CONSTANT(m, FALSE);
 
   /* R_ext/Arith.h */
-  //ADD_INT_CONSTANT(m, NA_LOGICAL);
-  //ADD_INT_CONSTANT(m, NA_INTEGER);
+  /* ADD_INT_CONSTANT(m, NA_LOGICAL); */
+  /* ADD_INT_CONSTANT(m, NA_INTEGER); */
 
   initOptions = PyTuple_New(4);
 
@@ -3533,8 +3535,8 @@ initrinterface(void)
 
   if (PyModule_AddObject(m, "isInitialized", embeddedR_isInitialized) < 0)
     return;
-  //FIXME: DECREF ?
-  //Py_DECREF(embeddedR_isInitialized);
+  /* FIXME: DECREF ? */
+  /* Py_DECREF(embeddedR_isInitialized); */
 
   globalEnv = (PySexpObject *)Sexp_new(&EnvironmentSexp_Type, 
                                        Py_None, Py_None);
@@ -3542,8 +3544,8 @@ initrinterface(void)
 
   if (PyDict_SetItemString(d, "globalEnv", (PyObject *)globalEnv) < 0)
     return;
-  //FIXME: DECREF ?
-  //Py_DECREF(globalEnv);
+  /* FIXME: DECREF ? */
+  /* Py_DECREF(globalEnv); */
 
   baseNameSpaceEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
                                              Py_None, Py_None);
@@ -3551,7 +3553,7 @@ initrinterface(void)
   if (PyDict_SetItemString(d, "baseNameSpaceEnv", 
                            (PyObject *)baseNameSpaceEnv) < 0)
     return;
-/*   //FIXME: DECREF ? */
+/* FIXME: DECREF ? */
 /*   Py_DECREF(baseNameSpaceEnv); */
 
   emptyEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
@@ -3566,7 +3568,7 @@ initrinterface(void)
                                              Py_None, Py_None);
   if (PyDict_SetItemString(d, "R_MissingArg", (PyObject *)rpy_R_MissingArg) < 0)
     return;
-  //FIXME: DECREF ?
+  /* FIXME: DECREF ? */
   Py_DECREF(rpy_R_MissingArg);  
 
   rinterface_unserialize = PyDict_GetItemString(d, "unserialize");

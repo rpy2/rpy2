@@ -32,15 +32,15 @@ sexp_typekind(SEXP sexp)
   switch (TYPEOF(sexp)) {
   case REALSXP: return 'f';
   case INTSXP: return 'i';
-    //FIXME: handle strings ?
-    //case STRSXP: return 'S';
-        //FIXME: handle 'O' (as R list ?)
+    /* FIXME: handle strings ? */
+    /* case STRSXP: return 'S'; */
+    /* FIXME: handle 'O' (as R list ?) */
   case CPLXSXP: return 'c';
-  // It would be more logical (hah) to return 'b' here, but 1) R booleans are
-  // full integer width, and Numpy for example can only handle 8-bit booleans,
-  // not 32-bit, 2) R actually uses this width; NA_LOGICAL is the same as
-  // NA_INTEGER, i.e. INT_MIN, i.e. 0x80000000. So this also lets us preserve
-  // NA's:
+    /* It would be more logical (hah) to return 'b' here, but 1) R booleans are
+     * full integer width, and Numpy for example can only handle 8-bit booleans,
+     * not 32-bit, 2) R actually uses this width; NA_LOGICAL is the same as
+     * NA_INTEGER, i.e. INT_MIN, i.e. 0x80000000. So this also lets us preserve
+     * NA's: */
   case LGLSXP: return 'i';
   }
   return 0;
@@ -52,7 +52,7 @@ sexp_typepointer(SEXP sexp)
   switch (TYPEOF(sexp)) {
   case REALSXP: return (void *)NUMERIC_POINTER(sexp);
   case INTSXP: return (void *)INTEGER_POINTER(sexp);
-    //case STRSXP: return (void *)CHARACTER_POINTER(;
+    /* case STRSXP: return (void *)CHARACTER_POINTER(; */
   case CPLXSXP: return (void *)COMPLEX_POINTER(sexp);
   case LGLSXP: return (void *)LOGICAL_POINTER(sexp);
   }

@@ -13,7 +13,7 @@
 
 
 PyDoc_STRVAR(module_doc,
-	     "Graphical output devices for R.");
+             "Graphical output devices for R.");
 
 static inline void rpy_printandclear_error(void)
 {
@@ -21,7 +21,7 @@ static inline void rpy_printandclear_error(void)
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
      and the Python exception raised up.*/
-    //FIXME: Print the exception in the meanwhile
+    /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
     PyErr_Clear();
   }
@@ -32,8 +32,8 @@ static inline void rpy_GrDev_CallBack(pDevDesc dd, PyObject *name)
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
   result = PyObject_CallMethodObjArgs(self, name, NULL);
@@ -50,7 +50,7 @@ static void rpy_Close(pDevDesc dd)
 }
 
 PyDoc_STRVAR(GrDev_close_doc,
-	     "Close the graphical output device.");
+             "Close the graphical output device.");
 static PyObject* GrDev_close(PyObject *self)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device closing not implemented.");
@@ -65,12 +65,12 @@ static void rpy_Activate(pDevDesc dd)
 }
 
 PyDoc_STRVAR(GrDev_activate_doc,
-	     "Activate the graphical output device.");
+             "Activate the graphical output device.");
 static PyObject* GrDev_activate(PyObject *self)
 {
-  //error("Not implemented.");
+  /* error("Not implemented."); */
   PyErr_Format(PyExc_NotImplementedError, "Device activation not implemented.");
-  //printf("done.\n");
+  /* printf("done.\n"); */
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -82,7 +82,7 @@ static void rpy_Deactivate(pDevDesc dd)
 }
 
 PyDoc_STRVAR(GrDev_deactivate_doc,
-	     "Deactivate the graphical output device.");
+             "Deactivate the graphical output device.");
 static PyObject* GrDev_deactivate(PyObject *self)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device deactivation not implemented.");
@@ -92,22 +92,22 @@ static PyObject* GrDev_deactivate(PyObject *self)
 
 static PyObject* GrDev_size_name;
 static void rpy_Size(double *left, double *right, 
-		     double *bottom, double *top,
-		     pDevDesc dd)
+                     double *bottom, double *top,
+                     pDevDesc dd)
 {
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
   printf("FIXME: size(left=%f, right=%f, bottom=%f, top=%f)\n", 
-	 *left, *right, *bottom, *top);
+         *left, *right, *bottom, *top);
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
 
   PyObject *lrbt = Py_BuildValue("(dddd)", *left, *right, *bottom, *top);
   result = PyObject_CallMethodObjArgs(self, GrDev_size_name, 
-				      lrbt, NULL);
+                                      lrbt, NULL);
   rpy_printandclear_error();
 
   if (! PyTuple_Check(result) ) {
@@ -127,7 +127,7 @@ static void rpy_Size(double *left, double *right,
 }
 
 PyDoc_STRVAR(GrDev_size_doc,
-	     "Set the size of the graphical device.");
+             "Set the size of the graphical device.");
 static PyObject* GrDev_size(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device size not implemented.");
@@ -141,10 +141,10 @@ static void rpy_NewPage(const pGEcontext gc, pDevDesc dd)
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
-  //FIXME give the callback access to gc 
+  /* FIXME give the callback access to gc */
   PyObject *self = (PyObject *)dd->deviceSpecific;
   result = PyObject_CallMethodObjArgs(self, GrDev_newpage_name, NULL);
 
@@ -154,11 +154,11 @@ static void rpy_NewPage(const pGEcontext gc, pDevDesc dd)
 }
 
 PyDoc_STRVAR(GrDev_newpage_doc,
-	     "Create a new page for the graphical device.");
+             "Create a new page for the graphical device.");
 static PyObject* GrDev_newpage(PyObject *self, PyObject *args)
 {
   printf("FIXME: newpage.\n");
-  //PyErr_Format(PyExc_NotImplementedError, "Not implemented.");
+  /* PyErr_Format(PyExc_NotImplementedError, "Not implemented."); */
   Py_INCREF(Py_None);
   printf("  done.\n");
   return Py_None;
@@ -170,26 +170,26 @@ static void rpy_Clip(double x0, double x1, double y0, double y1, pDevDesc dd)
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  //FIXME optimize ?
+  /* FIXME optimize ? */
   PyObject *py_x0 = PyFloat_FromDouble(x0);
   PyObject *py_x1 = PyFloat_FromDouble(x1);
   PyObject *py_y0 = PyFloat_FromDouble(y0);
   PyObject *py_y1 = PyFloat_FromDouble(y1);
   result = PyObject_CallMethodObjArgs(self, GrDev_clip_name, 
-				      py_x0, py_x1,
-				      py_y0, py_y1,
-				      NULL);
+                                      py_x0, py_x1,
+                                      py_y0, py_y1,
+                                      NULL);
 
   rpy_printandclear_error();
   Py_XDECREF(result);
 }
 
 PyDoc_STRVAR(GrDev_clip_doc,
-	     "Clip the graphical device.");
+             "Clip the graphical device.");
 static PyObject* GrDev_clip(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device clip not implemented.");
@@ -203,10 +203,10 @@ static double rpy_StrWidth(const char *str, const pGEcontext gc, pDevDesc dd)
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
-  //FIXME give the callback access to gc 
+  /* FIXME give the callback access to gc */
   PyObject *self = (PyObject *)dd->deviceSpecific;
   PyObject *py_str = PyString_FromString(str);
   result = PyObject_CallMethodObjArgs(self, GrDev_strwidth_name, py_str);
@@ -220,7 +220,7 @@ static double rpy_StrWidth(const char *str, const pGEcontext gc, pDevDesc dd)
 }
 
 PyDoc_STRVAR(GrDev_strwidth_doc,
-	     "String width on the graphical device.");
+             "String width on the graphical device.");
 static PyObject* GrDev_strwidth(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device strwidth not implemented.");
@@ -230,26 +230,26 @@ static PyObject* GrDev_strwidth(PyObject *self, PyObject *args)
 
 static PyObject* GrDev_text_name;
 static void rpy_Text(double x, double y, const char *str,
-		     double rot, double hadj, const pGEcontext gc, pDevDesc dd)
+                     double rot, double hadj, const pGEcontext gc, pDevDesc dd)
 {
     PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  //FIXME optimize ?
+  /* FIXME optimize ? */
   PyObject *py_x = PyFloat_FromDouble(x);
   PyObject *py_y = PyFloat_FromDouble(y);
   PyObject *py_str = PyString_FromString(str);
   PyObject *py_rot = PyFloat_FromDouble(rot);
   PyObject *py_hadj = PyFloat_FromDouble(hadj);
-  //FIXME pass gc ?
+  /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_text_name, 
-				      py_x, py_y,
-				      py_str, py_rot, py_hadj,
-				      NULL);
+                                      py_x, py_y,
+                                      py_str, py_rot, py_hadj,
+                                      NULL);
 
   rpy_printandclear_error();
 
@@ -257,7 +257,7 @@ static void rpy_Text(double x, double y, const char *str,
 }
 
 PyDoc_STRVAR(GrDev_text_doc,
-	     "String width on the graphical device.");
+             "String width on the graphical device.");
 static PyObject* GrDev_text(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device text not implemented.");
@@ -267,25 +267,25 @@ static PyObject* GrDev_text(PyObject *self, PyObject *args)
 
 static PyObject* GrDev_rect_name;
 static void rpy_Rect(double x0, double x1, double y0, double y1,
-		     const pGEcontext gc, pDevDesc dd)
+                     const pGEcontext gc, pDevDesc dd)
 {
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  //FIXME optimize ?
+  /* FIXME optimize ? */
   PyObject *py_x0 = PyFloat_FromDouble(x0);
   PyObject *py_x1 = PyFloat_FromDouble(x1);
   PyObject *py_y0 = PyFloat_FromDouble(y0);
   PyObject *py_y1 = PyFloat_FromDouble(y1);
-  //FIXME pass gc ?
+  /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_rect_name, 
-				      py_x0, py_x1,
-				      py_y0, py_y1,
-				      NULL);
+                                      py_x0, py_x1,
+                                      py_y0, py_y1,
+                                      NULL);
 
   rpy_printandclear_error();
 
@@ -293,7 +293,7 @@ static void rpy_Rect(double x0, double x1, double y0, double y1,
 }
 
 PyDoc_STRVAR(GrDev_rect_doc,
-	     "Draw a rectangle on the graphical device.");
+             "Draw a rectangle on the graphical device.");
 static PyObject* GrDev_rect(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device rect not implemented.");
@@ -303,30 +303,30 @@ static PyObject* GrDev_rect(PyObject *self, PyObject *args)
 
 static PyObject* GrDev_circle_name;
 static void rpy_Circle(double x, double y, double r,
-		       const pGEcontext gc, pDevDesc dd)
+                       const pGEcontext gc, pDevDesc dd)
 {
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  //FIXME optimize ?
+  /* FIXME optimize ? */
   PyObject *py_x = PyFloat_FromDouble(x);
   PyObject *py_y = PyFloat_FromDouble(y);
   PyObject *py_r = PyFloat_FromDouble(r);
-  //FIXME pass gc ?
+  /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_circle_name, 
-				      py_x, py_y, py_r,
-				      NULL);
+                                      py_x, py_y, py_r,
+                                      NULL);
 
   rpy_printandclear_error();
   Py_DECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_circle_doc,
-	     "Draw a circle on the graphical device.");
+             "Draw a circle on the graphical device.");
 static PyObject* GrDev_circle(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device circle not implemented.");
@@ -336,32 +336,32 @@ static PyObject* GrDev_circle(PyObject *self, PyObject *args)
 
 static PyObject* GrDev_line_name;
 static void rpy_Line(double x1, double y1, 
-		     double x2, double y2,
-		     const pGEcontext gc, pDevDesc dd)
+                     double x2, double y2,
+                     const pGEcontext gc, pDevDesc dd)
 {
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  //FIXME optimize ?
+  /* FIXME optimize ? */
   PyObject *py_x1 = PyFloat_FromDouble(x1);
   PyObject *py_y1 = PyFloat_FromDouble(y1);
   PyObject *py_x2 = PyFloat_FromDouble(x2);
   PyObject *py_y2 = PyFloat_FromDouble(y2);
-  //FIXME pass gc ?
+  /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_line_name, 
-				      py_x1, py_y1, py_x2, py_y2,
-				      NULL);
+                                      py_x1, py_y1, py_x2, py_y2,
+                                      NULL);
 
   rpy_printandclear_error();
   Py_DECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_line_doc,
-	     "Draw a line on the graphical device.");
+             "Draw a line on the graphical device.");
 static PyObject* GrDev_line(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device line not implemented.");
@@ -371,30 +371,30 @@ static PyObject* GrDev_line(PyObject *self, PyObject *args)
 
 static PyObject* GrDev_polyline_name;
 static void rpy_PolyLine(int n, double *x, double *y, 
-			 const pGEcontext gc, pDevDesc dd)
+                         const pGEcontext gc, pDevDesc dd)
 {
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  //FIXME optimize ?
+  /* FIXME optimize ? */
   printf("FIXME: PolyLine.\n");
   PyObject *py_x = PyFloat_FromDouble(*x);
   PyObject *py_y = PyFloat_FromDouble(*y);
-  //FIXME pass gc ?
+  /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_polyline_name, 
-				      py_x, py_y,
-				      NULL);
+                                      py_x, py_y,
+                                      NULL);
 
   rpy_printandclear_error();
   Py_DECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_polyline_doc,
-	     "Draw a polyline on the graphical device.");
+             "Draw a polyline on the graphical device.");
 static PyObject* GrDev_polyline(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device polyline not implemented.");
@@ -404,29 +404,29 @@ static PyObject* GrDev_polyline(PyObject *self, PyObject *args)
 
 static PyObject* GrDev_polygon_name;
 static void rpy_Polygon(int n, double *x, double *y, 
-			const pGEcontext gc, pDevDesc dd)
+                        const pGEcontext gc, pDevDesc dd)
 {
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  //FIXME optimize ?
+  /* FIXME optimize ? */
   printf("FIXME: Polygon.\n");
   PyObject *py_x = PyFloat_FromDouble(*x);
   PyObject *py_y = PyFloat_FromDouble(*y);
-  //FIXME pass gc ?
+  /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_polygon_name, 
-				      py_x, py_y,
-				      NULL);
+                                      py_x, py_y,
+                                      NULL);
   rpy_printandclear_error();
   Py_DECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_polygon_doc,
-	     "Draw a polygon on the graphical device.");
+             "Draw a polygon on the graphical device.");
 static PyObject* GrDev_polygon(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device polygon not implemented.");
@@ -436,23 +436,23 @@ static PyObject* GrDev_polygon(PyObject *self, PyObject *args)
 
 static PyObject* GrDev_locator_name;
 static Rboolean rpy_Locator(double *x, double *y, 
-			const pGEcontext gc, pDevDesc dd)
+                        const pGEcontext gc, pDevDesc dd)
 {
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  //FIXME optimize ?
+  /* FIXME optimize ? */
   printf("FIXME: Polygon.\n");
   PyObject *py_x = PyFloat_FromDouble(*x);
   PyObject *py_y = PyFloat_FromDouble(*y);
-  //FIXME pass gc ?
+  /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_polygon_name, 
-				      py_x, py_y,
-				      NULL);
+                                      py_x, py_y,
+                                      NULL);
 
   rpy_printandclear_error();
 
@@ -474,7 +474,7 @@ static Rboolean rpy_Locator(double *x, double *y,
 }
 
 PyDoc_STRVAR(GrDev_locator_doc,
-	     "Locator on the graphical device.");
+             "Locator on the graphical device.");
 static PyObject* GrDev_locator(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device locator not implemented.");
@@ -488,20 +488,20 @@ static void rpy_Mode(int mode, pDevDesc dd)
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
   PyObject *py_mode = PyInt_FromLong((long)mode);
   result = PyObject_CallMethodObjArgs(self, GrDev_mode_name, 
-				      py_mode,
-				      NULL);
+                                      py_mode,
+                                      NULL);
   rpy_printandclear_error();
   Py_DECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_mode_doc,
-	     "Mode on the graphical device.");
+             "Mode on the graphical device.");
 static PyObject* GrDev_mode(PyObject *self)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device mode not implemented.");
@@ -511,27 +511,27 @@ static PyObject* GrDev_mode(PyObject *self)
 
 static PyObject* GrDev_metricinfo_name;
 static void rpy_MetricInfo(int c, const pGEcontext gc, 
-			   double* ascent, double* descent, double *width,
-			   pDevDesc dd)
+                           double* ascent, double* descent, double *width,
+                           pDevDesc dd)
 {
   PyObject *result;
 
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  //FIXME optimize ?
+  /* FIXME optimize ? */
   printf("FIXME: MetricInfo.\n");
   PyObject *py_c = PyInt_FromLong((long)c);
   PyObject *py_ascent = PyFloat_FromDouble(*ascent);
   PyObject *py_descent = PyFloat_FromDouble(*descent);
   PyObject *py_width = PyFloat_FromDouble(*width);
-  //FIXME pass gc ?
+  /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_metricinfo_name, 
-				      py_c,
-				      py_ascent, py_descent, py_width,
-				      NULL);
+                                      py_c,
+                                      py_ascent, py_descent, py_width,
+                                      NULL);
 
   rpy_printandclear_error();
 
@@ -552,7 +552,7 @@ static void rpy_MetricInfo(int c, const pGEcontext gc,
 }
 
 PyDoc_STRVAR(GrDev_metricinfo_doc,
-	     "MetricInfo on the graphical device.");
+             "MetricInfo on the graphical device.");
 static PyObject* GrDev_metricinfo(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device metricinfo not implemented.");
@@ -568,31 +568,31 @@ static SEXP rpy_GetEvent(SEXP rho, const char *prompt)
 
   pGEDevDesc dd = GEcurrentDevice();
   /* Restore the Python handler */
-  //FIXME
-  //PyOS_setsig(SIGINT, python_sighandler);
+  /* FIXME */
+  /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->dev->deviceSpecific;
-  //FIXME optimize ?
+  /* FIXME optimize ? */
   printf("FIXME: MetricInfo.\n");
   PyObject *py_prompt = PyString_FromString(prompt);
-  //FIXME pass gc ?
+  /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_getevent_name,
-				      py_prompt,
-				      NULL);
+                                      py_prompt,
+                                      NULL);
 
   rpy_printandclear_error();
-  //FIXME: check that the method only returns PySexp ?
+  /* FIXME: check that the method only returns PySexp ? */
   printf("FIXME: check that only PySexp returned.\n");
 
   r_res = RPY_SEXP((PySexpObject *)result);
-  //FIXME: handle refcount and protection of the resulting r_res
+  /* FIXME: handle refcount and protection of the resulting r_res */
   printf("FIXME: handle refcount and protection of the resulting r_res");
   Py_DECREF(result);
   return r_res;
 }
 
 PyDoc_STRVAR(GrDev_getevent_doc,
-	     "Get even on the graphical device.");
+             "Get even on the graphical device.");
 static PyObject* GrDev_getevent(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device getevent not implemented.");
@@ -624,27 +624,27 @@ void configureDevice(pDevDesc dd, PyObject *self)
   dd->mode = rpy_Mode;
   dd->metricInfo = rpy_MetricInfo;
   dd->getEvent = rpy_GetEvent;
-  //FIXME: initialization from self.attribute
-  dd->hasTextUTF8 = TRUE; //PyObject_GetAttrString(self, );
-  dd->wantSymbolUTF8 = TRUE;   //FIXME: initialization from self.attribute
+  /* FIXME: initialization from self.attribute */
+  dd->hasTextUTF8 = TRUE; /*PyObject_GetAttrString(self, ); */
+  dd->wantSymbolUTF8 = TRUE;   /* FIXME: initialization from self.attribute */
   dd->strWidthUTF8 = rpy_StrWidth;
   dd->textUTF8 = rpy_Text;
 
-  dd->left = 0;   //FIXME: initialization from self.attribute
-  dd->right = 100;   //FIXME: initialization from self.attribute
-  dd->bottom = 100;   //FIXME: initialization from self.attribute
-  dd->top = 0;   //FIXME: initialization from self.attribute
+  dd->left = 0;   /* FIXME: initialization from self.attribute */
+  dd->right = 100;   /* FIXME: initialization from self.attribute */
+  dd->bottom = 100;   /* FIXME: initialization from self.attribute */
+  dd->top = 0;   /* FIXME: initialization from self.attribute */
 
   /* starting parameters */
   dd->startfont = 1; 
-  dd->startps = 12.0; // ps * 
+  dd->startps = 12.0; /* ps *  */
   dd->startcol = R_RGB(0, 0, 0);
   dd->startfill = R_TRANWHITE;
   dd->startlty = LTY_SOLID; 
   dd->startgamma = 1;
         
-  //dd->cra[0] = 0.9 * 12;
-  //dd->cra[1] = 1.2 * 12;
+  /* dd->cra[0] = 0.9 * 12; */
+  /* dd->cra[1] = 1.2 * 12; */
         
   /* character addressing offsets */
   dd->xCharOffset = 0.4900;
@@ -658,7 +658,7 @@ void configureDevice(pDevDesc dd, PyObject *self)
   /* device capabilities */
   dd->canClip = FALSE;
   dd->canHAdj = 0; /* text adjustment 0, 1, or 2 */
-  dd->canChangeGamma = FALSE; //FIXME: what is this ? 
+  dd->canChangeGamma = FALSE; /* FIXME: what is this ? */
 
   dd->canGenMouseDown = TRUE; /* can the device generate mousedown events */
   dd->canGenMouseMove = TRUE; /* can the device generate mousemove events */
@@ -674,7 +674,7 @@ void configureDevice(pDevDesc dd, PyObject *self)
 static void
 GrDev_clear(PyGrDevObject *self)
 {
-  //FIXME
+  /* FIXME */
   printf("FIXME: Clearing GrDev.\n");
   printf("  done.\n");
 }
@@ -682,7 +682,7 @@ GrDev_clear(PyGrDevObject *self)
 static void
 GrDev_dealloc(PyGrDevObject *self)
 {
-  //FIXME
+  /* FIXME */
   printf("FIXME: Deallocating GrDev.\n");
   R_ReleaseObject(self->devnum);
   PyMem_Free(((PyGrDevObject *)self)->grdev);
@@ -695,9 +695,9 @@ GrDev_repr(PyObject *self)
 {
   pDevDesc devdesc = ((PyGrDevObject *)self)->grdev;
   return PyString_FromFormat("<%s - Python:\%p / R graphical device:\%p>",
-			     self->ob_type->tp_name,
-			     self,
-			     devdesc);
+                             self->ob_type->tp_name,
+                             self,
+                             devdesc);
 }
 
 static PyMethodDef GrDev_methods[] = {
@@ -741,7 +741,7 @@ static PyMethodDef GrDev_methods[] = {
 
 
 PyDoc_STRVAR(GrDev_hasTextUTF8_doc,
-	     "UTF8 capabilities of the device.");
+             "UTF8 capabilities of the device.");
 static PyObject*
 GrDev_hasTextUTF8_get(PyObject *self)
 {
@@ -759,12 +759,12 @@ GrDev_hasTextUTF8_set(PyObject *self, PyObject *value)
 {
   if (value == NULL) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute hasTextUTF8 cannot be deleted");
+                    "The attribute hasTextUTF8 cannot be deleted");
     return -1;
   }
   if (! PyBool_Check(value)) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute hasTextUTF8 must be a boolean");
+                    "The attribute hasTextUTF8 must be a boolean");
     return -1;
   }
   if (value == Py_True) {
@@ -773,14 +773,14 @@ GrDev_hasTextUTF8_set(PyObject *self, PyObject *value)
     ((PyGrDevObject *)self)->grdev->hasTextUTF8 = FALSE;
   } else {
     PyErr_SetString(PyExc_TypeError,
-		    "Mysterious error when setting the attribute hasTextUTF8.");
+                    "Mysterious error when setting the attribute hasTextUTF8.");
     return -1;
   }
   return 0;
 }
 
 PyDoc_STRVAR(GrDev_wantSymbolUTF8_doc,
-	     "UTF8 capabilities of the device.");
+             "UTF8 capabilities of the device.");
 static PyObject*
 GrDev_wantSymbolUTF8_get(PyObject *self)
 {
@@ -798,12 +798,12 @@ GrDev_wantSymbolUTF8_set(PyObject *self, PyObject *value)
 {
   if (value == NULL) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute wantSymbolUTF8 cannot be deleted");
+                    "The attribute wantSymbolUTF8 cannot be deleted");
     return -1;
   }
   if (! PyBool_Check(value)) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute wantSymbolUTF8 must be a boolean");
+                    "The attribute wantSymbolUTF8 must be a boolean");
     return -1;
   }
   if (value == Py_True) {
@@ -812,14 +812,14 @@ GrDev_wantSymbolUTF8_set(PyObject *self, PyObject *value)
     ((PyGrDevObject *)self)->grdev->wantSymbolUTF8 = FALSE;
   } else {
     PyErr_SetString(PyExc_TypeError,
-		    "Mysterious error when setting the attribute hasTextUTF8.");
+                    "Mysterious error when setting the attribute hasTextUTF8.");
     return -1;
   }
   return 0;
 }
 
 PyDoc_STRVAR(GrDev_left_doc,
-	     "Left coordinate.");
+             "Left coordinate.");
 static PyObject*
 GrDev_left_get(PyObject *self)
 {
@@ -832,12 +832,12 @@ GrDev_left_set(PyObject *self, PyObject *value)
 {
   if (value == NULL) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute left cannot be deleted");
+                    "The attribute left cannot be deleted");
     return -1;
   }
   if (! PyFloat_Check(value)) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute left must be a float");
+                    "The attribute left must be a float");
     return -1;
   }
   ((PyGrDevObject *)self)->grdev->left = PyFloat_AsDouble(value);    
@@ -846,7 +846,7 @@ GrDev_left_set(PyObject *self, PyObject *value)
 
 
 PyDoc_STRVAR(GrDev_right_doc,
-	     "Right coordinate.");
+             "Right coordinate.");
 static PyObject*
 GrDev_right_get(PyObject *self)
 {
@@ -859,12 +859,12 @@ GrDev_right_set(PyObject *self, PyObject *value)
 {
   if (value == NULL) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute right cannot be deleted");
+                    "The attribute right cannot be deleted");
     return -1;
   }
   if (! PyFloat_Check(value)) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute right must be a float");
+                    "The attribute right must be a float");
     return -1;
   }
   ((PyGrDevObject *)self)->grdev->right = PyFloat_AsDouble(value);    
@@ -872,7 +872,7 @@ GrDev_right_set(PyObject *self, PyObject *value)
 }
 
 PyDoc_STRVAR(GrDev_top_doc,
-	     "Top coordinate.");
+             "Top coordinate.");
 static PyObject*
 GrDev_top_get(PyObject *self)
 {
@@ -885,12 +885,12 @@ GrDev_top_set(PyObject *self, PyObject *value)
 {
   if (value == NULL) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute top cannot be deleted");
+                    "The attribute top cannot be deleted");
     return -1;
   }
   if (! PyFloat_Check(value)) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute top must be a float");
+                    "The attribute top must be a float");
     return -1;
   }
   ((PyGrDevObject *)self)->grdev->top = PyFloat_AsDouble(value);    
@@ -898,7 +898,7 @@ GrDev_top_set(PyObject *self, PyObject *value)
 }
 
 PyDoc_STRVAR(GrDev_bottom_doc,
-	     "Bottom coordinate.");
+             "Bottom coordinate.");
 static PyObject*
 GrDev_bottom_get(PyObject *self)
 {
@@ -911,12 +911,12 @@ GrDev_bottom_set(PyObject *self, PyObject *value)
 {
   if (value == NULL) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute bottom cannot be deleted");
+                    "The attribute bottom cannot be deleted");
     return -1;
   }
   if (! PyFloat_Check(value)) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute bottom must be a float");
+                    "The attribute bottom must be a float");
     return -1;
   }
   ((PyGrDevObject *)self)->grdev->bottom = PyFloat_AsDouble(value);    
@@ -924,7 +924,7 @@ GrDev_bottom_set(PyObject *self, PyObject *value)
 }
 
 PyDoc_STRVAR(GrDev_canGenMouseDown_doc,
-	     "Ability to generate mouse down events.");
+             "Ability to generate mouse down events.");
 static PyObject*
 GrDev_canGenMouseDown_get(PyObject *self)
 {
@@ -942,12 +942,12 @@ GrDev_canGenMouseDown_set(PyObject *self, PyObject *value)
 {
   if (value == NULL) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute canGenMouseDown cannot be deleted");
+                    "The attribute canGenMouseDown cannot be deleted");
     return -1;
   }
   if (! PyBool_Check(value)) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute canGenMouseDown must be a boolean");
+                    "The attribute canGenMouseDown must be a boolean");
     return -1;
   }
   if (value == Py_True) {
@@ -956,7 +956,7 @@ GrDev_canGenMouseDown_set(PyObject *self, PyObject *value)
     ((PyGrDevObject *)self)->grdev->canGenMouseDown = FALSE;
   } else {
     PyErr_SetString(PyExc_TypeError,
-		    "Mysterious error when setting the attribute canGenMouseDown.");
+                    "Mysterious error when setting the attribute canGenMouseDown.");
     return -1;
   }
   return 0;
@@ -964,7 +964,7 @@ GrDev_canGenMouseDown_set(PyObject *self, PyObject *value)
 
 
 PyDoc_STRVAR(GrDev_canGenMouseMove_doc,
-	     "Ability to generate mouse move events.");
+             "Ability to generate mouse move events.");
 static PyObject*
 GrDev_canGenMouseMove_get(PyObject *self)
 {
@@ -982,12 +982,12 @@ GrDev_canGenMouseMove_set(PyObject *self, PyObject *value)
 {
   if (value == NULL) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute canGenMouseMove cannot be deleted");
+                    "The attribute canGenMouseMove cannot be deleted");
     return -1;
   }
   if (! PyBool_Check(value)) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute canGenMouseMove must be a boolean");
+                    "The attribute canGenMouseMove must be a boolean");
     return -1;
   }
   if (value == Py_True) {
@@ -996,7 +996,7 @@ GrDev_canGenMouseMove_set(PyObject *self, PyObject *value)
     ((PyGrDevObject *)self)->grdev->canGenMouseMove = FALSE;
   } else {
     PyErr_SetString(PyExc_TypeError,
-		    "Mysterious error when setting the attribute canGenMouseMove.");
+                    "Mysterious error when setting the attribute canGenMouseMove.");
     return -1;
   }
   return 0;
@@ -1004,7 +1004,7 @@ GrDev_canGenMouseMove_set(PyObject *self, PyObject *value)
 
 
 PyDoc_STRVAR(GrDev_canGenMouseUp_doc,
-	     "Ability to generate mouse up events.");
+             "Ability to generate mouse up events.");
 static PyObject*
 GrDev_canGenMouseUp_get(PyObject *self)
 {
@@ -1022,12 +1022,12 @@ GrDev_canGenMouseUp_set(PyObject *self, PyObject *value)
 {
   if (value == NULL) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute canGenMouseUp cannot be deleted");
+                    "The attribute canGenMouseUp cannot be deleted");
     return -1;
   }
   if (! PyBool_Check(value)) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute canGenMouseUp must be a boolean");
+                    "The attribute canGenMouseUp must be a boolean");
     return -1;
   }
   if (value == Py_True) {
@@ -1036,7 +1036,7 @@ GrDev_canGenMouseUp_set(PyObject *self, PyObject *value)
     ((PyGrDevObject *)self)->grdev->canGenMouseUp = FALSE;
   } else {
     PyErr_SetString(PyExc_TypeError,
-		    "Mysterious error when setting the attribute canGenMouseUp.");
+                    "Mysterious error when setting the attribute canGenMouseUp.");
     return -1;
   }
   return 0;
@@ -1044,7 +1044,7 @@ GrDev_canGenMouseUp_set(PyObject *self, PyObject *value)
 
 
 PyDoc_STRVAR(GrDev_canGenKeybd_doc,
-	     "Ability to generate keyboard events.");
+             "Ability to generate keyboard events.");
 static PyObject*
 GrDev_canGenKeybd_get(PyObject *self)
 {
@@ -1062,12 +1062,12 @@ GrDev_canGenKeybd_set(PyObject *self, PyObject *value)
 {
   if (value == NULL) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute canGenKeydb cannot be deleted");
+                    "The attribute canGenKeydb cannot be deleted");
     return -1;
   }
   if (! PyBool_Check(value)) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute canGenKeybd must be a boolean");
+                    "The attribute canGenKeybd must be a boolean");
     return -1;
   }
   if (value == Py_True) {
@@ -1076,14 +1076,14 @@ GrDev_canGenKeybd_set(PyObject *self, PyObject *value)
     ((PyGrDevObject *)self)->grdev->canGenKeybd = FALSE;
   } else {
     PyErr_SetString(PyExc_TypeError,
-		    "Mysterious error when setting the attribute canGenKeybd.");
+                    "Mysterious error when setting the attribute canGenKeybd.");
     return -1;
   }
   return 0;
 }
 
 PyDoc_STRVAR(GrDev_displayListOn_doc,
-	     "Status of the display list.");
+             "Status of the display list.");
 static PyObject*
 GrDev_displayListOn_get(PyObject *self)
 {
@@ -1101,12 +1101,12 @@ GrDev_displayListOn_set(PyObject *self, PyObject *value)
 {
   if (value == NULL) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute displayListOn cannot be deleted");
+                    "The attribute displayListOn cannot be deleted");
     return -1;
   }
   if (! PyBool_Check(value)) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The attribute displayListOn must be a boolean");
+                    "The attribute displayListOn must be a boolean");
     return -1;
   }
   if (value == Py_True) {
@@ -1115,7 +1115,7 @@ GrDev_displayListOn_set(PyObject *self, PyObject *value)
     ((PyGrDevObject *)self)->grdev->displayListOn = FALSE;
   } else {
     PyErr_SetString(PyExc_TypeError,
-		    "Mysterious error when setting the attribute displayListOn.");
+                    "Mysterious error when setting the attribute displayListOn.");
     return -1;
   }
   return 0;
@@ -1123,7 +1123,7 @@ GrDev_displayListOn_set(PyObject *self, PyObject *value)
 
 
 PyDoc_STRVAR(GrDev_devnum_doc,
-	     "Device number.");
+             "Device number.");
 static PyObject* GrDev_devnum_get(PyObject* self)
 {
   PyObject* res;
@@ -1197,8 +1197,8 @@ static PyObject*
 GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
 
-  //FIXME: should this be checked and raise an exception if necessary ?
-  //R_CheckDeviceAvailable();
+  /* FIXME: should this be checked and raise an exception if necessary ? */
+  /* R_CheckDeviceAvailable(); */
 
   printf("FIXME: New GrDev\n");
   PyGrDevObject *self;
@@ -1208,7 +1208,7 @@ GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     PyErr_NoMemory();
 
   self->grdev = (pDevDesc)PyMem_Malloc(1 * sizeof(DevDesc));
-  //FIXME: fallback if memory allocation error ?
+  /* FIXME: fallback if memory allocation error ? */
   self->devnum = R_NilValue;
   printf("  done.\n");
   return(PyObject *)self;
@@ -1229,11 +1229,11 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   ((PyGrDevObject *)self)->devnum = ScalarInteger(ndevNumber(dd) + 1);
   R_PreserveObject(((PyGrDevObject *)self)->devnum);
-  //FIXME: protect device number ?
-  //allocate memory for the pDevDesc structure ?
-  //pDevDesc grdev = malloc();
-  //FIXME: handle allocation error
-  //self->grdev = grdev;
+  /* FIXME: protect device number ? */
+  /* allocate memory for the pDevDesc structure ? */
+  /* pDevDesc grdev = malloc(); */
+  /* FIXME: handle allocation error */
+  /* self->grdev = grdev; */
   printf("  done.\n");
   return 0;
 }
@@ -1242,25 +1242,25 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
  * Generic graphical device.
  */
 static PyTypeObject GrDev_Type = {
-	/* The ob_type field must be initialized in the module init function
-	 * to be portable to Windows without using C++. */
-	PyObject_HEAD_INIT(NULL)
-	0,			/*ob_size*/
-	"rinterface.GraphicalDevice",	/*tp_name*/
-	sizeof(PyGrDevObject),	/*tp_basicsize*/
-	0,			/*tp_itemsize*/
-	/* methods */
-	(destructor)GrDev_dealloc, /*tp_dealloc*/
-	0,			/*tp_print*/
-	0,                      /*tp_getattr*/
-	0,                      /*tp_setattr*/
-	0,			/*tp_compare*/
-	GrDev_repr,		/*tp_repr*/
-	0,			/*tp_as_number*/
-	0,			/*tp_as_sequence*/
-	0,			/*tp_as_mapping*/
-	0,			/*tp_hash*/
-	0,                      /*tp_call*/
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rinterface.GraphicalDevice",   /*tp_name*/
+        sizeof(PyGrDevObject),  /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        (destructor)GrDev_dealloc, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        GrDev_repr,             /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,                      /*tp_call*/
         0,                      /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
@@ -1268,7 +1268,7 @@ static PyTypeObject GrDev_Type = {
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
         0,                      /*tp_doc*/
         0,                      /*tp_traverse*/
-        0,//(inquiry)Sexp_clear,                      /*tp_clear*/
+        0,/*(inquiry)Sexp_clear, tp_clear*/
         0,                      /*tp_richcompare*/
         0,                      /*tp_weaklistoffset*/
         0,                      /*tp_iter*/
@@ -1289,12 +1289,12 @@ static PyTypeObject GrDev_Type = {
 };
 
 static PyMethodDef rpydevice_methods[] = {
-  {NULL,		NULL}		/* sentinel */
+  {NULL,                NULL}           /* sentinel */
 };
 
 
 
-#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
+#ifndef PyMODINIT_FUNC  /* declarations for DLL import/export */
 #define PyMODINIT_FUNC void
 #endif
 

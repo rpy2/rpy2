@@ -25,7 +25,7 @@ extern const unsigned int const RPY_R_BUSY;
 
 typedef struct {
   Py_ssize_t count;
-  //unsigned short int rpy_only;
+  /* unsigned short int rpy_only; */
   SEXP sexp;
 } SexpObject;
 
@@ -33,24 +33,24 @@ typedef struct {
 typedef struct {
   PyObject_HEAD 
   SexpObject *sObj;
-  //SEXP sexp;
+  /* SEXP sexp; */
 } PySexpObject;
 
 
 #define RPY_COUNT(obj) (((obj)->sObj)->count)
 #define RPY_SEXP(obj) (((obj)->sObj)->sexp)
-//#define RPY_SEXP(obj) ((obj)->sexp)
-//#define RPY_RPYONLY(obj) (((obj)->sObj)->rpy_only)
+/* #define RPY_SEXP(obj) ((obj)->sexp) */
+/* #define RPY_RPYONLY(obj) (((obj)->sObj)->rpy_only) */
 
 #define RPY_INCREF(obj) (((obj)->sObj)->count++)
 #define RPY_DECREF(obj) (((obj)->sObj)->count--)
 
-#define RPY_PY_FROM_RBOOL(res, rbool)			\
-  if (rbool == NA_LOGICAL) {				\
-    Py_INCREF(Py_None);					\
-    res = Py_None;					\
-  } else {						\
-    res = PyBool_FromLong((long)(rbool));		\
+#define RPY_PY_FROM_RBOOL(res, rbool)                   \
+  if (rbool == NA_LOGICAL) {                            \
+    Py_INCREF(Py_None);                                 \
+    res = Py_None;                                      \
+  } else {                                              \
+    res = PyBool_FromLong((long)(rbool));               \
   }
 
 
@@ -62,7 +62,7 @@ typedef struct {
 
 #define RPY_GIL_RELEASE(is_threaded, gstate) \
   if (is_threaded) { \
-    PyGILState_Release(gstate);			\
+    PyGILState_Release(gstate);                 \
   }
 
 
