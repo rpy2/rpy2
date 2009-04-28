@@ -95,6 +95,14 @@ class BoolSexpVector(SexpVector):
     def __init__(self, v):        
         super(BoolSexpVector, self).__init__(v, LGLSXP)
 
+class ListSexpVector(SexpVector):
+    """ 
+    Vector of objects (list in R terminology).
+    """
+    def __init__(self, v):        
+        super(ListSexpVector, self).__init__(v, VECSXP)
+
+
 # wrapper in case someone changes sys.stdout:
 def consolePrint(x):
     """This is the default callback for R's console. It simply writes to stdout."""

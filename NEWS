@@ -46,6 +46,10 @@ New Features
 - Ability to specify a callback function for R_CleanUp (called upon exiting R)
   [very experimental]
 
+- Class :class:`ListSexpVector` for creating R lists easily
+  (complementing :class:`IntSexpVector`, :class:`StrSexpVector`, and friends) 
+
+
 Changes
 -------
 
@@ -69,7 +73,7 @@ Bugs fixed
   (like :meth:`rinterface.SexpEnvironment` does)
 
 - :class:`rinterface.SexpVector` will now properly raise an exception
-  when trying to create vector-like object of impossible type.
+  when trying to create vector-like object of impossible type
 
 
 Release 2.0.4
