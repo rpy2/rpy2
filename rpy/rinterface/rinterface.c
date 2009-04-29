@@ -1159,7 +1159,7 @@ PyDoc_STRVAR(Sexp_do_slot_assign_doc,
              "Set the attribute/slot for an R object.\n"
              "\n"
              ":param name: string\n"
-             ":param value: instance of rpy2.rinterface.Sexp");
+             ":param value: instance of :class:`rpy2.rinterface.Sexp`");
 
 static PyObject*
 Sexp_named_get(PyObject *self)
@@ -1562,7 +1562,7 @@ static PyTypeObject Sexp_Type = {
          * to be portable to Windows without using C++. */
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
-        "rinterface.Sexp",      /*tp_name*/
+        "rpy2.rinterface.Sexp",      /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
@@ -1991,7 +1991,7 @@ PyDoc_STRVAR(SexpClosure_rcall_doc,
              "R function.\n\n"
              ":param args: tuple of two-elements items"
              " or class::`rlike.container.ArgsDict`\n\n"
-             ":rtype: instance of type or subtype :class:`rinterface.Sexp`\n");
+             ":rtype: instance of type or subtype :class:`rpy2.rinterface.Sexp`\n");
 
 static PySexpObject*
 Sexp_closureEnv(PyObject *self)
@@ -2016,7 +2016,7 @@ PyDoc_STRVAR(Sexp_closureEnv_doc,
 Returns the environment the object is defined in.\n\
 This corresponds to the C-level function CLOENV(SEXP).\n\
 \n\
-:rtype: :class:`rinterface.SexpEnvironment`\n");
+:rtype: :class:`rpy2.rinterface.SexpEnvironment`\n");
 
 static PyMethodDef ClosureSexp_methods[] = {
   {"closureEnv", (PyCFunction)Sexp_closureEnv, METH_NOARGS,
@@ -2044,7 +2044,7 @@ static PyTypeObject ClosureSexp_Type = {
          * to be portable to Windows without using C++. */
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
-        "rinterface.SexpClosure",       /*tp_name*/
+        "rpy2.rinterface.SexpClosure",       /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
@@ -2363,7 +2363,7 @@ static PyTypeObject VectorSexp_Type = {
          * to be portable to Windows without using C++. */
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
-        "rinterface.SexpVector",        /*tp_name*/
+        "rpy2.rinterface.SexpVector",        /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
@@ -2774,7 +2774,7 @@ static PyTypeObject EnvironmentSexp_Type = {
          * to be portable to Windows without using C++. */
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
-        "rinterface.SexpEnvironment",   /*tp_name*/
+        "rpy2.rinterface.SexpEnvironment",   /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
@@ -2867,7 +2867,7 @@ static PyTypeObject S4Sexp_Type = {
          * to be portable to Windows without using C++. */
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
-        "rinterface.SexpS4",    /*tp_name*/
+        "rpy2.rinterface.SexpS4",    /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
@@ -2920,7 +2920,7 @@ static PyTypeObject LangSexp_Type = {
          * to be portable to Windows without using C++. */
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
-        "rinterface.SexpLang",  /*tp_name*/
+        "rpy2.rinterface.SexpLang",  /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
@@ -3521,7 +3521,7 @@ initrinterface(void)
 
 
   if (RPyExc_RuntimeError == NULL) {
-    RPyExc_RuntimeError = PyErr_NewException("rinterface.RRuntimeError", 
+    RPyExc_RuntimeError = PyErr_NewException("rpy2.rinterface.RRuntimeError", 
                                              NULL, NULL);
     if (RPyExc_RuntimeError == NULL)
       return;
