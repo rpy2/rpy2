@@ -196,3 +196,5 @@ latex_logo = 'rpy2_logo.png'
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+

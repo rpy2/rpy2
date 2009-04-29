@@ -542,3 +542,7 @@ nicely:
   fit = robjects.r('lm(%s)' %fmla.r_repr())
 
 
+Class diagram
+=============
+
+.. inheritance-diagram:: rpy2.robjects
