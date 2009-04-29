@@ -15,4 +15,9 @@ include debian/*
 prune debian/.svn
 prune CVS
 prune dist
-prune doc
+
+include demos/*
+
+include doc/Makefile
+include doc/source
+
