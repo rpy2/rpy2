@@ -9,10 +9,15 @@ include rpy/rinterface/array.c
 include rpy/rinterface/array.h
 include rpy/rinterface/r_utils.c
 include rpy/rinterface/r_utils.h
+include rpy/rinterface/rpy_device.c
+include rpy/rinterface/rpy_device.h
 
 include debian/*
 
 prune debian/.svn
 prune CVS
 prune dist
-prune doc
+
+include doc/Makefile
+include doc/source
+
