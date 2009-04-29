@@ -41,7 +41,7 @@ Requirements
 
 Python version 2.4 or higher, as well as R-2.7.0 or higher are required.
 
-Currently the development is mostly done on Linux and MacOS X with the
+Currently the development is mostly done on Linux and a bit MacOS X with the
 following version for the softwares:
 
 ======== ========
