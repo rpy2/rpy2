@@ -51,6 +51,7 @@ class RObjectMixin(object):
 
     rclass = property(getrclass)
 
+
 def repr_robject(o, linesep=os.linesep):
     s = rpy2.rinterface.baseNameSpaceEnv.get("deparse")(o)
     s = str.join(linesep, s)
@@ -67,3 +68,4 @@ class RObject(RObjectMixin, rpy2.rinterface.Sexp):
                                      "that inherits from rpy2.rinterface.Sexp" +\
                                      "(not from %s)" %type(value))
         super(RObject, self).__setattr__(name, value)
+
