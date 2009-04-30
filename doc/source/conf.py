@@ -31,8 +31,7 @@ extensions = ['sphinx.ext.doctest',
               'sphinx.ext.ifconfig',
               'sphinx.ext.intersphinx',
               'sphinx.ext.graphviz', 
-              'sphinx.ext.inheritance_diagram',
-              'autoinit_rpy']
+              'sphinx.ext.inheritance_diagram']
               
 intersphinx_mapping = {'http://docs.python.org/dev': None}
 
