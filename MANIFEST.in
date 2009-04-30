@@ -19,5 +19,5 @@ prune dist
 include demos/*
 
 include doc/Makefile
-include doc/source
+include doc/source/*
 
