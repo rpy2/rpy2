@@ -26,6 +26,9 @@ help:
 clean:
 	-rm -rf build/*
 
+rpy_graphics:
+	@cd source/_static/demos && python graphics.py
+
 html:
 	mkdir -p source/_static
 	mkdir -p build/html build/doctrees
