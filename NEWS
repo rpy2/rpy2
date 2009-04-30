@@ -94,7 +94,7 @@ Bugs fixed
   setup.py now only print a message about an empty string returned from 
   R CMD config
 
-- Numpy arrays with complex elements are now longer causing segfaults
+- Numpy arrays with complex elements are no longer causing segfaults
 
 
 Release 2.0.3
