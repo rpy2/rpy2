@@ -73,10 +73,18 @@ def get_rconfig(RHOME, about, allow_empty = False):
         # MacOSX
         rconfig_m = re.match('^(-F.+) (-framework.+)$', rconfig)
     if rconfig_m is None:
+        # MacOSX
+        rconfig_m = re.match('^(-framework.+)$', rconfig)
+    if rconfig_m is None:
         rconfig_m = re.match('^(-I.+)$', rconfig)
-    if (rconfig_m is None) and not allow_empty:
-        raise Exception(cmd + '\nreturned\n' + rconfig)
-    return rconfig_m.groups()
+        
+    if (rconfig_m is None):
+        if allow_empty:
+            return []
+        else:
+            raise Exception(cmd + '\nreturned\n' + rconfig)
+    else:
+        return rconfig_m.groups()
 
 rnewest = [0, 0, 0]
 rversions = []
