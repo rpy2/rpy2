@@ -40,7 +40,9 @@ class build(_build):
 class build_ext(_build_ext):
     """
     -DRPY_VERBOSE
-    -DRPY_DEBUG_PRESERVE   : SEXP objects being preserved and 'unpreserved'
+    -DRPY_DEBUG_PRESERV+         rconfig_m = re.match('^(-framework.+)$', rconfig)
++     if rconfig_m is None:
+E   : SEXP objects being preserved and 'unpreserved'
                              from R's garbage collection
     -DRPY_DEBUG_PROMISE    : evaluation of promises
     -DRPY_DEBUG_OBJECTINIT : initialization of PySexpObject
@@ -180,13 +182,14 @@ def get_rconfig(r_home, about, allow_empty = False):
     possible_patterns = ('^(-L.+) (-l.+)$',
                          '^(-l.+)$',  # fix for the case -lblas is returned
                          '^(-F.+) (-framework.+)$', # fix for MacOS X
+                         '^(-framework.+)$',
                          '^(-I.+)$')
     for pattern in possible_patterns:
         rconfig_m = re.match(pattern, rconfig)
         if rconfig_m is not None:
             break
     if rconfig_m is None:
-        if allow_empy and (rconfig == ''):
+        if allow_empty and (rconfig == ''):
             print(cmd + '\nreturned an empty string.\n')
         else:
             raise Exception(cmd + '\nreturned\n' + rconfig)
