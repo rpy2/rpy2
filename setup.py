@@ -40,14 +40,12 @@ class build(_build):
 class build_ext(_build_ext):
     """
     -DRPY_VERBOSE
-    -DRPY_DEBUG_PRESERV+         rconfig_m = re.match('^(-framework.+)$', rconfig)
-+     if rconfig_m is None:
-E   : SEXP objects being preserved and 'unpreserved'
-                             from R's garbage collection
+    -DRPY_DEBUG_PRESERV
     -DRPY_DEBUG_PROMISE    : evaluation of promises
     -DRPY_DEBUG_OBJECTINIT : initialization of PySexpObject
     -DRPY_DEBUG_CONSOLE    : console I/O
-    -DRPY_DEBUG_COBJECT    : SexpObject passed as a CObject 
+    -DRPY_DEBUG_COBJECT    : SexpObject passed as a CObject
+    -DRPY_DEBUG_GRDEV
     """
     user_options = _build_ext.user_options + \
         [

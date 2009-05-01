@@ -381,7 +381,9 @@ static void rpy_PolyLine(int n, double *x, double *y,
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
   /* FIXME optimize ? */
+  #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: PolyLine.\n");
+  #endif
   PyObject *py_x = PyFloat_FromDouble(*x);
   PyObject *py_y = PyFloat_FromDouble(*y);
   /* FIXME pass gc ? */
@@ -414,7 +416,9 @@ static void rpy_Polygon(int n, double *x, double *y,
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
   /* FIXME optimize ? */
+#ifdef RPY_DEBUG_GRDEV
   printf("FIXME: Polygon.\n");
+#endif
   PyObject *py_x = PyFloat_FromDouble(*x);
   PyObject *py_y = PyFloat_FromDouble(*y);
   /* FIXME pass gc ? */
@@ -446,7 +450,9 @@ static Rboolean rpy_Locator(double *x, double *y,
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
   /* FIXME optimize ? */
+#ifdef RPY_DEBUG_GRDEV
   printf("FIXME: Polygon.\n");
+#endif
   PyObject *py_x = PyFloat_FromDouble(*x);
   PyObject *py_y = PyFloat_FromDouble(*y);
   /* FIXME pass gc ? */
@@ -519,10 +525,12 @@ static void rpy_MetricInfo(int c, const pGEcontext gc,
   /* Restore the Python handler */
   /* FIXME */
   /* PyOS_setsig(SIGINT, python_sighandler); */
-
+  
   PyObject *self = (PyObject *)dd->deviceSpecific;
   /* FIXME optimize ? */
+#ifdef RPY_DEBUG_GRDEV
   printf("FIXME: MetricInfo.\n");
+#endif
   PyObject *py_c = PyInt_FromLong((long)c);
   PyObject *py_ascent = PyFloat_FromDouble(*ascent);
   PyObject *py_descent = PyFloat_FromDouble(*descent);
@@ -573,7 +581,9 @@ static SEXP rpy_GetEvent(SEXP rho, const char *prompt)
 
   PyObject *self = (PyObject *)dd->dev->deviceSpecific;
   /* FIXME optimize ? */
+#ifdef RPY_DEBUG_GRDEV
   printf("FIXME: MetricInfo.\n");
+#endif
   PyObject *py_prompt = PyString_FromString(prompt);
   /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_getevent_name,
@@ -683,11 +693,15 @@ static void
 GrDev_dealloc(PyGrDevObject *self)
 {
   /* FIXME */
+#ifdef RPY_DEBUG_GRDEV
   printf("FIXME: Deallocating GrDev.\n");
+#endif
   R_ReleaseObject(self->devnum);
   PyMem_Free(((PyGrDevObject *)self)->grdev);
   self->ob_type->tp_free((PyObject*)self);
+#ifdef RPY_DEBUG_GRDEV
   printf("  done.\n");
+#endif
 }
 
 static PyObject*
@@ -1200,7 +1214,9 @@ GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   /* FIXME: should this be checked and raise an exception if necessary ? */
   /* R_CheckDeviceAvailable(); */
 
+#ifdef RPY_DEBUG_GRDEV
   printf("FIXME: New GrDev\n");
+#endif
   PyGrDevObject *self;
   self = (PyGrDevObject *)type->tp_alloc(type, 0);
 
@@ -1210,7 +1226,9 @@ GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   self->grdev = (pDevDesc)PyMem_Malloc(1 * sizeof(DevDesc));
   /* FIXME: fallback if memory allocation error ? */
   self->devnum = R_NilValue;
+#ifdef RPY_DEBUG_GRDEV
   printf("  done.\n");
+#endif
   return(PyObject *)self;
 }
 
@@ -1218,8 +1236,9 @@ GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static int
 GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
+#ifdef RPY_DEBUG_GRDEV
   printf("FIXME: Initializing GrDev\n");
-
+#endif
   pDevDesc dd = ((PyGrDevObject *)self)->grdev;
 
   configureDevice(dd, self);
@@ -1246,7 +1265,7 @@ static PyTypeObject GrDev_Type = {
          * to be portable to Windows without using C++. */
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
-        "rinterface.GraphicalDevice",   /*tp_name*/
+        "rpy2.rinterface.GraphicalDevice",   /*tp_name*/
         sizeof(PyGrDevObject),  /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
