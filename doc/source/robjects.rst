@@ -527,7 +527,7 @@ The class :class:`robjects.RFormula` is representing an `R` formula.
   y = x.r + robjects.r.rnorm(10, sd=0.2)
 
   fmla = robjects.RFormula('y ~ x')
-  env = fmla.getenvironment()
+  env = fmla.environment
   env['x'] = x
   env['y'] = y
 
