@@ -99,8 +99,8 @@ class build_ext(_build_ext):
         for r_home in self.r_home:
             r_home = r_home.strip()
         rversion = get_rversion(r_home)
-        if cmp_version(rversion[:2], [2, 7]) == -1:
-            raise SystemExit("Error: R >= 2.7 required.")
+        if cmp_version(rversion[:2], [2, 8]) == -1:
+            raise SystemExit("Error: R >= 2.8 required.")
         rversions.append(rversion)
 
         r_libs = []
