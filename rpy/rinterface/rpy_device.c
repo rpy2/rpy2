@@ -130,7 +130,10 @@ PyDoc_STRVAR(GrDev_size_doc,
              "Set the size of the graphical device.");
 static PyObject* GrDev_size(PyObject *self, PyObject *args)
 {
-  PyErr_Format(PyExc_NotImplementedError, "Device size not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, 
+	       "Device size not implemented.\n"
+	       "[ expected signature is ((left, right, bottom, top)) \n]"
+	       "[ should return a tuple of length 4]");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -364,7 +367,9 @@ PyDoc_STRVAR(GrDev_line_doc,
              "Draw a line on the graphical device.");
 static PyObject* GrDev_line(PyObject *self, PyObject *args)
 {
-  PyErr_Format(PyExc_NotImplementedError, "Device line not implemented.");
+  PyErr_Format(PyExc_NotImplementedError, 
+	       "Device line not implemented.\n"
+	       "[expected signature is (x1, y1, x2, y2)]");
   Py_INCREF(Py_None);
   return Py_None;
 }
