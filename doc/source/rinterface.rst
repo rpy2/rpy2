@@ -643,7 +643,24 @@ rather difficult.
 but this can lead to complications since '_' can also be used for R symbols. 
 
 There is a way to provide explict access to object in R packages, since
-loaded packages can be considered as environments.
+loaded packages can be considered as environments. To make it convenient
+to use, one can consider making a function such as the one below:
+
+.. code-block:: python
+
+   def rimport(packname):
+       """ import an R package and return its environment """
+       as_environment = rinterface.baseNameSpaceEnv['as.environment']
+       require = rinterface.baseNameSpaceEnv['require']
+       require(rinterface.StrSexpVector(packname), 
+               quiet = rinterface.BoolSexpVector((True, )))
+       packname = rinterface.StrSexpVector(('package:' + str(packname)))
+       pack_env = as_environment(packname)
+       return pack_env
+
+>>> class_env = rimport("class")
+>>> class_env['knn']
+
 
 For example, we can reimplement in `Python` the `R` function 
 returning the search path (`search`).

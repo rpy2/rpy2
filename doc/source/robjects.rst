@@ -39,12 +39,15 @@ This class is currently a singleton, with
 its one representation instanciated when the
 module is loaded:
 
-
 >>> robjects.r
 >>> print(robjects.r)
 
 The instance can be seen as the entry point to an
 embedded R process.
+
+Being a singleton means that each time the constructor
+for :class:`R` is called the same instance is returned;
+this is required by the fact that the embedded R is stateful.
 
 The elements that would be accessible
 from an equivalent R environment are accessible as attributes
@@ -62,6 +65,7 @@ R functions:
 
 >>> plot = robjects.r.plot
 >>> dir = robjects.r.dir
+
 
 This approach has limitation as:
 
@@ -120,9 +124,8 @@ garbage collection until `foo` is deleted from Python
 1.2
 
 
-
-Strings as R code
------------------
+Evaluating a string as R code
+-----------------------------
 
 Just like it is the case with RPy-1.x, on-the-fly
 evaluation of R code contained in a string can be performed
