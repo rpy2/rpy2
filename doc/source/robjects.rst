@@ -96,7 +96,7 @@ rather straightforward:
   1. Check if the attribute is defined as such in the python definition for
      `r`
 
-  2. Check if the attribute is can be accessed in R, starting from `globalEnv`
+  2. Check if the attribute is can be accessed in R, starting from `globalenv`
 
 When safety matters most, we recommend using :meth:`__getitem__` to get
 a given R object.
@@ -106,7 +106,7 @@ a given R object.
 Storing the object in a python variable will protect it from garbage
 collection, even if deleted from the objects visible to an R user.
 
->>> robjects.globalEnv['foo'] = 1.2
+>>> robjects.globalenv['foo'] = 1.2
 >>> foo = robjects.r['foo']
 >>> foo[0]
 1.2
@@ -326,7 +326,7 @@ The method :meth:`getnames` retrieve those names.
 
 .. index::
    pair: robjects;REnvironment
-   pair: robjects;globalEnv
+   pair: robjects;globalenv
 
 :class:`RArray`
 ---------------
@@ -408,9 +408,6 @@ an hybrid of a dictionary and a scope.
 The first of all environments is called the Global Environment,
 that can also be referred to as the R workspace.
 
->>> globalEnv = robjects.globalEnv
-
-
 An R environment in RPy2 can be seen as a kind of Python
 dictionnary.
 
@@ -418,9 +415,9 @@ Assigning a value to a symbol in an environment has been
 made as simple as assigning a value to a key in a Python
 dictionary:
 
->>> robjects.r.ls(globalEnv)
+>>> robjects.r.ls(globalenv)
 >>> globalEnv["a"] = 123
->>> print(robjects.r.ls(globalEnv))
+>>> print(robjects.r.ls(globalenv))
 
 
 Care must be taken when assigning objects into an environment
@@ -429,7 +426,7 @@ with an identical name.
 The following example should make one measure that this can mean
 trouble if no care is taken:
 
->>> globalEnv["pi"] = 123
+>>> globalenv["pi"] = 123
 >>> print(robjects.r.pi)
 [1] 123
 >>>

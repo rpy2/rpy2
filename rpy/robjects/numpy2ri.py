@@ -41,7 +41,7 @@ def numpy2ri(o):
             for field_name in o.dtype.names:
                 df_args.append((field_name, 
                                 ro.conversion.py2ri(o[field_name])))
-            res = ro.baseNameSpaceEnv["data.frame"].rcall(tuple(df_args), ro.globalEnv)
+            res = ro.baseenv["data.frame"].rcall(tuple(df_args), ro.globalenv)
         # It should be impossible to get here:
         else:
             raise(ValueError("Unknown numpy array type."))

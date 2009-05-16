@@ -29,32 +29,32 @@ class RInstanceTestCase(unittest.TestCase):
 
     def testEval(self):
         # vector long enough to span across more than one line
-        x = robjects.baseNameSpaceEnv['seq'](1, 50, 2)
+        x = robjects.baseenv['seq'](1, 50, 2)
         res = robjects.r('sum(%s)' %x.r_repr())
         self.assertEquals(625, res[0])
         
 class MappingTestCase(unittest.TestCase):
 
     def testMapperR2Python_string(self):
-        sexp = rinterface.globalEnv.get("letters")
+        sexp = rinterface.globalenv.get("letters")
         ob = robjects.default_ri2py(sexp)
         self.assertTrue(isinstance(ob, 
                                    robjects.RVector))
 
     def testMapperR2Python_boolean(self):
-        sexp = rinterface.globalEnv.get("T")
+        sexp = rinterface.globalenv.get("T")
         ob = robjects.default_ri2py(sexp)
         self.assertTrue(isinstance(ob, 
                                    robjects.RVector))
 
     def testMapperR2Python_function(self):
-        sexp = rinterface.globalEnv.get("plot")
+        sexp = rinterface.globalenv.get("plot")
         ob = robjects.default_ri2py(sexp)
         self.assertTrue(isinstance(ob, 
                                    robjects.RFunction))
 
     def testMapperR2Python_environment(self):
-        sexp = rinterface.globalEnv.get(".GlobalEnv")
+        sexp = rinterface.globalenv.get(".GlobalEnv")
         self.assertTrue(isinstance(robjects.default_ri2py(sexp), 
                                    robjects.REnvironment))
 
@@ -62,7 +62,7 @@ class MappingTestCase(unittest.TestCase):
         robjects.r('setClass("A", representation(x="integer"))')
         classname = rinterface.StrSexpVector(["A", ])
         one = rinterface.IntSexpVector([1, ])
-        sexp = rinterface.globalEnv.get("new")(classname, 
+        sexp = rinterface.globalenv.get("new")(classname, 
                                                x=one)
         self.assertTrue(isinstance(robjects.default_ri2py(sexp), 
                                    robjects.RS4))
@@ -113,7 +113,7 @@ class MappingTestCase(unittest.TestCase):
 
         def f(obj):
             pyobj = robjects.default_ri2py(obj)
-            inherits = rinterface.baseNameSpaceEnv["inherits"]
+            inherits = rinterface.baseenv["inherits"]
             classname = rinterface.SexpVector(["density", ], 
                                               rinterface.STRSXP)
             if inherits(pyobj, classname)[0]:

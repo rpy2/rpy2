@@ -11,20 +11,20 @@ class SexpClosureTestCase(unittest.TestCase):
         self.assertRaises(ValueError, rinterface.SexpClosure, x)
         
     def testTypeof(self):
-        sexp = rinterface.globalEnv.get("plot")
+        sexp = rinterface.globalenv.get("plot")
         self.assertEquals(sexp.typeof, rinterface.CLOSXP)
 
     def testRError(self):
-        sum = rinterface.baseNameSpaceEnv["sum"]
-        letters = rinterface.baseNameSpaceEnv["letters"]
+        sum = rinterface.baseenv["sum"]
+        letters = rinterface.baseenv["letters"]
         self.assertRaises(rinterface.RRuntimeError, sum, letters)
 
     def testClosureEnv(self):
-        parse = rinterface.baseNameSpaceEnv["parse"]
+        parse = rinterface.baseenv["parse"]
         exp = parse(text = rinterface.SexpVector(["function(x) { x[y] }", ], 
                                                  rinterface.STRSXP))
-        fun = rinterface.baseNameSpaceEnv["eval"](exp)
-        vec = rinterface.baseNameSpaceEnv["letters"]
+        fun = rinterface.baseenv["eval"](exp)
+        vec = rinterface.baseenv["letters"]
         self.assertRaises(rinterface.RRuntimeError, fun, vec)
 
         fun.closureEnv()["y"] = rinterface.SexpVector([1, ], 
@@ -37,8 +37,8 @@ class SexpClosureTestCase(unittest.TestCase):
 
     def testCallS4SetClass(self):
         # R's package "methods" can perform uncommon operations
-        r_setClass = rinterface.globalEnv.get('setClass')
-        r_representation = rinterface.globalEnv.get('representation')
+        r_setClass = rinterface.globalenv.get('setClass')
+        r_representation = rinterface.globalenv.get('representation')
         attrnumeric = rinterface.SexpVector(["numeric", ],
                                             rinterface.STRSXP)
         classname = rinterface.SexpVector(['Track', ], rinterface.STRSXP)
@@ -59,8 +59,8 @@ class SexpClosureTestCase(unittest.TestCase):
                            ('c', rinterface.SexpVector([0, ], 
                                                        rinterface.INTSXP))))
         
-        mylist = rinterface.baseNameSpaceEnv['list'].rcall(ad.items(), 
-                                                           rinterface.globalEnv)
+        mylist = rinterface.baseenv['list'].rcall(ad.items(), 
+                                                           rinterface.globalenv)
         
         names = [x for x in mylist.do_slot("names")]
         
@@ -69,32 +69,32 @@ class SexpClosureTestCase(unittest.TestCase):
 
     def testRcallArgsDictEnv(self):
         def parse(x):
-            rparse = rinterface.baseNameSpaceEnv.get('parse')
+            rparse = rinterface.baseenv.get('parse')
             res = rparse(text = rinterface.StrSexpVector((x,)))
             return res
             
         ad = rlc.ArgsDict( ((None, parse('sum(x)')),) )
-        env_a = rinterface.baseNameSpaceEnv['new.env']()
+        env_a = rinterface.baseenv['new.env']()
         env_a['x'] = rinterface.IntSexpVector([1,2,3])
-        sum_a = rinterface.baseNameSpaceEnv['eval'].rcall(ad.items(), 
+        sum_a = rinterface.baseenv['eval'].rcall(ad.items(), 
                                                           env_a)
         self.assertEquals(6, sum_a[0])
-        env_b = rinterface.baseNameSpaceEnv['new.env']()
+        env_b = rinterface.baseenv['new.env']()
         env_b['x'] = rinterface.IntSexpVector([4,5,6])
-        sum_b = rinterface.baseNameSpaceEnv['eval'].rcall(ad.items(), 
+        sum_b = rinterface.baseenv['eval'].rcall(ad.items(), 
                                                           env_b)
         self.assertEquals(15, sum_b[0])        
         
     def testErrorInCall(self):
-        mylist = rinterface.baseNameSpaceEnv['list']
+        mylist = rinterface.baseenv['list']
         
         self.assertRaises(ValueError, mylist, 'foo')
 
     def testMissingArg(self):
-        parse = rinterface.baseNameSpaceEnv["parse"]
+        parse = rinterface.baseenv["parse"]
         exp = parse(text=rinterface.SexpVector(["function(x) { missing(x) }"],
                                                rinterface.STRSXP))
-        fun = rinterface.baseNameSpaceEnv["eval"](exp)
+        fun = rinterface.baseenv["eval"](exp)
         nonmissing = rinterface.SexpVector([0, ], rinterface.INTSXP)
         missing = rinterface.R_MissingArg
         self.assertEquals(False, fun(nonmissing)[0])

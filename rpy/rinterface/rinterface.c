@@ -3547,7 +3547,7 @@ initrinterface(void)
                                        Py_None, Py_None);
   RPY_SEXP(globalEnv) = R_EmptyEnv;
 
-  if (PyDict_SetItemString(d, "globalEnv", (PyObject *)globalEnv) < 0)
+  if (PyDict_SetItemString(d, "globalenv", (PyObject *)globalEnv) < 0)
     return;
   /* FIXME: DECREF ? */
   /* Py_DECREF(globalEnv); */
@@ -3555,7 +3555,7 @@ initrinterface(void)
   baseNameSpaceEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
                                              Py_None, Py_None);
   RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
-  if (PyDict_SetItemString(d, "baseNameSpaceEnv", 
+  if (PyDict_SetItemString(d, "baseenv", 
                            (PyObject *)baseNameSpaceEnv) < 0)
     return;
 /* FIXME: DECREF ? */
@@ -3564,7 +3564,7 @@ initrinterface(void)
   emptyEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
                                      Py_None, Py_None);
   RPY_SEXP(emptyEnv) = R_EmptyEnv;
-  if (PyDict_SetItemString(d, "emptyEnv", 
+  if (PyDict_SetItemString(d, "emptyenv", 
                            (PyObject *)emptyEnv) < 0)
     return;
 

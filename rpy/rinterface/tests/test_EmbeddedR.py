@@ -8,7 +8,7 @@ rinterface.initr()
 
 def onlyAQUAorWindows(function):
     def res(self):
-        platform = rinterface.baseNameSpaceEnv.get('.Platform')
+        platform = rinterface.baseenv.get('.Platform')
         platform_gui = [e for i, e in enumerate(platform.do_slot('names')) if e == 'GUI'][0]
         platform_ostype = [e for i, e in enumerate(platform.do_slot('names')) if e == 'OS.type'][0]
         if (platform_gui != 'AQUA') and (platform_ostype != 'windows'):
@@ -48,7 +48,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         rinterface.setWriteConsole(f)
         self.assertEquals(rinterface.getWriteConsole(), f)
         code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
-        rinterface.baseNameSpaceEnv["print"](code)
+        rinterface.baseenv["print"](code)
         self.assertEquals('[1] "3"\n', str.join('', buf))
 
     def testWriteConsoleWithError(self):
@@ -61,7 +61,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         sys.stderr = tmp_file
         try:
             code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
-            rinterface.baseNameSpaceEnv["print"](code)
+            rinterface.baseenv["print"](code)
         except Exception, e:
             sys.stderr = stderr
             raise e
@@ -80,7 +80,7 @@ class EmbeddedRTestCase(unittest.TestCase):
 
         rinterface.setFlushConsole(f)
         self.assertEquals(rinterface.getFlushConsole(), f)
-        rinterface.baseNameSpaceEnv.get("flush.console")()
+        rinterface.baseenv.get("flush.console")()
         self.assertEquals(1, flush['count'])
         rinterface.setWriteConsole(rinterface.consoleFlush)
 
@@ -94,7 +94,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         stderr = sys.stderr
         sys.stderr = tmp_file
         try:
-            res = rinterface.baseNameSpaceEnv.get("flush.console")()
+            res = rinterface.baseenv.get("flush.console")()
         except Exception, e:
             sys.stderr = stderr
             raise e
@@ -111,7 +111,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             return yes
         rinterface.setReadConsole(sayyes)
         self.assertEquals(rinterface.getReadConsole(), sayyes)
-        res = rinterface.baseNameSpaceEnv["readline"]()
+        res = rinterface.baseenv["readline"]()
         self.assertEquals(yes.strip(), res[0])
         rinterface.setReadConsole(rinterface.consoleRead)
 
@@ -125,7 +125,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         stderr = sys.stderr
         sys.stderr = tmp_file
         try:
-            res = rinterface.baseNameSpaceEnv["readline"]()
+            res = rinterface.baseenv["readline"]()
         except Exception, e:
             sys.stderr = stderr
             raise e
@@ -151,7 +151,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             return me
         rinterface.setChooseFile(chooseMe)
         self.assertEquals(rinterface.getChooseFile(), chooseMe)
-        res = rinterface.baseNameSpaceEnv["file.choose"]()
+        res = rinterface.baseenv["file.choose"]()
         self.assertEquals(me, res[0])
         rinterface.setChooseFile(rinterface.chooseFile)
 
@@ -164,7 +164,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         stderr = sys.stderr
         sys.stderr = tmp_file
         try:
-            res = rinterface.baseNameSpaceEnv["file.choose"]()
+            res = rinterface.baseenv["file.choose"]()
         except rinterface.RRuntimeError, rre:
             pass
         except Exception, e:
@@ -185,11 +185,11 @@ class EmbeddedRTestCase(unittest.TestCase):
                 sf.append(tf)
 
         rinterface.setShowFiles(f)
-        file_path = rinterface.baseNameSpaceEnv["file.path"]
-        r_home = rinterface.baseNameSpaceEnv["R.home"]
+        file_path = rinterface.baseenv["file.path"]
+        r_home = rinterface.baseenv["R.home"]
         filename = file_path(r_home(rinterface.StrSexpVector(("doc", ))), 
                              rinterface.StrSexpVector(("COPYRIGHTS", )))
-        res = rinterface.baseNameSpaceEnv["file.show"](filename)
+        res = rinterface.baseenv["file.show"](filename)
         self.assertEquals(filename[0], sf[1][1])
         self.assertEquals('R Information', sf[0])
 
@@ -203,7 +203,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         import multiprocessing
         def foo(queue):
             import rpy2.rinterface as rinterface
-            rdate = rinterface.baseNameSpaceEnv['date']
+            rdate = rinterface.baseenv['date']
             rinterface.endr(1)
             try:
                 tmp = rdate()
@@ -221,9 +221,9 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertTrue(res[0])
 
     def testStr_typeint(self):
-        t = rinterface.baseNameSpaceEnv['letters']
+        t = rinterface.baseenv['letters']
         self.assertEquals('STRSXP', rinterface.str_typeint(t.typeof))
-        t = rinterface.baseNameSpaceEnv['pi']
+        t = rinterface.baseenv['pi']
         self.assertEquals('REALSXP', rinterface.str_typeint(t.typeof))
 
     def testStr_typeint_invalid(self):
@@ -265,22 +265,22 @@ class EmbeddedRTestCase(unittest.TestCase):
 
 class ObjectDispatchTestCase(unittest.TestCase):
     def testObjectDispatchLang(self):
-        formula = rinterface.globalEnv.get('formula')
+        formula = rinterface.globalenv.get('formula')
         obj = formula(rinterface.StrSexpVector(['y ~ x', ]))
         self.assertTrue(isinstance(obj, rinterface.SexpVector))
         self.assertEquals(rinterface.LANGSXP, obj.typeof)
 
     def testObjectDispatchVector(self):
-        letters = rinterface.globalEnv.get('letters')
+        letters = rinterface.globalenv.get('letters')
         self.assertTrue(isinstance(letters, rinterface.SexpVector))
 
     def testObjectDispatchClosure(self):
         #import pdb; pdb.set_trace()
-        help = rinterface.globalEnv.get('sum')
+        help = rinterface.globalenv.get('sum')
         self.assertTrue(isinstance(help, rinterface.SexpClosure))
 
     def testObjectDispatchRawVector(self):
-        raw = rinterface.baseNameSpaceEnv.get('raw')
+        raw = rinterface.baseenv.get('raw')
         rawvec = raw(rinterface.IntSexpVector((10, )))
         self.assertEquals(rinterface.RAWSXP, rawvec.typeof)
 
@@ -289,7 +289,7 @@ class SerializeTestCase(unittest.TestCase):
         x = rinterface.IntSexpVector([1,2,3])
         x_serialized = x.__getstate__()
         x_again = rinterface.unserialize(x_serialized, x.typeof)
-        identical = rinterface.baseNameSpaceEnv["identical"]
+        identical = rinterface.baseenv["identical"]
         self.assertFalse(x.rsame(x_again))
         self.assertTrue(identical(x, x_again)[0])
 

@@ -55,7 +55,7 @@ With :mod:`rpy2`:
 
    Under the hood, the variable `pi` is gotten by default from the
    R *base* package, unless an other variable with the name `pi` was
-   created in the `globalEnv`. The Section :ref:`robjects-environments`
+   created in R's `.globalEnv`. The Section :ref:`robjects-environments`
    tells more about that.
 
    Also note that pi is not a scalar but a vector of length 1
@@ -118,7 +118,7 @@ but first also creates an R function
 `f`. That function `f` is present in the R `Global Environement`, and can
 be accessed with the `__getitem__` mechanism outlined above:
 
->>> r_f = robjects.globalEnv['f']
+>>> r_f = robjects.globalenv['f']
 >>> print(r_f.r_repr())
 function (r) 
 {
@@ -302,8 +302,8 @@ One way to achieve the same with :mod:`rpy2.robjects` is
    group = r.gl(2, 10, 20, labels = ["Ctl","Trt"])
    weight = ctl + trt
 
-   robjects.globalEnv["weight"] = weight
-   robjects.globalEnv["group"] = group
+   robjects.globalenv["weight"] = weight
+   robjects.globalenv["group"] = group
    lm_D9 = r.lm("weight ~ group")
    print(r.anova(lm_D9))
 

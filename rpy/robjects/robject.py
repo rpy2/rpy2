@@ -8,15 +8,15 @@ class RObjectMixin(object):
     """ Class to provide methods common to all RObject instances """
     name = None
 
-    __tempfile = rpy2.rinterface.baseNameSpaceEnv.get("tempfile")
-    __file = rpy2.rinterface.baseNameSpaceEnv.get("file")
-    __fifo = rpy2.rinterface.baseNameSpaceEnv.get("fifo")
-    __sink = rpy2.rinterface.baseNameSpaceEnv.get("sink")
-    __close = rpy2.rinterface.baseNameSpaceEnv.get("close")
-    __readlines = rpy2.rinterface.baseNameSpaceEnv.get("readLines")
-    __unlink = rpy2.rinterface.baseNameSpaceEnv.get("unlink")
-    __rclass = rpy2.rinterface.baseNameSpaceEnv.get("class")
-    __show = rpy2.rinterface.baseNameSpaceEnv.get("show")
+    __tempfile = rpy2.rinterface.baseenv.get("tempfile")
+    __file = rpy2.rinterface.baseenv.get("file")
+    __fifo = rpy2.rinterface.baseenv.get("fifo")
+    __sink = rpy2.rinterface.baseenv.get("sink")
+    __close = rpy2.rinterface.baseenv.get("close")
+    __readlines = rpy2.rinterface.baseenv.get("readLines")
+    __unlink = rpy2.rinterface.baseenv.get("unlink")
+    __rclass = rpy2.rinterface.baseenv.get("class")
+    __show = rpy2.rinterface.baseenv.get("show")
 
     def __str__(self):
         if sys.platform == 'win32':
@@ -53,7 +53,7 @@ class RObjectMixin(object):
 
 
 def repr_robject(o, linesep=os.linesep):
-    s = rpy2.rinterface.baseNameSpaceEnv.get("deparse")(o)
+    s = rpy2.rinterface.baseenv.get("deparse")(o)
     s = str.join(linesep, s)
     return s
 

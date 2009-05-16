@@ -4,12 +4,12 @@ ri = robjects.rinterface
 import array
 import rpy2.rlike.container as rlc
 
-rlist = robjects.baseNameSpaceEnv["list"]
+rlist = robjects.baseenv["list"]
 
 class RVectorTestCase(unittest.TestCase):
 
     def testNew(self):
-        identical = ri.baseNameSpaceEnv["identical"]
+        identical = ri.baseenv["identical"]
         py_a = array.array('i', [1,2,3])
         ro_v = robjects.RVector(py_a)
         self.assertEquals(ro_v.typeof, ri.INTSXP)
@@ -82,7 +82,7 @@ class RVectorTestCase(unittest.TestCase):
 
         
     def testSubsetByIndex(self):
-        seq_R = robjects.baseNameSpaceEnv["seq"]
+        seq_R = robjects.baseenv["seq"]
         mySeq = seq_R(0, 10)
         # R indexing starts at one
         myIndex = robjects.RVector(array.array('i', range(1, 11, 2)))
@@ -97,11 +97,11 @@ class RVectorTestCase(unittest.TestCase):
             self.assertEquals(mySeq[si-1], mySubset[i])
         
     def testSubsetByName(self):
-        seq_R = robjects.baseNameSpaceEnv["seq"]
+        seq_R = robjects.baseenv["seq"]
         mySeq = seq_R(0, 25)
 
-        letters = robjects.baseNameSpaceEnv["letters"]
-        mySeq = robjects.baseNameSpaceEnv["names<-"](mySeq, 
+        letters = robjects.baseenv["letters"]
+        mySeq = robjects.baseenv["names<-"](mySeq, 
                                                      letters)
 
         # R indexing starts at one
@@ -113,7 +113,7 @@ class RVectorTestCase(unittest.TestCase):
             self.assertEquals(2, mySubset[i])
 
     def testSubsetIndexError(self):
-        seq_R = robjects.baseNameSpaceEnv["seq"]
+        seq_R = robjects.baseenv["seq"]
         mySeq = seq_R(0, 10)
         # R indexing starts at one
         myIndex = robjects.RVector(['a', 'b', 'c'])
@@ -147,19 +147,19 @@ class RVectorTestCase(unittest.TestCase):
 
     def testSubsetList(self):
         # list
-        letters = robjects.baseNameSpaceEnv["letters"]
+        letters = robjects.baseenv["letters"]
         myList = rlist(l=letters, f="foo")
-        idem = robjects.baseNameSpaceEnv["identical"]
+        idem = robjects.baseenv["identical"]
         self.assertTrue(idem(letters, myList.subset("l")[0]))
         self.assertTrue(idem("foo", myList.subset("f")[0]))
 
     def testGetItem(self):
-        letters = robjects.baseNameSpaceEnv["letters"]
+        letters = robjects.baseenv["letters"]
         self.assertEquals('a', letters[0])
         self.assertEquals('z', letters[25])
 
     def testGetItemOutOfBounds(self):
-        letters = robjects.baseNameSpaceEnv["letters"]
+        letters = robjects.baseenv["letters"]
         self.assertRaises(IndexError, letters.__getitem__, 26)
 
     def testSetItem(self):
@@ -173,16 +173,16 @@ class RVectorTestCase(unittest.TestCase):
 
     def getItemList(self):
         mylist = rlist(letters, "foo")
-        idem = robjects.baseNameSpaceEnv["identical"]
+        idem = robjects.baseenv["identical"]
         self.assertTrue(idem(letters, mylist[0]))
         self.assertTrue(idem("foo", mylist[1]))
 
     def testGetNames(self):
         vec = robjects.RVector(array.array('i', [1,2,3]))
-        v_names = [robjects.baseNameSpaceEnv["letters"][x] for x in (0,1,2)]
+        v_names = [robjects.baseenv["letters"][x] for x in (0,1,2)]
         #FIXME: simplify this
-        r_names = robjects.baseNameSpaceEnv["c"](*v_names)
-        vec = robjects.baseNameSpaceEnv["names<-"](vec, r_names)
+        r_names = robjects.baseenv["c"](*v_names)
+        vec = robjects.baseenv["names<-"](vec, r_names)
         for i in xrange(len(vec)):
             self.assertEquals(v_names[i], vec.getnames()[i])
 

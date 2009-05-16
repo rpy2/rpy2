@@ -98,10 +98,10 @@ Those two objects could be accessed from Python using their names.
 Two environments are provided as :class:`rpy2.rinterface.SexpEnvironment`
 
 .. index::
-   single: globalEnv
-   single: SexpEnvironment; globalEnv
+   single: globalenv
+   single: SexpEnvironment; globalenv
 
-.. rubric:: globalEnv
+.. rubric:: globalenv
 
 The global environment can be seen as the root (or topmost) environment,
 and is in fact a list, that is a sequence, of environments.
@@ -115,17 +115,17 @@ how to present it a clear(er) way).
 The library is said to be attached to the current search path.
 
 .. index::
-   pair: rinterface; baseNamespaceEnv
-   single: SexpEnvironment; baseNamespaceEnv
+   pair: rinterface; baseenv
+   single: SexpEnvironment; baseenv
 
-.. rubric:: baseNamespaceEnv
+.. rubric:: baseenv
 
 The base package has a namespace, that can be accessed as an environment.
 
 .. note::
-   Depending on what is in `globalEnv` and on the attached packages, base
-   objects can be masked when starting the search from `globalEnv`. 
-   Use `baseNamespaceEnv`
+   Depending on what is in `globalenv` and on the attached packages, base
+   objects can be masked when starting the search from `globalenv`. 
+   Use `baseenv`
    when you want to be sure to access a function you know to be
    in the base namespace.
 
@@ -184,8 +184,8 @@ An example should make it obvious::
    # output from the R console will now be appended to the list 'buf'
    rinterface.setWriteConsole(f)
 
-   date = rinterface.baseNamespaceEnv['date']
-   rprint = rinterface.baseNamespaceEnv['print']
+   date = rinterface.baseenv['date']
+   rprint = rinterface.baseenv['print']
    rprint(date())
 
    # the output is in our list (as defined in the function f above)
@@ -325,8 +325,8 @@ The class :class:`Sexp` is the base class for all R objects.
       :param name: string
       :rtype: instance of :class:`Sexp`
 
-      >>> matrix = rinterface.globalEnv.get("matrix")
-      >>> letters = rinterface.globalEnv.get("letters")
+      >>> matrix = rinterface.globalenv.get("matrix")
+      >>> letters = rinterface.globalenv.get("letters")
       >>> ncol = rinterface.SexpVector([2, ], rinterface.INTSXP)
       >>> m = matrix(letters, ncol = ncol)
       >>> [x for x in m.do_slot("dim")]
@@ -371,7 +371,7 @@ length 1.
 
 To use again the constant *pi*:
 
->>> pi = rinterface.globalEnv.get("pi")
+>>> pi = rinterface.globalenv.get("pi")
 >>> len(pi)
 1
 >>> pi
@@ -382,10 +382,10 @@ To use again the constant *pi*:
 
 The letters of the (western) alphabet are:
 
->>> letters = rinterface.globalEnv.get("letters") 
+>>> letters = rinterface.globalenv.get("letters") 
 >>> len(letters)
 26
->>> LETTERS = rinterface.globalEnv.get("LETTERS") 
+>>> LETTERS = rinterface.globalenv.get("LETTERS") 
 
 
 R types
@@ -436,7 +436,7 @@ can be given a name (that is be associated a string).
 The names are added to the other as an attribute (conveniently
 called `names`), and can be accessed as such:
 
->>> options = rinterface.globalEnv.get("options")()
+>>> options = rinterface.globalenv.get("options")()
 >>> option_names = options.do_slot("names")
 >>> [x for x in options_names]
 
@@ -479,7 +479,7 @@ The following incantation can be used instead.
 
 .. code-block:: python
 
-   parse = ri.baseNameSpaceEnv.get("parse")
+   parse = ri.baseenv.get("parse")
    NA_character = parse(text = ri.StrSexpVector(("NA_character_", )))
 
 
@@ -526,7 +526,7 @@ without looking further in the path of enclosing environments.
 
 The following will return an exception :class:`LookupError`:
 
->>> rinterface.globalEnv["pi"]
+>>> rinterface.globalenv["pi"]
 
 The constant *pi* is defined in R's *base* package,
 and therefore cannot be found in the Global Environment.
@@ -535,7 +535,7 @@ The assignment of a value to a symbol in an environment is as
 simple as assigning a value to a key in a Python dictionary:
 
 >>> x = rinterface.Sexp_Vector([123, ], rinterface.INTSXP)
->>> rinterface.globalEnv["x"] = x
+>>> rinterface.globalenv["x"] = x
 
 
 .. note::
@@ -553,7 +553,7 @@ The object is made iter-able.
 For example, we take the base name space (that is the environment
 that contains R's base objects:
 
->>> base = rinterface.baseNameSpace
+>>> base = rinterface.baseenv
 >>> basetypes = [x.typeof for x in base]
 
 
@@ -575,24 +575,24 @@ matching is returned.
 
 Let's start with an example:
 
->>> rinterface.globalEnv.get("pi")[0]
+>>> rinterface.globalenv.get("pi")[0]
 3.1415926535897931
 
 The constant `pi` is defined in the package `base`, that
 is always in the search path (and in the last position, as it is
 attached first). The call to :meth:`get` will
-look for `pi` first in `globalEnv`, then in the next environment
+look for `pi` first in `globalenv`, then in the next environment
 in the search path and repeat this until an object is found or the
 sequence of environments to explore is exhausted.
 
 We know that `pi` is in the base namespace and we could have gotten
 here directly from there:
 
->>> ri.baseNameSpaceEnv.get("pi")[0]
+>>> ri.baseenv.get("pi")[0]
 3.1415926535897931
->>> ri.baseNameSpaceEnv["pi"][0]
+>>> ri.baseenv["pi"][0]
 3.1415926535897931
->>> ri.globalEnv["pi"][0]
+>>> ri.globalenv["pi"][0]
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 LookupError: 'pi' not found
@@ -618,12 +618,12 @@ The same behavior can be obtained from :mod:`rpy2`
 with the optional parameter `wantFun` (specify that :meth:`get`
 should return an R function).
 
->>> ri.globalEnv["date"] = ri.StrSexpVector(["hohoho", ])
->>> ri.globalEnv.get("date")[0]
+>>> ri.globalenv["date"] = ri.StrSexpVector(["hohoho", ])
+>>> ri.globalenv.get("date")[0]
 'hohoho'
->>> ri.globalEnv.get("date", wantFun=True)
+>>> ri.globalenv.get("date", wantFun=True)
 <rinterface.SexpClosure - Python:0x7f142aa96198 / R:0x16e9500>
->>> date = ri.globalEnv.get("date", wantFun=True)
+>>> date = ri.globalenv.get("date", wantFun=True)
 >>> date()[0]
 'Sat Aug  9 15:48:42 2008'
 
@@ -650,8 +650,8 @@ to use, one can consider making a function such as the one below:
 
    def rimport(packname):
        """ import an R package and return its environment """
-       as_environment = rinterface.baseNameSpaceEnv['as.environment']
-       require = rinterface.baseNameSpaceEnv['require']
+       as_environment = rinterface.baseenv['as.environment']
+       require = rinterface.baseenv['require']
        require(rinterface.StrSexpVector(packname), 
                quiet = rinterface.BoolSexpVector((True, )))
        packname = rinterface.StrSexpVector(('package:' + str(packname)))
@@ -670,12 +670,12 @@ returning the search path (`search`).
    def rsearch():
        """ Return a list of package environments corresponding to the
        R search path. """
-       spath = [ri.globalEnv, ]
-       item = ri.globalEnv.enclos()
+       spath = [ri.globalenv, ]
+       item = ri.globalenv.enclos()
        while not item.rsame(ri.emptyEnv):
            spath.append(item)
 	   item = item.enclos()
-       spath.append(ri.baseNameSpaceEnv)
+       spath.append(ri.baseenv)
        return spath
 
 
@@ -685,7 +685,7 @@ from.
 
 .. code-block:: python
 
-   def wherefrom(name, startenv=ri.globalEnv):
+   def wherefrom(name, startenv=ri.globalenv):
        """ when calling 'get', where the R object is coming from. """
        env = startenv
        obj = None
@@ -734,7 +734,7 @@ In R terminology, a closure is a function (with its enclosing
 environment). That enclosing environment can be thought of as
 a context to the function.
 
->>> sum = rinterface.globalEnv.get("sum")
+>>> sum = rinterface.globalenv.get("sum")
 >>> x = rinterface.SexpVector([1,2,3], rinterface.INTSXP)
 >>> s = sum(x)
 >>> s[0]
@@ -745,7 +745,7 @@ a context to the function.
 Named arguments to an R function can be specified just the way
 they would be with any other regular Python function.
 
->>> rnorm = rinterface.globalEnv.get("rnorm")
+>>> rnorm = rinterface.globalenv.get("rnorm")
 >>> rnorm(rinterface.SexpVector([1, ], rinterface.INTSXP), 
           mean = rinterface.SexpVector([2, ], rinterface.INTSXP))[0]
 0.32796768001636134
@@ -777,7 +777,7 @@ permits calling a function the same way it would in R. For example::
    args['x'] = rinterface.IntSexpVector([1,2,3], rinterface.INTSXP)
    args[None] = rinterface.IntSexpVector([4,5], rinterface.INTSXP)
    args['y'] = rinterface.IntSexpVector([6, ], rinterface.INTSXP)
-   rlist = rinterface.baseNameSpaceEnv['list']
+   rlist = rinterface.baseenv['list']
    rl = rlist.rcall(args.items())
 
 >>> [x for x in rl.do_slot("names")]
@@ -794,8 +794,8 @@ In the example below, we inspect the environment for the
 function *plot*, that is the namespace for the
 package *graphics*.
 
->>> plot = rinterface.globalEnv.get("plot")
->>> ls = rinterface.globalEnv.get("ls")
+>>> plot = rinterface.globalenv.get("plot")
+>>> ls = rinterface.globalenv.get("ls")
 >>> envplot_list = ls(plot.closureEnv())
 >>> [x for x in envplot_ls]
 >>>

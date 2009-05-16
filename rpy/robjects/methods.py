@@ -1,9 +1,9 @@
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 
-getmethod = rinterface.baseNameSpaceEnv.get("getMethod")
+getmethod = rinterface.baseenv.get("getMethod")
 
-require = rinterface.baseNameSpaceEnv.get('require')
+require = rinterface.baseenv.get('require')
 require(rinterface.StrSexpVector(('methods', )),
         quiet = rinterface.BoolSexpVector((True, )))
 
@@ -24,4 +24,4 @@ class RS4(RObjectMixin, rinterface.SexpS4):
 
 
 
-methods_env = rinterface.baseNameSpaceEnv.get('as.environment')(rinterface.StrSexpVector(('package:methods', )))
+methods_env = rinterface.baseenv.get('as.environment')(rinterface.StrSexpVector(('package:methods', )))

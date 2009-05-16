@@ -51,7 +51,7 @@ def default_ri2py(o):
         res = REnvironment(o)
     elif isinstance(o, rinterface.SexpS4):
         res = RS4(o)
-    elif rinterface.baseNameSpaceEnv['class'](o)[0] == 'formula':
+    elif rinterface.baseenv['class'](o)[0] == 'formula':
         res = RFormula(o)
     else:
         res = RObject(o)
@@ -119,7 +119,7 @@ class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
     
     def __init__(self, o=None):
         if o is None:
-            o = rinterface.baseNameSpaceEnv["new.env"](hash=rinterface.SexpVector([True, ], rinterface.LGLSXP))
+            o = rinterface.baseenv["new.env"](hash=rinterface.SexpVector([True, ], rinterface.LGLSXP))
         super(REnvironment, self).__init__(o)
 
     def __getitem__(self, item):
@@ -146,8 +146,8 @@ class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
 
 class RFormula(RObjectMixin, rinterface.Sexp):
 
-    def __init__(self, formula, environment = rinterface.globalEnv):
-        inpackage = rinterface.baseNameSpaceEnv["::"]
+    def __init__(self, formula, environment = rinterface.globalenv):
+        inpackage = rinterface.baseenv["::"]
         asformula = inpackage(rinterface.StrSexpVector(['stats', ]), 
                               rinterface.StrSexpVector(['as.formula', ]))
         formula = rinterface.SexpVector(rinterface.StrSexpVector([formula, ]))
@@ -196,7 +196,7 @@ class R(object):
             raise orig_ae
 
     def __getitem__(self, item):
-        res = rinterface.globalEnv.get(item)
+        res = rinterface.globalenv.get(item)
 	res = conversion.ri2py(res)
         res.name = item
         return res
@@ -221,6 +221,6 @@ class R(object):
 
 r = R()
 
-globalEnv = conversion.ri2py(rinterface.globalEnv)
-baseNameSpaceEnv = conversion.ri2py(rinterface.baseNameSpaceEnv)
-emptyEnv = conversion.ri2py(rinterface.emptyEnv)
+globalenv = conversion.ri2py(rinterface.globalenv)
+baseenv = conversion.ri2py(rinterface.baseenv)
+emptyenv = conversion.ri2py(rinterface.emptyenv)

@@ -122,8 +122,8 @@ class ConcreteDeviceTestCase(unittest.TestCase):
         self.assertEquals(size, [1,2,3,4])
 
     def testLine(self):
-        res = rinterface.globalEnv.get('plot.new')()
-        res = rinterface.globalEnv.get('lines')(rinterface.IntSexpVector((0, 0)),
+        res = rinterface.globalenv.get('plot.new')()
+        res = rinterface.globalenv.get('lines')(rinterface.IntSexpVector((0, 0)),
                                                 rinterface.IntSexpVector((1, 2)))
         
 def suite():

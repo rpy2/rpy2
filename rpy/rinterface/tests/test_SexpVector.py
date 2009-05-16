@@ -11,25 +11,25 @@ def floatEqual(x, y, epsilon = 0.00000001):
 class WrapperSexpVectorTestCase(unittest.TestCase):
     def testInt(self):
         sexp = ri.IntSexpVector([1, ])
-        isInteger = ri.globalEnv.get("is.integer")
+        isInteger = ri.globalenv.get("is.integer")
         ok = isInteger(sexp)[0]
         self.assertTrue(ok)
 
     def testFloat(self):
         sexp = ri.IntSexpVector([1.0, ])
-        isNumeric = ri.globalEnv.get("is.numeric")
+        isNumeric = ri.globalenv.get("is.numeric")
         ok = isNumeric(sexp)[0]
         self.assertTrue(ok)
 
     def testStr(self):
         sexp = ri.StrSexpVector(["a", ])
-        isStr = ri.globalEnv.get("is.character")
+        isStr = ri.globalenv.get("is.character")
         ok = isStr(sexp)[0]
         self.assertTrue(ok)
 
     def testBool(self):
         sexp = ri.BoolSexpVector([True, ])
-        isBool = ri.globalEnv.get("is.logical")
+        isBool = ri.globalenv.get("is.logical")
         ok = isBool(sexp)[0]
         self.assertTrue(ok)
 
@@ -48,59 +48,59 @@ class SexpVectorTestCase(unittest.TestCase):
 
     def testNewBool(self):
         sexp = ri.SexpVector([True, ], ri.LGLSXP)
-        isLogical = ri.globalEnv.get("is.logical")
+        isLogical = ri.globalenv.get("is.logical")
         ok = isLogical(sexp)[0]
         self.assertTrue(ok)
         self.assertTrue(sexp[0])
 
         sexp = ri.SexpVector(["a", ], ri.LGLSXP)
-        isLogical = ri.globalEnv.get("is.logical")
+        isLogical = ri.globalenv.get("is.logical")
         ok = isLogical(sexp)[0]
         self.assertTrue(ok)
         self.assertTrue(sexp[0])
 
     def testNewInt(self):
         sexp = ri.SexpVector([1, ], ri.INTSXP)
-        isInteger = ri.globalEnv.get("is.integer")
+        isInteger = ri.globalenv.get("is.integer")
         ok = isInteger(sexp)[0]
         self.assertTrue(ok)
 
         sexp = ri.SexpVector(["a", ], ri.INTSXP)
-        isNA = ri.globalEnv.get("is.na")
+        isNA = ri.globalenv.get("is.na")
         ok = isNA(sexp)[0]
         self.assertTrue(ok)
 
     def testNewReal(self):
         sexp = ri.SexpVector([1.0, ], ri.REALSXP)
-        isNumeric = ri.globalEnv.get("is.numeric")
+        isNumeric = ri.globalenv.get("is.numeric")
         ok = isNumeric(sexp)[0]
         self.assertTrue(ok)
 
         sexp = ri.SexpVector(["a", ], ri.REALSXP)
-        isNA = ri.globalEnv.get("is.na")
+        isNA = ri.globalenv.get("is.na")
         ok = isNA(sexp)[0]
         self.assertTrue(ok)
 
     def testNewComplex(self):
         sexp = ri.SexpVector([1.0 + 1.0j, ], ri.CPLXSXP)
-        isComplex = ri.globalEnv.get("is.complex")
+        isComplex = ri.globalenv.get("is.complex")
         ok = isComplex(sexp)[0]
         self.assertTrue(ok)
 
     def testNewString(self):
         sexp = ri.SexpVector(["abc", ], ri.STRSXP)
-        isCharacter = ri.globalEnv.get("is.character")
+        isCharacter = ri.globalenv.get("is.character")
         ok = isCharacter(sexp)[0]
         self.assertTrue(ok)
 
         sexp = ri.SexpVector([1, ], ri.STRSXP)
-        isCharacter = ri.globalEnv.get("is.character")
+        isCharacter = ri.globalenv.get("is.character")
         ok = isCharacter(sexp)[0]
         self.assertTrue(ok)
 
     def testNewUnicode(self):
         sexp = ri.SexpVector([u'abc', ], ri.STRSXP)
-        isCharacter = ri.globalEnv.get("is.character")
+        isCharacter = ri.globalenv.get("is.character")
         ok = isCharacter(sexp)[0]
         self.assertTrue(ok)
         self.assertEquals('abc', sexp[0])
@@ -113,7 +113,7 @@ class SexpVectorTestCase(unittest.TestCase):
                                          ri.INTSXP)
         sexp = ri.SexpVector([sexp_char, sexp_int], 
                                      ri.VECSXP)
-        isList = ri.globalEnv.get("is.list")
+        isList = ri.globalenv.get("is.list")
         ok = isList(sexp)[0]
         self.assertTrue(ok)
 
@@ -131,42 +131,42 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertRaises(ValueError, ri.SexpVector, 1, ri.INTSXP)
 
     def testGetItem(self):
-        letters_R = ri.globalEnv.get("letters")
+        letters_R = ri.globalenv.get("letters")
         self.assertTrue(isinstance(letters_R, ri.SexpVector))
         letters = (('a', 0), ('b', 1), ('c', 2), 
                    ('x', 23), ('y', 24), ('z', 25))
         for l, i in letters:
             self.assertTrue(letters_R[i] == l)
 
-        Rlist = ri.globalEnv.get("list")
-        seq_R = ri.globalEnv.get("seq")
+        Rlist = ri.globalenv.get("list")
+        seq_R = ri.globalenv.get("seq")
 
         mySeq = seq_R(ri.SexpVector([0, ], ri.INTSXP),
                       ri.SexpVector([10, ], ri.INTSXP))
 
         myList = Rlist(s=mySeq, l=letters_R)
-        idem = ri.globalEnv.get("identical")
+        idem = ri.globalenv.get("identical")
 
         self.assertTrue(idem(mySeq, myList[0]))
         self.assertTrue(idem(letters_R, myList[1]))
 
-        letters_R = ri.globalEnv.get("letters")
+        letters_R = ri.globalenv.get("letters")
         self.assertEquals('z', letters_R[-1])
 
     def testGetItemBooleanNA(self):
         vec = ri.StrSexpVector(["a", ])
-        vec = ri.baseNameSpaceEnv['as.logical'](vec)
+        vec = ri.baseenv['as.logical'](vec)
         self.assertEquals(None, vec[0])
 
     def testGetItemLang(self):
-        formula = ri.baseNameSpaceEnv.get('formula')
+        formula = ri.baseenv.get('formula')
         f = formula(ri.StrSexpVector(['y ~ x', ]))
         y = f[0]
         self.assertEquals(ri.LANGSXP, y.typeof)
         self.assertEquals(1, len(y))
 
     def testGetItemExpression(self):
-        expression = ri.baseNameSpaceEnv.get('expression')
+        expression = ri.baseenv.get('expression')
         e = expression(ri.StrSexpVector(['a', ]),
                        ri.StrSexpVector(['b', ]))
         y = e[0]
@@ -174,7 +174,7 @@ class SexpVectorTestCase(unittest.TestCase):
 
 
     def testGetItemNegativeOutOfBound(self):
-        letters_R = ri.globalEnv.get("letters")
+        letters_R = ri.globalenv.get("letters")
         self.assertRaises(IndexError, letters_R.__getitem__,
                           -100)
 
@@ -186,19 +186,19 @@ class SexpVectorTestCase(unittest.TestCase):
                               ri.R_LEN_T_MAX+1)
 
     def testAssignItemDifferentType(self):
-        c_R = ri.globalEnv.get("c")
+        c_R = ri.globalenv.get("c")
         myVec = c_R(ri.SexpVector([0, 1, 2, 3, 4, 5], ri.INTSXP))
         self.assertRaises(ValueError, myVec.__setitem__, 0, 
                           ri.SexpVector(["a", ], ri.STRSXP))
 
     def testAssignItemOutOfBound(self):
-        c_R = ri.globalEnv.get("c")
+        c_R = ri.globalenv.get("c")
         myVec = c_R(ri.SexpVector([0, 1, 2, 3, 4, 5], ri.INTSXP))
         self.assertRaises(IndexError, myVec.__setitem__, 10, 
                           ri.SexpVector([1, ], ri.INTSXP))
 
     def testAssignItemInt(self):
-        c_R = ri.globalEnv.get("c")
+        c_R = ri.globalenv.get("c")
         myVec = c_R(ri.SexpVector([0, 1, 2, 3, 4, 5], ri.INTSXP))
         myVec[0] = ri.SexpVector([100, ], ri.INTSXP)
         self.assertTrue(myVec[0] == 100)
@@ -210,7 +210,7 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertTrue(myVec[5] == 200)
 
     def testAssignItemReal(self):
-        c_R = ri.globalEnv.get("c")
+        c_R = ri.globalenv.get("c")
         myVec = c_R(ri.SexpVector([0.0, 1.0, 2.0, 3.0, 4.0, 5.0], 
                                           ri.REALSXP))
         myVec[0] = ri.SexpVector([100.0, ], ri.REALSXP)
@@ -220,7 +220,7 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertTrue(floatEqual(myVec[3], 100.0))
 
     def testAssignItemLogical(self):
-        c_R = ri.globalEnv.get("c")
+        c_R = ri.globalenv.get("c")
         myVec = c_R(ri.SexpVector([True, False, True, True, False], 
                                   ri.LGLSXP))
         myVec[0] = ri.SexpVector([False, ], ri.LGLSXP)
@@ -230,7 +230,7 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertFalse(myVec[3])
 
     def testAssignItemComplex(self):
-        c_R = ri.globalEnv.get("c")
+        c_R = ri.globalenv.get("c")
         myVec = c_R(ri.SexpVector([1.0+2.0j, 2.0+2.0j, 3.0+2.0j, 
                                    4.0+2.0j, 5.0+2.0j], 
                                   ri.CPLXSXP))
@@ -266,7 +266,7 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertTrue(letters_R[0] == "z")
 
     def testMissingRPreserveObjectBug(self):
-        rgc = ri.baseNameSpaceEnv['gc']
+        rgc = ri.baseenv['gc']
         xx = range(100000)
         x = ri.SexpVector(xx, ri.INTSXP)
         rgc()    

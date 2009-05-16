@@ -138,18 +138,18 @@ class LibraryPanel(gtk.VBox):
             self._console.append('library("%s")\n' %packName)
 
             if sys.platform == 'win32':
-                tfile = robjects.baseNameSpaceEnv["tempfile"]()
-                tmp = robjects.baseNameSpaceEnv["file"](tfile, open="w")
+                tfile = robjects.baseenv["tempfile"]()
+                tmp = robjects.baseenv["file"](tfile, open="w")
             else:
-                tmp = robjects.baseNameSpaceEnv["fifo"]("")
-            robjects.baseNameSpaceEnv["sink"](tmp)
+                tmp = robjects.baseenv["fifo"]("")
+            robjects.baseenv["sink"](tmp)
             
-            robjects.baseNameSpaceEnv["library"](packName)
+            robjects.baseenv["library"](packName)
 
             if sys.platform == 'win32':
-                robjects.baseNameSpaceEnv["close"](tmp)
-                tmp = robjects.baseNameSpaceEnv["file"](tfile, open="r")
-            out = robjects.baseNameSpaceEnv["readLines"](tmp)
+                robjects.baseenv["close"](tmp)
+                tmp = robjects.baseenv["file"](tfile, open="r")
+            out = robjects.baseenv["readLines"](tmp)
             for line in out:
                 self._console.append(str(line)+"\n")
             robjects.r.close(tmp)
@@ -206,8 +206,8 @@ class VignetteExplorer(gtk.VBox):
 
         vignettes = robjects.r["vignette"]().subset("results")[0]
 
-        nrows = robjects.baseNameSpaceEnv["nrow"](vignettes)[0]
-        ncols = robjects.baseNameSpaceEnv["ncol"](vignettes)[0]
+        nrows = robjects.baseenv["nrow"](vignettes)[0]
+        ncols = robjects.baseenv["ncol"](vignettes)[0]
         for i in range(1, nrows + 1):
             row = []
             pack = vignettes.subset(i, 1)[0]
@@ -233,7 +233,7 @@ class VignetteExplorer(gtk.VBox):
             
             pdffile = robjects.r.vignette(vigName, package = packName)
             pdffile = pdffile.subset("file")[0][0]
-            pdfviewer = robjects.baseNameSpaceEnv["options"]("pdfviewer")[0][0]
+            pdfviewer = robjects.baseenv["options"]("pdfviewer")[0][0]
 
             pid = os.spawnl(os.P_NOWAIT, pdfviewer, pdffile)
             
@@ -449,7 +449,7 @@ class EnvExplorer(gtk.VBox):
         self._table.clear()
         
         for symbol in self._env: 
-            stype = robjects.baseNameSpaceEnv["class"](self._env[symbol])
+            stype = robjects.baseenv["class"](self._env[symbol])
             row = [symbol, stype]
             self._table.append(row)
 
@@ -622,8 +622,8 @@ class Main(object):
 
 
         consolePanel = ConsolePanel()
-        #tmp = robjects.baseNameSpaceEnv["fifo"]("")
-        #robjects.baseNameSpaceEnv["sink"](tmp)
+        #tmp = robjects.baseenv["fifo"]("")
+        #robjects.baseenv["sink"](tmp)
         
         #s = r.readLines(tmp)
         #r.close(tmp)
@@ -636,7 +636,7 @@ class Main(object):
         notebook.append_page(codePanel, gtk.Label("Code"))
 
         # global env
-        globalEnvPanel = EnvExplorer(robjects.globalEnv)
+        globalEnvPanel = EnvExplorer(robjects.globalenv)
         globalEnvPanel.show()
         notebook.append_page(globalEnvPanel, gtk.Label("globalEnv"))
 

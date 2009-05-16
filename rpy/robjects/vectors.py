@@ -5,8 +5,8 @@ import conversion
 
 import rpy2.rlike.container as rlc
 
-globalenv_ri = rinterface.globalEnv
-baseenv_ri = rinterface.baseNameSpaceEnv
+globalenv_ri = rinterface.globalenv
+baseenv_ri = rinterface.baseenv
 
 class RVectorDelegator(object):
     """

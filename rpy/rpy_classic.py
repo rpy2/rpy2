@@ -239,7 +239,7 @@ class Robj(object):
 
 class R(object):
     def __init__(self):
-        self.get = ri.globalEnv.get
+        self.get = ri.globalenv.get
         self.TRUE = ri.TRUE
         self.FALSE = ri.FALSE
         
@@ -257,7 +257,7 @@ class R(object):
     def __getitem__(self, name):
         #FIXME: "get function only" vs "get anything"
         # wantFun = True ?
-        res = ri.globalEnv.get(name)
+        res = ri.globalenv.get(name)
         res = rpy2py(res)
         return res
 
@@ -268,7 +268,7 @@ class R(object):
         helpobj.helpfun(*arg, **kw)
         
     def __repr__(self):
-        r_version = ri.baseNameSpaceEnv['R.version.string'][0]
+        r_version = ri.baseenv['R.version.string'][0]
         res = 'RPy version %s with %s' %(RPY_VERSION, r_version)
         return res
 

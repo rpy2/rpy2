@@ -15,7 +15,7 @@ class RFormulaTestCase(unittest.TestCase):
 
     def testSetenvironment(self):
         fml = robjects.RFormula("y ~ x")
-        newenv = robjects.baseNameSpaceEnv['new.env']()
+        newenv = robjects.baseenv['new.env']()
         env = fml.getenvironment()
         self.assertFalse(newenv.rsame(env))
         fml.setenvironment(newenv)
