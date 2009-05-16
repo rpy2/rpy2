@@ -86,9 +86,10 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         
         args = [conversion.py2ro(x) for x in args]
         for k, v in kwargs.itervalues():
-            args[k] = conversion.py2ro(v)
+            args[k] = conversion.py2ri(v)
         
-        res = conversion.py2ri(globalenv_ri.get("["))(*([self, ] + [x for x in args]), **kwargs)
+        fun = conversion.ri2py(globalenv_ri.get("["))
+        res = fun(*([self, ] + [x for x in args]), **kwargs)
         return res
 
     def assign(self, index, value):
@@ -109,6 +110,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
 
     def __add__(self, x):
         res = baseenv_ri.get("c")(self, conversion.py2ri(x))
+        res = conversion.ri2py(res)
         return res
 
     def __getitem__(self, i):
@@ -124,7 +126,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
     def getnames(self):
         """ Get the element names, calling the R function names(). """
         res = baseenv_ri.get('names')(self)
-        res = conversion.py2ro(res)
+        res = conversion.ri2py(res)
         return res
 
     def setnames(self, value):
