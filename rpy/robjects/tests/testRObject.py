@@ -58,9 +58,23 @@ class RObjectPicklingTestCase(unittest.TestCase):
                                                                robj_again)[0])
         tmp_file.close()
 
+import robjects.methods
+
+class RS4TestCase(unittest.TestCase):
+    def testSlotNames(self):
+        self.assertTrue(False) # no test yet
+
+    def testIsClass(self):
+        self.assertTrue(False) # no test yet
+
+    def testValidObject(self):
+        self.assertTrue(False) # no test yet
+
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RObjectTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(RObjectPicklingTestCase))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(RS4TestCase))
     return suite
 
 if __name__ == '__main__':

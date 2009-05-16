@@ -14,6 +14,12 @@ New Features
 
 - Method :meth:`formals` for :class:`RFunction`
 
+- Methods :meth:`slotnames`, :meth:`isclass`, and :meth:`validobject`
+  for :class:`RS4`
+
+- Vector-like objects now in a module :mod:`rpy2.robjects.vectors`
+
+
 :mod:`rpy2.rinterface`:
 
 - New functions for specifying callback functions for R's front-ends:
