@@ -55,6 +55,8 @@ New Features
 - Class :class:`ListSexpVector` for creating R lists easily
   (complementing :class:`IntSexpVector`, :class:`StrSexpVector`, and friends) 
 
+- Crash when trying to create a SexpVector of a non-vector type
+
 
 Changes
 -------

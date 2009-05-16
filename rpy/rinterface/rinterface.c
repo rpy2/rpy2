@@ -3078,6 +3078,7 @@ newSEXP(PyObject *object, int rType)
         REAL(sexp)[i] = NA_REAL;
       }
     }
+    UNPROTECT(1);
     break;
   case INTSXP:
     PROTECT(sexp = NEW_INTEGER(length));
@@ -3092,6 +3093,7 @@ newSEXP(PyObject *object, int rType)
         INTEGER(sexp)[i] = NA_INTEGER;
       }
     }
+    UNPROTECT(1);
     break;
   case LGLSXP:
     PROTECT(sexp = NEW_LOGICAL(length));
@@ -3104,6 +3106,7 @@ newSEXP(PyObject *object, int rType)
         LOGICAL(sexp)[i] = NA_LOGICAL;
       }
     }
+    UNPROTECT(1);
     break;
   case STRSXP:
     PROTECT(sexp = NEW_CHARACTER(length));
@@ -3135,6 +3138,7 @@ newSEXP(PyObject *object, int rType)
         SET_STRING_ELT(sexp, i, NA_STRING);
       }
     }
+    UNPROTECT(1);
     break;
   case VECSXP:
     PROTECT(sexp = NEW_LIST(length));
@@ -3150,6 +3154,7 @@ newSEXP(PyObject *object, int rType)
         SET_ELEMENT(sexp, i, RPY_SEXP((PySexpObject *)item));
       }
     }
+    UNPROTECT(1);
     break;
   case CPLXSXP:
     PROTECT(sexp = NEW_COMPLEX(length));
@@ -3166,6 +3171,7 @@ newSEXP(PyObject *object, int rType)
           COMPLEX(sexp)[i].i = NA_REAL;
         }
     }
+    UNPROTECT(1);
     break;
   default:
     PyErr_Format(PyExc_ValueError, "Cannot handle type %d", rType);
@@ -3182,7 +3188,6 @@ newSEXP(PyObject *object, int rType)
            sexp, preserved_robjects);
 #endif 
   }
-  UNPROTECT(1);
 
 #ifdef RPY_VERBOSE
   printf("  new SEXP for Python:%p is %p.\n", object, sexp);
