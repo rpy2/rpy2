@@ -3,6 +3,8 @@ import rpy2.rinterface as rinterface
 #import rpy2.robjects.conversion as conversion
 import conversion
 
+import rpy2.rlike.container as rlc
+
 globalenv_ri = rinterface.globalEnv
 baseenv_ri = rinterface.baseNameSpaceEnv
 
@@ -100,13 +102,13 @@ class RVector(RObjectMixin, rinterface.SexpVector):
             args = index
         args.append(conversion.py2ro(value))
         args.insert(0, self)
-        res = conversion.py2ri(globalenv_ri.get("[<-")).rcall(args.items(), globalEnv)
+        res = conversion.py2ri(globalenv_ri.get("[<-")).rcall(args.items(), globalenv_ri)
         #FIXME: check that the R class remains the same ?
         self.__sexp__ = res.__sexp__
 
 
     def __add__(self, x):
-        res = r.get("c")(self, x)
+        res = baseenv_ri.get("c")(self, conversion.py2ri(x))
         return res
 
     def __getitem__(self, i):
@@ -121,14 +123,15 @@ class RVector(RObjectMixin, rinterface.SexpVector):
 
     def getnames(self):
         """ Get the element names, calling the R function names(). """
-        res = r.names(self)
+        res = baseenv_ri.get('names')(self)
+        res = conversion.py2ro(res)
         return res
 
     def setnames(self, value):
         """ Set the element names
         (like the R function 'names<-' does it)."""
 
-        res = conversion.py2ri(globalenv_ri.get("names<-"))(self, value)
+        res = conversion.ri2py(globalenv_ri.get("names<-"))(self, value)
         return res
 
     names = property(getnames, setnames, 
@@ -165,7 +168,7 @@ class RArray(RVector):
     def __init__(self, o):
         super(RArray, self).__init__(o)
         #import pdb; pdb.set_trace()
-        if not r["is.array"](self)[0]:
+        if not baseenv_ri.get("is.array")(self)[0]:
             raise(TypeError("The object must be representing an R array"))
 
     def getdim(self):

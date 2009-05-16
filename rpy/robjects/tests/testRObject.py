@@ -58,7 +58,7 @@ class RObjectPicklingTestCase(unittest.TestCase):
                                                                robj_again)[0])
         tmp_file.close()
 
-import robjects.methods
+import rpy2.robjects.methods
 
 class RS4TestCase(unittest.TestCase):
     def testSlotNames(self):
