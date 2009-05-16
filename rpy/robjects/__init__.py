@@ -11,7 +11,8 @@ import array
 import itertools
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
-import rpy2.robjects.conversion
+
+import conversion
 
 from rpy2.robjects.robject import RObjectMixin, RObject
 from rpy2.robjects.methods import RS4

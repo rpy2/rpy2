@@ -1,14 +1,14 @@
-import rpy2.robjects. as robjects
+from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 
-getmethod = robjects.baseNameSpaceEnv.get("getMethod")
+getmethod = rinterface.baseNameSpaceEnv.get("getMethod")
 
-require = robjects.baseNameSpaceEnv.get('require')
-require('methods', quiet = True)
+require = rinterface.baseNameSpaceEnv.get('require')
+require(rinterface.StrSexpVector(('methods', )),
+        quiet = rinterface.BoolSexpVector((True, )))
 
-methods_env = robjects.baseNameSpaceEnv['as.environment']('package:methods')
 
-class RS4(robjects.RObjectMixin, rinterface.SexpS4):
+class RS4(RObjectMixin, rinterface.SexpS4):
 
     def slotnames(self):
         return methods_env['slotNames']()
@@ -21,3 +21,7 @@ class RS4(robjects.RObjectMixin, rinterface.SexpS4):
 
     def validobject(self, test = False, complete = False):
         return methods_env['validObject'](test = False, complete = False)
+
+
+
+methods_env = rinterface.baseNameSpaceEnv.get('as.environment')(rinterface.StrSexpVector(('package:methods', )))

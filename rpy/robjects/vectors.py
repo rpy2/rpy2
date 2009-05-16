@@ -1,6 +1,10 @@
 from rpy2.robjects.robject import RObjectMixin, RObject
-import rpy2.robjects.conversion as conversion
+import rpy2.rinterface as rinterface
+#import rpy2.robjects.conversion as conversion
+import conversion
 
+globalenv_ri = rinterface.globalEnv
+baseenv_ri = rinterface.baseNameSpaceEnv
 
 class RVectorDelegator(object):
     """
@@ -20,35 +24,35 @@ class RVectorDelegator(object):
         return res
 
     def __add__(self, x):
-        res = r.get("+")(self._parent, x)
+        res = globalenv_ri.get("+")(self._parent, conversion.py2ri(x))
         return res
 
     def __sub__(self, x):
-        res = r.get("-")(self._parent, x)
+        res = globalenv_ri.get("-")(self._parent, conversion.py2ri(x))
         return res
 
     def __mul__(self, x):
-        res = r.get("*")(self._parent, x)
+        res = globalenv_ri.get("*")(self._parent, conversion.py2ri(x))
         return res
 
     def __pow__(self, x):
-        res = r.get("^")(self._parent, x)
+        res = globalenv_ri.get("^")(self._parent, conversion.py2ri(x))
         return res
 
     def __div__(self, x):
-        res = r.get("/")(self._parent, x)
+        res = globalenv_ri.get("/")(self._parent, conversion.py2ri(x))
         return res
 
     def __divmod__(self, x):
-        res = r.get("%%")(self._parent, x)
+        res = globalenv_ri.get("%%")(self._parent, conversion.py2ri(x))
         return res
 
     def __or__(self, x):
-        res = r.get("|")(self._parent, x)
+        res = globalenv_ri.get("|")(self._parent, conversion.py2ri(x))
         return res
 
     def __and__(self, x):
-        res = r.get("&")(self._parent, x)
+        res = globalenv_ri.get("&")(self._parent, conversion.py2ri(x))
         return res
 
 class RVector(RObjectMixin, rinterface.SexpVector):
@@ -82,7 +86,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         for k, v in kwargs.itervalues():
             args[k] = conversion.py2ro(v)
         
-        res = r["["](*([self, ] + [x for x in args]), **kwargs)
+        res = conversion.py2ri(globalenv_ri.get("["))(*([self, ] + [x for x in args]), **kwargs)
         return res
 
     def assign(self, index, value):
@@ -96,7 +100,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
             args = index
         args.append(conversion.py2ro(value))
         args.insert(0, self)
-        res = r["[<-"].rcall(args.items(), globalEnv)
+        res = conversion.py2ri(globalenv_ri.get("[<-")).rcall(args.items(), globalEnv)
         #FIXME: check that the R class remains the same ?
         self.__sexp__ = res.__sexp__
 
@@ -124,7 +128,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         """ Set the element names
         (like the R function 'names<-' does it)."""
 
-        res = r["names<-"](self, value)
+        res = conversion.py2ri(globalenv_ri.get("names<-"))(self, value)
         return res
 
     names = property(getnames, setnames, 
@@ -165,13 +169,13 @@ class RArray(RVector):
             raise(TypeError("The object must be representing an R array"))
 
     def getdim(self):
-        res = r.dim(self)
+        res = globalenv_ri.get("dim")(self)
         res = conversion.ri2py(res)
         return res
 
     def setdim(self, value):
         value = conversion.py2ro(value)
-        res = r["dim<-"](self, value)
+        res = globalenv_ri.get("dim<-")(self, value)
             #FIXME: not properly done
         raise(Exception("Not yet implemented"))
 
@@ -182,7 +186,7 @@ class RArray(RVector):
         """ Return a list of name vectors
         (like the R function 'dimnames' does it)."""
 
-        res = r.dimnames(self)
+        res = globalenv_ri.get("dimnames")(self)
         return res
         
     names = property(getnames)
@@ -204,19 +208,20 @@ class RMatrix(RArray):
 class RDataFrame(RVector):
     """ R 'data.frame'.
     """
-
+    _dataframe_name = rinterface.StrSexpVector(('data.frame',))
+    
     def __init__(self, tlist):
         """ Create a new data frame.
 
         :param tlist: rpy2.rlike.container.TaggedList or rpy2.rinterface.SexpVector (and of class 'data.frame' for R)
         """
         if isinstance(tlist, rlc.TaggedList):
-            df = baseNameSpaceEnv["data.frame"].rcall(tlist.items(), globalEnv)
+            df = baseenv_ri.get("data.frame").rcall(tlist.items(), globalenv_ri)
             super(RDataFrame, self).__init__(df)
         elif isinstance(tlist, rinterface.SexpVector):
             if tlist.typeof != rinterface.VECSXP:
                 raise ValueError("tlist should of typeof VECSXP")
-            if not r['inherits'](tlist, 'data.frame')[0]:
+            if not globalenv_ri.get('inherits')(tlist, self._dataframe_name)[0]:
                 raise ValueError('tlist should of R class "data.frame"')
             super(RDataFrame, self).__init__(tlist)
         else:
@@ -228,19 +233,19 @@ class RDataFrame(RVector):
     def nrow(self):
         """ Number of rows. 
         :rtype: integer """
-        return baseNameSpaceEnv["nrow"](self)[0]
+        return baseenv_ri.get("nrow")(self)[0]
 
     def ncol(self):
         """ Number of columns.
         :rtype: integer """
-        return baseNameSpaceEnv["ncol"](self)[0]
+        return baseenv_ri.get("ncol")(self)[0]
     
     def rownames(self):
         """ Row names
         
         :rtype: SexpVector
         """
-        res = baseNameSpaceEnv["rownames"](self)
+        res = baseenv_ri.get("rownames")(self)
         return conversion.ri2py(res)
 
     def colnames(self):
@@ -248,7 +253,7 @@ class RDataFrame(RVector):
 
         :rtype: SexpVector
         """
-        res = baseNameSpaceEnv["colnames"](self)
+        res = baseenv_ri("colnames")(self)
         return conversion.ri2py(res)
 
 
@@ -257,16 +262,17 @@ class RFunction(RObjectMixin, rinterface.SexpClosure):
     
     """
 
-    __formals = rinterface.baseNameSpaceEnv.get('formals')
-    __local = rinterface.baseNameSpaceEnv.get('local')
-    __call = rinterface.baseNameSpaceEnv.get('call')
-    __assymbol = rinterface.baseNameSpaceEnv.get('as.symbol')
+    __formals = baseenv_ri.get('formals')
+    __local = baseenv_ri.get('local')
+    __call = baseenv_ri.get('call')
+    __assymbol = baseenv_ri.get('as.symbol')
+    __newenv = baseenv_ri.get('new.env')
 
     _local_env = None
 
     def __init__(self, *args, **kwargs):
         super(RFunction, self).__init__(*args, **kwargs)
-        self._local_env = REnvironment()
+        self._local_env = self.__newenv(hash=rinterface.BoolSexpVector((True, )))
 
     def __call__(self, *args, **kwargs):
         new_args = [conversion.py2ri(a) for a in args]
