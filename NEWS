@@ -19,6 +19,8 @@ New Features
 
 - Vector-like objects now in a module :mod:`rpy2.robjects.vectors`
 
+- :func:`set_accessors` for adding simply accessors to an :class:`RS4`
+
 
 :mod:`rpy2.rinterface`:
 
