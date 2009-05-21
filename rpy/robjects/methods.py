@@ -11,7 +11,7 @@ require(rinterface.StrSexpVector(('methods', )),
 class RS4(RObjectMixin, rinterface.SexpS4):
 
     def slotnames(self):
-        return methods_env['slotNames']()
+        return methods_env['slotNames'](self)
 
     
     @staticmethod
