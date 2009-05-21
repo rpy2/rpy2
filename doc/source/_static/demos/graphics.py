@@ -3,22 +3,22 @@ from rpy2 import robjects
 
 # import an R package
 def rimport(x):
-   robjects.baseNameSpaceEnv["require"](x, quietly = True)
+   robjects.baseenv["require"](x, quietly = True)
 
 # load an R dataset
-data = robjects.baseNameSpaceEnv.get("data")
+data = robjects.baseenv.get("data")
 
 # The R 'print' function
-rprint = robjects.globalEnv.get("print")
+rprint = robjects.globalenv.get("print")
 #--line 13
 
 #--line 15
 rimport('lattice')
 
-xyplot = robjects.baseNameSpaceEnv.get("xyplot")
+xyplot = robjects.baseenv.get("xyplot")
 #--line 19
 
-grdevices_env = robjects.baseNameSpaceEnv['as.environment']('package:grDevices')
+grdevices_env = robjects.baseenv['as.environment']('package:grDevices')
 png = grdevices_env['png']
 dev_off = grdevices_env['dev.off']
 
@@ -26,9 +26,9 @@ png('../../_static/graphics_lattice_xyplot_1.png',
     width = 480, height = 480)
 #--line 27
 data("mtcars")
-mtcars = robjects.globalEnv["mtcars"]
+mtcars = robjects.globalenv["mtcars"]
 
-xyplot = robjects.baseNameSpaceEnv.get('xyplot')
+xyplot = robjects.baseenv.get('xyplot')
 
 formula = robjects.RFormula('mpg ~ wt')
 formula.getenvironment()['mpg'] = mtcars.r['mpg'][0]
@@ -65,7 +65,7 @@ dev_off()
 rimport("ggplot2")
 
 def dparse(x):
-   res = robjects.baseNameSpaceEnv["parse"](text = x)
+   res = robjects.baseenv["parse"](text = x)
    return res
 #--line 70
 
@@ -87,7 +87,7 @@ png('../../_static/graphics_ggplot2_qplot_2.png',
     width = 480, height = 480)
 #--line 88
 data("mtcars")
-mtcars = robjects.globalEnv["mtcars"]
+mtcars = robjects.globalenv["mtcars"]
 
 xy = qplot(dparse("wt"), dparse("mpg"), 
            data = mtcars,
@@ -102,18 +102,18 @@ png('../../_static/graphics_ggplot2_ggplot_1.png',
     width = 480, height = 480)
 #--line 103
 def radd(x, y):
-    res = robjects.baseNameSpaceEnv.get("+")(x, y)
+    res = robjects.baseenv.get("+")(x, y)
     return res
 
-ggplot = robjects.globalEnv.get("ggplot")
-aes = robjects.globalEnv.get("aes")
+ggplot = robjects.globalenv.get("ggplot")
+aes = robjects.globalenv.get("aes")
 
 xy = ggplot(mtcars, aes(y = dparse('wt'), x = dparse('mpg')))
 
-facet_grid = robjects.globalEnv.get("facet_grid")
+facet_grid = robjects.globalenv.get("facet_grid")
 p = radd(xy, facet_grid(robjects.RFormula('. ~ cyl')))
 
-geom_point = robjects.globalEnv.get("geom_point")
+geom_point = robjects.globalenv.get("geom_point")
 p = radd(p, geom_point())
 
 rprint(p)
@@ -124,7 +124,7 @@ dev_off()
 png('../../_static/graphics_ggplot2_qplot_3.png',
     width = 480, height = 480)
 #--line 126
-geom_abline = robjects.globalEnv.get("geom_abline")
+geom_abline = robjects.globalenv.get("geom_abline")
 
 xy = qplot(dparse("wt"), dparse("mpg"), 
            data = mtcars,
@@ -148,7 +148,7 @@ dev_off()
 png('../../_static/graphics_ggplot2_qplot_5.png',
     width = 480, height = 480)
 #--line 150
-stat_smooth = robjects.globalEnv.get("stat_smooth")
+stat_smooth = robjects.globalenv.get("stat_smooth")
 
 p = radd(xy, stat_smooth(method = "lm"))
 rprint(p)
@@ -168,7 +168,7 @@ dev_off()
 png('../../_static/graphics_ggplot2_qplot_7.png',
     width = 480, height = 480)
 #--line 170
-geom_smooth = robjects.globalEnv.get("geom_smooth")
+geom_smooth = robjects.globalenv.get("geom_smooth")
 p = radd(xy, geom_smooth(aes(group=dparse("cyl")), method = "lm"))
 rprint(p)
 #--line 174
@@ -179,7 +179,7 @@ png('../../_static/graphics_ggplot2_ggplot_add.png',
     width = 480, height = 480)
 #--line 180
 xy = ggplot(mtcars, aes(y = dparse('wt'), x = dparse('mpg')))
-facet_grid = robjects.globalEnv.get("facet_grid")
+facet_grid = robjects.globalenv.get("facet_grid")
 p = radd(xy, geom_point())
 p = radd(p, facet_grid(robjects.RFormula('. ~ cyl')))
 p = radd(p, geom_smooth(aes(group=dparse("cyl")), method = "lm", data = mtcars))
