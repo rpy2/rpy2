@@ -30,7 +30,7 @@ class RS4_Type(type):
         try:
             cls_rname = cls_dict['__rname__']
         except KeyError, ke:
-            cls_name = name
+            cls_rname = name
             
         for rname, where, \
                 python_name, as_property, \
