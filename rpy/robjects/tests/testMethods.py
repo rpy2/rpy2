@@ -20,23 +20,22 @@ class MethodsTestCase(unittest.TestCase):
 
 
     def testRS4_TypeAccessors(self):
-        robjects.r['setClass']("A", robjects.r('list(foo="numeric")'))
-        robjects.r['setMethod']("length", signature="A",
+        robjects.r['setClass']("R_A", robjects.r('list(foo="numeric")'))
+        robjects.r['setMethod']("length", signature="R_A",
                                 definition = robjects.r("function(x) 123"))
         class A(methods.RS4):
             __metaclass__ = methods.RS4_Type
-            __rname__ = 'A'
+            __rname__ = 'R_A'
             __slots__ = ('get_length', 'length')
             __accessors__ = (('length', None,
                               'get_length', False, 'get the length'),
                              ('length', None,
                               'length', True, 'length'))
             def __init__(self):
-                obj = robjects.r['new']('A')
+                obj = robjects.r['new']('R_A')
                 self.__sexp__ = obj.__sexp__
                 
         a = A()
-        #import pdb; pdb.set_trace()
         self.assertEquals(123, a.get_length()[0])
         self.assertEquals(123, a.length[0])
         

@@ -27,7 +27,11 @@ class RS4(RObjectMixin, rinterface.SexpS4):
 class RS4_Type(type):
     def __new__(mcs, name, bases, cls_dict):
 
-        cls_rname = cls_dict['__rname__']
+        try:
+            cls_rname = cls_dict['__rname__']
+        except KeyError, ke:
+            cls_name = name
+            
         for rname, where, \
                 python_name, as_property, \
                 docstring in cls_dict['__accessors__']:
