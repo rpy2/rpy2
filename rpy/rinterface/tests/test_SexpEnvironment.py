@@ -50,15 +50,15 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         # now with the function-only option
 
         self.assertRaises(LookupError, 
-                          rinterface.globalenv.get, "pi", wantFun = True)
+                          rinterface.globalenv.get, "pi", wantfun = True)
 
     def testGet_functionOnly(self):
-        hist = rinterface.globalenv.get("hist", wantFun = False)
+        hist = rinterface.globalenv.get("hist", wantfun = False)
         self.assertEquals(rinterface.CLOSXP, hist.typeof)
         rinterface.globalenv["hist"] = rinterface.SexpVector(["foo", ], 
                                                              rinterface.STRSXP)
 
-        hist = rinterface.globalenv.get("hist", wantFun = True)
+        hist = rinterface.globalenv.get("hist", wantfun = True)
         self.assertEquals(rinterface.CLOSXP, hist.typeof)
         
 

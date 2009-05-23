@@ -2496,7 +2496,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   PySexpObject *res;
   PyObject *wantFun = Py_False;
   Py_INCREF(Py_False);
-  static char *kwlist[] = {"name", "wantFun", NULL};
+  static char *kwlist[] = {"name", "wantfun", NULL};
  
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|O!",
                                    kwlist,
@@ -2545,7 +2545,7 @@ PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
              "Find a name/symbol in the environment, following the chain of enclosing\n"
              "environments until either the topmost environment is reached or the name\n"
              "is found, and returned the associated object. \n"
-             "The optional parameter `wantFun` indicates whether functions should be\n"
+             "The optional parameter `wantfun` indicates whether functions should be\n"
              "returned or not.\n"
              ":rtype: instance of type of subtype :class:`rpy2.rinterface.Sexp`");
 

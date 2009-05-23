@@ -79,13 +79,19 @@ Changes
 - The broken variables NA_STRING, NA_INTEGER, NA_LOGICAL, and NA_REAL are
   removed. The documentation on missing values was revised.
 
-- globalEnv and baseNameSpaceEnv were renamed to globalenv and baseenv
-  respectively
+- :data:`globalEnv` and :data:`baseNameSpaceEnv` were renamed to 
+  :data:`globalenv` and :data:`baseenv` respectively
+
+- The parameter *wantFun* in :meth:`REnvironment.get` is now *wantfun* 
 
 :mod:`rpy2.rinterface`:
 
-- globalEnv, baseNameSpaceEnv, and emptyEnv were renamed to
-  globalenv, baseenv and emptyenv respectively
+- :data:`globalEnv`, :data:`baseNameSpaceEnv`, and :data:`emptyEnv` 
+  were renamed to :data:`globalenv`, :data:`baseenv` and :data:`emptyenv`
+  respectively
+
+- The parameter *wantFun* in :meth:`SexpEnvironment.get` is now *wantfun* 
+
 
 Bugs fixed
 ----------

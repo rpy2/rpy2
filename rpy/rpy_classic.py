@@ -256,7 +256,7 @@ class R(object):
 
     def __getitem__(self, name):
         #FIXME: "get function only" vs "get anything"
-        # wantFun = True ?
+        # wantfun = True ?
         res = ri.globalenv.get(name)
         res = rpy2py(res)
         return res

@@ -615,15 +615,15 @@ The base function `date` is still found, although a non-function object
 is present earlier on the search path.
 
 The same behavior can be obtained from :mod:`rpy2`
-with the optional parameter `wantFun` (specify that :meth:`get`
+with the optional parameter `wantfun` (specify that :meth:`get`
 should return an R function).
 
 >>> ri.globalenv["date"] = ri.StrSexpVector(["hohoho", ])
 >>> ri.globalenv.get("date")[0]
 'hohoho'
->>> ri.globalenv.get("date", wantFun=True)
+>>> ri.globalenv.get("date", wantfun=True)
 <rinterface.SexpClosure - Python:0x7f142aa96198 / R:0x16e9500>
->>> date = ri.globalenv.get("date", wantFun=True)
+>>> date = ri.globalenv.get("date", wantfun=True)
 >>> date()[0]
 'Sat Aug  9 15:48:42 2008'
 
