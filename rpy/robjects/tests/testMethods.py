@@ -5,15 +5,18 @@ rinterface = robjects.rinterface
 
 class MethodsTestCase(unittest.TestCase):
     def testSet_accessors(self):
-        robjects.r['setClass']("A")
+        robjects.r['setClass']("A", robjects.r('list(foo="numeric")'))
         robjects.r['setMethod']("length", signature="A",
                                 definition = robjects.r("function(x) 123"))
         class A(methods.RS4):
-            pass
+            def __init__(self):
+                obj = robjects.r['new']('A')
+                self.__sexp__ = obj.__sexp__
+
         acs = (('length', None, True, None), )
         methods.set_accessors(A, "A", None, acs)
         a = A()
-        self.assertEquals(123, a.length()[0])
+        self.assertEquals(123, a.length[0])
 
 
     def testRS4_TypeAccessors(self):
