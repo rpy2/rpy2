@@ -19,7 +19,10 @@ New Features
 
 - Vector-like objects now in a module :mod:`rpy2.robjects.vectors`
 
-- :func:`set_accessors` for adding simply accessors to an :class:`RS4`
+- :func:`set_accessors` for adding simply accessors to a class inheriting
+  from :class:`RS4`
+
+- :class:`RS4_Type` for metaclass-declared accessors
 
 
 :mod:`rpy2.rinterface`:
