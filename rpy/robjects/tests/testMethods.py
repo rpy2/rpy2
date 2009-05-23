@@ -30,7 +30,7 @@ class MethodsTestCase(unittest.TestCase):
             __accessors__ = (('length', None,
                               'get_length', False, 'get the length'),
                              ('length', None,
-                              'length', True, 'length'))
+                              None, True, 'length'))
             def __init__(self):
                 obj = robjects.r['new']('R_A')
                 self.__sexp__ = obj.__sexp__

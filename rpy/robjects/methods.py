@@ -43,7 +43,7 @@ class RS4_Type(type):
                 where = rinterface.StrSexpVector((where, ))
 
             if python_name is None:
-                python_name = r_name
+                python_name = rname
                 
             signature = rinterface.StrSexpVector((cls_rname, ))            
             r_meth = getmethod(rinterface.StrSexpVector((rname, )), 
