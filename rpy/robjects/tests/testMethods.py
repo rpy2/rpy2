@@ -19,6 +19,16 @@ class MethodsTestCase(unittest.TestCase):
         self.assertEquals(123, a.length[0])
 
 
+    def testRS4_TypeNoAccessors(self):
+        robjects.r['setClass']("Foo", robjects.r('list(foo="numeric")'))
+        class Foo(methods.RS4):
+            __metaclass__ = methods.RS4_Type
+            def __init__(self):
+                obj = robjects.r['new']('R_A')
+                self.__sexp__ = obj.__sexp__
+        f = Foo()
+        
+
     def testRS4_TypeAccessors(self):
         robjects.r['setClass']("R_A", robjects.r('list(foo="numeric")'))
         robjects.r['setMethod']("length", signature="R_A",

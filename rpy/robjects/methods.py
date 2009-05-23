@@ -31,10 +31,15 @@ class RS4_Type(type):
             cls_rname = cls_dict['__rname__']
         except KeyError, ke:
             cls_rname = name
+
+        try:
+            accessors = cls_dict['__accessors__']
+        except KeyError, ke:
+            accessors = []
             
         for rname, where, \
                 python_name, as_property, \
-                docstring in cls_dict['__accessors__']:
+                docstring in accessors:
 
             if where is None:
                 where = rinterface.globalenv
