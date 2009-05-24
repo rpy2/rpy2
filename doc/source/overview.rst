@@ -235,22 +235,26 @@ to inheritance.
 Acknowledgements
 ----------------
 
-Acknowledgements go to:
+Acknowledgements go to (alphabetical order):
 
-Walter Moreira, and Gregory Warnes
-    For the original RPy and its maintainance through the years.
  
 Alexander Belopolsky. 
     His code contribution of an alternative RPy is acknowledged.
     I have found great inspiration in reading that code.
 
-JRI
-    The Java-R Interface, and its authors, as answers to some
-    of the implementation questions were found there.
- 
 Contributors
     The help of people, donating time, ideas or software patches
     is much appreciated.
     Their names can be found in this documentation (mostly around the
     section Changes).
 
+JRI
+    The Java-R Interface, and its authors, as at several occasions
+    its code was the most practical source of documentation
+    regarding how to embed R. 
+
+Nathaniel Smith
+    Great patches, challenging and pertinent comments.
+
+Walter Moreira, and Gregory Warnes
+    For the original RPy and its maintainance through the years.
