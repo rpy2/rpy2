@@ -358,9 +358,11 @@ is an R vector, which implies one type for all elements
 in one given column, and which allows for possibly different types across
 different columns.
 
-
 In :mod:`rpy2.robjects`, 
 :class:`RDataFrame` represents the `R` class `data.frame`.
+
+Creating objects
+^^^^^^^^^^^^^^^^
 
 Creating an :class:`RDataFrame` can be done by:
 
@@ -384,7 +386,7 @@ constructs a data.frame from named arguments
 >>> d = {'value': robjects.IntVector((1,2,3)),
          'letter': robjects.StrVector(('x', 'y', 'z'))}
 >>> dataf = robjects.RDataFrame(d)
->>> print(dataf.colnames())
+>>> print(dataf.colnames)
 [1] "letter" "value"
 
 .. note::
@@ -392,6 +394,43 @@ constructs a data.frame from named arguments
    since we are using a Python dictionnary. This difference between
    R and Python can be resolved by using TaggedList instances
    (XXX add material about that).
+
+Extracting elements
+^^^^^^^^^^^^^^^^^^^
+
+>>> dataf[0]
+<RVector - Python:0x8a58c2c / R:0x8e7dd08>
+
+>>> [column.rclass[0] for column in dataf]
+['factor', 'integer']
+
+
+
+>>> dataf.rx(1)
+<RDataFrame - Python:0x8a584ac / R:0x95a6fb8>
+>>> print(dataf.rx(1))
+  letter
+1      x
+2      y
+3      z
+
+>>> dataf.rx2(1)
+<RVector - Python:0x8a4bfcc / R:0x8e7dd08>
+>>> print(dataf.rx2(1))
+[1] x y z
+Levels: x y z
+
+>>> print(dataf.rx(1, True))
+  letter value
+1      x     1
+>>> print(dataf.rx(robjects.IntVector((1,3)), True))
+  letter value
+1      x     1
+3      z     3
+
+
+Python docstrings
+^^^^^^^^^^^^^^^^^
 
 .. autoclass:: rpy2.robjects.RDataFrame
    :show-inheritance:
