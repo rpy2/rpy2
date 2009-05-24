@@ -253,21 +253,25 @@ integer(0)
 >>> print(x.subset(1))
 [1] 1
 
-Rather than calling :meth:`subset`, and to still have the conveniently
-short `[` operator available, a syntactic sugar is available in
-the form of delegating-like attribute :attr:`r`.
+Rather than calling :meth:`subset`, and to still have a conveniently
+short operator available, a syntactic sugar is available in
+the form of delegating-like attribute :attr:`rx` (for *R-extraction*).
+This attribute is a callable, as Python does not allow the use of
+of multiple parameters and keywords for `[`, and delegates the tasks
+of extracting elements to a separate object.
+In practice, wanting to extract elements *the R way* works as below:
 
->>> print(x.r[0])
+>>> print(x.rx(0))
 integer(0)
->>> print(x.r[1])
+>>> print(x.rx(1))
 [1] 1
 
 The two next examples demonstrate some of `R`'s features regarding indexing,
 respectively element exclusion and recycling rule:
 
->>> print(x.r[-1])
+>>> print(x.rx(-1))
 2:10
->>> print(x.r[True])
+>>> print(x.rx(True))
 1:10
 
 This class is extending the class :class:`rinterface.SexpVector`, 

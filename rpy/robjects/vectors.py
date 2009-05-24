@@ -8,7 +8,27 @@ import rpy2.rlike.container as rlc
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
 
-class RVectorDelegator(object):
+
+
+class RVectorExtractDelegator(object):
+    def __init__(self, parent):
+        """ The parent in expected to inherit from RVector. """
+        self._parent = parent
+
+    def __call__(self, *args, **kwargs):
+        res = self._parent.subset(*args, **kwargs)
+        return res
+
+class RVectorExtract2Delegator(object):
+    def __init__(self, parent):
+        """ The parent in expected to inherit from RVector. """
+        self._parent = parent
+
+    def __call__(self, *args, **kwargs):
+        res = self._parent.subset2(*args, **kwargs)
+        return res
+
+class RVectorOperationsDelegator(object):
     """
     Delegate operations such as __getitem__, __add__, etc..
     to an R call of the corresponding function on its parent
@@ -20,10 +40,6 @@ class RVectorDelegator(object):
     def __init__(self, parent):
         """ The parent in expected to inherit from RVector. """
         self._parent = parent
-
-    def __getitem__(self, *args, **kwargs):
-        res = self._parent.subset(*args, **kwargs)
-        return res
 
     def __add__(self, x):
         res = globalenv_ri.get("+")(self._parent, conversion.py2ri(x))
@@ -57,6 +73,7 @@ class RVectorDelegator(object):
         res = globalenv_ri.get("&")(self._parent, conversion.py2ri(x))
         return res
 
+
 class RVector(RObjectMixin, rinterface.SexpVector):
     """ R vector-like object. Items in those instances can
        be accessed with the method "__getitem__" ("[" operator),
@@ -66,8 +83,9 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         if not isinstance(o, rinterface.SexpVector):
             o = conversion.py2ri(o)
         super(RVector, self).__init__(o)
-        self.r = RVectorDelegator(self)
-            
+        self.ro = RVectorOperationsDelegator(self)
+        self.rx = RVectorExtractDelegator(self)
+        self.rx2 = RVectorExtract2Delegator(self)
 
     def subset(self, *args, **kwargs):
         """ Subset the "R-way.", using R's "[" function. 
@@ -92,6 +110,19 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         fun = conversion.ri2py(globalenv_ri.get("["))
         res = fun(*([self, ] + [x for x in args]), **kwargs)
         return res
+
+    def subset2(self, *args, **kwargs):
+        """ Subset the "R-way.", using R's "[[" function. 
+        """
+        
+        args = [conversion.py2ro(x) for x in args]
+        for k, v in kwargs.itervalues():
+            args[k] = conversion.py2ri(v)
+        
+        fun = conversion.ri2py(globalenv_ri.get("[["))
+        res = fun(*([self, ] + [x for x in args]), **kwargs)
+        return res
+
 
     def assign(self, index, value):
         """ Assign a given value to a given index position in the vector """
@@ -265,6 +296,7 @@ class RDataFrame(RVector):
         res = baseenv_ri("colnames")(self)
         return conversion.ri2py(res)
 
+        
 
 class RFunction(RObjectMixin, rinterface.SexpClosure):
     """ An R function.

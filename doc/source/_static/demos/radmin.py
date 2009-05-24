@@ -20,8 +20,8 @@ class FunctionPanel(gtk.VBox):
         super(FunctionPanel, self).__init__()
         self._rfunction = rfunction
         formals = self._as_list(rfunction.formals())
-        formals_value = [x for x in formals.r[-1]]
-        formals_name = [x for x in formals.r[-1].names]
+        formals_value = [x for x in formals.rx(-1)]
+        formals_name = [x for x in formals.rx(-1).names]
         self._table = gtk.ListStore(str, str)
         self._treeView = gtk.TreeView(model = self._table)
         self._treeView.show()
@@ -583,9 +583,9 @@ class ConsolePanel(gtk.VBox):
         else:
             try:            
                 res = robjects.r('withVisible( ' + rcode + ' )')
-                visible = res.r["visible"][0][0]
+                visible = res.rx2("visible")[0]
                 if visible:
-                    res = res.r["value"][0]
+                    res = res.rx2("value")
                 else:
                     res = None
             except robjects.rinterface.RRuntimeError, rre:

@@ -62,21 +62,21 @@ class RVectorTestCase(unittest.TestCase):
     def testRAddOperators(self):
         seq_R = robjects.r["seq"]
         mySeq = seq_R(0, 10)
-        mySeqAdd = mySeq.r + 2
+        mySeqAdd = mySeq.ro + 2
         for i, li in enumerate(mySeq):
             self.assertEquals(li + 2, mySeqAdd[i])
 
     def testRMultOperators(self):
         seq_R = robjects.r["seq"]
         mySeq = seq_R(0, 10)
-        mySeqAdd = mySeq.r + mySeq
+        mySeqAdd = mySeq.ro + mySeq
         for i, li in enumerate(mySeq):
             self.assertEquals(li * 2, mySeqAdd[i])
 
     def testRPowerOperator(self):
         seq_R = robjects.r["seq"]
         mySeq = seq_R(0, 10)
-        mySeqPow = mySeq.r ** 2
+        mySeqPow = mySeq.ro ** 2
         for i, li in enumerate(mySeq):
             self.assertEquals(li ** 2, mySeqPow[i])
 
@@ -92,7 +92,7 @@ class RVectorTestCase(unittest.TestCase):
             self.assertEquals(mySeq[si-1], mySubset[i])
 
         # same with the delegator
-        mySubset = mySeq.r[myIndex]
+        mySubset = mySeq.rx(myIndex)
         for i, si in enumerate(myIndex):
             self.assertEquals(mySeq[si-1], mySubset[i])
         
@@ -120,7 +120,7 @@ class RVectorTestCase(unittest.TestCase):
 
         self.assertRaises(ri.RRuntimeError, mySeq.subset, myIndex)
 
-
+        
     def testAssign(self):
         vec = robjects.r.seq(1, 10)
         i = array.array('i', [1, 3])

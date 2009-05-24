@@ -28,8 +28,8 @@ class RDataFrameTestCase(unittest.TestCase):
     def testNewFromDict(self):
         d = {'a': robjects.IntVector((1,2)),
              'b': robjects.StrVector(('c', 'd'))}
-        dataf = robjects.RDataFrame(**d)
-        self.assertEquals('c', dataf.r['b'][0][0])
+        dataf = robjects.RDataFrame(d)
+        self.assertEquals(1, dataf.rx2('a')[0])
         
     def testDim(self):
         letters = robjects.r.letters        
