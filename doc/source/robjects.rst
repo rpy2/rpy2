@@ -383,9 +383,11 @@ as many R functions do return a data.frame.
 In this example, will use the R function `data.frame()`, that
 constructs a data.frame from named arguments
 
->>> d = {'value': robjects.IntVector((1,2,3)),
-         'letter': robjects.StrVector(('x', 'y', 'z'))}
->>> dataf = robjects.RDataFrame(d)
+
+>>> import rpy2.rlike.container as rlc
+>>> od = rlc.OrdDict(('value', robjects.IntVector((1,2,3))),
+                     ('letter', robjects.StrVector(('x', 'y', 'z'))))
+>>> dataf = robjects.RDataFrame(od)
 >>> print(dataf.colnames)
 [1] "letter" "value"
 

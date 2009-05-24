@@ -26,6 +26,8 @@ New Features
 
 - :meth:`RVector.rx` and :meth:`RVector.rx2` for extracting the R-way
 
+- :class:`RDataFrame` can now be created from :`rlike.container.OrdDict`
+  instances
 
 :mod:`rpy2.rinterface`:
 

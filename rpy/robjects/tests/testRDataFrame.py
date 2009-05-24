@@ -25,10 +25,11 @@ class RDataFrameTestCase(unittest.TestCase):
         rdataf = robjects.r('data.frame(a=1:2, b=c("a", "b"))')
         dataf = robjects.RDataFrame(rdataf)        
 
-    def testNewFromDict(self):
-        d = {'a': robjects.IntVector((1,2)),
-             'b': robjects.StrVector(('c', 'd'))}
-        dataf = robjects.RDataFrame(d)
+    def testNewFromOrdDict(self):
+        od = rlc.OrdDict(c=(('a', robjects.IntVector((1,2))),
+                            ('b', robjects.StrVector(('c', 'd')))
+                            ))
+        dataf = robjects.RDataFrame(od)
         self.assertEquals(1, dataf.rx2('a')[0])
         
     def testDim(self):

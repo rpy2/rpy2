@@ -118,7 +118,7 @@ class RVector(ExtractMixin, RObjectMixin, rinterface.SexpVector):
     def assign(self, index, value):
         """ Assign a given value to a given index position in the vector """
         if not (isinstance(index, rlc.TaggedList) | \
-                    isinstance(index, rlc.ArgsDict)):
+                    isinstance(index, rlc.OrdDict)):
             args = rlc.TaggedList([conversion.py2ro(index), ])
         else:
             for i in xrange(len(index)):
@@ -273,10 +273,10 @@ class RDataFrame(RVector):
             if not globalenv_ri.get('inherits')(tlist, self._dataframe_name)[0]:
                 raise ValueError('tlist should of R class "data.frame"')
             super(RDataFrame, self).__init__(tlist)
-        elif isinstance(tlist, dict):
-            for k, v in tlist.iteritems():
-                tlist[k] = conversion.py2ri(v)
-            df = baseenv_ri.get("data.frame")(**tlist)
+        elif isinstance(tlist, rlc.OrdDict):
+            kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
+            kv = tuple(kv)
+            df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
             super(RDataFrame, self).__init__(df)
         else:
             raise ValueError("tlist can be either "+

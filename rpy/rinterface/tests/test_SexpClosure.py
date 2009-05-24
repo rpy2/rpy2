@@ -49,15 +49,15 @@ class SexpClosureTestCase(unittest.TestCase):
 
 
 
-    def testRcallArgsDict(self):
-        ad = rlc.ArgsDict((('a', rinterface.SexpVector([2, ], 
+    def testRcallOrdDict(self):
+        ad = rlc.OrdDict((('a', rinterface.SexpVector([2, ], 
                                                        rinterface.INTSXP)), 
-                           ('b', rinterface.SexpVector([1, ], 
+                          ('b', rinterface.SexpVector([1, ], 
+                                                      rinterface.INTSXP)),
+                          (None, rinterface.SexpVector([5, ], 
                                                        rinterface.INTSXP)),
-                           (None, rinterface.SexpVector([5, ], 
-                                                        rinterface.INTSXP)),
-                           ('c', rinterface.SexpVector([0, ], 
-                                                       rinterface.INTSXP))))
+                        ('c', rinterface.SexpVector([0, ], 
+                                                    rinterface.INTSXP))))
         
         mylist = rinterface.baseenv['list'].rcall(ad.items(), 
                                                            rinterface.globalenv)
@@ -67,13 +67,13 @@ class SexpClosureTestCase(unittest.TestCase):
         for i in range(4):
             self.assertEquals(('a', 'b', '', 'c')[i], names[i])
 
-    def testRcallArgsDictEnv(self):
+    def testRcallOrdDictEnv(self):
         def parse(x):
             rparse = rinterface.baseenv.get('parse')
             res = rparse(text = rinterface.StrSexpVector((x,)))
             return res
             
-        ad = rlc.ArgsDict( ((None, parse('sum(x)')),) )
+        ad = rlc.OrdDict( ((None, parse('sum(x)')),) )
         env_a = rinterface.baseenv['new.env']()
         env_a['x'] = rinterface.IntSexpVector([1,2,3])
         sum_a = rinterface.baseenv['eval'].rcall(ad.items(), 
