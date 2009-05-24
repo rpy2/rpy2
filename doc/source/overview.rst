@@ -153,9 +153,15 @@ At any time, an installation can be tested as follows:
 
 .. note::
 
-   At the time of writing, 2 unit tests will fail. Their failure
-   is forced, because terminating then starting again an
-   embbeded R is causing problems.
+   At the time of writing, few unit tests will fail with
+   the release version. Their failure is forced, as running
+   the tests will either:
+
+   * leave R in a close-to-unusable state because terminating
+   then starting again an embbeded R is apparently not possible.
+
+   * cause a segfault (the case with numpy arrays of unicode
+   characters)
 
 .. warning::
 
