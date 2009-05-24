@@ -24,6 +24,8 @@ New Features
 
 - :class:`RS4_Type` for metaclass-declared accessors
 
+- :meth:`RVector.rx` and :meth:`RVector.rx2` for extracting the R-way
+
 
 :mod:`rpy2.rinterface`:
 
@@ -83,6 +85,9 @@ Changes
   :data:`globalenv` and :data:`baseenv` respectively
 
 - The parameter *wantFun* in :meth:`REnvironment.get` is now *wantfun* 
+
+- :attr:`RVector.r` does not have a __getitem__ method any longer
+  (see in `.rx` and `.rx2` in the new features)
 
 :mod:`rpy2.rinterface`:
 
