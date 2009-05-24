@@ -21,7 +21,7 @@ Containers
 ==========
 
 The module contains data collection-type data structures. 
-:class:`ArgsDict` and :class:`TaggedList` are structures
+:class:`OrdDict` and :class:`TaggedList` are structures
 with which containeed items/elements can be tagged.
 
 The module can be imported as follows:
@@ -30,12 +30,12 @@ The module can be imported as follows:
 
 
 .. index::
-   single: ArgsDict
+   single: OrdDict
 
-ArgsDict
+OrdDict
 --------
 
-The :class:`ArgsDict` proposes an implementation of what is
+The :class:`OrdDict` proposes an implementation of what is
 sometimes referred to in Python as an ordered dictionnary, with a
 particularity: a key ``None`` means that, although an item has a rank
 and can be retrieved from that rank, it has no "name".
@@ -44,7 +44,7 @@ In the hope of simplifying its usage, the API for an ordered dictionnary
 in :pep:`372` was implemented. An example of usage is:
 
 >>> x = (('a', 123), ('b', 456), ('c', 789))
->>> nl = rlc.ArgsDict(x)
+>>> nl = rlc.OrdDict(x)
 
 
 >>> nl['a']
@@ -57,6 +57,13 @@ to `None` indicates a value for which no name is associated.
 
 
 >>> nl[None] = 'no name'
+
+The Python docstring for the class is:
+
+.. autoclass:: rpy2.rlike.container.OrdDict
+   :members:
+
+
 
 .. index::
    single: TaggedList

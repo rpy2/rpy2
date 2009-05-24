@@ -67,6 +67,11 @@ New Features
 
 - Crash when trying to create a SexpVector of a non-vector type
 
+:mod:`rpy2.rlike`:
+
+- :meth:`iteritems` for :class:`OrdDict` (formerly:class:`ArgDict`) 
+  and :class:`TaggedList`
+
 
 Changes
 -------
@@ -105,6 +110,10 @@ Changes
   respectively
 
 - The parameter *wantFun* in :meth:`SexpEnvironment.get` is now *wantfun* 
+
+:mod:`rpy2.rlike`:
+
+- :class:`ArgDict` becomes :class:`OrdDict`.
 
 
 Bugs fixed

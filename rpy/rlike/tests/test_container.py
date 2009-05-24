@@ -2,16 +2,16 @@ import unittest
 import itertools
 import rpy2.rlike.container as rlc
 
-class ArgsDictTestCase(unittest.TestCase):
+class OrdDictTestCase(unittest.TestCase):
 
     def testNew(self):
-        nl = rlc.ArgsDict()
+        nl = rlc.OrdDict()
 
         x = (('a', 123), ('b', 456), ('c', 789))
-        nl = rlc.ArgsDict(x)
+        nl = rlc.OrdDict(x)
 
     def testLen(self):
-        x = rlc.ArgsDict()
+        x = rlc.OrdDict()
         self.assertEquals(0, len(x))
 
         x['a'] = 2
@@ -20,7 +20,7 @@ class ArgsDictTestCase(unittest.TestCase):
         self.assertEquals(2, len(x))
 
     def testGetSetitem(self):
-        x = rlc.ArgsDict()
+        x = rlc.OrdDict()
         
         x['a'] = 1
         self.assertEquals(1, len(x))
@@ -36,7 +36,7 @@ class ArgsDictTestCase(unittest.TestCase):
         self.assertEquals(1, x.index('b'))
         
     def testGetSetitemWithNone(self):
-        x = rlc.ArgsDict()
+        x = rlc.OrdDict()
         
         x['a'] = 1
         x[None] = 2
@@ -49,7 +49,7 @@ class ArgsDictTestCase(unittest.TestCase):
         self.assertEquals(2, x.index('b'))
         
     def testReverse(self):
-        x = rlc.ArgsDict()
+        x = rlc.OrdDict()
         x['a'] = 3
         x['b'] = 2
         x['c'] = 1
@@ -65,7 +65,7 @@ class ArgsDictTestCase(unittest.TestCase):
 
         args = (('a', 5), ('b', 4), ('c', 3),
                 ('d', 2), ('e', 1))
-        x = rlc.ArgsDict(args)
+        x = rlc.OrdDict(args)
         it = x.items()
         for ki, ko in itertools.izip(args, it):
             self.assertEquals(ki[0], ko[0])
@@ -241,7 +241,7 @@ class TaggedListTestCase(unittest.TestCase):
         self.assertEquals(tl.tags(), ('a', 'z', 'c'))
     
 def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(ArgsDictTestCase)
+    suite = unittest.TestLoader().loadTestsFromTestCase(OrdDictTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TaggedListTestCase))
     return suite
 

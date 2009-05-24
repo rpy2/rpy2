@@ -1,7 +1,7 @@
 import itertools
 import rpy2.rlike.indexing as rli
 
-class ArgsDict(dict):
+class OrdDict(dict):
     """ Implements the Ordered Dict API defined in PEP 372.
     When `odict` becomes part of collections, this class 
     should inherit from it rather than from `dict`.
@@ -19,11 +19,11 @@ class ArgsDict(dict):
             c = c.items()
 
         if isinstance(c, dict):
-            #FIXME: allow instance from ArgsDict ?
+            #FIXME: allow instance from OrdDict ?
             raise ValueError('A regular dictionnary does not ' +\
                                  'conserve the order of its keys.')
 
-        super(ArgsDict, self).__init__()
+        super(OrdDict, self).__init__()
         self.__l = []
         l = self.__l
 
@@ -40,7 +40,7 @@ class ArgsDict(dict):
     def __getitem__(self, key):
         if key is None:
             raise ValueError("Unnamed items cannot be retrieved by key.")
-        i = super(ArgsDict, self).__getitem__(key)
+        i = super(OrdDict, self).__getitem__(key)
         return self.__l[i][1]
 
     def __iter__(self):
@@ -82,7 +82,7 @@ class ArgsDict(dict):
             self.__l[i] = (key, value)
         else:
             self.__l.append((key, value))
-            super(ArgsDict, self).__setitem__(key, len(self.__l)-1)
+            super(OrdDict, self).__setitem__(key, len(self.__l)-1)
             
     def byindex(self, i):
         """ Fetch a value by index (rank), rather than by key."""
@@ -90,7 +90,7 @@ class ArgsDict(dict):
 
     def index(self, k):
         """ Return the index (rank) for the key 'k' """
-        return super(ArgsDict, self).__getitem__(k)
+        return super(OrdDict, self).__getitem__(k)
 
     def items(self):
         """ Return an ordered list of all key/value pairs """
@@ -98,6 +98,7 @@ class ArgsDict(dict):
         return tuple(res)
 
     def iteritems(self):
+        """ OD.iteritems() -> an iterator over the (key, value) items of D """
         return iter(self.__l)
 
     def reverse(self):
@@ -109,11 +110,11 @@ class ArgsDict(dict):
             l[i] = l[n-i-1]
             kv = l[i]
             if kv is not None:
-                super(ArgsDict, self).__setitem__(kv[0], i)
+                super(OrdDict, self).__setitem__(kv[0], i)
             l[n-i-1] = tmp
             kv = tmp
             if kv is not None:
-                super(ArgsDict, self).__setitem__(kv[0], n-i-1)
+                super(OrdDict, self).__setitem__(kv[0], n-i-1)
             
 
     def sort(self, cmp=None, key=None, reverse=False):
@@ -236,6 +237,11 @@ class TaggedList(list):
                 yield self[i]
             i += 1
 
+    def iteritems(self):
+        """ OD.iteritems() -> an iterator over the (key, value) items of D """
+        for tag, item in itertools.izip(self.__tags, self):
+            yield (tag, item)
+        
     def itertags(self):
         """
         iterate on tags.
