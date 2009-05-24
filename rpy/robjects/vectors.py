@@ -273,22 +273,23 @@ class RDataFrame(RVector):
         :rtype: integer """
         return baseenv_ri.get("ncol")(self)[0]
     
-    def rownames(self):
+    def _get_rownames(self):
         """ Row names
         
         :rtype: SexpVector
         """
         res = baseenv_ri.get("rownames")(self)
         return conversion.ri2py(res)
+    rownames = property(_get_rownames, None, None)
 
-    def colnames(self):
+    def _get_colnames(self):
         """ Column names
 
         :rtype: SexpVector
         """
         res = baseenv_ri("colnames")(self)
         return conversion.ri2py(res)
-
+    colnames = property(_get_colnames, None, None)
         
 
 class RFunction(RObjectMixin, rinterface.SexpClosure):

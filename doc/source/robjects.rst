@@ -383,7 +383,7 @@ constructs a data.frame from named arguments
 
 >>> d = {'value': robjects.IntVector((1,2,3)),
          'letter': robjects.StrVector(('x', 'y', 'z'))}
->>> dataf = robjects.r['data.frame'](**d)
+>>> dataf = robjects.RDataFrame(d)
 >>> print(dataf.colnames())
 [1] "letter" "value"
 
