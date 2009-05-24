@@ -71,11 +71,12 @@ class RVector(RObjectMixin, rinterface.SexpVector):
 
     def subset(self, *args, **kwargs):
         """ Subset the "R-way.", using R's "[" function. 
-           In a nutshell, R indexing differs from Python's on:
+           In a nutshell, R indexing differs from Python indexing on:
 
            - indexing can be done with integers or strings (that are 'names')
 
-           - an index equal to TRUE will mean everything selected (because of the recycling rule)
+           - an index equal to TRUE will mean everything selected
+             (because of the recycling rule)
 
            - integer indexing starts at one
 
@@ -229,11 +230,14 @@ class RDataFrame(RVector):
             if not globalenv_ri.get('inherits')(tlist, self._dataframe_name)[0]:
                 raise ValueError('tlist should of R class "data.frame"')
             super(RDataFrame, self).__init__(tlist)
+        elif isinstance(tlist, dict):
+            df = baseenv_ri.get("data.frame")(**tlist)
+            super(RDataFrame, self).__init__(df)
         else:
-            raise ValueError("tlist can be either"+
-                             " an instance of rpy2.rlike.container.TaggedList" +
+            raise ValueError("tlist can be either "+
+                             "an instance of rpy2.rlike.container.TaggedList," +
                              " or an instance of rpy2.rinterface.SexpVector" +
-                             " of type VECSXP.")
+                             " of type VECSXP, or a Python dict.")
     
     def nrow(self):
         """ Number of rows. 

@@ -7,7 +7,7 @@ import array
 
 class RDataFrameTestCase(unittest.TestCase):
 
-    def testNew(self):
+    def testNewFromTaggedList(self):
         letters = robjects.r.letters        
         numbers = robjects.r('1:26')
         df = robjects.RDataFrame(rlc.TaggedList((letters, numbers),
@@ -23,9 +23,14 @@ class RDataFrameTestCase(unittest.TestCase):
         self.assertRaises(ValueError, robjects.RDataFrame, rlist)
 
         rdataf = robjects.r('data.frame(a=1:2, b=c("a", "b"))')
-        dataf = robjects.RDataFrame(rdataf)
-        
+        dataf = robjects.RDataFrame(rdataf)        
 
+    def testNewFromDict(self):
+        d = {'a': robjects.IntVector((1,2)),
+             'b': robjects.StrVector(('c', 'd'))}
+        dataf = robjects.RDataFrame(**d)
+        self.assertEquals('c', dataf.r['b'][0][0])
+        
     def testDim(self):
         letters = robjects.r.letters        
         numbers = robjects.r('1:26')
