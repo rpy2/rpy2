@@ -62,6 +62,9 @@ New Features
 - Class :class:`ListSexpVector` for creating R lists easily
   (complementing :class:`IntSexpVector`, :class:`StrSexpVector`, and friends) 
 
+- :meth:`colnames`, :meth:`rownames` for :class:`RArray` are now 
+  property-style getters
+
 - Crash when trying to create a SexpVector of a non-vector type
 
 
@@ -88,6 +91,12 @@ Changes
 
 - :attr:`RVector.r` does not have a __getitem__ method any longer
   (see in `.rx` and `.rx2` in the new features)
+
+- :meth:`colnames`, :meth:`rownames`, :meth:`nrow`, :meth:`ncol` 
+  for :class:`RDataFrame` are now property-style getters
+
+- :meth:`nrow`, :meth:`ncol` for :class:`RArray` 
+  are now property-style getters
 
 :mod:`rpy2.rinterface`:
 

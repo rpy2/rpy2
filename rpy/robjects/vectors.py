@@ -223,15 +223,36 @@ class RArray(RVector):
 class RMatrix(RArray):
     """ An R matrix """
 
-    def nrow(self):
+    def _get_nrow(self):
         """ Number of rows.
         :rtype: integer """
         return self.dim[0]
+    nrow = property(_get_nrow, None, None)
 
-    def ncol(self):
+    def _get_ncol(self):
         """ Number of columns.
         :rtype: integer """
         return self.dim[1]
+    ncol = property(_get_ncol, None, None)
+
+    def _get_rownames(self):
+        """ Row names
+        
+        :rtype: SexpVector
+        """
+        res = baseenv_ri["rownames"](self)
+        return conversion.ri2py(res)
+    rownames = property(_get_rownames, None, None)
+
+    def _get_colnames(self):
+        """ Column names
+
+        :rtype: SexpVector
+        """
+        res = baseenv_ri["colnames"](self)
+        return conversion.ri2py(res)
+    colnames = property(_get_colnames, None, None)
+        
 
 class RDataFrame(RVector):
     """ R 'data.frame'.
@@ -263,22 +284,24 @@ class RDataFrame(RVector):
                              " or an instance of rpy2.rinterface.SexpVector" +
                              " of type VECSXP, or a Python dict.")
     
-    def nrow(self):
+    def _get_nrow(self):
         """ Number of rows. 
         :rtype: integer """
-        return baseenv_ri.get("nrow")(self)[0]
+        return baseenv_ri["nrow"](self)[0]
+    nrow = property(_get_nrow, None, None)
 
-    def ncol(self):
+    def _get_ncol(self):
         """ Number of columns.
         :rtype: integer """
-        return baseenv_ri.get("ncol")(self)[0]
+        return baseenv_ri["ncol"](self)[0]
+    ncol = property(_get_ncol, None, None)
     
     def _get_rownames(self):
         """ Row names
         
         :rtype: SexpVector
         """
-        res = baseenv_ri.get("rownames")(self)
+        res = baseenv_ri["rownames"](self)
         return conversion.ri2py(res)
     rownames = property(_get_rownames, None, None)
 
@@ -287,7 +310,7 @@ class RDataFrame(RVector):
 
         :rtype: SexpVector
         """
-        res = baseenv_ri("colnames")(self)
+        res = baseenv_ri["colnames"](self)
         return conversion.ri2py(res)
     colnames = property(_get_colnames, None, None)
         
