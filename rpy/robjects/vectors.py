@@ -10,22 +10,14 @@ baseenv_ri = rinterface.baseenv
 
 
 
-class RVectorExtractDelegator(object):
-    def __init__(self, parent):
-        """ The parent in expected to inherit from RVector. """
-        self._parent = parent
+class ExtractMixin(object):
 
-    def __call__(self, *args, **kwargs):
-        res = self._parent.subset(*args, **kwargs)
+    def rx(self, *args, **kwargs):
+        res = self.subset(*args, **kwargs)
         return res
 
-class RVectorExtract2Delegator(object):
-    def __init__(self, parent):
-        """ The parent in expected to inherit from RVector. """
-        self._parent = parent
-
-    def __call__(self, *args, **kwargs):
-        res = self._parent.subset2(*args, **kwargs)
+    def rx2(self, *args, **kwargs):
+        res = self.subset2(*args, **kwargs)
         return res
 
 class RVectorOperationsDelegator(object):
@@ -74,7 +66,7 @@ class RVectorOperationsDelegator(object):
         return res
 
 
-class RVector(RObjectMixin, rinterface.SexpVector):
+class RVector(ExtractMixin, RObjectMixin, rinterface.SexpVector):
     """ R vector-like object. Items in those instances can
        be accessed with the method "__getitem__" ("[" operator),
        or with the method "subset"."""
@@ -84,8 +76,6 @@ class RVector(RObjectMixin, rinterface.SexpVector):
             o = conversion.py2ri(o)
         super(RVector, self).__init__(o)
         self.ro = RVectorOperationsDelegator(self)
-        self.rx = RVectorExtractDelegator(self)
-        self.rx2 = RVectorExtract2Delegator(self)
 
     def subset(self, *args, **kwargs):
         """ Subset the "R-way.", using R's "[" function. 

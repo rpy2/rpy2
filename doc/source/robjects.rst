@@ -255,10 +255,7 @@ integer(0)
 
 Rather than calling :meth:`subset`, and to still have a conveniently
 short operator available, a syntactic sugar is available in
-the form of delegating-like attribute :attr:`rx` (for *R-extraction*).
-This attribute is a callable, as Python does not allow the use of
-of multiple parameters and keywords for `[`, and delegates the tasks
-of extracting elements to a separate object.
+the form of a short-named method :meth:`rx` (for *R-extraction*).
 In practice, wanting to extract elements *the R way* works as below:
 
 >>> print(x.rx(0))
