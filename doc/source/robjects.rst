@@ -546,4 +546,5 @@ nicely:
 Class diagram
 =============
 
-.. inheritance-diagram:: rpy2.robjects
+.. inheritance-diagram:: rpy2.robjects rpy2.robjects.methods rpy2.robjects.vectors
+   :parts: 1
