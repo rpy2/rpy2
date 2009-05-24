@@ -253,6 +253,8 @@ class RDataFrame(RVector):
                 raise ValueError('tlist should of R class "data.frame"')
             super(RDataFrame, self).__init__(tlist)
         elif isinstance(tlist, dict):
+            for k, v in tlist.iteritems():
+                tlist[k] = conversion.py2ri(v)
             df = baseenv_ri.get("data.frame")(**tlist)
             super(RDataFrame, self).__init__(df)
         else:

@@ -56,7 +56,8 @@ class RS4_Type(type):
                                where = where)
             r_meth = conversion.ri2py(r_meth)
             if as_property:
-                cls_dict[python_name] = property(r_meth, None, None)
+                cls_dict[python_name] = property(r_meth, None, None,
+                                                 doc = docstring)
             else:
                 cls_dict[python_name] =  lambda self: r_meth(self)
                 
