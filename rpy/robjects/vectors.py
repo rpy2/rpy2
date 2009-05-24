@@ -20,6 +20,43 @@ class ExtractMixin(object):
         res = self.subset2(*args, **kwargs)
         return res
 
+    def subset(self, *args, **kwargs):
+        """ Subset the "R-way.", using R's "[" function. 
+           In a nutshell, R indexing differs from Python indexing on:
+
+           - indexing can be done with integers or strings (that are 'names')
+
+           - an index equal to TRUE will mean everything selected
+             (because of the recycling rule)
+
+           - integer indexing starts at one
+
+           - negative integer indexing means exclusion of the given integers
+
+           - an index is itself a vector of elements to select
+        """
+        
+        args = [conversion.py2ro(x) for x in args]
+        for k, v in kwargs.itervalues():
+            args[k] = conversion.py2ri(v)
+        
+        fun = conversion.ri2py(globalenv_ri.get("["))
+        res = fun(*([self, ] + [x for x in args]), **kwargs)
+        return res
+
+    def subset2(self, *args, **kwargs):
+        """ Subset the "R-way.", using R's "[[" function. 
+        """
+        
+        args = [conversion.py2ro(x) for x in args]
+        for k, v in kwargs.itervalues():
+            args[k] = conversion.py2ri(v)
+        
+        fun = conversion.ri2py(globalenv_ri.get("[["))
+        res = fun(*([self, ] + [x for x in args]), **kwargs)
+        return res
+
+
 class RVectorOperationsDelegator(object):
     """
     Delegate operations such as __getitem__, __add__, etc..
@@ -76,42 +113,6 @@ class RVector(ExtractMixin, RObjectMixin, rinterface.SexpVector):
             o = conversion.py2ri(o)
         super(RVector, self).__init__(o)
         self.ro = RVectorOperationsDelegator(self)
-
-    def subset(self, *args, **kwargs):
-        """ Subset the "R-way.", using R's "[" function. 
-           In a nutshell, R indexing differs from Python indexing on:
-
-           - indexing can be done with integers or strings (that are 'names')
-
-           - an index equal to TRUE will mean everything selected
-             (because of the recycling rule)
-
-           - integer indexing starts at one
-
-           - negative integer indexing means exclusion of the given integers
-
-           - an index is itself a vector of elements to select
-        """
-        
-        args = [conversion.py2ro(x) for x in args]
-        for k, v in kwargs.itervalues():
-            args[k] = conversion.py2ri(v)
-        
-        fun = conversion.ri2py(globalenv_ri.get("["))
-        res = fun(*([self, ] + [x for x in args]), **kwargs)
-        return res
-
-    def subset2(self, *args, **kwargs):
-        """ Subset the "R-way.", using R's "[[" function. 
-        """
-        
-        args = [conversion.py2ro(x) for x in args]
-        for k, v in kwargs.itervalues():
-            args[k] = conversion.py2ri(v)
-        
-        fun = conversion.ri2py(globalenv_ri.get("[["))
-        res = fun(*([self, ] + [x for x in args]), **kwargs)
-        return res
 
 
     def assign(self, index, value):
