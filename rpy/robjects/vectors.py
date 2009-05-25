@@ -5,22 +5,22 @@ import conversion
 
 import rpy2.rlike.container as rlc
 
+import copy
+
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
 
 
 
-class ExtractMixin(object):
+class ExtractDelegator(object):
 
-    def rx(self, *args, **kwargs):
-        res = self.subset(*args, **kwargs)
-        return res
-
-    def rx2(self, *args, **kwargs):
-        res = self.subset2(*args, **kwargs)
-        return res
-
-    def subset(self, *args, **kwargs):
+    _function_name = '_extract'
+    _assignfunction_name = '_replace'
+    
+    def __init__(self, parent):
+        self._parent = parent
+        
+    def __call__(self, *args, **kwargs):
         """ Subset the "R-way.", using R's "[" function. 
            In a nutshell, R indexing differs from Python indexing on:
 
@@ -35,28 +35,53 @@ class ExtractMixin(object):
 
            - an index is itself a vector of elements to select
         """
-        
+
         args = [conversion.py2ro(x) for x in args]
+        kwargs = copy.copy(kwargs)
         for k, v in kwargs.itervalues():
-            args[k] = conversion.py2ri(v)
-        
-        fun = conversion.ri2py(globalenv_ri.get("["))
-        res = fun(*([self, ] + [x for x in args]), **kwargs)
+            kwargs[k] = conversion.py2ro(v)
+        fun = getattr(self._parent, self._function_name)
+        args.insert(0, self._parent)
+        res = fun(*args, **kwargs)
         return res
 
-    def subset2(self, *args, **kwargs):
-        """ Subset the "R-way.", using R's "[[" function. 
-        """
-        
-        args = [conversion.py2ro(x) for x in args]
-        for k, v in kwargs.itervalues():
-            args[k] = conversion.py2ri(v)
-        
-        fun = conversion.ri2py(globalenv_ri.get("[["))
-        res = fun(*([self, ] + [x for x in args]), **kwargs)
+    def __getitem__(self, item):
+        fun = getattr(self._parent, self._function_name)
+        args = copy.copy(item)
+        for k,v in args.iteritems():
+            args[k] = conversion.py2ro(v)
+        args.insert(0, self._parent)
+        res = fun.rcall(args.items())
         return res
 
+    def __setitem__(self, item, value):
+        """ Assign a given value to a given index position in the vector """
+        if not (isinstance(item, rlc.TaggedList) | \
+                    isinstance(item, rlc.OrdDict)):
+            args = list(rlc.TaggedList([conversion.py2ro(item), ]).items())
+        else:
+            args = [(None, conversion.py2ro(x)) for x in item]
+        args.append((None, conversion.py2ro(value)))
+        args.insert(0, (None, self._parent))
+        fun = getattr(self._parent, self._assignfunction_name)
+        res = fun.rcall(tuple(args),
+                        globalenv_ri)
+        #FIXME: check refcount and copying
+        self._parent.__sexp__ = res.__sexp__
 
+
+class DoubleExtractDelegator(ExtractDelegator):
+
+    _function_name = '_doubleextract'
+    _assignfunction_name = '_doublereplace'
+    
+    def __init__(self, parent):
+        self._parent = parent
+
+        
+
+
+    
 class RVectorOperationsDelegator(object):
     """
     Delegate operations such as __getitem__, __add__, etc..
@@ -103,33 +128,30 @@ class RVectorOperationsDelegator(object):
         return res
 
 
-class RVector(ExtractMixin, RObjectMixin, rinterface.SexpVector):
+class RVector(RObjectMixin, rinterface.SexpVector):
     """ R vector-like object. Items in those instances can
        be accessed with the method "__getitem__" ("[" operator),
        or with the method "subset"."""
 
+    _extract = rinterface.baseenv['[']
+    _replace = rinterface.baseenv['[<-']
+    _doubleextract = rinterface.baseenv['[[']
+    _doublereplace = rinterface.baseenv['[[<-']
+                                                    
     def __init__(self, o):
         if not isinstance(o, rinterface.SexpVector):
             o = conversion.py2ri(o)
         super(RVector, self).__init__(o)
         self.ro = RVectorOperationsDelegator(self)
+        self.rx = ExtractDelegator(self)
+        self.rx2 = DoubleExtractDelegator(self)
 
-
+    def subset(self, *args, **kwargs):
+        #FIXME: remove this method
+        return self.rx(*args, **kwargs)
+        
     def assign(self, index, value):
-        """ Assign a given value to a given index position in the vector """
-        if not (isinstance(index, rlc.TaggedList) | \
-                    isinstance(index, rlc.OrdDict)):
-            args = rlc.TaggedList([conversion.py2ro(index), ])
-        else:
-            for i in xrange(len(index)):
-                index[i] = conversion.py2ro(index[i])
-            args = index
-        args.append(conversion.py2ro(value))
-        args.insert(0, self)
-        res = conversion.py2ri(globalenv_ri.get("[<-")).rcall(args.items(), globalenv_ri)
-        #FIXME: check that the R class remains the same ?
-        self.__sexp__ = res.__sexp__
-
+        self.rx[index] = value
 
     def __add__(self, x):
         res = baseenv_ri.get("c")(self, conversion.py2ri(x))

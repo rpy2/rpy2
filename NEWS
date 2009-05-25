@@ -24,7 +24,8 @@ New Features
 
 - :class:`RS4_Type` for metaclass-declared accessors
 
-- :meth:`RVector.rx` and :meth:`RVector.rx2` for extracting the R-way
+- Delegating classes :class:`ExtractDelegator` and 
+  :class:`DoubleExtractDelegator` for extracting the R-way
 
 - :class:`RDataFrame` can now be created from :`rlike.container.OrdDict`
   instances
