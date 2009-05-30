@@ -61,14 +61,23 @@ class RObjectPicklingTestCase(unittest.TestCase):
 import rpy2.robjects.methods
 
 class RS4TestCase(unittest.TestCase):
+    def setUp(self):
+        robjects.r('setClass("A", representation(a="numeric", b="character"))')
+        
+    def tearDown(self):
+        robjects.r('setClass("A")')
+        
     def testSlotNames(self):
-        self.assertTrue(False) # no test yet
+        ainstance = robjects.r('new("A", a=1, b="c")')
+        self.assertEquals(('a', 'b'), tuple(ainstance.slotnames()))
 
     def testIsClass(self):
-        self.assertTrue(False) # no test yet
+        ainstance = robjects.r('new("A", a=1, b="c")')
+        self.assertFalse(ainstance.isclass("B"))
+        self.assertTrue(ainstance.isclass("A"))
 
     def testValidObject(self):
-        self.assertTrue(False) # no test yet
+        self.assertTrue(ainstance.validobject())
 
 
 def suite():
