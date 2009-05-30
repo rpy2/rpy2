@@ -77,8 +77,10 @@ class RS4TestCase(unittest.TestCase):
         self.assertTrue(ainstance.isclass("A"))
 
     def testValidObject(self):
+        ainstance = robjects.r('new("A", a=1, b="c")')
         self.assertTrue(ainstance.validobject())
-
+        ainstance.do_slot_assign("b", 2)
+        self.assertFalse(ainstance.validobject())
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RObjectTestCase)
