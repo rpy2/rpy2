@@ -13,10 +13,13 @@ baseenv_ri = rinterface.baseenv
 
 
 class ExtractDelegator(object):
-
-    _function_name = '_extract'
-    _assignfunction_name = '_replace'
+    """ Delegate the R 'extraction' of items in a vector
+    or vector-like object. This can help making syntactic
+    niceties possible."""
     
+    _extractfunction = rinterface.baseenv['[']
+    _replacefunction = rinterface.baseenv['[<-']
+
     def __init__(self, parent):
         self._parent = parent
         
@@ -40,13 +43,13 @@ class ExtractDelegator(object):
         kwargs = copy.copy(kwargs)
         for k, v in kwargs.itervalues():
             kwargs[k] = conversion.py2ro(v)
-        fun = getattr(self._parent, self._function_name)
+        fun = self._extractfunction
         args.insert(0, self._parent)
         res = fun(*args, **kwargs)
         return res
 
     def __getitem__(self, item):
-        fun = getattr(self._parent, self._function_name)
+        fun = self._extractfunction
         args = copy.copy(item)
         for k,v in args.iteritems():
             args[k] = conversion.py2ro(v)
@@ -63,7 +66,7 @@ class ExtractDelegator(object):
             args = [(None, conversion.py2ro(x)) for x in item]
         args.append((None, conversion.py2ro(value)))
         args.insert(0, (None, self._parent))
-        fun = getattr(self._parent, self._assignfunction_name)
+        fun = self._replacefunction
         res = fun.rcall(tuple(args),
                         globalenv_ri)
         #FIXME: check refcount and copying
@@ -72,13 +75,8 @@ class ExtractDelegator(object):
 
 class DoubleExtractDelegator(ExtractDelegator):
 
-    _function_name = '_doubleextract'
-    _assignfunction_name = '_doublereplace'
-    
-    def __init__(self, parent):
-        self._parent = parent
-
-        
+    _extractfunction = rinterface.baseenv['[[']
+    _replacefunction = rinterface.baseenv['[[<-']
 
 
     
@@ -128,16 +126,12 @@ class RVectorOperationsDelegator(object):
         return res
 
 
+
 class RVector(RObjectMixin, rinterface.SexpVector):
     """ R vector-like object. Items in those instances can
        be accessed with the method "__getitem__" ("[" operator),
        or with the method "subset"."""
 
-    _extract = rinterface.baseenv['[']
-    _replace = rinterface.baseenv['[<-']
-    _doubleextract = rinterface.baseenv['[[']
-    _doublereplace = rinterface.baseenv['[[<-']
-                                                    
     def __init__(self, o):
         if not isinstance(o, rinterface.SexpVector):
             o = conversion.py2ri(o)
