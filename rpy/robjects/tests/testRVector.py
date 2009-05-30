@@ -191,10 +191,9 @@ class RVectorTestCase(unittest.TestCase):
     def testSetNames(self):
         vec = robjects.RVector(array.array('i', [1,2,3]))
         names = ['x', 'y', 'z']
-        #FIXME: simplify this
-        vec = vec.setnames(names)
+        vec.names = names
         for i in xrange(len(vec)):
-            self.assertEquals(names[i], vec.getnames()[i])
+            self.assertEquals(names[i], vecnames[i])
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RVectorTestCase)
