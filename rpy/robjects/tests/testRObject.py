@@ -55,7 +55,7 @@ class RObjectPicklingTestCase(unittest.TestCase):
         tmp_file.seek(0)
         robj_again = pickle.load(tmp_file)
         self.assertTrue(robjects.baseenv["identical"](robj,
-                                                               robj_again)[0])
+                                                      robj_again)[0])
         tmp_file.close()
 
 import rpy2.robjects.methods
