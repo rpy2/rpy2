@@ -17,11 +17,14 @@ class RS4(RObjectMixin, rinterface.SexpS4):
     
     @staticmethod
     def isclass(name):
+        name = conversion.py2ri(name)
         return methods_env['isClass'](name)
 
 
     def validobject(self, test = False, complete = False):
-        return methods_env['validObject'](test = False, complete = False)
+        test = conversion.py2ri(test)
+        complete = conversion.py2ri(complete)
+        return methods_env['validObject'](test = test, complete = complete)
 
 
 class RS4_Type(type):
