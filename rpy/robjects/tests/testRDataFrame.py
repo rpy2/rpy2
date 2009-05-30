@@ -37,9 +37,8 @@ class RDataFrameTestCase(unittest.TestCase):
         numbers = robjects.r('1:26')
         df = robjects.RDataFrame(rlc.TaggedList((letters, numbers),
                                                 tags = ('letters', 'numbers')))
-
-        self.assertEquals(26, df.nrow())
-        self.assertEquals(2, df.ncol())
+        self.assertEquals(26, df.nrow)
+        self.assertEquals(2, df.ncol)
 
 
 def suite():
