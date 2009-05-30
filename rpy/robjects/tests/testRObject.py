@@ -73,8 +73,8 @@ class RS4TestCase(unittest.TestCase):
 
     def testIsClass(self):
         ainstance = robjects.r('new("A", a=1, b="c")')
-        self.assertFalse(ainstance.isclass("B"))
-        self.assertTrue(ainstance.isclass("A"))
+        self.assertFalse(ainstance.isclass("B")[0])
+        self.assertTrue(ainstance.isclass("A")[0])
 
     def testValidObject(self):
         ainstance = robjects.r('new("A", a=1, b="c")')
