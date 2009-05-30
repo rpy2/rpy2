@@ -46,6 +46,7 @@ class ExtractDelegator(object):
         fun = self._extractfunction
         args.insert(0, self._parent)
         res = fun(*args, **kwargs)
+        res = conversion.py2ro(res)
         return res
 
     def __getitem__(self, item):
@@ -55,6 +56,7 @@ class ExtractDelegator(object):
             args[k] = conversion.py2ro(v)
         args.insert(0, self._parent)
         res = fun.rcall(args.items())
+        res = conversion.py2ro(res)
         return res
 
     def __setitem__(self, item, value):
