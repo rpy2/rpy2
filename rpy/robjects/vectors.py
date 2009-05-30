@@ -80,7 +80,7 @@ class DoubleExtractDelegator(ExtractDelegator):
 
 
     
-class RVectorOperationsDelegator(object):
+class VectorOperationsDelegator(object):
     """
     Delegate operations such as __getitem__, __add__, etc..
     to an R call of the corresponding function on its parent
@@ -136,7 +136,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         if not isinstance(o, rinterface.SexpVector):
             o = conversion.py2ri(o)
         super(RVector, self).__init__(o)
-        self.ro = RVectorOperationsDelegator(self)
+        self.ro = VectorOperationsDelegator(self)
         self.rx = ExtractDelegator(self)
         self.rx2 = DoubleExtractDelegator(self)
 
