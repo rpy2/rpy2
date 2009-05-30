@@ -24,7 +24,8 @@ class RS4(RObjectMixin, rinterface.SexpS4):
     def validobject(self, test = False, complete = False):
         test = conversion.py2ri(test)
         complete = conversion.py2ri(complete)
-        return methods_env['validObject'](test = test, complete = complete)
+        return methods_env['validObject'](self, test = test,
+                                          complete = complete)
 
 
 class RS4_Type(type):
