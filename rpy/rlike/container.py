@@ -21,7 +21,7 @@ class OrdDict(dict):
         if isinstance(c, dict):
             #FIXME: allow instance from OrdDict ?
             raise ValueError('A regular dictionnary does not ' +\
-                                 'conserve the order of its keys.')
+                             'conserve the order of its keys.')
 
         super(OrdDict, self).__init__()
         self.__l = []
@@ -30,7 +30,10 @@ class OrdDict(dict):
         for k,v in c:
             self[k] = v
 
-
+    def __copy__(self):
+        cp = OrdDict(c = tuple(self.iteritems()))
+        return cp
+        
     def __cmp__(self, o):
         raise(Exception("Not yet implemented."))
 

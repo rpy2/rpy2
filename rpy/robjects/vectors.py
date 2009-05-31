@@ -208,8 +208,8 @@ class FloatVector(RVector):
 
 class RArray(RVector):
     """ An R array """
-    def __init__(self, o):
-        super(RArray, self).__init__(o)
+    def __init__(self, obj):
+        super(RArray, self).__init__(obj)
         #import pdb; pdb.set_trace()
         if not baseenv_ri.get("is.array")(self)[0]:
             raise(TypeError("The object must be representing an R array"))
@@ -233,6 +233,7 @@ class RArray(RVector):
         (like the R function 'dimnames' does it)."""
 
         res = globalenv_ri.get("dimnames")(self)
+        res = ri2ro(res)
         return res
         
     names = property(getnames)

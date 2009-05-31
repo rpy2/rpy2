@@ -184,8 +184,10 @@ The class :class:`RVector` has a constructor:
 
 >>> x = robjects.RVector(3)
 
-The class inherits from the class
-:class:`rpy2.rinterface.VectorSexp`.
+
+.. autoclass:: rpy2.robjects.RVector(o)
+   :show-inheritance:
+   :members:
 
 
 Creating vectors
@@ -201,22 +203,21 @@ class :class:`RVector` or the convenience classes
 :class:`IntVector`, :class:`FloatVector`, :class:`BoolVector`, :class:`StrVector` can
 used.
 
-.. autoclass:: rpy2.robjects.BoolVector
+.. autoclass:: rpy2.robjects.vectors.BoolVector(obj)
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.robjects.IntVector
+.. autoclass:: rpy2.robjects.vectors.IntVector(obj)
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.robjects.FloatVector
+.. autoclass:: rpy2.robjects.vectors.FloatVector(obj)
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.robjects.StrVector
+.. autoclass:: rpy2.robjects.vectors.StrVector(obj)
    :show-inheritance:
    :members:
-
 
 
 .. index::
@@ -224,56 +225,78 @@ used.
 
 .. _robjects-vectors-indexing:
 
-Indexing
---------
+Extracting items
+----------------
 
-Indexing can become a thorny issue, since Python indexing starts at zero
-and R indexing starts at one.
+Extracting elements of sequence/vector can become a thorny issue
+as Python and R differ on a number of points
+(index numbers starting at zero / starting at one,
+negative index number meaning *index from the end* / *everything except*,
+names cannot / can be used for subsettting).
 
+In order to solve this, the Python way and the R way were
+made available through two different routes.
 The python :meth:`__getitem__` method behaves like a Python user would expect
-it for a vector (and indexing starts at zero),
-while the method :meth:`subset` behaves like a R user would expect subsetting
-to happen that is:
+it for a vector (and indexing starts at zero).
+
+>>> x = robjects.r.seq(1, 5)
+>>> tuple(x)
+(1, 2, 3, 4, 5)
+>>> x.names = robjects.StrVector('abcde')
+>>> print(x)
+a b c d e 
+1 2 3 4 5
+>>> x[0]
+1
+>>> x[4]
+5
+>>> x[-1]
+5
+
+Access to R-style extracting/subsetting is granted though the two
+delegators *rx* and *rx2*, representing the R function *[* and *[[*
+respectively.
+
+In short, R-style extracting has the following characteristics:
 
 * indexing starts at one
 
 * the parameter to subset on can be a vector of 
 
-  - integers (negative integers meaning exlusion of the element)
+  - integers (negative integers meaning exlusion of the elements)
 
   - booleans
 
-  - strings
+  - strings (whenever the vector has *names* for its elements)
 
->>> x = robjects.r.seq(1, 10)
->>> x[0]
-1
->>> print(x.subset(0))
-integer(0)
->>> print(x.subset(1))
+
+>>> print(x.rx(1))
 [1] 1
+>>> print(x.rx(robjects.IntVector((1, 3))))
+[1] 1 3
 
-Rather than calling :meth:`subset`, and to still have a conveniently
-short operator available, a syntactic sugar is available in
-the form of a short-named method :meth:`rx` (for *R-extraction*).
-In practice, wanting to extract elements *the R way* works as below:
+R/S have particularities, in which some see consistency issues.
+For example although the indexing starts at 1, indexing on 0
+does not return an *index out of bounds* error but a vector
+of length 0:
 
 >>> print(x.rx(0))
 integer(0)
->>> print(x.rx(1))
-[1] 1
 
-The two next examples demonstrate some of `R`'s features regarding indexing,
-respectively element exclusion and recycling rule:
+The two next examples demonstrate some of `R`'s features
+(such as element exclusion and the recycling rule):
 
 >>> print(x.rx(-1))
-2:10
+2:5
+>>> print(x.rx(robjects.IntVector((-1, -3))))
+[1] 2 4 5
 >>> print(x.rx(True))
-1:10
-
-This class is extending the class :class:`rinterface.SexpVector`, 
-and its documentation can be referred to for details of what is happenening
-at the low-level.
+1:5
+>>> print(x.rx(robjects.BoolVector((False, True, False, True, True))))
+[1] 2 4 5
+>>> print(x.rx('a'))
+a
+1
 
 Operators
 ---------
@@ -285,31 +308,31 @@ as much as, necessary.
 The delegating attribute mentioned in the Indexing section can also
 be used with the following operators:
 
-+----------+---------+
-| operator | R (.r)  |
-+==========+=========+
-| ``+``    | Add     |
-+----------+---------+
-| ``-``    | Subtract|
-+----------+---------+
-| ``*``    | Multiply|
-+----------+---------+
-| ``/``    | Divide  |
-+----------+---------+
-| ``**``   | Power   |
-+----------+---------+
-| ``or``   | Or      |
-+----------+---------+
-| ``and``  | And     |
-+----------+---------+
++----------+----------+
+| operator | R (.ro)  |
++==========+==========+
+| ``+``    | Add      |
++----------+----------+
+| ``-``    | Subtract |
++----------+----------+
+| ``*``    | Multiply |
++----------+----------+
+| ``/``    | Divide   |
++----------+----------+
+| ``**``   | Power    |
++----------+----------+
+| ``or``   | Or       |
++----------+----------+
+| ``and``  | And      |
++----------+----------+
 
 >>> x = robjects.r.seq(1, 10)
->>> print(x.r + 1)
+>>> print(x.ro + 1)
 2:11
 
 .. note::
-   In Python, the operator ``+`` concatenate sequence object, and this behavior
-   has been conserved.
+   In Python, the operator ``+`` concatenates sequence objects, 
+   and this behavior has been conserved.
 
 .. note::
    The boolean operator ``not`` cannot be redefined in Python (at least up to
@@ -321,8 +344,16 @@ be used with the following operators:
 Names
 -----
 
-``R`` vectors can have a name given to all or some of the items.
-The method :meth:`getnames` retrieve those names.
+``R`` vectors can have a name given to all or some of the elements.
+The property :attr:`names` can be used to get, or set, those names.
+
+>>> x = robjects.r.seq(1, 5)
+>>> x.names = robjects.StrVector('abcde')
+>>> x.names[0]
+'a'
+>>> x.names[0] = 'z'
+>>> tuple(x.names)
+('z', 'b', 'c', 'd', 'e')
 
 
 .. index::
@@ -336,10 +367,55 @@ In `R`, arrays are simply vectors with a dimension attribute. That fact
 was reflected in the class hierarchy with :class:`robjects.RArray` inheriting
 from :class:`robjects.RVector`.
 
+.. autoclass:: rpy2.robjects.vectors.RArray(obj)
+   :show-inheritance:
+   :members:
+
+
+
 :class:`RMatrix`
 ----------------
 
 A :class:`RMatrix` is a special case of :class:`RArray`.
+
+>>> m = robjects.r.matrix(robjects.IntVector(range(10)), nrow=5)
+>>> print(m)
+     [,1] [,2]
+[1,]    0    5
+[2,]    1    6
+[3,]    2    7
+[4,]    3    8
+[5,]    4    9
+
+.. autoclass:: rpy2.robjects.vectors.RMatrix(obj)
+   :show-inheritance:
+   :members:
+
+
+
+Extracting
+^^^^^^^^^^
+
+Extracting can still be performed Python-style or
+R-style.
+
+
+>>> m[0]
+0
+>>> m[5]
+5
+>>> print(m.rx(1))
+[1] 0
+>>> print(m.rx(6))
+[1] 5
+
+Matrixes are two-dimensional arrays, and elements can
+be extracted according to two indexes:
+
+>>> print(m.rx(1,1))
+[1] 0
+>>> print(m.rx(3,2))
+[1] 7
 
 
 .. _robjects-dataframes:
@@ -385,8 +461,8 @@ constructs a data.frame from named arguments
 
 
 >>> import rpy2.rlike.container as rlc
->>> od = rlc.OrdDict(('value', robjects.IntVector((1,2,3))),
-                     ('letter', robjects.StrVector(('x', 'y', 'z'))))
+>>> od = rlc.OrdDict(c(('value', robjects.IntVector((1,2,3))),
+                       ('letter', robjects.StrVector(('x', 'y', 'z')))))
 >>> dataf = robjects.RDataFrame(od)
 >>> print(dataf.colnames)
 [1] "letter" "value"
@@ -400,13 +476,25 @@ constructs a data.frame from named arguments
 Extracting elements
 ^^^^^^^^^^^^^^^^^^^
 
+Here again, Python's :meth:`__getitem__` will work
+as a Python programmer will expect it to:
+
+>>> len(dataf)
+2
 >>> dataf[0]
 <RVector - Python:0x8a58c2c / R:0x8e7dd08>
+
+The :class:`RDataFrame` is composed of columns,
+with each column being possibly of a different type:
 
 >>> [column.rclass[0] for column in dataf]
 ['factor', 'integer']
 
+Using R-style access to elements is a little more richer,
+with the *rx2* accessor taking now more importance than earlier.
 
+Like with Python's :meth:`__getitem__` above,
+extracting on one index selects columns:
 
 >>> dataf.rx(1)
 <RDataFrame - Python:0x8a584ac / R:0x95a6fb8>
@@ -416,16 +504,27 @@ Extracting elements
 2      y
 3      z
 
+It is important to notice that the result is itself
+of class :class:`RDataFrame`. Getting the column as
+a vector is requires the use of *rx2*.
+
 >>> dataf.rx2(1)
 <RVector - Python:0x8a4bfcc / R:0x8e7dd08>
 >>> print(dataf.rx2(1))
 [1] x y z
 Levels: x y z
 
->>> print(dataf.rx(1, True))
+
+Since data frames are table-like structure, they
+can be thought of as two-dimensional arrays and
+can therefore be extracted on two indexes.
+
+>>> subdataf = dataf.rx(1, True)
+>>> print(subdataf)
   letter value
 1      x     1
->>> print(dataf.rx(robjects.IntVector((1,3)), True))
+>>> subdataf = dataf.rx(robjects.IntVector((1,3)), True)
+>>> print(subdataf)
   letter value
 1      x     1
 3      z     3
@@ -434,7 +533,7 @@ Levels: x y z
 Python docstrings
 ^^^^^^^^^^^^^^^^^
 
-.. autoclass:: rpy2.robjects.RDataFrame
+.. autoclass:: rpy2.robjects.vectors.RDataFrame(tlist)
    :show-inheritance:
    :members:
 
@@ -487,8 +586,11 @@ An environment is also iter-able, returning all the symbols
 >>> len([x for x in env])
 <a long list returned>
 
-For further information, read the documentation for the
-class :class:`rpy2.rinterface.SexpEnvironment`.
+.. autoclass:: rpy2.robjects.REnvironment(o=None)
+   :show-inheritance:
+   :members:
+
+
 
 .. index::
    pair: robjects; RFunction
@@ -525,12 +627,17 @@ In Python it can then write:
    myparams = {'na.rm': True}
    robjects.r.sum(0, **myparams)
 
-Things are also not always that simple, as the use of dictionary does
-ensure that the order in which the parameters are passed is conserved.
+Things are also not always that simple, as the use of a dictionary does
+not ensure that the order in which the parameters are passed is conserved.
 
 The R functions as defined in :mod:`rpy2.robjects` inherit from the class
 :class:`rpy2.rinterface.SexpClosure`, and further documentation
 on the behavior of function can be found in Section :ref:`rinterface-functions`.
+
+.. autoclass:: rpy2.robjects.RFunction(*args, **kwargs)
+   :show-inheritance:
+   :members:
+
 
 .. index::
    pair: robjects; RFormula
@@ -582,6 +689,11 @@ nicely:
 .. code-block:: python
 
   fit = robjects.r('lm(%s)' %fmla.r_repr())
+
+.. autoclass:: rpy2.robjects.RFormula(formula, environment = rinterface.globalenv)
+   :show-inheritance:
+   :members:
+
 
 
 Class diagram

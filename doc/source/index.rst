@@ -2,10 +2,12 @@ Documentation for rpy2
 ======================
 
 
-.. ifconfig:: releaselevel.endswith('dev')
+.. ifconfig:: release.endswith('dev')
 
-   This documentation refers to software under development,
-   and can be out-of-sync with the code.
+   .. warning::
+
+      This documentation refers to software under development,
+      with everything this implies.
 
 .. toctree::
    :maxdepth: 2
