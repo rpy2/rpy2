@@ -132,12 +132,12 @@ def chooseFile(prompt):
     return res
 setChooseFile(chooseFile)
 
-def showFiles(wtitle, titlefiles):
-    sys.stdout.write(wtitle)
+def showFiles(wtitle, titlefiles, rdel, pager):
+    sys.stdout.write(titlefiles)
 
-    for tf in titlefiles:
-        sys.stdout.write(tf)
-        f = open(tf)
+    for wt in wtitle:
+        sys.stdout.write(wt[0])
+        f = open(wt[1])
         for row in f:
             sys.stdout.write(row)
         f.close()
