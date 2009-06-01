@@ -231,7 +231,7 @@ class RArray(RVector):
         (like the R function 'dimnames' does it)."""
 
         res = globalenv_ri.get("dimnames")(self)
-        res = ri2ro(res)
+        res = conversion.ri2py(res)
         return res
         
     names = property(getnames)
