@@ -7,7 +7,8 @@ Documentation for rpy2
    .. warning::
 
       This documentation refers to software under development,
-      with everything this implies.
+      with everything this implies. This documentation reflects
+      the package version |version| on |today|
 
 .. toctree::
    :maxdepth: 2
