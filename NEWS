@@ -154,6 +154,9 @@ Bugs fixed
 
 - Numpy arrays with complex elements are no longer causing segfaults
 
+- Calls to :meth:`SexpClosure.rcall` with something else that the expected
+  kind of tuple could cause a segfault
+
 
 Release 2.0.3
 =============

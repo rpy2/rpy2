@@ -1848,7 +1848,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
     return NULL;
   }
 
-  if (! PyTuple_Check(args)) {
+  if (! PyTuple_Check(params)) {
     PyErr_Format(PyExc_ValueError, "The first parameter must be a tuple.");
     return NULL;
   }
