@@ -15,10 +15,9 @@ class OrdDict(dict):
 
     def __init__(self, c=[]):
 
-        if isinstance(c, TaggedList):
-            c = c.items()
-
-        if isinstance(c, dict):
+        if isinstance(c, TaggedList) or isinstance(c, OrdDict):
+            c = c.iteritems()
+        elif isinstance(c, dict):
             #FIXME: allow instance from OrdDict ?
             raise ValueError('A regular dictionnary does not ' +\
                              'conserve the order of its keys.')
@@ -134,11 +133,11 @@ class TaggedList(list):
 
     def __add__(self, tl):
         try:
-            tags = tl.tags()
+            tags = tl.tags
         except AttributeError, ae:
             raise ValueError('Can only concatenate TaggedLists.')
-        res = TaggedList(list(self) + list(tl), 
-                         tags = self.tags() + tl.tags())
+        res = TaggedList(list(self) + list(tl),
+                         tags = self.tags + tl.tags)
         return res
 
     def __delitem__(self, y):
@@ -152,7 +151,7 @@ class TaggedList(list):
     def __iadd__(self, y):
         super(TaggedList, self).__iadd__(y)
         if isinstance(y, TaggedList):
-            self.__tags.__iadd__(y.tags())
+            self.__tags.__iadd__(y.tags)
         else:
             self.__tags.__iadd__([None, ] * len(y))
         return self
@@ -162,20 +161,23 @@ class TaggedList(list):
         resitems = super(TaggedList, self).__imul__(y)
         return self
 
-    def __init__(self, l, tags = None):
+    @staticmethod
+    def from_iteritems(tagval):
+        tags = []
+        if isinstance(tagval, OrdDict):
+            tagval = tagval.iteritems()
+        for k,v in tagval:
+            tags.append(k)
+            super(TaggedList, self).append(v)
+        self.__tags = tags
 
-        super(TaggedList, self).__init__(l)
-
+    def __init__(self, seq, tags = None):
+        super(TaggedList, self).__init__(seq)
         if tags is None:
-            tags = [None, ] * len(l)
-        tags = list(tags)
-
-        if isinstance(tags, list):
-            if len(tags) != len(l):
-                raise ValueError("When a list, the parameter 'tags' must be of same length as the given list.")
-            self.__tags = tags
-        else:
-            raise ValueError("Parameter 'tags' must be either a list or 'None'.")
+            tags = [None, ] * len(seq)
+        if len(tags) != len(seq):
+            raise ValueError("There must be as many tags as seq")
+        self.__tags = list(tags)
 
     def __setslice__(self, i, j, y):
         super(TaggedList, self).__setslice__(i, j, y)
@@ -296,16 +298,16 @@ class TaggedList(list):
         super(TaggedList, self).sort(reverse = reverse)
         self.__tags = [self.__tags[i] for i in o]
 
-    def tags(self):
-        """
-        Return a tuple of all tags
+    def __get_tags(self):
+        return tuple(self.__tags)
+
+    def __set_tags(self, tags):
+        if len(tags) == len(self.__tags):
+            self.__tags = tuple(tags)
+        else:
+            raise ValueError("The new list of tags should have the same length as the old one")
+    tags = property(__get_tags, __set_tags)
         
-        :rtype: tuple
-        """
-        res = [x for x in self.__tags]
-        return tuple(res)
-
-
     def settag(self, i, t):
         """
         Set tag 't' for item 'i'.

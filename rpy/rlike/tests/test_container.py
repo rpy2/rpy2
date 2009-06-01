@@ -62,7 +62,6 @@ class OrdDictTestCase(unittest.TestCase):
         self.assertEquals(2, x.index('a'))
 
     def testItems(self):
-
         args = (('a', 5), ('b', 4), ('c', 3),
                 ('d', 2), ('e', 1))
         x = rlc.OrdDict(args)
@@ -74,137 +73,105 @@ class OrdDictTestCase(unittest.TestCase):
 class TaggedListTestCase(unittest.TestCase):
 
     def test__add__(self):
-        tn = ['a', 'b', 'c']
-        tv = [1,2, 3]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
         tl = tl + tl
         self.assertEquals(6, len(tl))
-        self.assertEquals(('a', 'b', 'c', 'a', 'b', 'c'), tl.tags())
+        self.assertEquals(('a', 'b', 'c', 'a', 'b', 'c'), tl.tags)
         self.assertEquals((1,2,3,1,2,3), tuple(tl))
 
     def test__delitem__(self):
-        tn = ['a', 'b', 'c']
-        tv = [1,2,3]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
         self.assertEquals(3, len(tl))
         del tl[1]
         self.assertEquals(2, len(tl))
-        self.assertEquals(tl.tags(), ('a', 'c'))
+        self.assertEquals(tl.tags, ('a', 'c'))
         self.assertEquals(tuple(tl), (1, 3))
 
     def test__delslice__(self):
-        tn = ['a', 'b', 'c', 'd']
-        tv = [1,2,3,4]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3,4), tags=('a', 'b', 'c', 'd'))        
         del tl[1:3]
         self.assertEquals(2, len(tl))
-        self.assertEquals(tl.tags(), ('a', 'd'))
+        self.assertEquals(tl.tags, ('a', 'd'))
         self.assertEquals(tuple(tl), (1, 4))
 
     def test__iadd__(self):
-        tn = ['a', 'b', 'c']
-        tv = [1, 2, 3]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
         tl += tl
         self.assertEquals(6, len(tl))
-        self.assertEquals(('a', 'b', 'c', 'a', 'b', 'c'), tl.tags())
+        self.assertEquals(('a', 'b', 'c', 'a', 'b', 'c'), tl.tags)
         self.assertEquals((1,2,3,1,2,3), tuple(tl))
 
     def test__imul__(self):
-        tn = ['a', 'b']
-        tv = [1,2]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2), tags=('a', 'b'))
         tl *= 3
         self.assertEquals(6, len(tl))
-        self.assertEquals(('a', 'b', 'a', 'b', 'a', 'b'), tl.tags())
+        self.assertEquals(('a', 'b', 'a', 'b', 'a', 'b'), tl.tags)
         self.assertEquals((1,2,1,2,1,2), tuple(tl))
 
     def test__init__(self):
-        tn = ['a', 'b', 'c']
-        tv = [1,2,3]
-        tl = rlc.TaggedList(tv, tags = tn)
-
-        self.assertRaises(TypeError, rlc.TaggedList, tv, tags=123)
-        self.assertRaises(ValueError, rlc.TaggedList, tv, tags=('a', 'b'))        
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
+        self.assertRaises(ValueError, rlc.TaggedList, (1,2,3), tags = ('b', 'c'))
 
     def test__setslice__(self):
-        tn = ['a', 'b', 'c', 'd']
-        tv = [1,2,3,4]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3,4), tags=('a', 'b', 'c', 'd'))        
         tl[1:3] = [5, 6]
         self.assertEquals(4, len(tl))
-        self.assertEquals(tl.tags(), ('a', 'b', 'c', 'd'))
+        self.assertEquals(tl.tags, ('a', 'b', 'c', 'd'))
         self.assertEquals(tuple(tl), (1, 5, 6, 4))
 
     def testappend(self):
-        tn = ['a', 'b', 'c']
-        tv = [1,2,3]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
         self.assertEquals(3, len(tl))
         tl.append(4, tag='a')
         self.assertEquals(4, len(tl))
         self.assertEquals(4, tl[3])
-        self.assertEquals(('a', 'b', 'c', 'a'), tl.tags())
+        self.assertEquals(('a', 'b', 'c', 'a'), tl.tags)
 
     def testextend(self):
-        tn = ['a', 'b', 'c']
-        tv = [1,2,3]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
         tl.extend([4, 5])
         self.assertEquals(('a', 'b', 'c', None, None), tuple(tl.itertags()))
         self.assertEquals((1, 2, 3, 4, 5), tuple(tl))
 
     def testinsert(self):
-        tn = ['a', 'b', 'c']
-        tv = [1,2,3]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
         tl.insert(1, 4, tag = 'd')
         self.assertEquals(('a', 'd', 'b', 'c'), tuple(tl.itertags()))
         self.assertEquals((1, 4, 2, 3), tuple(tl))
         
     def testitems(self):
-        tn = ['a', 'b', 'c']
-        tv = [1,2,3]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
         self.assertEquals((('a', 1), ('b', 2), ('c', 3)), 
                           tl.items())
 
     def testiterontag(self):
-        tn = ['a', 'b', 'a', 'c']
-        tv = [1,2,3,4]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'a'))
         self.assertEquals((1, 3), tuple(tl.iterontag('a')))
 
     def testitertags(self):
-        tn = ['a', 'b', 'c']
-        tv = [1,2,3]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))
         self.assertEquals(('a', 'b', 'c'), tuple(tl.itertags()))
 
     def testpop(self):
-        tn = ['a', 'b', 'c']
-        tv = [1,2,3]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))
         self.assertEquals(3, len(tl))
         elt = tl.pop()
         self.assertEquals(3, elt)
         self.assertEquals(2, len(tl))
-        self.assertEquals(tl.tags(), ('a', 'b'))
+        self.assertEquals(tl.tags, ('a', 'b'))
         self.assertEquals(tuple(tl), (1, 2))
 
         elt = tl.pop(0)
         self.assertEquals(1, elt)
         self.assertEquals(1, len(tl))
-        self.assertEquals(tl.tags(), ('b', ))
+        self.assertEquals(tl.tags, ('b', ))
 
     def testremove(self):
-        tn = ['a', 'b', 'c']
-        tv = [1,2,3]
-        tl = rlc.TaggedList(tv, tags = tn)
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))
         self.assertEquals(3, len(tl))
         tl.remove(2)
         self.assertEquals(2, len(tl))
-        self.assertEquals(tl.tags(), ('a', 'c'))
+        self.assertEquals(tl.tags, ('a', 'c'))
         self.assertEquals(tuple(tl), (1, 3))
 
     def testreverse(self):
@@ -213,7 +180,7 @@ class TaggedListTestCase(unittest.TestCase):
         tl = rlc.TaggedList(tv, tags = tn)
         tl.reverse()
         self.assertEquals(3, len(tl))
-        self.assertEquals(tl.tags(), ('c', 'b', 'a'))
+        self.assertEquals(tl.tags, ('c', 'b', 'a'))
         self.assertEquals(tuple(tl), (3, 2, 1))
 
     def testsort(self):
@@ -222,24 +189,35 @@ class TaggedListTestCase(unittest.TestCase):
         tl = rlc.TaggedList(tv, tags = tn)
         tl.sort()
 
-        self.assertEquals(tl.tags(), ('a', 'b', 'c'))
+        self.assertEquals(tl.tags, ('a', 'b', 'c'))
         self.assertEquals(tuple(tl), (1, 2, 3))
         
     def testtags(self):
         tn = ['a', 'b', 'c']
         tv = [1,2,3]
         tl = rlc.TaggedList(tv, tags = tn)
-        tags = tl.tags()
+        tags = tl.tags
         self.assertTrue(isinstance(tags, tuple))
         self.assertEquals(tags, ('a', 'b', 'c'))
+
+        tn = ['d', 'e', 'f']
+        tl.tags = tn
+        self.assertTrue(isinstance(tags, tuple))
+        self.assertEquals(tuple(tn), tl.tags)
 
     def testsettag(self):
         tn = ['a', 'b', 'c']
         tv = [1,2,3]
         tl = rlc.TaggedList(tv, tags = tn)
         tl.settag(1, 'z')
-        self.assertEquals(tl.tags(), ('a', 'z', 'c'))
-    
+        self.assertEquals(tl.tags, ('a', 'z', 'c'))
+
+    def testfrom_iteritems(self):
+        tn = ('a', 'b', 'c')
+        tv = [1,2,3]
+        tl = rlc.TaggedList(tv, tags = tn)
+        self.assertEquals(tn, tl.tags)
+        
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(OrdDictTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TaggedListTestCase))

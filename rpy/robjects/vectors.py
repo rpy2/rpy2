@@ -51,9 +51,9 @@ class ExtractDelegator(object):
 
     def __getitem__(self, item):
         fun = self._extractfunction
-        args = copy.copy(item)
-        for k,v in args.iteritems():
-            args[k] = conversion.py2ro(v)
+        args = rlc.TaggedList(item)
+        for i, k,v in enumerate(args.iteritems()):
+            args[i] = conversion.py2ro(v)
         args.insert(0, self._parent)
         res = fun.rcall(args.items())
         res = conversion.py2ro(res)
@@ -61,15 +61,13 @@ class ExtractDelegator(object):
 
     def __setitem__(self, item, value):
         """ Assign a given value to a given index position in the vector """
-        if not (isinstance(item, rlc.TaggedList) | \
-                    isinstance(item, rlc.OrdDict)):
-            args = list(rlc.TaggedList([conversion.py2ro(item), ]).items())
-        else:
-            args = [(None, conversion.py2ro(x)) for x in item]
-        args.append((None, conversion.py2ro(value)))
-        args.insert(0, (None, self._parent))
+        args = rlc.TaggedList(item)
+        for i, (k,v) in enumerate(args.iteritems()):
+            args[i] = conversion.py2ro(v)       
+        args.append(conversion.py2ro(value), tag = None)
+        args.insert(0, self._parent, tag = None)
         fun = self._replacefunction
-        res = fun.rcall(tuple(args),
+        res = fun.rcall(tuple(args.iteritems()),
                         globalenv_ri)
         #FIXME: check refcount and copying
         self._parent.__sexp__ = res.__sexp__

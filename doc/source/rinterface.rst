@@ -716,6 +716,7 @@ from.
    File "<stdin>", line 1, in <module>
    LookupError: The object has no such attribute.
 
+
 .. index::
    single: closure
    single: SexpClosure

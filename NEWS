@@ -75,6 +75,8 @@ New Features
 - :meth:`iteritems` for :class:`OrdDict` (formerly:class:`ArgDict`) 
   and :class:`TaggedList`
 
+- static method :meth:`from_iteritems` for :class:`TaggedList`,
+  for creating a TaggedList from any object having a method :meth:`iteritems`
 
 Changes
 -------
@@ -117,6 +119,9 @@ Changes
 :mod:`rpy2.rlike`:
 
 - :class:`ArgDict` becomes :class:`OrdDict`.
+
+- :meth:`tags` of :class:`TaggedList` is now a property (with a getter
+  and a setter)
 
 
 Bugs fixed

@@ -51,16 +51,16 @@ class SexpClosureTestCase(unittest.TestCase):
 
     def testRcallOrdDict(self):
         ad = rlc.OrdDict((('a', rinterface.SexpVector([2, ], 
-                                                       rinterface.INTSXP)), 
+                                                      rinterface.INTSXP)), 
                           ('b', rinterface.SexpVector([1, ], 
                                                       rinterface.INTSXP)),
                           (None, rinterface.SexpVector([5, ], 
                                                        rinterface.INTSXP)),
-                        ('c', rinterface.SexpVector([0, ], 
-                                                    rinterface.INTSXP))))
-        
+                          ('c', rinterface.SexpVector([0, ], 
+                                                      rinterface.INTSXP))))
+
         mylist = rinterface.baseenv['list'].rcall(ad.items(), 
-                                                           rinterface.globalenv)
+                                                  rinterface.globalenv)
         
         names = [x for x in mylist.do_slot("names")]
         
