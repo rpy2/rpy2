@@ -172,7 +172,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         """ Set the element names
         (like the R function 'names<-' does it)."""
 
-        res = globalenv_ri.get("names<-")(self, value)
+        res = globalenv_ri.get("names<-")(self, conversion.py2ro(value))
         self.__sexp__ = res.__sexp__
 
     names = property(getnames, setnames, 
