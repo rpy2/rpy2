@@ -163,14 +163,11 @@ class TaggedList(list):
 
     @staticmethod
     def from_iteritems(tagval):
-        tags = []
-        if isinstance(tagval, OrdDict):
-            tagval = tagval.iteritems()
-        for k,v in tagval:
-            tags.append(k)
-            super(TaggedList, self).append(v)
-        self.__tags = tags
-
+        res = TaggedList([])
+        for k,v in tagval.iteritems():
+            res.append(v, tag=k)
+        return res
+    
     def __init__(self, seq, tags = None):
         super(TaggedList, self).__init__(seq)
         if tags is None:

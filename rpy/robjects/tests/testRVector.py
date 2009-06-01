@@ -131,7 +131,7 @@ class RVectorTestCase(unittest.TestCase):
         self.assertEquals(4, vec[3])
 
         i = array.array('i', [1, 5])
-        vec.assign(rlc.TaggedList.from_sequence([i, ]), 50)
+        vec.assign(rlc.TaggedList((i, )), 50)
         self.assertEquals(50, vec[0])
         self.assertEquals(2, vec[1])
         self.assertEquals(20, vec[2])

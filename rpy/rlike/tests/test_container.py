@@ -213,10 +213,14 @@ class TaggedListTestCase(unittest.TestCase):
         self.assertEquals(tl.tags, ('a', 'z', 'c'))
 
     def testfrom_iteritems(self):
-        tn = ('a', 'b', 'c')
-        tv = [1,2,3]
-        tl = rlc.TaggedList(tv, tags = tn)
-        self.assertEquals(tn, tl.tags)
+        od = rlc.OrdDict( (('a', 1), ('b', 2), ('c', 3)) )
+        tl = rlc.TaggedList.from_iteritems(od)
+        self.assertEquals(('a', 'b', 'c'), tl.tags)
+        self.assertEquals((1, 2, 3), tuple(tl))
+
+        tl = rlc.TaggedList.from_iteritems({'a':1, 'b':2, 'c':3})
+        self.assertEquals(set(('a', 'b', 'c')), set(tl.tags))
+        self.assertEquals(set((1, 2, 3)), set(tuple(tl)))
         
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(OrdDictTestCase)
