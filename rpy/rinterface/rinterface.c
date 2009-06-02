@@ -1902,6 +1902,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
     res = newPySexpObject(res_R);
   } else {
     PyErr_Format(PyExc_LookupError, "'%s' not found", name);
+    Py_DECREF(Py_False);
     res = NULL;
   }
   Py_DECREF(Py_False);
