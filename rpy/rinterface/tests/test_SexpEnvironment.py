@@ -44,7 +44,7 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         self.assertTrue(ok)
 
     def testGetEmptyString(self):
-        self.assertRaises(RRuntimeError, rinterface.globalEnv.get, "")
+        self.assertRaises(ValueError, rinterface.globalEnv.get, "")
 
     def testGet_functionOnly_lookupError(self):
         # now with the function-only option
