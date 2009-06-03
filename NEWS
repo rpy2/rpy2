@@ -133,6 +133,8 @@ Bugs fixed
 - :class:`rinterface.SexpVector` will now properly raise an exception
   when trying to create vector-like object of impossible type
 
+- :meth:`SexpEnvironment.__getitem__` called with an empty string
+  caused unpredictable (and bad) things
 
 Release 2.0.5
 =============

@@ -2627,6 +2627,10 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
 
   name = PyString_AsString(key);
 
+  if (strlen(name) == 0) {
+    PyErr_Format(PyExc_KeyError, name);
+  }
+
   if (embeddedR_status & RPY_R_BUSY) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return NULL;
