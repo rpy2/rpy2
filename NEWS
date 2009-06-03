@@ -134,6 +134,16 @@ Bugs fixed
   when trying to create vector-like object of impossible type
 
 
+Release 2.0.5
+=============
+
+Bugs fixed
+----------
+
+- Crash when calling :meth:`SexpEnvironment.get` with an empty string
+  #bug report by Walter Moreira
+
+
 Release 2.0.4
 =============
 

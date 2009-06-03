@@ -61,6 +61,8 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         hist = rinterface.globalenv.get("hist", wantfun = True)
         self.assertEquals(rinterface.CLOSXP, hist.typeof)
         
+    def testGet_emptyString(self):
+        self.assertRaises(ValueError, rinterface.globalEnv.get, "")
 
     def testSubscript(self):
         ge = rinterface.globalenv
