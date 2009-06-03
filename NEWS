@@ -6,6 +6,9 @@ Bugs fixed
 
 - Build with -framework used (OS X) will/should work properly
 
+- Crash when calling :meth:`SexpEnvironment.get` with an empty string
+  #bug report by Walter Moreira
+
 
 Release 2.0.4
 =============

@@ -1887,6 +1887,12 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
     return NULL;
   }
 
+  if (strlen(name) == 0) {
+    PyErr_Format(PyExc_ValueError, "Invalid name.");
+    Py_DECREF(Py_False);
+    return NULL;
+  }
+
   if (rho_R == R_EmptyEnv) {
     PyErr_Format(PyExc_LookupError, "Fatal error: R_EmptyEnv.");
   }
@@ -1896,7 +1902,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   } else {
     res_R = findVar(install(name), rho_R);
   }
-
+  
   if (res_R != R_UnboundValue) {
     //FIXME rpy_only
     res = newPySexpObject(res_R);
