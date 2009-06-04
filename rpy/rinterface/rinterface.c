@@ -2523,6 +2523,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   if (strlen(name) == 0) {
     PyErr_Format(PyExc_ValueError, "Invalid name.");
     Py_DECREF(Py_False);
+    embeddedR_freelock();
     return NULL;
   }
 
