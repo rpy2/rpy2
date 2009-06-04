@@ -4,7 +4,7 @@
 #include <Python.h>
 #include <Rdefines.h>
 #include <Rinternals.h>
-#include "rinterface.h"
+#include "rpy_rinterface.h"
 
 #define ARRAY_INTERFACE_VERSION 2
 

@@ -68,7 +68,7 @@
 #include <R_ext/Rdynload.h>
 #include <R_ext/RStartup.h>
 
-#include "rinterface.h"
+#include "rpy_rinterface.h"
 #include "array.h"
 #include "r_utils.h"
 

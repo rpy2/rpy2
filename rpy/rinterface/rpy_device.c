@@ -8,7 +8,7 @@
 #include <R_ext/GraphicsEngine.h>
 #include <R_ext/GraphicsDevice.h>
 
-#include "rinterface.h"
+#include "rpy_rinterface.h"
 #include "rpy_device.h"
 
 

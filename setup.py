@@ -130,6 +130,7 @@ class build_ext(_build_ext):
                         allow_empty=True) +\
                         get_rconfig(r_home, 'BLAS_LIBS')
 
+        import pdb; pdb.set_trace()
         for e in self.extensions:
             e.extra_compile_args.extend(extra_link_args)
 
@@ -179,8 +180,8 @@ def get_rconfig(r_home, about, allow_empty = False):
     rconfig_m = None
     possible_patterns = ('^(-L.+) (-l.+)$',
                          '^(-l.+)$',  # fix for the case -lblas is returned
-                         '^(-F.+) (-framework.+)$', # fix for MacOS X
-                         '^(-framework.+)$',
+                         '^(-F.+? -framework .+)$', # fix for MacOS X
+                         '^(-framework .+)$',
                          '^(-I.+)$')
     for pattern in possible_patterns:
         rconfig_m = re.match(pattern, rconfig)
