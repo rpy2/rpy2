@@ -2630,6 +2630,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
 
   if (strlen(name) == 0) {
     PyErr_Format(PyExc_KeyError, name);
+    return NULL;
   }
 
   if (embeddedR_status & RPY_R_BUSY) {
