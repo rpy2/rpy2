@@ -130,7 +130,6 @@ class build_ext(_build_ext):
                         allow_empty=True) +\
                         get_rconfig(r_home, 'BLAS_LIBS')
 
-        import pdb; pdb.set_trace()
         for e in self.extensions:
             e.extra_compile_args.extend(extra_link_args)
 
