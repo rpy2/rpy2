@@ -32,6 +32,10 @@ New Features
 
 - :class:`FactorVector` to represent R factors
 
+- the conversion is now returning subclasses of
+  :class:`robjects.vector.RVector` (such as :class:`IntVector`, 
+  :class:`FloatVector`, etc...) rather than only return :class:`RVector`
+
 
 :mod:`rpy2.rinterface`:
 

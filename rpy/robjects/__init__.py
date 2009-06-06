@@ -30,21 +30,32 @@ def default_ri2py(o):
     """
 
     res = None
+    try:
+        rcls = o.do_slot("class")[0]
+    except LookupError, le:
+        rcls = None
+
     if isinstance(o, RObject):
         res = o
     elif isinstance(o, rinterface.SexpVector):
-        try:
-           cl = o.do_slot("class")[0]
-           if cl == 'data.frame':
-               res = vectors.RDataFrame(o)
-        except LookupError, le:
-            pass
+        if rcls == 'data.frame':
+            res = vectors.RDataFrame(o)
         if res is None:
             try:
                 dim = o.do_slot("dim")
                 res = vectors.RArray(o)
             except LookupError, le:
-                res = vectors.RVector(o)
+                if o.typeof == rinterface.INTSXP:
+                    if rcls == 'factor':
+                        res = vectors.FactorVector(o)
+                    else:
+                        res = vectors.IntVector(o)
+                elif o.typeof == rinterface.REALSXP:
+                    res = vectors.FloatVector(o)
+                elif o.typeof == rinterface.STRSXP:
+                    res = vectors.StrVector(o)
+                else:
+                    res = vectors.RVector(o)
     elif isinstance(o, rinterface.SexpClosure):
         res = RFunction(o)
     elif isinstance(o, rinterface.SexpEnvironment):
