@@ -30,6 +30,9 @@ New Features
 - :class:`RDataFrame` can now be created from :`rlike.container.OrdDict`
   instances
 
+- :class:`FactorVector` to represent R factors
+
+
 :mod:`rpy2.rinterface`:
 
 - New functions for specifying callback functions for R's front-ends:

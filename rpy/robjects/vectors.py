@@ -203,7 +203,40 @@ class FloatVector(RVector):
         obj = rinterface.FloatSexpVector(obj)
         super(FloatVector, self).__init__(obj)
 
+class FactorVector(IntVector):
+    """ Vector of 'factors' """
 
+    _factor = baseenv_ri['factor']
+    _levels = baseenv_ri['levels']
+    _levels_set = baseenv_ri['levels<-']
+    _nlevels = baseenv_ri['nlevels']
+    _isordered = baseenv_ri['is.ordered']
+    
+    def __init__(self, obj, levels = None,
+                 labels = None, exclude = None,
+                 ordered = None):
+        res = self._factor(conversion.py2ro(obj))
+        self.__sexp__ = res.__sexp__
+
+    def __levels_get(self):
+        res = self._levels(self)
+        return conversion.ri2py(res)
+    def __levels_set(self, value):
+        res = self._levels_set(self, conversion.py2ro(value))
+    levels = property(__levels_get, __levels_set)
+
+    def __nlevels_get(self):
+        res = self._nlevels(self)
+        return res[0]
+    nlevels = property(__nlevels_get, None, None, "number of levels ")
+
+    def __isordered_get(self):
+        res = self._isordered(self)
+        return res[0]
+    isordered = property(__isordered_get, None, None,
+                         "are the levels in the factor ordered ?")
+
+    
 class RArray(RVector):
     """ An R array """
     def __init__(self, obj):
