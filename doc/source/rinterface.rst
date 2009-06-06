@@ -769,12 +769,12 @@ Python is that
 all parameters in R are passed in the order they are in the call
 (no matter whether the parameter is named or not),
 while in Python only parameters without a name are passed in order.
-Using the class :class:`ArgsDict` in the module :mod:`rpy2.rlike.container`,
+Using the class :class:`OrdDict` in the module :mod:`rpy2.rlike.container`,
 together with the method :meth:`rcall`,
 permits calling a function the same way it would in R. For example::
 
    import rpy2.rlike.container as rpc
-   args = rpc.ArgsDict()
+   args = rpc.OrdDict()
    args['x'] = rinterface.IntSexpVector([1,2,3], rinterface.INTSXP)
    args[None] = rinterface.IntSexpVector([4,5], rinterface.INTSXP)
    args['y'] = rinterface.IntSexpVector([6, ], rinterface.INTSXP)
