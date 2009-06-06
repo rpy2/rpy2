@@ -3298,7 +3298,7 @@ static PyMethodDef EmbeddedR_methods[] = {
   {"getShowFiles",      (PyCFunction)EmbeddedR_getShowFiles,     METH_VARARGS,
    EmbeddedR_getShowFiles_doc},
   {"setCleanUp",      (PyCFunction)EmbeddedR_setCleanUp,     METH_VARARGS,
-   EmbeddedR_getCleanUp_doc},
+   EmbeddedR_setCleanUp_doc},
   {"getCleanUp",      (PyCFunction)EmbeddedR_getCleanUp,     METH_VARARGS,
    EmbeddedR_getCleanUp_doc},
   {"findVarEmbeddedR",  (PyCFunction)EmbeddedR_findVar,  METH_VARARGS,
