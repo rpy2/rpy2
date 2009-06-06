@@ -200,8 +200,8 @@ as they will be exposed as they should by :mod:`rpy2.robjects`.
 
 When one wants to create a vector from Python, either the 
 class :class:`RVector` or the convenience classes
-:class:`IntVector`, :class:`FloatVector`, :class:`BoolVector`, :class:`StrVector` can
-used.
+:class:`IntVector`, :class:`FloatVector`, :class:`BoolVector`, 
+:class:`StrVector` can be used.
 
 .. autoclass:: rpy2.robjects.vectors.BoolVector(obj)
    :show-inheritance:
@@ -216,6 +216,30 @@ used.
    :members:
 
 .. autoclass:: rpy2.robjects.vectors.StrVector(obj)
+   :show-inheritance:
+   :members:
+
+FactorVector
+^^^^^^^^^^^^
+
+R's factors are somewhat peculiar: they aim at representing
+a memory-efficient vector of labels. They are implemented
+as vectors of integers, to which are associated a (presumably
+shorter) vector of labels. Each integer represents the position
+of the label in the associated vector of labels.
+
+
+>>> sv = ro.StrVector('ababbc')
+>>> fac = ro.FactorVector(sv)
+>>> print(fac)
+[1] a b a b b c
+Levels: a b c
+>>> tuple(fac)
+(1, 2, 1, 2, 2, 3)
+>>> tuple(fac.levels)
+('a', 'b', 'c')
+
+.. autoclass:: rpy2.robjects.vectors.FactorVector(obj)
    :show-inheritance:
    :members:
 
