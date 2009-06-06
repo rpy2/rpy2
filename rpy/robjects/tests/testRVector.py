@@ -46,6 +46,24 @@ class RVectorTestCase(unittest.TestCase):
         self.assertEquals(False, vec[1])
         self.assertEquals(2, len(vec))
 
+    def testNewFactorVector(self):
+        vec = robjects.FactorVector(robjects.StrVector('abaabc'))
+        self.assertEquals(6, len(vec))
+
+    def testFactorVector_isordered(self):
+        vec = robjects.FactorVector(robjects.StrVector('abaabc'))
+        self.assertFalse(vec.isordered)
+
+    def testFactorVector_nlevels(self):
+        vec = robjects.FactorVector(robjects.StrVector('abaabc'))
+        self.assertEquals(3, vec.nlevels)
+
+    def testFactorVector_levels(self):
+        vec = robjects.FactorVector(robjects.StrVector('abaabc'))
+        self.assertEquals(3, len(vec.levels))
+        self.assertEquals(set(('a','b','c')), set(tuple(vec.levels)))
+
+
     def testAddOperators(self):
         seq_R = robjects.r["seq"]
         mySeqA = seq_R(0, 3)

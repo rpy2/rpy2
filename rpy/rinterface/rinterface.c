@@ -1505,16 +1505,19 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   Py_INCREF(Py_True);
   PyObject *copy = Py_True;
-
+  int sexptype = -1;
   SexpObject *tmpSexpObject;
 
 
-  static char *kwlist[] = {"sexp", "copy", NULL};
+  static char *kwlist[] = {"sexp", "sexptype", "copy", NULL};
   /* FIXME: handle the copy argument */
 
-  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", 
+  /* the "sexptype" is as a quick hack to make calls from
+   the constructor of SexpVector */
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|iO!", 
                                     kwlist,
                                     &sourceObject,
+				    &sexptype,
                                     &PyBool_Type, &copy)) {
     Py_DECREF(Py_True);
     return -1;
@@ -2443,7 +2446,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   if (PyObject_IsInstance(object, 
                           (PyObject*)&VectorSexp_Type)) {
     /* call parent's constructor */
-    if (Sexp_init(self, args, NULL) == -1) {
+      if (Sexp_init(self, args, NULL) == -1) {
       /* PyErr_Format(PyExc_RuntimeError, "Error initializing instance."); */
       embeddedR_freelock();
       return -1;
