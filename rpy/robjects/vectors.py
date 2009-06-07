@@ -95,35 +95,35 @@ class VectorOperationsDelegator(object):
 
     def __add__(self, x):
         res = globalenv_ri.get("+")(self._parent, conversion.py2ri(x))
-        return res
+        return conversion.ri2py(res)
 
     def __sub__(self, x):
         res = globalenv_ri.get("-")(self._parent, conversion.py2ri(x))
-        return res
+        return conversion.ri2py(res)
 
     def __mul__(self, x):
         res = globalenv_ri.get("*")(self._parent, conversion.py2ri(x))
-        return res
+        return conversion.ri2py(res)
 
     def __pow__(self, x):
         res = globalenv_ri.get("^")(self._parent, conversion.py2ri(x))
-        return res
+        return conversion.ri2py(res)
 
     def __div__(self, x):
         res = globalenv_ri.get("/")(self._parent, conversion.py2ri(x))
-        return res
+        return conversion.ri2py(res)
 
     def __divmod__(self, x):
         res = globalenv_ri.get("%%")(self._parent, conversion.py2ri(x))
-        return res
+        return conversion.ri2py(res)
 
     def __or__(self, x):
         res = globalenv_ri.get("|")(self._parent, conversion.py2ri(x))
-        return res
+        return conversion.ri2py(res)
 
     def __and__(self, x):
         res = globalenv_ri.get("&")(self._parent, conversion.py2ri(x))
-        return res
+        return conversion.ri2py(res)
 
 
 
