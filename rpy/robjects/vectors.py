@@ -212,10 +212,17 @@ class FactorVector(IntVector):
     _nlevels = baseenv_ri['nlevels']
     _isordered = baseenv_ri['is.ordered']
     
-    def __init__(self, obj, levels = None,
-                 labels = None, exclude = None,
-                 ordered = None):
-        res = self._factor(conversion.py2ro(obj))
+    def __init__(self, obj, levels = rinterface.R_MissingArg,
+                 labels = rinterface.R_MissingArg,
+                 exclude = rinterface.R_MissingArg,
+                 ordered = rinterface.R_MissingArg):
+        if not isinstance(obj, rinterface.Sexp):
+            obj = rinterface.StrSexpVector(obj)
+        res = self._factor(obj,
+                           levels = levels,
+                           labels = labels,
+                           exclude = exclude,
+                           ordered = ordered)
         self.__sexp__ = res.__sexp__
 
     def __levels_get(self):
