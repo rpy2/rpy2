@@ -21,6 +21,6 @@ Documentation for rpy2
    rpy_classic
    rlike
 
-   changes
+   appendix
 
 

@@ -101,20 +101,16 @@ dev_off()
 png('../../_static/graphics_ggplot2_ggplot_1.png',
     width = 480, height = 480)
 #-- ggplot1-begin
-def radd(x, y):
-    res = robjects.baseenv.get("+")(x, y)
-    return res
-
 ggplot = robjects.globalenv.get("ggplot")
 aes = robjects.globalenv.get("aes")
 
 xy = ggplot(mtcars, aes(y = as_symbol('wt'), x = as_symbol('mpg')))
 
 facet_grid = robjects.globalenv.get("facet_grid")
-p = radd(xy, facet_grid(robjects.RFormula('. ~ cyl')))
+p = xy.ro + facet_grid(robjects.RFormula('. ~ cyl'))
 
 geom_point = robjects.globalenv.get("geom_point")
-p = radd(p, geom_point())
+p = p.ro + geom_point()
 
 rprint(p)
 #-- ggplot1-end
@@ -131,7 +127,7 @@ xy = qplot(as_symbol("wt"), as_symbol("mpg"),
            xlab = "wt", ylab = "mpg")
 
 line = geom_abline(intercept = 30) 
-p = radd(xy, line)
+p = xy.ro + line
 rprint(p)
 #-- qplot3-end
 dev_off()
@@ -139,7 +135,7 @@ dev_off()
 png('../../_static/graphics_ggplot2_qplot_4.png',
     width = 480, height = 480)
 #-- qplot3addline-begin
-p = radd(p, geom_abline(intercept = 15))
+p = p.ro + geom_abline(intercept = 15)
 rprint(p)
 #-- qplot3addline-end
 dev_off()
@@ -150,7 +146,7 @@ png('../../_static/graphics_ggplot2_qplot_5.png',
 #-- qplot3addsmooth-begin
 stat_smooth = robjects.globalenv.get("stat_smooth")
 
-p = radd(xy, stat_smooth(method = "lm"))
+p = xy.ro + stat_smooth(method = "lm")
 rprint(p)
 #-- qplot3addsmooth-end
 dev_off()
@@ -159,8 +155,8 @@ dev_off()
 png('../../_static/graphics_ggplot2_qplot_6.png',
     width = 480, height = 480)
 #-- qplot3addsmoothblue-begin
-p = radd(xy, stat_smooth(method = "lm", 
-                         fill="blue", colour="#e03030d0", size=3))
+p = xy.ro + stat_smooth(method = "lm", 
+                        fill="blue", colour="#e03030d0", size=3)
 rprint(p)
 #-- qplot3addsmoothblue-end
 dev_off()
@@ -169,7 +165,7 @@ png('../../_static/graphics_ggplot2_qplot_7.png',
     width = 480, height = 480)
 #-- ggplot1addsmooth-begin
 geom_smooth = robjects.globalenv.get("geom_smooth")
-p = radd(xy, geom_smooth(aes(group=as_symbol("cyl")), method = "lm"))
+p = xy.ro + geom_smooth(aes(group=as_symbol("cyl")), method = "lm")
 rprint(p)
 #-- ggplot1addsmooth-end
 dev_off()
@@ -180,11 +176,11 @@ png('../../_static/graphics_ggplot2_ggplot_add.png',
 #-- ggplot2-begin
 xy = ggplot(mtcars, aes(y = as_symbol('wt'), x = as_symbol('mpg')))
 facet_grid = robjects.globalenv.get("facet_grid")
-p = radd(xy, geom_point())
-p = radd(p, facet_grid(robjects.RFormula('. ~ cyl')))
-p = radd(p, geom_smooth(aes(group=as_symbol("cyl")),
-                        method = "lm",
-                        data = mtcars))
+p = xy.ro + geom_point()
+p = p.ro + facet_grid(robjects.RFormula('. ~ cyl'))
+p = p.ro + geom_smooth(aes(group=as_symbol("cyl")),
+                       method = "lm",
+                       data = mtcars)
 rprint(p)
 #-- ggplot2-end
 dev_off()

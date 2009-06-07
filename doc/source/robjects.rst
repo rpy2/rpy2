@@ -333,6 +333,8 @@ The two next examples demonstrate some of `R`'s features
 a
 1
 
+.. _robjects-operationsdelegator:
+
 Operators
 ---------
 
@@ -340,8 +342,8 @@ Mathematical operations on two vectors: the following operations
 are performed element-wise in R, recycling the shortest vector if, and
 as much as, necessary.
 
-The delegating attribute mentioned in the Indexing section can also
-be used with the following operators:
+To expose that to Python, a delegating attribute :attr:`ro` is provided
+for vector-like objects.
 
 +----------+----------+
 | operator | R (.ro)  |

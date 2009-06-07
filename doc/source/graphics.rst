@@ -27,7 +27,7 @@ one will have to specify it.
 .. note::
 
    Do not forget to close a non-interactive device when done.
-This will flush the writing to the file.
+   This will flush the writing to the file.
 
 
 Getting ready
@@ -99,7 +99,7 @@ color-coding.
 
 An alternative to color-coding is to have 
 points is different *panels*. In lattice,
-this done by specify it in the formula.
+this done by specifying it in the formula.
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- xyplot3-begin
@@ -155,7 +155,11 @@ is straightforward.
    :scale: 50
 
 Splitting the data into panels, in a similar fashion to what we did
-with *lattice*, is now a matter of adding *facets*
+with *lattice*, is now a matter of adding *facets*. Adding specifications
+about what or how to plot data with *ggplot2* is performed with the
+*+* operator in R. Noting that the *ggplot* objects are of class
+:class:`RVector`, we simply use the delegator for R operations :attr:`ro`
+(see :ref:`robjects-operationsdelegator` for more about delegated R operations).
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot1-begin
