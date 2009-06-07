@@ -38,7 +38,8 @@ To run examples in this section we first import
 functions.
 
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 2-12
+   :start-after: #-- setup-begin
+   :end-before: #-- setup-end
 
 
 Package *lattice*
@@ -53,7 +54,9 @@ Importing the package `lattice` is done the
 same as it is done for other R packages.
 
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 16-18
+   :start-after: #-- setuplattice-begin
+   :end-before: #-- setuplattice-end
+
 
 Scatter plot
 ------------
@@ -62,16 +65,20 @@ We use the dataset *mtcars*, and will use
 the lattice function *xyplot* to make scatter plots.
 
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 28-31
+   :start-after: #-- setupxyplot-begin
+   :end-before: #-- setupxyplot-end
 
-Lattice is working with formulae, we build
-one and store values in its environment.
+
+Lattice is working with formulae (see :ref:`robjects-formula`),
+therefore we build one and store values in its environment.
 Making a plot is then a matter of calling
 the function *xyplot* with the *formula* as
-as argument.
+as an argument.
 
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 33-38
+   :start-after: #-- xyplot1-begin
+   :end-before: #-- xyplot1-end
+
 
 .. image:: _static/graphics_lattice_xyplot_1.png
    :scale: 50
@@ -83,7 +90,9 @@ This will indicate the different groups by
 color-coding.
 
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 45-46
+   :start-after: #-- xyplot2-begin
+   :end-before: #-- xyplot2-end
+
 
 .. image:: _static/graphics_lattice_xyplot_2.png
    :scale: 50
@@ -93,7 +102,9 @@ points is different *panels*. In lattice,
 this done by specify it in the formula.
 
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 53-59
+   :start-after: #-- xyplot3-begin
+   :end-before: #-- xyplot3-end
+
 
 .. image:: _static/graphics_lattice_xyplot_3.png
    :scale: 50
@@ -104,29 +115,52 @@ Package *ggplot2*
 Introduction
 ------------
 
+The R package *ggplot2* relies a lot unevaluated
+symbols in R expression, so we create an helper function :func:`as_symbol`
+to assist us.
+
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 65-69
-
-
+   :start-after: #-- setupggplot2-begin
+   :end-before: #-- setupggplot2-end
 
 
 Plot
 ----
 
+Making a simple plot is achieved by calling the R/ggplot2 function *qplot*;
+we define a Python-level alias for it as we are going to call it few times.
+
+That function shares a lot of similarity with R's default plot function,
+or the xyplot function from lattice.
+
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 76-82
+   :start-after: #-- qplot1-begin
+   :end-before: #-- qplot1-end
+
 
 .. image:: _static/graphics_ggplot2_qplot_1.png
    :scale: 50
 
+When using the dataset *mtcars*, as done previously with lattice,
+care should be taken to have the names of the variables to plot
+as unevaluated expression. Beside that, the call to :func:`qplot`
+is straightforward.
+
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 89-96
+   :start-after: #-- qplot2-begin
+   :end-before: #-- qplot2-end
+
 
 .. image:: _static/graphics_ggplot2_qplot_2.png
    :scale: 50
 
+Splitting the data into panels, in a similar fashion to what we did
+with *lattice*, is now a matter of adding *facets*
+
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 104-119
+   :start-after: #-- ggplot1-begin
+   :end-before: #-- ggplot1-end
+
    
 .. image:: _static/graphics_ggplot2_ggplot_1.png
    :scale: 50
@@ -135,42 +169,53 @@ Adding graphical elements
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 127-135
+   :start-after: #-- qplot3-begin
+   :end-before: #-- qplot3-end
    
 .. image:: _static/graphics_ggplot2_qplot_3.png
    :scale: 50
 
 
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 142-143
+   :start-after: #-- qplot3addline-begin
+   :end-before: #-- qplot3addline-end
+
    
 .. image:: _static/graphics_ggplot2_qplot_4.png
    :scale: 50
 
 
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 151-154
+   :start-after: #-- qplot3addsmooth-begin
+   :end-before: #-- qplot3addsmooth-end
+
    
 .. image:: _static/graphics_ggplot2_qplot_5.png
    :scale: 50
 
 
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 162-164
+   :start-after: #-- qplot3addsmoothblue-begin
+   :end-before: #-- qplot3addsmoothblue-end
+
    
 .. image:: _static/graphics_ggplot2_qplot_6.png
    :scale: 50
 
 
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 171-173
+   :start-after: #-- ggplot1addsmooth-begin
+   :end-before: #-- ggplot1addsmooth-end
+
    
 .. image:: _static/graphics_ggplot2_qplot_7.png
    :scale: 50
 
 
 .. literalinclude:: _static/demos/graphics.py
-   :lines: 181-185
+   :start-after: #-- ggplot2-begin
+   :end-before: #-- ggplot2-end
+
    
 .. image:: _static/graphics_ggplot2_ggplot_add.png
    :scale: 50

@@ -678,6 +678,8 @@ on the behavior of function can be found in Section :ref:`rinterface-functions`.
    pair: robjects; RFormula
    single: formula
 
+.. _robjects-formula:
+
 Formulae
 ========
 
