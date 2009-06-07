@@ -13,13 +13,10 @@ Documentation for rpy2
 .. toctree::
    :maxdepth: 2
 
-   overview
-   introduction
-   robjects
-   graphics
+   getting-started
+   high-level
    numpy
    callbacks
-   robjects_convert
    rinterface
    rpy_classic
    rlike

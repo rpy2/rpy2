@@ -327,7 +327,7 @@ The class :class:`Sexp` is the base class for all R objects.
 
       >>> matrix = rinterface.globalenv.get("matrix")
       >>> letters = rinterface.globalenv.get("letters")
-      >>> ncol = rinterface.SexpVector([2, ], rinterface.INTSXP)
+      >>> ncol = rinterface.IntSexpVector([2, ])
       >>> m = matrix(letters, ncol = ncol)
       >>> [x for x in m.do_slot("dim")]
       [13, 2]
@@ -534,7 +534,7 @@ and therefore cannot be found in the Global Environment.
 The assignment of a value to a symbol in an environment is as
 simple as assigning a value to a key in a Python dictionary:
 
->>> x = rinterface.Sexp_Vector([123, ], rinterface.INTSXP)
+>>> x = rinterface.IntSexpVector([123, ])
 >>> rinterface.globalenv["x"] = x
 
 
@@ -736,7 +736,7 @@ environment). That enclosing environment can be thought of as
 a context to the function.
 
 >>> sum = rinterface.globalenv.get("sum")
->>> x = rinterface.SexpVector([1,2,3], rinterface.INTSXP)
+>>> x = rinterface.IntSexpVector([1,2,3])
 >>> s = sum(x)
 >>> s[0]
 6
@@ -747,8 +747,8 @@ Named arguments to an R function can be specified just the way
 they would be with any other regular Python function.
 
 >>> rnorm = rinterface.globalenv.get("rnorm")
->>> rnorm(rinterface.SexpVector([1, ], rinterface.INTSXP), 
-          mean = rinterface.SexpVector([2, ], rinterface.INTSXP))[0]
+>>> rnorm(rinterface.IntSexpVector([1, ]), 
+          mean = rinterface.IntSexpVector([2, ]))[0]
 0.32796768001636134
 
 There are however frequent names for R parameters causing problems: all the names with a *dot*. using such parameters for an R function will either require
@@ -775,9 +775,9 @@ permits calling a function the same way it would in R. For example::
 
    import rpy2.rlike.container as rpc
    args = rpc.OrdDict()
-   args['x'] = rinterface.IntSexpVector([1,2,3], rinterface.INTSXP)
-   args[None] = rinterface.IntSexpVector([4,5], rinterface.INTSXP)
-   args['y'] = rinterface.IntSexpVector([6, ], rinterface.INTSXP)
+   args['x'] = rinterface.IntSexpVector([1,2,3])
+   args[None] = rinterface.IntSexpVector([4,5])
+   args['y'] = rinterface.IntSexpVector([6, ])
    rlist = rinterface.baseenv['list']
    rl = rlist.rcall(args.items())
 
@@ -845,16 +845,22 @@ R_HOME
   R's TRUE and FALSE
 
 .. index::
+   single: CPLXSXP
+   single: type; CPLXSXP
    single: ENVSXP
    single: type; ENVSXP
    single: INTSXP
    single: type; INTSXP
+   single: LANGSXP
+   single: type; LANGSXP
    single: LGLSXP
    single: type; LGLSXP
    single: STRSXP
    single: type; STRSXP
    single: REALSXP
    single: type; REALSXP
+   single: RAWSXP
+   single: type; RAWSXP
 
 R types
 -------
@@ -870,6 +876,9 @@ Vector types
 
 :const:`LGLSXP`
   Boolean (logical in the R terminology)
+
+:const:`RAWSXP`
+  Raw (machine-readable) value
 
 :const:`REALSXP`
   Numerical value (float / double)

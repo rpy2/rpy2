@@ -339,7 +339,7 @@ $coefficients
       5.032      -0.371 
 
 More about extracting elements from vectors is available
-at :ref:`robjects-vectors-indexing`.
+at :ref:`robjects-extracting`.
    
 Principal component analysis
 ----------------------------

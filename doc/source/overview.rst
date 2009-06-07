@@ -1,8 +1,12 @@
+
+
+********
 Overview
-========
+********
+
 
 Background
-----------
+==========
 
 `Python`_ is a popular 
 all-purpose scripting language, while `R`_ (an open source implementation
@@ -34,10 +38,10 @@ that were waiting to be included into RPy.
 This effort can be seen as a redesign and rewrite of the RPy package.
 
 Installation
-------------
+============
 
 Requirements
-^^^^^^^^^^^^
+------------
 
 Python version 2.4 or higher, as well as R-2.7.0 or higher are required.
 
@@ -55,7 +59,7 @@ gcc-4.3 is used for compiling the C parts.
 
 
 Download
-^^^^^^^^
+--------
 
 In theory we could have available for download:
 
@@ -82,7 +86,7 @@ what is available.
 
 
 Linux precompiled binaries
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------
 
 Debian packages are available thanks to Dirk Eddelbuettel.
 This is likely to mean that Ubuntu and other Debian-based
@@ -92,7 +96,7 @@ distributions will also have it in their repositories.
   single: install;win32
 
 Microsoft's Windows precompiled binaries
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------------------
 
 If available, the executable can be run; this will install the package
 in the default Python installation.
@@ -104,7 +108,7 @@ by Laurent Oget (from Predictix) since version 2.0.0b1.
   single: install;source
 
 Install from source
-^^^^^^^^^^^^^^^^^^^
+-------------------
 
 The source package is on the PYthon Package Index (PYPI), and the 
 *easy_install* script can be used whenever available.
@@ -137,7 +141,7 @@ It is otherwise possible to give explicitly the location for the R HOME:
   single: test;whole installation
 
 Test an installation
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 At any time, an installation can be tested as follows:
 
@@ -163,6 +167,7 @@ At any time, an installation can be tested as follows:
    * cause a segfault (the case with numpy arrays of unicode
    characters)
 
+
 .. warning::
 
    Win32 versions are still lacking some of the functionalities in the
@@ -170,12 +175,12 @@ At any time, an installation can be tested as follows:
    input and output.
 
 Contents
---------
+========
 
 The package is made of several sub-packages or modules:
 
 :mod:`rpy2.rpy_classic`
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 
 Higher-level interface similar to the one in RPy-1.x.
 This is provided for compatibility reasons, as well as to facilitate the migration
@@ -183,27 +188,27 @@ to RPy2.
 
 
 :mod:`rpy2.robjects`
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 Higher-level interface, when ease-of-use matters most.
 
 
 :mod:`rpy2.rinterface`
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 Low-level interface to R, when speed and flexibility
 matter most. Here the programmer gets close(r) to R's C-level
 API.
 
 :mod:`rpy2.rlike`
-^^^^^^^^^^^^^^^^^
+-----------------
 
 Data structures and functions to mimic some of R's features and specificities
 
 
 
 Design notes
-------------
+============
 
 
 When designing ryp2, attention was given to make:
@@ -233,7 +238,7 @@ to inheritance.
 
 
 Acknowledgements
-----------------
+================
 
 Acknowledgements go to (alphabetical order):
 
@@ -258,3 +263,5 @@ Nathaniel Smith
 
 Walter Moreira, and Gregory Warnes
     For the original RPy and its maintainance through the years.
+
+

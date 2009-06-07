@@ -1,7 +1,8 @@
 
 
+
 ********************
-High-level interface
+The robjects package
 ********************
 
 .. module:: rpy2.robjects
@@ -223,8 +224,8 @@ FactorVector
 ^^^^^^^^^^^^
 
 R's factors are somewhat peculiar: they aim at representing
-a memory-efficient vector of labels. They are implemented
-as vectors of integers, to which are associated a (presumably
+a memory-efficient vector of labels, and in order to achieve it
+are implemented as vectors of integers, to which are associated a (presumably
 shorter) vector of labels. Each integer represents the position
 of the label in the associated vector of labels.
 
@@ -239,15 +240,18 @@ Levels: a b c
 >>> tuple(fac.levels)
 ('a', 'b', 'c')
 
+When extracting elements from a :class:`FactorVector`, a sensible default
+might be to use R-style extracting (see :ref:`robjects-extracting`) 
+
 .. autoclass:: rpy2.robjects.vectors.FactorVector(obj)
    :show-inheritance:
    :members:
 
 
 .. index::
-   pair: RVector;indexing
+   pair: RVector;extracting
 
-.. _robjects-vectors-indexing:
+.. _robjects-extracting:
 
 Extracting items
 ----------------
@@ -260,6 +264,10 @@ names cannot / can be used for subsettting).
 
 In order to solve this, the Python way and the R way were
 made available through two different routes.
+
+Extractiong, Python-style
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
 The python :meth:`__getitem__` method behaves like a Python user would expect
 it for a vector (and indexing starts at zero).
 
@@ -276,6 +284,9 @@ a b c d e
 5
 >>> x[-1]
 5
+
+Extracting, R-style
+^^^^^^^^^^^^^^^^^^^
 
 Access to R-style extracting/subsetting is granted though the two
 delegators *rx* and *rx2*, representing the R function *[* and *[[*
@@ -725,3 +736,6 @@ Class diagram
 
 .. inheritance-diagram:: rpy2.robjects rpy2.robjects.methods rpy2.robjects.vectors
    :parts: 1
+
+
+
