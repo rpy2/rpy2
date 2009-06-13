@@ -3512,7 +3512,6 @@ initrinterface(void)
 
   initOptions = PyTuple_New(4);
 
-  /* Add an extra ref. It should remain impossible to delete it */
   PYASSERT_ZERO(
                 PyTuple_SetItem(initOptions, 0, 
                                 PyString_FromString("rpy2"))
@@ -3531,6 +3530,7 @@ initrinterface(void)
                 );
 
   PyModule_AddObject(m, "initoptions", initOptions);
+  /* Add an extra ref. It should remain impossible to delete it */
   Py_INCREF(initOptions);
 
   PyModule_AddObject(m, "Sexp", (PyObject *)&Sexp_Type);
