@@ -3529,10 +3529,10 @@ initrinterface(void)
                                 PyString_FromString("--no-save"))
                 );
 
-  PyModule_AddObject(m, "initoptions", initOptions);
   /* Add an extra ref. It should remain impossible to delete it */
   Py_INCREF(initOptions);
 
+  PyModule_AddObject(m, "initoptions", initOptions);
   PyModule_AddObject(m, "Sexp", (PyObject *)&Sexp_Type);
   PyModule_AddObject(m, "SexpClosure", (PyObject *)&ClosureSexp_Type);
   PyModule_AddObject(m, "SexpVector", (PyObject *)&VectorSexp_Type);
