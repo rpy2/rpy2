@@ -97,6 +97,20 @@ rprint(xy)
 #-- qplot2-end
 dev_off()
 
+png('../../_static/graphics_ggplot2_qplot_3.png',
+    width = 480, height = 480)
+#-- qplot3-begin
+data("mtcars")
+mtcars = robjects.globalenv["mtcars"]
+
+xy = qplot(as_symbol("wt"), as_symbol("mpg"), 
+           data = mtcars, colour = as_symbol("cyl"),
+           xlab = "wt", ylab = "mpg")
+
+rprint(xy)
+#-- qplot3-end
+dev_off()
+
 
 png('../../_static/graphics_ggplot2_ggplot_1.png',
     width = 480, height = 480)
@@ -117,9 +131,9 @@ rprint(p)
 dev_off()
 
 
-png('../../_static/graphics_ggplot2_qplot_3.png',
+png('../../_static/graphics_ggplot2_qplot_4.png',
     width = 480, height = 480)
-#-- qplot3-begin
+#-- qplot4-begin
 geom_abline = robjects.globalenv.get("geom_abline")
 
 xy = qplot(as_symbol("wt"), as_symbol("mpg"), 
@@ -129,10 +143,10 @@ xy = qplot(as_symbol("wt"), as_symbol("mpg"),
 line = geom_abline(intercept = 30) 
 p = xy.ro + line
 rprint(p)
-#-- qplot3-end
+#-- qplot4-end
 dev_off()
 
-png('../../_static/graphics_ggplot2_qplot_4.png',
+png('../../_static/graphics_ggplot2_qplot_5.png',
     width = 480, height = 480)
 #-- qplot3addline-begin
 p = p.ro + geom_abline(intercept = 15)
@@ -141,7 +155,7 @@ rprint(p)
 dev_off()
 
 
-png('../../_static/graphics_ggplot2_qplot_5.png',
+png('../../_static/graphics_ggplot2_qplot_6.png',
     width = 480, height = 480)
 #-- qplot3addsmooth-begin
 stat_smooth = robjects.globalenv.get("stat_smooth")
@@ -152,7 +166,7 @@ rprint(p)
 dev_off()
 
 
-png('../../_static/graphics_ggplot2_qplot_6.png',
+png('../../_static/graphics_ggplot2_qplot_7.png',
     width = 480, height = 480)
 #-- qplot3addsmoothblue-begin
 p = xy.ro + stat_smooth(method = "lm", 
@@ -178,6 +192,21 @@ xy = ggplot(mtcars, aes(y = as_symbol('wt'), x = as_symbol('mpg')))
 facet_grid = robjects.globalenv.get("facet_grid")
 p = xy.ro + geom_point()
 p = p.ro + facet_grid(robjects.RFormula('. ~ cyl'))
+p = p.ro + geom_smooth(aes(group=as_symbol("cyl")),
+                       method = "lm",
+                       data = mtcars)
+rprint(p)
+#-- ggplot2-end
+dev_off()
+
+
+png('../../_static/graphics_ggplot2_ggplot_addtwo.png',
+    width = 480, height = 480)
+#-- ggplot2-begin
+xy = ggplot(mtcars, aes(y = as_symbol('wt'), x = as_symbol('mpg')))
+facet_grid = robjects.globalenv.get("facet_grid")
+p = xy.ro + geom_point()
+p = p.ro + facet_grid(robjects.RFormula('gear ~ cyl'))
 p = p.ro + geom_smooth(aes(group=as_symbol("cyl")),
                        method = "lm",
                        data = mtcars)

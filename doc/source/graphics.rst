@@ -154,10 +154,28 @@ is straightforward.
 .. image:: _static/graphics_ggplot2_qplot_2.png
    :scale: 50
 
+
+Like done with *lattice*, a third variable can represented
+on the same plot using color encoding:
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- qplot3-begin
+   :end-before: #-- qplot3-end
+   
+.. image:: _static/graphics_ggplot2_qplot_3.png
+   :scale: 50
+
+
+
 Splitting the data into panels, in a similar fashion to what we did
-with *lattice*, is now a matter of adding *facets*. Adding specifications
-about what or how to plot data with *ggplot2* is performed with the
-*+* operator in R. Noting that the *ggplot* objects are of class
+with *lattice*, is now a matter of adding *facets*. 
+A central concept to *ggplot2* is that plot are made of added
+graphical elements, and adding specifications such as "I want my data
+to be split in panel" as then a matter of adding that information
+to an existing plot.
+
+In R, the addition is performed with the *+* operator and,
+noting that the *ggplot* objects are of class
 :class:`RVector`, we simply use the delegator for R operations :attr:`ro`
 (see :ref:`robjects-operationsdelegator` for more about delegated R operations).
 
@@ -169,14 +187,16 @@ about what or how to plot data with *ggplot2* is performed with the
 .. image:: _static/graphics_ggplot2_ggplot_1.png
    :scale: 50
 
+
 Adding graphical elements
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+
 .. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- qplot3-begin
-   :end-before: #-- qplot3-end
+   :start-after: #-- qplot4-begin
+   :end-before: #-- qplot4-end
    
-.. image:: _static/graphics_ggplot2_qplot_3.png
+.. image:: _static/graphics_ggplot2_qplot_4.png
    :scale: 50
 
 
@@ -185,7 +205,7 @@ Adding graphical elements
    :end-before: #-- qplot3addline-end
 
    
-.. image:: _static/graphics_ggplot2_qplot_4.png
+.. image:: _static/graphics_ggplot2_qplot_5.png
    :scale: 50
 
 
@@ -194,7 +214,7 @@ Adding graphical elements
    :end-before: #-- qplot3addsmooth-end
 
    
-.. image:: _static/graphics_ggplot2_qplot_5.png
+.. image:: _static/graphics_ggplot2_qplot_6.png
    :scale: 50
 
 
@@ -203,7 +223,7 @@ Adding graphical elements
    :end-before: #-- qplot3addsmoothblue-end
 
    
-.. image:: _static/graphics_ggplot2_qplot_6.png
+.. image:: _static/graphics_ggplot2_qplot_7.png
    :scale: 50
 
 
@@ -212,7 +232,7 @@ Adding graphical elements
    :end-before: #-- ggplot1addsmooth-end
 
    
-.. image:: _static/graphics_ggplot2_qplot_7.png
+.. image:: _static/graphics_ggplot2_qplot_8.png
    :scale: 50
 
 

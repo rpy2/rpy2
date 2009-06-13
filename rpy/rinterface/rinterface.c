@@ -2532,6 +2532,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
 
   if (rho_R == R_EmptyEnv) {
     PyErr_Format(PyExc_LookupError, "Fatal error: R_EmptyEnv.");
+    return NULL;
   }
 
   if (wantFun == Py_True) {
