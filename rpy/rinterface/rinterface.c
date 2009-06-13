@@ -3556,8 +3556,6 @@ initrinterface(void)
 
   if (PyModule_AddObject(m, "isInitialized", embeddedR_isInitialized) < 0)
     return;
-  /* FIXME: DECREF ? */
-  /* Py_DECREF(embeddedR_isInitialized); */
 
   globalEnv = (PySexpObject *)Sexp_new(&EnvironmentSexp_Type, 
                                        Py_None, Py_None);
