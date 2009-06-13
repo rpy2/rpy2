@@ -2535,7 +2535,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
     return NULL;
   }
 
-  if (wantFun == Py_True) {
+  if (PyObject_IsTrue(wantFun)) {
     res_R = rpy_findFun(install(name), rho_R);
   } else {
     res_R = findVar(install(name), rho_R);
