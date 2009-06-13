@@ -3562,32 +3562,42 @@ initrinterface(void)
   RPY_SEXP(globalEnv) = R_EmptyEnv;
 
   if (PyDict_SetItemString(d, "globalenv", (PyObject *)globalEnv) < 0)
+  {
+    Py_DECREF(globalEnv);
     return;
-  /* FIXME: DECREF ? */
-  /* Py_DECREF(globalEnv); */
+  }
+  Py_DECREF(globalEnv);
 
   baseNameSpaceEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
                                              Py_None, Py_None);
   RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
   if (PyDict_SetItemString(d, "baseenv", 
                            (PyObject *)baseNameSpaceEnv) < 0)
+  {
+    Py_DECREF(baseNameSpaceEnv);
     return;
-/* FIXME: DECREF ? */
-/*   Py_DECREF(baseNameSpaceEnv); */
+  }
+  Py_DECREF(baseNameSpaceEnv);
 
   emptyEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
                                      Py_None, Py_None);
   RPY_SEXP(emptyEnv) = R_EmptyEnv;
   if (PyDict_SetItemString(d, "emptyenv", 
                            (PyObject *)emptyEnv) < 0)
+  {
+    Py_DECREF(emptyEnv);
     return;
-
+  }
+  Py_DECREF(emptyEnv);
 
   rpy_R_MissingArg = (PySexpObject*)Sexp_new(&Sexp_Type,
                                              Py_None, Py_None);
   if (PyDict_SetItemString(d, "R_MissingArg", (PyObject *)rpy_R_MissingArg) < 0)
+  {
+    Py_DECREF(rpy_R_MissingArg);
     return;
-  /* FIXME: DECREF ? */
+  }
+
   Py_DECREF(rpy_R_MissingArg);  
 
   rinterface_unserialize = PyDict_GetItemString(d, "unserialize");
