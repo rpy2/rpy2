@@ -2496,7 +2496,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
 {
   char *name;
   SEXP res_R = NULL;
-  PySexpObject *res;
+  PySexpObject *res = NULL;
   PyObject *wantFun = Py_False;
   Py_INCREF(Py_False);
   static char *kwlist[] = {"name", "wantfun", NULL};
