@@ -2837,7 +2837,7 @@ static int
 EnvironmentSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
   PyObject *object;
-  PyObject *copy;
+  PyObject *copy = Py_False;
   static char *kwlist[] = {"sexpenv", "copy", NULL};
   /* FIXME: handle the copy argument */
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", 
