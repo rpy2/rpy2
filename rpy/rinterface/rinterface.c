@@ -2424,7 +2424,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   PyObject *object;
   int sexptype = -1;
-  PyObject *copy;
+  PyObject *copy = Py_False;
   static char *kwlist[] = {"sexpvector", "sexptype", "copy", NULL};
 
 
