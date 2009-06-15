@@ -70,6 +70,9 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         ok = ge.get("identical")(obj, a)
         self.assertTrue(ok[0])
 
+    def testSubscriptEmptyString(self):
+        self.assertRaises(ValueError, rinterface.globalEnv.__getitem__, "")
+
     def testLength(self):
         newEnv = rinterface.globalEnv.get("new.env")
         env = newEnv()

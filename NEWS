@@ -9,6 +9,9 @@ Bugs fixed
 - Crash when calling :meth:`SexpEnvironment.get` with an empty string
   #bug report by Walter Moreira
 
+- Crash when calling :meth:`SexpEnvironment.__getitem__` with an empty
+  string
+
 
 Release 2.0.4
 =============

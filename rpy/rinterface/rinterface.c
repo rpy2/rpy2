@@ -1985,6 +1985,12 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;
   }
+
+  if (strlen(name) == 0) {
+    PyErr_Format(PyExc_ValueError, "Invalid name.");
+    return NULL;
+  }
+
   res_R = findVarInFrame(rho_R, install(name));
 
   if (res_R != R_UnboundValue) {
