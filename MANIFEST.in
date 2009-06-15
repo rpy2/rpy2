@@ -1,6 +1,7 @@
 global-include debian* README
 global-exclude *patch* *diff* .svn
 
+include MANIFEST
 include NEWS README AUTHORS
 include MPL_LICENSE GPL_LICENSE LGPL_LICENSE
 include rpy/rinterface/rinterface.h
