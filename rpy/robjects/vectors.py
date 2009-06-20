@@ -181,9 +181,14 @@ class RVector(RObjectMixin, rinterface.SexpVector):
 
 class StrVector(RVector):
     """ Vector of string elements """
+    _factorconstructor = rinterface.baseenv['factor']
     def __init__(self, obj):
         obj = rinterface.StrSexpVector(obj)
         super(StrVector, self).__init__(obj)
+
+    def factor(self):
+        res = self._factorconstructor(self)
+        return conversion.ri2py(res)
 
 class IntVector(RVector):
     """ Vector of integer elements """

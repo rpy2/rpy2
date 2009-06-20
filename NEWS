@@ -36,6 +36,8 @@ New Features
   :class:`robjects.vector.RVector` (such as :class:`IntVector`, 
   :class:`FloatVector`, etc...) rather than only return :class:`RVector`
 
+- :class:`StrVector` has a method :meth:`factor` to turn a
+  vector of strings into an R factor
 
 :mod:`rpy2.rinterface`:
 
@@ -140,8 +142,6 @@ Bugs fixed
 - :class:`rinterface.SexpVector` will now properly raise an exception
   when trying to create vector-like object of impossible type
 
-- :meth:`SexpEnvironment.__getitem__` called with an empty string
-  caused unpredictable (and bad) things
 
 Release 2.0.5
 =============
@@ -151,6 +151,9 @@ Bugs fixed
 
 - Crash when calling :meth:`SexpEnvironment.get` with an empty string
   #bug report by Walter Moreira
+
+- :meth:`SexpEnvironment.__getitem__` called with an empty string
+  caused unpredictable (and bad) things
 
 
 Release 2.0.4
