@@ -48,7 +48,7 @@ copyright = '2008-2009, Laurent Gautier'
 version = '2.0'
 # The full version, including alpha/beta/rc tags.
 release = '2.0.5'
-releaselevel = 'dev'
+releaselevel = ''
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
