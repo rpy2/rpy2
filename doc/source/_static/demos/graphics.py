@@ -23,7 +23,7 @@ xyplot = robjects.baseenv.get("xyplot")
 #-- setupxyplot-end
 
 grdevices.png('../../_static/graphics_lattice_xyplot_1.png',
-    width = 480, height = 480)
+    width = 512, height = 512)
 #-- xyplot1-begin
 data("mtcars")
 mtcars = robjects.globalenv["mtcars"]
@@ -40,7 +40,7 @@ rprint(p)
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_lattice_xyplot_2.png',
-    width = 480, height = 480)
+    width = 512, height = 512)
 #-- xyplot2-begin
 p = xyplot(formula, groups = mtcars.rx2('cyl'))
 rprint(p)
@@ -48,7 +48,7 @@ rprint(p)
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_lattice_xyplot_3.png',
-    width = 480, height = 480)
+    width = 512, height = 512)
 #-- xyplot3-begin
 formula = robjects.RFormula('mpg ~ wt | cyl')
 formula.getenvironment()['mpg'] = mtcars.rx2('mpg')
@@ -69,7 +69,7 @@ mtcars = ro.r("mtcars")
 #-- setupggplot2-end
 
 grdevices.png('../../_static/graphics_ggplot2mtcars.png',
-    width = 480, height = 480)
+    width = 512, height = 512)
 #-- ggplot2mtcars-begin
 gp = ggplot2.GGPlot.new(mtcars)
 
@@ -82,7 +82,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2mtcarscolcyl.png',
-    width = 480, height = 480)
+    width = 512, height = 512)
 #-- ggplot2mtcarscolcyl-begin
 gp = ggplot2.GGPlot.new(mtcars)
 
@@ -96,7 +96,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2_ggplot_1.png',
-              width = 480, height = 480)
+              width = 512, height = 512)
 #-- ggplot1-begin
 pp = gp + \
      ggplot2.Aes.new(x='wt', y='mpg') + \
@@ -111,7 +111,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2aescolsize.png',
-              width = 480, height = 480)
+              width = 512, height = 512)
 #-- ggplot2aescolsize-begin
 pp = gp + \
      ggplot2.Aes.new(x='wt', y='mpg', size='gear', col='cyl') + \
@@ -122,7 +122,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2_qplot_4.png',
-              width = 480, height = 480)
+              width = 512, height = 512)
 #-- qplot4-begin
 pp = gp + \
      ggplot2.Aes.new(x='wt', y='mpg') + \
@@ -133,7 +133,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2_qplot_5.png',
-              width = 480, height = 480)
+              width = 512, height = 512)
 #-- qplot3addline-begin
 pp = gp + \
      ggplot2.Aes.new(x='wt', y='mpg') + \
@@ -146,7 +146,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2_qplot_6.png',
-              width = 480, height = 480)
+              width = 512, height = 512)
 #-- qplot3addsmooth-begin
 pp = gp + \
      ggplot2.Aes.new(x='wt', y='mpg') + \
@@ -159,7 +159,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2smoothblue.png',
-              width = 480, height = 480)
+              width = 512, height = 512)
 #-- ggplot2smoothblue-begin
 pp = gp + \
      ggplot2.Aes.new(x='wt', y='mpg') + \
@@ -171,7 +171,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2smoothbycyl.png',
-              width = 480, height = 480)
+              width = 512, height = 512)
 #-- ggplot2smoothbycyl-begin
 pp = gp + \
      ggplot2.Aes.new(x='wt', y='mpg') + \
@@ -183,7 +183,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2_smoothbycylwithcolours.png',
-              width = 480, height = 480)
+              width = 512, height = 512)
 #-- ggplot2smoothbycylwithcolours-begin
 pp = gp + \
      ggplot2.Aes.new(x='wt', y='mpg') + \
@@ -196,7 +196,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2smoothbycylfacetcyl.png',
-              width = 480, height = 480)
+              width = 512, height = 512)
 #-- ggplot2smoothbycylfacetcyl-begin
 pp = gp + \
      ggplot2.Aes.new(x='wt', y='mpg') + \
@@ -212,7 +212,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2histogramfacetcyl.png',
-              width = 480, height = 480)
+              width = 512, height = 512)
 #-- ggplot2histogramfacetcyl-begin
 pp = gp + \
      ggplot2.Aes.new(x='wt') + \

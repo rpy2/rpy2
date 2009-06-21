@@ -41,7 +41,7 @@ The module :mod:`grdevices` aims at representing the R package
 
    import rpy2.robjects.lib.grdevices as grdevices
 
-   grdevices.png(file="path/to/file.png", width=480, height=480)
+   grdevices.png(file="path/to/file.png", width=512, height=512)
    # plotting code here   
    grdevices.dev_off()
 
@@ -168,9 +168,17 @@ Plot
 .. image:: _static/graphics_ggplot2mtcars.png
    :scale: 50
 
+Aesthethics mapping
+^^^^^^^^^^^^^^^^^^^
+
+An important concept for the grammar of graphics is the
+mapping of variables, or columns in a data frame, to
+graphical representations.
 
 Like it was shown for *lattice*, a third variable can be represented
-on the same plot using color encoding:
+on the same plot using color encoding, and this is now done by
+specifying that as a mapping (the parameter *col* when calling
+the :class:`Aes`):
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2mtcarscolcyl-begin
@@ -179,6 +187,19 @@ on the same plot using color encoding:
 .. image:: _static/graphics_ggplot2mtcarscolcyl.png
    :scale: 50
 
+The size of the graphical symbols plotted (here circular dots) can
+also be mapped to a variable:
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2aescolsize-begin
+   :end-before: #-- ggplot2aescolsize-end
+   
+.. image:: _static/graphics_ggplot2aescolsize.png
+   :scale: 50
+
+
+Facets
+^^^^^^
 
 Splitting the data into panels, in a similar fashion to what we did
 with *lattice*, is now a matter of adding *facets*. 
@@ -187,20 +208,6 @@ graphical elements, and adding specifications such as "I want my data
 to be split in panel" is then a matter of adding that information
 to an existing plot.
 
-Aesthethics mapping
-^^^^^^^^^^^^^^^^^^^
-
-An important concept for the grammar of graphics is the
-mapping of variables, or columns in a data frame, to
-graphical representations.
-
-
-.. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot2aescolsize-begin
-   :end-before: #-- ggplot2aescolsize-end
-   
-.. image:: _static/graphics_ggplot2aescolsize.png
-   :scale: 50
 
 
 
