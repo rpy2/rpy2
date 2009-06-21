@@ -919,7 +919,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   Py_XDECREF(embeddedR_isInitialized);
   embeddedR_status = RPY_R_INITIALIZED;
   embeddedR_isInitialized = Py_True;
-  Py_INCREF(Py_True);
+  Py_INCREF(embeddedR_isInitialized);
 
   RPY_SEXP(globalEnv) = R_GlobalEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
@@ -974,7 +974,7 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   /* FIXME: Is it possible to reinitialize R later ?
    * Py_XDECREF(embeddedR_isInitialized);
    * embeddedR_isInitialized = Py_False;
-   *Py_INCREF(Py_False); 
+   *Py_INCREF(embeddedR_isInitialized); 
    */
 
   Py_RETURN_NONE;
@@ -1503,7 +1503,6 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   PyObject *sourceObject;
 
-  Py_INCREF(Py_True);
   PyObject *copy = Py_True;
   int sexptype = -1;
   SexpObject *tmpSexpObject;
@@ -1519,7 +1518,6 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
                                     &sourceObject,
 				    &sexptype,
                                     &PyBool_Type, &copy)) {
-    Py_DECREF(Py_True);
     return -1;
   }
 
@@ -1527,7 +1525,6 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
                             (PyObject*)&Sexp_Type)) {
     PyErr_Format(PyExc_ValueError, 
                  "Can only instanciate from Sexp objects.");
-    Py_DECREF(Py_True);
     return -1;
   }
 
@@ -1543,10 +1540,8 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   } else {
     PyErr_Format(PyExc_ValueError, "Cast without copy is not yet implemented.");
-    Py_DECREF(Py_True);
     return -1;
   }
-  Py_DECREF(Py_True);
 
 #ifdef RPY_VERBOSE
   printf("done.\n");
@@ -2498,14 +2493,13 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   SEXP res_R = NULL;
   PySexpObject *res = NULL;
   PyObject *wantFun = Py_False;
-  Py_INCREF(Py_False);
+
   static char *kwlist[] = {"name", "wantfun", NULL};
  
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|O!",
                                    kwlist,
                                    &name, 
                                    &PyBool_Type, &wantFun)) { 
-    Py_DECREF(Py_False);
     return NULL; 
   }
 
@@ -2518,14 +2512,12 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   const SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    Py_DECREF(Py_False);
     embeddedR_freelock();
     return NULL;
   }
 
   if (strlen(name) == 0) {
     PyErr_Format(PyExc_ValueError, "Invalid name.");
-    Py_DECREF(Py_False);
     embeddedR_freelock();
     return NULL;
   }
@@ -2548,7 +2540,6 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
     PyErr_Format(PyExc_LookupError, "'%s' not found", name);
     res = NULL;
   }
-  Py_DECREF(Py_False);
   embeddedR_freelock();
   return (PyObject *)res;
 }
