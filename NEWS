@@ -120,6 +120,11 @@ Changes
 - static method :meth:`from_csvfile` and 
   instance method :meth:`to_csvfile` for :class:`RDataFrame`
 
+- module :mod:`lib` to store modules representing R packages
+
+- module :mod:`lib.grdevices` for R's grDevices
+
+
 :mod:`rpy2.rinterface`:
 
 - :data:`globalEnv`, :data:`baseNameSpaceEnv`, and :data:`emptyEnv` 
