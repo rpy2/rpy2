@@ -124,6 +124,8 @@ Changes
 
 - module :mod:`lib.grdevices` for R's grDevices
 
+- module :mod:`lib.ggplot2` for the CRAN package ggplot2.
+
 
 :mod:`rpy2.rinterface`:
 
