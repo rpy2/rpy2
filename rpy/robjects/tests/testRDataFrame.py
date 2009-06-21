@@ -40,6 +40,11 @@ class RDataFrameTestCase(unittest.TestCase):
         self.assertEquals(26, df.nrow)
         self.assertEquals(2, df.ncol)
 
+    def testFrom_csvfile(self):
+        self.assertTrue(False) # no test yet
+
+    def testTo_csvfile(self):
+        self.assertTrue(False) # no test yet
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RDataFrameTestCase)

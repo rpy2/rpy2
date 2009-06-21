@@ -117,6 +117,9 @@ Changes
 - :meth:`nrow`, :meth:`ncol` for :class:`RArray` 
   are now property-style getters
 
+- static method :meth:`from_csvfile` and 
+  instance method :meth:`to_csvfile` for :class:`RDataFrame`
+
 :mod:`rpy2.rinterface`:
 
 - :data:`globalEnv`, :data:`baseNameSpaceEnv`, and :data:`emptyEnv` 

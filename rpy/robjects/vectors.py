@@ -9,8 +9,7 @@ import copy
 
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
-
-
+utils_ri = rinterface.baseenv['as.environment'](rinterface.StrSexpVector(("package:utils", )))
 
 class ExtractDelegator(object):
     """ Delegate the R 'extraction' of items in a vector
@@ -320,6 +319,8 @@ class RDataFrame(RVector):
     """ R 'data.frame'.
     """
     _dataframe_name = rinterface.StrSexpVector(('data.frame',))
+    _read_csv = utils_ri['read.csv']
+    _write_csv = utils_ri['write.csv']
     
     def __init__(self, tlist):
         """ Create a new data frame.
@@ -376,7 +377,32 @@ class RDataFrame(RVector):
         return conversion.ri2py(res)
     colnames = property(_get_colnames, None, None)
         
+    @staticmethod
+    def from_csvfile(path, header = True, sep = ",",
+                     quote = "\"", dec = ".",
+                     fill = True, comment_char = ""):
+        """ Create an instance from data in a .csv file. """
+        path = conversion.py2ro(path)
+        header = conversion.py2ro(header)
+        sep = conversion.py2ro(sep)
+        quote = conversion.py2ro(quote)
+        dec = conversion.py2ro(dec)
+        fill = conversion.py2ro(fill)
+        comment_char = conversion.py2ro(comment_char)
+        res = RDataFrame._read_csv(path, header = header, sep = sep,
+                                   quote = quote, dec = dec,
+                                   fill = fill,
+                                   comment_char = comment_char)
 
+        return res
+
+    def to_csvfile(self, path, append = False):
+        """ Save the data into a .csv file. """
+        path = conversion.py2ro(path)
+        append = conversion.py2ro(append)
+        res = self._write_csv(path, append = append)
+        return res
+    
 class RFunction(RObjectMixin, rinterface.SexpClosure):
     """ An R function.
     
