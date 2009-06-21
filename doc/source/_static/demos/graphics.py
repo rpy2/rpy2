@@ -1,5 +1,8 @@
+
 #-- setup-begin
 from rpy2 import robjects
+from rpy2.robjects.lib import grdevices
+
 
 # import an R package
 def rimport(x):
@@ -19,11 +22,7 @@ rimport('lattice')
 xyplot = robjects.baseenv.get("xyplot")
 #-- setupxyplot-end
 
-grdevices_env = robjects.baseenv['as.environment']('package:grDevices')
-png = grdevices_env['png']
-dev_off = grdevices_env['dev.off']
-
-png('../../_static/graphics_lattice_xyplot_1.png',
+grdevices.png('../../_static/graphics_lattice_xyplot_1.png',
     width = 480, height = 480)
 #-- xyplot1-begin
 data("mtcars")
@@ -38,17 +37,17 @@ formula.getenvironment()['wt'] = mtcars.rx2('wt')
 p = xyplot(formula)
 rprint(p)
 #-- xyplot1-end
-dev_off()
+grdevices.dev_off()
 
-png('../../_static/graphics_lattice_xyplot_2.png',
+grdevices.png('../../_static/graphics_lattice_xyplot_2.png',
     width = 480, height = 480)
 #-- xyplot2-begin
 p = xyplot(formula, groups = mtcars.rx2('cyl'))
 rprint(p)
 #-- xyplot2-end
-dev_off()
+grdevices.dev_off()
 
-png('../../_static/graphics_lattice_xyplot_3.png',
+grdevices.png('../../_static/graphics_lattice_xyplot_3.png',
     width = 480, height = 480)
 #-- xyplot3-begin
 formula = robjects.RFormula('mpg ~ wt | cyl')
@@ -59,158 +58,190 @@ formula.getenvironment()['cyl'] = mtcars.rx2('cyl')
 p = xyplot(formula, layout=robjects.IntVector((3, 1)))
 rprint(p)
 #-- xyplot3-end
-dev_off()
+grdevices.dev_off()
 
 
 #-- setupggplot2-begin
-rimport("ggplot2")
-
-def as_symbol(x):
-   res = robjects.baseenv["parse"](text = x)
-   return res[0]
+import rpy2.robjects.lib.ggplot2 as ggplot2
+import rpy2.robjects as ro
+ro.r.data("mtcars")
+mtcars = ro.r("mtcars")
 #-- setupggplot2-end
 
-
-png('../../_static/graphics_ggplot2_qplot_1.png',
+grdevices.png('../../_static/graphics_ggplot2mtcars.png',
     width = 480, height = 480)
-#-- qplot1-begin
-qplot = robjects.r["qplot"]
+#-- ggplot2mtcars-begin
+gp = ggplot2.GGPlot.new(mtcars)
 
-x = robjects.r.rnorm(5)
-y = x + robjects.r.rnorm(5, sd = 0.2)
-xy = qplot(x, y, xlab="x", ylab="y")
-rprint(xy)
-#-- qplot1-end
-dev_off()
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg') + \
+     ggplot2.GeomPoint.new()
 
-png('../../_static/graphics_ggplot2_qplot_2.png',
+pp.plot()
+#-- ggplot2mtcars-end
+grdevices.dev_off()
+
+grdevices.png('../../_static/graphics_ggplot2mtcarscolcyl.png',
     width = 480, height = 480)
-#-- qplot2-begin
-data("mtcars")
-mtcars = robjects.globalenv["mtcars"]
+#-- ggplot2mtcarscolcyl-begin
+gp = ggplot2.GGPlot.new(mtcars)
 
-xy = qplot(as_symbol("wt"), as_symbol("mpg"), 
-           data = mtcars,
-           xlab = "wt", ylab = "mpg")
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg', col='cyl') + \
+     ggplot2.GeomPoint.new()
 
-rprint(xy)
-#-- qplot2-end
-dev_off()
-
-png('../../_static/graphics_ggplot2_qplot_3.png',
-    width = 480, height = 480)
-#-- qplot3-begin
-data("mtcars")
-mtcars = robjects.globalenv["mtcars"]
-
-xy = qplot(as_symbol("wt"), as_symbol("mpg"), 
-           data = mtcars, colour = as_symbol("cyl"),
-           xlab = "wt", ylab = "mpg")
-
-rprint(xy)
-#-- qplot3-end
-dev_off()
+pp.plot()
+#-- ggplot2mtcarscolcyl-end
+grdevices.dev_off()
 
 
-png('../../_static/graphics_ggplot2_ggplot_1.png',
-    width = 480, height = 480)
+grdevices.png('../../_static/graphics_ggplot2_ggplot_1.png',
+              width = 480, height = 480)
 #-- ggplot1-begin
-ggplot = robjects.globalenv.get("ggplot")
-aes = robjects.globalenv.get("aes")
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg') + \
+     ggplot2.GeomPoint.new() + \
+     ggplot2.FacetGrid.new(ro.RFormula('. ~ cyl'))
 
-xy = ggplot(mtcars, aes(y = as_symbol('wt'), x = as_symbol('mpg')))
 
-facet_grid = robjects.globalenv.get("facet_grid")
-p = xy.ro + facet_grid(robjects.RFormula('. ~ cyl'))
-
-geom_point = robjects.globalenv.get("geom_point")
-p = p.ro + geom_point()
-
-rprint(p)
+pp.plot()
 #-- ggplot1-end
-dev_off()
+grdevices.dev_off()
 
 
-png('../../_static/graphics_ggplot2_qplot_4.png',
-    width = 480, height = 480)
+
+grdevices.png('../../_static/graphics_ggplot2aescolsize.png',
+              width = 480, height = 480)
+#-- ggplot2aescolsize-begin
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg', size='gear', col='cyl') + \
+     ggplot2.GeomPoint.new()
+
+pp.plot()
+#-- ggplot2aescolsize-end
+grdevices.dev_off()
+
+grdevices.png('../../_static/graphics_ggplot2_qplot_4.png',
+              width = 480, height = 480)
 #-- qplot4-begin
-geom_abline = robjects.globalenv.get("geom_abline")
-
-xy = qplot(as_symbol("wt"), as_symbol("mpg"), 
-           data = mtcars,
-           xlab = "wt", ylab = "mpg")
-
-line = geom_abline(intercept = 30) 
-p = xy.ro + line
-rprint(p)
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg') + \
+     ggplot2.GeomPoint.new() + \
+     ggplot2.GeomAbline.new(intercept = 30)
+pp.plot()
 #-- qplot4-end
-dev_off()
+grdevices.dev_off()
 
-png('../../_static/graphics_ggplot2_qplot_5.png',
-    width = 480, height = 480)
+grdevices.png('../../_static/graphics_ggplot2_qplot_5.png',
+              width = 480, height = 480)
 #-- qplot3addline-begin
-p = p.ro + geom_abline(intercept = 15)
-rprint(p)
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg') + \
+     ggplot2.GeomPoint.new() + \
+     ggplot2.GeomAbline.new(intercept = 30) + \
+     ggplot2.GeomAbline.new(intercept = 15)
+pp.plot()
 #-- qplot3addline-end
-dev_off()
+grdevices.dev_off()
 
 
-png('../../_static/graphics_ggplot2_qplot_6.png',
-    width = 480, height = 480)
+grdevices.png('../../_static/graphics_ggplot2_qplot_6.png',
+              width = 480, height = 480)
 #-- qplot3addsmooth-begin
-stat_smooth = robjects.globalenv.get("stat_smooth")
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg') + \
+     ggplot2.GeomPoint.new() + \
+     ggplot2.StatSmooth.new(method = 'lm')
+pp.plot()
 
-p = xy.ro + stat_smooth(method = "lm")
-rprint(p)
 #-- qplot3addsmooth-end
-dev_off()
+grdevices.dev_off()
 
 
-png('../../_static/graphics_ggplot2_qplot_7.png',
-    width = 480, height = 480)
-#-- qplot3addsmoothblue-begin
-p = xy.ro + stat_smooth(method = "lm", 
-                        fill="blue", colour="#e03030d0", size=3)
-rprint(p)
-#-- qplot3addsmoothblue-end
-dev_off()
+grdevices.png('../../_static/graphics_ggplot2smoothblue.png',
+              width = 480, height = 480)
+#-- ggplot2smoothblue-begin
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg') + \
+     ggplot2.GeomPoint.new() + \
+     ggplot2.StatSmooth.new(method = 'lm', fill = 'blue',
+                            color = 'red', size = 3)
+pp.plot()
+#-- ggplot2smoothblue-end
+grdevices.dev_off()
 
-png('../../_static/graphics_ggplot2_qplot_7.png',
-    width = 480, height = 480)
-#-- ggplot1addsmooth-begin
-geom_smooth = robjects.globalenv.get("geom_smooth")
-p = xy.ro + geom_smooth(aes(group=as_symbol("cyl")), method = "lm")
-rprint(p)
-#-- ggplot1addsmooth-end
-dev_off()
+grdevices.png('../../_static/graphics_ggplot2smoothbycyl.png',
+              width = 480, height = 480)
+#-- ggplot2smoothbycyl-begin
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg') + \
+     ggplot2.GeomPoint.new() + \
+     ggplot2.GeomSmooth.new(ggplot2.Aes.new(group = 'cyl'),
+                            method = 'lm')
+pp.plot()
+#-- ggplot2smoothbycyl-end
+grdevices.dev_off()
+
+grdevices.png('../../_static/graphics_ggplot2_smoothbycylwithcolours.png',
+              width = 480, height = 480)
+#-- ggplot2smoothbycylwithcolours-begin
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg') + \
+     ggplot2.GeomPoint.new() + \
+     ggplot2.GeomSmooth.new(ggplot2.Aes.new(group = 'cyl'),
+                            method = 'lm')
+pp.plot()
+#-- ggplot2smoothbycylwithcolours-end
+grdevices.dev_off()
 
 
-png('../../_static/graphics_ggplot2_ggplot_add.png',
-    width = 480, height = 480)
-#-- ggplot2-begin
-xy = ggplot(mtcars, aes(y = as_symbol('wt'), x = as_symbol('mpg')))
-facet_grid = robjects.globalenv.get("facet_grid")
-p = xy.ro + geom_point()
-p = p.ro + facet_grid(robjects.RFormula('. ~ cyl'))
-p = p.ro + geom_smooth(aes(group=as_symbol("cyl")),
-                       method = "lm",
-                       data = mtcars)
-rprint(p)
-#-- ggplot2-end
-dev_off()
+grdevices.png('../../_static/graphics_ggplot2smoothbycylfacetcyl.png',
+              width = 480, height = 480)
+#-- ggplot2smoothbycylfacetcyl-begin
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg') + \
+     ggplot2.GeomPoint.new() + \
+     ggplot2.FacetGrid.new(ro.RFormula('. ~ cyl')) + \
+     ggplot2.GeomSmooth.new(ggplot2.Aes.new(group="cyl"),
+                            method = "lm",
+                            data = mtcars)
+
+pp.plot()
+#-- ggplot2smoothbycylfacetcyl-end
+grdevices.dev_off()
 
 
-png('../../_static/graphics_ggplot2_ggplot_addtwo.png',
-    width = 480, height = 480)
-#-- ggplot2-begin
-xy = ggplot(mtcars, aes(y = as_symbol('wt'), x = as_symbol('mpg')))
-facet_grid = robjects.globalenv.get("facet_grid")
-p = xy.ro + geom_point()
-p = p.ro + facet_grid(robjects.RFormula('gear ~ cyl'))
-p = p.ro + geom_smooth(aes(group=as_symbol("cyl")),
-                       method = "lm",
-                       data = mtcars)
-rprint(p)
-#-- ggplot2-end
-dev_off()
+grdevices.png('../../_static/graphics_ggplot2histogramfacetcyl.png',
+              width = 480, height = 480)
+#-- ggplot2histogramfacetcyl-begin
+pp = gp + \
+     ggplot2.Aes.new(x='wt') + \
+     ggplot2.GeomHistogram.new(binwidth=2) + \
+     ggplot2.FacetGrid.new(ro.RFormula('. ~ cyl'))
 
+pp.plot()
+#-- ggplot2histogramfacetcyl-end
+grdevices.dev_off()
+
+
+
+#---
+
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg') + \
+     ggplot2.GeomDensity2D.new(ggplot2.Aes.new(group="cyl")) + \
+     ggplot2.GeomPoint.new() + \
+     ggplot2.FacetGrid.new(ro.RFormula('. ~ cyl'))
+
+pp = gp + \
+     ggplot2.Aes.new(x='wt', y='mpg') + \
+     ggplot2.FacetGrid.new(ro.RFormula('gear ~ cyl')) + \
+     ggplot2.GeomPoint.new()
+
+
+
+
+pp = gp + \
+     ggplot2.Aes.new(x='mpg') + \
+     ggplot2.FacetGrid.new(ro.RFormula('. ~ cyl')) + \
+     ggplot2.GeomHistogram.new(binwidth = 5)

@@ -12,6 +12,10 @@ The purpose of this section is to get users going, and be able to figure out
 by reading the R documentation how to perform the same plot in rpy2.
 
 
+.. module:: rpy2.robjects.lib.grdevices
+   :platform: Unix, Windows
+   :synopsis: High-level interface with R
+
 Graphical devices
 -----------------
 
@@ -27,7 +31,30 @@ one will have to specify it.
 .. note::
 
    Do not forget to close a non-interactive device when done.
-   This will flush the writing to the file.
+   This can be required to flush pending data from the buffer.
+
+
+The module :mod:`grdevices` aims at representing the R package
+*grDevices*.
+
+.. code-block:: python
+
+   import rpy2.robjects.lib.grdevices as grdevices
+
+   grdevices.png(file="path/to/file.png", width=480, height=480)
+   # plotting code here   
+   grdevices.dev_off()
+
+
+The package contains an :class:`REnvironment` :data:`grdevices_env` that
+can be used to access an object known to belong to that R packages, e.g.:
+
+>>> palette = grdevices.palette()
+>>> print(palette)
+[1] "black"   "red"     "green3"  "blue"    "cyan"    "magenta" "yellow" 
+[8] "gray"
+
+
 
 
 Getting ready
@@ -109,15 +136,20 @@ this done by specifying it in the formula.
 .. image:: _static/graphics_lattice_xyplot_3.png
    :scale: 50
 
+
+.. module:: rpy2.robjects.lib.ggplot2
+   :platform: Unix, Windows
+   :synopsis: High-level interface with R
+
+
 Package *ggplot2*
 =================
 
 Introduction
 ------------
 
-The R package *ggplot2* relies a lot unevaluated
-symbols in R expression, so we create an helper function :func:`as_symbol`
-to assist us.
+Here again, having data in a :class:`RDataFrame` is expected
+(see :ref:`robjects-dataframes` for more information on such objects).
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- setupggplot2-begin
@@ -127,69 +159,49 @@ to assist us.
 Plot
 ----
 
-Making a simple plot is achieved by calling the R/ggplot2 function *qplot*;
-we define a Python-level alias for it as we are going to call it few times.
-
-That function shares a lot of similarity with R's default plot function,
-or the xyplot function from lattice.
 
 .. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- qplot1-begin
-   :end-before: #-- qplot1-end
+   :start-after: #-- ggplot2mtcars-begin
+   :end-before: #-- ggplot2mtcars-end
 
 
-.. image:: _static/graphics_ggplot2_qplot_1.png
-   :scale: 50
-
-When using the dataset *mtcars*, as done previously with lattice,
-care should be taken to have the names of the variables to plot
-as unevaluated expression. Beside that, the call to :func:`qplot`
-is straightforward.
-
-.. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- qplot2-begin
-   :end-before: #-- qplot2-end
-
-
-.. image:: _static/graphics_ggplot2_qplot_2.png
+.. image:: _static/graphics_ggplot2mtcars.png
    :scale: 50
 
 
-Like done with *lattice*, a third variable can represented
+Like it was shown for *lattice*, a third variable can be represented
 on the same plot using color encoding:
 
 .. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- qplot3-begin
-   :end-before: #-- qplot3-end
+   :start-after: #-- ggplot2mtcarscolcyl-begin
+   :end-before: #-- ggplot2mtcarscolcyl-end
    
-.. image:: _static/graphics_ggplot2_qplot_3.png
+.. image:: _static/graphics_ggplot2mtcarscolcyl.png
    :scale: 50
-
 
 
 Splitting the data into panels, in a similar fashion to what we did
 with *lattice*, is now a matter of adding *facets*. 
 A central concept to *ggplot2* is that plot are made of added
 graphical elements, and adding specifications such as "I want my data
-to be split in panel" as then a matter of adding that information
+to be split in panel" is then a matter of adding that information
 to an existing plot.
 
-In R, the addition is performed with the *+* operator and,
-noting that the *ggplot* objects are of class
-:class:`RVector`, we simply use the delegator for R operations :attr:`ro`
-(see :ref:`robjects-operationsdelegator` for more about delegated R operations).
+Aesthethics mapping
+^^^^^^^^^^^^^^^^^^^
+
+An important concept for the grammar of graphics is the
+mapping of variables, or columns in a data frame, to
+graphical representations.
+
 
 .. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot1-begin
-   :end-before: #-- ggplot1-end
-
+   :start-after: #-- ggplot2aescolsize-begin
+   :end-before: #-- ggplot2aescolsize-end
    
-.. image:: _static/graphics_ggplot2_ggplot_1.png
+.. image:: _static/graphics_ggplot2aescolsize.png
    :scale: 50
 
-
-Adding graphical elements
-^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 .. literalinclude:: _static/demos/graphics.py
@@ -219,29 +231,56 @@ Adding graphical elements
 
 
 .. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- qplot3addsmoothblue-begin
-   :end-before: #-- qplot3addsmoothblue-end
+   :start-after: #-- ggplot2smoothblue-begin
+   :end-before: #-- ggplot2smoothblue-end
 
    
-.. image:: _static/graphics_ggplot2_qplot_7.png
+.. image:: _static/graphics_ggplot2smoothblue.png
    :scale: 50
 
 
 .. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot1addsmooth-begin
-   :end-before: #-- ggplot1addsmooth-end
+   :start-after: #-- ggplot2smoothbycyl-begin
+   :end-before: #-- ggplot2smoothbycyl-end
+   
+.. image:: _static/graphics_ggplot2smoothbycyl.png
+   :scale: 50
+
+
+
+Encoding the information in the column *cyl* is again
+only a matter of specifying it in the :class:`AES` mapping.
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2smoothbycylwithcolours-begin
+   :end-before: #-- ggplot2smoothbycylwithcolours-end
 
    
-.. image:: _static/graphics_ggplot2_qplot_8.png
+.. image:: _static/graphics_ggplot2_smoothbycylwithcolours.png
    :scale: 50
+
+
+Splitting the plots on the data in column *cyl* is still simply done
+by adding a :class:`FacetGrid`.
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2smoothbycylfacetcyl-begin
+   :end-before: #-- ggplot2smoothbycylfacetcyl-end
+
+   
+.. image:: _static/graphics_ggplot2smoothbycylfacetcyl.png
+   :scale: 50
+
 
 
 .. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot2-begin
-   :end-before: #-- ggplot2-end
+   :start-after: #-- ggplot2histogramfacetcyl-begin
+   :end-before: #-- ggplot2histogramfacetcyl-end
 
    
-.. image:: _static/graphics_ggplot2_ggplot_add.png
+.. image:: _static/graphics_ggplot2histogramfacetcyl.png
    :scale: 50
+
+
 
 

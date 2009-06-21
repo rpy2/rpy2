@@ -471,6 +471,25 @@ is an R vector, which implies one type for all elements
 in one given column, and which allows for possibly different types across
 different columns.
 
+If we take the example of data about the pharmacokinetics of theophylline in
+different subjects, the table of data could look like:
+
+======= ====== ==== ==== ====
+Subject Weight Dose Time conc
+======= ====== ==== ==== ====
+ 1       79.6  4.02 0.00 0.74
+ 1       79.6  4.02 0.25 2.84
+ 1       79.6  4.02 0.57 6.57
+ 2       72.4  4.40 7.03 5.40
+ ...     ...   ...  ...  ...
+======= ====== ==== ==== ====
+
+Such representation of the data shares similarities with a table in
+a relational database: the structure between the variables, or columns,
+is given by other column. In the example above, the grouping of the
+measures by subject is given by the column *Subject*.
+
+
 In :mod:`rpy2.robjects`, 
 :class:`RDataFrame` represents the `R` class `data.frame`.
 
@@ -482,6 +501,8 @@ Creating an :class:`RDataFrame` can be done by:
 * Using the constructor for the class
 
 * Create the data.frame through R
+
+* Read data from a file using the instance method :meth:`from_csvfile`
 
 The constructor for :class:`RDataFrame` accepts either a 
 :class:`rinterface.SexpVector` 
