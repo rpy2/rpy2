@@ -271,7 +271,9 @@ setup(
                 pack_name+'.rlike',
                 pack_name+'.rlike.tests',
                 pack_name+'.robjects',
-                pack_name+'.robjects.tests'] + \
+                pack_name+'.robjects.tests',
+                pack_name+'.robjects.lib',
+                ] + \
         [pack_name + '.rinterface', pack_name + '.rinterface.tests'],
     classifiers = ['Programming Language :: Python',
                    'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
