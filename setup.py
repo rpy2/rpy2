@@ -80,7 +80,7 @@ def get_rconfig(RHOME, about, allow_empty = False):
         
     if (rconfig_m is None):
         if allow_empty:
-            return []
+            return ()
         else:
             raise Exception(cmd + '\nreturned\n' + rconfig)
     else:
