@@ -739,44 +739,51 @@ EmbeddedR_CleanUp(SA_TYPE saveact, int status, int runLast)
   int is_threaded ;
   PyGILState_STATE gstate;
 
-  if(saveact == SA_DEFAULT) /* The normal case apart from R_Suicide */
-        saveact = SaveAction;
+  if(saveact == SA_DEFAULT) { /* The normal case apart from R_Suicide */
+    saveact = SaveAction;
+  }
+  
+  RPY_GIL_ENSURE(is_threaded, gstate);
+  
+  PyObject *arglist = Py_BuildValue("iii", saveact, status, runLast);
+  PyObject *result = PyEval_CallObject(cleanUpCallback, arglist);
+  PyObject* pythonerror = PyErr_Occurred();
+  
+  if (pythonerror != NULL) {
+    /* All R actions should be stopped since the Python callback failed,
+	     and the Python exception raised up.*/
+    /* FIXME: Print the exception in the meanwhile */
+    PyErr_Print();
+    PyErr_Clear();
+  } else {
+    if (result == Py_None)
+      jump_to_toplevel();
+
+    int res_true = PyObject_IsTrue(result);
+    switch(res_true) {
+    case -1:
+      printf("*** error while testing of the value returned from the cleanup callback is true.\n");
+      jump_to_toplevel();
+      break;
+    case 1:
+      saveact = SA_SAVE;
+      break;
+    case 0:
+      saveact = SA_NOSAVE;
+      break;
+    }
+    Py_XDECREF(arglist);
+    RPY_GIL_RELEASE(is_threaded, gstate);
+  }
 
   if (saveact == SA_SAVEASK) {
     if (R_Interactive) {
-      if (cleanUpCallback != NULL) {
+      /* if (cleanUpCallback != NULL) {	 */
 	
-	RPY_GIL_ENSURE(is_threaded, gstate);
-	
-	PyObject *arglist = Py_BuildValue("ii", status, runLast);
-	PyObject *result = PyEval_CallObject(cleanUpCallback, arglist);
-	PyObject* pythonerror = PyErr_Occurred();
-
-	if (pythonerror != NULL) {
-	  /* All R actions should be stopped since the Python callback failed,
-	     and the Python exception raised up.*/
-	  /* FIXME: Print the exception in the meanwhile */
-	  PyErr_Print();
-	  PyErr_Clear();
-	} else {
-	  int res_true = PyObject_IsTrue(result);
-	  switch(res_true) {
-	  case -1:
-	    jump_to_toplevel();
-	    break;
-	  case 1:
-	    saveact = SA_SAVE;
-	    break;
-	  case 0:
-	    saveact = SA_NOSAVE;
-	    break;
-	  }
-	  Py_XDECREF(arglist);
-	  RPY_GIL_RELEASE(is_threaded, gstate);
-	}
-      } else {
+      /* 	} */
+      /* } else { */
 	saveact = SaveAction;
-      }
+      /* } */
     } else {
 	saveact = SaveAction;
     }

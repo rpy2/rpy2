@@ -196,6 +196,12 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testShowFilesWithError(self):
         self.assertTrue(False) # no unit test (yet)
 
+    def testSetCleanUp(self):
+        self.assertTrue(False) # no unit test (yet)
+
+    def testCleanUp(self):
+        self.assertTrue(False) # no unit test (yet)
+
     def testCallErrorWhenEndedR(self):
         if sys.version_info[0] == 2 and sys.version_info[1] < 6:
             self.assertTrue(False) # cannot be tested with Python < 2.6
