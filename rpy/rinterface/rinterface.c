@@ -721,37 +721,109 @@ static PyObject * EmbeddedR_getCleanUp(PyObject *self,
 PyDoc_STRVAR(EmbeddedR_getCleanUp_doc,
              "Get the function called to clean up when exiting R.");
 
+extern SA_TYPE SaveAction; 
 static void
 EmbeddedR_CleanUp(SA_TYPE saveact, int status, int runLast)
 {
+  /*
+    R_CleanUp is invoked at the end of the session to give the user the
+    option of saving their data.
+    If ask == SA_SAVEASK the user should be asked if possible (and this
+    option should not occur in non-interactive use).
+    If ask = SA_SAVE or SA_NOSAVE the decision is known.
+    If ask = SA_DEFAULT use the SaveAction set at startup.
+    In all these cases run .Last() unless quitting is cancelled.
+    If ask = SA_SUICIDE, no save, no .Last, possibly other things.
+  */
+
   int is_threaded ;
   PyGILState_STATE gstate;
 
-  printf("--->FIXME: dummy cleanup.\n");
-  if (cleanUpCallback == NULL)
-    return;
-
+  if(saveact == SA_DEFAULT) { /* The normal case apart from R_Suicide */
+    saveact = SaveAction;
+  }
+  
   RPY_GIL_ENSURE(is_threaded, gstate);
-
-  PyObject *arglist = Py_BuildValue("ii", status, runLast);
+  
+  PyObject *arglist = Py_BuildValue("iii", saveact, status, runLast);
   PyObject *result = PyEval_CallObject(cleanUpCallback, arglist);
   PyObject* pythonerror = PyErr_Occurred();
-
+  
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
-     and the Python exception raised up.*/
+	     and the Python exception raised up.*/
     /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
     PyErr_Clear();
+  } else {
+    if (result == Py_None)
+      jump_to_toplevel();
+
+    int res_true = PyObject_IsTrue(result);
+    switch(res_true) {
+    case -1:
+      printf("*** error while testing of the value returned from the cleanup callback is true.\n");
+      jump_to_toplevel();
+      break;
+    case 1:
+      saveact = SA_SAVE;
+      break;
+    case 0:
+      saveact = SA_NOSAVE;
+      break;
+    }
     Py_XDECREF(arglist);
     RPY_GIL_RELEASE(is_threaded, gstate);
-    return;
   }
 
-  Py_DECREF(arglist);
-  Py_XDECREF(result);
-  RPY_GIL_RELEASE(is_threaded, gstate);
-  return;
+  if (saveact == SA_SAVEASK) {
+    if (R_Interactive) {
+      /* if (cleanUpCallback != NULL) {	 */
+	
+      /* 	} */
+      /* } else { */
+	saveact = SaveAction;
+      /* } */
+    } else {
+	saveact = SaveAction;
+    }
+  }
+  switch (saveact) {
+  case SA_SAVE:
+    if(runLast) R_dot_Last();
+    if(R_DirtyImage) R_SaveGlobalEnv();
+/*     if (CharacterMode == RGui) { */
+/*       R_setupHistory(); /\* re-read the history size and filename *\/ */
+/*       wgl_savehistory(R_HistoryFile, R_HistorySize); */
+/*     } else if(R_Interactive && CharacterMode == RTerm) { */
+/*       R_setupHistory(); /\* re-read the history size and filename *\/ */
+/*       gl_savehistory(R_HistoryFile, R_HistorySize); */
+/*     } */
+    break;
+  case SA_NOSAVE:
+    if(runLast) R_dot_Last();
+    break;
+  case SA_SUICIDE:
+  default:
+    break;
+  }
+  R_RunExitFinalizers();
+/*   editorcleanall(); */
+/*   CleanEd(); */
+  R_CleanTempDir();
+  Rf_KillAllDevices();
+/*   AllDevicesKilled = TRUE; */
+/*   if (R_Interactive && CharacterMode == RTerm) */
+/*     SetConsoleTitle(oldtitle); */
+/*   if (R_CollectWarnings && saveact != SA_SUICIDE */
+/*       && CharacterMode == RTerm) */
+/*     PrintWarnings(); */
+/*   app_cleanup(); */
+/*   RConsole = NULL; */
+/*   if(ifp) fclose(ifp); */
+/*   if(ifile[0]) unlink(ifile); */
+  /* exit(status); */
+  
 }
 
 /* --- Initialize and terminate an embedded R --- */

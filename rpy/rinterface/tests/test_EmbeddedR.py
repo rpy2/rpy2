@@ -196,6 +196,24 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testShowFilesWithError(self):
         self.assertTrue(False) # no unit test (yet)
 
+    def testSetCleanUp(self):
+        orig_cleanup = rinterface.getCleanUp()
+        def f(x, y, z):
+            return False
+        rinterface.setCleanUp(f)
+        rinterface.setCleanUp(orig_cleanup)
+
+    def testCleanUp(self):
+        orig_cleanup = rinterface.getCleanUp()
+        def f(saveact, status, runlast):
+            return None
+        r_quit = rinterface.baseenv['q']
+        self.assertRaises(rinterface.RRuntimeError, r_quit)
+        rinterface.setCleanUp(f)
+
+
+        rinterface.setCleanUp(orig_cleanup)
+
     def testCallErrorWhenEndedR(self):
         if sys.version_info[0] == 2 and sys.version_info[1] < 6:
             self.assertTrue(False) # cannot be tested with Python < 2.6

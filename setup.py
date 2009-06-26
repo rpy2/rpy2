@@ -189,6 +189,7 @@ def get_rconfig(r_home, about, allow_empty = False):
     if rconfig_m is None:
         if allow_empty and (rconfig == ''):
             print(cmd + '\nreturned an empty string.\n')
+            return ()
         else:
             raise Exception(cmd + '\nreturned\n' + rconfig)
     return rconfig_m.groups()

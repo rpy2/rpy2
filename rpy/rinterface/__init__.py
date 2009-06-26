@@ -144,3 +144,7 @@ def showFiles(wtitle, titlefiles, rdel, pager):
     return 0
 setShowFiles(showFiles)
 
+# def cleanUp(saveact, status, runlast):
+#     return True
+
+# setCleanUp(cleanUp)
