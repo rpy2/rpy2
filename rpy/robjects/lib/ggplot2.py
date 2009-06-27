@@ -2,6 +2,8 @@ import rpy2.robjects.methods
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
 
+import copy
+
 #getmethod = robjects.baseenv.get("getMethod")
 
 rimport = robjects.baseenv.get('library')
@@ -13,7 +15,7 @@ StrVector = robjects.StrVector
 
 def as_symbol(x):
    res = robjects.baseenv["parse"](text = x)
-   return res[0]
+   return res
 
 
 class GGPlot(robjects.RObject):
@@ -38,11 +40,15 @@ class GGPlot(robjects.RObject):
 
 class Aes(robjects.RVector):
     _constructor = ggplot2_env['aes_string']
+    #_constructor = ggplot2_env['aes']
     
     @classmethod
     def new(cls, **kwargs):
-        res = cls(cls._constructor(**kwargs))
-        return res
+       new_kwargs = copy.copy(kwargs)
+       for k,v in kwargs.iteritems():
+          new_kwargs[k] = as_symbol(v)
+       res = cls(cls._constructor(**new_kwargs))
+       return res
 
 
 class Layer(robjects.RObject):
@@ -356,8 +362,9 @@ original_conversion = conversion.ri2py
 def ggplot2_conversion(robj):
 
     pyobj = original_conversion(robj)
-    if pyobj.rclass[0] == 'ggplot':
-        pyobj = GGPlot(pyobj)
+
+    if 'ggplot' in pyobj.rclass:
+       pyobj = GGPlot(pyobj)
 
     return pyobj
 
