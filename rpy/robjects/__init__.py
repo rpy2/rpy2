@@ -54,16 +54,17 @@ def default_ri2py(o):
                     res = vectors.FloatVector(o)
                 elif o.typeof == rinterface.STRSXP:
                     res = vectors.StrVector(o)
+                elif o.typeof == rinterface.LANGSXP and rcls == 'formula':
+                    res = RFormula(o)
                 else:
                     res = vectors.RVector(o)
+
     elif isinstance(o, rinterface.SexpClosure):
         res = RFunction(o)
     elif isinstance(o, rinterface.SexpEnvironment):
         res = REnvironment(o)
     elif isinstance(o, rinterface.SexpS4):
         res = RS4(o)
-    elif rinterface.baseenv['class'](o)[0] == 'formula':
-        res = RFormula(o)
     else:
         res = RObject(o)
     return res
