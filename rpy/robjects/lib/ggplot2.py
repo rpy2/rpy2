@@ -358,6 +358,8 @@ class ScaleColourGrey(ScaleColour):
    _constructor = ggplot2_env['scale_colour_grey']
 
 
+opts = ggplot2_env['opts']
+
 original_conversion = conversion.ri2py
 def ggplot2_conversion(robj):
 
