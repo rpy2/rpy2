@@ -198,6 +198,90 @@ also be mapped to a variable:
    :scale: 50
 
 
+Geometry
+^^^^^^^^
+
+The *geometry* is how the data are represented. So far we used a scatter
+plot of points, but there are other ways to represent our data.
+
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geombin2d-begin
+   :end-before: #-- ggplot2geombin2d-end
+   
+.. image:: _static/graphics_ggplot2geombin2d.png
+   :scale: 50
+
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geomboxplot-begin
+   :end-before: #-- ggplot2geomboxplot-end
+   
+.. image:: _static/graphics_ggplot2geomboxplot.png
+   :scale: 50
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geomhistogram-begin
+   :end-before: #-- ggplot2geomhistogram-end
+   
+.. image:: _static/graphics_ggplot2geomhistogram.png
+   :scale: 50
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geomhistogramfillcyl-begin
+   :end-before: #-- ggplot2geomhistogramfillcyl-end
+   
+.. image:: _static/graphics_ggplot2geomhistogramfillcyl.png
+   :scale: 50
+
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2aescolboxplot-begin
+   :end-before: #-- ggplot2aescolboxplot-end
+   
+.. image:: _static/graphics_ggplot2aescolboxplot.png
+   :scale: 50
+
+
+Models fitted to the data are also easy to add to a plot:
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2addsmooth-begin
+   :end-before: #-- ggplot2addsmooth-end
+
+   
+.. image:: _static/graphics_ggplot2addsmooth.png
+   :scale: 50
+
+The *method* can be one of {*glm*, *gam*, *loess*, and *rlm*}.
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2addsmoothloess-begin
+   :end-before: #-- ggplot2addsmoothloess-end
+
+   
+.. image:: _static/graphics_ggplot2addsmoothloess.png
+   :scale: 50
+
+
+
+
+Several *geometry* objects can be added on the top of eachother
+in order to create the final plot. For example, a marginal *rug*
+can be added to the axis of a regular scatterplot:
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geompointandrug-begin
+   :end-before: #-- ggplot2geompointandrug-end
+   
+.. image:: _static/graphics_ggplot2geompointandrug.png
+   :scale: 50
+
+
+
+
+
+
 Facets
 ^^^^^^
 
@@ -207,6 +291,31 @@ A central concept to *ggplot2* is that plot are made of added
 graphical elements, and adding specifications such as "I want my data
 to be split in panel" is then a matter of adding that information
 to an existing plot.
+
+For example, splitting the plots on the data in column *cyl* 
+is still simply done by adding a :class:`FacetGrid`.
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2smoothbycylfacetcyl-begin
+   :end-before: #-- ggplot2smoothbycylfacetcyl-end
+
+   
+.. image:: _static/graphics_ggplot2smoothbycylfacetcyl.png
+   :scale: 50
+
+
+The way data are represented (the *geometry* in the terminology
+used the grammar of graphics) are still specified the usual way.
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2histogramfacetcyl-begin
+   :end-before: #-- ggplot2histogramfacetcyl-end
+
+   
+.. image:: _static/graphics_ggplot2histogramfacetcyl.png
+   :scale: 50
+
+
 
 
 
@@ -227,14 +336,6 @@ to an existing plot.
 .. image:: _static/graphics_ggplot2_qplot_5.png
    :scale: 50
 
-
-.. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- qplot3addsmooth-begin
-   :end-before: #-- qplot3addsmooth-end
-
-   
-.. image:: _static/graphics_ggplot2_qplot_6.png
-   :scale: 50
 
 
 .. literalinclude:: _static/demos/graphics.py
@@ -266,27 +367,6 @@ only a matter of specifying it in the :class:`AES` mapping.
 .. image:: _static/graphics_ggplot2_smoothbycylwithcolours.png
    :scale: 50
 
-
-Splitting the plots on the data in column *cyl* is still simply done
-by adding a :class:`FacetGrid`.
-
-.. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot2smoothbycylfacetcyl-begin
-   :end-before: #-- ggplot2smoothbycylfacetcyl-end
-
-   
-.. image:: _static/graphics_ggplot2smoothbycylfacetcyl.png
-   :scale: 50
-
-
-
-.. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot2histogramfacetcyl-begin
-   :end-before: #-- ggplot2histogramfacetcyl-end
-
-   
-.. image:: _static/graphics_ggplot2histogramfacetcyl.png
-   :scale: 50
 
 
 
