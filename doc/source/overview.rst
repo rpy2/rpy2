@@ -80,10 +80,13 @@ that development items such as Python headers and a C compiler are installed.
 Check on the `Sourceforge download page <http://downloads.sourceforge.net/rpy>`_
 what is available.
 
-
 .. note::
    Choose files from the `rpy2` package, not `rpy`.
 
+.. note::
+   The *easy_install* system can be used,
+   although it is currently only provided for source
+   (see :ref:`install-easyinstall`)
 
 Linux precompiled binaries
 --------------------------
@@ -110,6 +113,11 @@ by Laurent Oget (from Predictix) since version 2.0.0b1.
 Install from source
 -------------------
 
+.. _install-easyinstall:
+
+easy_install
+^^^^^^^^^^^^
+
 The source package is on the PYthon Package Index (PYPI), and the 
 *easy_install* script can be used whenever available.
 The shell command will then just be:
@@ -118,6 +126,8 @@ The shell command will then just be:
 
    easy_install rpy2
 
+source archive
+^^^^^^^^^^^^^^
 
 To install from a downloaded source archive `<rpy_package>` do in a shell:
 
@@ -135,6 +145,15 @@ It is otherwise possible to give explicitly the location for the R HOME:
 .. code-block:: bash
 
    python setup.py build --r-home /opt/packages/R/lib install
+
+
+Other options to build the package are:
+
+.. code-block:: bash
+
+   --r-home-lib # for exotic location of the R shared libraries
+
+   --r-home-modules # for R shared modules
 
 
 .. index::
