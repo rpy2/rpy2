@@ -49,8 +49,15 @@ class RObjectMixin(object):
 
     def getrclass(self):
         """ Return the name of the R class for the object. """
-        return self.__rclass(self)
-
+        try:
+            return self.__rclass(self)
+        except rpy2.rinterface.RRuntimeError, rre:
+            if self.typeof == rpy2.rinterface.SYMSXP:
+                #unevaluated expression: has no class
+                return (None, )
+            else:
+                raise rre
+            
     rclass = property(getrclass)
 
 
