@@ -184,7 +184,8 @@ grdevices.png('../../_static/graphics_ggplot2aescolsize.png',
               width = 512, height = 512)
 #-- ggplot2aescolsize-begin
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg', size='gear', col='factor(cyl)') + \
+     ggplot2.Aes.new(x='wt', y='mpg', size='factor(carb)',
+                     col='factor(cyl)', shape='factor(gear)') + \
      ggplot2.GeomPoint.new()
 
 pp.plot()
@@ -244,16 +245,32 @@ pp.plot()
 grdevices.dev_off()
 
 
-grdevices.png('../../_static/graphics_ggplot2addsmoothloess.png',
-              width = 512, height = 512)
-#-- ggplot2addsmoothloess-begin
-pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.GeomPoint.new() + \
-     ggplot2.StatSmooth.new(method = 'loess')
-pp.plot()
+grdevices.png('../../_static/graphics_ggplot2addsmoothmethods.png',
+              width = 1024, height = 340)
 
-#-- ggplot2addsmoothloess-end
+#-- ggplot2addsmoothmethods-begin
+ro.r['grid.newpage']()
+ro.r['pushViewport'](ro.r['viewport'](layout=ro.r['grid.layout'](1, 3)))
+
+params = (('lm', 'y ~ x'),
+          ('lm', 'y ~ poly(x, 2)'),
+          ('loess', 'y ~ x'))
+          
+for col_i in (1,2,3):
+   vp = ro.r['viewport'](**{'layout.pos.col':col_i, 'layout.pos.row': 1})
+   #ro.r['pushViewport'](vp)
+   #ro.r['grid.rect'](vp = vp)
+   method, formula = params[col_i-1]
+   gp = ggplot2.GGPlot.new(mtcars)
+   pp = gp + \
+        ggplot2.Aes.new(x='wt', y='mpg') + \
+        ggplot2.GeomPoint.new() + \
+        ggplot2.StatSmooth.new(method = method, formula=formula) + \
+      ggplot2.opts(title = method + ' - ' + formula)
+   ro.r['print'](pp, vp = vp)
+   #ro.r['upViewport']()
+
+#-- ggplot2addsmoothmethods-end
 grdevices.dev_off()
 
 

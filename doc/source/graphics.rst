@@ -255,18 +255,39 @@ Models fitted to the data are also easy to add to a plot:
 
 The *method* can be one of {*glm*, *gam*, *loess*, and *rlm*}.
 
+
+.. image:: _static/graphics_ggplot2addsmoothmethods.png
+   :scale: 50
+
+
+The constructor for :class:`GeomSmooth` also accepts a parameter
+:param:`group` that indicates if the fit should be done according to groups.
+
 .. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot2addsmoothloess-begin
-   :end-before: #-- ggplot2addsmoothloess-end
+   :start-after: #-- ggplot2smoothbycyl-begin
+   :end-before: #-- ggplot2smoothbycyl-end
+   
+.. image:: _static/graphics_ggplot2smoothbycyl.png
+   :scale: 50
+
+
+
+Encoding the information in the column *cyl* is again
+only a matter of specifying it in the :class:`AES` mapping.
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2smoothbycylwithcolours-begin
+   :end-before: #-- ggplot2smoothbycylwithcolours-end
 
    
-.. image:: _static/graphics_ggplot2addsmoothloess.png
+.. image:: _static/graphics_ggplot2_smoothbycylwithcolours.png
    :scale: 50
 
 
 
 
-Several *geometry* objects can be added on the top of eachother
+As can already be observed in the examples with :class:`GeomSmooth`,
+several *geometry* objects can be added on the top of eachother
 in order to create the final plot. For example, a marginal *rug*
 can be added to the axis of a regular scatterplot:
 
@@ -346,26 +367,6 @@ used the grammar of graphics) are still specified the usual way.
 .. image:: _static/graphics_ggplot2smoothblue.png
    :scale: 50
 
-
-.. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot2smoothbycyl-begin
-   :end-before: #-- ggplot2smoothbycyl-end
-   
-.. image:: _static/graphics_ggplot2smoothbycyl.png
-   :scale: 50
-
-
-
-Encoding the information in the column *cyl* is again
-only a matter of specifying it in the :class:`AES` mapping.
-
-.. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot2smoothbycylwithcolours-begin
-   :end-before: #-- ggplot2smoothbycylwithcolours-end
-
-   
-.. image:: _static/graphics_ggplot2_smoothbycylwithcolours.png
-   :scale: 50
 
 
 
