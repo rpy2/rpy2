@@ -71,11 +71,11 @@ mtcars = ro.r("mtcars")
 grdevices.png('../../_static/graphics_ggplot2mtcars.png',
     width = 512, height = 512)
 #-- ggplot2mtcars-begin
-gp = ggplot2.GGPlot.new(mtcars)
+gp = ggplot2.ggplot(mtcars)
 
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.GeomPoint.new()
+     ggplot2.aes(x='wt', y='mpg') + \
+     ggplot2.geom_point()
 
 pp.plot()
 #-- ggplot2mtcars-end
@@ -84,11 +84,11 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2geombin2d.png',
     width = 512, height = 512)
 #-- ggplot2geombin2d-begin
-gp = ggplot2.GGPlot.new(mtcars)
+gp = ggplot2.ggplot(mtcars)
 
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.GeomBin2D.new()
+     ggplot2.aes(x='wt', y='mpg') + \
+     ggplot2.geom_bin2d()
 
 pp.plot()
 #-- ggplot2geombin2d-end
@@ -97,11 +97,11 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2geomboxplot.png',
     width = 512, height = 512)
 #-- ggplot2geomboxplot-begin
-gp = ggplot2.GGPlot.new(mtcars)
+gp = ggplot2.ggplot(mtcars)
 
 pp = gp + \
-     ggplot2.Aes.new(x='factor(cyl)', y='mpg') + \
-     ggplot2.GeomBoxplot.new()
+     ggplot2.aes(x='factor(cyl)', y='mpg') + \
+     ggplot2.geom_boxplot()
 
 pp.plot()
 #-- ggplot2geomboxplot-end
@@ -110,11 +110,11 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2geomhistogram.png',
     width = 512, height = 512)
 #-- ggplot2geomhistogram-begin
-gp = ggplot2.GGPlot.new(mtcars)
+gp = ggplot2.ggplot(mtcars)
 
 pp = gp + \
-     ggplot2.Aes.new(x='wt') + \
-     ggplot2.GeomHistogram.new()
+     ggplot2.aes(x='wt') + \
+     ggplot2.geom_histogram()
 
 pp.plot()
 #-- ggplot2geomhistogram-end
@@ -123,11 +123,11 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2geomhistogramfillcyl.png',
     width = 512, height = 512)
 #-- ggplot2geomhistogramfillcyl-begin
-gp = ggplot2.GGPlot.new(mtcars)
+gp = ggplot2.ggplot(mtcars)
 
 pp = gp + \
-     ggplot2.Aes.new(x='wt', fill='factor(cyl)') + \
-     ggplot2.GeomHistogram.new()
+     ggplot2.aes(x='wt', fill='factor(cyl)') + \
+     ggplot2.geom_histogram()
 
 pp.plot()
 #-- ggplot2geomhistogramfillcyl-end
@@ -138,12 +138,12 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2geompointandrug.png',
     width = 512, height = 512)
 #-- ggplot2geompointandrug-begin
-gp = ggplot2.GGPlot.new(mtcars)
+gp = ggplot2.ggplot(mtcars)
 
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.GeomPoint.new() + \
-     ggplot2.GeomRug.new()
+     ggplot2.aes(x='wt', y='mpg') + \
+     ggplot2.geom_point() + \
+     ggplot2.geom_rug()
 
 pp.plot()
 #-- ggplot2geompointandrug-end
@@ -154,11 +154,11 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2mtcarscolcyl.png',
     width = 512, height = 512)
 #-- ggplot2mtcarscolcyl-begin
-gp = ggplot2.GGPlot.new(mtcars)
+gp = ggplot2.ggplot(mtcars)
 
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg', col='factor(cyl)') + \
-     ggplot2.GeomPoint.new()
+     ggplot2.aes(x='wt', y='mpg', col='factor(cyl)') + \
+     ggplot2.geom_point()
 
 pp.plot()
 #-- ggplot2mtcarscolcyl-end
@@ -169,9 +169,9 @@ grdevices.png('../../_static/graphics_ggplot2_ggplot_1.png',
               width = 512, height = 512)
 #-- ggplot1-begin
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.GeomPoint.new() + \
-     ggplot2.FacetGrid.new(ro.RFormula('. ~ cyl'))
+     ggplot2.aes(x='wt', y='mpg') + \
+     ggplot2.geom_point() + \
+     ggplot2.facet_grid(ro.RFormula('. ~ cyl'))
 
 
 pp.plot()
@@ -184,9 +184,9 @@ grdevices.png('../../_static/graphics_ggplot2aescolsize.png',
               width = 512, height = 512)
 #-- ggplot2aescolsize-begin
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg', size='factor(carb)',
-                     col='factor(cyl)', shape='factor(gear)') + \
-     ggplot2.GeomPoint.new()
+     ggplot2.aes(x='wt', y='mpg', size='factor(carb)',
+                 col='factor(cyl)', shape='factor(gear)') + \
+     ggplot2.geom_point()
 
 pp.plot()
 #-- ggplot2aescolsize-end
@@ -195,11 +195,11 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2aescolboxplot.png',
               width = 512, height = 512)
 #-- ggplot2aescolboxplot-begin
-gp = ggplot2.GGPlot.new(mtcars)
+gp = ggplot2.ggplot(mtcars)
 
 pp = gp + \
-     ggplot2.Aes.new(x='factor(cyl)', y='mpg', fill='factor(cyl)') + \
-     ggplot2.GeomBoxplot.new()
+     ggplot2.aes(x='factor(cyl)', y='mpg', fill='factor(cyl)') + \
+     ggplot2.geom_boxplot()
 
 pp.plot()
 #-- ggplot2aescolboxplot-end
@@ -212,9 +212,9 @@ grdevices.png('../../_static/graphics_ggplot2_qplot_4.png',
               width = 512, height = 512)
 #-- qplot4-begin
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.GeomPoint.new() + \
-     ggplot2.GeomAbline.new(intercept = 30)
+     ggplot2.aes(x='wt', y='mpg') + \
+     ggplot2.geom_point() + \
+     ggplot2.geom_abline(intercept = 30)
 pp.plot()
 #-- qplot4-end
 grdevices.dev_off()
@@ -223,10 +223,10 @@ grdevices.png('../../_static/graphics_ggplot2_qplot_5.png',
               width = 512, height = 512)
 #-- qplot3addline-begin
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.GeomPoint.new() + \
-     ggplot2.GeomAbline.new(intercept = 30) + \
-     ggplot2.GeomAbline.new(intercept = 15)
+     ggplot2.aes(x='wt', y='mpg') + \
+     ggplot2.geom_point() + \
+     ggplot2.geom_abline(intercept = 30) + \
+     ggplot2.geom_abline(intercept = 15)
 pp.plot()
 #-- qplot3addline-end
 grdevices.dev_off()
@@ -236,9 +236,9 @@ grdevices.png('../../_static/graphics_ggplot2addsmooth.png',
               width = 512, height = 512)
 #-- ggplot2addsmooth-begin
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.GeomPoint.new() + \
-     ggplot2.StatSmooth.new(method = 'lm')
+     ggplot2.aes(x='wt', y='mpg') + \
+     ggplot2.geom_point() + \
+     ggplot2.stat_smooth(method = 'lm')
 pp.plot()
 
 #-- ggplot2addsmooth-end
@@ -261,12 +261,12 @@ for col_i in (1,2,3):
    #ro.r['pushViewport'](vp)
    #ro.r['grid.rect'](vp = vp)
    method, formula = params[col_i-1]
-   gp = ggplot2.GGPlot.new(mtcars)
+   gp = ggplot2.ggplot(mtcars)
    pp = gp + \
-        ggplot2.Aes.new(x='wt', y='mpg') + \
-        ggplot2.GeomPoint.new() + \
-        ggplot2.StatSmooth.new(method = method, formula=formula) + \
-      ggplot2.opts(title = method + ' - ' + formula)
+        ggplot2.aes(x='wt', y='mpg') + \
+        ggplot2.geom_point() + \
+        ggplot2.stat_smooth(method = method, formula=formula) + \
+        ggplot2.opts(title = method + ' - ' + formula)
    ro.r['print'](pp, vp = vp)
    #ro.r['upViewport']()
 
@@ -279,10 +279,10 @@ grdevices.png('../../_static/graphics_ggplot2smoothblue.png',
               width = 512, height = 512)
 #-- ggplot2smoothblue-begin
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.GeomPoint.new() + \
-     ggplot2.StatSmooth.new(method = 'lm', fill = 'blue',
-                            color = 'red', size = 3)
+     ggplot2.aes(x='wt', y='mpg') + \
+     ggplot2.geom_point() + \
+     ggplot2.stat_smooth(method = 'lm', fill = 'blue',
+                         color = 'red', size = 3)
 pp.plot()
 #-- ggplot2smoothblue-end
 grdevices.dev_off()
@@ -291,10 +291,10 @@ grdevices.png('../../_static/graphics_ggplot2smoothbycyl.png',
               width = 512, height = 512)
 #-- ggplot2smoothbycyl-begin
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.GeomPoint.new() + \
-     ggplot2.GeomSmooth.new(ggplot2.Aes.new(group = 'cyl'),
-                            method = 'lm')
+     ggplot2.aes(x='wt', y='mpg') + \
+     ggplot2.geom_point() + \
+     ggplot2.geom_smooth(ggplot2.Aes.new(group = 'cyl'),
+                         method = 'lm')
 pp.plot()
 #-- ggplot2smoothbycyl-end
 grdevices.dev_off()
@@ -303,10 +303,10 @@ grdevices.png('../../_static/graphics_ggplot2_smoothbycylwithcolours.png',
               width = 512, height = 512)
 #-- ggplot2smoothbycylwithcolours-begin
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg', col='factor(cyl)') + \
-     ggplot2.GeomPoint.new() + \
-     ggplot2.GeomSmooth.new(ggplot2.Aes.new(group = 'cyl'),
-                            method = 'lm')
+     ggplot2.aes(x='wt', y='mpg', col='factor(cyl)') + \
+     ggplot2.geom_point() + \
+     ggplot2.geom_smooth(ggplot2.aes(group = 'cyl'),
+                         method = 'lm')
 pp.plot()
 #-- ggplot2smoothbycylwithcolours-end
 grdevices.dev_off()
@@ -316,11 +316,11 @@ grdevices.png('../../_static/graphics_ggplot2smoothbycylfacetcyl.png',
               width = 512, height = 512)
 #-- ggplot2smoothbycylfacetcyl-begin
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.GeomPoint.new() + \
-     ggplot2.FacetGrid.new(ro.RFormula('. ~ cyl')) + \
-     ggplot2.GeomSmooth.new(ggplot2.Aes.new(group="cyl"),
-                            method = "lm",
+     ggplot2.aes(x='wt', y='mpg') + \
+     ggplot2.geom_point() + \
+     ggplot2.facet_grid(ro.RFormula('. ~ cyl')) + \
+     ggplot2.geom_smooth(ggplot2.aes(group="cyl"),
+                         method = "lm",
                             data = mtcars)
 
 pp.plot()
@@ -332,9 +332,9 @@ grdevices.png('../../_static/graphics_ggplot2histogramfacetcyl.png',
               width = 512, height = 512)
 #-- ggplot2histogramfacetcyl-begin
 pp = gp + \
-     ggplot2.Aes.new(x='wt') + \
-     ggplot2.GeomHistogram.new(binwidth=2) + \
-     ggplot2.FacetGrid.new(ro.RFormula('. ~ cyl'))
+     ggplot2.aes(x='wt') + \
+     ggplot2.geom_histogram(binwidth=2) + \
+     ggplot2.facet_grid(ro.RFormula('. ~ cyl'))
 
 pp.plot()
 #-- ggplot2histogramfacetcyl-end
@@ -346,15 +346,15 @@ grdevices.dev_off()
 #---
 
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.GeomDensity2D.new(ggplot2.Aes.new(group = 'cyl')) + \
-     ggplot2.GeomPoint.new() + \
-     ggplot2.FacetGrid.new(ro.RFormula('. ~ cyl'))
+     ggplot2.aes(x='wt', y='mpg') + \
+     ggplot2.geom_density(ggplot2.aes(group = 'cyl')) + \
+     ggplot2.geom_point() + \
+     ggplot2.facet_grid(ro.RFormula('. ~ cyl'))
 
 pp = gp + \
-     ggplot2.Aes.new(x='wt', y='mpg') + \
-     ggplot2.FacetGrid.new(ro.RFormula('gear ~ cyl')) + \
-     ggplot2.GeomPoint.new()
+     ggplot2.aes(x='wt', y='mpg') + \
+     ggplot2.facet_grid(ro.RFormula('gear ~ cyl')) + \
+     ggplot2.geom_point()
 
 
 
