@@ -36,6 +36,7 @@ class GGPlot(robjects.RObject):
         res = self._add(self, obj)
         return res
 
+ggplot = GGPlot.new
 
 
 class Aes(robjects.RVector):
@@ -49,7 +50,7 @@ class Aes(robjects.RVector):
           new_kwargs[k] = as_symbol(v)
        res = cls(cls._constructor(**new_kwargs))
        return res
-
+aes = Aes.new
 
 class Layer(robjects.RObject):
     _constructor = ggplot2_env['layer']
@@ -73,7 +74,7 @@ class Layer(robjects.RObject):
 
         res = cls(cls.contructor)(*args)
         return res
-        
+layer = Layer.new        
 
 class GBaseObject(robjects.RObject):
     @classmethod
@@ -88,195 +89,294 @@ class Stat(GBaseObject):
 
 class StatAbline(Stat):
    _constructor = ggplot2_env['stat_abline']
+stat_abline = StatAbline.new
+
 class StatBin(Stat):
    _constructor = ggplot2_env['stat_bin']
+stat_bin = StatBin.new
+
 class StatBin2D(Stat):
    _constructor = ggplot2_env['stat_bin2d']
+stat_bin2d = StatBin2D.new
+
 class StatBinhex(Stat):
    _constructor = ggplot2_env['stat_binhex']
+stat_binhex = StatBinhex.new
+   
 class StatBoxplot(Stat):
    _constructor = ggplot2_env['stat_boxplot']
+stat_boxplot = StatBoxplot.new
+
 class StatContour(Stat):
    _constructor = ggplot2_env['stat_contour']
+stat_contour = StatContour.new
+
 class StatDensity(Stat):
    _constructor = ggplot2_env['stat_density']
+stat_density = StatDensity.new
+
 class StatDensity2D(Stat):
    _constructor = ggplot2_env['stat_density2d']
+stat_density2d = StatDensity2D.new
+
 class StatFunction(Stat):
    _constructor = ggplot2_env['stat_function']
+stat_function = StatFunction.new
+
 class StatHline(Stat):
    _constructor = ggplot2_env['stat_hline']
+stat_hline = StatHline.new
+
 class StatIdentity(Stat):
    _constructor = ggplot2_env['stat_identity']
-class StatQq(Stat):
+stat_identity = StatIdentity.new
+
+class StatQQ(Stat):
    _constructor = ggplot2_env['stat_qq']
+stat_qq = StatQQ.new
+
 class StatQuantile(Stat):
    _constructor = ggplot2_env['stat_quantile']
+stat_quantile = StatQuantile.new
+
 class StatSmooth(Stat):
    _constructor = ggplot2_env['stat_smooth']
+stat_smooth = StatSmooth.new
+
 class StatSpoke(Stat):
    _constructor = ggplot2_env['stat_spoke']
+stat_spoke = StatSpoke.new
+
 class StatSum(Stat):
    _constructor = ggplot2_env['stat_sum']
+stat_sum = StatSum.new
+
 class StatSummary(Stat):
    _constructor = ggplot2_env['stat_summary']
+stat_summary = StatSummary.new
+
 class StatUnique(Stat):
    _constructor = ggplot2_env['stat_unique']
+stat_unique = StatUnique.new
+
 class StatVline(Stat):
    _constructor = ggplot2_env['stat_vline']
-
+stat_vline = StatVline.new
 
 class Coord(GBaseObject):
    pass
 
 class CoordCartesian(Coord):
    _constructor = ggplot2_env['coord_cartesian']
+coord_cartesian = CoordCartesian.new
+
 class CoordEqual(Coord):
    _constructor = ggplot2_env['coord_equal']
+coord_equal = CoordEqual.new
+
 class CoordFlip(Coord):
    _constructor = ggplot2_env['coord_flip']
+coord_flip = CoordFlip.new
+
 class CoordMap(Coord):
    _constructor = ggplot2_env['coord_map']
+coord_map = CoordMap.new
+
 class CoordPolar(Coord):
    _constructor = ggplot2_env['coord_polar']
+coord_polar = CoordPolar.new
+
 class CoordTrans(Coord):
    _constructor = ggplot2_env['coord_trans']
+coord_trans = CoordTrans.new
+
 
 class Facet(GBaseObject):
    pass
 
 class FacetGrid(Facet):
    _constructor = ggplot2_env['facet_grid']
+facet_grid = FacetGrid.new
+
 class FacetWrap(Facet):
    _constructor = ggplot2_env['facet_wrap']
-
+facet_wrap = FacetWrap.new
 
 class Geom(GBaseObject):
     pass
 
 class GeomAbline(Geom):
    _constructor = ggplot2_env['geom_abline']
+geom_abline = GeomAbline.new
+
 class GeomArea(Geom):
    _constructor = ggplot2_env['geom_area']
+geom_area = GeomArea.new
+
 class GeomBar(Geom):
    _constructor = ggplot2_env['geom_bar']
+geom_bar = GeomBar.new
+
 class GeomBin2D(Geom):
    _constructor = ggplot2_env['geom_bin2d']
+geom_bin2d = GeomBin2D.new
+
 class GeomBlank(Geom):
    _constructor = ggplot2_env['geom_blank']
+geom_blank = GeomBlank.new
+   
 class GeomBoxplot(Geom):
    _constructor = ggplot2_env['geom_boxplot']
+geom_boxplot = GeomBoxplot.new
+   
 class GeomContour(Geom):
    _constructor = ggplot2_env['geom_contour']
+geom_contour = GeomContour.new
+
 class GeomCrossBar(Geom):
    _constructor = ggplot2_env['geom_crossbar']
+geom_crossbar = GeomCrossBar.new
+
 class GeomDensity(Geom):
    _constructor = ggplot2_env['geom_density']
+geom_density = GeomDensity.new
+
 class GeomDensity2D(Geom):
    _constructor = ggplot2_env['geom_density2d']
+geom_density2d = GeomDensity2D.new
+
 class GeomErrorBar(Geom):
    _constructor = ggplot2_env['geom_errorbar']
+geom_errorbar = GeomErrorBar.new
+
 class GeomErrorBarH(Geom):
    _constructor = ggplot2_env['geom_errorbarh']
+geom_errorbarh = GeomErrorBarH.new
+
 class GeomFreqPoly(Geom):
    _constructor = ggplot2_env['geom_freqpoly']
+geom_freqpoly = GeomFreqPoly.new
+
 class GeomHex(Geom):
-   _constructor = ggplot2_env['geom_histogram']
+   _constructor = ggplot2_env['geom_hex']
+geom_hex = GeomHex.new
+
 class GeomHistogram(Geom):
    _constructor = ggplot2_env['geom_histogram']
+geom_histogram = GeomHistogram.new
+
 class GeomHLine(Geom):
    _constructor = ggplot2_env['geom_hline']
+geom_hline = GeomHLine.new
+
 class GeomJitter(Geom):
    _constructor = ggplot2_env['geom_jitter']
+geom_jitter = GeomJitter.new
+
 class GeomLine(Geom):
    _constructor = ggplot2_env['geom_line']
+geom_line = GeomLine.new
+
 class GeomLineRange(Geom):
    _constructor = ggplot2_env['geom_linerange']
+geom_linerange = GeomLineRange.new
+   
 class GeomPath(Geom):
    _constructor = ggplot2_env['geom_path']
+geom_path = GeomPath.new
+
 class GeomPoint(Geom):
    _constructor = ggplot2_env['geom_point']
+geom_point = GeomPoint.new
+
 class GeomPointRange(Geom):
    _constructor = ggplot2_env['geom_pointrange']
+geom_pointrange = GeomPointRange.new
+
 class GeomPolygon(Geom):
    _constructor = ggplot2_env['geom_polygon']
+geom_polygon = GeomPolygon.new
+
 class GeomQuantile(Geom):
    _constructor = ggplot2_env['geom_quantile']
+geom_quantile = GeomQuantile.new
+
 class GeomRect(Geom):
    _constructor = ggplot2_env['geom_rect']
+geom_rect = GeomRect.new
+
 class GeomRibbon(Geom):
    _constructor = ggplot2_env['geom_ribbon']
+geom_ribbon = GeomRibbon.new
+
 class GeomRug(Geom):
    _constructor = ggplot2_env['geom_rug']
+geom_rug = GeomRug.new
+
 class GeomSegment(Geom):
    _constructor = ggplot2_env['geom_segment']
+geom_segment = GeomSegment.new
+
 class GeomSmooth(Geom):
    _constructor = ggplot2_env['geom_smooth']
+geom_smooth = GeomSmooth.new
+
 class GeomStep(Geom):
    _constructor = ggplot2_env['geom_step']
+geom_step = GeomStep.new
+
 class GeomText(Geom):
    _constructor = ggplot2_env['geom_text']
+geom_text = GeomText.new
+
 class GeomTile(Geom):
    _constructor = ggplot2_env['geom_tile']
+geom_tile = GeomTile.new
+
 class GeomVLine(Geom):
    _constructor = ggplot2_env['geom_vline']
-
+geom_vline = GeomVLine.new
 
 class Position(GBaseObject):
    pass
 
 class PositionDodge(Position):
    _constructor = ggplot2_env['position_dodge']
+position_dodge = PositionDodge.new
 class PositionFill(Position):
    _constructor = ggplot2_env['position_fill']
+position_fill = PositionFill.new
 class PositionIdentify(Position):
    _constructor = ggplot2_env['position_identity']
+position_identity = PositionIdentify.new
 class PositionJitter(Position):
    _constructor = ggplot2_env['position_jitter']
+position_jitter = PositionJitter.new
 class PositionStack(Position):
    _constructor = ggplot2_env['position_stack']
-
+position_stack = PositionStack.new
 
 class Scale(GBaseObject):
    pass
 
 class ScaleAlpha(Scale):
    _constructor = ggplot2_env['scale_alpha']
-#class ScaleBrewer(Scale):
-#   _constructor = ggplot2_env['scale_brewer']
+scale_alpha = ScaleAlpha.new
 class ScaleColour(Scale):
    _constructor = ggplot2_env['scale_colour']
-#class ScaleContinuous(Scale):
-#   _constructor = ggplot2_env['scale_continuous']
-# class ScaleDate(Scale):
-#    _constructor = ggplot2_env['scale_date']
-# class ScaleDateTime(Scale):
-#    _constructor = ggplot2_env['scale_datetime']
+scale_colour = ScaleColour.new
 class ScaleDiscrete(Scale):
    _constructor = ggplot2_env['scale_discrete']
-# class ScaleGradient(Scale):
-#    _constructor = ggplot2_env['scale_gradient']
-# class ScaleGradient2(Scale):
-#    _constructor = ggplot2_env['scale_gradient2']
-# class ScaleGradientN(Scale):
-#    _constructor = ggplot2_env['scale_gradientn']
-# class ScaleGrey(Scale):
-#    _constructor = ggplot2_env['scale_grey']
-# class ScaleHue(Scale):
-#    _constructor = ggplot2_env['scale_hue']
-# class ScaleIdentity(Scale):
-#    _constructor = ggplot2_env['scale_identity']
-class Scalelinetype(Scale):
+scale_discrete = ScaleDiscrete.new
+class ScaleLinetype(Scale):
    _constructor = ggplot2_env['scale_linetype']
-# class ScaleManual(Scale):
-#    _constructor = ggplot2_env['scale_manual']
+scale_linetype = ScaleLinetype.new
 class ScaleShape(Scale):
    _constructor = ggplot2_env['scale_shape']
+scale_shape = ScaleShape.new
 class ScaleSize(Scale):
    _constructor = ggplot2_env['scale_size']
-# class ScaleList(Scale):
-#    _constructor = ggplot2_env['scale_list']
-
+scale_size = ScaleSize.new
 
 class ScaleX(Scale):
    pass
