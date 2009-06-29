@@ -1396,6 +1396,20 @@ PyDoc_STRVAR(Sexp___getstate___doc,
 
 
 static PyObject*
+Sexp___setstate__(PyObject *self, PyObject *state)
+{
+
+  PyObject *res_string;
+  Py_INCREF(Py_None);
+  return Py_None;
+
+}
+
+PyDoc_STRVAR(Sexp___setstate___doc,
+             "set the state of an instance (dummy).");
+
+
+static PyObject*
 EmbeddedR_unserialize(PyObject* self, PyObject* args)
 {
   PyObject *res;
@@ -1491,7 +1505,9 @@ Sexp___reduce__(PyObject* self)
 }
 
 PyDoc_STRVAR(Sexp___reduce___doc,
-             "");
+             "Prepare an instance for serialization.");
+
+
 
 static PyMethodDef Sexp_methods[] = {
   {"do_slot", (PyCFunction)Sexp_do_slot, METH_O,
@@ -1504,6 +1520,8 @@ static PyMethodDef Sexp_methods[] = {
    Sexp_duplicate_doc},
   {"__getstate__", (PyCFunction)Sexp___getstate__, METH_NOARGS,
    Sexp___getstate___doc},
+  {"__setstate__", (PyCFunction)Sexp___setstate__, METH_O,
+   Sexp___setstate___doc},
   {"__reduce__", (PyCFunction)Sexp___reduce__, METH_NOARGS,
    Sexp___reduce___doc},
   {NULL, NULL}          /* sentinel */
