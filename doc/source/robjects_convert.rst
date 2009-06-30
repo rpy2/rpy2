@@ -1,3 +1,8 @@
+.. module:: rpy2.robjects.conversion
+   :platform: Unix, Windows
+   :synopsis: Converting R objects from their low-level representation to their higher(er)-level representation
+
+.. _robjects-conversion:
 
 Mapping rpy2 objects to arbitrary python objects
 =====================================================
