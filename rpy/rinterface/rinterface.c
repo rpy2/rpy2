@@ -3161,7 +3161,7 @@ newSEXP(PyObject *object, int rType)
   }
   const Py_ssize_t length = PySequence_Fast_GET_SIZE(seq_object);
 
-  int i;
+  Py_ssize_t i;
   switch(rType) {
   case REALSXP:
     PROTECT(sexp = NEW_NUMERIC(length));      
