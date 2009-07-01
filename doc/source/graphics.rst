@@ -264,7 +264,7 @@ The *method* can be one of {*glm*, *gam*, *loess*, and *rlm*}.
 
 
 The constructor for :class:`GeomSmooth` also accepts a parameter
-:param:`group` that indicates if the fit should be done according to groups.
+*groupr*` that indicates if the fit should be done according to groups.
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2smoothbycyl-begin
