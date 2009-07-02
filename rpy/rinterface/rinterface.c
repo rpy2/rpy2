@@ -203,17 +203,20 @@ static inline PyObject* EmbeddedR_setAnyCallback(PyObject *self,
   
 }
 
-static inline PyObject* EmbeddedR_getAnyCallback(PyObject *self,
+static PyObject* EmbeddedR_getAnyCallback(PyObject *self,
                                                  PyObject *args,
                                                  PyObject *target)
 {
   PyObject *result = NULL;
 
   if (PyArg_ParseTuple(args, "")) {
-    if (target == NULL)
-      result = NULL;
-    else
+    if (target == NULL) {
+      result = Py_None;
+    } else {
       result = target;
+    }
+  } else {
+
   }
   Py_XINCREF(result);
   return result;
@@ -225,7 +228,8 @@ static PyObject* writeConsoleCallback = NULL;
 static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
                                            PyObject *args)
 {
-  return EmbeddedR_setAnyCallback(self, args, &writeConsoleCallback);  
+  PyObject *res = EmbeddedR_setAnyCallback(self, args, &writeConsoleCallback);
+  return res;
 }
 
 PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
@@ -715,7 +719,8 @@ PyDoc_STRVAR(EmbeddedR_setCleanUp_doc,
 static PyObject * EmbeddedR_getCleanUp(PyObject *self,
                                        PyObject *args)
 {
-  return EmbeddedR_getAnyCallback(self, args, cleanUpCallback);
+  PyObject* res = EmbeddedR_getAnyCallback(self, args, cleanUpCallback);
+  return res;
 }
 
 PyDoc_STRVAR(EmbeddedR_getCleanUp_doc,
