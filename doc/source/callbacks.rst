@@ -24,7 +24,7 @@ A suitable callback function will be such as it accepts one parameter of class :
 that is the prompt, and returns the user input as a :class:`str`.
 
 The pair of functions 
-:func:`rpy2.rinterface.setReadConsole` and :func:`rpy2.rinterface.getReadConsole`
+:func:`rpy2.rinterface.set_readconsole` and :func:`rpy2.rinterface.get_readconsole`
 can be used to set and retrieve the callback function respectively.
 
 Write console
@@ -49,7 +49,7 @@ A suitable callback function will be such as it accepts no parameter
 and only has side-effects (does not return anything).
 
 The pair of functions 
-:func:`rpy2.rinterface.setFlushConsole` and :func:`rpy2.rinterface.getFlushConsole`
+:func:`rpy2.rinterface.set_flushconsole` and :func:`rpy2.rinterface.get_flushconsole`
 can be used to set and retrieve the callback function respectively.
 
 

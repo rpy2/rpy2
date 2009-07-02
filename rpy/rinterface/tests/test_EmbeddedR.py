@@ -20,10 +20,10 @@ def onlyAQUAorWindows(function):
 class EmbeddedRTestCase(unittest.TestCase):
 
     def tearDown(self):
-        rinterface.setWriteConsole(rinterface.consolePrint)
-        rinterface.setReadConsole(rinterface.consoleRead)
-        rinterface.setReadConsole(rinterface.consoleFlush)
-        rinterface.setChooseFile(rinterface.chooseFile)
+        rinterface.set_writeconsole(rinterface.consolePrint)
+        rinterface.set_readconsole(rinterface.consoleRead)
+        rinterface.set_readconsole(rinterface.consoleFlush)
+        rinterface.set_choosefile(rinterface.chooseFile)
 
     def testConsolePrint(self):
         tmp_file = tempfile.NamedTemporaryFile()
@@ -45,8 +45,8 @@ class EmbeddedRTestCase(unittest.TestCase):
         def f(x):
             buf.append(x)
 
-        rinterface.setWriteConsole(f)
-        self.assertEquals(rinterface.getWriteConsole(), f)
+        rinterface.set_writeconsole(f)
+        self.assertEquals(rinterface.get_writeconsole(), f)
         code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
         rinterface.baseenv["print"](code)
         self.assertEquals('[1] "3"\n', str.join('', buf))
@@ -54,7 +54,7 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testWriteConsoleWithError(self):
         def f(x):
             raise Exception("Doesn't work.")
-        rinterface.setWriteConsole(f)
+        rinterface.set_writeconsole(f)
 
         tmp_file = tempfile.NamedTemporaryFile()
         stderr = sys.stderr
@@ -78,17 +78,17 @@ class EmbeddedRTestCase(unittest.TestCase):
         def f():
             flush['count'] = flush['count'] + 1
 
-        rinterface.setFlushConsole(f)
-        self.assertEquals(rinterface.getFlushConsole(), f)
+        rinterface.set_flushconsole(f)
+        self.assertEquals(rinterface.get_flushconsole(), f)
         rinterface.baseenv.get("flush.console")()
         self.assertEquals(1, flush['count'])
-        rinterface.setWriteConsole(rinterface.consoleFlush)
+        rinterface.set_writeconsole(rinterface.consoleFlush)
 
     @onlyAQUAorWindows
     def testFlushConsoleWithError(self):
         def f(prompt):
             raise Exception("Doesn't work.")
-        rinterface.setFlushConsole(f)
+        rinterface.set_flushconsole(f)
 
         tmp_file = tempfile.NamedTemporaryFile()
         stderr = sys.stderr
@@ -109,16 +109,16 @@ class EmbeddedRTestCase(unittest.TestCase):
         yes = "yes\n"
         def sayyes(prompt):
             return yes
-        rinterface.setReadConsole(sayyes)
-        self.assertEquals(rinterface.getReadConsole(), sayyes)
+        rinterface.set_readconsole(sayyes)
+        self.assertEquals(rinterface.get_readconsole(), sayyes)
         res = rinterface.baseenv["readline"]()
         self.assertEquals(yes.strip(), res[0])
-        rinterface.setReadConsole(rinterface.consoleRead)
+        rinterface.set_readconsole(rinterface.consoleRead)
 
     def testReadConsoleWithError(self):
         def f(prompt):
             raise Exception("Doesn't work.")
-        rinterface.setReadConsole(f)
+        rinterface.set_readconsole(f)
 
         tmp_file = tempfile.NamedTemporaryFile()
 
@@ -149,16 +149,16 @@ class EmbeddedRTestCase(unittest.TestCase):
         me = "me"
         def chooseMe(prompt):
             return me
-        rinterface.setChooseFile(chooseMe)
-        self.assertEquals(rinterface.getChooseFile(), chooseMe)
+        rinterface.set_choosefile(chooseMe)
+        self.assertEquals(rinterface.get_choosefile(), chooseMe)
         res = rinterface.baseenv["file.choose"]()
         self.assertEquals(me, res[0])
-        rinterface.setChooseFile(rinterface.chooseFile)
+        rinterface.set_choosefile(rinterface.chooseFile)
 
     def testChooseFileWithError(self):
         def f(prompt):
             raise Exception("Doesn't work.")
-        rinterface.setChooseFile(f)
+        rinterface.set_choosefile(f)
 
         tmp_file = tempfile.NamedTemporaryFile()
         stderr = sys.stderr
@@ -184,7 +184,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             for tf in fileheaders:
                 sf.append(tf)
 
-        rinterface.setShowFiles(f)
+        rinterface.set_showfiles(f)
         file_path = rinterface.baseenv["file.path"]
         r_home = rinterface.baseenv["R.home"]
         filename = file_path(r_home(rinterface.StrSexpVector(("doc", ))), 
@@ -197,22 +197,22 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertTrue(False) # no unit test (yet)
 
     def testSetCleanUp(self):
-        orig_cleanup = rinterface.getCleanUp()
+        orig_cleanup = rinterface.get_cleanup()
         def f(x, y, z):
             return False
-        rinterface.setCleanUp(f)
-        rinterface.setCleanUp(orig_cleanup)
+        rinterface.set_cleanup(f)
+        rinterface.set_cleanup(orig_cleanup)
 
     def testCleanUp(self):
-        orig_cleanup = rinterface.getCleanUp()
+        orig_cleanup = rinterface.get_cleanup()
         def f(saveact, status, runlast):
             return None
         r_quit = rinterface.baseenv['q']
         self.assertRaises(rinterface.RRuntimeError, r_quit)
-        rinterface.setCleanUp(f)
+        rinterface.set_cleanup(f)
 
 
-        rinterface.setCleanUp(orig_cleanup)
+        rinterface.set_cleanup(orig_cleanup)
 
     def testCallErrorWhenEndedR(self):
         if sys.version_info[0] == 2 and sys.version_info[1] < 6:
