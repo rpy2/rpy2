@@ -198,7 +198,7 @@ class EmbeddedRTestCase(unittest.TestCase):
 
     def testSetCleanUp(self):
         orig_cleanup = rinterface.get_cleanup()
-        def f(x, y, z):
+        def f(saveact, status, runlast):
             return False
         rinterface.set_cleanup(f)
         rinterface.set_cleanup(orig_cleanup)
@@ -208,10 +208,8 @@ class EmbeddedRTestCase(unittest.TestCase):
         def f(saveact, status, runlast):
             return None
         r_quit = rinterface.baseenv['q']
+        rinterface.set_cleanup(f)        
         self.assertRaises(rinterface.RRuntimeError, r_quit)
-        rinterface.set_cleanup(f)
-
-
         rinterface.set_cleanup(orig_cleanup)
 
     def testCallErrorWhenEndedR(self):
