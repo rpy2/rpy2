@@ -641,7 +641,7 @@ An environment is also iter-able, returning all the symbols
 (keys) it contains:
 
 >>> env = robjects.r.baseenv()
->>> len([x for x in env])
+>>> [x for x in env]
 <a long list returned>
 
 .. autoclass:: rpy2.robjects.REnvironment(o=None)

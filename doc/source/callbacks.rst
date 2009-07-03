@@ -152,15 +152,19 @@ an :class:`RRuntimeError`).
 
   rpy2.rinterface.initr()
 
+  rquit = rpy2.rinterface.baseenv['q']
+
   def cleanup(saveact, status, runlast):
       # cancel all attempts to quit R programmatically
       print("One can't escape...")
       return None
 
-  orig_cleanup = rpy2.rinterface.get_cleanup()
-  rpy2.rinterface.set_cleanup(cleanup)
-  
-  rquit = rpy2.rinterface.baseenv['q']
-  rquit()
 
-  rpy2.rinterface.set_cleanup(orig_cleanup)
+>>>  orig_cleanup = rpy2.rinterface.get_cleanup()
+>>>  rpy2.rinterface.set_cleanup(cleanup)
+>>> rquit()
+
+
+Restore the original cleanup:
+
+>>> rpy2.rinterface.set_cleanup(orig_cleanup)
