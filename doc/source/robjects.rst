@@ -698,7 +698,7 @@ on the behavior of function can be found in Section :ref:`rinterface-functions`.
 
 
 .. index::
-   pair: robjects; RFormula
+   pair: robjects; Formula
    single: formula
 
 .. _robjects-formula:
@@ -725,14 +725,14 @@ are evaluated in the environment it was defined in. Without further
 specification, that environment is the environment in which the
 the formula is created.
 
-The class :class:`robjects.RFormula` is representing an `R` formula.
+The class :class:`robjects.Formula` is representing an `R` formula.
 
 .. code-block:: python
 
   x = robjects.RVector(array.array('i', range(1, 11)))
   y = x.r + robjects.r.rnorm(10, sd=0.2)
 
-  fmla = robjects.RFormula('y ~ x')
+  fmla = robjects.Formula('y ~ x')
   env = fmla.environment
   env['x'] = x
   env['y'] = y
@@ -750,7 +750,7 @@ nicely:
 
   fit = robjects.r('lm(%s)' %fmla.r_repr())
 
-.. autoclass:: rpy2.robjects.RFormula(formula, environment = rinterface.globalenv)
+.. autoclass:: rpy2.robjects.Formula(formula, environment = rinterface.globalenv)
    :show-inheritance:
    :members:
 

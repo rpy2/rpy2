@@ -126,6 +126,7 @@ Changes
 
 - module :mod:`lib.ggplot2` for the CRAN package ggplot2.
 
+- the class *RFormula* has been renamed :class:`Formula`
 
 :mod:`rpy2.rinterface`:
 
