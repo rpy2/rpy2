@@ -30,7 +30,7 @@ mtcars = robjects.globalenv["mtcars"]
 
 xyplot = robjects.baseenv.get('xyplot')
 
-formula = robjects.RFormula('mpg ~ wt')
+formula = robjects.Formula('mpg ~ wt')
 formula.getenvironment()['mpg'] = mtcars.rx2('mpg')
 formula.getenvironment()['wt'] = mtcars.rx2('wt')
 
@@ -50,7 +50,7 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_lattice_xyplot_3.png',
     width = 512, height = 512)
 #-- xyplot3-begin
-formula = robjects.RFormula('mpg ~ wt | cyl')
+formula = robjects.Formula('mpg ~ wt | cyl')
 formula.getenvironment()['mpg'] = mtcars.rx2('mpg')
 formula.getenvironment()['wt'] = mtcars.rx2('wt')
 formula.getenvironment()['cyl'] = mtcars.rx2('cyl')
@@ -171,7 +171,7 @@ grdevices.png('../../_static/graphics_ggplot2_ggplot_1.png',
 pp = gp + \
      ggplot2.aes(x='wt', y='mpg') + \
      ggplot2.geom_point() + \
-     ggplot2.facet_grid(ro.RFormula('. ~ cyl'))
+     ggplot2.facet_grid(ro.Formula('. ~ cyl'))
 
 
 pp.plot()
@@ -318,7 +318,7 @@ grdevices.png('../../_static/graphics_ggplot2smoothbycylfacetcyl.png',
 pp = gp + \
      ggplot2.aes(x='wt', y='mpg') + \
      ggplot2.geom_point() + \
-     ggplot2.facet_grid(ro.RFormula('. ~ cyl')) + \
+     ggplot2.facet_grid(ro.Formula('. ~ cyl')) + \
      ggplot2.geom_smooth(ggplot2.aes(group="cyl"),
                          method = "lm",
                             data = mtcars)
@@ -334,11 +334,38 @@ grdevices.png('../../_static/graphics_ggplot2histogramfacetcyl.png',
 pp = gp + \
      ggplot2.aes(x='wt') + \
      ggplot2.geom_histogram(binwidth=2) + \
-     ggplot2.facet_grid(ro.RFormula('. ~ cyl'))
+     ggplot2.facet_grid(ro.Formula('. ~ cyl'))
 
 pp.plot()
 #-- ggplot2histogramfacetcyl-end
 grdevices.dev_off()
+
+
+# grdevices.png('../../_static/graphics_ggplot2coordtranssqrt.png',
+#               width = 512, height = 512)
+# #-- ggplot2coordtranssqrt-begin
+# pp = gp + \
+#      ggplot2.aes(x='wt', y='mpg') + \
+#      ggplot2.scale_y_sqrt() + \
+#      ggplot2.geom_point()
+
+# pp.plot()
+# #-- ggplot2coordtranssqrt-end
+# grdevices.dev_off()
+
+# grdevices.png('../../_static/graphics_ggplot2coordtransreverse.png',
+#               width = 512, height = 512)
+# #-- ggplot2coordtransreverse-begin
+# pp = gp + \
+#      ggplot2.aes(x='wt', y='mpg') + \
+#      ggplot2.geom_point() + \
+#      ggplot2.scale_y_reverse()
+
+# pp.plot()
+# #-- ggplot2coordtransreverse-end
+# grdevices.dev_off()
+
+
 
 
 
@@ -349,11 +376,11 @@ pp = gp + \
      ggplot2.aes(x='wt', y='mpg') + \
      ggplot2.geom_density(ggplot2.aes(group = 'cyl')) + \
      ggplot2.geom_point() + \
-     ggplot2.facet_grid(ro.RFormula('. ~ cyl'))
+     ggplot2.facet_grid(ro.Formula('. ~ cyl'))
 
 pp = gp + \
      ggplot2.aes(x='wt', y='mpg') + \
-     ggplot2.facet_grid(ro.RFormula('gear ~ cyl')) + \
+     ggplot2.facet_grid(ro.Formula('gear ~ cyl')) + \
      ggplot2.geom_point()
 
 
@@ -361,5 +388,5 @@ pp = gp + \
 
 pp = gp + \
      ggplot2.Aes.new(x='mpg') + \
-     ggplot2.FacetGrid.new(ro.RFormula('. ~ cyl')) + \
+     ggplot2.FacetGrid.new(ro.Formula('. ~ cyl')) + \
      ggplot2.GeomHistogram.new(binwidth = 5)

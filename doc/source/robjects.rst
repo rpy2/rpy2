@@ -491,12 +491,12 @@ measures by subject is given by the column *Subject*.
 
 
 In :mod:`rpy2.robjects`, 
-:class:`RDataFrame` represents the `R` class `data.frame`.
+:class:`DataFrame` represents the `R` class `data.frame`.
 
 Creating objects
 ^^^^^^^^^^^^^^^^
 
-Creating an :class:`RDataFrame` can be done by:
+Creating an :class:`DataFrame` can be done by:
 
 * Using the constructor for the class
 
@@ -504,12 +504,12 @@ Creating an :class:`RDataFrame` can be done by:
 
 * Read data from a file using the instance method :meth:`from_csvfile`
 
-The constructor for :class:`RDataFrame` accepts either a 
+The constructor for :class:`DataFrame` accepts either a 
 :class:`rinterface.SexpVector` 
 (with :attr:`typeof` equal to *VECSXP*, that is an R `list`)
 or an instance of class :class:`rpy2.rlike.container.TaggedList`.
 
->>> robjects.RDataFrame()
+>>> robjects.DataFrame()
 
 
 Creating the data.frame in R can be achieved in numerous ways,
@@ -521,7 +521,7 @@ constructs a data.frame from named arguments
 >>> import rpy2.rlike.container as rlc
 >>> od = rlc.OrdDict(c(('value', robjects.IntVector((1,2,3))),
                        ('letter', robjects.StrVector(('x', 'y', 'z')))))
->>> dataf = robjects.RDataFrame(od)
+>>> dataf = robjects.DataFrame(od)
 >>> print(dataf.colnames)
 [1] "letter" "value"
 
@@ -542,7 +542,7 @@ as a Python programmer will expect it to:
 >>> dataf[0]
 <RVector - Python:0x8a58c2c / R:0x8e7dd08>
 
-The :class:`RDataFrame` is composed of columns,
+The :class:`DataFrame` is composed of columns,
 with each column being possibly of a different type:
 
 >>> [column.rclass[0] for column in dataf]
@@ -555,7 +555,7 @@ Like with Python's :meth:`__getitem__` above,
 extracting on one index selects columns:
 
 >>> dataf.rx(1)
-<RDataFrame - Python:0x8a584ac / R:0x95a6fb8>
+<DataFrame - Python:0x8a584ac / R:0x95a6fb8>
 >>> print(dataf.rx(1))
   letter
 1      x
@@ -563,7 +563,7 @@ extracting on one index selects columns:
 3      z
 
 It is important to notice that the result is itself
-of class :class:`RDataFrame`. Getting the column as
+of class :class:`DataFrame`. Getting the column as
 a vector is requires the use of *rx2*.
 
 >>> dataf.rx2(1)
@@ -591,7 +591,7 @@ can therefore be extracted on two indexes.
 Python docstrings
 ^^^^^^^^^^^^^^^^^
 
-.. autoclass:: rpy2.robjects.vectors.RDataFrame(tlist)
+.. autoclass:: rpy2.robjects.vectors.DataFrame(tlist)
    :show-inheritance:
    :members:
 
@@ -698,7 +698,7 @@ on the behavior of function can be found in Section :ref:`rinterface-functions`.
 
 
 .. index::
-   pair: robjects; RFormula
+   pair: robjects; Formula
    single: formula
 
 .. _robjects-formula:
@@ -725,14 +725,14 @@ are evaluated in the environment it was defined in. Without further
 specification, that environment is the environment in which the
 the formula is created.
 
-The class :class:`robjects.RFormula` is representing an `R` formula.
+The class :class:`robjects.Formula` is representing an `R` formula.
 
 .. code-block:: python
 
   x = robjects.RVector(array.array('i', range(1, 11)))
   y = x.r + robjects.r.rnorm(10, sd=0.2)
 
-  fmla = robjects.RFormula('y ~ x')
+  fmla = robjects.Formula('y ~ x')
   env = fmla.environment
   env['x'] = x
   env['y'] = y
@@ -750,7 +750,7 @@ nicely:
 
   fit = robjects.r('lm(%s)' %fmla.r_repr())
 
-.. autoclass:: rpy2.robjects.RFormula(formula, environment = rinterface.globalenv)
+.. autoclass:: rpy2.robjects.Formula(formula, environment = rinterface.globalenv)
    :show-inheritance:
    :members:
 

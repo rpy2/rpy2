@@ -203,17 +203,20 @@ static inline PyObject* EmbeddedR_setAnyCallback(PyObject *self,
   
 }
 
-static inline PyObject* EmbeddedR_getAnyCallback(PyObject *self,
+static PyObject* EmbeddedR_getAnyCallback(PyObject *self,
                                                  PyObject *args,
                                                  PyObject *target)
 {
   PyObject *result = NULL;
 
   if (PyArg_ParseTuple(args, "")) {
-    if (target == NULL)
-      result = NULL;
-    else
+    if (target == NULL) {
+      result = Py_None;
+    } else {
       result = target;
+    }
+  } else {
+
   }
   Py_XINCREF(result);
   return result;
@@ -225,7 +228,8 @@ static PyObject* writeConsoleCallback = NULL;
 static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
                                            PyObject *args)
 {
-  return EmbeddedR_setAnyCallback(self, args, &writeConsoleCallback);  
+  PyObject *res = EmbeddedR_setAnyCallback(self, args, &writeConsoleCallback);
+  return res;
 }
 
 PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
@@ -715,7 +719,8 @@ PyDoc_STRVAR(EmbeddedR_setCleanUp_doc,
 static PyObject * EmbeddedR_getCleanUp(PyObject *self,
                                        PyObject *args)
 {
-  return EmbeddedR_getAnyCallback(self, args, cleanUpCallback);
+  PyObject* res = EmbeddedR_getAnyCallback(self, args, cleanUpCallback);
+  return res;
 }
 
 PyDoc_STRVAR(EmbeddedR_getCleanUp_doc,
@@ -3161,7 +3166,7 @@ newSEXP(PyObject *object, int rType)
   }
   const Py_ssize_t length = PySequence_Fast_GET_SIZE(seq_object);
 
-  int i;
+  Py_ssize_t i;
   switch(rType) {
   case REALSXP:
     PROTECT(sexp = NEW_NUMERIC(length));      
@@ -3358,33 +3363,33 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_init_doc},
   {"endr",      (PyCFunction)EmbeddedR_end,    METH_O,
    EmbeddedR_end_doc},
-  {"setWriteConsole",   (PyCFunction)EmbeddedR_setWriteConsole,  METH_VARARGS,
+  {"set_writeconsole",   (PyCFunction)EmbeddedR_setWriteConsole,  METH_VARARGS,
    EmbeddedR_setWriteConsole_doc},
-  {"getWriteConsole",   (PyCFunction)EmbeddedR_getWriteConsole,  METH_VARARGS,
+  {"get_writeconsole",   (PyCFunction)EmbeddedR_getWriteConsole,  METH_VARARGS,
    EmbeddedR_getWriteConsole_doc},
-  {"setReadConsole",    (PyCFunction)EmbeddedR_setReadConsole,   METH_VARARGS,
+  {"set_readconsole",    (PyCFunction)EmbeddedR_setReadConsole,   METH_VARARGS,
    EmbeddedR_setReadConsole_doc},
-  {"getReadConsole",    (PyCFunction)EmbeddedR_getReadConsole,   METH_VARARGS,
+  {"get_readconsole",    (PyCFunction)EmbeddedR_getReadConsole,   METH_VARARGS,
    EmbeddedR_getReadConsole_doc},
-  {"setFlushConsole",   (PyCFunction)EmbeddedR_setFlushConsole,  METH_VARARGS,
+  {"set_flushconsole",   (PyCFunction)EmbeddedR_setFlushConsole,  METH_VARARGS,
    EmbeddedR_setFlushConsole_doc},
-  {"getFlushConsole",   (PyCFunction)EmbeddedR_getFlushConsole,  METH_VARARGS,
+  {"get_flushconsole",   (PyCFunction)EmbeddedR_getFlushConsole,  METH_VARARGS,
    EmbeddedR_getFlushConsole_doc},
-  {"setShowMessage",    (PyCFunction)EmbeddedR_setShowMessage,   METH_VARARGS,
+  {"set_showmessage",    (PyCFunction)EmbeddedR_setShowMessage,   METH_VARARGS,
    EmbeddedR_setShowMessage_doc},
-  {"getShowMessage",    (PyCFunction)EmbeddedR_getShowMessage,   METH_VARARGS,
+  {"get_showmessage",    (PyCFunction)EmbeddedR_getShowMessage,   METH_VARARGS,
    EmbeddedR_getShowMessage_doc},
-  {"setChooseFile",     (PyCFunction)EmbeddedR_setChooseFile,    METH_VARARGS,
+  {"set_choosefile",     (PyCFunction)EmbeddedR_setChooseFile,    METH_VARARGS,
    EmbeddedR_setChooseFile_doc},
-  {"getChooseFile",     (PyCFunction)EmbeddedR_getChooseFile,    METH_VARARGS,
+  {"get_choosefile",     (PyCFunction)EmbeddedR_getChooseFile,    METH_VARARGS,
    EmbeddedR_getChooseFile_doc},
-  {"setShowFiles",      (PyCFunction)EmbeddedR_setShowFiles,     METH_VARARGS,
+  {"set_showfiles",      (PyCFunction)EmbeddedR_setShowFiles,     METH_VARARGS,
    EmbeddedR_setShowFiles_doc},
-  {"getShowFiles",      (PyCFunction)EmbeddedR_getShowFiles,     METH_VARARGS,
+  {"get_showfiles",      (PyCFunction)EmbeddedR_getShowFiles,     METH_VARARGS,
    EmbeddedR_getShowFiles_doc},
-  {"setCleanUp",      (PyCFunction)EmbeddedR_setCleanUp,     METH_VARARGS,
+  {"set_cleanup",      (PyCFunction)EmbeddedR_setCleanUp,     METH_VARARGS,
    EmbeddedR_setCleanUp_doc},
-  {"getCleanUp",      (PyCFunction)EmbeddedR_getCleanUp,     METH_VARARGS,
+  {"get_cleanup",      (PyCFunction)EmbeddedR_getCleanUp,     METH_VARARGS,
    EmbeddedR_getCleanUp_doc},
   {"findVarEmbeddedR",  (PyCFunction)EmbeddedR_findVar,  METH_VARARGS,
    EmbeddedR_findVar_doc},

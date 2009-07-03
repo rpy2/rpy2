@@ -39,7 +39,7 @@ def default_ri2py(o):
         res = o
     elif isinstance(o, rinterface.SexpVector):
         if rcls == 'data.frame':
-            res = vectors.RDataFrame(o)
+            res = vectors.DataFrame(o)
         if res is None:
             try:
                 dim = o.do_slot("dim")
@@ -55,7 +55,7 @@ def default_ri2py(o):
                 elif o.typeof == rinterface.STRSXP:
                     res = vectors.StrVector(o)
                 elif o.typeof == rinterface.LANGSXP and rcls == 'formula':
-                    res = RFormula(o)
+                    res = Formula(o)
                 else:
                     res = vectors.RVector(o)
 
@@ -156,7 +156,7 @@ class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
 
 
 
-class RFormula(RObjectMixin, rinterface.Sexp):
+class Formula(RObjectMixin, rinterface.Sexp):
 
     def __init__(self, formula, environment = rinterface.globalenv):
         inpackage = rinterface.baseenv["::"]
@@ -165,7 +165,7 @@ class RFormula(RObjectMixin, rinterface.Sexp):
         formula = rinterface.SexpVector(rinterface.StrSexpVector([formula, ]))
         robj = asformula(formula,
                          env = environment)
-        super(RFormula, self).__init__(robj)
+        super(Formula, self).__init__(robj)
         
     def getenvironment(self):
         """ Get the environment in which the formula is finding its symbols."""

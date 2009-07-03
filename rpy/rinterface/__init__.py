@@ -108,29 +108,29 @@ def consolePrint(x):
     """This is the default callback for R's console. It simply writes to stdout."""
     sys.stdout.write(x)
 
-setWriteConsole(consolePrint)
+set_writeconsole(consolePrint)
 
 def consoleFlush():
     sys.stdout.flush()
 
-setFlushConsole(consoleFlush)
+set_flushconsole(consoleFlush)
 
 def consoleRead(prompt):
     input = raw_input(prompt)
     input += "\n"
     return input
 
-setReadConsole(consoleRead)
+set_readconsole(consoleRead)
 
 def consoleMessage(x):
     sys.stdout.write(x)
-setShowMessage(consoleMessage)
+set_showmessage(consoleMessage)
 
 
 def chooseFile(prompt):
     res = raw_input(prompt)
     return res
-setChooseFile(chooseFile)
+set_choosefile(chooseFile)
 
 def showFiles(wtitle, titlefiles, rdel, pager):
     sys.stdout.write(titlefiles)
@@ -142,7 +142,7 @@ def showFiles(wtitle, titlefiles, rdel, pager):
             sys.stdout.write(row)
         f.close()
     return 0
-setShowFiles(showFiles)
+set_showfiles(showFiles)
 
 # def cleanUp(saveact, status, runlast):
 #     return True

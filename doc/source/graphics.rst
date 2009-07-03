@@ -151,7 +151,7 @@ Introduction
 The R package *ggplot2* is expected to be installed in the *R*
 used from *rpy2*.
 
-Here again, having data in a :class:`RDataFrame` is expected
+Here again, having data in a :class:`DataFrame` is expected
 (see :ref:`robjects-dataframes` for more information on such objects).
 
 .. literalinclude:: _static/demos/graphics.py
@@ -256,7 +256,8 @@ Models fitted to the data are also easy to add to a plot:
 .. image:: _static/graphics_ggplot2addsmooth.png
    :scale: 50
 
-The *method* can be one of {*glm*, *gam*, *loess*, and *rlm*}.
+The *method* can be one of {*glm*, *gam*, *loess*, *rlm*},
+and formula can be specified to declared the fitting (see example below).
 
 
 .. image:: _static/graphics_ggplot2addsmoothmethods.png
@@ -264,7 +265,7 @@ The *method* can be one of {*glm*, *gam*, *loess*, and *rlm*}.
 
 
 The constructor for :class:`GeomSmooth` also accepts a parameter
-:param:`group` that indicates if the fit should be done according to groups.
+*groupr*` that indicates if the fit should be done according to groups.
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2smoothbycyl-begin
