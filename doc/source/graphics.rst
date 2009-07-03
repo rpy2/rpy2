@@ -256,7 +256,8 @@ Models fitted to the data are also easy to add to a plot:
 .. image:: _static/graphics_ggplot2addsmooth.png
    :scale: 50
 
-The *method* can be one of {*glm*, *gam*, *loess*, and *rlm*}.
+The *method* can be one of {*glm*, *gam*, *loess*, *rlm*},
+and formula can be specified to declared the fitting (see example below).
 
 
 .. image:: _static/graphics_ggplot2addsmoothmethods.png
