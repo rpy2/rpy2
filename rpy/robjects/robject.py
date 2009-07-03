@@ -56,8 +56,7 @@ class RObjectMixin(object):
                 #unevaluated expression: has no class
                 return (None, )
             else:
-                raise rre
-            
+                raise rre        
     rclass = property(getrclass)
 
 
