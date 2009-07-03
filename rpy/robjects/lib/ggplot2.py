@@ -484,7 +484,7 @@ class ScaleFillGradient2(ScaleFill):
 scale_fill_gradient2 = ScaleFillGradient2.new
 class ScaleFillGradientN(ScaleFill):
    _constructor = ggplot2_env['scale_fill_gradientn']
-scale_fill_gradientn = ScaleFillGradientn.new
+scale_fill_gradientn = ScaleFillGradientN.new
 class ScaleFillGrey(ScaleFill):
    _constructor = ggplot2_env['scale_fill_grey']
 scale_fill_grey = ScaleFillGrey.new
