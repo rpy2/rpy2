@@ -378,6 +378,8 @@ class ScaleSize(Scale):
    _constructor = ggplot2_env['scale_size']
 scale_size = ScaleSize.new
 
+class ScaleFill(Scale):
+   pass
 class ScaleX(Scale):
    pass
 class ScaleY(Scale):
@@ -385,10 +387,10 @@ class ScaleY(Scale):
 
 class ScaleXContinuous(ScaleX):
    _constructor = ggplot2_env['scale_x_continuous']
-scale_x_continous = ScaleXContinous.new
+scale_x_continous = ScaleXContinuous.new
 class ScaleYContinuous(ScaleY):
    _constructor = ggplot2_env['scale_y_continuous']
-scale_y_continous = ScaleYContinous.new
+scale_y_continous = ScaleYContinuous.new
 class ScaleXDiscrete(ScaleX):
    _constructor = ggplot2_env['scale_x_discrete']
 scale_x_discrete = ScaleXDiscrete.new
@@ -465,7 +467,36 @@ class ScaleColourGradient2(ScaleColour):
    _constructor = ggplot2_env['scale_colour_gradient2']
 class ScaleColourGrey(ScaleColour):
    _constructor = ggplot2_env['scale_colour_grey']
-
+class ScaleFillBrewer(ScaleFill):
+   _constructor = ggplot2_env['scale_fill_brewer']
+scale_fill_brewer = ScaleFillBrewer.new
+class ScaleFillContinuous(ScaleFill):
+   _constructor = ggplot2_env['scale_fill_continuous']
+scale_fill_continuous = ScaleFillContinuous.new
+class ScaleFillDiscrete(ScaleFill):
+   _constructor = ggplot2_env['scale_fill_discrete']
+scale_fill_discrete = ScaleFillDiscrete.new
+class ScaleFillGradient(ScaleFill):
+   _constructor = ggplot2_env['scale_fill_gradient']
+scale_fill_gradient = ScaleFillGradient.new
+class ScaleFillGradient2(ScaleFill):
+   _constructor = ggplot2_env['scale_fill_gradient2']
+scale_fill_gradient2 = ScaleFillGradient2.new
+class ScaleFillGradientN(ScaleFill):
+   _constructor = ggplot2_env['scale_fill_gradientn']
+scale_fill_gradientn = ScaleFillGradientn.new
+class ScaleFillGrey(ScaleFill):
+   _constructor = ggplot2_env['scale_fill_grey']
+scale_fill_grey = ScaleFillGrey.new
+class ScaleFillHue(ScaleFill):
+   _constructor = ggplot2_env['scale_fill_hue']
+scale_fill_hue = ScaleFillHue.new
+class ScaleFillIdentity(ScaleFill):
+   _constructor = ggplot2_env['scale_fill_identity']
+scale_fill_identity = ScaleFillIdentity.new
+class ScaleFillManual(ScaleFill):
+   _constructor = ggplot2_env['scale_fill_manual']
+scale_fill_manual = ScaleFillManual.new
 
 opts = ggplot2_env['opts']
 
