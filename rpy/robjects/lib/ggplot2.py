@@ -385,16 +385,22 @@ class ScaleY(Scale):
 
 class ScaleXContinuous(ScaleX):
    _constructor = ggplot2_env['scale_x_continuous']
+scale_x_continous = ScaleXContinous.new
 class ScaleYContinuous(ScaleY):
    _constructor = ggplot2_env['scale_y_continuous']
+scale_y_continous = ScaleYContinous.new
 class ScaleXDiscrete(ScaleX):
    _constructor = ggplot2_env['scale_x_discrete']
+scale_x_discrete = ScaleXDiscrete.new
 class ScaleYDiscrete(ScaleY):
    _constructor = ggplot2_env['scale_y_discrete']
+scale_y_discrete = ScaleYDiscrete.new
 class ScaleXDate(ScaleX):
    _constructor = ggplot2_env['scale_x_date']
+scale_x_date = ScaleXDate.new
 class ScaleYDate(ScaleY):
    _constructor = ggplot2_env['scale_y_date']
+scale_y_date = ScaleYDate.new
 class ScaleXDatetime(ScaleX):
    _constructor = ggplot2_env['scale_x_datetime']
 class ScaleYDatetime(ScaleY):
@@ -441,13 +447,16 @@ class ScaleYProbit(ScaleY):
    _constructor = ggplot2_env['scale_y_probit']
 class ScaleXReverse(ScaleX):
    _constructor = ggplot2_env['scale_x_reverse']
+scale_x_reverse = ScaleXReverse.new
 class ScaleYReverse(ScaleY):
    _constructor = ggplot2_env['scale_y_reverse']
+scale_y_reverse = ScaleYReverse.new
 class ScaleXSqrt(ScaleX):
    _constructor = ggplot2_env['scale_x_sqrt']
+scale_x_sqrt = ScaleXSqrt.new
 class ScaleYSqrt(ScaleY):
    _constructor = ggplot2_env['scale_y_sqrt']
-
+scale_y_sqrt = ScaleYSqrt.new
 class ScaleColourBrewer(ScaleColour):
    _constructor = ggplot2_env['scale_colour_brewer']
 class ScaleColourGradient(ScaleColour):
