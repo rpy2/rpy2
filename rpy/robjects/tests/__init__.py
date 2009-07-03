@@ -3,7 +3,7 @@ import unittest
 import testRObject
 import testRVector
 import testRArray
-import testRDataFrame
+import testDataFrame
 import testFormula
 import testRFunction
 import testREnvironment
@@ -17,7 +17,7 @@ def suite():
     suite_RObject = testRObject.suite()
     suite_RVector = testRVector.suite()
     suite_RArray = testRArray.suite()
-    suite_RDataFrame = testRDataFrame.suite()
+    suite_DataFrame = testDataFrame.suite()
     suite_RFunction = testRFunction.suite()
     suite_REnvironment = testREnvironment.suite()
     suite_Formula = testFormula.suite()
@@ -27,7 +27,7 @@ def suite():
     alltests = unittest.TestSuite([suite_RObject,
                                    suite_RVector,                   
                                    suite_RArray,
-                                   suite_RDataFrame,
+                                   suite_DataFrame,
                                    suite_RFunction,
                                    suite_REnvironment,
                                    suite_Formula,

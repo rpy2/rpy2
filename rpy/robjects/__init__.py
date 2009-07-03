@@ -39,7 +39,7 @@ def default_ri2py(o):
         res = o
     elif isinstance(o, rinterface.SexpVector):
         if rcls == 'data.frame':
-            res = vectors.RDataFrame(o)
+            res = vectors.DataFrame(o)
         if res is None:
             try:
                 dim = o.do_slot("dim")

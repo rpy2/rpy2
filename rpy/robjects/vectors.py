@@ -315,7 +315,7 @@ class RMatrix(RArray):
     colnames = property(_get_colnames, None, None)
         
 
-class RDataFrame(RVector):
+class DataFrame(RVector):
     """ R 'data.frame'.
     """
     _dataframe_name = rinterface.StrSexpVector(('data.frame',))
@@ -329,18 +329,18 @@ class RDataFrame(RVector):
         """
         if isinstance(tlist, rlc.TaggedList):
             df = baseenv_ri.get("data.frame").rcall(tlist.items(), globalenv_ri)
-            super(RDataFrame, self).__init__(df)
+            super(DataFrame, self).__init__(df)
         elif isinstance(tlist, rinterface.SexpVector):
             if tlist.typeof != rinterface.VECSXP:
                 raise ValueError("tlist should of typeof VECSXP")
             if not globalenv_ri.get('inherits')(tlist, self._dataframe_name)[0]:
                 raise ValueError('tlist should of R class "data.frame"')
-            super(RDataFrame, self).__init__(tlist)
+            super(DataFrame, self).__init__(tlist)
         elif isinstance(tlist, rlc.OrdDict):
             kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
             kv = tuple(kv)
             df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
-            super(RDataFrame, self).__init__(df)
+            super(DataFrame, self).__init__(df)
         else:
             raise ValueError("tlist can be either "+
                              "an instance of rpy2.rlike.container.TaggedList," +
@@ -389,10 +389,10 @@ class RDataFrame(RVector):
         dec = conversion.py2ro(dec)
         fill = conversion.py2ro(fill)
         comment_char = conversion.py2ro(comment_char)
-        res = RDataFrame._read_csv(path, header = header, sep = sep,
-                                   quote = quote, dec = dec,
-                                   fill = fill,
-                                   comment_char = comment_char)
+        res = DataFrame._read_csv(path, header = header, sep = sep,
+                                  quote = quote, dec = dec,
+                                  fill = fill,
+                                  comment_char = comment_char)
 
         return res
 

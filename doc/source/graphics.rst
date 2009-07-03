@@ -151,7 +151,7 @@ Introduction
 The R package *ggplot2* is expected to be installed in the *R*
 used from *rpy2*.
 
-Here again, having data in a :class:`RDataFrame` is expected
+Here again, having data in a :class:`DataFrame` is expected
 (see :ref:`robjects-dataframes` for more information on such objects).
 
 .. literalinclude:: _static/demos/graphics.py

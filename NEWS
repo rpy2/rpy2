@@ -27,7 +27,7 @@ New Features
 - Delegating classes :class:`ExtractDelegator` and 
   :class:`DoubleExtractDelegator` for extracting the R-way
 
-- :class:`RDataFrame` can now be created from :`rlike.container.OrdDict`
+- :class:`DataFrame` (formerly *RDataFrame*) can now be created from :`rlike.container.OrdDict`
   instances
 
 - :class:`FactorVector` to represent R factors
@@ -127,6 +127,8 @@ Changes
 - module :mod:`lib.ggplot2` for the CRAN package ggplot2.
 
 - the class *RFormula* has been renamed :class:`Formula`
+
+- the class *RDataFrame* has been renamed :class:`DataFrame`
 
 :mod:`rpy2.rinterface`:
 
