@@ -929,7 +929,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
 
   char *RHome;
 
-  R_SetStartTime();
+  R_setStartTime();
   R_DefParams(Rp);
   if (getenv("R_HOME")) {
     strcpy(RHome, getenv("R_HOME"));
