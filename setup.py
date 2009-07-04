@@ -182,6 +182,6 @@ setup(name = pack_name,
                      'Intended Audience :: Science/Research',
                      'Development Status :: 5 - Production/Stable'
                     ],
-      data_files = [('rpy2/images/', ['doc/source/rpy2_logo.png'])]
+      data_files = [(os.path.join('rpy2','images'), [os.path.join('doc', 'source', 'rpy2_logo.png')])]
       )
 
