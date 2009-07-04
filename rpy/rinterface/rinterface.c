@@ -74,14 +74,6 @@
 #include "array.h"
 #include "r_utils.h"
 
-#if Win32
-#if !defined(uintptr_t)
-typedef unsigned int *uintptr_t;
-#endif
-extern __declspec(dllimport) uintptr_t R_CStackLimit; /* C stack limit */
-#endif
-
-
 /* Helper variables to quickly resolve SEXP types.
  * The first variable gives the highest possible
  * SEXP type.
