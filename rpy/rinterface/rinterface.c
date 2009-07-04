@@ -61,9 +61,10 @@
 #include <R_ext/Complex.h>
 #include <Rembedded.h>
 
-#if !Win32
-#include <R_ext/eventloop.h>
+#if Win32
+#include <winsock2.h>
 #endif
+#include <R_ext/eventloop.h>
 
 /* FIXME: consider the use of parsing */
 /* #include <R_ext/Parse.h> */
