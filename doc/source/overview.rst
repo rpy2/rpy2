@@ -97,8 +97,8 @@ Microsoft's Windows precompiled binaries
 If available, the executable can be run; this will install the package
 in the default Python installation.
 
-At the time of writing, Microsoft Windows binaries are contributed 
-by Laurent Oget (from Predictix) since version 2.0.0b1.
+From version 2.0.0b1 to version 2.0.3, Microsoft Windows binaries for Python 2.5 were contributed 
+by Laurent Oget (Predictix).
 
 .. index::
   single: install;source
