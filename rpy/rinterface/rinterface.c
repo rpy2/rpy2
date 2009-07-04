@@ -61,7 +61,9 @@
 #include <R_ext/Complex.h>
 #include <Rembedded.h>
 
+#if !Win32
 #include <R_ext/eventloop.h>
+#endif
 
 /* FIXME: consider the use of parsing */
 /* #include <R_ext/Parse.h> */
