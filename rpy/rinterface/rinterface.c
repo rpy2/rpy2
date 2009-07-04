@@ -59,6 +59,10 @@
 #include <R_ext/Complex.h>
 #include <Rembedded.h>
 
+#if Win32
+#include <winsock2.h>
+#endif
+
 #include <R_ext/eventloop.h>
 
 /* FIXME: consider the use of parsing */
@@ -72,6 +76,8 @@
 #include "r_utils.h"
 
 //#define RPY_VERBOSE
+
+
 
 
 /* A tuple that holds options to initialize R */
