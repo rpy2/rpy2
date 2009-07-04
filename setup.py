@@ -207,6 +207,7 @@ def getRinterface_ext():
         define_macros.append(('Win32', 1))
     else:
         define_macros.append(('R_INTERFACE_PTRS', 1))
+        define_macros.append(('HAVE_POSIX_SIGJMP', 1))
 
     define_macros.append(('CSTACK_DEFNS', 1))
     define_macros.append(('RIF_HAS_RSIGHAND', 1))
@@ -282,7 +283,8 @@ setup(
                    'Intended Audience :: Science/Research',
                    'Development Status :: 3 - Alpha'
                    ],
-    data_files = [('rpy2/images/', ['doc/source/rpy2_logo.png'])]
+    data_files = [(os.path.join('rpy2', 'images'), 
+                   [os.path.join('doc', 'source', 'rpy2_logo.png')])]
     
     #[pack_name + '.rinterface_' + x for x in rinterface_rversions] + \
         #[pack_name + '.rinterface_' + x + '.tests' for x in rinterface_rversions]
