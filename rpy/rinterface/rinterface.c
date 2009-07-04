@@ -939,7 +939,6 @@ static PyObject* EmbeddedR_init(PyObject *self)
   }
   Rp->rhome = RHome;
 
-  char *RHome; 
   if (getenv("R_USER")) {
     strcpy(RHome, getenv("R_USER"));
   } else {
