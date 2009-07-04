@@ -47,7 +47,7 @@ copyright = '2008-2009, Laurent Gautier'
 # The short X.Y version.
 version = '2.0'
 # The full version, including alpha/beta/rc tags.
-release = '2.0.5'
+release = '2.0.6'
 releaselevel = ''
 
 # There are two options for replacing |today|: either, you set today to some
