@@ -955,8 +955,8 @@ static PyObject* EmbeddedR_init(PyObject *self)
   Rp->home = RUser;
   /* Rp->CharacterMode = LinkDLL; */
   Rp->ReadConsole = EmbeddedR_ReadConsole;
-  Rp->WriteConsole = EmbeddedR_WriteConsole;
-  /* Rp->WriteConsoleEx = EmbeddedR_WriteConsole; */
+  Rp->WriteConsole = NULL;
+  Rp->WriteConsoleEx = EmbeddedR_WriteConsole;
   Rp->ShowMessage = EmbeddedR_ShowMessage;
   /* Rp->FlushConsole = EmbeddedR_FlushConsole; */
   Rp->R_Interactive = TRUE;
