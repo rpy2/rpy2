@@ -50,6 +50,9 @@
 
 #include "Python.h"
 
+#if Win32
+#include <winsock2.h>
+#endif
 
 #include <R.h>
 #include <Rinternals.h>
@@ -58,10 +61,6 @@
 #include <Rinterface.h>
 #include <R_ext/Complex.h>
 #include <Rembedded.h>
-
-#if Win32
-#include <winsock2.h>
-#endif
 
 #include <R_ext/eventloop.h>
 
