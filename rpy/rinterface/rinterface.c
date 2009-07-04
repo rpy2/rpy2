@@ -899,6 +899,17 @@ PyDoc_STRVAR(EmbeddedR_ProcessEvents_doc,
              "and R_runHandlers (on other platforms).");
 
 
+#ifdef Win32
+void win32CallBack()
+{
+   /* called during i/o, eval, graphics in ProcessEvents */
+}
+void Re_Busy(int which)
+{
+  
+}
+#endif
+
 static PyObject* EmbeddedR_init(PyObject *self) 
 {
 
@@ -957,9 +968,18 @@ static PyObject* EmbeddedR_init(PyObject *self)
   Rp->ReadConsole = EmbeddedR_ReadConsole;
   Rp->WriteConsole = NULL;
   Rp->WriteConsoleEx = EmbeddedR_WriteConsole;
+
+  Rp->Busy = Re_Busy;
   Rp->ShowMessage = EmbeddedR_ShowMessage;
   /* Rp->FlushConsole = EmbeddedR_FlushConsole; */
+  Rp->CallBack = win32CallBack;
+  Rp->R_Quiet = FALSE;
   Rp->R_Interactive = TRUE;
+  Rp->RestoreAction = SA_RESTORE;
+  /* hocus-pocus for R-win32 - just don't ask why*/
+  R_SetParams(Rp);
+  R_SizeFromEnv(Rp);
+  R_SetParams(Rp);
   setup_term_ui();
 #endif
 
