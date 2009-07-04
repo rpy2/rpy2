@@ -70,6 +70,12 @@
 #include <R_ext/Rdynload.h>
 #include <R_ext/RStartup.h>
 
+/* From Defn.h */
+#ifdef HAVE_POSIX_SETJMP
+#define SIGJMP_BUF sigjmp_buf
+#else
+#define SIGJMP_BUF jmp_buf
+
 #include "rpy_rinterface.h"
 #include "array.h"
 #include "r_utils.h"
@@ -117,7 +123,7 @@ inline void embeddedR_freelock(void) {
   embeddedR_status = embeddedR_status ^ RPY_R_BUSY;
 }
 
-sigjmp_buf env_sigjmp;
+SIGJMP_BUF env_sigjmp;
 /* Python's signal handler */
 static PyOS_sighandler_t python_sighandler, last_sighandler;
 
