@@ -951,7 +951,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   Rp->WriteConsole = EmbeddedR_WriteConsole;
   /* Rp->WriteConsoleEx = EmbeddedR_WriteConsole; */
   Rp->ShowMessage = EmbeddedR_ShowMessage;
-  Rp->FlushConsole = EmbeddedR_FlushConsole;
+  /* Rp->FlushConsole = EmbeddedR_FlushConsole; */
   Rp->R_Interactive = TRUE;
   setup_term_ui();
 #endif
