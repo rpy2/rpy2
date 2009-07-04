@@ -976,6 +976,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   Rp->R_Quiet = FALSE;
   Rp->R_Interactive = TRUE;
   Rp->RestoreAction = SA_RESTORE;
+  Rp->SaveAction = SA_SAVEASK;
   /* hocus-pocus for R-win32 - just don't ask why*/
   R_SetParams(Rp);
   R_SizeFromEnv(Rp);
