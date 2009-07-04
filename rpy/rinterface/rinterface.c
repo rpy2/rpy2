@@ -928,7 +928,8 @@ static PyObject* EmbeddedR_init(PyObject *self)
   structRstart rp;
   Rstart Rp = &rp;
 
-  char *RHome;
+  char RHome[260];
+  char RUser[260];
 
   R_setStartTime();
   R_DefParams(Rp);
@@ -941,12 +942,17 @@ static PyObject* EmbeddedR_init(PyObject *self)
   Rp->rhome = RHome;
 
   if (getenv("R_USER")) {
-    strcpy(RHome, getenv("R_USER"));
+    strcpy(RUser, getenv("R_USER"));
+  } else if (getenv("HOME")) {
+    strcpy(RUser, getenv("HOME"));
+  } else if (getenv("HOMEDIR")) {
+    strcpy(RUser, getenv("HOMEDIR"));
+    strcat(RUser, getenv("HOMEPATH"));
   } else {
     PyErr_Format(PyExc_RuntimeError, "R_USER not defined.");
     return NULL;
   }
-  Rp->home = getRUser();
+  Rp->home = RUser;
   /* Rp->CharacterMode = LinkDLL; */
   Rp->ReadConsole = EmbeddedR_ReadConsole;
   Rp->WriteConsole = EmbeddedR_WriteConsole;
