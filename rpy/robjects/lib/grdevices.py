@@ -12,7 +12,10 @@ grdevices_env = robjects.baseenv['as.environment']('package:grDevices')
 
 png = grdevices_env['png']
 pdf = grdevices_env['pdf']
-svg = grdevices_env['svg']
+try:
+    svg = grdevices_env['svg']
+except LookupError, le:
+    pass
 x11 = grdevices_env['x11']
 
 postscript = grdevices_env['postscript']
