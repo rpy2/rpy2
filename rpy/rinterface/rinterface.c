@@ -75,6 +75,7 @@
 #define SIGJMP_BUF sigjmp_buf
 #else
 #define SIGJMP_BUF jmp_buf
+#endif
 
 #include "rpy_rinterface.h"
 #include "array.h"
