@@ -44,9 +44,9 @@ def default_ri2py(o):
             try:
                 dim = o.do_slot("dim")
                 if len(dim) == 2:
-                    res = vectors.RMatrix(o)
+                    res = vectors.Matrix(o)
                 else:
-                    res = vectors.RArray(o)
+                    res = vectors.Array(o)
             except LookupError, le:
                 if o.typeof == rinterface.INTSXP:
                     if rcls == 'factor':

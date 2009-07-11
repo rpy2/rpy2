@@ -77,7 +77,7 @@ New Features
 - Class :class:`ListSexpVector` for creating R lists easily
   (complementing :class:`IntSexpVector`, :class:`StrSexpVector`, and friends) 
 
-- :meth:`colnames`, :meth:`rownames` for :class:`RArray` are now 
+- :meth:`colnames`, :meth:`rownames` for :class:`Array` (formerly *RArray*) are now 
   property-style getters
 
 - Crash when trying to create a SexpVector of a non-vector type
@@ -117,7 +117,7 @@ Changes
 - :meth:`colnames`, :meth:`rownames`, :meth:`nrow`, :meth:`ncol` 
   for :class:`RDataFrame` are now property-style getters
 
-- :meth:`nrow`, :meth:`ncol` for :class:`RArray` 
+- :meth:`nrow`, :meth:`ncol` for :class:`Array` 
   are now property-style getters
 
 - static method :meth:`from_csvfile` and 
@@ -129,9 +129,9 @@ Changes
 
 - module :mod:`lib.ggplot2` for the CRAN package ggplot2.
 
-- the class *RFormula* has been renamed :class:`Formula`
-
-- the class *RDataFrame* has been renamed :class:`DataFrame`
+- renaming of few classes, the *R* prefix: :class:`Formula` (from *RFormula*),
+  :class:`DataFrame` (from *RDataFrame*), :class:`Array` (from *RArray*),
+  :class:`Matrix` (from *RMatrix*).
 
 :mod:`rpy2.rinterface`:
 
@@ -163,7 +163,7 @@ Bugs fixed
   when trying to create vector-like object of impossible type
 
 - R objects of class *matrix* are now properly converted into :class:`RMatrix`
-  (instead of RArray)
+  (instead of :class:`Array`)
 
 
 Release 2.0.5

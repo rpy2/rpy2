@@ -397,23 +397,25 @@ The property :attr:`names` can be used to get, or set, those names.
    pair: robjects;REnvironment
    pair: robjects;globalenv
 
-:class:`RArray`
+:class:`Array`
 ---------------
 
 In `R`, arrays are simply vectors with a dimension attribute. That fact
-was reflected in the class hierarchy with :class:`robjects.RArray` inheriting
+was reflected in the class hierarchy with :class:`robjects.Array` inheriting
 from :class:`robjects.RVector`.
 
-.. autoclass:: rpy2.robjects.vectors.RArray(obj)
+.. autoclass:: rpy2.robjects.vectors.Array(obj)
    :show-inheritance:
    :members:
 
 
 
-:class:`RMatrix`
+:class:`Matrix`
 ----------------
 
-A :class:`RMatrix` is a special case of :class:`RArray`.
+A :class:`Matrix` is a special case of :class:`Array`. As with arrays,
+one must remember that this is just a vector with dimension attributes
+(number of rows, number of columns).
 
 >>> m = robjects.r.matrix(robjects.IntVector(range(10)), nrow=5)
 >>> print(m)
@@ -424,7 +426,28 @@ A :class:`RMatrix` is a special case of :class:`RArray`.
 [4,]    3    8
 [5,]    4    9
 
-.. autoclass:: rpy2.robjects.vectors.RMatrix(obj)
+.. note::
+
+   In *R*, matrices are column-major ordered, although the constructor 
+   :func:`matrix` accepts a boolean parameter *byrow* that, when true, 
+   will build the matrix *as if* row-major ordered.
+
+Regular operators work element-wise on the underlying vector.
+
+>>> m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2)
+>>> print(m.ro + 1)
+     [,1] [,2]
+[1,]    1    3
+[2,]    2    4
+
+For more on operators, see :ref:`robjects-operationsdelegator`.
+
+Matrix multiplication is available as :meth:`Matrix.dot`, 
+transposition as :meth:`Matrix.transpose`, as well as common
+operations such as cross-product, eigen values computation
+, and singular value decomposition.
+
+.. autoclass:: rpy2.robjects.vectors.Matrix(obj)
    :show-inheritance:
    :members:
 

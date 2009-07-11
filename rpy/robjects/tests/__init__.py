@@ -2,7 +2,7 @@ import unittest
 
 import testRObject
 import testRVector
-import testRArray
+import testArray
 import testDataFrame
 import testFormula
 import testRFunction
@@ -16,7 +16,7 @@ import testNumpyConversions
 def suite():
     suite_RObject = testRObject.suite()
     suite_RVector = testRVector.suite()
-    suite_RArray = testRArray.suite()
+    suite_Array = testArray.suite()
     suite_DataFrame = testDataFrame.suite()
     suite_RFunction = testRFunction.suite()
     suite_REnvironment = testREnvironment.suite()
@@ -26,7 +26,7 @@ def suite():
     suite_Methods = testMethods.suite()
     alltests = unittest.TestSuite([suite_RObject,
                                    suite_RVector,                   
-                                   suite_RArray,
+                                   suite_Array,
                                    suite_DataFrame,
                                    suite_RFunction,
                                    suite_REnvironment,

@@ -250,7 +250,7 @@ class FactorVector(IntVector):
                          "are the levels in the factor ordered ?")
 
     
-class RArray(RVector):
+class Array(RVector):
     """ An R array """
     _dimnames_get = baseenv_ri['dimnames']
     _dimnames_set = baseenv_ri['dimnames<-']
@@ -259,7 +259,7 @@ class RArray(RVector):
     _isarray = baseenv_ri['is.array']
 
     def __init__(self, obj):
-        super(RArray, self).__init__(obj)
+        super(Array, self).__init__(obj)
         #import pdb; pdb.set_trace()
         if not self._isarray(self)[0]:
             raise(TypeError("The object must be representing an R array"))
@@ -299,7 +299,7 @@ class RArray(RVector):
     dimnames = names
 
 
-class RMatrix(RArray):
+class Matrix(Array):
     """ An R matrix """
     _transpose = baseenv_ri['t']
     _rownames = baseenv_ri['rownames']
@@ -308,6 +308,7 @@ class RMatrix(RArray):
     _crossprod = baseenv_ri['crossprod']
     _tcrossprod = baseenv_ri['tcrossprod']
     _svd = baseenv_ri['svd']
+    _eigen = baseenv_ri['eigen']
 
     def __nrow_get(self):
         """ Number of rows.
@@ -364,6 +365,11 @@ class RMatrix(RArray):
         return conversion.ri2py(self)
 
     def dot(self, m):
+        """ Matrix multiplication """
+        res = self._dot(self, m)
+        return conversion.ri2py(res)
+
+    def eigen(self):
         """ Matrix multiplication """
         res = self._dot(self, m)
         return conversion.ri2py(res)
