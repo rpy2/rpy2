@@ -237,6 +237,17 @@ plot of points, but there are other ways to represent our data.
 .. image:: _static/graphics_ggplot2geomhistogramfillcyl.png
    :scale: 50
 
+Barplot-based representations of several densities on the same
+figure can often be lacking clarity. Line-based representation
+can be in better.
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geomfreqpolyfillcyl-begin
+   :end-before: #-- ggplot2geomfreqpolyfillcyl-end
+   
+.. image:: _static/graphics_ggplot2geomfreqpolyfillcyl.png
+   :scale: 50
+
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2aescolboxplot-begin

@@ -107,8 +107,7 @@ pp.plot()
 #-- ggplot2geomboxplot-end
 grdevices.dev_off()
 
-grdevices.png('../../_static/graphics_ggplot2geomhistogram.png',
-    width = 512, height = 512)
+
 #-- ggplot2geomhistogram-begin
 gp = ggplot2.ggplot(mtcars)
 
@@ -118,6 +117,24 @@ pp = gp + \
 
 pp.plot()
 #-- ggplot2geomhistogram-end
+
+grdevices.png('../../_static/graphics_ggplot2geomhistogram.png',
+    width = 900, height = 412)
+ro.r['grid.newpage']()
+ro.r['pushViewport'](ro.r['viewport'](layout=ro.r['grid.layout'](1, 3)))
+
+params = (('black', 'black'),
+          ('black', 'white'),
+          ('white', 'black'))
+          
+for col_i in range(3):
+   vp = ro.r['viewport'](**{'layout.pos.col':col_i+1, 'layout.pos.row': 1})
+   outline_color, fill_color= params[col_i]
+   pp = gp + \
+        ggplot2.aes(x='wt') + \
+        ggplot2.geom_histogram(col=outline_color, fill=fill_color) + \
+        ggplot2.opts(title =  'col=%s - fill=%s' %params[col_i])
+   ro.r['print'](pp, vp = vp)
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2geomhistogramfillcyl.png',
@@ -132,6 +149,34 @@ pp = gp + \
 pp.plot()
 #-- ggplot2geomhistogramfillcyl-end
 grdevices.dev_off()
+
+
+grdevices.png('../../_static/graphics_ggplot2geomfreqpolyfillcyl.png',
+    width = 812, height = 412)
+#-- ggplot2geomfreqpolyfillcyl-begin
+ro.r['grid.newpage']()
+ro.r['pushViewport'](ro.r['viewport'](layout=ro.r['grid.layout'](1, 2)))
+
+dataf = robjects.r['data.frame'](**{'value': robjects.r['rnorm'](100, mean=0) + robjects.r['rnorm'](100, mean=1), 
+                                    'mean': robjects.r('rep(c(0,1), each=100)')})
+gp = ggplot2.ggplot(dataf)
+
+vp = ro.r['viewport'](**{'layout.pos.col':1, 'layout.pos.row': 1})
+pp = gp + \
+     ggplot2.aes(x='value', col='factor(mean)') + \
+     ggplot2.geom_freqpoly()
+ro.r['print'](pp, vp = vp)
+
+vp = ro.r['viewport'](**{'layout.pos.col':2, 'layout.pos.row': 1})
+pp = gp + \
+     ggplot2.aes(x='value', fill='factor(mean)') + \
+     ggplot2.geom_density(alpha=0.5)
+ro.r['print'](pp, vp = vp)
+
+
+#-- ggplot2geomfreqpolyfillcyl-end
+grdevices.dev_off()
+
 
 
 
