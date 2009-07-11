@@ -234,6 +234,8 @@ class FactorVector(IntVector):
         return conversion.ri2py(res)
     def __levels_set(self, value):
         res = self._levels_set(self, conversion.py2ro(value))
+        self.__sexp__ = res.__sexp__
+
     levels = property(__levels_get, __levels_set)
 
     def __nlevels_get(self):
@@ -290,7 +292,7 @@ class RArray(RVector):
 
         value = conversion.ri2py(value)
         res = self._dimnames_set(self, value)        
-
+        self.__sexp__ = res.__sexp__
         
     names = property(__dimnames_get, __dimnames_set, None, 
                      "names associated with the dimension.")
@@ -299,38 +301,72 @@ class RArray(RVector):
 
 class RMatrix(RArray):
     """ An R matrix """
+    _transpose = baseenv_ri['t']
+    _rownames = baseenv_ri['rownames']
+    _colnames = baseenv_ri['colnames']
+    _dot = baseenv_ri['%*%']
+    _crossprod = baseenv_ri['crossprod']
+    _tcrossprod = baseenv_ri['tcrossprod']
+    _svd = baseenv_ri['svd']
 
     def __nrow_get(self):
         """ Number of rows.
         :rtype: integer """
         return self.dim[0]
-    nrow = property(_get_nrow, None, None, "Number of rows")
+    nrow = property(__nrow_get, None, None, "Number of rows")
 
-    def __ncol_set(self):
+    def __ncol_get(self):
         """ Number of columns.
         :rtype: integer """
         return self.dim[1]
-    ncol = property(_get_ncol, None, None, "Number of columns")
+    ncol = property(__ncol_get, None, None, "Number of columns")
 
     def __rownames_get(self):
         """ Row names
         
         :rtype: SexpVector
         """
-        res = baseenv_ri["rownames"](self)
+        res = self._rownames(self)
         return conversion.ri2py(res)
+    rownames = property(__rownames_get, None, None, "Row names")
 
-    rownames = property(_get_rownames, None, None, "Row names")
-
-    def _get_colnames(self):
+    def __colnames_get(self):
         """ Column names
 
         :rtype: SexpVector
         """
-        res = baseenv_ri["colnames"](self)
+        res = self._colnames(self)
         return conversion.ri2py(res)
-    colnames = property(_get_colnames, None, None)
+    colnames = property(__colnames_get, None, None, "Column names")
         
+    def transpose(self):
+        """ transpose the matrix """
+        res = self._transpose(self)
+        return conversion.ri2py(self)
+
+    def crossprod(self, m):
+        """ crossproduct X'.Y"""
+        res = self._crossprod(self, conversion.ri2py(m))
+        return conversion.ri2py(self)
+
+    def tcrossprod(self):
+        """ crossproduct X.Y'"""
+        res = self._tcrossprod(self)
+        return conversion.ri2py(self)
+
+    def svd(self, nu = None, nv = None, linpack = False):
+        """ SVD decomposition """
+        if nu is None:
+            nu = min(tuple(self.dim))
+        if nv is None:
+            nv = min(tuple(self.dim))
+        res = self._crossprod(self, nu = nu, nv = nv, linpack = False)
+        return conversion.ri2py(self)
+
+    def dot(self, m):
+        """ Matrix multiplication """
+        res = self._dot(self, m)
+        return conversion.ri2py(res)
 
 class DataFrame(RVector):
     """ R 'data.frame'.

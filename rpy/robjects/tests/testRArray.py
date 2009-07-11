@@ -25,8 +25,8 @@ class RArrayTestCase(unittest.TestCase):
 
 
     def testNamesGet(self):
-        dimnames = robjects.r.list(['a', 'b', 'c'],
-                                   ['d', 'e'])
+        dimnames = robjects.r.list(robjects.StrVector(['a', 'b', 'c']),
+                                   robjects.StrVector(['d', 'e']))
         m = robjects.r.matrix(1, nrow=3, ncol=2,
                               dimnames = dimnames)
         a = robjects.RArray(m)
@@ -36,8 +36,8 @@ class RArrayTestCase(unittest.TestCase):
         self.assertTrue(r_identical(dimnames[1], res[1]))
 
     def testNamesSet(self):
-        dimnames = robjects.r.list(['a', 'b', 'c'],
-                                   ['d', 'e'])
+        dimnames = robjects.r.list(robjects.StrVector(['a', 'b', 'c']),
+                                   robjects.StrVector(['d', 'e']))
         m = robjects.r.matrix(1, nrow=3, ncol=2)
         a = robjects.RArray(m)
         a.names = dimnames
@@ -46,8 +46,38 @@ class RArrayTestCase(unittest.TestCase):
         self.assertTrue(r_identical(dimnames[0], res[0]))
         self.assertTrue(r_identical(dimnames[1], res[1]))
 
+class MatrixTestCase(unittest.TestCase):
+
+    def testNrowGet(self):
+        m = robjects.r.matrix(robjects.IntVector(range(6)), nrow=3, ncol=2)
+        self.assertEquals(3, m.nrow)
+
+    def testNcolGet(self):
+        m = robjects.r.matrix(robjects.IntVector(range(6)), nrow=3, ncol=2)
+        self.assertEquals(2, m.ncol)
+
+    def testTranspose(self):
+        m = robjects.r.matrix(robjects.IntVector(range(6)), nrow=3, ncol=2)
+        mt = m.transpose()
+        for i in (0,1,2,3,4,5,):
+            self.assertEquals(i, m[i])
+        for i in (0,3,1,4,2,5):
+            self.assertEquals(i, mt[i])
+
+    def testCrossprod(self):
+        self.assertTrue(False)  # no test yet
+    def testTCrossprod(self):
+        self.assertTrue(False)  # no test yet
+    def testSVD(self):
+        self.assertTrue(False) # no test yet
+    def testDot(self):
+        m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2, ncol=2)        
+        m2 = m.dot(m)
+        self.assertEquals((2,3,6,11), tuple(m2))
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RArrayTestCase)
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(MatrixTestCase))
     return suite
 
 if __name__ == '__main__':
