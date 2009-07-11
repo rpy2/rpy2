@@ -250,31 +250,36 @@ class FactorVector(IntVector):
     
 class RArray(RVector):
     """ An R array """
+    _dimnames = baseenv_ri['dimnames']
+    _dim_get = baseenv_ri['dim']
+    _dim_set = baseenv_ri['dim<-']
+    _isarray = baseenv_ri['is.array']
+
     def __init__(self, obj):
         super(RArray, self).__init__(obj)
         #import pdb; pdb.set_trace()
-        if not baseenv_ri.get("is.array")(self)[0]:
+        if not self._isarray(self)[0]:
             raise(TypeError("The object must be representing an R array"))
 
-    def getdim(self):
-        res = globalenv_ri.get("dim")(self)
+    def __dim_get(self):
+        res = self._dim_get(self)
         res = conversion.ri2py(res)
         return res
 
-    def setdim(self, value):
+    def __dim_set(self, value):
         value = conversion.py2ro(value)
-        res = globalenv_ri.get("dim<-")(self, value)
+        res = self._dim_set(self, value)
             #FIXME: not properly done
         raise(Exception("Not yet implemented"))
 
-    dim = property(getdim, setdim, 
-                   "Dimension of the array.")
+    dim = property(__dim_get, __dim_set, 
+                   "Get or set the dimension of the array.")
 
     def getnames(self):
         """ Return a list of name vectors
         (like the R function 'dimnames' does it)."""
 
-        res = globalenv_ri.get("dimnames")(self)
+        res = self._dimnames(self)
         res = conversion.ri2py(res)
         return res
         
