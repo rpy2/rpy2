@@ -7,6 +7,7 @@ import os, sys
 import pygtk
 pygtk.require('2.0')
 import gtk
+import rpy2
 import rpy2.robjects as robjects
 import itertools
 import gobject
