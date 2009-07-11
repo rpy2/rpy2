@@ -24,13 +24,24 @@ class RArrayTestCase(unittest.TestCase):
 #         a.dim = rd
 
 
-    def testGetnames(self):
+    def testNamesGet(self):
         dimnames = robjects.r.list(['a', 'b', 'c'],
                                    ['d', 'e'])
         m = robjects.r.matrix(1, nrow=3, ncol=2,
                               dimnames = dimnames)
         a = robjects.RArray(m)
-        res = a.getnames()
+        res = a.names
+        r_identical = robjects.r.identical
+        self.assertTrue(r_identical(dimnames[0], res[0]))
+        self.assertTrue(r_identical(dimnames[1], res[1]))
+
+    def testNamesSet(self):
+        dimnames = robjects.r.list(['a', 'b', 'c'],
+                                   ['d', 'e'])
+        m = robjects.r.matrix(1, nrow=3, ncol=2)
+        a = robjects.RArray(m)
+        a.names = dimnames
+        res = a.names
         r_identical = robjects.r.identical
         self.assertTrue(r_identical(dimnames[0], res[0]))
         self.assertTrue(r_identical(dimnames[1], res[1]))

@@ -250,7 +250,8 @@ class FactorVector(IntVector):
     
 class RArray(RVector):
     """ An R array """
-    _dimnames = baseenv_ri['dimnames']
+    _dimnames_get = baseenv_ri['dimnames']
+    _dimnames_set = baseenv_ri['dimnames<-']
     _dim_get = baseenv_ri['dim']
     _dim_set = baseenv_ri['dim<-']
     _isarray = baseenv_ri['is.array']
@@ -275,40 +276,51 @@ class RArray(RVector):
     dim = property(__dim_get, __dim_set, 
                    "Get or set the dimension of the array.")
 
-    def getnames(self):
+    def __dimnames_get(self):
         """ Return a list of name vectors
         (like the R function 'dimnames' does it)."""
 
-        res = self._dimnames(self)
+        res = self._dimnames_get(self)
         res = conversion.ri2py(res)
         return res
+
+    def __dimnames_set(self, value):
+        """ Return a list of name vectors
+        (like the R function 'dimnames' does it)."""
+
+        value = conversion.ri2py(value)
+        res = self._dimnames_set(self, value)        
+
         
-    names = property(getnames)
+    names = property(__dimnames_get, __dimnames_set, None, 
+                     "names associated with the dimension.")
+    dimnames = names
 
 
 class RMatrix(RArray):
     """ An R matrix """
 
-    def _get_nrow(self):
+    def __nrow_get(self):
         """ Number of rows.
         :rtype: integer """
         return self.dim[0]
-    nrow = property(_get_nrow, None, None)
+    nrow = property(_get_nrow, None, None, "Number of rows")
 
-    def _get_ncol(self):
+    def __ncol_set(self):
         """ Number of columns.
         :rtype: integer """
         return self.dim[1]
-    ncol = property(_get_ncol, None, None)
+    ncol = property(_get_ncol, None, None, "Number of columns")
 
-    def _get_rownames(self):
+    def __rownames_get(self):
         """ Row names
         
         :rtype: SexpVector
         """
         res = baseenv_ri["rownames"](self)
         return conversion.ri2py(res)
-    rownames = property(_get_rownames, None, None)
+
+    rownames = property(_get_rownames, None, None, "Row names")
 
     def _get_colnames(self):
         """ Column names
