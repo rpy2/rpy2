@@ -39,6 +39,7 @@ New Features
 - :class:`StrVector` has a method :meth:`factor` to turn a
   vector of strings into an R factor
 
+ 
 :mod:`rpy2.rinterface`:
 
 - New functions for specifying callback functions for R's front-ends:
@@ -158,6 +159,9 @@ Bugs fixed
 
 - :class:`rinterface.SexpVector` will now properly raise an exception
   when trying to create vector-like object of impossible type
+
+- R objects of class *matrix* are now properly converted into :class:`RMatrix`
+  (instead of RArray)
 
 
 Release 2.0.5
