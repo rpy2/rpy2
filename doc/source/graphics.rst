@@ -238,7 +238,8 @@ plot of points, but there are other ways to represent our data.
    :scale: 50
 
 Barplot-based representations of several densities on the same
-figure can often be lacking clarity. Line-based representation
+figure can often be lacking clarity and line-based representation,
+either :func:`geom_freqpoly` or :func:`geom_density`,
 can be in better.
 
 .. literalinclude:: _static/demos/graphics.py
@@ -248,6 +249,8 @@ can be in better.
 .. image:: _static/graphics_ggplot2geomfreqpolyfillcyl.png
    :scale: 50
 
+Boxplots can be used to represent a *summary* of the data with an emphasis
+on location and spread.
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2aescolboxplot-begin

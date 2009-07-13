@@ -153,7 +153,6 @@ grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2geomfreqpolyfillcyl.png',
     width = 812, height = 412)
-#-- ggplot2geomfreqpolyfillcyl-begin
 ro.r['grid.newpage']()
 ro.r['pushViewport'](ro.r['viewport'](layout=ro.r['grid.layout'](1, 2)))
 
@@ -168,13 +167,13 @@ pp = gp + \
 ro.r['print'](pp, vp = vp)
 
 vp = ro.r['viewport'](**{'layout.pos.col':2, 'layout.pos.row': 1})
+#-- ggplot2geomfreqpolyfillcyl-begin
 pp = gp + \
-     ggplot2.aes(x='value', fill='factor(mean)') + \
-     ggplot2.geom_density(alpha=0.5)
+     ggplot2.aes(x='value', fill='factor(mean)', alpha=0.5) + \
+     ggplot2.geom_density()
+#-- ggplot2geomfreqpolyfillcyl-end
 ro.r['print'](pp, vp = vp)
 
-
-#-- ggplot2geomfreqpolyfillcyl-end
 grdevices.dev_off()
 
 
