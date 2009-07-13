@@ -240,8 +240,31 @@ Levels: a b c
 >>> tuple(fac.levels)
 ('a', 'b', 'c')
 
-When extracting elements from a :class:`FactorVector`, a sensible default
-might be to use R-style extracting (see :ref:`robjects-extracting`) 
+Since a :class:`FactorVector` is an :class:`IntVector` with attached
+metadata (the levels), getting items Python-style was not changed from
+what happens when gettings items from a :class:`IntVector`.
+A consequence to that is that information about the
+levels is then lost.
+
+>>> item_i = 0
+>>> fac[item_i]
+1
+
+Getting the level corresponding to an item requires using the :attr:`levels`,:
+
+>>> fac.levels[fac[item_i] - 1]
+'a'
+
+.. warning::
+
+   Do not forget to subtract one to the value in the :class:`FactorVector`.
+   Indexing in Python starts at zero while indexing R starts at one,
+   and recovering the level for an item requires an adjustment between the two.
+
+
+When extracting elements from a :class:`FactorVector` a sensible default
+might be to use R-style extracting (see :ref:`robjects-extracting`),
+as it preserves the integer/string duality.
 
 .. autoclass:: rpy2.robjects.vectors.FactorVector(obj)
    :show-inheritance:
@@ -814,6 +837,4 @@ Class diagram
 
 .. inheritance-diagram:: rpy2.robjects rpy2.robjects.methods rpy2.robjects.vectors
    :parts: 1
-
-
 
