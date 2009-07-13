@@ -1,6 +1,7 @@
 
 #-- setup-begin
 from rpy2 import robjects
+from rpy2.robjects.lib import grid
 from rpy2.robjects.lib import grdevices
 
 
@@ -120,15 +121,15 @@ pp.plot()
 
 grdevices.png('../../_static/graphics_ggplot2geomhistogram.png',
     width = 900, height = 412)
-ro.r['grid.newpage']()
-ro.r['pushViewport'](ro.r['viewport'](layout=ro.r['grid.layout'](1, 3)))
+grid.newpage()
+grid.Viewport.push(grid.viewport(layout=grid.layout(1, 3)))
 
 params = (('black', 'black'),
           ('black', 'white'),
           ('white', 'black'))
           
 for col_i in range(3):
-   vp = ro.r['viewport'](**{'layout.pos.col':col_i+1, 'layout.pos.row': 1})
+   vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 1})
    outline_color, fill_color= params[col_i]
    pp = gp + \
         ggplot2.aes(x='wt') + \
@@ -153,20 +154,20 @@ grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2geomfreqpolyfillcyl.png',
     width = 812, height = 412)
-ro.r['grid.newpage']()
-ro.r['pushViewport'](ro.r['viewport'](layout=ro.r['grid.layout'](1, 2)))
+grid.newpage()
+grid.Viewport.push(grid.viewport(layout=grid.layout(1, 2)))
 
 dataf = robjects.r['data.frame'](**{'value': robjects.r['rnorm'](100, mean=0) + robjects.r['rnorm'](100, mean=1), 
                                     'mean': robjects.r('rep(c(0,1), each=100)')})
 gp = ggplot2.ggplot(dataf)
 
-vp = ro.r['viewport'](**{'layout.pos.col':1, 'layout.pos.row': 1})
+vp = grid.viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
 pp = gp + \
      ggplot2.aes(x='value', col='factor(mean)') + \
      ggplot2.geom_freqpoly()
 ro.r['print'](pp, vp = vp)
 
-vp = ro.r['viewport'](**{'layout.pos.col':2, 'layout.pos.row': 1})
+vp = grid.viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
 #-- ggplot2geomfreqpolyfillcyl-begin
 pp = gp + \
      ggplot2.aes(x='value', fill='factor(mean)', alpha=0.5) + \
@@ -293,17 +294,15 @@ grdevices.png('../../_static/graphics_ggplot2addsmoothmethods.png',
               width = 1024, height = 340)
 
 #-- ggplot2addsmoothmethods-begin
-ro.r['grid.newpage']()
-ro.r['pushViewport'](ro.r['viewport'](layout=ro.r['grid.layout'](1, 3)))
+grid.newpage()
+grid.Viewport.push(grid.viewport(layout=grid.layout(1, 3)))
 
 params = (('lm', 'y ~ x'),
           ('lm', 'y ~ poly(x, 2)'),
           ('loess', 'y ~ x'))
           
 for col_i in (1,2,3):
-   vp = ro.r['viewport'](**{'layout.pos.col':col_i, 'layout.pos.row': 1})
-   #ro.r['pushViewport'](vp)
-   #ro.r['grid.rect'](vp = vp)
+   vp = grid.viewport(**{'layout.pos.col':col_i, 'layout.pos.row': 1})
    method, formula = params[col_i-1]
    gp = ggplot2.ggplot(mtcars)
    pp = gp + \
@@ -312,7 +311,6 @@ for col_i in (1,2,3):
         ggplot2.stat_smooth(method = method, formula=formula) + \
         ggplot2.opts(title = method + ' - ' + formula)
    ro.r['print'](pp, vp = vp)
-   #ro.r['upViewport']()
 
 #-- ggplot2addsmoothmethods-end
 grdevices.dev_off()
