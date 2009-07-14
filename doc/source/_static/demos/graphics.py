@@ -122,7 +122,7 @@ pp.plot()
 grdevices.png('../../_static/graphics_ggplot2geomhistogram.png',
     width = 900, height = 412)
 grid.newpage()
-grid.Viewport.push(grid.viewport(layout=grid.layout(1, 3)))
+grid.viewport(layout=grid.layout(1, 3)).push()
 
 params = (('black', 'black'),
           ('black', 'white'),
@@ -155,7 +155,7 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2geomfreqpolyfillcyl.png',
     width = 812, height = 412)
 grid.newpage()
-grid.Viewport.push(grid.viewport(layout=grid.layout(1, 2)))
+grid.viewport(layout=grid.layout(1, 2)).push()
 
 dataf = robjects.r['data.frame'](**{'value': robjects.r['rnorm'](100, mean=0) + robjects.r['rnorm'](100, mean=1), 
                                     'mean': robjects.r('rep(c(0,1), each=100)')})
@@ -295,7 +295,7 @@ grdevices.png('../../_static/graphics_ggplot2addsmoothmethods.png',
 
 #-- ggplot2addsmoothmethods-begin
 grid.newpage()
-grid.Viewport.push(grid.viewport(layout=grid.layout(1, 3)))
+grid.viewport(layout=grid.layout(1, 3)).push()
 
 params = (('lm', 'y ~ x'),
           ('lm', 'y ~ poly(x, 2)'),

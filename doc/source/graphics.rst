@@ -13,7 +13,6 @@ by reading the R documentation how to perform the same plot in rpy2.
 
 
 .. module:: rpy2.robjects.lib.grdevices
-   :platform: Unix, Windows
    :synopsis: High-level interface with R
 
 Graphical devices
@@ -138,9 +137,7 @@ this done by specifying it in the formula.
 
 
 .. module:: rpy2.robjects.lib.ggplot2
-   :platform: Unix, Windows
    :synopsis: High-level interface with R
-
 
 Package *ggplot2*
 =================
@@ -384,6 +381,59 @@ used the grammar of graphics) are still specified the usual way.
    
 .. image:: _static/graphics_ggplot2smoothblue.png
    :scale: 50
+
+.. module:: rpy2.robjects.lib.grid
+   :synopsis: High-level interface with R
+
+Package *grid*
+==============
+
+The *grid* package is the underlying plotting environment for *lattice*
+and *ggplot2* figures. In few words, it consists in pushing and poping systems
+of coordinates (*viewports*) into a stack, 
+and plotting graphical elements into them.
+
+
+>>> from rpy2.robjects.lib import grid
+
+Getting a new page is achieve by calling the function :func:`grid.newpage`.
+
+Calling :func:`layout` will create a layout, e.g. create a layout with one row
+and 3 columns:
+
+>>> lt = grid.layout(1, 3)
+
+That layout can be used to construct a viewport:
+
+>>> vp = grid.viewport(layout = lt)
+
+The created viewport corresponds to a graphical entity.
+Pushing into the current viewport, can be done by using the class method
+:meth:`grid.Viewport.push`:
+
+>>> vp.push()
+
+Example:
+
+.. code-block:: python
+
+   lt = grid.layout(1, 3)
+   vp = grid.viewport(layout = lt)
+   vp.push()
+
+   vp = grid.Viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
+   grid.rect(vp = vp).draw()
+
+   vp = grid.Viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
+   grid.text("foo", vp = vp).draw()
+
+   vp = grid.Viewport(**{'layout.pos.col':3, 'layout.pos.row': 1})
+   grid.circle(vp = vp).draw()
+
+.. autoclass:: rpy2.robjects.lib.grid.Viewport(o)
+   :show-inheritance:
+   :members:
+   :undoc-members:
 
 
 
