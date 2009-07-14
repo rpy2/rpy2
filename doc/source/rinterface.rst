@@ -585,7 +585,7 @@ returning the search path (`search`).
        R search path. """
        spath = [ri.globalenv, ]
        item = ri.globalenv.enclos()
-       while not item.rsame(ri.emptyEnv):
+       while not item.rsame(ri.emptyenv):
            spath.append(item)
 	   item = item.enclos()
        spath.append(ri.baseenv)
@@ -609,7 +609,7 @@ from.
                retry = False
            except LookupError, knf:
                env = env.enclos()
-	       if env.rsame(ri.emptyEnv):
+	       if env.rsame(ri.emptyenv):
                    retry = False
                else:
                    retry = True
