@@ -39,7 +39,7 @@ New Features
 - :class:`StrVector` has a method :meth:`factor` to turn a
   vector of strings into an R factor
 
-- :class:`RMatrix` was added the methods: :meth:`dot`, :meth:`svd`, :meth:`crossprod`,
+- :class:`Matrix` was added the methods: :meth:`dot`, :meth:`svd`, :meth:`crossprod`,
   :meth:`tcrossprod`, :meth:`transpose`.
  
 :mod:`rpy2.rinterface`:
