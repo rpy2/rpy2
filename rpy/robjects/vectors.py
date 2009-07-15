@@ -356,7 +356,10 @@ class Matrix(Array):
         return conversion.ri2py(res)
 
     def svd(self, nu = None, nv = None, linpack = False):
-        """ SVD decomposition """
+        """ SVD decomposition.
+        If nu is None, it is given the default value min(tuple(self.dim)).
+        If nv is None, it is given the default value min(tuple(self.dim)).
+        """
         if nu is None:
             nu = min(tuple(self.dim))
         if nv is None:
@@ -490,7 +493,7 @@ class RFunction(RObjectMixin, rinterface.SexpClosure):
 
     def formals(self):
         """ Return the signature of the underlying R function 
-        (as the R function 'formals' would). """
+        (as the R function 'formals()' would). """
         res = self.__formals(self)
         res = conversion.ri2py(res)
         return res
