@@ -34,7 +34,7 @@ one will have to specify it.
 
 
 The module :mod:`grdevices` aims at representing the R package
-*grDevices*.
+grDevices*.
 
 .. code-block:: python
 
@@ -147,6 +147,11 @@ Introduction
 
 The R package *ggplot2* is expected to be installed in the *R*
 used from *rpy2*.
+
+The package is using the *grid* lower-level plotting infrastructure, modelled in 
+:mod:`rpy2.robjects.lib.grid`. Whenever separate plots on the same device,
+or arbitrary graphical elements overlaid, are wished it may require interacting
+with that infrastructure.
 
 Here again, having data in a :class:`DataFrame` is expected
 (see :ref:`robjects-dataframes` for more information on such objects).
@@ -417,17 +422,23 @@ Example:
 
 .. code-block:: python
 
+   # create a rows/columns layout
    lt = grid.layout(1, 3)
    vp = grid.viewport(layout = lt)
+   # push it the plotting stack
    vp.push()
 
+   # create a viewport located at (1,1) in the layout
    vp = grid.Viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
+   # create a (unit) rectangle in that viewport
    grid.rect(vp = vp).draw()
 
    vp = grid.Viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
+   # create text in the viewport at (1,2)
    grid.text("foo", vp = vp).draw()
 
    vp = grid.Viewport(**{'layout.pos.col':3, 'layout.pos.row': 1})
+   # create a (unit) circle in the viewport (1,3)
    grid.circle(vp = vp).draw()
 
 .. autoclass:: rpy2.robjects.lib.grid.Viewport(o)
