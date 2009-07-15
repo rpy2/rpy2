@@ -466,9 +466,10 @@ Regular operators work element-wise on the underlying vector.
 For more on operators, see :ref:`robjects-operationsdelegator`.
 
 Matrix multiplication is available as :meth:`Matrix.dot`, 
-transposition as :meth:`Matrix.transpose`, as well as common
+transposition as :meth:`Matrix.transpose`. Common
 operations such as cross-product, eigen values computation
-, and singular value decomposition.
+, and singular value decomposition are also available through
+method with explicit names.
 
 .. autoclass:: rpy2.robjects.vectors.Matrix(obj)
    :show-inheritance:
