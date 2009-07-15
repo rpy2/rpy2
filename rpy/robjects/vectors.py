@@ -343,17 +343,17 @@ class Matrix(Array):
     def transpose(self):
         """ transpose the matrix """
         res = self._transpose(self)
-        return conversion.ri2py(self)
+        return conversion.ri2py(res)
 
     def crossprod(self, m):
         """ crossproduct X'.Y"""
         res = self._crossprod(self, conversion.ri2py(m))
-        return conversion.ri2py(self)
+        return conversion.ri2py(res)
 
-    def tcrossprod(self):
+    def tcrossprod(self, m):
         """ crossproduct X.Y'"""
-        res = self._tcrossprod(self)
-        return conversion.ri2py(self)
+        res = self._tcrossprod(self, m)
+        return conversion.ri2py(res)
 
     def svd(self, nu = None, nv = None, linpack = False):
         """ SVD decomposition """
@@ -362,7 +362,7 @@ class Matrix(Array):
         if nv is None:
             nv = min(tuple(self.dim))
         res = self._crossprod(self, nu = nu, nv = nv, linpack = False)
-        return conversion.ri2py(self)
+        return conversion.ri2py(res)
 
     def dot(self, m):
         """ Matrix multiplication """
@@ -370,8 +370,8 @@ class Matrix(Array):
         return conversion.ri2py(res)
 
     def eigen(self):
-        """ Matrix multiplication """
-        res = self._dot(self, m)
+        """ Eigen values """
+        res = self._eigen(self, m)
         return conversion.ri2py(res)
 
 class DataFrame(RVector):
