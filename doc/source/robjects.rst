@@ -467,6 +467,9 @@ one must remember that this is just a vector with dimension attributes
    :func:`matrix` accepts a boolean parameter *byrow* that, when true, 
    will build the matrix *as if* row-major ordered.
 
+Computing on matrices
+^^^^^^^^^^^^^^^^^^^^^
+
 Regular operators work element-wise on the underlying vector.
 
 >>> m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2)
@@ -483,6 +486,16 @@ operations such as cross-product, eigen values computation
 , and singular value decomposition are also available through
 method with explicit names.
 
+>>> print( m.crossprod(m) )
+     [,1] [,2]
+[1,]    1    3
+[2,]    3   13
+>>> print( m.transpose().dot(m) )
+     [,1] [,2]
+[1,]    1    3
+[2,]    3   13
+
+
 .. autoclass:: rpy2.robjects.vectors.Matrix(obj)
    :show-inheritance:
    :members:
@@ -495,22 +508,27 @@ Extracting
 Extracting can still be performed Python-style or
 R-style.
 
-
+>>> m = ro.r.matrix(ro.IntVector(range(2, 8)), nrow=3)
+>>> print(m)
+     [,1] [,2]
+[1,]    2    5
+[2,]    3    6
+[3,]    4    7
 >>> m[0]
-0
+2
 >>> m[5]
-5
+7
 >>> print(m.rx(1))
-[1] 0
+[1] 2
 >>> print(m.rx(6))
-[1] 5
+[1] 7
 
 Matrixes are two-dimensional arrays, and elements can
 be extracted according to two indexes:
 
->>> print(m.rx(1,1))
-[1] 0
->>> print(m.rx(3,2))
+>>> print(m.rx(1, 1))
+[1] 2
+>>> print(m.rx(3, 2))
 [1] 7
 
 
