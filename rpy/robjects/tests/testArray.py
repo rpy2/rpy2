@@ -59,10 +59,10 @@ class MatrixTestCase(unittest.TestCase):
     def testTranspose(self):
         m = robjects.r.matrix(robjects.IntVector(range(6)), nrow=3, ncol=2)
         mt = m.transpose()
-        for i in (0,1,2,3,4,5,):
-            self.assertEquals(i, m[i])
-        for i in (0,3,1,4,2,5):
-            self.assertEquals(i, mt[i])
+        for i,val in enumerate((0,1,2,3,4,5,)):
+            self.assertEquals(val, m[i])
+        for i,val in enumerate((0,3,1,4,2,5)):
+            self.assertEquals(val, mt[i])
 
     def testCrossprod(self):
         self.assertTrue(False)  # no test yet
