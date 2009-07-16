@@ -28,7 +28,7 @@ New Features
   :class:`DoubleExtractDelegator` for extracting the R-way
 
 - :class:`DataFrame` (formerly *RDataFrame*) can now be created from :`rlike.container.OrdDict`
-  instances
+  instances, or any other object inheriting from dict.
 
 - :class:`FactorVector` to represent R factors
 

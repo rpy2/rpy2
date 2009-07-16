@@ -417,7 +417,7 @@ class DataFrame(RVector):
             if not globalenv_ri.get('inherits')(tlist, self._dataframe_name)[0]:
                 raise ValueError('tlist should of R class "data.frame"')
             super(DataFrame, self).__init__(tlist)
-        elif isinstance(tlist, rlc.OrdDict):
+        elif isinstance(tlist, dict):
             kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
             kv = tuple(kv)
             df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
