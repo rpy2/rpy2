@@ -842,7 +842,7 @@ and restore them from their serialized form.
    Currently loading an object from a serialized form restores the object in
    its low-level form (as in :mod:`rpy2.rinterface`). Higher-level objects
    can be restored by calling the higher-level casting function
-   :func:`rpy2.robjects.conversion.ri2py` (see :ref:`robjects-conversion`.
+   :func:`rpy2.robjects.conversion.ri2py` (see :ref:`robjects-conversion`).
 
 
 Class diagram
