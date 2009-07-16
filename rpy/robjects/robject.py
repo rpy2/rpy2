@@ -41,14 +41,12 @@ class RObjectMixin(object):
         return s
 
     def r_repr(self):
-        """ R string representation for an object.
-        This string representation can be used directed
-        in R code.
+        """ String representation for an object that can be
+        directly evaluated as R code.
         """
         return repr_robject(self, linesep='\n')
 
-    def getrclass(self):
-        """ Return the name of the R class for the object. """
+    def _rclass_get(self):
         try:
             return self.__rclass(self)
         except rpy2.rinterface.RRuntimeError, rre:
@@ -57,7 +55,8 @@ class RObjectMixin(object):
                 return (None, )
             else:
                 raise rre        
-    rclass = property(getrclass)
+    rclass = property(_rclass_get, None, None,
+                      "name of the R class for the object.")
 
 
 def repr_robject(o, linesep=os.linesep):
