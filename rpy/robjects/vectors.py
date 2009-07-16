@@ -130,6 +130,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
     """ R vector-like object. Items in those instances can
        be accessed with the method "__getitem__" ("[" operator),
        or with the method "subset"."""
+    _sample = rinterface.baseenv['sample']
 
     def __init__(self, o):
         if not isinstance(o, rinterface.SexpVector):
@@ -173,6 +174,18 @@ class RVector(RObjectMixin, rinterface.SexpVector):
     names = property(_names_get, _names_set, 
                      "Names for the items in the vector.")
 
+    def sample(self, n, replace = False, probabilities = None):
+        """ Draw a sample of size n from the vector. If 'replace' is True,
+        the """
+        assert isinstance(n, int)
+        assert isinstance(replace, bool)
+        if probabilities is not None:
+            probabilities = FloatVector(probabilities)
+        res = self._sample(self, IntVector((n,)), 
+                           replace = BoolVector((replace, )),
+                           prob = probabilities)
+        res = conversion.ri2py(res)
+        return res
 
 class StrVector(RVector):
     """ Vector of string elements """

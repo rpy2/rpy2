@@ -44,6 +44,7 @@ New Features
  
 - :meth:`IntVector.tabulate` to count the number of times a value is found in the vector
 
+- :meth:`RVector.sample` to draw a (random) sample of arbitrary size from a vector
 
 :mod:`rpy2.rinterface`:
 
