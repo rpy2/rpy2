@@ -44,6 +44,7 @@ New Features
  
 - :meth:`IntVector.tabulate` to count the number of times a value is found in the vector
 
+
 :mod:`rpy2.rinterface`:
 
 - New functions for specifying callback functions for R's front-ends:
@@ -146,6 +147,9 @@ Changes
 - The call-back getters and setters are now :func:`get_readconsole`,
   :func:`set_readconsole`, :func:`get_writeconsole`, :func:`set_writeconsole`,
   :func:`get_flushconsole`, and :func:`set_flushconsole`.
+
+- Functions also accept named parameters equal to Py_None, and transform them to R
+  NULL (previously only accepted parameters inheriting from Sexp).
 
 :mod:`rpy2.rlike`:
 

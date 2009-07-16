@@ -1889,11 +1889,15 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       argValue = PyTuple_GetItem(tmp_obj, 1);
       is_PySexpObject = PyObject_TypeCheck(argValue, &Sexp_Type);
       if (! is_PySexpObject) {
-        PyErr_Format(PyExc_ValueError, 
-                     "All named parameters must be of type Sexp_Type.");
-        Py_DECREF(tmp_obj);     
-        Py_XDECREF(citems);
-        goto fail;
+	if ( argValue == Py_None ) {
+	  argValue = R_NilValue;
+	} else {
+	  PyErr_Format(PyExc_ValueError, 
+		       "All named parameters must be of type Sexp_Type or None");
+	  Py_DECREF(tmp_obj);     
+	  Py_XDECREF(citems);
+	  goto fail;
+	}
       }
       Py_DECREF(tmp_obj);
       tmp_R = RPY_SEXP((PySexpObject *)argValue);
