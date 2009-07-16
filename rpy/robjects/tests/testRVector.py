@@ -202,9 +202,9 @@ class RVectorTestCase(unittest.TestCase):
         r_names = robjects.baseenv["c"](*v_names)
         vec = robjects.baseenv["names<-"](vec, r_names)
         for i in xrange(len(vec)):
-            self.assertEquals(v_names[i], vec.getnames()[i])
+            self.assertEquals(v_names[i], vec.names[i])
 
-        vec.getnames()[0] = 'x'
+        vec.names[0] = 'x'
 
     def testSetNames(self):
         vec = robjects.RVector(array.array('i', [1,2,3]))

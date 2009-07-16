@@ -42,6 +42,8 @@ New Features
 - :class:`Matrix` was added the methods: :meth:`dot`, :meth:`svd`, :meth:`crossprod`,
   :meth:`tcrossprod`, :meth:`transpose`.
  
+- :meth:`IntVector.tabulate` to count the number of times a value is found in the vector
+
 :mod:`rpy2.rinterface`:
 
 - New functions for specifying callback functions for R's front-ends:

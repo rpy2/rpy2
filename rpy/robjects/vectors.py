@@ -161,20 +161,16 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         value = conversion.py2ri(value)
         res = super(RVector, self).__setitem__(i, value)
 
-    def getnames(self):
-        """ Get the element names, calling the R function names(). """
+    def _names_get(self):
         res = baseenv_ri.get('names')(self)
         res = conversion.ri2py(res)
         return res
 
-    def setnames(self, value):
-        """ Set the element names
-        (like the R function 'names<-' does it)."""
-
+    def _names_set(self, value):
         res = globalenv_ri.get("names<-")(self, conversion.py2ro(value))
         self.__sexp__ = res.__sexp__
 
-    names = property(getnames, setnames, 
+    names = property(_names_get, _names_set, 
                      "Names for the items in the vector.")
 
 
@@ -186,14 +182,24 @@ class StrVector(RVector):
         super(StrVector, self).__init__(obj)
 
     def factor(self):
+        """ construct a factor vector from the vector of strings """
         res = self._factorconstructor(self)
         return conversion.ri2py(res)
 
 class IntVector(RVector):
     """ Vector of integer elements """
+    _tabulate = rinterface.baseenv['tabulate']
+
     def __init__(self, obj):
         obj = rinterface.IntSexpVector(obj)
         super(IntVector, self).__init__(obj)
+
+    def tabulate(self, nbins = None):
+        """ Count the number of times integer values are found """
+        if nbins is None:
+            nbins = max(1, max(self))
+        res = self._tabulate(self)
+        return conversion.ri2py(res)
 
 class BoolVector(RVector):
     """ Vector of boolean (logical) elements """

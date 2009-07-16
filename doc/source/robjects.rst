@@ -178,8 +178,6 @@ representations of R objects.
    :show-inheritance:
    :members:
 
-
-
 .. index::
    pair: robjects;RVector
 

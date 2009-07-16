@@ -41,7 +41,7 @@ class RFunctionTestCase(unittest.TestCase):
         #FIXME: no need for as.list when paired list are handled
         res = robjects.r['as.list'](res)
         self.assertEquals(2, len(res))
-        n = res.getnames()
+        n = res.names
         self.assertEquals("x", n[0])
         self.assertEquals("y", n[1])
 
