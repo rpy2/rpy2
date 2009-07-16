@@ -1,6 +1,5 @@
 .. module:: rpy2.robjects.conversion
-   :platform: Unix, Windows
-   :synopsis: Converting R objects from their low-level representation to their higher(er)-level representation
+   :synopsis: Shuttling between low-level and higher(er)-level representations
 
 .. _robjects-conversion:
 
