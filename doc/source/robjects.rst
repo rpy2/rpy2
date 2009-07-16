@@ -674,7 +674,7 @@ made as simple as assigning a value to a key in a Python
 dictionary:
 
 >>> robjects.r.ls(globalenv)
->>> globalEnv["a"] = 123
+>>> robjects.globalenv["a"] = 123
 >>> print(robjects.r.ls(globalenv))
 
 
