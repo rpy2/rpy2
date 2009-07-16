@@ -170,7 +170,7 @@ and from :class:`rpy2.robjects.robject.RObjectMixin`, the later defining
 higher-level methods for R objects to be shared by other higher-level
 representations of R objects.
 
-.. autoclass:: rpy2.robjects.RObjectMixin
+.. autoclass:: rpy2.robjects.robject.RObjectMixin
    :show-inheritance:
    :members:
 
