@@ -4,12 +4,18 @@ rpy_classic
 ***********
 
 .. module:: rpy2.rpy_classic
-   :platform: Unix, Windows
    :synopsis: Emulate the orignal rpy
 
 
-This module provides an API similar to the one 
+This module provides an API *similar* to the one 
 in RPy-1.x (*rpy*).
+
+.. warning::
+
+   The implementation of the RPy-1.x characteristics is incomplete.
+   This is likely not due to limitations in the low-level interface
+   :mod:`rpy2.rinterface` but due to limited time from this author,
+   and from limited contributions to get it improved.
 
 To match examples and documentation for *rpy*,
 we load the module as:
