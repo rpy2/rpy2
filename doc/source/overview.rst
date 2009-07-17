@@ -48,14 +48,18 @@ Python version 2.4 or higher, as well as R-2.7.0 or higher are required.
 Currently the development is mostly done on Linux and a bit MacOS X with the
 following version for the softwares:
 
-======== ========
+======== =========
 Software Versions 
-======== ========
+======== =========
  Python   2.5; 2.6 
- R        2.8; 2.9 
-======== ========
+ R        2.8; 2.9
+======== =========
 
-gcc-4.3 is used for compiling the C parts.
+When compiling R from source, do not forget to specify *--enable-R-shlib* at
+the *./configure* step.
+
+gcc-4.3 is used for compiling the C parts on Linux. gcc-4.0 seems to be the default
+on OS X and yet produce fully functional binaries.
 
 
 Download
@@ -126,6 +130,8 @@ The shell command will then just be:
 
    easy_install rpy2
 
+.. _install-setup:
+
 source archive
 ^^^^^^^^^^^^^^
 
@@ -140,7 +146,8 @@ To install from a downloaded source archive `<rpy_package>` do in a shell:
 This will build the package, guessing the R HOME from
 the R executable found in the PATH.
 
-It is otherwise possible to give explicitly the location for the R HOME:
+Beside the regular options for :mod:distutils:-way of building and installing
+Python packages, it is otherwise possible to give explicitly the location for the R HOME:
 
 .. code-block:: bash
 
