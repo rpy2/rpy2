@@ -1844,7 +1844,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     tmp_R = RPY_SEXP((PySexpObject *)tmp_obj);
     /* tmp_R = Rf_duplicate(tmp_R); */
     if (! tmp_R) {
-      PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+      PyErr_Format(PyExc_ValueError, "An unnamed parameter is a NULL SEXP.");
       Py_DECREF(tmp_obj);
       goto fail;
     }
@@ -1904,7 +1904,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       /* SET_NAMED(tmp_R, 2); */
       /* tmp_R = Rf_duplicate(tmp_R); */
       if (! tmp_R) {
-        PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+        PyErr_Format(PyExc_ValueError, "A named parameter is a NULL SEXP.");
         Py_DECREF(tmp_obj);
         Py_XDECREF(citems);
         goto fail;
