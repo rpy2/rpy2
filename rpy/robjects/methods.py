@@ -12,19 +12,21 @@ require(rinterface.StrSexpVector(('methods', )),
 class RS4(RObjectMixin, rinterface.SexpS4):
 
     def slotnames(self):
+        """ Return the 'slots' defined for this object """
         return methods_env['slotNames'](self)
-
     
     @staticmethod
     def isclass(name):
+        """ Return whether the given name is a defined class. """
         name = conversion.py2ri(name)
-        return methods_env['isClass'](name)
+        return methods_env['isClass'](name)[0]
 
     def validobject(self, test = False, complete = False):
+        """ Return whether the instance is 'valid' for its class. """
         test = conversion.py2ri(test)
         complete = conversion.py2ri(complete)
         return methods_env['validObject'](self, test = test,
-                                          complete = complete)
+                                          complete = complete)[0]
 
 
 class RS4_Type(type):

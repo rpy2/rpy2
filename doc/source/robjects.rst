@@ -850,6 +850,24 @@ nicely:
    :show-inheritance:
    :members:
 
+OOP with R
+==========
+
+S3 objects
+----------
+
+S3 objects are default R objects (i.e., not S4 instances) for which
+an attribute "class" has been added.
+
+
+S4 objects
+----------
+
+.. autoclass:: rpy2.robjects.RS4(sexp)
+   :show-inheritance:
+   :members:
+
+
 
 Object serialization
 ====================
