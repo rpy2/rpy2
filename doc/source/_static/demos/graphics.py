@@ -23,6 +23,13 @@ rimport('lattice')
 xyplot = robjects.baseenv.get("xyplot")
 #-- setupxyplot-end
 
+#-- dataset-begin
+rnorm = robjects.r['rnorm']
+dataf_rnorm = robjects.DataFrame({'value': rnorm(300, mean=0) + rnorm(100, mean=3),
+                                  'other_value': rnorm(300, mean=0) + rnorm(100, mean=3),
+                                  'mean': robjects.IntVector([0, ]*300 + [3, ] * 100)})
+#-- dataset-end
+
 grdevices.png('../../_static/graphics_lattice_xyplot_1.png',
     width = 512, height = 512)
 #-- xyplot1-begin
@@ -83,17 +90,47 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2geombin2d.png',
-    width = 512, height = 512)
+    width = 1000, height = 350)
+grid.newpage()
+grid.viewport(layout=grid.layout(1, 3)).push()
+
+vp = grid.viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
 #-- ggplot2geombin2d-begin
-gp = ggplot2.ggplot(mtcars)
+gp = ggplot2.ggplot(dataf_rnorm)
 
 pp = gp + \
-     ggplot2.aes(x='wt', y='mpg') + \
-     ggplot2.geom_bin2d()
-
-pp.plot()
+     ggplot2.aes(x='value', y='other_value') + \
+     ggplot2.geom_bin2d() + \
+     ggplot2.opts(title =  'geom_bin2d')
+ro.r['print'](pp, vp = vp)
 #-- ggplot2geombin2d-end
+
+vp = grid.viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
+#-- ggplot2geomdensity2d-begin
+gp = ggplot2.ggplot(dataf_rnorm)
+
+pp = gp + \
+     ggplot2.aes(x='value', y='other_value') + \
+     ggplot2.geom_density2d() + \
+     ggplot2.opts(title =  'geom_density2d')
+ro.r['print'](pp, vp = vp)
+#-- ggplot2geomdensity2d-end
+
+vp = grid.viewport(**{'layout.pos.col':3, 'layout.pos.row': 1})
+#-- ggplot2geomhexbin-begin
+gp = ggplot2.ggplot(dataf_rnorm)
+
+pp = gp + \
+     ggplot2.aes(x='value', y='other_value') + \
+     ggplot2.geom_hex() + \
+     ggplot2.opts(title =  'geom_hex')
+ro.r['print'](pp, vp = vp)
+#-- ggplot2geomhexbin-end
+
 grdevices.dev_off()
+
+
+
 
 grdevices.png('../../_static/graphics_ggplot2geomboxplot.png',
     width = 512, height = 512)
@@ -138,6 +175,7 @@ for col_i in range(3):
    ro.r['print'](pp, vp = vp)
 grdevices.dev_off()
 
+
 grdevices.png('../../_static/graphics_ggplot2geomhistogramfillcyl.png',
     width = 512, height = 512)
 #-- ggplot2geomhistogramfillcyl-begin
@@ -152,14 +190,27 @@ pp.plot()
 grdevices.dev_off()
 
 
+grdevices.png('../../_static/graphics_ggplot2geompointdensity2d.png',
+              width = 512, height = 512)
+#-- ggplot2geompointdensity2d-begin
+gp = ggplot2.ggplot(dataf_rnorm)
+
+pp = gp + \
+     ggplot2.aes(x='value', y='other_value') + \
+     ggplot2.geom_point(alpha = 0.3) + \
+     ggplot2.geom_density2d(ggplot2.aes(col = '..level..')) + \
+     ggplot2.opts(title =  'point + density')
+pp.plot()
+#-- ggplot2geompointdensity2d-end
+grdevices.dev_off()
+
+
 grdevices.png('../../_static/graphics_ggplot2geomfreqpolyfillcyl.png',
     width = 812, height = 412)
 grid.newpage()
 grid.viewport(layout=grid.layout(1, 2)).push()
 
-dataf = robjects.r['data.frame'](**{'value': robjects.r['rnorm'](100, mean=0) + robjects.r['rnorm'](100, mean=1), 
-                                    'mean': robjects.r('rep(c(0,1), each=100)')})
-gp = ggplot2.ggplot(dataf)
+gp = ggplot2.ggplot(dataf_rnorm)
 
 vp = grid.viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
 pp = gp + \
@@ -176,7 +227,6 @@ pp = gp + \
 ro.r['print'](pp, vp = vp)
 
 grdevices.dev_off()
-
 
 
 

@@ -160,6 +160,10 @@ Here again, having data in a :class:`DataFrame` is expected
    :start-after: #-- setupggplot2-begin
    :end-before: #-- setupggplot2-end
 
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- dataset-begin
+   :end-before: #-- dataset-end
+
 
 Plot
 ----
@@ -209,11 +213,24 @@ Geometry
 The *geometry* is how the data are represented. So far we used a scatter
 plot of points, but there are other ways to represent our data.
 
+Whenever a large number of points are present, it can become interesting
+to try representing the density of "dots" on the scatterplot.
 
+With 2D bins:
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2geombin2d-begin
    :end-before: #-- ggplot2geombin2d-end
-   
+
+With hexagonal bins:
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geomhexbin-begin
+   :end-before: #-- ggplot2geomhexbin-end
+
+With a kernel density estimate:
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geomdensity2d-begin
+   :end-before: #-- ggplot2geomdensity2d-end
+
 .. image:: _static/graphics_ggplot2geombin2d.png
    :scale: 50
 
@@ -260,6 +277,7 @@ on location and spread.
    
 .. image:: _static/graphics_ggplot2aescolboxplot.png
    :scale: 50
+
 
 
 Models fitted to the data are also easy to add to a plot:
@@ -320,6 +338,12 @@ can be added to the axis of a regular scatterplot:
 
 
 
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geompointdensity2d-begin
+   :end-before: #-- ggplot2geompointdensity2d-end
+   
+.. image:: _static/graphics_ggplot2geompointdensity2d.png
+   :scale: 50
 
 
 
