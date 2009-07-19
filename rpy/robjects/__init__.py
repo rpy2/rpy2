@@ -18,6 +18,18 @@ from rpy2.robjects.robject import RObjectMixin, RObject
 from rpy2.robjects.methods import RS4
 from rpy2.robjects.vectors import *
 
+# missing values
+parse = rinterface.baseenv['parse']
+reval = rinterface.baseenv['eval']
+NA_real = reval(parse(text = rinterface.StrSexpVector(("NA_real_", ))))
+NA_integer = reval(parse(text = rinterface.StrSexpVector(("NA_integer_", ))))
+NA_bool = reval(parse(text = rinterface.StrSexpVector(("NA", ))))
+NA_character = reval(parse(text = rinterface.StrSexpVector(("NA_character_", ))))
+NA_complex = reval(parse(text = rinterface.StrSexpVector(("NA_complex_", ))))
+del(parse)
+
+
+
 #FIXME: close everything when leaving (check RPy for that).
 
 
