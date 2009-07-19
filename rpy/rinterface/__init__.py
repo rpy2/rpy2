@@ -15,10 +15,19 @@ if len(R_HOME) == 0:
                                          0, win32con.KEY_QUERY_VALUE )
             R_HOME = win32api.RegQueryValueEx(hkey, "InstallPath")[0]
             win32api.RegCloseKey( hkey )
+        except ImportError, ie:
+            raise RuntimeError(
+                "No environment variable R_HOME could be found, "
+                "calling the command 'R RHOME' does not return anything, " +\
+                "and unable to import win32api or win32con, " +\
+                    "both of which being needed to retrieve where is R "+\
+                    "from the registry. You should either specify R_HOME " +\
+                    "or install the win32 package.")
         except:
             raise RuntimeError(
-                "Unable to determine R version from the registery." +\
-                "Calling the command 'R RHOME' does not return anything.\n" +\
+                "No environment variable R_HOME could be found, "
+                "calling the command 'R RHOME' does not return anything, " +\
+                "and unable to determine R version from the registery." +\
                     "This might be because R.exe is nowhere in your Path.")
     else:
         raise RuntimeError(
