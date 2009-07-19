@@ -395,7 +395,12 @@ The following incantation can be used instead.
    parse = ri.baseenv.get("parse")
    NA_character = parse(text = ri.StrSexpVector(("NA_character_", )))
 
+.. note:: 
 
+   In the snippet of code above, the object retrived is then an unevaluated
+   expression. Making using of it as actual missing value in a vector will
+   require its evaluation. For example, the aliases for missing values available from
+   :mod:`rpy2.robjects` (see :ref:`robjects-missingvalues`) were evaluated.
 
 .. rubric:: Constructors
 

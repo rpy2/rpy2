@@ -366,6 +366,23 @@ The two next examples demonstrate some of `R`'s features
 a
 1
 
+.. _robjects-missingvalues:
+
+Missing values
+--------------
+
+Anyone with experience in the analysis of real data knows that, well,
+some of the data might be missing. In S/Splus/R special *NA* values can be used
+in a data vector to indicate that, and :mod:`rpy2.robjects` makes aliases for
+those available as data objects :data:`NA_bool`, data:`NA_real`, data:`NA_integer`, 
+data:`NA_character`, :data:`NA_complex`.
+
+>>> x = robjects.IntVector(range(3))
+>>> x[0] <- robjects.NA_integer
+>>> print(x)
+[1] NA  1  2
+
+
 .. _robjects-operationsdelegator:
 
 Operators
