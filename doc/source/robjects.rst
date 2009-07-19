@@ -863,7 +863,7 @@ an attribute "class" has been added.
 S4 objects
 ----------
 
-.. autoclass:: rpy2.robjects.RS4(sexp)
+.. autoclass:: rpy2.robjects.methods.RS4(sexp)
    :show-inheritance:
    :members:
 
