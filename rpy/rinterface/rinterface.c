@@ -1823,7 +1823,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   SET_TYPEOF(c_R, LANGSXP);
   fun_R = RPY_SEXP((PySexpObject *)self);
   if (! fun_R) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    PyErr_Format(PyExc_ValueError, "Underlying R function is a NULL SEXP.");
     goto fail;
   }
   SETCAR(c_R, fun_R);
