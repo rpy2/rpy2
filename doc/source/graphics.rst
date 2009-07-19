@@ -213,34 +213,9 @@ Geometry
 The *geometry* is how the data are represented. So far we used a scatter
 plot of points, but there are other ways to represent our data.
 
-Whenever a large number of points are present, it can become interesting
-to try representing the density of "dots" on the scatterplot.
 
-With 2D bins:
-.. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot2geombin2d-begin
-   :end-before: #-- ggplot2geombin2d-end
-
-With hexagonal bins:
-.. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot2geomhexbin-begin
-   :end-before: #-- ggplot2geomhexbin-end
-
-With a kernel density estimate:
-.. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot2geomdensity2d-begin
-   :end-before: #-- ggplot2geomdensity2d-end
-
-.. image:: _static/graphics_ggplot2geombin2d.png
-   :scale: 50
-
-
-.. literalinclude:: _static/demos/graphics.py
-   :start-after: #-- ggplot2geomboxplot-begin
-   :end-before: #-- ggplot2geomboxplot-end
-   
-.. image:: _static/graphics_ggplot2geomboxplot.png
-   :scale: 50
+Looking at the distribution of univariate data can be achieved with
+an histogram:
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2geomhistogram-begin
@@ -267,6 +242,45 @@ can be in better.
    
 .. image:: _static/graphics_ggplot2geomfreqpolyfillcyl.png
    :scale: 50
+
+
+
+
+Whenever a large number of points are present, it can become interesting
+to try representing the density of "dots" on the scatterplot.
+
+With 2D bins:
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geombin2d-begin
+   :end-before: #-- ggplot2geombin2d-end
+
+With a kernel density estimate:
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geomdensity2d-begin
+   :end-before: #-- ggplot2geomdensity2d-end
+
+With hexagonal bins:
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geomhexbin-begin
+   :end-before: #-- ggplot2geomhexbin-end
+
+.. image:: _static/graphics_ggplot2geombin2d.png
+   :scale: 50
+
+
+Box plot:
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2geomboxplot-begin
+   :end-before: #-- ggplot2geomboxplot-end
+   
+.. image:: _static/graphics_ggplot2geomboxplot.png
+   :scale: 50
+
+
 
 Boxplots can be used to represent a *summary* of the data with an emphasis
 on location and spread.
