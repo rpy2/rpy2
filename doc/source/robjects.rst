@@ -383,6 +383,10 @@ those available as data objects :data:`NA_bool`, :data:`NA_real`, :data:`NA_inte
 [1] NA  1  2
 
 
+.. note::
+
+   :data:`NA_bool` is the alias for R's *NA*.
+
 .. _robjects-operationsdelegator:
 
 Operators
