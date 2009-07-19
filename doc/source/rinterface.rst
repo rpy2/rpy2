@@ -155,7 +155,7 @@ differently when run interactively compared to when run in the so-called
 I/O with the R console
 ----------------------
 
-See :ref:`rinterface-callbacks-consoleio`.
+See :ref:`rinterface-callbacks_consoleio`.
 
 
 Graphical devices
