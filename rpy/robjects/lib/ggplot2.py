@@ -17,7 +17,6 @@ def as_symbol(x):
    res = robjects.baseenv["parse"](text = x)
    return res
 
-
 class GGPlot(robjects.RObject):
 
     _constructor = ggplot2_env['ggplot']
@@ -29,8 +28,8 @@ class GGPlot(robjects.RObject):
         res = cls(cls._constructor(data))
         return res
     
-    def plot(self):
-        self._rprint(self)
+    def plot(self, vp = robjects.NULL):
+        self._rprint(self, vp = vp)
 
     def __add__(self, obj):
         res = self._add(self, obj)
