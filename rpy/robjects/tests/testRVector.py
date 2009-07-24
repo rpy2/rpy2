@@ -218,19 +218,19 @@ class RVectorTestCase(unittest.TestCase):
         vec[0] = robjects.NA_integer
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
     def testNAreal(self):
-        vec = robjects.IntVector((1.0, 2.0, 3.0))
+        vec = robjects.FloatVector((1.0, 2.0, 3.0))
         vec[0] = robjects.NA_real
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
     def testNAbool(self):
-        vec = robjects.IntVector((True, False, True))
+        vec = robjects.BoolVector((True, False, True))
         vec[0] = robjects.NA_bool
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
     def testNAcomplex(self):
-        vec = robjects.IntVector((1+1j, 2+2j, 3+3j))
+        vec = robjects.ComplexVector((1+1j, 2+2j, 3+3j))
         vec[0] = robjects.NA_complex
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
     def testNAcharacter(self):
-        vec = robjects.IntVector('abc')
+        vec = robjects.StrVector('abc')
         vec[0] = robjects.NA_character
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
     
