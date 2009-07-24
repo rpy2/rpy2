@@ -404,48 +404,70 @@ class ScaleYDate(ScaleY):
 scale_y_date = ScaleYDate.new
 class ScaleXDatetime(ScaleX):
    _constructor = ggplot2_env['scale_x_datetime']
+scale_x_datetime = ScaleXDatetime.new
 class ScaleYDatetime(ScaleY):
    _constructor = ggplot2_env['scale_y_datetime']
+scale_y_datetime = ScaleYDatetime.new
 class ScaleXExp(ScaleX):
    _constructor = ggplot2_env['scale_x_exp']
+scale_x_exp = ScaleXExp.new
 class ScaleYExp(ScaleY):
    _constructor = ggplot2_env['scale_y_exp']
+scale_y_exp = ScaleYExp.new
 class ScaleXInverse(ScaleX):
    _constructor = ggplot2_env['scale_x_inverse']
+scale_x_inverse = ScaleXInvers.new
 class ScaleYInverse(ScaleY):
    _constructor = ggplot2_env['scale_y_inverse']
+scale_y_inverse = ScaleYInvers.new
 class ScaleXLog(ScaleX):
    _constructor = ggplot2_env['scale_x_log']
+scale_x_log = ScaleXLog.new
 class ScaleYLog(ScaleY):
    _constructor = ggplot2_env['scale_y_log']
+scale_y_log = ScaleYLog.new
 class ScaleXLog10(ScaleX):
    _constructor = ggplot2_env['scale_x_log10']
+scale_x_log10 = ScaleXLog10.new
 class ScaleYLog10(ScaleY):
    _constructor = ggplot2_env['scale_y_log10']
+scale_y_log10 = ScaleYLog10.new
 class ScaleXLog2(ScaleX):
    _constructor = ggplot2_env['scale_x_log2']
+scale_x_log2 = ScaleXLog2.new
 class ScaleYLog2(ScaleY):
    _constructor = ggplot2_env['scale_y_log2']
+scale_y_log2 = ScaleYLog2.new
 class ScaleXLogit(ScaleX):
    _constructor = ggplot2_env['scale_x_logit']
+scale_x_logit = ScaleXLogit.new
 class ScaleYLogit(ScaleY):
    _constructor = ggplot2_env['scale_y_logit']
+scale_y_logit = ScaleYLogit.new
 class ScaleXPow(ScaleX):
    _constructor = ggplot2_env['scale_x_pow']
+scale_x_pow = ScaleXPow.new
 class ScaleYPow(ScaleY):
    _constructor = ggplot2_env['scale_y_pow']
+scale_y_pow = ScaleYPow.new
 class ScaleXPow10(ScaleX):
    _constructor = ggplot2_env['scale_x_pow10']
+scale_x_pow10 = ScaleXPow10.new
 class ScaleYPow10(ScaleY):
    _constructor = ggplot2_env['scale_y_pow10']
+scale_y_pow10 = ScaleYPow10.new
 class ScaleXProb(ScaleX):
    _constructor = ggplot2_env['scale_x_prob']
+scale_x_prob = ScaleXProb.new
 class ScaleYProb(ScaleY):
    _constructor = ggplot2_env['scale_y_prob']
+scale_y_prob = ScaleYProb.new
 class ScaleXProbit(ScaleX):
    _constructor = ggplot2_env['scale_x_probit']
+scale_x_probit = ScaleXProbit.new
 class ScaleYProbit(ScaleY):
    _constructor = ggplot2_env['scale_y_probit']
+scale_y_probit = ScaleYProbit.new
 class ScaleXReverse(ScaleX):
    _constructor = ggplot2_env['scale_x_reverse']
 scale_x_reverse = ScaleXReverse.new
@@ -460,12 +482,16 @@ class ScaleYSqrt(ScaleY):
 scale_y_sqrt = ScaleYSqrt.new
 class ScaleColourBrewer(ScaleColour):
    _constructor = ggplot2_env['scale_colour_brewer']
+scale_colour_brewer = ScaleColourBrewer.new
 class ScaleColourGradient(ScaleColour):
    _constructor = ggplot2_env['scale_colour_gradient']
+scale_colour_gradient = ScaleColourGradient.new
 class ScaleColourGradient2(ScaleColour):
    _constructor = ggplot2_env['scale_colour_gradient2']
+scale_colour_gradient2 = ScaleColourGradient2.new
 class ScaleColourGrey(ScaleColour):
    _constructor = ggplot2_env['scale_colour_grey']
+scale_colour_grey = ScaleColourGrey.new
 class ScaleFillBrewer(ScaleFill):
    _constructor = ggplot2_env['scale_fill_brewer']
 scale_fill_brewer = ScaleFillBrewer.new
