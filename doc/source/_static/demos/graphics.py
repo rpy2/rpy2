@@ -102,7 +102,7 @@ pp = gp + \
      ggplot2.aes(x='value', y='other_value') + \
      ggplot2.geom_bin2d() + \
      ggplot2.opts(title =  'geom_bin2d')
-ro.r['print'](pp, vp = vp)
+pp.plot(vp = vp)
 #-- ggplot2geombin2d-end
 
 vp = grid.viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
@@ -113,7 +113,7 @@ pp = gp + \
      ggplot2.aes(x='value', y='other_value') + \
      ggplot2.geom_density2d() + \
      ggplot2.opts(title =  'geom_density2d')
-ro.r['print'](pp, vp = vp)
+pp.plot(vp = vp)
 #-- ggplot2geomdensity2d-end
 
 vp = grid.viewport(**{'layout.pos.col':3, 'layout.pos.row': 1})
@@ -124,7 +124,7 @@ pp = gp + \
      ggplot2.aes(x='value', y='other_value') + \
      ggplot2.geom_hex() + \
      ggplot2.opts(title =  'geom_hex')
-ro.r['print'](pp, vp = vp)
+pp.plot(vp = vp)
 #-- ggplot2geomhexbin-end
 
 grdevices.dev_off()
@@ -172,7 +172,7 @@ for col_i in range(3):
         ggplot2.aes(x='wt') + \
         ggplot2.geom_histogram(col=outline_color, fill=fill_color) + \
         ggplot2.opts(title =  'col=%s - fill=%s' %params[col_i])
-   ro.r['print'](pp, vp = vp)
+   pp.plot(vp = vp)
 grdevices.dev_off()
 
 
@@ -216,7 +216,7 @@ vp = grid.viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
 pp = gp + \
      ggplot2.aes(x='value', col='factor(mean)') + \
      ggplot2.geom_freqpoly()
-ro.r['print'](pp, vp = vp)
+pp.plot(vp = vp)
 
 vp = grid.viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
 #-- ggplot2geomfreqpolyfillcyl-begin
@@ -224,7 +224,7 @@ pp = gp + \
      ggplot2.aes(x='value', fill='factor(mean)', alpha=0.5) + \
      ggplot2.geom_density()
 #-- ggplot2geomfreqpolyfillcyl-end
-ro.r['print'](pp, vp = vp)
+pp.plot(vp = vp)
 
 grdevices.dev_off()
 
@@ -360,7 +360,7 @@ for col_i in (1,2,3):
         ggplot2.geom_point() + \
         ggplot2.stat_smooth(method = method, formula=formula) + \
         ggplot2.opts(title = method + ' - ' + formula)
-   ro.r['print'](pp, vp = vp)
+   pp.plot(vp = vp)
 
 #-- ggplot2addsmoothmethods-end
 grdevices.dev_off()
