@@ -243,7 +243,7 @@ class R(object):
         s = super(R, self).__str__()
         s += os.linesep
         version = self["version"]
-        tmp = [n+': '+val[0] for n, val in itertools.izip(version.getnames(), version)]
+        tmp = [n+': '+val[0] for n, val in itertools.izip(version.names, version)]
         s += str.join(os.linesep, tmp)
         return s
 
