@@ -46,8 +46,8 @@ New Features
 
 - :meth:`RVector.sample` to draw a (random) sample of arbitrary size from a vector
 
-- :data:`NA_bool`, data:`NA_real`, data:`NA_integer`, data:`NA_character`, 
-  :data:`NA_complex' as aliases for R's missing values.
+- :data:`NA_bool`, :data:`NA_real`, :data:`NA_integer`, :data:`NA_character`, 
+  :data:`NA_complex` as aliases for R's missing values.
 
 :mod:`rpy2.rinterface`:
 
