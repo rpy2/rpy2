@@ -111,6 +111,13 @@ class ListSexpVector(SexpVector):
     def __init__(self, v):        
         super(ListSexpVector, self).__init__(v, VECSXP)
 
+class ComplexSexpVector(SexpVector):
+    """ 
+    Vector of complex (complex in R terminology).
+    """
+    def __init__(self, v):        
+        super(ComplexSexpVector, self).__init__(v, CPLXSXP)
+
 
 
 # wrapper in case someone changes sys.stdout:

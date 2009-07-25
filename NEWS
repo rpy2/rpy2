@@ -49,6 +49,8 @@ New Features
 - :data:`NA_bool`, :data:`NA_real`, :data:`NA_integer`, :data:`NA_character`, 
   :data:`NA_complex` as aliases for R's missing values.
 
+- :data:`ComplexVector` for vectors of complex (real + imaginary) elements
+
 :mod:`rpy2.rinterface`:
 
 - New functions for specifying callback functions for R's front-ends:
@@ -96,6 +98,8 @@ New Features
 
 - static method :meth:`from_iteritems` for :class:`TaggedList`,
   for creating a TaggedList from any object having a method :meth:`iteritems`
+
+- :data:`ComplexSexpVector` for vectors of complex (real + imaginary) elements
 
 Changes
 -------

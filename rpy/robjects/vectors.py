@@ -220,6 +220,12 @@ class BoolVector(RVector):
         obj = rinterface.BoolSexpVector(obj)
         super(BoolVector, self).__init__(obj)
 
+class ComplexVector(RVector):
+    """ Vector of complex elements """
+    def __init__(self, obj):
+        obj = rinterface.ComplexSexpVector(obj)
+        super(ComplexVector, self).__init__(obj)
+
 class FloatVector(RVector):
     """ Vector of float (double) elements """
     def __init__(self, obj):

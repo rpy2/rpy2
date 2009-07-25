@@ -33,6 +33,12 @@ class WrapperSexpVectorTestCase(unittest.TestCase):
         ok = isBool(sexp)[0]
         self.assertTrue(ok)
 
+    def testComplex(self):
+        sexp = ri.ComplexSexpVector([1+2j, ])
+        is_complex = ri.globalenv.get("is.complex")
+        ok = is_complex(sexp)[0]
+        self.assertTrue(ok)
+
 class SexpVectorTestCase(unittest.TestCase):
 
     def testMissinfType(self):
