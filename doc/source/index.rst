@@ -20,10 +20,9 @@ Documentation for rpy2
    getting-started
    high-level
    numpy
-   callbacks
    rinterface
-   rpy_classic
    rlike
+   miscellaneous
 
    appendix
 
