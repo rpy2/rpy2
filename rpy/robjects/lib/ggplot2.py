@@ -416,10 +416,10 @@ class ScaleYExp(ScaleY):
 scale_y_exp = ScaleYExp.new
 class ScaleXInverse(ScaleX):
    _constructor = ggplot2_env['scale_x_inverse']
-scale_x_inverse = ScaleXInvers.new
+scale_x_inverse = ScaleXInverse.new
 class ScaleYInverse(ScaleY):
    _constructor = ggplot2_env['scale_y_inverse']
-scale_y_inverse = ScaleYInvers.new
+scale_y_inverse = ScaleYInverse.new
 class ScaleXLog(ScaleX):
    _constructor = ggplot2_env['scale_x_log']
 scale_x_log = ScaleXLog.new
