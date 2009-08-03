@@ -248,7 +248,7 @@ can be in better.
 
 
 Whenever a large number of points are present, it can become interesting
-to try representing the density of "dots" on the scatterplot.
+to represent the density of "dots" on the scatterplot.
 
 With 2D bins:
 
