@@ -34,7 +34,7 @@ one will have to specify it.
 
 
 The module :mod:`grdevices` aims at representing the R package
-grDevices*.
+grDevices*. Example with the R functions *png* and *dev.off*:
 
 .. code-block:: python
 
@@ -44,6 +44,9 @@ grDevices*.
    # plotting code here   
    grdevices.dev_off()
 
+
+
+   
 
 The package contains an :class:`REnvironment` :data:`grdevices_env` that
 can be used to access an object known to belong to that R packages, e.g.:
