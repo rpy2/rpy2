@@ -4,6 +4,10 @@
 Performances
 ************
 
+
+A simple benchmark
+==================
+
 As a simple benchmark, we took a function that would sum
 up all elements in a numerical vector.
 
@@ -136,3 +140,5 @@ accelerated using *psyco*.
 :class:`numpy.array.sum` is about twice faster than its R conterpart,
 although it is important to remember that the R version handles missing
 values.
+
+
