@@ -233,7 +233,8 @@ an histogram:
 
 Barplot-based representations of several densities on the same
 figure can often be lacking clarity and line-based representation,
-either :func:`geom_freqpoly` or :func:`geom_density`,
+either :func:`geom_freqpoly` (representation of the frequency as broken
+lines) or :func:`geom_density` (plot a density estimate),
 can be in better.
 
 .. literalinclude:: _static/demos/graphics.py
