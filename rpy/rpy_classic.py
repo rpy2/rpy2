@@ -186,6 +186,7 @@ class Robj(object):
     __local_mode = NO_DEFAULT
 
     def __init__(self, sexp):
+
         if not isinstance(sexp, ri.Sexp):
             raise ValueError('"sexp" must inherit from ri.Sexp')
         self.__sexp = sexp
@@ -210,14 +211,18 @@ class Robj(object):
             else:                
                 a = py2rpy(a)
             kwargs_r[a_n] = a
-        #import pdb; pdb.set_trace()
+
         res = self.__sexp(*args_r, **kwargs_r)
         res = rpy2py(res)
         return res
 
     def __getitem__(self, item):
-        res = self.__sexp[item]
-        res = rpy2py(res)
+        if not isinstance(item, Robj):
+            item = py2rpy(item)
+        res = r["["](self.__sexp, item)
+        mode = self.__local_mode
+        if mode == BASIC_CONVERSION:
+            res = rpy2py(res)
         return res
 
     ##FIXME: not part of RPy-1.x.
@@ -234,8 +239,9 @@ class Robj(object):
         res = rpy2py(self, mode)
         return res
 
-    def local_mode(mode = default_mode):
+    def __local_mode(self, mode = default_mode):
         self.__local_mode = mode
+
 
 class R(object):
     def __init__(self):
