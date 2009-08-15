@@ -740,6 +740,12 @@ An environment is also iter-able, returning all the symbols
 >>> [x for x in env]
 <a long list returned>
 
+.. note:: 
+
+   Although there is a natural link between environment
+   and R packages, one should consider using convenience wrapper
+   dedicated to R packages (see :ref:`robjects-packages`).
+
 .. autoclass:: rpy2.robjects.REnvironment(o=None)
    :show-inheritance:
    :members:
