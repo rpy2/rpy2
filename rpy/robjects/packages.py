@@ -9,10 +9,13 @@ class Package(object):
     """ Models an R package
     (and can do so from an arbitrary environment - with the caution
     that locked environments should mostly be considered) """
-    def __init__(self, env, name):
-        """ Create a Python module-like object from an R environment """
+    
+    def __init__(self, env, name, translation = {}):
+        """ Create a Python module-like object from an R environment,
+        using the specified translation if defined. """
         self._env = env
         self._name = name
+        self._translation = translation
         mynames = tuple(self.__dict__)
         self._rpy2r = {}
         self.__fill_rpy2r__()
@@ -29,39 +32,43 @@ class Package(object):
         """ Fill the attribute _rpy2r """
         name = self._name
         for rname in self._env:
-            dot_i = rname.find('.')
-            if dot_i > -1:
-                rpyname = rname.replace('.', '_')
-                if rpyname in self._rpy2r:
-                    raise Exception('Conflict in converting R symbol ' + \
-                                    'to a Python symbol' + \
-                                    '(%s -> %s while there is already ' + \
-                                    '%s -> %s)' %(rname, rpyname,
-                                                  rname, self._rpyname))
-                print('Changing ' + rname +' to ' + rpyname + \
-                      ' in the package ' + name )
+            if rname in self._translation:
+                rpyname = self._translation[rname]
             else:
-                rpyname = rname
-            if rname in self.__dict__:
-                #FIXME: raise an exception, issue a warning ?
-                print('The symbol ' + rname +' in the package ' + name + \
+                dot_i = rname.find('.')
+                if dot_i > -1:
+                    rpyname = rname.replace('.', '_')
+                    if rpyname in self._rpy2r:
+                        raise Exception('Conflict in converting R symbol ' + \
+                                        'to a Python symbol' + \
+                                        '(%s -> %s while there is already ' + \
+                                        '%s -> %s)' %(rname, rpyname,
+                                                      rname, self._rpyname))
+                    print('Changing ' + rname +' to ' + rpyname + \
+                          ' in the package ' + name )
+                else:
+                    rpyname = rname
+                if rname in self.__dict__:
+                    #FIXME: raise an exception, issue a warning ?
+                    print('The symbol ' + rname +' in the package ' + name + \
                       ' is conflicting with a Python object attribute')
                 
             self._rpy2r[rpyname] = rname
-            self.__dict__[rpyname] = conversion.ri2py(self._env[rname])
+            rpyobj = conversion.ri2py(self._env[rname])
+            self.__dict__[rpyname] = rpyobj
 
 
 class LibraryError(ImportError):
     pass
 
 
-def importr(name, where = rpy2.robjects.lib):
+def importr(name, where = rpy2.robjects.lib, translation = {}):
     """ Import an R package (and return a module-like object). """
     ok = require(rinterface.StrSexpVector([name, ]))[0]
     if not ok:
         raise LibraryError("The R package %s could not be imported" %name)
     env = as_env(rinterface.StrSexpVector(['package:'+name, ]))
-    pack = Package(env, name)
+    pack = Package(env, name, translation = translation)
 
     if where is not None:
         if name in where.__dict__:
