@@ -9,6 +9,7 @@ import testRFunction
 import testREnvironment
 import testRobjects
 import testMethods
+import testPackages
 
 # wrap this nicely so a warning is issued if no numpy present
 import testNumpyConversions
@@ -24,6 +25,7 @@ def suite():
     suite_Robjects = testRobjects.suite()
     suite_NumpyConversions = testNumpyConversions.suite()
     suite_Methods = testMethods.suite()
+    suite_Packages = testPackages.suite()
     alltests = unittest.TestSuite([suite_RObject,
                                    suite_RVector,                   
                                    suite_Array,
@@ -33,7 +35,8 @@ def suite():
                                    suite_Formula,
                                    suite_Robjects,
                                    suite_Methods,
-                                   suite_NumpyConversions
+                                   suite_NumpyConversions,
+                                   suite_Packages
                                    ])
     return alltests
 

@@ -51,6 +51,9 @@ New Features
 
 - :data:`ComplexVector` for vectors of complex (real + imaginary) elements
 
+- :mod:`packages` to provide utilty functions to handle R packages
+  (import of R packages)
+
 :mod:`rpy2.rinterface`:
 
 - New functions for specifying callback functions for R's front-ends:
