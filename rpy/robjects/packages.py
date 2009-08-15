@@ -44,8 +44,6 @@ class Package(object):
                                         '(%s -> %s while there is already ' + \
                                         '%s -> %s)' %(rname, rpyname,
                                                       rname, self._rpyname))
-                    print('Changing ' + rname +' to ' + rpyname + \
-                          ' in the package ' + name )
                 else:
                     rpyname = rname
                 if rname in self.__dict__:
