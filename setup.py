@@ -2,7 +2,12 @@
 import os, os.path, sys, shutil, re, itertools
 from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build import build as _build
-from distutils.core import setup, Extension
+
+try:
+    from setuptools import setup
+except ImportError, ie:
+    from distutils.core import setup
+from distutils.core import Extension
 
 
 pack_name = 'rpy2'
