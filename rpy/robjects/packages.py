@@ -15,7 +15,7 @@ class Package(object):
         self._name = name
         mynames = tuple(self.__dict__)
         self._rpy2r = {}
-        self.__fill_rset__()
+        self.__fill_rpy2r__()
         self.__update_dict__()
 
     def __update_dict__(self):
@@ -62,8 +62,10 @@ def importr(name, where = rpy2.robjects.lib):
         raise LibraryError("The R package %s could not be imported" %name)
     env = as_env(rinterface.StrSexpVector(['package:'+name, ]))
     pack = Package(env, name)
-    if name in where.__dict__:
-        print("A object of name %s is already found in %s" %(name, where))
-    rlib.__dict__[name] = pack
+
+    if where is not None:
+        if name in where.__dict__:
+            raise LibraryError("An object of name %s is already found in %s" %(name, where))
+        where.__dict__[name] = pack
     return pack
 
