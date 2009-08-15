@@ -844,11 +844,71 @@ nicely:
 
 .. code-block:: python
 
-  fit = robjects.r('lm(%s)' %fmla.r_repr())
+   fit = robjects.r('lm(%s)' %fmla.r_repr())
 
 .. autoclass:: rpy2.robjects.Formula(formula, environment = rinterface.globalenv)
    :show-inheritance:
    :members:
+
+.. _robjects-packages:
+
+R packages
+==========
+
+In R, objects can be bundled into packages for distribution.
+In similar fashion to Python modules, the packages can be installed,
+and then loaded when their are needed. This is achieved by the R
+functions *library()* and *require()* (attaching the namespace of
+the package to the R `search path`).
+
+.. code-block:: python
+
+   import rpy2.robjects.packages as rpackages
+   utils = rpackages.importr("utils")
+
+
+The object utils is now a module-like object, in the sense that
+its :attr:`__dict__` contains keys corresponding to the R symbols.
+For example the R function *data()* can be accessed like:
+
+>>> utils.data
+<RFunction - Python:0x913754c / R:0x943bdf8>
+
+Unfortunately, accessing an R symbol can be a little less straightforward
+as R symbols can contain characters that are invalid in Python symbols.
+Anyone with experience in R can even add there is a predilection for
+the dot (*.*).
+
+In an attempt to address this, during the import of the package a
+translation of the R symbols is attempted, with dots becoming underscores.
+This is not unlike what could be found in :mod:`rpy`, but with distinctive
+differences: 
+
+- The translation is performed once, when the package is imported,
+  and the results cached
+
+- A check that the translation is not masking other R symbols in the package
+  is performed.
+  Should it happen, a :class:`rpy2.robjects.packages.LibraryError` is raised,
+  an the optional parameter *translation* to :func:`importr`
+  shoud be used.
+
+- The translation is concerning one package, limiting the risk
+  of masking when compared to rpy translating relatively blindly and 
+  retrieving the first match
+
+.. note:: 
+
+   The translation of '.' into '_' is clearly not sufficient, as
+   R symbols can use a lot more character illegal in Python symbols.
+   Those more exotic symbols can be accessed through :attr:`__dict__`.
+   
+   Example:
+
+   >>> utils.__dict__['?']
+   <RFunction - Python:0x913796c / R:0x9366fac>
+
+
 
 OOP with R
 ==========
