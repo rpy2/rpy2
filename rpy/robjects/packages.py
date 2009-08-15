@@ -39,11 +39,11 @@ class Package(object):
                 if dot_i > -1:
                     rpyname = rname.replace('.', '_')
                     if rpyname in self._rpy2r:
-                        raise Exception('Conflict in converting R symbol ' + \
-                                        'to a Python symbol' + \
-                                        '(%s -> %s while there is already ' + \
-                                        '%s -> %s)' %(rname, rpyname,
-                                                      rname, self._rpyname))
+                        raise LibraryError(('Conflict in converting R symbol'+\
+                                            ' to a Python symbol ' +\
+                                            '(%s -> %s while there is already'+\
+                                            ' %s)') %(rname, rpyname,
+                                                      rpyname))
                 else:
                     rpyname = rname
                 if rname in self.__dict__:

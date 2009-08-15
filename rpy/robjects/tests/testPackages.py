@@ -10,7 +10,7 @@ class PackagesTestCase(unittest.TestCase):
         env['a'] = robjects.StrVector('abcd')
         env['b'] = robjects.IntVector((1,2,3))
         env['c'] = robjects.r(''' function(x) x^2''')
-        pck = robjects.packages.Package(env)
+        pck = robjects.packages.Package(env, "dummy_package")
         self.assertTrue(isinstance(pck.a, robjects.RVector))
         self.assertTrue(isinstance(pck.b, robjects.RVector))
         self.assertTrue(isinstance(pck.b, robjects.RFunction))
@@ -21,7 +21,7 @@ class PackagesTestCase(unittest.TestCase):
         env['a.a'] = robjects.StrVector('abcd')
         env['b'] = robjects.IntVector((1,2,3))
         env['c'] = robjects.r(''' function(x) x^2''')
-        pck = robjects.packages.Package(env)
+        pck = robjects.packages.Package(env, "dummy_package")
         self.assertTrue(isinstance(pck.a_a, robjects.RVector))
         self.assertTrue(isinstance(pck.b, robjects.RVector))
         self.assertTrue(isinstance(pck.b, robjects.RFunction))
@@ -33,7 +33,7 @@ class PackagesTestCase(unittest.TestCase):
         env['c'] = robjects.r(''' function(x) x^2''')
         self.assertRaises(packages.LibraryError,
                           robjects.packages.Package,
-                          env)
+                          env, "dummy_package")
         
 
 class ImportrTestCase(unittest.TestCase):
