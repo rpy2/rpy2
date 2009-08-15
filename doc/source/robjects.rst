@@ -855,6 +855,9 @@ nicely:
 R packages
 ==========
 
+Importing R packages
+--------------------
+
 In R, objects can be bundled into packages for distribution.
 In similar fashion to Python modules, the packages can be installed,
 and then loaded when their are needed. This is achieved by the R
@@ -867,7 +870,7 @@ the package to the R `search path`).
    utils = rpackages.importr("utils")
 
 
-The object utils is now a module-like object, in the sense that
+The object :rob:`utils` is now a module-like object, in the sense that
 its :attr:`__dict__` contains keys corresponding to the R symbols.
 For example the R function *data()* can be accessed like:
 
@@ -908,6 +911,17 @@ differences:
    >>> utils.__dict__['?']
    <RFunction - Python:0x913796c / R:0x9366fac>
 
+
+Installing/removing R packages
+------------------------------
+
+R is shipped with a set of *recommended packages* 
+(the equivalent of a standard library), but there is a large
+(and growing) number of other packages available.
+
+Installing those packages can done from within R, and
+one will consult an R-related documentation if unsure of how to
+do so.
 
 
 OOP with R
