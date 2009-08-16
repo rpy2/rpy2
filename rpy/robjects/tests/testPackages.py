@@ -24,7 +24,7 @@ class PackagesTestCase(unittest.TestCase):
         pck = robjects.packages.Package(env, "dummy_package")
         self.assertTrue(isinstance(pck.a_a, robjects.RVector))
         self.assertTrue(isinstance(pck.b, robjects.RVector))
-        self.assertTrue(isinstance(pck.b, robjects.RFunction))
+        self.assertTrue(isinstance(pck.c, robjects.RFunction))
 
     def testNewWithDotConflict(self):
         env = robjects.Environment()

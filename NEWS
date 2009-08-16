@@ -123,7 +123,8 @@ Changes
 - :data:`globalEnv` and :data:`baseNameSpaceEnv` were renamed to 
   :data:`globalenv` and :data:`baseenv` respectively
 
-- The parameter *wantFun* in :meth:`REnvironment.get` is now *wantfun* 
+- The parameter *wantFun* in :meth:`Environment.get` 
+  (formerly *REnvironment.get()*) is now *wantfun* 
 
 - :attr:`RVector.r` does not have a __getitem__ method any longer
   (see in `.rx` and `.rx2` in the new features)
@@ -145,7 +146,7 @@ Changes
 
 - renaming of few classes, the *R* prefix: :class:`Formula` (from *RFormula*),
   :class:`DataFrame` (from *RDataFrame*), :class:`Array` (from *RArray*),
-  :class:`Matrix` (from *RMatrix*).
+  :class:`Matrix` (from *RMatrix*), :class:`Environment` (from *REnvironment*).
 
 :mod:`rpy2.rinterface`:
 
