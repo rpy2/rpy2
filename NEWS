@@ -146,7 +146,8 @@ Changes
 
 - renaming of few classes, the *R* prefix: :class:`Formula` (from *RFormula*),
   :class:`DataFrame` (from *RDataFrame*), :class:`Array` (from *RArray*),
-  :class:`Matrix` (from *RMatrix*), :class:`Environment` (from *REnvironment*).
+  :class:`Matrix` (from *RMatrix*), :class:`Environment` (from *REnvironment*),
+  :class:`Function` (from *RFunction*)
 
 :mod:`rpy2.rinterface`:
 

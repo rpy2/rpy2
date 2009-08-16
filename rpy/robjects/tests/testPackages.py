@@ -13,7 +13,7 @@ class PackagesTestCase(unittest.TestCase):
         pck = robjects.packages.Package(env, "dummy_package")
         self.assertTrue(isinstance(pck.a, robjects.RVector))
         self.assertTrue(isinstance(pck.b, robjects.RVector))
-        self.assertTrue(isinstance(pck.b, robjects.RFunction))
+        self.assertTrue(isinstance(pck.b, robjects.Function))
 
 
     def testNewWithDot(self):
@@ -24,7 +24,7 @@ class PackagesTestCase(unittest.TestCase):
         pck = robjects.packages.Package(env, "dummy_package")
         self.assertTrue(isinstance(pck.a_a, robjects.RVector))
         self.assertTrue(isinstance(pck.b, robjects.RVector))
-        self.assertTrue(isinstance(pck.c, robjects.RFunction))
+        self.assertTrue(isinstance(pck.c, robjects.Function))
 
     def testNewWithDotConflict(self):
         env = robjects.Environment()

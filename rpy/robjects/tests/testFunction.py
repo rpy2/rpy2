@@ -3,20 +3,20 @@ import rpy2.robjects as robjects
 rinterface = robjects.rinterface
 import array
 
-class RFunctionTestCase(unittest.TestCase):
+class FunctionTestCase(unittest.TestCase):
     def testNew(self):
         identical = rinterface.baseenv["identical"]
-        self.assertRaises(ValueError, robjects.RFunction, 'a')
+        self.assertRaises(ValueError, robjects.Function, 'a')
 
         ri_f = rinterface.baseenv.get('help')
         
-        ro_f = robjects.RFunction(ri_f)
+        ro_f = robjects.Function(ri_f)
         
         self.assertTrue(identical(ri_f, ro_f))
 
     def testCall(self):
         ri_f = rinterface.baseenv.get('sum')
-        ro_f = robjects.RFunction(ri_f)
+        ro_f = robjects.Function(ri_f)
         
         ro_v = robjects.RVector(array.array('i', [1,2,3]))
         
@@ -46,7 +46,7 @@ class RFunctionTestCase(unittest.TestCase):
         self.assertEquals("y", n[1])
 
 def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(RFunctionTestCase)
+    suite = unittest.TestLoader().loadTestsFromTestCase(FunctionTestCase)
     return suite
 
 if __name__ == '__main__':

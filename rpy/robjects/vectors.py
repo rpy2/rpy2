@@ -490,7 +490,7 @@ class DataFrame(RVector):
         res = self._write_csv(path, append = append)
         return res
     
-class RFunction(RObjectMixin, rinterface.SexpClosure):
+class Function(RObjectMixin, rinterface.SexpClosure):
     """ An R function.
     
     """
@@ -504,7 +504,7 @@ class RFunction(RObjectMixin, rinterface.SexpClosure):
     _local_env = None
 
     def __init__(self, *args, **kwargs):
-        super(RFunction, self).__init__(*args, **kwargs)
+        super(Function, self).__init__(*args, **kwargs)
         self._local_env = self.__newenv(hash=rinterface.BoolSexpVector((True, )))
 
     def __call__(self, *args, **kwargs):
@@ -512,7 +512,7 @@ class RFunction(RObjectMixin, rinterface.SexpClosure):
 	new_kwargs = {}
         for k, v in kwargs.iteritems():
             new_kwargs[k] = conversion.py2ri(v)
-        res = super(RFunction, self).__call__(*new_args, **new_kwargs)
+        res = super(Function, self).__call__(*new_args, **new_kwargs)
         res = conversion.ri2py(res)
         return res
 

@@ -51,7 +51,7 @@ class MappingTestCase(unittest.TestCase):
         sexp = rinterface.globalenv.get("plot")
         ob = robjects.default_ri2py(sexp)
         self.assertTrue(isinstance(ob, 
-                                   robjects.RFunction))
+                                   robjects.Function))
 
     def testMapperR2Python_environment(self):
         sexp = rinterface.globalenv.get(".GlobalEnv")

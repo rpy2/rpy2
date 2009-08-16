@@ -162,7 +162,7 @@ The class :class:`rpy2.robjects.RObject`
 can represent any arbitray R object, although it will often
 be used for objects without any more specific representation
 in Python/rpy2 (such as :class:`RVector`,
-:class:`RFunction`, :class:`Environment`).
+:class:`Function`, :class:`Environment`).
 
 The class inherits from the lower-level
 :class:`rpy2.rinterface.Sexp`
@@ -754,7 +754,7 @@ An environment is also iter-able, returning all the symbols
 
 
 .. index::
-   pair: robjects; RFunction
+   pair: robjects; Function
    pair: robjects; function
 
 .. _robjects-functions:
@@ -795,7 +795,7 @@ The R functions as defined in :mod:`rpy2.robjects` inherit from the class
 :class:`rpy2.rinterface.SexpClosure`, and further documentation
 on the behavior of function can be found in Section :ref:`rinterface-functions`.
 
-.. autoclass:: rpy2.robjects.RFunction(*args, **kwargs)
+.. autoclass:: rpy2.robjects.Function(*args, **kwargs)
    :show-inheritance:
    :members:
 
@@ -881,7 +881,7 @@ its :attr:`__dict__` contains keys corresponding to the R symbols.
 For example the R function *data()* can be accessed like:
 
 >>> utils.data
-<RFunction - Python:0x913754c / R:0x943bdf8>
+<Function - Python:0x913754c / R:0x943bdf8>
 
 Unfortunately, accessing an R symbol can be a little less straightforward
 as R symbols can contain characters that are invalid in Python symbols.
@@ -915,7 +915,7 @@ differences:
    Example:
 
    >>> utils.__dict__['?']
-   <RFunction - Python:0x913796c / R:0x9366fac>
+   <Function - Python:0x913796c / R:0x9366fac>
 
 
 Installing/removing R packages

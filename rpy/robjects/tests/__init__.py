@@ -5,7 +5,7 @@ import testRVector
 import testArray
 import testDataFrame
 import testFormula
-import testRFunction
+import testFunction
 import testEnvironment
 import testRobjects
 import testMethods
@@ -19,7 +19,7 @@ def suite():
     suite_RVector = testRVector.suite()
     suite_Array = testArray.suite()
     suite_DataFrame = testDataFrame.suite()
-    suite_RFunction = testRFunction.suite()
+    suite_Function = testFunction.suite()
     suite_Environment = testEnvironment.suite()
     suite_Formula = testFormula.suite()
     suite_Robjects = testRobjects.suite()
@@ -30,7 +30,7 @@ def suite():
                                    suite_RVector,                   
                                    suite_Array,
                                    suite_DataFrame,
-                                   suite_RFunction,
+                                   suite_Function,
                                    suite_Environment,
                                    suite_Formula,
                                    suite_Robjects,

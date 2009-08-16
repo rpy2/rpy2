@@ -81,7 +81,7 @@ def default_ri2py(o):
                     res = vectors.RVector(o)
 
     elif isinstance(o, rinterface.SexpClosure):
-        res = RFunction(o)
+        res = Function(o)
     elif isinstance(o, rinterface.SexpEnvironment):
         res = Environment(o)
     elif isinstance(o, rinterface.SexpS4):

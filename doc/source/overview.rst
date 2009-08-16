@@ -254,7 +254,7 @@ The choice of inheritance was made to facilitate the implementation
 of mostly inter-exchangeable classes between :mod:`rpy2.rinterface`
 and :mod:`rpy2.robjects`. For example, an :class:`rpy2.rinterface.SexpClosure`
 can be given any :class:`rpy2.robjects.RObject` as a parameter while
-any :class:`rpy2.robjects.RFunction` can be given any 
+any :class:`rpy2.robjects.Function` can be given any 
 :class:`rpy2.rinterface.Sexp`. Because of R's functional basis, 
 a container-like extension is also present.
 
