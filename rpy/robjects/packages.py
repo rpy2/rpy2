@@ -47,16 +47,18 @@ class Package(object):
                 else:
                     rpyname = rname
                 if rname in self.__dict__:
-                    #FIXME: raise an exception, issue a warning ?
-                    print('The symbol ' + rname +' in the package ' + name + \
-                      ' is conflicting with a Python object attribute')
-                
+                    raise LibraryError('The symbol ' + rname +\
+                                       ' in the package ' + name + \
+                                       ' is conflicting with ' +\
+                                       'a Python object attribute')
             self._rpy2r[rpyname] = rname
             rpyobj = conversion.ri2py(self._env[rname])
+            #FIXME: shouldn't the original R name be also in the __dict__ ?
             self.__dict__[rpyname] = rpyobj
 
 
 class LibraryError(ImportError):
+    """ Error occuring with importing an R library """
     pass
 
 
