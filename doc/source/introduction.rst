@@ -242,8 +242,8 @@ This section demonstrates some of the features of
 rpy2 by the example.
 
 
-Function calls and plotting
----------------------------
+Graphics and plots
+------------------
 
 .. code-block:: python
 
@@ -262,15 +262,8 @@ Function calls and plotting
 Setting dynamically the number of arguments in a function call can be
 done the usual way in python
 
-.. code-block:: python
-
-  args = [x, y]
-  kwargs = {'ylab':"foo/bar", 'type':"b", 'col':"blue", 'log':"x"}
-  r.plot(*args, **kwargs)
-
-.. note::
-   Since the named parameters are a Python :class:`dict`, 
-   the order of the parameters is lost for `**kwargs` arguments. 
+More about plots and graphics in R, as well as more advanced
+plots are presented in Section :ref:`graphics`.
 
 
 Linear models
@@ -310,11 +303,11 @@ One way to achieve the same with :mod:`rpy2.robjects` is
    lm_D90 = r.lm("weight ~ group - 1")
    print(r.summary(lm_D90))
 
-Q:
-   Now how to extract data from the resulting objects ?
+Q: Now how to extract data from the resulting objects ?
 
-A:
-   The same, never it is. On the R object all depends.
+A: Well, it all depends on the object. R is very much designed
+   for interactive sessions, and users often inspect what a
+   function is returning in order to know how to extract information.
 
 When taking the results from the code above, one could go like:
 
@@ -333,7 +326,13 @@ Checking its element names is then trivial:
 
 And so is extracting a particular element:
 
->>> print(lm_D9.r['coefficients'])
+>>> print(lm_D9.rx2('coefficients'))
+(Intercept)    groupTrt 
+      5.032      -0.371 
+
+or 
+
+>>> print(lm_D9.rx('coefficients'))
 $coefficients
 (Intercept)    groupTrt 
       5.032      -0.371 
@@ -353,7 +352,8 @@ The R code is
   plot(pca, main="Eigen values")
   biplot(pca, main="biplot")
 
-The :mod:`rpy2.robjects` code is
+The :mod:`rpy2.robjects` code can be as close of the
+R code as possible:
 
 .. testcode::
 
@@ -365,6 +365,22 @@ The :mod:`rpy2.robjects` code is
   pca = r.princomp(m)
   r.plot(pca, main="Eigen values")
   r.biplot(pca, main="biplot")
+
+However, the same example can be made a little more tidier
+(with respect to being specific about R functions used)
+
+.. testcode::
+
+   from rpy2.robjects.packages import importr
+
+   base     = importr('base')
+   stats    = importr('stats')
+   graphics = importr('graphics')
+
+   m = base.matrix(stats.rnorm(100), ncol = 5)
+   pca = stats.princomp(m)
+   graphics.plot(pca, main = "Eigen values")
+   stats.biplot(pca, main = "biplot")      
    
 
 One more example

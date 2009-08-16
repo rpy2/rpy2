@@ -2,47 +2,42 @@
 #-- setup-begin
 from rpy2 import robjects
 from rpy2.robjects.lib import grid
-from rpy2.robjects.lib import grdevices
-
-
-# import an R package
-def rimport(x):
-   robjects.baseenv["require"](x, quietly = True)
+from rpy2.robjects.packages import importr
 
 # load an R dataset
 data = robjects.baseenv.get("data")
 
 # The R 'print' function
 rprint = robjects.globalenv.get("print")
+stats = importr('stats')
+grdevices = importr('grDevices')
 #-- setup-end
 
 #-- setuplattice-begin
-rimport('lattice')
+lattice = importr('lattice')
 #-- setuplattice-end
 #-- setupxyplot-begin
-xyplot = robjects.baseenv.get("xyplot")
+xyplot = lattice.xyplot
 #-- setupxyplot-end
 
 #-- dataset-begin
-rnorm = robjects.r['rnorm']
+rnorm = stats.rnorm
 dataf_rnorm = robjects.DataFrame({'value': rnorm(300, mean=0) + rnorm(100, mean=3),
                                   'other_value': rnorm(300, mean=0) + rnorm(100, mean=3),
                                   'mean': robjects.IntVector([0, ]*300 + [3, ] * 100)})
 #-- dataset-end
 
 grdevices.png('../../_static/graphics_lattice_xyplot_1.png',
-    width = 512, height = 512)
+              width = 512, height = 512)
 #-- xyplot1-begin
 data("mtcars")
 mtcars = robjects.globalenv["mtcars"]
-
-xyplot = robjects.baseenv.get('xyplot')
 
 formula = robjects.Formula('mpg ~ wt')
 formula.getenvironment()['mpg'] = mtcars.rx2('mpg')
 formula.getenvironment()['wt'] = mtcars.rx2('wt')
 
-p = xyplot(formula)
+p = lattice.xyplot(formula)
 rprint(p)
 #-- xyplot1-end
 grdevices.dev_off()
@@ -50,7 +45,7 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_lattice_xyplot_2.png',
     width = 512, height = 512)
 #-- xyplot2-begin
-p = xyplot(formula, groups = mtcars.rx2('cyl'))
+p = lattice.xyplot(formula, groups = mtcars.rx2('cyl'))
 rprint(p)
 #-- xyplot2-end
 grdevices.dev_off()
@@ -63,7 +58,7 @@ formula.getenvironment()['mpg'] = mtcars.rx2('mpg')
 formula.getenvironment()['wt'] = mtcars.rx2('wt')
 formula.getenvironment()['cyl'] = mtcars.rx2('cyl')
 
-p = xyplot(formula, layout=robjects.IntVector((3, 1)))
+p = lattice.xyplot(formula, layout=robjects.IntVector((3, 1)))
 rprint(p)
 #-- xyplot3-end
 grdevices.dev_off()

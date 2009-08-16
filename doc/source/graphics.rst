@@ -1,3 +1,5 @@
+.. _graphics:
+
 ********
 Graphics
 ********
@@ -38,17 +40,15 @@ grDevices*. Example with the R functions *png* and *dev.off*:
 
 .. code-block:: python
 
-   import rpy2.robjects.lib.grdevices as grdevices
+   from rpy2.robjects.packages import importr
+   grdevices = importr('grDevices')
 
    grdevices.png(file="path/to/file.png", width=512, height=512)
    # plotting code here   
    grdevices.dev_off()
 
 
-
-   
-
-The package contains an :class:`REnvironment` :data:`grdevices_env` that
+The package contains an :class:`Environment` :data:`grdevices_env` that
 can be used to access an object known to belong to that R packages, e.g.:
 
 >>> palette = grdevices.palette()
@@ -317,7 +317,7 @@ and formula can be specified to declared the fitting (see example below).
 
 
 The constructor for :class:`GeomSmooth` also accepts a parameter
-*groupr*` that indicates if the fit should be done according to groups.
+*groupr* that indicates if the fit should be done according to groups.
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2smoothbycyl-begin

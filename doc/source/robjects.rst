@@ -162,7 +162,7 @@ The class :class:`rpy2.robjects.RObject`
 can represent any arbitray R object, although it will often
 be used for objects without any more specific representation
 in Python/rpy2 (such as :class:`RVector`,
-:class:`RFunction`, :class:`REnvironment`).
+:class:`RFunction`, :class:`Environment`).
 
 The class inherits from the lower-level
 :class:`rpy2.rinterface.Sexp`
@@ -448,7 +448,7 @@ The property :attr:`names` can be used to get, or set, those names.
 
 
 .. index::
-   pair: robjects;REnvironment
+   pair: robjects;Environment
    pair: robjects;globalenv
 
 :class:`Array`
@@ -743,10 +743,11 @@ An environment is also iter-able, returning all the symbols
 .. note:: 
 
    Although there is a natural link between environment
-   and R packages, one should consider using convenience wrapper
-   dedicated to R packages (see :ref:`robjects-packages`).
+   and R packages, one should consider using the convenience wrapper
+   dedicated to model R packages (see :ref:`robjects-packages`).
+   
 
-.. autoclass:: rpy2.robjects.REnvironment(o=None)
+.. autoclass:: rpy2.robjects.Environment(o=None)
    :show-inheritance:
    :members:
 
@@ -875,8 +876,7 @@ the package to the R `search path`).
    import rpy2.robjects.packages as rpackages
    utils = rpackages.importr("utils")
 
-
-The object :rob:`utils` is now a module-like object, in the sense that
+The object :obj:`utils` is now a module-like object, in the sense that
 its :attr:`__dict__` contains keys corresponding to the R symbols.
 For example the R function *data()* can be accessed like:
 
