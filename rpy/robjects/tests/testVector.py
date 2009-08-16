@@ -6,16 +6,16 @@ import rpy2.rlike.container as rlc
 
 rlist = robjects.baseenv["list"]
 
-class RVectorTestCase(unittest.TestCase):
+class VectorTestCase(unittest.TestCase):
 
     def testNew(self):
         identical = ri.baseenv["identical"]
         py_a = array.array('i', [1,2,3])
-        ro_v = robjects.RVector(py_a)
+        ro_v = robjects.Vector(py_a)
         self.assertEquals(ro_v.typeof, ri.INTSXP)
         
         ri_v = ri.SexpVector(py_a, ri.INTSXP)
-        ro_v = robjects.RVector(ri_v)
+        ro_v = robjects.Vector(ri_v)
 
         self.assertTrue(identical(ro_v, ri_v)[0])
 
@@ -103,7 +103,7 @@ class RVectorTestCase(unittest.TestCase):
         seq_R = robjects.baseenv["seq"]
         mySeq = seq_R(0, 10)
         # R indexing starts at one
-        myIndex = robjects.RVector(array.array('i', range(1, 11, 2)))
+        myIndex = robjects.Vector(array.array('i', range(1, 11, 2)))
 
         mySubset = mySeq.subset(myIndex)
         for i, si in enumerate(myIndex):
@@ -123,7 +123,7 @@ class RVectorTestCase(unittest.TestCase):
                                                      letters)
 
         # R indexing starts at one
-        myIndex = robjects.RVector(letters[2])
+        myIndex = robjects.Vector(letters[2])
 
         mySubset = mySeq.subset(myIndex)
 
@@ -134,7 +134,7 @@ class RVectorTestCase(unittest.TestCase):
         seq_R = robjects.baseenv["seq"]
         mySeq = seq_R(0, 10)
         # R indexing starts at one
-        myIndex = robjects.RVector(['a', 'b', 'c'])
+        myIndex = robjects.Vector(['a', 'b', 'c'])
 
         self.assertRaises(ri.RRuntimeError, mySeq.subset, myIndex)
 
@@ -158,7 +158,7 @@ class RVectorTestCase(unittest.TestCase):
                          
     def testSubsetRecyclingRule(self):
         # recycling rule
-        v = robjects.RVector(array.array('i', range(1, 23)))
+        v = robjects.Vector(array.array('i', range(1, 23)))
         m = robjects.r.matrix(v, ncol = 2)
         col = m.subset(True, 1)
         self.assertEquals(11, len(col))
@@ -196,7 +196,7 @@ class RVectorTestCase(unittest.TestCase):
         self.assertTrue(idem("foo", mylist[1]))
 
     def testGetNames(self):
-        vec = robjects.RVector(array.array('i', [1,2,3]))
+        vec = robjects.Vector(array.array('i', [1,2,3]))
         v_names = [robjects.baseenv["letters"][x] for x in (0,1,2)]
         #FIXME: simplify this
         r_names = robjects.baseenv["c"](*v_names)
@@ -207,7 +207,7 @@ class RVectorTestCase(unittest.TestCase):
         vec.names[0] = 'x'
 
     def testSetNames(self):
-        vec = robjects.RVector(array.array('i', [1,2,3]))
+        vec = robjects.Vector(array.array('i', [1,2,3]))
         names = ['x', 'y', 'z']
         vec.names = names
         for i in xrange(len(vec)):
@@ -235,7 +235,7 @@ class RVectorTestCase(unittest.TestCase):
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
     
 def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(RVectorTestCase)
+    suite = unittest.TestLoader().loadTestsFromTestCase(VectorTestCase)
     return suite
 
 if __name__ == '__main__':

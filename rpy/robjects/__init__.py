@@ -78,7 +78,7 @@ def default_ri2py(o):
                 elif o.typeof == rinterface.LANGSXP and rcls == 'formula':
                     res = Formula(o)
                 else:
-                    res = vectors.RVector(o)
+                    res = vectors.Vector(o)
 
     elif isinstance(o, rinterface.SexpClosure):
         res = Function(o)

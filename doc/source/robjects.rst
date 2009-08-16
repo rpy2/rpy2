@@ -161,7 +161,7 @@ R objects
 The class :class:`rpy2.robjects.RObject`
 can represent any arbitray R object, although it will often
 be used for objects without any more specific representation
-in Python/rpy2 (such as :class:`RVector`,
+in Python/rpy2 (such as :class:`Vector`,
 :class:`Function`, :class:`Environment`).
 
 The class inherits from the lower-level
@@ -179,7 +179,7 @@ representations of R objects.
    :members:
 
 .. index::
-   pair: robjects;RVector
+   pair: robjects;Vector
 
 .. _robjects-vectors:
 
@@ -191,12 +191,12 @@ an R user is interacting with are vector-like.
 For example, this means that any scalar is in fact a vector
 of length one.
 
-The class :class:`RVector` has a constructor:
+The class :class:`Vector` has a constructor:
 
->>> x = robjects.RVector(3)
+>>> x = robjects.Vector(3)
 
 
-.. autoclass:: rpy2.robjects.RVector(o)
+.. autoclass:: rpy2.robjects.Vector(o)
    :show-inheritance:
    :members:
 
@@ -210,7 +210,7 @@ When the vectors are created from R, one should not worry much
 as they will be exposed as they should by :mod:`rpy2.robjects`.
 
 When one wants to create a vector from Python, either the 
-class :class:`RVector` or the convenience classes
+class :class:`Vector` or the convenience classes
 :class:`IntVector`, :class:`FloatVector`, :class:`BoolVector`, 
 :class:`StrVector` can be used.
 
@@ -282,7 +282,7 @@ as it preserves the integer/string duality.
 
 
 .. index::
-   pair: RVector;extracting
+   pair: Vector;extracting
 
 .. _robjects-extracting:
 
@@ -456,7 +456,7 @@ The property :attr:`names` can be used to get, or set, those names.
 
 In `R`, arrays are simply vectors with a dimension attribute. That fact
 was reflected in the class hierarchy with :class:`robjects.Array` inheriting
-from :class:`robjects.RVector`.
+from :class:`robjects.Vector`.
 
 .. autoclass:: rpy2.robjects.vectors.Array(obj)
    :show-inheritance:
@@ -636,7 +636,7 @@ as a Python programmer will expect it to:
 >>> len(dataf)
 2
 >>> dataf[0]
-<RVector - Python:0x8a58c2c / R:0x8e7dd08>
+<Vector - Python:0x8a58c2c / R:0x8e7dd08>
 
 The :class:`DataFrame` is composed of columns,
 with each column being possibly of a different type:
@@ -663,7 +663,7 @@ of class :class:`DataFrame`. Getting the column as
 a vector is requires the use of *rx2*.
 
 >>> dataf.rx2(1)
-<RVector - Python:0x8a4bfcc / R:0x8e7dd08>
+<Vector - Python:0x8a4bfcc / R:0x8e7dd08>
 >>> print(dataf.rx2(1))
 [1] x y z
 Levels: x y z
@@ -832,7 +832,7 @@ The class :class:`robjects.Formula` is representing an `R` formula.
 
 .. code-block:: python
 
-  x = robjects.RVector(array.array('i', range(1, 11)))
+  x = robjects.Vector(array.array('i', range(1, 11)))
   y = x.r + robjects.r.rnorm(10, sd=0.2)
 
   fmla = robjects.Formula('y ~ x')

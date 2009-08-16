@@ -46,7 +46,7 @@ of writing a new function `ri2py` that handles this, as shown below:
 
    def my_ri2py(obj):
        res = robjects.default_ri2py(obj)
-       if isinstance(res, robjects.RVector) and (len(res) == 1):
+       if isinstance(res, robjects.Vector) and (len(res) == 1):
            res = res[0]
        return res
 

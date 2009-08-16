@@ -12,7 +12,7 @@ class RInstanceTestCase(unittest.TestCase):
 
     def testGetItem(self):
         letters_R = robjects.r["letters"]
-        self.assertTrue(isinstance(letters_R, robjects.RVector))
+        self.assertTrue(isinstance(letters_R, robjects.Vector))
         letters = (('a', 0), ('b', 1), ('c', 2), ('x', 23), ('y', 24), ('z', 25))
         for l, i in letters:
             self.assertTrue(letters_R[i] == l)
@@ -39,13 +39,13 @@ class MappingTestCase(unittest.TestCase):
         sexp = rinterface.globalenv.get("letters")
         ob = robjects.default_ri2py(sexp)
         self.assertTrue(isinstance(ob, 
-                                   robjects.RVector))
+                                   robjects.Vector))
 
     def testMapperR2Python_boolean(self):
         sexp = rinterface.globalenv.get("T")
         ob = robjects.default_ri2py(sexp)
         self.assertTrue(isinstance(ob, 
-                                   robjects.RVector))
+                                   robjects.Vector))
 
     def testMapperR2Python_function(self):
         sexp = rinterface.globalenv.get("plot")
@@ -70,39 +70,39 @@ class MappingTestCase(unittest.TestCase):
     def testMapperPy2R_integer(self):
         py = 1
         rob = robjects.default_py2ro(py)
-        self.assertTrue(isinstance(rob, robjects.RVector))
+        self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEquals(rinterface.INTSXP, rob.typeof)
 
     def testMapperPy2R_boolean(self):        
         py = True
         rob = robjects.default_py2ro(py)
-        self.assertTrue(isinstance(rob, robjects.RVector))
+        self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEquals(rinterface.LGLSXP, rob.typeof)
 
     def testMapperPy2R_str(self):        
         py = 'houba'
         rob = robjects.default_py2ro(py)
-        self.assertTrue(isinstance(rob, robjects.RVector))
+        self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEquals(rinterface.STRSXP, rob.typeof)
 
     def testMapperPy2R_unicode(self):        
         py = u'houba'
         self.assertTrue(isinstance(py, unicode))
         rob = robjects.default_py2ro(py)
-        self.assertTrue(isinstance(rob, robjects.RVector))
+        self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEquals(rinterface.STRSXP, rob.typeof)
         #FIXME: more tests
 
     def testMapperPy2R_float(self):
         py = 1.0
         rob = robjects.default_py2ro(py)
-        self.assertTrue(isinstance(rob, robjects.RVector))
+        self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEquals(rinterface.REALSXP, rob.typeof)
 
     def testMapperPy2R_complex(self):
         py = 1.0 + 2j
         rob = robjects.default_py2ro(py)
-        self.assertTrue(isinstance(rob, robjects.RVector))
+        self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEquals(rinterface.CPLXSXP, rob.typeof)
 
 

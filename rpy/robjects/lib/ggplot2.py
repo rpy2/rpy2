@@ -38,7 +38,7 @@ class GGPlot(robjects.RObject):
 ggplot = GGPlot.new
 
 
-class Aes(robjects.RVector):
+class Aes(robjects.Vector):
     _constructor = ggplot2_env['aes_string']
     #_constructor = ggplot2_env['aes']
     

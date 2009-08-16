@@ -12,7 +12,7 @@ New Features
 
 :mod:`rpy2.robjects`:
 
-- Method :meth:`formals` for :class:`RFunction`
+- Method :meth:`formals` for :class:`Function` (formerly *RFunction*)
 
 - Methods :meth:`slotnames`, :meth:`isclass`, and :meth:`validobject`
   for :class:`RS4`
@@ -33,8 +33,9 @@ New Features
 - :class:`FactorVector` to represent R factors
 
 - the conversion is now returning subclasses of
-  :class:`robjects.vector.RVector` (such as :class:`IntVector`, 
-  :class:`FloatVector`, etc...) rather than only return :class:`RVector`
+  :class:`robjects.vectors.Vector` -formerly *RVector*-
+  (such as :class:`IntVector`, 
+  :class:`FloatVector`, etc...) rather than only return :class:`Vector`
 
 - :class:`StrVector` has a method :meth:`factor` to turn a
   vector of strings into an R factor
@@ -44,7 +45,7 @@ New Features
  
 - :meth:`IntVector.tabulate` to count the number of times a value is found in the vector
 
-- :meth:`RVector.sample` to draw a (random) sample of arbitrary size from a vector
+- :meth:`Vector.sample` to draw a (random) sample of arbitrary size from a vector
 
 - :data:`NA_bool`, :data:`NA_real`, :data:`NA_integer`, :data:`NA_character`, 
   :data:`NA_complex` as aliases for R's missing values.
@@ -126,7 +127,7 @@ Changes
 - The parameter *wantFun* in :meth:`Environment.get` 
   (formerly *REnvironment.get()*) is now *wantfun* 
 
-- :attr:`RVector.r` does not have a __getitem__ method any longer
+- :attr:`Vector.r` does not have a __getitem__ method any longer
   (see in `.rx` and `.rx2` in the new features)
 
 - :meth:`colnames`, :meth:`rownames`, :meth:`nrow`, :meth:`ncol` 
@@ -147,7 +148,7 @@ Changes
 - renaming of few classes, the *R* prefix: :class:`Formula` (from *RFormula*),
   :class:`DataFrame` (from *RDataFrame*), :class:`Array` (from *RArray*),
   :class:`Matrix` (from *RMatrix*), :class:`Environment` (from *REnvironment*),
-  :class:`Function` (from *RFunction*)
+  :class:`Function` (from *RFunction*), :class:`Vector` (from *RVector*).
 
 :mod:`rpy2.rinterface`:
 
@@ -204,7 +205,7 @@ Release 2.0.4
 Bugs fixed
 ----------
 
-- Added missing named parameter *wantfun* to method :meth:`Renvironment.get`
+- Added missing named parameter *wantfun* to method :meth:`REnvironment.get`
   (making it similar to :meth:`SexpEnvironment.get`)
 
 - Leak in reference counting when creating SexpVector objects fixed

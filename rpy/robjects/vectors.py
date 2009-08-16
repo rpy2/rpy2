@@ -89,7 +89,7 @@ class VectorOperationsDelegator(object):
     """
 
     def __init__(self, parent):
-        """ The parent in expected to inherit from RVector. """
+        """ The parent in expected to inherit from Vector. """
         self._parent = parent
 
     def __add__(self, x):
@@ -126,7 +126,7 @@ class VectorOperationsDelegator(object):
 
 
 
-class RVector(RObjectMixin, rinterface.SexpVector):
+class Vector(RObjectMixin, rinterface.SexpVector):
     """ R vector-like object. Items in those instances can
        be accessed with the method "__getitem__" ("[" operator),
        or with the method "subset"."""
@@ -135,7 +135,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
     def __init__(self, o):
         if not isinstance(o, rinterface.SexpVector):
             o = conversion.py2ri(o)
-        super(RVector, self).__init__(o)
+        super(Vector, self).__init__(o)
         self.ro = VectorOperationsDelegator(self)
         self.rx = ExtractDelegator(self)
         self.rx2 = DoubleExtractDelegator(self)
@@ -153,14 +153,14 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         return res
 
     def __getitem__(self, i):
-        res = super(RVector, self).__getitem__(i)
+        res = super(Vector, self).__getitem__(i)
         if isinstance(res, rinterface.Sexp):
             res = conversion.ri2py(res)
         return res
 
     def __setitem__(self, i, value):
         value = conversion.py2ri(value)
-        res = super(RVector, self).__setitem__(i, value)
+        res = super(Vector, self).__setitem__(i, value)
 
     def _names_get(self):
         res = baseenv_ri.get('names')(self)
@@ -187,7 +187,7 @@ class RVector(RObjectMixin, rinterface.SexpVector):
         res = conversion.ri2py(res)
         return res
 
-class StrVector(RVector):
+class StrVector(Vector):
     """ Vector of string elements """
     _factorconstructor = rinterface.baseenv['factor']
     def __init__(self, obj):
@@ -199,7 +199,7 @@ class StrVector(RVector):
         res = self._factorconstructor(self)
         return conversion.ri2py(res)
 
-class IntVector(RVector):
+class IntVector(Vector):
     """ Vector of integer elements """
     _tabulate = rinterface.baseenv['tabulate']
 
@@ -214,19 +214,19 @@ class IntVector(RVector):
         res = self._tabulate(self)
         return conversion.ri2py(res)
 
-class BoolVector(RVector):
+class BoolVector(Vector):
     """ Vector of boolean (logical) elements """
     def __init__(self, obj):
         obj = rinterface.BoolSexpVector(obj)
         super(BoolVector, self).__init__(obj)
 
-class ComplexVector(RVector):
+class ComplexVector(Vector):
     """ Vector of complex elements """
     def __init__(self, obj):
         obj = rinterface.ComplexSexpVector(obj)
         super(ComplexVector, self).__init__(obj)
 
-class FloatVector(RVector):
+class FloatVector(Vector):
     """ Vector of float (double) elements """
     def __init__(self, obj):
         obj = rinterface.FloatSexpVector(obj)
@@ -275,7 +275,7 @@ class FactorVector(IntVector):
                          "are the levels in the factor ordered ?")
 
     
-class Array(RVector):
+class Array(Vector):
     """ An R array """
     _dimnames_get = baseenv_ri['dimnames']
     _dimnames_set = baseenv_ri['dimnames<-']
@@ -402,7 +402,7 @@ class Matrix(Array):
         res = self._eigen(self, m)
         return conversion.ri2py(res)
 
-class DataFrame(RVector):
+class DataFrame(Vector):
     """ R 'data.frame'.
     """
     _dataframe_name = rinterface.StrSexpVector(('data.frame',))

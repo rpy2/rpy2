@@ -11,8 +11,8 @@ class PackagesTestCase(unittest.TestCase):
         env['b'] = robjects.IntVector((1,2,3))
         env['c'] = robjects.r(''' function(x) x^2''')
         pck = robjects.packages.Package(env, "dummy_package")
-        self.assertTrue(isinstance(pck.a, robjects.RVector))
-        self.assertTrue(isinstance(pck.b, robjects.RVector))
+        self.assertTrue(isinstance(pck.a, robjects.Vector))
+        self.assertTrue(isinstance(pck.b, robjects.Vector))
         self.assertTrue(isinstance(pck.c, robjects.Function))
 
 
@@ -22,8 +22,8 @@ class PackagesTestCase(unittest.TestCase):
         env['b'] = robjects.IntVector((1,2,3))
         env['c'] = robjects.r(''' function(x) x^2''')
         pck = robjects.packages.Package(env, "dummy_package")
-        self.assertTrue(isinstance(pck.a_a, robjects.RVector))
-        self.assertTrue(isinstance(pck.b, robjects.RVector))
+        self.assertTrue(isinstance(pck.a_a, robjects.Vector))
+        self.assertTrue(isinstance(pck.b, robjects.Vector))
         self.assertTrue(isinstance(pck.c, robjects.Function))
 
     def testNewWithDotConflict(self):

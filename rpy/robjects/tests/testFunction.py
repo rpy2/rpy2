@@ -18,7 +18,7 @@ class FunctionTestCase(unittest.TestCase):
         ri_f = rinterface.baseenv.get('sum')
         ro_f = robjects.Function(ri_f)
         
-        ro_v = robjects.RVector(array.array('i', [1,2,3]))
+        ro_v = robjects.Vector(array.array('i', [1,2,3]))
         
         s = ro_f(ro_v)
 
@@ -31,7 +31,7 @@ class FunctionTestCase(unittest.TestCase):
 
     def testCallClosureWithRObject(self):
         ri_f = rinterface.baseenv["sum"]
-        ro_vec = robjects.RVector(array.array('i', [1,2,3]))
+        ro_vec = robjects.Vector(array.array('i', [1,2,3]))
         res = ri_f(ro_vec)
         self.assertEquals(6, res[0])
 
