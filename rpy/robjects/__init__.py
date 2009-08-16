@@ -83,7 +83,7 @@ def default_ri2py(o):
     elif isinstance(o, rinterface.SexpClosure):
         res = RFunction(o)
     elif isinstance(o, rinterface.SexpEnvironment):
-        res = REnvironment(o)
+        res = Environment(o)
     elif isinstance(o, rinterface.SexpS4):
         res = RS4(o)
     else:
@@ -147,30 +147,30 @@ conversion.py2ro = default_py2ro
 
 
 
-class REnvironment(RObjectMixin, rinterface.SexpEnvironment):
+class Environment(RObjectMixin, rinterface.SexpEnvironment):
     """ An R environement. """
     
     def __init__(self, o=None):
         if o is None:
             o = rinterface.baseenv["new.env"](hash=rinterface.SexpVector([True, ], rinterface.LGLSXP))
-        super(REnvironment, self).__init__(o)
+        super(Environment, self).__init__(o)
 
     def __getitem__(self, item):
-        res = super(REnvironment, self).__getitem__(item)
+        res = super(Environment, self).__getitem__(item)
         res = conversion.ri2py(res)
         res.name = item
         return res
 
     def __setitem__(self, item, value):
         robj = conversion.py2ro(value)
-        super(REnvironment, self).__setitem__(item, robj)
+        super(Environment, self).__setitem__(item, robj)
 
     def get(self, item, wantfun = False):
         """ Get a object from its R name/symol
         :param item: string (name/symbol)
         :rtype: object (as returned by :func:`conversion.ri2py`)
         """
-        res = super(REnvironment, self).get(item, wantfun = wantfun)
+        res = super(Environment, self).get(item, wantfun = wantfun)
         res = conversion.ri2py(res)
         return res
 

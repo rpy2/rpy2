@@ -56,7 +56,7 @@ class MappingTestCase(unittest.TestCase):
     def testMapperR2Python_environment(self):
         sexp = rinterface.globalenv.get(".GlobalEnv")
         self.assertTrue(isinstance(robjects.default_ri2py(sexp), 
-                                   robjects.REnvironment))
+                                   robjects.Environment))
 
     def testMapperR2Python_s4(self):
         robjects.r('setClass("A", representation(x="integer"))')

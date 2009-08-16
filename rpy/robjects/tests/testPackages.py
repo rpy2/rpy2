@@ -6,7 +6,7 @@ rinterface = robjects.rinterface
 class PackagesTestCase(unittest.TestCase):
 
     def testNew(self):
-        env = robjects.REnvironment()
+        env = robjects.Environment()
         env['a'] = robjects.StrVector('abcd')
         env['b'] = robjects.IntVector((1,2,3))
         env['c'] = robjects.r(''' function(x) x^2''')
@@ -17,7 +17,7 @@ class PackagesTestCase(unittest.TestCase):
 
 
     def testNewWithDot(self):
-        env = robjects.REnvironment()
+        env = robjects.Environment()
         env['a.a'] = robjects.StrVector('abcd')
         env['b'] = robjects.IntVector((1,2,3))
         env['c'] = robjects.r(''' function(x) x^2''')
@@ -27,7 +27,7 @@ class PackagesTestCase(unittest.TestCase):
         self.assertTrue(isinstance(pck.b, robjects.RFunction))
 
     def testNewWithDotConflict(self):
-        env = robjects.REnvironment()
+        env = robjects.Environment()
         env['a.a'] = robjects.StrVector('abcd')
         env['a_a'] = robjects.IntVector((1,2,3))
         env['c'] = robjects.r(''' function(x) x^2''')

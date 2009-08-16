@@ -6,7 +6,7 @@ import testArray
 import testDataFrame
 import testFormula
 import testRFunction
-import testREnvironment
+import testEnvironment
 import testRobjects
 import testMethods
 import testPackages
@@ -20,7 +20,7 @@ def suite():
     suite_Array = testArray.suite()
     suite_DataFrame = testDataFrame.suite()
     suite_RFunction = testRFunction.suite()
-    suite_REnvironment = testREnvironment.suite()
+    suite_Environment = testEnvironment.suite()
     suite_Formula = testFormula.suite()
     suite_Robjects = testRobjects.suite()
     suite_NumpyConversions = testNumpyConversions.suite()
@@ -31,7 +31,7 @@ def suite():
                                    suite_Array,
                                    suite_DataFrame,
                                    suite_RFunction,
-                                   suite_REnvironment,
+                                   suite_Environment,
                                    suite_Formula,
                                    suite_Robjects,
                                    suite_Methods,

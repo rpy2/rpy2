@@ -3,21 +3,21 @@ import rpy2.robjects as robjects
 rinterface = robjects.rinterface
 import array
 
-class REnvironmentTestCase(unittest.TestCase):
+class EnvironmentTestCase(unittest.TestCase):
     def testNew(self):
-        env = robjects.REnvironment()
+        env = robjects.Environment()
         self.assertEquals(rinterface.ENVSXP, env.typeof)
 
     def testNewValueError(self):
-        self.assertRaises(ValueError, robjects.REnvironment, 'a')
+        self.assertRaises(ValueError, robjects.Environment, 'a')
 
     def testSetItem(self):
-        env = robjects.REnvironment()
+        env = robjects.Environment()
         env['a'] = 123
         self.assertTrue('a' in env)
 
 def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(REnvironmentTestCase)
+    suite = unittest.TestLoader().loadTestsFromTestCase(EnvironmentTestCase)
     return suite
 
 if __name__ == '__main__':
