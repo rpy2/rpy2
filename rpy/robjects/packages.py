@@ -46,7 +46,7 @@ class Package(object):
                                                       rpyname))
                 else:
                     rpyname = rname
-                if rname in self.__dict__:
+                if rpyname in self.__dict__ or rpyname == '__dict__':
                     raise LibraryError('The symbol ' + rname +\
                                        ' in the package ' + name + \
                                        ' is conflicting with ' +\

@@ -34,7 +34,17 @@ class PackagesTestCase(unittest.TestCase):
         self.assertRaises(packages.LibraryError,
                           robjects.packages.Package,
                           env, "dummy_package")
-        
+
+
+    def testNewWithDotConflict(self):
+        env = robjects.Environment()
+        env['__dict__'] = robjects.StrVector('abcd')
+        env['a_a'] = robjects.IntVector((1,2,3))
+        env['c'] = robjects.r(''' function(x) x^2''')
+        self.assertRaises(packages.LibraryError,
+                          robjects.packages.Package,
+                          env, "dummy_package")
+
 
 class ImportrTestCase(unittest.TestCase):
     def testImportStats(self):
