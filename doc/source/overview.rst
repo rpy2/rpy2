@@ -188,10 +188,10 @@ At any time, an installation can be tested as follows:
    the tests will either:
 
    * leave R in a close-to-unusable state because terminating
-   then starting again an embbeded R is apparently not possible.
+     then starting again an embbeded R is apparently not possible.
 
    * cause a segfault (the case with numpy arrays of unicode
-   characters)
+     characters)
 
 
 .. warning::
