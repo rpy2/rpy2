@@ -48,7 +48,7 @@ class PackagesTestCase(unittest.TestCase):
 
 class ImportrTestCase(unittest.TestCase):
     def testImportStats(self):
-        stats = robjects.packages.importr('stats', where = None)
+        stats = robjects.packages.importr('stats')
         self.assertTrue(isinstance(stats, robjects.packages.Package))
         
 def suite():

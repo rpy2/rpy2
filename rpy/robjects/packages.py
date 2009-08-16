@@ -62,7 +62,7 @@ class LibraryError(ImportError):
     pass
 
 
-def importr(name, where = rpy2.robjects.lib, translation = {}):
+def importr(name, translation = {}):
     """ Import an R package (and return a module-like object). """
     ok = require(rinterface.StrSexpVector([name, ]))[0]
     if not ok:
@@ -70,9 +70,5 @@ def importr(name, where = rpy2.robjects.lib, translation = {}):
     env = as_env(rinterface.StrSexpVector(['package:'+name, ]))
     pack = Package(env, name, translation = translation)
 
-    if where is not None:
-        if name in where.__dict__:
-            raise LibraryError("An object of name %s is already found in %s" %(name, where))
-        where.__dict__[name] = pack
     return pack
 
