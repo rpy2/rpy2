@@ -141,8 +141,6 @@ Changes
 
 - module :mod:`lib` to store modules representing R packages
 
-- module :mod:`lib.grdevices` for R's grDevices
-
 - module :mod:`lib.ggplot2` for the CRAN package ggplot2.
 
 - renaming of few classes, the *R* prefix: :class:`Formula` (from *RFormula*),
