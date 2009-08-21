@@ -95,6 +95,8 @@ New Features
 
 - Crash when trying to create a SexpVector of a non-vector type
 
+- pairlists (LISTSXP) now handled
+
 :mod:`rpy2.rlike`:
 
 - :meth:`iteritems` for :class:`OrdDict` (formerly:class:`ArgDict`) 

@@ -2349,6 +2349,13 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       sexp_item = VECTOR_ELT(*sexp, i_R);
       res = (PyObject *)newPySexpObject(sexp_item);
       break;
+    case LISTSXP:
+      tmp = nthcdr(*sexp, i_R);
+      sexp_item = allocVector(LISTSXP, 1);
+      SETCAR(sexp_item, CAR(tmp));
+      SET_TAG(sexp_item, TAG(tmp));
+      res = (PyObject *)newPySexpObject(sexp_item);
+      break;      
     case LANGSXP:
       tmp = nthcdr(*sexp, i_R);
       sexp_item = allocVector(LANGSXP, 1);
@@ -3143,6 +3150,7 @@ newPySexpObject(const SEXP sexp)
   case LGLSXP:
   case CPLXSXP:
   case VECSXP:
+  case LISTSXP:
   case LANGSXP:
   case EXPRSXP:
   case STRSXP:
