@@ -72,3 +72,22 @@ def importr(name, translation = {}):
 
     return pack
 
+
+def wherefrom(symbol, startenv = rinterface.globalenv):
+    """ For a given symbol, return the environment
+    this symbol is first found in, starting from 'startenv'
+    """
+    env = startenv
+    obj = None
+    tryagain = True
+    while tryagain:
+        try:
+            obj = env[symbol]
+            tryagain = False
+        except LookupError, knf:
+            env = env.enclos()
+            if env.rsame(rinterface.emptyenv):
+                tryagain = False
+            else:
+                tryagain = True
+    return conversion.ri2py(env)

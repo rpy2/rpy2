@@ -50,6 +50,13 @@ class ImportrTestCase(unittest.TestCase):
     def testImportStats(self):
         stats = robjects.packages.importr('stats')
         self.assertTrue(isinstance(stats, robjects.packages.Package))
+
+class WherefromTestCase(unittest.TestCase):
+    def testWherefrom(self):
+        stats = robjects.packages.importr('stats')
+        rnorm_pack = robjects.packages.wherefrom('rnorm')
+        self.assertEquals('package:stats',
+                          rnorm_pack.do_slot('name')[0])
         
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(PackagesTestCase)
