@@ -237,9 +237,10 @@ static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
-            "Set how to handle output from the R console.\n\n"
-             ":param f: callback function such as"
-             "None <- f(output), or None.\n");
+             "set_writeconsole(f)\n\n"
+             "Set how to handle output from the R console with either None"
+             " or a function f such as f(output) returns None"
+             " (f only has side effects).");
 
 static PyObject * EmbeddedR_getWriteConsole(PyObject *self,
                                             PyObject *args)
@@ -248,7 +249,9 @@ static PyObject * EmbeddedR_getWriteConsole(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_getWriteConsole_doc,
-             "Retrieve current R console output handler (see setWriteConsole).");
+             "get_writeconsole()\n\n"
+             "Retrieve the current R console output handler"
+             " (see set_writeconsole)");
 
 
 
@@ -302,7 +305,10 @@ static PyObject* EmbeddedR_setShowMessage(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_setShowMessage_doc,
-            "Use the function to handle R's alert messages.");
+             "set_showmessage(f)\n\n"
+             "Set how to handle alert message from R with either None"
+             " or a function f such as f(message) returns None"
+             " (f only has side effects).");
 
 static PyObject * EmbeddedR_getShowMessage(PyObject *self,
                                             PyObject *args)
@@ -311,7 +317,10 @@ static PyObject * EmbeddedR_getShowMessage(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_getShowMessage_doc,
-             "Retrieve current R console output handler (see setShowMessage).");
+             "get_showmessage()\n\n"
+             "Retrieve the current R alert message handler"
+             " (see set_showmessage)");
+
 
 static void
 EmbeddedR_ShowMessage(const char *buf)
@@ -365,9 +374,10 @@ static PyObject* EmbeddedR_setReadConsole(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_setReadConsole_doc,
-             "Set the function handling input to the R console.\n\n"
-             ":param f: a callback function such as "
-             "result <- f(prompt) \n");
+             "set_readconsole(f)\n\n"
+             "Set how to handle input to R with either None"
+             " or a function f such as f(prompt) returns the string"
+             " message to be passed to R");
 
 static PyObject * EmbeddedR_getReadConsole(PyObject *self,
                                             PyObject *args)
@@ -376,7 +386,9 @@ static PyObject * EmbeddedR_getReadConsole(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_getReadConsole_doc,
-             "Retrieve current R console output handler (see setReadConsole).");
+             "get_readconsole()\n\n"
+             "Retrieve the current R alert message handler"
+             " (see set_readconsole)");
 
 static int
 EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf, 
@@ -464,9 +476,10 @@ static PyObject* EmbeddedR_setFlushConsole(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_setFlushConsole_doc,
-             "Set the behavior for ensuring that the console buffer is flushed.\n\n"
-             ":param f: callback function such as "
-             "None <- f()\n");
+             "set_flushconsole(f)\n\n"
+             "Set how to handle the flushing to the R conso with either None"
+             " or a function f such as f() returns None"
+             " (f only has side effects).");
 
 static PyObject * EmbeddedR_getFlushConsole(PyObject *self,
                                             PyObject *args)
@@ -475,7 +488,9 @@ static PyObject * EmbeddedR_getFlushConsole(PyObject *self,
 }
 
 PyDoc_STRVAR(EmbeddedR_getFlushConsole_doc,
-             "Retrieve current R console output handler (see setFlushConsole).");
+             "get_flushconsole()\n\n"
+             "Retrieve the current R handler to flush the console"
+             " (see set_flushconsole)");
 
 static void
 EmbeddedR_FlushConsole(void)
@@ -760,7 +775,7 @@ EmbeddedR_CleanUp(SA_TYPE saveact, int status, int runLast)
   
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
-	     and the Python exception raised up.*/
+             and the Python exception raised up.*/
     /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
     PyErr_Clear();
@@ -787,14 +802,14 @@ EmbeddedR_CleanUp(SA_TYPE saveact, int status, int runLast)
 
   if (saveact == SA_SAVEASK) {
     if (R_Interactive) {
-      /* if (cleanUpCallback != NULL) {	 */
-	
-      /* 	} */
+      /* if (cleanUpCallback != NULL) {  */
+        
+      /*        } */
       /* } else { */
-	saveact = SaveAction;
+        saveact = SaveAction;
       /* } */
     } else {
-	saveact = SaveAction;
+        saveact = SaveAction;
     }
   }
   switch (saveact) {
@@ -1641,7 +1656,7 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|iO!", 
                                     kwlist,
                                     &sourceObject,
-				    &sexptype,
+                                    &sexptype,
                                     &PyBool_Type, &copy)) {
     return -1;
   }
@@ -1889,15 +1904,15 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       argValue = PyTuple_GetItem(tmp_obj, 1);
       is_PySexpObject = PyObject_TypeCheck(argValue, &Sexp_Type);
       if (! is_PySexpObject) {
-	if ( argValue == Py_None ) {
-	  argValue = R_NilValue;
-	} else {
-	  PyErr_Format(PyExc_ValueError, 
-		       "All named parameters must be of type Sexp_Type or None");
-	  Py_DECREF(tmp_obj);     
-	  Py_XDECREF(citems);
-	  goto fail;
-	}
+        if ( argValue == Py_None ) {
+          argValue = R_NilValue;
+        } else {
+          PyErr_Format(PyExc_ValueError, 
+                       "All named parameters must be of type Sexp_Type or None");
+          Py_DECREF(tmp_obj);     
+          Py_XDECREF(citems);
+          goto fail;
+        }
       }
       Py_DECREF(tmp_obj);
       tmp_R = RPY_SEXP((PySexpObject *)argValue);
