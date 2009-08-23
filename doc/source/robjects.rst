@@ -791,6 +791,18 @@ In Python it can then write:
 Things are also not always that simple, as the use of a dictionary does
 not ensure that the order in which the parameters are passed is conserved.
 
+R is capable of introspection, and can return the arguments accepted
+by a function through the function `formals()`, modelled as a method of
+:class:`Function`.
+
+>>> from rpy2.robjects.packages import importr
+>>> stats = importr('stats')
+>>> rnorm = stats.rnorm
+>>> rnorm.formals()
+<Vector - Python:0x8790bcc / R:0x93db250>
+>>> tuple(rnorm.formals().names)
+('n', 'mean', 'sd')
+
 The R functions as defined in :mod:`rpy2.robjects` inherit from the class
 :class:`rpy2.rinterface.SexpClosure`, and further documentation
 on the behavior of function can be found in Section :ref:`rinterface-functions`.
@@ -833,14 +845,15 @@ The class :class:`robjects.Formula` is representing an `R` formula.
 .. code-block:: python
 
   x = robjects.Vector(array.array('i', range(1, 11)))
-  y = x.r + robjects.r.rnorm(10, sd=0.2)
+  y = x.r + rnorm(10, sd=0.2)
 
   fmla = robjects.Formula('y ~ x')
   env = fmla.environment
   env['x'] = x
   env['y'] = y
 
-  fit = robjects.r.lm(fmla)
+  stats = importr('lm')
+  fit = stats.lm(fmla)
 
 One drawback with that approach is that pretty printing of
 the `fit` object is note quite as clear as what one would
@@ -873,8 +886,8 @@ the package to the R `search path`).
 
 .. code-block:: python
 
-   import rpy2.robjects.packages as rpackages
-   utils = rpackages.importr("utils")
+   from rpy2.robjects.packages import importr
+   utils = importr("utils")
 
 The object :obj:`utils` is now a module-like object, in the sense that
 its :attr:`__dict__` contains keys corresponding to the R symbols.
@@ -894,10 +907,10 @@ This is not unlike what could be found in :mod:`rpy`, but with distinctive
 differences: 
 
 - The translation is performed once, when the package is imported,
-  and the results cached
+  and the results cached. The caching allows us to perform the check below.
 
 - A check that the translation is not masking other R symbols in the package
-  is performed.
+  is performed (e.g., both 'print_me' and 'print.me' are present).
   Should it happen, a :class:`rpy2.robjects.packages.LibraryError` is raised,
   an the optional parameter *translation* to :func:`importr`
   shoud be used.
@@ -917,6 +930,9 @@ differences:
    >>> utils.__dict__['?']
    <Function - Python:0x913796c / R:0x9366fac>
 
+
+.. automodule:: rpy2.robjects.packages
+   :members:
 
 Installing/removing R packages
 ------------------------------

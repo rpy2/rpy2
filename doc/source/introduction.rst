@@ -55,10 +55,17 @@ With :mod:`rpy2`:
 
    Under the hood, the variable `pi` is gotten by default from the
    R *base* package, unless an other variable with the name `pi` was
-   created in R's `.globalEnv`. The Section :ref:`robjects-environments`
-   tells more about that.
+   created in R's `.globalEnv`. 
+   
+   Whenever one wishes to be specific about where the symbol
+   should be looked for (which should be most of the time),
+   it possible to wrap R packages in Python module-like objects
+   (see :ref:`robjects-packages`).
+   
+   For more details on environments, see Section 
+   :ref:`robjects-environments`.
 
-   Also note that pi is not a scalar but a vector of length 1
+   Also, note that *pi* is not a scalar but a vector of length 1
 
 
 Evaluating R code
@@ -108,31 +115,45 @@ Example:
 .. code-block:: r
 
    robjects.r('''
-	   f <- function(r) { 2 * pi * r }
+	   f <- function(r, verbose=FALSE) {
+               if (verbose) {
+                   cat("I am calling f().\n")
+               }
+               2 * pi * r 
+           }
            f(3)
 	   ''')
 
-
 The expression above will return the value 18.85, 
-but first also creates an R function
-`f`. That function `f` is present in the R `Global Environement`, and can
+but first creates an R function `f`. 
+That function `f` is present in the R `Global Environement`, and can
 be accessed with the `__getitem__` mechanism outlined above:
 
 >>> r_f = robjects.globalenv['f']
 >>> print(r_f.r_repr())
-function (r) 
+function (r, verbose = FALSE) 
 {
+    if (verbose) {
+        cat("I am calling f().\n")
+    }
     2 * pi * r
 }
 
-or 
+.. note:: 
 
->>> r_f = robjects.r['f']
->>> print(r_f.r_repr())
-function (r) 
-{
-    2 * pi * r
-}
+   As shown earlier, an alternative way to get the function
+   is to get it from the :class:`R` singleton
+
+   >>> r_f = robjects.r['f']
+
+
+The function r_f is callable, and can be used like a regular Python function.
+
+>>> res = r_f(3)
+
+Jump to Section :ref:`robjects-introduction-functions` for more on calling
+functions.
+
 
 Interpolating R objects into R code strings
 -------------------------------------------
@@ -209,6 +230,8 @@ R functions:
 [2,]  2.2  4.4  6.6
 
 
+.. _robjects-introduction-functions:
+
 Calling R functions
 ===================
 
@@ -219,7 +242,7 @@ Python functions:
 >>> rsum(robjects.IntVector([1,2,3]))[0]
 6L
 
-Keywords can be used with the same ease:
+Keywords will also be working:
 
 >>> rsort = robjects.r['sort']
 >>> res = rsort(robjects.IntVector([1,2,3]), decreasing=True)
@@ -300,8 +323,13 @@ One way to achieve the same with :mod:`rpy2.robjects` is
    lm_D9 = r.lm("weight ~ group")
    print(r.anova(lm_D9))
 
+   # omitting the intercept
    lm_D90 = r.lm("weight ~ group - 1")
    print(r.summary(lm_D90))
+
+This way to perform a linear fit it matching precisely the way in R presented
+above, but there are other ways (see Section :ref:`robjects-formula`
+for storing the variables directly in the lookup environment of the formula).
 
 Q: Now how to extract data from the resulting objects ?
 
@@ -339,6 +367,8 @@ $coefficients
 
 More about extracting elements from vectors is available
 at :ref:`robjects-extracting`.
+
+
    
 Principal component analysis
 ----------------------------
