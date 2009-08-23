@@ -431,6 +431,8 @@ Convenience classes are provided to create vectors of a given type:
    single: SexpEnvironment
    single: rinterface; SexpEnvironment
 
+.. _rinterface-sexpenvironment:
+
 :class:`SexpEnvironment`
 ------------------------
 
@@ -553,12 +555,15 @@ In a `Python` programmer's perspective, it would be nice to map loaded `R`
 packages as modules and provide access to `R` objects in packages the
 same way than `Python` object in modules are accessed.
 
-This is unfortunately not possible in a robust way: the dot character `.`
+This is unfortunately not possible in a completely
+robust way: the dot character `.`
 can be used for symbol names in R (like pretty much any character), and
 this can make an exact correspondance between `R` and `Python` names 
 rather difficult.
 :mod:`rpy` uses transformation functions that translates '.' to '_' and back,
-but this can lead to complications since '_' can also be used for R symbols. 
+but this can lead to complications since '_' can also be used for R symbols 
+(although this is the approach taken for the high-level interface, see
+Section :ref:`robjects-packages`).
 
 There is a way to provide explict access to object in R packages, since
 loaded packages can be considered as environments. To make it convenient

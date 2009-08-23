@@ -199,6 +199,6 @@ latex_logo = 'rpy2_logo.png'
 #latex_use_modindex = True
 
 
-# Example configuration for intersphinx: refer to the Python standard library.
+# intersphinx:.
 intersphinx_mapping = {'http://docs.python.org/': None,
                        'http://docs.scipy.org/doc/numpy': None}

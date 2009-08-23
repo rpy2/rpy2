@@ -930,9 +930,30 @@ differences:
    >>> utils.__dict__['?']
    <Function - Python:0x913796c / R:0x9366fac>
 
-
 .. automodule:: rpy2.robjects.packages
    :members:
+
+Finding where an R symbol is coming from
+----------------------------------------
+
+Knowning which object is effectively considered when a given symbol
+is resolved can of much importance in R, as the number of packages
+attached grows and the use of the namespace accessors "::" and ":::" 
+is not so frequent.
+
+The function :func:`wherefrom` offers a way to find it:
+
+>>> import rpy2.robjects.packages as rpacks
+>>> env = rpacks.wherefrom('lm')
+>>> env.do_slot('name')[0]
+'package:stats'
+
+
+.. note::
+
+   This does not generalize completely, and more details regarding
+   environment, and packages as environment should be checked
+   Section :ref:`rinterface-sexpenvironment`.
 
 Installing/removing R packages
 ------------------------------

@@ -4,9 +4,6 @@ from rpy2 import robjects
 from rpy2.robjects.lib import grid
 from rpy2.robjects.packages import importr
 
-# load an R dataset
-data = robjects.baseenv.get("data")
-
 # The R 'print' function
 rprint = robjects.globalenv.get("print")
 stats = importr('stats')
@@ -30,9 +27,8 @@ dataf_rnorm = robjects.DataFrame({'value': rnorm(300, mean=0) + rnorm(100, mean=
 grdevices.png('../../_static/graphics_lattice_xyplot_1.png',
               width = 512, height = 512)
 #-- xyplot1-begin
-data("mtcars")
-mtcars = robjects.globalenv["mtcars"]
-
+datasets = importr('datasets')
+mtcars = datasets.mtcars
 formula = robjects.Formula('mpg ~ wt')
 formula.getenvironment()['mpg'] = mtcars.rx2('mpg')
 formula.getenvironment()['wt'] = mtcars.rx2('wt')
@@ -67,8 +63,11 @@ grdevices.dev_off()
 #-- setupggplot2-begin
 import rpy2.robjects.lib.ggplot2 as ggplot2
 import rpy2.robjects as ro
-ro.r.data("mtcars")
-mtcars = ro.r("mtcars")
+from rpy2.robjects.packages import importr
+
+datasets = importr('datasets')
+mtcars = datasets.mtcars
+
 #-- setupggplot2-end
 
 grdevices.png('../../_static/graphics_ggplot2mtcars.png',
@@ -216,8 +215,8 @@ pp.plot(vp = vp)
 vp = grid.viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
 #-- ggplot2geomfreqpolyfillcyl-begin
 pp = gp + \
-     ggplot2.aes(x='value', fill='factor(mean)', alpha=0.5) + \
-     ggplot2.geom_density()
+     ggplot2.aes(x='value', fill='factor(mean)') + \
+     ggplot2.geom_density(alpha = 0.5)
 #-- ggplot2geomfreqpolyfillcyl-end
 pp.plot(vp = vp)
 
@@ -389,7 +388,7 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2_smoothbycylwithcolours.png',
               width = 512, height = 512)
 #-- ggplot2smoothbycylwithcolours-begin
-pp = gp + \
+pp = ggplot2.ggplot(mtcars) + \
      ggplot2.aes(x='wt', y='mpg', col='factor(cyl)') + \
      ggplot2.geom_point() + \
      ggplot2.geom_smooth(ggplot2.aes(group = 'cyl'),

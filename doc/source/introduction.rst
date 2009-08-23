@@ -285,6 +285,21 @@ Graphics and plots
 Setting dynamically the number of arguments in a function call can be
 done the usual way in python
 
+There are several ways to plot data in `R`, some of which are
+presented in this documentation:
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- setupggplot2-begin
+   :end-before: #-- setupggplot2-end
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2smoothbycylwithcolours-begin
+   :end-before: #-- ggplot2smoothbycylwithcolours-end
+
+   
+.. image:: _static/graphics_ggplot2_smoothbycylwithcolours.png
+   :scale: 50
+
 More about plots and graphics in R, as well as more advanced
 plots are presented in Section :ref:`graphics`.
 
