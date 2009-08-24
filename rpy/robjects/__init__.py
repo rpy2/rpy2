@@ -131,6 +131,7 @@ class RObjectMixin(object):
             tmp = baseNameSpaceEnv["file"](tfile, open="r")
         s = baseNameSpaceEnv["readLines"](tmp)
         if sys.platform == 'win32':
+            baseNameSpaceEnv["close"](tmp)
             baseNameSpaceEnv["unlink"](tfile)
         else:
             r.close(tmp)
