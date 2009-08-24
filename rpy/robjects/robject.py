@@ -34,6 +34,7 @@ class RObjectMixin(object):
             tmp = self.__file(tfile, open = rpy2.rinterface.StrSexpVector(["r", ]))
         s = self.__readlines(tmp)
         if sys.platform == 'win32':
+            self.__close(tmp)
             self.__unlink(tfile)
         else:
             self.__close(tmp)

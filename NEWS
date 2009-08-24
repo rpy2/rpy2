@@ -186,6 +186,24 @@ Bugs fixed
   (instead of :class:`Array`)
 
 
+Release 2.0.7
+=============
+
+Bugs fixed
+----------
+
+- On win32, printing an object was leaving an open file handle behind each time,
+  leading to an error and the impossibility to print
+  (# bug report and fix by Christopher Gutierrez)
+
+
+Release 2.0.6
+=============
+
+No user-visible change. Win32-specific additions to the C module
+were made to compile it.
+
+
 Release 2.0.5
 =============
 
