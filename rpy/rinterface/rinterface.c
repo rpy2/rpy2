@@ -100,6 +100,11 @@ static PyObject *initOptions;
 static SEXP errMessage_SEXP;
 static PyObject *RPyExc_RuntimeError = NULL;
 
+#ifdef Win32
+/* R instance as a global */
+Rstart Rp;
+#endif
+
 /* FIXME: see the details of interruption */
 /* Indicates whether the R interpreter was interrupted by a SIGINT */
 int interrupted = 0;
@@ -955,7 +960,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
 #else
   /* --- Win32 --- */
   structRstart rp;
-  Rstart Rp = &rp;
+  Rp = &rp;
 
   char RHome[260];
   char RUser[260];
@@ -1105,6 +1110,34 @@ PyDoc_STRVAR(EmbeddedR_end_doc,
              "endEmbeddedR()\n\
              \n\
              Terminate an embedded R.");
+
+
+
+static PyObject* EmbeddedR_setinteractive(PyObject *self, PyObject *status)
+{
+  if (! PyBool_Check(status)) {
+    PyErr_SetString(PyExc_ValueError, "The status must be a boolean");
+    return NULL;
+  }
+  int rtruefalse;
+  if (PyObject_IsTrue(status)) {
+    rtruefalse = TRUE;
+  } else {
+    rtruefalse = FALSE;
+  }
+  #ifdef Win32
+  Rp->R_Interactive = rtruefalse;
+  #else
+  R_Interactive = rtruefalse;
+  #endif
+  Py_RETURN_NONE;
+}
+PyDoc_STRVAR(EmbeddedR_setinteractive_doc,
+             "set_interactive(status)\n\
+             \n\
+             Set the interactivity status for R.\n\
+             (This function exists for experimentation purposes,\n\
+             and could lead to an unpredictable outcome.)");
 
 
 
@@ -3420,6 +3453,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_init_doc},
   {"endr",      (PyCFunction)EmbeddedR_end,    METH_O,
    EmbeddedR_end_doc},
+  {"set_interactive",   (PyCFunction)EmbeddedR_setinteractive,  METH_O,
+   EmbeddedR_setinteractive_doc},
   {"set_writeconsole",   (PyCFunction)EmbeddedR_setWriteConsole,  METH_VARARGS,
    EmbeddedR_setWriteConsole_doc},
   {"get_writeconsole",   (PyCFunction)EmbeddedR_getWriteConsole,  METH_VARARGS,

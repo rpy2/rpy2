@@ -95,7 +95,11 @@ New Features
 
 - Crash when trying to create a SexpVector of a non-vector type
 
-- pairlists (LISTSXP) now handled
+- Pairlists (LISTSXP) now handled
+
+- Experimental function :func:`set_interactive` to set whether R is in interactive
+  mode or not (#following an issue reported by Yaroslav Halchenko)
+
 
 :mod:`rpy2.rlike`:
 
