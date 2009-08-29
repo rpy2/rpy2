@@ -138,7 +138,17 @@ from garbage collection.
 
 Such objects can be created when using the constructor for an `Sexp*` class.
 
+Pass-by-value paradigm
+----------------------
 
+The root of the R language is functional, with arguments passed by value.
+R is actually using tricks to lower memory usage, such as only copying an object
+when needed (that is when the object is modified in a local block),
+but copies of objects are nevertheless frequent. This can remain unnoticed
+by a user until large objects are in use or a large number of modification
+of objects are performed, in which case performance issues may appear.
+
+In :mod:`rpy2`, 
 
 Interactive features
 ====================
@@ -811,6 +821,9 @@ Vector types
 
 :const:`VECSXP`
   List
+
+:const:`LISTSXP`
+  Paired list
 
 :const:`LANGSXP`
   Language object.

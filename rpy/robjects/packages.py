@@ -58,7 +58,7 @@ class Package(object):
 
 
 class LibraryError(ImportError):
-    """ Error occuring with importing an R library """
+    """ Error occuring when importing an R library """
     pass
 
 
