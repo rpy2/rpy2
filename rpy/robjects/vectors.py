@@ -175,8 +175,10 @@ class Vector(RObjectMixin, rinterface.SexpVector):
                      "Names for the items in the vector.")
 
     def sample(self, n, replace = False, probabilities = None):
-        """ Draw a sample of size n from the vector. If 'replace' is True,
-        the """
+        """ Draw a sample of size n from the vector. 
+        If 'replace' is True, the sampling is done with replacement.
+        The optional argument 'probabilities' indicates sampling probabilities. """
+
         assert isinstance(n, int)
         assert isinstance(replace, bool)
         if probabilities is not None:
