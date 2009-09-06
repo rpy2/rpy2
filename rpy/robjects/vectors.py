@@ -511,7 +511,7 @@ class Function(RObjectMixin, rinterface.SexpClosure):
 
     def __call__(self, *args, **kwargs):
         new_args = [conversion.py2ri(a) for a in args]
-	new_kwargs = {}
+        new_kwargs = {}
         for k, v in kwargs.iteritems():
             new_kwargs[k] = conversion.py2ri(v)
         res = super(Function, self).__call__(*new_args, **new_kwargs)
