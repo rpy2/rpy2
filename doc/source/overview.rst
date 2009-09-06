@@ -43,7 +43,9 @@ Installation
 Requirements
 ------------
 
-Python version 2.4 or higher, as well as R-2.7.0 or higher are required.
+Python version 2.4 or greater, as well as R-2.7.0 or greater are required
+(R-2.8.0 or greater is recommended as R-2.7 has shown stability issues
+when used with rpy2).
 
 Currently the development is mostly done on Linux and a bit MacOS X with the
 following version for the softwares:
@@ -65,24 +67,28 @@ on OS X and yet produce fully functional binaries.
 Download
 --------
 
-In theory we could have available for download:
+The following options are, or could be, available for download:
 
-  * Source packages.
+  * Source packages. Released versions are available on Sourceforge as well as
+    on Pypy. Snapshots of the development version can downloaded from
+    bitbucket
+
+    .. note::
+       The repository on bitbucket has several branches. Make sure to select
+       the one you are interested in.
 
   * Pre-compiled binary packages for
 
-    * Microsoft's Windows
+    * Microsoft's Windows (releases are on Sourceforge, irregular snapshots 
+      for the dev version on bitbucket)
 
-    * Apple's MacOS X
+    * Apple's MacOS X (although Fink and Macports are available, there does not
+      seem to be binaries currently available)
 
     * Linux distributions
 
 `rpy2` has been reported compiling successfully on all 3 platforms, provided
 that development items such as Python headers and a C compiler are installed.
-
-
-Check on the `Sourceforge download page <http://downloads.sourceforge.net/rpy>`_
-what is available.
 
 .. note::
    Choose files from the `rpy2` package, not `rpy`.
