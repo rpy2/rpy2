@@ -230,7 +230,7 @@ class R(object):
 
     def __getitem__(self, item):
         res = rinterface.globalenv.get(item)
-	res = conversion.ri2py(res)
+        res = conversion.ri2py(res)
         res.name = item
         return res
 
