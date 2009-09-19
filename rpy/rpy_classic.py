@@ -196,7 +196,7 @@ class Robj(object):
             if isinstance(a, ri.Sexp):
                 a = a
             elif isinstance(a, Robj):
-                a = a.getSexp()
+                a = a.get_sexp()
             else:
                 a = py2rpy(a)
             args_r.append(a)
@@ -206,7 +206,7 @@ class Robj(object):
             if isinstance(a, ri.Sexp):
                 a = a
             elif isinstance(a, Robj):
-                a = a.getSexp()
+                a = a.get_sexp()
             else:                
                 a = py2rpy(a)
             kwargs_r[a_n] = a
