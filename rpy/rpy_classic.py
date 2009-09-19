@@ -216,8 +216,12 @@ class Robj(object):
         return res
 
     def __getitem__(self, item):
-        res = self.__sexp[item]
-        res = rpy2py(res)
+        if not isinstance(item, Robj):
+            item = py2rpy(item)
+        res = r["["](self.__sexp, item)
+        mode = self.__local_mode
+        if mode == BASIC_CONVERSION:
+            res = rpy2py(res)
         return res
 
     ##FIXME: not part of RPy-1.x.
