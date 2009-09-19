@@ -73,7 +73,7 @@ R space and Python space
 
 When using the RPy2 package, two realms are co-existing: R and Python.
 
-The :class:`Sexp_Type` objects can be considered as Python enveloppes pointing
+The :class:`Sexp_Type` objects can be considered as Python envelopes pointing
 to data stored and administered in the R space.
 
 R variables are existing within an embedded R workspace, and can be accessed
@@ -203,7 +203,7 @@ An example should make it obvious::
 
    .. versionadded:: 2.0.3
 
-Flushing output from the console will be handlded with
+Flushing output from the console will be handled with
 
 .. autofunction:: setFlushConsole(f)
 
