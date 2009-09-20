@@ -157,7 +157,7 @@ def rpy2py_basic(obj):
         elif obj.typeof in [ri.VECSXP]:
             res = [rpy2py(x) for x in obj]
         else:
-            raise ValueError("Invalid type for 'obj'.")
+            raise ValueError("Invalid type %i (%s) for 'obj'." %(obj.typeof, ri.str_typeint(obj.typeof)))
     else:
         res = Robj(obj)
     return res
