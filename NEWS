@@ -7,6 +7,12 @@ Bugs fixed
   leading to an error and the impossibility to print
   (# bug report and fix by Christopher Gutierrez)
 
+- :mod:`rpy_classic` threw errors about an unknown 'getSexp' when trying to extract
+  elements from an object
+
+- :mod:`rpy_classic` had issues when switching between the CONVERSION/NO_CONVERSION
+   modes
+
 
 Release 2.0.6
 =============
