@@ -452,6 +452,32 @@ grdevices.dev_off()
 # grdevices.dev_off()
 
 
+grdevices.png('../../_static/graphics_grid.png',
+              width = 512, height = 512)
+#-- grid-begin
+grid.newpage()
+# create a rows/columns layout
+lt = grid.layout(2, 3)
+vp = grid.viewport(layout = lt)
+# push it the plotting stack
+vp.push()
+
+# create a viewport located at (1,1) in the layout
+vp = grid.viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
+# create a (unit) rectangle in that viewport
+grid.rect(vp = vp).draw()
+
+vp = grid.viewport(**{'layout.pos.col':2, 'layout.pos.row': 2})
+# create text in the viewport at (1,2)
+grid.text("foo", vp = vp).draw()
+
+vp = grid.viewport(**{'layout.pos.col':3, 'layout.pos.row': 1})
+# create a (unit) circle in the viewport (1,3)
+grid.circle(vp = vp).draw()
+
+#-- grid-end
+grdevices.dev_off()
+
 
 
 

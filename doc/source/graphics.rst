@@ -437,9 +437,9 @@ Package *grid*
 
 The *grid* package is the underlying plotting environment for *lattice*
 and *ggplot2* figures. In few words, it consists in pushing and poping systems
-of coordinates (*viewports*) into a stack, 
-and plotting graphical elements into them.
-
+of coordinates (*viewports*) into a stack, and plotting graphical elements into them.
+The system can be thought of as a scene graph, with each *viewport* a node in
+the graph.
 
 >>> from rpy2.robjects.lib import grid
 
@@ -462,26 +462,13 @@ Pushing into the current viewport, can be done by using the class method
 
 Example:
 
-.. code-block:: python
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- grid-begin
+   :end-before: #-- grid-end
+   
+.. image:: _static/graphics_grid.png
+   :scale: 50
 
-   # create a rows/columns layout
-   lt = grid.layout(1, 3)
-   vp = grid.viewport(layout = lt)
-   # push it the plotting stack
-   vp.push()
-
-   # create a viewport located at (1,1) in the layout
-   vp = grid.Viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
-   # create a (unit) rectangle in that viewport
-   grid.rect(vp = vp).draw()
-
-   vp = grid.Viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
-   # create text in the viewport at (1,2)
-   grid.text("foo", vp = vp).draw()
-
-   vp = grid.Viewport(**{'layout.pos.col':3, 'layout.pos.row': 1})
-   # create a (unit) circle in the viewport (1,3)
-   grid.circle(vp = vp).draw()
 
 .. autoclass:: rpy2.robjects.lib.grid.Viewport(o)
    :show-inheritance:
