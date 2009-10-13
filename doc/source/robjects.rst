@@ -894,7 +894,7 @@ its :attr:`__dict__` contains keys corresponding to the R symbols.
 For example the R function *data()* can be accessed like:
 
 >>> utils.data
-<Function - Python:0x913754c / R:0x943bdf8>
+<SignatureTranslatedFunction - Python:0x913754c / R:0x943bdf8>
 
 Unfortunately, accessing an R symbol can be a little less straightforward
 as R symbols can contain characters that are invalid in Python symbols.
@@ -912,7 +912,7 @@ differences:
 - A check that the translation is not masking other R symbols in the package
   is performed (e.g., both 'print_me' and 'print.me' are present).
   Should it happen, a :class:`rpy2.robjects.packages.LibraryError` is raised,
-  an the optional parameter *translation* to :func:`importr`
+  the optional parameter *robject_translations* to :func:`importr`
   shoud be used.
 
 - The translation is concerning one package, limiting the risk
@@ -929,6 +929,19 @@ differences:
 
    >>> utils.__dict__['?']
    <Function - Python:0x913796c / R:0x9366fac>
+
+In addition to the translation of robjects symbols,
+objects that are R functions see their named arguments translated as similar way
+(with '.' becoming '_' in Python).
+
+>>> base = importr('base')
+>>> base.scan._prm_translate
+{'blank_lines_skip': 'blank.lines.skip',
+ 'comment_char': 'comment.char',
+ 'multi_line': 'multi.line',
+ 'na_strings': 'na.strings',
+ 'strip_white': 'strip.white'}
+
 
 .. automodule:: rpy2.robjects.packages
    :members:
