@@ -19,20 +19,19 @@ from rpy2.robjects.methods import RS4
 from rpy2.robjects.vectors import *
 
 
-parse = rinterface.baseenv['parse']
-reval = rinterface.baseenv['eval']
+_parse = rinterface.baseenv['parse']
+_reval = rinterface.baseenv['eval']
 # missing values
-NA_real = reval(parse(text = rinterface.StrSexpVector(("NA_real_", ))))
-NA_integer = reval(parse(text = rinterface.StrSexpVector(("NA_integer_", ))))
-NA_bool = reval(parse(text = rinterface.StrSexpVector(("NA", ))))
-NA_character = reval(parse(text = rinterface.StrSexpVector(("NA_character_", ))))
-NA_complex = reval(parse(text = rinterface.StrSexpVector(("NA_complex_", ))))
+NA_real = _reval(_parse(text = rinterface.StrSexpVector(("NA_real_", ))))
+NA_integer = _reval(_parse(text = rinterface.StrSexpVector(("NA_integer_", ))))
+NA_bool = _reval(_parse(text = rinterface.StrSexpVector(("NA", ))))
+NA_character = _reval(_parse(text = rinterface.StrSexpVector(("NA_character_", ))))
+NA_complex = _reval(_parse(text = rinterface.StrSexpVector(("NA_complex_", ))))
 # NULL
-NULL = reval(parse(text = rinterface.StrSexpVector(("NULL", ))))
+NULL = _reval(_parse(text = rinterface.StrSexpVector(("NULL", ))))
 # TRUE/FALSE
-TRUE = reval(parse(text = rinterface.StrSexpVector(("TRUE", ))))
-FALSE = reval(parse(text = rinterface.StrSexpVector(("FALSE", ))))
-del(parse)
+TRUE = _reval(_parse(text = rinterface.StrSexpVector(("TRUE", ))))
+FALSE = _reval(_parse(text = rinterface.StrSexpVector(("FALSE", ))))
 
 
 
