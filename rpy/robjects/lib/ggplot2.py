@@ -202,7 +202,8 @@ class FacetWrap(Facet):
 facet_wrap = FacetWrap.new
 
 class Geom(GBaseObject):
-    pass
+   pass
+       
 
 class GeomAbline(Geom):
    _constructor = ggplot2_env['geom_abline']
