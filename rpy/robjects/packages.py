@@ -2,8 +2,8 @@ import rpy2.rinterface as rinterface
 import rpy2.robjects.lib
 import rpy2.robjects.conversion as conversion
 
-require = rinterface.baseenv['require']
-as_env = rinterface.baseenv['as.environment']
+_require = rinterface.baseenv['require']
+_as_env = rinterface.baseenv['as.environment']
 
 class Package(object):
     """ Models an R package
@@ -64,10 +64,10 @@ class LibraryError(ImportError):
 
 def importr(name, translation = {}):
     """ Import an R package (and return a module-like object). """
-    ok = require(rinterface.StrSexpVector([name, ]))[0]
+    ok = _require(rinterface.StrSexpVector([name, ]))[0]
     if not ok:
         raise LibraryError("The R package %s could not be imported" %name)
-    env = as_env(rinterface.StrSexpVector(['package:'+name, ]))
+    env = _as_env(rinterface.StrSexpVector(['package:'+name, ]))
     pack = Package(env, name, translation = translation)
 
     return pack
