@@ -39,8 +39,7 @@ ggplot = GGPlot.new
 
 
 class Aes(robjects.Vector):
-    _constructor = ggplot2_env['aes_string']
-    #_constructor = ggplot2_env['aes']
+    _constructor = ggplot2_env['aes']
     
     @classmethod
     def new(cls, **kwargs):
@@ -50,6 +49,19 @@ class Aes(robjects.Vector):
        res = cls(cls._constructor(**new_kwargs))
        return res
 aes = Aes.new
+
+class AesString(robjects.Vector):
+    _constructor = ggplot2_env['aes_string']
+    
+    @classmethod
+    def new(cls, **kwargs):
+       new_kwargs = copy.copy(kwargs)
+       for k,v in kwargs.iteritems():
+          new_kwargs[k] = as_symbol(v)
+       res = cls(cls._constructor(**new_kwargs))
+       return res
+aes_string = AesString.new
+
 
 class Layer(robjects.RObject):
     _constructor = ggplot2_env['layer']
