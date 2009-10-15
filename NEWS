@@ -52,8 +52,11 @@ New Features
 
 - :data:`ComplexVector` for vectors of complex (real + imaginary) elements
 
-- :mod:`packages` to provide utilty functions to handle R packages
+- :mod:`packages` to provide utility functions to handle R packages
   (import of R packages)
+
+- :mod:`functions` to provide classes related to R functions, with the new 
+  class :class:`SignatureTranslatedFunction`
 
 :mod:`rpy2.rinterface`:
 

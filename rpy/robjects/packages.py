@@ -1,7 +1,7 @@
 import rpy2.rinterface as rinterface
 import rpy2.robjects.lib
 import rpy2.robjects.conversion as conversion
-from rpy2.robjects import Function
+from rpy2.robjects.functions import SignatureTranslatedFunction
 from rpy2.robjects import NULL
 
 _require = rinterface.baseenv['require']
@@ -61,31 +61,6 @@ class Package(object):
 
 
 
-class SignatureTranslatedFunction(Function):
-    """ Wraps an R function in such way that the R argument names with the
-    character '.' are replaced with '_' whenever present """
-    _prm_translate = None
-
-    def __init__(self, *args):
-        super(SignatureTranslatedFunction, self).__init__(*args)
-        prm_translate = {}
-        if not self.formals().rsame(NULL):
-            for r_param in self.formals().names:
-                py_param = r_param.replace('.', '_')
-                if py_param in prm_translate:
-                    raise ValueError("Error: '%s' already in the transalation table" %r_param)
-                if py_param != r_param:
-                    prm_translate[py_param] = r_param
-        self._prm_translate = prm_translate
-
-    def __call__(self, *args, **kwargs):
-        prm_translate = self._prm_translate
-        for k in tuple(kwargs.keys()):
-            r_k = prm_translate.get(k, None)
-            if r_k is not None:
-                v = kwargs.pop(k)
-                kwargs[r_k] = v
-        return super(SignatureTranslatedFunction, self).__call__(*args, **kwargs)
 
 class SignatureTranslatedPackage(Package):
     def __fill_rpy2r__(self):

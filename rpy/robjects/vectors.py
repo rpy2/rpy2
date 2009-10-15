@@ -492,35 +492,3 @@ class DataFrame(Vector):
         res = self._write_csv(path, append = append)
         return res
     
-class Function(RObjectMixin, rinterface.SexpClosure):
-    """ An R function.
-    
-    """
-
-    __formals = baseenv_ri.get('formals')
-    __local = baseenv_ri.get('local')
-    __call = baseenv_ri.get('call')
-    __assymbol = baseenv_ri.get('as.symbol')
-    __newenv = baseenv_ri.get('new.env')
-
-    _local_env = None
-
-    def __init__(self, *args, **kwargs):
-        super(Function, self).__init__(*args, **kwargs)
-        self._local_env = self.__newenv(hash=rinterface.BoolSexpVector((True, )))
-
-    def __call__(self, *args, **kwargs):
-        new_args = [conversion.py2ri(a) for a in args]
-        new_kwargs = {}
-        for k, v in kwargs.iteritems():
-            new_kwargs[k] = conversion.py2ri(v)
-        res = super(Function, self).__call__(*new_args, **new_kwargs)
-        res = conversion.ri2py(res)
-        return res
-
-    def formals(self):
-        """ Return the signature of the underlying R function 
-        (as the R function 'formals()' would). """
-        res = self.__formals(self)
-        res = conversion.ri2py(res)
-        return res

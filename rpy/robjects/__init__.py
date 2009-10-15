@@ -17,7 +17,7 @@ import conversion
 from rpy2.robjects.robject import RObjectMixin, RObject
 from rpy2.robjects.methods import RS4
 from rpy2.robjects.vectors import *
-
+from rpy2.robjects.functions import Function, SignatureTranslatedFunction
 
 _parse = rinterface.baseenv['parse']
 _reval = rinterface.baseenv['eval']
@@ -80,7 +80,7 @@ def default_ri2py(o):
                     res = vectors.Vector(o)
 
     elif isinstance(o, rinterface.SexpClosure):
-        res = Function(o)
+        res = SignatureTranslatedFunction(o)
     elif isinstance(o, rinterface.SexpEnvironment):
         res = Environment(o)
     elif isinstance(o, rinterface.SexpS4):
