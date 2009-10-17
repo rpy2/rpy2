@@ -770,8 +770,9 @@ Python function:
 >>> plot(rnorm(100), ylab="random")
 
 This is all looking fine and simple until R parameters with names 
-such as `na.rm` are encountered. In those cases, using the special
-syntax `**kwargs` is one way to go.
+such as `na.rm` are encountered. By default, this is addressed by
+having a translation of '.' in the R parameter name into a '_' in the Python
+parameter name.
 
 Let's take an example in R:
 
@@ -785,8 +786,21 @@ In Python it can then write:
 
    from rpy2 import robjects
 
-   myparams = {'na.rm': True}
-   robjects.r.sum(0, **myparams)
+   robjects.r.sum(0, na_rm = True)
+
+.. note::
+
+   The object robjects.r.sum is an instance of :class:`SignatureTranslatedFunction`,
+   a child class of :class:`Function`, and the translation of the parameter within
+   its constructor. This saves on having to translate parameters at each function
+   call, and allow to perform sanity check regarding possible ambiguous translation.
+
+   If translation is not desired, the class :class:`Function` can be used. With
+   that class, using the special Python syntax `**kwargs` is one way to go specify
+   named parameters with a dot '.'
+
+
+
 
 Things are also not always that simple, as the use of a dictionary does
 not ensure that the order in which the parameters are passed is conserved.
@@ -811,6 +825,9 @@ on the behavior of function can be found in Section :ref:`rinterface-functions`.
    :show-inheritance:
    :members:
 
+.. autoclass:: rpy2.robjects.SignatureTranslatedFunction(*args, **kwargs)
+   :show-inheritance:
+   :members:
 
 .. index::
    pair: robjects; Formula
