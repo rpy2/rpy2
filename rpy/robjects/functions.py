@@ -44,6 +44,11 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         res = conversion.ri2py(res)
         return res
 
+    def rcall(self, *args):
+        res = super(Function, self).rcall(self, *args)
+        res = conversion.ri2py(res)
+        return res
+
 class SignatureTranslatedFunction(Function):
     """ Wraps an R function in such way that the R argument names with the
     character '.' are replaced with '_' whenever present """
