@@ -64,7 +64,7 @@ class NumpyConversionsTestCase(unittest.TestCase):
         self.assertEquals(tuple(r["dim"](i2d_r)), (2, 3))
 
         # Make sure we got the row/column swap right:
-        self.assertEquals(i2d_r.subset(1, 2)[0], i2d[0, 1])
+        self.assertEquals(i2d_r.rx(1, 2)[0], i2d[0, 1])
 
         f3d = numpy.arange(24, dtype="f").reshape((2, 3, 4))
         f3d_r = robjects.conversion.py2ri(f3d)
@@ -73,7 +73,7 @@ class NumpyConversionsTestCase(unittest.TestCase):
         self.assertEquals(tuple(r["dim"](f3d_r)), (2, 3, 4))
 
         # Make sure we got the row/column swap right:
-        self.assertEquals(f3d_r.subset(1, 2, 3)[0], f3d[0, 1, 2])
+        self.assertEquals(f3d_r.rx(1, 2, 3)[0], f3d[0, 1, 2])
 
     def testObjectArray(self):
         o = numpy.array([1, "a", 3.2], dtype=numpy.object_)

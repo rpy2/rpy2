@@ -99,22 +99,17 @@ class VectorTestCase(unittest.TestCase):
             self.assertEquals(li ** 2, mySeqPow[i])
 
         
-    def testSubsetByIndex(self):
+    def testExtractByIndex(self):
         seq_R = robjects.baseenv["seq"]
         mySeq = seq_R(0, 10)
         # R indexing starts at one
         myIndex = robjects.Vector(array.array('i', range(1, 11, 2)))
 
-        mySubset = mySeq.subset(myIndex)
-        for i, si in enumerate(myIndex):
-            self.assertEquals(mySeq[si-1], mySubset[i])
-
-        # same with the delegator
         mySubset = mySeq.rx(myIndex)
         for i, si in enumerate(myIndex):
             self.assertEquals(mySeq[si-1], mySubset[i])
         
-    def testSubsetByName(self):
+    def testExtractByName(self):
         seq_R = robjects.baseenv["seq"]
         mySeq = seq_R(0, 25)
 
@@ -125,51 +120,51 @@ class VectorTestCase(unittest.TestCase):
         # R indexing starts at one
         myIndex = robjects.Vector(letters[2])
 
-        mySubset = mySeq.subset(myIndex)
+        mySubset = mySeq.rx(myIndex)
 
         for i, si in enumerate(myIndex):
             self.assertEquals(2, mySubset[i])
 
-    def testSubsetIndexError(self):
+    def testExtractIndexError(self):
         seq_R = robjects.baseenv["seq"]
         mySeq = seq_R(0, 10)
         # R indexing starts at one
         myIndex = robjects.Vector(['a', 'b', 'c'])
 
-        self.assertRaises(ri.RRuntimeError, mySeq.subset, myIndex)
+        self.assertRaises(ri.RRuntimeError, mySeq.rx, myIndex)
 
         
-    def testAssign(self):
+    def testReplace(self):
         vec = robjects.r.seq(1, 10)
         i = array.array('i', [1, 3])
-        vec.assign(rlc.OrdDict(((None, i),)), 20)
+        vec.rx[rlc.TaggedList((i, ))] = 20
         self.assertEquals(20, vec[0])
         self.assertEquals(2, vec[1])
         self.assertEquals(20, vec[2])
         self.assertEquals(4, vec[3])
 
         i = array.array('i', [1, 5])
-        vec.assign(rlc.TaggedList((i, )), 50)
+        vec.rx[rlc.TaggedList((i, ))] = 50
         self.assertEquals(50, vec[0])
         self.assertEquals(2, vec[1])
         self.assertEquals(20, vec[2])
         self.assertEquals(4, vec[3])
         self.assertEquals(50, vec[4])
                          
-    def testSubsetRecyclingRule(self):
+    def testExtractRecyclingRule(self):
         # recycling rule
         v = robjects.Vector(array.array('i', range(1, 23)))
         m = robjects.r.matrix(v, ncol = 2)
-        col = m.subset(True, 1)
+        col = m.rx(True, 1)
         self.assertEquals(11, len(col))
 
-    def testSubsetList(self):
+    def testExtractList(self):
         # list
         letters = robjects.baseenv["letters"]
         myList = rlist(l=letters, f="foo")
         idem = robjects.baseenv["identical"]
-        self.assertTrue(idem(letters, myList.subset("l")[0]))
-        self.assertTrue(idem("foo", myList.subset("f")[0]))
+        self.assertTrue(idem(letters, myList.rx("l")[0]))
+        self.assertTrue(idem("foo", myList.rx("f")[0]))
 
     def testGetItem(self):
         letters = robjects.baseenv["letters"]

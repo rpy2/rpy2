@@ -159,6 +159,10 @@ Changes
   :class:`Matrix` (from *RMatrix*), :class:`Environment` (from *REnvironment*),
   :class:`Function` (from *RFunction*), :class:`Vector` (from *RVector*).
 
+- :class:`robjects.vectors.Vector` lost the (now redundant) methods
+  `subset` and `assign`. Those operations were just aliases to the 
+  :class:`ExtractDelegator`
+
 :mod:`rpy2.rinterface`:
 
 - :data:`globalEnv`, :data:`baseNameSpaceEnv`, and :data:`emptyEnv` 
