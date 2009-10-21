@@ -143,13 +143,6 @@ class Vector(RObjectMixin, rinterface.SexpVector):
         self.rx = ExtractDelegator(self)
         self.rx2 = DoubleExtractDelegator(self)
 
-    def subset(self, *args, **kwargs):
-        #FIXME: remove this method
-        return self.rx(*args, **kwargs)
-        
-    def assign(self, index, value):
-        self.rx[index] = value
-
     def __add__(self, x):
         res = baseenv_ri.get("c")(self, conversion.py2ri(x))
         res = conversion.ri2py(res)

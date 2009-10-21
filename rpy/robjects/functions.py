@@ -46,7 +46,7 @@ class Function(RObjectMixin, rinterface.SexpClosure):
 
     def rcall(self, *args):
         """ Wrapper around the parent method rpy2.rinterface.SexpClosure.rcall(). """
-        res = super(Function, self).rcall(self, *args)
+        res = super(Function, self).rcall(*args)
         res = conversion.ri2py(res)
         return res
 
