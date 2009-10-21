@@ -12,7 +12,8 @@ baseenv_ri = rinterface.baseenv
 utils_ri = rinterface.baseenv['as.environment'](rinterface.StrSexpVector(("package:utils", )))
 
 class ExtractDelegator(object):
-    """ Delegate the R 'extraction' of items in a vector
+    """ Delegate the R 'extraction' ("[") and 'replacement' ("[<-")
+    of items in a vector
     or vector-like object. This can help making syntactic
     niceties possible."""
     
@@ -73,7 +74,10 @@ class ExtractDelegator(object):
 
 
 class DoubleExtractDelegator(ExtractDelegator):
-
+    """ Delegate the R 'extraction' ("[[") and "replacement" ("[[<-")
+    of items in a vector
+    or vector-like object. This can help making syntactic
+    niceties possible."""
     _extractfunction = rinterface.baseenv['[[']
     _replacefunction = rinterface.baseenv['[[<-']
 
@@ -82,8 +86,7 @@ class DoubleExtractDelegator(ExtractDelegator):
 class VectorOperationsDelegator(object):
     """
     Delegate operations such as __getitem__, __add__, etc..
-    to an R call of the corresponding function on its parent
-    attribute.
+    to the corresponding R function.
     This permits a convenient coexistence between
     operators on Python sequence object with their R conterparts.
     """
@@ -127,9 +130,9 @@ class VectorOperationsDelegator(object):
 
 
 class Vector(RObjectMixin, rinterface.SexpVector):
-    """ R vector-like object. Items in those instances can
-       be accessed with the method "__getitem__" ("[" operator),
-       or with the method "subset"."""
+    """ R vector-like object. Items can be accessed with:
+    - the method "__getitem__" ("[" operator)
+    - the delegators rx or rx2 """
     _sample = rinterface.baseenv['sample']
 
     def __init__(self, o):
@@ -191,7 +194,9 @@ class Vector(RObjectMixin, rinterface.SexpVector):
 
 class StrVector(Vector):
     """ Vector of string elements """
+
     _factorconstructor = rinterface.baseenv['factor']
+
     def __init__(self, obj):
         obj = rinterface.StrSexpVector(obj)
         super(StrVector, self).__init__(obj)

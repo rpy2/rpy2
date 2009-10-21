@@ -10,6 +10,7 @@ require(rinterface.StrSexpVector(('methods', )),
 
 
 class RS4(RObjectMixin, rinterface.SexpS4):
+    """ Python representation of an R instance of class 'S4'. """
 
     def slotnames(self):
         """ Return the 'slots' defined for this object """

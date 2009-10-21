@@ -12,8 +12,7 @@ NULL = _reval(_parse(text = rinterface.StrSexpVector(("NULL", ))))
 
 
 class Function(RObjectMixin, rinterface.SexpClosure):
-    """ An R function.
-    
+    """ Python representation of an R function.
     """
 
     __formals = baseenv_ri.get('formals')
@@ -39,19 +38,21 @@ class Function(RObjectMixin, rinterface.SexpClosure):
 
     def formals(self):
         """ Return the signature of the underlying R function 
-        (as the R function 'formals()' would). """
+        (as the R function 'formals()' would).
+        """
         res = self.__formals(self)
         res = conversion.ri2py(res)
         return res
 
     def rcall(self, *args):
+        """ Wrapper around the parent method rpy2.rinterface.SexpClosure.rcall(). """
         res = super(Function, self).rcall(self, *args)
         res = conversion.ri2py(res)
         return res
 
 class SignatureTranslatedFunction(Function):
-    """ Wraps an R function in such way that the R argument names with the
-    character '.' are replaced with '_' whenever present """
+    """ Python representation of an R function such as 
+    the character '.' is replaced with '_' whenever present in the R argument name. """
     _prm_translate = None
 
     def __init__(self, *args):
