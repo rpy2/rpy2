@@ -96,8 +96,6 @@ New Features
 - :meth:`colnames`, :meth:`rownames` for :class:`Array` (formerly *RArray*) are now 
   property-style getters
 
-- Crash when trying to create a SexpVector of a non-vector type
-
 - Pairlists (LISTSXP) now handled
 
 - Experimental function :func:`set_interactive` to set whether R is in interactive
@@ -194,6 +192,8 @@ Bugs fixed
 
 - :class:`rinterface.SexpVector` will now properly raise an exception
   when trying to create vector-like object of impossible type
+
+- Crash when trying to create a SexpVector of a non-vector type
 
 - R objects of class *matrix* are now properly converted into :class:`RMatrix`
   (instead of :class:`Array`)
