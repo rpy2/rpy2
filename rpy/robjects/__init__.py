@@ -77,7 +77,7 @@ def default_py2ri(o):
             raise(ValueError("Nothing can be done for this array type at the moment."))
     elif isinstance(o, bool):
         res = rinterface.SexpVector([o, ], rinterface.LGLSXP)
-    elif isinstance(o, int):
+    elif isinstance(o, int) or isinstance(o, long):
         res = rinterface.SexpVector([o, ], rinterface.INTSXP)
     elif isinstance(o, float):
         res = rinterface.SexpVector([o, ], rinterface.REALSXP)
