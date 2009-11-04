@@ -142,18 +142,20 @@ At any time, an installation can be tested as follows:
   suite = rpy2.tests.suite()
   tr.run(suite)
 
-.. note::
-
-   At the time of writing, 2 unit tests will fail. Their failure
-   is forced, because terminating then starting again an
-   embbeded R is causing problems.
-
 .. warning::
 
+   At the time of writing, 3 unit tests will fail under UNIX, and a little more
+   under win32. For those 3 tests, their failure
+   is forced; a visual inspection of the test report will give more details.
+    
    Win32 versions are still lacking some of the functionalities in the
    UNIX-alike versions, most notably the callback function for console
    input and output.
 
+   Should the number of failed tests exceed the number documented above,
+   one should still read the output from the test suite before filing a bug report.
+
+ 
 Contents
 --------
 
