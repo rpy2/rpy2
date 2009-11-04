@@ -379,7 +379,7 @@ grdevices.png('../../_static/graphics_ggplot2smoothbycyl.png',
 pp = gp + \
      ggplot2.aes_string(x='wt', y='mpg') + \
      ggplot2.geom_point() + \
-     ggplot2.geom_smooth(ggplot2.Aes.new(group = 'cyl'),
+     ggplot2.geom_smooth(ggplot2.aes_string(group = 'cyl'),
                          method = 'lm')
 pp.plot()
 #-- ggplot2smoothbycyl-end
@@ -499,6 +499,6 @@ pp = gp + \
 
 
 pp = gp + \
-     ggplot2.Aes.new(x='mpg') + \
+     ggplot2.aes_string(x='mpg') + \
      ggplot2.FacetGrid.new(ro.Formula('. ~ cyl')) + \
      ggplot2.GeomHistogram.new(binwidth = 5)
