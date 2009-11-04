@@ -148,13 +148,18 @@ Package *ggplot2*
 Introduction
 ------------
 
-The R package *ggplot2* is expected to be installed in the *R*
+The R package *ggplot2* implements the Grammar of Graphics.
+While more documentation on the package and its usage with R can be found
+on the `ggplot2 website`_, this section will introduce the basic concepts required
+to build plots. Obviously, the *R* package *ggplot2* is expected to be installed in the *R*
 used from *rpy2*.
 
-The package is using the *grid* lower-level plotting infrastructure, modelled in 
-:mod:`rpy2.robjects.lib.grid`. Whenever separate plots on the same device,
-or arbitrary graphical elements overlaid, are wished it may require interacting
-with that infrastructure.
+.. _ggplot2 website: http://had.co.nz/ggplot2/
+ 
+The package is using the *grid* lower-level plotting infrastructure, that can be accessed
+through the module :mod:`rpy2.robjects.lib.grid`. Whenever separate plots on the same device,
+or arbitrary graphical elements overlaid, or significant plot customization, or editing
+are needed, some knowledge of *grid* will be required.
 
 Here again, having data in a :class:`DataFrame` is expected
 (see :ref:`robjects-dataframes` for more information on such objects).
