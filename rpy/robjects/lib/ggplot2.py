@@ -399,10 +399,10 @@ class ScaleY(Scale):
 
 class ScaleXContinuous(ScaleX):
    _constructor = ggplot2_env['scale_x_continuous']
-scale_x_continous = ScaleXContinuous.new
+scale_x_continuous = ScaleXContinuous.new
 class ScaleYContinuous(ScaleY):
    _constructor = ggplot2_env['scale_y_continuous']
-scale_y_continous = ScaleYContinuous.new
+scale_y_continuous = ScaleYContinuous.new
 class ScaleXDiscrete(ScaleX):
    _constructor = ggplot2_env['scale_x_discrete']
 scale_x_discrete = ScaleXDiscrete.new
