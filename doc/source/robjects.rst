@@ -603,16 +603,22 @@ Creating an :class:`DataFrame` can be done by:
 The constructor for :class:`DataFrame` accepts either a 
 :class:`rinterface.SexpVector` 
 (with :attr:`typeof` equal to *VECSXP*, that is an R `list`)
-or an instance of class :class:`rpy2.rlike.container.TaggedList`.
+or any Python object implementing the method :meth:`iteritems`
+(for example :class:`dict`, or :class:`rpy2.rlike.container.OrdDict`)
 
->>> robjects.DataFrame()
+Empty `data.frame`:
 
+>>> dataf = robjects.DataFrame()
 
-Creating the data.frame in R can be achieved in numerous ways,
-as many R functions do return a data.frame.
-In this example, will use the R function `data.frame()`, that
-constructs a data.frame from named arguments
+`data.frame` with 2 two columns (not that the order of
+the columns in the resulting :class:`DataFrame` can be different
+from the order in which they are declared):
 
+>>> d = {'a': robjects.IntVector((1,2,3)), 'b': robjects.IntVector((4,5,6))}
+>>> dataf = robject.DataFrame(d)
+
+To create a :class:`DataFrame` and be certain of the order in which the
+columns are an ordered dictionary can be used:
 
 >>> import rpy2.rlike.container as rlc
 >>> od = rlc.OrdDict(c(('value', robjects.IntVector((1,2,3))),
@@ -621,11 +627,9 @@ constructs a data.frame from named arguments
 >>> print(dataf.colnames)
 [1] "letter" "value"
 
-.. note::
-   The order of the columns `value` and `letter` cannot be conserved,
-   since we are using a Python dictionnary. This difference between
-   R and Python can be resolved by using TaggedList instances
-   (XXX add material about that).
+Creating the data.frame in R can otherwise be achieved in numerous ways,
+as many R functions do return a `data.frame`, such as the
+ function `data.frame()`.
 
 Extracting elements
 ^^^^^^^^^^^^^^^^^^^
