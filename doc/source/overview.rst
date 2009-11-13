@@ -50,12 +50,12 @@ when used with rpy2).
 Currently the development is mostly done on Linux and a bit MacOS X with the
 following version for the softwares:
 
-======== =========
+======== ==========
 Software Versions 
-======== =========
- Python   2.5; 2.6 
- R        2.8; 2.9
-======== =========
+======== ==========
+ Python   2.6 
+ R        2.9; 2.10
+======== ==========
 
 When compiling R from source, do not forget to specify *--enable-R-shlib* at
 the *./configure* step.
