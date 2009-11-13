@@ -8,13 +8,19 @@ Mapping rpy2 objects to arbitrary python objects
 
 Switching between a conversion and a no conversion mode,
 an operation often present when working with RPy-1.x, is no longer
-necessary as the R objects can be either passed on to R functions
-or used in Python. 
+necessary with rpy2.
 
-However, there is a low-level mapping between `R` and `Python` objects
-performed behind the (Python-level) scene, done by the :mod:`rpy2.rinterface`,
+The approach taken is to have R-wrapping objects that implement
+interfaces of builtin Python types whenever possible, letting the
+Python layer access the objects the usual way and the wrapped R objects be
+used as they are by the R functions. For example, R vectors are mapped
+to Python objects implementing the :meth:`__getitem__` method in the sequence
+protocol, so elements can be accessed easily.
+
+There is a low-level mapping between `R` and `Python` objects
+performed behind the (Python-level) scene, done at the :mod:`rpy2.rinterface` level,
 while an higher-level mapping is done between low-level objects and
-higher-level objects using the functions:
+higher-level objects. The later is performed by the functions:
 
 :meth:`conversion.ri2py`
    :mod:`rpy2.rinterface` to Python. By default, this function
