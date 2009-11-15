@@ -18,6 +18,7 @@ class RObjectMixin(object):
     __readlines = rpy2.rinterface.baseenv.get("readLines")
     __unlink = rpy2.rinterface.baseenv.get("unlink")
     __rclass = rpy2.rinterface.baseenv.get("class")
+    __rclass_set = rpy2.rinterface.baseenv.get("class<-")
     __show = rpy2.rinterface.baseenv.get("show")
 
     def __str__(self):
@@ -55,9 +56,13 @@ class RObjectMixin(object):
                 #unevaluated expression: has no class
                 return (None, )
             else:
-                raise rre        
-    rclass = property(_rclass_get, None, None,
-                      "name of the R class for the object.")
+                raise rre
+    def _rclass_set(self, value):
+        res = self.__rclass_set(self, value)
+        self.__sexp__ = res.__sexp__
+            
+    rclass = property(_rclass_get, _rclass_set, None,
+                      "R class for the object, stored an R string vector.")
 
 
 def repr_robject(o, linesep=os.linesep):
