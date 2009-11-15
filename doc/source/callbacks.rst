@@ -56,7 +56,7 @@ A suitable callback function will be such as it accepts one parameter of class :
 and only has side-effects (does not return anything).
 
 The pair of functions 
-:func:`rpy2.rinterface.setWriteConsole` and :func:`rpy2.rinterface.getWriteConsole`
+:func:`rpy2.rinterface.set_writeconsole` and :func:`rpy2.rinterface.get_writeconsole`
 can be used to set and retrieve the callback function respectively.
 
 The default callback function, called :func:`rinterface.consolePrint`
@@ -75,7 +75,7 @@ An example should make it obvious::
        buf.append(x)
 
    # output from the R console will now be appended to the list 'buf'
-   rinterface.setWriteConsole(f)
+   rinterface.set_writeconsole(f)
 
    date = rinterface.baseenv['date']
    rprint = rinterface.baseenv['print']
@@ -86,7 +86,7 @@ An example should make it obvious::
 
 
    # restore default function
-   rinterface.setWriteConsole(rinterface.consolePrint)
+   rinterface.set_writeconsole(rinterface.consolePrint)
 
 
 .. autofunction:: rpy2.rinterface.set_writeconsole(f)
