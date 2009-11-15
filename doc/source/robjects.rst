@@ -1001,23 +1001,48 @@ one will consult an R-related documentation if unsure of how to
 do so.
 
 
-OOP with R
-==========
+Working with R's OOPs
+---------------------
+
+Object-Oriented Programming can a achieved in R, but in more than
+one way. Beside the *official* S3 and S4 systems, there is a rich
+ecosystem of alternative implementations of objects (aroma, or proto
+are two such systems).
 
 S3 objects
-----------
+^^^^^^^^^^
 
 S3 objects are default R objects (i.e., not S4 instances) for which
 an attribute "class" has been added.
 
+>>> x = robjects.IntVector((1, 3))
+>>> tuple(x.rclass)
+('integer',)
+
+Making the object x an instance of a class *pair*, itself inheriting from
+*integer* is only a matter of setting the attribute:
+
+>>> x.rclass = robjects.StrVector(("pair", "integer"))
+>>> tuple(x.rclass)
+('pair', 'integer')
+
+Methods for *S3* classes are simply R functions with a name such as name.<class_name>,
+the dispatch being made at run-time from the first argument in the function call.
+
+For example, the function *plot.lm* plots objects of class *lm*. The call
+*plot(something)* will see R extract the class of the object something, and see
+if a function *plot.<class_of_something>* is in the search path.
+
 
 S4 objects
-----------
+^^^^^^^^^^
+
+S4 objects are a little more formal regarding their class definition, and all
+instances belong to the low-level R type SEXPS4.
 
 .. autoclass:: rpy2.robjects.methods.RS4(sexp)
    :show-inheritance:
    :members:
-
 
 
 Object serialization
