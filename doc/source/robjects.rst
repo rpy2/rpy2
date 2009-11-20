@@ -34,7 +34,7 @@ Visible differences with RPy-1.x are:
 
 
 `r`: the instance of `R`
-========================
+=======================
 
 This class is currently a singleton, with
 its one representation instanciated when the
@@ -1030,8 +1030,13 @@ Methods for *S3* classes are simply R functions with a name such as name.<class_
 the dispatch being made at run-time from the first argument in the function call.
 
 For example, the function *plot.lm* plots objects of class *lm*. The call
-*plot(something)* will see R extract the class of the object something, and see
+*plot(something)* will see R extract the class name of the object something, and see
 if a function *plot.<class_of_something>* is in the search path.
+
+.. note::
+
+   This rule is not strict as there can exit functions with a *dot* in their name
+   and the part after the dot not correspond to an S3 class name. 
 
 
 S4 objects
@@ -1040,9 +1045,60 @@ S4 objects
 S4 objects are a little more formal regarding their class definition, and all
 instances belong to the low-level R type SEXPS4.
 
+The definition of methods for a class can happen anytime after the class has
+been defined (a practice something referred to as *monkey patching*
+or *duck punching* in the Python world).
+
+There are obviously many ways to try having a mapping between R classes and Python
+classes, and the one proposed here is to make Python classes that inherit
+:class:`rpy2.rinterface.methods.RS4`.
+
+Since the S4 system allows polymorphic definition of methods it currently
+appears trickly to have an simple, automatic, and robust mapping of R
+methods to Python methods. We rely on human-written mappings, although
+some helpers are provided.
+
+.. code:: python
+
+   import rpy2.robjects as robjects
+   from rpy2.robjects.packages import importr
+
+   stats4 = importr("stats4")
+   getmethod = robjects.baseenv.get("getMethod")
+
+   StrVector = robjects.StrVector
+
+class Sequence(robjects.methods.RS4):
+    def __len__(self):
+        res = self._length(self)
+        return res[0]
+
+   class LME(robjects.RS4):
+       _confint = getmethod("confint", 
+                            signature = StrVector(["lme", ]),
+                            where="package:stats4")
+       _loglik = getmethod("loglik", 
+                           signature = StrVector(["lme", ]),
+                           where="package:stats4")
+       _profile = getmethod("profile", 
+                            signature = StrVector(["lme", ]),
+                            where="package:stats4")
+
+       def confint(self):
+           return self._confint(self)
+
+       def loglik(self):
+           return self._loglik(self)
+
+       def profile(self):
+           return self._profile(self)
+
+
 .. autoclass:: rpy2.robjects.methods.RS4(sexp)
    :show-inheritance:
    :members:
+
+
 
 
 Object serialization
