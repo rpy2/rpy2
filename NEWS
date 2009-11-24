@@ -198,7 +198,7 @@ Bugs fixed
 - R objects of class *matrix* are now properly converted into :class:`RMatrix`
   (instead of :class:`Array`)
 
-- :method:`Robj.as_py` was not working at all
+- :meth:`Robj.as_py` was not working at all
 
 
 Release 2.0.7
