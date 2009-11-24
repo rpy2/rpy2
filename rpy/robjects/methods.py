@@ -16,6 +16,9 @@ class RS4(RObjectMixin, rinterface.SexpS4):
         """ Return the 'slots' defined for this object """
         return methods_env['slotNames'](self)
     
+    def do_slot(self):
+        return conversion.ri2py(super(RS4, self).do_slot())
+
     @staticmethod
     def isclass(name):
         """ Return whether the given name is a defined class. """
@@ -28,7 +31,6 @@ class RS4(RObjectMixin, rinterface.SexpS4):
         complete = conversion.py2ri(complete)
         return methods_env['validObject'](self, test = test,
                                           complete = complete)[0]
-
 
 class RS4_Type(type):
     def __new__(mcs, name, bases, cls_dict):
