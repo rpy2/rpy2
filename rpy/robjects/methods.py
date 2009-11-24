@@ -16,8 +16,8 @@ class RS4(RObjectMixin, rinterface.SexpS4):
         """ Return the 'slots' defined for this object """
         return methods_env['slotNames'](self)
     
-    def do_slot(self):
-        return conversion.ri2py(super(RS4, self).do_slot())
+    def do_slot(self, name):
+        return conversion.ri2py(super(RS4, self).do_slot(name))
 
     @staticmethod
     def isclass(name):
