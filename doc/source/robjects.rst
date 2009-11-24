@@ -34,7 +34,7 @@ Visible differences with RPy-1.x are:
 
 
 `r`: the instance of `R`
-=======================
+========================
 
 This class is currently a singleton, with
 its one representation instanciated when the
@@ -1002,7 +1002,7 @@ do so.
 
 
 Working with R's OOPs
----------------------
+=====================
 
 Object-Oriented Programming can a achieved in R, but in more than
 one way. Beside the *official* S3 and S4 systems, there is a rich
@@ -1010,7 +1010,7 @@ ecosystem of alternative implementations of objects (aroma, or proto
 are two such systems).
 
 S3 objects
-^^^^^^^^^^
+----------
 
 S3 objects are default R objects (i.e., not S4 instances) for which
 an attribute "class" has been added.
@@ -1035,12 +1035,12 @@ if a function *plot.<class_of_something>* is in the search path.
 
 .. note::
 
-   This rule is not strict as there can exit functions with a *dot* in their name
+   This rule is not strict as there can exist functions with a *dot* in their name
    and the part after the dot not correspond to an S3 class name. 
 
 
 S4 objects
-^^^^^^^^^^
+----------
 
 S4 objects are a little more formal regarding their class definition, and all
 instances belong to the low-level R type SEXPS4.
@@ -1053,50 +1053,71 @@ There are obviously many ways to try having a mapping between R classes and Pyth
 classes, and the one proposed here is to make Python classes that inherit
 :class:`rpy2.rinterface.methods.RS4`.
 
-Since the S4 system allows polymorphic definition of methods it currently
+Since the S4 system allows polymorphic definition of methods, that is for a given
+method name there can exist several list of possible arguments and type for
+the arguments, it currently
 appears trickly to have an simple, automatic, and robust mapping of R
-methods to Python methods. We rely on human-written mappings, although
-some helpers are provided.
+methods to Python methods. For the time being, one will rely on
+human-written mappings, although some helpers are provided by rpy2.
 
-.. code:: python
+.. note::
+   More automation for reflecting S4 class definitions into Python is on the list
+   of items to be worked on, so one may hope for more in a following release.
 
-   import rpy2.robjects as robjects
-   from rpy2.robjects.packages import importr
 
-   stats4 = importr("stats4")
-   getmethod = robjects.baseenv.get("getMethod")
+To make this a little more concrete, we take the R class `lmList`
+in the package `lme4` and show how to write a Python wrapper for it.
 
-   StrVector = robjects.StrVector
+.. warning::
 
-class Sequence(robjects.methods.RS4):
-    def __len__(self):
-        res = self._length(self)
-        return res[0]
+   The R package `lme4` is not distributed with R, and will have to be installed
+   for the example to work.
 
-   class LME(robjects.RS4):
-       _confint = getmethod("confint", 
-                            signature = StrVector(["lme", ]),
-                            where="package:stats4")
-       _loglik = getmethod("loglik", 
-                           signature = StrVector(["lme", ]),
-                           where="package:stats4")
-       _profile = getmethod("profile", 
-                            signature = StrVector(["lme", ]),
-                            where="package:stats4")
+First, a bit of boilerplate code is needed. We obviously 
+import the higher-level interface, as well the function 
+:func:`rpy2.robjects.packages.importr`. The R class we want to represent
+is defined in the 
+:mod:`rpy2` modules and utilities. 
 
-       def confint(self):
-           return self._confint(self)
+.. literalinclude:: _static/demos/s4classes.py
+   :start-after: #-- setup-begin
+   :end-before:  #-- setup-end
 
-       def loglik(self):
-           return self._loglik(self)
+Once done, the Python class definition can be written.
+In the first part of that code, we choose a static mapping of the
+R-defined methods. The advantage for doing so is a bit of speed
+(as the S4 dispatch mechanism has a cost), and the disadvantage
+is that the a modification of the method at the R level would require
+a refresh of the mappings concerned. The second part of the code
+is wrapper to those mappings, where Python-to-R operations prior
+to calling the R method can be performed.
+In the last part of the class definition, a *static methods* is defined.
+This is one way to have polymorphic constructors implemented.
 
-       def profile(self):
-           return self._profile(self)
+.. literalinclude:: _static/demos/s4classes.py
+   :start-after: #-- LmList-begin
+   :end-before:  #-- LmList-end
+
+Creating a instance of :class:`LmList` can now be achieved by specifying
+a model as a :class:`Formula` and a dataset.
+
+.. literalinclude:: _static/demos/s4classes.py
+   :start-after: #-- buildLmList-begin
+   :end-before:  #-- buildLmList-end
 
 
 .. autoclass:: rpy2.robjects.methods.RS4(sexp)
    :show-inheritance:
    :members:
+
+
+Automated mapping of user-defined classes
+-----------------------------------------
+
+Once a Python class mirroring an R classis defined, the mapping can be made
+automatic by adding new rules to the conversion system
+(see Section :ref:`robjects-conversion`).
+
 
 
 

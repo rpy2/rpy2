@@ -71,7 +71,8 @@ The default behavior can be restored with:
 Default functions
 -----------------
 
-The docstrings for :meth:`default_ri2py`, :meth:`default_py2ri`, and :meth:`py2ro` are:
+The docstrings for :meth:`default_ri2py`, :meth:`default_py2ri`, 
+and :meth:`py2ro` are:
 
 .. autofunction:: rpy2.robjects.default_ri2py
 .. autofunction:: rpy2.robjects.default_py2ri
