@@ -71,7 +71,7 @@ mtcars = datasets.mtcars
 #-- setupggplot2-end
 
 grdevices.png('../../_static/graphics_ggplot2mtcars.png',
-    width = 512, height = 512)
+              width = 512, height = 512)
 #-- ggplot2mtcars-begin
 gp = ggplot2.ggplot(mtcars)
 
@@ -84,7 +84,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2geombin2d.png',
-    width = 1000, height = 350)
+              width = 1000, height = 350)
 grid.newpage()
 grid.viewport(layout=grid.layout(1, 3)).push()
 
@@ -127,7 +127,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2geomboxplot.png',
-    width = 512, height = 512)
+              width = 512, height = 512)
 #-- ggplot2geomboxplot-begin
 gp = ggplot2.ggplot(mtcars)
 
@@ -151,7 +151,7 @@ pp.plot()
 #-- ggplot2geomhistogram-end
 
 grdevices.png('../../_static/graphics_ggplot2geomhistogram.png',
-    width = 900, height = 412)
+              width = 900, height = 412)
 grid.newpage()
 grid.viewport(layout=grid.layout(1, 3)).push()
 
@@ -171,7 +171,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2geomhistogramfillcyl.png',
-    width = 512, height = 512)
+              width = 512, height = 512)
 #-- ggplot2geomhistogramfillcyl-begin
 gp = ggplot2.ggplot(mtcars)
 
@@ -200,7 +200,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2geomfreqpolyfillcyl.png',
-    width = 812, height = 412)
+              width = 812, height = 412)
 grid.newpage()
 grid.viewport(layout=grid.layout(1, 2)).push()
 
@@ -225,7 +225,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2geompointandrug.png',
-    width = 512, height = 512)
+              width = 512, height = 512)
 #-- ggplot2geompointandrug-begin
 gp = ggplot2.ggplot(mtcars)
 
@@ -241,7 +241,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2mtcarscolcyl.png',
-    width = 512, height = 512)
+              width = 512, height = 512)
 #-- ggplot2mtcarscolcyl-begin
 gp = ggplot2.ggplot(mtcars)
 
@@ -480,6 +480,27 @@ grdevices.dev_off()
 
 
 
+grdevices.png('../../_static/graphics_ggplot2withgrid.png',
+              width = 512, height = 512)
+#-- grid-begin
+grid.newpage()
+# create a rows/columns layout
+lt = grid.layout(2, 1)
+vp = grid.viewport(layout = lt)
+# push it the plotting stack
+vp.push()
+
+# create a viewport located at (1,1) in the layout
+vp = grid.viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
+# create a (unit) rectangle in that viewport
+grid.rect(vp = vp).draw()
+
+vp = grid.viewport(**{'layout.pos.col':1, 'layout.pos.row': 2})
+# create text in the viewport at (1,2)
+grid.text("foo", vp = vp).draw()
+
+#-- grid-end
+grdevices.dev_off()
 
 
 #---
