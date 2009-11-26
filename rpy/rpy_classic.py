@@ -156,6 +156,8 @@ def rpy2py_basic(obj):
             res = [x for x in obj]
         elif obj.typeof in [ri.VECSXP]:
             res = [rpy2py(x) for x in obj]
+        elif obj.typeof == [ri.LANGSXP]:
+            res = Robj(obj)
         else:
             raise ValueError("Invalid type for 'obj'.")
     else:
