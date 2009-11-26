@@ -46,12 +46,12 @@ class LmList(robjects.methods.RS4):
         return self._formula(self)
     
     @staticmethod
-    def from_formula_and_dataframe(formula, 
-                                   data = rinterface.R_MissingArg,
-                                   family = rinterface.R_MissingArg,
-                                   subset = rinterface.R_MissingArg,
-                                   weights = rinterface.R_MissingArg):
-        """ Build an LmList from """
+    def from_formula(formula, 
+                     data = rinterface.R_MissingArg,
+                     family = rinterface.R_MissingArg,
+                     subset = rinterface.R_MissingArg,
+                     weights = rinterface.R_MissingArg):
+        """ Build an LmList from a formula """
         res = LmList._lmfit_from_formula(formula, data,
                                          family = family,
                                          subset = subset,
@@ -63,8 +63,8 @@ class LmList(robjects.methods.RS4):
 #-- buildLmList-begin
 sleepstudy = lme4.sleepstudy
 formula = robjects.Formula('Reaction ~ Days | Subject')
-lml1 = LmList.from_formula_and_dataframe(formula, 
-                                         sleepstudy)
+lml1 = LmList.from_formula(formula, 
+                           sleepstudy)
 #-- buildLmList-end
 
 
@@ -74,6 +74,6 @@ formula = robjects.Formula('Reaction ~ Days | Subject')
 for varname in ('Reaction', 'Days', 'Subject'):
     formula.environment[varname] = sleepstudy.rx2(varname)
 
-lml1 = LmList.from_formula_and_dataframe(formula)
+lml1 = LmList.from_formula(formula)
 #-- buildLmListBetterCall-end
 
