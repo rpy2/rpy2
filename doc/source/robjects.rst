@@ -1105,6 +1105,18 @@ a model as a :class:`Formula` and a dataset.
    :start-after: #-- buildLmList-begin
    :end-before:  #-- buildLmList-end
 
+A drawback of the approach above is that the R "call" is stored,
+and as we are passing the :class:`DataFrame` *sleepstudy* 
+(and as it is believed to to be an anonymous structure by R) the call
+is lengthy as it comprise the explicit structure description of the data frame.
+(try to print *lml1*). This becomes hardly acceptable as datasets grow bigger.
+An alternative to that is to store the columns of the data frame into
+the environment for the :class:`Formula`, as shown below:
+
+.. literalinclude:: _static/demos/s4classes.py
+   :start-after: #-- buildLmListBetterCall-begin
+   :end-before:  #-- buildLmListBetterCall-end
+
 
 .. autoclass:: rpy2.robjects.methods.RS4(sexp)
    :show-inheritance:
