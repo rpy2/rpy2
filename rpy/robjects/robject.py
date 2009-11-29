@@ -51,7 +51,7 @@ class RObjectMixin(object):
     def _rclass_get(self):
         try:
             res = self.__rclass(self)
-            res = conversion.ri2py(res)
+            #res = conversion.ri2py(res)
             return res
         except rpy2.rinterface.RRuntimeError, rre:
             if self.typeof == rpy2.rinterface.SYMSXP:

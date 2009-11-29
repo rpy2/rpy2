@@ -1,6 +1,10 @@
 import rpy2.robjects as ro
+import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 import numpy
+
+
+original_conversion = conversion.py2ri
 
 def numpy2ri(o):
     if isinstance(o, numpy.ndarray):
@@ -32,7 +36,7 @@ def numpy2ri(o):
             raise(ValueError("Cannot convert numpy array of unsigned values -- R does not have unsigned integers."))
         # Array-of-PyObject is treated like a Python list:
         elif o.dtype.kind == "O":
-            res = ro.conversion.py2ri(list(o))
+            res = conversion.py2ri(list(o))
         # Record arrays map onto R data frames:
         elif o.dtype.kind == "V":
             if o.dtype.names is None:
@@ -40,7 +44,7 @@ def numpy2ri(o):
             df_args = []
             for field_name in o.dtype.names:
                 df_args.append((field_name, 
-                                ro.conversion.py2ri(o[field_name])))
+                                conversion.py2ri(o[field_name])))
             res = ro.baseenv["data.frame"].rcall(tuple(df_args), ro.globalenv)
         # It should be impossible to get here:
         else:
