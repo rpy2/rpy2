@@ -1,13 +1,13 @@
 import rpy2.robjects.methods
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
-
+from rpy2.robjects.packages import importr
 import copy
 
 #getmethod = robjects.baseenv.get("getMethod")
 
 rimport = robjects.baseenv.get('library')
-rimport('ggplot2')
+ggplot2 = importr('ggplot2')
 
 ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
 
@@ -535,6 +535,53 @@ scale_fill_identity = ScaleFillIdentity.new
 class ScaleFillManual(ScaleFill):
    _constructor = ggplot2_env['scale_fill_manual']
 scale_fill_manual = ScaleFillManual.new
+
+class Options(robjects.Vector):
+    pass
+class Theme(Options):
+    @classmethod
+    def new(cls):
+        res = cls(cls._constructor())
+        return res
+
+class ThemeBlank(Theme):
+    _constructor = ggplot2.theme_blank
+theme_blank = ThemeBlank.new
+#theme_get
+
+class ThemeGrey(Theme):
+    _constructor = ggplot2.theme_grey
+theme_grey = ThemeGrey.new
+
+class ThemeRect(Theme):
+    _constructor = ggplot2.theme_rect
+theme_rect = ThemeRect.new
+
+class ThemeSegment(Theme):
+    _constructor = ggplot2.theme_segment
+theme_segment = ThemeSegment.new
+
+class ThemeText(Theme):
+    _constructor = ggplot2.theme_text
+theme_text = ThemeText.new
+
+class ThemeBW(Theme):
+    _constructor = ggplot2.theme_bw
+theme_bw = ThemeBW.new
+
+class ThemeGray(Theme):
+    _constructor = ggplot2.theme_gray
+theme_gray = ThemeGray.new
+
+class ThemeLine(Theme):
+    _constructor = ggplot2.theme_line
+theme_line = ThemeLine.new
+
+#theme_render
+#theme_set
+
+theme_update = ggplot2.theme_update  
+
 
 opts = ggplot2_env['opts']
 
