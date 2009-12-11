@@ -540,25 +540,34 @@ class Options(robjects.Vector):
     pass
 class Theme(Options):
     @classmethod
-    def new(cls):
-        res = cls(cls._constructor())
+    def new(cls, base_size = 12):
+        res = cls(cls._constructor(base_size = base_size))
         return res
 
 class ThemeBlank(Theme):
     _constructor = ggplot2.theme_blank
+    @classmethod
+    def new(cls):
+        res = cls(cls._constructor(base_size = base_size))
+        return res
 theme_blank = ThemeBlank.new
-#theme_get
+
+theme_get = ggplot2.theme_get
 
 class ThemeGrey(Theme):
     _constructor = ggplot2.theme_grey
+
 theme_grey = ThemeGrey.new
 
 class ThemeRect(Theme):
     _constructor = ggplot2.theme_rect
+    @classmethod
+    def new(cls, fill = robjects.NA_bool, colour = "black", size = 0.5, linetype = 1):
+        res = cls(cls._constructor(fill = fill, colour = colour, size = size, linetype = linetype))
 theme_rect = ThemeRect.new
 
 class ThemeSegment(Theme):
-    _constructor = ggplot2.theme_segment
+    _constructor = ggplot2.theme_rect
 theme_segment = ThemeSegment.new
 
 class ThemeText(Theme):
