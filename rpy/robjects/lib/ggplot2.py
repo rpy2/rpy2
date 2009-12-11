@@ -587,7 +587,7 @@ class ThemeLine(Theme):
 theme_line = ThemeLine.new
 
 #theme_render
-#theme_set
+theme_set = ggplot2.theme_set
 
 theme_update = ggplot2.theme_update  
 
