@@ -99,73 +99,8 @@ class VectorTestCase(unittest.TestCase):
             self.assertEquals(li ** 2, mySeqPow[i])
 
         
-    def testExtractByIndex(self):
-        seq_R = robjects.baseenv["seq"]
-        mySeq = seq_R(0, 10)
-        # R indexing starts at one
-        myIndex = robjects.Vector(array.array('i', range(1, 11, 2)))
 
-        mySubset = mySeq.rx(myIndex)
-        for i, si in enumerate(myIndex):
-            self.assertEquals(mySeq[si-1], mySubset[i])
-        
-    def testExtractByName(self):
-        seq_R = robjects.baseenv["seq"]
-        mySeq = seq_R(0, 25)
-
-        letters = robjects.baseenv["letters"]
-        mySeq = robjects.baseenv["names<-"](mySeq, 
-                                                     letters)
-
-        # R indexing starts at one
-        myIndex = robjects.Vector(letters[2])
-
-        mySubset = mySeq.rx(myIndex)
-
-        for i, si in enumerate(myIndex):
-            self.assertEquals(2, mySubset[i])
-
-    def testExtractIndexError(self):
-        seq_R = robjects.baseenv["seq"]
-        mySeq = seq_R(0, 10)
-        # R indexing starts at one
-        myIndex = robjects.Vector(['a', 'b', 'c'])
-
-        self.assertRaises(ri.RRuntimeError, mySeq.rx, myIndex)
-
-        
-    def testReplace(self):
-        vec = robjects.r.seq(1, 10)
-        i = array.array('i', [1, 3])
-        vec.rx[rlc.TaggedList((i, ))] = 20
-        self.assertEquals(20, vec[0])
-        self.assertEquals(2, vec[1])
-        self.assertEquals(20, vec[2])
-        self.assertEquals(4, vec[3])
-
-        i = array.array('i', [1, 5])
-        vec.rx[rlc.TaggedList((i, ))] = 50
-        self.assertEquals(50, vec[0])
-        self.assertEquals(2, vec[1])
-        self.assertEquals(20, vec[2])
-        self.assertEquals(4, vec[3])
-        self.assertEquals(50, vec[4])
-                         
-    def testExtractRecyclingRule(self):
-        # recycling rule
-        v = robjects.Vector(array.array('i', range(1, 23)))
-        m = robjects.r.matrix(v, ncol = 2)
-        col = m.rx(True, 1)
-        self.assertEquals(11, len(col))
-
-    def testExtractList(self):
-        # list
-        letters = robjects.baseenv["letters"]
-        myList = rlist(l=letters, f="foo")
-        idem = robjects.baseenv["identical"]
-        self.assertTrue(idem(letters, myList.rx("l")[0]))
-        self.assertTrue(idem("foo", myList.rx("f")[0]))
-
+ 
     def testGetItem(self):
         letters = robjects.baseenv["letters"]
         self.assertEquals('a', letters[0])
@@ -229,8 +164,78 @@ class VectorTestCase(unittest.TestCase):
         vec[0] = robjects.NA_character
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
     
+class ExtractDelegatorTestCase(unittest.TestCase):
+    def testExtractByIndex(self):
+        seq_R = robjects.baseenv["seq"]
+        mySeq = seq_R(0, 10)
+        # R indexing starts at one
+        myIndex = robjects.Vector(array.array('i', range(1, 11, 2)))
+
+        mySubset = mySeq.rx(myIndex)
+        for i, si in enumerate(myIndex):
+            self.assertEquals(mySeq[si-1], mySubset[i])
+        
+    def testExtractByName(self):
+        seq_R = robjects.baseenv["seq"]
+        mySeq = seq_R(0, 25)
+
+        letters = robjects.baseenv["letters"]
+        mySeq = robjects.baseenv["names<-"](mySeq, 
+                                                     letters)
+
+        # R indexing starts at one
+        myIndex = robjects.Vector(letters[2])
+
+        mySubset = mySeq.rx(myIndex)
+
+        for i, si in enumerate(myIndex):
+            self.assertEquals(2, mySubset[i])
+
+    def testExtractIndexError(self):
+        seq_R = robjects.baseenv["seq"]
+        mySeq = seq_R(0, 10)
+        # R indexing starts at one
+        myIndex = robjects.Vector(['a', 'b', 'c'])
+
+        self.assertRaises(ri.RRuntimeError, mySeq.rx, myIndex)
+
+       
+    def testReplace(self):
+        vec = robjects.r.seq(1, 10)
+        i = array.array('i', [1, 3])
+        vec.rx[rlc.TaggedList((i, ))] = 20
+        self.assertEquals(20, vec[0])
+        self.assertEquals(2, vec[1])
+        self.assertEquals(20, vec[2])
+        self.assertEquals(4, vec[3])
+
+        i = array.array('i', [1, 5])
+        vec.rx[rlc.TaggedList((i, ))] = 50
+        self.assertEquals(50, vec[0])
+        self.assertEquals(2, vec[1])
+        self.assertEquals(20, vec[2])
+        self.assertEquals(4, vec[3])
+        self.assertEquals(50, vec[4])
+                         
+    def testExtractRecyclingRule(self):
+        # recycling rule
+        v = robjects.Vector(array.array('i', range(1, 23)))
+        m = robjects.r.matrix(v, ncol = 2)
+        col = m.rx(True, 1)
+        self.assertEquals(11, len(col))
+
+    def testExtractList(self):
+        # list
+        letters = robjects.baseenv["letters"]
+        myList = rlist(l=letters, f="foo")
+        idem = robjects.baseenv["identical"]
+        self.assertTrue(idem(letters, myList.rx("l")[0]))
+        self.assertTrue(idem("foo", myList.rx("f")[0]))
+
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(VectorTestCase)
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ExtractDelegatorTestCase))
     return suite
 
 if __name__ == '__main__':
