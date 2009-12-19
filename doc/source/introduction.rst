@@ -397,7 +397,7 @@ The R code is
   plot(pca, main="Eigen values")
   biplot(pca, main="biplot")
 
-The :mod:`rpy2.robjects` code can be as close of the
+The :mod:`rpy2.robjects` code can be as close to the
 R code as possible:
 
 .. testcode::
@@ -425,8 +425,26 @@ However, the same example can be made a little more tidier
    m = base.matrix(stats.rnorm(100), ncol = 5)
    pca = stats.princomp(m)
    graphics.plot(pca, main = "Eigen values")
-   stats.biplot(pca, main = "biplot")      
-   
+   stats.biplot(pca, main = "biplot") 
+
+Creating an R vector or matrix, and filling its cells using Python code
+-----------------------------------------------------------------------
+
+.. testcode::
+
+   import rpy2.robjects as robjects
+   from rpy2.robjects.packages import importr
+
+   base = importr('base')
+
+   # create a numerical matrix of size 100x10 and filled with NAs 
+   m = base.matrix(robjects.NA_Real, nrow=100, ncol=10)
+
+   for row_i in xrange(1, 100+1):
+       for col_i in xrange(1, 10+1):
+           m.rx[rlc.TaggedList((row_i, ), (col_i, ))] = row_i + col_i * 100
+
+
 
 One more example
 ----------------

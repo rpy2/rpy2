@@ -322,7 +322,7 @@ Extracting, R-style
 ^^^^^^^^^^^^^^^^^^^
 
 Access to R-style extracting/subsetting is granted though the two
-delegators *rx* and *rx2*, representing the R function *[* and *[[*
+delegators *rx* and *rx2*, representing the R functions *[* and *[[*
 respectively.
 
 In short, R-style extracting has the following characteristics:
@@ -365,6 +365,8 @@ The two next examples demonstrate some of `R`'s features
 >>> print(x.rx('a'))
 a
 1
+
+
 
 .. _robjects-missingvalues:
 
