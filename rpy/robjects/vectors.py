@@ -52,7 +52,7 @@ class ExtractDelegator(object):
     def __getitem__(self, item):
         fun = self._extractfunction
         args = rlc.TaggedList(item)
-        for i, k,v in enumerate(args.iteritems()):
+        for i, (k, v) in enumerate(args.iteritems()):
             args[i] = conversion.py2ro(v)
         args.insert(0, self._parent)
         res = fun.rcall(args.items())
@@ -62,7 +62,7 @@ class ExtractDelegator(object):
     def __setitem__(self, item, value):
         """ Assign a given value to a given index position in the vector """
         args = rlc.TaggedList.from_iteritems(item)
-        for i, (k,v) in enumerate(args.iteritems()):
+        for i, (k, v) in enumerate(args.iteritems()):
             args[i] = conversion.py2ro(v)       
         args.append(conversion.py2ro(value), tag = None)
         args.insert(0, self._parent, tag = None)
