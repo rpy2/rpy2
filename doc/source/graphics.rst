@@ -477,7 +477,7 @@ Example:
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- gridwithggplot2-begin
-   :end-before: #-- gridwithggplot2-begin-end
+   :end-before: #-- gridwithggplot2-end
    
 .. image:: _static/graphics_ggplot2withgrid.png
    :scale: 50
