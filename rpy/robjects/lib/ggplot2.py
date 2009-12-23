@@ -548,7 +548,7 @@ class ThemeBlank(Theme):
     _constructor = ggplot2.theme_blank
     @classmethod
     def new(cls):
-        res = cls(cls._constructor(base_size = base_size))
+        res = cls(cls._constructor())
         return res
 theme_blank = ThemeBlank.new
 
@@ -562,16 +562,29 @@ theme_grey = ThemeGrey.new
 class ThemeRect(Theme):
     _constructor = ggplot2.theme_rect
     @classmethod
-    def new(cls, fill = robjects.NA_bool, colour = "black", size = 0.5, linetype = 1):
-        res = cls(cls._constructor(fill = fill, colour = colour, size = size, linetype = linetype))
+    def new(cls, fill = robjects.NA_bool, colour = "black", 
+            size = 0.5, linetype = 1):
+       res = cls(cls._constructor(fill = fill, colour = colour, 
+                                  size = size, linetype = linetype))
+       return res
 theme_rect = ThemeRect.new
 
 class ThemeSegment(Theme):
     _constructor = ggplot2.theme_rect
+    
 theme_segment = ThemeSegment.new
 
-class ThemeText(Theme):
+# Theme text is not a vector :/
+class ThemeText(robjects.Function):
     _constructor = ggplot2.theme_text
+    @classmethod
+    def new(cls, family = "", face = "plain", colour = "black", size = 10,
+            hjust = 0.5, vjust = 0.5, angle = 0, lineheight = 1.1):
+       res = cls(cls._constructor(family = family, face = face, 
+                                  colour = colour, size = size,
+                                  hjust = hjust, vjust = vjust, 
+                                  angle = angle, lineheight = lineheight))
+       return res
 theme_text = ThemeText.new
 
 class ThemeBW(Theme):
