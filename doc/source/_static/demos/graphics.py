@@ -482,24 +482,27 @@ grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2withgrid.png',
               width = 512, height = 512)
-#-- grid-begin
+#-- gridwithggplot2-begin
 grid.newpage()
-# create a rows/columns layout
-lt = grid.layout(2, 1)
-vp = grid.viewport(layout = lt)
-# push it the plotting stack
+
+# create a viewport as the main plot
+vp = grid.viewport(width = 1, height = 1) 
 vp.push()
 
-# create a viewport located at (1,1) in the layout
-vp = grid.viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
-# create a (unit) rectangle in that viewport
-grid.rect(vp = vp).draw()
+p = ggplot2.ggplot(datasets.rock) + \
+    ggplot2.geom_point(ggplot2.aes_string(x = 'area', y = 'peri')) + \
+    ggplot2.theme_bw()
+p.plot(vp = vp)
 
-vp = grid.viewport(**{'layout.pos.col':1, 'layout.pos.row': 2})
-# create text in the viewport at (1,2)
-grid.text("foo", vp = vp).draw()
+vp = grid.viewport(width = 0.6, height = 0.6, x = 0.37, y=0.69)
+vp.push()
+p = ggplot2.ggplot(datasets.rock) + \
+    ggplot2.geom_point(ggplot2.aes_string(x = 'area', y = 'shape')) + \
+    ggplot2.opts(**{'axis.text.x': ggplot2.theme_text(angle = 45)})
 
-#-- grid-end
+p.plot(vp = vp)
+
+#-- gridwithggplot2-end
 grdevices.dev_off()
 
 

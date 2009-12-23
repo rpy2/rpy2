@@ -475,6 +475,13 @@ Example:
    :scale: 50
 
 
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- gridwithggplot2-begin
+   :end-before: #-- gridwithggplot2-begin-end
+   
+.. image:: _static/graphics_ggplot2withgrid.png
+   :scale: 50
+
 .. autoclass:: rpy2.robjects.lib.grid.Viewport(o)
    :show-inheritance:
    :members:
