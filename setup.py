@@ -11,7 +11,7 @@ from distutils.core import Extension
 
 
 pack_name = 'rpy2'
-pack_version = __import__('rpy').__version__[0]
+pack_version = __import__('rpy').__version__
 
 
 class build(_build):
