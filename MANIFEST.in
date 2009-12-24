@@ -20,5 +20,5 @@ prune CVS
 prune dist
 
 include doc/Makefile
-include doc/source
+include doc/source/rpy2_logo.png
 
