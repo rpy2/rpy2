@@ -4,7 +4,6 @@ global-exclude *patch* *diff* .svn
 include MANIFEST
 include NEWS README AUTHORS
 include MPL_LICENSE GPL_LICENSE LGPL_LICENSE
-include rpy/rinterface/rinterface.h
 include rpy/rinterface/rpy_rinterface.h
 include rpy/rinterface/rinterface.c
 include rpy/rinterface/array.c
