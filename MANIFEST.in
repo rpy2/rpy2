@@ -16,7 +16,6 @@ include rpy/rinterface/rpy_device.h
 include debian/*
 
 prune debian/.svn
-prune CVS
 prune dist
 
 include doc/Makefile
