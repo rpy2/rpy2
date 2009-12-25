@@ -662,11 +662,19 @@ from.
 Functions
 ---------
 
+
+
 .. rubric:: A function with a context
 
 In R terminology, a closure is a function (with its enclosing
 environment). That enclosing environment can be thought of as
 a context to the function.
+
+.. note::
+
+   Technically, the class :class:`SexpClosure` corresponds to the R
+   types CLOSXP, BUILTINSXP, and SPECIALSXP, with only the first one
+   (CLOSXP) being a closure.
 
 >>> sum = rinterface.globalenv.get("sum")
 >>> x = rinterface.IntSexpVector([1,2,3])
@@ -717,8 +725,6 @@ permits calling a function the same way it would in R. For example::
 >>> [x for x in rl.do_slot("names")]
 ['x', '', 'y']
 
-
-
 .. index::
    single: closureEnv
 
@@ -733,6 +739,8 @@ package *graphics*.
 >>> envplot_list = ls(plot.closureEnv())
 >>> [x for x in envplot_ls]
 >>>
+
+
 
 :class:`SexpS4`
 ---------------
@@ -831,11 +839,20 @@ Vector types
 :const:`EXPRSXP`
   Unevaluated expression.
 
-Other types
-^^^^^^^^^^^
+Function types
+^^^^^^^^^^^^^^
 
 :const:`CLOSXP`
   Function with an enclosure. Represented by :class:`rpy2.rinterface.SexpClosure`.
+
+:const:`BUILTINSXP`
+  Base function
+
+:const:`SPECIALSXP`
+  Some other kind of function
+
+Other types
+^^^^^^^^^^^
 
 :const:`ENVSXP`
   Environment. Represented by :class:`rpy2.rinterface.SexpEnvironment`.

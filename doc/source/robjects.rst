@@ -784,30 +784,74 @@ Let's take an example in R:
 
 .. code-block:: r
 
-   sum(0, na.rm = TRUE)
+   rank(0, na.last = TRUE)
 
 In Python it can then write:
 
 .. code-block:: python
 
-   from rpy2 import robjects
+   from rpy2.robjects.packages import importr
+   base = importr('base')
 
-   robjects.r.sum(0, na_rm = True)
+   base.rank(0, na_last = True)
 
 .. note::
 
-   The object robjects.r.sum is an instance of :class:`SignatureTranslatedFunction`,
-   a child class of :class:`Function`, and the translation of the parameter within
-   its constructor. This saves on having to translate parameters at each function
-   call, and allow to perform sanity check regarding possible ambiguous translation.
+   The object base.rank is an instance of :class:`SignatureTranslatedFunction`,
+   a child class of :class:`Function`, and the translation of the parameters made during
+   the creation of the instance.
+   This saves the need to translate parameters at each function
+   call, and allow to perform sanity check regarding possible 
+   ambiguous translation with an acceptable cost (since this is 
+   only performed when the instance is created).
 
    If translation is not desired, the class :class:`Function` can be used. With
-   that class, using the special Python syntax `**kwargs` is one way to go specify
-   named parameters with a dot '.'
+   that class, using the special Python syntax `**kwargs` is one way to specify
+   named parameters that contain a dot '.'
 
+   It is important to understand that the translation is done by inspecting
+   the signature of the R function, and that not much can be guessed from the
+   R ellipsis '...' whenever present. Parameters falling in the '...' will need
+   to have their R names passes, as show in the example below:
 
+   >>> graphics = importr('graphics')
+   >>> graphics.par(cex_axis = 0.5)
+   Warning message:
+   In function (..., no.readonly = FALSE)  :
+   "cex_axis" is not a graphical parameter
+   <Vector - Python:0xa1688cc / R:0xab763b0>
+   >>> graphics.par(**{'cex.axis': 0.5})
+   <Vector - Python:0xae8fbec / R:0xaafb850>
 
+   There exists a way to specify manually parameter mapping:
 
+   .. code-block:: python
+
+      from rpy2.robjects.functions import SignatureTranslatedFunction
+      from rpy2.robjects.packages import importr
+      graphics = importr('graphics')
+      graphics.par = SignatureTranslatedFunction(graphics.par,
+                                                 init_prm_translate = {'cex_axis': 'cex.axis'})
+
+   >>> graphics.par(cex_axis = 0.5)
+   <Vector - Python:0xa2cc90c / R:0xa5f7fd8>
+
+   Translating blindly each '.' in parameter names into '_' currently appears
+   to be a risky
+   practice, and is left to one to decide for his own code. (Bad) example:
+ 
+   .. code-block:: python
+
+      def iamfeelinglucky(**kwargs):
+          res = {}
+          for k, v in kwargs.iteritems:
+              res[k.replace('_', '.')] = v
+          return res
+
+      graphics.par(**(iamfeelinglucky(cex_axis = 0.5)))
+
+    
+   
 Things are also not always that simple, as the use of a dictionary does
 not ensure that the order in which the parameters are passed is conserved.
 
@@ -822,6 +866,15 @@ by a function through the function `formals()`, modelled as a method of
 <Vector - Python:0x8790bcc / R:0x93db250>
 >>> tuple(rnorm.formals().names)
 ('n', 'mean', 'sd')
+
+
+.. warning::
+
+   Here again there is a twist coming from R, and some functions are "special".
+   rpy2 is exposing as :class:`rpy2.rinterface.SexpClosure`  R objects that 
+   can be either CLOSXP, BUILTINSXP, or SPECIALSXP. However, only CLOSXP objects
+   will return non-null `formals`.
+
 
 The R functions as defined in :mod:`rpy2.robjects` inherit from the class
 :class:`rpy2.rinterface.SexpClosure`, and further documentation
