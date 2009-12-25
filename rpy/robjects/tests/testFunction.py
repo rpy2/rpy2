@@ -3,20 +3,24 @@ import rpy2.robjects as robjects
 rinterface = robjects.rinterface
 import array
 
-class FunctionTestCase(unittest.TestCase):
-    def testNew(self):
-        identical = rinterface.baseenv["identical"]
-        self.assertRaises(ValueError, robjects.Function, 'a')
+identical = rinterface.baseenv["identical"]
+Function = robjects.functions.Function
+SignatureTranslatedFunction = robjects.functions.SignatureTranslatedFunction
 
+class FunctionTestCase(unittest.TestCase):
+    def testNewInvalid(self):
+        self.assertRaises(ValueError, Function, 'a')
+
+    def testNewInvalid(self):
         ri_f = rinterface.baseenv.get('help')
         
-        ro_f = robjects.Function(ri_f)
+        ro_f = Function(ri_f)
         
         self.assertTrue(identical(ri_f, ro_f))
 
     def testCall(self):
         ri_f = rinterface.baseenv.get('sum')
-        ro_f = robjects.Function(ri_f)
+        ro_f = Function(ri_f)
         
         ro_v = robjects.Vector(array.array('i', [1,2,3]))
         
@@ -44,6 +48,30 @@ class FunctionTestCase(unittest.TestCase):
         n = res.names
         self.assertEquals("x", n[0])
         self.assertEquals("y", n[1])
+
+class SignatureTranslatedFunctionTestCase(unittest.TestCase):
+    def testNewInvalid(self):
+        self.assertRaises(ValueError, 
+                          SignatureTranslatedFunction, 'a')
+
+    def testNew(self):
+        ri_f = rinterface.baseenv.get('rank')
+        ro_f = SignatureTranslatedFunction(ri_f)        
+        self.assertTrue(identical(ri_f, ro_f))
+
+    def testNewWithTranslation(self):
+        ri_f = rinterface.baseenv.get('rank')
+        ro_f = SignatureTranslatedFunction(ri_f,
+                                           prm_translate = {'foo_bar': 'na.last'})
+        self.assertTrue(identical(ri_f, ro_f))
+
+    def testCall(self):
+        ri_f = rinterface.baseenv.get('sum')
+        ro_f = robjects.Function(ri_f)
+        
+        ro_v = robjects.Vector(array.array('i', [1,2,3]))
+        
+        s = ro_f(ro_v)
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(FunctionTestCase)

@@ -55,9 +55,13 @@ class SignatureTranslatedFunction(Function):
     the character '.' is replaced with '_' whenever present in the R argument name. """
     _prm_translate = None
 
-    def __init__(self, *args):
-        super(SignatureTranslatedFunction, self).__init__(*args)
-        prm_translate = {}
+    def __init__(self, sexp, init_prm_translate = None):
+        super(SignatureTranslatedFunction, self).__init__(sexp)
+        if init_prm_translate is None:
+            prm_translate = {}
+        else:
+            assert isinstance(init_prm_translate, dict)
+            prm_translate = init_prm_translate
         if not self.formals().rsame(NULL):
             for r_param in self.formals().names:
                 py_param = r_param.replace('.', '_')
