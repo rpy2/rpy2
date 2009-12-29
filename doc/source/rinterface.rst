@@ -147,8 +147,63 @@ when needed (that is when the object is modified in a local block),
 but copies of objects are nevertheless frequent. This can remain unnoticed
 by a user until large objects are in use or a large number of modification
 of objects are performed, in which case performance issues may appear.
+An infamous example is when the column names for a matrix are changed,
+bringing a system to its knees when the matrix is very large, 
+as the whole matrix ends up being copied. 
 
-In :mod:`rpy2`, 
+On the contrary, Python is using pointer objects passed around
+through function calls, and since :mod:`rpy2`, is a Python-to-R interface
+the Python approach was conserved.
+
+Although being contrived, the example below will illustrate the point.
+With R, renaming a column is like:
+
+.. code-block:: r
+
+   # create a matrix
+   m <- matrix(1:10, nrow = 2,
+               dimnames = list(c("1", "2"),
+	                       c("a", "b", "c", "d", "e")))
+   # rename the third column
+   i <- 3
+   colnames(m)[i] <- "foo"
+
+With :mod:`rpy2.rinterface`:
+   
+.. code-block:: python
+
+   # import and initialize
+   import rpy2.rinterface as ri
+   ri.initr()
+
+   # make a function to rename column i
+   def rename_col_i(m, i, name):
+       m.do_slot("dimnames")[1][i] = name
+
+   # create a matrix
+   matrix = ri.baseenv["matrix"]
+   rlist = ri.baseenv["list"]
+   m = matrix(ri.baseenv[":"](ri.IntSexpVector((1, )), ri.IntSexpVector((10, ))),
+              nrow = ri.IntSexpVector((2, )),
+              dimnames = rlist(ri.StrSexpVector(("1", "2")),
+	                       ri.StrSexpVector(("a", "b", "c", "d", "e"))))
+
+Now we can check that the column names
+
+>>> tuple(m.do_slot("dimnames")[1])
+('a', 'b', 'c', 'd', 'e')
+
+And rename the third column (remembering that R vectors are 1-indexed
+while Python sequences are 0-indexed).
+
+>>> i = 3-1   
+>>> rename_col_i(m, i, ri.StrSexpVector(("foo", )))
+>>> tuple(m.do_slot("dimnames")[1])
+('a', 'b', 'foo', 'd', 'e')
+
+Unlike with the R code, neither the matrix or the vector with the column names
+are copied. Whenever this is not a good thing, R objects can be copied the
+way Python objects are usually copied (using :func:`copy.deepcopy`).
 
 Interactive features
 ====================
