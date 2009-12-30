@@ -75,7 +75,11 @@ class MatrixTestCase(unittest.TestCase):
     def testSVD(self):
         self.assertTrue(False) # no test yet
     def testEigen(self):
-        self.assertTrue(False) # no test yet
+        m = robjects.r.matrix(robjects.IntVector((1, -1, -1, 1)), nrow=2)
+        res = m.eigen()
+        for i, val in res.rx2("values"):
+            self.assertEquals((2, 0)[i], val)
+
     def testDot(self):
         m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2, ncol=2)        
         m2 = m.dot(m)
