@@ -206,6 +206,36 @@ are copied. Whenever this is not a good thing, R objects can be copied the
 way Python objects are usually copied (using :func:`copy.deepcopy`,
 :class:`Sexp` implements :meth:`Sexp.__deepcopy__`).
 
+Memory management and garbage collection
+----------------------------------------
+
+Whenever the pass-by-value paradigm is applied stricly,
+garbage collection is straightforward as objects only live within
+the scope they are declared, but R is using a slight modification
+of this in order to minimize memory usage. Each R object has an
+attribute :attr:`Sexp.named` attached to it, indicating
+the need to copy the object.
+
+>>> import rpy2.rinterface as ri
+>>> ri.initr()
+0
+>>> ri.baseenv['letters'].named
+0
+
+Now we assign the vector *letters* in the R base namespace
+to a variable *mine* in the R globalenv namespace:
+
+>>> ri.baseenv['assign'](ri.StrSexpVector(("mine", )), ri.baseenv['letters'])
+<rpy2.rinterface.SexpVector - Python:0xb77ad280 / R:0xa23c5c0>
+>>> tuple(ri.globalenv)
+("mine", )
+>>> ri.globalenv["mine"].named
+2
+
+The *named* is 2 to indicate that *mine* should be copied if a modication
+of any sort is performed on the object.
+
+
 Interactive features
 ====================
 
