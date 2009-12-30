@@ -1939,7 +1939,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       is_PySexpObject = PyObject_TypeCheck(argValue, &Sexp_Type);
       if (! is_PySexpObject) {
         if ( argValue == Py_None ) {
-          argValue = rpy_R_NilValue;
+          argValue = (PyObject *)rpy_R_NilValue;
         } else {
           PyErr_Format(PyExc_ValueError, 
                        "All named parameters must be of type Sexp_Type or None");
@@ -1948,8 +1948,8 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
           goto fail;
         }
       }
-      Py_DECREF(tmp_obj);
       tmp_R = RPY_SEXP((PySexpObject *)argValue);
+      Py_DECREF(tmp_obj);
       /* SET_NAMED(tmp_R, 2); */
       /* tmp_R = Rf_duplicate(tmp_R); */
       if (! tmp_R) {
