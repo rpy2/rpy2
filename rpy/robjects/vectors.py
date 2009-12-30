@@ -399,7 +399,7 @@ class Matrix(Array):
 
     def eigen(self):
         """ Eigen values """
-        res = self._eigen(self, m)
+        res = self._eigen(self)
         return conversion.ri2py(res)
 
 class DataFrame(Vector):

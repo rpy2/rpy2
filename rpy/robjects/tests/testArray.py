@@ -86,7 +86,7 @@ class MatrixTestCase(unittest.TestCase):
     def testEigen(self):
         m = robjects.r.matrix(robjects.IntVector((1, -1, -1, 1)), nrow=2)
         res = m.eigen()
-        for i, val in res.rx2("values"):
+        for i, val in enumerate(res.rx2("values")):
             self.assertEquals((2, 0)[i], val)
 
     def testDot(self):
