@@ -65,7 +65,11 @@ class MatrixTestCase(unittest.TestCase):
             self.assertEquals(val, mt[i])
 
     def testCrossprod(self):
-        self.assertTrue(False)  # no test yet
+        m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2)
+        mcp = m.crossprod(m)
+        for i,val in enumerate((1,3,3,13,)):
+            self.assertEquals(val, mcp[i])
+
     def testTCrossprod(self):
         self.assertTrue(False)  # no test yet
     def testSVD(self):
