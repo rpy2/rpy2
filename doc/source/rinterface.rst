@@ -203,7 +203,8 @@ while Python sequences are 0-indexed).
 
 Unlike with the R code, neither the matrix or the vector with the column names
 are copied. Whenever this is not a good thing, R objects can be copied the
-way Python objects are usually copied (using :func:`copy.deepcopy`).
+way Python objects are usually copied (using :func:`copy.deepcopy`,
+:class:`Sexp` implements :meth:`Sexp.__deepcopy__`).
 
 Interactive features
 ====================
@@ -874,7 +875,7 @@ Vector types
   Boolean (logical in the R terminology)
 
 :const:`RAWSXP`
-  Raw (machine-readable) value
+  Raw (bytes) value
 
 :const:`REALSXP`
   Numerical value (float / double)
