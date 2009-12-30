@@ -2798,7 +2798,7 @@ static PyMethodDef EnvironmentSexp_methods[] = {
 static PySexpObject*
 EnvironmentSexp_subscript(PyObject *self, PyObject *key)
 {
-  char *name;
+  const char *name;
   SEXP res_R = NULL;
 
   if (!PyString_Check(key)) {
