@@ -3,6 +3,10 @@ import rpy2.robjects as robjects
 rinterface = robjects.rinterface
 import array
 
+
+def almost_equal(x, y, epsilon = 0.00001):
+    return abs(y - x) <= epsilon
+
 class ArrayTestCase(unittest.TestCase):
 
     def testNew(self):
@@ -72,8 +76,13 @@ class MatrixTestCase(unittest.TestCase):
 
     def testTCrossprod(self):
         self.assertTrue(False)  # no test yet
+
     def testSVD(self):
-        self.assertTrue(False) # no test yet
+        m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2)
+        res = m.svd()
+        for i,val in res.rx2("d"):
+            self.assertTrue(almost_equal((2, 0)[i], val))
+
     def testEigen(self):
         m = robjects.r.matrix(robjects.IntVector((1, -1, -1, 1)), nrow=2)
         res = m.eigen()
