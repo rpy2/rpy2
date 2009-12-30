@@ -162,7 +162,7 @@ The class :class:`rpy2.robjects.RObject`
 can represent any arbitray R object, although it will often
 be used for objects without any more specific representation
 in Python/rpy2 (such as :class:`Vector`,
-:class:`Function`, :class:`Environment`).
+:class:`functions.Function`, :class:`Environment`).
 
 The class inherits from the lower-level
 :class:`rpy2.rinterface.Sexp`
@@ -797,15 +797,18 @@ In Python it can then write:
 
 .. note::
 
-   The object base.rank is an instance of :class:`SignatureTranslatedFunction`,
-   a child class of :class:`Function`, and the translation of the parameters made during
+   The object base.rank is an instance of
+   :class:`functions.SignatureTranslatedFunction`,
+   a child class of :class:`functions.Function`, and the translation of 
+   the parameters made during
    the creation of the instance.
    This saves the need to translate parameters at each function
    call, and allow to perform sanity check regarding possible 
    ambiguous translation with an acceptable cost (since this is 
    only performed when the instance is created).
 
-   If translation is not desired, the class :class:`Function` can be used. With
+   If translation is not desired, the class :class:`functions.Function` 
+   can be used. With
    that class, using the special Python syntax `**kwargs` is one way to specify
    named parameters that contain a dot '.'
 
@@ -857,7 +860,7 @@ not ensure that the order in which the parameters are passed is conserved.
 
 R is capable of introspection, and can return the arguments accepted
 by a function through the function `formals()`, modelled as a method of
-:class:`Function`.
+:class:`functions.Function`.
 
 >>> from rpy2.robjects.packages import importr
 >>> stats = importr('stats')
@@ -880,11 +883,11 @@ The R functions as defined in :mod:`rpy2.robjects` inherit from the class
 :class:`rpy2.rinterface.SexpClosure`, and further documentation
 on the behavior of function can be found in Section :ref:`rinterface-functions`.
 
-.. autoclass:: rpy2.robjects.Function(*args, **kwargs)
+.. autoclass:: rpy2.robjects.functions.Function(*args, **kwargs)
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.robjects.SignatureTranslatedFunction(*args, **kwargs)
+.. autoclass:: rpy2.robjects.functions.SignatureTranslatedFunction(*args, **kwargs)
    :show-inheritance:
    :members:
 
@@ -998,7 +1001,7 @@ differences:
 .. note:: 
 
    The translation of '.' into '_' is clearly not sufficient, as
-   R symbols can use a lot more character illegal in Python symbols.
+   R symbols can use a lot more characters illegal in Python symbols.
    Those more exotic symbols can be accessed through :attr:`__dict__`.
    
    Example:
@@ -1163,7 +1166,7 @@ a model as a :class:`Formula` and a dataset.
 A drawback of the approach above is that the R "call" is stored,
 and as we are passing the :class:`DataFrame` *sleepstudy* 
 (and as it is believed to to be an anonymous structure by R) the call
-is lengthy as it comprise the explicit structure description of the data frame.
+is verbose: it comprises the explicit structure of the data frame
 (try to print *lml1*). This becomes hardly acceptable as datasets grow bigger.
 An alternative to that is to store the columns of the data frame into
 the environment for the :class:`Formula`, as shown below:
@@ -1223,6 +1226,6 @@ and restore them from their serialized form.
 Class diagram
 =============
 
-.. inheritance-diagram:: rpy2.robjects rpy2.robjects.methods rpy2.robjects.vectors
+.. inheritance-diagram:: rpy2.robjects rpy2.robjects.methods rpy2.robjects.vectors rpy2.robjects.functions
    :parts: 1
 
