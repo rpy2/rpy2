@@ -4,6 +4,7 @@ rinterface = robjects.rinterface
 import rpy2.rlike.container as rlc
 
 import array
+import csv, tempfile
 
 class DataFrameTestCase(unittest.TestCase):
 
@@ -41,7 +42,19 @@ class DataFrameTestCase(unittest.TestCase):
         self.assertEquals(2, df.ncol)
 
     def testFrom_csvfile(self):
-        self.assertTrue(False) # no test yet
+        column_names = ('letter', 'value')
+        data = (column_names,
+                ('a', 1),
+                ('b', 2),
+                ('c', 3))
+        fh = tempfile.NamedTemporaryFile(mode = "w", delete = False)
+        csv_w = csv.writer(fh)
+        csv_w.writelines(data)
+        fh.close()
+        dataf = robjects.DataFrame.from_csvfile(fh.name)
+        self.assertEquals(column_names, tuple(dataf.names()))
+        self.assertEquals(3, dataf.nrow)
+        self.assertEquals(2, dataf.ncol)
 
     def testTo_csvfile(self):
         self.assertTrue(False) # no test yet
