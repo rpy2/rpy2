@@ -40,6 +40,23 @@ This effort can be seen as a redesign and rewrite of the RPy package.
 Installation
 ============
 
+Upgrading from an older release of rpy2
+---------------------------------------
+
+In order to upgrade one will have to first remove all 
+installed rpy2 packages in the *PYTHONPATH*, then and only then install
+the recent version of rpy2 wished.
+
+The current rpy2 can be located with the code snippet below, then
+files and directories starting with rpy2 clean manually.
+
+.. code-block:: python
+
+   import rpy2
+   rpy2.__path__
+
+
+
 Requirements
 ------------
 
