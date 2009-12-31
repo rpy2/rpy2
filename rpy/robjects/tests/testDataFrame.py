@@ -49,10 +49,10 @@ class DataFrameTestCase(unittest.TestCase):
                 ('c', 3))
         fh = tempfile.NamedTemporaryFile(mode = "w", delete = False)
         csv_w = csv.writer(fh)
-        csv_w.writelines(data)
+        csv_w.writerows(data)
         fh.close()
         dataf = robjects.DataFrame.from_csvfile(fh.name)
-        self.assertEquals(column_names, tuple(dataf.names()))
+        self.assertEquals(column_names, tuple(dataf.names))
         self.assertEquals(3, dataf.nrow)
         self.assertEquals(2, dataf.ncol)
 

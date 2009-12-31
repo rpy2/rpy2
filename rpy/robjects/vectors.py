@@ -476,11 +476,12 @@ class DataFrame(Vector):
         dec = conversion.py2ro(dec)
         fill = conversion.py2ro(fill)
         comment_char = conversion.py2ro(comment_char)
-        res = DataFrame._read_csv(path, header = header, sep = sep,
-                                  quote = quote, dec = dec,
-                                  fill = fill,
-                                  comment_char = comment_char)
-
+        res = DataFrame._read_csv(path, 
+                                  **{'header': header, 'sep': sep,
+                                     'quote': quote, 'dec': dec,
+                                     'fill': fill,
+                                     'comment.char': comment_char})
+        res = conversion.ri2py(res)
         return res
 
     def to_csvfile(self, path, append = False):
