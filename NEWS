@@ -27,7 +27,8 @@ New Features
 - Delegating classes :class:`ExtractDelegator` and 
   :class:`DoubleExtractDelegator` for extracting the R-way
 
-- :class:`DataFrame` (formerly *RDataFrame*) can now be created from :`rlike.container.OrdDict`
+- :class:`DataFrame` (formerly *RDataFrame*) can now be created 
+  from :`rlike.container.OrdDict`
   instances, or any other object inheriting from dict.
 
 - :class:`FactorVector` to represent R factors
@@ -103,6 +104,12 @@ New Features
 
 - New object :data:`R_NilValue`, exposing R's special object for representing
   a "NULL".
+
+- Scalar Python parameters of type :class:`int`, :class:`long`,
+  :class:`float`, :class:`bool`, and :class:`None` 
+  in a call (using :class:`SexpClosure`) are now automatically converted
+  to length-one R vectors (at the exception of None, converted
+  to R_NilValue).
 
 :mod:`rpy2.rlike`:
 

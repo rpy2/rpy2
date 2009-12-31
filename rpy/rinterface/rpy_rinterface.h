@@ -53,7 +53,6 @@ typedef struct {
     res = PyBool_FromLong((long)(rbool));               \
   }
 
-
 #define RPY_GIL_ENSURE(is_threaded, gstate)  \
   is_threaded = PyEval_ThreadsInitialized(); \
   if (is_threaded) { \
@@ -64,6 +63,29 @@ typedef struct {
   if (is_threaded) { \
     PyGILState_Release(gstate);                 \
   }
+
+#define RPY_PYSCALAR_RVECTOR(py_obj, sexp)				\
+  sexp = NULL;								\
+  /* The argument is not a PySexpObject, so we are going to check
+     if conversion from a scalar type is possible */		  \
+if (PyLong_Check(py_obj) | PyInt_Check(py_obj)) {		  \
+  sexp = allocVector(INTSXP, 1);				  \
+  INTEGER_POINTER(sexp)[0] = PyInt_AS_LONG(py_obj);		  \
+  PROTECT(sexp);						  \
+  protect_count++;						  \
+ } else if (PyBool_Check(py_obj)) {					\
+  sexp = allocVector(LGLSXP, 1);					\
+  LOGICAL_POINTER(sexp)[0] = py_obj == Py_True ? TRUE : FALSE;	\
+  PROTECT(sexp);							\
+  protect_count++;							\
+ } else if (PyFloat_Check(py_obj)) {					\
+  sexp = allocVector(REALSXP, 1);					\
+  NUMERIC_POINTER(sexp)[0] = PyFloat_AS_DOUBLE(py_obj);		\
+  PROTECT(sexp);							\
+  protect_count++;							\
+ } else if (py_obj == Py_None) {					\
+  sexp = R_NilValue;							\
+ }
 
 
 #endif /* !RPY_RI_H */

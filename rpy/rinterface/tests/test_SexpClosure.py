@@ -4,6 +4,7 @@ import rpy2.rlike.container as rlc
 
 rinterface.initr()
 
+
 class SexpClosureTestCase(unittest.TestCase):
 
     def testNew(self):
@@ -99,6 +100,19 @@ class SexpClosureTestCase(unittest.TestCase):
         missing = rinterface.R_MissingArg
         self.assertEquals(False, fun(nonmissing)[0])
         self.assertEquals(True, fun(missing)[0])
+
+    def testScalarConvertInteger(self):
+        self.assertEquals('integer',
+                          rinterface.baseenv["typeof"](1)[0])
+
+    def testScalarConvertDouble(self):
+        self.assertEquals('double', 
+                          rinterface.baseenv["typeof"](1.0)[0])
+
+    def testScalarConvertBoolean(self):
+        self.assertEquals('logical', 
+                          rinterface.baseenv["typeof"](True)[0])
+        
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpClosureTestCase)
