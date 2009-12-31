@@ -389,7 +389,7 @@ class Matrix(Array):
             nu = min(tuple(self.dim))
         if nv is None:
             nv = min(tuple(self.dim))
-        res = self._crossprod(self, nu = nu, nv = nv, linpack = False)
+        res = self._svd(self, nu = nu, nv = nv, LINPACK = False)
         return conversion.ri2py(res)
 
     def dot(self, m):

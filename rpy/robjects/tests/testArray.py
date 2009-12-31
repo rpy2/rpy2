@@ -78,9 +78,9 @@ class MatrixTestCase(unittest.TestCase):
         self.assertTrue(False)  # no test yet
 
     def testSVD(self):
-        m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2)
+        m = robjects.r.matrix(robjects.IntVector((1, -1, -1, 1)), nrow=2)
         res = m.svd()
-        for i,val in res.rx2("d"):
+        for i,val in enumerate(res.rx2("d")):
             self.assertTrue(almost_equal((2, 0)[i], val))
 
     def testEigen(self):
