@@ -57,7 +57,15 @@ class DataFrameTestCase(unittest.TestCase):
         self.assertEquals(2, dataf.ncol)
 
     def testTo_csvfile(self):
-        self.assertTrue(False) # no test yet
+        fh = tempfile.NamedTemporaryFile(mode = "w", delete = False)
+        fh.close()
+        d = {'letter': robjects.StrVector('abc'),
+             'value' : robjects.IntVector((1, 2, 3))}
+        dataf = robjects.DataFrame(d)
+        dataf.to_csvfile(fh.name)
+        dataf = robjects.DataFrame.from_csvfile(fh.name)
+        self.assertEquals(3, dataf.nrow)
+        self.assertEquals(2, dataf.ncol)
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DataFrameTestCase)
