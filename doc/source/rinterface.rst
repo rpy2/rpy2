@@ -183,8 +183,8 @@ With :mod:`rpy2.rinterface`:
    # create a matrix
    matrix = ri.baseenv["matrix"]
    rlist = ri.baseenv["list"]
-   m = matrix(ri.baseenv[":"](ri.IntSexpVector((1, )), ri.IntSexpVector((10, ))),
-              nrow = ri.IntSexpVector((2, )),
+   m = matrix(ri.baseenv[":"](1, 10),
+              nrow = 2,
               dimnames = rlist(ri.StrSexpVector(("1", "2")),
 	                       ri.StrSexpVector(("a", "b", "c", "d", "e"))))
 
@@ -336,8 +336,7 @@ The class :class:`Sexp` is the base class for all R objects.
 
       >>> matrix = rinterface.globalenv.get("matrix")
       >>> letters = rinterface.globalenv.get("letters")
-      >>> ncol = rinterface.IntSexpVector([2, ])
-      >>> m = matrix(letters, ncol = ncol)
+      >>> m = matrix(letters, ncol = 2)
       >>> [x for x in m.do_slot("dim")]
       [13, 2]
       >>>

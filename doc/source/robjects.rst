@@ -631,7 +631,7 @@ columns are an ordered dictionary can be used:
 
 Creating the data.frame in R can otherwise be achieved in numerous ways,
 as many R functions do return a `data.frame`, such as the
- function `data.frame()`.
+function `data.frame()`.
 
 Extracting elements
 ^^^^^^^^^^^^^^^^^^^
