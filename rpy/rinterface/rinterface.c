@@ -1891,7 +1891,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       if (tmp_R == NULL) {
 	PyErr_Format(PyExc_ValueError, 
 		     "All parameters must be of type Sexp_Type,"
-		     "or Python int/long, or Python float, or Python bool"
+		     "or Python int/long, float, bool, or None"
 		     );
 	Py_DECREF(tmp_obj);
 	goto fail;
@@ -1949,7 +1949,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 	if (tmp_R == NULL) {
           PyErr_Format(PyExc_ValueError, 
 		       "All parameters must be of type Sexp_Type,"
-		       "or Python int/long, or Python float, or Python bool, "
+		       "or Python int/long, float, bool, "
 		       "or None"
 		       );
           Py_DECREF(tmp_obj);     
@@ -1962,7 +1962,6 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       /* tmp_R = Rf_duplicate(tmp_R); */
       if (! tmp_R) {
         PyErr_Format(PyExc_ValueError, "A named parameter is a NULL SEXP.");
-        Py_DECREF(tmp_obj);
         Py_XDECREF(citems);
         goto fail;
       }
