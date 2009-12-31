@@ -105,8 +105,10 @@ New Features
 - New object :data:`R_NilValue`, exposing R's special object for representing
   a "NULL".
 
+- :data:`ComplexSexpVector` for vectors of complex (real + imaginary) elements
+
 - Scalar Python parameters of type :class:`int`, :class:`long`,
-  :class:`float`, :class:`bool`, and :class:`None` 
+  :class:`double`, :class:`bool`, and :class:`None` 
   in a call (using :class:`SexpClosure`) are now automatically converted
   to length-one R vectors (at the exception of None, converted
   to R_NilValue).
@@ -118,8 +120,6 @@ New Features
 
 - static method :meth:`from_iteritems` for :class:`TaggedList`,
   for creating a TaggedList from any object having a method :meth:`iteritems`
-
-- :data:`ComplexSexpVector` for vectors of complex (real + imaginary) elements
 
 Changes
 -------
