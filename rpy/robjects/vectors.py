@@ -488,6 +488,6 @@ class DataFrame(Vector):
         """ Save the data into a .csv file. """
         path = conversion.py2ro(path)
         append = conversion.py2ro(append)
-        res = self._write_csv(path, append = append)
+        res = self._write_csv(self, file = path, append = append)
         return res
     
