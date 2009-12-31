@@ -1855,6 +1855,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   SEXP call_R, c_R, res_R;
   int largs, lkwds;
   SEXP tmp_R, fun_R;
+  int protect_count = 0;
   
   largs = lkwds = 0;
   if (args)
@@ -1880,7 +1881,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 
   int arg_i;
   PyObject *tmp_obj; /* temp object to iterate through the args tuple*/
-  int protect_count = 0;
+
   for (arg_i=0; arg_i<largs; arg_i++) {
     tmp_obj = PyTuple_GetItem(args, arg_i);
     if (PyObject_TypeCheck(tmp_obj, &Sexp_Type)) {
@@ -2005,7 +2006,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   return res;
   
  fail:
-  UNPROTECT(1);
+  UNPROTECT(1 + protect_count);
   embeddedR_freelock();
   return NULL;
 
