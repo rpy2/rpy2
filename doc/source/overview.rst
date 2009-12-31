@@ -60,8 +60,12 @@ Software Versions
 When compiling R from source, do not forget to specify *--enable-R-shlib* at
 the *./configure* step.
 
-gcc-4.3 is used for compiling the C parts on Linux. gcc-4.0 seems to be the default
-on OS X and yet produce fully functional binaries.
+gcc-4.4 is used for compiling the C parts on Linux. gcc-4.0 seems to be the default
+on OS X Leopard and yet produce fully functional binaries.
+
+.. note::
+
+   On OS X, the *XCode* tools will be required in order to compile rpy2. 
 
 
 Download
