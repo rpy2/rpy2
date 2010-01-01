@@ -67,6 +67,19 @@ class DataFrameTestCase(unittest.TestCase):
         self.assertEquals(3, dataf.nrow)
         self.assertEquals(2+1, dataf.ncol) # row names means +1
 
+    def testIter_col(self):
+        dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
+        col_types = [x.typeof for x in dataf.iter_column()]
+        self.assertEquals(rinterface.INTSXP, col_types[0])
+        self.assertEquals(rinterface.STRSXP, col_types[1])
+
+    def testIter_row(self):
+        dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
+        rows = [x for x in dataf.iter_row()]
+        self.assertEquals(1, rows[0][0])
+        self.assertEquals("b", rows[1][1])
+
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DataFrameTestCase)
     return suite

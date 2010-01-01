@@ -491,3 +491,12 @@ class DataFrame(Vector):
         res = self._write_csv(self, file = path, append = append)
         return res
     
+    def iter_row(self):
+        """ iterator across rows """
+        for i in xrange(self.nrow):
+            yield self.rx(i+1, rinterface.R_MissingArg)
+
+    def iter_column(self):
+        """ iterator across columns """
+        for i in xrange(self.ncol):
+            yield self.rx(rinterface.R_MissingArg, i+1)

@@ -59,6 +59,9 @@ New Features
 - :mod:`functions` to provide classes related to R functions, with the new 
   class :class:`SignatureTranslatedFunction`
 
+- :meth:`DataFrame.iter_row` and :meth:`DataFrame.iter_column`, iterating
+  through rows and columns respectively.
+
 :mod:`rpy2.rinterface`:
 
 - New functions for specifying callback functions for R's front-ends:
@@ -147,13 +150,13 @@ Changes
   (see in `.rx` and `.rx2` in the new features)
 
 - :meth:`colnames`, :meth:`rownames`, :meth:`nrow`, :meth:`ncol` 
-  for :class:`RDataFrame` are now property-style getters
+  for :class:`DataFrame` are now property-style getters
 
 - :meth:`nrow`, :meth:`ncol` for :class:`Array` 
   are now property-style getters
 
 - static method :meth:`from_csvfile` and 
-  instance method :meth:`to_csvfile` for :class:`RDataFrame`
+  instance method :meth:`to_csvfile` for :class:`DataFrame`
 
 - module :mod:`lib` to store modules representing R packages
 
