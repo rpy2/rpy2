@@ -496,15 +496,33 @@ scale_y_sqrt = ScaleYSqrt.new
 class ScaleColourBrewer(ScaleColour):
    _constructor = ggplot2_env['scale_colour_brewer']
 scale_colour_brewer = ScaleColourBrewer.new
+class ScaleColourContinuous(ScaleColour):
+   _constructor = ggplot2_env['scale_colour_continuous']
+scale_colour_continuous = ScaleColourContinuous.new
+class ScaleColourDiscrete(ScaleColour):
+   _constructor = ggplot2_env['scale_colour_discrete']
+scale_colour_discrete = ScaleColourDiscrete.new
 class ScaleColourGradient(ScaleColour):
    _constructor = ggplot2_env['scale_colour_gradient']
 scale_colour_gradient = ScaleColourGradient.new
 class ScaleColourGradient2(ScaleColour):
    _constructor = ggplot2_env['scale_colour_gradient2']
 scale_colour_gradient2 = ScaleColourGradient2.new
+class ScaleColourGradientN(ScaleColour):
+   _constructor = ggplot2_env['scale_colour_gradientn']
+scale_colour_gradientn = ScaleColourGradientN.new
 class ScaleColourGrey(ScaleColour):
    _constructor = ggplot2_env['scale_colour_grey']
 scale_colour_grey = ScaleColourGrey.new
+class ScaleColourHue(ScaleColour):
+   _constructor = ggplot2_env['scale_colour_hue']
+scale_colour_hue = ScaleColourHue.new
+class ScaleColourIdentity(ScaleColour):
+   _constructor = ggplot2_env['scale_colour_identity']
+scale_colour_identity = ScaleColourIdentity.new
+class ScaleColourManual(ScaleColour):
+   _constructor = ggplot2_env['scale_colour_manual']
+scale_colour_manual = ScaleColourManual.new
 class ScaleFillBrewer(ScaleFill):
    _constructor = ggplot2_env['scale_fill_brewer']
 scale_fill_brewer = ScaleFillBrewer.new
