@@ -173,7 +173,7 @@ To install from a downloaded source archive `<rpy_package>` do in a shell:
 This will build the package, guessing the R HOME from
 the R executable found in the PATH.
 
-Beside the regular options for :mod:distutils:-way of building and installing
+Beside the regular options for :mod:`distutils`-way of building and installing
 Python packages, it is otherwise possible to give explicitly the location for the R HOME:
 
 .. code-block:: bash

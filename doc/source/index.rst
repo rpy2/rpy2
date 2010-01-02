@@ -2,7 +2,7 @@ Documentation for rpy2
 ======================
 
 
-.. ifconfig:: release.endswith('dev')
+.. ifconfig:: release.endswith('dev') or release[:-1].endswith('alpha')
 
    .. warning::
       This documentation describe the rpy2 package version |version| on |today|.
@@ -14,16 +14,81 @@ Documentation for rpy2
       at all times, and this documentation up-to-date, temporary issues may appear:
       please remember that this is software under development.
 
-.. toctree::
-   :maxdepth: 2
 
-   getting-started
-   high-level
-   numpy
-   rinterface
-   rlike
-   miscellaneous
+.. only:: html
 
-   appendix
+   The first section contains a quick introduction, as well as how to get started
+   (requirements, install rpy2). This should be the natural place to
+   start if you are new to rpy2.
+
+   .. toctree::
+      :maxdepth: 3
+
+      getting-started
+
+
+   The high-level interface in rpy2 is designed to facilitate the use of R by
+   Python programmers. R objects are exposed as instances of Python-implemented
+   classes, with R functions as bound methods to those objects in a number of cases.
+   This section also contains an introduction to graphics with R: *trellis* (*lattice*)
+   plots as well as the grammar of graphics implemented in *ggplot2* let one
+   make complex and informative plots with little code written, while the underlying
+   *grid* graphics allow all possible customization is outlined.
+
+   .. toctree::
+      :maxdepth: 3
+
+      high-level
+
+   Users of the Python signature numerical package :mod:`numpy` can continue using
+   the data structures they are familiar with, and share objects seamlessly with R.
+
+   .. toctree::
+      :maxdepth: 3
+
+      numpy
+
+   A lower-level interface, closer to R's C-level API, is available. It can be used
+   when performance optimization is needed, or when extensions to the high-level
+   interface are developped.
+
+   .. toctree::
+      :maxdepth: 3
+
+      rinterface
+
+   Finally, the documentation covers the subpackage with R-like Python classes
+   and functions, callback functions, as well as compatibility with rpy-1.x.
+   and benchmarks.
+
+   .. toctree::
+      :maxdepth: 3
+
+      rlike
+      miscellaneous
+
+
+   The list of changes relates changes across versions, and will be checked when
+   upgrading rpy2.
+
+   .. toctree::
+      :maxdepth: 2
+
+      appendix
+
+
+.. only:: latex
+
+   .. toctree::
+      :maxdepth: 2
+
+      getting-started
+      high-level
+      numpy
+      rinterface
+      rlike
+      miscellaneous
+
+      appendix
 
 
