@@ -156,7 +156,11 @@ def rpy2py_basic(obj):
             res = [x for x in obj]
         elif obj.typeof in [ri.VECSXP]:
             try:
+                # if the returned objects is a list with names, return a dict
                 obj_names = obj.do_slot("names")
+                # caution: throw an exception if duplicated names
+                if (len(set(obj_names)) != len(obj_names)):
+                    raise ValueError("Duplicated names in the R named list.")
                 res = dict([(obj_names[i], rpy2py(x)) for i,x in enumerate(obj)])
             except LookupError:
                 res = [rpy2py(x) for x in obj]

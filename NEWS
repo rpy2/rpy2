@@ -193,6 +193,12 @@ Changes
 - :meth:`tags` of :class:`TaggedList` is now a property (with a getter
   and a setter)
 
+:mod:`rpy2.rpy_classic`:
+
+- R named lists are returned as Python :class:`dict`, like rpy-1.x does it, with the
+  notable difference that duplicate names are not silently overwritten: an exception
+  of class :class:`ValueError` is thrown whenever happening
+
 
 Bugs fixed
 ----------
