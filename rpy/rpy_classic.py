@@ -155,7 +155,11 @@ def rpy2py_basic(obj):
                           ri.LGLSXP,ri.STRSXP]:
             res = [x for x in obj]
         elif obj.typeof in [ri.VECSXP]:
-            res = [rpy2py(x) for x in obj]
+            try:
+                obj_names = obj.do_slot("names")
+                res = dict([(obj_names[i], rpy2py(x)) for i,x in enumerate(obj)])
+            except LookupError:
+                res = [rpy2py(x) for x in obj]
         elif obj.typeof == [ri.LANGSXP]:
             res = Robj(obj)
         else:

@@ -1,5 +1,5 @@
 
-/* Copyright Laurent Gautier - 2009 */
+/* Copyright Laurent Gautier - 2009-2010 */
 
 #include <Python.h>
 #include <R.h>
