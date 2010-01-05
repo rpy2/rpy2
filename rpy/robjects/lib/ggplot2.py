@@ -622,6 +622,7 @@ theme_set = ggplot2.theme_set
 
 theme_update = ggplot2.theme_update  
 
+gplot = ggplot2.qplot
 
 opts = ggplot2_env['opts']
 
