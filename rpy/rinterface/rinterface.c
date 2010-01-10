@@ -2776,7 +2776,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   } else if (PySequence_Check(object)) {
     if ((sexptype < 0) || (sexptype > RPY_MAX_VALIDSEXTYPE) || 
         (! validSexpType[sexptype])) {
-      PyErr_Format(PyExc_ValueError, "Invalid SEXP type.");
+      PyErr_Format(PyExc_ValueError, "Invalid SEXP type '%i'.", sexptype);
       embeddedR_freelock();
       return -1;
     }
@@ -3477,16 +3477,42 @@ newSEXP(PyObject *object, int rType)
     break;
   case VECSXP:
     PROTECT(sexp = NEW_LIST(length));
+    SEXP tmp, tmp2;
     for (i = 0; i < length; ++i) {
       if((item = PySequence_Fast_GET_ITEM(seq_object, i))) {
-        int is_PySexpObject = PyObject_TypeCheck(item, &Sexp_Type);
-        if (! is_PySexpObject) {
-          Py_DECREF(item);
+	if (PyObject_TypeCheck(item, &Sexp_Type)) {
+	  SET_ELEMENT(sexp, i, RPY_SEXP((PySexpObject *)item));
+	} else if (PyFloat_Check(item)) {
+	  tmp = allocVector(REALSXP, 1);
+	  REAL(tmp)[0] = PyFloat_AS_DOUBLE(item);
+	  SET_ELEMENT(sexp, i, tmp);
+	} else if (PyInt_Check(item) | PyLong_Check(item)) {
+	  tmp = allocVector(INTSXP, 1);
+	  INTEGER_POINTER(tmp)[0] = PyInt_AS_LONG(item);
+	  SET_ELEMENT(sexp, i, tmp);
+	} else if (PyBool_Check(item)) {
+	  if (item == Py_True) {
+	    SET_ELEMENT(sexp, i, TRUE);
+	  } else {
+	    SET_ELEMENT(sexp, i, FALSE);
+	  }
+	} else if (PyString_Check(item)) {
+	  PROTECT(tmp = NEW_CHARACTER(1));
+	  tmp2 = mkChar(PyString_AS_STRING(item));
+	  if (!tmp2) {
+	    PyErr_NoMemory();
+	    sexp = NULL;
+	    break;
+	  }
+	  SET_STRING_ELT(tmp, 0, tmp2);
+	  SET_ELEMENT(sexp, i, tmp);
+	  UNPROTECT(1);
+	} else {
           PyErr_Format(PyExc_ValueError, "All elements of the list must be of "
-                       "type 'Sexp_Type'.");
-          return NULL;
+                       "type 'Sexp_Type' or of Python types float, int, bool, or str.");
+          sexp = NULL;
+	  break;
         }
-        SET_ELEMENT(sexp, i, RPY_SEXP((PySexpObject *)item));
       }
     }
     UNPROTECT(1);

@@ -111,6 +111,13 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertTrue(ok)
         self.assertEquals('abc', sexp[0])
 
+    def testNewList(self):
+        vec = ri.ListSexpVector([1,'b',3,'d',5])
+        ok = ri.baseenv["is.list"](vec)[0]
+        self.assertTrue(ok)
+        self.assertEquals(5, len(vec))
+        self.assertEquals(1, vec[0][0])
+        self.assertEquals('b', vec[1][0])
 
     def testNewVector(self):
         sexp_char = ri.SexpVector(["abc", ], 
@@ -238,11 +245,11 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertEquals(2+3j, vec[1])
 
     def testGetSliceList(self):
-        vec = ri.SexpVector([1,'b',3+4j])
+        vec = ri.ListSexpVector([1,'b',True])
         vec = vec[0:2]
         self.assertEquals(2, len(vec))
-        self.assertEquals(1, vec[0])
-        self.assertEquals('b', vec[1])
+        self.assertEquals(1, vec[0][0])
+        self.assertEquals('b', vec[1][0])
 
     def testAssignItemDifferentType(self):
         c_R = ri.globalenv.get("c")
