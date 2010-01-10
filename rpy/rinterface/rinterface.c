@@ -2466,7 +2466,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return -1;
   }
-
+  
   int is_PySexpObject = PyObject_TypeCheck(val, &Sexp_Type);
   if (! is_PySexpObject) {
     PyErr_Format(PyExc_ValueError, "Any new value must be of "
@@ -2480,14 +2480,14 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
   }
 
   self_typeof = TYPEOF(*sexp);
-  if ((self_typeof != VECSXP) & (TYPEOF(*sexp_val) != self_typeof)) {
+  if (TYPEOF(*sexp_val) != self_typeof) {
     PyErr_Format(PyExc_ValueError, 
 		 "The new value cannot be of 'typeof' other than %i ('%i' given)", 
 		 self_typeof, TYPEOF(*sexp_val));
     return -1;
   }
 
-  if ((TYPEOF(*sexp) != VECSXP) & (LENGTH(*sexp_val) != 1)) {
+  if (LENGTH(*sexp_val) != 1) {
     PyErr_Format(PyExc_ValueError, "The new value must be of length 1.");
     return -1;
   }
