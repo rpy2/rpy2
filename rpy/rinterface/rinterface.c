@@ -2442,6 +2442,7 @@ static int
 VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
 {
   R_len_t i_R, len_R;
+  int self_typeof;
 
   /* Check for 64 bits platforms */
   if (i >= R_LEN_T_MAX) {
@@ -2478,9 +2479,11 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
     return -1;
   }
 
-  if (TYPEOF(*sexp_val) != TYPEOF(*sexp)) {
+  self_typeof = TYPEOF(*sexp);
+  if ((self_typeof != VECSXP) & (TYPEOF(*sexp_val) != self_typeof)) {
     PyErr_Format(PyExc_ValueError, 
-		 "The new value cannot be of 'typeof' other than %i", TYPEOF(*sexp));
+		 "The new value cannot be of 'typeof' other than %i ('%i' given)", 
+		 self_typeof, TYPEOF(*sexp_val));
     return -1;
   }
 
@@ -2491,7 +2494,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
 
   SEXP sexp_copy;
   i_R = (R_len_t)i;
-  switch (TYPEOF(*sexp)) {
+  switch (self_typeof) {
   case REALSXP:
     (NUMERIC_POINTER(*sexp))[i_R] = (NUMERIC_POINTER(*sexp_val))[0];
     break;
@@ -2514,7 +2517,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
     break;
   default:
     PyErr_Format(PyExc_ValueError, "Cannot handle typeof '%d'", 
-                 TYPEOF(*sexp));
+                 self_typeof);
     return -1;
     break;
   }
