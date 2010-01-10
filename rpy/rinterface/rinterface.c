@@ -2513,7 +2513,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
     UNPROTECT(1);
     break;
   default:
-    PyErr_Format(PyExc_ValueError, "cannot handle type %d", 
+    PyErr_Format(PyExc_ValueError, "Cannot handle typeof '%d'", 
                  TYPEOF(*sexp));
     return -1;
     break;
