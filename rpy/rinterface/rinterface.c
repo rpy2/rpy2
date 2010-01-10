@@ -2479,7 +2479,8 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
   }
 
   if (TYPEOF(*sexp_val) != TYPEOF(*sexp)) {
-    PyErr_Format(PyExc_ValueError, "The type for the new value cannot be different.");
+    PyErr_Format(PyExc_ValueError, 
+		 "The new value cannot be of 'typeof' other than %i", TYPEOF(*sexp));
     return -1;
   }
 
