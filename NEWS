@@ -216,6 +216,7 @@ Bugs fixed
 
 - :meth:`Robj.as_py` was not working at all (and now it does to some extent)
 
+- Replacing elements of a VECSEXP (R list) was throwing an error (issue #24)
 
 Release 2.0.7
 =============

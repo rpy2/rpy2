@@ -2487,7 +2487,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
     return -1;
   }
 
-  if ((TYPEOF(*sexp_val) != VECSXP) & (LENGTH(*sexp_val) != 1)) {
+  if ((TYPEOF(*sexp) != VECSXP) & (LENGTH(*sexp_val) != 1)) {
     PyErr_Format(PyExc_ValueError, "The new value must be of length 1.");
     return -1;
   }
