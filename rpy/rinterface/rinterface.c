@@ -2349,6 +2349,12 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     return NULL;
   }
 
+  len_R = GET_LENGTH(*sexp);
+  
+  if (i < 0) {
+    i = len_R - i;
+  }
+
   /* On 64bits, Python is apparently able to use larger integer
    * than R for indexing. */
   if (i >= R_LEN_T_MAX) {
@@ -2356,12 +2362,6 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     embeddedR_freelock();
     res = NULL;
     return res;
-  }
-
-  len_R = GET_LENGTH(*sexp);
-  
-  if (i < 0) {
-    i = len_R - i;
   }
 
   if (i < 0) {
