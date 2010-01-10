@@ -116,7 +116,7 @@ New Features
   to length-one R vectors (at the exception of None, converted
   to R_NilValue).
 
-- Python slices can now be use on R vector-like objects 
+- Python slices can now be used on R vector-like objects 
 
 :mod:`rpy2.rlike`:
 
