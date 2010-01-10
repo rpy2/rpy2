@@ -196,6 +196,54 @@ class SexpVectorTestCase(unittest.TestCase):
             self.assertRaises(IndexError, myVec.__getitem__, 
                               ri.R_LEN_T_MAX+1)
 
+    def testGetSliceFloat(self):
+        vec = ri.FloatSexpVector([1.0,2.0,3.0])
+        vec = vec[0:2]
+        self.assertEquals(2, len(vec))
+        self.assertEquals(1.0, vec[0])
+        self.assertEquals(2.0, vec[1])
+
+    def testGetSliceInt(self):
+        vec = ri.IntSexpVector([1,2,3])
+        vec = vec[0:2]
+        self.assertEquals(2, len(vec))
+        self.assertEquals(1, vec[0])
+        self.assertEquals(2, vec[1])
+
+    def testGetSliceIntNegative(self):
+        vec = ri.IntSexpVector([1,2,3])
+        vec = vec[-2:-1]
+        self.assertEquals(1, len(vec))
+        self.assertEquals(2, vec[0])
+
+    def testGetSliceBool(self):
+        vec = ri.BoolSexpVector([True,False,True])
+        vec = vec[0:2]
+        self.assertEquals(2, len(vec))
+        self.assertEquals(True, vec[0])
+        self.assertEquals(False, vec[1])
+
+    def testGetSliceStr(self):
+        vec = ri.IntSexpVector(['a','b','c'])
+        vec = vec[0:2]
+        self.assertEquals(2, len(vec))
+        self.assertEquals('a', vec[0])
+        self.assertEquals('a', vec[1])
+
+    def testGetSliceComplex(self):
+        vec = ri.ComplexSexpVector([1+2j,2+3j,3+4j])
+        vec = vec[0:2]
+        self.assertEquals(2, len(vec))
+        self.assertEquals(1+2j, vec[0])
+        self.assertEquals(2+3j, vec[1])
+
+    def testGetSliceList(self):
+        vec = ri.SexpVector([1,'b',3+4j])
+        vec = vec[0:2]
+        self.assertEquals(2, len(vec))
+        self.assertEquals(1, vec[0])
+        self.assertEquals('b', vec[1])
+
     def testAssignItemDifferentType(self):
         c_R = ri.globalenv.get("c")
         myVec = c_R(ri.SexpVector([0, 1, 2, 3, 4, 5], ri.INTSXP))

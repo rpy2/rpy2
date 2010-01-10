@@ -2437,6 +2437,130 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
   return res;
 }
 
+/* a[i1:i2] */
+static PyObject *
+VectorSexp_slice(PyObject *object, Py_ssize_t i1, Py_ssize_t i2)
+{
+  PyObject* res;
+  R_len_t i1_R, i2_R, len_R;
+
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+  SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
+  SEXP res_sexp;
+
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    embeddedR_freelock();
+    return NULL;
+  }
+
+
+  len_R = GET_LENGTH(*sexp);
+  
+  if (i1 < 0) {
+    i1 = (R_len_t)(len_R - i1);
+  }
+  if (i2 < 0) {
+    i2 = (R_len_t)(len_R - i2);
+  }
+
+  /* On 64bits, Python is apparently able to use larger integer
+   * than R for indexing. */
+  if ((i1 >= R_LEN_T_MAX) | (i2 >= R_LEN_T_MAX)) {
+    PyErr_Format(PyExc_IndexError, 
+		 "Index values in the slice exceed what R can handle.");
+    embeddedR_freelock();
+    return NULL;
+  }
+
+  if ((i1 < 0) | (i2 < 0)) {
+    PyErr_Format(PyExc_IndexError, 
+                 "Mysterious error: likely an integer overflow.");
+    embeddedR_freelock();
+    return res;
+  }
+  if ((i1 >= GET_LENGTH(*sexp)) | (i2 >= GET_LENGTH(*sexp))) {
+    PyErr_Format(PyExc_IndexError, "Index out of range.");
+    res_sexp = NULL;
+  } else {
+    if ( i1 > i2) {
+      /* Whenever this occurs for regular Python lists,
+      * a sequence of length 0 is returned. Setting i1:=i2
+      * causes the same whithout writing "special case" code.
+      */
+      i2 = i1;
+    }
+    double vd;
+    int vi;
+    Rcomplex vc;
+    R_len_t slice_len = i2-i1;
+    R_len_t slice_i;
+    const char *vs;
+    SEXP tmp, sexp_item; /* tmp and sexp_item needed for case LANGSXP */
+    switch (TYPEOF(*sexp)) {
+    case REALSXP:
+      res_sexp = allocVector(REALSXP, slice_len);
+      for (slice_i = 0; slice_i < slice_len; slice_i++) {
+	NUMERIC_POINTER(res_sexp)[slice_i] = (NUMERIC_POINTER(*sexp))[slice_i + i1];
+      }
+      break;
+    case INTSXP:
+      res_sexp = allocVector(INTSXP, slice_len);
+      for (slice_i = 0; slice_i < slice_len; slice_i++) {
+	INTEGER_POINTER(res_sexp)[slice_i] = (INTEGER_POINTER(*sexp))[slice_i + i1];
+      }
+      break;
+    case LGLSXP:
+      res_sexp = allocVector(LGLSXP, slice_len);
+      for (slice_i = 0; slice_i < slice_len; slice_i++) {
+	LOGICAL_POINTER(res_sexp)[slice_i] = (LOGICAL_POINTER(*sexp))[slice_i + i1];
+      }
+      break;
+    case CPLXSXP:
+      res_sexp = allocVector(CPLXSXP, slice_len);
+      for (slice_i = 0; slice_i < slice_len; slice_i++) {
+	COMPLEX_POINTER(res_sexp)[slice_i] = (COMPLEX_POINTER(*sexp))[slice_i + i1];
+      }
+      break;
+    case STRSXP:
+      res_sexp = allocVector(STRSXP, slice_len);
+      for (slice_i = 0; slice_i < slice_len; slice_i++) {
+	SET_STRING_ELT(res_sexp, slice_i, STRING_ELT(*sexp, slice_i + i1));
+      }
+      break;
+/*     case CHARSXP: */
+      /*       FIXME: implement handling of single char (if possible ?) */
+/*       vs = (CHAR(*sexp)[i_R]); */
+/*       res = PyString_FromStringAndSize(vs, 1); */
+    case VECSXP:
+    case EXPRSXP:
+      res_sexp = allocVector(VECSXP, slice_len);
+      for (slice_i = 0; slice_i < slice_len; slice_i++) {
+	SET_VECTOR_ELT(res_sexp, slice_i, VECTOR_ELT(*sexp, slice_i + i1));
+      }
+      break;
+    case LISTSXP:
+    case LANGSXP:
+    default:
+      PyErr_Format(PyExc_ValueError, "Cannot handle type %d", 
+                   TYPEOF(*sexp));
+      res_sexp = NULL;
+      break;
+    }
+  }
+  embeddedR_freelock();
+  if (res_sexp != NULL) {
+    return newPySexpObject(res_sexp);
+  } else {
+    return NULL;
+  }
+}
+
+
 /* a[i] = val */
 static int
 VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
@@ -2529,8 +2653,8 @@ static PySequenceMethods VectorSexp_sequenceMethods = {
   0,                              /* sq_concat */
   0,                              /* sq_repeat */
   (ssizeargfunc)VectorSexp_item,        /* sq_item */
-  0, /*(ssizessizeargfunc)VectorSexp_slice,  sq_slice */
-  (ssizeobjargproc)VectorSexp_ass_item,   /* sq_ass_item */
+  (ssizessizeargfunc)VectorSexp_slice,  /* sq_slice */
+  (ssizeobjargproc)VectorSexp_ass_item, /* sq_ass_item */
   0,                              /* sq_ass_slice */
   0,                              /* sq_contains */
   0,                              /* sq_inplace_concat */
