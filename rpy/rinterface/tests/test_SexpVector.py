@@ -231,11 +231,11 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertEquals(False, vec[1])
 
     def testGetSliceStr(self):
-        vec = ri.IntSexpVector(['a','b','c'])
+        vec = ri.StrSexpVector(['a','b','c'])
         vec = vec[0:2]
         self.assertEquals(2, len(vec))
         self.assertEquals('a', vec[0])
-        self.assertEquals('a', vec[1])
+        self.assertEquals('b', vec[1])
 
     def testGetSliceComplex(self):
         vec = ri.ComplexSexpVector([1+2j,2+3j,3+4j])
