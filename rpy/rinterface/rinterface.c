@@ -3400,45 +3400,51 @@ newSEXP(PyObject *object, int rType)
   const Py_ssize_t length = PySequence_Fast_GET_SIZE(seq_object);
 
   Py_ssize_t i;
+  double *numeric_ptr;
+  long   *integer_ptr;
+  int    *logical_ptr;
   switch(rType) {
   case REALSXP:
-    PROTECT(sexp = NEW_NUMERIC(length));      
+    PROTECT(sexp = NEW_NUMERIC(length));
+    numeric_ptr = REAL(sexp);
     for (i = 0; i < length; ++i) {
       if((item = PyNumber_Float(PySequence_Fast_GET_ITEM(seq_object, i)))) {
-        REAL(sexp)[i] = PyFloat_AS_DOUBLE(item);
+	numeric_ptr[i] = PyFloat_AS_DOUBLE(item);
         Py_DECREF(item);
       }
       else {
         PyErr_Clear();
-        REAL(sexp)[i] = NA_REAL;
+        numeric_ptr[i] = NA_REAL;
       }
     }
     UNPROTECT(1);
     break;
   case INTSXP:
     PROTECT(sexp = NEW_INTEGER(length));
+    integer_ptr = INTEGER(sexp);
     for (i = 0; i < length; ++i) {
       if((item = PyNumber_Int(PySequence_Fast_GET_ITEM(seq_object, i)))) {
         long l = PyInt_AS_LONG(item);
-        INTEGER(sexp)[i] = (l<=INT_MAX && l>=INT_MIN)?l:NA_INTEGER;
+        integer_ptr[i] = (l<=INT_MAX && l>=INT_MIN)?l:NA_INTEGER;
         Py_DECREF(item);
       }
       else {
         PyErr_Clear();
-        INTEGER(sexp)[i] = NA_INTEGER;
+        integer_ptr[i] = NA_INTEGER;
       }
     }
     UNPROTECT(1);
     break;
   case LGLSXP:
     PROTECT(sexp = NEW_LOGICAL(length));
+    logical_ptr = LOGICAL(sexp);
     for (i = 0; i < length; ++i) {
       int q = PyObject_IsTrue(PySequence_Fast_GET_ITEM(seq_object, i));
       if (q != -1)
-        LOGICAL(sexp)[i] = q;
+        logical_ptr[i] = q;
       else {
         PyErr_Clear();
-        LOGICAL(sexp)[i] = NA_LOGICAL;
+        logical_ptr[i] = NA_LOGICAL;
       }
     }
     UNPROTECT(1);
