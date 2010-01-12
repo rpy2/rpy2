@@ -2208,7 +2208,7 @@ This corresponds to the C-level function CLOENV(SEXP).\n\
 :rtype: :class:`rpy2.rinterface.SexpEnvironment`\n");
 
 static PyMethodDef ClosureSexp_methods[] = {
-  {"closureEnv", (PyCFunction)Sexp_closureEnv, METH_NOARGS,
+  {"closureenv", (PyCFunction)Sexp_closureEnv, METH_NOARGS,
    Sexp_closureEnv_doc},
   {"rcall", (PyCFunction)Sexp_rcall, METH_VARARGS,
    SexpClosure_rcall_doc},
@@ -2221,7 +2221,7 @@ In R a function is defined within an enclosing \
 environment, thus the name closure. \
 In Python, 'nested scopes' could be the closest similar thing.\
 \n\
-The closure can be accessed with the method 'closureEnv'.\
+The closure can be accessed with the method 'closureenv'.\
 ");
 
 static int
@@ -2549,8 +2549,7 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
     }
   }
   embeddedR_freelock();
-  if (res_sexp == NULL) {
-    return NULL;
+  if (res_sexp == NULL) {    return NULL;
   }
   return (PyObject*)newPySexpObject(res_sexp);
 }

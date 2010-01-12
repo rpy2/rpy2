@@ -20,7 +20,7 @@ class SexpClosureTestCase(unittest.TestCase):
         letters = rinterface.baseenv["letters"]
         self.assertRaises(rinterface.RRuntimeError, sum, letters)
 
-    def testClosureEnv(self):
+    def testClosureenv(self):
         parse = rinterface.baseenv["parse"]
         exp = parse(text = rinterface.SexpVector(["function(x) { x[y] }", ], 
                                                  rinterface.STRSXP))
@@ -28,11 +28,11 @@ class SexpClosureTestCase(unittest.TestCase):
         vec = rinterface.baseenv["letters"]
         self.assertRaises(rinterface.RRuntimeError, fun, vec)
 
-        fun.closureEnv()["y"] = rinterface.SexpVector([1, ], 
+        fun.closureenv()["y"] = rinterface.SexpVector([1, ], 
                                                       rinterface.INTSXP)
         self.assertEquals('a', fun(vec)[0])
 
-        fun.closureEnv()["y"] = rinterface.SexpVector([2, ], 
+        fun.closureenv()["y"] = rinterface.SexpVector([2, ], 
                                                       rinterface.INTSXP)
         self.assertEquals('b', fun(vec)[0])
 
