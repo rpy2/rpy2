@@ -2492,7 +2492,6 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
       */
       ihigh = ilow;
     }
-    printf("%i-%i\n", ilow, ihigh);
     R_len_t slice_len = ihigh-ilow;
     R_len_t slice_i;
     const char *vs;
