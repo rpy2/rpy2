@@ -2438,9 +2438,8 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
 
 /* a[i1:i2] */
 static PyObject *
-VectorSexp_slice(PyObject *object, Py_ssize_t i1, Py_ssize_t i2)
+VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
 {
-  PyObject* res;
   R_len_t len_R;
 
   if (embeddedR_status & RPY_R_BUSY) {
@@ -2460,72 +2459,73 @@ VectorSexp_slice(PyObject *object, Py_ssize_t i1, Py_ssize_t i2)
 
   len_R = GET_LENGTH(*sexp);
   
-  if (i1 < 0) {
-    i1 = (R_len_t)(len_R - i1);
+  if (ilow < 0) {
+    ilow = (R_len_t)(len_R - ilow) + 1;
   }
-  if (i2 < 0) {
-    i2 = (R_len_t)(len_R - i2);
+  if (ihigh < 0) {
+    ihigh = (R_len_t)(len_R - ihigh) + 1;
   }
 
   /* On 64bits, Python is apparently able to use larger integer
    * than R for indexing. */
-  if ((i1 >= R_LEN_T_MAX) | (i2 >= R_LEN_T_MAX)) {
+  if ((ilow >= R_LEN_T_MAX) | (ihigh >= R_LEN_T_MAX)) {
     PyErr_Format(PyExc_IndexError, 
 		 "Index values in the slice exceed what R can handle.");
     embeddedR_freelock();
     return NULL;
   }
 
-  if ((i1 < 0) | (i2 < 0)) {
+  if ((ilow < 0) | (ihigh < 0)) {
     PyErr_Format(PyExc_IndexError, 
                  "Mysterious error: likely an integer overflow.");
     embeddedR_freelock();
     return NULL;
   }
-  if ((i1 > GET_LENGTH(*sexp)) | (i2 > GET_LENGTH(*sexp))) {
+  if ((ilow > GET_LENGTH(*sexp)) | (ihigh > GET_LENGTH(*sexp))) {
     PyErr_Format(PyExc_IndexError, "Index out of range.");
-    res_sexp = NULL;
+    return NULL;
   } else {
-    if ( i1 > i2) {
+    if ( ilow > ihigh ) {
       /* Whenever this occurs for regular Python lists,
-      * a sequence of length 0 is returned. Setting i1:=i2
+      * a sequence of length 0 is returned. Setting ilow:=ilow
       * causes the same whithout writing "special case" code.
       */
-      i2 = i1;
+      ihigh = ilow;
     }
-    R_len_t slice_len = i2-i1;
+    printf("%i-%i\n", ilow, ihigh);
+    R_len_t slice_len = ihigh-ilow;
     R_len_t slice_i;
     const char *vs;
     SEXP tmp, sexp_item; /* tmp and sexp_item needed for case LANGSXP */
     switch (TYPEOF(*sexp)) {
     case REALSXP:
       res_sexp = allocVector(REALSXP, slice_len);
-      for (slice_i = 0; slice_i < slice_len; slice_i++) {
-	NUMERIC_POINTER(res_sexp)[slice_i] = (NUMERIC_POINTER(*sexp))[slice_i + i1];
-      }
+      memcpy(NUMERIC_POINTER(res_sexp),
+	     NUMERIC_POINTER(*sexp) + ilow,  
+	     (ihigh-ilow) * sizeof(double));
       break;
     case INTSXP:
       res_sexp = allocVector(INTSXP, slice_len);
-      for (slice_i = 0; slice_i < slice_len; slice_i++) {
-	INTEGER_POINTER(res_sexp)[slice_i] = (INTEGER_POINTER(*sexp))[slice_i + i1];
-      }
+      memcpy(INTEGER_POINTER(res_sexp),
+	     INTEGER_POINTER(*sexp) + ilow,  
+	     (ihigh-ilow) * sizeof(int));
       break;
     case LGLSXP:
       res_sexp = allocVector(LGLSXP, slice_len);
-      for (slice_i = 0; slice_i < slice_len; slice_i++) {
-	LOGICAL_POINTER(res_sexp)[slice_i] = (LOGICAL_POINTER(*sexp))[slice_i + i1];
-      }
+      memcpy(INTEGER_POINTER(res_sexp),
+	     INTEGER_POINTER(*sexp) + ilow,  
+	     (ihigh-ilow) * sizeof(int));
       break;
     case CPLXSXP:
       res_sexp = allocVector(CPLXSXP, slice_len);
       for (slice_i = 0; slice_i < slice_len; slice_i++) {
-	COMPLEX_POINTER(res_sexp)[slice_i] = (COMPLEX_POINTER(*sexp))[slice_i + i1];
+	COMPLEX_POINTER(res_sexp)[slice_i] = (COMPLEX_POINTER(*sexp))[slice_i + ilow];
       }
       break;
     case STRSXP:
       res_sexp = allocVector(STRSXP, slice_len);
       for (slice_i = 0; slice_i < slice_len; slice_i++) {
-	SET_STRING_ELT(res_sexp, slice_i, STRING_ELT(*sexp, slice_i + i1));
+	SET_STRING_ELT(res_sexp, slice_i, STRING_ELT(*sexp, slice_i + ilow));
       }
       break;
 /*     case CHARSXP: */
@@ -2536,7 +2536,7 @@ VectorSexp_slice(PyObject *object, Py_ssize_t i1, Py_ssize_t i2)
     case EXPRSXP:
       res_sexp = allocVector(VECSXP, slice_len);
       for (slice_i = 0; slice_i < slice_len; slice_i++) {
-	SET_VECTOR_ELT(res_sexp, slice_i, VECTOR_ELT(*sexp, slice_i + i1));
+	SET_VECTOR_ELT(res_sexp, slice_i, VECTOR_ELT(*sexp, slice_i + ilow));
       }
       break;
     case LISTSXP:
@@ -2552,7 +2552,7 @@ VectorSexp_slice(PyObject *object, Py_ssize_t i1, Py_ssize_t i2)
   if (res_sexp == NULL) {
     return NULL;
   }
-  return newPySexpObject(res_sexp);
+  return (PyObject*)newPySexpObject(res_sexp);
 }
 
 
