@@ -2075,7 +2075,6 @@ Sexp_rcall(PyObject *self, PyObject *args)
 
   int arg_i;
   PyObject *tmp_obj;
-  int is_PySexpObject;
 
   /* named args */
   PyObject *argValue, *argName;
@@ -2442,7 +2441,7 @@ static PyObject *
 VectorSexp_slice(PyObject *object, Py_ssize_t i1, Py_ssize_t i2)
 {
   PyObject* res;
-  R_len_t i1_R, i2_R, len_R;
+  R_len_t len_R;
 
   if (embeddedR_status & RPY_R_BUSY) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
@@ -2481,7 +2480,7 @@ VectorSexp_slice(PyObject *object, Py_ssize_t i1, Py_ssize_t i2)
     PyErr_Format(PyExc_IndexError, 
                  "Mysterious error: likely an integer overflow.");
     embeddedR_freelock();
-    return res;
+    return NULL;
   }
   if ((i1 > GET_LENGTH(*sexp)) | (i2 > GET_LENGTH(*sexp))) {
     PyErr_Format(PyExc_IndexError, "Index out of range.");
@@ -2494,9 +2493,6 @@ VectorSexp_slice(PyObject *object, Py_ssize_t i1, Py_ssize_t i2)
       */
       i2 = i1;
     }
-    double vd;
-    int vi;
-    Rcomplex vc;
     R_len_t slice_len = i2-i1;
     R_len_t slice_i;
     const char *vs;
@@ -2553,11 +2549,10 @@ VectorSexp_slice(PyObject *object, Py_ssize_t i1, Py_ssize_t i2)
     }
   }
   embeddedR_freelock();
-  if (res_sexp != NULL) {
-    return newPySexpObject(res_sexp);
-  } else {
+  if (res_sexp == NULL) {
     return NULL;
   }
+  return newPySexpObject(res_sexp);
 }
 
 
