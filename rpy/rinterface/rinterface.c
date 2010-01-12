@@ -2483,7 +2483,7 @@ VectorSexp_slice(PyObject *object, Py_ssize_t i1, Py_ssize_t i2)
     embeddedR_freelock();
     return res;
   }
-  if ((i1 >= GET_LENGTH(*sexp)) | (i2 >= GET_LENGTH(*sexp))) {
+  if ((i1 > GET_LENGTH(*sexp)) | (i2 > GET_LENGTH(*sexp))) {
     PyErr_Format(PyExc_IndexError, "Index out of range.");
     res_sexp = NULL;
   } else {
