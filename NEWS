@@ -126,6 +126,8 @@ New Features
 - static method :meth:`from_iteritems` for :class:`TaggedList`,
   for creating a TaggedList from any object having a method :meth:`iteritems`
 
+- Better handling of R's missing values NA, NA_integer_, and NA_real_.
+
 Changes
 -------
 

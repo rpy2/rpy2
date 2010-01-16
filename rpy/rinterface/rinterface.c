@@ -174,6 +174,23 @@ static int preserved_robjects = 0;
 #endif
 
 
+/* NAs */
+static PyObject*
+NAInteger_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
+
+static PyTypeObject NAInteger_Type;
+
+static PyObject*
+NALogical_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
+
+static PyTypeObject NALogical_Type;
+
+static PyObject*
+NAReal_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
+
+static PyTypeObject NAReal_Type;
+
+
 /* early definition of functions */
 static PySexpObject* newPySexpObject(const SEXP sexp);
 static SEXP newSEXP(PyObject *object, const int rType);
@@ -2384,15 +2401,27 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     switch (TYPEOF(*sexp)) {
     case REALSXP:
       vd = (NUMERIC_POINTER(*sexp))[i_R];
-      res = PyFloat_FromDouble(vd);
+      if (vd == NA_REAL) {
+	res = NAReal_new(&NAReal_Type, Py_None, Py_None);
+      } else {
+	res = PyFloat_FromDouble(vd);
+      }
       break;
     case INTSXP:
       vi = INTEGER_POINTER(*sexp)[i_R];
-      res = PyInt_FromLong((long)vi);
+      if (vi == NA_INTEGER) {
+	res = NAInteger_new(&NAInteger_Type, Py_None, Py_None);
+      } else {
+	res = PyInt_FromLong((long)vi);
+      }
       break;
     case LGLSXP:
       vi = LOGICAL_POINTER(*sexp)[i_R];
-      RPY_PY_FROM_RBOOL(res, vi);
+      if (vi == NA_LOGICAL) {
+	res = NALogical_new(&NALogical_Type, Py_None, Py_None);
+      } else {
+	RPY_PY_FROM_RBOOL(res, vi);
+      }
       break;
     case CPLXSXP:
       vc = COMPLEX_POINTER(*sexp)[i_R];
@@ -2980,6 +3009,11 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   if (!PyString_Check(key)) {
     PyErr_Format(PyExc_ValueError, "Keys must be string objects.");
     return -1;
+  }
+
+  if (value == NULL) {
+    /* delete objects */
+    
   }
 
   int is_PySexpObject = PyObject_TypeCheck(value, &Sexp_Type);
@@ -3765,6 +3799,427 @@ static R_ExternalMethodDef externalMethods[] = {
 };
 
 
+/* --- NA values --- */
+
+PyDoc_STRVAR(NAInteger_Type_doc,
+"Missing value for an integer in R."
+);
+
+static PyObject*
+NAInteger_repr(PyObject *self)
+{
+  static PyObject* repr = NULL;
+  if (repr == NULL) {
+    repr = PyString_FromString("NA_integer_");
+  }
+  Py_XINCREF(repr);
+  return repr;
+}
+
+static PyObject*
+NA_str(PyObject *self)
+{
+  static PyObject* repr = NULL;
+  if (repr == NULL) {
+    repr = PyString_FromString("NA");
+  }
+  return repr;
+}
+
+/* Whenever an NA object is used for arithmetic or logic,
+ * the results is NA. */
+static PyObject*
+NA_unaryfunc(PyObject *self)
+{
+  Py_XINCREF(self);
+  return self;
+}
+static PyObject*
+NA_binaryfunc(PyObject *self, PyObject *obj)
+{
+  Py_XINCREF(self);
+  return self;
+
+}
+static PyObject*
+NA_ternaryfunc(PyObject *self, PyObject *obj1, PyObject *obj2)
+{
+  Py_XINCREF(self);
+  return self;
+}
+
+static int
+NA_nonzero(PyObject *self)
+{
+  return 1;
+}
+
+static PyNumberMethods NAInteger_NumberMethods = {
+  (binaryfunc)NA_binaryfunc, /* nb_add */
+  (binaryfunc)NA_binaryfunc, /* nb_subtract; */
+  (binaryfunc)NA_binaryfunc, /* nb_multiply; */
+  (binaryfunc)NA_binaryfunc, /* nb_divide; */
+  (binaryfunc)NA_binaryfunc, /* nb_remainder; */
+  (binaryfunc)NA_binaryfunc, /* nb_divmod; */
+  (ternaryfunc)NA_binaryfunc, /* nb_power; */
+  (unaryfunc) NA_unaryfunc, /* nb_negative; */
+  (unaryfunc) NA_unaryfunc, /* nb_positive; */
+  (unaryfunc) NA_unaryfunc, /* nb_absolute; */
+  (inquiry) NA_nonzero, /* nb_nonzero;       /* Used by PyObject_IsTrue */
+  (unaryfunc) NA_unaryfunc, /* nb_invert; */
+  (binaryfunc) NA_binaryfunc, /* nb_lshift; */
+  (binaryfunc) NA_binaryfunc, /* nb_rshift; */
+  (binaryfunc) NA_binaryfunc, /*  nb_and; */
+  (binaryfunc) NA_binaryfunc, /*  nb_xor; */
+  (binaryfunc) NA_binaryfunc, /* nb_or; */
+  0, //(coerce) NA_coerce, /* coercion nb_coerce;       -- Used by the coerce() function */
+  (unaryfunc) NA_unaryfunc, /* nb_int; */
+  (unaryfunc) NA_unaryfunc, /* nb_long; */
+  (unaryfunc) NA_unaryfunc, /* nb_float; */
+  (unaryfunc) NA_unaryfunc, /* nb_oct; */
+  (unaryfunc) NA_unaryfunc, /* nb_hex; */
+  /* Added in release 2.0 */
+  0, /* nb_inplace_add; */
+  0, /* nb_inplace_subtract; */
+  0, /* nb_inplace_multiply; */
+  0, /* nb_inplace_divide; */
+  0, /* nb_inplace_remainder; */
+  0, /* nb_inplace_power; */
+  0, /* nb_inplace_lshift; */
+  0, /* nb_inplace_rshift; */
+  0, /* nb_inplace_and; */
+  0, /* nb_inplace_xor; */
+  0, /* nb_inplace_or; */
+  /* Added in release 2.2 */
+  (binaryfunc) NA_binaryfunc, /* nb_floor_divide; */
+  (binaryfunc) NA_binaryfunc, /* nb_true_divide; */
+  0, /* nb_inplace_floor_divide; */
+  0, /* nb_inplace_true_divide; */
+  /* Added in release 2.5 */
+#if PY_VERSION_HEX >= 0x02050000
+  (unaryfunc) NA_unaryfunc /* nb_index; */
+#endif
+};
+
+
+static PyTypeObject NAInteger_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rpy2.rinterface.NAInteger_Type",       /*tp_name*/
+        sizeof(PyObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        NAInteger_repr,                      /*tp_repr*/
+        &NAInteger_NumberMethods,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,                      /*tp_call*/
+        NA_str,                      /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
+        NAInteger_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0, //NAInteger_methods,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,                      /*tp_getset*/
+        &PyLong_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        0, //(initproc)ClosureSexp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        NAInteger_new,                      /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
+
+static PyObject*
+NAInteger_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  static PyObject *self = NULL;
+
+  if (self == NULL) {
+    if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+      PyErr_Format(PyExc_RuntimeError, 
+		   "R should be be initialized first.");
+      return -1;
+    }
+    //self = PyInt_Type->tp_new(type,
+    //			      PyInt_FromLong(NA_INTEGER), Py_None);
+    self = type->tp_alloc(type, 0);
+    ((PyIntObject *)self)->ob_ival = (long)NA_INTEGER;
+  }
+  Py_XINCREF(self);
+  return (PyObject *)self;
+}
+
+/* NA Boolean / Logical */
+
+PyDoc_STRVAR(NALogical_Type_doc,
+"Missing value for a boolean in R."
+);
+
+static PyObject*
+NALogical_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  static PyObject *self = NULL;
+
+  if (self == NULL) {
+    self = type->tp_alloc(type, 0);
+    ((PyBoolObject *)self)->ob_ival = (long)NA_LOGICAL;
+  }
+  Py_XINCREF(self);
+  return (PyObject *)self;
+}
+
+
+static PyObject*
+NALogical_repr(PyObject *self)
+{
+  static PyObject* repr = NULL;
+  if (repr == NULL) {
+    repr = PyString_FromString("NA");
+  }
+  Py_XINCREF(repr);
+  return repr;
+}
+
+static PyNumberMethods NALogical_NumberMethods = {
+  0, /* nb_add */
+  0, /* nb_subtract; */
+  0, /* nb_multiply; */
+  0, /* nb_divide; */
+  0, /* nb_remainder; */
+  0, /* nb_divmod; */
+  0, /* nb_power; */
+  0, /* nb_negative; */
+  0, /* nb_positive; */
+  0, /* nb_absolute; */
+  0, /* nb_nonzero;       /* Used by PyObject_IsTrue */
+  0, /* nb_invert; */
+  0, /* nb_lshift; */
+  0, /* nb_rshift; */
+  (binaryfunc) NA_binaryfunc, /*  nb_and; */
+  (binaryfunc) NA_binaryfunc, /*  nb_xor; */
+  (binaryfunc) NA_binaryfunc, /* nb_or; */
+  0, //(coerce) NA_coerce, /* coercion nb_coerce;       -- Used by the coerce() function */
+  0, /* nb_int; */
+  0, /* nb_long; */
+  0, /* nb_float; */
+  0, /* nb_oct; */
+  0, /* nb_hex; */
+  /* Added in release 2.0 */
+  0, /* nb_inplace_add; */
+  0, /* nb_inplace_subtract; */
+  0, /* nb_inplace_multiply; */
+  0, /* nb_inplace_divide; */
+  0, /* nb_inplace_remainder; */
+  0, /* nb_inplace_power; */
+  0, /* nb_inplace_lshift; */
+  0, /* nb_inplace_rshift; */
+  0, /* nb_inplace_and; */
+  0, /* nb_inplace_xor; */
+  0, /* nb_inplace_or; */
+  /* Added in release 2.2 */
+  0, /* nb_floor_divide; */
+  0, /* nb_true_divide; */
+  0, /* nb_inplace_floor_divide; */
+  0, /* nb_inplace_true_divide; */
+  /* Added in release 2.5 */
+#if PY_VERSION_HEX >= 0x02050000
+  0 /* nb_index; */
+#endif
+};
+
+static PyTypeObject NALogical_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rpy2.rinterface.NALogicalType",       /*tp_name*/
+        sizeof(PyObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        NALogical_repr,                      /*tp_repr*/
+        &NALogical_NumberMethods,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,                      /*tp_call*/
+        NA_str,                      /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
+        NALogical_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0, //NAInteger_methods,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,                      /*tp_getset*/
+        &NAInteger_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        0, //(initproc)ClosureSexp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        NALogical_new,                      /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
+
+/* NA Float / Real */
+
+PyDoc_STRVAR(NAReal_Type_doc,
+"Missing value for a float in R."
+);
+
+static PyObject*
+NAReal_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  static PyObject *self = NULL;
+
+  if (self == NULL) {
+    self = type->tp_alloc(type, 0);
+  }
+  Py_XINCREF(self);
+  return (PyObject *)self;
+}
+
+
+static PyObject*
+NAReal_repr(PyObject *self)
+{
+  static PyObject* repr = NULL;
+  if (repr == NULL) {
+    repr = PyString_FromString("NA_real_");
+  }
+  return repr;
+}
+
+
+static PyNumberMethods NAReal_NumberMethods = {
+  (binaryfunc)NA_binaryfunc, /* nb_add */
+  (binaryfunc)NA_binaryfunc, /* nb_subtract; */
+  (binaryfunc)NA_binaryfunc, /* nb_multiply; */
+  (binaryfunc)NA_binaryfunc, /* nb_divide; */
+  (binaryfunc)NA_binaryfunc, /* nb_remainder; */
+  (binaryfunc)NA_binaryfunc, /* nb_divmod; */
+  (ternaryfunc)NA_binaryfunc, /* nb_power; */
+  (unaryfunc) NA_unaryfunc, /* nb_negative; */
+  (unaryfunc) NA_unaryfunc, /* nb_positive; */
+  (unaryfunc) NA_unaryfunc, /* nb_absolute; */
+  (inquiry) NA_nonzero, /* nb_nonzero;       /* Used by PyObject_IsTrue */
+  0, /* nb_invert; */
+  0, /* nb_lshift; */
+  0, /* nb_rshift; */
+  0, /*  nb_and; */
+  0, /*  nb_xor; */
+  0, /* nb_or; */
+  0, //(coerce) NA_coerce, /* coercion nb_coerce;       -- Used by the coerce() function */
+  (unaryfunc) NA_unaryfunc, /* nb_int; */
+  (unaryfunc) NA_unaryfunc, /* nb_long; */
+  (unaryfunc) NA_unaryfunc, /* nb_float; */
+  0, /* nb_oct; */
+  0, /* nb_hex; */
+  /* Added in release 2.0 */
+  0, /* nb_inplace_add; */
+  0, /* nb_inplace_subtract; */
+  0, /* nb_inplace_multiply; */
+  0, /* nb_inplace_divide; */
+  0, /* nb_inplace_remainder; */
+  0, /* nb_inplace_power; */
+  0, /* nb_inplace_lshift; */
+  0, /* nb_inplace_rshift; */
+  0, /* nb_inplace_and; */
+  0, /* nb_inplace_xor; */
+  0, /* nb_inplace_or; */
+  /* Added in release 2.2 */
+  (binaryfunc) NA_binaryfunc, /* nb_floor_divide; */
+  (binaryfunc) NA_binaryfunc, /* nb_true_divide; */
+  0, /* nb_inplace_floor_divide; */
+  0, /* nb_inplace_true_divide; */
+  /* Added in release 2.5 */
+#if PY_VERSION_HEX >= 0x02050000
+  0 /* nb_index; */
+#endif
+};
+
+
+static PyTypeObject NAReal_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rpy2.rinterface.NALogicalType",       /*tp_name*/
+        sizeof(PyObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        NALogical_repr,                      /*tp_repr*/
+        &NALogical_NumberMethods,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,                      /*tp_call*/
+        NA_str,                      /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
+        NALogical_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0, //NAInteger_methods,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,                      /*tp_getset*/
+        &NAInteger_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        0, //(initproc)ClosureSexp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        NALogical_new,                      /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
+
+
 
 /* --- Initialize the module ---*/
 static char **validSexpType;
@@ -3806,6 +4261,22 @@ initrinterface(void)
   if (PyType_Ready(&S4Sexp_Type) < 0)
     return;
   if (PyType_Ready(&LangSexp_Type) < 0)
+    return;
+
+  /* Required because NA types inherit from basic Python types */
+  if (PyType_Ready(&PyBool_Type) < 0) {
+    return -1;
+  }
+  if (PyType_Ready(&PyLong_Type) < 0) {
+    return -1;
+  }
+
+  /* NA types */
+  if (PyType_Ready(&NAInteger_Type) < 0)
+    return;
+  if (PyType_Ready(&NALogical_Type) < 0)
+    return;
+  if (PyType_Ready(&NAReal_Type) < 0)
     return;
 
   PyObject *m, *d;
@@ -3886,6 +4357,10 @@ initrinterface(void)
   PyModule_AddObject(m, "SexpS4", (PyObject *)&S4Sexp_Type);
   PyModule_AddObject(m, "SexpLang", (PyObject *)&LangSexp_Type);
 
+  /* NA types */
+  PyModule_AddObject(m, "NAIntegerType", (PyObject *)&NAInteger_Type);
+  PyModule_AddObject(m, "NALogicalType", (PyObject *)&NALogical_Type);
+  PyModule_AddObject(m, "NARealType", (PyObject *)&NAReal_Type);
 
   if (RPyExc_RuntimeError == NULL) {
     RPyExc_RuntimeError = PyErr_NewException("rpy2.rinterface.RRuntimeError", 

@@ -3,6 +3,11 @@ import sys
 import rpy2.rinterface as ri
 
 ri.initr()
+def evalr(string):
+    rstring = ri.StrSexpVector((string, ))
+    res = ri.baseenv["parse"](text = rstring)
+    res = ri.baseenv["eval"](res)
+    return res
 
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon
@@ -38,6 +43,35 @@ class WrapperSexpVectorTestCase(unittest.TestCase):
         is_complex = ri.globalenv.get("is.complex")
         ok = is_complex(sexp)[0]
         self.assertTrue(ok)
+
+class NAValuesTestCase(unittest.TestCase):
+    def testRtoNAInteger(self):
+        na_int = ri.NAIntegerType()
+        r_na_int = evalr("NA_integer_")[0]
+        self.assertTrue(r_na_int is na_int)
+
+    def testNAIntegertoR(self):
+        na_int = ri.NAIntegerType()
+        self.assertEquals(True, ri.baseenv["is.na"](na_int)[0])
+
+    def testRtoNALogical(self):
+        na_lgl = ri.NALogicalType()
+        r_na_lgl = evalr("NA")[0]
+        self.assertTrue(r_na_lgl is na_lgl)
+
+    def testNAILogicaltoR(self):
+        na_lgl = ri.NALogicalType()
+        self.assertEquals(True, ri.baseenv["is.na"](na_lgl)[0])
+
+    def testRtoNAReal(self):
+        na_real = ri.NARealType()
+        r_na_real = evalr("NA_real_")[0]
+        self.assertTrue(r_na_real is na_real)
+
+    def testNARealtoR(self):
+        na_real = ri.NARealType()
+        self.assertEquals(True, ri.baseenv["is.na"](na_real)[0])
+
 
 class SexpVectorTestCase(unittest.TestCase):
 
@@ -166,10 +200,6 @@ class SexpVectorTestCase(unittest.TestCase):
         letters_R = ri.globalenv.get("letters")
         self.assertEquals('z', letters_R[-1])
 
-    def testGetItemBooleanNA(self):
-        vec = ri.StrSexpVector(["a", ])
-        vec = ri.baseenv['as.logical'](vec)
-        self.assertEquals(None, vec[0])
 
     def testGetItemLang(self):
         formula = ri.baseenv.get('formula')
@@ -341,6 +371,7 @@ class SexpVectorTestCase(unittest.TestCase):
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpVectorTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(WrapperSexpVectorTestCase))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(NAValuesTestCase))
     return suite
 
 if __name__ == '__main__':
