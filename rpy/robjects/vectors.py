@@ -467,7 +467,8 @@ class DataFrame(Vector):
     @staticmethod
     def from_csvfile(path, header = True, sep = ",",
                      quote = "\"", dec = ".",
-                     fill = True, comment_char = ""):
+                     fill = True, comment_char = "",
+                     as_is = False):
         """ Create an instance from data in a .csv file. """
         path = conversion.py2ro(path)
         header = conversion.py2ro(header)
@@ -476,11 +477,13 @@ class DataFrame(Vector):
         dec = conversion.py2ro(dec)
         fill = conversion.py2ro(fill)
         comment_char = conversion.py2ro(comment_char)
+        as_is = conversion.py2ro(as_is)
         res = DataFrame._read_csv(path, 
                                   **{'header': header, 'sep': sep,
                                      'quote': quote, 'dec': dec,
                                      'fill': fill,
-                                     'comment.char': comment_char})
+                                     'comment.char': comment_char,
+                                     'as.is': as_is})
         res = conversion.ri2py(res)
         return res
 
