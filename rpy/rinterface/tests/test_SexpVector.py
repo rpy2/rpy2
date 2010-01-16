@@ -54,12 +54,16 @@ class NAValuesTestCase(unittest.TestCase):
         na_int = ri.NAIntegerType()
         self.assertEquals(True, ri.baseenv["is.na"](na_int)[0])
 
+    def testNAIntegerBinaryfunc(self):
+        na_int = ri.NAIntegerType()
+        self.assertTrue((na_int + 2) is na_int)
+
     def testRtoNALogical(self):
         na_lgl = ri.NALogicalType()
         r_na_lgl = evalr("NA")[0]
         self.assertTrue(r_na_lgl is na_lgl)
 
-    def testNAILogicaltoR(self):
+    def testNALogicaltoR(self):
         na_lgl = ri.NALogicalType()
         self.assertEquals(True, ri.baseenv["is.na"](na_lgl)[0])
 
@@ -71,6 +75,10 @@ class NAValuesTestCase(unittest.TestCase):
     def testNARealtoR(self):
         na_real = ri.NARealType()
         self.assertEquals(True, ri.baseenv["is.na"](na_real)[0])
+
+    def testNARntegerBinaryfunc(self):
+        na_real = ri.NARealType()
+        self.assertTrue((na_real + 2.0) is na_real)
 
 
 class SexpVectorTestCase(unittest.TestCase):
