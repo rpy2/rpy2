@@ -190,6 +190,11 @@ NAReal_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
 static PyTypeObject NAReal_Type;
 
+static PyObject*
+NACharacter_New(int new);
+
+static PyTypeObject NACharacter_Type;
+
 
 /* early definition of functions */
 static PySexpObject* newPySexpObject(const SEXP sexp);
@@ -2428,8 +2433,12 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       res = PyComplex_FromDoubles(vc.r, vc.i);
       break;
     case STRSXP:
-      vs = translateChar(STRING_ELT(*sexp, i_R));
-      res = PyString_FromString(vs);
+      if (STRING_ELT(*sexp, i_R) == NA_STRING) {
+	res = NACharacter_New(1);
+      } else {
+	vs = translateChar(STRING_ELT(*sexp, i_R));
+	res = PyString_FromString(vs);
+      }
       break;
 /*     case CHARSXP: */
       /*       FIXME: implement handling of single char (if possible ?) */
@@ -3412,7 +3421,7 @@ newSEXP(PyObject *object, int rType)
 {
   SEXP sexp;
   SEXP str_R; /* used whenever there a string / unicode */
-  PyObject *seq_object, *item; 
+  PyObject *seq_object, *item, *item_tmp, *na; 
 
 #ifdef RPY_VERBOSE
   printf("  new SEXP for Python:%p.\n", object);
@@ -3478,35 +3487,41 @@ newSEXP(PyObject *object, int rType)
     break;
   case STRSXP:
     PROTECT(sexp = NEW_CHARACTER(length));
+    na = NACharacter_New(1);
     for (i = 0; i < length; ++i) {
-      if((item = PyObject_Str(PySequence_Fast_GET_ITEM(seq_object, i)))) {
-        str_R = mkChar(PyString_AS_STRING(item));
-        if (!str_R) {
-          Py_DECREF(item);
-          PyErr_NoMemory();
-          sexp = NULL;
-          break;
-        }
-        Py_DECREF(item);
-        SET_STRING_ELT(sexp, i, str_R);
-      }
-      else if ((item = PyObject_Unicode(PySequence_Fast_GET_ITEM(seq_object, i)))) {
+      /* item is a borrowed reference */
+      item = PySequence_Fast_GET_ITEM(seq_object, i);
+      if (item == na) {
+	str_R = NA_STRING;
+      } else if((item_tmp = PyObject_Str(item))) {
+	str_R = mkChar(PyString_AS_STRING(item_tmp));
+	if (!str_R) {
+	    PyErr_NoMemory();
+	    UNPROTECT(1);
+	    sexp = NULL;
+	    Py_DECREF(na);
+	    break;
+	}
+	Py_DECREF(item_tmp);
+      } else if ((item_tmp = PyObject_Unicode(item))) {
         str_R = mkChar(PyUnicode_AS_DATA(item));
         if (!str_R) {
-          Py_DECREF(item);
           PyErr_NoMemory();
+	  UNPROTECT(1);
           sexp = NULL;
+	  Py_DECREF(na);
           break;
         }
-        Py_DECREF(item);
-        SET_STRING_ELT(sexp, i, str_R);
+        Py_DECREF(item_tmp);
       }
       else {
         PyErr_Clear();
-        SET_STRING_ELT(sexp, i, NA_STRING);
+        str_R = NA_STRING;
       }
+      SET_STRING_ELT(sexp, i, str_R);
     }
     UNPROTECT(1);
+    Py_XDECREF(na);
     break;
   case VECSXP:
     PROTECT(sexp = NEW_LIST(length));
@@ -3981,6 +3996,11 @@ NALogical_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   static PyObject *self = NULL;
 
   if (self == NULL) {
+    if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+      PyErr_Format(PyExc_RuntimeError, 
+		   "R should be be initialized first.");
+      return -1;
+    }
     self = type->tp_alloc(type, 0);
     ((PyBoolObject *)self)->ob_ival = (long)NA_LOGICAL;
   }
@@ -4106,6 +4126,11 @@ NAReal_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   static PyObject *self = NULL;
 
   if (self == NULL) {
+    if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+      PyErr_Format(PyExc_RuntimeError, 
+		   "R should be be initialized first.");
+      return -1;
+    }
     self = type->tp_alloc(type, 0);
   }
   Py_XINCREF(self);
@@ -4120,6 +4145,7 @@ NAReal_repr(PyObject *self)
   if (repr == NULL) {
     repr = PyString_FromString("NA_real_");
   }
+  Py_XINCREF(repr);
   return repr;
 }
 
@@ -4219,6 +4245,119 @@ static PyTypeObject NAReal_Type = {
         0                      /*tp_is_gc*/
 };
 
+/* NA Float / Real */
+
+PyDoc_STRVAR(NACharacter_Type_doc,
+"Missing value for a string."
+);
+
+static PyObject*
+NACharacter_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  static PyObject *self = NULL;
+  static char *kwlist[] = {0};
+
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
+    return NULL;
+  }
+
+  if (self == NULL) {
+    self = PyString_Type.tp_new(type, args, kwds);
+    //self = type->tp_alloc(type, 0);
+    if (self == NULL) {
+      PyErr_Format(PyExc_ValueError, 
+		   "Could not create an instance of NACharacterType");
+      return NULL;
+    }
+  }
+  Py_XINCREF(self);
+
+  return (PyObject *)self;
+  
+}
+
+static PyObject*
+NACharacter_New(int new)
+{
+
+  static PyObject *args = NULL;
+  static PyObject *kwds = NULL;
+  PyObject *res;
+
+  if (args == NULL) {
+    args = PyTuple_Pack(0);
+  }
+  if (kwds == NULL) {
+    kwds = PyDict_New();
+  }
+
+  res = NACharacter_tp_new(&NACharacter_Type, args, kwds);
+  if (! new) {
+    Py_DECREF(res);
+  }
+  return res;
+}
+
+
+static PyObject*
+NACharacter_repr(PyObject *self)
+{
+  static PyObject* repr = NULL;
+  if (repr == NULL) {
+    repr = PyString_FromString("NA_character_");
+  }
+  Py_XINCREF(repr);
+  return repr;
+}
+
+
+static PyTypeObject NACharacter_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rpy2.rinterface.NACharacterType",       /*tp_name*/
+        sizeof(PyObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        NACharacter_repr,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,                      /*tp_call*/
+        NA_str,                      /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
+        NACharacter_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0, //NAInteger_methods,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,                      /*tp_getset*/
+        &PyString_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        0, //(initproc)ClosureSexp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        NACharacter_tp_new,                      /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
+
 
 
 /* --- Initialize the module ---*/
@@ -4277,6 +4416,8 @@ initrinterface(void)
   if (PyType_Ready(&NALogical_Type) < 0)
     return;
   if (PyType_Ready(&NAReal_Type) < 0)
+    return;
+  if (PyType_Ready(&NACharacter_Type) < 0)
     return;
 
   PyObject *m, *d;
@@ -4361,6 +4502,7 @@ initrinterface(void)
   PyModule_AddObject(m, "NAIntegerType", (PyObject *)&NAInteger_Type);
   PyModule_AddObject(m, "NALogicalType", (PyObject *)&NALogical_Type);
   PyModule_AddObject(m, "NARealType", (PyObject *)&NAReal_Type);
+  PyModule_AddObject(m, "NACharacterType", (PyObject *)&NACharacter_Type);
 
   if (RPyExc_RuntimeError == NULL) {
     RPyExc_RuntimeError = PyErr_NewException("rpy2.rinterface.RRuntimeError", 

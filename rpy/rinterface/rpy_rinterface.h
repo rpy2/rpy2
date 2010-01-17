@@ -3,6 +3,7 @@
 #define RPY_RI_H
 
 #include <R.h>
+#include <Rinternals.h>
 #include <Python.h>
 
 /* Back-compatibility with Python 2.4 */
@@ -68,7 +69,9 @@ typedef struct {
   sexp = NULL;								\
   /* The argument is not a PySexpObject, so we are going to check
      if conversion from a scalar type is possible */		  \
-if (PyLong_Check(py_obj) | PyInt_Check(py_obj)) {		  \
+if ((py_obj) == NACharacter_New(0)) {				  \
+  sexp = NA_STRING;						  \
+ } else if (PyLong_Check(py_obj) | PyInt_Check(py_obj)) {	  \
   sexp = allocVector(INTSXP, 1);				  \
   INTEGER_POINTER(sexp)[0] = PyInt_AS_LONG(py_obj);		  \
   PROTECT(sexp);						  \
