@@ -175,9 +175,7 @@ static int preserved_robjects = 0;
 
 
 /* NAs */
-static PyObject*
-NAInteger_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
-
+static PyObject* NAInteger_New(int new);
 static PyTypeObject NAInteger_Type;
 
 static PyObject*
@@ -190,9 +188,7 @@ NAReal_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
 static PyTypeObject NAReal_Type;
 
-static PyObject*
-NACharacter_New(int new);
-
+static PyObject* NACharacter_New(int new);
 static PyTypeObject NACharacter_Type;
 
 
@@ -2415,7 +2411,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     case INTSXP:
       vi = INTEGER_POINTER(*sexp)[i_R];
       if (vi == NA_INTEGER) {
-	res = NAInteger_new(&NAInteger_Type, Py_None, Py_None);
+	res = NAInteger_New(1);
       } else {
 	res = PyInt_FromLong((long)vi);
       }
@@ -3916,6 +3912,9 @@ static PyNumberMethods NAInteger_NumberMethods = {
 #endif
 };
 
+static PyObject*
+NAInteger_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
+
 
 static PyTypeObject NAInteger_Type = {
         /* The ob_type field must be initialized in the module init function
@@ -3959,32 +3958,25 @@ static PyTypeObject NAInteger_Type = {
         0,                      /*tp_dictoffset*/
         0, //(initproc)ClosureSexp_init,                      /*tp_init*/
         0,                      /*tp_alloc*/
-        NAInteger_new,                      /*tp_new*/
+        NAInteger_tp_new,                      /*tp_new*/
         0,                      /*tp_free*/
         0                      /*tp_is_gc*/
 };
 
 static PyObject*
-NAInteger_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+NAInteger_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-  static PyObject *self = NULL;
-
-  if (self == NULL) {
-    if (! (embeddedR_status & RPY_R_INITIALIZED)) {
-      PyErr_Format(PyExc_RuntimeError, 
-		   "R should be be initialized first.");
-      return -1;
-    }
-    //self = PyInt_Type->tp_new(type,
-    //			      PyInt_FromLong(NA_INTEGER), Py_None);
-    self = type->tp_alloc(type, 0);
-    ((PyIntObject *)self)->ob_ival = (long)NA_INTEGER;
-  }
-  Py_XINCREF(self);
-  return (PyObject *)self;
+  RPY_NA_TP_NEW("NAIntegerType", PyLong_Type, PyInt_FromLong, (long)NA_INTEGER);
 }
 
 /* NA Boolean / Logical */
+
+static PyObject*
+NAInteger_New(int new)
+{
+  RPY_NA_NEW(NAInteger_Type, NAInteger_tp_new)
+}
+
 
 PyDoc_STRVAR(NALogical_Type_doc,
 "Missing value for a boolean in R."
@@ -4254,48 +4246,13 @@ PyDoc_STRVAR(NACharacter_Type_doc,
 static PyObject*
 NACharacter_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-  static PyObject *self = NULL;
-  static char *kwlist[] = {0};
-
-  if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
-    return NULL;
-  }
-
-  if (self == NULL) {
-    self = PyString_Type.tp_new(type, args, kwds);
-    //self = type->tp_alloc(type, 0);
-    if (self == NULL) {
-      PyErr_Format(PyExc_ValueError, 
-		   "Could not create an instance of NACharacterType");
-      return NULL;
-    }
-  }
-  Py_XINCREF(self);
-
-  return (PyObject *)self;
-  
+  RPY_NA_TP_NEW("NACharacterType", PyString_Type, PyString_FromString, "")
 }
 
 static PyObject*
 NACharacter_New(int new)
 {
-
-  static PyObject *args = NULL;
-  static PyObject *kwds = NULL;
-  PyObject *res;
-
-  if (args == NULL) {
-    args = PyTuple_Pack(0);
-  }
-  if (kwds == NULL) {
-    kwds = PyDict_New();
-  }
-
-  res = NACharacter_tp_new(&NACharacter_Type, args, kwds);
-  if (! new) {
-    Py_DECREF(res);
-  }
-  return res;
+  RPY_NA_NEW(NACharacter_Type, NACharacter_tp_new)
 }
 
 
