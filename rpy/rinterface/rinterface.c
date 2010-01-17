@@ -178,14 +178,10 @@ static int preserved_robjects = 0;
 static PyObject* NAInteger_New(int new);
 static PyTypeObject NAInteger_Type;
 
-static PyObject*
-NALogical_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
-
+static PyObject* NALogical_New(int new);
 static PyTypeObject NALogical_Type;
 
-static PyObject*
-NAReal_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
-
+static PyObject* NAReal_New(int new);
 static PyTypeObject NAReal_Type;
 
 static PyObject* NACharacter_New(int new);
@@ -2403,7 +2399,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     case REALSXP:
       vd = (NUMERIC_POINTER(*sexp))[i_R];
       if (vd == NA_REAL) {
-	res = NAReal_new(&NAReal_Type, Py_None, Py_None);
+	res = NAReal_New(1);
       } else {
 	res = PyFloat_FromDouble(vd);
       }
@@ -2419,7 +2415,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     case LGLSXP:
       vi = LOGICAL_POINTER(*sexp)[i_R];
       if (vi == NA_LOGICAL) {
-	res = NALogical_new(&NALogical_Type, Py_None, Py_None);
+	res = NALogical_New(1);
       } else {
 	RPY_PY_FROM_RBOOL(res, vi);
       }
@@ -3966,10 +3962,9 @@ static PyTypeObject NAInteger_Type = {
 static PyObject*
 NAInteger_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-  RPY_NA_TP_NEW("NAIntegerType", PyLong_Type, PyInt_FromLong, (long)NA_INTEGER);
+  RPY_NA_TP_NEW("NAIntegerType", PyLong_Type, PyInt_FromLong, 
+		(long)NA_INTEGER)
 }
-
-/* NA Boolean / Logical */
 
 static PyObject*
 NAInteger_New(int new)
@@ -3977,29 +3972,24 @@ NAInteger_New(int new)
   RPY_NA_NEW(NAInteger_Type, NAInteger_tp_new)
 }
 
+/* NA Boolean / Logical */
 
 PyDoc_STRVAR(NALogical_Type_doc,
 "Missing value for a boolean in R."
 );
 
 static PyObject*
-NALogical_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+NALogical_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-  static PyObject *self = NULL;
-
-  if (self == NULL) {
-    if (! (embeddedR_status & RPY_R_INITIALIZED)) {
-      PyErr_Format(PyExc_RuntimeError, 
-		   "R should be be initialized first.");
-      return -1;
-    }
-    self = type->tp_alloc(type, 0);
-    ((PyBoolObject *)self)->ob_ival = (long)NA_LOGICAL;
-  }
-  Py_XINCREF(self);
-  return (PyObject *)self;
+  RPY_NA_TP_NEW("NALogicalType", PyInt_Type, PyInt_FromLong, 
+		(long)NA_LOGICAL)
 }
 
+static PyObject*
+NALogical_New(int new)
+{
+  RPY_NA_NEW(NALogical_Type, NALogical_tp_new)
+}
 
 static PyObject*
 NALogical_repr(PyObject *self)
@@ -4101,7 +4091,7 @@ static PyTypeObject NALogical_Type = {
         0,                      /*tp_dictoffset*/
         0, //(initproc)ClosureSexp_init,                      /*tp_init*/
         0,                      /*tp_alloc*/
-        NALogical_new,                      /*tp_new*/
+        NALogical_tp_new,                      /*tp_new*/
         0,                      /*tp_free*/
         0                      /*tp_is_gc*/
 };
@@ -4113,22 +4103,17 @@ PyDoc_STRVAR(NAReal_Type_doc,
 );
 
 static PyObject*
-NAReal_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+NAReal_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-  static PyObject *self = NULL;
-
-  if (self == NULL) {
-    if (! (embeddedR_status & RPY_R_INITIALIZED)) {
-      PyErr_Format(PyExc_RuntimeError, 
-		   "R should be be initialized first.");
-      return -1;
-    }
-    self = type->tp_alloc(type, 0);
-  }
-  Py_XINCREF(self);
-  return (PyObject *)self;
+  RPY_NA_TP_NEW("NARealType", PyFloat_Type, PyFloat_FromDouble, 
+		(long)NA_REAL)
 }
 
+static PyObject*
+NAReal_New(int new)
+{
+  RPY_NA_NEW(NAReal_Type, NAReal_tp_new)
+}
 
 static PyObject*
 NAReal_repr(PyObject *self)
@@ -4195,7 +4180,7 @@ static PyTypeObject NAReal_Type = {
          * to be portable to Windows without using C++. */
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
-        "rpy2.rinterface.NALogicalType",       /*tp_name*/
+        "rpy2.rinterface.NARealType",       /*tp_name*/
         sizeof(PyObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
@@ -4204,8 +4189,8 @@ static PyTypeObject NAReal_Type = {
         0,                      /*tp_getattr*/
         0,                      /*tp_setattr*/
         0,                      /*tp_compare*/
-        NALogical_repr,                      /*tp_repr*/
-        &NALogical_NumberMethods,                      /*tp_as_number*/
+        NAReal_repr,                      /*tp_repr*/
+        &NAReal_NumberMethods,                      /*tp_as_number*/
         0,                      /*tp_as_sequence*/
         0,                      /*tp_as_mapping*/
         0,                      /*tp_hash*/
@@ -4215,7 +4200,7 @@ static PyTypeObject NAReal_Type = {
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
-        NALogical_Type_doc,                      /*tp_doc*/
+        NAReal_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
         0,                      /*tp_clear*/
         0,                      /*tp_richcompare*/
@@ -4225,14 +4210,14 @@ static PyTypeObject NAReal_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-        &NAInteger_Type,             /*tp_base*/
+        &PyFloat_Type,             /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
         0,                      /*tp_dictoffset*/
         0, //(initproc)ClosureSexp_init,                      /*tp_init*/
         0,                      /*tp_alloc*/
-        NALogical_new,                      /*tp_new*/
+        NAReal_tp_new,                      /*tp_new*/
         0,                      /*tp_free*/
         0                      /*tp_is_gc*/
 };

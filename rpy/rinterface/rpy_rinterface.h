@@ -110,8 +110,6 @@ if ((py_obj) == NACharacter_New(0)) {					\
     self = (parent_type).tp_new(type, new_args, kwds);			\
     Py_DECREF(new_args);						\
     if (self == NULL) {							\
-      PyErr_Format(PyExc_ValueError,					\
-		   "Could not create an instance of " type_name);	\
       return NULL;							\
     }									\
   }									\
