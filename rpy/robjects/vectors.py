@@ -466,7 +466,9 @@ class DataFrame(Vector):
         
     @staticmethod
     def from_csvfile(path, header = True, sep = ",",
-                     quote = "\"", dec = ".",
+                     quote = "\"", dec = ".", 
+                     row_names = rinterface.R_MissingArg,
+                     col_names = rinterface.R_MissingArg,
                      fill = True, comment_char = "",
                      as_is = False):
         """ Create an instance from data in a .csv file. """
@@ -475,12 +477,16 @@ class DataFrame(Vector):
         sep = conversion.py2ro(sep)
         quote = conversion.py2ro(quote)
         dec = conversion.py2ro(dec)
+        row_names = conversion.py2ro(row_names)
+        col_names = conversion.py2ro(col_names)
         fill = conversion.py2ro(fill)
         comment_char = conversion.py2ro(comment_char)
         as_is = conversion.py2ro(as_is)
         res = DataFrame._read_csv(path, 
                                   **{'header': header, 'sep': sep,
                                      'quote': quote, 'dec': dec,
+                                     'row.names': row_names,
+                                     'col.names': col_names,
                                      'fill': fill,
                                      'comment.char': comment_char,
                                      'as.is': as_is})
