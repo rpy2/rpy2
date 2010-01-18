@@ -447,22 +447,25 @@ class DataFrame(Vector):
     ncol = property(_get_ncol, None, None)
     
     def _get_rownames(self):
-        """ Row names
-        
-        :rtype: SexpVector
-        """
         res = baseenv_ri["rownames"](self)
         return conversion.ri2py(res)
-    rownames = property(_get_rownames, None, None)
+
+    def _set_rownames(self, rownames):
+        res = baseenv_ri["rownames<-"](self, conversion.py2ri(rownames))
+        self.__sexp__ = res.__sexp__
+
+    rownames = property(_get_rownames, _set_rownames, None, 
+                        "Row names")
 
     def _get_colnames(self):
-        """ Column names
-
-        :rtype: SexpVector
-        """
         res = baseenv_ri["colnames"](self)
         return conversion.ri2py(res)
-    colnames = property(_get_colnames, None, None)
+
+    def _set_colnames(self, colnames):
+        res = baseenv_ri["colnames<-"](self, conversion.py2ri(colnames))
+        self.__sexp__ = res.__sexp__
+        
+    colnames = property(_get_colnames, _set_colnames, None)
         
     @staticmethod
     def from_csvfile(path, header = True, sep = ",",

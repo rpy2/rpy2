@@ -79,6 +79,27 @@ class DataFrameTestCase(unittest.TestCase):
         self.assertEquals(1, rows[0][0])
         self.assertEquals("b", rows[1][1])
 
+    def testColnames(self):
+        dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
+        self.assertEquals('1', dataf.rownames[0])
+        self.assertEquals('2', dataf.rownames[1])
+
+    def testColnames_set(self):
+        dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
+        dataf.colnames = robjects.StrVector('de')
+        self.assertEquals('d', dataf.colnames[0])
+        self.assertEquals('e', dataf.colnames[1])
+
+    def testRownames(self):
+        dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
+        self.assertEquals('a', dataf.colnames[0])
+        self.assertEquals('b', dataf.colnames[1])        
+
+    def testRownames_set(self):
+        dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
+        dataf.rownames = robjects.StrVector('de')
+        self.assertEquals('d', dataf.rownames[0])
+        self.assertEquals('e', dataf.rownames[1])
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DataFrameTestCase)
