@@ -51,6 +51,7 @@
 #include <signal.h>
 #include <setjmp.h>
 
+#define PY_SSIZE_T_CLEAN 
 #include "Python.h"
 
 #if Win32
@@ -1543,7 +1544,7 @@ EmbeddedR_unserialize(PyObject* self, PyObject* args)
 
   /*FIXME: use of the memcpy seems to point in the direction of
   * using the option mentioned above anyway. */
-  int raw_i;
+  Py_ssize_t raw_i;
   for (raw_i = 0; raw_i < raw_size; raw_i++) {
     RAW_POINTER(raw_sexp)[raw_i] = raw[raw_i];
   }
