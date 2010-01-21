@@ -3455,7 +3455,6 @@ newSEXP(PyObject *object, int rType)
       if((item = PyNumber_Int(PySequence_Fast_GET_ITEM(seq_object, i)))) {
         long l = PyInt_AS_LONG(item);
         integer_ptr[i] = (l<=(long)INT_MAX && l>=(long)INT_MIN)?(int)l:NA_INTEGER;
-	printf("%i\n");
         Py_DECREF(item);
       }
       else {
