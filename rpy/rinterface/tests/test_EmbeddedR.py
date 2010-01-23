@@ -318,6 +318,7 @@ class SerializeTestCase(unittest.TestCase):
         f.seek(0)
         x_again = pickle.load(f)
         f.close()
+        identical = rinterface.baseenv["identical"]
         self.assertTrue(identical(x, x_again)[0])
                      
 def suite():
