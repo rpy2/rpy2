@@ -81,6 +81,11 @@ typedef struct {
     INTEGER_POINTER(sexp)[0] = NA_INTEGER;                              \
     PROTECT(sexp);                                                      \
     protect_count++;                                                    \
+  } else if ((py_obj) == NALogical_New(0)) {                            \
+    sexp = allocVector(LGLSXP, 1);                                      \
+    INTEGER_POINTER(sexp)[0] = NA_LOGICAL;                              \
+    PROTECT(sexp);                                                      \
+    protect_count++;                                                    \  
   } else if (PyInt_Check(py_obj)) {                                     \
     sexp = allocVector(INTSXP, 1);                                      \
     INTEGER_POINTER(sexp)[0] = (int)(PyInt_AS_LONG(py_obj));            \
