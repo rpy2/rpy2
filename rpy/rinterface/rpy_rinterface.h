@@ -46,6 +46,11 @@ typedef struct {
 #define RPY_INCREF(obj) (((obj)->sObj)->count++)
 #define RPY_DECREF(obj) (((obj)->sObj)->count--)
 
+
+#define RPY_RINT_FROM_LONG(value)		\
+  ((value<=(long)INT_MAX && value>=(long)INT_MIN)?(int)value:NA_INTEGER)
+
+
 #define RPY_PY_FROM_RBOOL(res, rbool)                   \
   if (rbool == NA_LOGICAL) {                            \
     Py_INCREF(Py_None);                                 \
@@ -60,25 +65,31 @@ typedef struct {
     gstate = PyGILState_Ensure(); \
   }
 
-#define RPY_GIL_RELEASE(is_threaded, gstate) \
-  if (is_threaded) { \
+#define RPY_GIL_RELEASE(is_threaded, gstate)	\
+  if (is_threaded) {				\
     PyGILState_Release(gstate);                 \
   }
 
 #define RPY_PYSCALAR_RVECTOR(py_obj, sexp)				\
   sexp = NULL;								\
-  /* The argument is not a PySexpObject, so we are going to check
+  /* The argument is not a PySexpObject, so we are going to check       \
      if conversion from a scalar type is possible */			\
-if ((py_obj) == NACharacter_New(0)) {					\
-  sexp = NA_STRING;							\
- } else if ((py_obj) == NAInteger_New(0)) {				\
+  if ((py_obj) == NACharacter_New(0)) {					\
+    sexp = NA_STRING;							\
+  } else if ((py_obj) == NAInteger_New(0)) {				\
+    sexp = allocVector(INTSXP, 1);					\
+    INTEGER_POINTER(sexp)[0] = NA_INTEGER;				\
+    PROTECT(sexp);							\
+    protect_count++;							\
+  } else if (PyInt_Check(py_obj)) {					\
   sexp = allocVector(INTSXP, 1);					\
-  INTEGER_POINTER(sexp)[0] = NA_INTEGER;				\
-  PROTECT(sexp);							\
-  protect_count++;							\
- } else if (PyLong_Check(py_obj) | PyInt_Check(py_obj)) {		\
+  INTEGER_POINTER(sexp)[0] = (int)PyInt_AS_LONG(py_obj);		\
+		       PROTECT(sexp);					\
+		       protect_count++;	   \  
+} else if (PyLong_Check(py_obj)) {					\
   sexp = allocVector(INTSXP, 1);					\
-  INTEGER_POINTER(sexp)[0] = PyInt_AS_LONG(py_obj);			\
+  /* FIXME: check overflow (PyLong_AsLong returns -1 and raises exception */ \
+  INTEGER_POINTER(sexp)[0] = RPY_RINT_FROM_LONG(PyLong_AsLong(py_obj)); \
   PROTECT(sexp);							\
   protect_count++;							\
  } else if (PyBool_Check(py_obj)) {					\
@@ -136,8 +147,5 @@ if ((py_obj) == NACharacter_New(0)) {					\
   }									\
   return res;								\
 
-
-#define RPY_RINT_FROM_LONG(value)		\
-  ((value<=(long)INT_MAX && value>=(long)INT_MIN)?(int)value:NA_INTEGER)
 
 #endif /* !RPY_RI_H */

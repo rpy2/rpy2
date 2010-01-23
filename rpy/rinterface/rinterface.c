@@ -3527,9 +3527,14 @@ newSEXP(PyObject *object, int rType)
 	  tmp = allocVector(REALSXP, 1);
 	  REAL(tmp)[0] = PyFloat_AS_DOUBLE(item);
 	  SET_ELEMENT(sexp, i, tmp);
-	} else if (PyInt_Check(item) | PyLong_Check(item)) {
+	} else if (PyInt_Check(item)) {				
+	  tmp = allocVector(INTSXP, 1);				
+	  INTEGER_POINTER(tmp)[0] = (int)PyInt_AS_LONG(item);
+	  SET_ELEMENT(sexp, i, tmp);
+	} else if (PyLong_Check(item)) {
 	  tmp = allocVector(INTSXP, 1);
-	  INTEGER_POINTER(tmp)[0] = RPY_RINT_FROM_LONG(PyInt_AS_LONG(item));
+	  /* FIXME: check overflow */
+	  INTEGER_POINTER(tmp)[0] = RPY_RINT_FROM_LONG(PyLong_AsLong(item));
 	  SET_ELEMENT(sexp, i, tmp);
 	} else if (PyBool_Check(item)) {
 	  tmp = allocVector(LGLSXP, 1);
