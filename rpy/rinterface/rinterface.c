@@ -2542,8 +2542,8 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
       break;
     case LGLSXP:
       res_sexp = allocVector(LGLSXP, slice_len);
-      memcpy(INTEGER_POINTER(res_sexp),
-	     INTEGER_POINTER(*sexp) + ilow,  
+      memcpy(LOGICAL_POINTER(res_sexp),
+	     LOGICAL_POINTER(*sexp) + ilow,  
 	     (ihigh-ilow) * sizeof(int));
       break;
     case CPLXSXP:
