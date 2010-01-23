@@ -4347,10 +4347,10 @@ initrinterface(void)
 
   /* Required because NA types inherit from basic Python types */
   if (PyType_Ready(&PyBool_Type) < 0) {
-    return -1;
+    return;
   }
   if (PyType_Ready(&PyLong_Type) < 0) {
-    return -1;
+    return;
   }
 
   /* NA types */
