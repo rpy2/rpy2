@@ -1905,12 +1905,12 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     } else {
       RPY_PYSCALAR_RVECTOR(tmp_obj, tmp_R);
       if (tmp_R == NULL) {
-	PyErr_Format(PyExc_ValueError, 
-		     "All parameters must be of type Sexp_Type,"
-		     "or Python int/long, float, bool, or None"
-		     );
-	Py_DECREF(tmp_obj);
-	goto fail;
+        PyErr_Format(PyExc_ValueError, 
+                     "All parameters must be of type Sexp_Type,"
+                     "or Python int/long, float, bool, or None"
+                     );
+        Py_DECREF(tmp_obj);
+        goto fail;
       }
     }
 
@@ -1959,15 +1959,15 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       
       argValue = PyTuple_GetItem(tmp_obj, 1);
       if (PyObject_TypeCheck(argValue, &Sexp_Type)) {
-	tmp_R = RPY_SEXP((PySexpObject *)argValue);
+        tmp_R = RPY_SEXP((PySexpObject *)argValue);
       } else {
-	RPY_PYSCALAR_RVECTOR(argValue, tmp_R);	
-	if (tmp_R == NULL) {
+        RPY_PYSCALAR_RVECTOR(argValue, tmp_R);  
+        if (tmp_R == NULL) {
           PyErr_Format(PyExc_ValueError, 
-		       "All parameters must be of type Sexp_Type,"
-		       "or Python int/long, float, bool, "
-		       "or None"
-		       );
+                       "All parameters must be of type Sexp_Type,"
+                       "or Python int/long, float, bool, "
+                       "or None"
+                       );
           Py_DECREF(tmp_obj);     
           Py_XDECREF(citems);
           goto fail;
@@ -2133,11 +2133,11 @@ Sexp_rcall(PyObject *self, PyObject *args)
     } else {
       RPY_PYSCALAR_RVECTOR(argValue, tmp_R);
       if (tmp_R == NULL) {
-	PyErr_Format(PyExc_ValueError, 
-		     "All parameters must be of type Sexp_Type,"
-		     "or Python int/long, float, bool, or None"
-		     );
-	goto fail;
+        PyErr_Format(PyExc_ValueError, 
+                     "All parameters must be of type Sexp_Type,"
+                     "or Python int/long, float, bool, or None"
+                     );
+        goto fail;
       }
     }
     if (! tmp_R) {
@@ -2400,25 +2400,25 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     case REALSXP:
       vd = (NUMERIC_POINTER(*sexp))[i_R];
       if (vd == NA_REAL) {
-	res = NAReal_New(1);
+        res = NAReal_New(1);
       } else {
-	res = PyFloat_FromDouble(vd);
+        res = PyFloat_FromDouble(vd);
       }
       break;
     case INTSXP:
       vi = INTEGER_POINTER(*sexp)[i_R];
       if (vi == NA_INTEGER) {
-	res = NAInteger_New(1);
+        res = NAInteger_New(1);
       } else {
-	res = PyInt_FromLong((long)vi);
+        res = PyInt_FromLong((long)vi);
       }
       break;
     case LGLSXP:
       vi = LOGICAL_POINTER(*sexp)[i_R];
       if (vi == NA_LOGICAL) {
-	res = NALogical_New(1);
+        res = NALogical_New(1);
       } else {
-	RPY_PY_FROM_RBOOL(res, vi);
+        RPY_PY_FROM_RBOOL(res, vi);
       }
       break;
     case CPLXSXP:
@@ -2427,10 +2427,10 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       break;
     case STRSXP:
       if (STRING_ELT(*sexp, i_R) == NA_STRING) {
-	res = NACharacter_New(1);
+        res = NACharacter_New(1);
       } else {
-	vs = translateChar(STRING_ELT(*sexp, i_R));
-	res = PyString_FromString(vs);
+        vs = translateChar(STRING_ELT(*sexp, i_R));
+        res = PyString_FromString(vs);
       }
       break;
 /*     case CHARSXP: */
@@ -2501,7 +2501,7 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
    * than R for indexing. */
   if ((ilow >= R_LEN_T_MAX) | (ihigh >= R_LEN_T_MAX)) {
     PyErr_Format(PyExc_IndexError, 
-		 "Index values in the slice exceed what R can handle.");
+                 "Index values in the slice exceed what R can handle.");
     embeddedR_freelock();
     return NULL;
   }
@@ -2531,31 +2531,31 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
     case REALSXP:
       res_sexp = allocVector(REALSXP, slice_len);
       memcpy(NUMERIC_POINTER(res_sexp),
-	     NUMERIC_POINTER(*sexp) + ilow,  
-	     (ihigh-ilow) * sizeof(double));
+             NUMERIC_POINTER(*sexp) + ilow,  
+             (ihigh-ilow) * sizeof(double));
       break;
     case INTSXP:
       res_sexp = allocVector(INTSXP, slice_len);
       memcpy(INTEGER_POINTER(res_sexp),
-	     INTEGER_POINTER(*sexp) + ilow,  
-	     (ihigh-ilow) * sizeof(int));
+             INTEGER_POINTER(*sexp) + ilow,  
+             (ihigh-ilow) * sizeof(int));
       break;
     case LGLSXP:
       res_sexp = allocVector(LGLSXP, slice_len);
       memcpy(LOGICAL_POINTER(res_sexp),
-	     LOGICAL_POINTER(*sexp) + ilow,  
-	     (ihigh-ilow) * sizeof(int));
+             LOGICAL_POINTER(*sexp) + ilow,  
+             (ihigh-ilow) * sizeof(int));
       break;
     case CPLXSXP:
       res_sexp = allocVector(CPLXSXP, slice_len);
       for (slice_i = 0; slice_i < slice_len; slice_i++) {
-	COMPLEX_POINTER(res_sexp)[slice_i] = (COMPLEX_POINTER(*sexp))[slice_i + ilow];
+        COMPLEX_POINTER(res_sexp)[slice_i] = (COMPLEX_POINTER(*sexp))[slice_i + ilow];
       }
       break;
     case STRSXP:
       res_sexp = allocVector(STRSXP, slice_len);
       for (slice_i = 0; slice_i < slice_len; slice_i++) {
-	SET_STRING_ELT(res_sexp, slice_i, STRING_ELT(*sexp, slice_i + ilow));
+        SET_STRING_ELT(res_sexp, slice_i, STRING_ELT(*sexp, slice_i + ilow));
       }
       break;
 /*     case CHARSXP: */
@@ -2566,7 +2566,7 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
     case EXPRSXP:
       res_sexp = allocVector(VECSXP, slice_len);
       for (slice_i = 0; slice_i < slice_len; slice_i++) {
-	SET_VECTOR_ELT(res_sexp, slice_i, VECTOR_ELT(*sexp, slice_i + ilow));
+        SET_VECTOR_ELT(res_sexp, slice_i, VECTOR_ELT(*sexp, slice_i + ilow));
       }
       break;
     case LISTSXP:
@@ -2630,8 +2630,8 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
   self_typeof = TYPEOF(*sexp);
   if (TYPEOF(*sexp_val) != self_typeof) {
     PyErr_Format(PyExc_ValueError, 
-		 "The new value cannot be of 'typeof' other than %i ('%i' given)", 
-		 self_typeof, TYPEOF(*sexp_val));
+                 "The new value cannot be of 'typeof' other than %i ('%i' given)", 
+                 self_typeof, TYPEOF(*sexp_val));
     return -1;
   }
 
@@ -3438,7 +3438,7 @@ newSEXP(PyObject *object, int rType)
     numeric_ptr = REAL(sexp);
     for (i = 0; i < length; ++i) {
       if((item = PyNumber_Float(PySequence_Fast_GET_ITEM(seq_object, i)))) {
-	numeric_ptr[i] = PyFloat_AS_DOUBLE(item);
+        numeric_ptr[i] = PyFloat_AS_DOUBLE(item);
         Py_DECREF(item);
       }
       else {
@@ -3485,24 +3485,24 @@ newSEXP(PyObject *object, int rType)
       /* item is a borrowed reference */
       item = PySequence_Fast_GET_ITEM(seq_object, i);
       if (item == na) {
-	str_R = NA_STRING;
+        str_R = NA_STRING;
       } else if((item_tmp = PyObject_Str(item))) {
-	str_R = mkChar(PyString_AS_STRING(item_tmp));
-	if (!str_R) {
-	    PyErr_NoMemory();
-	    UNPROTECT(1);
-	    sexp = NULL;
-	    Py_DECREF(na);
-	    break;
-	}
-	Py_DECREF(item_tmp);
+        str_R = mkChar(PyString_AS_STRING(item_tmp));
+        if (!str_R) {
+            PyErr_NoMemory();
+            UNPROTECT(1);
+            sexp = NULL;
+            Py_DECREF(na);
+            break;
+        }
+        Py_DECREF(item_tmp);
       } else if ((item_tmp = PyObject_Unicode(item))) {
         str_R = mkChar(PyUnicode_AS_DATA(item));
         if (!str_R) {
           PyErr_NoMemory();
-	  UNPROTECT(1);
+          UNPROTECT(1);
           sexp = NULL;
-	  Py_DECREF(na);
+          Py_DECREF(na);
           break;
         }
         Py_DECREF(item_tmp);
@@ -3521,41 +3521,41 @@ newSEXP(PyObject *object, int rType)
     SEXP tmp, tmp2;
     for (i = 0; i < length; ++i) {
       if((item = PySequence_Fast_GET_ITEM(seq_object, i))) {
-	if (PyObject_TypeCheck(item, &Sexp_Type)) {
-	  SET_ELEMENT(sexp, i, RPY_SEXP((PySexpObject *)item));
-	} else if (PyFloat_Check(item)) {
-	  tmp = allocVector(REALSXP, 1);
-	  REAL(tmp)[0] = PyFloat_AS_DOUBLE(item);
-	  SET_ELEMENT(sexp, i, tmp);
-	} else if (PyInt_Check(item)) {				
-	  tmp = allocVector(INTSXP, 1);				
-	  INTEGER_POINTER(tmp)[0] = (int)PyInt_AS_LONG(item);
-	  SET_ELEMENT(sexp, i, tmp);
-	} else if (PyLong_Check(item)) {
-	  tmp = allocVector(INTSXP, 1);
-	  /* FIXME: check overflow */
-	  INTEGER_POINTER(tmp)[0] = RPY_RINT_FROM_LONG(PyLong_AsLong(item));
-	  SET_ELEMENT(sexp, i, tmp);
-	} else if (PyBool_Check(item)) {
-	  tmp = allocVector(LGLSXP, 1);
-	  LOGICAL_POINTER(tmp)[0] = (int)PyInt_AS_LONG(item);
-	  SET_ELEMENT(sexp, i, tmp);
-	} else if (PyString_Check(item)) {
-	  PROTECT(tmp = NEW_CHARACTER(1));
-	  tmp2 = mkChar(PyString_AS_STRING(item));
-	  if (!tmp2) {
-	    PyErr_NoMemory();
-	    sexp = NULL;
-	    break;
-	  }
-	  SET_STRING_ELT(tmp, 0, tmp2);
-	  SET_ELEMENT(sexp, i, tmp);
-	  UNPROTECT(1);
-	} else {
+        if (PyObject_TypeCheck(item, &Sexp_Type)) {
+          SET_ELEMENT(sexp, i, RPY_SEXP((PySexpObject *)item));
+        } else if (PyFloat_Check(item)) {
+          tmp = allocVector(REALSXP, 1);
+          REAL(tmp)[0] = PyFloat_AS_DOUBLE(item);
+          SET_ELEMENT(sexp, i, tmp);
+        } else if (PyInt_Check(item)) {                         
+          tmp = allocVector(INTSXP, 1);                         
+          INTEGER_POINTER(tmp)[0] = (int)PyInt_AS_LONG(item);
+          SET_ELEMENT(sexp, i, tmp);
+        } else if (PyLong_Check(item)) {
+          tmp = allocVector(INTSXP, 1);
+          /* FIXME: check overflow */
+          INTEGER_POINTER(tmp)[0] = RPY_RINT_FROM_LONG(PyLong_AsLong(item));
+          SET_ELEMENT(sexp, i, tmp);
+        } else if (PyBool_Check(item)) {
+          tmp = allocVector(LGLSXP, 1);
+          LOGICAL_POINTER(tmp)[0] = (int)PyInt_AS_LONG(item);
+          SET_ELEMENT(sexp, i, tmp);
+        } else if (PyString_Check(item)) {
+          PROTECT(tmp = NEW_CHARACTER(1));
+          tmp2 = mkChar(PyString_AS_STRING(item));
+          if (!tmp2) {
+            PyErr_NoMemory();
+            sexp = NULL;
+            break;
+          }
+          SET_STRING_ELT(tmp, 0, tmp2);
+          SET_ELEMENT(sexp, i, tmp);
+          UNPROTECT(1);
+        } else {
           PyErr_Format(PyExc_ValueError, "All elements of the list must be of "
                        "type 'Sexp_Type' or of Python types float, int, bool, or str.");
           sexp = NULL;
-	  break;
+          break;
         }
       }
     }
@@ -3967,7 +3967,7 @@ static PyObject*
 NAInteger_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
   RPY_NA_TP_NEW("NAIntegerType", PyLong_Type, PyInt_FromLong, 
-		(long)NA_INTEGER)
+                (long)NA_INTEGER)
 }
 
 static PyObject*
@@ -3986,7 +3986,7 @@ static PyObject*
 NALogical_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
   RPY_NA_TP_NEW("NALogicalType", PyInt_Type, PyInt_FromLong, 
-		(long)NA_LOGICAL)
+                (long)NA_LOGICAL)
 }
 
 static PyObject*
@@ -4110,7 +4110,7 @@ static PyObject*
 NAReal_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
   RPY_NA_TP_NEW("NARealType", PyFloat_Type, PyFloat_FromDouble, 
-		(long)NA_REAL)
+                (long)NA_REAL)
 }
 
 static PyObject*
@@ -4509,7 +4509,7 @@ initrinterface(void)
   Py_DECREF(rpy_R_MissingArg);  
 
   rpy_R_NilValue = (PySexpObject*)Sexp_new(&Sexp_Type,
-					   Py_None, Py_None);
+                                           Py_None, Py_None);
   if (PyDict_SetItemString(d, "R_NilValue", (PyObject *)rpy_R_NilValue) < 0)
   {
     Py_DECREF(rpy_R_NilValue);
