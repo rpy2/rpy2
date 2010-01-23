@@ -137,5 +137,7 @@ if ((py_obj) == NACharacter_New(0)) {					\
   return res;								\
 
 
+#define RPY_RINT_FROM_LONG(value)		\
+  ((value<=(long)INT_MAX && value>=(long)INT_MIN)?(int)value:NA_INTEGER)
 
 #endif /* !RPY_RI_H */

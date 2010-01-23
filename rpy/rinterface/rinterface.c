@@ -1257,7 +1257,7 @@ Sexp_typeof_get(PyObject *self)
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;;
   }
-  return PyInt_FromLong(TYPEOF(sexp));
+  return PyInt_FromLong((long)TYPEOF(sexp));
 }
 PyDoc_STRVAR(Sexp_typeof_doc,
              "R internal SEXPREC type.");
@@ -3454,7 +3454,7 @@ newSEXP(PyObject *object, int rType)
     for (i = 0; i < length; ++i) {
       if((item = PyNumber_Int(PySequence_Fast_GET_ITEM(seq_object, i)))) {
         long l = PyInt_AS_LONG(item);
-        integer_ptr[i] = (l<=(long)INT_MAX && l>=(long)INT_MIN)?(int)l:NA_INTEGER;
+        integer_ptr[i] = RPY_RINT_FROM_LONG(l);
         Py_DECREF(item);
       }
       else {
@@ -3529,11 +3529,11 @@ newSEXP(PyObject *object, int rType)
 	  SET_ELEMENT(sexp, i, tmp);
 	} else if (PyInt_Check(item) | PyLong_Check(item)) {
 	  tmp = allocVector(INTSXP, 1);
-	  INTEGER_POINTER(tmp)[0] = PyInt_AS_LONG(item);
+	  INTEGER_POINTER(tmp)[0] = RPY_RINT_FROM_LONG(PyInt_AS_LONG(item));
 	  SET_ELEMENT(sexp, i, tmp);
 	} else if (PyBool_Check(item)) {
 	  tmp = allocVector(LGLSXP, 1);
-	  LOGICAL_POINTER(tmp)[0] = PyInt_AS_LONG(item);
+	  LOGICAL_POINTER(tmp)[0] = (int)PyInt_AS_LONG(item);
 	  SET_ELEMENT(sexp, i, tmp);
 	} else if (PyString_Check(item)) {
 	  PROTECT(tmp = NEW_CHARACTER(1));
