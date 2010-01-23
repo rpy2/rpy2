@@ -1,5 +1,6 @@
 import unittest
 import itertools
+import pickle
 import rpy2.rinterface as rinterface
 import sys, os, subprocess, time, tempfile, signal
 
