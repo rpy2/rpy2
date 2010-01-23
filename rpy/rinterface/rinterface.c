@@ -3532,11 +3532,9 @@ newSEXP(PyObject *object, int rType)
 	  INTEGER_POINTER(tmp)[0] = PyInt_AS_LONG(item);
 	  SET_ELEMENT(sexp, i, tmp);
 	} else if (PyBool_Check(item)) {
-	  if (item == Py_True) {
-	    SET_ELEMENT(sexp, i, TRUE);
-	  } else {
-	    SET_ELEMENT(sexp, i, FALSE);
-	  }
+	  tmp = allocVector(LGLSXP, 1);
+	  LOGICAL_POINTER(tmp)[0] = PyInt_AS_LONG(item);
+	  SET_ELEMENT(sexp, i, tmp);
 	} else if (PyString_Check(item)) {
 	  PROTECT(tmp = NEW_CHARACTER(1));
 	  tmp2 = mkChar(PyString_AS_STRING(item));
