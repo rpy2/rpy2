@@ -71,7 +71,7 @@ class MatrixTestCase(unittest.TestCase):
     def testCrossprod(self):
         m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2)
         mcp = m.crossprod(m)
-        for i,val in enumerate((1,3,3,13,)):
+        for i,val in enumerate((1.0,3.0,3.0,13.0,)):
             self.assertEquals(val, mcp[i])
 
     def testTCrossprod(self):
