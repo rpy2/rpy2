@@ -50,7 +50,6 @@ typedef struct {
 #define RPY_RINT_FROM_LONG(value)               \
   ((value<=(long)INT_MAX && value>=(long)INT_MIN)?(int)value:NA_INTEGER)
 
-
 #define RPY_PY_FROM_RBOOL(res, rbool)                   \
   if (rbool == NA_LOGICAL) {                            \
     Py_INCREF(Py_None);                                 \
@@ -70,6 +69,7 @@ typedef struct {
     PyGILState_Release(gstate);                 \
   }
 
+
 #define RPY_PYSCALAR_RVECTOR(py_obj, sexp)                              \
   sexp = NULL;                                                          \
   /* The argument is not a PySexpObject, so we are going to check       \
@@ -82,29 +82,32 @@ typedef struct {
     PROTECT(sexp);                                                      \
     protect_count++;                                                    \
   } else if (PyInt_Check(py_obj)) {                                     \
-  sexp = allocVector(INTSXP, 1);                                        \
-  INTEGER_POINTER(sexp)[0] = (int)PyInt_AS_LONG(py_obj);                \
-                       PROTECT(sexp);                                   \
-                       protect_count++;    \  
-} else if (PyLong_Check(py_obj)) {                                      \
-  sexp = allocVector(INTSXP, 1);                                        \
-  /* FIXME: check overflow (PyLong_AsLong returns -1 and raises exception */ \
-  INTEGER_POINTER(sexp)[0] = RPY_RINT_FROM_LONG(PyLong_AsLong(py_obj)); \
-  PROTECT(sexp);                                                        \
-  protect_count++;                                                      \
+    sexp = allocVector(INTSXP, 1);                                      \
+    INTEGER_POINTER(sexp)[0] = (int)(PyInt_AS_LONG(py_obj));            \
+    PROTECT(sexp);                                                      \
+    protect_count++;                                                    \
+  } else if (PyLong_Check(py_obj)) {                                    \
+    sexp = allocVector(INTSXP, 1);                                      \
+    INTEGER_POINTER(sexp)[0] = RPY_RINT_FROM_LONG(PyLong_AsLong(py_obj)); \
+    if ((INTEGER_POINTER(sexp)[0] == -1) && PyErr_Occurred() ) {        \
+      INTEGER_POINTER(sexp)[0] = NA_INTEGER;                            \
+      PyErr_Clear();                                                    \
+    }                                                                   \
+    PROTECT(sexp);                                                      \
+    protect_count++;                                                    \
  } else if (PyBool_Check(py_obj)) {                                     \
-  sexp = allocVector(LGLSXP, 1);                                        \
-  LOGICAL_POINTER(sexp)[0] = py_obj == Py_True ? TRUE : FALSE;          \
-  PROTECT(sexp);                                                        \
-  protect_count++;                                                      \
+    sexp = allocVector(LGLSXP, 1);                                      \
+    LOGICAL_POINTER(sexp)[0] = py_obj == Py_True ? TRUE : FALSE;        \
+    PROTECT(sexp);                                                      \
+    protect_count++;                                                    \
  } else if (PyFloat_Check(py_obj)) {                                    \
-  sexp = allocVector(REALSXP, 1);                                       \
-  NUMERIC_POINTER(sexp)[0] = PyFloat_AS_DOUBLE(py_obj);                 \
-  PROTECT(sexp);                                                        \
-  protect_count++;                                                      \
- } else if (py_obj == Py_None) {                                        \
-  sexp = R_NilValue;                                                    \
- }
+    sexp = allocVector(REALSXP, 1);                                     \
+    NUMERIC_POINTER(sexp)[0] = PyFloat_AS_DOUBLE(py_obj);               \
+    PROTECT(sexp);                                                      \
+    protect_count++;                                                    \
+  } else if (py_obj == Py_None) {                                       \
+    sexp = R_NilValue;                                                  \
+  }
 
 
 #define RPY_NA_TP_NEW(type_name, parent_type, value_type, value)        \

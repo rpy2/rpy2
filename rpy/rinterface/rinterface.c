@@ -3533,8 +3533,11 @@ newSEXP(PyObject *object, int rType)
           SET_ELEMENT(sexp, i, tmp);
         } else if (PyLong_Check(item)) {
           tmp = allocVector(INTSXP, 1);
-          /* FIXME: check overflow */
           INTEGER_POINTER(tmp)[0] = RPY_RINT_FROM_LONG(PyLong_AsLong(item));
+          if ((INTEGER_POINTER(tmp)[0] == -1) && PyErr_Occurred() ) {
+            INTEGER_POINTER(tmp)[0] = NA_INTEGER;
+            PyErr_Clear();
+          }
           SET_ELEMENT(sexp, i, tmp);
         } else if (PyBool_Check(item)) {
           tmp = allocVector(LGLSXP, 1);
