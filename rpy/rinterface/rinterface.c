@@ -2630,16 +2630,19 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
   }
 
   self_typeof = TYPEOF(*sexp);
-  if ((self_typeof != VECSXP) && (TYPEOF(*sexp_val) != self_typeof)) {
-    PyErr_Format(PyExc_ValueError, 
-                 "The new value cannot be of 'typeof' other than %i ('%i' given)", 
-                 self_typeof, TYPEOF(*sexp_val));
-    return -1;
-  }
 
-  if (LENGTH(*sexp_val) != 1) {
-    PyErr_Format(PyExc_ValueError, "The new value must be of length 1.");
-    return -1;
+  if (self_typeof != VECSXP) {
+    if (TYPEOF(*sexp_val) != self_typeof) {
+      PyErr_Format(PyExc_ValueError, 
+		   "The new value cannot be of 'typeof' other than %i ('%i' given)", 
+		   self_typeof, TYPEOF(*sexp_val));
+      return -1;
+    }
+
+    if (LENGTH(*sexp_val) != 1) {
+      PyErr_Format(PyExc_ValueError, "The new value must be of length 1.");
+      return -1;
+    }
   }
 
   SEXP sexp_copy;
