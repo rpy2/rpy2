@@ -124,7 +124,7 @@ typedef struct {
     return NULL;                                                        \
   }                                                                     \
                                                                         \
-  if (self == NULL) {                                                   \
+  if (self == NULL) {							\
     new_args = PyTuple_Pack(1, (value_type)(value));                    \
     self = (parent_type).tp_new(type, new_args, kwds);                  \
     Py_DECREF(new_args);                                                \
