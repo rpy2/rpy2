@@ -1719,8 +1719,10 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   if (PyObject_IsTrue(copy)) {
     tmpSexpObject = ((PySexpObject *)self)->sObj;
-    ((PySexpObject *)self)->sObj = ((PySexpObject *)sourceObject)->sObj;
-    free(tmpSexpObject);
+    if (tmpSexpObject != ((PySexpObject *)sourceObject)->sObj) {
+      ((PySexpObject *)self)->sObj = ((PySexpObject *)sourceObject)->sObj;
+      PyMem_Free(tmpSexpObject);
+    }
     RPY_INCREF((PySexpObject *)self);
 #ifdef RPY_VERBOSE
     printf("Python: %p / R: %p - sexp count is now %i.\n", 
@@ -4521,5 +4523,5 @@ initrinterface(void)
   Py_DECREF(rpy_R_NilValue);  
 
   rinterface_unserialize = PyDict_GetItemString(d, "unserialize");
-  
+
 }

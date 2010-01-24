@@ -12,7 +12,7 @@ class SexpTestCase(unittest.TestCase):
         x = "a"
         self.assertRaises(ValueError, rinterface.Sexp, x)
 
-    def testNew(self):        
+    def testNew(self):
         sexp = rinterface.baseenv.get("letters")
         sexp_new = rinterface.Sexp(sexp)
 
@@ -127,4 +127,5 @@ def suite():
     return suite
 
 if __name__ == '__main__':
-     unittest.main()
+    tr = unittest.TextTestRunner(verbosity = 2)
+    tr.run(suite())

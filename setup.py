@@ -3,10 +3,7 @@ import os, os.path, sys, shutil, re, itertools
 from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build import build as _build
 
-try:
-    from setuptools import setup
-except ImportError, ie:
-    from distutils.core import setup
+from distutils.core import setup
 from distutils.core import Extension
 
 
@@ -246,7 +243,7 @@ def getRinterface_ext():
             library_dirs = r_libs,
             define_macros = define_macros,
             runtime_library_dirs = r_libs,
-            #extra_compile_args=['-O0', '-g'],
+            extra_compile_args=['-O0', '-g'],
         )
 
     return [rinterface_ext, rpy_device_ext]
@@ -263,6 +260,7 @@ for scheme in distutils.command.install.INSTALL_SCHEMES.values():
     scheme['data'] = scheme['purelib']
 
 setup(
+    install_requires=['distribute'],
     cmdclass = {'build': build,
                 'build_ext': build_ext},
     name = pack_name,
@@ -275,13 +273,14 @@ setup(
     ext_modules = rinterface_exts[0],
     package_dir = pack_dir,
     packages = [pack_name,
-                pack_name+'.rlike',
-                pack_name+'.rlike.tests',
-                pack_name+'.robjects',
-                pack_name+'.robjects.tests',
-                pack_name+'.robjects.lib',
-                ] + \
-        [pack_name + '.rinterface', pack_name + '.rinterface.tests'],
+                pack_name + '.rlike',
+                pack_name + '.rlike.tests',
+                pack_name + '.rinterface',
+                pack_name + '.rinterface.tests',
+                pack_name + '.robjects',
+                pack_name + '.robjects.tests',
+                pack_name + '.robjects.lib',
+                ],
     classifiers = ['Programming Language :: Python',
                    'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
                    'Intended Audience :: Developers',
