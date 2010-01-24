@@ -2630,7 +2630,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
   }
 
   self_typeof = TYPEOF(*sexp);
-  if (TYPEOF(*sexp_val) != self_typeof) {
+  if ((self_typeof != VECSXP) && (TYPEOF(*sexp_val) != self_typeof)) {
     PyErr_Format(PyExc_ValueError, 
                  "The new value cannot be of 'typeof' other than %i ('%i' given)", 
                  self_typeof, TYPEOF(*sexp_val));
