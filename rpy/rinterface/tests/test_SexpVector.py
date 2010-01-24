@@ -393,4 +393,6 @@ def suite():
     return suite
 
 if __name__ == '__main__':
-    unittest.main()
+    tr = unittest.TextTestRunner(verbosity = 2)
+    tr.run(suite())
+    

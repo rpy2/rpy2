@@ -243,7 +243,7 @@ def getRinterface_ext():
             library_dirs = r_libs,
             define_macros = define_macros,
             runtime_library_dirs = r_libs,
-            extra_compile_args=['-O0', '-g'],
+            #extra_compile_args=['-O0', '-g'],
         )
 
     return [rinterface_ext, rpy_device_ext]
