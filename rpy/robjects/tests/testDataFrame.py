@@ -76,7 +76,7 @@ class DataFrameTestCase(unittest.TestCase):
     def testIter_row(self):
         dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
         rows = [x for x in dataf.iter_row()]
-        self.assertEquals(1, rows[0][0])
+        self.assertEquals(1, rows[0][0][0])
         self.assertEquals("b", rows[1][1])
 
     def testColnames(self):
