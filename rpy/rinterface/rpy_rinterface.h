@@ -85,6 +85,11 @@ typedef struct {
     sexp = allocVector(LGLSXP, 1);                                      \
     INTEGER_POINTER(sexp)[0] = NA_LOGICAL;                              \
     PROTECT(sexp);                                                      \
+    protect_count++;                                                    \
+ } else if (PyBool_Check(py_obj)) {                                     \
+    sexp = allocVector(LGLSXP, 1);                                      \
+    LOGICAL_POINTER(sexp)[0] = py_obj == Py_True ? TRUE : FALSE;        \
+    PROTECT(sexp);                                                      \
     protect_count++;                                                    \  
   } else if (PyInt_Check(py_obj)) {                                     \
     sexp = allocVector(INTSXP, 1);                                      \
@@ -98,11 +103,6 @@ typedef struct {
       INTEGER_POINTER(sexp)[0] = NA_INTEGER;                            \
       PyErr_Clear();                                                    \
     }                                                                   \
-    PROTECT(sexp);                                                      \
-    protect_count++;                                                    \
- } else if (PyBool_Check(py_obj)) {                                     \
-    sexp = allocVector(LGLSXP, 1);                                      \
-    LOGICAL_POINTER(sexp)[0] = py_obj == Py_True ? TRUE : FALSE;        \
     PROTECT(sexp);                                                      \
     protect_count++;                                                    \
  } else if (PyFloat_Check(py_obj)) {                                    \
