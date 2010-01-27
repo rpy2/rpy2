@@ -2634,8 +2634,8 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
   if (self_typeof != VECSXP) {
     if (TYPEOF(*sexp_val) != self_typeof) {
       PyErr_Format(PyExc_ValueError, 
-		   "The new value cannot be of 'typeof' other than %i ('%i' given)", 
-		   self_typeof, TYPEOF(*sexp_val));
+                   "The new value cannot be of 'typeof' other than %i ('%i' given)", 
+                   self_typeof, TYPEOF(*sexp_val));
       return -1;
     }
 
@@ -2677,6 +2677,138 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
   return 0;
 }
 
+/* a[i:j] = val */
+static int
+VectorSexp_ass_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *val)
+{
+  R_len_t len_R;
+  int self_typeof;
+
+  if (embeddedR_status & RPY_R_BUSY) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return -1;
+  }
+  embeddedR_setlock();
+
+  if (! PyObject_TypeCheck(val, &Sexp_Type)) {
+    PyErr_Format(PyExc_ValueError, "Any new value must be of "
+		 "type 'Sexp_Type'.");
+    embeddedR_freelock();
+    return -1;
+  }
+
+  SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
+  len_R = GET_LENGTH(*sexp);
+  
+  if (ilow < 0) {
+    ilow = (R_len_t)(len_R - ilow) + 1;
+  }
+  if (ihigh < 0) {
+    ihigh = (R_len_t)(len_R - ihigh) + 1;
+  }
+
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    embeddedR_freelock();
+    return -1;
+  }
+  
+  /* On 64bits, Python is apparently able to use larger integer
+   * than R for indexing. */
+  if ((ilow >= R_LEN_T_MAX) | (ihigh >= R_LEN_T_MAX)) {
+    PyErr_Format(PyExc_IndexError, 
+                 "Index values in the slice exceed what R can handle.");
+    embeddedR_freelock();
+    return -1;
+  }
+
+  if ((ilow < 0) | (ihigh < 0)) {
+    PyErr_Format(PyExc_IndexError, 
+                 "Mysterious error: likely an integer overflow.");
+    embeddedR_freelock();
+    return -1;
+  }
+  if ((ilow > GET_LENGTH(*sexp)) | (ihigh > GET_LENGTH(*sexp))) {
+    PyErr_Format(PyExc_IndexError, "Index out of range.");
+    return -1;
+  } else {
+    if ( ilow > ihigh ) {
+      /* Whenever this occurs for regular Python lists,
+      * a sequence of length 0 is returned. Setting ilow:=ilow
+      * causes the same whithout writing "special case" code.
+      */
+      ihigh = ilow;
+    }
+
+    R_len_t slice_len = ihigh-ilow;
+    R_len_t slice_i;
+    const char *vs;
+    SEXP tmp, sexp_item; /* tmp and sexp_item needed for case LANGSXP */
+
+    SEXP sexp_val = RPY_SEXP((PySexpObject *)val);
+    if (! sexp_val) {
+      PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+      embeddedR_freelock();
+      return -1;
+    }
+
+    if (slice_len != GET_LENGTH(sexp_val)) {
+      PyErr_Format(PyExc_ValueError, "The length of the replacement value differs from the length of the slice.");
+      embeddedR_freelock();
+      return -1;
+    }
+
+    switch (TYPEOF(*sexp)) {
+    case REALSXP:
+      memcpy(NUMERIC_POINTER(*sexp) + ilow,
+	     NUMERIC_POINTER(sexp_val),
+             (ihigh-ilow) * sizeof(double));
+      break;
+    case INTSXP:
+      memcpy(INTEGER_POINTER(*sexp) + ilow,
+             INTEGER_POINTER(sexp_val),
+             (ihigh-ilow) * sizeof(int));
+      break;
+    case LGLSXP:
+      memcpy(LOGICAL_POINTER(*sexp) + ilow,
+	     LOGICAL_POINTER(sexp_val),
+             (ihigh-ilow) * sizeof(int));
+      break;
+    case CPLXSXP:
+      for (slice_i = 0; slice_i < slice_len; slice_i++) {
+        (COMPLEX_POINTER(*sexp))[slice_i + ilow] = COMPLEX_POINTER(sexp_val)[slice_i];
+      }
+      break;
+    case STRSXP:
+      for (slice_i = 0; slice_i < slice_len; slice_i++) {
+        SET_STRING_ELT(*sexp, slice_i + ilow, STRING_ELT(sexp_val, slice_i));
+      }
+      break;
+/*     case CHARSXP: */
+      /*       FIXME: implement handling of single char (if possible ?) */
+/*       vs = (CHAR(*sexp)[i_R]); */
+/*       res = PyString_FromStringAndSize(vs, 1); */
+    case VECSXP:
+    case EXPRSXP:
+      for (slice_i = 0; slice_i < slice_len; slice_i++) {
+        SET_VECTOR_ELT(*sexp, slice_i + ilow, VECTOR_ELT(sexp_val, slice_i));
+      }
+      break;
+    case LISTSXP:
+    case LANGSXP:
+    default:
+      PyErr_Format(PyExc_ValueError, "Cannot handle type %d", 
+                   TYPEOF(*sexp));
+      embeddedR_freelock();
+      return -1;
+      break;
+    }
+  }
+  embeddedR_freelock();
+  return 0;
+}
+
+
 static PySequenceMethods VectorSexp_sequenceMethods = {
   (lenfunc)VectorSexp_len,              /* sq_length */
   0,                              /* sq_concat */
@@ -2684,7 +2816,7 @@ static PySequenceMethods VectorSexp_sequenceMethods = {
   (ssizeargfunc)VectorSexp_item,        /* sq_item */
   (ssizessizeargfunc)VectorSexp_slice,  /* sq_slice */
   (ssizeobjargproc)VectorSexp_ass_item, /* sq_ass_item */
-  0,                              /* sq_ass_slice */
+  (ssizeobjargproc)VectorSexp_ass_slice, /* sq_ass_slice */
   0,                              /* sq_contains */
   0,                              /* sq_inplace_concat */
   0                               /* sq_inplace_repeat */

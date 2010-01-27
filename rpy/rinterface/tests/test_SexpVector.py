@@ -379,6 +379,56 @@ class SexpVectorTestCase(unittest.TestCase):
         letters_R[0] = ri.SexpVector(["z", ], ri.STRSXP)
         self.assertTrue(letters_R[0] == "z")
 
+    def testSetSliceFloat(self):
+        vec = ri.FloatSexpVector([1.0,2.0,3.0])
+        vec[0:2] = ri.FloatSexpVector([11.0, 12.0])
+        self.assertEquals(3, len(vec))
+        self.assertEquals(11.0, vec[0])
+        self.assertEquals(12.0, vec[1])
+        self.assertEquals(3.0, vec[2])
+
+    def testSetSliceInt(self):
+        vec = ri.IntSexpVector([1,2,3])
+        vec[0:2] = ri.IntSexpVector([11,12])
+        self.assertEquals(3, len(vec))
+        self.assertEquals(11, vec[0])
+        self.assertEquals(12, vec[1])
+
+    def testSetSliceIntNegative(self):
+        vec = ri.IntSexpVector([1,2,3])
+        vec[-2:-1] = ri.IntSexpVector([33,])
+        self.assertEquals(3, len(vec))
+        self.assertEquals(33, vec[1])
+
+    def testSetSliceBool(self):
+        vec = ri.BoolSexpVector([True,False,True])
+        vec[0:2] = ri.BoolSexpVector([False, False])
+        self.assertEquals(3, len(vec))
+        self.assertEquals(False, vec[0])
+        self.assertEquals(False, vec[1])
+
+    def testSetSliceStr(self):
+        vec = ri.StrSexpVector(['a','b','c'])
+        vec[0:2] = ri.StrSexpVector(['d','e'])
+        self.assertEquals(3, len(vec))
+        self.assertEquals('d', vec[0])
+        self.assertEquals('e', vec[1])
+
+    def testSetSliceComplex(self):
+        vec = ri.ComplexSexpVector([1+2j,2+3j,3+4j])
+        vec[0:2] = ri.ComplexSexpVector([11+2j,12+3j])
+        self.assertEquals(3, len(vec))
+        self.assertEquals(11+2j, vec[0])
+        self.assertEquals(12+3j, vec[1])
+
+    def testSetSliceList(self):
+        vec = ri.ListSexpVector([1,'b',True])
+        vec[0:2] = ri.ListSexpVector([False, 2])
+        self.assertEquals(3, len(vec))
+        self.assertEquals(False, vec[0][0])
+        self.assertEquals(2, vec[1][0])
+
+
     def testMissingRPreserveObjectBug(self):
         rgc = ri.baseenv['gc']
         xx = range(100000)
