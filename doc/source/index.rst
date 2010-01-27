@@ -19,13 +19,14 @@ Documentation for rpy2
 
    The first section contains a quick introduction, as well as how to get started
    (requirements, install rpy2). This should be the natural place to
-   start if you are new to rpy2.
+   start if you are new to R, or rpy2. Hints for porting existing code to a newer
+   version of rpy2 are also given.
 
    .. toctree::
       :maxdepth: 3
 
       getting-started
-
+      porting-to-rpy2
 
    The high-level interface in rpy2 is designed to facilitate the use of R by
    Python programmers. R objects are exposed as instances of Python-implemented
@@ -68,8 +69,8 @@ Documentation for rpy2
       miscellaneous
 
 
-   The list of changes relates changes across versions, and will be checked when
-   upgrading rpy2.
+   The list of changes across versions can be helpful when
+   upgrading to a newer version for rpy2.
 
    .. toctree::
       :maxdepth: 2
