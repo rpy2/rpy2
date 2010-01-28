@@ -98,11 +98,27 @@ class SexpVectorTestCase(unittest.TestCase):
 
 #FIXME: end and initializing again causes currently a lot a trouble...
     def testNewWithoutInit(self):
-        self.assertTrue(False) # worked when tested, but calling endEmbeddedR causes trouble
-        ri.endr(1)
-        self.assertRaises(RuntimeError, ri.SexpVector, [1,2], ri.INTSXP)
-        #FIXME: trouble... does not initialize R when failing the test
-        ri.initr()
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # cannot be tested with Python < 2.6
+            return None
+        import multiprocessing
+        def foo(queue):
+            import rpy2.rinterface as rinterface
+            rinterface.endr(1)
+            try:
+                tmp = ri.SexpVector([1,2], ri.INTSXP)
+                res = (False, None)
+            except RuntimeError, re:
+                res = (True, re)
+            except Exception, e:
+                res = (False, e)
+            queue.put(res)
+        q = multiprocessing.Queue()
+        p = multiprocessing.Process(target = foo, args = (q,))
+        p.start()
+        res = q.get()
+        p.join()
+        self.assertTrue(res[0])
 
     def testNewBool(self):
         sexp = ri.SexpVector([True, ], ri.LGLSXP)
