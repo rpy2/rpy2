@@ -469,6 +469,8 @@ through the slot named `dimnames`.
 
 .. rubric:: Missing values
 
+.. _missing_values:
+
 In R missing the symbol *NA* represents a missing value.
 The general rule that R scalars are in fact vectors applies here again,
 and the following R code is creating a vector of length 1.
