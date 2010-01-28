@@ -1648,7 +1648,7 @@ static PyObject*
 Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
 
-  PySexpObject *self;
+  PySexpObject *self = NULL;
   /* unsigned short int rpy_only = 1; */
 
   #ifdef RPY_VERBOSE
@@ -1887,6 +1887,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 
   /* A SEXP with the function to call and the arguments and keywords. */
   PROTECT(c_R = call_R = allocList(largs+lkwds+1));
+  protect_count += 1;
   SET_TYPEOF(c_R, LANGSXP);
   fun_R = RPY_SEXP((PySexpObject *)self);
   if (! fun_R) {
@@ -1998,18 +1999,19 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 
   /* FIXME: R_GlobalContext ? */
   PROTECT(res_R = do_eval_expr(call_R, R_GlobalEnv));
+  protect_count += 1;
   /* PROTECT(res_R = do_eval_expr(call_R, CLOENV(fun_R))); */
 
 /*   if (!res) { */
 /*     UNPROTECT(2); */
 /*     return NULL; */
 /*   } */
-  UNPROTECT(2 + protect_count);
 
 
   if (! res_R) {
     /* EmbeddedR_exception_from_errmessage(); */
     /* PyErr_Format(PyExc_RuntimeError, "Error while running R code"); */
+    UNPROTECT(protect_count);
     embeddedR_freelock();
     return NULL;
   }
@@ -2019,11 +2021,12 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   Rf_PrintWarnings(); /* show any warning messages */
 
   PyObject *res = (PyObject *)newPySexpObject(res_R);
+  UNPROTECT(protect_count);
   embeddedR_freelock();
   return res;
   
  fail:
-  UNPROTECT(1 + protect_count);
+  UNPROTECT(protect_count);
   embeddedR_freelock();
   return NULL;
 
@@ -2527,8 +2530,8 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
     }
     R_len_t slice_len = ihigh-ilow;
     R_len_t slice_i;
-    const char *vs;
-    SEXP tmp, sexp_item; /* tmp and sexp_item needed for case LANGSXP */
+    //const char *vs;
+    //SEXP tmp, sexp_item; /* tmp and sexp_item needed for case LANGSXP */
     switch (TYPEOF(*sexp)) {
     case REALSXP:
       res_sexp = allocVector(REALSXP, slice_len);
