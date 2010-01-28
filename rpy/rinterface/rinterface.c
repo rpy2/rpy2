@@ -715,7 +715,7 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
      and the Python exception raised up.*/
     /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
-    PyErr_Clear();
+    //PyErr_Clear();
     Py_XDECREF(arglist);
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;

@@ -195,7 +195,16 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEquals('R Information', sf[0])
 
     def testShowFilesWithError(self):
-        self.assertTrue(False) # no unit test (yet)
+        def f(fileheaders, wtitle, fdel, pager):
+            # error here
+            1 + 'a'
+
+        rinterface.set_showfiles(f)
+        file_path = rinterface.baseenv["file.path"]
+        r_home = rinterface.baseenv["R.home"]
+        filename = file_path(r_home(rinterface.StrSexpVector(("doc", ))), 
+                             rinterface.StrSexpVector(("COPYRIGHTS", )))
+        self.assertRaises(TypeError, rinterface.baseenv["file.show"], filename)
 
     def testSetCleanUp(self):
         orig_cleanup = rinterface.get_cleanup()
