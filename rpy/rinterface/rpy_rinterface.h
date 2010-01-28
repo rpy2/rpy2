@@ -90,7 +90,7 @@ typedef struct {
     sexp = allocVector(LGLSXP, 1);                                      \
     LOGICAL_POINTER(sexp)[0] = py_obj == Py_True ? TRUE : FALSE;        \
     PROTECT(sexp);                                                      \
-    protect_count++;                                                    \  
+    protect_count++;                                                    \
   } else if (PyInt_Check(py_obj)) {                                     \
     sexp = allocVector(INTSXP, 1);                                      \
     INTEGER_POINTER(sexp)[0] = (int)(PyInt_AS_LONG(py_obj));            \
