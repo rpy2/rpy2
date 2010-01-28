@@ -1,6 +1,12 @@
 Release 2.1-dev
 ===============
 
+Known problems
+--------------
+
+- Numpy arrays with unicode elements seem to be now causing a
+  segfault
+
 New Features
 ------------
 
