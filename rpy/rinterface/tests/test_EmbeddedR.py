@@ -20,11 +20,6 @@ def onlyAQUAorWindows(function):
 
 class EmbeddedRTestCase(unittest.TestCase):
 
-    def tearDown(self):
-        rinterface.set_writeconsole(rinterface.consolePrint)
-        rinterface.set_readconsole(rinterface.consoleRead)
-        rinterface.set_readconsole(rinterface.consoleFlush)
-        rinterface.set_choosefile(rinterface.chooseFile)
 
     def testConsolePrint(self):
         tmp_file = tempfile.NamedTemporaryFile()
@@ -111,6 +106,12 @@ class EmbeddedRTestCase(unittest.TestCase):
 
 
 class CallbacksTestCase(unittest.TestCase):
+    def tearDown(self):
+        rinterface.set_writeconsole(rinterface.consolePrint)
+        rinterface.set_readconsole(rinterface.consoleRead)
+        rinterface.set_readconsole(rinterface.consoleFlush)
+        rinterface.set_choosefile(rinterface.chooseFile)
+
     def testSetWriteConsole(self):
         buf = []
         def f(x):
