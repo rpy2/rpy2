@@ -76,11 +76,11 @@ typedef struct {
      if conversion from a scalar type is possible */                    \
   if ((py_obj) == NACharacter_New(0)) {                                 \
     sexp = NA_STRING;                                                   \
-  } else if ((py_obj) == NAInteger_New(0)) {                            \
-    sexp = allocVector(INTSXP, 1);                                      \
-    INTEGER_POINTER(sexp)[0] = NA_INTEGER;                              \
-    PROTECT(sexp);                                                      \
+  } else if ((py_obj) == NAInteger_New(0)) {				\
+    sexp = allocVector(INTSXP, 1);					\
+    PROTECT(sexp);							\
     protect_count++;                                                    \
+    INTEGER_POINTER(sexp)[0] = NA_INTEGER;                              \
   } else if ((py_obj) == NALogical_New(0)) {                            \
     sexp = allocVector(LGLSXP, 1);                                      \
     INTEGER_POINTER(sexp)[0] = NA_LOGICAL;                              \

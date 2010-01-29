@@ -4094,7 +4094,7 @@ static PyTypeObject NAInteger_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-        &PyLong_Type,             /*tp_base*/
+        &PyInt_Type,             /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
@@ -4109,7 +4109,7 @@ static PyTypeObject NAInteger_Type = {
 static PyObject*
 NAInteger_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-  RPY_NA_TP_NEW("NAIntegerType", PyLong_Type, PyLong_FromLong, 
+  RPY_NA_TP_NEW("NAIntegerType", PyInt_Type, PyInt_FromLong, 
                 (long)NA_INTEGER)
 }
 
