@@ -41,6 +41,76 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEquals('haha', ''.join(tmp_file.readlines()))
         tmp_file.close()
 
+
+    def testCallErrorWhenEndedR(self):
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # cannot be tested with Python < 2.6
+            return None
+        import multiprocessing
+        def foo(queue):
+            import rpy2.rinterface as rinterface
+            rdate = rinterface.baseenv['date']
+            rinterface.endr(1)
+            try:
+                tmp = rdate()
+                res = (False, None)
+            except RuntimeError, re:
+                res = (True, re)
+            except Exception, e:
+                res = (False, e)
+            queue.put(res)
+        q = multiprocessing.Queue()
+        p = multiprocessing.Process(target = foo, args = (q,))
+        p.start()
+        res = q.get()
+        p.join()
+        self.assertTrue(res[0])
+
+    def testStr_typeint(self):
+        t = rinterface.baseenv['letters']
+        self.assertEquals('STRSXP', rinterface.str_typeint(t.typeof))
+        t = rinterface.baseenv['pi']
+        self.assertEquals('REALSXP', rinterface.str_typeint(t.typeof))
+
+    def testStr_typeint_invalid(self):
+        self.assertRaises(LookupError, rinterface.str_typeint, 99)
+
+    def testGet_initoptions(self):
+        options = rinterface.get_initoptions()
+        self.assertEquals(len(rinterface.initoptions),
+                          len(options))
+        for o1, o2 in itertools.izip(rinterface.initoptions, options):
+            self.assertEquals(o1, o2)
+        
+    def testSet_initoptions(self):
+        self.assertRaises(RuntimeError, rinterface.set_initoptions, 
+                          ('aa', '--verbose', '--no-save'))
+
+    def testInterruptR(self):
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # Test unit currently requires Python >= 2.6
+        rpy_code = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
+                                               delete = False)
+        rpy_code_str = os.linesep.join(['import rpy2.robjects as ro',
+                                        'rcode = "i <- 0"',
+                                        'rcode += "while(TRUE) {"',
+                                        'rcode += "i <- i+1"',
+                                        'rcode += "Sys.sleep(0.01)"',
+                                        'rcode += "}"',
+                                        'ro.r(rcode)'])
+        rpy_code.write(rpy_code_str)
+        rpy_code.close()
+        child_proc = subprocess.Popen(('python', rpy_code.name))
+        #child_proc = subprocess.Popen(('sleep', '113'))
+        #import pdb; pdb.set_trace()
+        child_proc.send_signal(signal.SIGINT)
+        ret_code = child_proc.poll()
+        #print(ret_code)
+        #import pdb; pdb.set_trace()
+        self.assertFalse(ret_code is None) # Interruption failed
+
+
+class CallbacksTestCase(unittest.TestCase):
     def testSetWriteConsole(self):
         buf = []
         def f(x):
@@ -222,72 +292,6 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertRaises(rinterface.RRuntimeError, r_quit)
         rinterface.set_cleanup(orig_cleanup)
 
-    def testCallErrorWhenEndedR(self):
-        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
-            self.assertTrue(False) # cannot be tested with Python < 2.6
-            return None
-        import multiprocessing
-        def foo(queue):
-            import rpy2.rinterface as rinterface
-            rdate = rinterface.baseenv['date']
-            rinterface.endr(1)
-            try:
-                tmp = rdate()
-                res = (False, None)
-            except RuntimeError, re:
-                res = (True, re)
-            except Exception, e:
-                res = (False, e)
-            queue.put(res)
-        q = multiprocessing.Queue()
-        p = multiprocessing.Process(target = foo, args = (q,))
-        p.start()
-        res = q.get()
-        p.join()
-        self.assertTrue(res[0])
-
-    def testStr_typeint(self):
-        t = rinterface.baseenv['letters']
-        self.assertEquals('STRSXP', rinterface.str_typeint(t.typeof))
-        t = rinterface.baseenv['pi']
-        self.assertEquals('REALSXP', rinterface.str_typeint(t.typeof))
-
-    def testStr_typeint_invalid(self):
-        self.assertRaises(LookupError, rinterface.str_typeint, 99)
-
-    def testGet_initoptions(self):
-        options = rinterface.get_initoptions()
-        self.assertEquals(len(rinterface.initoptions),
-                          len(options))
-        for o1, o2 in itertools.izip(rinterface.initoptions, options):
-            self.assertEquals(o1, o2)
-        
-    def testSet_initoptions(self):
-        self.assertRaises(RuntimeError, rinterface.set_initoptions, 
-                          ('aa', '--verbose', '--no-save'))
-
-    def testInterruptR(self):
-        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
-            self.assertTrue(False) # Test unit currently requires Python >= 2.6
-        rpy_code = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
-                                               delete = False)
-        rpy_code_str = os.linesep.join(['import rpy2.robjects as ro',
-                                        'rcode = "i <- 0"',
-                                        'rcode += "while(TRUE) {"',
-                                        'rcode += "i <- i+1"',
-                                        'rcode += "Sys.sleep(0.01)"',
-                                        'rcode += "}"',
-                                        'ro.r(rcode)'])
-        rpy_code.write(rpy_code_str)
-        rpy_code.close()
-        child_proc = subprocess.Popen(('python', rpy_code.name))
-        #child_proc = subprocess.Popen(('sleep', '113'))
-        #import pdb; pdb.set_trace()
-        child_proc.send_signal(signal.SIGINT)
-        ret_code = child_proc.poll()
-        #print(ret_code)
-        #import pdb; pdb.set_trace()
-        self.assertFalse(ret_code is None) # Interruption failed
 
 class ObjectDispatchTestCase(unittest.TestCase):
     def testObjectDispatchLang(self):
@@ -332,6 +336,7 @@ class SerializeTestCase(unittest.TestCase):
                      
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(EmbeddedRTestCase)
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(CallbacksTestCase))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ObjectDispatchTestCase))
     return suite
 
