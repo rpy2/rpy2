@@ -4055,6 +4055,7 @@ static PyNumberMethods NAInteger_NumberMethods = {
 #endif
 };
 
+
 static PyObject*
 NAInteger_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
@@ -4064,7 +4065,7 @@ static PyTypeObject NAInteger_Type = {
          * to be portable to Windows without using C++. */
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
-        "rpy2.rinterface.NAInteger_Type",       /*tp_name*/
+        "rpy2.rinterface.NAIntegerType",       /*tp_name*/
         sizeof(PyObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
@@ -4091,7 +4092,7 @@ static PyTypeObject NAInteger_Type = {
         0,                      /*tp_weaklistoffset*/
         0,                      /*tp_iter*/
         0,                      /*tp_iternext*/
-        0, //NAInteger_methods,           /*tp_methods*/
+        0,                      /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
         &PyInt_Type,             /*tp_base*/
