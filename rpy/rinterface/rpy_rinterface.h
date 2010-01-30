@@ -83,9 +83,9 @@ typedef struct {
     INTEGER_POINTER(sexp)[0] = NA_INTEGER;                              \
   } else if ((py_obj) == NALogical_New(0)) {                            \
     sexp = allocVector(LGLSXP, 1);                                      \
-    INTEGER_POINTER(sexp)[0] = NA_LOGICAL;                              \
     PROTECT(sexp);                                                      \
     protect_count++;                                                    \
+    LOGICAL_POINTER(sexp)[0] = NA_LOGICAL;                              \
  } else if (PyBool_Check(py_obj)) {                                     \
     sexp = allocVector(LGLSXP, 1);                                      \
     LOGICAL_POINTER(sexp)[0] = py_obj == Py_True ? TRUE : FALSE;        \
