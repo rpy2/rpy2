@@ -67,18 +67,18 @@ class NAValuesTestCase(unittest.TestCase):
         na_lgl = ri.NALogicalType()
         self.assertEquals(True, ri.baseenv["is.na"](na_lgl)[0])
 
-    def testRtoNAReal(self):
-        na_real = ri.NARealType()
-        r_na_real = evalr("NA_real_")[0]
-        self.assertTrue(r_na_real is na_real)
+#     def testRtoNAReal(self):
+#         na_real = ri.NARealType()
+#         r_na_real = evalr("NA_real_")[0]
+#         self.assertTrue(r_na_real is na_real)
 
-    def testNARealtoR(self):
-        na_real = ri.NARealType()
-        self.assertEquals(True, ri.baseenv["is.na"](na_real)[0])
+#     def testNARealtoR(self):
+#         na_real = ri.NARealType()
+#         self.assertEquals(True, ri.baseenv["is.na"](na_real)[0])
 
-    def testNAIntegerBinaryfunc(self):
-        na_real = ri.NARealType()
-        self.assertTrue((na_real + 2.0) is na_real)
+#     def testNARealBinaryfunc(self):
+#         na_real = ri.NARealType()
+#         self.assertTrue((na_real + 2.0) is na_real)
 
     def testRtoNACharacter(self):
         na_character = ri.NACharacterType()
@@ -86,9 +86,9 @@ class NAValuesTestCase(unittest.TestCase):
         self.assertTrue(r_na_character is na_character)
         
 
-    def testNACharactertoR(self):
-        na_character = ri.NACharacterType()
-        self.assertEquals(True, ri.baseenv["is.na"](na_character)[0])
+#     def testNACharactertoR(self):
+#         na_character = ri.NACharacterType()
+#         self.assertEquals(True, ri.baseenv["is.na"](na_character)[0])
         
 
 class SexpVectorTestCase(unittest.TestCase):
