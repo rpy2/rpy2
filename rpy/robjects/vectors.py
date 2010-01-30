@@ -473,14 +473,14 @@ class DataFrame(Vector):
     def cbind(self, *args, **kwargs):
         """ bind objects as supplementary columns """
         new_args   = [self, ] + [conversion.ri2py(x) for x in args]
-        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs])
+        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs.iteritems()])
         res = self._cbind(*new_args, **new_kwargs)
         return conversion.ri2py(res)
 
     def rbind(self, *args, **kwargs):
         """ bind objects as supplementary rows """
         new_args   = [conversion.ri2py(x) for x in args]
-        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs])
+        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs.iteritems()])
         res = self._rbind(self, *new_args, **new_kwargs)
         return conversion.ri2py(res)
 
