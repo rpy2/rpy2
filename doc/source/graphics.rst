@@ -369,6 +369,16 @@ can be added to the axis of a regular scatterplot:
    :scale: 50
 
 
+Polygons can be used for maps, as shown is a relatively artificial
+example below:
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2mappolygon-begin
+   :end-before: #-- ggplot2mappolygon-end
+   
+.. image:: _static/graphics_ggplot2map_polygon.png
+   :scale: 50
+
 
 Facets
 ^^^^^^

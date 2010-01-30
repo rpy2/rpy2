@@ -8,6 +8,7 @@ from rpy2.robjects.packages import importr
 rprint = robjects.globalenv.get("print")
 stats = importr('stats')
 grdevices = importr('grDevices')
+base = importr('base')
 #-- setup-end
 
 #-- setuplattice-begin
@@ -452,6 +453,26 @@ grdevices.dev_off()
 # grdevices.dev_off()
 
 
+grdevices.png('../../_static/graphics_ggplot2map_polygon.png',
+              width = 512, height = 512)
+#-- ggplot2mappolygon-begin
+map = importr('maps')
+fr = ggplot2.map_data('france')
+
+# add a column indicating which region names have an "o".
+fr = fr.cbind(fr, has_o = base.grepl('o', fr.rx2("region"),
+                                     ignore_case = True))
+p = ggplot2.ggplot(fr) + \
+    ggplot2.geom_polygon(ggplot2.aes(x = 'long', y = 'lat',
+                                     group = 'group', fill = 'has_o'),
+                         col="black")
+p.plot()
+#-- ggplot2mappolygon-end
+grdevices.dev_off()
+
+
+
+
 grdevices.png('../../_static/graphics_grid.png',
               width = 512, height = 512)
 #-- grid-begin
@@ -504,6 +525,8 @@ p.plot(vp = vp)
 
 #-- gridwithggplot2-end
 grdevices.dev_off()
+
+
 
 
 #---

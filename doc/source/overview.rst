@@ -196,7 +196,43 @@ Other options to build the package are:
 Test an installation
 --------------------
 
-At any time, an installation can be tested as follows:
+An installation can be tested for functionalities in the different layers consitituting
+the packages.
+
+To test the :mod:`rpy2.robjects` high-level interface:
+
+.. code-block:: python
+
+  import rpy2.robjects.tests
+  import unittest
+
+  # the verbosity level can be increased if needed
+  tr = unittest.TextTestRunner(verbosity = 1)
+  suite = rpy2.robjects.tests.suite()
+  tr.run(suite)
+
+If interested in the lower-level interface, the tests can be run with:
+
+.. code-block:: python
+
+  import rpy2.rinterface.tests
+  import unittest
+
+  # the verbosity level can be increased if needed
+  tr = unittest.TextTestRunner(verbosity = 1)
+  suite = rpy2.robjects.tests.suite()
+  tr.run(suite)
+
+.. note::
+
+  The low-level test suite can be trying instable features, not used in the :mod:`rpy2.robjects`
+  interface. Negative test results, or eventual crashes, should be considered with care before
+  surrendering to panic.
+
+  Also, win32 versions are still lacking some of the functionalities in the
+  UNIX-alike versions, most notably the callback function for console
+  input and output.
+
 
 .. code-block:: python
 
@@ -208,24 +244,14 @@ At any time, an installation can be tested as follows:
   suite = rpy2.tests.suite()
   tr.run(suite)
 
-.. note::
-
-   At the time of writing, few unit tests will fail with
-   the release version. Their failure is forced, as running
-   the tests will either:
-
-   * leave R in a close-to-unusable state because terminating
-     then starting again an embbeded R is apparently not possible.
-
-   * cause a segfault (the case with numpy arrays of unicode
-     characters)
-
-
 .. warning::
 
-   Win32 versions are still lacking some of the functionalities in the
-   UNIX-alike versions, most notably the callback function for console
-   input and output.
+  For reasons that remain to be elucidated, running the test suites will leave the Python
+  iterpreter in a fragile state, soon crashing afer the tests have been run. T
+
+  It is therefore recommended to terminate the Python process after the tests and start
+  working with a fresh new session.
+
 
 Contents
 ========
