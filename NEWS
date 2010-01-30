@@ -62,6 +62,10 @@ New Features
 - :meth:`DataFrame.iter_row` and :meth:`DataFrame.iter_column`, iterating
   through rows and columns respectively.
 
+- :meth:`DataFrame.cbind` and :meth:`DataFrame.rbind` for binding columns or
+  rows to a DataFrame.
+
+
 :mod:`rpy2.rinterface`:
 
 - New functions for specifying callback functions for R's front-ends:

@@ -406,8 +406,10 @@ class DataFrame(Vector):
     """ R 'data.frame'.
     """
     _dataframe_name = rinterface.StrSexpVector(('data.frame',))
-    _read_csv = utils_ri['read.csv']
+    _read_csv  = utils_ri['read.csv']
     _write_csv = utils_ri['write.csv']
+    _cbind     = rinterface.baseenv['cbind.data.frame']
+    _rbind     = rinterface.baseenv['rbind.data.frame']
     
     def __init__(self, tlist):
         """ Create a new data frame.
@@ -466,7 +468,24 @@ class DataFrame(Vector):
         self.__sexp__ = res.__sexp__
         
     colnames = property(_get_colnames, _set_colnames, None)
-        
+
+
+    def cbind(self, *args, **kwargs):
+        """ bind objects as supplementary columns """
+        new_args   = [self, ] + [conversion.ri2py(x) for x in args]
+        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs])
+        res = self._cbind(*new_args, **new_kwargs)
+        return conversion.ri2py(res)
+
+    def rbind(self, *args, **kwargs):
+        """ bind objects as supplementary rows """
+        new_args   = [conversion.ri2py(x) for x in args]
+        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs])
+        res = self._rbind(self, *new_args, **new_kwargs)
+        return conversion.ri2py(res)
+
+
+    
     @staticmethod
     def from_csvfile(path, header = True, sep = ",",
                      quote = "\"", dec = ".", 

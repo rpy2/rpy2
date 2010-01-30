@@ -101,6 +101,12 @@ class DataFrameTestCase(unittest.TestCase):
         self.assertEquals('d', dataf.rownames[0])
         self.assertEquals('e', dataf.rownames[1])
 
+    def testCbind(self):
+        dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
+        dataf = dataf.cbind(robjects.r('data.frame(a=1:2, b=I(c("a", "b")))'))
+        self.assertEquals(4, dataf.ncol)
+        self.assertEquals(2, len([x for x in dataf.colnames if x == 'a']))
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DataFrameTestCase)
     return suite
