@@ -20,15 +20,16 @@ def suite():
     suite_EmbeddedR = test_EmbeddedR.suite()
     suite_Device = test_Device.suite()
     #suite_EmbeddedR_multithreaded = test_EmbeddedR_multithreaded.suite()
-    alltests = unittest.TestSuite([suite_Sexp
-                                   ,suite_SexpVector 
-                                   ,suite_SexpEnvironment 
-                                   ,suite_SexpClosure
-                                   ,suite_SexpVectorNumeric
-                                   ,suite_EmbeddedR
-                                   #,suite_Device
-                                   #,suite_EmbeddedR_multithreaded
-                                  ])
+    alltests = unittest.TestSuite([
+        suite_EmbeddedR
+        ,suite_Sexp
+        ,suite_SexpVector 
+        ,suite_SexpEnvironment 
+        ,suite_SexpClosure
+        ,suite_SexpVectorNumeric
+        #,suite_Device
+        #,suite_EmbeddedR_multithreaded
+        ])
     return alltests
 
 def main():
