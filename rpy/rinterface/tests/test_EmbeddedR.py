@@ -271,15 +271,30 @@ class CallbacksTestCase(unittest.TestCase):
 
     def testShowFilesWithError(self):
         def f(fileheaders, wtitle, fdel, pager):
-            # error here
-            1 + 'a'
+            raise Exception("Doesn't work")
 
         rinterface.set_showfiles(f)
         file_path = rinterface.baseenv["file.path"]
         r_home = rinterface.baseenv["R.home"]
         filename = file_path(r_home(rinterface.StrSexpVector(("doc", ))), 
                              rinterface.StrSexpVector(("COPYRIGHTS", )))
-        self.assertRaises(TypeError, rinterface.baseenv["file.show"], filename)
+
+        tmp_file = tempfile.NamedTemporaryFile()
+        stderr = sys.stderr
+        sys.stderr = tmp_file
+        try:
+            res = rinterface.baseenv["file.show"](filename)
+        except rinterface.RRuntimeError, rre:
+            pass
+        except Exception, e:
+            sys.stderr = stderr
+            raise e
+        sys.stderr = stderr
+        tmp_file.flush()
+        tmp_file.seek(0)
+        errorstring = ''.join(tmp_file.readlines())
+        self.assertTrue(errorstring.startswith('Traceback'))
+        tmp_file.close()
 
     def testSetCleanUp(self):
         orig_cleanup = rinterface.get_cleanup()
