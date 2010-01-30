@@ -4129,7 +4129,7 @@ static PyObject*
 NALogical_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
   RPY_NA_TP_NEW("NALogicalType", PyInt_Type, PyInt_FromLong, 
-                (int)NA_LOGICAL)
+                (long)NA_LOGICAL)
 }
 
 static PyObject*
