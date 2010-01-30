@@ -624,7 +624,10 @@ theme_update = ggplot2.theme_update
 
 gplot = ggplot2.qplot
 
+map_data = ggplot2.map_data
+
 opts = ggplot2_env['opts']
+
 
 original_conversion = conversion.ri2py
 def ggplot2_conversion(robj):
