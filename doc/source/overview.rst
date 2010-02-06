@@ -8,7 +8,7 @@ Overview
 Background
 ==========
 
-`Python`_ is a popular 
+`Python`_ is a popular
 all-purpose scripting language, while `R`_ (an open source implementation
 of the S/Splus language)
 is a scripting language mostly popular for data analysis, statistics, and
@@ -20,8 +20,8 @@ at least familiar with one of the two.
 
 Having an interface between both languages, and benefit from the respective
 libraries of one language while working in the other language, appeared
-desirable and an early option to achieve it was the RSPython project, 
-itself part of the `Omegahat project`_. 
+desirable and an early option to achieve it was the RSPython project,
+itself part of the `Omegahat project`_.
 
 A bit later, the RPy project appeared and focused on providing simple and
 robust access to R from within Python, with the initial Unix-only releases
@@ -43,7 +43,7 @@ Installation
 Upgrading from an older release of rpy2
 ---------------------------------------
 
-In order to upgrade one will have to first remove all 
+In order to upgrade one will have to first remove all
 installed rpy2 packages in the *PYTHONPATH*, then and only then install
 the recent version of rpy2 wished.
 
@@ -68,9 +68,9 @@ Currently the development is mostly done on Linux and a bit MacOS X with the
 following version for the softwares:
 
 ======== ==========
-Software Versions 
+Software Versions
 ======== ==========
- Python   2.6 
+ Python   2.6
  R        2.9; 2.10
 ======== ==========
 
@@ -82,7 +82,7 @@ on OS X Leopard and yet produce fully functional binaries.
 
 .. note::
 
-   On OS X, the *XCode* tools will be required in order to compile rpy2. 
+   On OS X, the *XCode* tools will be required in order to compile rpy2.
 
 
 Download
@@ -100,7 +100,7 @@ The following options are, or could be, available for download:
 
   * Pre-compiled binary packages for
 
-    * Microsoft's Windows (releases are on Sourceforge, irregular snapshots 
+    * Microsoft's Windows (releases are on Sourceforge, irregular snapshots
       for the dev version on bitbucket)
 
     * Apple's MacOS X (although Fink and Macports are available, there does not
@@ -135,7 +135,7 @@ Microsoft's Windows precompiled binaries
 If available, the executable can be run; this will install the package
 in the default Python installation.
 
-At the time of writing, Microsoft Windows binaries are contributed 
+At the time of writing, Microsoft Windows binaries are contributed
 by Laurent Oget (from Predictix) since version 2.0.0b1.
 
 .. index::
@@ -149,7 +149,7 @@ Install from source
 easy_install
 ^^^^^^^^^^^^
 
-The source package is on the PYthon Package Index (PYPI), and the 
+The source package is on the PYthon Package Index (PYPI), and the
 *easy_install* script can be used whenever available.
 The shell command will then just be:
 
@@ -196,7 +196,7 @@ Other options to build the package are:
 Test an installation
 --------------------
 
-An installation can be tested for functionalities in the different layers consitituting
+An installation can be tested for functionalities in the different layers constituting
 the packages.
 
 To test the :mod:`rpy2.robjects` high-level interface:
@@ -220,12 +220,12 @@ If interested in the lower-level interface, the tests can be run with:
 
   # the verbosity level can be increased if needed
   tr = unittest.TextTestRunner(verbosity = 1)
-  suite = rpy2.robjects.tests.suite()
+  suite = rpy2.rinterface.tests.suite()
   tr.run(suite)
 
 .. note::
 
-  The low-level test suite can be trying instable features, not used in the :mod:`rpy2.robjects`
+  The low-level test suite can be trying unstable features, not used in the :mod:`rpy2.robjects`
   interface. Negative test results, or eventual crashes, should be considered with care before
   surrendering to panic.
 
@@ -247,7 +247,7 @@ If interested in the lower-level interface, the tests can be run with:
 .. warning::
 
   For reasons that remain to be elucidated, running the test suites will leave the Python
-  iterpreter in a fragile state, soon crashing afer the tests have been run. T
+  interpreter in a fragile state, soon crashing after the tests have been run.
 
   It is therefore recommended to terminate the Python process after the tests and start
   working with a fresh new session.
@@ -290,7 +290,7 @@ Design notes
 ============
 
 
-When designing ryp2, attention was given to make:
+When designing rpy2, attention was given to make:
 
 - the use of the module simple from both a Python or R user's perspective
 
@@ -307,8 +307,8 @@ The choice of inheritance was made to facilitate the implementation
 of mostly inter-exchangeable classes between :mod:`rpy2.rinterface`
 and :mod:`rpy2.robjects`. For example, an :class:`rpy2.rinterface.SexpClosure`
 can be given any :class:`rpy2.robjects.RObject` as a parameter while
-any :class:`rpy2.robjects.Function` can be given any 
-:class:`rpy2.rinterface.Sexp`. Because of R's functional basis, 
+any :class:`rpy2.robjects.Function` can be given any
+:class:`rpy2.rinterface.Sexp`. Because of R's functional basis,
 a container-like extension is also present.
 
 The module :mod:`rpy2.rpy_classic` is using delegation, letting us
@@ -321,8 +321,8 @@ Acknowledgements
 
 Acknowledgements go to (alphabetical order):
 
- 
-Alexander Belopolsky. 
+
+Alexander Belopolsky.
     His code contribution of an alternative RPy is acknowledged.
     I have found great inspiration in reading that code.
 
@@ -335,12 +335,12 @@ Contributors
 JRI
     The Java-R Interface, and its authors, as at several occasions
     its code was the most practical source of documentation
-    regarding how to embed R. 
+    regarding how to embed R.
 
 Nathaniel Smith
     Great patches, challenging and pertinent comments.
 
 Walter Moreira, and Gregory Warnes
-    For the original RPy and its maintainance through the years.
+    For the original RPy and its maintenance through the years.
 
 
