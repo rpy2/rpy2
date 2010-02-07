@@ -28,13 +28,51 @@ The camelCase naming disappeared from variables and methods, as it seemed
 to be mostly absent from such obejcts in the standard library
 (although nothing specific appears about that in :pep:`8`).
 
-Practically, this means that `globalEnv` became `globalenv`, `baseEnv` became `baseenv`, etc...
+Practically, this means that the following name changes occurred:
+
++----------------------+-------------+
+| old name             | new name    |
++======================+=============+
+| :mod:`rpy2.robjects`               |
++----------------------+-------------+
+| `globalEnv`          | `globalenv` |
++----------------------+-------------+
+| `baseNameSpaceEnv`   | `baseenv`   |
++----------------------+-------------+
+| :mod:`rpy2.rinterface`             |
++----------------------+-------------+
+| `globalEnv`          | `globalenv` |
++----------------------+-------------+
+| `baseEnv`            | `baseenv`   |
++----------------------+-------------+
+
 
 R-prefixed class names
 ----------------------
 
 Class names prefixed with the letter `R` were cleaned from that prefix.
 For example, `RVector` became `Vector`, `RDataFrame` became `DataFrame`, etc...
+
++---------------+--------------+
+| old name      | new name     |
++===============+==============+
+| :mod:`rpy2.robjects`         |
++---------------+--------------+
+| `RVector`     | `Vector`     |
++---------------+--------------+
+| `RArray`      | `Array`      |
++---------------+--------------+
+| `RMatrix`     | `Matrix`     |
++---------------+--------------+
+| `RDataFrame`  | `DataFrame`  |
++---------------+--------------+
+| `REnvironment`| `Environment`|
++---------------+--------------+
+| `RFunction`   | `Function`   |
++---------------+--------------+
+| `RFormula`    | `Formula`    |
++---------------+--------------+
+
 
 Namespace for R packages
 ^^^^^^^^^^^^^^^^^^^^^^^^

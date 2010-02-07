@@ -70,7 +70,7 @@ Documentation for rpy2
 
 
    The list of changes across versions can be helpful when
-   upgrading to a newer version for rpy2.
+   upgrading to a newer version of rpy2.
 
    .. toctree::
       :maxdepth: 2
