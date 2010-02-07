@@ -51,27 +51,26 @@ Whenever possible, this steps performs a safe
 conversion of '.' in R variable names into '_' for the Python variable
 name.
 
+The documentation in Section :ref:`robjects-packages` gives more details.
+
 Parameter names in function call
 ---------------------------------
 
-By default, R fucntion exposed will have a safe translation of their parameter names
-attempted ('.' will become '_')
+By default, R functions exposed will have a safe translation of their named parameters
+attempted ('.' will become '_'). Section :ref:`robjects-functions` should be checked for
+details.
 
 
 Missing values
 ---------------
 
 R has a built-in concept of *missing values*, and of types for missing values.
-This now better integrated into rpy2
-
-:ref:`missing_values`
+This now better integrated into rpy2 (see Section :ref:`missing_values`)
 
 Graphics
 --------
 
 The combined use of namespaces for R packages (see above),
 and of custom representation of few specific R libraries is making
-the generation of graphics (even) easier. 
-
-:ref:`graphics`
+the generation of graphics (even) easier (see Section :ref:`graphics`).
 

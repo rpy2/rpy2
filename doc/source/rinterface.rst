@@ -291,8 +291,8 @@ Classes
 =======
 
 
-Sexp
-----
+:class:`Sexp`
+-------------
 
 The class :class:`Sexp` is the base class for all R objects.
 
