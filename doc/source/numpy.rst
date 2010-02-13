@@ -17,16 +17,28 @@ From `rpy2` to `numpy`:
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 Vectors can be converted to :mod:`numpy` arrays using
-:meth:`array` or :meth:`asarray`::
+:meth:`array` or :meth:`asarray`:
 
-  import numpy
+.. code-block:: python
 
-  ltr = robjects.r.letters
-  ltr_np = numpy.array(ltr)
+   import numpy
 
-This behavior is inherited from the low-level interface,
-and is means that the objects presents an interface recognized by
-`numpy`, and that interface used to know the structure of the object.
+   ltr = robjects.r.letters
+   ltr_np = numpy.array(ltr)
+
+This behavior is inherited from the low-level interface;
+vector-like objects inheriting from :class:`rpy2.rinterface.SexpVector`
+present an interface recognized by `numpy`.
+
+
+.. code-block:: python
+
+   from rpy2.robjects.packages import importr
+
+   datasets = importr('datasets')
+   ostatus = datasets.occupationalStatus
+   ostatus_np = numpy.array(ostatus)
+
 
 
 

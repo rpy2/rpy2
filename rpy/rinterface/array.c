@@ -9,11 +9,14 @@
 #define ARRAY_INTERFACE_VERSION 2
 
 /* Array Interface flags */
-#define CONTIGUOUS    0x001
-#define FORTRAN       0x002
-#define ALIGNED       0x100
-#define NOTSWAPPED    0x200
-#define WRITEABLE     0x400
+#define NPY_CONTIGUOUS    0x0001
+#define NPY_FORTRAN       0x0002
+#define NPY_ENSURECOPY    0x0020
+#define NPY_ALIGNED       0x0100
+#define NPY_NOTSWAPPED    0x0200
+#define NPY_WRITEABLE     0x0400
+#define NPY_BEHAVED       (NPY_ALIGNED | NPY_WRITEABLE)
+#define NPY_FARRAY        (NPY_FORTRAN | NPY_BEHAVED)
 
 typedef struct {
   int version;
@@ -29,6 +32,9 @@ typedef struct {
 static char
 sexp_typekind(SEXP sexp)
 {
+  /* Given an SEXP object, this returns the corresponding
+   * Type in the numpy world.
+   */
   switch (TYPEOF(sexp)) {
   case REALSXP: return 'f';
   case INTSXP: return 'i';
@@ -76,15 +82,21 @@ sexp_itemsize(SEXP sexp)
 static int
 sexp_rank(SEXP sexp)
 {
+  /* Return the number of dimensions for the array 
+   * (e.g., a vector will return 1, a matrix 2, ...)
+   */
   SEXP dim = getAttrib(sexp, R_DimSymbol);
   if (dim == R_NilValue)
     return 1;
-  return LENGTH(dim);
+  return GET_LENGTH(dim);
 }
 
 static void
 sexp_shape(SEXP sexp, Py_intptr_t* shape, int nd)
 {
+  /* Set the numpy 'shape', that is a vector of Py_intptr_t
+   * containing the size of each dimension (see sexp_rank).
+   */
   int i;
   SEXP dim = getAttrib(sexp, R_DimSymbol);
   if (dim == R_NilValue)
@@ -107,33 +119,43 @@ array_struct_free(void *ptr, void *arr)
 PyObject* 
 array_struct_get(PySexpObject *self)
 {
+  /* Get an array structure as understood by the numpy package from
+     'self' (a SexpVector).
+   */
   SEXP sexp = RPY_SEXP(self);
   if (!sexp) {
     PyErr_SetString(PyExc_AttributeError, "Null sexp");
     return NULL;
   }
-  PyArrayInterface *inter;
+
   char typekind =  sexp_typekind(sexp);
   if (!typekind) {
     PyErr_SetString(PyExc_AttributeError, "Unsupported SEXP type");
     return NULL;
   }
+
+  /* allocate memory for the array description (this is what will be returned) */
+  PyArrayInterface *inter;
   inter = (PyArrayInterface *)PyMem_Malloc(sizeof(PyArrayInterface));
   if (!inter) {
     return PyErr_NoMemory();
   }
-  int nd = sexp_rank(sexp);
-  int i;
+
   inter->version = ARRAY_INTERFACE_VERSION;
+
+  int nd = sexp_rank(sexp);
   inter->nd = nd;
+
   inter->typekind = typekind;
   inter->itemsize = sexp_itemsize(sexp);
-  inter->flags = FORTRAN|ALIGNED|NOTSWAPPED|WRITEABLE;
+  inter->flags = NPY_FARRAY;
   inter->shape = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t)*nd*2);
   sexp_shape(sexp, inter->shape, nd);
   inter->strides = inter->shape + nd;
   Py_intptr_t stride = inter->itemsize;
   inter->strides[0] = stride;
+
+  int i;
   for (i = 1; i < nd; ++i) {
     stride *= inter->shape[i-1];
     inter->strides[i] = stride;
