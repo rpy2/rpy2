@@ -115,14 +115,7 @@ VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
 static Py_ssize_t
 VectorSexp_getsegcount(PySexpObject *self, Py_ssize_t *lenp)
 {
-  int ok;
-  int itemsize;
-
-  if (! ok) {
-    return -1;
-  }
   SEXP sexp = RPY_SEXP(self);
-  Py_ssize_t len;
 
   switch (TYPEOF(sexp)) {
   case REALSXP:
@@ -186,7 +179,7 @@ VectorSexp_getreadbuf(PySexpObject *self, Py_ssize_t segment, void **ptrptr)
     *ptrptr = NULL;
     return -1;
   }
-
+  return 0;
 }
 
 static Py_ssize_t
