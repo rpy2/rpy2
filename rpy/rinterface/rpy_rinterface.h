@@ -1,6 +1,8 @@
 
-#ifndef RPY_RI_H
-#define RPY_RI_H
+#ifndef _RPY_RI_H_
+#define _RPY_RI_H_
+
+#ifdef _RPY_RI_H_
 
 #include <R.h>
 #include <Rinternals.h>
@@ -157,3 +159,5 @@ typedef struct {
 
 
 #endif /* !RPY_RI_H */
+
+#endif
