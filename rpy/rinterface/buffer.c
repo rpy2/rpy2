@@ -1,7 +1,7 @@
 
 #include <Python.h>
 #include <Rdefines.h>
-#include <Rinternals.h>
+
 #include "rpy_rinterface.h"
 
 #include "buffer.h"
@@ -34,7 +34,8 @@ sexp_shape(SEXP sexp, Py_intptr_t *shape, int nd)
 }
 
 static void
-sexp_strides(SEXP sexp, Py_intptr_t *strides, Py_ssize_t itemsize, Py_intptr_t *shape, int nd)
+sexp_strides(SEXP sexp, Py_intptr_t *strides, Py_ssize_t itemsize, 
+	     Py_intptr_t *shape, int nd)
 {
   /* Set the buffer 'strides', that is a vector or Py_intptr_t
    * containing the offset (in bytes) when progressing along
@@ -47,23 +48,23 @@ sexp_strides(SEXP sexp, Py_intptr_t *strides, Py_ssize_t itemsize, Py_intptr_t *
   }
 }
 
-int
-SexpVector_getbuffer(PyObject *obj, Py_buffer *view, int flags)
+static int
+VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
 {
-
+  
   if (view == NULL) {
     return -1;
   }
-
-  if (!(flags & PyBuf_F_CONTIGUOUS)) {
+  
+  if (!(flags & PyBUF_F_CONTIGUOUS)) {
     PyErr_SetString(PyExc_ValueError, "Only FORTRAN-style contiguous arrays allowed.");
     return -1;
   }
-
+  
   PySexpObject *self = (PySexpObject *)obj;
   SEXP sexp = RPY_SEXP(self);
-  int typeof = TYPEOF(sexp);
-  switch (typeof) {
+
+  switch (TYPEOF(sexp)) {
   case REALSXP:
     view->buf = NUMERIC_POINTER(sexp);
     view->len = GET_LENGTH(sexp) * sizeof(double);
@@ -116,12 +117,36 @@ static Py_ssize_t
 VectorSexp_getsegcount(PySexpObject *self, Py_ssize_t *lenp)
 {
   int ok;
-  int itemize;
-  RPY_SEXP_NBYTES(self, itemsize, ok);
+  int itemsize;
+
   if (! ok) {
     return -1;
   }
-  *lenp = itemsize * GET_LENGTH(RPY_SEXP(self));
+  SEXP sexp = RPY_SEXP(self);
+  Py_ssize_t len;
+
+  switch (TYPEOF(sexp)) {
+  case REALSXP:
+    *lenp = GET_LENGTH(sexp) * sizeof(double);
+    break;
+  case INTSXP:
+    *lenp = GET_LENGTH(sexp) * sizeof(int);
+    break;
+  case LGLSXP:
+    *lenp = GET_LENGTH(sexp) * sizeof(int);
+    break;
+  case CPLXSXP:
+    *lenp = GET_LENGTH(sexp) * sizeof(Rcomplex);
+    break;
+  case RAWSXP:
+    *lenp = GET_LENGTH(sexp) * 1;
+    break;
+  default:
+    PyErr_Format(PyExc_ValueError, "Buffer for this type not yet supported.");
+    *lenp = 0;
+    return -1;
+  }
+
   return 0;
 }
 
@@ -136,7 +161,7 @@ VectorSexp_getreadbuf(PySexpObject *self, Py_ssize_t segment, void **ptrptr)
   SEXP sexp = RPY_SEXP(self);
   Py_ssize_t len;
 
-  switch (TYPEOF(sexp) {
+  switch (TYPEOF(sexp)) {
   case REALSXP:
     *ptrptr = NUMERIC_POINTER(sexp);
     len = GET_LENGTH(sexp) * sizeof(double);
@@ -173,20 +198,20 @@ VectorSexp_getwritebuf(PySexpObject *self, Py_ssize_t segment, void **ptrptr)
 }
 
 static Py_ssize_t
-VectorSexp_getcharbuf(PySexpObject *self, Py_ssize_t segment, constchar **ptrptr)
+VectorSexp_getcharbuf(PySexpObject *self, Py_ssize_t segment, const char **ptrptr)
 {
   /*FIXME: introduce a "writeable" flag for SexpVector objects ? */
   return VectorSexp_getreadbuf(self, segment, (void **)ptrptr);
 }
 
 static PyBufferProcs VectorSexp_as_buffer = {
-        (readbufferproc)VextorSexp_getreadbuf,
+        (readbufferproc)VectorSexp_getreadbuf,
         (writebufferproc)VectorSexp_getwritebuf,
         (segcountproc)VectorSexp_getsegcount,
 	(charbufferproc)VectorSexp_getcharbuf,
 #if PY_VERSION_HEX >= 0x02060000
 	(getbufferproc)VectorSexp_getbuffer,
-	(releasebuffer)0,
+	(releasebufferproc)0,
 #endif
         NULL,
 };
