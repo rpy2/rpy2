@@ -205,5 +205,4 @@ static PyBufferProcs VectorSexp_as_buffer = {
 	(getbufferproc)VectorSexp_getbuffer,
 	(releasebufferproc)0,
 #endif
-        NULL,
 };
