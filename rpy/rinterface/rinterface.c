@@ -84,6 +84,7 @@
 #include "rpy_rinterface.h"
 #include "array.h"
 #include "r_utils.h"
+#include "buffer.h"
 
 /* Helper variables to quickly resolve SEXP types.
  * The first variable gives the highest possible
@@ -2870,7 +2871,7 @@ static PyTypeObject VectorSexp_Type = {
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
-        0,                      /*tp_as_buffer*/
+        &VectorSexp_as_buffer,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
         VectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/

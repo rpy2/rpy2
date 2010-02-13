@@ -46,7 +46,7 @@ typedef struct {
 #define RPY_INCREF(obj) (((obj)->sObj)->count++)
 #define RPY_DECREF(obj) (((obj)->sObj)->count--)
 
-
+  
 #define RPY_RINT_FROM_LONG(value)               \
   ((value<=(long)INT_MAX && value>=(long)INT_MIN)?(int)value:NA_INTEGER)
 
