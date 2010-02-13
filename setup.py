@@ -217,13 +217,23 @@ def getRinterface_ext():
     include_dirs = []
     
     rinterface_ext = Extension(
-            pack_name + '.rinterface.rinterface',
-            [os.path.join('rpy', 'rinterface', 'array.c'), 
-             os.path.join('rpy', 'rinterface', 'r_utils.c'),
-             os.path.join('rpy', 'rinterface', 'rinterface.c')
-             ],
-            include_dirs = include_dirs + 
-                            [os.path.join('rpy', 'rinterface'),],
+            name = pack_name + '.rinterface.rinterface',
+            sources = [ \
+            #os.path.join('rpy', 'rinterface', 'embeddedr.c'), 
+            #os.path.join('rpy', 'rinterface', 'r_utils.c'),
+            #os.path.join('rpy', 'rinterface', 'buffer.c'),
+            #os.path.join('rpy', 'rinterface', 'sequence.c'),
+            #os.path.join('rpy', 'rinterface', 'sexp.c'),
+            os.path.join('rpy', 'rinterface', 'rinterface.c')
+                       ],
+            depends = [os.path.join('rpy', 'rinterface', 'embeddedr.h'), 
+                       os.path.join('rpy', 'rinterface', 'r_utils.h'),
+                       os.path.join('rpy', 'rinterface', 'buffer.h'),
+                       os.path.join('rpy', 'rinterface', 'sequence.h'),
+                       os.path.join('rpy', 'rinterface', 'sexp.h'),
+                       os.path.join('rpy', 'rinterface', 'rpy_rinterface.h')
+                       ],
+            include_dirs = [os.path.join('rpy', 'rinterface'),] + include_dirs,
             libraries = ['R', ],
             library_dirs = r_libs,
             define_macros = define_macros,

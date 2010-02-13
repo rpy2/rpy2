@@ -81,10 +81,30 @@
 #define SIGJMP_BUF jmp_buf
 #endif
 
+#define _RPY_RINTERFACE_MODULE_
+
+staticforward PyObject* EmbeddedR_unserialize(PyObject* self, PyObject* args);
+
 #include "rpy_rinterface.h"
-#include "array.h"
+#include "embeddedr.h"
+#include "na_values.h"
+#include "sexp.h"
 #include "r_utils.h"
 #include "buffer.h"
+#include "sequence.h"
+
+static PySexpObject* newPySexpObject(const SEXP sexp);
+
+#include "embeddedr.c"
+#include "na_values.c"
+#include "sexp.c"
+#include "r_utils.c"
+#include "buffer.c"
+#include "sequence.c"
+
+
+
+static PyObject *embeddedR_isInitialized;
 
 /* Helper variables to quickly resolve SEXP types.
  * The first variable gives the highest possible
@@ -119,20 +139,6 @@ interrupt_R(int signum)
   error("Interrupted");
 }
 
-/* Helper variable to store R's status
- */
-const unsigned int const RPY_R_INITIALIZED = 0x01;
-const unsigned int const RPY_R_BUSY = 0x02;
-
-static unsigned int embeddedR_status = 0;
-static PyObject *embeddedR_isInitialized;
-
-inline void embeddedR_setlock(void) {
-  embeddedR_status = embeddedR_status | RPY_R_BUSY;
-}
-inline void embeddedR_freelock(void) {
-  embeddedR_status = embeddedR_status ^ RPY_R_BUSY;
-}
 
 SIGJMP_BUF env_sigjmp;
 /* Python's signal handler */
@@ -169,8 +175,6 @@ static PySexpObject *emptyEnv;
 static PySexpObject *rpy_R_MissingArg;
 static PySexpObject *rpy_R_NilValue;
 
-static PyObject *rinterface_unserialize;
-
 #ifdef RPY_DEBUG_PRESERVE
 static int preserved_robjects = 0;
 #endif
@@ -191,7 +195,6 @@ static PyTypeObject NACharacter_Type;
 
 
 /* early definition of functions */
-static PySexpObject* newPySexpObject(const SEXP sexp);
 static SEXP newSEXP(PyObject *object, const int rType);
 
 
@@ -885,7 +888,7 @@ Get the options used to initialize R.\
 static PyObject* EmbeddedR_setinitoptions(PyObject *self, PyObject *tuple) 
 {
 
-  if (embeddedR_status & RPY_R_INITIALIZED) {
+  if (rpy_has_status(RPY_R_INITIALIZED)) {
     PyErr_Format(PyExc_RuntimeError, 
                  "Options cannot be set once R has been initialized.");
     return NULL;
@@ -912,12 +915,12 @@ Set the options used to initialize R.\
 
 static PyObject* EmbeddedR_ProcessEvents(PyObject *self)
 {
-  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+  if (! (rpy_has_status(RPY_R_INITIALIZED))) {
     PyErr_Format(PyExc_RuntimeError, 
                  "R should not process events before being initialized.");
     return NULL;
   }
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return NULL;
   }
@@ -955,7 +958,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
 
   static int status;
   
-  if (embeddedR_status & RPY_R_INITIALIZED) {
+  if (rpy_has_status(RPY_R_INITIALIZED)) {
     return PyInt_FromLong(status);
 /*     PyErr_Format(PyExc_RuntimeError, "R can only be initialized once."); */
 /*     return NULL; */
@@ -1109,7 +1112,7 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   /* */
 
   Rf_endEmbeddedR((int)fatal);
-  embeddedR_status = embeddedR_status & (! RPY_R_INITIALIZED);
+  embeddedR_status = rpy_has_status(! RPY_R_INITIALIZED);
 
   RPY_SEXP(globalEnv) = R_EmptyEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
@@ -1180,622 +1183,6 @@ EmbeddedR_exception_from_errmessage(void)
  * Access to R objects through Python objects
  */
 
-staticforward PyTypeObject Sexp_Type;
-
-void SexpObject_clear(SexpObject *sexpobj)
-{
-
-  (*sexpobj).count--;
-
-#ifdef RPY_VERBOSE
-  printf("R:%p -- sexp count is %i...", 
-         sexpobj->sexp, sexpobj->count);
-#endif
-  if (((*sexpobj).count == 0) && (*sexpobj).sexp) {
-#ifdef RPY_VERBOSE
-    printf("freeing SEXP resources...");
-#endif 
-
-    if (sexpobj->sexp != R_NilValue) {
-#ifdef RPY_DEBUG_PRESERVE
-      printf("  PRESERVE -- Sexp_clear: R_ReleaseObject -- %p ", 
-             sexpobj->sexp);
-      preserved_robjects -= 1;
-      printf("-- %i\n", preserved_robjects);
-#endif 
-    R_ReleaseObject(sexpobj->sexp);
-    }
-    PyMem_Free(sexpobj);
-    /* self->ob_type->tp_free((PyObject*)self); */
-#ifdef RPY_VERBOSE
-    printf("done.\n");
-#endif 
-  }  
-}
-
-static void
-Sexp_clear(PySexpObject *self)
-{
-  
-  SexpObject_clear(self->sObj);
-
-}
-
-
-static void
-Sexp_dealloc(PySexpObject *self)
-{
-  Sexp_clear(self);
-  self->ob_type->tp_free((PyObject*)self);
-
-  /* PyObject_Del(self); */
-}
-
-
-static PyObject*
-Sexp_repr(PyObject *self)
-{
-  /* FIXME: make sure this is making any sense */
-  SEXP sexp = RPY_SEXP((PySexpObject *)self);
-  /* if (! sexp) {
-   *  PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-   *  return NULL;
-   *}
-   */
-  return PyString_FromFormat("<%s - Python:\%p / R:\%p>",
-                             self->ob_type->tp_name,
-                             self,
-                             sexp);
-}
-
-
-static PyObject*
-Sexp_typeof_get(PyObject *self)
-{
-  PySexpObject *pso = (PySexpObject*)self;
-  SEXP sexp = RPY_SEXP(pso);
-  if (! sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;;
-  }
-  return PyInt_FromLong((long)TYPEOF(sexp));
-}
-PyDoc_STRVAR(Sexp_typeof_doc,
-             "R internal SEXPREC type.");
-
-
-static PyObject*
-Sexp_do_slot(PyObject *self, PyObject *name)
-{
-  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
-  if (! sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;;
-  }
-  if (! PyString_Check(name)) {
-    PyErr_SetString(PyExc_TypeError, "The name must be a string.");
-    return NULL;
-  }
-  char *name_str = PyString_AS_STRING(name);
-
-  if (! R_has_slot(sexp, install(name_str))) {
-    PyErr_SetString(PyExc_LookupError, "The object has no such attribute.");
-    return NULL;
-  }
-  SEXP res_R = GET_SLOT(sexp, install(name_str));
-
-  PyObject *res = (PyObject *)newPySexpObject(res_R);
-  return res;
-}
-PyDoc_STRVAR(Sexp_do_slot_doc,
-             "Returns the attribute/slot for an R object.\n"
-             " The name of the slot (a string) is the only parameter for\n"
-             "the method.\n"
-             ":param name: string\n"
-             ":rtype: instance of type or subtype :class:`rpy2.rinterface.Sexp`");
-
-static PyObject*
-Sexp_do_slot_assign(PyObject *self, PyObject *args)
-{
-
-  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
-  if (! sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;;
-  }
-
-  char *name_str;
-  PyObject *value;
-  if (! PyArg_ParseTuple(args, "sO", 
-                         &name_str,
-                         &value)) {
-    return NULL;
-  }
-
-  if (! PyObject_IsInstance(value, 
-                          (PyObject*)&Sexp_Type)) {
-      PyErr_Format(PyExc_ValueError, "Value must be an instance of Sexp.");
-      return NULL;
-  }
-
-  SEXP value_sexp = RPY_SEXP((PySexpObject *)value);
-  if (! value_sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;;
-  }
-
-  SET_SLOT(sexp, install(name_str), value_sexp);
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-PyDoc_STRVAR(Sexp_do_slot_assign_doc,
-             "Set the attribute/slot for an R object.\n"
-             "\n"
-             ":param name: string\n"
-             ":param value: instance of :class:`rpy2.rinterface.Sexp`");
-
-static PyObject*
-Sexp_named_get(PyObject *self)
-{
-  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
-  if (! sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;;
-  }
-  unsigned int res = NAMED(sexp);
-  return PyInt_FromLong((long)res);
-}
-PyDoc_STRVAR(Sexp_named_doc,
-"Integer code for the R object reference-pseudo counting.\n\
-This method corresponds to the macro NAMED.\n\
-See the R-extensions manual for further details.");
-
-void SexpObject_CObject_destroy(void *cobj)
-{
-  SexpObject* sexpobj_ptr = (SexpObject *)cobj;
-  SexpObject_clear(sexpobj_ptr);
-}
-
-static PyObject*
-Sexp_sexp_get(PyObject *self, void *closure)
-{
-  PySexpObject* rpyobj = (PySexpObject*)self;
-
-  if (! RPY_SEXP(rpyobj)) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;;
-  }
-  
-  RPY_INCREF(rpyobj);
-  PyObject *res = PyCObject_FromVoidPtr(rpyobj->sObj, 
-                                        SexpObject_CObject_destroy);
-  return res;
-}
-
-static int
-Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure)
-{
-  if (! PyCObject_Check(obj)) {
-    PyErr_SetString(PyExc_TypeError, "The value must be a CObject.");
-    return -1;
-  }
-
-  SexpObject *sexpobj_orig = ((PySexpObject*)self)->sObj;
-  SexpObject *sexpobj = (SexpObject *)(PyCObject_AsVoidPtr(obj));
-  #ifdef RPY_DEBUG_COBJECT
-  printf("Setting %p (count: %i) to %p (count: %i)\n", 
-         sexpobj_orig, (int)sexpobj_orig->count,
-         sexpobj, (int)sexpobj->count);
-  #endif
-
-  if ( (sexpobj_orig->sexp != R_NilValue) &
-       (TYPEOF(sexpobj_orig->sexp) != TYPEOF(sexpobj->sexp))
-      ) {
-    PyErr_Format(PyExc_ValueError, 
-                 "Mismatch in SEXP type (as returned by typeof)");
-    return -1;
-  }
-
-  SEXP sexp = sexpobj->sexp;
-  if (! sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return -1;
-  }
-
-  /*FIXME: increment count seems needed, but is this leak free ? */
-  sexpobj->count += 2;
-  sexpobj_orig->count += 1;
-
-  SexpObject_clear(sexpobj_orig);
-  RPY_SEXP(((PySexpObject*)self)) = sexp;
-
-  return 0;
-}
-PyDoc_STRVAR(Sexp_sexp_doc,
-             "Opaque C pointer to the underlying R object");
-
-static PyObject*
-Sexp_rsame(PyObject *self, PyObject *other)
-{
-  
-  if (! PyObject_IsInstance(other, 
-                            (PyObject*)&Sexp_Type)) {
-    PyErr_Format(PyExc_ValueError, 
-                 "Can only compare Sexp objects.");
-    return NULL;
-  }
-  
-  SEXP sexp_self = RPY_SEXP(((PySexpObject*)self));
-  if (! sexp_self) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;;
-  }
-  
-  SEXP sexp_other = RPY_SEXP(((PySexpObject*)other));
-  if (! sexp_other) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;;
-  }
-  
-  long same = (sexp_self == sexp_other);
-  return PyBool_FromLong(same);
-}
-PyDoc_STRVAR(Sexp_rsame_doc,
-             "Is the given object representing the same underlying R object as the instance.");
-
-static PyObject*
-Sexp_duplicate(PyObject *self, PyObject *kwargs)
-{
-  SEXP sexp_self, sexp_copy;
-  PyObject *res;
-  
-  sexp_self = RPY_SEXP((PySexpObject*)self);
-  if (! sexp_self) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;;
-  }
-  PROTECT(sexp_copy = Rf_duplicate(sexp_self));
-  res = (PyObject *) newPySexpObject(sexp_copy);
-  UNPROTECT(1);
-  return res;
-}
-PyDoc_STRVAR(Sexp_duplicate_doc,
-             "Makes a copy of the underlying Sexp object, and returns it.");
-
-static PyObject*
-Sexp___getstate__(PyObject *self)
-{
-
-  PyObject *res_string;
-
-  SEXP sexp = RPY_SEXP((PySexpObject *)self);
-  if (! sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;
-  }
-
-  SEXP sexp_ser;
-  PROTECT(sexp_ser = rpy_serialize(sexp, R_GlobalEnv));
-  if (TYPEOF(sexp_ser) != RAWSXP) {
-    UNPROTECT(1);
-    PyErr_Format(PyExc_RuntimeError, 
-                 "R's serialize did not return a raw vector.");
-    return NULL;
-  }
-  /* PyByteArray is only available with Python >= 2.6 */
-          /* res = PyByteArray_FromStringAndSize(sexp_ser, len); */
-
-  /*FIXME: is this working on 64bit archs ? */
-  res_string = PyString_FromStringAndSize((void *)RAW_POINTER(sexp_ser), 
-                                          (Py_ssize_t)LENGTH(sexp_ser));
-  UNPROTECT(1);
-  return res_string;
-}
-
-PyDoc_STRVAR(Sexp___getstate___doc,
-             "Returns a serialized object for the underlying R object");
-
-
-static PyObject*
-Sexp___setstate__(PyObject *self, PyObject *state)
-{
-
-  Py_INCREF(Py_None);
-  return Py_None;
-
-}
-
-PyDoc_STRVAR(Sexp___setstate___doc,
-             "set the state of an instance (dummy).");
-
-
-static PyObject*
-EmbeddedR_unserialize(PyObject* self, PyObject* args)
-{
-  PyObject *res;
-
-  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
-    PyErr_Format(PyExc_RuntimeError, 
-                 "R cannot evaluate code before being initialized.");
-    return NULL;
-  }
-  
-
-  char *raw;
-  Py_ssize_t raw_size;
-  int rtype;
-  if (! PyArg_ParseTuple(args, "s#i",
-                         &raw, &raw_size,
-                         &rtype)) {
-    return NULL;
-  }
-
-  if (embeddedR_status & RPY_R_BUSY) {
-    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
-    return NULL;
-  }
-  embeddedR_setlock();
-
-  /* Not the most memory-efficient; an other option would
-  * be to create a dummy RAW and rebind "raw" as its content
-  * (wich seems clearly off the charts).
-  */
-  SEXP raw_sexp, sexp_ser;
-  PROTECT(raw_sexp = NEW_RAW((int)raw_size));
-
-  /*FIXME: use of the memcpy seems to point in the direction of
-  * using the option mentioned above anyway. */
-  Py_ssize_t raw_i;
-  for (raw_i = 0; raw_i < raw_size; raw_i++) {
-    RAW_POINTER(raw_sexp)[raw_i] = raw[raw_i];
-  }
-  PROTECT(sexp_ser = rpy_unserialize(raw_sexp, R_GlobalEnv));
-
-  if (TYPEOF(sexp_ser) != rtype) {
-    UNPROTECT(2);
-    PyErr_Format(PyExc_ValueError, 
-                 "Mismatch between the serialized object"
-                 " and the expected R type"
-                 " (expected %i but got %i)", rtype, TYPEOF(raw_sexp));
-    return NULL;
-  }
-  res = (PyObject*)newPySexpObject(sexp_ser);
-  
-  UNPROTECT(2);
-  embeddedR_freelock();
-  return res;
-}
-
-static PyObject*
-Sexp___reduce__(PyObject* self)
-{
-  PyObject *dict, *result;
-
-  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
-    PyErr_Format(PyExc_RuntimeError, 
-                 "R cannot evaluate code before being initialized.");
-    return NULL;
-  }
-  
-  dict = PyObject_GetAttrString((PyObject *)self,
-                                "__dict__");
-  if (dict == NULL) {
-    PyErr_Clear();
-    dict = Py_None;
-    Py_INCREF(dict);
-  }
-
-  if (embeddedR_status & RPY_R_BUSY) {
-    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
-    return NULL;
-  }
-  embeddedR_setlock();
-
-  result = Py_BuildValue("O(Oi)O",
-                         rinterface_unserialize, /* constructor */
-                         Sexp___getstate__(self),
-                         TYPEOF(RPY_SEXP((PySexpObject *)self)),
-                         dict);
-
-  embeddedR_freelock();
-
-  Py_DECREF(dict);
-  return result;
-
-}
-
-PyDoc_STRVAR(Sexp___reduce___doc,
-             "Prepare an instance for serialization.");
-
-
-
-static PyMethodDef Sexp_methods[] = {
-  {"do_slot", (PyCFunction)Sexp_do_slot, METH_O,
-   Sexp_do_slot_doc},
-  {"do_slot_assign", (PyCFunction)Sexp_do_slot_assign, METH_VARARGS,
-   Sexp_do_slot_assign_doc},
-  {"rsame", (PyCFunction)Sexp_rsame, METH_O,
-   Sexp_rsame_doc},
-  {"__deepcopy__", (PyCFunction)Sexp_duplicate, METH_KEYWORDS,
-   Sexp_duplicate_doc},
-  {"__getstate__", (PyCFunction)Sexp___getstate__, METH_NOARGS,
-   Sexp___getstate___doc},
-  {"__setstate__", (PyCFunction)Sexp___setstate__, METH_O,
-   Sexp___setstate___doc},
-  {"__reduce__", (PyCFunction)Sexp___reduce__, METH_NOARGS,
-   Sexp___reduce___doc},
-  {NULL, NULL}          /* sentinel */
-};
-
-
-static PyGetSetDef Sexp_getsets[] = {
-  {"named", 
-   (getter)Sexp_named_get,
-   (setter)0,
-   Sexp_named_doc},
-  {"typeof", 
-   (getter)Sexp_typeof_get,
-   (setter)0,
-   Sexp_typeof_doc},
-  {"__sexp__",
-   (getter)Sexp_sexp_get,
-   (setter)Sexp_sexp_set,
-   Sexp_sexp_doc},
-  {NULL, NULL, NULL, NULL}          /* sentinel */
-};
-
-
-static PyObject*
-Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-{
-
-  PySexpObject *self = NULL;
-  /* unsigned short int rpy_only = 1; */
-
-  #ifdef RPY_VERBOSE
-  printf("new '%s' object @...\n", type->tp_name);
-  #endif 
-
-  /* self = (PySexpObject *)PyObject_New(PySexpObject, type); */
-  self = (PySexpObject *)type->tp_alloc(type, 0);
-  #ifdef RPY_VERBOSE
-  printf("  Python:%p / R:%p (R_NilValue) ...\n", self, R_NilValue);
-  #endif 
-
-  if (! self)
-    PyErr_NoMemory();
-
-  self->sObj = (SexpObject *)PyMem_Malloc(1 * sizeof(SexpObject));
-  if (! self->sObj) {
-    Py_DECREF(self);
-    PyErr_NoMemory();
-  }
-
-  RPY_COUNT(self) = 1;
-  RPY_SEXP(self) = R_NilValue;
-  /* RPY_RPYONLY(self) = rpy_only; */
-
-  #ifdef RPY_VERBOSE
-  printf("done.\n");
-  #endif 
-
-  return (PyObject *)self;
-
-}
-
-static int
-Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
-{
-#ifdef RPY_VERBOSE
-  printf("Python:%p / R:%p - Sexp initializing...\n", 
-         self, RPY_SEXP((PySexpObject *)self));
-#endif 
-
-  PyObject *sourceObject;
-
-  PyObject *copy = Py_True;
-  int sexptype = -1;
-  SexpObject *tmpSexpObject;
-
-
-  static char *kwlist[] = {"sexp", "sexptype", "copy", NULL};
-  /* FIXME: handle the copy argument */
-
-  /* the "sexptype" is as a quick hack to make calls from
-   the constructor of SexpVector */
-  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|iO!", 
-                                    kwlist,
-                                    &sourceObject,
-                                    &sexptype,
-                                    &PyBool_Type, &copy)) {
-    return -1;
-  }
-
-  if (! PyObject_IsInstance(sourceObject, 
-                            (PyObject*)&Sexp_Type)) {
-    PyErr_Format(PyExc_ValueError, 
-                 "Can only instanciate from Sexp objects.");
-    return -1;
-  }
-
-  if (PyObject_IsTrue(copy)) {
-    tmpSexpObject = ((PySexpObject *)self)->sObj;
-    if (tmpSexpObject != ((PySexpObject *)sourceObject)->sObj) {
-      ((PySexpObject *)self)->sObj = ((PySexpObject *)sourceObject)->sObj;
-      PyMem_Free(tmpSexpObject);
-    }
-    RPY_INCREF((PySexpObject *)self);
-#ifdef RPY_VERBOSE
-    printf("Python: %p / R: %p - sexp count is now %i.\n", 
-           (PySexpObject *)self, RPY_SEXP((PySexpObject *)self), RPY_COUNT((PySexpObject *)self));
-#endif 
-
-  } else {
-    PyErr_Format(PyExc_ValueError, "Cast without copy is not yet implemented.");
-    return -1;
-  }
-
-#ifdef RPY_VERBOSE
-  printf("done.\n");
-#endif 
-
-  /* SET_NAMED(RPY_SEXP((PySexpObject *)self), (unsigned int)2); */
-  return 0;
-}
-
-
-/*
- * Generic Sexp_Type. It represents SEXP objects at large.
- */
-static PyTypeObject Sexp_Type = {
-        /* The ob_type field must be initialized in the module init function
-         * to be portable to Windows without using C++. */
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-        "rpy2.rinterface.Sexp",      /*tp_name*/
-        sizeof(PySexpObject),   /*tp_basicsize*/
-        0,                      /*tp_itemsize*/
-        /* methods */
-        (destructor)Sexp_dealloc, /*tp_dealloc*/
-        0,                      /*tp_print*/
-        0,                      /*tp_getattr*/
-        0,                      /*tp_setattr*/
-        0,                      /*tp_compare*/
-        Sexp_repr,              /*tp_repr*/
-        0,                      /*tp_as_number*/
-        0,                      /*tp_as_sequence*/
-        0,                      /*tp_as_mapping*/
-        0,                      /*tp_hash*/
-        0,                      /*tp_call*/
-        0,                      /*tp_str*/
-        0,                      /*tp_getattro*/
-        0,                      /*tp_setattro*/
-        0,                      /*tp_as_buffer*/
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
-        0,                      /*tp_doc*/
-        0,                      /*tp_traverse*/
-        (inquiry)Sexp_clear,                      /*tp_clear*/
-        0,                      /*tp_richcompare*/
-        0,                      /*tp_weaklistoffset*/
-        0,                      /*tp_iter*/
-        0,                      /*tp_iternext*/
-        Sexp_methods,           /*tp_methods*/
-        0,                      /*tp_members*/
-        Sexp_getsets,            /*tp_getset*/
-        0,                      /*tp_base*/
-        0,                      /*tp_dict*/
-        0,                      /*tp_descr_get*/
-        0,                      /*tp_descr_set*/
-        0,                      /*tp_dictoffset*/
-        (initproc)Sexp_init,    /*tp_init*/
-        0,                      /*tp_alloc*/
-        Sexp_new,               /*tp_new*/
-        0,                      /*tp_free*/
-        0,                      /*tp_is_gc*/
-};
-
-
-
 
 /*
  * Closure-type Sexp.
@@ -1858,13 +1245,13 @@ static PyObject *
 Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 {
 
-  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+  if (! (rpy_has_status(RPY_R_INITIALIZED))) {
     PyErr_Format(PyExc_RuntimeError, 
                  "R must be initialized before any call to R functions is possible.");
     return NULL;
   }
 
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return NULL;
   }
@@ -2040,7 +1427,7 @@ static PyObject *
 Sexp_rcall(PyObject *self, PyObject *args)
 {
   
-  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+  if (! (rpy_has_status(RPY_R_INITIALIZED))) {
     PyErr_Format(PyExc_RuntimeError, 
                  "R must be initialized before any call to R functions is possible.");
     return NULL;
@@ -2064,7 +1451,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
     return NULL;
   }
 
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return NULL;
   }
@@ -2212,7 +1599,7 @@ Sexp_closureEnv(PyObject *self)
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       return NULL;
   }
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return NULL;
   }
@@ -2327,511 +1714,12 @@ ClosureSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
 
 
-/* len(x) */
-static Py_ssize_t VectorSexp_len(PyObject *object)
-{
-  if (embeddedR_status & RPY_R_BUSY) {
-    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
-    return -1;
-  }
-  embeddedR_setlock();
-
-  Py_ssize_t len;
-  /* FIXME: sanity checks. */
-  SEXP sexp = RPY_SEXP((PySexpObject *)object);
-  if (! sexp) {
-      PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-      return -1;
-  }
-  len = (Py_ssize_t)GET_LENGTH(sexp);
-
-  embeddedR_freelock();
-  return len;
-}
-
-/* a[i] */
-static PyObject *
-VectorSexp_item(PyObject *object, Py_ssize_t i)
-{
-  PyObject* res;
-  R_len_t i_R, len_R;
-
-  if (embeddedR_status & RPY_R_BUSY) {
-    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
-    return NULL;
-  }
-  embeddedR_setlock();
-  SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
-
-  if (! sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    embeddedR_freelock();
-    return NULL;
-  }
-
-  len_R = GET_LENGTH(*sexp);
-  
-  if (i < 0) {
-    i = len_R - i;
-  }
-
-  /* On 64bits, Python is apparently able to use larger integer
-   * than R for indexing. */
-  if (i >= R_LEN_T_MAX) {
-    PyErr_Format(PyExc_IndexError, "Index value exceeds what R can handle.");
-    embeddedR_freelock();
-    res = NULL;
-    return res;
-  }
-
-  if (i < 0) {
-    PyErr_Format(PyExc_IndexError, 
-                 "Mysterious error: likely an integer overflow.");
-    res = NULL;
-    embeddedR_freelock();
-    return res;
-  }
-  if ((i >= GET_LENGTH(*sexp))) {
-    PyErr_Format(PyExc_IndexError, "Index out of range.");
-    res = NULL;
-  }
-  else {
-    double vd;
-    int vi;
-    Rcomplex vc;
-    const char *vs;
-    SEXP tmp, sexp_item; /* needed by LANGSXP */
-    i_R = (R_len_t)i;
-    switch (TYPEOF(*sexp)) {
-    case REALSXP:
-      vd = (NUMERIC_POINTER(*sexp))[i_R];
-      if (vd == NA_REAL) {
-        res = NAReal_New(1);
-      } else {
-        res = PyFloat_FromDouble(vd);
-      }
-      break;
-    case INTSXP:
-      vi = INTEGER_POINTER(*sexp)[i_R];
-      if (vi == NA_INTEGER) {
-        res = NAInteger_New(1);
-      } else {
-        res = PyInt_FromLong((long)vi);
-      }
-      break;
-    case LGLSXP:
-      vi = LOGICAL_POINTER(*sexp)[i_R];
-      if (vi == NA_LOGICAL) {
-        res = NALogical_New(1);
-      } else {
-        RPY_PY_FROM_RBOOL(res, vi);
-      }
-      break;
-    case CPLXSXP:
-      vc = COMPLEX_POINTER(*sexp)[i_R];
-      res = PyComplex_FromDoubles(vc.r, vc.i);
-      break;
-    case STRSXP:
-      if (STRING_ELT(*sexp, i_R) == NA_STRING) {
-        res = NACharacter_New(1);
-      } else {
-        vs = translateChar(STRING_ELT(*sexp, i_R));
-        res = PyString_FromString(vs);
-      }
-      break;
-/*     case CHARSXP: */
-      /*       FIXME: implement handling of single char (if possible ?) */
-/*       vs = (CHAR(*sexp)[i_R]); */
-/*       res = PyString_FromStringAndSize(vs, 1); */
-    case VECSXP:
-    case EXPRSXP:
-      sexp_item = VECTOR_ELT(*sexp, i_R);
-      res = (PyObject *)newPySexpObject(sexp_item);
-      break;
-    case LISTSXP:
-      tmp = nthcdr(*sexp, i_R);
-      sexp_item = allocVector(LISTSXP, 1);
-      SETCAR(sexp_item, CAR(tmp));
-      SET_TAG(sexp_item, TAG(tmp));
-      res = (PyObject *)newPySexpObject(sexp_item);
-      break;      
-    case LANGSXP:
-      tmp = nthcdr(*sexp, i_R);
-      sexp_item = allocVector(LANGSXP, 1);
-      SETCAR(sexp_item, CAR(tmp));
-      SET_TAG(sexp_item, TAG(tmp));
-      res = (PyObject *)newPySexpObject(sexp_item);
-      break;
-    default:
-      PyErr_Format(PyExc_ValueError, "Cannot handle type %d", 
-                   TYPEOF(*sexp));
-      res = NULL;
-      break;
-    }
-  }
-  embeddedR_freelock();
-  return res;
-}
-
-/* a[i1:i2] */
-static PyObject *
-VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
-{
-  R_len_t len_R;
-
-  if (embeddedR_status & RPY_R_BUSY) {
-    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
-    return NULL;
-  }
-  embeddedR_setlock();
-  SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
-  SEXP res_sexp;
-
-  if (! sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    embeddedR_freelock();
-    return NULL;
-  }
-
-
-  len_R = GET_LENGTH(*sexp);
-  
-  if (ilow < 0) {
-    ilow = (R_len_t)(len_R - ilow) + 1;
-  }
-  if (ihigh < 0) {
-    ihigh = (R_len_t)(len_R - ihigh) + 1;
-  }
-
-  /* On 64bits, Python is apparently able to use larger integer
-   * than R for indexing. */
-  if ((ilow >= R_LEN_T_MAX) | (ihigh >= R_LEN_T_MAX)) {
-    PyErr_Format(PyExc_IndexError, 
-                 "Index values in the slice exceed what R can handle.");
-    embeddedR_freelock();
-    return NULL;
-  }
-
-  if ((ilow < 0) | (ihigh < 0)) {
-    PyErr_Format(PyExc_IndexError, 
-                 "Mysterious error: likely an integer overflow.");
-    embeddedR_freelock();
-    return NULL;
-  }
-  if ((ilow > GET_LENGTH(*sexp)) | (ihigh > GET_LENGTH(*sexp))) {
-    PyErr_Format(PyExc_IndexError, "Index out of range.");
-    return NULL;
-  } else {
-    if ( ilow > ihigh ) {
-      /* Whenever this occurs for regular Python lists,
-      * a sequence of length 0 is returned. Setting ilow:=ilow
-      * causes the same whithout writing "special case" code.
-      */
-      ihigh = ilow;
-    }
-    R_len_t slice_len = ihigh-ilow;
-    R_len_t slice_i;
-    //const char *vs;
-    //SEXP tmp, sexp_item; /* tmp and sexp_item needed for case LANGSXP */
-    switch (TYPEOF(*sexp)) {
-    case REALSXP:
-      res_sexp = allocVector(REALSXP, slice_len);
-      memcpy(NUMERIC_POINTER(res_sexp),
-             NUMERIC_POINTER(*sexp) + ilow,  
-             (ihigh-ilow) * sizeof(double));
-      break;
-    case INTSXP:
-      res_sexp = allocVector(INTSXP, slice_len);
-      memcpy(INTEGER_POINTER(res_sexp),
-             INTEGER_POINTER(*sexp) + ilow,  
-             (ihigh-ilow) * sizeof(int));
-      break;
-    case LGLSXP:
-      res_sexp = allocVector(LGLSXP, slice_len);
-      memcpy(LOGICAL_POINTER(res_sexp),
-             LOGICAL_POINTER(*sexp) + ilow,  
-             (ihigh-ilow) * sizeof(int));
-      break;
-    case CPLXSXP:
-      res_sexp = allocVector(CPLXSXP, slice_len);
-      for (slice_i = 0; slice_i < slice_len; slice_i++) {
-        COMPLEX_POINTER(res_sexp)[slice_i] = (COMPLEX_POINTER(*sexp))[slice_i + ilow];
-      }
-      break;
-    case STRSXP:
-      res_sexp = allocVector(STRSXP, slice_len);
-      for (slice_i = 0; slice_i < slice_len; slice_i++) {
-        SET_STRING_ELT(res_sexp, slice_i, STRING_ELT(*sexp, slice_i + ilow));
-      }
-      break;
-/*     case CHARSXP: */
-      /*       FIXME: implement handling of single char (if possible ?) */
-/*       vs = (CHAR(*sexp)[i_R]); */
-/*       res = PyString_FromStringAndSize(vs, 1); */
-    case VECSXP:
-    case EXPRSXP:
-      res_sexp = allocVector(VECSXP, slice_len);
-      for (slice_i = 0; slice_i < slice_len; slice_i++) {
-        SET_VECTOR_ELT(res_sexp, slice_i, VECTOR_ELT(*sexp, slice_i + ilow));
-      }
-      break;
-    case LISTSXP:
-    case LANGSXP:
-    default:
-      PyErr_Format(PyExc_ValueError, "Cannot handle type %d", 
-                   TYPEOF(*sexp));
-      res_sexp = NULL;
-      break;
-    }
-  }
-  embeddedR_freelock();
-  if (res_sexp == NULL) {    return NULL;
-  }
-  return (PyObject*)newPySexpObject(res_sexp);
-}
-
-
-/* a[i] = val */
-static int
-VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
-{
-  R_len_t i_R, len_R;
-  int self_typeof;
-
-  /* Check for 64 bits platforms */
-  if (i >= R_LEN_T_MAX) {
-    PyErr_Format(PyExc_IndexError, "Index value exceeds what R can handle.");
-    return -1;
-  }
-
-  SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
-  len_R = GET_LENGTH(*sexp);
-  
-  if (i < 0) {
-    i = len_R - i;
-  }
-
-  if (i >= len_R) {
-    PyErr_Format(PyExc_IndexError, "Index out of range.");
-    return -1;
-  }
-
-  if (! sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return -1;
-  }
-  
-  int is_PySexpObject = PyObject_TypeCheck(val, &Sexp_Type);
-  if (! is_PySexpObject) {
-    PyErr_Format(PyExc_ValueError, "Any new value must be of "
-                 "type 'Sexp_Type'.");
-    return -1;
-  }
-  SEXP *sexp_val = &(RPY_SEXP((PySexpObject *)val));
-  if (! sexp_val) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return -1;
-  }
-
-  self_typeof = TYPEOF(*sexp);
-
-  if (self_typeof != VECSXP) {
-    if (TYPEOF(*sexp_val) != self_typeof) {
-      PyErr_Format(PyExc_ValueError, 
-                   "The new value cannot be of 'typeof' other than %i ('%i' given)", 
-                   self_typeof, TYPEOF(*sexp_val));
-      return -1;
-    }
-
-    if (LENGTH(*sexp_val) != 1) {
-      PyErr_Format(PyExc_ValueError, "The new value must be of length 1.");
-      return -1;
-    }
-  }
-
-  SEXP sexp_copy;
-  i_R = (R_len_t)i;
-  switch (self_typeof) {
-  case REALSXP:
-    (NUMERIC_POINTER(*sexp))[i_R] = (NUMERIC_POINTER(*sexp_val))[0];
-    break;
-  case INTSXP:
-    (INTEGER_POINTER(*sexp))[i_R] = (INTEGER_POINTER(*sexp_val))[0];
-    break;
-  case LGLSXP:
-    (LOGICAL_POINTER(*sexp))[i_R] = (LOGICAL_POINTER(*sexp_val))[0];
-    break;
-  case CPLXSXP:
-    (COMPLEX_POINTER(*sexp))[i_R] = (COMPLEX_POINTER(*sexp_val))[0];
-    break;
-  case STRSXP:
-    SET_STRING_ELT(*sexp, i_R, STRING_ELT(*sexp_val, 0));
-    break;
-  case VECSXP:
-    PROTECT(sexp_copy = Rf_duplicate(*sexp_val));
-    SET_VECTOR_ELT(*sexp, i_R, sexp_copy);
-    UNPROTECT(1);
-    break;
-  default:
-    PyErr_Format(PyExc_ValueError, "Cannot handle typeof '%d'", 
-                 self_typeof);
-    return -1;
-    break;
-  }
-  return 0;
-}
-
-/* a[i:j] = val */
-static int
-VectorSexp_ass_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *val)
-{
-  R_len_t len_R;
-  int self_typeof;
-
-  if (embeddedR_status & RPY_R_BUSY) {
-    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
-    return -1;
-  }
-  embeddedR_setlock();
-
-  if (! PyObject_TypeCheck(val, &Sexp_Type)) {
-    PyErr_Format(PyExc_ValueError, "Any new value must be of "
-		 "type 'Sexp_Type'.");
-    embeddedR_freelock();
-    return -1;
-  }
-
-  SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
-  len_R = GET_LENGTH(*sexp);
-  
-  if (ilow < 0) {
-    ilow = (R_len_t)(len_R - ilow) + 1;
-  }
-  if (ihigh < 0) {
-    ihigh = (R_len_t)(len_R - ihigh) + 1;
-  }
-
-  if (! sexp) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    embeddedR_freelock();
-    return -1;
-  }
-  
-  /* On 64bits, Python is apparently able to use larger integer
-   * than R for indexing. */
-  if ((ilow >= R_LEN_T_MAX) | (ihigh >= R_LEN_T_MAX)) {
-    PyErr_Format(PyExc_IndexError, 
-                 "Index values in the slice exceed what R can handle.");
-    embeddedR_freelock();
-    return -1;
-  }
-
-  if ((ilow < 0) | (ihigh < 0)) {
-    PyErr_Format(PyExc_IndexError, 
-                 "Mysterious error: likely an integer overflow.");
-    embeddedR_freelock();
-    return -1;
-  }
-  if ((ilow > GET_LENGTH(*sexp)) | (ihigh > GET_LENGTH(*sexp))) {
-    PyErr_Format(PyExc_IndexError, "Index out of range.");
-    return -1;
-  } else {
-    if ( ilow > ihigh ) {
-      /* Whenever this occurs for regular Python lists,
-      * a sequence of length 0 is returned. Setting ilow:=ilow
-      * causes the same whithout writing "special case" code.
-      */
-      ihigh = ilow;
-    }
-
-    R_len_t slice_len = ihigh-ilow;
-    R_len_t slice_i;
-    const char *vs;
-    SEXP tmp, sexp_item; /* tmp and sexp_item needed for case LANGSXP */
-
-    SEXP sexp_val = RPY_SEXP((PySexpObject *)val);
-    if (! sexp_val) {
-      PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-      embeddedR_freelock();
-      return -1;
-    }
-
-    if (slice_len != GET_LENGTH(sexp_val)) {
-      PyErr_Format(PyExc_ValueError, "The length of the replacement value differs from the length of the slice.");
-      embeddedR_freelock();
-      return -1;
-    }
-
-    switch (TYPEOF(*sexp)) {
-    case REALSXP:
-      memcpy(NUMERIC_POINTER(*sexp) + ilow,
-	     NUMERIC_POINTER(sexp_val),
-             (ihigh-ilow) * sizeof(double));
-      break;
-    case INTSXP:
-      memcpy(INTEGER_POINTER(*sexp) + ilow,
-             INTEGER_POINTER(sexp_val),
-             (ihigh-ilow) * sizeof(int));
-      break;
-    case LGLSXP:
-      memcpy(LOGICAL_POINTER(*sexp) + ilow,
-	     LOGICAL_POINTER(sexp_val),
-             (ihigh-ilow) * sizeof(int));
-      break;
-    case CPLXSXP:
-      for (slice_i = 0; slice_i < slice_len; slice_i++) {
-        (COMPLEX_POINTER(*sexp))[slice_i + ilow] = COMPLEX_POINTER(sexp_val)[slice_i];
-      }
-      break;
-    case STRSXP:
-      for (slice_i = 0; slice_i < slice_len; slice_i++) {
-        SET_STRING_ELT(*sexp, slice_i + ilow, STRING_ELT(sexp_val, slice_i));
-      }
-      break;
-/*     case CHARSXP: */
-      /*       FIXME: implement handling of single char (if possible ?) */
-/*       vs = (CHAR(*sexp)[i_R]); */
-/*       res = PyString_FromStringAndSize(vs, 1); */
-    case VECSXP:
-    case EXPRSXP:
-      for (slice_i = 0; slice_i < slice_len; slice_i++) {
-        SET_VECTOR_ELT(*sexp, slice_i + ilow, VECTOR_ELT(sexp_val, slice_i));
-      }
-      break;
-    case LISTSXP:
-    case LANGSXP:
-    default:
-      PyErr_Format(PyExc_ValueError, "Cannot handle type %d", 
-                   TYPEOF(*sexp));
-      embeddedR_freelock();
-      return -1;
-      break;
-    }
-  }
-  embeddedR_freelock();
-  return 0;
-}
-
-
-static PySequenceMethods VectorSexp_sequenceMethods = {
-  (lenfunc)VectorSexp_len,              /* sq_length */
-  0,                              /* sq_concat */
-  0,                              /* sq_repeat */
-  (ssizeargfunc)VectorSexp_item,        /* sq_item */
-  (ssizessizeargfunc)VectorSexp_slice,  /* sq_slice */
-  (ssizeobjargproc)VectorSexp_ass_item, /* sq_ass_item */
-  (ssizeobjargproc)VectorSexp_ass_slice, /* sq_ass_slice */
-  0,                              /* sq_contains */
-  0,                              /* sq_inplace_concat */
-  0                               /* sq_inplace_repeat */
-};
-
 
 static PyGetSetDef VectorSexp_getsets[] = {
-  {"__array_struct__", 
-   (getter)array_struct_get,
-   (setter)0,
-   "Array protocol: struct"},
+  /* {"__array_struct__",  */
+  /*  (getter)array_struct_get, */
+  /*  (setter)0, */
+  /*  "Array protocol: struct"}, */
   {NULL, NULL, NULL, NULL}          /* sentinel */
 };
 
@@ -2903,7 +1791,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   printf("%p: VectorSexp initializing...\n", self);
 #endif 
 
-  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+  if (! (rpy_has_status(RPY_R_INITIALIZED))) {
     PyErr_Format(PyExc_RuntimeError, 
                  "R must be initialized before any instance can be created.");
     return -1;
@@ -2924,7 +1812,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     return -1;
   }
 
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return -1;
   }
@@ -2995,7 +1883,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
     return NULL; 
   }
 
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return NULL;
   }
@@ -3046,7 +1934,7 @@ PyDoc_STRVAR(EnvironmentSexp_findVar_doc,
 static PyObject*
 EnvironmentSexp_frame(PyObject *self)
 {
-  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+  if (! (rpy_has_status(RPY_R_INITIALIZED))) {
     PyErr_Format(PyExc_RuntimeError, 
                  "R must be initialized before environments can be accessed.");
     return NULL;
@@ -3054,7 +1942,7 @@ EnvironmentSexp_frame(PyObject *self)
   SEXP res_R = NULL;
   PySexpObject *res;
 
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return NULL;
   }
@@ -3070,12 +1958,12 @@ PyDoc_STRVAR(EnvironmentSexp_frame_doc,
 static PyObject*
 EnvironmentSexp_enclos(PyObject *self)
 {
-  if (! (embeddedR_status & RPY_R_INITIALIZED)) {
+  if (! (rpy_has_status(RPY_R_INITIALIZED))) {
     PyErr_Format(PyExc_RuntimeError, 
                  "R must be initialized before environments can be accessed.");
     return NULL;
   }
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return NULL;
   }
@@ -3120,7 +2008,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
     return NULL;
   }
 
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return NULL;
   }
@@ -3169,7 +2057,7 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 
   name = PyString_AsString(key);
 
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return -1;
   }
@@ -3199,7 +2087,7 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 
 static Py_ssize_t EnvironmentSexp_length(PyObject *self) 
 {
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return -1;
   }
@@ -3228,7 +2116,7 @@ static PyMappingMethods EnvironmentSexp_mappingMethods = {
 static PyObject* 
 EnvironmentSexp_iter(PyObject *sexpEnvironment)
 {
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return NULL;
   }
@@ -3335,7 +2223,7 @@ EnvironmentSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     return -1;
   }
 
-  if (embeddedR_status & RPY_R_BUSY) {
+  if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return -1;
   }
@@ -3953,501 +2841,6 @@ static R_ExternalMethodDef externalMethods[] = {
         {NULL, NULL, 0} 
 };
 
-
-/* --- NA values --- */
-
-PyDoc_STRVAR(NAInteger_Type_doc,
-"Missing value for an integer in R."
-);
-
-static PyObject*
-NAInteger_repr(PyObject *self)
-{
-  static PyObject* repr = NULL;
-  if (repr == NULL) {
-    repr = PyString_FromString("NA_integer_");
-  }
-  Py_XINCREF(repr);
-  return repr;
-}
-
-static PyObject*
-NA_str(PyObject *self)
-{
-  static PyObject* repr = NULL;
-  if (repr == NULL) {
-    repr = PyString_FromString("NA");
-  }
-  return repr;
-}
-
-/* Whenever an NA object is used for arithmetic or logic,
- * the results is NA. */
-static PyObject*
-NA_unaryfunc(PyObject *self)
-{
-  Py_XINCREF(self);
-  return self;
-}
-static PyObject*
-NA_binaryfunc(PyObject *self, PyObject *obj)
-{
-  Py_XINCREF(self);
-  return self;
-
-}
-static PyObject*
-NA_ternaryfunc(PyObject *self, PyObject *obj1, PyObject *obj2)
-{
-  Py_XINCREF(self);
-  return self;
-}
-
-static int
-NA_nonzero(PyObject *self)
-{
-  return 1;
-}
-
-static PyNumberMethods NAInteger_NumberMethods = {
-  (binaryfunc)NA_binaryfunc, /* nb_add */
-  (binaryfunc)NA_binaryfunc, /* nb_subtract; */
-  (binaryfunc)NA_binaryfunc, /* nb_multiply; */
-  (binaryfunc)NA_binaryfunc, /* nb_divide; */
-  (binaryfunc)NA_binaryfunc, /* nb_remainder; */
-  (binaryfunc)NA_binaryfunc, /* nb_divmod; */
-  (ternaryfunc)NA_binaryfunc, /* nb_power; */
-  (unaryfunc) NA_unaryfunc, /* nb_negative; */
-  (unaryfunc) NA_unaryfunc, /* nb_positive; */
-  (unaryfunc) NA_unaryfunc, /* nb_absolute; */
-  (inquiry) NA_nonzero, /* nb_nonzero;       /* Used by PyObject_IsTrue */
-  (unaryfunc) NA_unaryfunc, /* nb_invert; */
-  (binaryfunc) NA_binaryfunc, /* nb_lshift; */
-  (binaryfunc) NA_binaryfunc, /* nb_rshift; */
-  (binaryfunc) NA_binaryfunc, /*  nb_and; */
-  (binaryfunc) NA_binaryfunc, /*  nb_xor; */
-  (binaryfunc) NA_binaryfunc, /* nb_or; */
-  0, //(coerce) NA_coerce, /* coercion nb_coerce;       -- Used by the coerce() function */
-  (unaryfunc) NA_unaryfunc, /* nb_int; */
-  (unaryfunc) NA_unaryfunc, /* nb_long; */
-  (unaryfunc) NA_unaryfunc, /* nb_float; */
-  (unaryfunc) NA_unaryfunc, /* nb_oct; */
-  (unaryfunc) NA_unaryfunc, /* nb_hex; */
-  /* Added in release 2.0 */
-  0, /* nb_inplace_add; */
-  0, /* nb_inplace_subtract; */
-  0, /* nb_inplace_multiply; */
-  0, /* nb_inplace_divide; */
-  0, /* nb_inplace_remainder; */
-  0, /* nb_inplace_power; */
-  0, /* nb_inplace_lshift; */
-  0, /* nb_inplace_rshift; */
-  0, /* nb_inplace_and; */
-  0, /* nb_inplace_xor; */
-  0, /* nb_inplace_or; */
-  /* Added in release 2.2 */
-  (binaryfunc) NA_binaryfunc, /* nb_floor_divide; */
-  (binaryfunc) NA_binaryfunc, /* nb_true_divide; */
-  0, /* nb_inplace_floor_divide; */
-  0, /* nb_inplace_true_divide; */
-  /* Added in release 2.5 */
-#if PY_VERSION_HEX >= 0x02050000
-  (unaryfunc) NA_unaryfunc /* nb_index; */
-#endif
-};
-
-
-static PyObject*
-NAInteger_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
-
-
-static PyTypeObject NAInteger_Type = {
-        /* The ob_type field must be initialized in the module init function
-         * to be portable to Windows without using C++. */
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-        "rpy2.rinterface.NAIntegerType",       /*tp_name*/
-        sizeof(PyObject),   /*tp_basicsize*/
-        0,                      /*tp_itemsize*/
-        /* methods */
-        0, /*tp_dealloc*/
-        0,                      /*tp_print*/
-        0,                      /*tp_getattr*/
-        0,                      /*tp_setattr*/
-        0,                      /*tp_compare*/
-        NAInteger_repr,                      /*tp_repr*/
-        &NAInteger_NumberMethods,                      /*tp_as_number*/
-        0,                      /*tp_as_sequence*/
-        0,                      /*tp_as_mapping*/
-        0,                      /*tp_hash*/
-        0,                      /*tp_call*/
-        NA_str,                      /*tp_str*/
-        0,                      /*tp_getattro*/
-        0,                      /*tp_setattro*/
-        0,                      /*tp_as_buffer*/
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
-        NAInteger_Type_doc,                      /*tp_doc*/
-        0,                      /*tp_traverse*/
-        0,                      /*tp_clear*/
-        0,                      /*tp_richcompare*/
-        0,                      /*tp_weaklistoffset*/
-        0,                      /*tp_iter*/
-        0,                      /*tp_iternext*/
-        0,                      /*tp_methods*/
-        0,                      /*tp_members*/
-        0,                      /*tp_getset*/
-        &PyInt_Type,             /*tp_base*/
-        0,                      /*tp_dict*/
-        0,                      /*tp_descr_get*/
-        0,                      /*tp_descr_set*/
-        0,                      /*tp_dictoffset*/
-        0, //(initproc)ClosureSexp_init,                      /*tp_init*/
-        0,                      /*tp_alloc*/
-        NAInteger_tp_new,                      /*tp_new*/
-        0,                      /*tp_free*/
-        0                      /*tp_is_gc*/
-};
-
-static PyObject*
-NAInteger_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-{
-  RPY_NA_TP_NEW("NAIntegerType", PyInt_Type, PyInt_FromLong, 
-                (long)NA_INTEGER)
-}
-
-static PyObject*
-NAInteger_New(int new)
-{
-  RPY_NA_NEW(NAInteger_Type, NAInteger_tp_new)
-}
-
-/* NA Boolean / Logical */
-
-PyDoc_STRVAR(NALogical_Type_doc,
-"Missing value for a boolean in R."
-);
-
-static PyObject*
-NALogical_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-{
-  RPY_NA_TP_NEW("NALogicalType", PyInt_Type, PyInt_FromLong, 
-                (long)NA_LOGICAL)
-}
-
-static PyObject*
-NALogical_New(int new)
-{
-  RPY_NA_NEW(NALogical_Type, NALogical_tp_new)
-}
-
-static PyObject*
-NALogical_repr(PyObject *self)
-{
-  static PyObject* repr = NULL;
-  if (repr == NULL) {
-    repr = PyString_FromString("NA");
-  }
-  Py_XINCREF(repr);
-  return repr;
-}
-
-static PyNumberMethods NALogical_NumberMethods = {
-  0, /* nb_add */
-  0, /* nb_subtract; */
-  0, /* nb_multiply; */
-  0, /* nb_divide; */
-  0, /* nb_remainder; */
-  0, /* nb_divmod; */
-  0, /* nb_power; */
-  0, /* nb_negative; */
-  0, /* nb_positive; */
-  0, /* nb_absolute; */
-  0, /* nb_nonzero;       /* Used by PyObject_IsTrue */
-  0, /* nb_invert; */
-  0, /* nb_lshift; */
-  0, /* nb_rshift; */
-  (binaryfunc) NA_binaryfunc, /*  nb_and; */
-  (binaryfunc) NA_binaryfunc, /*  nb_xor; */
-  (binaryfunc) NA_binaryfunc, /* nb_or; */
-  0, //(coerce) NA_coerce, /* coercion nb_coerce;       -- Used by the coerce() function */
-  0, /* nb_int; */
-  0, /* nb_long; */
-  0, /* nb_float; */
-  0, /* nb_oct; */
-  0, /* nb_hex; */
-  /* Added in release 2.0 */
-  0, /* nb_inplace_add; */
-  0, /* nb_inplace_subtract; */
-  0, /* nb_inplace_multiply; */
-  0, /* nb_inplace_divide; */
-  0, /* nb_inplace_remainder; */
-  0, /* nb_inplace_power; */
-  0, /* nb_inplace_lshift; */
-  0, /* nb_inplace_rshift; */
-  0, /* nb_inplace_and; */
-  0, /* nb_inplace_xor; */
-  0, /* nb_inplace_or; */
-  /* Added in release 2.2 */
-  0, /* nb_floor_divide; */
-  0, /* nb_true_divide; */
-  0, /* nb_inplace_floor_divide; */
-  0, /* nb_inplace_true_divide; */
-  /* Added in release 2.5 */
-#if PY_VERSION_HEX >= 0x02050000
-  0 /* nb_index; */
-#endif
-};
-
-static PyTypeObject NALogical_Type = {
-        /* The ob_type field must be initialized in the module init function
-         * to be portable to Windows without using C++. */
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-        "rpy2.rinterface.NALogicalType",       /*tp_name*/
-        sizeof(PyObject),   /*tp_basicsize*/
-        0,                      /*tp_itemsize*/
-        /* methods */
-        0, /*tp_dealloc*/
-        0,                      /*tp_print*/
-        0,                      /*tp_getattr*/
-        0,                      /*tp_setattr*/
-        0,                      /*tp_compare*/
-        NALogical_repr,                      /*tp_repr*/
-        &NALogical_NumberMethods,                      /*tp_as_number*/
-        0,                      /*tp_as_sequence*/
-        0,                      /*tp_as_mapping*/
-        0,                      /*tp_hash*/
-        0,                      /*tp_call*/
-        NA_str,                      /*tp_str*/
-        0,                      /*tp_getattro*/
-        0,                      /*tp_setattro*/
-        0,                      /*tp_as_buffer*/
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
-        NALogical_Type_doc,                      /*tp_doc*/
-        0,                      /*tp_traverse*/
-        0,                      /*tp_clear*/
-        0,                      /*tp_richcompare*/
-        0,                      /*tp_weaklistoffset*/
-        0,                      /*tp_iter*/
-        0,                      /*tp_iternext*/
-        0, //NAInteger_methods,           /*tp_methods*/
-        0,                      /*tp_members*/
-        0,                      /*tp_getset*/
-        &PyInt_Type,             /*tp_base*/
-        0,                      /*tp_dict*/
-        0,                      /*tp_descr_get*/
-        0,                      /*tp_descr_set*/
-        0,                      /*tp_dictoffset*/
-        0, //(initproc)ClosureSexp_init,                      /*tp_init*/
-        0,                      /*tp_alloc*/
-        NALogical_tp_new,                      /*tp_new*/
-        0,                      /*tp_free*/
-        0                      /*tp_is_gc*/
-};
-
-/* NA Float / Real */
-
-PyDoc_STRVAR(NAReal_Type_doc,
-"Missing value for a float in R."
-);
-
-static PyObject*
-NAReal_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-{
-  RPY_NA_TP_NEW("NARealType", PyFloat_Type, PyFloat_FromDouble, 
-                (long)NA_REAL)
-}
-
-static PyObject*
-NAReal_New(int new)
-{
-  RPY_NA_NEW(NAReal_Type, NAReal_tp_new)
-}
-
-static PyObject*
-NAReal_repr(PyObject *self)
-{
-  static PyObject* repr = NULL;
-  if (repr == NULL) {
-    repr = PyString_FromString("NA_real_");
-  }
-  Py_XINCREF(repr);
-  return repr;
-}
-
-
-static PyNumberMethods NAReal_NumberMethods = {
-  (binaryfunc)NA_binaryfunc, /* nb_add */
-  (binaryfunc)NA_binaryfunc, /* nb_subtract; */
-  (binaryfunc)NA_binaryfunc, /* nb_multiply; */
-  (binaryfunc)NA_binaryfunc, /* nb_divide; */
-  (binaryfunc)NA_binaryfunc, /* nb_remainder; */
-  (binaryfunc)NA_binaryfunc, /* nb_divmod; */
-  (ternaryfunc)NA_binaryfunc, /* nb_power; */
-  (unaryfunc) NA_unaryfunc, /* nb_negative; */
-  (unaryfunc) NA_unaryfunc, /* nb_positive; */
-  (unaryfunc) NA_unaryfunc, /* nb_absolute; */
-  (inquiry) NA_nonzero, /* nb_nonzero;       /* Used by PyObject_IsTrue */
-  0, /* nb_invert; */
-  0, /* nb_lshift; */
-  0, /* nb_rshift; */
-  0, /*  nb_and; */
-  0, /*  nb_xor; */
-  0, /* nb_or; */
-  0, //(coerce) NA_coerce, /* coercion nb_coerce;       -- Used by the coerce() function */
-  (unaryfunc) NA_unaryfunc, /* nb_int; */
-  (unaryfunc) NA_unaryfunc, /* nb_long; */
-  (unaryfunc) NA_unaryfunc, /* nb_float; */
-  0, /* nb_oct; */
-  0, /* nb_hex; */
-  /* Added in release 2.0 */
-  0, /* nb_inplace_add; */
-  0, /* nb_inplace_subtract; */
-  0, /* nb_inplace_multiply; */
-  0, /* nb_inplace_divide; */
-  0, /* nb_inplace_remainder; */
-  0, /* nb_inplace_power; */
-  0, /* nb_inplace_lshift; */
-  0, /* nb_inplace_rshift; */
-  0, /* nb_inplace_and; */
-  0, /* nb_inplace_xor; */
-  0, /* nb_inplace_or; */
-  /* Added in release 2.2 */
-  (binaryfunc) NA_binaryfunc, /* nb_floor_divide; */
-  (binaryfunc) NA_binaryfunc, /* nb_true_divide; */
-  0, /* nb_inplace_floor_divide; */
-  0, /* nb_inplace_true_divide; */
-  /* Added in release 2.5 */
-#if PY_VERSION_HEX >= 0x02050000
-  0 /* nb_index; */
-#endif
-};
-
-
-static PyTypeObject NAReal_Type = {
-        /* The ob_type field must be initialized in the module init function
-         * to be portable to Windows without using C++. */
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-        "rpy2.rinterface.NARealType",       /*tp_name*/
-        sizeof(PyObject),   /*tp_basicsize*/
-        0,                      /*tp_itemsize*/
-        /* methods */
-        0, /*tp_dealloc*/
-        0,                      /*tp_print*/
-        0,                      /*tp_getattr*/
-        0,                      /*tp_setattr*/
-        0,                      /*tp_compare*/
-        NAReal_repr,                      /*tp_repr*/
-        &NAReal_NumberMethods,                      /*tp_as_number*/
-        0,                      /*tp_as_sequence*/
-        0,                      /*tp_as_mapping*/
-        0,                      /*tp_hash*/
-        0,                      /*tp_call*/
-        NA_str,                      /*tp_str*/
-        0,                      /*tp_getattro*/
-        0,                      /*tp_setattro*/
-        0,                      /*tp_as_buffer*/
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
-        NAReal_Type_doc,                      /*tp_doc*/
-        0,                      /*tp_traverse*/
-        0,                      /*tp_clear*/
-        0,                      /*tp_richcompare*/
-        0,                      /*tp_weaklistoffset*/
-        0,                      /*tp_iter*/
-        0,                      /*tp_iternext*/
-        0, //NAInteger_methods,           /*tp_methods*/
-        0,                      /*tp_members*/
-        0,                      /*tp_getset*/
-        &PyFloat_Type,             /*tp_base*/
-        0,                      /*tp_dict*/
-        0,                      /*tp_descr_get*/
-        0,                      /*tp_descr_set*/
-        0,                      /*tp_dictoffset*/
-        0, //(initproc)ClosureSexp_init,                      /*tp_init*/
-        0,                      /*tp_alloc*/
-        NAReal_tp_new,                      /*tp_new*/
-        0,                      /*tp_free*/
-        0                      /*tp_is_gc*/
-};
-
-/* NA Float / Real */
-
-PyDoc_STRVAR(NACharacter_Type_doc,
-"Missing value for a string."
-);
-
-static PyObject*
-NACharacter_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-{
-  RPY_NA_TP_NEW("NACharacterType", PyString_Type, PyString_FromString, "")
-}
-
-static PyObject*
-NACharacter_New(int new)
-{
-  RPY_NA_NEW(NACharacter_Type, NACharacter_tp_new)
-}
-
-
-static PyObject*
-NACharacter_repr(PyObject *self)
-{
-  static PyObject* repr = NULL;
-  if (repr == NULL) {
-    repr = PyString_FromString("NA_character_");
-  }
-  Py_XINCREF(repr);
-  return repr;
-}
-
-
-static PyTypeObject NACharacter_Type = {
-        /* The ob_type field must be initialized in the module init function
-         * to be portable to Windows without using C++. */
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-        "rpy2.rinterface.NACharacterType",       /*tp_name*/
-        sizeof(PyObject),   /*tp_basicsize*/
-        0,                      /*tp_itemsize*/
-        /* methods */
-        0, /*tp_dealloc*/
-        0,                      /*tp_print*/
-        0,                      /*tp_getattr*/
-        0,                      /*tp_setattr*/
-        0,                      /*tp_compare*/
-        NACharacter_repr,                      /*tp_repr*/
-        0,                      /*tp_as_number*/
-        0,                      /*tp_as_sequence*/
-        0,                      /*tp_as_mapping*/
-        0,                      /*tp_hash*/
-        0,                      /*tp_call*/
-        NA_str,                      /*tp_str*/
-        0,                      /*tp_getattro*/
-        0,                      /*tp_setattro*/
-        0,                      /*tp_as_buffer*/
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
-        NACharacter_Type_doc,                      /*tp_doc*/
-        0,                      /*tp_traverse*/
-        0,                      /*tp_clear*/
-        0,                      /*tp_richcompare*/
-        0,                      /*tp_weaklistoffset*/
-        0,                      /*tp_iter*/
-        0,                      /*tp_iternext*/
-        0, //NAInteger_methods,           /*tp_methods*/
-        0,                      /*tp_members*/
-        0,                      /*tp_getset*/
-        &PyString_Type,             /*tp_base*/
-        0,                      /*tp_dict*/
-        0,                      /*tp_descr_get*/
-        0,                      /*tp_descr_set*/
-        0,                      /*tp_dictoffset*/
-        0, //(initproc)ClosureSexp_init,                      /*tp_init*/
-        0,                      /*tp_alloc*/
-        NACharacter_tp_new,                      /*tp_new*/
-        0,                      /*tp_free*/
-        0                      /*tp_is_gc*/
-};
 
 
 

@@ -2,7 +2,7 @@
 #ifndef _RPY_RI_H_
 #define _RPY_RI_H_
 
-#ifdef _RPY_RI_H_
+
 
 #include <R.h>
 #include <Rinternals.h>
@@ -19,13 +19,8 @@ typedef intobjargproc ssizeobjargproc;
 #endif
 
 
-extern const unsigned int const RPY_R_INITIALIZED;
-extern const unsigned int const RPY_R_BUSY;
-
-
 /* Representation of R objects (instances) as instances in Python.
  */
-
 typedef struct {
   Py_ssize_t count;
   /* unsigned short int rpy_only; */
@@ -47,6 +42,7 @@ typedef struct {
 
 #define RPY_INCREF(obj) (((obj)->sObj)->count++)
 #define RPY_DECREF(obj) (((obj)->sObj)->count--)
+
 
   
 #define RPY_RINT_FROM_LONG(value)               \
@@ -160,4 +156,3 @@ typedef struct {
 
 #endif /* !RPY_RI_H */
 
-#endif

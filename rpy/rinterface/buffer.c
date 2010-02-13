@@ -3,7 +3,6 @@
 #include <Rdefines.h>
 
 #include "rpy_rinterface.h"
-
 #include "buffer.h"
 
 static int

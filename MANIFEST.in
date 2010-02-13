@@ -4,12 +4,32 @@ global-exclude *patch* *diff* .svn
 include MANIFEST
 include NEWS README AUTHORS
 include MPL_LICENSE GPL_LICENSE LGPL_LICENSE
+
+
 include rpy/rinterface/rpy_rinterface.h
 include rpy/rinterface/rinterface.c
+
+include rpy/rinterface/sexp.c
+include rpy/rinterface/sexp.h
+
 include rpy/rinterface/array.c
 include rpy/rinterface/array.h
+
+include rpy/rinterface/buffer.c
+include rpy/rinterface/buffer.h
+
+include rpy/rinterface/sequence.c
+include rpy/rinterface/sequence.h
+
+include rpy/rinterface/na_values.c
+include rpy/rinterface/na_values.h
+
+include rpy/rinterface/embeddedr.c
+include rpy/rinterface/embeddedr.h
+
 include rpy/rinterface/r_utils.c
 include rpy/rinterface/r_utils.h
+
 include rpy/rinterface/rpy_device.c
 include rpy/rinterface/rpy_device.h
 
