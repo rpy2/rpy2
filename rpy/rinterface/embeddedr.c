@@ -15,5 +15,5 @@ static inline void embeddedR_freelock(void) {
   embeddedR_status = embeddedR_status ^ RPY_R_BUSY;
 }
 static inline unsigned int rpy_has_status(unsigned int status) {
-  return (embeddedR_status & status);
+  return (embeddedR_status & status) == status;
 }
