@@ -148,7 +148,7 @@ array_struct_get(PySexpObject *self)
 
   inter->typekind = typekind;
   inter->itemsize = sexp_itemsize(sexp);
-  inter->flags = NPY_FARRAY;
+  inter->flags = (NPY_FARRAY | NPY_NOTSWAPPED);
   inter->shape = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t)*nd);
   sexp_shape(sexp, inter->shape, nd);
   inter->strides = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t)*nd);
