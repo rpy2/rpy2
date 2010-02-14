@@ -131,9 +131,9 @@ PyDoc_STRVAR(GrDev_size_doc,
 static PyObject* GrDev_size(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, 
-	       "Device size not implemented.\n"
-	       "[ expected signature is ((left, right, bottom, top)) \n]"
-	       "[ should return a tuple of length 4]");
+               "Device size not implemented.\n"
+               "[ expected signature is ((left, right, bottom, top)) \n]"
+               "[ should return a tuple of length 4]");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -368,8 +368,8 @@ PyDoc_STRVAR(GrDev_line_doc,
 static PyObject* GrDev_line(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, 
-	       "Device line not implemented.\n"
-	       "[expected signature is (x1, y1, x2, y2)]");
+               "Device line not implemented.\n"
+               "[expected signature is (x1, y1, x2, y2)]");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -445,7 +445,7 @@ static PyObject* GrDev_polygon(PyObject *self, PyObject *args)
 
 static PyObject* GrDev_locator_name;
 static Rboolean rpy_Locator(double *x, double *y, 
-                        const pGEcontext gc, pDevDesc dd)
+                            const pGEcontext gc, pDevDesc dd)
 {
   PyObject *result;
 
