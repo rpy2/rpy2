@@ -445,7 +445,7 @@ static PyObject* GrDev_polygon(PyObject *self, PyObject *args)
 
 static PyObject* GrDev_locator_name;
 static Rboolean rpy_Locator(double *x, double *y, 
-                            const pGEcontext gc, pDevDesc dd)
+                            int coords, pDevDesc dd)
 {
   PyObject *result;
 
@@ -456,12 +456,13 @@ static Rboolean rpy_Locator(double *x, double *y,
   PyObject *self = (PyObject *)dd->deviceSpecific;
   /* FIXME optimize ? */
 #ifdef RPY_DEBUG_GRDEV
-  printf("FIXME: Polygon.\n");
+  printf("FIXME: Locator.\n");
 #endif
   PyObject *py_x = PyFloat_FromDouble(*x);
   PyObject *py_y = PyFloat_FromDouble(*y);
-  /* FIXME pass gc ? */
-  result = PyObject_CallMethodObjArgs(self, GrDev_polygon_name, 
+  /* FIXME: pass gc ? */
+  /* FIXME: test !dd->dev->locator before proceed ? */
+  result = PyObject_CallMethodObjArgs(self, GrDev_locator_name, 
                                       py_x, py_y,
                                       NULL);
 
