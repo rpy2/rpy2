@@ -149,17 +149,12 @@ array_struct_get(PySexpObject *self)
   inter->typekind = typekind;
   inter->itemsize = sexp_itemsize(sexp);
   inter->flags = NPY_FARRAY;
-  inter->shape = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t)*nd*2);
+  inter->shape = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t)*nd);
   sexp_shape(sexp, inter->shape, nd);
-  inter->strides = inter->shape + nd;
-  Py_intptr_t stride = inter->itemsize;
-  inter->strides[0] = stride;
+  inter->strides = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t)*nd);
+  sexp_strides(sexp, inter->strides, inter->itemsize,
+	       inter->shape, nd);
 
-  int i;
-  for (i = 1; i < nd; ++i) {
-    stride *= inter->shape[i-1];
-    inter->strides[i] = stride;
-  }
   inter->data = sexp_typepointer(sexp);
   if (inter->data == NULL) {
     PyErr_SetString(PyExc_RuntimeError, "Error while mapping type.");
