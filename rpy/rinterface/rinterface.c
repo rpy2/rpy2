@@ -91,6 +91,7 @@ staticforward PyObject* EmbeddedR_unserialize(PyObject* self, PyObject* args);
 #include "sexp.h"
 #include "r_utils.h"
 #include "buffer.h"
+#include "array.h"
 #include "sequence.h"
 
 static PySexpObject* newPySexpObject(const SEXP sexp);
@@ -100,6 +101,7 @@ static PySexpObject* newPySexpObject(const SEXP sexp);
 #include "sexp.c"
 #include "r_utils.c"
 #include "buffer.c"
+#include "array.c"
 #include "sequence.c"
 
 
@@ -1395,7 +1397,6 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 /*     return NULL; */
 /*   } */
 
-
   if (! res_R) {
     /* EmbeddedR_exception_from_errmessage(); */
     /* PyErr_Format(PyExc_RuntimeError, "Error while running R code"); */
@@ -1410,6 +1411,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 
   PyObject *res = (PyObject *)newPySexpObject(res_R);
   UNPROTECT(protect_count);
+  Py_INCREF(res);
   embeddedR_freelock();
   return res;
   
@@ -1716,10 +1718,10 @@ ClosureSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
 
 static PyGetSetDef VectorSexp_getsets[] = {
-  /* {"__array_struct__",  */
-  /*  (getter)array_struct_get, */
-  /*  (setter)0, */
-  /*  "Array protocol: struct"}, */
+  {"__array_struct__",
+   (getter)array_struct_get,
+   (setter)0,
+   "Array protocol: struct"},
   {NULL, NULL, NULL, NULL}          /* sentinel */
 };
 

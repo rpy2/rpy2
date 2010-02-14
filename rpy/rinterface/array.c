@@ -79,32 +79,32 @@ sexp_itemsize(SEXP sexp)
   return 0;
 }
 
-static int
-sexp_rank(SEXP sexp)
-{
-  /* Return the number of dimensions for the array 
-   * (e.g., a vector will return 1, a matrix 2, ...)
-   */
-  SEXP dim = getAttrib(sexp, R_DimSymbol);
-  if (dim == R_NilValue)
-    return 1;
-  return GET_LENGTH(dim);
-}
+/* static int */
+/* sexp_rank(SEXP sexp) */
+/* { */
+/*   /\* Return the number of dimensions for the array  */
+/*    * (e.g., a vector will return 1, a matrix 2, ...) */
+/*    *\/ */
+/*   SEXP dim = getAttrib(sexp, R_DimSymbol); */
+/*   if (dim == R_NilValue) */
+/*     return 1; */
+/*   return GET_LENGTH(dim); */
+/* } */
 
-static void
-sexp_shape(SEXP sexp, Py_intptr_t* shape, int nd)
-{
-  /* Set the numpy 'shape', that is a vector of Py_intptr_t
-   * containing the size of each dimension (see sexp_rank).
-   */
-  int i;
-  SEXP dim = getAttrib(sexp, R_DimSymbol);
-  if (dim == R_NilValue)
-    shape[0] = LENGTH(sexp);
-  else for (i = 0; i < nd; ++i) {
-      shape[i] = INTEGER(dim)[i];
-    }
-}
+/* static void */
+/* sexp_shape(SEXP sexp, Py_intptr_t* shape, int nd) */
+/* { */
+/*   /\* Set the numpy 'shape', that is a vector of Py_intptr_t */
+/*    * containing the size of each dimension (see sexp_rank). */
+/*    *\/ */
+/*   int i; */
+/*   SEXP dim = getAttrib(sexp, R_DimSymbol); */
+/*   if (dim == R_NilValue) */
+/*     shape[0] = LENGTH(sexp); */
+/*   else for (i = 0; i < nd; ++i) { */
+/*       shape[i] = INTEGER(dim)[i]; */
+/*     } */
+/* } */
 
 static void
 array_struct_free(void *ptr, void *arr)
@@ -116,7 +116,7 @@ array_struct_free(void *ptr, void *arr)
 }
 
 
-PyObject* 
+static PyObject* 
 array_struct_get(PySexpObject *self)
 {
   /* Get an array structure as understood by the numpy package from

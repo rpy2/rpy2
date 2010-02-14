@@ -50,7 +50,7 @@ sexp_strides(SEXP sexp, Py_intptr_t *strides, Py_ssize_t itemsize,
 static int
 VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
 {
-  
+  printf("getbuffer\n");
   if (view == NULL) {
     return 0;
   }
@@ -132,6 +132,7 @@ VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
 static Py_ssize_t
 VectorSexp_getsegcount(PySexpObject *self, Py_ssize_t *lenp)
 {
+  printf("getsegcount\n");
   SEXP sexp = RPY_SEXP(self);
 
   switch (TYPEOF(sexp)) {
@@ -162,6 +163,7 @@ VectorSexp_getsegcount(PySexpObject *self, Py_ssize_t *lenp)
 static Py_ssize_t
 VectorSexp_getreadbuf(PySexpObject *self, Py_ssize_t segment, void **ptrptr)
 {
+  printf("getreadbuf\n");
   if (segment != 0) {
     PyErr_SetString(PyExc_ValueError,
 		    "accessing non-existing data segment");
@@ -202,6 +204,7 @@ VectorSexp_getreadbuf(PySexpObject *self, Py_ssize_t segment, void **ptrptr)
 static Py_ssize_t
 VectorSexp_getwritebuf(PySexpObject *self, Py_ssize_t segment, void **ptrptr)
 {
+  printf("getwritebuf\n");
   /*FIXME: introduce a "writeable" flag for SexpVector objects ? */
   return VectorSexp_getreadbuf(self, segment, (void **)ptrptr);
 }
