@@ -52,13 +52,19 @@ VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
 {
   
   if (view == NULL) {
-    return -1;
+    return 0;
   }
   
-  if (!(flags & PyBUF_F_CONTIGUOUS)) {
+  if ((flags & PyBUF_F_CONTIGUOUS) == PyBUF_F_CONTIGUOUS) {
     PyErr_SetString(PyExc_ValueError, "Only FORTRAN-style contiguous arrays allowed.");
     return -1;
   }
+
+  view->obj = obj;
+  if (obj) {
+    Py_INCREF(obj);
+  }
+  view->readonly = 0;
   
   PySexpObject *self = (PySexpObject *)obj;
   SEXP sexp = RPY_SEXP(self);
@@ -68,39 +74,50 @@ VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
     view->buf = NUMERIC_POINTER(sexp);
     view->len = GET_LENGTH(sexp) * sizeof(double);
     view->itemsize = sizeof(double);
+    view->format = "f";
     break;
   case INTSXP:
     view->buf = INTEGER_POINTER(sexp);
     view->len = GET_LENGTH(sexp) * sizeof(int);
     view->itemsize = sizeof(int);
+    view->format = "i";
     break;
   case LGLSXP:
     view->buf = LOGICAL_POINTER(sexp);
     view->len = GET_LENGTH(sexp) * sizeof(int);
     view->itemsize = sizeof(int);
+    view->format = "i";
     break;
   case CPLXSXP:
     view->buf = COMPLEX_POINTER(sexp);
     view->len = GET_LENGTH(sexp) * sizeof(Rcomplex);
     view->itemsize = sizeof(Rcomplex);
+    view->format = "B"; /* FIXME: correct format for complex ? */
     break;
   case RAWSXP:
     view->buf = RAW_POINTER(sexp);
     view->len = GET_LENGTH(sexp);
     view->itemsize = 1;
+    view->format = "B";
     break;
   default:
     PyErr_Format(PyExc_ValueError, "Buffer for this type not yet supported.");
     return -1;
   }
 
-  view->readonly = 0;
-  view->format = "B";
   view->ndim = sexp_rank(sexp);
-  view->shape =  (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t) * view->ndim);
-  sexp_shape(sexp, view->shape, view->ndim);
-  view->strides = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t) * view->ndim);
-  sexp_strides(sexp, view->strides, view->itemsize, view->shape, view->ndim);
+
+  view->shape = NULL;
+  if ((flags & PyBUF_ND) == PyBUF_ND) {
+    view->shape =  (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t) * view->ndim);
+    sexp_shape(sexp, view->shape, view->ndim);
+  }
+
+  view->strides = NULL;
+  if ((flags & PyBUF_STRIDES) == PyBUF_STRIDES) {
+    view->strides = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t) * view->ndim);
+    sexp_strides(sexp, view->strides, view->itemsize, view->shape, view->ndim);
+  }
   /* view->suboffsets = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t) * view->ndim); */
   /* int i; */
   /* for (i = 0; i < view->ndim; i++) { */
