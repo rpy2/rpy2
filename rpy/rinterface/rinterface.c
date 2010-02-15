@@ -1304,14 +1304,12 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
                      "All parameters must be of type Sexp_Type,"
                      "or Python int/long, float, bool, or None"
                      );
-        Py_DECREF(tmp_obj);
         goto fail;
       }
     }
 
     if (! tmp_R) {
       PyErr_Format(PyExc_ValueError, "An unnamed parameter is a NULL SEXP.");
-      Py_DECREF(tmp_obj);
       goto fail;
     }
     SETCAR(c_R, tmp_R);
@@ -1330,7 +1328,6 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       tmp_obj = PySequence_GetItem(citems, arg_i);
       if (! tmp_obj) {
         PyErr_Format(PyExc_ValueError, "No un-named item %i !?", arg_i);
-        Py_XDECREF(tmp_obj);
         Py_XDECREF(citems);
         goto fail;
       }
@@ -1340,14 +1337,12 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
         addArgName = 0;
         PyErr_SetString(PyExc_TypeError, 
                         "None/missing keywords not yet supported.");
-        Py_DECREF(tmp_obj);
         Py_XDECREF(citems);
         goto fail;
       } else if (PyString_Check(argName)) {
         addArgName = 1;
       } else {
         PyErr_SetString(PyExc_TypeError, "All keywords must be strings.");
-        Py_DECREF(tmp_obj);
         Py_XDECREF(citems);
         goto fail;
       }
@@ -1363,7 +1358,6 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
                        "or Python int/long, float, bool, "
                        "or None"
                        );
-          Py_DECREF(tmp_obj);     
           Py_XDECREF(citems);
           goto fail;
         }
