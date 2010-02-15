@@ -90,7 +90,9 @@ staticforward PyObject* EmbeddedR_unserialize(PyObject* self, PyObject* args);
 #include "na_values.h"
 #include "sexp.h"
 #include "r_utils.h"
+#if PY_VERSION_HEX >= 0x02060000
 #include "buffer.h"
+#endif
 #include "array.h"
 #include "sequence.h"
 
@@ -100,11 +102,11 @@ static PySexpObject* newPySexpObject(const SEXP sexp);
 #include "na_values.c"
 #include "sexp.c"
 #include "r_utils.c"
+#if PY_VERSION_HEX >= 0x02060000
 #include "buffer.c"
+#endif
 #include "array.c"
 #include "sequence.c"
-
-
 
 static PyObject *embeddedR_isInitialized;
 
@@ -1761,8 +1763,13 @@ static PyTypeObject VectorSexp_Type = {
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
+#if PY_VERSION_HEX >= 0x02060000
         &VectorSexp_as_buffer,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
+#else
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
+#endif
         VectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
         0,                      /*tp_clear*/
