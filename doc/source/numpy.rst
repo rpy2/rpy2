@@ -17,7 +17,7 @@ From `rpy2` to `numpy`:
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 R vectors or arrays can be  to :mod:`numpy` arrays using
-:meth:`array` or :meth:`asarray`:
+:meth:`numpy.array` or :meth:`numpy.asarray`:
 
 .. code-block:: python
 
@@ -41,7 +41,8 @@ present an interface recognized by `numpy`.
    ostatus_np = numpy.array(ostatus)
    ostatus_npnc = numpy.asarray(ostatus)
 
-The matrix *ostatus* is an 8x8 matrix: 
+The matrix *ostatus* is an 8x8 matrix:
+
 >>> print(ostatus)
       destination
 origin   1   2   3   4   5   6   7   8
@@ -54,7 +55,8 @@ origin   1   2   3   4   5   6   7   8
      7   0   6  19  40  21 158 143  71
      8   0   3  14  32  15 126  91 106
 
-It has been *copied* to a numpy array:
+Its content has been copied to a numpy array:
+
 >>> ostatus_np
 array([[ 50,  19,  26,   8,   7,  11,   6,   2],
        [ 16,  40,  34,  18,  11,  20,   8,   3],
@@ -73,12 +75,19 @@ array([[ 50,  19,  26,   8,   7,  11,   6,   2],
 50
 
 On the other hand, *ostatus_npnc* is a view on *ostatus*; no copy was made:
+
 >>> ostatus_npnc[0, 0] = 456
 >>> ostatus.rx(1, 1)[0]
 456
 
 Since we did modify an actual R dataset for the session, we should restore it:
+
 >>> ostatus_npnc[0, 0] = 50
+
+As we see, :meth:`numpy.asarray`: provides a way to build a *view* on the underlying
+R array, without making a copy. This will be of particular appeal to developpers whishing
+to mix :mod:`rpy2` and :mod:`numpy` code, with the :mod:`rpy2` objects or the :mod:`numpy` view passed to
+functions, or for interactive users much more familiar with the :mod:`numpy` syntax.
 
 
 .. note::
@@ -135,7 +144,7 @@ be used construct `numpy` arrays:
 
 
 .. note::
-   when using :meth:`asarray`, the data are not copied.
+   when using :meth:`numpy.asarray`, the data are not copied.
 
 >>> rx[2]
 3
