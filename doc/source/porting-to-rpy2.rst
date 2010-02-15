@@ -70,6 +70,22 @@ Histogram:
    graphics.rug(ed)
    grdevices.dev_off()
 
+Alternatively, the ggplot2 can be used to make the plots:
+
+.. code-block:: python
+
+   from rpy2.robjects.lib import ggplot2
+
+   p = ggplot2.ggplot(faithful_data) + \
+       ggplot2.aes_string(x = "eruptions") + \
+       ggplot2.geom_histogram(fill = "lightblue") + \
+       ggplot2.geom_density(colour = "orange") + \
+       ggplot2.geom_rug() + \
+       ggplot2.scale_x_continuous("Eruption duration (seconds)") + \
+       ggplot2.options(title = "Old Faithful eruptions")
+
+   p.plot()
+
 .. code-block:: python
 
    long_ed = robjects.FloatVector([x for x in ed if x > 3])
@@ -78,8 +94,8 @@ Histogram:
    stats = importr('stats')
 
    params = {'do.points' : False, 
-              'verticals' : 1, 
-              'main' : "Empirical cumulative distribution function of " + \
+             'verticals' : 1, 
+             'main' : "Empirical cumulative distribution function of " + \
                        "Old Faithful eruptions longer than 3 seconds"}
    graphics.plot(r.ecdf(long_ed), **params)
    x = r_base.seq(3, 5.4, 0.01)
