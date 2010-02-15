@@ -47,6 +47,9 @@ sexp_strides(SEXP sexp, Py_intptr_t *strides, Py_ssize_t itemsize,
   }
 }
 
+
+#if PY_VERSION_HEX >= 0x02060000
+
 static int
 VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
 {
@@ -127,7 +130,7 @@ VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
   view->internal = NULL;
   return 0;
 }
-
+#endif
 
 static Py_ssize_t
 VectorSexp_getsegcount(PySexpObject *self, Py_ssize_t *lenp)
