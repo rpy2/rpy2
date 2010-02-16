@@ -170,6 +170,13 @@ class Vector(RObjectMixin, rinterface.SexpVector):
     names = property(_names_get, _names_set, 
                      "Names for the items in the vector.")
 
+    def iteritems(self):
+        """ iterate over names and values """
+        it_names = iter(self.names)
+        it_self  = iter(self)
+        for k, v in zip(it_names, it_self):
+            yield (k, v)
+
     def sample(self, n, replace = False, probabilities = None):
         """ Draw a sample of size n from the vector. 
         If 'replace' is True, the sampling is done with replacement.

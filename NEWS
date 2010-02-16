@@ -65,6 +65,7 @@ New Features
 - :meth:`DataFrame.cbind` and :meth:`DataFrame.rbind` for binding columns or
   rows to a DataFrame.
 
+- :meth:`Vector.iteritems` to iterate on pairs of names and values.
 
 :mod:`rpy2.rinterface`:
 
