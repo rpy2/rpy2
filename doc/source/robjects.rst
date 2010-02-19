@@ -186,7 +186,7 @@ representations of R objects.
 Vectors
 =======
 
-Beside functions, and environemnts, most of the objects
+Beside functions, and environments, most of the objects
 an R user is interacting with are vector-like.
 For example, this means that any scalar is in fact a vector
 of length one.
@@ -340,10 +340,53 @@ In short, R-style extracting has the following characteristics:
 
 >>> print(x.rx(1))
 [1] 1
->>> print(x.rx(robjects.IntVector((1, 3))))
-[1] 1 3
+>>> print(x.rx('a'))
+a
+1
 
-R/S have particularities, in which some see consistency issues.
+R can extract several elements at once:
+
+>>> i = robjects.IntVector((1, 3))
+>>> print(x.rx(i))
+[1] 1 3
+>>> b = robjects.BoolVector((False, True, False, True, True))
+>>> print(x.rx(b))
+[1] 2 4 5
+
+When a boolean extract vector is of smaller length than the vector,
+is expanded as necessary (this is know in R as the `recycling rule`):
+ 
+>>> print(x.rx(True))
+1:5
+>>> b = robjects.BoolVector((False, True))
+>>> print(x.rx(b))
+[1] 2 4
+
+In R, negative indices are understood as element exclusion.
+
+>>> print(x.rx(-1))
+2:5
+>>> i = robjects.IntVector((-1, -3))
+>>> print(x.rx(i))
+[1] 2 4 5
+
+That last example could also be written:
+
+>>> i = - robjects.IntVector((1, 3)).ro
+>>> print(x.rx(i))
+[1] 2 4 5
+
+R operators are vector operations, with the operator applyied
+to each element in the vector. This can be used to build extract
+indexes.
+
+>>> i = x.ro > 3 # extract values > 3
+>>> i = (x.ro >= 2 ).ro & (x.ro <= 4) # extract values between 2 and 4
+
+(More on R operators in Section  :ref:`robjects-operationsdelegator`).
+
+
+R/S also have particularities, in which some see consistency issues.
 For example although the indexing starts at 1, indexing on 0
 does not return an *index out of bounds* error but a vector
 of length 0:
@@ -351,20 +394,6 @@ of length 0:
 >>> print(x.rx(0))
 integer(0)
 
-The two next examples demonstrate some of `R`'s features
-(such as element exclusion and the recycling rule):
-
->>> print(x.rx(-1))
-2:5
->>> print(x.rx(robjects.IntVector((-1, -3))))
-[1] 2 4 5
->>> print(x.rx(True))
-1:5
->>> print(x.rx(robjects.BoolVector((False, True, False, True, True))))
-[1] 2 4 5
->>> print(x.rx('a'))
-a
-1
 
 
 
@@ -373,9 +402,9 @@ a
 Missing values
 --------------
 
-Anyone with experience in the analysis of real data knows that, well,
+Anyone with experience in the analysis of real data knows that
 some of the data might be missing. In S/Splus/R special *NA* values can be used
-in a data vector to indicate that, and :mod:`rpy2.robjects` makes aliases for
+in a data vector to indicate that fact, and :mod:`rpy2.robjects` makes aliases for
 those available as data objects :data:`NA_bool`, :data:`NA_real`, :data:`NA_integer`, 
 :data:`NA_character`, :data:`NA_complex`.
 
@@ -401,31 +430,40 @@ as much as, necessary.
 To expose that to Python, a delegating attribute :attr:`ro` is provided
 for vector-like objects.
 
-+----------+----------+
-| operator | R (.ro)  |
-+==========+==========+
-| ``+``    | Add      |
-+----------+----------+
-| ``-``    | Subtract |
-+----------+----------+
-| ``*``    | Multiply |
-+----------+----------+
-| ``/``    | Divide   |
-+----------+----------+
-| ``**``   | Power    |
-+----------+----------+
-| ``or``   | Or       |
-+----------+----------+
-| ``and``  | And      |
-+----------+----------+
++----------+-----------------+
+| Python   |    R            |
++==========+=================+
+| ``+``    | ``+``           |
++----------+-----------------+
+| ``-``    | ``-``           |
++----------+-----------------+
+| ``*``    | ``*``           |
++----------+-----------------+
+| ``/``    | ``/``           |
++----------+-----------------+
+| ``**``   | ``**`` or ``^`` |
++----------+-----------------+
+| ``or``   | ``|``           |
++----------+-----------------+
+| ``and``  | ``&``           |
++----------+-----------------+
+| ``<``    | ``<``           |
++----------+-----------------+
+| ``<=``   | ``<=``          |
++----------+-----------------+
+| ``==``   | ``==``          |
++----------+-----------------+
+| ``!=``   | ``!=``          |
++----------+-----------------+
 
 >>> x = robjects.r.seq(1, 10)
 >>> print(x.ro + 1)
 2:11
 
 .. note::
-   In Python, the operator ``+`` concatenates sequence objects, 
-   and this behavior has been conserved.
+   In Python, using the operator ``+`` on two sequences 
+   concatenates them and this behavior has been conserved.
+   >>> print(x + 1)
 
 .. note::
    The boolean operator ``not`` cannot be redefined in Python (at least up to
@@ -683,11 +721,17 @@ can therefore be extracted on two indexes.
 >>> print(subdataf)
   letter value
 1      x     1
->>> subdataf = dataf.rx(robjects.IntVector((1,3)), True)
+>>> rows_i <- robjects.IntVector((1,3))
+>>> subdataf = dataf.rx(rows_i, True)
 >>> print(subdataf)
   letter value
 1      x     1
 3      z     3
+
+That last example is something extremely common in R. A vector of indices,
+here *rows_i*, is used to take a subset of the :class:`DataFrame`.
+
+
 
 
 Python docstrings

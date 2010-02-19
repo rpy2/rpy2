@@ -138,6 +138,16 @@ from garbage collection.
 
 Such objects can be created when using the constructor for an `Sexp*` class.
 
+For example:
+
+>>> x = rinterface.IntVector((1,2,3))
+
+creates a fully usable R vector, but it does not have an associtated
+R symbol (it is in memory, but cannot be called by name). It is will be
+protected from garbage collection until the Python garbage collector
+claims it.
+
+
 Pass-by-value paradigm
 ----------------------
 
@@ -239,7 +249,7 @@ of any sort is performed on the object.
 Interactive features
 ====================
 
-The embedded R started from :mod:`rpy2` is interactive, which 
+The embedded R started from :mod:`rpy2` is interactive by default, which 
 means that a number of interactive features present when working
 in an interactive R console will be available for use.
 
@@ -248,20 +258,36 @@ can also be triggered indirectly, as some on the R functions will behave
 differently when run interactively compared to when run in the so-called
 *BATCH mode*.
 
+.. note::
+
+   However, interactive use may mean the ability to periodically check
+   and process events. This is for example the case with interactive
+   graphics devices or with the HTML-based help system 
+   (see :ref:`rinterface-interactive-processevents`).
+
+
 I/O with the R console
 ----------------------
 
 See :ref:`rinterface-callbacks_consoleio`.
 
 
-Graphical devices
------------------
+.. _rinterface-interactive-processevents:
 
-Interactive graphical devices can be resized and the information they display
-refreshed, provided that the embedded R process is instructed to process
-pending interactive events.
+Processing interactive events
+-----------------------------
 
-Currently, the way to achieve this is to call the function
+An interactive R session is can start interactive activities
+that require a continuous monitoring for events. A typical example
+is the interactive graphical devices (`plotting windows`),
+as they can be resized and the information they display is refreshed.
+
+However, to do so the R process must be instructed to process
+pending interactive events. This is done by the R console for example,
+but :mod:`rpy2` is designed as a library rather than a threaded R process
+running within Python (yet this can be done as shown below).
+
+The way to restore interactivity this is simply to call the function
 :func:`rinterface.process_revents` at regular intervals.
 
 This can be taken care of by an higher-level interface, or can
@@ -270,7 +296,7 @@ be hacked quickly as::
    import rpy2.rinterface as rinterface
    import time
 
-   def refresh():
+   def r_refresh():
        # Ctrl-C to interrupt
        while True:
            rinterface.process_revents()
@@ -281,8 +307,11 @@ to a thread whenever a script is running::
 
    import threading
    
-   t = threading.Timer(0.1, refresh)
+   t = threading.Timer(0.1, r_refresh)
    t.start()
+
+By doing so, one makes R run an thread with the Python process.
+
    
 .. autofunction:: process_revents()
 
