@@ -63,7 +63,7 @@ class ExtractDelegator(object):
         """ Assign a given value to a given index position in the vector """
         args = rlc.TaggedList.from_iteritems(item)
         for i, (k, v) in enumerate(args.iteritems()):
-            args[i] = conversion.py2ro(v)       
+            args[i] = conversion.py2ro(v)
         args.append(conversion.py2ro(value), tag = None)
         args.insert(0, self._parent, tag = None)
         fun = self._replacefunction
@@ -127,6 +127,36 @@ class VectorOperationsDelegator(object):
         res = globalenv_ri.get("&")(self._parent, conversion.py2ri(x))
         return conversion.ri2py(res)
 
+    # Comparisons
+
+    def __lt__(self, x):
+        res = globalenv_ri.get("<")(self._parent, conversion.py2ri(x))
+        return conversion.ri2py(res)
+
+    def __le__(self, x):
+        res = globalenv_ri.get("<=")(self._parent, conversion.py2ri(x))
+        return conversion.ri2py(res)
+
+    def __eq__(self, x):
+        res = globalenv_ri.get("==")(self._parent, conversion.py2ri(x))
+        return conversion.ri2py(res)
+
+    def __ne__(self, x):
+        res = globalenv_ri.get("!=")(self._parent, conversion.py2ri(x))
+        return conversion.ri2py(res)
+
+    def __gt__(self, x):
+        res = globalenv_ri.get(">")(self._parent, conversion.py2ri(x))
+        return conversion.ri2py(res)
+
+    def __ge__(self, x):
+        res = globalenv_ri.get(">=")(self._parent, conversion.py2ri(x))
+        return conversion.ri2py(res)
+    
+    # 
+    def __neg__(self):
+        res = globalenv_ri.get("-")(self._parent)
+        return res
 
 
 class Vector(RObjectMixin, rinterface.SexpVector):

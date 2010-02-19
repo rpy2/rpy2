@@ -98,8 +98,6 @@ class VectorTestCase(unittest.TestCase):
         for i, li in enumerate(mySeq):
             self.assertEquals(li ** 2, mySeqPow[i])
 
-        
-
  
     def testGetItem(self):
         letters = robjects.baseenv["letters"]
