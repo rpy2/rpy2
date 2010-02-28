@@ -296,11 +296,11 @@ be hacked quickly as::
    import rpy2.rinterface as rinterface
    import time
 
-   def r_refresh():
+   def r_refresh(interval = 0.03):
        # Ctrl-C to interrupt
        while True:
            rinterface.process_revents()
-           time.sleep(0.1)
+           time.sleep(interval)
 
 The module :mod:`threading` offers a trivial way to dispatch the work
 to a thread whenever a script is running::
