@@ -235,10 +235,21 @@ FactorVector
 
 R's factors are somewhat peculiar: they aim at representing
 a memory-efficient vector of labels, and in order to achieve it
-are implemented as vectors of integers, to which are associated a (presumably
+are implemented as vectors of integers to which are associated a (presumably
 shorter) vector of labels. Each integer represents the position
 of the label in the associated vector of labels.
 
+For example, the following vector of labels
+
++---+---+---+---+---+---+
+| a | b | a | b | b | c |
++---+---+---+---+---+---+
+
+will become
+
++---+---+---+---+---+---+     +---+---+---+
+| 1 | 2 | 1 | 2 | 2 | 3 | and | a | b | c |
++---+---+---+---+---+---+     +---+---+---+
 
 >>> sv = ro.StrVector('ababbc')
 >>> fac = ro.FactorVector(sv)
@@ -1072,8 +1083,8 @@ objects that are R functions see their named arguments translated as similar way
 Finding where an R symbol is coming from
 ----------------------------------------
 
-Knowning which object is effectively considered when a given symbol
-is resolved can of much importance in R, as the number of packages
+Knowing which object is effectively considered when a given symbol
+is resolved can be of much importance in R, as the number of packages
 attached grows and the use of the namespace accessors "::" and ":::" 
 is not so frequent.
 
