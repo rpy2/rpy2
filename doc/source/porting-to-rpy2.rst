@@ -22,11 +22,15 @@ almost iconic status for many :mod:`rpy` users.
 That example is the obvious text for a Rosetta stone and we provide
 its translation into :mod:`rpy2.robjects` for rpy2-2.1.0. This example
 is based on John A. Schroeder's translation for rpy2-2.0.8 (that is
-also working with the 2.1, but cannot use new features for obvious
+also working with version 2.1, but cannot use new features for obvious
 compatibility reasons).
 
 
-Setting up:
+Setting up
+""""""""""
+
+rpy2 can hide more of the R layer, providing an interface that only
+requires Python knowledge.
 
 .. code-block:: python
 
@@ -35,7 +39,13 @@ Setting up:
 
    r_base = importr('base')
 
-Importing the data:
+The example only uses explicitly a :class:`rpy2.robjects.vectors.DataFrame`, and
+defined R packages. The function :func:`rpy2.robjects.packages.importr` allows
+the encapsulation of R functions in packages into a Python-friendly form.
+
+
+Importing the data
+""""""""""""""""""
 
 .. code-block:: python
 
@@ -49,7 +59,8 @@ R's own collection of datasets:
    datasets = importr('datasets')
    faithful_data = datasets.faithful
 
-Summary:
+Summary
+"""""""
 
 .. code-block:: python
 
@@ -57,7 +68,8 @@ Summary:
    for k, v in edsummary.iteritems():
       print("%s: %.3f\n" %(k, v))
 
-Stem-and-leaf plot:
+Stem-and-leaf plot
+""""""""""""""""""
 
 .. code-block:: python
 
@@ -66,7 +78,8 @@ Stem-and-leaf plot:
    print("Stem-and-leaf plot of Old Faithful eruption duration data")
    graphics.stem(faithful_data.rx2("eruptions"))
 
-Histogram:
+Histogram
+"""""""""
 
 .. code-block:: python
 
