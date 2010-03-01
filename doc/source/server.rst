@@ -24,7 +24,11 @@ Server
 ------
 
 An implementation of a simplistic socket server listening
-on a given port
+on a given port for a string to evaluate as R code
+is straightforward with Python's SocketServer module.
+
+Our example server will be in a file `rpyserve.py`, containing
+the following code.
 
 .. literalinclude:: _static/demos/rpyserve.py
 
@@ -39,11 +43,15 @@ Running a server listening on port 9090 is then:
 Client
 ------
 
+Using Python's socket module, implementing a client is
+just as easy. We write the code for ours into a file
+`rpyclient.py`:
+ 
 .. literalinclude:: _static/demos/rpyclient.py
 
 
-Evaluating R code on a local server defined as above, listening on
-port 9090 is then:
+Evaluating R code on a local server as defined in the previous
+section, listening on port 9090 is then:
 
 .. code-block:: bash
 
