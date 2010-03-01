@@ -94,7 +94,7 @@ Histogram
    graphics.rug(ed)
    grdevices.dev_off()
 
-Alternatively, the ggplot2 can be used to make the plots:
+Alternatively, the ggplot2 package can be used to make the plots:
 
 .. code-block:: python
 
@@ -126,7 +126,7 @@ Alternatively, the ggplot2 can be used to make the plots:
    graphics.plot(stats.ecdf(long_ed), **params)
    x = r_base.seq(3, 5.4, 0.01)
    graphics.lines(x, stats.pnorm(x, mean = r_base.mean(long_ed), 
-                                  sd = r_base.sqrt(stats.var(long_ed))),
+                                 sd = r_base.sqrt(stats.var(long_ed))),
                   lty = 3, lwd = 2, col = "salmon")
    grdevices.dev_off()
 
