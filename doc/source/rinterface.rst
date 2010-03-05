@@ -512,21 +512,18 @@ The type of NA is logical (boolean), and one can specify a different
 type with the symbols
 *NA_character_*, *NA_integer_*, *NA_real_*, and *NA_complex_*.
 
-To keep things a little challenging, those symbol are little
+In :mod:`rpy2.rinterface`, the symbols can be accessed by through 
+:data:`NA_Character`, 
+:data:`NA_Integer`, 
+:data:`NA_Real`.
+
+
+This should be preferred way to use R's NA as those symbol are little
 peculiar and cannot be retrieved with :meth:`SexpEnvironment.get`.
-The following incantation can be used instead.
 
-.. code-block:: python
-
-   parse = ri.baseenv.get("parse")
-   NA_character = parse(text = ri.StrSexpVector(("NA_character_", )))
-
-.. note:: 
-
-   In the snippet of code above, the object retrived is then an unevaluated
-   expression. Making using of it as actual missing value in a vector will
-   require its evaluation. For example, the aliases for missing values available from
-   :mod:`rpy2.robjects` (see :ref:`robjects-missingvalues`) were evaluated.
+Those missing values can also be used with the :mod:`rpy2.robjects` layer
+and more documentation about their usage can be found there
+(see :ref:`robjects-missingvalues`).
 
 .. rubric:: Constructors
 
