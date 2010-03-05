@@ -2983,9 +2983,13 @@ initrinterface(void)
 
   /* NA types */
   PyModule_AddObject(m, "NAIntegerType", (PyObject *)&NAInteger_Type);
+  PyModule_AddObject(m, "NA_Integer", NAInteger_New(1));
   PyModule_AddObject(m, "NALogicalType", (PyObject *)&NALogical_Type);
+  PyModule_AddObject(m, "NA_Logical", NALogical_New(1));
   PyModule_AddObject(m, "NARealType", (PyObject *)&NAReal_Type);
+  PyModule_AddObject(m, "NA_Real", NAReal_New(1));
   PyModule_AddObject(m, "NACharacterType", (PyObject *)&NACharacter_Type);
+  PyModule_AddObject(m, "NA_Character", NACharacter_New(1));
 
   if (RPyExc_RuntimeError == NULL) {
     RPyExc_RuntimeError = PyErr_NewException("rpy2.rinterface.RRuntimeError", 
