@@ -424,10 +424,23 @@ those available as data objects :data:`NA_bool`, :data:`NA_real`, :data:`NA_inte
 >>> print(x)
 [1] NA  1  2
 
+The translation of NA types is done at the item level, returning a pointer to
+the corresponding NA singleton class.
+
+>>> tuple(x)
+(NA_integer, 1, 2)
+>>> xt = tuple(x)
+>>> xt[0] is robjects.NA_integer
+True
 
 .. note::
 
    :data:`NA_bool` is the alias for R's *NA*.
+
+.. note::
+
+   The NA objects are pointers to :mod:`rpy2.rinterface` objects.
+
 
 .. _robjects-operationsdelegator:
 

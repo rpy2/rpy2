@@ -18,7 +18,7 @@ More details can be found on the
 
 .. _interactive-sessions:
 
-Interactive sessions
+Interactive consoles
 ====================
 
 Data analysts often like to work interactively, that is going through short
