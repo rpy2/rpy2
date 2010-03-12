@@ -369,7 +369,7 @@ can be added to the axis of a regular scatterplot:
    :scale: 50
 
 
-Polygons can be used for maps, as shown is a relatively artificial
+Polygons can be used for maps, as shown in the relatively artificial
 example below:
 
 .. literalinclude:: _static/demos/graphics.py
@@ -497,8 +497,24 @@ Example:
    :members:
    :undoc-members:
 
+.. autoclass:: rpy2.robjects.lib.grid.Grob(o)
+   :show-inheritance:
+   :members:
+   :undoc-members:
+
+.. autoclass:: rpy2.robjects.lib.grid.GTree(o)
+   :show-inheritance:
+   :members:
+   :undoc-members:
 
 
+
+
+Class diagram
+-------------
+
+.. inheritance-diagram:: rpy2.robjects.lib.grid
+   :parts: 1
 
 
 
