@@ -490,3 +490,109 @@ static PyTypeObject NACharacter_Type = {
         0                      /*tp_is_gc*/
 };
 
+
+
+/* Missing parameter value (not an NA in the usual sense) */
+
+PyDoc_STRVAR(Missing_Type_doc,
+"Missing parameter (in a function call)."
+);
+
+static PyObject*
+MissingType_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  static PySexpObject *self = NULL;
+  static char *kwlist[] = {0};
+
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
+    return NULL;
+  }
+
+  if (self == NULL) {
+    self = (PySexpObject*)(Sexp_Type.tp_new(type, Py_None, Py_None));
+    if (self == NULL) {
+      return NULL;
+    }
+  }
+  Py_XINCREF(self);
+  return (PyObject *)self;
+}
+
+static PyObject*
+MissingType_tp_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+  static char *kwlist[] = {0};
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
+    return NULL;
+  }
+  return 0;
+}
+
+static PyObject*
+MissingType_repr(PyObject *self)
+{
+  static PyObject* repr = NULL;
+  if (repr == NULL) {
+    repr = PyString_FromString("Missing");
+  }
+  Py_XINCREF(repr);
+  return repr;
+}
+
+static PyObject*
+MissingType_str(PyObject *self)
+{
+  static PyObject* repr = NULL;
+  if (repr == NULL) {
+    repr = PyString_FromString("Missing");
+  }
+  Py_XINCREF(repr);
+  return repr;
+}
+
+static PyTypeObject Missing_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rpy2.rinterface.MissingType",       /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        MissingType_repr,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,                      /*tp_call*/
+        MissingType_str,                      /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
+        Missing_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0, //NAInteger_methods,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,                      /*tp_getset*/
+        &Sexp_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        MissingType_tp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        MissingType_tp_new,                      /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};

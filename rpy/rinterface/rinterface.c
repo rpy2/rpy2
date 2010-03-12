@@ -197,7 +197,6 @@ static PyTypeObject NACharacter_Type;
 /* early definition of functions */
 static SEXP newSEXP(PyObject *object, const int rType);
 
-
 /* --- set output from the R console ---*/
 
 static inline PyObject* EmbeddedR_setAnyCallback(PyObject *self,
@@ -2903,6 +2902,13 @@ initrinterface(void)
   PyModule_AddObject(m, "NA_Real", NAReal_New(1));
   PyModule_AddObject(m, "NACharacterType", (PyObject *)&NACharacter_Type);
   PyModule_AddObject(m, "NA_Character", NACharacter_New(1));
+
+  /* Missing */
+  if (PyType_Ready(&Missing_Type) < 0)
+    return;
+  PyModule_AddObject(m, "MissingType", (PyObject *)&Missing_Type);
+  PyModule_AddObject(m, "Missing", Sexp_new(&Missing_Type, 
+  						      Py_None, Py_None));
 
   if (RPyExc_RuntimeError == NULL) {
     RPyExc_RuntimeError = PyErr_NewException("rpy2.rinterface.RRuntimeError", 
