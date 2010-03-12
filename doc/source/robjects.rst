@@ -427,11 +427,15 @@ those available as data objects :data:`NA_bool`, :data:`NA_real`, :data:`NA_inte
 The translation of NA types is done at the item level, returning a pointer to
 the corresponding NA singleton class.
 
->>> tuple(x)
-(NA_integer, 1, 2)
 >>> xt = tuple(x)
+>>> xt
+(NA_integer, 1, 2)
 >>> xt[0] is robjects.NA_integer
 True
+>>> xt[0] == robjects.NA_integer
+True
+>>> [y for y in x if y is not NA_integer]
+[1, 2]
 
 .. note::
 
