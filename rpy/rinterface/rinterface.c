@@ -1318,30 +1318,39 @@ Sexp_rcall(PyObject *self, PyObject *args)
   for (arg_i=0; arg_i<nparams; arg_i++) {
     /* printf("item: %i\n", arg_i); */
     tmp_obj = PySequence_GetItem(params, arg_i);
+    /* PySequence_GetItem() returns a new reference */
     if (! tmp_obj) {
       PyErr_Format(PyExc_ValueError, "No item %i !?", arg_i);
       goto fail;
     }
-    item_length = PyObject_Length(tmp_obj);
+    if (! PyTuple_Check(tmp_obj)) {
+      PyErr_Format(PyExc_ValueError, 
+		   "Item %i in the sequence is not a tuple.",
+		   arg_i);
+      Py_DECREF(tmp_obj);
+      goto fail;
+    }
+    item_length = PyTuple_GET_SIZE(tmp_obj);
     if (item_length != 2) {
       PyErr_Format(PyExc_ValueError, "Item %i in the sequence passed as an argument"
                    "should have two elements.", 
                    arg_i);
+      Py_DECREF(tmp_obj);
       goto fail;
     }
     /* First check the name for the parameter */
-    argName = PyTuple_GetItem(tmp_obj, 0);
+    argName = PyTuple_GET_ITEM(tmp_obj, 0);
     if (argName == Py_None) {
       addArgName = 0;
     } else if (PyString_Check(argName)) {
       addArgName = 1;
     } else {
       PyErr_SetString(PyExc_TypeError, "All keywords must be strings (or None).");
-      Py_DECREF(argName);
+      Py_DECREF(tmp_obj);
       goto fail;
     }
     /* Then take care of the value associated with that name. */
-    argValue = PyTuple_GetItem(tmp_obj, 1);
+    argValue = PyTuple_GET_ITEM(tmp_obj, 1);
     if (PyObject_TypeCheck(argValue, &Sexp_Type)) {
       tmp_R = RPY_SEXP((PySexpObject *)argValue);
       /* tmp_R = Rf_duplicate(tmp_R); */
@@ -1354,13 +1363,13 @@ Sexp_rcall(PyObject *self, PyObject *args)
                      "All parameters must be of type Sexp_Type,"
                      "or Python int/long, float, bool, or None"
                      );
+	Py_DECREF(tmp_obj);
         goto fail;
       }
     }
     if (! tmp_R) {
-      Py_DECREF(argName);
-      Py_DECREF(argValue);
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+      Py_DECREF(tmp_obj);
       goto fail;
     }
     /* Put the value into the R call being built
@@ -1371,8 +1380,6 @@ Sexp_rcall(PyObject *self, PyObject *args)
       argNameString = PyString_AsString(argName);
       SET_TAG(c_R, install(argNameString));
     }
-    Py_DECREF(argName);
-    Py_DECREF(argValue);
     c_R = CDR(c_R);
   }
 
@@ -1415,7 +1422,7 @@ PyDoc_STRVAR(SexpClosure_rcall_doc,
 
 
 /* This is merely a wrapper around Sexp_rcall,
- * putting an named an unnamed arguments into a tuple of name, value pairs.
+ * putting named and unnamed arguments into a tuple of name, value pairs.
  */
 static PyObject *
 Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
@@ -1424,6 +1431,9 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   Py_ssize_t n_unnamedparams, n_namedparams, n_params, p_i, ppos;
   PyObject *tmp_pair, *tmp_key, *tmp_value, *params, *new_args, *res;
   n_unnamedparams = PySequence_Length(args);
+  /* test present in Objects/funcobject.c in the Python source 
+   * Missing keywords do not translate to an empty dict.
+   */
   if (kwds != NULL && PyDict_Check(kwds)) {
     n_namedparams = PyDict_Size(kwds);
   } else {
@@ -1431,44 +1441,58 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   }
 
   n_params = n_unnamedparams + n_namedparams;
+  /* Tuple to hold (name, value) pairs for Sexp_rcall() */
   params = PyTuple_New(n_params);
+
+  /* Populate with unnamed parameters first */
   for (p_i = 0; p_i < n_unnamedparams; p_i++) {
+
     tmp_pair = PyTuple_New(2);
+
+    /* key/name is None */
+    /* PyTuple_SET_ITEM() "steals" a reference, so INCREF necessary */
     Py_INCREF(Py_None);
     PyTuple_SET_ITEM(tmp_pair, 0, Py_None);
+
+    /* value */
     tmp_value = PyTuple_GET_ITEM(args, p_i);
     Py_INCREF(tmp_value);
-    /* PyTuple_SET_ITEM() "steals" a reference, so INCREF necessary */
     PyTuple_SET_ITEM(tmp_pair, 1, tmp_value);
+
     PyTuple_SET_ITEM(params, p_i,
 		     tmp_pair);
     /* PyTuple_SET_ITEM() "steals" a reference, so no DECREF necessary */
-    /* Py_DECREF(tmp_pair); */
   }
+
   if (n_namedparams > 0) {
     ppos = 0;
     p_i = 0;
     while(PyDict_Next(kwds, &ppos, &tmp_key, &tmp_value)) {
+
       tmp_pair = PyTuple_New(2);
+
       /* PyTuple_SET_ITEM() "steals" a reference, so no DECREF necessary */
       Py_INCREF(tmp_key);
-      Py_INCREF(tmp_value);
       PyTuple_SET_ITEM(tmp_pair, 0, tmp_key);
+
+      Py_INCREF(tmp_value);
       PyTuple_SET_ITEM(tmp_pair, 1, tmp_value);
+
       PyTuple_SET_ITEM(params, p_i + n_unnamedparams,
 		       tmp_pair);
       p_i++;
       /* PyTuple_SET_ITEM() "steals" a reference, so no DECREF necessary */
-      /* Py_DECREF(tmp_pair); */
     }
   }
 
   new_args = PyTuple_New(2);
   PyTuple_SET_ITEM(new_args, 0, params);
+  /* reference to params stolen, no need to DECREF params */
   Py_INCREF(globalEnv);
   PyTuple_SET_ITEM(new_args, 1, globalEnv);
+
   res = Sexp_rcall(self, new_args);
-  Py_DECREF(new_args);
+  //Py_DECREF(new_args);
   return res;
 }
 
