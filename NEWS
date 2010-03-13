@@ -123,6 +123,9 @@ New Features
 
 - Python slices can now be used on R vector-like objects 
 
+- Better handling of R's missing values NA, NA_integer_, NA_real_, 
+  and NA_character_.
+
 :mod:`rpy2.rlike`:
 
 - :meth:`iteritems` for :class:`OrdDict` (formerly:class:`ArgDict`) 
@@ -131,8 +134,6 @@ New Features
 - static method :meth:`from_iteritems` for :class:`TaggedList`,
   for creating a TaggedList from any object having a method :meth:`iteritems`
 
-- Better handling of R's missing values NA, NA_integer_, NA_real_, 
-  and NA_character_.
 
 Changes
 -------
