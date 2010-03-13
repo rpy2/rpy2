@@ -238,8 +238,7 @@ class SexpVectorTestCase(unittest.TestCase):
         formula = ri.baseenv.get('formula')
         f = formula(ri.StrSexpVector(['y ~ x', ]))
         y = f[0]
-        self.assertEquals(ri.LANGSXP, y.typeof)
-        self.assertEquals(1, len(y))
+        self.assertEquals(ri.SYMSXP, y.typeof)
 
     def testGetItemExpression(self):
         expression = ri.baseenv.get('expression')
