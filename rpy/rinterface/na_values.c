@@ -535,7 +535,7 @@ MissingArgType_repr(PyObject *self)
 {
   static PyObject* repr = NULL;
   if (repr == NULL) {
-    repr = PyString_FromString("MissingArg");
+    repr = PyString_FromString("rpy2.rinterface.MissingArg");
   }
   Py_XINCREF(repr);
   return repr;
