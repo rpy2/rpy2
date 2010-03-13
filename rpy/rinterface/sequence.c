@@ -137,10 +137,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       res = (PyObject *)newPySexpObject(sexp_item);
       break;      
     case LANGSXP:
-      tmp = nthcdr(*sexp, i_R);
-      sexp_item = allocVector(LANGSXP, 1);
-      SETCAR(sexp_item, CAR(tmp));
-      SET_TAG(sexp_item, TAG(tmp));
+      sexp_item = CAR(nthcdr(*sexp, i_R));
       res = (PyObject *)newPySexpObject(sexp_item);
       break;
     default:
@@ -166,7 +163,7 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
   }
   embeddedR_setlock();
   SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
-  SEXP res_sexp;
+  SEXP res_sexp, tmp, tmp2;
 
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
@@ -256,14 +253,29 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
         SET_VECTOR_ELT(res_sexp, slice_i, VECTOR_ELT(*sexp, slice_i + ilow));
       }
       break;
-    case LISTSXP:
     case LANGSXP:
+      PROTECT(res_sexp = allocList(slice_len));
+      if ( slice_len > 0 ) {
+	SET_TYPEOF(res_sexp, LANGSXP);
+      }
+      for (tmp = *sexp, tmp2 = res_sexp, slice_i = 0; 
+	   slice_i < slice_len + ilow; tmp = CDR(tmp)) {
+	if (slice_i - ilow > 0) {
+	  tmp2 = CDR(tmp2);
+	  SETCAR(tmp2, tmp);
+	}
+	slice_i++;
+      }
+      UNPROTECT(1);
+      break;
+    case LISTSXP:
     default:
       PyErr_Format(PyExc_ValueError, "Cannot handle type %d", 
                    TYPEOF(*sexp));
       res_sexp = NULL;
       break;
     }
+
   }
   embeddedR_freelock();
   if (res_sexp == NULL) {    return NULL;
