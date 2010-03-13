@@ -195,7 +195,7 @@ graphical representations.
 Like it was shown for *lattice*, a third variable can be represented
 on the same plot using color encoding, and this is now done by
 specifying that as a mapping (the parameter *col* when calling
-the constructor for the :class:`AesString`):
+the constructor for the :class:`AesString`).
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2mtcarscolcyl-begin

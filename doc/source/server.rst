@@ -14,7 +14,8 @@ are currently difficult or impossible to achieve with R serve.
 
 
 The :mod:`pyRserve` package addresses the connection to Rserve
-from Python, and is therefore limited to Rserve servers only.
+from Python, and although it frees one from handling the R server is
+also constrains one to use Rserve.
 
 
 Simple socket-based server and client

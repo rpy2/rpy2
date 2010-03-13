@@ -73,7 +73,7 @@ New Features
   :func:`set_showmessage`, :func:`set_flushconsole`,
   :func:`set_choosefile`, :func:`set_showfiles`
 
-- New object :data:`R_MissingArg`, exposing R's special object for representing
+- New object :data:`MissingArg`, exposing R's special object for representing
   a "missing" parameter in a function call.
   (#this was first a patch by Nathaniel Smith with a function getMissingArgSexp)
 
