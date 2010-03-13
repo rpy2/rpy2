@@ -328,18 +328,19 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
 
   self_typeof = TYPEOF(*sexp);
 
-  if (self_typeof != VECSXP) {
+  if ( (self_typeof != VECSXP) && self_typeof != LANGSXP ) {
     if (TYPEOF(*sexp_val) != self_typeof) {
       PyErr_Format(PyExc_ValueError, 
                    "The new value cannot be of 'typeof' other than %i ('%i' given)", 
                    self_typeof, TYPEOF(*sexp_val));
       return -1;
     }
-
+    
     if (LENGTH(*sexp_val) != 1) {
       PyErr_Format(PyExc_ValueError, "The new value must be of length 1.");
       return -1;
     }
+
   }
 
   SEXP sexp_copy;
@@ -364,6 +365,9 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
     PROTECT(sexp_copy = Rf_duplicate(*sexp_val));
     SET_VECTOR_ELT(*sexp, i_R, sexp_copy);
     UNPROTECT(1);
+    break;
+  case LANGSXP:
+    SETCAR(nthcdr(*sexp, i_R), *sexp_val);
     break;
   default:
     PyErr_Format(PyExc_ValueError, "Cannot handle typeof '%d'", 
