@@ -509,7 +509,7 @@ MissingType_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   }
 
   if (self == NULL) {
-    self = (PySexpObject*)(Sexp_Type.tp_new(type, Py_None, Py_None));
+    self = (PySexpObject*)(Sexp_Type.tp_new(&Sexp_Type, Py_None, Py_None));
     if (self == NULL) {
       return NULL;
     }
@@ -590,9 +590,17 @@ static PyTypeObject Missing_Type = {
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
         0,                      /*tp_dictoffset*/
-        MissingType_tp_init,                      /*tp_init*/
+        (initproc)MissingType_tp_init,                      /*tp_init*/
         0,                      /*tp_alloc*/
         MissingType_tp_new,                      /*tp_new*/
         0,                      /*tp_free*/
         0                      /*tp_is_gc*/
 };
+
+
+static PyObject*
+Missing_Type_New(int new)
+{
+  RPY_NA_NEW(Missing_Type, MissingType_tp_new)
+}
+

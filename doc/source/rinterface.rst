@@ -500,6 +500,12 @@ through the slot named `dimnames`.
 
 .. _missing_values:
 
+.. note::
+
+   R also has the notion of missing parameters in function calls.
+   This is a separate concept, and more information about are given in 
+   Section :ref:`rinterface-functions`.
+
 In R missing the symbol *NA* represents a missing value.
 The general rule that R scalars are in fact vectors applies here again,
 and the following R code is creating a vector of length 1.
@@ -853,6 +859,49 @@ package *graphics*.
 >>> [x for x in envplot_ls]
 >>>
 
+
+.. rubric:: Missing parameters
+
+In R function calls can contain explicitely missing parameters.
+
+.. code-block:: rconsole
+
+   > sum(1,,3)
+   Error: element 2 is empty;
+      the part of the args list of 'sum' being evaluated was:
+      (1, , 3)
+
+This is used when extracting a subset of an array, with a missing
+parameter interpreted by the extract function `[` like all elements
+across that dimension must be taken.
+
+.. code-block:: r
+
+   m <- matrix(1:10, nrow = 5, ncol = 2)
+
+   # extract the second column
+   n <- m[, 2]
+
+   # can also be written
+   n <- "["(m, , 2)
+
+:data:`rinterface.Missing` is a pointer to the singleton :class:`rinterface.MissingType`,
+allowing to explicitly pass missing parameters to a function call.
+
+For example, the extraction of the second column of a matrix with R shown above,
+will write almost identically in rpy2.
+
+.. code-block:: python
+
+   import rpy2.rinterface as ri
+   ri.initr()
+
+   matrix = ri.baseenv['matrix']
+   extract = ri.baseenv['[']
+
+   m = matrix(ri.IntSexpVector(range(1, 11)), nrow = 5, ncol = 2)
+
+   n = extract(m, ri.Missing, 2)
 
 
 :class:`SexpS4`

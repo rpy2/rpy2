@@ -1071,6 +1071,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
   RPY_SEXP(emptyEnv) = R_EmptyEnv;
   RPY_SEXP(rpy_R_MissingArg) = R_MissingArg;
+  RPY_SEXP((PySexpObject *)Missing_Type_New(0)) = R_MissingArg;
   RPY_SEXP(rpy_R_NilValue) = R_NilValue;
 
   errMessage_SEXP = findVar(install("geterrmessage"), 
@@ -2907,8 +2908,7 @@ initrinterface(void)
   if (PyType_Ready(&Missing_Type) < 0)
     return;
   PyModule_AddObject(m, "MissingType", (PyObject *)&Missing_Type);
-  PyModule_AddObject(m, "Missing", Sexp_new(&Missing_Type, 
-  						      Py_None, Py_None));
+  PyModule_AddObject(m, "Missing", Missing_Type_New(1));
 
   if (RPyExc_RuntimeError == NULL) {
     RPyExc_RuntimeError = PyErr_NewException("rpy2.rinterface.RRuntimeError", 
