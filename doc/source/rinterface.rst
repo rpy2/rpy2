@@ -885,7 +885,7 @@ across that dimension must be taken.
    # can also be written
    n <- "["(m, , 2)
 
-:data:`rinterface.Missing` is a pointer to the singleton :class:`rinterface.MissingType`,
+:data:`rinterface.MissingArg` is a pointer to the singleton :class:`rinterface.MissingArgType`,
 allowing to explicitly pass missing parameters to a function call.
 
 For example, the extraction of the second column of a matrix with R shown above,
@@ -901,7 +901,7 @@ will write almost identically in rpy2.
 
    m = matrix(ri.IntSexpVector(range(1, 11)), nrow = 5, ncol = 2)
 
-   n = extract(m, ri.Missing, 2)
+   n = extract(m, ri.MissingArg, 2)
 
 
 :class:`SexpS4`

@@ -172,7 +172,6 @@ PyDoc_STRVAR(module_doc,
 static PySexpObject *globalEnv;
 static PySexpObject *baseNameSpaceEnv;
 static PySexpObject *emptyEnv;
-static PySexpObject *rpy_R_MissingArg;
 static PySexpObject *rpy_R_NilValue;
 
 #ifdef RPY_DEBUG_PRESERVE
@@ -1070,8 +1069,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   RPY_SEXP(globalEnv) = R_GlobalEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
   RPY_SEXP(emptyEnv) = R_EmptyEnv;
-  RPY_SEXP(rpy_R_MissingArg) = R_MissingArg;
-  RPY_SEXP((PySexpObject *)Missing_Type_New(0)) = R_MissingArg;
+  RPY_SEXP((PySexpObject *)MissingArg_Type_New(0)) = R_MissingArg;
   RPY_SEXP(rpy_R_NilValue) = R_NilValue;
 
   errMessage_SEXP = findVar(install("geterrmessage"), 
@@ -2905,10 +2903,10 @@ initrinterface(void)
   PyModule_AddObject(m, "NA_Character", NACharacter_New(1));
 
   /* Missing */
-  if (PyType_Ready(&Missing_Type) < 0)
+  if (PyType_Ready(&MissingArg_Type) < 0)
     return;
-  PyModule_AddObject(m, "MissingType", (PyObject *)&Missing_Type);
-  PyModule_AddObject(m, "Missing", Missing_Type_New(1));
+  PyModule_AddObject(m, "MissingArgType", (PyObject *)&MissingArg_Type);
+  PyModule_AddObject(m, "MissingArg", MissingArg_Type_New(1));
 
   if (RPyExc_RuntimeError == NULL) {
     RPyExc_RuntimeError = PyErr_NewException("rpy2.rinterface.RRuntimeError", 
@@ -2958,15 +2956,6 @@ initrinterface(void)
     return;
   }
   Py_DECREF(emptyEnv);
-
-  rpy_R_MissingArg = (PySexpObject*)Sexp_new(&Sexp_Type,
-                                             Py_None, Py_None);
-  if (PyDict_SetItemString(d, "R_MissingArg", (PyObject *)rpy_R_MissingArg) < 0)
-  {
-    Py_DECREF(rpy_R_MissingArg);
-    return;
-  }
-  Py_DECREF(rpy_R_MissingArg);  
 
   rpy_R_NilValue = (PySexpObject*)Sexp_new(&Sexp_Type,
                                            Py_None, Py_None);

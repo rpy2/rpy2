@@ -278,10 +278,10 @@ class FactorVector(IntVector):
     _nlevels = baseenv_ri['nlevels']
     _isordered = baseenv_ri['is.ordered']
     
-    def __init__(self, obj, levels = rinterface.R_MissingArg,
-                 labels = rinterface.R_MissingArg,
-                 exclude = rinterface.R_MissingArg,
-                 ordered = rinterface.R_MissingArg):
+    def __init__(self, obj, levels = rinterface.MissingArg,
+                 labels = rinterface.MissingArg,
+                 exclude = rinterface.MissingArg,
+                 ordered = rinterface.MissingArg):
         if not isinstance(obj, rinterface.Sexp):
             obj = rinterface.StrSexpVector(obj)
         res = self._factor(obj,
@@ -526,8 +526,8 @@ class DataFrame(Vector):
     @staticmethod
     def from_csvfile(path, header = True, sep = ",",
                      quote = "\"", dec = ".", 
-                     row_names = rinterface.R_MissingArg,
-                     col_names = rinterface.R_MissingArg,
+                     row_names = rinterface.MissingArg,
+                     col_names = rinterface.MissingArg,
                      fill = True, comment_char = "",
                      as_is = False):
         """ Create an instance from data in a .csv file. """
@@ -562,9 +562,9 @@ class DataFrame(Vector):
     def iter_row(self):
         """ iterator across rows """
         for i in xrange(self.nrow):
-            yield self.rx(i+1, rinterface.R_MissingArg)
+            yield self.rx(i+1, rinterface.MissingArg)
 
     def iter_column(self):
         """ iterator across columns """
         for i in xrange(self.ncol):
-            yield self.rx(rinterface.R_MissingArg, i+1)
+            yield self.rx(rinterface.MissingArg, i+1)
