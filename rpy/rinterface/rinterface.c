@@ -1088,7 +1088,6 @@ PyDoc_STRVAR(EmbeddedR_init_doc,
 Initialize an embedded R.\
 ");
 
-
 static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
 {
   /* FIXME: Have a reference count for R objects known to Python.
@@ -1110,7 +1109,8 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   /* */
 
   Rf_endEmbeddedR((int)fatal);
-  embeddedR_status = rpy_has_status(! RPY_R_INITIALIZED);
+  char str[32];
+  embeddedR_status = embeddedR_status & (! RPY_R_INITIALIZED);
 
   RPY_SEXP(globalEnv) = R_EmptyEnv;
   RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
