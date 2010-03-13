@@ -75,9 +75,15 @@ class LibraryError(ImportError):
     pass
 
 
-def importr(name, robject_translations = {}, signature_translation = True):
+def importr(name, robject_translations = {}, signature_translation = True,
+            suppress_messages = True):
     """ Import an R package (and return a module-like object). """
-    ok = _require(rinterface.StrSexpVector([name, ]))[0]
+    if suppress_messages:
+        _parse = rinterface.baseenv['parse']
+        expr = _parse(text = rinterface.StrSexpVector(["suppressPackageStartupMessages(base::require(%s))" %name]))
+        ok = rinterface.baseenv['eval'](expr)
+    else:
+        ok = _require(rinterface.StrSexpVector([name, ]))[0]
     if not ok:
         raise LibraryError("The R package %s could not be imported" %name)
     env = _as_env(rinterface.StrSexpVector(['package:'+name, ]))
