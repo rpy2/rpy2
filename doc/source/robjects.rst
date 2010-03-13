@@ -247,9 +247,15 @@ For example, the following vector of labels
 
 will become
 
-+---+---+---+---+---+---+     +---+---+---+
-| 1 | 2 | 1 | 2 | 2 | 3 | and | a | b | c |
-+---+---+---+---+---+---+     +---+---+---+
++---+---+---+---+---+---+
+| 1 | 2 | 1 | 2 | 2 | 3 |
++---+---+---+---+---+---+
+
+and
+
++---+---+---+
+| a | b | c |
++---+---+---+
 
 >>> sv = ro.StrVector('ababbc')
 >>> fac = ro.FactorVector(sv)
@@ -340,7 +346,7 @@ In short, R-style extracting has the following characteristics:
 
 * indexing starts at one
 
-* the parameter to subset on can be a vector of 
+* the argument to subset on can be a vector of 
 
   - integers (negative integers meaning exlusion of the elements)
 
@@ -551,7 +557,7 @@ one must remember that this is just a vector with dimension attributes
 .. note::
 
    In *R*, matrices are column-major ordered, although the constructor 
-   :func:`matrix` accepts a boolean parameter *byrow* that, when true, 
+   :func:`matrix` accepts a boolean argument *byrow* that, when true, 
    will build the matrix *as if* row-major ordered.
 
 Computing on matrices
@@ -847,10 +853,10 @@ Python function:
 >>> rnorm = robjects.r.rnorm
 >>> plot(rnorm(100), ylab="random")
 
-This is all looking fine and simple until R parameters with names 
+This is all looking fine and simple until R arguments with names 
 such as `na.rm` are encountered. By default, this is addressed by
-having a translation of '.' in the R parameter name into a '_' in the Python
-parameter name.
+having a translation of '.' (dot) in the R argument name into a '_' in the Python
+argument name.
 
 Let's take an example in R:
 
@@ -872,9 +878,9 @@ In Python it can then write:
    The object base.rank is an instance of
    :class:`functions.SignatureTranslatedFunction`,
    a child class of :class:`functions.Function`, and the translation of 
-   the parameters made during
+   the argument names made during
    the creation of the instance.
-   This saves the need to translate parameters at each function
+   This saves the need to translate the names at each function
    call, and allow to perform sanity check regarding possible 
    ambiguous translation with an acceptable cost (since this is 
    only performed when the instance is created).
@@ -882,11 +888,11 @@ In Python it can then write:
    If translation is not desired, the class :class:`functions.Function` 
    can be used. With
    that class, using the special Python syntax `**kwargs` is one way to specify
-   named parameters that contain a dot '.'
+   named arguments that contain a dot '.'
 
    It is important to understand that the translation is done by inspecting
    the signature of the R function, and that not much can be guessed from the
-   R ellipsis '...' whenever present. Parameters falling in the '...' will need
+   R ellipsis '...' whenever present. Arguments falling in the '...' will need
    to have their R names passes, as show in the example below:
 
    >>> graphics = importr('graphics')
@@ -898,7 +904,7 @@ In Python it can then write:
    >>> graphics.par(**{'cex.axis': 0.5})
    <Vector - Python:0xae8fbec / R:0xaafb850>
 
-   There exists a way to specify manually parameter mapping:
+   There exists a way to specify manually a argument mapping:
 
    .. code-block:: python
 
@@ -911,7 +917,7 @@ In Python it can then write:
    >>> graphics.par(cex_axis = 0.5)
    <Vector - Python:0xa2cc90c / R:0xa5f7fd8>
 
-   Translating blindly each '.' in parameter names into '_' currently appears
+   Translating blindly each '.' in argument names into '_' currently appears
    to be a risky
    practice, and is left to one to decide for his own code. (Bad) example:
  
@@ -928,7 +934,7 @@ In Python it can then write:
     
    
 Things are also not always that simple, as the use of a dictionary does
-not ensure that the order in which the parameters are passed is conserved.
+not ensure that the order in which the arguments are passed is conserved.
 
 R is capable of introspection, and can return the arguments accepted
 by a function through the function `formals()`, modelled as a method of
@@ -1063,7 +1069,7 @@ differences:
 - A check that the translation is not masking other R symbols in the package
   is performed (e.g., both 'print_me' and 'print.me' are present).
   Should it happen, a :class:`rpy2.robjects.packages.LibraryError` is raised,
-  the optional parameter *robject_translations* to :func:`importr`
+  the optional argument *robject_translations* to :func:`importr`
   shoud be used.
 
 - The translation is concerning one package, limiting the risk
