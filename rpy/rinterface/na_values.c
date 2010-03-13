@@ -498,6 +498,8 @@ PyDoc_STRVAR(MissingArg_Type_doc,
 "Missing argument (in a function call)."
 );
 
+staticforward PyTypeObject MissingArg_Type;
+
 static PyObject*
 MissingArgType_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
@@ -509,7 +511,7 @@ MissingArgType_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   }
 
   if (self == NULL) {
-    self = (PySexpObject*)(Sexp_Type.tp_new(&Sexp_Type, Py_None, Py_None));
+    self = (PySexpObject*)(Sexp_Type.tp_new(&MissingArg_Type, Py_None, Py_None));
     if (self == NULL) {
       return NULL;
     }
