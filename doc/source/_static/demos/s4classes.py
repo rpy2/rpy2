@@ -47,10 +47,10 @@ class LmList(robjects.methods.RS4):
     
     @staticmethod
     def from_formula(formula, 
-                     data = rinterface.R_MissingArg,
-                     family = rinterface.R_MissingArg,
-                     subset = rinterface.R_MissingArg,
-                     weights = rinterface.R_MissingArg):
+                     data = rinterface.MissingArg,
+                     family = rinterface.MissingArg,
+                     subset = rinterface.MissingArg,
+                     weights = rinterface.MissingArg):
         """ Build an LmList from a formula """
         res = LmList._lmfit_from_formula(formula, data,
                                          family = family,
