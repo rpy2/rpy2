@@ -84,29 +84,27 @@ class EmbeddedRTestCase(unittest.TestCase):
                           ('aa', '--verbose', '--no-save'))
 
     def testInterruptR(self):
-        self.assertTrue(False) #testing for interrupt during testing appears to create adverse side-effects
-#     def testInterruptR(self):
-#         if sys.version_info[0] == 2 and sys.version_info[1] < 6:
-#             self.assertTrue(False) # Test unit currently requires Python >= 2.6
-#         rpy_code = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
-#                                                delete = False)
-#         rpy_code_str = os.linesep.join(['import rpy2.robjects as ro',
-#                                         'rcode = "i <- 0"',
-#                                         'rcode += "while(TRUE) {"',
-#                                         'rcode += "i <- i+1"',
-#                                         'rcode += "Sys.sleep(0.01)"',
-#                                         'rcode += "}"',
-#                                         'ro.r(rcode)'])
-#         rpy_code.write(rpy_code_str)
-#         rpy_code.close()
-#         child_proc = subprocess.Popen(('python', rpy_code.name))
-#         #child_proc = subprocess.Popen(('sleep', '113'))
-#         #import pdb; pdb.set_trace()
-#         child_proc.send_signal(signal.SIGINT)
-#         ret_code = child_proc.poll()
-#         #print(ret_code)
-#         #import pdb; pdb.set_trace()
-#         self.assertFalse(ret_code is None) # Interruption failed
+        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
+            self.assertTrue(False) # Test unit currently requires Python >= 2.6
+        rpy_code = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
+                                               delete = False)
+        rpy_code_str = os.linesep.join(['import rpy2.robjects as ro',
+                                        'rcode = "i <- 0"',
+                                        'rcode += "while(TRUE) {"',
+                                        'rcode += "i <- i+1"',
+                                        'rcode += "Sys.sleep(0.01)"',
+                                        'rcode += "}"',
+                                        'ro.r(rcode)'])
+        rpy_code.write(rpy_code_str)
+        rpy_code.close()
+        child_proc = subprocess.Popen(('python', rpy_code.name))
+        #child_proc = subprocess.Popen(('sleep', '113'))
+        #import pdb; pdb.set_trace()
+        child_proc.send_signal(signal.SIGINT)
+        ret_code = child_proc.poll()
+        #print(ret_code)
+        #import pdb; pdb.set_trace()
+        self.assertFalse(ret_code is None) # Interruption failed
 
 
 class CallbacksTestCase(unittest.TestCase):
