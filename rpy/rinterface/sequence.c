@@ -86,7 +86,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     switch (TYPEOF(*sexp)) {
     case REALSXP:
       vd = (NUMERIC_POINTER(*sexp))[i_R];
-      if (vd == NA_REAL) {
+      if (R_IsNA(vd)) {
         res = NAReal_New(1);
       } else {
         res = PyFloat_FromDouble(vd);
