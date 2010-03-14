@@ -211,13 +211,16 @@ class CallbacksTestCase(unittest.TestCase):
         tmp_file.close()
         
     def testSetShowMessage(self):
-        self.assertTrue(False) # no unit test (yet)
         def f(message):
-            return None
+            return "foo"
         rinterface.set_showmessage(f)
+        #FIXME: incomplete test
 
     def testShowMessageWithError(self):
-        self.assertTrue(False) # no unit test (yet)
+        def f(prompt):
+            raise Exception("Doesn't work.")
+        rinterface.set_showmessage(f)
+        #FIXME: incomplete test
 
     def testSetChooseFile(self):
         me = "me"
