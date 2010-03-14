@@ -87,7 +87,7 @@ class NAValuesTestCase(unittest.TestCase):
         
     def testNACharactertoR(self):
         na_character = ri.NACharacterType()
-        self.assertEquals(True, ri.baseenv["is.na"](na_character)[0])
+        self.assertEquals(True, ri.baseenv["is.na"](ri.StrSexpVector((na_character, )))[0])
         
 
 class SexpVectorTestCase(unittest.TestCase):
