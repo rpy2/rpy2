@@ -1291,6 +1291,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
   
   /* A SEXP with the function to call and the arguments and keywords. */
   PROTECT(c_R = call_R = allocList(nparams+1));
+  protect_count++;
   SET_TYPEOF(c_R, LANGSXP);
   fun_R = RPY_SEXP((PySexpObject *)self);
   if (! fun_R) {
