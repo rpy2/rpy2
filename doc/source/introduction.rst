@@ -258,6 +258,55 @@ c(3L, 2L, 1L)
 More information on functions is in Section :ref:`robjects-functions`.
 
 
+Getting help
+============
+
+R has a builtin help system that, just like the pydoc strings are used frequently
+in python during interactive sessions, is used very frequently by R programmmers.
+This help system is accessible from R function, therefore accessible from rpy2.
+
+Help on a topic within a given packages, or currently loaded packages
+---------------------------------------------------------------------
+
+>>> from rpy2.robjects.packages import importr
+>>> utils = importr("utils") 
+>>> help_doc = utils.help("help")
+>>> help_doc[0]
+'/where/R/is/installed/library/utils/help/help'
+
+Converting the object returned to a string will produce the full help text
+on the topic:
+
+>>> str(help_doc)
+[...long output...]
+
+
+
+Locate topics among available packages
+--------------------------------------
+
+>>> help_where = utils.help_search("help")
+
+As before with `help`, the result can be printed / converted to a string,
+giving a similar result to what is obtained from an R session.
+
+.. note::
+
+   The data structure returned can otherwise be used to access the information
+   returned in details.
+
+   >>> tuple(help_where)
+   (<StrVector - Python:0x1f9a968 / R:0x247f908>,
+    <StrVector - Python:0x1f9a990 / R:0x25079d0>,
+    <StrVector - Python:0x1f9a9b8 / R:0x247f928>,
+    <Matrix - Python:0x1f9a850 / R:0x1ec0390>)
+   >>> tuple(help_where[3].colnames)
+   ('topic', 'title', 'Package', 'LibPath')
+
+   However, this is beyond the scope of an introduction, and one should
+   master the content of Section :ref:`robjects-vectors` before anything else.
+
+
 Examples
 ========
 
@@ -437,7 +486,7 @@ Creating an R vector or matrix, and filling its cells using Python code
 
    base = importr('base')
 
-   # create a numerical matrix of size 100x10 and filled with NAs 
+   # create a numerical matrix of size 100x10 filled with NAs 
    m = base.matrix(robjects.NA_Real, nrow=100, ncol=10)
 
    for row_i in xrange(1, 100+1):
