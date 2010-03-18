@@ -290,6 +290,9 @@ class FactorVector(IntVector):
                            exclude = exclude,
                            ordered = ordered)
         self.__sexp__ = res.__sexp__
+        self.ro = VectorOperationsDelegator(self)
+        self.rx = ExtractDelegator(self)
+        self.rx2 = DoubleExtractDelegator(self)
 
     def __levels_get(self):
         res = self._levels(self)
