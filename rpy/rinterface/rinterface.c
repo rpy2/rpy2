@@ -1440,7 +1440,9 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   }
 
   n_params = n_unnamedparams + n_namedparams;
-  /* Tuple to hold (name, value) pairs for Sexp_rcall() */
+  /* Tuple to hold (name, value) pairs for Sexp_rcall().
+   * This must be DECREFed when exiting.
+   */
   params = PyTuple_New(n_params);
 
   /* Populate with unnamed parameters first */
@@ -1486,12 +1488,12 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 
   new_args = PyTuple_New(2);
   PyTuple_SET_ITEM(new_args, 0, params);
-  /* reference to params stolen, no need to DECREF params */
+  /* reference to params stolen, no need to change refcount for params */
   Py_INCREF(globalEnv);
   PyTuple_SET_ITEM(new_args, 1, globalEnv);
 
   res = Sexp_rcall(self, new_args);
-  //Py_DECREF(new_args);
+  Py_DECREF(new_args);
   return res;
 }
 
@@ -2663,25 +2665,25 @@ static SEXP R_PyObject_type_tag;
 static SEXP
 R_PyObject_decref(SEXP s)
 {
-        PyObject* pyo = (PyObject*)R_ExternalPtrAddr(s);
-        if (pyo) {
-                Py_DECREF(pyo);
-                R_ClearExternalPtr(s);
-        }
-        return R_NilValue;
+  PyObject* pyo = (PyObject*)R_ExternalPtrAddr(s);
+  if (pyo) {
+    Py_DECREF(pyo);
+    R_ClearExternalPtr(s);
+  }
+  return R_NilValue;
 }
 
 static SEXP
 mkPyObject(PyObject* pyo)
 {
-        SEXP res;
-        Py_INCREF(pyo);
-        res = R_MakeExternalPtr(pyo, R_PyObject_type_tag, R_NilValue);
-        R_RegisterCFinalizer(res, (R_CFinalizer_t)R_PyObject_decref);
-        return res;
+  SEXP res;
+  Py_INCREF(pyo);
+  res = R_MakeExternalPtr(pyo, R_PyObject_type_tag, R_NilValue);
+  R_RegisterCFinalizer(res, (R_CFinalizer_t)R_PyObject_decref);
+  return res;
 }
 
-#define R_PyObject_TYPE_CHECK(s) \
+#define R_PyObject_TYPE_CHECK(s)					\
   (TYPEOF(s) == EXTPTRSXP && R_ExternalPtrTag(s) == R_PyObject_type_tag)
 
 static SEXP
