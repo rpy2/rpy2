@@ -1317,7 +1317,8 @@ Sexp_rcall(PyObject *self, PyObject *args)
   for (arg_i=0; arg_i<nparams; arg_i++) {
     /* printf("item: %i\n", arg_i); */
     tmp_obj = PySequence_GetItem(params, arg_i);
-    /* PySequence_GetItem() returns a new reference */
+    /* PySequence_GetItem() returns a new reference 
+    * so tmp_obj must be DECREFed when required */
     if (! tmp_obj) {
       PyErr_Format(PyExc_ValueError, "No item %i !?", arg_i);
       goto fail;
@@ -1352,6 +1353,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
     argValue = PyTuple_GET_ITEM(tmp_obj, 1);
     if (PyObject_TypeCheck(argValue, &Sexp_Type)) {
       tmp_R = RPY_SEXP((PySexpObject *)argValue);
+      Py_DECREF(tmp_obj);
       /* tmp_R = Rf_duplicate(tmp_R); */
     } else {
       RPY_PYSCALAR_RVECTOR(argValue, tmp_R);
