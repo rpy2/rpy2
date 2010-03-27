@@ -157,7 +157,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
     def __getitem__(self, item):
         res = super(Environment, self).__getitem__(item)
         res = conversion.ri2py(res)
-        res.name = item
+        res._name = item
         return res
 
     def __setitem__(self, item, value):
@@ -171,6 +171,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         """
         res = super(Environment, self).get(item, wantfun = wantfun)
         res = conversion.ri2py(res)
+        res._name = item
         return res
 
 
@@ -230,7 +231,7 @@ class R(object):
     def __getitem__(self, item):
         res = rinterface.globalenv.get(item)
         res = conversion.ri2py(res)
-        res.name = item
+        res._name = item
         return res
 
     #FIXME: check that this is properly working

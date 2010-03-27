@@ -56,6 +56,7 @@ class Package(object):
                                        'a Python object attribute')
             self._rpy2r[rpyname] = rname
             rpyobj = conversion.ri2py(self._env[rname])
+            rpyobj._name = rname
             #FIXME: shouldn't the original R name be also in the __dict__ ?
             self.__dict__[rpyname] = rpyobj
 
