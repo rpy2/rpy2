@@ -7,6 +7,15 @@ from rpy2.robjects import NULL
 _require = rinterface.baseenv['require']
 _as_env = rinterface.baseenv['as.environment']
 
+def quiet_require(name, lib_loc = None):
+    _parse = rinterface.baseenv['parse']
+    if lib_loc == None:
+        lib_loc = "NULL"
+    expr_txt = "suppressPackageStartupMessages(base::require(%s, lib.loc=%s))" \
+        %(name, lib_loc)
+    expr = _parse(text = rinterface.StrSexpVector([expr_txt, ]))
+    ok = rinterface.baseenv['eval'](expr)
+    return ok
 
 class Package(object):
     """ Models an R package
@@ -76,19 +85,14 @@ class LibraryError(ImportError):
     pass
 
 
+
 def importr(name, 
             lib_loc = None,
             robject_translations = {}, signature_translation = True,
             suppress_messages = True):
     """ Import an R package (and return a module-like object). """
     if suppress_messages:
-        _parse = rinterface.baseenv['parse']
-        if lib_loc == None:
-            lib_loc = "NULL"
-        expr_txt = "suppressPackageStartupMessages(base::require(%s, lib.loc=%s))" \
-            %(name, lib_loc)
-        expr = _parse(text = rinterface.StrSexpVector([expr_txt, ]))
-        ok = rinterface.baseenv['eval'](expr)
+        ok = quiet_require(name, lib_loc = lib_loc)
     else:
         ok = _require(rinterface.StrSexpVector([name, ]), **{'lib.loc': lib_loc})[0]
     if not ok:
