@@ -1318,7 +1318,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
     /* printf("item: %i\n", arg_i); */
     tmp_obj = PySequence_GetItem(params, arg_i);
     /* PySequence_GetItem() returns a new reference 
-    * so tmp_obj must be DECREFed when required */
+    * so tmp_obj must be DECREFed when no longer required */
     if (! tmp_obj) {
       PyErr_Format(PyExc_ValueError, "No item %i !?", arg_i);
       goto fail;
@@ -1339,6 +1339,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
       goto fail;
     }
     /* First check the name for the parameter */
+    /* (stolen reference, no need to look after it)*/
     argName = PyTuple_GET_ITEM(tmp_obj, 0);
     if (argName == Py_None) {
       addArgName = 0;
@@ -1350,6 +1351,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
       goto fail;
     }
     /* Then take care of the value associated with that name. */
+    /* (stolen reference, no need to look after it)*/
     argValue = PyTuple_GET_ITEM(tmp_obj, 1);
     if (PyObject_TypeCheck(argValue, &Sexp_Type)) {
       tmp_R = RPY_SEXP((PySexpObject *)argValue);
@@ -1358,8 +1360,6 @@ Sexp_rcall(PyObject *self, PyObject *args)
     } else {
       RPY_PYSCALAR_RVECTOR(argValue, tmp_R);
       if (tmp_R == NULL) {
-	Py_DECREF(argName);
-	Py_DECREF(argValue);
         PyErr_Format(PyExc_ValueError, 
                      "All parameters must be of type Sexp_Type,"
                      "or Python int/long, float, bool, or None"
