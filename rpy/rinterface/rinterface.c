@@ -1369,10 +1369,6 @@ Sexp_rcall(PyObject *self, PyObject *args)
                      "or Python int/long, float, bool, or None"
                      );
 	Py_DECREF(tmp_obj);
-	if (on_the_fly) {
-	  UNPROTECT(1);
-	  protect_count--;
-	}
         goto fail;
       }
     }
