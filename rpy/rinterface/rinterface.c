@@ -1215,7 +1215,7 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
   /* FIXME: evaluate expression in the given */
   interrupted = 0;
   res_R = R_tryEval(expr_R, env_R, &error);
-  
+
   /* Py_END_ALLOW_THREADS */
 #ifdef _WIN32
   PyOS_setsig(SIGBREAK, python_sighandler);   
@@ -1303,7 +1303,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
 
   int arg_i;
   int on_the_fly; /* boolean flag to tell whether a given parameter is
-		   * converted on the fly */
+                   * converted on the fly */
   PyObject *tmp_obj;  /* temp object to iterate through the args tuple*/
 
   /* named args */
@@ -1327,8 +1327,8 @@ Sexp_rcall(PyObject *self, PyObject *args)
     }
     if (! PyTuple_Check(tmp_obj)) {
       PyErr_Format(PyExc_ValueError, 
-		   "Item %i in the sequence is not a tuple.",
-		   arg_i);
+                   "Item %i in the sequence is not a tuple.",
+                   arg_i);
       Py_DECREF(tmp_obj);
       goto fail;
     }
@@ -1368,7 +1368,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
                      "All parameters must be of type Sexp_Type,"
                      "or Python int/long, float, bool, or None"
                      );
-	Py_DECREF(tmp_obj);
+        Py_DECREF(tmp_obj);
         goto fail;
       }
     }
@@ -1376,8 +1376,8 @@ Sexp_rcall(PyObject *self, PyObject *args)
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       Py_DECREF(tmp_obj);
       if (on_the_fly) {
-	UNPROTECT(1);
-	protect_count--;
+        UNPROTECT(1);
+        protect_count--;
       }
       goto fail;
     }
@@ -1417,7 +1417,6 @@ Sexp_rcall(PyObject *self, PyObject *args)
 
   PyObject *res = (PyObject *)newPySexpObject(res_R);
   UNPROTECT(protect_count);
-  Py_INCREF(res);
   embeddedR_freelock();
   return res;
   
@@ -1429,11 +1428,11 @@ Sexp_rcall(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(SexpClosure_rcall_doc,
-	     "S.rcall(args, env) -> Sexp\n\n"
+             "S.rcall(args, env) -> Sexp\n\n"
              "Return the result of evaluating the underlying R function"
-	     " as an instance of type rpy2.rinterface.Sexp,"
+             " as an instance of type rpy2.rinterface.Sexp,"
              " args being a sequence of two-elements items"
-	     " and env a instance of type rpy2.rinterface.SexpEnvironment.");
+             " and env a instance of type rpy2.rinterface.SexpEnvironment.");
 
 
 /* This is merely a wrapper around Sexp_rcall,
@@ -1477,7 +1476,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     PyTuple_SET_ITEM(tmp_pair, 1, tmp_value);
 
     PyTuple_SET_ITEM(params, p_i,
-		     tmp_pair);
+                     tmp_pair);
     /* PyTuple_SET_ITEM() "steals" a reference, so no DECREF necessary */
   }
 
@@ -1496,7 +1495,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
       PyTuple_SET_ITEM(tmp_pair, 1, tmp_value);
 
       PyTuple_SET_ITEM(params, p_i + n_unnamedparams,
-		       tmp_pair);
+                       tmp_pair);
       p_i++;
       /* PyTuple_SET_ITEM() "steals" a reference, so no DECREF necessary */
     }
@@ -2699,7 +2698,7 @@ mkPyObject(PyObject* pyo)
   return res;
 }
 
-#define R_PyObject_TYPE_CHECK(s)					\
+#define R_PyObject_TYPE_CHECK(s)                                        \
   (TYPEOF(s) == EXTPTRSXP && R_ExternalPtrTag(s) == R_PyObject_type_tag)
 
 static SEXP
