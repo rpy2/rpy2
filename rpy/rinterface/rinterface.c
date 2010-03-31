@@ -1302,6 +1302,8 @@ Sexp_rcall(PyObject *self, PyObject *args)
   c_R = CDR(c_R);
 
   int arg_i;
+  int on_the_fly; /* boolean flag to tell whether a given parameter is
+		   * converted on the fly */
   PyObject *tmp_obj;  /* temp object to iterate through the args tuple*/
 
   /* named args */
@@ -1353,11 +1355,13 @@ Sexp_rcall(PyObject *self, PyObject *args)
     /* Then take care of the value associated with that name. */
     /* (stolen reference, no need to look after it)*/
     argValue = PyTuple_GET_ITEM(tmp_obj, 1);
+    on_the_fly = 0;
     if (PyObject_TypeCheck(argValue, &Sexp_Type)) {
       tmp_R = RPY_SEXP((PySexpObject *)argValue);
       Py_DECREF(tmp_obj);
       /* tmp_R = Rf_duplicate(tmp_R); */
     } else {
+      on_the_fly = 1;
       RPY_PYSCALAR_RVECTOR(argValue, tmp_R);
       if (tmp_R == NULL) {
         PyErr_Format(PyExc_ValueError, 
@@ -1382,6 +1386,12 @@ Sexp_rcall(PyObject *self, PyObject *args)
       SET_TAG(c_R, install(argNameString));
     }
     c_R = CDR(c_R);
+    /* if on-the-fly conversion, UNPROTECT the newly created
+     * tmp_R in order to avoid overflowing the protection stack. */
+    if (on_the_fly) {
+      UNPROTECT(1);
+      protect_count--;
+    }
   }
 
   /* Py_BEGIN_ALLOW_THREADS */
