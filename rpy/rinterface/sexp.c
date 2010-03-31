@@ -237,6 +237,23 @@ PyDoc_STRVAR(Sexp_sexp_doc,
              "Opaque C pointer to the underlying R object");
 
 static PyObject*
+Sexp_refcount_get(PyObject *self)
+{
+  PySexpObject* rpyobj = (PySexpObject*)self;
+
+  if (! RPY_SEXP(rpyobj)) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;;
+  }
+  
+  PyObject *res = PyInt_FromLong((long)(rpyobj->sObj->count));
+  return res;
+}
+PyDoc_STRVAR(Sexp_refcount_doc,
+             "Reference counter for the underlying R object");
+
+
+static PyObject*
 Sexp_rsame(PyObject *self, PyObject *other)
 {
   
@@ -463,6 +480,10 @@ static PyGetSetDef Sexp_getsets[] = {
    (getter)Sexp_sexp_get,
    (setter)Sexp_sexp_set,
    Sexp_sexp_doc},
+  {"__sexp_refcount__",
+   (getter)Sexp_refcount_get,
+   (setter)0,
+   Sexp_refcount_doc},
   {NULL, NULL, NULL, NULL}          /* sentinel */
 };
 
