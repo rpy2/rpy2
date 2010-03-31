@@ -1369,12 +1369,20 @@ Sexp_rcall(PyObject *self, PyObject *args)
                      "or Python int/long, float, bool, or None"
                      );
 	Py_DECREF(tmp_obj);
+	if (on_the_fly) {
+	  UNPROTECT(1);
+	  protect_count--;
+	}
         goto fail;
       }
     }
     if (! tmp_R) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       Py_DECREF(tmp_obj);
+      if (on_the_fly) {
+	UNPROTECT(1);
+	protect_count--;
+      }
       goto fail;
     }
     /* Put the value into the R call being built
