@@ -98,12 +98,11 @@ class EmbeddedRTestCase(unittest.TestCase):
         rpy_code.write(rpy_code_str)
         rpy_code.close()
         child_proc = subprocess.Popen(('python', rpy_code.name))
-        #child_proc = subprocess.Popen(('sleep', '113'))
-        #import pdb; pdb.set_trace()
+        time.sleep(1)  # required for the SIGINT to function
+        # (appears like a bug w/ subprocess)
+        # (the exact sleep time migth be machine dependent :( )
         child_proc.send_signal(signal.SIGINT)
         ret_code = child_proc.poll()
-        #print(ret_code)
-        #import pdb; pdb.set_trace()
         self.assertFalse(ret_code is None) # Interruption failed
 
 
