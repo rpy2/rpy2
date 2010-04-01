@@ -1,5 +1,5 @@
-import os
-import sys
+import os, sys
+import tempfile
 import rpy2.rinterface
 
 rpy2.rinterface.initr()
@@ -23,23 +23,25 @@ class RObjectMixin(object):
 
     def __str__(self):
         if sys.platform == 'win32':
-            tfile = self.__tempfile()
-            tmp = self.__file(tfile, open = rpy2.rinterface.StrSexpVector(["w", ]))
+            tmpf = tempfile.NamedTemporaryFile()
+            tmp = self.__file(rpy2.rinterface.StrSexpVector([tmpf.name,]), 
+                              open = rpy2.rinterface.StrSexpVector(["r+", ]))
+            self.__sink(tmp)
         else:
-            tmp = self.__fifo(rpy2.rinterface.StrSexpVector(["", ]))
-        self.__sink(tmp)
+            writeconsole = rpy2.rinterface.get_writeconsole()
+            s = []
+            def f(x):
+                s.append(x)
+            rpy2.rinterface.set_writeconsole(f)
         self.__show(self)
-        self.__sink()
         if sys.platform == 'win32':
-            self.__close(tmp)
-            tmp = self.__file(tfile, open = rpy2.rinterface.StrSexpVector(["r", ]))
-        s = self.__readlines(tmp)
-        if sys.platform == 'win32':
-            self.__close(tmp)
-            self.__unlink(tfile)
+            self.__sink()
+            s = tmpf.readlines()
+            tmpf.close()
+            s = str.join(os.linesep, s)
         else:
-            self.__close(tmp)
-        s = str.join(os.linesep, s)
+            rpy2.rinterface.set_writeconsole(writeconsole)
+            s = str.join('', s)
         return s
 
     def r_repr(self):
