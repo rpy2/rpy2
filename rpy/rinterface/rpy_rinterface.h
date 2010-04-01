@@ -84,6 +84,11 @@ typedef struct {
     PROTECT(sexp);                                                      \
     protect_count++;                                                    \
     LOGICAL_POINTER(sexp)[0] = NA_LOGICAL;                              \
+  } else if ((py_obj) == NAReal_New(0)) {				\
+    sexp = allocVector(REALSXP, 1);					\
+    PROTECT(sexp);                                                      \
+    protect_count++;                                                    \
+    NUMERIC_POINTER(sexp)[0] = NA_REAL;					\
  } else if (PyBool_Check(py_obj)) {                                     \
     sexp = allocVector(LGLSXP, 1);                                      \
     LOGICAL_POINTER(sexp)[0] = py_obj == Py_True ? TRUE : FALSE;        \
