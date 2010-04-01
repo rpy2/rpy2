@@ -293,8 +293,7 @@ setup(
                 ],
     classifiers = ['Programming Language :: Python',
                    'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
-                   'License :: OSI Approved :: GNU General Public License (GPL)
-',
+                   'License :: OSI Approved :: GNU General Public License (GPL)',
                    'Intended Audience :: Developers',
                    'Intended Audience :: Science/Research',
                    'Development Status :: 4 - Beta'
