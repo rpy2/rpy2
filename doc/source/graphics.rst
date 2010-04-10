@@ -348,7 +348,7 @@ only a matter of specifying it in the :class:`AesString` mapping.
 
 
 As can already be observed in the examples with :class:`GeomSmooth`,
-several *geometry* objects can be added on the top of eachother
+several *geometry* objects can be added on the top of each other
 in order to create the final plot. For example, a marginal *rug*
 can be added to the axis of a regular scatterplot:
 
@@ -458,7 +458,7 @@ the graph.
 
 >>> from rpy2.robjects.lib import grid
 
-Getting a new page is achieve by calling the function :func:`grid.newpage`.
+Getting a new page is achieved by calling the function :func:`grid.newpage`.
 
 Calling :func:`layout` will create a layout, e.g. create a layout with one row
 and 3 columns:

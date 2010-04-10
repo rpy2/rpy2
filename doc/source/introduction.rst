@@ -197,7 +197,7 @@ explicitly:
 >>> robjects.r['pi'][0]
 3.1415926535897931
 
-There much that can be achieved with vector, having them to behave
+There is much that can be achieved with vectors, having them to behave
 more like Python lists or R vectors.
 A comprehensive description of the behavior of vectors is found in
 :ref:`robjects-vectors`.
