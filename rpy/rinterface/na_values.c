@@ -57,7 +57,7 @@ static PyNumberMethods NAInteger_NumberMethods = {
   (binaryfunc)NA_binaryfunc, /* nb_divide; */
   (binaryfunc)NA_binaryfunc, /* nb_remainder; */
   (binaryfunc)NA_binaryfunc, /* nb_divmod; */
-  (ternaryfunc)NA_binaryfunc, /* nb_power; */
+  (ternaryfunc)NA_ternaryfunc, /* nb_power; */
   (unaryfunc) NA_unaryfunc, /* nb_negative; */
   (unaryfunc) NA_unaryfunc, /* nb_positive; */
   (unaryfunc) NA_unaryfunc, /* nb_absolute; */
@@ -324,7 +324,7 @@ static PyNumberMethods NAReal_NumberMethods = {
   (binaryfunc)NA_binaryfunc, /* nb_divide; */
   (binaryfunc)NA_binaryfunc, /* nb_remainder; */
   (binaryfunc)NA_binaryfunc, /* nb_divmod; */
-  (ternaryfunc)NA_binaryfunc, /* nb_power; */
+  (ternaryfunc)NA_ternaryfunc, /* nb_power; */
   (unaryfunc) NA_unaryfunc, /* nb_negative; */
   (unaryfunc) NA_unaryfunc, /* nb_positive; */
   (unaryfunc) NA_unaryfunc, /* nb_absolute; */
