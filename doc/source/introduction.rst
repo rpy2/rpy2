@@ -352,6 +352,13 @@ presented in this documentation:
 More about plots and graphics in R, as well as more advanced
 plots are presented in Section :ref:`graphics`.
 
+.. warning::
+
+   By default, the embedded R will open an interactive plotting device,
+   that is a window in which the plot is located.
+   Processing interactive events on that devices, such as resizing or closing
+   the window must be explicitly required
+   (see Section :ref:`rinterface-interactive-processevents`).
 
 Linear models
 -------------
