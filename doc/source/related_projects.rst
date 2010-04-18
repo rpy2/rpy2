@@ -37,7 +37,7 @@ Obviously the Python console can be used, but there exist improvements to it, ma
 the user experience more pleasant with features such as history and autocompletion.
 Example of such enhanced consoles are:
 
-* ipython: interactive-python shell, developped under of the `scipy <http://scipy.org>`
+* ipython: interactive-python shell, developed under of the `scipy <http://scipy.org>`
   (Scientific Python) umbrella
 
 * bpython: curse-based enhancement to the Python console
@@ -55,6 +55,6 @@ a graphical user interface.
 :mod:`rpy2` can be used to provide an R console embedded in such applications, 
 or build an alternative R GUI.
 
-When offering an R console, the developper(s) may want to retain control on the
+When offering an R console, the developer(s) may want to retain control on the
 the way interaction with R is handled, at the level of the console and for the
 base R functions targetting interactivity (see Section  :ref:`rinterface-callbacks`).

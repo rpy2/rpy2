@@ -113,7 +113,7 @@ Tools for working with sequences
 ================================
 
 Tools for working with objects implementing the
-the sequence protocol can be found here.
+sequence protocol can be found here.
 
 
 .. autofunction:: tapply

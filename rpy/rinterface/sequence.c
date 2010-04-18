@@ -485,16 +485,13 @@ VectorSexp_ass_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh, PyObje
         SET_STRING_ELT(*sexp, slice_i + ilow, STRING_ELT(sexp_val, slice_i));
       }
       break;
-/*     case CHARSXP: */
-      /*       FIXME: implement handling of single char (if possible ?) */
-/*       vs = (CHAR(*sexp)[i_R]); */
-/*       res = PyString_FromStringAndSize(vs, 1); */
     case VECSXP:
     case EXPRSXP:
       for (slice_i = 0; slice_i < slice_len; slice_i++) {
         SET_VECTOR_ELT(*sexp, slice_i + ilow, VECTOR_ELT(sexp_val, slice_i));
       }
       break;
+    case CHARSXP:
     case LISTSXP:
     case LANGSXP:
     default:

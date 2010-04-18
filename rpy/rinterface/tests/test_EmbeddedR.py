@@ -98,7 +98,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         rpy_code.write(rpy_code_str)
         rpy_code.close()
         child_proc = subprocess.Popen(('python', rpy_code.name))
-        time.sleep(1)  # required for the SIGINT to function
+        time.sleep(2)  # required for the SIGINT to function
         # (appears like a bug w/ subprocess)
         # (the exact sleep time migth be machine dependent :( )
         child_proc.send_signal(signal.SIGINT)

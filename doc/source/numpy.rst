@@ -134,7 +134,7 @@ The :class:`rpy2.rinterface.SexpVector` objects are made to
 behave like arrays, as defined in the Python package :mod:`numpy`.
 
 The functions :func:`numpy.array` and :func:`numpy.asarray` can
-be used construct `numpy` arrays:
+be used to construct `numpy` arrays:
 
 
 >>> import numpy

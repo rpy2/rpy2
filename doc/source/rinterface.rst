@@ -15,7 +15,7 @@ Overview
 The package :mod:`rinterface` is provided as a lower-level interface,
 for situations where either the use-cases addressed by :mod:`robjects`
 are not covered, or for the cases where the layer in :mod:`robjects`
-has an excessive cost in terms of performances.
+has an excessive cost in terms of performance.
 
 The package can be imported with:
 

@@ -22,7 +22,7 @@ intuitive interface to both Python and R programmers.
 
 :mod:`rpy2.robjects` is written on the top of :mod:`rpy2.rinterface`, and one
 not satisfied with it could easily build one's own flavor of a
-Python-R interface by modifying it (:mod:`rpy2.rpy_classic` is an other
+Python-R interface by modifying it (:mod:`rpy2.rpy_classic` is another
 example of a Python interface built on the top of :mod:`rpy2.rinterface`).
 
 Visible differences with RPy-1.x are:
@@ -315,7 +315,7 @@ names cannot / can be used for subsettting).
 In order to solve this, the Python way and the R way were
 made available through two different routes.
 
-Extractiong, Python-style
+Extracting, Python-style
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The python :meth:`__getitem__` method behaves like a Python user would expect
@@ -633,7 +633,7 @@ Data frames
 
 Data frames are important data structures in R, as they are used to
 represent a data to analyze in a study in a relatively 
-large nunmber of cases.
+large number of cases.
 
 A data frame can be thought of as a tabular representation of data,
 with one variable per column, and one data point per row. Each column
@@ -1002,7 +1002,7 @@ The class :class:`robjects.Formula` is representing an `R` formula.
 .. code-block:: python
 
   x = robjects.Vector(array.array('i', range(1, 11)))
-  y = x.r + rnorm(10, sd=0.2)
+  y = x.ro + rnorm(10, sd=0.2)
 
   fmla = robjects.Formula('y ~ x')
   env = fmla.environment

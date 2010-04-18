@@ -97,7 +97,7 @@ conversion.ri2py = default_ri2py
 def default_py2ri(o):
     """ Convert arbitrary Python object to :class:`rpy2.rinterface.Sexp` to objects,
     creating an R object with the content of the Python object in the process
-    (wichi means data copying).
+    (wich means data copying).
 
     :param o: object
     :rtype: :class:`rpy2.rinterface.Sexp` (and subclasses)
@@ -159,7 +159,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
     def __getitem__(self, item):
         res = super(Environment, self).__getitem__(item)
         res = conversion.ri2py(res)
-        res._name = item
+        res.__rname__ = item
         return res
 
     def __setitem__(self, item, value):
@@ -173,7 +173,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         """
         res = super(Environment, self).get(item, wantfun = wantfun)
         res = conversion.ri2py(res)
-        res._name = item
+        res.__rname__ = item
         return res
 
 
@@ -233,7 +233,7 @@ class R(object):
     def __getitem__(self, item):
         res = rinterface.globalenv.get(item)
         res = conversion.ri2py(res)
-        res._name = item
+        res.__rname__ = item
         return res
 
     #FIXME: check that this is properly working

@@ -57,11 +57,11 @@ static PyNumberMethods NAInteger_NumberMethods = {
   (binaryfunc)NA_binaryfunc, /* nb_divide; */
   (binaryfunc)NA_binaryfunc, /* nb_remainder; */
   (binaryfunc)NA_binaryfunc, /* nb_divmod; */
-  (ternaryfunc)NA_binaryfunc, /* nb_power; */
+  (ternaryfunc)NA_ternaryfunc, /* nb_power; */
   (unaryfunc) NA_unaryfunc, /* nb_negative; */
   (unaryfunc) NA_unaryfunc, /* nb_positive; */
   (unaryfunc) NA_unaryfunc, /* nb_absolute; */
-  (inquiry) NA_nonzero, /* nb_nonzero;       /* Used by PyObject_IsTrue */
+  (inquiry) NA_nonzero, /* nb_nonzero;       -- Used by PyObject_IsTrue */
   (unaryfunc) NA_unaryfunc, /* nb_invert; */
   (binaryfunc) NA_binaryfunc, /* nb_lshift; */
   (binaryfunc) NA_binaryfunc, /* nb_rshift; */
@@ -203,7 +203,7 @@ static PyNumberMethods NALogical_NumberMethods = {
   0, /* nb_negative; */
   0, /* nb_positive; */
   0, /* nb_absolute; */
-  0, /* nb_nonzero;       /* Used by PyObject_IsTrue */
+  0, /* nb_nonzero;  --  Used by PyObject_IsTrue */
   0, /* nb_invert; */
   0, /* nb_lshift; */
   0, /* nb_rshift; */
@@ -324,11 +324,11 @@ static PyNumberMethods NAReal_NumberMethods = {
   (binaryfunc)NA_binaryfunc, /* nb_divide; */
   (binaryfunc)NA_binaryfunc, /* nb_remainder; */
   (binaryfunc)NA_binaryfunc, /* nb_divmod; */
-  (ternaryfunc)NA_binaryfunc, /* nb_power; */
+  (ternaryfunc)NA_ternaryfunc, /* nb_power; */
   (unaryfunc) NA_unaryfunc, /* nb_negative; */
   (unaryfunc) NA_unaryfunc, /* nb_positive; */
   (unaryfunc) NA_unaryfunc, /* nb_absolute; */
-  (inquiry) NA_nonzero, /* nb_nonzero;       /* Used by PyObject_IsTrue */
+  (inquiry) NA_nonzero, /* nb_nonzero;   -- Used by PyObject_IsTrue */
   0, /* nb_invert; */
   0, /* nb_lshift; */
   0, /* nb_rshift; */

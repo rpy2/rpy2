@@ -8,7 +8,7 @@ import conversion
 
 class RObjectMixin(object):
     """ Class to provide methods common to all RObject instances """
-    _name = None
+    __rname__ = None
 
     __tempfile = rpy2.rinterface.baseenv.get("tempfile")
     __file = rpy2.rinterface.baseenv.get("file")
@@ -67,16 +67,6 @@ class RObjectMixin(object):
             
     rclass = property(_rclass_get, _rclass_set, None,
                       "R class for the object, stored an R string vector.")
-
-
-    def _name_get(self):
-        return self._name
-
-    name = property(_name_get, None, None,
-                      """
-Name/symbol for the object as known to R. This is an information with possibly a transient validity,
-which should be used with care.
-""")
 
 
 def repr_robject(o, linesep=os.linesep):

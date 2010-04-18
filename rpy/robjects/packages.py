@@ -26,7 +26,7 @@ class Package(object):
         """ Create a Python module-like object from an R environment,
         using the specified translation if defined. """
         self._env = env
-        self._name = name
+        self.__rname__ = name
         self._translation = translation
         mynames = tuple(self.__dict__)
         self._rpy2r = {}
@@ -42,7 +42,7 @@ class Package(object):
 
     def __fill_rpy2r__(self):
         """ Fill the attribute _rpy2r """
-        name = self._name
+        name = self.__rname__
         for rname in self._env:
             if rname in self._translation:
                 rpyname = self._translation[rname]
@@ -65,7 +65,7 @@ class Package(object):
                                        'a Python object attribute')
             self._rpy2r[rpyname] = rname
             rpyobj = conversion.ri2py(self._env[rname])
-            rpyobj._name = rname
+            rpyobj.__rname__ = rname
             #FIXME: shouldn't the original R name be also in the __dict__ ?
             self.__dict__[rpyname] = rpyobj
 

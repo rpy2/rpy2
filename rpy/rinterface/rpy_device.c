@@ -444,8 +444,7 @@ static PyObject* GrDev_polygon(PyObject *self, PyObject *args)
 }
 
 static PyObject* GrDev_locator_name;
-static Rboolean rpy_Locator(double *x, double *y, 
-                            int coords, pDevDesc dd)
+static Rboolean rpy_Locator(double *x, double *y, pDevDesc dd)
 {
   PyObject *result;
 

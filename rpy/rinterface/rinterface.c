@@ -1505,7 +1505,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   PyTuple_SET_ITEM(new_args, 0, params);
   /* reference to params stolen, no need to change refcount for params */
   Py_INCREF(globalEnv);
-  PyTuple_SET_ITEM(new_args, 1, globalEnv);
+  PyTuple_SET_ITEM(new_args, 1, (PyObject *)globalEnv);
 
   res = Sexp_rcall(self, new_args);
   Py_DECREF(new_args);
