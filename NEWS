@@ -61,6 +61,8 @@ New Features
 
 - :meth:`Vector.iteritems` to iterate on pairs of names and values.
 
+- :attr:`Robject.__rname__` to store the "R name"
+
 :mod:`rpy2.rinterface`:
 
 - New functions for specifying callback functions for R's front-ends:
