@@ -265,7 +265,7 @@ R has a builtin help system that, just like the pydoc strings are used frequentl
 in python during interactive sessions, is used very frequently by R programmmers.
 This help system is accessible from R function, therefore accessible from rpy2.
 
-Help on a topic within a given packages, or currently loaded packages
+Help on a topic within a given package, or currently loaded packages
 ---------------------------------------------------------------------
 
 >>> from rpy2.robjects.packages import importr
