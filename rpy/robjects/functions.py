@@ -70,6 +70,8 @@ class SignatureTranslatedFunction(Function):
                 if py_param != r_param:
                     prm_translate[py_param] = r_param
         self._prm_translate = prm_translate
+        if hasattr(sexp, '__rname__'):
+            self.__rname__ = sexp.__rname__
 
     def __call__(self, *args, **kwargs):
         prm_translate = self._prm_translate
