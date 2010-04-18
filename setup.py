@@ -270,7 +270,7 @@ for scheme in distutils.command.install.INSTALL_SCHEMES.values():
     scheme['data'] = scheme['purelib']
 
 setup(
-    install_requires=['distribute'],
+    #install_requires=['distribute'],
     cmdclass = {'build': build,
                 'build_ext': build_ext},
     name = pack_name,
