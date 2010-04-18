@@ -182,12 +182,15 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
 class Formula(RObjectMixin, rinterface.Sexp):
 
     def __init__(self, formula, environment = rinterface.globalenv):
-        inpackage = rinterface.baseenv["::"]
-        asformula = inpackage(rinterface.StrSexpVector(['stats', ]), 
-                              rinterface.StrSexpVector(['as.formula', ]))
-        formula = rinterface.SexpVector(rinterface.StrSexpVector([formula, ]))
-        robj = asformula(formula,
-                         env = environment)
+        if isinstance(formula, str):
+            inpackage = rinterface.baseenv["::"]
+            asformula = inpackage(rinterface.StrSexpVector(['stats', ]), 
+                                  rinterface.StrSexpVector(['as.formula', ]))
+            formula = rinterface.SexpVector(rinterface.StrSexpVector([formula, ]))
+            robj = asformula(formula,
+                             env = environment)
+        else:
+            robj = formula
         super(Formula, self).__init__(robj)
         
     def getenvironment(self):
