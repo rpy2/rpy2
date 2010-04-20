@@ -5,6 +5,15 @@ rinterface.initr()
 
 class SexpEnvironmentTestCase(unittest.TestCase):
 
+    def setUp(self):
+        self.console = rinterface.get_writeconsole()
+        def noconsole(x):
+            pass
+        rinterface.set_writeconsole(noconsole)
+
+    def tearDown(self):
+        rinterface.set_writeconsole(self.console)
+
     def testNew(self):
         sexp = rinterface.globalenv
         sexp_new = rinterface.SexpEnvironment(sexp)

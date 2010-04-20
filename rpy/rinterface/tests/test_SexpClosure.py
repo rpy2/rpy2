@@ -7,6 +7,16 @@ rinterface.initr()
 
 class SexpClosureTestCase(unittest.TestCase):
 
+
+    def setUp(self):
+        self.console = rinterface.get_writeconsole()
+        def noconsole(x):
+            pass
+        rinterface.set_writeconsole(noconsole)
+
+    def tearDown(self):
+        rinterface.set_writeconsole(self.console)
+
     def testNew(self):
         x = "a"
         self.assertRaises(ValueError, rinterface.SexpClosure, x)
@@ -18,6 +28,7 @@ class SexpClosureTestCase(unittest.TestCase):
     def testRError(self):
         sum = rinterface.baseenv["sum"]
         letters = rinterface.baseenv["letters"]
+        
         self.assertRaises(rinterface.RRuntimeError, sum, letters)
 
     def testClosureenv(self):

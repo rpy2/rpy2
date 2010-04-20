@@ -243,6 +243,9 @@ class CallbacksTestCase(unittest.TestCase):
         rinterface.set_choosefile(rinterface.chooseFile)
 
     def testChooseFileWithError(self):
+        def noconsole(x):
+            pass
+        rinterface.set_writeconsole(noconsole) # reverted by the tearDown method
         def f(prompt):
             raise Exception("Doesn't work.")
         rinterface.set_choosefile(f)
