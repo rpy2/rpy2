@@ -94,7 +94,10 @@ class EmbeddedRTestCase(unittest.TestCase):
                                         'rcode += "i <- i+1"',
                                         'rcode += "Sys.sleep(0.01)"',
                                         'rcode += "}"',
-                                        'ro.r(rcode)'])
+                                        'try:',
+                                        '  ro.r(rcode)',
+                                        'except Exception, e:',
+                                        '  pass'])
         rpy_code.write(rpy_code_str)
         rpy_code.close()
         child_proc = subprocess.Popen(('python', rpy_code.name))
