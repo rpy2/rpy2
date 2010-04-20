@@ -20,7 +20,8 @@ def quiet_require(name, lib_loc = None):
 class Package(object):
     """ Models an R package
     (and can do so from an arbitrary environment - with the caution
-    that locked environments should mostly be considered) """
+    that locked environments should mostly be considered).
+     """
     
     def __init__(self, env, name, translation = {}):
         """ Create a Python module-like object from an R environment,
@@ -68,7 +69,6 @@ class Package(object):
             rpyobj.__rname__ = rname
             #FIXME: shouldn't the original R name be also in the __dict__ ?
             self.__dict__[rpyname] = rpyobj
-
 
 
 
