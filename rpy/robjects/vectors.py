@@ -5,7 +5,7 @@ import conversion
 
 import rpy2.rlike.container as rlc
 
-import copy
+import copy, os
 
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
@@ -525,7 +525,6 @@ class DataFrame(Vector):
         return conversion.ri2py(res)
 
 
-    
     @staticmethod
     def from_csvfile(path, header = True, sep = ",",
                      quote = "\"", dec = ".", 
@@ -555,11 +554,13 @@ class DataFrame(Vector):
         res = conversion.ri2py(res)
         return res
 
-    def to_csvfile(self, path, append = False):
+    def to_csvfile(self, path, quote = True, sep = ",", eol = os.linesep, na = "NA", dec = ".", row_names = True,
+                   col_names = True, qmethod = "escape", append = False):
         """ Save the data into a .csv file. """
         path = conversion.py2ro(path)
         append = conversion.py2ro(append)
-        res = self._write_csv(self, file = path, append = append)
+        res = self._write_csv(self, file = path, quote = quote, sep = sep, eol = eol, na = na, dec = dec,
+                              row_names = row_names, col_names = col_names, qmethod = qmethod, append = append)
         return res
     
     def iter_row(self):
