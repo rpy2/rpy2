@@ -88,23 +88,31 @@ class EmbeddedRTestCase(unittest.TestCase):
             self.assertTrue(False) # Test unit currently requires Python >= 2.6
         rpy_code = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
                                                delete = False)
-        rpy_code_str = os.linesep.join(['import rpy2.robjects as ro',
-                                        'rcode = "i <- 0"',
-                                        'rcode += "while(TRUE) {"',
-                                        'rcode += "i <- i+1"',
-                                        'rcode += "Sys.sleep(0.01)"',
-                                        'rcode += "}"',
-                                        'try:',
-                                        '  ro.r(rcode)',
-                                        'except Exception, e:',
-                                        '  pass'])
+        rpy_code_str = """
+import sys
+import rpy2.robjects as ro
+def f(x):
+  pass
+ro.rinterface.set_writeconsole(f)
+rcode = "i <- 0; "
+rcode += "while(TRUE) { "
+rcode += "i <- i+1; "
+rcode += "Sys.sleep(0.01); "
+rcode += "}"
+try:
+  ro.r(rcode)
+except Exception, e:
+  sys.exit(0)
+  """
+
         rpy_code.write(rpy_code_str)
         rpy_code.close()
         child_proc = subprocess.Popen(('python', rpy_code.name))
-        time.sleep(2)  # required for the SIGINT to function
+        time.sleep(1)  # required for the SIGINT to function
         # (appears like a bug w/ subprocess)
         # (the exact sleep time migth be machine dependent :( )
         child_proc.send_signal(signal.SIGINT)
+        time.sleep(1)  # required for the SIGINT to function
         ret_code = child_proc.poll()
         self.assertFalse(ret_code is None) # Interruption failed
 
