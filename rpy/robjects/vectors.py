@@ -447,7 +447,7 @@ class DataFrame(Vector):
     """
     _dataframe_name = rinterface.StrSexpVector(('data.frame',))
     _read_csv  = utils_ri['read.csv']
-    _write_csv = utils_ri['write.csv']
+    _write_table = utils_ri['write.table']
     _cbind     = rinterface.baseenv['cbind.data.frame']
     _rbind     = rinterface.baseenv['rbind.data.frame']
     
@@ -554,13 +554,22 @@ class DataFrame(Vector):
         res = conversion.ri2py(res)
         return res
 
-    def to_csvfile(self, path, quote = True, sep = ",", eol = os.linesep, na = "NA", dec = ".", row_names = True,
-                   col_names = True, qmethod = "escape", append = False):
+    def to_csvfile(self, path, quote = True, sep = ",", eol = os.linesep, na = "NA", dec = ".", 
+                   row_names = True, col_names = True, qmethod = "escape", append = False):
         """ Save the data into a .csv file. """
         path = conversion.py2ro(path)
         append = conversion.py2ro(append)
-        res = self._write_csv(self, file = path, quote = quote, sep = sep, eol = eol, na = na, dec = dec,
-                              row_names = row_names, col_names = col_names, qmethod = qmethod, append = append)
+        sep = conversion.py2ro(sep)
+        eol = conversion.py2ro(eol)
+        na = conversion.py2ro(na)
+        dec = conversion.py2ro(dec)
+        row_names = conversion.py2ro(row_names)
+        col_names = conversion.py2ro(col_names)
+        qmethod = conversion.py2ro(qmethod)
+        res = self._write_table(self, **{'file': path, 'quote': quote, 'sep': sep, 
+                                         'eol': eol, 'na': na, 'dec': dec,
+                                         'row.names': row_names, 
+                                         'col.names': col_names, 'qmethod': qmethod, 'append': append})
         return res
     
     def iter_row(self):

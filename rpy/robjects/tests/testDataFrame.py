@@ -65,7 +65,7 @@ class DataFrameTestCase(unittest.TestCase):
         dataf.to_csvfile(fh.name)
         dataf = robjects.DataFrame.from_csvfile(fh.name)
         self.assertEquals(3, dataf.nrow)
-        self.assertEquals(2+1, dataf.ncol) # row names means +1
+        self.assertEquals(2, dataf.ncol)
 
     def testIter_col(self):
         dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
