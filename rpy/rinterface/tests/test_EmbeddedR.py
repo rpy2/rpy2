@@ -20,6 +20,9 @@ def onlyAQUAorWindows(function):
         else:
             return function(self)
 
+class CustomException(Exception):
+    pass
+
 class EmbeddedRTestCase(unittest.TestCase):
 
 
@@ -137,7 +140,7 @@ class CallbacksTestCase(unittest.TestCase):
 
     def testWriteConsoleWithError(self):
         def f(x):
-            raise Exception("Doesn't work.")
+            raise CustomException("Doesn't work.")
         rinterface.set_writeconsole(f)
 
         tmp_file = tempfile.NamedTemporaryFile()
