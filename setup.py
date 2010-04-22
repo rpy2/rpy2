@@ -26,7 +26,8 @@ class build(_build):
              "(<r-home>/lib otherwise)"),
         ('r-home-modules=', None,
          "full path for the R shared modules/ directory " +\
-             "(<r-home>/modules otherwise)")]
+             "(<r-home>/modules otherwise)") 
+        ]
     boolean_options = _build.boolean_options #+ \
         #['r-autoconfig', ]
 
@@ -37,7 +38,6 @@ class build(_build):
         self.r_home = None
         self.r_home_lib = None
         self.r_home_modules = None
-
 
 class build_ext(_build_ext):
     """
@@ -79,7 +79,7 @@ class build_ext(_build_ext):
         self.set_undefined_options('build',
                                    #('r_autoconfig', 'r_autoconfig'),
                                    ('r_home', 'r_home'))
-        _build_ext.finalize_options(self)
+        _build_ext.finalize_options(self) 
         if self.r_home is None:
             self.r_home = os.popen("R RHOME").readlines()
             if len(self.r_home) == 0:
