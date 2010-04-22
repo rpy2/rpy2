@@ -16,6 +16,14 @@ will want to have a look at it.
 More details can be found on the 
 `rnumpy page <http://bitbucket.org/njs/rnumpy/wiki/Home>`_
 
+Bioconductor
+============
+
+Bioconductor is a popular set of R packages for bioinformatics.
+A number of classes defined within that project are exposed as Python classes through rpy2,
+in the project `rpy2-bioconductor-extensions`_.
+
+
 .. _interactive-sessions:
 
 Interactive consoles

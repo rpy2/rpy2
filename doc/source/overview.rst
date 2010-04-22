@@ -35,7 +35,9 @@ The present documentation describes RPy2, an evolution of RPy-1.x.
 Naturally RPy2 is inspired by RPy, but also by A. Belopolskys's contributions
 that were waiting to be included into RPy.
 
-This effort can be seen as a redesign and rewrite of the RPy package.
+This effort can be seen as a redesign and rewrite of the RPy package, and this
+unfortunately means there is not enough left in common to ensure compatibility.
+
 
 Installation
 ============
@@ -48,7 +50,7 @@ installed rpy2 packages in the *PYTHONPATH*, then and only then install
 the recent version of rpy2 wished.
 
 The current rpy2 can be located with the code snippet below, then
-files and directories starting with rpy2 clean manually.
+files and directories starting with rpy2 can be cleaned manually.
 
 .. code-block:: python
 
@@ -101,7 +103,7 @@ The following options are, or could be, available for download:
   * Pre-compiled binary packages for
 
     * Microsoft's Windows (releases are on Sourceforge, irregular snapshots
-      for the dev version on bitbucket)
+      for the dev version on bitbucket) - there is currently not support for rpy2-2.1
 
     * Apple's MacOS X (although Fink and Macports are available, there does not
       seem to be binaries currently available)
@@ -135,8 +137,11 @@ Microsoft's Windows precompiled binaries
 If available, the executable can be run; this will install the package
 in the default Python installation.
 
-At the time of writing, Microsoft Windows binaries are contributed
-by Laurent Oget (from Predictix) since version 2.0.0b1.
+For few releases in the 2.0.x series, Microsoft Windows binaries were contributed
+by Laurent Oget from Predictix.
+
+There is currently no binaries or support for Microsoft Windows (more for lack of
+ressources than anything else).
 
 .. index::
   single: install;source
@@ -196,8 +201,42 @@ Other options to build the package are:
 Test an installation
 --------------------
 
-An installation can be tested for functionalities in the different layers constituting
-the packages.
+An installation can be tested for functionalities, and whenever necessary 
+the different layers constituting the packages can be tested independently.
+
+.. code-block:: bash
+
+   python -m 'rpy2.tests'
+
+On Python 2.6, this should return that all tests were successful.
+
+
+Whenever more details are needed, one can consider running explicit tests.
+
+.. code-block:: python
+
+  import rpy2.tests
+  import unittest
+
+  # the verbosity level can be increased if needed
+  tr = unittest.TextTestRunner(verbosity = 1)
+  suite = rpy2.tests.suite()
+  tr.run(suite)
+
+.. note:: 
+
+   Running the tests in an interactive session appear to trigger spurious exceptions
+   when testing callback function raising exception. If unsure, just use the first way
+   to test presented in the begining of this section.
+
+.. warning::
+
+  For reasons that remain to be elucidated, running the test suites used to leave the Python
+  interpreter in a fragile state, soon crashing after the tests have been run.
+
+  It is not clear whether this is still the case, but is recommended to terminate the 
+  Python process after the tests and start working with a fresh new session.
+
 
 To test the :mod:`rpy2.robjects` high-level interface:
 
@@ -222,35 +261,6 @@ If interested in the lower-level interface, the tests can be run with:
   tr = unittest.TextTestRunner(verbosity = 1)
   suite = rpy2.rinterface.tests.suite()
   tr.run(suite)
-
-.. note::
-
-  The low-level test suite can be trying unstable features, not used in the :mod:`rpy2.robjects`
-  interface. Negative test results, or eventual crashes, should be considered with care before
-  surrendering to panic.
-
-  Also, win32 versions are still lacking some of the functionalities in the
-  UNIX-alike versions, most notably the callback function for console
-  input and output.
-
-
-.. code-block:: python
-
-  import rpy2.tests
-  import unittest
-
-  # the verbosity level can be increased if needed
-  tr = unittest.TextTestRunner(verbosity = 1)
-  suite = rpy2.tests.suite()
-  tr.run(suite)
-
-.. warning::
-
-  For reasons that remain to be elucidated, running the test suites will leave the Python
-  interpreter in a fragile state, soon crashing after the tests have been run.
-
-  It is therefore recommended to terminate the Python process after the tests and start
-  working with a fresh new session.
 
 
 Contents

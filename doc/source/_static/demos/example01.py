@@ -26,10 +26,5 @@ r.plot(pca, main="Eigen values")
 r.biplot(pca, main="biplot")
 
 
-if not r.require("GO.db")[0]:
-    raise(Exception("Bioconductor Package GO missing"))
-
-
-goItem = r.GOTERM["GO:0000001"]
 
 
