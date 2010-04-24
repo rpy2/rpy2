@@ -7,8 +7,11 @@ PyDoc_STRVAR(NAInteger_Type_doc,
 static PyObject*
 NAInteger_repr(PyObject *self)
 {
-  PyObject* repr = NULL;
-  repr = PyString_FromString("NA_integer_");
+  static PyObject* repr = NULL;
+  if (repr == NULL) {
+    repr = PyString_FromString("NA_integer_");
+  }
+  Py_XINCREF(repr);
   return repr;
 }
 
@@ -19,6 +22,7 @@ NA_str(PyObject *self)
   if (repr == NULL) {
     repr = PyString_FromString("NA");
   }
+  Py_XINCREF(repr);
   return repr;
 }
 
