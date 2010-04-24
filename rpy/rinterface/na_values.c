@@ -1,5 +1,7 @@
 /* --- NA values --- */
 
+#include <longintrepr.h>
+
 PyDoc_STRVAR(NAInteger_Type_doc,
 "Missing value for an integer in R."
 );
@@ -141,7 +143,7 @@ static PyTypeObject NAInteger_Type = {
         0,                      /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-        &PyLong_Type,             /*tp_base*/
+        &PyLong_Type,           /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
@@ -156,8 +158,41 @@ static PyTypeObject NAInteger_Type = {
 static PyObject*
 NAInteger_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-  RPY_NA_TP_NEW("NAIntegerType", PyLong_Type, PyLong_FromLong, 
-                (long)NA_INTEGER)
+  static PyLongObject *self = NULL;
+  static char *kwlist[] = {0};
+  PyObject *py_value;
+  Py_ssize_t i, n;
+
+  assert(PyType_IsSubtype(type, &PyLong_Type));
+
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
+    return NULL;
+  }
+  
+  if (self == NULL) {
+    py_value = PyLong_FromLong((long)(NA_INTEGER));
+    if (py_value == NULL) {
+      return NULL;
+    }
+
+    assert(PyLong_CheckExact(py_value));
+    n = Py_SIZE(py_value);
+    if (n < 0)
+      n = -n;
+    self = (PyLongObject *)(PyLong_Type.tp_alloc(type, n));
+    if (self == NULL) {
+      Py_DECREF(py_value);
+      return NULL;
+    }
+    assert(PyLong_Check(self));
+    Py_SIZE(self) = Py_SIZE(py_value);
+    for (i = 0; i < n; i++) {
+      self->ob_digit[i] = ((PyLongObject *)py_value)->ob_digit[i];
+    }
+    Py_DECREF(py_value);
+  }
+  Py_XINCREF(self);
+  return (PyObject *)self;
 }
 
 static PyObject*
@@ -300,7 +335,7 @@ static PyObject*
 NAReal_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
   RPY_NA_TP_NEW("NARealType", PyFloat_Type, PyFloat_FromDouble, 
-                (long)NA_REAL)
+                (double)NA_REAL)
 }
 
 static PyObject*
