@@ -65,6 +65,10 @@ class NAValuesTestCase(unittest.TestCase):
         self.assertEquals(1, x[0])
         self.assertEquals(2, x[2])
 
+    def testNAIntegerRepr(self):
+        na_int = ri.NAIntegerType()
+        self.assertEquals("NA_integer_", repr(na_int))
+
     def testRtoNALogical(self):
         na_lgl = ri.NALogicalType()
         r_na_lgl = evalr("NA")[0]
@@ -80,6 +84,10 @@ class NAValuesTestCase(unittest.TestCase):
         self.assertTrue(x[1] is na_bool)
         self.assertEquals(True, x[0])
         self.assertEquals(False, x[2])
+
+    def testNAIntegerRepr(self):
+        na_bool = ri.NALogicalType()
+        self.assertEquals("NA", repr(na_bool))
 
     def testRtoNAReal(self):
         na_real = ri.NARealType()
@@ -101,6 +109,10 @@ class NAValuesTestCase(unittest.TestCase):
         self.assertEquals(1.1, x[0])
         self.assertEquals(2.2, x[2])
 
+    def testNARealRepr(self):
+        na_float = ri.NARealType()
+        self.assertEquals("NA_real_", repr(na_float))
+
     def testRtoNACharacter(self):
         na_character = ri.NACharacterType()
         r_na_character = evalr("NA_character_")[0]
@@ -116,6 +128,10 @@ class NAValuesTestCase(unittest.TestCase):
         self.assertTrue(x[1] is na_str)
         self.assertEquals("ab", x[0])
         self.assertEquals("cd", x[2])
+
+    def testNACharacterRepr(self):
+        na_str = ri.NACharacterType()
+        self.assertEquals("NA_character_", repr(na_str))
 
 class SexpVectorTestCase(unittest.TestCase):
 
