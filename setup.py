@@ -277,7 +277,7 @@ setup(
     version = pack_version,
     description = "Python interface to the R language",
     url = "http://rpy.sourceforge.net",
-    license = "GPLv3.0 (except rpy2.rinterface LGPL)",
+    license = "AGPLv3.0 (except rpy2.rinterface: LGPL)",
     author = "Laurent Gautier",
     author_email = "lgautier@gmail.com",
     ext_modules = rinterface_exts[0],
@@ -293,7 +293,7 @@ setup(
                 ],
     classifiers = ['Programming Language :: Python',
                    'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
-                   'License :: OSI Approved :: GNU General Public License (GPL)',
+                   'License :: OSI Approved :: GNU Affero General Public License v3',
                    'Intended Audience :: Developers',
                    'Intended Audience :: Science/Research',
                    'Development Status :: 4 - Beta'
