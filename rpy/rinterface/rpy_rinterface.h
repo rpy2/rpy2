@@ -119,17 +119,21 @@ typedef struct {
   }
 
 
-#define RPY_NA_TP_NEW(type_name, parent_type, value_type, value)        \
+#define RPY_NA_TP_NEW(type_name, parent_type, pyconstructor, value)        \
   static PyObject *self = NULL;                                         \
   static char *kwlist[] = {0};                                          \
-  PyObject *new_args;                                                   \
+  PyObject *py_value, *new_args;					\
                                                                         \
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {          \
     return NULL;                                                        \
   }                                                                     \
                                                                         \
   if (self == NULL) {							\
-    new_args = PyTuple_Pack(1, (value_type)(value));                    \
+    py_value = (pyconstructor)(value);				    	\
+    if (py_value == NULL) {						\
+      return NULL;							\
+    }									\
+    new_args = PyTuple_Pack(1, py_value);				\
     self = (parent_type).tp_new(type, new_args, kwds);                  \
     Py_DECREF(new_args);                                                \
     if (self == NULL) {                                                 \
@@ -137,7 +141,6 @@ typedef struct {
     }                                                                   \
   }                                                                     \
   Py_XINCREF(self);                                                     \
-                                                                        \
   return (PyObject *)self;                                              \
 
 
