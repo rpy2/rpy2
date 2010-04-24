@@ -58,6 +58,13 @@ class NAValuesTestCase(unittest.TestCase):
         na_int = ri.NAIntegerType()
         self.assertTrue((na_int + 2) is na_int)
 
+    def testNAIntegerInVector(self):
+        na_int = ri.NAIntegerType()
+        x = ri.IntSexpVector((1, na_int, 2))
+        self.assertTrue(x[1] is na_int)
+        self.assertEquals(1, x[0])
+        self.assertEquals(2, x[2])
+
     def testRtoNALogical(self):
         na_lgl = ri.NALogicalType()
         r_na_lgl = evalr("NA")[0]
@@ -66,6 +73,13 @@ class NAValuesTestCase(unittest.TestCase):
     def testNALogicaltoR(self):
         na_lgl = ri.NALogicalType()
         self.assertEquals(True, ri.baseenv["is.na"](na_lgl)[0])
+
+    def testNALogicalInVector(self):
+        na_bool = ri.NALogicalType()
+        x = ri.BoolSexpVector((True, na_bool, False))
+        self.assertTrue(x[1] is na_bool)
+        self.assertEquals(True, x[0])
+        self.assertEquals(False, x[2])
 
     def testRtoNAReal(self):
         na_real = ri.NARealType()
@@ -80,6 +94,13 @@ class NAValuesTestCase(unittest.TestCase):
         na_real = ri.NARealType()
         self.assertTrue((na_real + 2.0) is na_real)
 
+    def testNARealInVector(self):
+        na_float = ri.NARealType()
+        x = ri.FloatSexpVector((1.1, na_float, 2.2))
+        self.assertTrue(x[1] is na_float)
+        self.assertEquals(1.1, x[0])
+        self.assertEquals(2.2, x[2])
+
     def testRtoNACharacter(self):
         na_character = ri.NACharacterType()
         r_na_character = evalr("NA_character_")[0]
@@ -89,6 +110,12 @@ class NAValuesTestCase(unittest.TestCase):
         na_character = ri.NACharacterType()
         self.assertEquals(True, ri.baseenv["is.na"](ri.StrSexpVector((na_character, )))[0])
         
+    def testNACharacterInVector(self):
+        na_str = ri.NACharacterType()
+        x = ri.StrSexpVector(("ab", na_str, "cd"))
+        self.assertTrue(x[1] is na_str)
+        self.assertEquals("ab", x[0])
+        self.assertEquals("cd", x[2])
 
 class SexpVectorTestCase(unittest.TestCase):
 
