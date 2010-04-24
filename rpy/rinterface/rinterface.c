@@ -2394,9 +2394,11 @@ newSEXP(PyObject *object, int rType)
     PROTECT(sexp = NEW_NUMERIC(length));
     numeric_ptr = REAL(sexp);
     for (i = 0; i < length; ++i) {
-      if((item = PyNumber_Float(PySequence_Fast_GET_ITEM(seq_object, i)))) {
-        numeric_ptr[i] = PyFloat_AS_DOUBLE(item);
-        Py_DECREF(item);
+      item = PySequence_Fast_GET_ITEM(seq_object, i);
+      item_tmp = PyNumber_Float(item);
+      if (item_tmp) {
+        numeric_ptr[i] = PyFloat_AS_DOUBLE(item_tmp);
+	Py_DECREF(item_tmp);
       }
       else {
         PyErr_Clear();
@@ -2409,10 +2411,12 @@ newSEXP(PyObject *object, int rType)
     PROTECT(sexp = NEW_INTEGER(length));
     integer_ptr = INTEGER(sexp);
     for (i = 0; i < length; ++i) {
-      if((item = PyNumber_Int(PySequence_Fast_GET_ITEM(seq_object, i)))) {
-        long l = PyInt_AS_LONG(item);
+      item = PySequence_Fast_GET_ITEM(seq_object, i);
+      item_tmp = PyNumber_Int(item);
+      if (item_tmp) {
+        long l = PyInt_AS_LONG(item_tmp);
         integer_ptr[i] = RPY_RINT_FROM_LONG(l);
-        Py_DECREF(item);
+        Py_DECREF(item_tmp);
       }
       else {
         PyErr_Clear();
