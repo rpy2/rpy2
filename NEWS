@@ -42,8 +42,8 @@ New Features
 
 - :meth:`Vector.sample` to draw a (random) sample of arbitrary size from a vector
 
-- :data:`NA_bool`, :data:`NA_real`, :data:`NA_integer`, :data:`NA_character`, 
-  :data:`NA_complex` as aliases for R's missing values.
+- :data:`NA_Bool`, :data:`NA_Real`, :data:`NA_Integer`, :data:`NA_Character`, 
+  :data:`NA_Complex` as aliases for R's missing values.
 
 - :data:`ComplexVector` for vectors of complex (real + imaginary) elements
 
@@ -119,8 +119,8 @@ New Features
 
 - Python slices can now be used on R vector-like objects 
 
-- Better handling of R's missing values NA, NA_integer_, NA_real_, 
-  and NA_character_.
+- Better handling of R's missing values NA, `NA_integer_`, `NA_real_`, 
+  and `NA_character_`.
 
 :mod:`rpy2.rlike`:
 
