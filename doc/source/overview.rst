@@ -45,42 +45,54 @@ Installation
 Upgrading from an older release of rpy2
 ---------------------------------------
 
-In order to upgrade one will have to first remove all
-installed rpy2 packages in the *PYTHONPATH*, then and only then install
+In order to upgrade one will have to first remove older
+installed rpy2 packages then and only then install
 the recent version of rpy2 wished.
 
-The current rpy2 can be located with the code snippet below, then
-files and directories starting with rpy2 can be cleaned manually.
+To do so, or to check whether you have an earlier version
+of rpy2 installed do the following in a Python console:
 
 .. code-block:: python
 
    import rpy2
    rpy2.__path__
 
+An error during the execution means that you do not have any older
+version of rpy2 installed and you should proceed to the next section.
+
+If this returns a string containing a path, you should go to that path
+and removed all files and directories starting with *rpy2*. To make sure
+that the cleaning is complete, open a new Python session and check that
+trying to import rpy2 results in an error.
 
 
 Requirements
 ------------
 
-Python version 2.4 or greater, as well as R-2.7.0 or greater are required
-(R-2.8.0 or greater is recommended as R-2.7 has shown stability issues
-when used with rpy2).
+Python version 2.5 or greater, as well as R-2.8.0 or greater are required
 
-Currently the development is mostly done on Linux and a bit MacOS X with the
-following version for the softwares:
+Currently the development is done on UNIX-alike operating systems with the
+following version for the softwares, and those are the recommended
+versions to run rpy2 with.
 
-======== ==========
+======== ===========
 Software Versions
-======== ==========
+======== ===========
  Python   2.6
- R        2.9; 2.10
-======== ==========
+ R        2.10; 2.11
+======== ===========
 
-When compiling R from source, do not forget to specify *--enable-R-shlib* at
-the *./configure* step.
+Python 2.4 and R 2.7 might compile, but there is much less testing done with
+those platforms and likely limited hopes for free support.
 
-gcc-4.4 is used for compiling the C parts on Linux. gcc-4.0 seems to be the default
-on OS X Leopard and yet produce fully functional binaries.
+.. note::
+
+   When compiling R from source, do not forget to specify
+   *--enable-R-shlib* at the *./configure* step.
+
+   gcc-4.4 is used for compiling the C parts on Linux.
+   gcc-4.0 seems to be the default on OS X Leopard and yet produce
+   fully functional binaries.
 
 .. note::
 
@@ -124,9 +136,20 @@ that development items such as Python headers and a C compiler are installed.
 Linux precompiled binaries
 --------------------------
 
-Debian packages are available thanks to Dirk Eddelbuettel.
-This is likely to mean that Ubuntu and other Debian-based
-distributions will also have it in their repositories.
+Linux distribution have packaging systems, and rpy2 is present
+in a number of them, either as a pre-compiled package or a source
+package compiled on-the-fly.
+
+.. note:: 
+
+   Those versions will often be older than the latest rpy2 release.
+
+Known distributions are: Debian and related (such as Ubuntu - often
+the most recent thanks to Dirk Eddelbuettel), Suse, RedHat, Mandrake,
+Gentoo.
+
+On, OS X rpy2 is in Macports and Fink.
+
 
 .. index::
   single: install;win32
