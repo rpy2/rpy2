@@ -109,9 +109,7 @@ and is in fact a list, that is a sequence, of environments.
 When an R library (package in R's terminology) is loaded,
 is it added to the existing sequence of environments. Unless
 specified, it is inserted in second position. The first position
-always remains attributed to the global environment
-(FIXME: there is a bit of circulariry in this definition - check
-how to present it a clear(er) way).
+being always attributed to the global environment.
 The library is said to be attached to the current search path.
 
 .. index::
@@ -522,6 +520,40 @@ In :mod:`rpy2.rinterface`, the symbols can be accessed by through
 :data:`NA_Character`, 
 :data:`NA_Integer`, 
 :data:`NA_Real`.
+
+Those are singleton instance from respective *NA<something>Type* classes.
+
+>>> my_naint = rinterface.NAIntegerType()
+>>> my_naint is rinterface.NA_Integer
+True
+>>> my_naint == rinterface.NA_Integer
+True
+
+*NA* values can be present in vectors returned by R functions.
+
+>>> rinterface.baseenv['as.integer'](rinterface.StrSexpVector(("foo",)))[0]
+NA_integer_
+
+*NA* values can have operators implemented, but the results will then
+be missing values.
+ 
+>>> rinterface.NA_Integer + 1
+NA_integer_
+>>> rinterface.NA_Integer * 10
+NA_integer_
+
+.. warning::
+
+   Python functions relying on C-level implementations might not be following
+   the same rule for *NAs*.
+   
+   >>> x = rinterface.IntSexpVector((1, rinterface.NA_Integer, 2))
+   >>> sum(x)
+   3
+   >>> max(x)
+   2
+   >>> min(x)
+   NA_integer_
 
 
 This should be preferred way to use R's NA as those symbol are little
