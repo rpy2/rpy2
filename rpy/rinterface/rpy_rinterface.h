@@ -16,6 +16,10 @@ typedef int Py_ssize_t;
 typedef inquiry lenfunc;
 typedef intargfunc ssizeargfunc;
 typedef intobjargproc ssizeobjargproc;
+typedef PyObject *(*ssizessizeargfunc)(PyObject *, Py_ssize_t, Py_ssize_t);
+typedef int(*ssizessizeobjargproc)(PyObject *, Py_ssize_t, Py_ssize_t, 
+PyObject *);
+
 #endif
 
 
