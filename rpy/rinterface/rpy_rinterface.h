@@ -19,6 +19,10 @@ typedef intobjargproc ssizeobjargproc;
 typedef PyObject *(*ssizessizeargfunc)(PyObject *, Py_ssize_t, Py_ssize_t);
 typedef int(*ssizessizeobjargproc)(PyObject *, Py_ssize_t, Py_ssize_t, 
 PyObject *);
+typedef Py_ssize_t (*readbufferproc)(PyObject *, Py_ssize_t, void **);
+typedef Py_ssize_t (*writebufferproc)(PyObject *, Py_ssize_t, void **);
+typedef Py_ssize_t (*segcountproc)(PyObject *, Py_ssize_t *);
+typedef Py_ssize_t (*charbufferproc)(PyObject *, Py_ssize_t, char **);
 
 #endif
 
