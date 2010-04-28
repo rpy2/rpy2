@@ -553,6 +553,12 @@ scale_fill_identity = ScaleFillIdentity.new
 class ScaleFillManual(ScaleFill):
    _constructor = ggplot2_env['scale_fill_manual']
 scale_fill_manual = ScaleFillManual.new
+class ScaleLinetypeManual(ScaleLinetype):
+   _constructor = ggplot2_env['scale_linetype_manual']
+scale_linetype_manual = ScaleLinetypeManual.new
+class ScaleShapeManual(ScaleShape):
+   _constructor = ggplot2_env['scale_shape_manual']
+scale_shape_manual = ScaleShapeManual.new
 
 class Options(robjects.Vector):
     pass
