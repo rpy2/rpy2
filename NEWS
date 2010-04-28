@@ -1,5 +1,25 @@
-Release 2.1-dev
-===============
+Release 2.1.2
+=============
+
+Bugs fixed
+----------
+
+- Missing conditional C definition to compile with Python 2.4 # issue 38
+
+
+Release 2.1.1
+=============
+
+Bugs fixed
+----------
+
+- Issues with NA values # issue 37
+
+- Missing manual scale functions in :mod:`rpy2.robjects.lib.ggplot2` # issue 39
+
+
+Release 2.1.0
+=============
 
 New Features
 ------------
