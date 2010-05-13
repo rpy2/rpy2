@@ -6,6 +6,8 @@ Bugs fixed
 
 - Missing conditional C definition to compile with Python 2.4 # issue 38
 
+- Fixed error when calling robjects.vectors.Vector.iteritems() on an R 
+  vector without names
 
 Release 2.1.1
 =============
