@@ -5,7 +5,7 @@ import conversion
 
 import rpy2.rlike.container as rlc
 
-import copy, os
+import copy, os, itertools
 
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
@@ -202,9 +202,12 @@ class Vector(RObjectMixin, rinterface.SexpVector):
 
     def iteritems(self):
         """ iterate over names and values """
-        it_names = iter(self.names)
+        if self.names.rsame(rinterface.R_NilValue):
+            it_names = itertools.cycle((None, ))
+        else:
+            it_names = iter(self.names)
         it_self  = iter(self)
-        for k, v in zip(it_names, it_self):
+        for v, k in zip(it_self, it_names):
             yield (k, v)
 
     def sample(self, n, replace = False, probabilities = None):

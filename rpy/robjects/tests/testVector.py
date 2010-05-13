@@ -161,7 +161,23 @@ class VectorTestCase(unittest.TestCase):
         vec = robjects.StrVector('abc')
         vec[0] = robjects.NA_character
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
-    
+
+    def testIteritems(self):
+        vec = robjects.IntVector(range(3))
+        vec.names = robjects.StrVector('abc')
+        names = [k for k,v in vec.iteritems()]
+        self.assertEquals(['a', 'b', 'c'], names)
+        values = [v for k,v in vec.iteritems()]
+        self.assertEquals([0, 1, 2], values)
+
+    def testIteritemsNoNames(self):
+        vec = robjects.IntVector(range(3))
+        names = [k for k,v in vec.iteritems()]
+        self.assertEquals([None, None, None], names)
+        values = [v for k,v in vec.iteritems()]
+        self.assertEquals([0, 1, 2], values)
+
+
 class ExtractDelegatorTestCase(unittest.TestCase):
 
     def setUp(self):
