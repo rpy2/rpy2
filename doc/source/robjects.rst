@@ -1189,9 +1189,9 @@ There are obviously many ways to try having a mapping between R classes and Pyth
 classes, and the one proposed here is to make Python classes that inherit
 :class:`rpy2.rinterface.methods.RS4`.
 
-Since the S4 system allows polymorphic definition of methods, that is for a given
-method name there can exist several list of possible arguments and type for
-the arguments, it currently
+Since the S4 system allows polymorphic definitions of methods, that is for a given
+method name there can exist several sets of possible arguments (and type for
+the arguments), it currently
 appears trickly to have an simple, automatic, and robust mapping of R
 methods to Python methods. For the time being, one will rely on
 human-written mappings, although some helpers are provided by rpy2.
