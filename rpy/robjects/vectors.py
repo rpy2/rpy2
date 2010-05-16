@@ -55,7 +55,8 @@ class ExtractDelegator(object):
         for i, (k, v) in enumerate(args.iteritems()):
             args[i] = conversion.py2ro(v)
         args.insert(0, self._parent)
-        res = fun.rcall(args.items())
+        res = fun.rcall(args.items(),
+                        globalenv_ri)
         res = conversion.py2ro(res)
         return res
 
