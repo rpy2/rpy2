@@ -20,6 +20,7 @@ from rpy2.robjects.robject import RObjectMixin, RObject
 from rpy2.robjects.methods import RS4
 from rpy2.robjects.vectors import *
 from rpy2.robjects.functions import Function, SignatureTranslatedFunction
+from rpy2.robjects.environments import Environment
 
 _parse = rinterface.baseenv['parse']
 _reval = rinterface.baseenv['eval']
@@ -146,35 +147,6 @@ def default_py2ro(o):
 conversion.py2ro = default_py2ro
 
 
-
-
-class Environment(RObjectMixin, rinterface.SexpEnvironment):
-    """ An R environement. """
-    
-    def __init__(self, o=None):
-        if o is None:
-            o = rinterface.baseenv["new.env"](hash=rinterface.SexpVector([True, ], rinterface.LGLSXP))
-        super(Environment, self).__init__(o)
-
-    def __getitem__(self, item):
-        res = super(Environment, self).__getitem__(item)
-        res = conversion.ri2py(res)
-        res.__rname__ = item
-        return res
-
-    def __setitem__(self, item, value):
-        robj = conversion.py2ro(value)
-        super(Environment, self).__setitem__(item, robj)
-
-    def get(self, item, wantfun = False):
-        """ Get a object from its R name/symol
-        :param item: string (name/symbol)
-        :rtype: object (as returned by :func:`conversion.ri2py`)
-        """
-        res = super(Environment, self).get(item, wantfun = wantfun)
-        res = conversion.ri2py(res)
-        res.__rname__ = item
-        return res
 
 
 
