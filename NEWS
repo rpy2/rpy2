@@ -13,6 +13,9 @@ Bugs fixed
 - Fixed error when calling robjects.vectors.Vector.iteritems() on an R 
   vector without names
 
+- Fixed automatic conversion issues (issue #41)
+
+
 Release 2.1.1
 =============
 
