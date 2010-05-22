@@ -98,6 +98,13 @@ class NumpyConversionsTestCase(unittest.TestCase):
         u = numpy.array([1, 2, 3], dtype=numpy.uint32)
         self.assertRaises(ValueError, robjects.conversion.py2ri, u)
 
+    def testAssignNumpyObject(self):
+        x = numpy.arange(-10., 10., 1)
+        env = robjects.Environment()
+        env["x"] = x
+        self.assertEquals(1, len(env))
+        self.assertTrue(isinstance(env["x"], robjects.Array))
+
 def suite():
     if has_numpy:
         return unittest.TestLoader().loadTestsFromTestCase(NumpyConversionsTestCase)

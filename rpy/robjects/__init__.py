@@ -141,8 +141,8 @@ def default_py2ro(o):
     :param o: object
     :rtype: :class:`rpy2.robjects.RObject (and subclasses)`
     """
-    res = default_py2ri(o)
-    return default_ri2py(res)
+    res = conversion.py2ri(o)
+    return conversion.ri2py(res)
 
 conversion.py2ro = default_py2ro
 

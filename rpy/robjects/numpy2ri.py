@@ -7,6 +7,8 @@ import numpy
 original_conversion = conversion.py2ri
 
 def numpy2ri(o):
+    """ Augmented conversion function, converting numpy arrays into
+    rpy2.rinterface-level R structures. """
     if isinstance(o, numpy.ndarray):
         if not o.dtype.isnative:
             raise(ValueError("Cannot pass numpy arrays with non-native byte orders at the moment."))
