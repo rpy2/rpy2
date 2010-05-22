@@ -682,7 +682,7 @@ or any Python object implementing the method :meth:`iteritems`
 
 Empty `data.frame`:
 
->>> dataf = robjects.DataFrame()
+>>> dataf = robjects.DataFrame({})
 
 `data.frame` with 2 two columns (not that the order of
 the columns in the resulting :class:`DataFrame` can be different
