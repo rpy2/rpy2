@@ -22,17 +22,12 @@ from rpy2.robjects.vectors import *
 from rpy2.robjects.functions import Function, SignatureTranslatedFunction
 from rpy2.robjects.environments import Environment
 
-from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character
+# missing values
+from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Complex
 
 _parse = rinterface.baseenv['parse']
 _reval = rinterface.baseenv['eval']
-# missing values
-# keep them in vectors to keep compatibility with the 2.1.x series 
-NA_real = FloatVector((NA_Real, ))
-NA_integer = IntVector((NA_Integer, ))
-NA_bool = BoolVector((NA_Logical, ))
-NA_character = StrVector((NA_Character, ))
-NA_complex = ComplexVector(_reval(_parse(text = rinterface.StrSexpVector(("NA_complex_", )))))
+
 # NULL
 NULL = _reval(_parse(text = rinterface.StrSexpVector(("NULL", ))))
 # TRUE/FALSE

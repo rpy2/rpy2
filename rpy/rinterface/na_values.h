@@ -7,6 +7,7 @@
 
 static PyTypeObject NAInteger_Type;
 static PyTypeObject NAReal_Type;
+static PyTypeObject NAComplex_Type;
 static PyTypeObject NALogical_Type;
 static PyTypeObject NACharacter_Type;
 

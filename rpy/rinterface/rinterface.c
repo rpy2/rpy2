@@ -189,6 +189,9 @@ static PyTypeObject NALogical_Type;
 static PyObject* NAReal_New(int new);
 static PyTypeObject NAReal_Type;
 
+static PyObject* NAComplex_New(int new);
+static PyTypeObject NAComplex_Type;
+
 static PyObject* NACharacter_New(int new);
 static PyTypeObject NACharacter_Type;
 
@@ -2836,6 +2839,8 @@ initrinterface(void)
     return;
   if (PyType_Ready(&NAReal_Type) < 0)
     return;
+  if (PyType_Ready(&NAComplex_Type) < 0)
+    return;
   if (PyType_Ready(&NACharacter_Type) < 0)
     return;
 
@@ -2924,6 +2929,8 @@ initrinterface(void)
   PyModule_AddObject(m, "NA_Logical", NALogical_New(1));
   PyModule_AddObject(m, "NARealType", (PyObject *)&NAReal_Type);
   PyModule_AddObject(m, "NA_Real", NAReal_New(1));
+  PyModule_AddObject(m, "NAComplexType", (PyObject *)&NAComplex_Type);
+  PyModule_AddObject(m, "NA_Complex", NAComplex_New(1));
   PyModule_AddObject(m, "NACharacterType", (PyObject *)&NACharacter_Type);
   PyModule_AddObject(m, "NA_Character", NACharacter_New(1));
 

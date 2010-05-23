@@ -451,7 +451,7 @@ static PyTypeObject NAReal_Type = {
         0                      /*tp_is_gc*/
 };
 
-/* NA Float / Real */
+/* NA Character */
 
 PyDoc_STRVAR(NACharacter_Type_doc,
 "Missing value for a string."
@@ -529,6 +529,152 @@ static PyTypeObject NACharacter_Type = {
         0                      /*tp_is_gc*/
 };
 
+
+/* NA Complex */
+
+PyDoc_STRVAR(NAComplex_Type_doc,
+"Missing value for a complex in R."
+);
+
+static PyObject*
+NAComplex_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  static PyObject *self = NULL;
+  static char *kwlist[] = {0};
+  PyObject *py_value, *new_args;
+                                
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
+    return NULL;
+  }
+
+  if (self == NULL) {
+    py_value = PyComplex_FromDoubles((double)NA_REAL, (double)NA_REAL);
+    if (py_value == NULL) {
+      return NULL;
+    }
+    new_args = PyTuple_Pack(1, py_value);
+    self = PyComplex_Type.tp_new(type, new_args, kwds);
+    Py_DECREF(new_args);
+    if (self == NULL) {
+      return NULL;
+    }
+  }
+  Py_XINCREF(self);                                                     \
+  return (PyObject *)self;        
+}
+
+static PyObject*
+NAComplex_New(int new)
+{
+  RPY_NA_NEW(NAComplex_Type, NAComplex_tp_new)
+}
+
+static PyObject*
+NAComplex_repr(PyObject *self)
+{
+  static PyObject* repr = NULL;
+  if (repr == NULL) {
+    repr = PyString_FromString("NA_complex_");
+  }
+  Py_XINCREF(repr);
+  return repr;
+}
+
+
+static PyNumberMethods NAComplex_NumberMethods = {
+  (binaryfunc)NA_binaryfunc, /* nb_add */
+  (binaryfunc)NA_binaryfunc, /* nb_subtract; */
+  (binaryfunc)NA_binaryfunc, /* nb_multiply; */
+  (binaryfunc)NA_binaryfunc, /* nb_divide; */
+  (binaryfunc)NA_binaryfunc, /* nb_remainder; */
+  (binaryfunc)NA_binaryfunc, /* nb_divmod; */
+  (ternaryfunc)NA_ternaryfunc, /* nb_power; */
+  (unaryfunc) NA_unaryfunc, /* nb_negative; */
+  (unaryfunc) NA_unaryfunc, /* nb_positive; */
+  (unaryfunc) NA_unaryfunc, /* nb_absolute; */
+  (inquiry) NA_nonzero, /* nb_nonzero;   -- Used by PyObject_IsTrue */
+  0, /* nb_invert; */
+  0, /* nb_lshift; */
+  0, /* nb_rshift; */
+  0, /*  nb_and; */
+  0, /*  nb_xor; */
+  0, /* nb_or; */
+  0, //(coerce) NA_coerce, /* coercion nb_coerce;       -- Used by the coerce() function */
+  (unaryfunc) NA_unaryfunc, /* nb_int; */
+  (unaryfunc) NA_unaryfunc, /* nb_long; */
+  (unaryfunc) NA_unaryfunc, /* nb_float; */
+  0, /* nb_oct; */
+  0, /* nb_hex; */
+  /* Added in release 2.0 */
+  0, /* nb_inplace_add; */
+  0, /* nb_inplace_subtract; */
+  0, /* nb_inplace_multiply; */
+  0, /* nb_inplace_divide; */
+  0, /* nb_inplace_remainder; */
+  0, /* nb_inplace_power; */
+  0, /* nb_inplace_lshift; */
+  0, /* nb_inplace_rshift; */
+  0, /* nb_inplace_and; */
+  0, /* nb_inplace_xor; */
+  0, /* nb_inplace_or; */
+  /* Added in release 2.2 */
+  (binaryfunc) NA_binaryfunc, /* nb_floor_divide; */
+  (binaryfunc) NA_binaryfunc, /* nb_true_divide; */
+  0, /* nb_inplace_floor_divide; */
+  0, /* nb_inplace_true_divide; */
+  /* Added in release 2.5 */
+#if PY_VERSION_HEX >= 0x02050000
+  0 /* nb_index; */
+#endif
+};
+
+
+static PyTypeObject NAComplex_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+        "rpy2.rinterface.NAComplexType",       /*tp_name*/
+        sizeof(PyObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        NAComplex_repr,                      /*tp_repr*/
+        &NAComplex_NumberMethods,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,                      /*tp_call*/
+        NA_str,                      /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
+        NAComplex_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0, //NAInteger_methods,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,                      /*tp_getset*/
+        &PyComplex_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        0, //(initproc)ClosureSexp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        NAComplex_tp_new,                      /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
 
 
 /* Missing parameter value (not an NA in the usual sense) */
