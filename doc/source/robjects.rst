@@ -422,11 +422,11 @@ Missing values
 Anyone with experience in the analysis of real data knows that
 some of the data might be missing. In S/Splus/R special *NA* values can be used
 in a data vector to indicate that fact, and :mod:`rpy2.robjects` makes aliases for
-those available as data objects :data:`NA_bool`, :data:`NA_real`, :data:`NA_integer`, 
-:data:`NA_character`, :data:`NA_complex`.
+those available as data objects :data:`NA_Logical`, :data:`NA_Real`,
+:data:`NA_Integer`, :data:`NA_Character`, :data:`NA_Complex`.
 
 >>> x = robjects.IntVector(range(3))
->>> x[0] <- robjects.NA_integer
+>>> x[0] <- robjects.NA_Integer
 >>> print(x)
 [1] NA  1  2
 
@@ -436,20 +436,21 @@ the corresponding NA singleton class.
 >>> xt = tuple(x)
 >>> xt
 (NA_integer, 1, 2)
->>> xt[0] is robjects.NA_integer
+>>> xt[0] is robjects.NA_Integer
 True
->>> xt[0] == robjects.NA_integer
+>>> xt[0] == robjects.NA_Integer
 True
->>> [y for y in x if y is not NA_integer]
+>>> [y for y in x if y is not NA_Integer]
 [1, 2]
 
 .. note::
 
-   :data:`NA_bool` is the alias for R's *NA*.
+   :data:`NA_Logical` is the alias for R's *NA*.
 
 .. note::
 
-   The NA objects are pointers to :mod:`rpy2.rinterface` objects.
+   The NA objects are imported from the corresponding
+   :mod:`rpy2.rinterface` objects.
 
 
 .. _robjects-operationsdelegator:
