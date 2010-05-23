@@ -23,7 +23,9 @@ typedef Py_ssize_t (*readbufferproc)(PyObject *, Py_ssize_t, void **);
 typedef Py_ssize_t (*writebufferproc)(PyObject *, Py_ssize_t, void **);
 typedef Py_ssize_t (*segcountproc)(PyObject *, Py_ssize_t *);
 typedef Py_ssize_t (*charbufferproc)(PyObject *, Py_ssize_t, char **);
-
+#endif
+#if (PY_VERSION_HEX < 0x02060000)
+typedef Py_SIZE Py_Size;
 #endif
 
 
