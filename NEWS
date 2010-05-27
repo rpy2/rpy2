@@ -25,6 +25,8 @@ Release 2.1.3
 Bugs fixed
 ----------
 
+- Spurious error message when using DataFrame.from_csvfile() without
+  specifying col_names  or row_names
 
 - Patch to finally compile with Python < 2.6 (contribDuted by Denis Barbier)
 

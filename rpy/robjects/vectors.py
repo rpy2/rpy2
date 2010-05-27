@@ -542,8 +542,10 @@ class DataFrame(Vector):
         sep = conversion.py2ro(sep)
         quote = conversion.py2ro(quote)
         dec = conversion.py2ro(dec)
-        row_names = conversion.py2ro(row_names)
-        col_names = conversion.py2ro(col_names)
+        if row_names is not rinterface.MissingArg:
+            row_names = conversion.py2ro(row_names)
+        if col_names is not rinterface.MissingArg:
+            col_names = conversion.py2ro(col_names)
         fill = conversion.py2ro(fill)
         comment_char = conversion.py2ro(comment_char)
         as_is = conversion.py2ro(as_is)
