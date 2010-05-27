@@ -19,6 +19,15 @@ Changes
   NA_Logical, NA_Real, NA_Integer, NA_Character, NA_Complex should be used.
 
 
+Release 2.1.3
+=============
+
+Bugs fixed
+----------
+
+
+- Patch to finally compile with Python < 2.6 (contribDuted by Denis Barbier)
+
 
 Release 2.1.2
 =============
