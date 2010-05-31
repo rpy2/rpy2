@@ -4,6 +4,10 @@ Release 2.2.0-dev
 New Features
 ------------
 
+:mod:`rpy2.robjects`:
+
+- :meth:`Environment.keys` to list the keys
+
 :mod:`rpy2.rinterface`:
 
 - NA_Complex and :class:`NAComplexType` for missing complex values.

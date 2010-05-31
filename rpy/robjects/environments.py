@@ -30,3 +30,6 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         res.__rname__ = item
         return res
 
+    def keys(self):
+        """ Return a tuple listing the keys in the object """
+        return tuple([x for x in self])
