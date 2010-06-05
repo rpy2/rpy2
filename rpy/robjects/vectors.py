@@ -6,6 +6,7 @@ import conversion
 import rpy2.rlike.container as rlc
 
 import copy, os, itertools
+import time
 
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
@@ -318,7 +319,54 @@ class FactorVector(IntVector):
     isordered = property(__isordered_get, None, None,
                          "are the levels in the factor ordered ?")
 
-    
+class DateVector(FloatVector):
+    """ Vector of dates """
+    pass
+
+
+class POSIXt(object):
+    """ POSIX time vector. This is an abstract class. """
+    pass
+
+class POSIXlt(POSIXt, Vector):
+    """ Representation of dates with 9-component
+    (similar to Python's time.struct_time. """
+
+    def __init__(self, seq):
+        if isinstance(seq, rinterface.Sexp):
+            super(self, Vector)(seq)
+        else:
+            #FIXME: check that seq a sequence of time.struct_time objects
+            as_posixlt = rinterface.baseenv['as.POSIXlt']
+            origin = rinterface.StrSexpVector([time.strftime("%Y-%m-%d", 
+                                                             time.gmtime(0)),])
+            rvec = rinterface.FloatSexpVector([time.mktime(x) for x in seq]) 
+            sexp = as_posixlt(rvec, origin = origin)
+            self.__sexp__ = sexp.__sexp__
+
+    def __getitem__(self, i):
+        # "[[" operator returns the components of a time object
+        # (and yes, this is confusing)
+        tmp = self.rx2(i-1)
+        return time.struct_time(*tuple(tmp))
+        
+class POSIXct(POSIXt, FloatVector):
+    """ """
+    def __init__(self, seq):
+        if isinstance(seq, rinterface.Sexp):
+            super(self, FloatSexpVector)(seq)
+        else:
+            #FIXME: check that seq a sequence of time.struct_time objects
+            as_posixct = rinterface.baseenv['as.POSIXct']
+            origin = rinterface.StrSexpVector([time.strftime("%Y-%m-%d", 
+                                                             time.gmtime(0)),])
+            rvec = rinterface.FloatSexpVector([time.mktime(x) for x in seq]) 
+            sexp = as_posixct(rvec, origin = origin)
+            self.__sexp__ = sexp.__sexp__
+        
+        
+
+
 class Array(Vector):
     """ An R array """
     _dimnames_get = baseenv_ri['dimnames']

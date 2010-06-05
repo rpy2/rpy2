@@ -1,7 +1,7 @@
 import unittest
 import rpy2.robjects as robjects
 ri = robjects.rinterface
-import array
+import array, time
 import rpy2.rlike.container as rlc
 
 rlist = robjects.baseenv["list"]
@@ -141,25 +141,25 @@ class VectorTestCase(unittest.TestCase):
         for i in xrange(len(vec)):
             self.assertEquals(names[i], vec.names[i])
 
-    def testNAinteger(self):
+    def testNAInteger(self):
         vec = robjects.IntVector(range(3))
-        vec[0] = robjects.NA_integer
+        vec[0] = robjects.NA_Integer
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
-    def testNAreal(self):
+    def testNAReal(self):
         vec = robjects.FloatVector((1.0, 2.0, 3.0))
-        vec[0] = robjects.NA_real
+        vec[0] = robjects.NA_Real
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
-    def testNAbool(self):
+    def testNALogical(self):
         vec = robjects.BoolVector((True, False, True))
-        vec[0] = robjects.NA_bool
+        vec[0] = robjects.NA_Logical
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
-    def testNAcomplex(self):
+    def testNAComplex(self):
         vec = robjects.ComplexVector((1+1j, 2+2j, 3+3j))
-        vec[0] = robjects.NA_complex
+        vec[0] = robjects.NA_Complex
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
-    def testNAcharacter(self):
+    def testNACharacter(self):
         vec = robjects.StrVector('abc')
-        vec[0] = robjects.NA_character
+        vec[0] = robjects.NA_Character
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
 
     def testIteritems(self):
@@ -177,6 +177,16 @@ class VectorTestCase(unittest.TestCase):
         values = [v for k,v in vec.iteritems()]
         self.assertEquals([0, 1, 2], values)
 
+class DateTimeVectorTestCase(unittest.TestCase):
+    def testPOSIXlt_fromPythonTime(self):
+        x = [time.struct_time(range(9)), time.struct_time(range(9))]
+        res = robjects.POSIXlt(x)
+        self.assertEquals(2, len(x))
+
+    def testPOSIXct_fromPythonTime(self):
+        x = [time.struct_time(range(9)), time.struct_time(range(9))]
+        res = robjects.POSIXct(x)
+        self.assertEquals(2, len(x))
 
 class ExtractDelegatorTestCase(unittest.TestCase):
 
@@ -261,7 +271,9 @@ class ExtractDelegatorTestCase(unittest.TestCase):
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(VectorTestCase)
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(DateTimeVectorTestCase))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ExtractDelegatorTestCase))
+
     return suite
 
 if __name__ == '__main__':

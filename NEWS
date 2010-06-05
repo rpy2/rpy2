@@ -8,6 +8,10 @@ New Features
 
 - :meth:`Environment.keys` to list the keys
 
+- classes :class:`robjects.vectors.POSIXlt` and 
+  :class:`robjects.vectors.POSIXlt` to represent vectors of R
+  dates/time
+
 :mod:`rpy2.rinterface`:
 
 - NA_Complex and :class:`NAComplexType` for missing complex values.
