@@ -116,7 +116,11 @@ def default_py2ri(o):
     elif isinstance(o, bool):
         res = rinterface.SexpVector([o, ], rinterface.LGLSXP)
     elif isinstance(o, int) or isinstance(o, long):
-        res = rinterface.SexpVector([o, ], rinterface.INTSXP)
+        # special case for NA_Logical
+        if o is rinterface.NA_Logical:
+            res = rinterface.SexpVector([o, ], rinterface.LGLSXP)
+        else:
+            res = rinterface.SexpVector([o, ], rinterface.INTSXP)
     elif isinstance(o, float):
         res = rinterface.SexpVector([o, ], rinterface.REALSXP)
     elif isinstance(o, str):
