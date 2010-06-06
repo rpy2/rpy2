@@ -713,8 +713,8 @@ To create a :class:`DataFrame` and be certain of the order in which the
 columns are an ordered dictionary can be used:
 
 >>> import rpy2.rlike.container as rlc
->>> od = rlc.OrdDict(c(('value', robjects.IntVector((1,2,3))),
-                       ('letter', robjects.StrVector(('x', 'y', 'z')))))
+>>> od = rlc.OrdDict([('value', robjects.IntVector((1,2,3))),
+                      ('letter', robjects.StrVector(('x', 'y', 'z')))])
 >>> dataf = robjects.DataFrame(od)
 >>> print(dataf.colnames)
 [1] "letter" "value"
