@@ -8,6 +8,7 @@ _require = rinterface.baseenv['require']
 _as_env = rinterface.baseenv['as.environment']
 
 def quiet_require(name, lib_loc = None):
+    """ Load an R package /quietly/ (suppressing messages to the console). """
     _parse = rinterface.baseenv['parse']
     if lib_loc == None:
         lib_loc = "NULL"
@@ -16,6 +17,11 @@ def quiet_require(name, lib_loc = None):
     expr = _parse(text = rinterface.StrSexpVector([expr_txt, ]))
     ok = rinterface.baseenv['eval'](expr)
     return ok
+
+def get_packagepath(package):
+    """ return the path to an R package """
+    res = rinterface.baseenv['.find.package'](rinterface.StrSexpVector((package, )))
+    return res[0]
 
 class Package(object):
     """ Models an R package
