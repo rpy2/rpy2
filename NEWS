@@ -12,10 +12,17 @@ New Features
   :class:`robjects.vectors.POSIXlt` to represent vectors of R
   dates/time
 
+- :func:`packages.get_packagepath` to get the path to an R package
+
+- module :mod:`rpy2.robjects.help` to expose the R help system to Python
+
 :mod:`rpy2.rinterface`:
 
 - NA_Complex and :class:`NAComplexType` for missing complex values.
 
+:mod:`rpy2.rlike`:
+
+- :class:`container.OrdDict` get proper methods :meth:`keys` and `get`
 
 Changes
 -------
