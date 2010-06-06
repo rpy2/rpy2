@@ -5,7 +5,37 @@ R help system.
 import os
 import rpy2.robjects as ro
 import rpy2.robjects.packages as packages
+import rpy2.rlike.container as rlc
 ri = ro.rinterface
+
+class Page(object):
+    """ An R documentation page. 
+    The original R structure is a nested sequence of components,
+    corresponding to the latex-like .Rd file """
+
+    def __init__(self, struct_rdb):
+        sections = rlc.OrdDict()
+        for elt in struct_rdb:
+            rd_tag = elt.do_slot("Rd_tag")[0]
+            if rd_tag.startswith('\\'):
+                rd_tag = rd_tag[1:]
+            lst = sections.get(rd_tag)
+            if lst is None:
+                lst = []
+                sections[rd_tag] = lst
+            for sub_elt in elt:
+                lst.append(sub_elt)
+        self.sections = sections
+
+    def to_docstring(self, section_names = None):
+        s = []
+
+        if section_names is None:
+            section_names = self.sections.keys()
+            
+        for name in section_names:
+            self.sections[name]
+
 
 class Package(object):
     """ The R documentation (aka help) for a package """
