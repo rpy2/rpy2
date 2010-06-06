@@ -33,9 +33,24 @@ class Page(object):
         if section_names is None:
             section_names = self.sections.keys()
             
-        for name in section_names:
-            self.sections[name]
+        def walk(tree):
+            if not isinstance(tree, str):
+                for elt in tree:
+                    walk(elt)
+            else:
+                s.append(tree)
+                s.append(' ')
 
+        for name in section_names:
+            s.append(name)
+            s.append(os.linesep)
+            s.append('-' * len(name))
+            s.append(os.linesep)
+            s.append(os.linesep)
+            walk(self.sections[name])
+            s.append(os.linesep)
+            s.append(os.linesep)
+        return s
 
 class Package(object):
     """ The R documentation (aka help) for a package """
