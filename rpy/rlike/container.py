@@ -111,6 +111,10 @@ class OrdDict(dict):
         """ OD.iteritems() -> an iterator over the (key, value) items of D """
         return iter(self.__l)
 
+    def keys(self):
+        """ """
+        return tuple([x[0] for x in self.__l])
+
     def reverse(self):
         """ Reverse the order of the elements in-place (no copy)."""
         l = self.__l
