@@ -34,6 +34,13 @@ class OrdDictTestCase(unittest.TestCase):
         self.assertEquals(2, len(x))
         self.assertEquals(1, x['b'])
         self.assertEquals(1, x.index('b'))
+
+    def testGet(self):
+        x = rlc.OrdDict()
+        x['a'] = 1
+        self.assertEquals(1, x.get('a'))
+        self.assertEquals(None, x.get('b'))
+        self.assertEquals(2, x.get('b', 2))
         
     def testGetSetitemWithNone(self):
         x = rlc.OrdDict()

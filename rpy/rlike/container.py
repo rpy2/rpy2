@@ -99,6 +99,14 @@ class OrdDict(dict):
         res = [self.byindex(i) for i in xrange(len(self.__l))]
         return tuple(res)
 
+    def get(self, k, d = None):
+        """ OD.get(k[,d]) -> OD[k] if k in OD, else d.  d defaults to None """
+        try:
+            res = self[k]
+        except KeyError, ke:
+            res = d
+        return res
+
     def iteritems(self):
         """ OD.iteritems() -> an iterator over the (key, value) items of D """
         return iter(self.__l)
