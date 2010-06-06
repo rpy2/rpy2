@@ -33,9 +33,6 @@ include rpy/rinterface/r_utils.h
 include rpy/rinterface/rpy_device.c
 include rpy/rinterface/rpy_device.h
 
-include debian/*
-
-prune debian/.svn
 prune dist
 
 include doc/Makefile
