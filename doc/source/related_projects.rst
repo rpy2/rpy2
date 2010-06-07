@@ -21,7 +21,7 @@ Bioconductor
 
 Bioconductor is a popular set of R packages for bioinformatics.
 A number of classes defined within that project are exposed as Python classes through rpy2,
-in the project `rpy2-bioconductor-extensions http://pypi.python.org/pypi/rpy2-bioconductor-extensions/0.2-dev`_.
+in the project `rpy2-bioconductor-extensions <http://pypi.python.org/pypi/rpy2-bioconductor-extensions/0.2-dev>`_.
 
 
 .. _interactive-sessions:
