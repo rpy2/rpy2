@@ -62,9 +62,11 @@ grdevices.dev_off()
 
 
 #-- setupggplot2-begin
+import math, datetime, dateutil.parser
 import rpy2.robjects.lib.ggplot2 as ggplot2
 import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
+base = importr('base')
 
 datasets = importr('datasets')
 mtcars = datasets.mtcars
@@ -427,6 +429,123 @@ pp.plot()
 #-- ggplot2histogramfacetcyl-end
 grdevices.dev_off()
 
+#-- ggplot2perfcolor-begin
+# set up data structures for mapping attributes to colors, line types, and 
+#   labels
+colormap_raw = [['red', '#ff0000'],
+                ['green', '#76b900']]
+colormap_labels = [['red', 'RED'],
+                   ['green', 'GREEN']]
+colormap = ro.StrVector([elt[1] for elt in colormap_raw])
+colormap.names = ro.StrVector([elt[0] for elt in colormap_raw])
+
+linemap_raw = [['Perf2', 'dashed'],
+               ['Perf1', 'solid']]
+linemap = ro.StrVector([elt[1] for elt in linemap_raw])
+linemap.names = ro.StrVector([elt[0] for elt in linemap_raw])
+
+# input data, which may normally come from an external csv file
+# note the use of base.I which makes R interpret these as explicit data
+#   rather than store them as factors; since we're manipulating them 
+#   directly, we need them stored explicitly
+input_dataframes = { 
+  'red' : ro.DataFrame({ 'Date' : base.I(ro.StrVector(("6/25/08", "9/23/09"))),
+                         'Perf1' : ro.FloatVector((1090,2500)),
+                         'Perf2' : ro.FloatVector((215,500))
+                         }),
+  'green' : ro.DataFrame({ 'Date' : base.I(ro.StrVector(("Jun-15-2008", 
+                                                         "4/15/10"))),
+                           'Perf1' : ro.FloatVector((922,1030)),
+                           'Perf2' : ro.FloatVector((78,515))
+                           })
+  }
+
+# create empty data frame df ...
+df = ro.DataFrame({})
+for color in ['green', 'red']:
+  # ... then for each input data frame, read that data frame (perhaps
+  # from a file), append column of color names, then append to df
+  df = df.rbind(input_dataframes[color].
+                cbind(ro.DataFrame({'color' : 
+                                    base.I(ro.StrVector([color]))})))
+
+# now do some data processing
+
+# read out 'Date' column, convert using python dateutil parser, put
+#   back into 'Date' column
+# example of taking data in R dataframe, changing it in python, then
+#   putting it back
+df[tuple(df.colnames).index('Date')] = \
+    base.as_Date(ro.StrVector([str(dateutil.parser.parse(x))
+                               for x in df.rx2('Date')]))
+
+# what is the range of Perf1 and Perf2? we use this for custom log plot lines
+perfs = df[tuple(df.colnames).index('Perf1')] + \
+        df[tuple(df.colnames).index('Perf2')]
+gflops_range = [ round(math.log10(min(perfs))), 
+                 round(math.log10(max(perfs))) ]
+
+# we have data that looks like this:
+# [date, perf1, perf2, color]
+# note there's two measurements per line.
+# instead we want data that looks like this:
+# [date, perf, color, perftype] where perftype is perf1 or perf2
+# the right operator for this is "melt" in the "reshape" package
+
+# melt from horizontal into vertical format
+df = ro.r.melt(df, 
+               id_var=['Date','color'], 
+               measure=['Perf1','Perf2'], 
+               variable_name='PerfType')
+# rename resulting value column to Performance
+df.names[tuple(df.colnames).index('value')] = 'Performance'
+
+# now we have 4 datasets: {red, green} x {perf1, perf2}
+# plot the colored datasets in their respective colors
+# plot the PerfTypes as solid (circle markers) and dashed (triangle markers) 
+#   lines
+
+# plot with both log and linear y scales
+# aes_string: set the axis labels and what we're plotting
+# opts: set the title and the thickness of the lines
+#   note the use of **{} to allow setting "legend.key.size" as a keyword
+# scale_colour_manual: associate color datasets with actual colors and names
+# geom_point and geom_line: thicker points and lines
+# scale_linetype_manual: associate perf types with linetypes
+for yscale in ['log', 'linear']: 
+  pp = ggplot2.ggplot(df) + \
+      ggplot2.aes_string(x='Date', y='Performance', color='color', 
+                         shape='PerfType', linetype='PerfType') + \
+      ggplot2.opts(**{'title' : 
+                      'Performance vs. Color',
+                      'legend.key.size' : ro.r.unit(1.4, "lines") } ) + \
+      ggplot2.scale_colour_manual("Color", 
+                                  values=colormap,
+                                  breaks=colormap.names,
+                                  labels=[elt[1] for elt in 
+                                          colormap_labels]) + \
+      ggplot2.geom_point(size=3) + \
+      ggplot2.scale_linetype_manual(values=linemap) + \
+      ggplot2.geom_line(size=1.5)
+
+  # custom y-axis lines: major lines ("breaks") are every 10^n; 9
+  #   minor lines ("minor_breaks") between major lines
+  if (yscale == 'log'):
+    pp = pp + \
+        ggplot2.scale_y_log10(breaks = ro.r("10^(%d:%d)" % (gflops_range[0], 
+                                                            gflops_range[1])),
+                              minor_breaks = 
+                              ro.r("rep(10^(%d:%d), each=9) * rep(1:9, %d)" %
+                                   (gflops_range[0] - 1, gflops_range[1], 
+                                    gflops_range[1] - gflops_range[0])))
+
+  pp.plot()
+#-- ggplot2perfcolor-end
+grdevices.dev_off()
+
+
+grdevices.png('../../_static/graphics_ggplot2perfcolor_log.png',
+              width = 512, height = 512)
 
 # grdevices.png('../../_static/graphics_ggplot2coordtranssqrt.png',
 #               width = 512, height = 512)
