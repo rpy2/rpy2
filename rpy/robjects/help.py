@@ -93,7 +93,7 @@ class Package(object):
 
 
     def fetch(self, key):
-        """ Fetch the documentation associated with a given key. """
+        """ Fetch the documentation page associated with a given key. """
         rdx_variables = self._rdx.rx2('variables')
         assert key in rdx_variables.names
         
