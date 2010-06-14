@@ -462,6 +462,19 @@ be extracted according to two indexes:
 [1] 7
 
 
+Extracting a whole row, or column can be achieved by replacing an index number
+by `True` or `False`
+
+Extract the first column:
+
+>>> print(m.rx(True, 1))
+
+Extract the second row:
+
+>>> print(m.rx(2, True))
+
+
+
 .. _robjects-dataframes:
 
 :class:`DataFrame`
@@ -541,6 +554,30 @@ columns are an ordered dictionary can be used:
 Creating the data.frame in R can otherwise be achieved in numerous ways,
 as many R functions do return a `data.frame`, such as the
 function `data.frame()`.
+
+.. note::
+
+   When creating a :class:`DataFrame`, vectors of strings are automatically
+   converted by R into instances of class :class:`Factor`. This behavior
+   can be prevented by wrapping the call into the R base function I.
+   
+   .. code-block:: python
+
+      from rpy2.robjects.vectors import DataFrame, StrVector
+      from rpy2.robjects.packages import importr
+      base = importr('base')
+      dataf = DataFrame({'string': base.I(StrVector('abbab')),
+                         'factor': StrVector('abbab')})
+
+   Here the :class:`DataFrame` `dataf` now has two columns, one as 
+   a :class:`Factor`, the other one as a :class:`StrVector`
+ 
+   >>> dataf.rx2('string')
+   <StrVector - Python:0x95fe5ec / R:0x9646ea0>
+   >>> dataf.rx2('factor')
+   <FactorVector - Python:0x95fe86c / R:0x9028138>
+
+
 
 Extracting elements
 ^^^^^^^^^^^^^^^^^^^
