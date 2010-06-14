@@ -62,7 +62,7 @@ grdevices.dev_off()
 
 
 #-- setupggplot2-begin
-import math, datetime, dateutil.parser
+import math, datetime
 import rpy2.robjects.lib.ggplot2 as ggplot2
 import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
@@ -449,16 +449,16 @@ linemap.names = ro.StrVector([elt[0] for elt in linemap_raw])
 #   rather than store them as factors; since we're manipulating them 
 #   directly, we need them stored explicitly
 input_dataframes = { 
-  'red' : ro.DataFrame({ 'Date' : base.I(ro.StrVector(("6/25/08", "9/23/09"))),
-                         'Perf1' : ro.FloatVector((1090,2500)),
-                         'Perf2' : ro.FloatVector((215,500))
-                         }),
-  'green' : ro.DataFrame({ 'Date' : base.I(ro.StrVector(("Jun-15-2008", 
-                                                         "4/15/10"))),
-                           'Perf1' : ro.FloatVector((922,1030)),
-                           'Perf2' : ro.FloatVector((78,515))
-                           })
-  }
+   'red' : ro.DataFrame({ 'Date' : base.as_Date(ro.StrVector(("2008-06-25", "2009-09-23"))),
+                          'Perf1' : ro.FloatVector((1090,2500)),
+                          'Perf2' : ro.FloatVector((215,500))
+                          }),
+   'green' : ro.DataFrame({ 'Date' : base.as_Date(ro.StrVector(("2008-06-15", 
+                                                                "2010-04-15"))),
+                            'Perf1' : ro.FloatVector((922,1030)),
+                            'Perf2' : ro.FloatVector((78,515))
+                            })
+   }
 
 # create empty data frame df ...
 df = ro.DataFrame({})
@@ -475,9 +475,9 @@ for color in ['green', 'red']:
 #   back into 'Date' column
 # example of taking data in R dataframe, changing it in python, then
 #   putting it back
-df[tuple(df.colnames).index('Date')] = \
-    base.as_Date(ro.StrVector([str(dateutil.parser.parse(x))
-                               for x in df.rx2('Date')]))
+
+#df[tuple(df.colnames).index('Date')] = \
+#    base.as_Date(df.rx2('Date'))
 
 # what is the range of Perf1 and Perf2? we use this for custom log plot lines
 perfs = df[tuple(df.colnames).index('Perf1')] + \
