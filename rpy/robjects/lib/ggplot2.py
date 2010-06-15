@@ -397,6 +397,7 @@ class ScaleX(Scale):
 class ScaleY(Scale):
    pass
 
+
 class ScaleXContinuous(ScaleX):
    _constructor = ggplot2_env['scale_x_continuous']
 scale_x_continuous = ScaleXContinuous.new
@@ -560,6 +561,7 @@ class ScaleShapeManual(ScaleShape):
    _constructor = ggplot2_env['scale_shape_manual']
 scale_shape_manual = ScaleShapeManual.new
 
+
 class Options(robjects.Vector):
     pass
 class Theme(Options):
@@ -586,7 +588,7 @@ theme_grey = ThemeGrey.new
 class ThemeRect(Theme):
     _constructor = ggplot2.theme_rect
     @classmethod
-    def new(cls, fill = robjects.NA_bool, colour = "black", 
+    def new(cls, fill = robjects.NA_Logical, colour = "black", 
             size = 0.5, linetype = 1):
        res = cls(cls._constructor(fill = fill, colour = colour, 
                                   size = size, linetype = linetype))

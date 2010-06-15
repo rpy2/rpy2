@@ -429,6 +429,8 @@ pp.plot()
 #-- ggplot2histogramfacetcyl-end
 grdevices.dev_off()
 
+grdevices.png('../../_static/graphics_ggplot2perfcolor_.png',
+              width = 512, height = 512)
 #-- ggplot2perfcolor-begin
 # set up data structures for mapping attributes to colors, line types, and 
 #   labels
@@ -544,8 +546,6 @@ for yscale in ['log', 'linear']:
 grdevices.dev_off()
 
 
-grdevices.png('../../_static/graphics_ggplot2perfcolor_log.png',
-              width = 512, height = 512)
 
 # grdevices.png('../../_static/graphics_ggplot2coordtranssqrt.png',
 #               width = 512, height = 512)
