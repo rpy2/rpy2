@@ -43,6 +43,12 @@ New features
 - :mod:`rpy2.robjects.lib.ggplot2` now has the functions :func:`limits`,
   :func:`xlim`, :func:`ylim` exposed (patch contributed anonymously)
 
+Bugs fixed
+----------
+
+- Install script when the BLAS library used by R is specified as a library
+  file (patch by Michael Kuhn)
+
 
 Release 2.1.3
 =============

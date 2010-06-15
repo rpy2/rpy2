@@ -193,6 +193,9 @@ def get_rconfig(r_home, about, allow_empty = False):
             print(cmd + '\nreturned an empty string.\n')
             return ()
         else:
+            # if the configuration points to an existing library, use it
+            if os.path.exists(rconfig):
+                return ("-l"+rconfig,)
             raise Exception(cmd + '\nreturned\n' + rconfig)
     return rconfig_m.groups()
 
