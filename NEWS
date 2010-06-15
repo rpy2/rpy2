@@ -37,6 +37,12 @@ Changes
 Release 2.1.4
 =============
 
+New features
+------------
+
+- :mod:`rpy2.robjects.lib.ggplot2` now has the functions :func:`limits`,
+  :func:`xlim`, :func:`ylim` exposed (patch contributed anonymously)
+
 
 Release 2.1.3
 =============

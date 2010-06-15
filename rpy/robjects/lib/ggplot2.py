@@ -397,6 +397,18 @@ class ScaleX(Scale):
 class ScaleY(Scale):
    pass
 
+class Limits(Scale):
+   _constructor = ggplot2_env['limits']
+limits = Limits.new
+
+class XLim(Scale):
+   _constructor = ggplot2_env['xlim']
+xlim = XLim.new
+
+class YLim(Scale):
+   _constructor = ggplot2_env['ylim']
+ylim = YLim.new
+
 
 class ScaleXContinuous(ScaleX):
    _constructor = ggplot2_env['scale_x_continuous']
