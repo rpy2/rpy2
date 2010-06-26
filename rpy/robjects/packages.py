@@ -1,8 +1,8 @@
 import rpy2.rinterface as rinterface
 import rpy2.robjects.lib
-import rpy2.robjects.conversion as conversion
+import conversion as conversion
 from rpy2.robjects.functions import SignatureTranslatedFunction
-from rpy2.robjects import NULL
+from rpy2.robjects.constants import NULL
 
 _require = rinterface.baseenv['require']
 _as_env = rinterface.baseenv['as.environment']

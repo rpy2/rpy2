@@ -2,11 +2,11 @@
 R help system.
 
 """
-import os
-import rpy2.robjects as ro
-import rpy2.robjects.packages as packages
+import os, itertools
+import rpy2.rinterface as rinterface
+import conversion as conversion
+import packages as packages
 import rpy2.rlike.container as rlc
-ri = ro.rinterface
 
 class Page(object):
     """ An R documentation page. 
@@ -55,6 +55,7 @@ class Page(object):
 class Package(object):
     """ The R documentation (aka help) for a package """
     __package_path = None
+    __package_name = None
     __aliases_info = 'aliases.rds'
     __paths_info = 'paths.rds'
     __anindex_info = 'AnIndex'
@@ -65,14 +66,14 @@ class Package(object):
             package_path = packages.get_packagepath(package_name)
         self.__package_path = package_path
         #FIXME: handle the case of missing "aliases.rds"
-        rpath = ri.StrSexpVector((os.path.join(package_path,
+        rpath = rinterface.StrSexpVector((os.path.join(package_path,
                                                'help',
                                                self.__aliases_info), ))
-        rds = ri.baseenv['.readRDS'](rpath)
-        rds = ro.StrVector(rds)
+        rds = rinterface.baseenv['.readRDS'](rpath)
+        rds = rinterface.StrSexpVector(rds)
         class2methods = {}
         object2alias = {}
-        for k, v in rds.iteritems():
+        for k, v in itertools.izip(rds.do_slot('names'), rds):
             if v.startswith("class."):
                 classname = v[len("class."):]
                 if classname in class2methods:
@@ -86,27 +87,33 @@ class Package(object):
 
         self.class2methods = class2methods
         self.object2alias = object2alias
-        rpath = ri.StrSexpVector((os.path.join(package_path,
+        rpath = rinterface.StrSexpVector((os.path.join(package_path,
                                                'help',
                                                package_name + '.rdx'), ))
-        self._rdx = ro.Vector(ri.baseenv['.readRDS'](rpath))
+        self._rdx = conversion.ri2py(rinterface.baseenv['.readRDS'](rpath))
 
 
     def fetch(self, key):
         """ Fetch the documentation page associated with a given key. """
         rdx_variables = self._rdx.rx2('variables')
-        assert key in rdx_variables.names
+        if key not in rdx_variables.names:
+            raise HelpNotFound("No help could be fetched", 
+                               topic=key, package=self.__package_name)
         
-        rkey = ri.StrSexpVector(ri.StrSexpVector((key, )))
-        rpath = ri.StrSexpVector((os.path.join(self.package_path,
-                                               'help',
-                                               self.__package_name + '.rdb'),))
-
-        res = ri.baseenv['lazyLoadDBfetch'](rdx_variables.rx(rkey)[0], 
-                                            rpath,
-                                            self._rdx.rx2("compressed"),
-                                            ro.r('function(x) {}'))
-        return ro.Vector(res)
+        rkey = rinterface.StrSexpVector(rinterface.StrSexpVector((key, )))
+        rpath = rinterface.StrSexpVector((os.path.join(self.package_path,
+                                                       'help',
+                                                       self.__package_name + '.rdb'),))
+        
+        _parse = rinterface.baseenv['parse']
+        _eval  = rinterface.baseenv['eval']
+        devnull_func = _parse(text=rinterface.StrSexpVector(('function(x) {}', )))
+        devnull_func = _eval(devnull_func)
+        res = rinterface.baseenv['lazyLoadDBfetch'](rdx_variables.rx(rkey)[0], 
+                                                    rpath,
+                                                    self._rdx.rx2("compressed"),
+                                                    devnull_func)
+        return conversion.ri2py(res)
 
     package_path = property(lambda self: str(self.__package_path),
                             None, None,
@@ -114,4 +121,9 @@ class Package(object):
 
 
 
-
+class HelpNotFound(KeyError):
+    def __init__(self, msg, topic=None, package=None):
+        super(HelpNotFound, self).__init__(msg)
+        self.topic = topic
+        self.package = package
+        

@@ -59,6 +59,25 @@ class MethodsTestCase(unittest.TestCase):
         self.assertEquals(123, a.length[0])
         
         
+    def testGetclassdef(self):
+        robjects.r('library(stats4)')
+        cr = methods.getclassdef('mle', 'stats4')
+        self.assertFalse(cr.virtual)
+
+    def testRS4Auto_Type(self):
+        robjects.r('library(stats4)')
+        class MLE(robjects.methods.RS4):
+            __metaclass__ = robjects.methods.RS4Auto_Type
+            __rname__ = 'mle'
+            __rpackagename__ = 'stats4'
+        
+    def testRS4Auto_Type_nopackname(self):
+        robjects.r('library(stats4)')
+        class MLE(robjects.methods.RS4):
+            __metaclass__ = robjects.methods.RS4Auto_Type
+            __rname__ = 'mle'
+
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(MethodsTestCase)
     return suite

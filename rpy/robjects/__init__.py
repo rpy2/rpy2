@@ -14,13 +14,13 @@ import itertools
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
-import conversion
-
 from rpy2.robjects.robject import RObjectMixin, RObject
-from rpy2.robjects.methods import RS4
 from rpy2.robjects.vectors import *
 from rpy2.robjects.functions import Function, SignatureTranslatedFunction
 from rpy2.robjects.environments import Environment
+from rpy2.robjects.methods import RS4
+
+import conversion
 
 # missing values
 from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Complex
@@ -28,16 +28,7 @@ from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Co
 _parse = rinterface.baseenv['parse']
 _reval = rinterface.baseenv['eval']
 
-# NULL
-NULL = _reval(_parse(text = rinterface.StrSexpVector(("NULL", ))))
-# TRUE/FALSE
-TRUE = _reval(_parse(text = rinterface.StrSexpVector(("TRUE", ))))
-FALSE = _reval(_parse(text = rinterface.StrSexpVector(("FALSE", ))))
-
-
-
 #FIXME: close everything when leaving (check RPy for that).
-
 
 def default_ri2py(o):
     """ Convert :class:`rpy2.rinterface.Sexp` to higher-level objects,
@@ -147,9 +138,6 @@ def default_py2ro(o):
     return conversion.ri2py(res)
 
 conversion.py2ro = default_py2ro
-
-
-
 
 
 

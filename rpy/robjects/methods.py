@@ -1,5 +1,6 @@
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
+import help as rhelp
 import conversion
 
 getmethod = rinterface.baseenv.get("getMethod")
@@ -33,30 +34,36 @@ class RS4(RObjectMixin, rinterface.SexpS4):
                                           complete = complete)[0]
 
 class ClassRepresentation(RS4):
-    """ """
+    """ Definition of an R S4 class """
     slots = property(lambda x: [y[0] for y in x.do_slot('slots')],
                      None, None,
                      "Slots (attributes) for the class")
+    
     basenames = property(lambda x: [y[0] for y in x.do_slot('contains')],
-                     None, None,
-                     "parent classes")
+                         None, None,
+                         "Parent classes")
     contains = basenames
+
     isabstract = property(lambda x: x.do_slot('virtual')[0],
                           None, None,
                           "Is the class an abstract class ?")
     virtual = isabstract
+
     packagename = property(lambda x: x.do_slot('package')[0],
                            None, None,
                            "R package in which the class is defined")
     package = packagename
+
     classname = property(lambda x: x.do_slot('className')[0],
                          None, None,
                          "Name of the R class")
 
-def getclassdef(cls_name, cls_package):
+
+def getclassdef(cls_name, cls_packagename):
     cls_def = methods_env['getClassDef'](rinterface.StrSexpVector((cls_name,)),
-                                         rinterface.StrSexpVector((cls_package, )))
+                                         rinterface.StrSexpVector((cls_packagename, )))
     cls_def = ClassRepresentation(cls_def)
+    cls_def.__rname__ = cls_name
     return cls_def
 
 class RS4_Type(type):
@@ -107,19 +114,56 @@ class RS4Auto_Type(type):
             cls_rname = name
 
         try:
-            cls_rpackage = cls_dict['__rpackage__']
+            cls_rpackagename = cls_dict['__rpackagename__']
         except KeyError, ke:
-            cls_rpackage = globalenv
+            cls_rpackagename = None
 
-        cls_def = getclassdef(cls_name, cls_package)
+        try:
+            cls_attr_translation = cls_dict['__attr_translation__']
+        except KeyError, ke:
+            cls_attr_translation = {}
+        try:
+            cls_meth_translation = cls_dict['__meth_translation__']
+        except KeyError, ke:
+            cls_meth_translation = {}
+
+        cls_def = getclassdef(cls_rname, cls_rpackagename)
     
-        # documentation
+        # documentation / help
+        if cls_rpackagename is None:
+            cls_dict['__doc__'] = "Undocumented class from the R workspace."
+        else:
+            pack_help = rhelp.Package(cls_rpackagename)
+            page_help = None
+            try:
+                #R's classes are sometimes documented with a prefix 'class.'
+                page_help = pack_help.fetch('class.' + cls_def.__rname__)
+            except rhelp.HelpNotFound, hnf:
+                pass
+            if page_help is None:
+                try:
+                    page_help = pack_help.fetch(cls_def.__rname__)
+                except rhelp.HelpNotFound, hnf:
+                    pass
+            if page_help is None:
+                cls_dict['__doc__'] = 'Unable to fetch R documentation for the class'
+            else:
+                cls_dict['__doc__'] = ''.join(rhelp.Page(page_help).to_docstring())
         
         for slt_name in cls_def.slots:
+            #FIXME: sanity check on the slot name
+            try:
+                slt_name = cls_attr_translation[slt_name]
+            except KeyError, ke:
+                # no translation: abort
+                pass
+
+            #FIXME: isolate the slot documentation and have it here
             cls_dict[slt_name] = property(lambda self: self.do_slot(slt_name),
                                           None, None,
-                                          )
+                                          None)
 
+        
             # if where is None:
             #     where = rinterface.globalenv
             # else:
