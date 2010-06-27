@@ -1,3 +1,4 @@
+import itertools
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 import help as rhelp
@@ -163,27 +164,35 @@ class RS4Auto_Type(type):
                                           None, None,
                                           None)
 
-        
-            # if where is None:
-            #     where = rinterface.globalenv
-            # else:
-            #     where = "package:" + cls_def.packagename
-            #     where = rinterface.StrSexpVector((where, ))
+        # 
+        all_generics = methods_env['getGenerics']()
+        findmethods = methods_env['findMethods']
 
-            # if python_name is None:
-            #     python_name = rname
-                
-            # signature = rinterface.StrSexpVector((cls_rname, ))            
-            # r_meth = getmethod(rinterface.StrSexpVector((rname, )), 
-            #                    signature = signature,
-            #                    where = where)
-            # r_meth = conversion.ri2py(r_meth)
-            # if as_property:
-            #     cls_dict[python_name] = property(r_meth, None, None,
-            #                                      doc = docstring)
-            # else:
-            #     cls_dict[python_name] =  lambda self: r_meth(self)
-                
+        for funcname in all_generics:
+            all_methods = findmethods(rinterface.StrSexpVector((funcname, )), 
+                                       classes = rinterface.StrSexpVector((cls_rname, )))
+            for name, meth in itertools.izip(all_methods.do_slot("names"), all_methods):
+                signature = name.split("#")
+                meth_name = '__'.join(signature)
+                if funcname.endswith('<-'):
+                    meth_name = 'set_' + funcname[:-2] + '__' + meth_name
+                else:
+                    meth_name = funcname + '__' + meth_name
+
+                meth_name = meth_name.replace('.', '_')
+
+            #FIXME: sanity check on the function name
+                try:
+                    meth_name = cls_meth_translation[meth_name]
+                except KeyError, ke:
+                    # no translation: abort
+                    pass
+
+            #FIXME: isolate the slot documentation and have it here
+                if meth_name in cls_dict:
+                    raise Error("Duplicated attribute/method name.")
+                cls_dict[meth_name] = meth
+
         return type.__new__(mcs, name, bases, cls_dict)
 
 
