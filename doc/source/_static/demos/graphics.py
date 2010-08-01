@@ -429,8 +429,10 @@ pp.plot()
 #-- ggplot2histogramfacetcyl-end
 grdevices.dev_off()
 
-grdevices.png('../../_static/graphics_ggplot2perfcolor_.png',
-              width = 512, height = 512)
+grdevices.png('../../_static/graphics_ggplot2perfcolor_both.png',
+              width = 900, height = 412)
+grid.newpage()
+grid.viewport(layout=grid.layout(1, 2)).push()
 #-- ggplot2perfcolor-begin
 # set up data structures for mapping attributes to colors, line types, and 
 #   labels
@@ -514,7 +516,8 @@ df.names[tuple(df.colnames).index('value')] = 'Performance'
 # scale_colour_manual: associate color datasets with actual colors and names
 # geom_point and geom_line: thicker points and lines
 # scale_linetype_manual: associate perf types with linetypes
-for yscale in ['log', 'linear']: 
+for col_i, yscale in enumerate(['log', 'linear']): 
+  vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 1})
   pp = ggplot2.ggplot(df) + \
       ggplot2.aes_string(x='Date', y='Performance', color='color', 
                          shape='PerfType', linetype='PerfType') + \
@@ -541,7 +544,7 @@ for yscale in ['log', 'linear']:
                                    (gflops_range[0] - 1, gflops_range[1], 
                                     gflops_range[1] - gflops_range[0])))
 
-  pp.plot()
+  pp.plot(vp = vp)
 #-- ggplot2perfcolor-end
 grdevices.dev_off()
 

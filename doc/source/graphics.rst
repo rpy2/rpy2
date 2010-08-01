@@ -470,7 +470,7 @@ major and minor lines.
    :start-after: #-- ggplot2perfcolor-begin
    :end-before: #-- ggplot2perfcolor-end
    
-.. image:: _static/graphics_ggplot2perfcolor_log.png
+.. image:: _static/graphics_ggplot2perfcolor_both.png
    :scale: 50
 
 .. module:: rpy2.robjects.lib.grid
