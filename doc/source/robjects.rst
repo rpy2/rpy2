@@ -686,7 +686,7 @@ and restore them from their serialized form.
    import rpy2.robjects as ro
 
    x = ro.StrVector(('a', 'b', 'c'))
-base_help.fetch('sum')
+   base_help.fetch('sum')
    f = file('/tmp/foo.pso', 'w')
    pickle.dump(x, f)
    f.close()
