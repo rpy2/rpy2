@@ -28,7 +28,7 @@ class GGPlot(robjects.RObject):
         res = cls(cls._constructor(data))
         return res
     
-    def plot(self, vp = robjects.NULL):
+    def plot(self, vp = robjects.constants.NULL):
         self._rprint(self, vp = vp)
 
     def __add__(self, obj):
