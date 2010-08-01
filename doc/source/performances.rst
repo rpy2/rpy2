@@ -4,6 +4,54 @@
 Performances
 ************
 
+Optimizing for performances
+===========================
+
+Memory usage
+------------
+
+R objects live in the R memory space, their size unbeknown to Python,
+and because of that it seems that Python does not always garbage collect often enough when
+large objects are involved. This is sometimes leading to transient increased memory usage when large
+objects are overwritten in loops, and although reaching a system's memory limit appears
+to trigger garbage collection, one may wish to explicitly trigger the collection.
+
+.. code-block:: python
+
+   import gc
+   gc.collect()
+
+
+As a concrete example, consider the code below. This has been used somewhere a unique benchmark
+Python-to-R bridge, unfortunately without considering specificities of the Python and R respective garbage
+collection mechanisms. The outcome of the benchmark changes dramatically, probably putting back rpy2 as
+the fastest, most memory efficient, and most versatile Python-to-R bridge.
+
+.. code-block:: python
+
+   import rpy2.robjects
+   import gc
+
+   r = rpy2.robjects.r
+
+   r("a <- NULL")
+   for i in range(20):
+       rcode = "a <- rbind(a, seq(1000000) * 1.0 * %d)" % i
+       r(rcode)
+       print r("sum(a)")
+       # explicit garbage collection
+       gc.collect()
+
+Low-level interface
+-------------------
+
+The high-level layer :mod:`rpy2.robjects` brings a lot of convenience, such a class mappings and interfaces, but obviously
+with a cost in term of performances. This cost is neglibible for common usage, but compute-intensive programms traversing the
+Python-to-R bridge way and back a very large number of time will notice it.
+
+For those cases, the :mod:`rpy2.rinterface` low-level layer gets the programmer closer to R's C-level interface, bring rpy2
+faster than R code itself, as shown below.
+
 
 A simple benchmark
 ==================
