@@ -1,37 +1,45 @@
-
 import random
 import time
 import sys
-import array
-import numpy
-import rpy2.robjects as ro
+import multiprocessing
+import array, numpy, rpy2.robjects as ro
 
 
-sys.stdout.write("Setting up...")
-n = 20000
-n_loop = 100
-x_list = [random.random() for i in xrange(n)]
-x_array = array.array('f', x_list)
-x_numpy = numpy.array(x_list, 'f')
-x_floatvector = ro.FloatVector(x_list)
-x_sexpvector = ro.rinterface.SexpVector(x_floatvector)
-sys.stdout.write("done.\n")
 
-r_loopsum = """
-function(x) { total = 0; for (elt in x) {total <- total + elt} }
-"""
-ro.globalenv['x'] = x_floatvector
-rdo_loopsum = """
-for (i in 1:%i) {
-  res <- %s(x)
-}
-"""
+def setup_func(kind):
+    n = 20000
+    x_list = [random.random() for i in xrange(n)]
+    module = None
+    if kind == "array":
+        import array as module
+        res = module.array('f', x_list)
+    elif kind == "numpy.array":
+        import numpy as module
+        res = module.array(x_list, 'f')
+    elif kind == "FloatVector":
+        import rpy2.robjects as module
+        res = module.FloatVector(x_list)
+    elif kind == "SexpVector":
+        import rpy2.rinterface as module
+        module.initr()
+        res = module.IntSexpVector(x_list)
+    elif kind == "list":
+        res = x_list
+    elif kind == "R":
+        import rpy2.robjects as module
+        res = module.IntVector(x_list)
+        module.globalenv['x'] = res
+        res = None
+    else:
+        raise ValueError("Unknown kind '%s'" %kind)
+    return (res, module)
 
-ro.globalenv['r_sum'] = ro.r(r_loopsum)
 
 def python_reduce(x):
     total = reduce(lambda x, y: x+y, x)
     return total
+
+
 
 def python_sum(x):
     total = 0.0
@@ -39,44 +47,82 @@ def python_sum(x):
         total += elt
     return total
 
+def test_sum(queue, func, array_type, n, setup_func):
+    array, module = setup_func(array_type)
+    time_beg = time.time()
+    for i in xrange(n):
+        res = func(array)
+    time_end = time.time()
+    queue.put(time_end - time_beg)
 
-def run_test(f, x):
-    begin = time.time()
-    for i in xrange(n_loop):
-        res = f(x)
-    end = time.time()
-    return end-begin
+q = multiprocessing.Queue()
+combos = [(label_func, func, label_sequence) \
+          for label_func, func in (("pure python", python_sum), \
+                                   ("reduce python", python_reduce), \
+                                   ("builtin python", sum))
+          for label_sequence in ("SexpVector",
+                                 "FloatVector",
+                                 "list",
+                                 "array",
+                                 "numpy.array")]
 
-begin = time.time()
-ro.r(rdo_loopsum %(n_loop, "r_sum"))
-end = time.time()
-rpure_time = end-begin
-print("pure R - :%f" %rpure_time)
-begin = time.time()
-ro.r(rdo_loopsum %(n_loop, "sum"))
-end = time.time()
-rbuiltin_time = end-begin
-print("builtin R - :%f" %(1/(rbuiltin_time/rpure_time)))
-
-
-combos = [(label_function, function, label_sequence, sequence) \
-          for label_function, function in (("pure python", python_sum), \
-                                           ("reduce python", python_reduce), \
-                                           ("builtin python", sum))
-          for label_sequence, sequence in (("SexpVector", x_sexpvector), \
-                                           ("FloatVector", x_floatvector),
-                                           ("list", x_list),
-                                           ("array", x_array),
-                                           ("numpy.array", x_numpy))]
-res = []
-for label_function, function, label_sequence, sequence in combos:
-    res.append(run_test(function, sequence))
-    print("%s - %s: %f" %(label_function, label_sequence, 1/(res[-1]/rpure_time)))
-
-
-tmp = run_test(x_numpy.sum, None)
-print("%s - %s: %f" %("numpy.array.sum", "numpy.array", 1/(tmp/rpure_time)))
+times = []
+n_loop = 100
 
 
 
+# python
+for label_func, func, label_sequence in combos:
+    p = multiprocessing.Process(target = test_sum, args = (q, func,
+                                                           label_sequence,
+                                                           n_loop,
+                                                           setup_func))
+    p.start()
+    res = q.get()
+    p.join()
+    times.append(res)
 
+
+# pure R
+def test_sumr(queue, func, n, setup_func):
+    array, module = setup_func("R")
+    time_beg = time.time()
+    r_loopsum = """
+function(x) { total = 0; for (elt in x) {total <- total + elt} }
+"""
+    
+    rdo_loopsum = """
+for (i in 1:%i) {
+  res <- %s(x)
+}
+"""
+    module.r(rdo_loopsum %(n, r_loopsum))
+    time_end = time.time()
+    queue.put(time_end - time_beg)
+
+p = multiprocessing.Process(target = test_sumr, args = (q, func,
+                                                        n_loop,
+                                                        setup_func))
+p.start()
+res = q.get()
+p.join()
+times.append(res)
+combos.append(("R", None, "R"))
+
+
+
+
+from rpy2.robjects.vectors import DataFrame, FloatVector, StrVector
+d = {}
+d['code'] = StrVector([x[0] for x in combos])
+d['sequence'] = StrVector([x[-1] for x in combos])
+d['time'] = FloatVector([x for x in times])
+
+dataf = DataFrame(d)
+
+from rpy2.robjects.lib import ggplot2
+p = ggplot2.ggplot(dataf) + \
+    ggplot2.geom_point(ggplot2.aes_string(x="sequence", 
+                                          y="time", 
+                                          colour="code"))
+p.plot()
