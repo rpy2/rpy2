@@ -6,7 +6,6 @@ import array
 import numpy
 import rpy2.robjects as ro
 
-import psyco
 
 sys.stdout.write("Setting up...")
 n = 20000
@@ -40,8 +39,6 @@ def python_sum(x):
         total += elt
     return total
 
-psyco_sum = psyco.proxy(python_sum)
-
 
 def run_test(f, x):
     begin = time.time()
@@ -65,8 +62,7 @@ print("builtin R - :%f" %(1/(rbuiltin_time/rpure_time)))
 combos = [(label_function, function, label_sequence, sequence) \
           for label_function, function in (("pure python", python_sum), \
                                            ("reduce python", python_reduce), \
-                                           ("builtin python", sum), \
-                                           ("psyco", psyco_sum)) \
+                                           ("builtin python", sum))
           for label_sequence, sequence in (("SexpVector", x_sexpvector), \
                                            ("FloatVector", x_floatvector),
                                            ("list", x_list),
