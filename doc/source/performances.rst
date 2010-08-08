@@ -88,7 +88,32 @@ The running times are summarized in the figure below.
 
 Iterating through a :class:`list` is likely the fastest, explaining
 why implementations of the sum in pure Python over this type are the fastest.
-Note that the iterating sum is 9 times faster in Python than in R.
+Python is much faster than R for iterating through a vector/list.
+
+Measuring the respective slopes, and using the slope for the R code
+as reference we obtain relative speedup, that is how many times faster
+code runs.
+
+=============== ============================================= ==========
+Function        Sequence                                      Speedup   
+=============== ============================================= ==========
+builtin python  array.array                                   20.95     
+builtin python  FloatVector                                   0.55      
+builtin python  list                                          31.27     
+builtin python  numpy.array                                   1.21      
+builtin python  SexpVector                                    20.52     
+pure python     array.array                                   9.48      
+pure python     FloatVector                                   0.53      
+pure python     list                                          10.38     
+pure python     numpy.array                                   1.09      
+pure python     SexpVector                                    6.17      
+reduce python   array.array                                   4.38      
+reduce python   FloatVector                                   0.47      
+reduce python   list                                          4.30      
+reduce python   numpy.array                                   1.18      
+reduce python   SexpVector                                    4.62      
+R               R                                             1.00      
+=============== ============================================= ==========
 
 The object one iterates through matters much for the speed, and
 the poorest performer is :class:`rpy2.robjects.vectors.FloatVector`,
@@ -96,7 +121,7 @@ being almost twice slower than pure R. This is expected since the iteration
 relies on R-level mechanisms to which a penalty for using a higher-level
 interface must be added.
 On the other hand, using a :class:`rpy2.rinterface.SexpVector` provides
-an almost 7x speedup, making the use of R through rpy2 faster that using
+an impressive speedup, making the use of R through rpy2 faster that using
 R from R itself. This was not unexpected, as the lower-level interface is
 closer to the C API for R.
 Since casting back a :class:`rpy2.robjects.vectors.FloatVector` to its
@@ -114,22 +139,6 @@ This is happening because the subsetting mechanism for the later is kept much li
 giving speed when needed. On the other hand, accessing 
 :class:`rpy2.robjects.vectors.FloatVector` is slower because the interface is currently
 implemented in pure Python, while it is in C for :mod:`numpy.array`.
-
-
-Measuring the respective slopes, and using the slope for the R code
-as reference we obtain relative speedup, that is how many times faster
-code runs.
-
-=============== ========================================== ==========
-Function        Sequence                                    Speedup
-=============== ========================================== ==========
-pure R                                                      1
-pure python     :class:`rpy2.rinterface.SexpVector`         *6.8*
-pure python     :class:`rpy2.robjects.vectors.FloatVector`  0.6
-pure python     :class:`list`                               9.1
-pure python     :class:`array.array`                        8.8
-pure python     :class:`numpy.array`                        1.2
-=============== ========================================== ==========
 
 
 Finally, and to put the earlier benchmarks in perspective, it would be

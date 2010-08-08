@@ -131,9 +131,10 @@ d['code'] = StrVector([x[0] for x in combos]) + StrVector(["R" for x in times_r]
 d['sequence'] = StrVector([x[-2] for x in combos]) + StrVector(["R" for x in times_r])
 d['time'] = FloatVector([x for x in times]) + FloatVector([x for x in times_r])
 d['n_loop']    = IntVector([x[-1] for x in combos]) + IntVector([x for x in n_loops])
+d['group'] = StrVector([d['code'][x] + ':' + d['sequence'][x] for x in xrange(len(d['n_loop']))])
 dataf = DataFrame(d)
 
-from rpy2.robjects import Formula
+
 
 from rpy2.robjects.lib import ggplot2
 p = ggplot2.ggplot(dataf) + \
@@ -156,3 +157,30 @@ grdevices.png('../../_static/benchmark_sum.png',
               width = 712, height = 512)
 p.plot()
 grdevices.dev_off()
+
+#base = importr("base")
+stats = importr('stats')
+nlme = importr("nlme")
+fit = nlme.lmList(Formula('time ~ n_loop | group'), data = dataf, 
+                  na_action = stats.na_exclude)
+
+
+# scale to R's slope
+speedup = [1/x for x in stats.coef(fit).rx2("n_loop").ro / stats.coef(fit).rx("R:R", True)[1][0]]
+
+# workaround an issue in class mapping
+df = DataFrame(stats.coef(fit))
+
+import os
+pad_len = (15, 45, 10)
+header = ("Function", "Sequence", "Speedup")
+res = [' '.join(["=" * pad_len[x] for x in range(3)]),
+       ' '.join([header[x].ljust(pad_len[x]) for x in range(3)]),
+       ' '.join(["=" * pad_len[x] for x in range(3)])]
+for coef_name, sp in itertools.izip(df.rownames, speedup):
+    row_content = coef_name.split(':')
+    row_content.append('%.2f' %sp)
+    res.append(' '.join([row_content[x].ljust(pad_len[x]) for x in range(3)]))
+res.append(' '.join(["=" * pad_len[x] for x in range(3)]))
+print(os.linesep.join(res))
+
