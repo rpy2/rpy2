@@ -4,9 +4,10 @@ import sys
 import multiprocessing
 import array, numpy, rpy2.robjects as ro
 
-n_loops = (10, 20, 30, 40)
+n_loops = (1, 10, 20, 30, 40)
 
 def setup_func(kind):
+#-- setup_sum-begin
     n = 20000
     x_list = [random.random() for i in xrange(n)]
     module = None
@@ -27,9 +28,10 @@ def setup_func(kind):
         res = x_list
     elif kind == "R":
         import rpy2.robjects as module
-        res = module.IntVector(x_list)
+        res = module.rinterface.IntSexpVector(x_list)
         module.globalenv['x'] = res
         res = None
+#-- setup_sum-end
     else:
         raise ValueError("Unknown kind '%s'" %kind)
     return (res, module)
@@ -40,18 +42,26 @@ def python_reduce(x):
     return total
 
 
-
+#-- purepython_sum-begin
 def python_sum(x):
     total = 0.0
     for elt in x:
         total += elt
     return total
-
+#-- purepython_sum-end
 
 def test_sumr(queue, func, n, setup_func):
     array, module = setup_func("R")
     r_loopsum = """
-function(x) { total = 0; for (elt in x) {total <- total + elt} }
+#-- purer_sum-begin
+function(x)
+{
+  total = 0;
+  for (elt in x) {
+    total <- total + elt
+  } 
+}
+#-- purer_sum-end
 """
     
     rdo_loopsum = """
@@ -130,5 +140,18 @@ p = ggplot2.ggplot(dataf) + \
     ggplot2.geom_line(ggplot2.aes_string(x="n_loop", 
                                          y="time",
                                          colour="code")) + \
-    ggplot2.facet_wrap(Formula('~sequence'))
+    ggplot2.geom_point(ggplot2.aes_string(x="n_loop", 
+                                          y="time",
+                                          colour="code")) + \
+    ggplot2.facet_wrap(Formula('~sequence')) + \
+    ggplot2.scale_y_continuous('running time') + \
+    ggplot2.scale_x_continuous('repeated n times', ) + \
+    ggplot2.xlim(0, max(n_loops))
+
+
+from rpy2.robjects.packages import importr
+grdevices = importr('grDevices')
+grdevices.png('../../_static/benchmark_sum.png',
+              width = 712, height = 512)
 p.plot()
+grdevices.dev_off()

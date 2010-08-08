@@ -59,49 +59,65 @@ A simple benchmark
 As a simple benchmark, we took a function that would sum
 up all elements in a numerical vector.
 
-pure R:
+In pure R, the code is like:
 
-.. code-block:: r
+.. literalinclude:: _static/demos/benchmarks.py
+   :language: r
+   :start-after: #-- purer_sum-begin
+   :end-before: #-- purer_sum-end
 
-   function(x) {
-     total <- 0
-     for (elt in x) {
-       total <- total + elt
-     }
-     return(total)
-   }
+while in pure Python this is like:
 
-pure Python:
+.. literalinclude:: _static/demos/benchmarks.py
+   :start-after: #-- purepython_sum-begin
+   :end-before: #-- purepython_sum-end
 
-.. code-block:: python
+R has obviously a vectorized function `sum()` calling underlying C code, but the purpose of the benchmark
+is to measure the running time of pure R code.
 
-   def py_sum(x):
-       total = 0
-       for elt in x:
-           total += elt
-       return total
+We ran this function over different types of sequences (of the same length)
+
+.. literalinclude:: _static/demos/benchmarks.py
+   :start-after: #-- setup_sum-begin
+   :end-before: #-- setup_sum-end
+
+The running times are summarized in the figure below.
+
+.. image:: _static/benchmark_sum.png
+   :scale: 80
+
+Iterating through a :class:`list` is likely the fastest, explaining
+why implementations of the sum in pure Python over this type are the fastest.
+Note that the iterating sum is 9 times faster in Python than in R.
+
+The object one iterates through matters much for the speed, and
+the poorest performer is :class:`rpy2.robjects.vectors.FloatVector`,
+being almost twice slower than pure R. This is expected since the iteration
+relies on R-level mechanisms to which a penalty for using a higher-level
+interface must be added.
+On the other hand, using a :class:`rpy2.rinterface.SexpVector` provides
+an almost 7x speedup, making the use of R through rpy2 faster that using
+R from R itself. This was not unexpected, as the lower-level interface is
+closer to the C API for R.
+Since casting back a :class:`rpy2.robjects.vectors.FloatVector` to its
+parent class :class:`rpy2.rinterface.SexpVector` is straightforward, we
+have a mechanism that the allows rpy2 run code over R objects faster than
+R can. It also means than :mod:`rpy2` is at faster than other Python-to-R bridges
+delegating all there code to be evaluated by R when considering the execution of
+code. Traversing from Python to R and back will also be faster with :mod:`rpy2`
+than with either pipes-based solutions or Rserve-based solutions. 
 
 
-We ran this function over different types of sequences (same length, 
-same values)
+What might seem more of a surprise is that iterating through a :class:`numpy.array` is only
+slightly faster than pure R, and slower than when using :class:`rpy2.rinterface.SexpVector`.
+This is happening because the subsetting mechanism for the later is kept much lighter weight, 
+giving speed when needed. On the other hand, accessing 
+:class:`rpy2.robjects.vectors.FloatVector` is slower because the interface is currently
+implemented in pure Python, while it is in C for :mod:`numpy.array`.
 
-.. code-block:: python
 
-   n = 20000
-   x_list = [random.random() for i in xrange(n)]
-
-   import array
-   x_array = array.array('f', x_list)
-
-   import numpy
-   x_numpy = numpy.array(x_list, 'f')
-
-   import rpy2.robjects as ro
-   x_floatvector = ro.FloatVector(x_list)
-   x_sexpvector = ro.rinterface.SexpVector(x_floatvector)
-
-All results are made relative to the implementation in pure R,
-with the column speedup indicating how many times faster the
+Measuring the respective slopes, and using the slope for the R code
+as reference we obtain relative speedup, that is how many times faster
 code runs.
 
 =============== ========================================== ==========
@@ -114,55 +130,6 @@ pure python     :class:`list`                               9.1
 pure python     :class:`array.array`                        8.8
 pure python     :class:`numpy.array`                        1.2
 =============== ========================================== ==========
-
-Iterating through a :class:`list` is likely the fastest, explaining
-why implementation of the sum in pure Python is the fastest.
-Note that the iterating sum is 9 times faster in Python than in R.
-
-The object one iterates through matters much for the speed, and
-the poorest performer is :class:`rpy2.robjects.vectors.FloatVector`,
-being almost twice slower than R. This is expected since the iteration
-relies on R-level mechanisms to which a penalty for using a higher-level
-interface must be added.
-On the other hand, using a :class:`rpy2.rinterface.SexpVector` provides
-an almost 7x speedup, making the use of R through rpy2 faster that using
-R from R. This was again expected, as the lower-level interface is
-closer to the C API for R.
-
-More of a surprise, iterating through a :class:`numpy.array` is only
-slightly faster than pure R.
-
-
-Using the popular bytecode optimizer *psyco*, we run again our benchmark
-function.
-
-
-psyco:
-
-.. code-block:: python
-
-   import psyco
-
-   psy_sum = psyco.proxy(py_sum)
-
-
-
-
-=============== ========================================== ==========
-Function        Sequence                                    Speedup
-=============== ========================================== ==========
-psyco           :class:`rpy2.rinterface.SexpVector`         *14.4*
-psyco           :class:`rpy2.robjects.vectors.FloatVector`  0.6
-psyco           :class:`list`                               27.1
-psyco           :class:`array.array`                        19.4
-psyco           :class:`numpy.array`                        1.5
-=============== ========================================== ==========
-
-When using psyco, we can achieve a 14x speed when looping 
-over an *R vector* (the vector is in the R memory space) and summing
-its elements from rpy2,
-compared to doing the same operation in pure R.
-
 
 
 Finally, and to put the earlier benchmarks in perspective, it is
@@ -180,10 +147,6 @@ builtin python  :class:`numpy.array`                        1.3
 builtin R                                                   133.2
 numpy.array.sum :class:`numpy.array`                        *272.2*
 =============== ========================================== ==========
-
-The builtin python implementation on list is only twice faster
-than a pure python implementation on an :class:`rpy2.rinterface.SexpVector`,
-accelerated using *psyco*.
 
 :class:`numpy.array.sum` is about twice faster than its R conterpart,
 although it is important to remember that the R version handles missing
