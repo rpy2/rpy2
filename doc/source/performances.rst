@@ -132,24 +132,9 @@ pure python     :class:`numpy.array`                        1.2
 =============== ========================================== ==========
 
 
-Finally, and to put the earlier benchmarks in perspective, it is
+Finally, and to put the earlier benchmarks in perspective, it would be
 fair to note that python and R have a builtin function *sum*,
 calling C-compiled code, and to compare their performances.
 
-=============== ========================================== ==========
-Function        Sequence                                    Speedup
-=============== ========================================== ==========
-builtin python  :class:`rpy2.rinterface.SexpVector`         14.9
-builtin python  :class:`rpy2.robjects.vectors.FloatVector`  0.6
-builtin python  :class:`list`                               32.7
-builtin python  :class:`array.array`                        26.1
-builtin python  :class:`numpy.array`                        1.3
-builtin R                                                   133.2
-numpy.array.sum :class:`numpy.array`                        *272.2*
-=============== ========================================== ==========
-
-:class:`numpy.array.sum` is about twice faster than its R conterpart,
-although it is important to remember that the R version handles missing
-values.
 
 
