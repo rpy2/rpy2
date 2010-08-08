@@ -101,7 +101,7 @@ R from R itself. This was not unexpected, as the lower-level interface is
 closer to the C API for R.
 Since casting back a :class:`rpy2.robjects.vectors.FloatVector` to its
 parent class :class:`rpy2.rinterface.SexpVector` is straightforward, we
-have a mechanism that the allows rpy2 run code over R objects faster than
+have a mechanism that allows rpy2 to run code over R objects faster than
 R can. It also means than :mod:`rpy2` is at faster than other Python-to-R bridges
 delegating all there code to be evaluated by R when considering the execution of
 code. Traversing from Python to R and back will also be faster with :mod:`rpy2`

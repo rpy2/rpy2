@@ -146,7 +146,8 @@ p = ggplot2.ggplot(dataf) + \
     ggplot2.facet_wrap(Formula('~sequence')) + \
     ggplot2.scale_y_continuous('running time') + \
     ggplot2.scale_x_continuous('repeated n times', ) + \
-    ggplot2.xlim(0, max(n_loops))
+    ggplot2.xlim(0, max(n_loops)) + \
+    ggplot2.opts(title = "Benchmark (running time)")
 
 
 from rpy2.robjects.packages import importr
