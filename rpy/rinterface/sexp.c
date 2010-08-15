@@ -48,8 +48,11 @@ static void
 Sexp_dealloc(PySexpObject *self)
 {
   Sexp_clear(self);
-  self->ob_type->tp_free((PyObject*)self);
-
+#if (PY_VERSION_HEX < 0x03010000)
+  (self->ob_type->tp_free)((PyObject*)self);
+#else
+  (Py_TYPE(self)->tp_free)((PyObject *)self);
+#endif
   /* PyObject_Del(self); */
 }
 
@@ -64,10 +67,17 @@ Sexp_repr(PyObject *self)
    *  return NULL;
    *}
    */
+#if (PY_VERSION_HEX < 0x03010000)
   return PyString_FromFormat("<%s - Python:\%p / R:\%p>",
                              self->ob_type->tp_name,
                              self,
-                             sexp);
+                             sexp);  
+#else
+  return PyUnicode_FromFormat("<%s - Python:\%p / R:\%p>",
+			      self->ob_type->tp_name,
+			      self,
+			      sexp);
+#endif
 }
 
 
@@ -78,9 +88,13 @@ Sexp_typeof_get(PyObject *self)
   SEXP sexp = RPY_SEXP(pso);
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;;
+    return NULL;
   }
+#if (PY_VERSION_HEX < 0x03010000)
   return PyInt_FromLong((long)TYPEOF(sexp));
+#else
+  return PyLong_FromLong((long)TYPEOF(sexp));
+#endif
 }
 PyDoc_STRVAR(Sexp_typeof_doc,
              "R internal SEXPREC type.");
@@ -92,14 +106,21 @@ Sexp_do_slot(PyObject *self, PyObject *name)
   SEXP sexp = RPY_SEXP(((PySexpObject*)self));
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;;
+    return NULL;
   }
+#if (PY_VERSION_HEX < 0x03010000)
   if (! PyString_Check(name)) {
+#else
+    if (! PyUnicode_Check(name)) {
+#endif
     PyErr_SetString(PyExc_TypeError, "The name must be a string.");
     return NULL;
   }
+#if (PY_VERSION_HEX < 0x03010000)
   char *name_str = PyString_AS_STRING(name);
-
+#else
+  char *name_str = PyBytes_AsString(PyUnicode_AsLatin1String(name));
+#endif
   if (! R_has_slot(sexp, install(name_str))) {
     PyErr_SetString(PyExc_LookupError, "The object has no such attribute.");
     return NULL;
@@ -165,7 +186,11 @@ Sexp_named_get(PyObject *self)
     return NULL;;
   }
   unsigned int res = NAMED(sexp);
+#if (PY_VERSION_HEX < 0x03010000)
   return PyInt_FromLong((long)res);
+#else
+  return PyLong_FromLong((long)res);
+#endif
 }
 PyDoc_STRVAR(Sexp_named_doc,
 "Integer code for the R object reference-pseudo counting.\n\
@@ -243,10 +268,13 @@ Sexp_refcount_get(PyObject *self)
 
   if (! RPY_SEXP(rpyobj)) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
-    return NULL;;
+    return NULL;
   }
-  
+#if (PY_VERSION_HEX < 0x03010000)  
   PyObject *res = PyInt_FromLong((long)(rpyobj->sObj->count));
+#else
+  PyObject *res = PyLong_FromLong((long)(rpyobj->sObj->count));
+#endif
   return res;
 }
 PyDoc_STRVAR(Sexp_refcount_doc,
@@ -325,8 +353,13 @@ Sexp___getstate__(PyObject *self)
           /* res = PyByteArray_FromStringAndSize(sexp_ser, len); */
 
   /*FIXME: is this working on 64bit archs ? */
+#if (PY_VERSION_HEX < 0x03010000)  
   res_string = PyString_FromStringAndSize((void *)RAW_POINTER(sexp_ser), 
                                           (Py_ssize_t)LENGTH(sexp_ser));
+#else
+  res_string = PyBytes_FromStringAndSize((void *)RAW_POINTER(sexp_ser), 
+					 (Py_ssize_t)LENGTH(sexp_ser));
+#endif
   UNPROTECT(1);
   return res_string;
 }
@@ -455,8 +488,13 @@ static PyMethodDef Sexp_methods[] = {
    Sexp_do_slot_assign_doc},
   {"rsame", (PyCFunction)Sexp_rsame, METH_O,
    Sexp_rsame_doc},
+#if (PY_VERSION_HEX < 0x03010000)  
   {"__deepcopy__", (PyCFunction)Sexp_duplicate, METH_KEYWORDS,
    Sexp_duplicate_doc},
+#else
+  {"__deepcopy__", (PyCFunction)Sexp_duplicate, METH_VARARGS | METH_KEYWORDS,
+   Sexp_duplicate_doc},
+#endif
   {"__getstate__", (PyCFunction)Sexp___getstate__, METH_NOARGS,
    Sexp___getstate___doc},
   {"__setstate__", (PyCFunction)Sexp___setstate__, METH_O,
@@ -593,8 +631,12 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 static PyTypeObject Sexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
+#if (PY_VERSION_HEX < 0x03010000)
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
+#else
+	PyVarObject_HEAD_INIT(NULL, 0)
+#endif
         "rpy2.rinterface.Sexp",      /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/

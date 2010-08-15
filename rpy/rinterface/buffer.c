@@ -220,10 +220,12 @@ VectorSexp_getcharbuf(PySexpObject *self, Py_ssize_t segment, const char **ptrpt
 }
 
 static PyBufferProcs VectorSexp_as_buffer = {
+#if (PY_VERSION_HEX < 0x03010000)
         (readbufferproc)VectorSexp_getreadbuf,
         (writebufferproc)VectorSexp_getwritebuf,
         (segcountproc)VectorSexp_getsegcount,
 	(charbufferproc)VectorSexp_getcharbuf,
+#endif
 #if PY_VERSION_HEX >= 0x02060000
 	(getbufferproc)VectorSexp_getbuffer,
 	(releasebufferproc)0,

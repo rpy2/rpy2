@@ -53,7 +53,13 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
   len_R = GET_LENGTH(*sexp);
   
   if (i < 0) {
+    /*FIXME: check that unit tests are covering this properly */
+    /*FIXME: is this valid for Python < 3 ? */
+#if (PY_VERSION_HEX < 0x03010000)
     i = len_R - i;
+#else
+    i = len_R + i;
+#endif
   }
 
   /* On 64bits, Python is apparently able to use larger integer
@@ -97,7 +103,11 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
       if (vi == NA_INTEGER) {
         res = NAInteger_New(1);
       } else {
+#if (PY_VERSION_HEX < 0x03010000)
         res = PyInt_FromLong((long)vi);
+#else
+	res = PyLong_FromLong((long)vi);
+#endif
       }
       break;
     case LGLSXP:
@@ -117,7 +127,11 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
         res = NACharacter_New(1);
       } else {
         vs = translateChar(STRING_ELT(*sexp, i_R));
+#if (PY_VERSION_HEX < 0x03010000)
         res = PyString_FromString(vs);
+#else
+	res = PyUnicode_FromString(vs);
+#endif
       }
       break;
 /*     case CHARSXP: */
@@ -173,13 +187,16 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
 
 
   len_R = GET_LENGTH(*sexp);
-  
+
+  /*FIXME: is this valid for Python < 3 ?*/  
+#if (PY_VERSION_HEX < 0x03010000)
   if (ilow < 0) {
     ilow = (R_len_t)(len_R - ilow) + 1;
   }
   if (ihigh < 0) {
     ihigh = (R_len_t)(len_R - ihigh) + 1;
   }
+#endif
 
   /* On 64bits, Python is apparently able to use larger integer
    * than R for indexing. */
@@ -301,7 +318,12 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
   len_R = GET_LENGTH(*sexp);
   
   if (i < 0) {
+    /* FIXME: Is this valid for Python < 3 ?*/
+#if (PY_VERSION_HEX < 0x03010000)
     i = len_R - i;
+#else
+    i = len_R + i;
+#endif
   }
 
   if (i >= len_R) {
@@ -400,13 +422,16 @@ VectorSexp_ass_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh, PyObje
 
   SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
   len_R = GET_LENGTH(*sexp);
-  
+
+  /* FIXME: Is this valid for Python < 3 ? */
+#if (PY_VERSION_HEX < 0x03010000)  
   if (ilow < 0) {
     ilow = (R_len_t)(len_R - ilow) + 1;
   }
   if (ihigh < 0) {
     ihigh = (R_len_t)(len_R - ihigh) + 1;
   }
+#endif
 
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");

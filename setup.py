@@ -274,6 +274,7 @@ for scheme in distutils.command.install.INSTALL_SCHEMES.values():
 
 setup(
     #install_requires=['distribute'],
+    #use2to3 = True,
     cmdclass = {'build': build,
                 'build_ext': build_ext},
     name = pack_name,
