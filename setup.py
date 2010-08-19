@@ -10,6 +10,11 @@ from distutils.core import Extension
 pack_name = 'rpy2'
 pack_version = __import__('rpy').__version__
 
+extra_setup = {}
+if sys.version_info >= (3,):
+    # Python 3 -> need to translate code
+    extra_setup['use_2to3'] = True
+    
 
 class build(_build):
     user_options = _build.user_options + \
@@ -274,7 +279,6 @@ for scheme in distutils.command.install.INSTALL_SCHEMES.values():
 
 setup(
     #install_requires=['distribute'],
-    #use2to3 = True,
     cmdclass = {'build': build,
                 'build_ext': build_ext},
     name = pack_name,
@@ -303,7 +307,8 @@ setup(
                    'Development Status :: 4 - Beta'
                    ],
     data_files = [(os.path.join('rpy2', 'images'), 
-                   [os.path.join('doc', 'source', 'rpy2_logo.png')])]
+                   [os.path.join('doc', 'source', 'rpy2_logo.png')])],
+    **extra_setup
     
     #[pack_name + '.rinterface_' + x for x in rinterface_rversions] + \
         #[pack_name + '.rinterface_' + x + '.tests' for x in rinterface_rversions]
