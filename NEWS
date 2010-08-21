@@ -4,6 +4,8 @@ Release 2.2.0-dev
 New Features
 ------------
 
+- Support for Python 3
+
 :mod:`rpy2.robjects`:
 
 - :meth:`Environment.keys` to list the keys
