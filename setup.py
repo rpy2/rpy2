@@ -6,15 +6,45 @@ from distutils.command.build import build as _build
 from distutils.core import setup
 from distutils.core import Extension
 
-
 pack_name = 'rpy2'
 pack_version = __import__('rpy').__version__
 
-extra_setup = {}
+package_prefix='.'
 if sys.version_info >= (3,):
-    # Python 3 -> need to translate code
-    extra_setup['use_2to3'] = True
-    
+    # Python 3 and we need to translate code
+    package_prefix = os.path.join('build', 'python3_rpy')
+    from distutils import filelist, dir_util, file_util, util#, log
+    #log.set_verbosity(1)
+    fl = filelist.FileList()
+    for line in open("MANIFEST.in"):
+        line = line.rstrip()
+        if line != '':
+            fl.process_template_line(line)
+    dir_util.create_tree(package_prefix, fl.files)
+    outfiles_2to3 = []
+    #dist_script = os.path.join("build", "src", "distribute_setup.py")
+    for f in fl.files:
+        outf, copied = file_util.copy_file(f, os.path.join(package_prefix, f), 
+                                           update=1)
+        if copied and outf.endswith(".py"): #and outf != dist_script:
+            outfiles_2to3.append(outf)
+        if copied and outf.endswith('api_tests.txt'):
+            # XXX support this in distutils as well
+            from lib2to3.main import main
+            main('lib2to3.fixes', ['-wd', os.path.join(package_prefix, 
+                                                       'tests', 'api_tests.txt')])
+
+    util.run_2to3(outfiles_2to3)
+
+    # arrange setup to use the copy
+    sys.path.insert(0, package_prefix)
+    src_root = package_prefix
+
+else:
+    from distutils.core import setup    
+from distutils.core import Extension
+
+
 
 class build(_build):
     user_options = _build.user_options + \
@@ -232,16 +262,26 @@ def getRinterface_ext():
             #os.path.join('rpy', 'rinterface', 'buffer.c'),
             #os.path.join('rpy', 'rinterface', 'sequence.c'),
             #os.path.join('rpy', 'rinterface', 'sexp.c'),
-            os.path.join('rpy', 'rinterface', 'rinterface.c')
+            os.path.join(package_prefix,
+                         'rpy', 'rinterface', 'rinterface.c')
                        ],
-            depends = [os.path.join('rpy', 'rinterface', 'embeddedr.h'), 
-                       os.path.join('rpy', 'rinterface', 'r_utils.h'),
-                       os.path.join('rpy', 'rinterface', 'buffer.h'),
-                       os.path.join('rpy', 'rinterface', 'sequence.h'),
-                       os.path.join('rpy', 'rinterface', 'sexp.h'),
-                       os.path.join('rpy', 'rinterface', 'rpy_rinterface.h')
+            depends = [os.path.join(package_prefix,
+                                    'rpy', 'rinterface', 'embeddedr.h'), 
+                       os.path.join(package_prefix,
+                                    'rpy', 'rinterface', 'r_utils.h'),
+                       os.path.join(package_prefix,
+                                    'rpy', 'rinterface', 'buffer.h'),
+                       os.path.join(package_prefix,
+                                    'rpy', 'rinterface', 'sequence.h'),
+                       os.path.join(package_prefix,
+                                    'rpy', 'rinterface', 'sexp.h'),
+                       os.path.join(package_prefix,
+                                    'rpy', 'rinterface', 'rpy_rinterface.h'),
+                       os.path.join(package_prefix,
+                                    'rpy', 'rinterface', 'rpy_device.h')
                        ],
-            include_dirs = [os.path.join('rpy', 'rinterface'),] + include_dirs,
+            include_dirs = [os.path.join(package_prefix,
+                                         'rpy', 'rinterface'),] + include_dirs,
             libraries = ['R', ],
             library_dirs = r_libs,
             define_macros = define_macros,
@@ -271,7 +311,7 @@ rinterface_exts = []
 ri_ext = getRinterface_ext()
 rinterface_exts.append(ri_ext)
 
-pack_dir = {pack_name: 'rpy'}
+pack_dir = {pack_name: os.path.join(package_prefix, 'rpy')}
 
 import distutils.command.install
 for scheme in distutils.command.install.INSTALL_SCHEMES.values():
@@ -308,7 +348,6 @@ setup(
                    ],
     data_files = [(os.path.join('rpy2', 'images'), 
                    [os.path.join('doc', 'source', 'rpy2_logo.png')])],
-    **extra_setup
     
     #[pack_name + '.rinterface_' + x for x in rinterface_rversions] + \
         #[pack_name + '.rinterface_' + x + '.tests' for x in rinterface_rversions]
