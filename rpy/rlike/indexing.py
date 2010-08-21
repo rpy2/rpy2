@@ -1,24 +1,18 @@
 
-def default_cmp(x, y):
+def default_key(x):
     """ Default comparison function """
-    if x < y: 
-        return -1
-    elif x > y:
-        return +1
-    else:
-        return 0
+    return x
 
-def order(seq, cmp = default_cmp, reverse = False):
+def order(seq, key = default_key, reverse = False):
     """ Return the order in which to take the items to obtained
     a sorted sequence."""
     o = range(len(seq))
 
-    def wrap_cmp(x, y):
+    def wrap_key(x):
         x = seq[x]
-        y = seq[y]
-        return cmp(x, y)
+        return key(x)
         
-    o.sort(cmp = wrap_cmp, reverse = reverse)
+    o.sort(key = wrap_key, reverse = reverse)
 
     return o
 
