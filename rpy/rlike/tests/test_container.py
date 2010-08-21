@@ -156,7 +156,7 @@ class TaggedListTestCase(unittest.TestCase):
     def testitems(self):
         tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
         self.assertEquals((('a', 1), ('b', 2), ('c', 3)), 
-                          tl.items())
+                          tuple(tl.items()))
 
     def testiterontag(self):
         tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'a'))
