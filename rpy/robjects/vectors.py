@@ -162,7 +162,14 @@ class VectorOperationsDelegator(object):
 
 
 class Vector(RObjectMixin, rinterface.SexpVector):
-    """ R vector-like object. Items can be accessed with:
+    """ Vector(seq) -> Vector.
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python object.
+    In the later case, a conversion will be attempted using
+    conversion.py2ri().
+    
+     R vector-like object. Items can be accessed with:
     - the method "__getitem__" ("[" operator)
     - the delegators rx or rx2 """
     _sample = rinterface.baseenv['sample']
@@ -228,7 +235,15 @@ class Vector(RObjectMixin, rinterface.SexpVector):
         return res
 
 class StrVector(Vector):
-    """ Vector of string elements """
+    """      Vector of string elements
+
+    StrVector(seq) -> StrVector.
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python sequence.
+    In the later case, all elements in the sequence should be either
+    strings, or have a str() representation.
+    """
 
     _factorconstructor = rinterface.baseenv['factor']
 
@@ -237,12 +252,23 @@ class StrVector(Vector):
         super(StrVector, self).__init__(obj)
 
     def factor(self):
-        """ construct a factor vector from the vector of strings """
+        """
+        factor() -> FactorVector
+
+        Construct a factor vector from a vector of strings. """
+
         res = self._factorconstructor(self)
         return conversion.ri2py(res)
 
 class IntVector(Vector):
-    """ Vector of integer elements """
+    """ Vector of integer elements 
+    IntVector(seq) -> IntVector.
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python sequence.
+    In the later case, all elements in the sequence should be either
+    integers, or have an int() representation.
+    """
     _tabulate = rinterface.baseenv['tabulate']
 
     def __init__(self, obj):
@@ -257,19 +283,44 @@ class IntVector(Vector):
         return conversion.ri2py(res)
 
 class BoolVector(Vector):
-    """ Vector of boolean (logical) elements """
+    """ Vector of boolean (logical) elements 
+    BoolVector(seq) -> BoolVector.
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python sequence.
+    In the later case, all elements in the sequence should be either
+    booleans, or have a bool() representation.
+    """
     def __init__(self, obj):
         obj = rinterface.BoolSexpVector(obj)
         super(BoolVector, self).__init__(obj)
 
 class ComplexVector(Vector):
-    """ Vector of complex elements """
+    """ Vector of complex elements 
+
+    ComplexVector(seq) -> ComplexVector
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python sequence.
+    In the later case, all elements in the sequence should be either
+    complex, or have a complex() representation.
+    
+    """
     def __init__(self, obj):
         obj = rinterface.ComplexSexpVector(obj)
         super(ComplexVector, self).__init__(obj)
 
 class FloatVector(Vector):
-    """ Vector of float (double) elements """
+    """ Vector of float (double) elements 
+
+    FloatVector(seq) -> FloatVector.
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python sequence.
+    In the later case, all elements in the sequence should be either
+    float, or have an float() representation.
+
+    """
     def __init__(self, obj):
         obj = rinterface.FloatSexpVector(obj)
         super(FloatVector, self).__init__(obj)
@@ -323,22 +374,23 @@ class DateVector(FloatVector):
     """ Vector of dates """
     pass
 
-
 class POSIXt(object):
     """ POSIX time vector. This is an abstract class. """
     pass
 
 class POSIXlt(POSIXt, Vector):
     """ Representation of dates with a 9-component structure
-    (similar to Python's time.struct_time). 
+    (similar to Python's time.struct_time).
+
+    POSIXlt(seq) -> POSIXlt.
+        
+    The constructor accepts either an R vector
+    or a sequence (an object with the Python
+    sequence interface) of time.struct_time objects. 
     """
 
     def __init__(self, seq):
-        """ POSIXlt(seq) -> POSIXlt.
-        
-        The constructor accepts either an R vector
-        or a sequence (an object with the Python
-        sequence interface) of time.struct_time objects.
+        """ 
         """
         if isinstance(seq, rinterface.Sexp):
             super(self, Vector)(seq)
@@ -360,14 +412,16 @@ class POSIXlt(POSIXt, Vector):
 class POSIXct(POSIXt, FloatVector):
     """ Representation of dates as seconds since Epoch.
     This form is preferred to POSIXlt for inclusion in a DataFrame.
+
+    POSIXlt(seq) -> POSIXlt.
+    
+    The constructor accepts either an R vector
+    or a sequence (an object with the Python
+    sequence interface) of time.struct_time objects.
     """
 
     def __init__(self, seq):
-        """ POSIXlt(seq) -> POSIXlt.
-        
-        The constructor accepts either an R vector
-        or a sequence (an object with the Python
-        sequence interface) of time.struct_time objects.
+        """ 
         """
 
         if isinstance(seq, rinterface.Sexp):
