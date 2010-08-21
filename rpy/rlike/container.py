@@ -119,7 +119,7 @@ class OrdDict(dict):
         """ Reverse the order of the elements in-place (no copy)."""
         l = self.__l
         n = len(self.__l)
-        for i in xrange(n/2):
+        for i in xrange(n//2):
             tmp = l[i]
             l[i] = l[n-i-1]
             kv = l[i]
