@@ -263,6 +263,12 @@ Whenever more details are needed, one can consider running explicit tests.
 
 To test the :mod:`rpy2.robjects` high-level interface:
 
+.. code-block:: bash
+
+  python -m 'rpy2.robjects.tests.__init__'
+
+or for a full control of options
+
 .. code-block:: python
 
   import rpy2.robjects.tests
@@ -274,6 +280,12 @@ To test the :mod:`rpy2.robjects` high-level interface:
   tr.run(suite)
 
 If interested in the lower-level interface, the tests can be run with:
+
+.. code-block:: bash
+
+  python -m 'rpy2.rinterface.tests.__init__'
+
+or for a full control of options
 
 .. code-block:: python
 
