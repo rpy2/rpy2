@@ -79,11 +79,13 @@ versions to run rpy2 with.
 Software Versions
 ======== ===========
  Python   2.6
- R        2.10; 2.11
+ R        2.11; 2.12
 ======== ===========
 
 Python 2.4 and R 2.7 might compile, but there is much less testing done with
-those platforms and likely limited hopes for free support.
+those platforms and likely limited hope for free support.
+
+Python 3.1 will install, but at the time of writing still has minor issues.
 
 .. note::
 
