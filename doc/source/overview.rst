@@ -98,6 +98,11 @@ Python 3.1 will install, but at the time of writing still has minor issues.
 
 .. note::
 
+   If installing from a linux distribution, the Python-dev package will
+   obviously be required to compile rpy2
+
+.. note::
+
    On OS X, the *XCode* tools will be required in order to compile rpy2.
 
 
