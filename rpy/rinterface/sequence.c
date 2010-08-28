@@ -36,7 +36,6 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
 {
   PyObject* res;
   R_len_t i_R, len_R;
-
   if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
     return NULL;
@@ -58,7 +57,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
 #if (PY_VERSION_HEX < 0x03010000)
     i = len_R - i;
 #else
-    i = len_R + i;
+    i += len_R;
 #endif
   }
 
@@ -300,6 +299,57 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
   return (PyObject*)newPySexpObject(res_sexp);
 }
 
+/* generic a[i] for Python3 */
+#if (PY_VERSION_HEX < 0x03010000)
+#else
+static PyObject*
+VectorSexp_subscript(PyObject *object, PyObject* item)
+{
+  Py_ssize_t i;
+  if (PyIndex_Check(item)) {
+    i = PyNumber_AsSsize_t(item, PyExc_IndexError);
+    if (i == -1 && PyErr_Occurred())
+      return NULL;
+    /* currently checked in VectorSexp_item */
+    /* if (i < 0) */
+    /*   i += VectorSexp_len(object); */
+    return VectorSexp_item(object, i);
+  } 
+  else if (PySlice_Check(item)) {
+    Py_ssize_t vec_len, start, stop, step, slicelength, cur, i;
+    PyObject* result;
+    PyObject* it;
+    PyObject **src, **dest;
+    vec_len = VectorSexp_len(object);
+    if (vec_len == -1)
+      /* propagate the error */
+      return NULL;
+    if (PySlice_GetIndicesEx((PySliceObject*)item,
+			     vec_len,
+			     &start, &stop, &step, &slicelength) < 0) {
+      return NULL;
+    }
+    if (slicelength <= 0) {
+      PyErr_Format(PyExc_IndexError,
+		   "The slice's length can't be < 0.");
+      return NULL;
+      /* return VectorSexp_New(0); */
+    }
+    else {
+      result = VectorSexp_slice(object, start, stop);
+      return result;
+    }
+  }
+  else {
+    PyErr_Format(PyExc_TypeError,
+		 "SexpVector indices must be integers, not %.200s",
+		 Py_TYPE(item)->tp_name);
+    return NULL;
+  }
+}
+#endif
+
+
 
 /* a[i] = val */
 static int
@@ -537,10 +587,27 @@ static PySequenceMethods VectorSexp_sequenceMethods = {
   0,                              /* sq_concat */
   0,                              /* sq_repeat */
   (ssizeargfunc)VectorSexp_item,        /* sq_item */
+#if (PY_VERSION_HEX < 0x03010000)
   (ssizessizeargfunc)VectorSexp_slice,  /* sq_slice */
+#else
+  0,                                         /* sq_slice */
+#endif
   (ssizeobjargproc)VectorSexp_ass_item, /* sq_ass_item */
+#if (PY_VERSION_HEX < 0x03010000)
   (ssizessizeobjargproc)VectorSexp_ass_slice, /* sq_ass_slice */
+#else
+  0,
+#endif
   0,                              /* sq_contains */
   0,                              /* sq_inplace_concat */
   0                               /* sq_inplace_repeat */
 };
+
+#if (PY_VERSION_HEX < 0x03010000)
+#else
+static PyMappingMethods VectorSexp_as_mapping = {
+  (lenfunc)VectorSexp_len,
+  (binaryfunc)VectorSexp_subscript,
+  0
+};
+#endif
