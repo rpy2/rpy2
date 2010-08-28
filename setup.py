@@ -11,6 +11,7 @@ pack_version = __import__('rpy').__version__
 
 package_prefix='.'
 if sys.version_info >= (3,):
+    print("Using 2to3 to translate Python2-only idioms into Python3 code. Please wait...")
     # Python 3 and we need to translate code
     package_prefix = os.path.join('build', 'python3_rpy')
     from distutils import filelist, dir_util, file_util, util#, log
@@ -39,7 +40,7 @@ if sys.version_info >= (3,):
     # arrange setup to use the copy
     sys.path.insert(0, package_prefix)
     src_root = package_prefix
-
+    print('done.')
 else:
     from distutils.core import setup    
 from distutils.core import Extension
