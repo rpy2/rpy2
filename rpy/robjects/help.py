@@ -120,6 +120,9 @@ class Package(object):
                             "Path to the installed R package")
 
 
+    def __repr__(self):
+        r = 'R package %s  '%self.__package_name + super(self, Package).__repr__()
+        return r
 
 class HelpNotFound(KeyError):
     def __init__(self, msg, topic=None, package=None):
