@@ -9,7 +9,7 @@
 
 
 /* len(x) */
-static Py_ssize_t VectorSexp_len(PyObject *object)
+static Py_ssize_t VectorSexp_len(PySexpObject* object)
 {
   if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
@@ -19,7 +19,7 @@ static Py_ssize_t VectorSexp_len(PyObject *object)
 
   Py_ssize_t len;
   /* FIXME: sanity checks. */
-  SEXP sexp = RPY_SEXP((PySexpObject *)object);
+  SEXP sexp = RPY_SEXP(object);
   if (! sexp) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       return -1;
@@ -32,7 +32,7 @@ static Py_ssize_t VectorSexp_len(PyObject *object)
 
 /* a[i] */
 static PyObject *
-VectorSexp_item(PyObject *object, Py_ssize_t i)
+VectorSexp_item(PySexpObject* object, Py_ssize_t i)
 {
   PyObject* res;
   R_len_t i_R, len_R;
@@ -41,7 +41,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
     return NULL;
   }
   embeddedR_setlock();
-  SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
+  SEXP *sexp = &(RPY_SEXP(object));
 
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
@@ -166,7 +166,7 @@ VectorSexp_item(PyObject *object, Py_ssize_t i)
 
 /* a[i1:i2] */
 static PyObject *
-VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
+VectorSexp_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh)
 {
   R_len_t len_R;
 
@@ -175,7 +175,7 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
     return NULL;
   }
   embeddedR_setlock();
-  SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
+  SEXP *sexp = &(RPY_SEXP(object));
   SEXP res_sexp, tmp, tmp2;
 
   if (! sexp) {
@@ -302,7 +302,7 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
 
 /* a[i] = val */
 static int
-VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
+VectorSexp_ass_item(PySexpObject* object, Py_ssize_t i, PyObject* val)
 {
   R_len_t i_R, len_R;
   int self_typeof;
@@ -313,7 +313,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
     return -1;
   }
 
-  SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
+  SEXP *sexp = &(RPY_SEXP(object));
   len_R = GET_LENGTH(*sexp);
   
   if (i < 0) {
@@ -401,7 +401,7 @@ VectorSexp_ass_item(PyObject *object, Py_ssize_t i, PyObject *val)
 
 /* a[i:j] = val */
 static int
-VectorSexp_ass_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *val)
+VectorSexp_ass_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *val)
 {
   R_len_t len_R;
   int self_typeof;
@@ -419,7 +419,7 @@ VectorSexp_ass_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh, PyObje
     return -1;
   }
 
-  SEXP *sexp = &(RPY_SEXP((PySexpObject *)object));
+  SEXP *sexp = &(RPY_SEXP(object));
   len_R = GET_LENGTH(*sexp);
 
   /* FIXME: Is this valid for Python < 3 ? */
@@ -556,16 +556,18 @@ static PySequenceMethods VectorSexp_sequenceMethods = {
 #else
 /* generic a[i] for Python3 */
 static PyObject*
-VectorSexp_subscript(PyObject *object, PyObject* item)
+VectorSexp_subscript(PySexpObject *object, PyObject* item)
 {
   Py_ssize_t i;
   if (PyIndex_Check(item)) {
     i = PyNumber_AsSsize_t(item, PyExc_IndexError);
-    if (i == -1 && PyErr_Occurred())
+    if (i == -1 && PyErr_Occurred()) {
       return NULL;
+    }
     /* currently checked in VectorSexp_item */
-    /* if (i < 0) */
-    /*   i += VectorSexp_len(object); */
+    /* (but have it here nevertheless) */
+    if (i < 0)
+       i += VectorSexp_len(object);
     return VectorSexp_item(object, i);
   } 
   else if (PySlice_Check(item)) {
@@ -622,7 +624,7 @@ VectorSexp_ass_subscript(PySexpObject* self, PyObject* item, PyObject* value)
       Py_ssize_t vec_len = VectorSexp_len(self);
       if (vec_len == -1)
       /* propagate the error */
-      return NULL;
+      return -1;
       if (PySlice_GetIndicesEx((PySliceObject*)item, vec_len,
 			       &start, &stop, &step, &slicelength) < 0) {
 	return -1;

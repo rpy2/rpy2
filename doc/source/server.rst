@@ -60,4 +60,3 @@ section, listening on port 9090 is then:
 
 In this example, the client is querying the R version.
 
-
