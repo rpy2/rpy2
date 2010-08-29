@@ -316,11 +316,8 @@ VectorSexp_subscript(PyObject *object, PyObject* item)
     return VectorSexp_item(object, i);
   } 
   else if (PySlice_Check(item)) {
-    Py_ssize_t vec_len, start, stop, step, slicelength, cur, i;
-    PyObject* result;
-    PyObject* it;
-    PyObject **src, **dest;
-    vec_len = VectorSexp_len(object);
+    Py_ssize_t start, stop, step, slicelength;
+    Py_ssize_t vec_len = VectorSexp_len(object);
     if (vec_len == -1)
       /* propagate the error */
       return NULL;
@@ -336,8 +333,15 @@ VectorSexp_subscript(PyObject *object, PyObject* item)
       /* return VectorSexp_New(0); */
     }
     else {
-      result = VectorSexp_slice(object, start, stop);
-      return result;
+      if (step == 1) {
+	PyObject *result = VectorSexp_slice(object, start, stop);
+	return result;
+      }
+      else {
+	PyErr_Format(PyExc_IndexError,
+		     "Only slicing with step==1 is supported for the moment.");
+	return NULL;
+      }
     }
   }
   else {
@@ -605,9 +609,47 @@ static PySequenceMethods VectorSexp_sequenceMethods = {
 
 #if (PY_VERSION_HEX < 0x03010000)
 #else
+/* genericc a[i] = foo for Python 3 */
+static int
+VectorSexp_ass_subscript(PySexpObject* self, PyObject* item, PyObject* value)
+{
+    if (PyIndex_Check(item)) {
+        Py_ssize_t i = PyNumber_AsSsize_t(item, PyExc_IndexError);
+        if (i == -1 && PyErr_Occurred())
+            return -1;
+        if (i < 0)
+            i += PyList_GET_SIZE(self);
+        return VectorSexp_ass_item(self, i, value);
+    }
+    else if (PySlice_Check(item)) {
+      Py_ssize_t start, stop, step, slicelength;
+      Py_ssize_t vec_len = VectorSexp_len(self);
+      if (vec_len == -1)
+      /* propagate the error */
+      return NULL;
+      if (PySlice_GetIndicesEx((PySliceObject*)item, vec_len,
+			       &start, &stop, &step, &slicelength) < 0) {
+	return -1;
+      }
+      if (step == 1) {
+	return VectorSexp_ass_slice(self, start, stop, value);
+      } else {
+	PyErr_Format(PyExc_IndexError,
+		     "Only slicing with step==1 is supported for the moment.");
+	return -1;
+      }
+    }
+    else {
+      PyErr_Format(PyExc_TypeError,
+                     "VectorSexp indices must be integers, not %.200s",
+                     item->ob_type->tp_name);
+        return -1;
+    }
+}
+
 static PyMappingMethods VectorSexp_as_mapping = {
   (lenfunc)VectorSexp_len,
   (binaryfunc)VectorSexp_subscript,
-  0
+  (objobjargproc)VectorSexp_ass_subscript
 };
 #endif
