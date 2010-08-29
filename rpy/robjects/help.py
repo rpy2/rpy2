@@ -37,7 +37,7 @@ class Page(object):
     def iteritems(self):
         """ iterator through the sections names and content
         in the documentation Page. """
-        return self.sections.iteritems:
+        return self.sections.iteritems
 
     def to_docstring(self, section_names = None):
         s = []
