@@ -107,7 +107,13 @@ class RS4_Type(type):
         return type.__new__(mcs, name, bases, cls_dict)
 
 # playground to experiment with more metaclass-level automation
+
 class RS4Auto_Type(type):
+    """ This type (metaclass) will take an R S4 class
+    and create a Python class out of it, fetching the
+    R documention page and putting into the Python docstring
+    on the fly.
+    """
     def __new__(mcs, name, bases, cls_dict):
         try:
             cls_rname = cls_dict['__rname__']
@@ -164,21 +170,34 @@ class RS4Auto_Type(type):
                                           None, None,
                                           None)
 
-        # 
+        # Now tackle the methods
         all_generics = methods_env['getGenerics']()
         findmethods = methods_env['findMethods']
 
+        # does not seem elegant, but there is probably nothing else to do
+        # than loop across all generics
         for funcname in all_generics:
             all_methods = findmethods(rinterface.StrSexpVector((funcname, )), 
-                                       classes = rinterface.StrSexpVector((cls_rname, )))
+                                      classes = rinterface.StrSexpVector((cls_rname, )))
+            # all_methods contains all method/signature pairs
+            # having the class we are considering somewhere in the signature
+            # (the R/S4 systems allows multiple dispatch)
             for name, meth in itertools.izip(all_methods.do_slot("names"), all_methods):
+                # R/S4 is storing each method/signature as a string, 
+                # with the argument type separated by the character '#'
+                # We will re-use that name for the Python name
+                # (no multiple dispatch in python, the method name
+                # will not be enough), replacing the '#'s with '__'s.
                 signature = name.split("#")
                 meth_name = '__'.join(signature)
+                # function names ending with '<-' indicate that the function
+                # is a setter of some sort. We reflect that by adding a 'set_'
+                # prefix to the Python name (and of course remove the suffix '<-').
                 if funcname.endswith('<-'):
                     meth_name = 'set_' + funcname[:-2] + '__' + meth_name
                 else:
                     meth_name = funcname + '__' + meth_name
-
+                # finally replace remaining '.'s in the Python name with '_'s
                 meth_name = meth_name.replace('.', '_')
 
             #FIXME: sanity check on the function name
@@ -189,6 +208,7 @@ class RS4Auto_Type(type):
                     pass
 
             #FIXME: isolate the slot documentation and have it here
+                
                 if meth_name in cls_dict:
                     raise Error("Duplicated attribute/method name.")
                 cls_dict[meth_name] = meth
