@@ -616,7 +616,7 @@ VectorSexp_ass_subscript(PySexpObject* self, PyObject* item, PyObject* value)
         if (i == -1 && PyErr_Occurred())
             return -1;
         if (i < 0)
-            i += PyList_GET_SIZE(self);
+            i += VectorSexp_len(self);
         return VectorSexp_ass_item(self, i, value);
     }
     else if (PySlice_Check(item)) {
