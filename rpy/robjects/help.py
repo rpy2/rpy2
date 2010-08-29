@@ -11,7 +11,10 @@ import rpy2.rlike.container as rlc
 class Page(object):
     """ An R documentation page. 
     The original R structure is a nested sequence of components,
-    corresponding to the latex-like .Rd file """
+    corresponding to the latex-like .Rd file 
+
+    In R the S3 class 'Rd' is the closest entity to this class.
+    """
 
     def __init__(self, struct_rdb):
         sections = rlc.OrdDict()
@@ -26,6 +29,15 @@ class Page(object):
             for sub_elt in elt:
                 lst.append(sub_elt)
         self.sections = sections
+
+    def __getitem__(self, item):
+        """ Get a section """
+        return self.sections[item]
+
+    def iteritems(self):
+        """ iterator through the sections names and content
+        in the documentation Page. """
+        return self.sections.iteritems:
 
     def to_docstring(self, section_names = None):
         s = []
@@ -94,7 +106,12 @@ class Package(object):
 
 
     def fetch(self, key):
-        """ Fetch the documentation page associated with a given key. """
+        """ Fetch the documentation page associated with a given key. 
+        
+        - for S4 classes, the class name is *often* prefixed with 'class.'. For example,
+        the key to the documentation for the class AnnotatedDataFrame in the package Biobase
+        is 'class.AnnotatedDataFrame'.
+        """
         rdx_variables = self._rdx.rx2('variables')
         if key not in rdx_variables.names:
             raise HelpNotFound("No help could be fetched", 
