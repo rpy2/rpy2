@@ -299,61 +299,6 @@ VectorSexp_slice(PyObject *object, Py_ssize_t ilow, Py_ssize_t ihigh)
   return (PyObject*)newPySexpObject(res_sexp);
 }
 
-/* generic a[i] for Python3 */
-#if (PY_VERSION_HEX < 0x03010000)
-#else
-static PyObject*
-VectorSexp_subscript(PyObject *object, PyObject* item)
-{
-  Py_ssize_t i;
-  if (PyIndex_Check(item)) {
-    i = PyNumber_AsSsize_t(item, PyExc_IndexError);
-    if (i == -1 && PyErr_Occurred())
-      return NULL;
-    /* currently checked in VectorSexp_item */
-    /* if (i < 0) */
-    /*   i += VectorSexp_len(object); */
-    return VectorSexp_item(object, i);
-  } 
-  else if (PySlice_Check(item)) {
-    Py_ssize_t start, stop, step, slicelength;
-    Py_ssize_t vec_len = VectorSexp_len(object);
-    if (vec_len == -1)
-      /* propagate the error */
-      return NULL;
-    if (PySlice_GetIndicesEx((PySliceObject*)item,
-			     vec_len,
-			     &start, &stop, &step, &slicelength) < 0) {
-      return NULL;
-    }
-    if (slicelength <= 0) {
-      PyErr_Format(PyExc_IndexError,
-		   "The slice's length can't be < 0.");
-      return NULL;
-      /* return VectorSexp_New(0); */
-    }
-    else {
-      if (step == 1) {
-	PyObject *result = VectorSexp_slice(object, start, stop);
-	return result;
-      }
-      else {
-	PyErr_Format(PyExc_IndexError,
-		     "Only slicing with step==1 is supported for the moment.");
-	return NULL;
-      }
-    }
-  }
-  else {
-    PyErr_Format(PyExc_TypeError,
-		 "SexpVector indices must be integers, not %.200s",
-		 Py_TYPE(item)->tp_name);
-    return NULL;
-  }
-}
-#endif
-
-
 
 /* a[i] = val */
 static int
@@ -609,6 +554,57 @@ static PySequenceMethods VectorSexp_sequenceMethods = {
 
 #if (PY_VERSION_HEX < 0x03010000)
 #else
+/* generic a[i] for Python3 */
+static PyObject*
+VectorSexp_subscript(PyObject *object, PyObject* item)
+{
+  Py_ssize_t i;
+  if (PyIndex_Check(item)) {
+    i = PyNumber_AsSsize_t(item, PyExc_IndexError);
+    if (i == -1 && PyErr_Occurred())
+      return NULL;
+    /* currently checked in VectorSexp_item */
+    /* if (i < 0) */
+    /*   i += VectorSexp_len(object); */
+    return VectorSexp_item(object, i);
+  } 
+  else if (PySlice_Check(item)) {
+    Py_ssize_t start, stop, step, slicelength;
+    Py_ssize_t vec_len = VectorSexp_len(object);
+    if (vec_len == -1)
+      /* propagate the error */
+      return NULL;
+    if (PySlice_GetIndicesEx((PySliceObject*)item,
+			     vec_len,
+			     &start, &stop, &step, &slicelength) < 0) {
+      return NULL;
+    }
+    if (slicelength <= 0) {
+      PyErr_Format(PyExc_IndexError,
+		   "The slice's length can't be < 0.");
+      return NULL;
+      /* return VectorSexp_New(0); */
+    }
+    else {
+      if (step == 1) {
+	PyObject *result = VectorSexp_slice(object, start, stop);
+	return result;
+      }
+      else {
+	PyErr_Format(PyExc_IndexError,
+		     "Only slicing with step==1 is supported for the moment.");
+	return NULL;
+      }
+    }
+  }
+  else {
+    PyErr_Format(PyExc_TypeError,
+		 "SexpVector indices must be integers, not %.200s",
+		 Py_TYPE(item)->tp_name);
+    return NULL;
+  }
+}
+
 /* genericc a[i] = foo for Python 3 */
 static int
 VectorSexp_ass_subscript(PySexpObject* self, PyObject* item, PyObject* value)
