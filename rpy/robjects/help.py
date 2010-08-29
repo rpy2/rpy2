@@ -40,6 +40,7 @@ class Page(object):
         return self.sections.iteritems
 
     def to_docstring(self, section_names = None):
+        """ return a string that can be used a Python docstring. """
         s = []
 
         if section_names is None:
@@ -108,9 +109,9 @@ class Package(object):
     def fetch(self, key):
         """ Fetch the documentation page associated with a given key. 
         
-        - for S4 classes, the class name is *often* prefixed with 'class.'. For example,
-        the key to the documentation for the class AnnotatedDataFrame in the package Biobase
-        is 'class.AnnotatedDataFrame'.
+        - for S4 classes, the class name is *often* prefixed with 'class.'.
+          For example, the key to the documentation for the class
+          AnnotatedDataFrame in the package Biobase is 'class.AnnotatedDataFrame'.
         """
         rdx_variables = self._rdx.rx2('variables')
         if key not in rdx_variables.names:

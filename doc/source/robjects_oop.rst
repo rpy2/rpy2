@@ -35,6 +35,8 @@ if a function *plot.<class_of_something>* is in the search path.
    This rule is not strict as there can exist functions with a *dot* in their name
    and the part after the dot not correspond to an S3 class name. 
 
+.. module:: rpy2.robjects.methods
+   :synopsis: S4 OOP in R
 
 S4 objects
 ----------
@@ -50,20 +52,10 @@ There are obviously many ways to try having a mapping between R classes and Pyth
 classes, and the one proposed here is to make Python classes that inherit
 :class:`rpy2.rinterface.methods.RS4`.
 
-Since the S4 system allows polymorphic definitions of methods, that is for a given
-method name there can exist several sets of possible arguments (and type for
-the arguments), it currently
-appears trickly to have an simple, automatic, and robust mapping of R
-methods to Python methods. For the time being, one will rely on
-human-written mappings, although some helpers are provided by rpy2.
-
-.. note::
-   More automation for reflecting S4 class definitions into Python is on the list
-   of items to be worked on, so one may hope for more in a following release.
-
-
-To make this a little more concrete, we take the R class `lmList`
-in the package `lme4` and show how to write a Python wrapper for it.
+Before looking automated ways to reflect R classes as Python classes, we look
+at how a class definition in Python can be made to reflect an R S4 class.
+We take the R class `lmList` in the package `lme4` and show how to write
+a Python wrapper for it.
 
 .. warning::
 
@@ -114,11 +106,49 @@ the environment for the :class:`Formula`, as shown below:
    :start-after: #-- buildLmListBetterCall-begin
    :end-before:  #-- buildLmListBetterCall-end
 
-
 .. autoclass:: rpy2.robjects.methods.RS4(sexp)
    :show-inheritance:
    :members:
 
+
+The S4 system allows polymorphic definitions of methods, that is for a given
+method name there can exist several sets of possible arguments and type for
+the arguments (like Clojure's multimethods). Mapping R methods to Python methods
+automatically and reliably requires a bit of work, and we chose to concatenate
+the method name with the type of the parameters in the signature.
+
+Using the automatic mapping is very simple. One only needs to declare
+a Python class with the following attributes:
+
++----------------------+-----------+----------------------------+
+| __rname__            | mandatory |  the name of the R class   |
++----------------------+-----------+----------------------------+
+| __rpackagename__     | optional  | the R package in which the |
+|                      |           | class is declared          |
++----------------------+-----------+----------------------------+
+| __attr_translation__ | optional  | :class:`dict` to translate |
++----------------------+-----------+----------------------------+
+| __meth_translation__ | optional  | :class:`dict` to translate |
++----------------------+-----------+----------------------------+
+
+Example:
+
+.. code-block:: python
+
+   from rpy2.robjects.packages import importr
+   stats4 = importr('stats4')
+   from rpy2.robjects.methods import RS4, RS4Auto_Type
+   
+   class MLE(RS4):
+     __metaclass__ = RS4Auto_Type
+     __rname__ = 'mle'
+     __rpackagename__ = 'stats4'
+
+The class `MLE` just defined has all attributes and methods needed
+to represent all slots (`attributes` in the S4 nomenclature)
+and methods defined for the class when the class is declared
+(remember that class methods can be declared, or even in a different
+package in R).
 
 Automated mapping of user-defined classes
 -----------------------------------------
