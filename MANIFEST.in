@@ -1,4 +1,4 @@
-global-include debian* README
+global-include README
 global-exclude *patch* *diff* .hg
 
 include MANIFEST

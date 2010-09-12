@@ -1736,7 +1736,11 @@ static PyTypeObject VectorSexp_Type = {
         0,                      /*tp_repr*/
         0,                      /*tp_as_number*/
         &VectorSexp_sequenceMethods,                    /*tp_as_sequence*/
+#if (PY_VERSION_HEX < 0x03010000)
         0,                      /*tp_as_mapping*/
+#else
+	&VectorSexp_as_mapping,
+#endif
         0,                      /*tp_hash*/
         0,              /*tp_call*/
         0,              /*tp_str*/

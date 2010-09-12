@@ -29,6 +29,15 @@ help:
 clean:
 	-rm -rf build/*
 
+
+demo_benchmark:
+	@cd source/_static/demos && python benchmarks.py
+
+demo_graphics:
+	@cd source/_static/demos && python benchmarks.py
+
+demo_all: demo_graphics demo_benchmark
+
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) build/html
 	@echo

@@ -1,6 +1,7 @@
 import unittest
 import itertools
 import pickle
+import rpy2
 import rpy2.rinterface as rinterface
 import sys, os, subprocess, time, tempfile, signal
 
@@ -91,22 +92,26 @@ class EmbeddedRTestCase(unittest.TestCase):
             self.assertTrue(False) # Test unit currently requires Python >= 2.6
         rpy_code = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
                                                delete = False)
+        rpy2_path = os.path.dirname(rpy2.__path__[0])
         rpy_code_str = """
 import sys
-import rpy2.robjects as ro
+sys.path.insert(0, '%s')
+import rpy2.rinterface as ri
+
+ri.initr()
 def f(x):
   pass
-ro.rinterface.set_writeconsole(f)
+ri.set_writeconsole(f)
 rcode = "i <- 0; "
 rcode += "while(TRUE) { "
 rcode += "i <- i+1; "
 rcode += "Sys.sleep(0.01); "
 rcode += "}"
 try:
-  ro.r(rcode)
+  ri.baseenv['eval'](ri.baseenv['parse'](text=ri.StrSexpVector(rcode)))
 except Exception, e:
   sys.exit(0)
-  """
+  """ %rpy2_path
 
         rpy_code.write(rpy_code_str)
         rpy_code.close()

@@ -79,11 +79,13 @@ versions to run rpy2 with.
 Software Versions
 ======== ===========
  Python   2.6
- R        2.10; 2.11
+ R        2.11; 2.12
 ======== ===========
 
 Python 2.4 and R 2.7 might compile, but there is much less testing done with
-those platforms and likely limited hopes for free support.
+those platforms and likely limited hope for free support.
+
+Python 3.1 will install, but at the time of writing still has minor issues.
 
 .. note::
 
@@ -93,6 +95,11 @@ those platforms and likely limited hopes for free support.
    gcc-4.4 is used for compiling the C parts on Linux.
    gcc-4.0 seems to be the default on OS X Leopard and yet produce
    fully functional binaries.
+
+.. note::
+
+   If installing from a linux distribution, the Python-dev package will
+   obviously be required to compile rpy2
 
 .. note::
 
@@ -263,6 +270,12 @@ Whenever more details are needed, one can consider running explicit tests.
 
 To test the :mod:`rpy2.robjects` high-level interface:
 
+.. code-block:: bash
+
+  python -m 'rpy2.robjects.tests.__init__'
+
+or for a full control of options
+
 .. code-block:: python
 
   import rpy2.robjects.tests
@@ -274,6 +287,12 @@ To test the :mod:`rpy2.robjects` high-level interface:
   tr.run(suite)
 
 If interested in the lower-level interface, the tests can be run with:
+
+.. code-block:: bash
+
+  python -m 'rpy2.rinterface.tests.__init__'
+
+or for a full control of options
 
 .. code-block:: python
 

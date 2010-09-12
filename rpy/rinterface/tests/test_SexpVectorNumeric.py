@@ -5,10 +5,16 @@ import rpy2.rinterface as rinterface
 
 try:
     import numpy
-    has_Numpy = True
+    has_numpy = True
 except ImportError:
-    hasNumpy = False
+    has_numpy = False
 
+def only_numpy(function):
+    def res(self):
+        if has_numpy:
+            return function(self)
+        else:
+            return None
 
 rinterface.initr()
 
@@ -58,16 +64,16 @@ def testArrayStructBoolean(self, numericModule):
 
 class SexpVectorNumericTestCase(unittest.TestCase):
 
-
+    @only_numpy
     def testArrayStructNumpyInt(self):
         testArrayStructInt(self, numpy)
-
+    @only_numpy
     def testArrayStructNumpyDouble(self):
         testArrayStructDouble(self, numpy)
-
+    @only_numpy
     def testArrayStructNumpyComplex(self):
         testArrayStructComplex(self, numpy)
-
+    @only_numpy
     def testArrayStructNumpyBoolean(self):
         testArrayStructBoolean(self, numpy)
 

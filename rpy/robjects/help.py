@@ -11,7 +11,10 @@ import rpy2.rlike.container as rlc
 class Page(object):
     """ An R documentation page. 
     The original R structure is a nested sequence of components,
-    corresponding to the latex-like .Rd file """
+    corresponding to the latex-like .Rd file 
+
+    In R the S3 class 'Rd' is the closest entity to this class.
+    """
 
     def __init__(self, struct_rdb):
         sections = rlc.OrdDict()
@@ -27,7 +30,17 @@ class Page(object):
                 lst.append(sub_elt)
         self.sections = sections
 
+    def __getitem__(self, item):
+        """ Get a section """
+        return self.sections[item]
+
+    def iteritems(self):
+        """ iterator through the sections names and content
+        in the documentation Page. """
+        return self.sections.iteritems
+
     def to_docstring(self, section_names = None):
+        """ return a string that can be used a Python docstring. """
         s = []
 
         if section_names is None:
@@ -94,7 +107,12 @@ class Package(object):
 
 
     def fetch(self, key):
-        """ Fetch the documentation page associated with a given key. """
+        """ Fetch the documentation page associated with a given key. 
+        
+        - for S4 classes, the class name is *often* prefixed with 'class.'.
+          For example, the key to the documentation for the class
+          AnnotatedDataFrame in the package Biobase is 'class.AnnotatedDataFrame'.
+        """
         rdx_variables = self._rdx.rx2('variables')
         if key not in rdx_variables.names:
             raise HelpNotFound("No help could be fetched", 
@@ -120,6 +138,9 @@ class Package(object):
                             "Path to the installed R package")
 
 
+    def __repr__(self):
+        r = 'R package %s  '%self.__package_name + super(self, Package).__repr__()
+        return r
 
 class HelpNotFound(KeyError):
     def __init__(self, msg, topic=None, package=None):

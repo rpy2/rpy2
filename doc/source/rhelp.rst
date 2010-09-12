@@ -44,3 +44,5 @@ class :class:`Page`
 
 >>> hp = rh.Page(base_help.fetch('sum'))
 
+>>> print(ho.to_docstrings())
+

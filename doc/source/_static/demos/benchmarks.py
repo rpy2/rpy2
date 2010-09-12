@@ -1,8 +1,10 @@
 import random
 import time
 import sys
+import itertools
 import multiprocessing
 import array, numpy, rpy2.robjects as ro
+from rpy2.robjects import Formula
 
 n_loops = (1, 10, 20, 30, 40)
 
