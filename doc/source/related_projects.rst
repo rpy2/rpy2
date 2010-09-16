@@ -6,6 +6,12 @@ Related projects
 rnumpy
 ======
 
+.. warning::
+
+   :mod:`rnumpy` was developped for rpy2-2.0.x series and few modifications
+   to it might be needed in order for it to work with more recent versions
+   of rpy2.
+
 The :mod:`rnumpy` interface builds on :mod:`rpy2.rinterface`
 and offers a different approach to the one in :mod:`rpy2.robjects`.
 
@@ -66,3 +72,18 @@ or build an alternative R GUI.
 When offering an R console, the developer(s) may want to retain control on the
 the way interaction with R is handled, at the level of the console and for the
 base R functions targetting interactivity (see Section  :ref:`rinterface-callbacks`).
+
+The `RPyGTK project <http://code.google.com/p/rpygtk/>`_ demonstrates how
+:mod:`rpy2` can be used to implement a full-blown GUI for R using python.
+
+
+R-like data strucutures
+=======================
+
+R's data frames are extremely convient when manipulating data.
+In :mod:`rpy2` the original R `data.frame` is represented by
+:class:`rpy2.robjects.vectors.DataFrame`, but the
+`pydataframe <http://code.google.com/p/pydataframe/>`_ project
+has a pure Python implementation of them (with a compatibility
+layer with :mod:`rpy2` providing a seamless transition
+whenever needed.
