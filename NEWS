@@ -43,8 +43,15 @@ Changes
 Bugs fixed
 ----------
 
+
+Release 2.1.5
+=============
+
+Bugs fixed
+----------
+
 - fixes the automatic detection of R_HOME/lib during building/compiling
-  when R_HOME/lib is not in lib/
+  when R_HOME/lib is not in lib/ (issue #54)
 
 
 Release 2.1.4
