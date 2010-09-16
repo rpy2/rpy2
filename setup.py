@@ -143,7 +143,7 @@ class build_ext(_build_ext):
 
         r_libs = []
         if self.r_home_lib is None:
-            r_libs.extend([os.path.join(r_home, 'lib'), ])
+            r_libs.extend(get_rconfig(r_home, '--ldflags')[0].split())
         else:
             r_libs.extend([self.r_home_lib, ])
 
