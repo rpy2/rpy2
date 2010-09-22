@@ -39,6 +39,7 @@ Changes
   deprecated (and removed).
   NA_Logical, NA_Real, NA_Integer, NA_Character, NA_Complex should be used.
 
+- :class:`rpy2.robjects.packages.Package` now inherits from :class:`types.ModuleType`
 
 Bugs fixed
 ----------
