@@ -28,7 +28,7 @@ ExtPtrSexp_address(PySexpObject *self)
     return NULL;
   }
   embeddedR_setlock();
-  PyObject *res = PyCObject_FromVoidPtr(R_ExternalPtrAddr(self->sObj), 
+  PyObject *res = PyCObject_FromVoidPtr(R_ExternalPtrAddr(self->sObj->sexp), 
                                         SexpObject_CObject_destroy);
   embeddedR_freelock();
   return res;
