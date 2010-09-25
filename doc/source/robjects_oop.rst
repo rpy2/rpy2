@@ -57,6 +57,8 @@ at how a class definition in Python can be made to reflect an R S4 class.
 We take the R class `lmList` in the package `lme4` and show how to write
 a Python wrapper for it.
 
+Manual R-in-Python class definition
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. warning::
 
    The R package `lme4` is not distributed with R, and will have to be installed
@@ -110,6 +112,8 @@ the environment for the :class:`Formula`, as shown below:
    :show-inheritance:
    :members:
 
+Automated R-in-Python class definitions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The S4 system allows polymorphic definitions of methods, that is for a given
 method name there can exist several sets of possible arguments and type for
@@ -149,6 +153,10 @@ to represent all slots (`attributes` in the S4 nomenclature)
 and methods defined for the class when the class is declared
 (remember that class methods can be declared, or even in a different
 package in R).
+
+.. autoclass:: rpy2.robjects.methods.RS4Auto_Type(sexp)
+   :show-inheritance:
+   :members:
 
 Automated mapping of user-defined classes
 -----------------------------------------
