@@ -97,6 +97,7 @@ static PyObject* EmbeddedR_unserialize(PyObject* self, PyObject* args);
 #include "buffer.h"
 #include "array.h"
 #include "sequence.h"
+#include "rexternalptr.h"
 
 static PySexpObject* newPySexpObject(const SEXP sexp);
 
@@ -107,6 +108,7 @@ static PySexpObject* newPySexpObject(const SEXP sexp);
 #include "buffer.c"
 #include "array.c"
 #include "sequence.c"
+#include "rexternalptr.c"
 
 static PyObject *embeddedR_isInitialized;
 
@@ -2376,7 +2378,14 @@ static PyTypeObject LangSexp_Type = {
 };
 
 
-/* --- Create a SEXP object --- */
+/* --- Create a SEXP object --- 
+ * Given an R SEXP object, it creates a 
+ * PySexpObject that is an rpy2 Python representation
+ * of an R object.
+ *
+ * In case of error, this returns NULL.
+ */
+
 static PySexpObject*
 newPySexpObject(const SEXP sexp)
 {
@@ -2431,6 +2440,9 @@ newPySexpObject(const SEXP sexp)
     break;
   case S4SXP:
     object = (PySexpObject *)Sexp_new(&S4Sexp_Type, Py_None, Py_None);
+    break;
+  case EXTPTRSXP:
+    object = (PySexpObject *)Sexp_new(&ExtPtrSexp_Type, Py_None, Py_None);
     break;
   default:
     object = (PySexpObject *)Sexp_new(&Sexp_Type, Py_None, Py_None);
@@ -2817,16 +2829,6 @@ static PyMethodDef EmbeddedR_methods[] = {
 
 static SEXP R_PyObject_type_tag;
 
-static SEXP
-R_PyObject_decref(SEXP s)
-{
-  PyObject* pyo = (PyObject*)R_ExternalPtrAddr(s);
-  if (pyo) {
-    Py_DECREF(pyo);
-    R_ClearExternalPtr(s);
-  }
-  return R_NilValue;
-}
 
 static SEXP
 mkPyObject(PyObject* pyo)
@@ -2973,6 +2975,8 @@ PyInit_rinterface(void)
     return NULL;
   if (PyType_Ready(&LangSexp_Type) < 0)
     return NULL;
+  if (PyType_Ready(&ExtPtrSexp_Type) < 0)
+    return NULL;
 
   /* Required because NA types inherit from basic Python types */
   if (PyType_Ready(&PyBool_Type) < 0) {
@@ -3086,6 +3090,7 @@ PyInit_rinterface(void)
   PyModule_AddObject(m, "SexpEnvironment", (PyObject *)&EnvironmentSexp_Type);
   PyModule_AddObject(m, "SexpS4", (PyObject *)&S4Sexp_Type);
   PyModule_AddObject(m, "SexpLang", (PyObject *)&LangSexp_Type);
+  PyModule_AddObject(m, "SexpExtPtr", (PyObject *)&ExtPtrSexp_Type);
 
   /* NA types */
   PyModule_AddObject(m, "NAIntegerType", (PyObject *)&NAInteger_Type);

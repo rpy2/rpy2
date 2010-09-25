@@ -25,6 +25,9 @@ New Features
 
 - NA_Complex and :class:`NAComplexType` for missing complex values.
 
+- new class :class:`SexpExtPtr` to represent R objects of type EXTPTR (external pointers).
+
+
 :mod:`rpy2.rlike`:
 
 - :class:`container.OrdDict` get proper methods :meth:`keys` and `get`

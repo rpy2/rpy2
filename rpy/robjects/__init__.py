@@ -77,6 +77,8 @@ def default_ri2py(o):
         res = Environment(o)
     elif isinstance(o, rinterface.SexpS4):
         res = RS4(o)
+    elif isinstance(o, rinterface.SexpExtPtr):
+        res = o
     else:
         res = RObject(o)
     return res
