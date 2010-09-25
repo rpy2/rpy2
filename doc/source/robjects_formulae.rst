@@ -31,27 +31,51 @@ The class :class:`robjects.Formula` is representing an `R` formula.
 
 .. code-block:: python
 
-  x = robjects.Vector(array.array('i', range(1, 11)))
-  y = x.ro + rnorm(10, sd=0.2)
+  import array
+  from rpy2.robjects import IntVector, Formula
+  from rpy2.robjects.packages import importr
+  stats = importr('stats')
 
-  fmla = robjects.Formula('y ~ x')
+  x = IntVector(range(1, 11))
+  y = x.ro + stats.rnorm(10, sd=0.2)
+
+  fmla = Formula('y ~ x')
   env = fmla.environment
   env['x'] = x
   env['y'] = y
 
-  stats = importr('lm')
   fit = stats.lm(fmla)
 
 One drawback with that approach is that pretty printing of
-the `fit` object is note quite as clear as what one would
-expect when working in `R`.
-However, by evaluating R code on
-the fly, we can obtain a `fit` object that will display
-nicely:
+the `fit` object is note quite as good as what one would
+expect when working in `R`: the `call` item now displays the code
+for the function use to perform the fit.
+
+If one still wants to avoid polluting the R global environment,
+the answer is to evaluate R call within the environment where the
+function is defined.
 
 .. code-block:: python
 
-   fit = robjects.r('lm(%s)' %fmla.r_repr())
+   from rpy2.robjects import Environment
+
+   eval_env = Environment()
+   eval_env['fmla'] = fmla
+   base = importr('base')
+
+   fit = base.eval.rcall(base.parse(text = 'lm(fmla)'), stats._env)
+
+
+Other options are:
+
+- Evaluate R code on the fly so we that model fitting function has a symbol
+  in R
+
+  .. code-block:: python
+
+     fit = robjects.r('lm(%s)' %fmla.r_repr())
+
+- Evaluate R code where all symbols are defined
 
 .. autoclass:: rpy2.robjects.Formula(formula, environment = rinterface.globalenv)
    :show-inheritance:
