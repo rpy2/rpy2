@@ -140,18 +140,18 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
     case VECSXP:
     case EXPRSXP:
       sexp_item = VECTOR_ELT(*sexp, i_R);
-      res = (PyObject *)newPySexpObject(sexp_item);
+      res = (PyObject *)newPySexpObject(sexp_item, 1);
       break;
     case LISTSXP:
       tmp = nthcdr(*sexp, i_R);
       sexp_item = allocVector(LISTSXP, 1);
       SETCAR(sexp_item, CAR(tmp));
       SET_TAG(sexp_item, TAG(tmp));
-      res = (PyObject *)newPySexpObject(sexp_item);
+      res = (PyObject *)newPySexpObject(sexp_item, 1);
       break;      
     case LANGSXP:
       sexp_item = CAR(nthcdr(*sexp, i_R));
-      res = (PyObject *)newPySexpObject(sexp_item);
+      res = (PyObject *)newPySexpObject(sexp_item, 1);
       break;
     default:
       PyErr_Format(PyExc_ValueError, "Cannot handle type %d", 
@@ -296,7 +296,7 @@ VectorSexp_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh)
   embeddedR_freelock();
   if (res_sexp == NULL) {    return NULL;
   }
-  return (PyObject*)newPySexpObject(res_sexp);
+  return (PyObject*)newPySexpObject(res_sexp, 1);
 }
 
 

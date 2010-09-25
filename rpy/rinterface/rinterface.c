@@ -99,7 +99,7 @@ static PyObject* EmbeddedR_unserialize(PyObject* self, PyObject* args);
 #include "sequence.h"
 #include "rexternalptr.h"
 
-static PySexpObject* newPySexpObject(const SEXP sexp);
+static PySexpObject* newPySexpObject(const SEXP sexp, const int preserve);
 
 #include "embeddedr.c"
 #include "na_values.c"
@@ -1469,7 +1469,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
   extern void Rf_PrintWarnings(void);
   Rf_PrintWarnings(); /* show any warning messages */
 
-  PyObject *res = (PyObject *)newPySexpObject(res_R);
+  PyObject *res = (PyObject *)newPySexpObject(res_R, 1);
   UNPROTECT(protect_count);
   embeddedR_freelock();
   return res;
@@ -1583,7 +1583,7 @@ Sexp_closureEnv(PyObject *self)
   embeddedR_setlock();
   closureEnv = CLOENV(sexp);
   embeddedR_freelock();
-  return newPySexpObject(closureEnv);
+  return newPySexpObject(closureEnv, 1);
 }
 PyDoc_STRVAR(Sexp_closureEnv_doc,
              "\n\
@@ -1909,7 +1909,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
 
   if (res_R != R_UnboundValue) {
     /* FIXME rpy_only */
-    res = newPySexpObject(res_R);
+    res = newPySexpObject(res_R, 1);
   } else {
     PyErr_Format(PyExc_LookupError, "'%s' not found", name);
     res = NULL;
@@ -1943,7 +1943,7 @@ EnvironmentSexp_frame(PyObject *self)
   embeddedR_setlock();
 
   res_R = FRAME(RPY_SEXP((PySexpObject *)self));
-  res = newPySexpObject(res_R);
+  res = newPySexpObject(res_R, 1);
   return (PyObject *)res;
 }
 PyDoc_STRVAR(EnvironmentSexp_frame_doc,
@@ -1966,7 +1966,7 @@ EnvironmentSexp_enclos(PyObject *self)
   SEXP res_R = NULL;
   PySexpObject *res;
   res_R = ENCLOS(RPY_SEXP((PySexpObject *)self));
-  res = newPySexpObject(res_R);
+  res = newPySexpObject(res_R, 1);
   embeddedR_freelock();
   return (PyObject *)res;
 }
@@ -2026,7 +2026,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
 
   if (res_R != R_UnboundValue) {
     embeddedR_freelock();
-    return newPySexpObject(res_R);
+    return newPySexpObject(res_R, 1);
   }
   PyErr_Format(PyExc_LookupError, "'%s' not found", name);
   embeddedR_freelock();
@@ -2141,7 +2141,7 @@ EnvironmentSexp_iter(PyObject *sexpEnvironment)
   }
   SEXP symbols;
   PROTECT(symbols = R_lsInternal(rho_R, TRUE));
-  PySexpObject *seq = newPySexpObject(symbols);
+  PySexpObject *seq = newPySexpObject(symbols, 1);
   Py_INCREF(seq);
   UNPROTECT(1);
  
@@ -2382,12 +2382,15 @@ static PyTypeObject LangSexp_Type = {
  * Given an R SEXP object, it creates a 
  * PySexpObject that is an rpy2 Python representation
  * of an R object.
+ * if preserve is not 0, it the resulting object is 'preserved'
+ * (that flag is made necessary by the getters in SexpExtPtr,
+ * as its SEXP items are already preserved by R).
  *
  * In case of error, this returns NULL.
  */
 
 static PySexpObject*
-newPySexpObject(const SEXP sexp)
+  newPySexpObject(const SEXP sexp, const int preserve)
 {
   PySexpObject *object;
   SEXP sexp_ok, env_R;
@@ -2407,7 +2410,7 @@ newPySexpObject(const SEXP sexp)
   else {
     sexp_ok = sexp;
   }
-  if (sexp_ok) {
+  if (sexp_ok && preserve) {
     R_PreserveObject(sexp_ok);
 #ifdef RPY_DEBUG_PRESERVE
     preserved_robjects += 1;
@@ -2455,7 +2458,8 @@ newPySexpObject(const SEXP sexp)
     preserved_robjects -= 1;
     printf("-- %i\n", preserved_robjects);
 #endif
-    R_ReleaseObject(sexp_ok);
+    if (preserve)
+      R_ReleaseObject(sexp_ok);
     PyErr_NoMemory();
     return NULL;
   }
@@ -2728,7 +2732,7 @@ EmbeddedR_findVar(PyObject *self, PyObject *args)
 
 
   if (res != R_UnboundValue) {
-    return newPySexpObject(res);
+    return newPySexpObject(res, 1);
   }
   PyErr_Format(PyExc_LookupError, "'%s' not found", name);
   return NULL;
@@ -2870,7 +2874,7 @@ do_Python(SEXP args)
       PyList_Append(pyargs, (PyObject *)R_ExternalPtrAddr(sexp));
     }
     else {
-      PyList_Append(pyargs, (PyObject *)newPySexpObject(sexp));
+      PyList_Append(pyargs, (PyObject *)newPySexpObject(sexp, 1));
     }
   }
   PyObject *pyargstup = PyList_AsTuple(pyargs);

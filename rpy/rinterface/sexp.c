@@ -127,7 +127,7 @@ Sexp_do_slot(PyObject *self, PyObject *name)
   }
   SEXP res_R = GET_SLOT(sexp, install(name_str));
 
-  PyObject *res = (PyObject *)newPySexpObject(res_R);
+  PyObject *res = (PyObject *)newPySexpObject(res_R, 1);
   return res;
 }
 PyDoc_STRVAR(Sexp_do_slot_doc,
@@ -213,6 +213,7 @@ Sexp_sexp_get(PyObject *self, void *closure)
     return NULL;;
   }
   
+  /*FIXME: Probable memory leak.*/
   RPY_INCREF(rpyobj);
   PyObject *res = PyCObject_FromVoidPtr(rpyobj->sObj, 
                                         SexpObject_CObject_destroy);
@@ -322,7 +323,7 @@ Sexp_duplicate(PyObject *self, PyObject *kwargs)
     return NULL;;
   }
   PROTECT(sexp_copy = Rf_duplicate(sexp_self));
-  res = (PyObject *) newPySexpObject(sexp_copy);
+  res = (PyObject *) newPySexpObject(sexp_copy, 1);
   UNPROTECT(1);
   return res;
 }
@@ -431,7 +432,7 @@ EmbeddedR_unserialize(PyObject* self, PyObject* args)
                  " (expected %i but got %i)", rtype, TYPEOF(raw_sexp));
     return NULL;
   }
-  res = (PyObject*)newPySexpObject(sexp_ser);
+  res = (PyObject*)newPySexpObject(sexp_ser, 1);
   
   UNPROTECT(2);
   embeddedR_freelock();
