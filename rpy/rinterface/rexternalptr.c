@@ -13,7 +13,61 @@ R_PyObject_decref(SEXP s)
 
 PyDoc_STRVAR(ExtPtrSexp_Type_doc,
 	     "R object that is an 'external pointer',"
-	     "that a pointer to a data structure R is not necessarily capable of manipulating.");
+	     " that a pointer to a data structure R is not necessarily"
+	     " capable of manipulating.\n"
+	     "SexpExtPtr(extref, tag = None, protected = None)");
+
+PyDoc_STRVAR(ExtPtrSexp___init___doc,
+	     "Construct an external pointer. "
+	     );
+
+static PySexpObject*
+ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
+{
+#ifdef RPY_VERBOSE
+  printf("Python:%p / R:%p - ExtPtrSexp initializing...\n", 
+         self, RPY_SEXP((PySexpObject *)self));
+#endif
+  if (! RPY_SEXP(self)) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return -1;
+  }
+
+  PyObject *pyextptr = Py_None;
+  PyObject *pytag = Py_None;
+  PyObject *pyprotected = Py_None;
+  static char *kwlist[] = {"extptr", "tag", "protected", NULL};
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!O!", 
+                                    kwlist,
+                                    &pyextptr,
+                                    &Sexp_Type, &pytag,
+                                    &Sexp_Type, &pyprotected)) {
+    return -1;
+  }
+  
+  /*FIXME: twist here - MakeExternalPtr will "preserve" the tag
+   * but the tag is already preserved (when exposed as a Python object) */
+  /* R_ReleaseObject(pytag->sObj->sexp); */
+  SEXP rtag, rprotected, rres;
+  if (pytag == Py_None) {
+    rtag = R_NilValue;
+  } else {
+    rtag = RPY_SEXP((PySexpObject *)pytag);
+  }
+  if (pyprotected == Py_None) {
+    rprotected = R_NilValue;
+  } else {
+    rprotected = RPY_SEXP((PySexpObject *)pyprotected);
+  }
+  Py_INCREF(pyextptr);
+  rres  = R_MakeExternalPtr(pyextptr, rtag, rprotected);
+  RPY_SEXP(self) = rres;
+
+#ifdef RPY_VERBOSE
+  printf("done.\n");
+#endif 
+  return 0;
+}
 
 
 PyDoc_STRVAR(ExtPtrSexp___address___doc,
@@ -33,6 +87,7 @@ ExtPtrSexp_address(PySexpObject *self)
   embeddedR_freelock();
   return res;
 }
+
 
 PyDoc_STRVAR(ExtPtrSexp___tag___doc,
 	     "The R tag associated with the external pointer"
@@ -130,7 +185,7 @@ static PyTypeObject ExtPtrSexp_Type = {
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
         0,                      /*tp_dictoffset*/
-        0,                      /*tp_init*/
+        (initproc)ExtPtrSexp_init,                      /*tp_init*/
         0,                      /*tp_alloc*/
         /*FIXME: add new method */
         0,                     /*tp_new*/

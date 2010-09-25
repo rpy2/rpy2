@@ -6,6 +6,7 @@ import test_Sexp
 import test_SexpClosure
 import test_SexpVectorNumeric
 import test_Device
+import test_SexpExtPtr
 
 import test_EmbeddedR
 #import test_EmbeddedR_multithreaded
@@ -19,6 +20,7 @@ def suite():
     suite_SexpVectorNumeric = test_SexpVectorNumeric.suite()
     suite_EmbeddedR = test_EmbeddedR.suite()
     suite_Device = test_Device.suite()
+    suite_SexpExtPtr = test_SexpExtPtr.suite()
     #suite_EmbeddedR_multithreaded = test_EmbeddedR_multithreaded.suite()
     alltests = unittest.TestSuite([
         suite_EmbeddedR
@@ -29,6 +31,7 @@ def suite():
         ,suite_SexpVectorNumeric
         #,suite_Device
         #,suite_EmbeddedR_multithreaded
+        ,suite_SexpExtPtr
         ])
     return alltests
 
