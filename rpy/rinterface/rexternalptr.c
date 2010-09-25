@@ -16,8 +16,8 @@ PyDoc_STRVAR(ExtPtrSexp_Type_doc,
 	     "that a pointer to a data structure R is not necessarily capable of manipulating.");
 
 
-PyDoc_STRVAR(Sexp___extptr___doc,
-	     "The memory address for the 'external' data."
+PyDoc_STRVAR(ExtPtrSexp___address___doc,
+	     "The C handle to external data as a PyCObject."
 	     );
 
 static PyObject*
@@ -27,17 +27,62 @@ ExtPtrSexp_address(PySexpObject *self)
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;
   }
-  
+  embeddedR_setlock();
   PyObject *res = PyCObject_FromVoidPtr(R_ExternalPtrAddr(self->sObj), 
                                         SexpObject_CObject_destroy);
+  embeddedR_freelock();
+  return res;
+}
+
+PyDoc_STRVAR(ExtPtrSexp___tag___doc,
+	     "The R tag associated with the external pointer"
+	     );
+
+static PySexpObject*
+ExtPtrSexp_tag(PySexpObject *self)
+{
+  if (! RPY_SEXP(self)) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;
+  }
+  embeddedR_setlock();
+  SEXP rtag = R_ExternalPtrTag(self->sObj->sexp);
+  PySexpObject *res = newPySexpObject(rtag);
+  embeddedR_freelock();
+  return res;
+}
+
+PyDoc_STRVAR(ExtPtrSexp___protected___doc,
+	     "The R 'protected' object associated with the external pointer"
+	     );
+
+static PySexpObject*
+ExtPtrSexp_protected(PySexpObject *self)
+{
+  if (! RPY_SEXP(self)) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;
+  }
+  embeddedR_setlock();
+  SEXP rtag = R_ExternalPtrProtected(self->sObj->sexp);
+  PySexpObject *res = newPySexpObject(rtag);
+  embeddedR_freelock();
   return res;
 }
 
 static PyGetSetDef ExtPtrSexp_getsets[] = {
-  {"__extptr__", 
+  {"__address__", 
    (getter)ExtPtrSexp_address,
    (setter)0,
-   Sexp___extptr___doc},
+   ExtPtrSexp___address___doc},
+  {"__tag__", 
+   (getter)ExtPtrSexp_tag,
+   (setter)0,
+   ExtPtrSexp___tag___doc},
+  {"__protected__", 
+   (getter)ExtPtrSexp_protected,
+   (setter)0,
+   ExtPtrSexp___protected___doc},
 {NULL, NULL, NULL, NULL} /* sentinel */
 };
 
