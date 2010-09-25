@@ -32,6 +32,7 @@ New Features
 
 - :class:`container.OrdDict` get proper methods :meth:`keys` and `get`
 
+
 Changes
 -------
 
@@ -40,6 +41,21 @@ Changes
 - NA_bool, NA_real, NA_integer, NA_character and NA_complex are now
   deprecated (and removed).
   NA_Logical, NA_Real, NA_Integer, NA_Character, NA_Complex should be used.
+
+- :class:`rpy2.robjects.packages.Package` now inherits from :class:`types.ModuleType`
+
+Bugs fixed
+----------
+
+
+Release 2.1.5
+=============
+
+Bugs fixed
+----------
+
+- fixes the automatic detection of R_HOME/lib during building/compiling
+  when R_HOME/lib is not in lib/ (issue #54)
 
 
 Release 2.1.4

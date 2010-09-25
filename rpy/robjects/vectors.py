@@ -87,7 +87,7 @@ class DoubleExtractDelegator(ExtractDelegator):
     
 class VectorOperationsDelegator(object):
     """
-    Delegate operations such as __getitem__, __add__, etc..
+    Delegate operations such as __getitem__, __add__, etc...
     to the corresponding R function.
     This permits a convenient coexistence between
     operators on Python sequence object with their R conterparts.
@@ -169,9 +169,13 @@ class Vector(RObjectMixin, rinterface.SexpVector):
     In the later case, a conversion will be attempted using
     conversion.py2ri().
     
-     R vector-like object. Items can be accessed with:
+    R vector-like object. Items can be accessed with:
+
     - the method "__getitem__" ("[" operator)
-    - the delegators rx or rx2 """
+
+    - the delegators rx or rx2 
+
+"""
     _sample = rinterface.baseenv['sample']
 
     def __init__(self, o):

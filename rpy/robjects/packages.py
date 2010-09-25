@@ -1,3 +1,4 @@
+from types import ModuleType
 import rpy2.rinterface as rinterface
 import rpy2.robjects.lib
 import conversion as conversion
@@ -23,7 +24,7 @@ def get_packagepath(package):
     res = rinterface.baseenv['.find.package'](rinterface.StrSexpVector((package, )))
     return res[0]
 
-class Package(object):
+class Package(ModuleType):
     """ Models an R package
     (and can do so from an arbitrary environment - with the caution
     that locked environments should mostly be considered).
@@ -32,6 +33,7 @@ class Package(object):
     def __init__(self, env, name, translation = {}):
         """ Create a Python module-like object from an R environment,
         using the specified translation if defined. """
+        super(Package, self).__init__(name)
         self._env = env
         self.__rname__ = name
         self._translation = translation
@@ -58,11 +60,12 @@ class Package(object):
                 if dot_i > -1:
                     rpyname = rname.replace('.', '_')
                     if rpyname in self._rpy2r:
-                        raise LibraryError(('Conflict in converting R symbol'+\
-                                            ' to a Python symbol ' +\
-                                            '(%s -> %s while there is already'+\
-                                            ' %s)') %(rname, rpyname,
-                                                      rpyname))
+                        msg = ('Conflict when converting R symbol'+\
+                                   ' to a Python symbol ' +\
+                                   '(%s -> %s while there is already'+\
+                                   ' %s)') %(rname, rpyname,
+                                             rpyname)
+                        raise LibraryError(msg)
                 else:
                     rpyname = rname
                 if rpyname in self.__dict__ or rpyname == '__dict__':

@@ -380,23 +380,24 @@ One way to achieve the same with :mod:`rpy2.robjects` is
 
 .. code-block:: python
 
-   import rpy2.robjects as robjects
+   from rpy2.robjects import FloatVector
+   from rpy2.robjects.packages import importr
+   stats = importr('stats')
+   base = importr('base')
 
-   r = robjects.r
-
-   ctl = robjects.FloatVector([4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14])
-   trt = robjects.FloatVector([4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69])
-   group = r.gl(2, 10, 20, labels = ["Ctl","Trt"])
+   ctl = FloatVector([4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14])
+   trt = FloatVector([4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69])
+   group = base.gl(2, 10, 20, labels = ["Ctl","Trt"])
    weight = ctl + trt
 
    robjects.globalenv["weight"] = weight
    robjects.globalenv["group"] = group
-   lm_D9 = r.lm("weight ~ group")
-   print(r.anova(lm_D9))
+   lm_D9 = stats.lm("weight ~ group")
+   print(stats.anova(lm_D9))
 
    # omitting the intercept
-   lm_D90 = r.lm("weight ~ group - 1")
-   print(r.summary(lm_D90))
+   lm_D90 = stats.lm("weight ~ group - 1")
+   print(base.summary(lm_D90))
 
 This way to perform a linear fit it matching precisely the way in R presented
 above, but there are other ways (see Section :ref:`robjects-formula`
@@ -488,17 +489,19 @@ Creating an R vector or matrix, and filling its cells using Python code
 
 .. testcode::
 
-   import rpy2.robjects as robjects
+   from rpy2.robjects import NA_real
+   from rpy2.rlike.container import TaggedList
    from rpy2.robjects.packages import importr
 
    base = importr('base')
 
    # create a numerical matrix of size 100x10 filled with NAs 
-   m = base.matrix(robjects.NA_Real, nrow=100, ncol=10)
+   m = base.matrix(NA_Real, nrow=100, ncol=10)
 
+   # fill the matrix
    for row_i in xrange(1, 100+1):
        for col_i in xrange(1, 10+1):
-           m.rx[rlc.TaggedList((row_i, ), (col_i, ))] = row_i + col_i * 100
+           m.rx[TaggedList((row_i, ), (col_i, ))] = row_i + col_i * 100
 
 
 

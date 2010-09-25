@@ -143,7 +143,8 @@ class build_ext(_build_ext):
 
         r_libs = []
         if self.r_home_lib is None:
-            r_libs.extend([os.path.join(r_home, 'lib'), ])
+            tmp = get_rconfig(r_home, '--ldflags')[0].split()
+            r_libs.extend(tmp)
         else:
             r_libs.extend([self.r_home_lib, ])
 
@@ -151,7 +152,12 @@ class build_ext(_build_ext):
             r_libs.extend([os.path.join(r_home, 'modules'), ])
         else:
             r_libs.extends([self.r_home_modules, ])
-            
+
+        for i, d in enumerate(r_libs):
+            if d.startswith('-L'):
+                r_libs[i] = d[2:]
+            else:
+                pass
         self.library_dirs.extend(r_libs)
 
         include_dirs = get_rconfig(r_home, '--cppflags')[0].split()
