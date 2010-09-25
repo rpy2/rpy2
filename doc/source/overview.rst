@@ -384,6 +384,10 @@ Contributors
     Their names can be found in this documentation (mostly around the
     section Changes).
 
+Grzegorz Slodkowicz
+    Google Summer of Code student, he has been working on Python3 compatibility
+    (and other nice features to be ported to the main code base in the future).
+
 JRI
     The Java-R Interface, and its authors, as at several occasions
     its code was the most practical source of documentation
