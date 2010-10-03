@@ -28,8 +28,8 @@ class SexpExtPtrTestCase(unittest.TestCase):
 
     def testNewInvalidTag(self):
         pyobject = "ahaha"
-        self.assertRaises(ValueError, rinterface.SexpExtPtr,
-                          pyobject, tag = "b")
+        self.assertRaises(TypeError, rinterface.SexpExtPtr,
+                          pyobject, tag = True)
 
     def testNewProtected(self):
         pyobject = "ahaha"
@@ -39,8 +39,8 @@ class SexpExtPtrTestCase(unittest.TestCase):
 
     def testNewInvalidProtected(self):
         pyobject = "ahaha"
-        self.assertRaises(ValueError, rinterface.SexpExtPtr,
-                          pyobject, protected = "c")
+        self.assertRaises(TypeError, rinterface.SexpExtPtr,
+                          pyobject, protected = True)
 
 
 def suite():
