@@ -18,13 +18,14 @@ class SexpExtPtrTestCase(unittest.TestCase):
         pyobject = "ahaha"
         sexp_new = rinterface.SexpExtPtr(pyobject)
         # R External pointer are never copied
-        self.assertTrue(False) # no real test (yet)
+        self.assertEquals(rinterface.EXTPTRSXP, sexp_new.typeof)
 
     def testNewTag(self):
         pyobject = "ahaha"
         sexp_new = rinterface.SexpExtPtr(pyobject, 
                                          tag = rinterface.StrSexpVector("b"))
-        self.assertTrue(False) # no real test (yet)
+        self.assertEquals(rinterface.EXTPTRSXP, sexp_new.typeof)
+        self.assertEquals('b', sexp_new.__tag__[0])
 
     def testNewInvalidTag(self):
         pyobject = "ahaha"
@@ -35,7 +36,8 @@ class SexpExtPtrTestCase(unittest.TestCase):
         pyobject = "ahaha"
         sexp_new = rinterface.SexpExtPtr(pyobject, 
                                          protected = rinterface.StrSexpVector("c"))
-        self.assertTrue(False) # no real test (yet)
+        self.assertEquals(rinterface.EXTPTRSXP, sexp_new.typeof)
+        self.assertEquals('c', sexp_new.__protected__[0])
 
     def testNewInvalidProtected(self):
         pyobject = "ahaha"
