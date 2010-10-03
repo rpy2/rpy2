@@ -1,5 +1,6 @@
 
 import os, os.path, sys, shutil, re, itertools
+from collections import namedtuple
 from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build import build as _build
 
@@ -141,41 +142,25 @@ class build_ext(_build_ext):
             raise SystemExit("Error: R >= 2.8 required.")
         rversions.append(rversion)
 
-        r_libs = []
-        if self.r_home_lib is None:
-            tmp = get_rconfig(r_home, '--ldflags')[0].split()
-            r_libs.extend(tmp)
-        else:
-            r_libs.extend([self.r_home_lib, ])
+        config = RConfig()
+        for about in ('--ldflags', '--cppflags', 
+                      'LAPACK_LIBS', 'BLAS_LIBS'):
+            config += get_rconfig(r_home, about)
+
+        print(config.__repr__())
+
+        self.include_dirs.extend(config._include_dirs)
+        self.libraries.extend(config._libraries)
+        self.library_dirs.extend(config._library_dirs)
 
         if self.r_home_modules is None:
-            r_libs.extend([os.path.join(r_home, 'modules'), ])
+            self.library_dirs.extend([os.path.join(r_home, 'modules'), ])
         else:
-            r_libs.extends([self.r_home_modules, ])
+            self.library_dirs.extends([self.r_home_modules, ])
 
-        for i, d in enumerate(r_libs):
-            if d.startswith('-L'):
-                r_libs[i] = d[2:]
-            else:
-                pass
-        self.library_dirs.extend(r_libs)
-
-        include_dirs = get_rconfig(r_home, '--cppflags')[0].split()
-        
-        for i, d in enumerate(include_dirs):
-            if d.startswith('-I'):
-                include_dirs[i] = d[2:]
-            else:
-                raise SystemExit('Error: trouble with R configuration %s' %d)
-        self.include_dirs.extend(include_dirs)
-
-        extra_link_args = get_rconfig(r_home, '--ldflags') +\
-            get_rconfig(r_home, 'LAPACK_LIBS', 
-                        allow_empty=True) +\
-                        get_rconfig(r_home, 'BLAS_LIBS')
-
-        for e in self.extensions:
-            e.extra_compile_args.extend(extra_link_args)
+        #for e in self.extensions:
+        #    self.extra_link_args.extra_link_args(config.extra_link_args)
+        #    e.extra_compile_args.extend(extra_link_args)
 
     def run(self):
         _build_ext.run(self)
@@ -210,6 +195,62 @@ def cmp_version(x, y):
             return 0
         return cmp_version(x[1:], y[1:])
 
+class RConfig(object):
+    _include_dirs = None
+    _libraries = None
+    _library_dirs = None 
+    _extra_link_args = None
+    _frameworks = None
+    _framework_dirs = None
+    def __init__(self,
+                 include_dirs = tuple(), libraries = tuple(),
+                 library_dirs = tuple(), extra_link_args = tuple(),
+                 frameworks = tuple(),
+                 framework_dirs = tuple()):
+        for k in ('include_dirs', 'libraries', 
+                  'library_dirs', 'extra_link_args'):
+            v = locals()[k]
+            if not isinstance(v, tuple):
+                if isinstance(v, str):
+                    v = [v, ]
+            v = tuple(set(v))
+            self.__dict__['_'+k] = v
+        # frameworks are specific to OSX
+        for k in ('framework_dirs', 'frameworks'):
+            v = locals()[k]
+            if not isinstance(v, tuple):
+                if isinstance(v, str):
+                    v = [v, ]
+            v = tuple(set(v))
+            self.__dict__['_'+k] = v
+            self.__dict__['_'+'extra_link_args'] = tuple(set(v + self.__dict__['_'+'extra_link_args']))
+            
+            
+    def __repr__(self):
+        s = 'Configuration for R as a library:' + os.linesep
+        s += os.linesep.join(
+            ['  ' + x + ': ' + self.__dict__['_'+x].__repr__() \
+                 for x in ('include_dirs', 'libraries',
+                           'library_dirs', 'extra_link_args')])
+        s += os.linesep + ' # OSX-specific (included in extra_link_args)' + os.linesep 
+        s += os.linesep.join(
+            ['  ' + x + ': ' + self.__dict__['_'+x].__repr__() \
+                 for x in ('framework_dirs', 'frameworks')]
+            )
+        
+        return s
+
+    def __add__(self, config):
+        assert isinstance(config, RConfig)
+        res = RConfig(include_dirs = self._include_dirs + \
+                          config._include_dirs,
+                      libraries = self._libraries + config._libraries,
+                      library_dirs = self._library_dirs + \
+                          config._library_dirs,
+                      extra_link_args = self._extra_link_args + \
+                          config._extra_link_args)
+        return res
+
 def get_rconfig(r_home, about, allow_empty = False):
     r_exec = os.path.join(r_home, 'bin', 'R')
     cmd = '"'+r_exec+'" CMD config '+about
@@ -221,14 +262,16 @@ def get_rconfig(r_home, about, allow_empty = False):
     rconfig = rconfig.strip()
     #sanity check of what is returned into rconfig
     rconfig_m = None
-    possible_patterns = ('^(-L.+) (-l.+)$',
-                         '^(-l.+)$',  # fix for the case -lblas is returned
-                         '^(-F.+? -framework .+)$', # fix for MacOS X
-                         '^(-framework .+)$',
-                         '^(-I.+)$')
-    for pattern in possible_patterns:
-        rconfig_m = re.match(pattern, rconfig)
+    possible_patterns = ('^-L(?P<library_dirs>.+) -l(?P<libraries>.+)$',
+                         '^-l(?P<libraries>.+)$', # fix for -lblas returned
+                         '^(?P<framework_dirs>-F.+?) (?P<frameworks>-framework .+)$', # OS X
+                         '^(?P<frameworks>-framework .+)$',
+                         '^-I(?P<include_dirs>.+)$')
+    pp = [re.compile(x) for x in possible_patterns]
+    for pattern in pp:
+        rconfig_m = pattern.match(rconfig)
         if rconfig_m is not None:
+            return RConfig(**rconfig_m.groupdict())
             break
     if rconfig_m is None:
         if allow_empty and (rconfig == ''):
@@ -237,7 +280,7 @@ def get_rconfig(r_home, about, allow_empty = False):
         else:
             # if the configuration points to an existing library, use it
             if os.path.exists(rconfig):
-                return ("-l"+rconfig,)
+                return RConfig(library = rconfig)
             raise Exception(cmd + '\nreturned\n' + rconfig)
     return rconfig_m.groups()
 
@@ -245,6 +288,7 @@ def get_rconfig(r_home, about, allow_empty = False):
 def getRinterface_ext():
     #r_libs = [os.path.join(RHOME, 'lib'), os.path.join(RHOME, 'modules')]
     r_libs = []
+    extra_link_args = []
 
     #FIXME: crude way (will break in many cases)
     #check how to get how to have a configure step
@@ -294,7 +338,7 @@ def getRinterface_ext():
             define_macros = define_macros,
             runtime_library_dirs = r_libs,
             #extra_compile_args=['-O0', '-g'],
-           
+            #extra_link_args = extra_link_args
             )
 
     rpy_device_ext = Extension(
@@ -309,6 +353,7 @@ def getRinterface_ext():
             define_macros = define_macros,
             runtime_library_dirs = r_libs,
             #extra_compile_args=['-O0', '-g'],
+            extra_link_args = extra_link_args
         )
 
     return [rinterface_ext, rpy_device_ext]
