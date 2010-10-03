@@ -47,6 +47,20 @@ Changes
 Bugs fixed
 ----------
 
+- Better and more explicit detection system for needed libraries when
+  compiling rpy2 (ported to release 2.1.6)
+
+
+Release 2.1.6
+=============
+
+Bugs fixed
+----------
+
+- Further fixes in the automatic detection of includes and libraries
+  needed to compile rpy2 against R. The detection code has
+  been refactored (backport from the 2.2.x branch)
+
 
 Release 2.1.5
 =============
