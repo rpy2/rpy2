@@ -279,6 +279,7 @@ class ExtractDelegatorTestCase(unittest.TestCase):
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(VectorTestCase)
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(FactorVectorTestCase))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(DateTimeVectorTestCase))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ExtractDelegatorTestCase))
 

@@ -395,7 +395,7 @@ class FactorVector(IntVector):
         the items returning associated label for each item """
         levels = self.levels
         for x in self:
-            yield levels[self[x]-1]
+            yield levels[x-1]
 
 class DateVector(FloatVector):
     """ Vector of dates """
