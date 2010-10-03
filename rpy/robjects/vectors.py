@@ -259,7 +259,9 @@ class StrVector(Vector):
         """
         factor() -> FactorVector
 
-        Construct a factor vector from a vector of strings. """
+        Construct a factor vector from a vector of strings. 
+        
+        """
 
         res = self._factorconstructor(self)
         return conversion.ri2py(res)
@@ -330,7 +332,21 @@ class FloatVector(Vector):
         super(FloatVector, self).__init__(obj)
 
 class FactorVector(IntVector):
-    """ Vector of 'factors' """
+    """ Vector of 'factors' 
+
+    FactorVector(obj,
+                 levels = rinterface.MissingArg,
+                 labels = rinterface.MissingArg,
+                 exclude = rinterface.MissingArg,
+                 ordered = rinterface.MissingArg) -> FactorVector
+
+    obj: StrVector or StrSexpVector
+    levels: StrVector or StrSexpVector
+    labels: StrVector or StrSexpVector (of same length as levels)
+    exclude: StrVector or StrSexpVector
+    ordered: boolean
+
+    """
 
     _factor = baseenv_ri['factor']
     _levels = baseenv_ri['levels']
@@ -373,6 +389,13 @@ class FactorVector(IntVector):
         return res[0]
     isordered = property(__isordered_get, None, None,
                          "are the levels in the factor ordered ?")
+
+    def iter_labels(self):
+        """ Iterate the over the labels, that is iterate over
+        the items returning associated label for each item """
+        levels = self.levels
+        for x in self:
+            yield levels[self[x]-1]
 
 class DateVector(FloatVector):
     """ Vector of dates """
@@ -419,7 +442,7 @@ class POSIXct(POSIXt, FloatVector):
 
     POSIXlt(seq) -> POSIXlt.
     
-    The constructor accepts either an R vector
+    The constructor accepts either an R vector floats
     or a sequence (an object with the Python
     sequence interface) of time.struct_time objects.
     """
@@ -659,7 +682,17 @@ class DataFrame(Vector):
                      col_names = rinterface.MissingArg,
                      fill = True, comment_char = "",
                      as_is = False):
-        """ Create an instance from data in a .csv file. """
+        """ Create an instance from data in a .csv file. 
+
+        path         : string with a path 
+        header       : boolean (heading line with column names or not)
+        sep          : separator character
+        quote        : quote character
+        row_names    : column name, or column index for column names (warning: indexing starts at one in R)
+        fill         : boolean (fill the lines when less entries than columns)
+        comment_char : comment character
+        as_is        : boolean (keep the columns of strings as such, or turn them into factors) 
+        """
         path = conversion.py2ro(path)
         header = conversion.py2ro(header)
         sep = conversion.py2ro(sep)
@@ -685,7 +718,19 @@ class DataFrame(Vector):
 
     def to_csvfile(self, path, quote = True, sep = ",", eol = os.linesep, na = "NA", dec = ".", 
                    row_names = True, col_names = True, qmethod = "escape", append = False):
-        """ Save the data into a .csv file. """
+        """ Save the data into a .csv file. 
+
+        path         : string with a path 
+        quote        : quote character
+        sep          : separator character
+        eol          : end-of-line character(s)
+        na           : string for missing values
+        dec          : string for decimal separator
+        row_names    : boolean (save row names, or not)
+        col_names    : boolean (save column names, or not)
+        comment_char : method to 'escape' special characters
+        append       : boolean (append if the file in the path is already existing, or not)
+        """
         path = conversion.py2ro(path)
         append = conversion.py2ro(append)
         sep = conversion.py2ro(sep)

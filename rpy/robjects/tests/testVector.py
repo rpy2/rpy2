@@ -46,23 +46,6 @@ class VectorTestCase(unittest.TestCase):
         self.assertEquals(False, vec[1])
         self.assertEquals(2, len(vec))
 
-    def testNewFactorVector(self):
-        vec = robjects.FactorVector(robjects.StrVector('abaabc'))
-        self.assertEquals(6, len(vec))
-
-    def testFactorVector_isordered(self):
-        vec = robjects.FactorVector(robjects.StrVector('abaabc'))
-        self.assertFalse(vec.isordered)
-
-    def testFactorVector_nlevels(self):
-        vec = robjects.FactorVector(robjects.StrVector('abaabc'))
-        self.assertEquals(3, vec.nlevels)
-
-    def testFactorVector_levels(self):
-        vec = robjects.FactorVector(robjects.StrVector('abaabc'))
-        self.assertEquals(3, len(vec.levels))
-        self.assertEquals(set(('a','b','c')), set(tuple(vec.levels)))
-
 
     def testAddOperators(self):
         seq_R = robjects.r["seq"]
@@ -176,6 +159,31 @@ class VectorTestCase(unittest.TestCase):
         self.assertEquals([None, None, None], names)
         values = [v for k,v in vec.iteritems()]
         self.assertEquals([0, 1, 2], values)
+
+class FactorVectorTestCase(unittest.TestCase):
+    def testNew(self):
+        vec = robjects.FactorVector(robjects.StrVector('abaabc'))
+        self.assertEquals(6, len(vec))
+
+    def testIsordered(self):
+        vec = robjects.FactorVector(robjects.StrVector('abaabc'))
+        self.assertFalse(vec.isordered)
+
+    def testNlevels(self):
+        vec = robjects.FactorVector(robjects.StrVector('abaabc'))
+        self.assertEquals(3, vec.nlevels)
+
+    def testLevels(self):
+        vec = robjects.FactorVector(robjects.StrVector('abaabc'))
+        self.assertEquals(3, len(vec.levels))
+        self.assertEquals(set(('a','b','c')), set(tuple(vec.levels)))
+    
+    def testIter_labels(self):
+        values = 'abaabc'
+        vec = robjects.FactorVector(robjects.StrVector(values))
+        it = vec.iter_labels()
+        for a, b in zip(values, it):
+            self.assertEquals(a, b)
 
 class DateTimeVectorTestCase(unittest.TestCase):
     def testPOSIXlt_fromPythonTime(self):

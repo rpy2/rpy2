@@ -21,6 +21,8 @@ New Features
 - Metaclass utilities in :mod:`rpy2.robjects.methods`, allowing to reflect
   automatically R S4 classes as Python classes.
 
+- :meth:`rpy2.robjects.vector.FactorVector.iter_labels` to iterate over the labels
+
 :mod:`rpy2.rinterface`:
 
 - NA_Complex and :class:`NAComplexType` for missing complex values.
