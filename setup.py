@@ -202,6 +202,7 @@ class RConfig(object):
     _extra_link_args = None
     _frameworks = None
     _framework_dirs = None
+
     def __init__(self,
                  include_dirs = tuple(), libraries = tuple(),
                  library_dirs = tuple(), extra_link_args = tuple(),
@@ -224,7 +225,45 @@ class RConfig(object):
             v = tuple(set(v))
             self.__dict__['_'+k] = v
             self.__dict__['_'+'extra_link_args'] = tuple(set(v + self.__dict__['_'+'extra_link_args']))
-            
+
+    @staticmethod
+    def from_string(string, allow_empty = False):
+        possible_patterns = ('^-L(?P<library_dirs>[^ ]+)$',
+                             '^-l(?P<libraries>[^ ]+)$',
+                             '^-I(?P<include_dirs>[^ ]+)$',
+                             '^(?P<framework_dirs>-F[^ ]+?)$',
+                             '^(?P<frameworks>-framework [^ ]+)$')
+        pp = [re.compile(x) for x in possible_patterns]
+        # sanity check of what is returned into rconfig
+        rconfig_m = None        
+        span = (0, 0)
+        rc = RConfig()
+        for substring in string.split(' '):
+            ok = False
+            for pattern in pp:
+                rconfig_m = pattern.match(substring)
+                if rconfig_m is not None:
+                    rc += RConfig(**rconfig_m.groupdict())
+                    span = rconfig_m.span()
+                    ok = True
+                    break
+                elif rconfig_m is None:
+                    if allow_empty and (rconfig == ''):
+                        print(cmd + '\nreturned an empty string.\n')
+                        rc += RConfig()
+                        ok = True
+                        break
+                    else:
+                        # if the configuration points to an existing library, 
+                        # use it
+                        if os.path.exists(string):
+                            rc += RConfig(library = substring)
+                            ok = True
+                            break
+            if not ok:
+                raise ValueError('Invalid substring\n' + substring 
+                                 + '\nin string\n' + string)
+        return rc
             
     def __repr__(self):
         s = 'Configuration for R as a library:' + os.linesep
@@ -251,6 +290,7 @@ class RConfig(object):
                           config._extra_link_args)
         return res
 
+
 def get_rconfig(r_home, about, allow_empty = False):
     r_exec = os.path.join(r_home, 'bin', 'R')
     cmd = '"'+r_exec+'" CMD config '+about
@@ -260,30 +300,8 @@ def get_rconfig(r_home, about, allow_empty = False):
     if rconfig.startswith("WARNING"):
         rconfig = rp.readline()
     rconfig = rconfig.strip()
-    #sanity check of what is returned into rconfig
-    rconfig_m = None
-    possible_patterns = ('^-L(?P<library_dirs>.+) -l(?P<libraries>.+)$',
-                         '^-l(?P<libraries>.+)$', # fix for -lblas returned
-                         '^(?P<framework_dirs>-F.+?) (?P<frameworks>-framework .+)$', # OS X
-                         '^(?P<frameworks>-framework .+)$',
-                         '^-I(?P<include_dirs>.+)$')
-    pp = [re.compile(x) for x in possible_patterns]
-    for pattern in pp:
-        rconfig_m = pattern.match(rconfig)
-        if rconfig_m is not None:
-            return RConfig(**rconfig_m.groupdict())
-            break
-    if rconfig_m is None:
-        if allow_empty and (rconfig == ''):
-            print(cmd + '\nreturned an empty string.\n')
-            return ()
-        else:
-            # if the configuration points to an existing library, use it
-            if os.path.exists(rconfig):
-                return RConfig(library = rconfig)
-            raise Exception(cmd + '\nreturned\n' + rconfig)
-    return rconfig_m.groups()
-
+    rc = RConfig.from_string(rconfig, allow_empty = allow_empty)
+    return rc
 
 def getRinterface_ext():
     #r_libs = [os.path.join(RHOME, 'lib'), os.path.join(RHOME, 'modules')]
@@ -358,50 +376,50 @@ def getRinterface_ext():
 
     return [rinterface_ext, rpy_device_ext]
 
+if __name__ == '__main__':
+    rinterface_exts = []
+    ri_ext = getRinterface_ext()
+    rinterface_exts.append(ri_ext)
 
-rinterface_exts = []
-ri_ext = getRinterface_ext()
-rinterface_exts.append(ri_ext)
+    pack_dir = {pack_name: os.path.join(package_prefix, 'rpy')}
 
-pack_dir = {pack_name: os.path.join(package_prefix, 'rpy')}
+    import distutils.command.install
+    for scheme in distutils.command.install.INSTALL_SCHEMES.values():
+        scheme['data'] = scheme['purelib']
 
-import distutils.command.install
-for scheme in distutils.command.install.INSTALL_SCHEMES.values():
-    scheme['data'] = scheme['purelib']
+    setup(
+        #install_requires=['distribute'],
+        cmdclass = {'build': build,
+                    'build_ext': build_ext},
+        name = pack_name,
+        version = pack_version,
+        description = "Python interface to the R language",
+        url = "http://rpy.sourceforge.net",
+        license = "AGPLv3.0 (except rpy2.rinterface: LGPL)",
+        author = "Laurent Gautier",
+        author_email = "lgautier@gmail.com",
+        ext_modules = rinterface_exts[0],
+        package_dir = pack_dir,
+        packages = [pack_name,
+                    pack_name + '.rlike',
+                    pack_name + '.rlike.tests',
+                    pack_name + '.rinterface',
+                    pack_name + '.rinterface.tests',
+                    pack_name + '.robjects',
+                    pack_name + '.robjects.tests',
+                    pack_name + '.robjects.lib',
+                    ],
+        classifiers = ['Programming Language :: Python',
+                       'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
+                       'License :: OSI Approved :: GNU Affero General Public License v3',
+                       'Intended Audience :: Developers',
+                       'Intended Audience :: Science/Research',
+                       'Development Status :: 4 - Beta'
+                       ],
+        data_files = [(os.path.join('rpy2', 'images'), 
+                       [os.path.join('doc', 'source', 'rpy2_logo.png')])],
 
-setup(
-    #install_requires=['distribute'],
-    cmdclass = {'build': build,
-                'build_ext': build_ext},
-    name = pack_name,
-    version = pack_version,
-    description = "Python interface to the R language",
-    url = "http://rpy.sourceforge.net",
-    license = "AGPLv3.0 (except rpy2.rinterface: LGPL)",
-    author = "Laurent Gautier",
-    author_email = "lgautier@gmail.com",
-    ext_modules = rinterface_exts[0],
-    package_dir = pack_dir,
-    packages = [pack_name,
-                pack_name + '.rlike',
-                pack_name + '.rlike.tests',
-                pack_name + '.rinterface',
-                pack_name + '.rinterface.tests',
-                pack_name + '.robjects',
-                pack_name + '.robjects.tests',
-                pack_name + '.robjects.lib',
-                ],
-    classifiers = ['Programming Language :: Python',
-                   'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
-                   'License :: OSI Approved :: GNU Affero General Public License v3',
-                   'Intended Audience :: Developers',
-                   'Intended Audience :: Science/Research',
-                   'Development Status :: 4 - Beta'
-                   ],
-    data_files = [(os.path.join('rpy2', 'images'), 
-                   [os.path.join('doc', 'source', 'rpy2_logo.png')])],
-    
-    #[pack_name + '.rinterface_' + x for x in rinterface_rversions] + \
-        #[pack_name + '.rinterface_' + x + '.tests' for x in rinterface_rversions]
-    )
+        #[pack_name + '.rinterface_' + x for x in rinterface_rversions] + \
+            #[pack_name + '.rinterface_' + x + '.tests' for x in rinterface_rversions]
+        )
 
