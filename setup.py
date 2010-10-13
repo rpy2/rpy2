@@ -238,7 +238,8 @@ class RConfig(object):
         rconfig_m = None        
         span = (0, 0)
         rc = RConfig()
-        for substring in string.split(' '):
+        
+        for substring in re.split('(?<!-framework) ', string):
             ok = False
             for pattern in pp:
                 rconfig_m = pattern.match(substring)
