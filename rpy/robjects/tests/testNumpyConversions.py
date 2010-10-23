@@ -114,6 +114,15 @@ class NumpyConversionsTestCase(unittest.TestCase):
         self.assertEquals(1, reca.a[0])
         self.assertEquals(2, reca.b[0])
 
+    def testAtomicVectorToNumpy(self):
+        v = robjects.vectors.IntVector((1,2,3))
+        a = rpyn.ri2numpy(v)
+        self.assertTrue(isinstance(a, numpy.ndarray))
+        self.assertEquals(1, v[0])
+
+    def testVectorToNumpy(self):
+        self.assertTrue(False) # no test yet
+
 def suite():
     if has_numpy:
         return unittest.TestLoader().loadTestsFromTestCase(NumpyConversionsTestCase)
