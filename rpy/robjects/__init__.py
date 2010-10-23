@@ -22,6 +22,9 @@ from rpy2.robjects.methods import RS4
 
 import conversion
 
+from rpy2.rinterface import Sexp, SexpVector, SexpClosure, SexpEnvironment, SexpS4, SexpExtPtr
+_globalenv = rinterface.globalenv
+
 # missing values
 from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Complex
 
@@ -46,7 +49,7 @@ def default_ri2py(o):
 
     if isinstance(o, RObject):
         res = o
-    elif isinstance(o, rinterface.SexpVector):
+    elif isinstance(o, SexpVector):
         if rcls == 'data.frame':
             res = vectors.DataFrame(o)
         if res is None:
@@ -71,13 +74,13 @@ def default_ri2py(o):
                 else:
                     res = vectors.Vector(o)
 
-    elif isinstance(o, rinterface.SexpClosure):
+    elif isinstance(o, SexpClosure):
         res = SignatureTranslatedFunction(o)
-    elif isinstance(o, rinterface.SexpEnvironment):
+    elif isinstance(o, SexpEnvironment):
         res = Environment(o)
-    elif isinstance(o, rinterface.SexpS4):
+    elif isinstance(o, SexpS4):
         res = RS4(o)
-    elif isinstance(o, rinterface.SexpExtPtr):
+    elif isinstance(o, SexpExtPtr):
         res = o
     else:
         res = RObject(o)
@@ -97,7 +100,7 @@ def default_py2ri(o):
     """
     if isinstance(o, RObject):
         res = rinterface.Sexp(o)
-    if isinstance(o, rinterface.Sexp):
+    if isinstance(o, Sexp):
         res = o
     elif isinstance(o, array.array):
         if o.typecode in ('h', 'H', 'i', 'I'):
@@ -145,7 +148,7 @@ conversion.py2ro = default_py2ro
 
 class Formula(RObjectMixin, rinterface.Sexp):
 
-    def __init__(self, formula, environment = rinterface.globalenv):
+    def __init__(self, formula, environment = _globalenv):
         if isinstance(formula, str):
             inpackage = rinterface.baseenv["::"]
             asformula = inpackage(rinterface.StrSexpVector(['stats', ]), 
@@ -198,7 +201,7 @@ class R(object):
             raise orig_ae
 
     def __getitem__(self, item):
-        res = rinterface.globalenv.get(item)
+        res = _globalenv.get(item)
         res = conversion.ri2py(res)
         res.__rname__ = item
         return res
@@ -223,6 +226,6 @@ class R(object):
 
 r = R()
 
-globalenv = conversion.ri2py(rinterface.globalenv)
+globalenv = conversion.ri2py(_globalenv)
 baseenv = conversion.ri2py(rinterface.baseenv)
 emptyenv = conversion.ri2py(rinterface.emptyenv)
