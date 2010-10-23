@@ -68,4 +68,3 @@ def ri2numpy(o):
         res = ro.default_ri2py(o)
     return res
 
-ro.conversion.ri2py = ri2numpy
