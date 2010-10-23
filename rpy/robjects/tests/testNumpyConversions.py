@@ -18,9 +18,11 @@ class NumpyConversionsTestCase(unittest.TestCase):
 
     def setUp(self):
         robjects.conversion.py2ri = rpyn.numpy2ri
+        robjects.conversion.ri2numpy = rpyn.ri2numpy
 
     def tearDown(self):
         robjects.conversion.py2ri = robjects.default_py2ri
+        robjects.conversion.ri2py = robjects.default_ri2py
 
     def checkHomogeneous(self, obj, mode, storage_mode):
         converted = robjects.conversion.py2ri(obj)
@@ -104,6 +106,13 @@ class NumpyConversionsTestCase(unittest.TestCase):
         env["x"] = x
         self.assertEquals(1, len(env))
         self.assertTrue(isinstance(env["x"], robjects.Array))
+
+    def testDataFrameToNumpy(self):
+        df = robjects.vectors.DataFrame(dict((('a', 1), ('b', 2))))
+        reca = rpyn.ri2numpy(df)
+        self.assertTrue(isinstance(reca, numpy.recarray))
+        self.assertEquals(1, reca.a[0])
+        self.assertEquals(2, reca.b[0])
 
 def suite():
     if has_numpy:

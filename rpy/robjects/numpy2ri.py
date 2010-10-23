@@ -57,3 +57,15 @@ def numpy2ri(o):
 
 
 ro.conversion.py2ri = numpy2ri
+
+
+def ri2numpy(o):
+    if isinstance(o, ro.DataFrame):
+        res = numpy.rec.fromarrays(o, names=tuple(o.names))
+    elif isinstance(o, ro.Vector) and (type(o) != ro.Vector):
+        res = numpy.asarray(o)
+    else:
+        res = ro.default_ri2py(o)
+    return res
+
+ro.conversion.ri2py = ri2numpy
