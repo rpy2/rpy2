@@ -8,6 +8,8 @@ import rpy2.rlike.container as rlc
 import copy, os, itertools
 import time
 
+from rpy2.rinterface import Sexp, SexpVector, StrSexpVector, IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, R_NilValue
+
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
 utils_ri = rinterface.baseenv['as.environment'](rinterface.StrSexpVector(("package:utils", )))
@@ -161,7 +163,7 @@ class VectorOperationsDelegator(object):
         return res
 
 
-class Vector(RObjectMixin, rinterface.SexpVector):
+class Vector(RObjectMixin, SexpVector):
     """ Vector(seq) -> Vector.
 
     The parameter 'seq' can be an instance inheriting from
@@ -179,7 +181,7 @@ class Vector(RObjectMixin, rinterface.SexpVector):
     _sample = rinterface.baseenv['sample']
 
     def __init__(self, o):
-        if not isinstance(o, rinterface.SexpVector):
+        if not isinstance(o, SexpVector):
             o = conversion.py2ri(o)
         super(Vector, self).__init__(o)
         self.ro = VectorOperationsDelegator(self)
@@ -193,7 +195,7 @@ class Vector(RObjectMixin, rinterface.SexpVector):
 
     def __getitem__(self, i):
         res = super(Vector, self).__getitem__(i)
-        if isinstance(res, rinterface.Sexp):
+        if isinstance(res, Sexp):
             res = conversion.ri2py(res)
         return res
 
@@ -215,7 +217,7 @@ class Vector(RObjectMixin, rinterface.SexpVector):
 
     def iteritems(self):
         """ iterate over names and values """
-        if self.names.rsame(rinterface.R_NilValue):
+        if self.names.rsame(R_NilValue):
             it_names = itertools.cycle((None, ))
         else:
             it_names = iter(self.names)
@@ -252,7 +254,7 @@ class StrVector(Vector):
     _factorconstructor = rinterface.baseenv['factor']
 
     def __init__(self, obj):
-        obj = rinterface.StrSexpVector(obj)
+        obj = StrSexpVector(obj)
         super(StrVector, self).__init__(obj)
 
     def factor(self):
@@ -278,7 +280,7 @@ class IntVector(Vector):
     _tabulate = rinterface.baseenv['tabulate']
 
     def __init__(self, obj):
-        obj = rinterface.IntSexpVector(obj)
+        obj = IntSexpVector(obj)
         super(IntVector, self).__init__(obj)
 
     def tabulate(self, nbins = None):
@@ -298,7 +300,7 @@ class BoolVector(Vector):
     booleans, or have a bool() representation.
     """
     def __init__(self, obj):
-        obj = rinterface.BoolSexpVector(obj)
+        obj = BoolSexpVector(obj)
         super(BoolVector, self).__init__(obj)
 
 class ComplexVector(Vector):
@@ -313,7 +315,7 @@ class ComplexVector(Vector):
     
     """
     def __init__(self, obj):
-        obj = rinterface.ComplexSexpVector(obj)
+        obj = ComplexSexpVector(obj)
         super(ComplexVector, self).__init__(obj)
 
 class FloatVector(Vector):
@@ -328,7 +330,7 @@ class FloatVector(Vector):
 
     """
     def __init__(self, obj):
-        obj = rinterface.FloatSexpVector(obj)
+        obj = FloatSexpVector(obj)
         super(FloatVector, self).__init__(obj)
 
 class FactorVector(IntVector):
@@ -358,8 +360,8 @@ class FactorVector(IntVector):
                  labels = rinterface.MissingArg,
                  exclude = rinterface.MissingArg,
                  ordered = rinterface.MissingArg):
-        if not isinstance(obj, rinterface.Sexp):
-            obj = rinterface.StrSexpVector(obj)
+        if not isinstance(obj, Sexp):
+            obj = StrSexpVector(obj)
         res = self._factor(obj,
                            levels = levels,
                            labels = labels,
@@ -419,14 +421,14 @@ class POSIXlt(POSIXt, Vector):
     def __init__(self, seq):
         """ 
         """
-        if isinstance(seq, rinterface.Sexp):
+        if isinstance(seq, Sexp):
             super(self, Vector)(seq)
         else:
             #FIXME: check that seq a sequence of time.struct_time objects
-            as_posixlt = rinterface.baseenv['as.POSIXlt']
-            origin = rinterface.StrSexpVector([time.strftime("%Y-%m-%d", 
-                                                             time.gmtime(0)),])
-            rvec = rinterface.FloatSexpVector([time.mktime(x) for x in seq]) 
+            as_posixlt = baseenv_ri['as.POSIXlt']
+            origin = StrSexpVector([time.strftime("%Y-%m-%d", 
+                                                  time.gmtime(0)),])
+            rvec = FloatSexpVector([time.mktime(x) for x in seq]) 
             sexp = as_posixlt(rvec, origin = origin)
             self.__sexp__ = sexp.__sexp__
 
@@ -451,14 +453,14 @@ class POSIXct(POSIXt, FloatVector):
         """ 
         """
 
-        if isinstance(seq, rinterface.Sexp):
+        if isinstance(seq, Sexp):
             super(self, FloatSexpVector)(seq)
         else:
             #FIXME: check that seq a sequence of time.struct_time objects
-            as_posixct = rinterface.baseenv['as.POSIXct']
-            origin = rinterface.StrSexpVector([time.strftime("%Y-%m-%d", 
-                                                             time.gmtime(0)),])
-            rvec = rinterface.FloatSexpVector([time.mktime(x) for x in seq]) 
+            as_posixct = baseenv_ri['as.POSIXct']
+            origin = StrSexpVector([time.strftime("%Y-%m-%d", 
+                                                  time.gmtime(0)),])
+            rvec = FloatSexpVector([time.mktime(x) for x in seq]) 
             sexp = as_posixct(rvec, origin = origin)
             self.__sexp__ = sexp.__sexp__
         
