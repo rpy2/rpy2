@@ -43,14 +43,14 @@ def default_ri2py(o):
 
     res = None
     try:
-        rcls = o.do_slot("class")[0]
+        rcls = o.do_slot("class")
     except LookupError, le:
-        rcls = None
+        rcls = [None]
 
     if isinstance(o, RObject):
         res = o
     elif isinstance(o, SexpVector):
-        if rcls == 'data.frame':
+        if 'data.frame' in rcls:
             res = vectors.DataFrame(o)
         if res is None:
             try:
@@ -61,7 +61,7 @@ def default_ri2py(o):
                     res = vectors.Array(o)
             except LookupError, le:
                 if o.typeof == rinterface.INTSXP:
-                    if rcls == 'factor':
+                    if 'factor' in rcls:
                         res = vectors.FactorVector(o)
                     else:
                         res = vectors.IntVector(o)
@@ -69,7 +69,7 @@ def default_ri2py(o):
                     res = vectors.FloatVector(o)
                 elif o.typeof == rinterface.STRSXP:
                     res = vectors.StrVector(o)
-                elif o.typeof == rinterface.LANGSXP and rcls == 'formula':
+                elif o.typeof == rinterface.LANGSXP and 'formula' in rcls:
                     res = Formula(o)
                 else:
                     res = vectors.Vector(o)
