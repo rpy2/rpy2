@@ -411,6 +411,7 @@ if __name__ == '__main__':
                     pack_name + '.robjects.lib',
                     ],
         classifiers = ['Programming Language :: Python',
+                       'Programming Language :: Python :: 3',
                        'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
                        'License :: OSI Approved :: GNU Affero General Public License v3',
                        'Intended Audience :: Developers',
