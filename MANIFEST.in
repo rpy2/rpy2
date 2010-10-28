@@ -33,6 +33,9 @@ include rpy/rinterface/r_utils.h
 include rpy/rinterface/rpy_device.c
 include rpy/rinterface/rpy_device.h
 
+include rpy/rinterface/rexternalptr.c
+include rpy/rinterface/rexternalptr.h
+
 include rpy/rinterface/*.py
 include rpy/rinterface/tests/*.py
 
