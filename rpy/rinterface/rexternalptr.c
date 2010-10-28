@@ -51,7 +51,7 @@ PyDoc_STRVAR(ExtPtrSexp___init___doc,
 	     "Construct an external pointer. "
 	     );
 
-static PySexpObject*
+static int
 ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 {
 #ifdef RPY_VERBOSE
