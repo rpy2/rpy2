@@ -117,7 +117,7 @@ rcode += "i <- i+1; "
 rcode += "Sys.sleep(0.01); "
 rcode += "}"
 try:
-  ri.baseenv['eval'](ri.baseenv['parse'](text=ri.StrSexpVector(rcode)))
+  ri.baseenv['eval'](ri.parse(rcode))
 except Exception, e:
   sys.exit(0)
   """ %rpy2_path

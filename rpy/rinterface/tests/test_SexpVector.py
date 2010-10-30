@@ -4,8 +4,7 @@ import rpy2.rinterface as ri
 
 ri.initr()
 def evalr(string):
-    rstring = ri.StrSexpVector((string, ))
-    res = ri.baseenv["parse"](text = rstring)
+    res = ri.parse(string)
     res = ri.baseenv["eval"](res)
     return res
 

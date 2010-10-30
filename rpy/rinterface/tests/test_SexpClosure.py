@@ -32,9 +32,7 @@ class SexpClosureTestCase(unittest.TestCase):
         self.assertRaises(rinterface.RRuntimeError, sum, letters)
 
     def testClosureenv(self):
-        parse = rinterface.baseenv["parse"]
-        exp = parse(text = rinterface.SexpVector(["function(x) { x[y] }", ], 
-                                                 rinterface.STRSXP))
+        exp = rinterface.parse("function(x) { x[y] }")
         fun = rinterface.baseenv["eval"](exp)
         vec = rinterface.baseenv["letters"]
         self.assertRaises(rinterface.RRuntimeError, fun, vec)
@@ -80,12 +78,7 @@ class SexpClosureTestCase(unittest.TestCase):
             self.assertEquals(('a', 'b', '', 'c')[i], names[i])
 
     def testRcallOrdDictEnv(self):
-        def parse(x):
-            rparse = rinterface.baseenv.get('parse')
-            res = rparse(text = rinterface.StrSexpVector((x,)))
-            return res
-            
-        ad = rlc.OrdDict( ((None, parse('sum(x)')),) )
+        ad = rlc.OrdDict( ((None, rinterface.parse('sum(x)')),) )
         env_a = rinterface.baseenv['new.env']()
         env_a['x'] = rinterface.IntSexpVector([1,2,3])
         sum_a = rinterface.baseenv['eval'].rcall(ad.items(), 
@@ -103,9 +96,7 @@ class SexpClosureTestCase(unittest.TestCase):
         self.assertRaises(ValueError, mylist, 'foo')
 
     def testMissingArg(self):
-        parse = rinterface.baseenv["parse"]
-        exp = parse(text=rinterface.SexpVector(["function(x) { missing(x) }"],
-                                               rinterface.STRSXP))
+        exp = rinterface.parse("function(x) { missing(x) }")
         fun = rinterface.baseenv["eval"](exp)
         nonmissing = rinterface.SexpVector([0, ], rinterface.INTSXP)
         missing = rinterface.MissingArg
