@@ -70,7 +70,7 @@
 #include <R_ext/eventloop.h>
 
 /* FIXME: consider the use of parsing */
-/* #include <R_ext/Parse.h> */
+#include <R_ext/Parse.h>
 #include <R_ext/Rdynload.h>
 #include <R_ext/RStartup.h>
 
@@ -1221,7 +1221,46 @@ EmbeddedR_exception_from_errmessage(void)
 }
 
 
+PyDoc_STRVAR(EmbeddedR_parse_doc,
+             "parse(string)\n\
+             \n\
+             Parse a string as R code.\n");
 
+static PySexpObject*
+EmbeddedR_parse(PyObject *self, PyObject *pystring)
+{
+
+  SEXP cmdSexp, cmdexpr;
+  PySexpObject *cmdpy;
+  ParseStatus status;
+
+#if (PY_VERSION_HEX < 0x03010000)
+  if (! PyString_Check(pystring)) {
+    PyErr_Format(PyExc_ValueError, "The object to parse must be a string.");
+    return NULL;
+  }
+  char *string = PyString_AsString(pystring);
+#else
+  if (! PyUnicode_Check(pystring)) {
+    PyErr_Format(PyExc_ValueError, "The object to parse must be a unicode string");
+    return NULL;
+  }
+  char *string = PyBytes_AsString(pystring);
+#endif
+
+  PROTECT(cmdSexp = allocVector(STRSXP, 1));
+  SET_STRING_ELT(cmdSexp, 0, mkChar(string));
+  cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
+  if (status != PARSE_OK) {
+    UNPROTECT(2);
+    PyErr_Format(PyExc_ValueError, "Error while parsing the string.");
+    /*FIXME: Fetch parsing error details*/
+    return NULL;
+  }
+  cmdpy = newPySexpObject(cmdexpr, 1);
+  UNPROTECT(2);
+  return cmdpy;
+}
 
 /*
  * Access to R objects through Python objects
@@ -2814,6 +2853,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_getCleanUp_doc},
   {"findVarEmbeddedR",  (PyCFunction)EmbeddedR_findVar,  METH_VARARGS,
    EmbeddedR_findVar_doc},
+  {"parse",  (PyCFunction)EmbeddedR_parse,  METH_O,
+   EmbeddedR_parse_doc},
   {"process_revents", (PyCFunction)EmbeddedR_ProcessEvents, METH_NOARGS,
    EmbeddedR_ProcessEvents_doc},
   {"str_typeint",       (PyCFunction)EmbeddedR_sexpType, METH_VARARGS,

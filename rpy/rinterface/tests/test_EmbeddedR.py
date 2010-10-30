@@ -87,6 +87,15 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertRaises(RuntimeError, rinterface.set_initoptions, 
                           ('aa', '--verbose', '--no-save'))
 
+    def testParse(self):
+        xp = rinterface.parse("2 + 3")
+        self.assertEquals(rinterface.EXPRSXP, xp.typeof)
+        self.assertEquals(2.0, xp[0][1][0])
+        self.assertEquals(3.0, xp[0][2][0])
+
+    def testParseInvalidString(self):
+        self.assertRaises(ValueError, rinterface.parse, 3)
+
     def testInterruptR(self):
         if sys.version_info[0] == 2 and sys.version_info[1] < 6:
             self.assertTrue(False) # Test unit currently requires Python >= 2.6
