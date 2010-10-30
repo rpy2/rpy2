@@ -14,7 +14,7 @@ ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
 StrVector = robjects.StrVector
 
 def as_symbol(x):
-   res = robjects.baseenv["parse"](text = x)
+   res = rinterface.parse(x)
    return res
 
 class GGPlot(robjects.RObject):

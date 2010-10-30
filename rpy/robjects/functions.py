@@ -6,9 +6,8 @@ import conversion
 baseenv_ri = rinterface.baseenv
 
 #needed to avoid circular imports
-_parse = rinterface.baseenv['parse']
 _reval = rinterface.baseenv['eval']
-NULL = _reval(_parse(text = rinterface.StrSexpVector(("NULL", ))))
+NULL = _reval(rinterface.parse("NULL"))
 
 
 class Function(RObjectMixin, rinterface.SexpClosure):

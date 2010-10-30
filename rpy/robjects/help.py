@@ -123,9 +123,8 @@ class Package(object):
                                                        'help',
                                                        self.__package_name + '.rdb'),))
         
-        _parse = rinterface.baseenv['parse']
         _eval  = rinterface.baseenv['eval']
-        devnull_func = _parse(text=rinterface.StrSexpVector(('function(x) {}', )))
+        devnull_func = rinterface.parse('function(x) {}')
         devnull_func = _eval(devnull_func)
         res = rinterface.baseenv['lazyLoadDBfetch'](rdx_variables.rx(rkey)[0], 
                                                     rpath,

@@ -1,10 +1,9 @@
 import rpy2.rinterface as rinterface
 
-_parse = rinterface.baseenv['parse']
 _reval = rinterface.baseenv['eval']
 
 # NULL
-NULL = _reval(_parse(text = rinterface.StrSexpVector(("NULL", ))))
+NULL = _reval(rinterface.parse("NULL"))
 # TRUE/FALSE
-TRUE = _reval(_parse(text = rinterface.StrSexpVector(("TRUE", ))))
-FALSE = _reval(_parse(text = rinterface.StrSexpVector(("FALSE", ))))
+TRUE = _reval(rinterface.parse("TRUE"))
+FALSE = _reval(rinterface.parse("FALSE"))

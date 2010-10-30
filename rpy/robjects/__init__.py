@@ -28,7 +28,6 @@ _globalenv = rinterface.globalenv
 # missing values
 from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Complex
 
-_parse = rinterface.baseenv['parse']
 _reval = rinterface.baseenv['eval']
 
 #FIXME: close everything when leaving (check RPy for that).
@@ -220,7 +219,7 @@ class R(object):
         return s
 
     def __call__(self, string):
-        p = self.parse(text=string)
+        p = rinterface.parse(string)
         res = self.eval(p)
         return res
 
