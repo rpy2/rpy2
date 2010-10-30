@@ -161,7 +161,20 @@ def showFiles(wtitle, titlefiles, rdel, pager):
     return 0
 set_showfiles(showFiles)
 
+def rternalize(function):
+    """ Takes an arbitrary Python function and wrap it
+    in such a way that it can be called from the R side. """
+    assert callable(function) #FIXME: move the test down to C
+    rpy_fun = SexpExtPtr(function, tag = python_type_tag)
+    #rpy_type = ri.StrSexpVector(('.Python', ))
+    #FIXME: this is a hack. Find a better way.
+    template = parse('function(...) { .External(".Python", foo, ...) }')
+    template[0][2][1][2] = rpy_fun
+    return baseenv['eval'](template)
+
 # def cleanUp(saveact, status, runlast):
 #     return True
 
 # setCleanUp(cleanUp)
+
+

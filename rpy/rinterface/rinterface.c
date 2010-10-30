@@ -2928,7 +2928,11 @@ do_Python(SEXP args)
   }
   PyObject *pyargstup = PyList_AsTuple(pyargs);
   /*FIXME: named arguments are not supported yet */
+
+  /* free the R lock as we are leaving the R side back to Python */
+  embeddedR_freelock();
   pyres = PyObject_Call(pyf, pyargstup, NULL);
+  embeddedR_setlock();
   if (!pyres) {
     PyObject *exctype;
     PyObject *excvalue; 

@@ -93,6 +93,31 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEquals(2.0, xp[0][1][0])
         self.assertEquals(3.0, xp[0][2][0])
 
+    def testRternalize(self):
+        def f(x, y):
+            return x[0]+y[0]
+        rfun = rinterface.rternalize(f)
+        res = rfun(1, 2)
+        self.assertEquals(3, res[0])
+
+
+    def testExternalPython(self):
+        def f(x):
+            return 3
+
+        rpy_fun = rinterface.SexpExtPtr(f, tag = rinterface.python_type_tag)
+        _python = rinterface.StrSexpVector(('.Python', ))
+        res = rinterface.baseenv['.External'](_python,
+                                              rpy_fun, 1)
+        self.assertEquals(3, res[0])
+        self.assertEquals(1, len(res))
+
+    def testExternalPythonFromExpression(self):
+        xp_name = rinterface.StrSexpVector(('expression',))
+        xp = rinterface.baseenv['vector'](xp_name, 3)
+        
+        
+
     def testParseInvalidString(self):
         self.assertRaises(ValueError, rinterface.parse, 3)
 
