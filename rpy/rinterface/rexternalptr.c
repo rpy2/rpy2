@@ -43,8 +43,7 @@ R_PyObject_decref(SEXP s)
 
 PyDoc_STRVAR(ExtPtrSexp_Type_doc,
 	     "R object that is an 'external pointer',"
-	     " that a pointer to a data structure R is not necessarily"
-	     " capable of manipulating.\n"
+	     " a pointer to a data structure implemented at the C level.\n"
 	     "SexpExtPtr(extref, tag = None, protected = None)");
 
 PyDoc_STRVAR(ExtPtrSexp___init___doc,
@@ -91,6 +90,7 @@ ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   }
   Py_INCREF(pyextptr);
   rres  = R_MakeExternalPtr(pyextptr, rtag, rprotected);
+  R_RegisterCFinalizer(rres, (R_CFinalizer_t)R_PyObject_decref);
   RPY_SEXP(self) = rres;
 
 #ifdef RPY_VERBOSE
