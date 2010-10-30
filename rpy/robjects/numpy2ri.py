@@ -1,5 +1,6 @@
 import rpy2.robjects as ro
 import rpy2.robjects.conversion as conversion
+import rpy2.rinterface as rinterface
 from rpy2.rinterface import SexpVector, INTSXP
 import numpy
 
