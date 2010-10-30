@@ -46,9 +46,9 @@ PyDoc_STRVAR(ExtPtrSexp_Type_doc,
 	     " a pointer to a data structure implemented at the C level.\n"
 	     "SexpExtPtr(extref, tag = None, protected = None)");
 
-PyDoc_STRVAR(ExtPtrSexp___init___doc,
-	     "Construct an external pointer. "
-	     );
+/* PyDoc_STRVAR(ExtPtrSexp___init___doc, */
+/* 	     "Construct an external pointer. " */
+/* 	     ); */
 
 static int
 ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)

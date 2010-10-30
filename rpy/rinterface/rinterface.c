@@ -205,6 +205,10 @@ static PyTypeObject NACharacter_Type;
 /* early definition of functions */
 static SEXP newSEXP(PyObject *object, const int rType);
 
+/* type tag for Python external methods */
+static PySexpObject *R_PyObject_type_tag;
+static void RegisterExternalSymbols(void);
+
 /* --- set output from the R console ---*/
 
 static inline PyObject* EmbeddedR_setAnyCallback(PyObject *self,
@@ -1122,6 +1126,17 @@ static PyObject* EmbeddedR_init(PyObject *self)
 #else
   PyObject *res = PyLong_FromLong(status);
 #endif
+
+  /* type tag for Python external methods */
+  SEXP type_tag;
+  PROTECT(type_tag = allocVector(STRSXP, 1));
+  SET_STRING_ELT(type_tag, 0, mkChar("Python"));
+  UNPROTECT(1);
+  R_PreserveObject(type_tag);
+  RPY_SEXP(R_PyObject_type_tag) = type_tag;
+
+  /* register the symbols */
+  RegisterExternalSymbols();
 
 #ifdef RPY_VERBOSE
   printf("R initialized - status: %i\n", status);
@@ -2872,9 +2887,6 @@ static PyMethodDef EmbeddedR_methods[] = {
 
 /* R representation of a PyObject */
 
-static SEXP R_PyObject_type_tag;
-
-
 static SEXP
 mkPyObject(PyObject* pyo)
 {
@@ -2886,26 +2898,22 @@ mkPyObject(PyObject* pyo)
 }
 
 #define R_PyObject_TYPE_CHECK(s)                                        \
-  (TYPEOF(s) == EXTPTRSXP && R_ExternalPtrTag(s) == R_PyObject_type_tag)
+  (TYPEOF(s) == EXTPTRSXP && R_ExternalPtrTag(s) == RPY_SEXP(R_PyObject_type_tag))
 
 static SEXP
 do_Python(SEXP args)
 {
-  SEXP sexp = CADR(args);
+  args = CDR(args);
+  SEXP sexp = CAR(args);
   SEXP res;
+  int protect_count;
+
   if (!R_PyObject_TYPE_CHECK(sexp)) {
-    error(".Python: invalid python type");
-    return R_NilValue;
-  }
-  /* PyTypeObject* type = R_ExternalPtrAddr(sexp); */
-  args = CDDR(args);
-  sexp = CAR(args);
-  if (!R_PyObject_TYPE_CHECK(sexp)) {
-    error(".Python: invalid function");
+    error(".Python: The first argument must be an external pointer tagged as of Python type.");
     return R_NilValue;
   }
   PyObject *pyf = R_ExternalPtrAddr(sexp);
-  
+
   /* create argument list */
   PyObject *pyargs = PyList_New(0);
   PyObject *pyres;
@@ -2948,17 +2956,25 @@ do_Python(SEXP args)
     res = RPY_SEXP((PySexpObject*)pyres);
   }
   else {
-    res = mkPyObject(pyres);
+    protect_count = 0;
+    RPY_PYSCALAR_RVECTOR(pyres, res);
+    if (res == NULL) {
+      res = mkPyObject(pyres);
+    }
+    UNPROTECT(protect_count);
   }
   Py_DECREF(pyres);
   
   return res;
 }
 
-static R_ExternalMethodDef externalMethods[] = { 
-        {".Python", (DL_FUNC)&do_Python, -1},
-        {NULL, NULL, 0} 
-};
+static void RegisterExternalSymbols() {
+  R_ExternalMethodDef externalMethods[] = { 
+    {".Python", (DL_FUNC)&do_Python, -1},
+    {NULL, NULL, 0} 
+  };
+  R_registerRoutines(R_getEmbeddingDllInfo(), NULL, NULL, NULL, externalMethods);
+}
 
 
 
@@ -3213,6 +3229,16 @@ PyInit_rinterface(void)
     return;
   }
   Py_DECREF(rpy_R_NilValue);  
+
+  R_PyObject_type_tag = (PySexpObject*)Sexp_new(&VectorSexp_Type,
+						Py_None, Py_None);
+  if (PyDict_SetItemString(d, "python_type_tag", 
+                           (PyObject *)R_PyObject_type_tag) < 0)
+  {
+    Py_DECREF(R_PyObject_type_tag);
+    return;
+  }
+  Py_DECREF(R_PyObject_type_tag);
 
   rinterface_unserialize = PyDict_GetItemString(d, "unserialize");
   return m;
