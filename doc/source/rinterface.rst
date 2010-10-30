@@ -953,6 +953,52 @@ class :class:`Sexp` method
    :show-inheritance:
    :members:
 
+:class:`SexpExtPtr`
+-------------------
+
+External pointers are intended to facilitate the handling of C or C++ data structures
+from R. In few words they are pointers to structures *external* to R. They have
+been used to implement vectors and arrays in shared memory, or storage-based vectors
+and arrays.
+
+External pointers also do not obey the pass-by-value rule and can represent a way
+to implement pointers in R.
+
+
+Let us consider the following simple example:
+
+.. code-block:: python
+   
+   ep = rinterface.SexpExtPtr("hohoho")
+
+The Python string is now encapsulated into an R external pointer, and visible as such
+by the embedded R process.
+
+When thinking of sharing C-level structures between R and Python more involved examples
+can be considered (here still a simple example):
+
+.. code-block:: python
+
+   import ctypes
+   class Point2D(ctypes.Structure):
+       _fields_ = [("x", ctypes.c_int),
+                   ("y", ctypes.c_int)]
+
+   pt = Point2D()
+
+   ep = rinterface.SexpExtPtr(pt)
+
+
+However, this remains a rather academic exercise if missing a way to access the data from R;
+in other words there should be functions on the R side to access the data.
+
+Such functions can be provided by R packages defining external pointers and their companion
+functions and methods. In that case we have here a way to build such external pointers
+directly from Python.
+
+.. autoclass:: rpy2.rinterface.SexpExtPtr(obj)
+   :show-inheritance:
+   :members:
 
 Class diagram
 =============
