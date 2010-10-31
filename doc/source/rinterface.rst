@@ -243,6 +243,71 @@ to a variable *mine* in the R globalenv namespace:
 The *named* is 2 to indicate that *mine* should be copied if a modication
 of any sort is performed on the object.
 
+Evaluating R code
+-----------------
+
+The R C-level function for parsing an arbitrary string a R code is exposed
+as the function :func:`parse`
+
+>>> expression = ri.parse('1 + 2')
+
+The resulting expression must be evaluated if the results from its execution
+are wanted.
+
+.. autofunction:: parse()
+
+
+Calling Python functions from R
+-------------------------------
+
+As could be expected from R's functional roots,
+functions are first-class objects.
+This means that the use of higher-order functions is not seldom,
+and this also means that the Python programmer has to either
+be able write R code for functions as arguments, or have a way
+to pass Python functions to R as genuine R functions. 
+That last options is becoming possible, in other words one can
+write a Python function and expose it to R in such a way that
+the embedded R engine can use as a regular R function.
+
+As an example, let's consider the R function 
+*optim()* that looks for optimal parameters for a given cost function.
+The cost function should be passed in the call to *optim()* as it will be
+repeatedly called as the parameter space is explored, and only Python
+coding skills are necessary as the code below demonstrates it.
+
+.. code-block:: python
+
+   from rpy2.robjects.vectors import FloatVector
+   from rpy2.robjects.packages import importr
+   import rpy2.rinterface as ri
+   stats = importr('stats')
+   
+   # Rosenbrock Banana function as a cost function
+   # (as in the R man page for optim())
+   def cost_f(x):
+       x1 = x[0]
+       x2 = x[1]
+       return 100 * (x2 - x1 * x1)**2 + (1 - x1)**2
+
+   # wrap the function f so it can be exposed to R
+   cost_fr = ri.rternalize(cost_f)
+
+   # starting parameters
+   start_params = FloatVector((-1.2, 1))
+
+   # call R's optim()
+   res = stats.optim(start_params, cost_fr)
+
+For convenience, the code examples uses the higher-level interface
+robjects whenever possible.
+
+The lower-level function :func:`rternalize` will take an arbitray
+Python function and return an :class:`rinterface.SexpClosure` instance,
+that is a object that can be used by R as a function.
+
+
+.. autofunction:: rternalize()
 
 Interactive features
 ====================
@@ -348,7 +413,7 @@ The class :class:`Sexp` is the base class for all R objects.
    .. method:: __deepcopy__(self)
 
       Make a *deep* copy of the object, calling the R-API C function
-      :cfunc:`Rf_duplicate()` for copying the R object wrapped.
+      c:function::`Rf_duplicate()` for copying the R object wrapped.
 
       .. versionadded:: 2.0.3
 
