@@ -73,9 +73,10 @@ sexp_strides(SEXP sexp, Py_intptr_t *strides, Py_ssize_t itemsize,
    * each dimension.
    */
   int i;
+  Py_intptr_t cumul_strides = 1;
   strides[0] = itemsize;
   for (i = 1; i < nd; i++) {
-    strides[i] = shape[i-1] * itemsize;
+    strides[i] = shape[i-1] * strides[i-1];
   }
 }
 
