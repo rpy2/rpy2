@@ -29,7 +29,6 @@ New Features
 
 - new class :class:`SexpExtPtr` to represent R objects of type EXTPTR (external pointers).
 
-
 :mod:`rpy2.rlike`:
 
 - :class:`container.OrdDict` get proper methods :meth:`keys` and `get`
@@ -51,6 +50,9 @@ Bugs fixed
 
 - Better and more explicit detection system for needed libraries when
   compiling rpy2 (ported to release 2.1.6)
+
+- Fixed issue with R arrays with more than 2 dimensions and numpy arrays
+  (issue #47).
 
 
 Release 2.1.6

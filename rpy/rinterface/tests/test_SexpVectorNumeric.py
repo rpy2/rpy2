@@ -77,6 +77,17 @@ class SexpVectorNumericTestCase(unittest.TestCase):
     def testArrayStructNumpyBoolean(self):
         testArrayStructBoolean(self, numpy)
 
+    def testArrayShapeLen3(self):
+        extract = rinterface.baseenv['[']
+        rarray = rinterface.baseenv['array'](rinterface.IntSexpVector(range(30)),
+                                             dim = rinterface.IntSexpVector([5,2,3]))
+        npyarray = numpy.array(rarray)
+        for i in range(5):
+            for j in range(2):
+                for k in range(3):
+                    self.assertEquals(extract(rarray, i+1, j+1, k+1)[0], 
+                                      npyarray[i, j, k])
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpVectorNumericTestCase)
     return suite
