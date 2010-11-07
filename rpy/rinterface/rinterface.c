@@ -1006,7 +1006,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   }
 
   const Py_ssize_t n_args = PySequence_Size(initOptions);
-  const char *options[n_args];
+  char *options[n_args];
 
   PyObject *opt_string;
   Py_ssize_t ii;
@@ -1376,7 +1376,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
   }
   embeddedR_setlock();
     
-  SEXP call_R, c_R, res_R;
+ SEXP call_R, c_R, res_R;
   int nparams;
   SEXP tmp_R, fun_R;
   int protect_count = 0;
@@ -2892,7 +2892,7 @@ mkPyObject(PyObject* pyo)
 {
   SEXP res;
   Py_INCREF(pyo);
-  res = R_MakeExternalPtr(pyo, R_PyObject_type_tag, R_NilValue);
+  res = R_MakeExternalPtr(pyo, RPY_SEXP(R_PyObject_type_tag), R_NilValue);
   R_RegisterCFinalizer(res, (R_CFinalizer_t)R_PyObject_decref);
   return res;
 }
