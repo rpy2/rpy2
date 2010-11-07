@@ -251,8 +251,13 @@ as the function :func:`parse`
 
 >>> expression = ri.parse('1 + 2')
 
-The resulting expression must be evaluated if the results from its execution
-are wanted.
+The resulting expression is a vector, possibly a nested vector, of R statements.
+
+.. note ::
+
+   The expression must be evaluated if the results from its execution
+   are wanted.
+
 
 .. autofunction:: parse()
 

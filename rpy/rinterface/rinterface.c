@@ -1249,6 +1249,12 @@ EmbeddedR_parse(PyObject *self, PyObject *pystring)
   PySexpObject *cmdpy;
   ParseStatus status;
 
+  if (! (rpy_has_status(RPY_R_INITIALIZED))) {
+    PyErr_Format(PyExc_RuntimeError, 
+                 "R must be initialized before any call to R functions is possible.");
+    return NULL;
+  }
+
 #if (PY_VERSION_HEX < 0x03010000)
   if (! PyString_Check(pystring)) {
     PyErr_Format(PyExc_ValueError, "The object to parse must be a string.");
@@ -1263,17 +1269,21 @@ EmbeddedR_parse(PyObject *self, PyObject *pystring)
   char *string = PyBytes_AsString(pystring);
 #endif
 
+  embeddedR_setlock();
+
   PROTECT(cmdSexp = allocVector(STRSXP, 1));
   SET_STRING_ELT(cmdSexp, 0, mkChar(string));
   cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
   if (status != PARSE_OK) {
     UNPROTECT(2);
+    embeddedR_freelock();
     PyErr_Format(PyExc_ValueError, "Error while parsing the string.");
     /*FIXME: Fetch parsing error details*/
     return NULL;
   }
   cmdpy = newPySexpObject(cmdexpr, 1);
   UNPROTECT(2);
+  embeddedR_freelock();
   return cmdpy;
 }
 
