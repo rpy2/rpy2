@@ -51,8 +51,24 @@ Bugs fixed
 - Better and more explicit detection system for needed libraries when
   compiling rpy2 (ported to release 2.1.6)
 
+
+Release 2.1.8
+=============
+
+Bugs fixed
+----------
+
 - Fixed issue with R arrays with more than 2 dimensions and numpy arrays
-  (issue #47).
+  (issue #47 - backported from the branch 2.2.x).
+
+
+Release 2.1.7
+=============
+
+Bugs fixed
+----------
+
+- More fixes for the automated detection of include and libraries at build time.
 
 
 Release 2.1.6
