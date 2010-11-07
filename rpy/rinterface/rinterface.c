@@ -1170,7 +1170,7 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   /* */
 
   Rf_endEmbeddedR((int)fatal);
-  char str[32];
+  
   embeddedR_status = embeddedR_status & (! RPY_R_INITIALIZED);
 
   RPY_SEXP(globalEnv) = R_EmptyEnv;
