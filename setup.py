@@ -288,7 +288,9 @@ class RConfig(object):
                       library_dirs = self._library_dirs + \
                           config._library_dirs,
                       extra_link_args = self._extra_link_args + \
-                          config._extra_link_args)
+                          config._extra_link_args,
+                      frameworks = self._frameworks + config._frameworks,
+                      framework_dirs = self._framework_dirs + config._framework_dirs)
         return res
 
 
