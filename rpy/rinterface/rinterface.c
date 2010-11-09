@@ -102,6 +102,7 @@ static PyObject* EmbeddedR_unserialize(PyObject* self, PyObject* args);
 static PySexpObject* newPySexpObject(const SEXP sexp, const int preserve);
 
 #include "embeddedr.c"
+#include "null_value.c"
 #include "na_values.c"
 #include "sexp.c"
 #include "r_utils.c"
@@ -1117,6 +1118,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
   RPY_SEXP(emptyEnv) = R_EmptyEnv;
   RPY_SEXP((PySexpObject *)MissingArg_Type_New(0)) = R_MissingArg;
+  RPY_SEXP((PySexpObject *)RNULL_Type_New(0)) = R_NilValue;
   RPY_SEXP(rpy_R_NilValue) = R_NilValue;
 
   errMessage_SEXP = findVar(install("geterrmessage"), 
@@ -2474,7 +2476,8 @@ static PySexpObject*
   else {
     sexp_ok = sexp;
   }
-  if (sexp_ok && preserve) {
+  /*FIXME: recode to have the test for NILSXP in a cleaner workflow */
+  if (sexp_ok && preserve && TYPEOF(sexp_ok) != NILSXP) {
     R_PreserveObject(sexp_ok);
 #ifdef RPY_DEBUG_PRESERVE
     preserved_robjects += 1;
@@ -2484,6 +2487,9 @@ static PySexpObject*
   }
 
   switch (TYPEOF(sexp_ok)) {
+  case NILSXP:
+    object = RNULL_Type_New(1);
+    break;
   case CLOSXP:
   case BUILTINSXP:
   case SPECIALSXP:
@@ -3185,6 +3191,13 @@ PyInit_rinterface(void)
     return;
   PyModule_AddObject(m, "MissingArgType", (PyObject *)&MissingArg_Type);
   PyModule_AddObject(m, "MissingArg", MissingArg_Type_New(1));
+
+  /* NULL */
+  if (PyType_Ready(&RNULL_Type) < 0)
+    return;
+  PyModule_AddObject(m, "RNULLType", (PyObject *)&RNULL_Type);
+  PyModule_AddObject(m, "RNULLArg", RNULL_Type_New(1));
+
 
   if (RPyExc_RuntimeError == NULL) {
     RPyExc_RuntimeError = PyErr_NewException("rpy2.rinterface.RRuntimeError", 

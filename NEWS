@@ -25,9 +25,16 @@ New Features
 
 :mod:`rpy2.rinterface`:
 
-- NA_Complex and :class:`NAComplexType` for missing complex values.
+- :data:`NA_Complex` and :class:`NAComplexType` for missing complex values.
 
-- new class :class:`SexpExtPtr` to represent R objects of type EXTPTR (external pointers).
+- :class:`SexpExtPtr` to represent R objects of type EXTPTR (external pointers).
+
+- :func:`rpy2.rinterface.parse` to parse a string a R code
+
+- :func:`rpy2.rinterface.rternalise` to wrap Python function as :class:`SexpClosure` that can
+  be called by R just as it was a function of its own.
+
+- :class:`rpy2.rinterface.NULL` for the R NULL value (singleton)
 
 :mod:`rpy2.rlike`:
 

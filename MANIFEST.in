@@ -24,6 +24,9 @@ include rpy/rinterface/sequence.h
 include rpy/rinterface/na_values.c
 include rpy/rinterface/na_values.h
 
+include rpy/rinterface/null_value.c
+include rpy/rinterface/null_value.h
+
 include rpy/rinterface/embeddedr.c
 include rpy/rinterface/embeddedr.h
 
