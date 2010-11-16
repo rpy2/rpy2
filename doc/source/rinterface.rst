@@ -243,20 +243,38 @@ to a variable *mine* in the R globalenv namespace:
 The *named* is 2 to indicate that *mine* should be copied if a modication
 of any sort is performed on the object.
 
-Evaluating R code
------------------
+Parsing and evaluating R code
+-----------------------------
 
 The R C-level function for parsing an arbitrary string a R code is exposed
 as the function :func:`parse`
 
 >>> expression = ri.parse('1 + 2')
 
-The resulting expression is a vector, possibly a nested vector, of R statements.
+The resulting expression is a nested list of R statements.
+
+>>> len(expression)
+1
+>>> len(expression[0])
+3
+
+The R code *1 + 2* translates to an expression of length 3:
+*+(1, 2)*, that is a call to the function *+* (or rather the symbol associated
+with the function) with the arguments *1* and *2*. 
+ 
+>>> ri.str_typeint(expression[0][0].typeof)
+'SYMSXP'
+>>> tuple(expression[0][1])
+(1.0,)
+>>> tuple(expression[0][2])
+(2.0,)
+
+
 
 .. note ::
 
-   The expression must be evaluated if the results from its execution
-   are wanted.
+   The expression must be evaluated if the result from its execution
+   is wanted.
 
 
 .. autofunction:: parse()
@@ -632,6 +650,27 @@ peculiar and cannot be retrieved with :meth:`SexpEnvironment.get`.
 Those missing values can also be used with the :mod:`rpy2.robjects` layer
 and more documentation about their usage can be found there
 (see :ref:`robjects-missingvalues`).
+
+.. autoclass:: rpy2.rinterface.NAIntegerType()
+   :show-inheritance:
+   :members:
+
+.. autoclass:: rpy2.rinterface.NARealType()
+   :show-inheritance:
+   :members:
+
+.. autoclass:: rpy2.rinterface.NALogicalType()
+   :show-inheritance:
+   :members:
+
+.. autoclass:: rpy2.rinterface.NACharacterType()
+   :show-inheritance:
+   :members:
+
+.. autoclass:: rpy2.rinterface.NAComplexType()
+   :show-inheritance:
+   :members:
+
 
 .. rubric:: Constructors
 
@@ -1059,12 +1098,19 @@ can be considered (here still a simple example):
    ep = rinterface.SexpExtPtr(pt)
 
 
-However, this remains a rather academic exercise if missing a way to access the data from R;
-in other words there should be functions on the R side to access the data.
+However, this remains a rather academic exercise unless there exists a way to access the
+data from R; when used in R packages, external pointers have companion functions to
+manipulate the C-level data structures.
 
-Such functions can be provided by R packages defining external pointers and their companion
-functions and methods. In that case we have here a way to build such external pointers
-directly from Python.
+In the case of external pointers and their companion functions and methods
+defined by R packages, the rpy2 interface lets a programmer create such external pointers
+directly from Python, using :mod:`ctypes` for example.
+
+However, the rpy2 interface allows more than that since a programmer is able to make
+a Python function accessible to R has is was a function of its own. It is possible
+to define arbitrary Python data structures as well as functions or methods to operate
+on them, pass the data structure to R as an external pointer, and expose the functions
+and methods to R. 
 
 .. autoclass:: rpy2.rinterface.SexpExtPtr(obj)
    :show-inheritance:
