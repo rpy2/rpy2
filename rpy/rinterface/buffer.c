@@ -109,7 +109,7 @@ VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
     view->buf = NUMERIC_POINTER(sexp);
     view->len = GET_LENGTH(sexp) * sizeof(double);
     view->itemsize = sizeof(double);
-    view->format = "f";
+    view->format = "d";
     break;
   case INTSXP:
     view->buf = INTEGER_POINTER(sexp);
