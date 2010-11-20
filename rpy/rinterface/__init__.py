@@ -78,16 +78,9 @@ class StrSexpVector(SexpVector):
     """ 
     Vector of strings.
     """
+
     def __init__(self, v):
         super(StrSexpVector, self).__init__(v, STRSXP)
-
-
-class IntSexpVector(SexpVector):
-    """ 
-    Vector of integers.
-    """
-    def __init__(self, v):        
-        super(IntSexpVector, self).__init__(v, INTSXP)
 
 
 class FloatSexpVector(SexpVector):

@@ -52,6 +52,11 @@ Changes
 
 - :class:`rpy2.robjects.packages.Package` now inherits from :class:`types.ModuleType`
 
+:mod:`rpy2.rinterface`:
+
+- class:`IntSexpVector` is now defined at the C level, improving performances
+  and memory footprint whenever a large number of instances are created.
+
 Bugs fixed
 ----------
 
