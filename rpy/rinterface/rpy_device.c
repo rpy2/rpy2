@@ -452,7 +452,8 @@ static PyObject* GrDev_polygon(PyObject *self, PyObject *args)
 }
 
 static PyObject* GrDev_locator_name;
-static Rboolean rpy_Locator(double *x, double *y, pDevDesc dd)
+static Rboolean rpy_Locator(double *x, double *y, 
+			    const pGEcontext gc, pDevDesc dd)
 {
   PyObject *result;
 
@@ -1424,7 +1425,7 @@ PyInit_rpy_device(void)
   GrDev_getevent_name = PyUnicode_FromString("getevent");
 #endif
   if (PyType_Ready(&GrDev_Type) < 0)
-    return NULL;
+    return;
   
   PyObject *m, *d;
 #if (PY_VERSION_HEX < 0x03010000)
@@ -1433,7 +1434,7 @@ PyInit_rpy_device(void)
   m = PyModule_Create(&rpydevicemodule);
 #endif
   if (m == NULL)
-    return NULL;
+    return;
   d = PyModule_GetDict(m);
 #if (PY_VERSION_HEX < 0x03010000)
   PyModule_AddObject(m, "GraphicalDevice", (PyObject *)&GrDev_Type);  
