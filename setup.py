@@ -411,6 +411,8 @@ if __name__ == '__main__':
                     pack_name + '.robjects',
                     pack_name + '.robjects.tests',
                     pack_name + '.robjects.lib',
+                    pack_name + '.interactive',
+                    pack_name + '.interactive.tests'
                     ],
         classifiers = ['Programming Language :: Python',
                        'Programming Language :: Python :: 3',

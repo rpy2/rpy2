@@ -40,6 +40,11 @@ New Features
 
 - :class:`container.OrdDict` get proper methods :meth:`keys` and `get`
 
+:mod:`rpy2.interactive`:
+
+- A new sub-package to provide utilities for interactive work, either for
+  handling R interactive events or use Python for interactive programming
+  (as often done with the R console)
 
 Changes
 -------
