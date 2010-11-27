@@ -64,6 +64,18 @@ Bugs fixed
   compiling rpy2 (ported to release 2.1.6)
 
 
+Release 2.1.9
+=============
+
+Bugs fixed
+----------
+
+- The R class in rpy2.robjects is now truly a singleton
+
+- When using numpy 1.5 and Python >= 2.7, the exposed buffer for R numerical (double)
+  vectors or arrays was wrong.
+
+
 Release 2.1.8
 =============
 
