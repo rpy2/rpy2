@@ -79,6 +79,9 @@ class Package(ModuleType):
             self.__dict__[rpyname] = rpyobj
 
 
+    def __repr__(self):
+        s = super(Package, self).__repr__()
+        return 'rpy2.robjecs.packages.Package as a ' + s
 
 class SignatureTranslatedPackage(Package):
     def __fill_rpy2r__(self):
