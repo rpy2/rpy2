@@ -180,13 +180,11 @@ class Formula(RObjectMixin, rinterface.Sexp):
 class R(object):
     _instance = None
 
-    def __init__(self):
-        if R._instance is None:
+    def __new__(cls):
+        if cls._instance is None:
             rinterface.initr()
-            R._instance = self
-        else:
-            pass
-            #raise(RuntimeError("Only one instance of R can be created"))
+            cls._instance = object.__new__(cls)
+        return cls._instance
         
     def __getattribute__(self, attr):
         try:
