@@ -122,7 +122,7 @@ static void rpy_Size(double *left, double *right,
     *bottom = PyFloat_AsDouble(PyTuple_GetItem(result, 2));
     *top = PyFloat_AsDouble(PyTuple_GetItem(result, 3));
   }
-
+  Py_DECREF(lrbt);
   Py_XDECREF(result);  
 }
 
@@ -188,6 +188,10 @@ static void rpy_Clip(double x0, double x1, double y0, double y1, pDevDesc dd)
                                       NULL);
 
   rpy_printandclear_error();
+  Py_DECREF(py_x0);
+  Py_DECREF(py_x1);
+  Py_DECREF(py_y0);
+  Py_DECREF(py_y1);
   Py_XDECREF(result);
 }
 
@@ -216,11 +220,18 @@ static double rpy_StrWidth(const char *str, const pGEcontext gc, pDevDesc dd)
 #else
   PyObject *py_str = PyUnicode_FromString(str);
 #endif
-  result = PyObject_CallMethodObjArgs(self, GrDev_strwidth_name, py_str);
+  result = PyObject_CallMethodObjArgs(self, GrDev_strwidth_name, py_str, NULL);
 
+  rpy_printandclear_error();
+  /*FIXME: only one of the two error should be printed. */
+  if (!PyFloat_Check(result)) {
+    PyErr_SetString(PyExc_TypeError,
+		    "The value returned by strwidth must be a float");
+  }
   rpy_printandclear_error();
 
   double r_res = PyFloat_AsDouble(result);
+  Py_DECREF(py_str);
   Py_DECREF(result);  
 
   return r_res;
@@ -263,8 +274,12 @@ static void rpy_Text(double x, double y, const char *str,
                                       NULL);
 
   rpy_printandclear_error();
-
-  Py_DECREF(result);  
+  Py_DECREF(py_x);
+  Py_DECREF(py_y);
+  Py_DECREF(py_str);
+  Py_DECREF(py_rot);
+  Py_DECREF(py_hadj);
+  Py_XDECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_text_doc,
@@ -299,8 +314,11 @@ static void rpy_Rect(double x0, double x1, double y0, double y1,
                                       NULL);
 
   rpy_printandclear_error();
-
-  Py_DECREF(result);  
+  Py_DECREF(py_x0);
+  Py_DECREF(py_x1);
+  Py_DECREF(py_y0);
+  Py_DECREF(py_y1);
+  Py_XDECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_rect_doc,
@@ -333,7 +351,10 @@ static void rpy_Circle(double x, double y, double r,
                                       NULL);
 
   rpy_printandclear_error();
-  Py_DECREF(result);  
+  Py_DECREF(py_x);
+  Py_DECREF(py_y);
+  Py_DECREF(py_r);
+  Py_XDECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_circle_doc,
@@ -368,6 +389,10 @@ static void rpy_Line(double x1, double y1,
                                       NULL);
 
   rpy_printandclear_error();
+  Py_DECREF(py_x1);
+  Py_DECREF(py_y1);
+  Py_DECREF(py_x2);
+  Py_DECREF(py_y2);
   Py_DECREF(result);  
 }
 
@@ -405,6 +430,8 @@ static void rpy_PolyLine(int n, double *x, double *y,
                                       NULL);
 
   rpy_printandclear_error();
+  Py_DECREF(py_x);
+  Py_DECREF(py_y);
   Py_DECREF(result);  
 }
 
@@ -432,13 +459,23 @@ static void rpy_Polygon(int n, double *x, double *y,
 #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: Polygon.\n");
 #endif
-  PyObject *py_x = PyFloat_FromDouble(*x);
-  PyObject *py_y = PyFloat_FromDouble(*y);
+  PyObject *py_n = PyLong_FromLong(n);
+  /* FIXME: optimize by moving py_x and py_y to Python buffers */
+  PyObject *py_x = PyTuple_New((Py_ssize_t)n);
+  PyObject *py_y = PyTuple_New((Py_ssize_t)n);
+  int i;
+  for (i = 0; i < n; i++) {
+    PyTuple_SET_ITEM(py_x, (Py_ssize_t)i, PyFloat_FromDouble(x[i]));
+    PyTuple_SET_ITEM(py_y, (Py_ssize_t)i, PyFloat_FromDouble(y[i]));
+  }
   /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_polygon_name, 
-                                      py_x, py_y,
+                                      py_n, py_x, py_y,
                                       NULL);
   rpy_printandclear_error();
+  Py_DECREF(py_x);
+  Py_DECREF(py_y);
+  Py_DECREF(py_n);
   Py_DECREF(result);  
 }
 
@@ -465,12 +502,13 @@ static Rboolean rpy_Locator(double *x, double *y, pDevDesc dd)
 #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: Locator.\n");
 #endif
-  PyObject *py_x = PyFloat_FromDouble(*x);
-  PyObject *py_y = PyFloat_FromDouble(*y);
+  //PyObject *py_x = PyList_New(0);
+  //PyObject *py_y = PyList_New(0);
+
   /* FIXME: pass gc ? */
   /* FIXME: test !dd->dev->locator before proceed ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_locator_name, 
-                                      py_x, py_y,
+                                      //py_x, py_y,
                                       NULL);
 
   rpy_printandclear_error();
@@ -482,12 +520,19 @@ static Rboolean rpy_Locator(double *x, double *y, pDevDesc dd)
     PyErr_Format(PyExc_ValueError, "Callback 'size' should return a tuple of length 2.");
     rpy_printandclear_error();    
   } else {
-    *x = PyFloat_AsDouble(PyTuple_GetItem(result, 0));
-    *y = PyFloat_AsDouble(PyTuple_GetItem(result, 1));
+    x[0] = PyFloat_AsDouble(PyTuple_GET_ITEM(result, 0));
+    y[0] = PyFloat_AsDouble(PyTuple_GET_ITEM(result, 1));
+    //int i;
+      //for (i = 0; i < n; i++) {
+      //x[i] = PyFloat_AsDouble(PyList_GET_ITEM(py_x, (Py_ssize_t)i));
+      //y[i] = PyFloat_AsDouble(PyList_GET_ITEM(py_y, (Py_ssize_t)i));
+      //}
   }
 
   Rboolean res_r = TRUE;
   printf("FIXME: return TRUE or FALSE");
+  //Py_DECREF(py_x);
+  //Py_DECREF(py_y);
   Py_DECREF(result);
   return res_r;
 }
@@ -520,6 +565,7 @@ static void rpy_Mode(int mode, pDevDesc dd)
                                       py_mode,
                                       NULL);
   rpy_printandclear_error();
+  Py_DECREF(py_mode);
   Py_DECREF(result);  
 }
 
@@ -553,13 +599,13 @@ static void rpy_MetricInfo(int c, const pGEcontext gc,
 #else
   PyObject *py_c = PyLong_FromLong((long)c);
 #endif
-  PyObject *py_ascent = PyFloat_FromDouble(*ascent);
-  PyObject *py_descent = PyFloat_FromDouble(*descent);
-  PyObject *py_width = PyFloat_FromDouble(*width);
+  //PyObject *py_ascent = PyFloat_FromDouble(*ascent);
+  //PyObject *py_descent = PyFloat_FromDouble(*descent);
+  //PyObject *py_width = PyFloat_FromDouble(*width);
   /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_metricinfo_name, 
                                       py_c,
-                                      py_ascent, py_descent, py_width,
+                                      //py_ascent, py_descent, py_width,
                                       NULL);
 
   rpy_printandclear_error();
@@ -576,6 +622,10 @@ static void rpy_MetricInfo(int c, const pGEcontext gc,
     *descent = PyFloat_AsDouble(PyTuple_GetItem(result, 1));
     *width = PyFloat_AsDouble(PyTuple_GetItem(result, 2));
   }
+  Py_DECREF(py_c);
+  //Py_DECREF(py_ascent);
+  //Py_DECREF(py_descent);
+  //Py_DECREF(py_width);
   Py_DECREF(result);
 
 }
@@ -623,6 +673,7 @@ static SEXP rpy_GetEvent(SEXP rho, const char *prompt)
   /* FIXME: handle refcount and protection of the resulting r_res */
   printf("FIXME: handle refcount and protection of the resulting r_res");
   Py_DECREF(result);
+  Py_DECREF(py_prompt);
   return r_res;
 }
 
@@ -1309,7 +1360,7 @@ static PyTypeObject GrDev_Type = {
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
 #else
-	PyVarObject_HEAD_INIT(NULL, 0)
+	PyVarObject_HEAD_INIT(NULL, 0),
 #endif
         "rpy2.rinterface.GraphicalDevice",   /*tp_name*/
         sizeof(PyGrDevObject),  /*tp_basicsize*/
@@ -1355,6 +1406,14 @@ static PyTypeObject GrDev_Type = {
         GrDev_new,               /*tp_new*/
         0,                      /*tp_free*/
         0,                      /*tp_is_gc*/
+#if (PY_VERSION_HEX < 0x03010000)
+#else
+	0,                      /*tp_bases*/
+	0,                      /*tp_mro*/
+	0,                      /*tp_cache*/
+	0,                      /*tp_subclasses*/
+	0                       /*tp_weaklist*/
+#endif
 };
 
 /* Additional methods for RpyDevice */
@@ -1424,7 +1483,7 @@ PyInit_rpy_device(void)
   GrDev_getevent_name = PyUnicode_FromString("getevent");
 #endif
   if (PyType_Ready(&GrDev_Type) < 0)
-    return NULL;
+    return;
   
   PyObject *m, *d;
 #if (PY_VERSION_HEX < 0x03010000)
@@ -1433,7 +1492,7 @@ PyInit_rpy_device(void)
   m = PyModule_Create(&rpydevicemodule);
 #endif
   if (m == NULL)
-    return NULL;
+    return;
   d = PyModule_GetDict(m);
 #if (PY_VERSION_HEX < 0x03010000)
   PyModule_AddObject(m, "GraphicalDevice", (PyObject *)&GrDev_Type);  

@@ -40,6 +40,11 @@ New Features
 
 - :class:`container.OrdDict` get proper methods :meth:`keys` and `get`
 
+:mod:`rpy2.interactive`:
+
+- A new sub-package to provide utilities for interactive work, either for
+  handling R interactive events or use Python for interactive programming
+  (as often done with the R console)
 
 Changes
 -------
@@ -62,6 +67,18 @@ Bugs fixed
 
 - Better and more explicit detection system for needed libraries when
   compiling rpy2 (ported to release 2.1.6)
+
+
+Release 2.1.9
+=============
+
+Bugs fixed
+----------
+
+- The R class in rpy2.robjects is now truly a singleton
+
+- When using numpy 1.5 and Python >= 2.7, the exposed buffer for R numerical (double)
+  vectors or arrays was wrong.
 
 
 Release 2.1.8
