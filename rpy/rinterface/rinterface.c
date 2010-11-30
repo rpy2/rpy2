@@ -1842,7 +1842,6 @@ static PyTypeObject VectorSexp_Type = {
         0,                      /*tp_free*/
         0                      /*tp_is_gc*/
 };
- 
 
 static int
 VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
@@ -1918,6 +1917,152 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
 #ifdef RPY_VERBOSE
   printf("done (VectorSexp_init).\n");
+#endif 
+
+  embeddedR_freelock();
+  return 0;
+}
+
+ 
+PyDoc_STRVAR(IntVectorSexp_Type_doc,
+             "R vector of integers (note: integers in R are C-int, not C-long)");
+
+static int
+IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
+
+static PyTypeObject IntVectorSexp_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+#if (PY_VERSION_HEX < 0x03010000)
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+#else
+	PyVarObject_HEAD_INIT(NULL, 0)
+#endif
+        "rpy2.rinterface.IntSexpVector",        /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        0,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                    /*tp_as_sequence*/
+#if (PY_VERSION_HEX < 0x03010000)
+        0,                      /*tp_as_mapping*/
+#else
+	0,
+#endif
+        0,                      /*tp_hash*/
+        0,              /*tp_call*/
+        0,              /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
+#else
+        0,                      /*tp_as_buffer*/
+        0,  /*tp_flags*/
+#endif
+        IntVectorSexp_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,            /*tp_getset*/
+        &VectorSexp_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        (initproc)IntVectorSexp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        0,               /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
+
+
+static int
+IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+#ifdef RPY_VERBOSE
+  printf("%p: IntVectorSexp initializing...\n", self);
+#endif 
+
+  if (! (rpy_has_status(RPY_R_INITIALIZED))) {
+    PyErr_Format(PyExc_RuntimeError, 
+                 "R must be initialized before any instance can be created.");
+    return -1;
+  }
+
+  PyObject *object;
+  PySexpObject *rpyobject;
+  int sexptype = INTSXP;
+  PyObject *copy = Py_False;
+  static char *kwlist[] = {"sexpvector", NULL};
+
+  /* FIXME: handle the copy argument */
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O", 
+                                    kwlist,
+                                    &object)) {
+    return -1;
+  }
+
+  if (rpy_has_status(RPY_R_BUSY)) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return -1;
+  }
+  embeddedR_setlock();
+
+  if (PyObject_IsInstance(object, 
+                          (PyObject*)&VectorSexp_Type)) {
+    /* Check that the type is the same 
+       FIXME: allow type conversion ?
+    */
+    rpyobject = (PySexpObject *)object;
+    if (sexptype != TYPEOF(RPY_SEXP(rpyobject))) {
+      PyErr_Format(PyExc_ValueError, "Invalid SEXP type '%i' (should be %i).", 
+		   TYPEOF(RPY_SEXP(rpyobject)), sexptype);
+      embeddedR_freelock();
+      return -1;
+    }
+    /* call parent's constructor */
+    if (Sexp_init(self, args, NULL) == -1) {
+      /* PyErr_Format(PyExc_RuntimeError, "Error initializing instance."); */
+      embeddedR_freelock();
+      return -1;
+    }
+  } else if (PySequence_Check(object)) {
+    SEXP sexp = newSEXP(object, sexptype);
+    if (sexp == NULL) {
+      /* newSEXP returning NULL will also have raised an exception
+       * (not-so-clear design :/ )
+       */
+      embeddedR_freelock();
+      return -1;
+    }
+    RPY_SEXP((PySexpObject *)self) = sexp;
+    #ifdef RPY_DEBUG_OBJECTINIT
+    printf("  SEXP vector is %p.\n", RPY_SEXP((PySexpObject *)self));
+    #endif
+    /* SET_NAMED(RPY_SEXP((PySexpObject *)self), 2); */
+  } else {
+    PyErr_Format(PyExc_ValueError, "Invalid sexpvector.");
+    embeddedR_freelock();
+    return -1;
+  }
+
+#ifdef RPY_VERBOSE
+  printf("done (IntVectorSexp_init).\n");
 #endif 
 
   embeddedR_freelock();
@@ -3050,6 +3195,8 @@ PyInit_rinterface(void)
     return;
   if (PyType_Ready(&VectorSexp_Type) < 0)
     return;
+  if (PyType_Ready(&IntVectorSexp_Type) < 0)
+    return;
   if (PyType_Ready(&EnvironmentSexp_Type) < 0)
     return;
   if (PyType_Ready(&S4Sexp_Type) < 0)
@@ -3169,6 +3316,7 @@ PyInit_rinterface(void)
   PyModule_AddObject(m, "Sexp", (PyObject *)&Sexp_Type);
   PyModule_AddObject(m, "SexpClosure", (PyObject *)&ClosureSexp_Type);
   PyModule_AddObject(m, "SexpVector", (PyObject *)&VectorSexp_Type);
+  PyModule_AddObject(m, "IntSexpVector", (PyObject *)&IntVectorSexp_Type);
   PyModule_AddObject(m, "SexpEnvironment", (PyObject *)&EnvironmentSexp_Type);
   PyModule_AddObject(m, "SexpS4", (PyObject *)&S4Sexp_Type);
   PyModule_AddObject(m, "SexpLang", (PyObject *)&LangSexp_Type);
