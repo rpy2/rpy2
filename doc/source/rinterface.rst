@@ -290,7 +290,7 @@ is not seldom,
 and this also means that the Python programmer has to either
 be able write R code for functions as arguments, or have a way
 to pass Python functions to R as genuine R functions. 
-That last options is becoming possible, in other words one can
+That last option is becoming possible, in other words one can
 write a Python function and expose it to R in such a way that
 the embedded R engine can use as a regular R function.
 
