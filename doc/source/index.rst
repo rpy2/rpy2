@@ -40,6 +40,14 @@ Documentation for rpy2
       :maxdepth: 3
 
       high-level
+   
+   R is often used in a read-eval-print loop (REPL), where interactivity is important.
+   Utilities are available in a dedicated sub-package.
+
+   .. toctree::
+      :maxdepth: 3
+
+      interactive
 
    Users of the Python signature numerical package :mod:`numpy` can continue using
    the data structures they are familiar with, and share objects seamlessly with R.
@@ -85,6 +93,7 @@ Documentation for rpy2
 
       getting-started
       high-level
+      interactive
       numpy
       rinterface
       rlike
