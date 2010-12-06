@@ -285,11 +285,12 @@ Calling Python functions from R
 
 As could be expected from R's functional roots,
 functions are first-class objects.
-This means that the use of higher-order functions is not seldom,
+This means that the use of callback functions as passed as parameters
+is not seldom,
 and this also means that the Python programmer has to either
 be able write R code for functions as arguments, or have a way
 to pass Python functions to R as genuine R functions. 
-That last options is becoming possible, in other words one can
+That last option is becoming possible, in other words one can
 write a Python function and expose it to R in such a way that
 the embedded R engine can use as a regular R function.
 
@@ -319,7 +320,7 @@ coding skills are necessary as the code below demonstrates it.
    # starting parameters
    start_params = FloatVector((-1.2, 1))
 
-   # call R's optim()
+   # call R's optim() with our cost funtion
    res = stats.optim(start_params, cost_fr)
 
 For convenience, the code examples uses the higher-level interface
@@ -373,30 +374,21 @@ pending interactive events. This is done by the R console for example,
 but :mod:`rpy2` is designed as a library rather than a threaded R process
 running within Python (yet this can be done as shown below).
 
-The way to restore interactivity this is simply to call the function
+The way to restore interactivity is to simply call the function
 :func:`rinterface.process_revents` at regular intervals.
 
-This can be taken care of by an higher-level interface, or can
-be hacked quickly as::
+An higher-level interface is available, running the processing of
+R events in a thread.
 
-   import rpy2.rinterface as rinterface
-   import time
+.. code-block:: python
 
-   def r_refresh(interval = 0.03):
-       # Ctrl-C to interrupt
-       while True:
-           rinterface.process_revents()
-           time.sleep(interval)
+   import rpy2.rinteractive.process_revents as process_revents
 
-The module :mod:`threading` offers a trivial way to dispatch the work
-to a thread whenever a script is running::
-
-   import threading
+   process_revents.start()
    
-   t = threading.Timer(0.1, r_refresh)
-   t.start()
-
-By doing so, one makes R run an thread with the Python process.
+   # should you wish to stop processing the events
+   # (which is needed to exit Python)
+   process_revents.stop()
 
    
 .. autofunction:: process_revents()

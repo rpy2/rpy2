@@ -1,6 +1,7 @@
 import rpy2.robjects.methods
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
+import rpy2.rinterface as rinterface
 from rpy2.robjects.packages import importr
 import copy
 

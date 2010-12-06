@@ -371,32 +371,28 @@ to inheritance.
 Acknowledgements
 ================
 
-Acknowledgements go to (alphabetical order):
+Acknowledgements go to the following individuals or group of individuals
+for contributions, support, and early testing (by alphabetical order):
 
-
-Alexander Belopolsky.
-    His code contribution of an alternative RPy is acknowledged.
-    I have found great inspiration in reading that code.
-
+Alexander Belopolsky
+Brad Chapman
+Peter Cock
 Contributors
-    The help of people, donating time, ideas or software patches
-    is much appreciated.
-    Their names can be found in this documentation (mostly around the
-    section Changes).
-
+Dirk Eddelbuettel
+JRI author(s)
+Thomas Kluyver
+Walter Moreira 
+Numpy list responders
+Laurent Oget
+John Owens
+Nicolas Rapin
+R authors
+R-help list responders
 Grzegorz Slodkowicz
-    Google Summer of Code student, he has been working on Python3 compatibility
-    (and other nice features to be ported to the main code base in the future).
-
-JRI
-    The Java-R Interface, and its authors, as at several occasions
-    its code was the most practical source of documentation
-    regarding how to embed R.
-
 Nathaniel Smith
-    Great patches, challenging and pertinent comments.
-
-Walter Moreira, and Gregory Warnes
-    For the original RPy and its maintenance through the years.
+Gregory Warnes
 
 
+
+
+    
