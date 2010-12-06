@@ -104,18 +104,55 @@ RNULLType_str(PyObject *self)
 PyDoc_STRVAR(RNULLType_nonzero_doc,
              "Returns the boolean representation for the instance (False).");
 
-static PyObject*
+static int
 RNULLType_nonzero(PyObject *self)
 {
-  Py_INCREF(Py_False);
-  return Py_False;
+  return 0;
 }
 
-static PyMethodDef RNULLType_methods[] = {
-  {"__nonzero__", (PyCFunction)RNULLType_nonzero, METH_NOARGS,
-   RNULLType_nonzero_doc},
-  {NULL, NULL}          /* sentinel */
+
+static PyNumberMethods RNULLType_as_number = {
+  0,                       /* nb_add */
+  0,                       /* nb_subtract */
+  0,                       /* nb_multiply */
+  0,                       /* nb_divide */
+  0,                       /* nb_remainder */
+  0,                    /* nb_divmod */
+  0,                       /* nb_power */
+  (unaryfunc)0,            /* nb_negative */
+  (unaryfunc)0,            /* nb_positive */
+  (unaryfunc)0,            /* nb_absolute */
+  (inquiry)RNULLType_nonzero,          /* nb_nonzero */
+  (unaryfunc)0,         /* nb_invert */
+  0,                    /* nb_lshift */
+  0,                    /* nb_rshift */
+  0,                       /* nb_and */
+  0,                       /* nb_xor */
+  0,                        /* nb_or */
+  0,                    /* nb_coerce */
+  (unaryfunc)0,            /* nb_int */
+  (unaryfunc)0,           /* nb_long */
+  (unaryfunc)0,          /* nb_float */
+  (unaryfunc)0,            /* nb_oct */
+  (unaryfunc)0,            /* nb_hex */
+  0,                      /* nb_inplace_add */
+  0,                      /* nb_inplace_subtract */
+  0,                      /* nb_inplace_multiply */
+  0,                      /* nb_inplace_divide */
+  0,                      /* nb_inplace_remainder */
+  0,                      /* nb_inplace_power */
+  0,                   /* nb_inplace_lshift */
+  0,                   /* nb_inplace_rshift */
+  0,                      /* nb_inplace_and */
+  0,                      /* nb_inplace_xor */
+  0,                       /* nb_inplace_or */
+  0,                  /* nb_floor_divide */
+  0,                   /* nb_true_divide */
+  0,                 /* nb_inplace_floor_divide */
+  0,                  /* nb_inplace_true_divide */
+  (unaryfunc)0,          /* nb_index */
 };
+
 
 static PyTypeObject RNULL_Type = {
         /* The ob_type field must be initialized in the module init function
@@ -136,7 +173,7 @@ static PyTypeObject RNULL_Type = {
         0,                      /*tp_setattr*/
         0,                      /*tp_compare*/
         RNULLType_repr,                      /*tp_repr*/
-        0,                      /*tp_as_number*/
+        &RNULLType_as_number,                      /*tp_as_number*/
         0,                      /*tp_as_sequence*/
         0,                      /*tp_as_mapping*/
         0,                      /*tp_hash*/
@@ -157,7 +194,7 @@ static PyTypeObject RNULL_Type = {
         0,                      /*tp_weaklistoffset*/
         0,                      /*tp_iter*/
         0,                      /*tp_iternext*/
-        RNULLType_methods,           /*tp_methods*/
+        0,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
         &Sexp_Type,             /*tp_base*/

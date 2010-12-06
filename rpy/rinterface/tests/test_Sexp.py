@@ -122,8 +122,15 @@ class SexpTestCase(unittest.TestCase):
         self.assertFalse(sexp.rsame(sexp3))
         self.assertEquals(0, sexp3.named)
 
+class RNULLTestCase(unittest.TestCase):
+    def testRNULLType_nonzero(self):
+        NULL = rinterface.RNULLType()
+        self.assertFalse(NULL)
+
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpTestCase)
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(RNULLTestCase))
     return suite
 
 if __name__ == '__main__':
