@@ -101,6 +101,22 @@ RNULLType_str(PyObject *self)
   return repr;
 }
 
+PyDoc_STRVAR(RNULLType_nonzero_doc,
+             "Returns the boolean representation for the instance (False).");
+
+static PyObject*
+RNULLType_nonzero(PyObject *self)
+{
+  Py_INCREF(Py_False);
+  return Py_False;
+}
+
+static PyMethodDef RNULLType_methods[] = {
+  {"__nonzero__", (PyCFunction)RNULLType_nonzero, METH_NOARGS,
+   RNULLType_nonzero_doc},
+  {NULL, NULL}          /* sentinel */
+};
+
 static PyTypeObject RNULL_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
@@ -141,7 +157,7 @@ static PyTypeObject RNULL_Type = {
         0,                      /*tp_weaklistoffset*/
         0,                      /*tp_iter*/
         0,                      /*tp_iternext*/
-        0, //NAInteger_methods,           /*tp_methods*/
+        RNULLType_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
         &Sexp_Type,             /*tp_base*/
