@@ -681,3 +681,58 @@ static PyMappingMethods VectorSexp_as_mapping = {
   (objobjargproc)VectorSexp_ass_subscript
 };
 #endif
+
+
+
+static PyObject *
+VectorSexp_index(PySexpObject *self, PyObject *args)
+{
+  Py_ssize_t i,  start, stop;
+  PyObject *v;
+  PyObject *item;
+
+  SEXP sexp = RPY_SEXP(self);
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;
+  }
+  start = 0;
+  stop = (Py_ssize_t)(GET_LENGTH(sexp));
+
+  if (!PyArg_ParseTuple(args, "O|O&O&:index", &v,
+			_PyEval_SliceIndex, &start,
+			_PyEval_SliceIndex, &stop))
+    return NULL;
+  if (start < 0) {
+    start += (Py_ssize_t)(GET_LENGTH(sexp));
+    if (start < 0)
+      start = 0;
+  }
+  if (stop < 0) {
+    stop += (Py_ssize_t)(GET_LENGTH(sexp));
+    if (stop < 0)
+      stop = 0;
+  }
+  for (i = start; i < stop && i < (Py_ssize_t)(GET_LENGTH(sexp)); i++) {
+    item = VectorSexp_item(self, i);
+    int cmp = PyObject_RichCompareBool(item, v, Py_EQ);
+    Py_DECREF(item);
+    if (cmp > 0)
+      return PyInt_FromSsize_t(i);
+    else if (cmp < 0)
+      return NULL;
+        }
+  PyErr_SetString(PyExc_ValueError, "list.index(x): x not in list");
+  return NULL;
+  
+}
+
+PyDoc_STRVAR(VectorSexp_index_doc,
+             "V.index(value, [start, [stop]]) -> integer -- return first index of value."
+             "Raises ValueError if the value is not present.");
+
+static PyMethodDef VectorSexp_methods[] = {
+  {"index", (PyCFunction)VectorSexp_index, METH_VARARGS, VectorSexp_index_doc},
+  {NULL, NULL}
+};
+  

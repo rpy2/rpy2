@@ -36,6 +36,9 @@ New Features
 
 - :class:`rpy2.rinterface.NULL` for the R NULL value (singleton)
 
+- :method:`SexpVector.index`, of similar behaviour to :method:`list.index`.
+
+
 :mod:`rpy2.rlike`:
 
 - :class:`container.OrdDict` get proper methods :meth:`keys` and `get`

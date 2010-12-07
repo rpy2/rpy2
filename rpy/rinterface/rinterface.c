@@ -1828,7 +1828,7 @@ static PyTypeObject VectorSexp_Type = {
         0,                      /*tp_weaklistoffset*/
         0,                      /*tp_iter*/
         0,                      /*tp_iternext*/
-        0,           /*tp_methods*/
+        VectorSexp_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         VectorSexp_getsets,            /*tp_getset*/
         &Sexp_Type,             /*tp_base*/

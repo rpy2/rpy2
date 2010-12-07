@@ -492,6 +492,17 @@ class SexpVectorTestCase(unittest.TestCase):
         rgc()    
         self.assertEquals(0, x[0])
 
+    def testIndexInteger(self):
+        x = ri.IntSexpVector((1,2,3))
+        self.assertEquals(0, x.index(1))
+        self.assertEquals(2, x.index(3))
+
+    def testIndexStr(self):
+        x = ri.StrSexpVector(('a','b','c'))
+        self.assertEquals(0, x.index('a'))
+        self.assertEquals(2, x.index('c'))
+
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpVectorTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(WrapperSexpVectorTestCase))
