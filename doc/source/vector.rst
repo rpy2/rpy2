@@ -229,8 +229,21 @@ That last example could also be written:
 >>> print(x.rx(i))
 [1] 2 4 5
 
+This extraction system is quite expressive, as it allows a very simple writting of 
+very common tasks in data analysis such as reordering and random sampling.
+
+>>> from rpy2.robjects.packages import importr
+>>> base = importr('base')
+>>> x = robjects.IntVector((5,3,2,1,4))
+>>> o_i = base.order(x)
+>>> print(x.rx(o_i))
+[1] 1 2 3 4 5
+>>> rnd_i = base.sample(x)
+>>> x_resampled = x.rx(o_i)
+
+
 R operators are vector operations, with the operator applyied
-to each element in the vector. This can be used to build extract
+to each element in the vector. This can be used to build extraction
 indexes.
 
 >>> i = x.ro > 3 # extract values > 3
@@ -248,6 +261,26 @@ of length 0:
 integer(0)
 
 
+Assigning items
+---------------
+
+
+Assigning, Python-style
+^^^^^^^^^^^^^^^^^^^^^^^
+
+>>> x = robjects.IntVector((1,2,3))
+>>> print(x)
+[1] 1 2 3
+>>> x[0] = 9
+>>> print(x)
+[1] 9 2 3
+
+>>> x = robjects.ListVector({'a': 1, 'b': 2, 'c': 3})
+>>> x[x.names.index('b')] = 9
+
+
+Assigning, R-style
+^^^^^^^^^^^^^^^^^^
 
 
 .. _robjects-missingvalues:
