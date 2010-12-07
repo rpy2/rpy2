@@ -68,6 +68,8 @@ def default_ri2py(o):
                     res = vectors.FloatVector(o)
                 elif o.typeof == rinterface.STRSXP:
                     res = vectors.StrVector(o)
+                elif o.typeof == rinterface.VECSXP:
+                    res = vectors.ListVector(o)
                 elif o.typeof == rinterface.LANGSXP and 'formula' in rcls:
                     res = Formula(o)
                 else:
