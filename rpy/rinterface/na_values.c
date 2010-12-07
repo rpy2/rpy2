@@ -92,7 +92,8 @@ NA_ternaryfunc(PyObject *self, PyObject *obj1, PyObject *obj2)
 static int
 NA_nonzero(PyObject *self)
 {
-  return 1;
+  PyErr_Format(PyExc_ValueError, "NA values cannot be evaluated as booleans.");
+  return 0;
 }
 
 static PyNumberMethods NAInteger_NumberMethods = {
