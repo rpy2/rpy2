@@ -3344,7 +3344,9 @@ PyInit_rinterface(void)
   if (PyType_Ready(&RNULL_Type) < 0)
     return;
   PyModule_AddObject(m, "RNULLType", (PyObject *)&RNULL_Type);
+  /*FIXME: shouldn't RNULLArg disappear ? */
   PyModule_AddObject(m, "RNULLArg", RNULL_Type_New(1));
+  PyModule_AddObject(m, "NULL", RNULL_Type_New(1));
 
 
   if (RPyExc_RuntimeError == NULL) {
