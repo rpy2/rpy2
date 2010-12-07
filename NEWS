@@ -21,7 +21,9 @@ New Features
 - Metaclass utilities in :mod:`rpy2.robjects.methods`, allowing to reflect
   automatically R S4 classes as Python classes.
 
-- :meth:`rpy2.robjects.vector.FactorVector.iter_labels` to iterate over the labels
+- :meth:`rpy2.robjects.vectors.FactorVector.iter_labels` to iterate over the labels
+
+- :class:`rpy2.robjects.vectors.ListVector` to represent R lists.
 
 :mod:`rpy2.rinterface`:
 

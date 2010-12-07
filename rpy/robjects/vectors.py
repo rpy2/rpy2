@@ -399,6 +399,35 @@ class FactorVector(IntVector):
         for x in self:
             yield levels[x-1]
 
+class ListVector(Vector):
+    """ R list (vector of arbitray elements)
+
+    ListVector(iteritemable) -> ListVector.
+
+    The parameter 'iteritemable' can be any object inheriting from 
+    rpy2.rlike.container.TaggedList, rpy2.rinterface.SexpVector of type VECSXP,
+    or dict.
+
+    """
+    def __init__(self, tlist):
+        if isinstance(tlist, rlc.TaggedList):
+            df = baseenv_ri.get("list").rcall(tlist.items(), globalenv_ri)
+            super(ListVector, self).__init__(df)
+        elif isinstance(tlist, rinterface.SexpVector):
+            if tlist.typeof != rinterface.VECSXP:
+                raise ValueError("tlist should of typeof VECSXP")
+            super(ListVector, self).__init__(tlist)
+        elif isinstance(tlist, dict):
+            kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
+            kv = tuple(kv)
+            df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
+            super(ListVector, self).__init__(df)
+        else:
+            raise ValueError("tlist can be either "+
+                             "an instance of rpy2.rlike.container.TaggedList," +
+                             " or an instance of rpy2.rinterface.SexpVector" +
+                             " of type VECSXP, or a Python dict.")
+
 class DateVector(FloatVector):
     """ Vector of dates """
     pass
