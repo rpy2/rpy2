@@ -268,6 +268,9 @@ Assigning items
 Assigning, Python-style
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+Since vectors are exposed as Python mutable sequences, the assignment works
+as for regular Python lists.
+
 >>> x = robjects.IntVector((1,2,3))
 >>> print(x)
 [1] 1 2 3
@@ -275,12 +278,43 @@ Assigning, Python-style
 >>> print(x)
 [1] 9 2 3
 
+In R vectors can be *named*, that is elements of the vector have a name.
+This is notably the case for R lists. Assigning based on names can be made
+easily by using the method :meth:`Vector.index`, as shown below.
+
 >>> x = robjects.ListVector({'a': 1, 'b': 2, 'c': 3})
 >>> x[x.names.index('b')] = 9
+
+.. note::
+
+   :meth:`Vector.index` has a complexity linear to the length of the vector's length;
+   this should be remembered if performance issues are met.
+
 
 
 Assigning, R-style
 ^^^^^^^^^^^^^^^^^^
+
+Differences between the two languages require few adaptations, and in
+appearance complexify a little the task.
+Should other Python-based systems for the representation of (mostly numerical)
+data structure, such a :mod:`numpy` be preferred, one will be encouraged to expose
+our rpy2 R objects through those structures.
+
+The attributes *rx* and *rx2* used previously can again be used:
+
+>>> x = robjects.IntVector(range(1, 4))
+>>> print(x)
+[1] 1 2 3
+>>> x.rx[1] = 9
+>>> print(x)
+[1] 9 2 3
+
+For the sake of complete compatibility with R the arguments can be named
+(and passed as a :class:`dict` or :class:`rpy2.rlike.container.TaggedList`).
+
+>>> x = robjects.ListVector({'a': 1, 'b': 2, 'c': 3})
+>>> x.rx2[{'i': x.names.index('b')}] = 9
 
 
 .. _robjects-missingvalues:
