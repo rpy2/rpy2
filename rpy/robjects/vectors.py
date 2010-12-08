@@ -64,15 +64,33 @@ class ExtractDelegator(object):
         return res
 
     def __setitem__(self, item, value):
-        """ Assign a given value to a given index position in the vector """
-        args = rlc.TaggedList.from_iteritems(item)
-        for i, (k, v) in enumerate(args.iteritems()):
-            args[i] = conversion.py2ro(v)
-        args.append(conversion.py2ro(value), tag = None)
-        args.insert(0, self._parent, tag = None)
+        """ Assign a given value to a given index position in the vector.
+        The index position can either be:
+        - an int: x[1] = y
+        - a tuple of ints: x[1, 2, 3] = y
+        - an iteritem-able object (such as a dict): x[{'i': 1}] = y
+        """
         fun = self._replacefunction
-        res = fun.rcall(tuple(args.iteritems()),
-                        globalenv_ri)
+        if type(item) is tuple:
+            args = list([None, ] * (len(item)+2))
+            for i, v in enumerate(item):
+                args[i+1] = conversion.py2ro(v)
+            args[-1] = conversion.py2ro(value)
+            args[0] = self._parent
+            res = fun(*args)
+        elif (type(item) is dict) or (type(item) is rlc.TaggedList):
+            args = rlc.TaggedList.from_iteritems(item)
+            for i, (k, v) in enumerate(args.iteritems()):
+                args[i] = conversion.py2ro(v)
+            args.append(conversion.py2ro(value), tag = None)
+            args.insert(0, self._parent, tag = None)
+            res = fun.rcall(tuple(args.iteritems()),
+                            globalenv_ri)
+        else:
+            args = [self._parent,
+                    conversion.py2ro(item),
+                    conversion.py2ro(value)]
+            res = fun(*args)
         #FIXME: check refcount and copying
         self._parent.__sexp__ = res.__sexp__
 

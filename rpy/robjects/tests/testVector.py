@@ -251,7 +251,7 @@ class ExtractDelegatorTestCase(unittest.TestCase):
 
        
     def testReplace(self):
-        vec = robjects.r.seq(1, 10)
+        vec = robjects.IntVector(range(1, 6))
         i = array.array('i', [1, 3])
         vec.rx[rlc.TaggedList((i, ))] = 20
         self.assertEquals(20, vec[0])
@@ -259,14 +259,41 @@ class ExtractDelegatorTestCase(unittest.TestCase):
         self.assertEquals(20, vec[2])
         self.assertEquals(4, vec[3])
 
+        vec = robjects.IntVector(range(1, 6))
         i = array.array('i', [1, 5])
         vec.rx[rlc.TaggedList((i, ))] = 50
         self.assertEquals(50, vec[0])
         self.assertEquals(2, vec[1])
-        self.assertEquals(20, vec[2])
+        self.assertEquals(3, vec[2])
         self.assertEquals(4, vec[3])
         self.assertEquals(50, vec[4])
-                         
+
+        vec = robjects.IntVector(range(1, 6))
+        vec.rx[1] = 70
+        self.assertEquals(70, vec[0])
+        self.assertEquals(2, vec[1])
+        self.assertEquals(3, vec[2])
+        self.assertEquals(4, vec[3])
+        self.assertEquals(5, vec[4])
+
+        vec = robjects.IntVector(range(1, 6))
+        vec.rx[robjects.IntVector((1, 3))] = 70
+        self.assertEquals(70, vec[0])
+        self.assertEquals(2, vec[1])
+        self.assertEquals(70, vec[2])
+        self.assertEquals(4, vec[3])
+        self.assertEquals(5, vec[4])
+
+
+        m = robjects.r('matrix(1:10, ncol=2)')
+        m.rx[1, 1] = 9
+        self.assertEquals(9, m[0])
+
+        m = robjects.r('matrix(1:10, ncol=2)')
+        m.rx[2, robjects.IntVector((1,2))] = 9
+        self.assertEquals(9, m[1])
+        self.assertEquals(9, m[6])
+                                 
     def testExtractRecyclingRule(self):
         # recycling rule
         v = robjects.Vector(array.array('i', range(1, 23)))
