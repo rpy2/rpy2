@@ -718,7 +718,11 @@ VectorSexp_index(PySexpObject *self, PyObject *args)
     int cmp = PyObject_RichCompareBool(item, v, Py_EQ);
     Py_DECREF(item);
     if (cmp > 0)
+#if (PY_VERSION_HEX < 0x03010000)
       return PyInt_FromSsize_t(i);
+#else
+      return PyLong_FromSsize_t(i);
+#endif
     else if (cmp < 0)
       return NULL;
         }
