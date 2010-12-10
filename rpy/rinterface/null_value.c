@@ -32,8 +32,8 @@
 /* --- NULL value --- */
 
 PyDoc_STRVAR(RNULL_Type_doc,
-"R NULL (singleton)."
-);
+	     "R NULL (singleton)."
+	     );
 
 #if (PY_VERSION_HEX < 0x03010000)
 staticforward PyTypeObject RNULL_Type;
@@ -100,9 +100,6 @@ RNULLType_str(PyObject *self)
   Py_XINCREF(repr);
   return repr;
 }
-
-PyDoc_STRVAR(RNULLType_nonzero_doc,
-             "Returns the boolean representation for the instance (False).");
 
 static int
 RNULLType_nonzero(PyObject *self)
