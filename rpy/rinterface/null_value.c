@@ -116,22 +116,22 @@ static PyNumberMethods RNULLType_as_number = {
   0,                       /* nb_remainder */
   0,                    /* nb_divmod */
   0,                       /* nb_power */
-  (unaryfunc)0,            /* nb_negative */
-  (unaryfunc)0,            /* nb_positive */
-  (unaryfunc)0,            /* nb_absolute */
+  0,            /* nb_negative */
+  0,            /* nb_positive */
+  0,            /* nb_absolute */
   (inquiry)RNULLType_nonzero,          /* nb_nonzero */
-  (unaryfunc)0,         /* nb_invert */
+  0,         /* nb_invert */
   0,                    /* nb_lshift */
   0,                    /* nb_rshift */
   0,                       /* nb_and */
   0,                       /* nb_xor */
   0,                        /* nb_or */
   0,                    /* nb_coerce */
-  (unaryfunc)0,            /* nb_int */
-  (unaryfunc)0,           /* nb_long */
-  (unaryfunc)0,          /* nb_float */
-  (unaryfunc)0,            /* nb_oct */
-  (unaryfunc)0,            /* nb_hex */
+  0,            /* nb_int */
+  0,           /* nb_long */
+  0,          /* nb_float */
+  0,            /* nb_oct */
+  0,            /* nb_hex */
   0,                      /* nb_inplace_add */
   0,                      /* nb_inplace_subtract */
   0,                      /* nb_inplace_multiply */
@@ -147,7 +147,7 @@ static PyNumberMethods RNULLType_as_number = {
   0,                   /* nb_true_divide */
   0,                 /* nb_inplace_floor_divide */
   0,                  /* nb_inplace_true_divide */
-  (unaryfunc)0,          /* nb_index */
+  0,          /* nb_index */
 };
 
 
