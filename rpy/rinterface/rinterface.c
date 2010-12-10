@@ -2633,7 +2633,7 @@ static PySexpObject*
 
   switch (TYPEOF(sexp_ok)) {
   case NILSXP:
-    object = RNULL_Type_New(1);
+    object = (PySexpObject *)RNULL_Type_New(1);
     break;
   case CLOSXP:
   case BUILTINSXP:
