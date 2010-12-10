@@ -112,7 +112,9 @@ static PyNumberMethods RNULLType_as_number = {
   0,                       /* nb_add */
   0,                       /* nb_subtract */
   0,                       /* nb_multiply */
+#if (PY_VERSION_HEX < 0x03010000)
   0,                       /* nb_divide */
+#endif
   0,                       /* nb_remainder */
   0,                    /* nb_divmod */
   0,                       /* nb_power */
@@ -126,16 +128,27 @@ static PyNumberMethods RNULLType_as_number = {
   0,                       /* nb_and */
   0,                       /* nb_xor */
   0,                        /* nb_or */
+#if (PY_VERSION_HEX < 0x03010000)
   0,                    /* nb_coerce */
+#endif
   0,            /* nb_int */
+#if (PY_VERSION_HEX < 0x03010000)
   0,           /* nb_long */
+#else,
+  NULL, /* reserved */
+#endif
   0,          /* nb_float */
+#if (PY_VERSION_HEX < 0x03010000)
   0,            /* nb_oct */
   0,            /* nb_hex */
+#endif
+  /* added in release 2.0 */
   0,                      /* nb_inplace_add */
   0,                      /* nb_inplace_subtract */
   0,                      /* nb_inplace_multiply */
+#if (PY_VERSION_HEX < 0x03010000)
   0,                      /* nb_inplace_divide */
+#endif
   0,                      /* nb_inplace_remainder */
   0,                      /* nb_inplace_power */
   0,                   /* nb_inplace_lshift */
@@ -143,11 +156,15 @@ static PyNumberMethods RNULLType_as_number = {
   0,                      /* nb_inplace_and */
   0,                      /* nb_inplace_xor */
   0,                       /* nb_inplace_or */
+  /* added in release 2.2 */
   0,                  /* nb_floor_divide */
   0,                   /* nb_true_divide */
   0,                 /* nb_inplace_floor_divide */
   0,                  /* nb_inplace_true_divide */
+  /* added in version 2.5 */
+#if (PY_VERSION_HEX >= 0x02050000)
   0,          /* nb_index */
+#endif
 };
 
 
