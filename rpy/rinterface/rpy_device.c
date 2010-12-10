@@ -1360,7 +1360,7 @@ static PyTypeObject GrDev_Type = {
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
 #else
-	PyVarObject_HEAD_INIT(NULL, 0),
+	PyVarObject_HEAD_INIT(NULL, 0)
 #endif
         "rpy2.rinterface.GraphicalDevice",   /*tp_name*/
         sizeof(PyGrDevObject),  /*tp_basicsize*/
