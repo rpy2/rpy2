@@ -38,7 +38,7 @@ New Features
 
 - :class:`rpy2.rinterface.NULL` for the R NULL value (singleton)
 
-- :method:`SexpVector.index`, of similar behaviour to :method:`list.index`.
+- :meth:`rinterface.SexpVector.index`, of similar behaviour to :meth:`list.index`.
 
 
 :mod:`rpy2.rlike`:
