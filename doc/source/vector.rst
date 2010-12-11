@@ -49,6 +49,10 @@ class :class:`Vector` or the convenience classes
    :show-inheritance:
    :members:
 
+.. autoclass:: rpy2.robjects.vectors.ListVector(obj)
+   :show-inheritance:
+   :members:
+
 Sequences of date or time points can be stored in
 :class:`POSIXlt` or :class:`POSIXct` objects. Both can be created
 from Python sequences of :class:`time.struct_time` objects or

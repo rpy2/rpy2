@@ -364,6 +364,8 @@ See :ref:`rinterface-callbacks_consoleio`.
 Processing interactive events
 -----------------------------
 
+.. codeauthor:: Nathaniel Smith, Laurent Gautier
+
 An interactive R session is can start interactive activities
 that require a continuous monitoring for events. A typical example
 is the interactive graphical devices (`plotting windows`),
@@ -377,21 +379,9 @@ running within Python (yet this can be done as shown below).
 The way to restore interactivity is to simply call the function
 :func:`rinterface.process_revents` at regular intervals.
 
+
 An higher-level interface is available, running the processing of
-R events in a thread.
-
-.. code-block:: python
-
-   import rpy2.rinteractive.process_revents as process_revents
-
-   process_revents.start()
-   
-   # should you wish to stop processing the events
-   # (which is needed to exit Python)
-   process_revents.stop()
-
-   
-.. autofunction:: process_revents()
+R events in a thread (see Section :ref:`interactive-reventloop`).
 
 
 Classes
@@ -913,8 +903,6 @@ from.
 
 Functions
 ---------
-
-
 
 .. rubric:: A function with a context
 

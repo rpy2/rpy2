@@ -19,9 +19,14 @@ and interactive development editors
 
 
 .. module:: rpy2.interactive.process_revents
+   :synopsis: Processing R events for interactivity
+
+.. _interactive-reventloop:
 
 R event loop
 ============
+
+.. codeauthor:: Thomas Kluyver, Laurent Gautier
 
 In order to perform operations like refreshing interactive graphical
 devices, R need to process the events triggering the refresh.
@@ -35,8 +40,11 @@ devices, R need to process the events triggering the refresh.
 >>> graphics.barplot(IntVector((1,3,2,5,4)), ylab="Value")
 
 Now the R graphical device is updated when resized.
+Should one wish to stop processing the events:
 
 >>> process_revents.stop()
+
+The processing can be resumed, stopped again, and so on.
 
 The frequency with which the processing of R events is performed can be roughly
 controlled. The thread is put to sleep for an arbitray duration between
@@ -50,6 +58,8 @@ processing is wished. This can be done while the threaded processing is
 active and will be taken into account at the next sleep cycle.
 
 >>> process_revents.EventProcessor.interval = 1.0
+
+.. autofunction:: process_revents()
 
 
 Graphical User interface
