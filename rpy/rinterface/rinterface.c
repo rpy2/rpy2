@@ -297,7 +297,6 @@ EmbeddedR_WriteConsole(const char *buf, int len)
 {
   PyObject *arglist;
   PyObject *result;
-
   const int is_threaded = PyEval_ThreadsInitialized();
   PyGILState_STATE gstate;
   RPY_GIL_ENSURE(is_threaded, gstate);
@@ -1269,7 +1268,9 @@ EmbeddedR_parse(PyObject *self, PyObject *pystring)
     PyErr_Format(PyExc_ValueError, "The object to parse must be a unicode string");
     return NULL;
   }
-  char *string = PyBytes_AsString(pystring);
+  PyObject *pybytes = PyUnicode_AsLatin1String(pystring);
+  char *string = PyBytes_AsString(pybytes);
+  Py_DECREF(pybytes);
 #endif
 
   embeddedR_setlock();
