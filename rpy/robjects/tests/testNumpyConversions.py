@@ -120,8 +120,10 @@ class NumpyConversionsTestCase(unittest.TestCase):
         self.assertTrue(isinstance(a, numpy.ndarray))
         self.assertEquals(1, v[0])
 
-    def testVectorToNumpy(self):
-        self.assertTrue(False) # no test yet
+    def testListVectorToNumpyErrorShape(self):
+        vec = robjects.ListVector({'a': robjects.vectors.IntVector((1, 2, 3)), 
+                                   'b': 2})
+        self.assertRaises(ValueError, rpyn.ri2numpy, vec)
 
 def suite():
     if has_numpy:
