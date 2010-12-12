@@ -3419,4 +3419,8 @@ PyInit_rinterface(void)
   Py_DECREF(R_PyObject_type_tag);
 
   rinterface_unserialize = PyDict_GetItemString(d, "unserialize");
+#if (PY_VERSION_HEX < 0x03010000)
+#else
+  return m;
+#endif
 }
