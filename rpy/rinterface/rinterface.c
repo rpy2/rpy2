@@ -2696,7 +2696,7 @@ newSEXP(PyObject *object, int rType)
 {
   SEXP sexp;
   SEXP str_R; /* used whenever there a string / unicode */
-  PyObject *seq_object, *item, *item_tmp, *na; 
+  PyObject *seq_object, *item, *item_tmp, *na, *pybytes; 
 
 #ifdef RPY_VERBOSE
   printf("  new SEXP for Python:%p.\n", object);
@@ -2787,7 +2787,9 @@ newSEXP(PyObject *object, int rType)
 #if (PY_VERSION_HEX < 0x03010000)
         str_R = mkChar(PyString_AS_STRING(item_tmp));
 #else
-	str_R = mkChar(PyBytes_AsString(PyUnicode_AsLatin1String(item_tmp)));
+	pybytes = PyUnicode_AsLatin1String(item_tmp);
+	str_R = mkChar(PyBytes_AsString(pybytes));
+	Py_DECREF(pybytes);
 #endif
         if (!str_R) {
             PyErr_NoMemory();
