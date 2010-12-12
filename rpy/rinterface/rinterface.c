@@ -3418,5 +3418,4 @@ PyInit_rinterface(void)
   Py_DECREF(R_PyObject_type_tag);
 
   rinterface_unserialize = PyDict_GetItemString(d, "unserialize");
-  return m;
 }
