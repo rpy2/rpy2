@@ -134,7 +134,7 @@ static PyNumberMethods RNULLType_as_number = {
   0,            /* nb_int */
 #if (PY_VERSION_HEX < 0x03010000)
   0,           /* nb_long */
-#else,
+#else
   NULL, /* reserved */
 #endif
   0,          /* nb_float */
