@@ -66,7 +66,6 @@ typedef struct {
   }
 
 #define RPY_GIL_ENSURE(is_threaded, gstate)	\
-  is_threaded = PyEval_ThreadsInitialized();	\
   if (is_threaded) {				\
     gstate = PyGILState_Ensure();		\
   } 

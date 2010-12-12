@@ -298,7 +298,7 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   PyObject *arglist;
   PyObject *result;
 
-  int is_threaded ;
+  const int is_threaded = PyEval_ThreadsInitialized();
   PyGILState_STATE gstate;
   RPY_GIL_ENSURE(is_threaded, gstate);
 
@@ -366,7 +366,7 @@ EmbeddedR_ShowMessage(const char *buf)
   PyObject *arglist;
   PyObject *result;
 
-  int is_threaded ;
+  const int is_threaded = PyEval_ThreadsInitialized();
   PyGILState_STATE gstate;
   RPY_GIL_ENSURE(is_threaded, gstate);
 
@@ -434,7 +434,7 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   PyObject *arglist;
   PyObject *result;
 
-  int is_threaded ;
+  const int is_threaded = PyEval_ThreadsInitialized();
   PyGILState_STATE gstate;
   RPY_GIL_ENSURE(is_threaded, gstate);
 
@@ -538,7 +538,7 @@ EmbeddedR_FlushConsole(void)
 {
   PyObject *result;
 
-  int is_threaded ;
+  const int is_threaded = PyEval_ThreadsInitialized();
   PyGILState_STATE gstate;
   RPY_GIL_ENSURE(is_threaded, gstate);
 
@@ -582,7 +582,7 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   PyObject *arglist;
   PyObject *result;
 
-  int is_threaded ;
+  const int is_threaded = PyEval_ThreadsInitialized();
   PyGILState_STATE gstate;
   RPY_GIL_ENSURE(is_threaded, gstate);
 
@@ -676,8 +676,9 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
                     const char *wtitle, Rboolean del, const char *pager)
 {
 
-  int is_threaded ;
+  const int is_threaded = PyEval_ThreadsInitialized();
   PyGILState_STATE gstate;
+
   RPY_GIL_ENSURE(is_threaded, gstate);
 
   if (showFilesCallback == NULL) {
@@ -823,7 +824,7 @@ EmbeddedR_CleanUp(SA_TYPE saveact, int status, int runLast)
     If ask = SA_SUICIDE, no save, no .Last, possibly other things.
   */
 
-  int is_threaded ;
+  const int is_threaded = PyEval_ThreadsInitialized();
   PyGILState_STATE gstate;
 
   if(saveact == SA_DEFAULT) { /* The normal case apart from R_Suicide */
