@@ -374,22 +374,22 @@ Acknowledgements
 Acknowledgements go to the following individuals or group of individuals
 for contributions, support, and early testing (by alphabetical order):
 
-Alexander Belopolsky
-Brad Chapman
-Peter Cock
-Contributors
-Dirk Eddelbuettel
-JRI author(s)
-Thomas Kluyver
-Walter Moreira 
-Numpy list responders
-Laurent Oget
-John Owens
-Nicolas Rapin
-R authors
-R-help list responders
-Grzegorz Slodkowicz
-Nathaniel Smith
+Alexander Belopolsky,
+Brad Chapman,
+Peter Cock,
+Contributors,
+Dirk Eddelbuettel,
+JRI author(s),
+Thomas Kluyver,
+Walter Moreira, 
+Numpy list responders,
+Laurent Oget,
+John Owens,
+Nicolas Rapin,
+R authors,
+R-help list responders,
+Grzegorz Slodkowicz,
+Nathaniel Smith,
 Gregory Warnes
 
 
