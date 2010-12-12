@@ -4,8 +4,7 @@ import rpy2.rinterface as rinterface
 from rpy2.rinterface import SexpVector, INTSXP
 import numpy
 
-DataFrame = ro.DataFrame
-Vector = ro.Vector
+from rpy2.robjects.vectors import DataFrame, Vector, ListVector
 
 original_conversion = conversion.py2ri
 
@@ -64,7 +63,7 @@ ro.conversion.py2ri = numpy2ri
 
 
 def ri2numpy(o):
-    if isinstance(o, DataFrame):
+    if isinstance(o, ListVector):
         res = numpy.rec.fromarrays(o, names=tuple(o.names))
     elif isinstance(o, Vector) and (type(o) != Vector):
         res = numpy.asarray(o)
