@@ -641,7 +641,7 @@ class Matrix(Array):
         res = self._eigen(self)
         return conversion.ri2py(res)
 
-class DataFrame(Vector):
+class DataFrame(ListVector):
     """ R 'data.frame'.
     """
     _dataframe_name = rinterface.StrSexpVector(('data.frame',))
