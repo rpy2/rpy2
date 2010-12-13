@@ -303,10 +303,10 @@ EmbeddedR_WriteConsole(const char *buf, int len)
 
   /* It is necessary to restore the Python handler when using a Python
      function for I/O. */
+
   PyOS_setsig(SIGINT, python_sighandler);
-  arglist = Py_BuildValue("(s)", buf);
-  if (! arglist) {
-    PyErr_NoMemory();
+  arglist = Py_BuildValue("(y)", buf);
+  if (! arglist) {    PyErr_NoMemory();
 /*     signal(SIGINT, old_int); */
 /*     return NULL; */
   }
@@ -623,7 +623,9 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
 #if (PY_VERSION_HEX < 0x03010000)
   char *path_str = PyString_AsString(result);
 #else
-  const char *path_str = PyBytes_AsString(PyUnicode_AsLatin1String(result));
+  PyObject *pybytes = PyUnicode_AsLatin1String(result);
+  const char *path_str = PyBytes_AsString(pybytes);
+  Py_DECREF(pybytes);
 #endif
 
   if (! path_str) {
@@ -1390,7 +1392,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
   }
   embeddedR_setlock();
     
- SEXP call_R, c_R, res_R;
+  SEXP call_R, c_R, res_R;
   int nparams;
   SEXP tmp_R, fun_R;
   int protect_count = 0;
@@ -1422,6 +1424,10 @@ Sexp_rcall(PyObject *self, PyObject *args)
 
   /* named args */
   PyObject *argValue, *argName;
+#if (PY_VERSION_HEX < 0x03010000)
+#else  
+  PyObject *pybytes;
+#endif
   const char *argNameString;
   unsigned int addArgName;
   Py_ssize_t item_length;
@@ -1507,7 +1513,9 @@ Sexp_rcall(PyObject *self, PyObject *args)
 #if (PY_VERSION_HEX < 0x03010000)
       argNameString = PyString_AsString(argName);
 #else
-      argNameString = PyBytes_AsString(PyUnicode_AsLatin1String(argName));
+      pybytes = PyUnicode_AsLatin1String(argName);
+      argNameString = PyBytes_AsString(pybytes);
+      Py_DECREF(pybytes);
 #endif
       SET_TAG(c_R, install(argNameString));
     }
@@ -2215,7 +2223,9 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
 #if (PY_VERSION_HEX < 0x03010000)
   name = PyString_AsString(key);
 #else
-  name = PyBytes_AsString(PyUnicode_AsLatin1String(key));
+  PyObject *pybytes = PyUnicode_AsLatin1String(key);
+  name = PyBytes_AsString(pybytes);
+  Py_DECREF(pybytes);
 #endif
 
   if (strlen(name) == 0) {
@@ -2277,7 +2287,9 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 #if (PY_VERSION_HEX < 0x03010000)
   name = PyString_AsString(key);
 #else
-  name = PyBytes_AsString(PyUnicode_AsLatin1String(key));
+  PyObject *pybytes = PyUnicode_AsLatin1String(key);
+  name = PyBytes_AsString(pybytes);
+  Py_DECREF(pybytes);
 #endif
 
   if (rpy_has_status(RPY_R_BUSY)) {
@@ -2804,7 +2816,9 @@ newSEXP(PyObject *object, int rType)
         str_R = mkChar(PyUnicode_AS_DATA(item));
 #else
       } else if ((item_tmp = PyObject_Str(item))) {
-	str_R = mkChar(PyBytes_AsString(PyUnicode_AsLatin1String(item)));
+	pybytes = PyUnicode_AsLatin1String(item);
+	str_R = mkChar(PyBytes_AsString(pybytes));
+	Py_DECREF(pybytes);
 #endif
         if (!str_R) {
           PyErr_NoMemory();
@@ -2872,7 +2886,9 @@ newSEXP(PyObject *object, int rType)
 #if (PY_VERSION_HEX < 0x03010000)
           tmp2 = mkChar(PyString_AS_STRING(item));
 #else
-	  tmp2 = mkChar(PyBytes_AsString(PyUnicode_AsLatin1String(item)));
+	  pybytes = PyUnicode_AsLatin1String(item);
+	  tmp2 = mkChar(PyBytes_AsString(pybytes));
+	  Py_DECREF(pybytes);
 #endif
           if (!tmp2) {
             PyErr_NoMemory();
@@ -3109,7 +3125,9 @@ do_Python(SEXP args)
 #if (PY_VERSION_HEX < 0x03010000)
       error(PyString_AS_STRING(excstr));
 #else
-      error(PyBytes_AsString(PyUnicode_AsLatin1String(excstr)));
+      PyObject *pybytes = PyUnicode_AsLatin1String(excstr);
+      error(PyBytes_AsString(pybytes));
+      Py_DECREF(pybytes);
 #endif
       Py_DECREF(excstr);
     } 

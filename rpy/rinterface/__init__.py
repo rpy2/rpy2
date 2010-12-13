@@ -114,9 +114,14 @@ class ComplexSexpVector(SexpVector):
 
 
 # wrapper in case someone changes sys.stdout:
-def consolePrint(x):
-    """This is the default callback for R's console. It simply writes to stdout."""
-    sys.stdout.write(x)
+if sys.version[0] == '2':
+    def consolePrint(x):
+        sys.stdout.write(x)
+elif sys.version[0] == '3':
+    def consolePrint(x):
+        print(x)
+else:
+    raise ValueError("Only Python 2.x and 3.x are supported.")
 
 set_writeconsole(consolePrint)
 
@@ -132,8 +137,15 @@ def consoleRead(prompt):
 
 set_readconsole(consoleRead)
 
-def consoleMessage(x):
-    sys.stdout.write(x)
+if sys.version[0] == '2':
+    def consoleMessage(x):
+        sys.stdout.write(x)
+elif sys.version[0] == '3':
+    def consoleMessage(x):
+        print(x)
+else:
+    raise ValueError("Only Python 2.x and 3.x are supported.")
+
 set_showmessage(consoleMessage)
 
 
