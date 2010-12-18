@@ -2305,12 +2305,16 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 
   #if (PY_VERSION_HEX < 0x03010000)
   if (!PyString_Check(key)) {
-#else
- if (!PyUnicode_Check(key)) {
-#endif
     PyErr_Format(PyExc_ValueError, "Keys must be string objects.");
     return -1;
   }
+#else
+  if (!PyUnicode_Check(key)) {
+    PyErr_Format(PyExc_ValueError, "Keys must be unicode string objects.");
+    return -1;
+  }
+#endif
+
 
   if (value == NULL) {
     /* delete objects */
