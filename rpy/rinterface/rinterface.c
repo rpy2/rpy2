@@ -462,6 +462,8 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   printf("done.(%p)\n", result);
   #endif
 
+  Py_XDECREF(arglist);
+
   PyObject* pythonerror = PyErr_Occurred();
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
@@ -469,7 +471,6 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
     /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
     PyErr_Clear();
-    Py_XDECREF(arglist);
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
@@ -478,18 +479,35 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   if (result == NULL) {
     /* FIXME: can this be reached ? result == NULL while no error ? */
 /*     signal(SIGINT, old_int); */
-    Py_XDECREF(arglist);
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
 
+  const char *input_str = NULL;
+
 #if (PY_VERSION_HEX < 0x03010000)
-  const char *input_str = PyString_AsString(result);
+  input_str = PyString_AsString(result);
 #else
-  const char *input_str = PyBytes_AsString(result);
+  if PyUnicode_Check(result) {
+      PyObject *pybytes = PyUnicode_AsLatin1String(result);
+      input_str = PyBytes_AsString(pybytes);
+      Py_DECREF(pybytes);
+    } else if (PyBytes_Check(result)) {
+    input_str = PyBytes_AsString(result);
+  } else {
+    PyErr_Format(PyExc_ValueError, \
+		 "The R console callback must return a unicode string or bytes.");
+    PyErr_Print();
+    PyErr_Clear();
+    RPY_GIL_RELEASE(is_threaded, gstate);
+    return 0;
+  }
+
+  //const char *input_str = PyBytes_AsString(result);
 #endif
   if (! input_str) {
-    Py_XDECREF(arglist);
+    PyErr_Print();
+    PyErr_Clear();
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
