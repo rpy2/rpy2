@@ -957,6 +957,26 @@ static PyObject* EmbeddedR_setinitoptions(PyObject *self, PyObject *tuple)
     PyErr_Format(PyExc_ValueError, "Parameter should be a tuple.");
     return NULL;
   }
+
+  /* now test that all elements of the tuple are strings (Python2)
+   * or bytes (Python3).
+   */
+  Py_ssize_t ii;
+  for (ii = 0; ii < PyTuple_GET_SIZE(tuple); ii++) {
+#if (PY_VERSION_HEX < 0x03010000)
+    if (! PyString_Check(PyTuple_GET_ITEM(tuple, ii))) {
+      PyErr_Format(PyExc_ValueError, "All options should be strings.");
+      return NULL;
+    }
+#else
+    if (! PyBytes_Check(PyTuple_GET_ITEM(tuple, ii))) {
+      PyErr_Format(PyExc_ValueError, "All options should be bytes.");
+      return NULL;
+    }
+#endif
+  }
+  
+  
   Py_DECREF(initOptions);
   Py_INCREF(tuple);
   initOptions = tuple;
