@@ -305,7 +305,13 @@ EmbeddedR_WriteConsole(const char *buf, int len)
      function for I/O. */
 
   PyOS_setsig(SIGINT, python_sighandler);
+
+#if (PY_VERSION_HEX < 0x03010000)
+  arglist = Py_BuildValue("(s)", buf);
+#else
   arglist = Py_BuildValue("(y)", buf);
+#endif
+
   if (! arglist) {    PyErr_NoMemory();
 /*     signal(SIGINT, old_int); */
 /*     return NULL; */
@@ -2318,7 +2324,7 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 
   if (value == NULL) {
     /* delete objects */
-    
+    /*FIXME: something missing here ?*/
   }
 
   int is_PySexpObject = PyObject_TypeCheck(value, &Sexp_Type);
