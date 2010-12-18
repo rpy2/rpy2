@@ -114,14 +114,8 @@ class ComplexSexpVector(SexpVector):
 
 
 # wrapper in case someone changes sys.stdout:
-if sys.version[0] == '2':
-    def consolePrint(x):
-        sys.stdout.write(x)
-elif sys.version[0] == '3':
-    def consolePrint(x):
-        print(x)
-else:
-    raise ValueError("Only Python 2.x and 3.x are supported.")
+def consolePrint(x):
+    sys.stdout.write(x)
 
 set_writeconsole(consolePrint)
 
