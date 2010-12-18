@@ -149,7 +149,9 @@ Sexp_do_slot(PyObject *self, PyObject *name)
 #if (PY_VERSION_HEX < 0x03010000)
   char *name_str = PyString_AS_STRING(name);
 #else
-  char *name_str = PyBytes_AsString(PyUnicode_AsLatin1String(name));
+  PyObject *pybytes = PyUnicode_AsLatin1String(name);
+  char *name_str = PyBytes_AsString(pybytes);
+  Py_DECREF(pybytes);
 #endif
   if (! R_has_slot(sexp, install(name_str))) {
     PyErr_SetString(PyExc_LookupError, "The object has no such attribute.");
