@@ -804,3 +804,8 @@ class DataFrame(ListVector):
         """ iterator across columns """
         for i in xrange(self.ncol):
             yield self.rx(rinterface.MissingArg, i+1)
+
+
+__all__ = ['Vector', 'StrVector', 'IntVector', 'BoolVector', 'ComplexVector',
+           'FloatVector', 'FactorVector', 'ListVector', 'POSIXlt', 'POSIXct',
+           'Array', 'Matrix', 'DataFrame']
