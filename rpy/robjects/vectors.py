@@ -428,14 +428,13 @@ class ListVector(Vector):
 
     """
     def __init__(self, tlist):
-        if isinstance(tlist, rlc.TaggedList):
-            df = baseenv_ri.get("list").rcall(tlist.items(), globalenv_ri)
-            super(ListVector, self).__init__(df)
-        elif isinstance(tlist, rinterface.SexpVector):
+        if isinstance(tlist, rinterface.SexpVector):
             if tlist.typeof != rinterface.VECSXP:
                 raise ValueError("tlist should of typeof VECSXP")
             super(ListVector, self).__init__(tlist)
-        elif isinstance(tlist, dict):
+        elif hasattr(tlist, "iteritems"):
+            if not callable(tlist.iteritems):
+                raise ValueError("tlist should have a /method/ iteritems (not an attribute)")
             kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
             kv = tuple(kv)
             df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
