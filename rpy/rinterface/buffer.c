@@ -85,7 +85,7 @@ sexp_strides(SEXP sexp, Py_intptr_t *strides, Py_ssize_t itemsize,
 static int
 VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
 {
-  printf("getbuffer\n");
+
   if (view == NULL) {
     return 0;
   }
