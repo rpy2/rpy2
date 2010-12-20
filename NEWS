@@ -4,7 +4,7 @@ Release 2.2.0-dev
 New Features
 ------------
 
-- Support for Python 3
+- Support for Python 3, and for some of its features ported to Python 2.7
 
 :mod:`rpy2.robjects`:
 
