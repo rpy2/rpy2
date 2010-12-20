@@ -247,21 +247,50 @@ Sexp_sexp_get(PyObject *self, void *closure)
   
   /*FIXME: Probable memory leak.*/
   RPY_INCREF(rpyobj);
+#if (PY_VERSION_HEX < 0x02070000)  
   PyObject *res = PyCObject_FromVoidPtr(rpyobj->sObj, 
                                         SexpObject_CObject_destroy);
+#else
+  PyObject *res = PyCapsule_New((void *)(rpyobj->sObj),
+				"rpy2.rinterface._C_API_",
+				SexpObject_CObject_destroy);
+#endif
+  
   return res;
 }
 
 static int
 Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure)
 {
+
+#if (PY_VERSION_HEX < 0x02070000)  
   if (! PyCObject_Check(obj)) {
     PyErr_SetString(PyExc_TypeError, "The value must be a CObject.");
     return -1;
   }
+#else
+  if (! PyCapsule_CheckExact(obj)) {
+    PyErr_SetString(PyExc_TypeError, "The value must be a Capsule");
+    return -1;
+  }
+#endif
 
   SexpObject *sexpobj_orig = ((PySexpObject*)self)->sObj;
+
+#if (PY_VERSION_HEX < 0x02070000)  
   SexpObject *sexpobj = (SexpObject *)(PyCObject_AsVoidPtr(obj));
+#else
+  SexpObject *sexpobj = (SexpObject *)(PyCapsule_GetPointer(obj,
+							    "rpy2.rinterface._C_API_"));
+#endif
+
+  if (obj == NULL) {
+    PyErr_SetString(PyExc_TypeError, 
+		    "The value must be a CObject or a Capsule of name 'rpy2.rinterface._C_API_'.");
+    return -1;
+  }
+
+
   #ifdef RPY_DEBUG_COBJECT
   printf("Setting %p (count: %i) to %p (count: %i)\n", 
          sexpobj_orig, (int)sexpobj_orig->count,
