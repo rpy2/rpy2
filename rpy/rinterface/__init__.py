@@ -131,14 +131,9 @@ def consoleRead(prompt):
 
 set_readconsole(consoleRead)
 
-if sys.version[0] == '2':
-    def consoleMessage(x):
-        sys.stdout.write(x)
-elif sys.version[0] == '3':
-    def consoleMessage(x):
-        print(x)
-else:
-    raise ValueError("Only Python 2.x and 3.x are supported.")
+
+def consoleMessage(x):
+    sys.stdout.write(x)
 
 set_showmessage(consoleMessage)
 
