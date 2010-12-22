@@ -112,8 +112,14 @@ ExtPtrSexp_address(PySexpObject *self)
     return NULL;
   }
   embeddedR_setlock();
+#if (PY_VERSION_HEX < 0x02070000) 
   PyObject *res = PyCObject_FromVoidPtr(R_ExternalPtrAddr(self->sObj->sexp), 
-                                        SexpObject_CObject_destroy);
+                                        NULL);
+#else
+  PyObject *res = PyCapsule_New(R_ExternalPtrAddr(self->sObj->sexp),
+				"rpy2.rinterface._C_API_SEXP_",
+				NULL);
+#endif
   embeddedR_freelock();
   return res;
 }

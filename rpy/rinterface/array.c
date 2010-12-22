@@ -161,6 +161,12 @@ array_struct_get(PySexpObject *self)
     return NULL;
   }
   Py_INCREF(self);
+#if (PY_VERSION_HEX < 0x02070000) 
   return PyCObject_FromVoidPtrAndDesc(inter, self, array_struct_free);
+#else
+  return PyCapsule_New(inter,
+		       NULL, /* Numpy does not seem to give a name */
+		       array_struct_free);
+#endif
 }
 
