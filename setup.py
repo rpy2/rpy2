@@ -18,10 +18,12 @@ if sys.version_info >= (3,):
     from distutils import filelist, dir_util, file_util, util#, log
     #log.set_verbosity(1)
     fl = filelist.FileList()
-    for line in open("MANIFEST.in"):
+    tmp = open("MANIFEST.in")
+    for line in tmp:
         line = line.rstrip()
         if line != '':
             fl.process_template_line(line)
+    tmp.close()
     dir_util.create_tree(package_prefix, fl.files)
     outfiles_2to3 = []
     #dist_script = os.path.join("build", "src", "distribute_setup.py")
@@ -118,7 +120,9 @@ class build_ext(_build_ext):
                                    ('r_home', 'r_home'))
         _build_ext.finalize_options(self) 
         if self.r_home is None:
-            self.r_home = os.popen("R RHOME").readlines()
+            tmp = os.popen("R RHOME")
+            self.r_home = tmp.readlines()
+            tmp.close()
             if len(self.r_home) == 0:
                 raise SystemExit("Error: Tried to guess R's HOME but no R command in the PATH.")
 
@@ -183,6 +187,7 @@ def get_rversion(r_home):
     rversion = rversion.split('.')
     rversion[0] = int(rversion[0])
     rversion[1] = int(rversion[1])
+    rp.close()
     return rversion
 
 def cmp_version(x, y):
@@ -304,6 +309,7 @@ def get_rconfig(r_home, about, allow_empty = False):
         rconfig = rp.readline()
     rconfig = rconfig.strip()
     rc = RConfig.from_string(rconfig, allow_empty = allow_empty)
+    rp.close()
     return rc
 
 def getRinterface_ext():
