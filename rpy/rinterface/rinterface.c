@@ -309,7 +309,7 @@ EmbeddedR_WriteConsole(const char *buf, int len)
 #if (PY_VERSION_HEX < 0x03010000)
   arglist = Py_BuildValue("(s)", buf);
 #else
-  arglist = Py_BuildValue("(y)", buf);
+  arglist = Py_BuildValue("(s)", buf);
 #endif
 
   if (! arglist) {    PyErr_NoMemory();
