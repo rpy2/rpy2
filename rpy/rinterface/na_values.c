@@ -669,21 +669,22 @@ NAComplex_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
   static PyObject *self = NULL;
   static char *kwlist[] = {0};
-  PyObject *py_value, *new_args;
-                                
+  Py_complex py_value;
+   
+  assert(PyTYpe_IsSubtype(type, &PyComplex_Type));
+
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
     return NULL;
   }
 
   if (self == NULL) {
-    py_value = PyComplex_FromDoubles((double)NA_REAL, (double)NA_REAL);
-    if (py_value == NULL) {
-      return NULL;
-    }
-    new_args = PyTuple_Pack(1, py_value);
-    self = PyComplex_Type.tp_new(type, new_args, kwds);
-    Py_DECREF(new_args);
-    if (self == NULL) {
+    py_value.real = (double)NA_REAL;
+    py_value.imag = (double)NA_REAL;
+
+    self = type->tp_alloc(type, 0);
+    if (self != NULL) {
+      ((PyComplexObject *)self)->cval = py_value; 
+    } else {
       return NULL;
     }
   }
