@@ -149,7 +149,11 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
       break;
     case CPLXSXP:
       vc = COMPLEX_POINTER(*sexp)[i_R];
-      res = PyComplex_FromDoubles(vc.r, vc.i);
+      if (vc.r == NA_REAL && vc.i == NA_REAL) {
+	res = NAComplex_New(1);
+      } else {
+	res = PyComplex_FromDoubles(vc.r, vc.i);
+      }
       break;
     case STRSXP:
       if (STRING_ELT(*sexp, i_R) == NA_STRING) {
@@ -606,11 +610,19 @@ VectorSexp_subscript(PySexpObject *object, PyObject* item)
     if (vec_len == -1)
       /* propagate the error */
       return NULL;
-    if (PySlice_GetIndicesEx((PySliceObject*)item,
+#if (PY_VERSION_HEX >= 0x03020000)
+    if (PySlice_GetIndicesEx((PyObject*)item,
 			     vec_len,
 			     &start, &stop, &step, &slicelength) < 0) {
       return NULL;
     }
+#else
+    if (PySlice_GetIndicesEx((PySliceObject*)item,
+			     vec_len,
+			     &start, &stop, &step, &slicelength) < 0) {
+      return NULL;
+    }    
+#endif
     if (slicelength <= 0) {
       PyErr_Format(PyExc_IndexError,
 		   "The slice's length can't be < 0.");
@@ -655,10 +667,17 @@ VectorSexp_ass_subscript(PySexpObject* self, PyObject* item, PyObject* value)
       if (vec_len == -1)
       /* propagate the error */
       return -1;
+#if (PY_VERSION_HEX >= 0x03020000)
+      if (PySlice_GetIndicesEx((PyObject*)item, vec_len,
+			       &start, &stop, &step, &slicelength) < 0) {
+	return -1;
+      }
+#else
       if (PySlice_GetIndicesEx((PySliceObject*)item, vec_len,
 			       &start, &stop, &step, &slicelength) < 0) {
 	return -1;
       }
+#endif
       if (step == 1) {
 	return VectorSexp_ass_slice(self, start, stop, value);
       } else {
