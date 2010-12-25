@@ -131,14 +131,14 @@ static PyNumberMethods NAInteger_NumberMethods = {
   (unaryfunc) NA_unaryfunc, /* nb_hex; */
 #endif
   /* Added in release 2.0 */
-  0, /* nb_inplace_add; */
-  0, /* nb_inplace_subtract; */
-  0, /* nb_inplace_multiply; */
+  (binaryfunc)NA_binaryfunc, /* nb_inplace_add; */
+  (binaryfunc)NA_binaryfunc, /* nb_inplace_subtract; */
+  (binaryfunc)NA_binaryfunc, /* nb_inplace_multiply; */
 #if (PY_VERSION_HEX < 0x03010000)
-  0, /* nb_inplace_divide; */
+  (binaryfunc)NA_binaryfunc, /* nb_inplace_divide; */
 #endif
-  0, /* nb_inplace_remainder; */
-  0, /* nb_inplace_power; */
+  (binaryfunc)NA_binaryfunc, /* nb_inplace_remainder; */
+  (binaryfunc)NA_binaryfunc, /* nb_inplace_power; */
   0, /* nb_inplace_lshift; */
   0, /* nb_inplace_rshift; */
   0, /* nb_inplace_and; */
@@ -147,8 +147,8 @@ static PyNumberMethods NAInteger_NumberMethods = {
   /* Added in release 2.2 */
   (binaryfunc) NA_binaryfunc, /* nb_floor_divide; */
   (binaryfunc) NA_binaryfunc, /* nb_true_divide; */
-  0, /* nb_inplace_floor_divide; */
-  0, /* nb_inplace_true_divide; */
+  (binaryfunc)NA_binaryfunc, /* nb_inplace_floor_divide; */
+  (binaryfunc)NA_binaryfunc, /* nb_inplace_true_divide; */
   /* Added in release 2.5 */
 #if PY_VERSION_HEX >= 0x02050000
   (unaryfunc) NA_unaryfunc /* nb_index; */
@@ -669,22 +669,19 @@ NAComplex_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
   static PyObject *self = NULL;
   static char *kwlist[] = {0};
-  Py_complex py_value;
    
-  assert(PyTYpe_IsSubtype(type, &PyComplex_Type));
+  assert(PyType_IsSubtype(type, &PyComplex_Type));
 
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
     return NULL;
   }
 
   if (self == NULL) {
+    Py_complex py_value;
     py_value.real = (double)NA_REAL;
     py_value.imag = (double)NA_REAL;
-
-    self = type->tp_alloc(type, 0);
-    if (self != NULL) {
-      ((PyComplexObject *)self)->cval = py_value; 
-    } else {
+    self = PyComplex_FromCComplex(py_value);
+    if (self == NULL) {
       return NULL;
     }
   }
