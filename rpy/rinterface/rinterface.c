@@ -69,10 +69,13 @@
 
 #include <R_ext/eventloop.h>
 
-/* FIXME: consider the use of parsing */
 #include <R_ext/Parse.h>
 #include <R_ext/Rdynload.h>
 #include <R_ext/RStartup.h>
+
+/*FIXME:  required to fix the R issue with setting static char* values
+ for readline variable (making Python's readline crash when trying to free them) */
+#include <readline/readline.h>
 
 /* From Defn.h */
 #ifdef HAVE_POSIX_SETJMP
@@ -1185,6 +1188,16 @@ static PyObject* EmbeddedR_init(PyObject *self)
 
   /* register the symbols */
   RegisterExternalSymbols();
+
+  /*FIXME: setting readline variables so R's oddly static declarations
+   become harmless*/
+  char *rl_completer, *rl_basic;
+  rl_completer = strndup(rl_completer_word_break_characters, 200);
+  rl_completer_word_break_characters = rl_completer;
+
+  rl_basic = strndup(rl_basic_word_break_characters, 200);
+  rl_basic_word_break_characters = rl_basic;
+  /* --- */
 
 #ifdef RPY_VERBOSE
   printf("R initialized - status: %i\n", status);
