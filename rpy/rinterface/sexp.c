@@ -229,11 +229,20 @@ PyDoc_STRVAR(Sexp_named_doc,
 This method corresponds to the macro NAMED.\n\
 See the R-extensions manual for further details.");
 
+#if (PY_VERSION_HEX < 0x02070000)  
 void SexpObject_CObject_destroy(void *cobj)
 {
   SexpObject* sexpobj_ptr = (SexpObject *)cobj;
   SexpObject_clear(sexpobj_ptr);
 }
+#else
+void SexpObject_CObject_destroy(PyObject *rpycapsule)
+{
+  SexpObject *sexpobj_ptr = (SexpObject *)(PyCapsule_GetPointer(rpycapsule,
+								"rpy2.rinterface._C_API_"));
+  SexpObject_clear(sexpobj_ptr);
+}
+#endif
 
 static PyObject*
 Sexp_sexp_get(PyObject *self, void *closure)
@@ -244,10 +253,11 @@ Sexp_sexp_get(PyObject *self, void *closure)
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return NULL;;
   }
+
   
-  /*FIXME: Probable memory leak.*/
-  RPY_INCREF(rpyobj);
+  RPY_INCREF(rpyobj);  
 #if (PY_VERSION_HEX < 0x02070000)  
+  /*FIXME: memory leak when INCREF ? */
   PyObject *res = PyCObject_FromVoidPtr(rpyobj->sObj, 
                                         SexpObject_CObject_destroy);
 #else

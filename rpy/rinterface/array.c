@@ -106,6 +106,8 @@ sexp_itemsize(SEXP sexp)
 /*     } */
 /* } */
 
+
+#if (PY_VERSION_HEX < 0x02070000)  
 static void
 array_struct_free(void *ptr, void *arr)
 {
@@ -114,7 +116,16 @@ array_struct_free(void *ptr, void *arr)
   Py_DECREF((PyObject *)arr);
   PyMem_Free(inter);
 }
-
+#else
+array_struct_free(PyObject *rpynumpycapsule)
+{
+  PyArrayInterface *inter = 
+    (PyArrayInterface *)(PyCapsule_GetPointer(rpynumpycapsule,
+					      NULL));
+  PyMem_Free(inter->shape);
+  PyMem_Free(inter);
+}
+#endif
 
 static PyObject* 
 array_struct_get(PySexpObject *self)
@@ -166,7 +177,7 @@ array_struct_get(PySexpObject *self)
 #else
   return PyCapsule_New(inter,
 		       NULL, /* Numpy does not seem to give a name */
-		       array_struct_free);
+		       (PyCapsule_Destructor) array_struct_free);
 #endif
 }
 
