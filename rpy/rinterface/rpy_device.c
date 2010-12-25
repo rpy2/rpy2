@@ -1482,8 +1482,13 @@ PyInit_rpy_device(void)
   GrDev_metricinfo_name = PyUnicode_FromString("metricinfo");
   GrDev_getevent_name = PyUnicode_FromString("getevent");
 #endif
-  if (PyType_Ready(&GrDev_Type) < 0)
+  if (PyType_Ready(&GrDev_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
+  }
   
   PyObject *m, *d;
 #if (PY_VERSION_HEX < 0x03010000)
@@ -1491,13 +1496,18 @@ PyInit_rpy_device(void)
 #else
   m = PyModule_Create(&rpydevicemodule);
 #endif
-  if (m == NULL)
-    return;
-  d = PyModule_GetDict(m);
+  if (m == NULL) {
 #if (PY_VERSION_HEX < 0x03010000)
-  PyModule_AddObject(m, "GraphicalDevice", (PyObject *)&GrDev_Type);  
+    return;
 #else
-  PyModule_AddObject(m, "GraphicalDevice", (PyObject *)&GrDev_Type);
+    return NULL;
+#endif
+  }
+
+  d = PyModule_GetDict(m);
+  PyModule_AddObject(m, "GraphicalDevice", (PyObject *)&GrDev_Type);  
+#if (PY_VERSION_HEX < 0x03010000)
+#else
   return m;
 #endif
 }
