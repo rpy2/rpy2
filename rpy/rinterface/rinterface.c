@@ -497,11 +497,12 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
 #if (PY_VERSION_HEX < 0x03010000)
   input_str = PyString_AsString(result);
 #else
-  if PyUnicode_Check(result) {
-      PyObject *pybytes = PyUnicode_AsLatin1String(result);
+  int is_unicode = PyUnicode_Check(result);
+  PyObject *pybytes = NULL;
+  if (is_unicode) {
+      pybytes = PyUnicode_AsLatin1String(result);
       input_str = PyBytes_AsString(pybytes);
-      Py_DECREF(pybytes);
-    } else if (PyBytes_Check(result)) {
+  } else if (PyBytes_Check(result)) {
     input_str = PyBytes_AsString(result);
   } else {
     PyErr_Format(PyExc_ValueError, \
@@ -515,6 +516,10 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   //const char *input_str = PyBytes_AsString(result);
 #endif
   if (! input_str) {
+#if (PY_VERSION_HEX >= 0x03010000)
+    if (is_unicode)
+      Py_XDECREF(pybytes);
+#endif
     PyErr_Print();
     PyErr_Clear();
     RPY_GIL_RELEASE(is_threaded, gstate);
@@ -526,6 +531,11 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   strncpy((char *)buf, input_str, (l>len-1)?len-1:l);
   buf[(l>len-1)?len-1:l]=0;
   /* --- */
+
+#if (PY_VERSION_HEX >= 0x03010000)
+  if (is_unicode)
+    Py_XDECREF(pybytes);
+#endif
   
   Py_XDECREF(result);
 /*   signal(SIGINT, old_int); */
@@ -651,11 +661,13 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   char *path_str = PyString_AsString(result);
 #else
   PyObject *pybytes = PyUnicode_AsLatin1String(result);
-  const char *path_str = PyBytes_AsString(pybytes);
-  Py_DECREF(pybytes);
+  char *path_str = PyBytes_AsString(pybytes);
 #endif
 
   if (! path_str) {
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
     Py_DECREF(result);
     PyErr_SetString(PyExc_TypeError, 
                     "Returned value should have a string representation");
@@ -671,6 +683,10 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   strncpy((char *)buf, path_str, (l>len-1)?len-1:l);
   buf[(l>len-1)?len-1:l] = '\0';
   /* --- */
+
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
 
   Py_DECREF(arglist);  
   Py_DECREF(result);
@@ -1329,13 +1345,15 @@ EmbeddedR_parse(PyObject *self, PyObject *pystring)
   }
   PyObject *pybytes = PyUnicode_AsLatin1String(pystring);
   char *string = PyBytes_AsString(pybytes);
-  Py_DECREF(pybytes);
 #endif
 
   embeddedR_setlock();
 
   PROTECT(cmdSexp = allocVector(STRSXP, 1));
   SET_STRING_ELT(cmdSexp, 0, mkChar(string));
+#if (PY_VERSION_HEX >= 0x03010000)
+  Py_DECREF(pybytes);
+#endif
   cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
   if (status != PARSE_OK) {
     UNPROTECT(2);
@@ -1572,9 +1590,11 @@ Sexp_rcall(PyObject *self, PyObject *args)
 #else
       pybytes = PyUnicode_AsLatin1String(argName);
       argNameString = PyBytes_AsString(pybytes);
-      Py_DECREF(pybytes);
 #endif
       SET_TAG(c_R, install(argNameString));
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
     }
     c_R = CDR(c_R);
     /* if on-the-fly conversion, UNPROTECT the newly created
@@ -2287,17 +2307,25 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
   name = PyString_AsString(key);
 #else
   PyObject *pybytes = PyUnicode_AsLatin1String(key);
+  if (pybytes == NULL) {
+    return NULL;
+  }
   name = PyBytes_AsString(pybytes);
-  Py_DECREF(pybytes);
 #endif
 
   if (strlen(name) == 0) {
     PyErr_Format(PyExc_KeyError, "%s", name);
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
     return NULL;
   }
 
   if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
     return NULL;
   }
   embeddedR_setlock();
@@ -2306,15 +2334,24 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     embeddedR_freelock();
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
     return NULL;
   }
   res_R = findVarInFrame(rho_R, install(name));
 
   if (res_R != R_UnboundValue) {
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
     embeddedR_freelock();
     return newPySexpObject(res_R, 1);
   }
   PyErr_Format(PyExc_LookupError, "'%s' not found", name);
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
   embeddedR_freelock();
   return NULL;
 }
@@ -2356,11 +2393,13 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 #else
   PyObject *pybytes = PyUnicode_AsLatin1String(key);
   name = PyBytes_AsString(pybytes);
-  Py_DECREF(pybytes);
 #endif
 
   if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
     return -1;
   }
   embeddedR_setlock();
@@ -2369,6 +2408,9 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
     embeddedR_freelock();
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
     return -1;
   }
 
@@ -2377,9 +2419,15 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "The value has NULL SEXP.");
     embeddedR_freelock();
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
     return -1;
   }
   SEXP sym = Rf_install(name);
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
   PROTECT(sexp_copy = Rf_duplicate(sexp));
   Rf_defineVar(sym, sexp_copy, rho_R);
   UNPROTECT(1);
