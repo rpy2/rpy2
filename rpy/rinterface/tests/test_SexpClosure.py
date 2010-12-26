@@ -69,7 +69,7 @@ class SexpClosureTestCase(unittest.TestCase):
                           ('c', rinterface.SexpVector([0, ], 
                                                       rinterface.INTSXP))))
 
-        mylist = rinterface.baseenv['list'].rcall(ad.items(), 
+        mylist = rinterface.baseenv['list'].rcall(tuple(ad.items()), 
                                                   rinterface.globalenv)
         
         names = [x for x in mylist.do_slot("names")]
@@ -81,13 +81,13 @@ class SexpClosureTestCase(unittest.TestCase):
         ad = rlc.OrdDict( ((None, rinterface.parse('sum(x)')),) )
         env_a = rinterface.baseenv['new.env']()
         env_a['x'] = rinterface.IntSexpVector([1,2,3])
-        sum_a = rinterface.baseenv['eval'].rcall(ad.items(), 
-                                                          env_a)
+        sum_a = rinterface.baseenv['eval'].rcall(tuple(ad.items()), 
+                                                 env_a)
         self.assertEquals(6, sum_a[0])
         env_b = rinterface.baseenv['new.env']()
         env_b['x'] = rinterface.IntSexpVector([4,5,6])
-        sum_b = rinterface.baseenv['eval'].rcall(ad.items(), 
-                                                          env_b)
+        sum_b = rinterface.baseenv['eval'].rcall(tuple(ad.items()), 
+                                                 env_b)
         self.assertEquals(15, sum_b[0])        
         
     def testErrorInCall(self):
