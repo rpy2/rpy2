@@ -220,6 +220,13 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertTrue(ok)
         self.assertEquals('abc', sexp[0])
 
+    def testNewUnicodeSymbol(self):
+        sexp = ri.SexpVector((u'\u21a7', ), ri.STRSXP)
+        isCharacter = ri.globalenv.get("is.character")
+        ok = isCharacter(sexp)[0]
+        self.assertTrue(ok)
+        self.assertEquals(u'\u21a7', sexp[0])
+        
     def testNewList(self):
         vec = ri.ListSexpVector([1,'b',3,'d',5])
         ok = ri.baseenv["is.list"](vec)[0]

@@ -2907,8 +2907,8 @@ newSEXP(PyObject *object, int rType)
 #if (PY_VERSION_HEX < 0x03010000)
         str_R = mkChar(PyString_AS_STRING(item_tmp));
 #else
-	pybytes = PyUnicode_AsLatin1String(item_tmp);
-	str_R = mkChar(PyBytes_AsString(pybytes));
+	pybytes = PyUnicode_AsUTF8String(item_tmp);
+	str_R = mkCharCE(PyBytes_AsString(pybytes), CE_UTF8);
 	Py_DECREF(pybytes);
 #endif
         if (!str_R) {
@@ -2921,13 +2921,9 @@ newSEXP(PyObject *object, int rType)
         Py_DECREF(item_tmp);
 #if (PY_VERSION_HEX < 0x03010000)
       } else if ((item_tmp = PyObject_Unicode(item))) {
-        str_R = mkChar(PyUnicode_AS_DATA(item));
-#else
-      } else if ((item_tmp = PyObject_Str(item))) {
-	pybytes = PyUnicode_AsLatin1String(item);
-	str_R = mkChar(PyBytes_AsString(pybytes));
+	pybytes = PyUnicode_AsUTF8String(item);
+        str_R = mkCharCE(PyBytes_AsString(pybytes), CE_UTF8);
 	Py_DECREF(pybytes);
-#endif
         if (!str_R) {
           PyErr_NoMemory();
           UNPROTECT(1);
@@ -2936,6 +2932,7 @@ newSEXP(PyObject *object, int rType)
           break;
         }
         Py_DECREF(item_tmp);
+#endif
       }
       else {
         PyErr_Clear();
@@ -2992,10 +2989,10 @@ newSEXP(PyObject *object, int rType)
 #endif
           PROTECT(tmp = NEW_CHARACTER(1));
 #if (PY_VERSION_HEX < 0x03010000)
-          tmp2 = mkChar(PyString_AS_STRING(item));
+	  tmp2 = mkCharCE(PyString_AsString(item), CE_UTF8);
 #else
-	  pybytes = PyUnicode_AsLatin1String(item);
-	  tmp2 = mkChar(PyBytes_AsString(pybytes));
+	  pybytes = PyUnicode_AsUTF8String(item);
+	  tmp2 = mkCharCE(PyBytes_AsString(pybytes), CE_UTF8);
 	  Py_DECREF(pybytes);
 #endif
           if (!tmp2) {
