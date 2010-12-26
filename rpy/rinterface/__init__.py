@@ -3,7 +3,10 @@ import os, sys
 try:
     R_HOME = (os.environ["R_HOME"], )
 except KeyError:
-    R_HOME = os.popen("R RHOME").readlines()
+    tmp = os.popen("R RHOME")
+    R_HOME = tmp.readlines()
+    tmp.close()
+    del(tmp)
 
 if len(R_HOME) == 0:
     if sys.platform == 'win32':
