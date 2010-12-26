@@ -117,6 +117,7 @@ array_struct_free(void *ptr, void *arr)
   PyMem_Free(inter);
 }
 #else
+static void
 array_struct_free(PyObject *rpynumpycapsule)
 {
   PyArrayInterface *inter = 
