@@ -2374,17 +2374,10 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   }
 #endif
 
-
-  if (value == NULL) {
-    /* delete objects */
-    /*FIXME: something missing here ?*/
-  }
-
   int is_PySexpObject = PyObject_TypeCheck(value, &Sexp_Type);
   if (! is_PySexpObject) {
     PyErr_Format(PyExc_ValueError, 
                  "All parameters must be of type Sexp_Type.");
-    /* PyDecRef(value); */
     return -1;
   }
 
