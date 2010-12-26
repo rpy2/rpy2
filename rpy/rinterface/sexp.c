@@ -151,14 +151,18 @@ Sexp_do_slot(PyObject *self, PyObject *name)
 #else
   PyObject *pybytes = PyUnicode_AsLatin1String(name);
   char *name_str = PyBytes_AsString(pybytes);
-  Py_DECREF(pybytes);
 #endif
   if (! R_has_slot(sexp, install(name_str))) {
     PyErr_SetString(PyExc_LookupError, "The object has no such attribute.");
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
     return NULL;
   }
   SEXP res_R = GET_SLOT(sexp, install(name_str));
-
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif
   PyObject *res = (PyObject *)newPySexpObject(res_R, 1);
   return res;
 }
