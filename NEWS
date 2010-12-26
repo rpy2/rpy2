@@ -25,6 +25,15 @@ New Features
 
 - :class:`rpy2.robjects.vectors.ListVector` to represent R lists.
 
+- Constructor for :class:`rpy2.robjects.vectors.ListVector` and 
+  :class:`rpy2.robjects.vectors.DataFrame` accept any iterable at the condition
+  that the elements iterated through also valid subscripts for it (e.g., given
+  an iterable v, the following is valid:
+
+  .. code:: python
+
+     x[k] for x in v
+
 :mod:`rpy2.rinterface`:
 
 - :data:`NA_Complex` and :class:`NAComplexType` for missing complex values.

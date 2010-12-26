@@ -432,16 +432,21 @@ class ListVector(Vector):
             if tlist.typeof != rinterface.VECSXP:
                 raise ValueError("tlist should of typeof VECSXP")
             super(ListVector, self).__init__(tlist)
-        elif hasattr(tlist, "iteritems"):
-            if not callable(tlist.iteritems):
-                raise ValueError("tlist should have a /method/ iteritems (not an attribute)")
+        elif isinstance(tlist, rlc.TaggedList):
             kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
+            kv = tuple(kv)
+            df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
+            super(ListVector, self).__init__(df)
+        elif hasattr(tlist, "__iter__"):
+            if not callable(tlist.__iter__):
+                raise ValueError("tlist should have a /method/ __iter__ (not an attribute)")
+            kv = [(str(k), conversion.py2ri(tlist[k])) for k in tlist]
             kv = tuple(kv)
             df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
             super(ListVector, self).__init__(df)
         else:
             raise ValueError("tlist can be either "+
-                             "an instance of rpy2.rlike.container.TaggedList," +
+                             "an iter-able " +
                              " or an instance of rpy2.rinterface.SexpVector" +
                              " of type VECSXP, or a Python dict.")
 
@@ -654,25 +659,29 @@ class DataFrame(ListVector):
 
         :param tlist: rpy2.rlike.container.TaggedList or rpy2.rinterface.SexpVector (and of class 'data.frame' for R)
         """
-        if isinstance(tlist, rlc.TaggedList):
-            df = baseenv_ri.get("data.frame").rcall(tuple(tlist.items()),
-                                                    globalenv_ri)
-            super(DataFrame, self).__init__(df)
-        elif isinstance(tlist, rinterface.SexpVector):
+        if isinstance(tlist, rinterface.SexpVector):
             if tlist.typeof != rinterface.VECSXP:
                 raise ValueError("tlist should of typeof VECSXP")
             if not globalenv_ri.get('inherits')(tlist, self._dataframe_name)[0]:
                 raise ValueError('tlist should of R class "data.frame"')
             super(DataFrame, self).__init__(tlist)
-        elif isinstance(tlist, dict):
+        elif isinstance(tlist, rlc.TaggedList):
             kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
+            kv = tuple(kv)
+            df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
+            super(DataFrame, self).__init__(df)
+        elif hasattr(tlist, "__iter__"):
+            if not callable(tlist.__iter__):
+                raise ValueError("tlist should have a /method/ __iter__ (not an attribute)")
+            kv = [(str(k), conversion.py2ri(tlist[k])) for k in tlist]
             df = baseenv_ri.get("data.frame").rcall(tuple(kv), globalenv_ri)
             super(DataFrame, self).__init__(df)
         else:
             raise ValueError("tlist can be either "+
-                             "an instance of rpy2.rlike.container.TaggedList," +
+                             "an instance of an iter-able class" +
+                             "(such a Python dict, rpy2.rlike.container OrdDict" +
                              " or an instance of rpy2.rinterface.SexpVector" +
-                             " of type VECSXP, or a Python dict.")
+                             " of type VECSXP")
     
     def _get_nrow(self):
         """ Number of rows. 
