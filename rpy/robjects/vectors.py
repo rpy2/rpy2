@@ -655,7 +655,8 @@ class DataFrame(ListVector):
         :param tlist: rpy2.rlike.container.TaggedList or rpy2.rinterface.SexpVector (and of class 'data.frame' for R)
         """
         if isinstance(tlist, rlc.TaggedList):
-            df = baseenv_ri.get("data.frame").rcall(tlist.items(), globalenv_ri)
+            df = baseenv_ri.get("data.frame").rcall(tuple(tlist.items()),
+                                                    globalenv_ri)
             super(DataFrame, self).__init__(df)
         elif isinstance(tlist, rinterface.SexpVector):
             if tlist.typeof != rinterface.VECSXP:
@@ -665,8 +666,7 @@ class DataFrame(ListVector):
             super(DataFrame, self).__init__(tlist)
         elif isinstance(tlist, dict):
             kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
-            kv = tuple(kv)
-            df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
+            df = baseenv_ri.get("data.frame").rcall(tuple(kv), globalenv_ri)
             super(DataFrame, self).__init__(df)
         else:
             raise ValueError("tlist can be either "+
