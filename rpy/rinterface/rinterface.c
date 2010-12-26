@@ -1881,11 +1881,14 @@ static PyTypeObject VectorSexp_Type = {
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
-#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
+#if PY_VERSION_HEX >= 0x02060000
         &VectorSexp_as_buffer,                      /*tp_as_buffer*/
+#else
+	0,                       /*tp_as_buffer*/
+#endif
+#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
 #else
-        0,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
 #endif
         VectorSexp_Type_doc,                      /*tp_doc*/

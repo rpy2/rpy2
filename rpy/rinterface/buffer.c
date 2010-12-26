@@ -164,6 +164,7 @@ VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
 }
 #endif
 
+#if (PY_VERSION_HEX < 0x03010000)
 static Py_ssize_t
 VectorSexp_getsegcount(PySexpObject *self, Py_ssize_t *lenp)
 {
@@ -198,7 +199,6 @@ VectorSexp_getsegcount(PySexpObject *self, Py_ssize_t *lenp)
 static Py_ssize_t
 VectorSexp_getreadbuf(PySexpObject *self, Py_ssize_t segment, void **ptrptr)
 {
-  printf("getreadbuf\n");
   if (segment != 0) {
     PyErr_SetString(PyExc_ValueError,
 		    "accessing non-existing data segment");
@@ -250,6 +250,7 @@ VectorSexp_getcharbuf(PySexpObject *self, Py_ssize_t segment, const char **ptrpt
   /*FIXME: introduce a "writeable" flag for SexpVector objects ? */
   return VectorSexp_getreadbuf(self, segment, (void **)ptrptr);
 }
+#endif
 
 static PyBufferProcs VectorSexp_as_buffer = {
 #if (PY_VERSION_HEX < 0x03010000)
