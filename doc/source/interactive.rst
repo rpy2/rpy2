@@ -24,7 +24,7 @@ in non-interactive code as well. It is trading trading flexibility
 or performances for ease-of-use.
  
 >>> import rpy2.interactive as r
->>> v = r.vectors.IntVector((1,2,3))
+>>> v = r.IntVector((1,2,3))
 >>> r.importr('datasets')
 rpy2.robjecs.packages.Package as a <module 'datasets' (built-in)>
 >>> tuple(r.packages.datasets.trees.names)
@@ -34,7 +34,7 @@ R vectors
 =========
 
 >>> import rpy2.interactive as r
->>> x = r.vectors.IntVector(range(10))
+>>> x = r.IntVector(range(10))
 
 
 R packages
@@ -50,6 +50,51 @@ R Packages can be:
 - installed 
 
 - attached (loaded)
+
+
+Loading installed packages
+--------------------------
+
+We start with the loading of R packages since this is a very common
+operation in R, and since R is typically distributed
+with *recommended* packages one can immediately start playing with.
+
+Loading installed R packages can be done through the function :func:`importr`. 
+
+>>> import rpy2.interactive as r
+>>> r.importr("graphics")
+rpy2.robjecs.packages.Package as a <module 'graphics' (built-in)>
+
+The function returns a package object, and also adds a reference to it
+in :attr:`r.packages`
+
+>>> r.packages.graphics
+rpy2.robjecs.packages.Package as a <module 'graphics' (built-in)>
+
+All objects in the R package *graphics* can subsequently be accessed
+through that module-like object. For example, for the function barplot:
+
+>>> r.packages.graphics.barplot
+<SignatureTranslatedFunction - Python:0x9f2f3ec / R:0x9c81f5c>
+
+
+Similarly, the recommended package *stats*, and *datasets*
+can be loaded.
+
+>>> r.importr("stats")
+rpy2.robjecs.packages.Package as a <module 'stats' (built-in)>
+>>> r.importr("datasets")
+rpy2.robjecs.packages.Package as a <module 'datasets' (built-in)>
+
+We can then demonstrate how to access objects in R packages through
+a graphical example:
+
+.. code-block:: python
+
+   r.packages.graphics.coplot(r.Formula('Time ~ conc | Wt'),
+                              r.packages.datasets.Theoph) 
+
+
 
 Available packages
 ------------------
@@ -111,22 +156,6 @@ Installing packages
 
 Once a package is installed it will be available for future use without having
 the need to install it again (unless a different version of R is used).
-
-
-Loading installed packages
---------------------------
-
-Loading installed R packages can be done through the function importr. 
-
->>> import rpy2.interactive as r
->>> r.importr("graphics")
-rpy2.robjecs.packages.Package as a <module 'graphics' (built-in)>
-
-The function returns a package object, and also adds a reference to it
-in :attr:`r.packages`
-
->>> r.packages.graphics
-rpy2.robjecs.packages.Package as a <module 'graphics' (built-in)>
 
 
 
