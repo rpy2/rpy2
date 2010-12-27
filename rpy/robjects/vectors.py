@@ -258,6 +258,42 @@ class Vector(RObjectMixin, SexpVector):
         res = conversion.ri2py(res)
         return res
 
+    def __repr__(self, indent = ''):
+        def p_str(x):
+            if isinstance(x, long) or isinstance(x, int):
+                res = '%8i' %x
+            elif isinstance(x, float):
+                res = '%8f' %x
+            else:
+                if isinstance(x, str):
+                    tmp = ['"', None, None, '"']
+                else:
+                    tmp = ['', None, None, '']
+                    x = type(x).__name__                    
+                if len(x) < 6:
+                    tmp[1] = x[:min(8, len(x))]
+                    tmp[2] = ''
+                else:
+                    tmp[1] = x[:5]
+                    tmp[2] = '...'
+                res = ''.join(tmp)
+            return res
+
+        if len(self) < 7:
+            s = '[' + \
+                ', '.join([p_str(x) for x in self[:min(len(self), 8)]]) + \
+                ']'
+        else:
+            s = '[' + \
+                ', '.join([p_str(x) for x in self[:3]]) + ', ..., ' + \
+                ', '.join([p_str(x) for x in self[(len(self)-3):len(self)]]) + \
+                ']'
+        
+        return indent + super(Vector, self).__repr__() + os.linesep + \
+            indent + s
+                          
+
+
 class StrVector(Vector):
     """      Vector of string elements
 
@@ -813,6 +849,19 @@ class DataFrame(ListVector):
         for i in xrange(self.ncol):
             yield self.rx(rinterface.MissingArg, i+1)
 
+    def __repr__(self):
+        
+        if len(self) < 7:
+            s = (x.__repr__(indent = '  ') for x in self)
+        else:
+            s = [x.__repr__(indent = '  ') for x in self[:3]] + \
+                ['  ...', ] + \
+                [join([x.__repr__(indent = '  ') for x in self[(len(self)-3):len(self)]])]
+        s = super(DataFrame, self).__repr__() + os.linesep + \
+            os.linesep.join(s)
+        return s
+
+# end of definition for DataFrame
 
 __all__ = ['Vector', 'StrVector', 'IntVector', 'BoolVector', 'ComplexVector',
            'FloatVector', 'FactorVector', 'ListVector', 'POSIXlt', 'POSIXct',
