@@ -30,7 +30,7 @@ New Features
   that the elements iterated through also valid subscripts for it (e.g., given
   an iterable v, the following is valid:
 
-  .. code:: python
+  .. code-block:: python
 
      x[k] for x in v
 
