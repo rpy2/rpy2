@@ -156,15 +156,25 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
       }
       break;
     case STRSXP:
-      if (STRING_ELT(*sexp, i_R) == NA_STRING) {
+      sexp_item = STRING_ELT(*sexp, i_R);
+      if (sexp_item == NA_STRING) {
         res = NACharacter_New(1);
       } else {
-        vs = translateChar(STRING_ELT(*sexp, i_R));
+	cetype_t encoding = Rf_getCharCE(sexp_item);
+	switch (encoding) {
+	case CE_UTF8:
+	  vs = translateCharUTF8(sexp_item);
+	  res = PyUnicode_FromString(vs);
+	  break;
+	default:
+	  vs = CHAR(sexp_item);
 #if (PY_VERSION_HEX < 0x03010000)
-        res = PyString_FromString(vs);
+	  res = PyString_FromString(vs);
 #else
-	res = PyUnicode_FromString(vs);
+	  res = PyUnicode_FromString(vs);
 #endif
+	  break;
+	}
       }
       break;
 /*     case CHARSXP: */

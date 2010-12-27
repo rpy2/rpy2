@@ -2362,7 +2362,7 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 {
   const char *name;
 
-  #if (PY_VERSION_HEX < 0x03010000)
+#if (PY_VERSION_HEX < 0x03010000)
   if (!PyString_Check(key)) {
     PyErr_Format(PyExc_ValueError, "Keys must be string objects.");
     return -1;
@@ -2903,26 +2903,35 @@ newSEXP(PyObject *object, int rType)
       item = PySequence_Fast_GET_ITEM(seq_object, i);
       if (item == na) {
         str_R = NA_STRING;
-      } else if((item_tmp = PyObject_Str(item))) {
 #if (PY_VERSION_HEX < 0x03010000)
-        str_R = mkChar(PyString_AS_STRING(item_tmp));
-#else
-	pybytes = PyUnicode_AsUTF8String(item_tmp);
-	str_R = mkCharCE(PyBytes_AsString(pybytes), CE_UTF8);
-	Py_DECREF(pybytes);
-#endif
+      } else if(PyString_Check(item)) {
+	/* PyObject_Str in Python >= 3 is a unicode string */
+        str_R = mkChar(PyString_AS_STRING(item));
         if (!str_R) {
-            PyErr_NoMemory();
-            UNPROTECT(1);
-            sexp = NULL;
-            Py_DECREF(na);
-            break;
+	  PyErr_NoMemory();
+	  UNPROTECT(1);
+	  sexp = NULL;
+	  Py_DECREF(na);
+	  break;
         }
-        Py_DECREF(item_tmp);
-#if (PY_VERSION_HEX < 0x03010000)
-      } else if ((item_tmp = PyObject_Unicode(item))) {
+#endif
+      } else if (PyUnicode_Check(item)) {
 	pybytes = PyUnicode_AsUTF8String(item);
-        str_R = mkCharCE(PyBytes_AsString(pybytes), CE_UTF8);
+	if (pybytes == NULL) {
+	  sexp = NULL;
+	  break;
+	}
+#if (PY_VERSION_HEX < 0x03010000)
+	const char *string = PyString_AsString(pybytes);
+#else
+	const char *string = PyBytes_AsString(pybytes);
+#endif
+	if (string == NULL) {
+	  Py_DECREF(pybytes);
+	  sexp = NULL;
+	  break;
+	}
+        str_R = mkCharCE(string, CE_UTF8);
 	Py_DECREF(pybytes);
         if (!str_R) {
           PyErr_NoMemory();
@@ -2931,8 +2940,6 @@ newSEXP(PyObject *object, int rType)
           Py_DECREF(na);
           break;
         }
-        Py_DECREF(item_tmp);
-#endif
       }
       else {
         PyErr_Clear();
@@ -2989,9 +2996,13 @@ newSEXP(PyObject *object, int rType)
 #endif
           PROTECT(tmp = NEW_CHARACTER(1));
 #if (PY_VERSION_HEX < 0x03010000)
-	  tmp2 = mkCharCE(PyString_AsString(item), CE_UTF8);
+	  tmp2 = mkChar(PyString_AsString(item));
 #else
 	  pybytes = PyUnicode_AsUTF8String(item);
+	  if (pybytes == NULL) {
+	    sexp = NULL;
+	    break;
+	  }
 	  tmp2 = mkCharCE(PyBytes_AsString(pybytes), CE_UTF8);
 	  Py_DECREF(pybytes);
 #endif
