@@ -231,19 +231,18 @@ VectorSexp_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh)
 
   len_R = GET_LENGTH(*sexp);
 
-  /*FIXME: is this valid for Python < 3 ?*/  
-#if (PY_VERSION_HEX < 0x03010000)
-  if (ilow < 0) {
-    ilow = (R_len_t)(len_R - ilow) + 1;
-  }
-  if (ihigh < 0) {
-    ihigh = (R_len_t)(len_R - ihigh) + 1;
-  }
-#endif
+  if (ilow < 0)
+    ilow = 0;
+  else if (ilow > (Py_ssize_t)len_R)
+    ilow = (Py_ssize_t)len_R;
+  if (ihigh < ilow)
+    ihigh = ilow;
+  else if (ihigh > (Py_ssize_t)len_R)
+    ihigh = (Py_ssize_t)len_R;
 
   /* On 64bits, Python is apparently able to use larger integer
    * than R for indexing. */
-  if ((ilow >= R_LEN_T_MAX) | (ihigh >= R_LEN_T_MAX)) {
+  if ((ilow >= (Py_ssize_t)R_LEN_T_MAX) | (ihigh >= (Py_ssize_t)R_LEN_T_MAX)) {
     PyErr_Format(PyExc_IndexError, 
                  "Index values in the slice exceed what R can handle.");
     embeddedR_freelock();

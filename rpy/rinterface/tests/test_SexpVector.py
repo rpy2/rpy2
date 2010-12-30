@@ -334,6 +334,21 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertEquals(1, len(vec))
         self.assertEquals(2, vec[0])
 
+    def testGetSliceMissingBoundary(self):
+        vec = ri.IntSexpVector(range(10))
+        vec_slice = vec[:2]
+        self.assertEquals(2, len(vec_slice))
+        self.assertEquals(0, vec_slice[0])
+        self.assertEquals(1, vec_slice[1])
+        vec_slice = vec[8:]
+        self.assertEquals(2, len(vec_slice))
+        self.assertEquals(8, vec_slice[0])
+        self.assertEquals(9, vec_slice[1])
+        vec_slice = vec[-2:]
+        self.assertEquals(2, len(vec_slice))
+        self.assertEquals(8, vec_slice[0])
+        self.assertEquals(9, vec_slice[1])
+
     def testGetSliceBool(self):
         vec = ri.BoolSexpVector([True,False,True])
         vec = vec[0:2]
