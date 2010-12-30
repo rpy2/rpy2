@@ -43,6 +43,7 @@ static inline void rpy_GrDev_CallBack(pDevDesc dd, PyObject *name)
   Py_XDECREF(result);  
 }
 
+
 static PyObject *GrDev_close_name;
 static void rpy_Close(pDevDesc dd)
 {
@@ -858,26 +859,7 @@ GrDev_hasTextUTF8_get(PyObject *self)
 static int
 GrDev_hasTextUTF8_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute hasTextUTF8 cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute hasTextUTF8 must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->hasTextUTF8 = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->hasTextUTF8 = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute hasTextUTF8.");
-    return -1;
-  }
-  return 0;
+  RPY_GRDEV_BOOL_SET(self, value, hasTextUTF8);
 }
 
 PyDoc_STRVAR(GrDev_wantSymbolUTF8_doc,
@@ -897,26 +879,7 @@ GrDev_wantSymbolUTF8_get(PyObject *self)
 static int
 GrDev_wantSymbolUTF8_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute wantSymbolUTF8 cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute wantSymbolUTF8 must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->wantSymbolUTF8 = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->wantSymbolUTF8 = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute hasTextUTF8.");
-    return -1;
-  }
-  return 0;
+  RPY_GRDEV_BOOL_SET(self, value, wantSymbolUTF8);
 }
 
 PyDoc_STRVAR(GrDev_left_doc,
@@ -1041,26 +1004,7 @@ GrDev_canGenMouseDown_get(PyObject *self)
 static int
 GrDev_canGenMouseDown_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenMouseDown cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenMouseDown must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->canGenMouseDown = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->canGenMouseDown = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute canGenMouseDown.");
-    return -1;
-  }
-  return 0;
+  RPY_GRDEV_BOOL_SET(self, value, canGenMouseDown);
 }
 
 
@@ -1081,26 +1025,7 @@ GrDev_canGenMouseMove_get(PyObject *self)
 static int
 GrDev_canGenMouseMove_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenMouseMove cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenMouseMove must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->canGenMouseMove = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->canGenMouseMove = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute canGenMouseMove.");
-    return -1;
-  }
-  return 0;
+  RPY_GRDEV_BOOL_SET(self, value, canGenMouseMove);
 }
 
 
@@ -1121,26 +1046,7 @@ GrDev_canGenMouseUp_get(PyObject *self)
 static int
 GrDev_canGenMouseUp_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenMouseUp cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenMouseUp must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->canGenMouseUp = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->canGenMouseUp = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute canGenMouseUp.");
-    return -1;
-  }
-  return 0;
+  RPY_GRDEV_BOOL_SET(self, value, canGenMouseUp);
 }
 
 
@@ -1161,26 +1067,7 @@ GrDev_canGenKeybd_get(PyObject *self)
 static int
 GrDev_canGenKeybd_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenKeydb cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenKeybd must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->canGenKeybd = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->canGenKeybd = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute canGenKeybd.");
-    return -1;
-  }
-  return 0;
+  RPY_GRDEV_BOOL_SET(self, value, canGenKeybd);
 }
 
 PyDoc_STRVAR(GrDev_displayListOn_doc,
@@ -1200,26 +1087,7 @@ GrDev_displayListOn_get(PyObject *self)
 static int
 GrDev_displayListOn_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute displayListOn cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute displayListOn must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->displayListOn = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->displayListOn = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute displayListOn.");
-    return -1;
-  }
-  return 0;
+  RPY_GRDEV_BOOL_SET(self, value, displayListOn);
 }
 
 
