@@ -97,8 +97,8 @@ class ConcreteDeviceTestCase(unittest.TestCase):
         def polyline(self, x, y):
             self._file.write('polyline(%f, %f)' %(x, y))
             
-        def clip(self):
-            pass
+        def clip(self, x1, y1, x2, y2):
+            self._file.write('clip(%f, %f, %f, %f)' %(x1, y1, x2, y2))
 
     def setUp(self):
         #f = tempfile.NamedTemporaryFile()
