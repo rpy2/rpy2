@@ -12,6 +12,16 @@ typedef struct {
 
 #define RPY_DEV_NUM(obj) (((PyGrDevObject *)obj)->devnum)
 
+#define RPY_GRDEV_BOOL_GET(self, attrname)	\
+  PyObject *res;							\
+  if (((PyGrDevObject *)self)->grdev->attrname == TRUE) {		\
+    res = Py_True;							\
+  } else {								\
+    res = Py_False;							\
+  }									\
+  Py_INCREF(res);							\
+  return res								\
+
 #define RPY_GRDEV_BOOL_SET(self, value, attrname)	\
   int res = 0;						\
   if (value == NULL) {					\
@@ -33,5 +43,19 @@ typedef struct {
   }									\
   return res								\
 
+#define RPY_GRDEV_FLOAT_SET(self, value, attrname)	\
+  int res = 0;						\
+  if (value == NULL) {					\
+    PyErr_SetString(PyExc_TypeError,					\
+		    "The attribute '"#attrname"' cannot be deleted");	\
+    res = -1;								\
+  } else if (! PyFloat_Check(value)) {					\
+    PyErr_SetString(PyExc_TypeError,					\
+		    "The attribute '"#attrname"' must be a float");	\
+    res = -1;								\
+  } else {								\
+  ((PyGrDevObject *)self)->grdev->attrname = PyFloat_AsDouble(value);	\
+  }									\
+  return res								\
 
 #endif /* !RPY_RD_H */

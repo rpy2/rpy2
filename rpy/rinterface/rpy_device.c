@@ -847,14 +847,7 @@ PyDoc_STRVAR(GrDev_hasTextUTF8_doc,
 static PyObject*
 GrDev_hasTextUTF8_get(PyObject *self)
 {
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->hasTextUTF8 == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
+  RPY_GRDEV_BOOL_GET(self, hasTextUTF8);
 }
 static int
 GrDev_hasTextUTF8_set(PyObject *self, PyObject *value)
@@ -867,14 +860,7 @@ PyDoc_STRVAR(GrDev_wantSymbolUTF8_doc,
 static PyObject*
 GrDev_wantSymbolUTF8_get(PyObject *self)
 {
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->wantSymbolUTF8 == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
+  RPY_GRDEV_BOOL_GET(self, wantSymbolUTF8);
 }
 static int
 GrDev_wantSymbolUTF8_set(PyObject *self, PyObject *value)
@@ -894,18 +880,7 @@ GrDev_left_get(PyObject *self)
 static int
 GrDev_left_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute left cannot be deleted");
-    return -1;
-  }
-  if (! PyFloat_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute left must be a float");
-    return -1;
-  }
-  ((PyGrDevObject *)self)->grdev->left = PyFloat_AsDouble(value);    
-  return 0;
+  RPY_GRDEV_FLOAT_SET(self, value, left);
 }
 
 
@@ -921,18 +896,7 @@ GrDev_right_get(PyObject *self)
 static int
 GrDev_right_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute right cannot be deleted");
-    return -1;
-  }
-  if (! PyFloat_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute right must be a float");
-    return -1;
-  }
-  ((PyGrDevObject *)self)->grdev->right = PyFloat_AsDouble(value);    
-  return 0;
+  RPY_GRDEV_FLOAT_SET(self, value, right);
 }
 
 PyDoc_STRVAR(GrDev_top_doc,
@@ -947,18 +911,7 @@ GrDev_top_get(PyObject *self)
 static int
 GrDev_top_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute top cannot be deleted");
-    return -1;
-  }
-  if (! PyFloat_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute top must be a float");
-    return -1;
-  }
-  ((PyGrDevObject *)self)->grdev->top = PyFloat_AsDouble(value);    
-  return 0;
+  RPY_GRDEV_FLOAT_SET(self, value, top);
 }
 
 PyDoc_STRVAR(GrDev_bottom_doc,
@@ -973,18 +926,7 @@ GrDev_bottom_get(PyObject *self)
 static int
 GrDev_bottom_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute bottom cannot be deleted");
-    return -1;
-  }
-  if (! PyFloat_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute bottom must be a float");
-    return -1;
-  }
-  ((PyGrDevObject *)self)->grdev->bottom = PyFloat_AsDouble(value);    
-  return 0;
+  RPY_GRDEV_FLOAT_SET(self, value, bottom);
 }
 
 PyDoc_STRVAR(GrDev_canGenMouseDown_doc,
@@ -992,14 +934,7 @@ PyDoc_STRVAR(GrDev_canGenMouseDown_doc,
 static PyObject*
 GrDev_canGenMouseDown_get(PyObject *self)
 {
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->canGenMouseDown == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
+  RPY_GRDEV_BOOL_GET(self, canGenMouseDown);
 }
 static int
 GrDev_canGenMouseDown_set(PyObject *self, PyObject *value)
@@ -1013,14 +948,7 @@ PyDoc_STRVAR(GrDev_canGenMouseMove_doc,
 static PyObject*
 GrDev_canGenMouseMove_get(PyObject *self)
 {
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->canGenMouseMove == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
+  RPY_GRDEV_BOOL_GET(self, canGenMouseMove);
 }
 static int
 GrDev_canGenMouseMove_set(PyObject *self, PyObject *value)
@@ -1034,14 +962,7 @@ PyDoc_STRVAR(GrDev_canGenMouseUp_doc,
 static PyObject*
 GrDev_canGenMouseUp_get(PyObject *self)
 {
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->canGenMouseUp == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
+  RPY_GRDEV_BOOL_GET(self, canGenMouseUp);
 }
 static int
 GrDev_canGenMouseUp_set(PyObject *self, PyObject *value)
@@ -1055,14 +976,7 @@ PyDoc_STRVAR(GrDev_canGenKeybd_doc,
 static PyObject*
 GrDev_canGenKeybd_get(PyObject *self)
 {
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->canGenKeybd == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
+  RPY_GRDEV_BOOL_GET(self, canGenKeybd);
 }
 static int
 GrDev_canGenKeybd_set(PyObject *self, PyObject *value)
@@ -1075,14 +989,7 @@ PyDoc_STRVAR(GrDev_displayListOn_doc,
 static PyObject*
 GrDev_displayListOn_get(PyObject *self)
 {
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->displayListOn == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
+  RPY_GRDEV_BOOL_GET(self, displayListOn);
 }
 static int
 GrDev_displayListOn_set(PyObject *self, PyObject *value)
