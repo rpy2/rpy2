@@ -34,7 +34,20 @@ R vectors
 =========
 
 >>> import rpy2.interactive as r
->>> x = r.IntVector(range(10))
+>>> r.IntVector(range(10))
+<IntVector - Python:0x935774c / R:0xa22b440>
+[       0,        1,        2, ...,        7,        8,        9]
+>>> r.IntVector(range(100))
+<IntVector - Python:0xa1c2dcc / R:0x9ac5540>
+[       0,        1,        2, ...,       97,       98,       99]
+
+In R, there are no scalars.
+
+>>> r.packages.base.pi
+<FloatVector - Python:0xa1d7a0c / R:0x9de02a8>
+[3.141593]
+
+To know more, please check Section :ref:`introduction-vectors`.
 
 
 R packages
