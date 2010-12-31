@@ -221,6 +221,12 @@ class Vector(RObjectMixin, SexpVector):
         value = conversion.py2ri(value)
         res = super(Vector, self).__setitem__(i, value)
 
+    def __getslice__(self, i, j):
+        res = super(Vector, self).__getslice__(i, j)
+        if isinstance(res, Sexp):
+            res = conversion.ri2py(res)
+        return res
+
     def _names_get(self):
         res = baseenv_ri.get('names')(self)
         res = conversion.ri2py(res)
@@ -258,39 +264,39 @@ class Vector(RObjectMixin, SexpVector):
         res = conversion.ri2py(res)
         return res
 
-    def __repr__(self, indent = ''):
-        def p_str(x):
+    def __repr_content__(self):
+        def p_str(x, max_width = 8):
             if isinstance(x, long) or isinstance(x, int):
                 res = '%8i' %x
             elif isinstance(x, float):
                 res = '%8f' %x
             else:
                 if isinstance(x, str):
-                    tmp = ['"', None, None, '"']
+                    x = x.__repr__()
                 else:
                     tmp = ['', None, None, '']
                     x = type(x).__name__                    
-                if len(x) < 6:
-                    tmp[1] = x[:min(8, len(x))]
-                    tmp[2] = ''
+                if len(x) < max_width:
+                    res = x
                 else:
-                    tmp[1] = x[:5]
-                    tmp[2] = '...'
-                res = ''.join(tmp)
+                    res = "%s..." %x[ : (max_width - 3)]
             return res
 
-        if len(self) < 7:
+        l = len(self)
+        if l < 7:
             s = '[' + \
-                ', '.join([p_str(x) for x in self[:min(len(self), 8)]]) + \
+                ', '.join((p_str(x, max_width = 52 / l) for x in self[ : 8])) +\
                 ']'
         else:
             s = '[' + \
-                ', '.join([p_str(x) for x in self[:3]]) + ', ..., ' + \
-                ', '.join([p_str(x) for x in self[(len(self)-3):len(self)]]) + \
+                ', '.join((p_str(x) for x in self[ : 3])) + ', ..., ' + \
+                ', '.join((p_str(x) for x in self[-3 : ])) + \
                 ']'
-        
-        return indent + super(Vector, self).__repr__() + os.linesep + \
-            indent + s
+        return s
+
+    def __repr__(self):        
+        return super(Vector, self).__repr__() + os.linesep + \
+            self.__repr_content__()
                           
 
 
@@ -485,6 +491,39 @@ class ListVector(Vector):
                              "an iter-able " +
                              " or an instance of rpy2.rinterface.SexpVector" +
                              " of type VECSXP, or a Python dict.")
+
+    def __repr__(self):        
+        res = []
+        if len(self) < 7:
+            for i, x in enumerate(self):
+                if isinstance(x, ListVector):
+                    res.append(super(ListVector, self).__repr__())
+                else:
+                    res.append("  %s: %s%s  %s" %(self.names[i],
+                                                  type(x),
+                                                  os.linesep,
+                                                  x.__repr_content__()))
+        else:
+            for i, x in enumerate(self[:3]):
+                if isinstance(x, ListVector):
+                    res.append(super(ListVector, self).__repr__())
+                else:
+                    res.append("  %s: %s%s  %s" %(self.names[i],
+                                                  type(x),
+                                                  os.linesep,
+                                                  x.__repr_content__()))
+            res.append('  ...')
+            for i, x in enumerate(self[-3:]):
+                if isinstance(x, ListVector):
+                    res.append(super(ListVector, self).__repr__())
+                else:
+                    res.append("  %s: %s%s  %s" %(self.names[i],
+                                                  type(x),
+                                                  os.linesep,
+                                                  x.__repr_content__()))
+        res = super(ListVector, self).__repr__() + os.linesep + \
+            os.linesep.join(res)
+        return res
 
 class DateVector(FloatVector):
     """ Vector of dates """
@@ -849,17 +888,6 @@ class DataFrame(ListVector):
         for i in xrange(self.ncol):
             yield self.rx(rinterface.MissingArg, i+1)
 
-    def __repr__(self):
-        
-        if len(self) < 7:
-            s = (x.__repr__(indent = '  ') for x in self)
-        else:
-            s = [x.__repr__(indent = '  ') for x in self[:3]] + \
-                ['  ...', ] + \
-                [join([x.__repr__(indent = '  ') for x in self[(len(self)-3):len(self)]])]
-        s = super(DataFrame, self).__repr__() + os.linesep + \
-            os.linesep.join(s)
-        return s
 
 # end of definition for DataFrame
 
