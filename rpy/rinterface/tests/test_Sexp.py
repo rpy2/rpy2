@@ -35,6 +35,13 @@ class SexpTestCase(unittest.TestCase):
         sexp = rinterface.baseenv.get("plot")
         self.assertEquals(sexp.typeof, rinterface.CLOSXP)
 
+    def testList_attrs(self):
+        x = rinterface.IntSexpVector((1,2,3))
+        self.assertEquals(0, len(x.list_attrs))
+        x.do_slot_assign('a', r.IntVector((33,)))
+        self.assertEquals(1, len(x.list_attrs))
+        self.assertTrue('a' in x.list_attrs)
+
     def testDo_slot(self):
         data_func = rinterface.baseenv.get("data")
         data_func(rinterface.SexpVector(["iris", ], rinterface.STRSXP))

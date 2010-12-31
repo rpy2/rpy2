@@ -102,3 +102,25 @@ SEXP rpy_unserialize(SEXP connection, SEXP rho)
   return res;
 }
 
+SEXP rpy_list_attr(SEXP sexp)
+{
+  SEXP attrs, res;
+  int nvalues, attr_i;
+
+  attrs = ATTRIB(sexp);
+  nvalues = GET_LENGTH(attrs);
+  PROTECT(res = allocVector(STRSXP, nvalues));
+
+  attr_i = 0;
+  while (attrs != R_NilValue) {
+    if (TAG(attrs) == R_NilValue)
+      SET_STRING_ELT(res, attr_i, R_BlankString);
+    else
+      SET_STRING_ELT(res, attr_i, PRINTNAME(TAG(attrs)));
+    attrs = CDR(attrs);
+    attr_i++;
+  }
+  UNPROTECT(1);
+  return res;
+}
+

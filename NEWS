@@ -49,6 +49,8 @@ New Features
 
 - :meth:`rinterface.SexpVector.index`, of similar behaviour to :meth:`list.index`.
 
+- :meth:`rpy2.rinterface.Sexp.list_attrs` to list the names of all R attributes
+  of a given object.
 
 :mod:`rpy2.rlike`:
 

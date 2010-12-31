@@ -130,6 +130,23 @@ PyDoc_STRVAR(Sexp_typeof_doc,
              "R internal SEXPREC type.");
 
 
+PyDoc_STRVAR(Sexp_list_attr_doc,
+             "Returns the list of attribute names.");
+PyObject*
+Sexp_list_attr(PyObject *self)
+{
+  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;
+  }
+  SEXP res_R;
+  PROTECT(res_R = rpy_list_attr(sexp));
+  PyObject *res = (PyObject *)newPySexpObject(res_R, 1);
+  UNPROTECT(1);
+  return res;
+}
+
 static PyObject*
 Sexp_do_slot(PyObject *self, PyObject *name)
 {
@@ -556,8 +573,9 @@ PyDoc_STRVAR(Sexp___reduce___doc,
              "Prepare an instance for serialization.");
 
 
-
 static PyMethodDef Sexp_methods[] = {
+  {"list_attrs", (PyCFunction)Sexp_list_attr, METH_NOARGS,
+   Sexp_list_attr_doc},
   {"do_slot", (PyCFunction)Sexp_do_slot, METH_O,
    Sexp_do_slot_doc},
   {"do_slot_assign", (PyCFunction)Sexp_do_slot_assign, METH_VARARGS,
