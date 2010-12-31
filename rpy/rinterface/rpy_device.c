@@ -841,32 +841,11 @@ static PyMethodDef GrDev_methods[] = {
   {NULL, NULL}          /* sentinel */
 };
 
+RPY_GRDEV_BOOL_GETSET(hasTextUTF8,
+		      "UTF8 capabilities of the device.")
 
-PyDoc_STRVAR(GrDev_hasTextUTF8_doc,
-             "UTF8 capabilities of the device.");
-static PyObject*
-GrDev_hasTextUTF8_get(PyObject *self)
-{
-  RPY_GRDEV_BOOL_GET(self, hasTextUTF8);
-}
-static int
-GrDev_hasTextUTF8_set(PyObject *self, PyObject *value)
-{
-  RPY_GRDEV_BOOL_SET(self, value, hasTextUTF8);
-}
-
-PyDoc_STRVAR(GrDev_wantSymbolUTF8_doc,
-             "UTF8 capabilities of the device.");
-static PyObject*
-GrDev_wantSymbolUTF8_get(PyObject *self)
-{
-  RPY_GRDEV_BOOL_GET(self, wantSymbolUTF8);
-}
-static int
-GrDev_wantSymbolUTF8_set(PyObject *self, PyObject *value)
-{
-  RPY_GRDEV_BOOL_SET(self, value, wantSymbolUTF8);
-}
+RPY_GRDEV_BOOL_GETSET(wantSymbolUTF8,
+		      "UTF8 capabilities of the device.")
 
 PyDoc_STRVAR(GrDev_left_doc,
              "Left coordinate.");
@@ -929,74 +908,20 @@ GrDev_bottom_set(PyObject *self, PyObject *value)
   RPY_GRDEV_FLOAT_SET(self, value, bottom);
 }
 
-PyDoc_STRVAR(GrDev_canGenMouseDown_doc,
-             "Ability to generate mouse down events.");
-static PyObject*
-GrDev_canGenMouseDown_get(PyObject *self)
-{
-  RPY_GRDEV_BOOL_GET(self, canGenMouseDown);
-}
-static int
-GrDev_canGenMouseDown_set(PyObject *self, PyObject *value)
-{
-  RPY_GRDEV_BOOL_SET(self, value, canGenMouseDown);
-}
+RPY_GRDEV_BOOL_GETSET(canGenMouseDown,
+             "Ability to generate mouse down events.")
 
+RPY_GRDEV_BOOL_GETSET(canGenMouseMove,
+             "Ability to generate mouse move events.")
 
-PyDoc_STRVAR(GrDev_canGenMouseMove_doc,
-             "Ability to generate mouse move events.");
-static PyObject*
-GrDev_canGenMouseMove_get(PyObject *self)
-{
-  RPY_GRDEV_BOOL_GET(self, canGenMouseMove);
-}
-static int
-GrDev_canGenMouseMove_set(PyObject *self, PyObject *value)
-{
-  RPY_GRDEV_BOOL_SET(self, value, canGenMouseMove);
-}
+RPY_GRDEV_BOOL_GETSET(canGenMouseUp,
+             "Ability to generate mouse up events.")
 
+RPY_GRDEV_BOOL_GETSET(canGenKeybd,
+             "Ability to generate keyboard events.")
 
-PyDoc_STRVAR(GrDev_canGenMouseUp_doc,
-             "Ability to generate mouse up events.");
-static PyObject*
-GrDev_canGenMouseUp_get(PyObject *self)
-{
-  RPY_GRDEV_BOOL_GET(self, canGenMouseUp);
-}
-static int
-GrDev_canGenMouseUp_set(PyObject *self, PyObject *value)
-{
-  RPY_GRDEV_BOOL_SET(self, value, canGenMouseUp);
-}
-
-
-PyDoc_STRVAR(GrDev_canGenKeybd_doc,
-             "Ability to generate keyboard events.");
-static PyObject*
-GrDev_canGenKeybd_get(PyObject *self)
-{
-  RPY_GRDEV_BOOL_GET(self, canGenKeybd);
-}
-static int
-GrDev_canGenKeybd_set(PyObject *self, PyObject *value)
-{
-  RPY_GRDEV_BOOL_SET(self, value, canGenKeybd);
-}
-
-PyDoc_STRVAR(GrDev_displayListOn_doc,
-             "Status of the display list.");
-static PyObject*
-GrDev_displayListOn_get(PyObject *self)
-{
-  RPY_GRDEV_BOOL_GET(self, displayListOn);
-}
-static int
-GrDev_displayListOn_set(PyObject *self, PyObject *value)
-{
-  RPY_GRDEV_BOOL_SET(self, value, displayListOn);
-}
-
+RPY_GRDEV_BOOL_GETSET(displayListOn,
+             "Status of the display list.")
 
 PyDoc_STRVAR(GrDev_devnum_doc,
              "Device number.");
