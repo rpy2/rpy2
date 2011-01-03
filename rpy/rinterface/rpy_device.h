@@ -41,7 +41,22 @@ typedef struct {
 		    "Mysterious error when setting the attribute "#attrname"."); \
     res = -1;								\
   }									\
-  return res								\
+  return res								
+
+#define RPY_GRDEV_BOOL_GETSET(attrname, docstring)		\
+  PyDoc_STRVAR(GrDev_##attrname##_doc,				\
+	       docstring);					\
+  static PyObject*						\
+  GrDev_##attrname##_get(PyObject *self)			\
+  {								\
+    RPY_GRDEV_BOOL_GET(self, attrname);				\
+					 }			\
+  static int							\
+  GrDev_##attrname##_set(PyObject *self, PyObject *value)	\
+  {								\
+    RPY_GRDEV_BOOL_SET(self, value, attrname);			\
+  }								
+
 
 #define RPY_GRDEV_FLOAT_SET(self, value, attrname)	\
   int res = 0;						\
@@ -56,6 +71,6 @@ typedef struct {
   } else {								\
   ((PyGrDevObject *)self)->grdev->attrname = PyFloat_AsDouble(value);	\
   }									\
-  return res								\
+  return res								
 
 #endif /* !RPY_RD_H */
