@@ -1,13 +1,14 @@
 import itertools
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
+from rpy2.rinterface import StrSexpVector
 import help as rhelp
 import conversion
 
 getmethod = rinterface.baseenv.get("getMethod")
 
 require = rinterface.baseenv.get('require')
-require(rinterface.StrSexpVector(('methods', )),
+require(StrSexpVector(('methods', )),
         quiet = rinterface.BoolSexpVector((True, )))
 
 
@@ -61,8 +62,8 @@ class ClassRepresentation(RS4):
 
 
 def getclassdef(cls_name, cls_packagename):
-    cls_def = methods_env['getClassDef'](rinterface.StrSexpVector((cls_name,)),
-                                         rinterface.StrSexpVector((cls_packagename, )))
+    cls_def = methods_env['getClassDef'](StrSexpVector((cls_name,)),
+                                         StrSexpVector((cls_packagename, )))
     cls_def = ClassRepresentation(cls_def)
     cls_def.__rname__ = cls_name
     return cls_def
@@ -88,13 +89,13 @@ class RS4_Type(type):
                 where = rinterface.globalenv
             else:
                 where = "package:" + str(where)
-                where = rinterface.StrSexpVector((where, ))
+                where = StrSexpVector((where, ))
 
             if python_name is None:
                 python_name = rname
                 
-            signature = rinterface.StrSexpVector((cls_rname, ))            
-            r_meth = getmethod(rinterface.StrSexpVector((rname, )), 
+            signature = StrSexpVector((cls_rname, ))            
+            r_meth = getmethod(StrSexpVector((rname, )), 
                                signature = signature,
                                where = where)
             r_meth = conversion.ri2py(r_meth)
@@ -113,6 +114,9 @@ class RS4Auto_Type(type):
     and create a Python class out of it, fetching the
     R documention page and putting into the Python docstring
     on the fly.
+    A class with this metaclass will have the following optional
+    attributes: __rname__, __rpackagename__, __attr__translation,
+    __meth_translation__.
     """
     def __new__(mcs, name, bases, cls_dict):
         try:
@@ -176,9 +180,11 @@ class RS4Auto_Type(type):
 
         # does not seem elegant, but there is probably nothing else to do
         # than loop across all generics
+        r_cls_rname = StrSexpVector((cls_rname, ))
         for funcname in all_generics:
-            all_methods = findmethods(rinterface.StrSexpVector((funcname, )), 
-                                      classes = rinterface.StrSexpVector((cls_rname, )))
+            all_methods = findmethods(StrSexpVector((funcname, )), 
+                                      classes = r_cls_rname)
+
             # all_methods contains all method/signature pairs
             # having the class we are considering somewhere in the signature
             # (the R/S4 systems allows multiple dispatch)
@@ -199,7 +205,7 @@ class RS4Auto_Type(type):
                     meth_name = funcname + '__' + meth_name
                 # finally replace remaining '.'s in the Python name with '_'s
                 meth_name = meth_name.replace('.', '_')
-
+                
             #FIXME: sanity check on the function name
                 try:
                     meth_name = cls_meth_translation[meth_name]
@@ -223,13 +229,13 @@ def set_accessors(cls, cls_name, where, acs):
         where = rinterface.globalenv
     else:
         where = "package:" + str(where)
-        where = rinterface.StrSexpVector((where, ))
+        where = StrSexpVector((where, ))
 
     for r_name, python_name, as_property, docstring in acs:
         if python_name is None:
             python_name = r_name
-        r_meth = getmethod(rinterface.StrSexpVector((r_name, )), 
-                           signature = rinterface.StrSexpVector((cls_name, )),
+        r_meth = getmethod(StrSexpVector((r_name, )), 
+                           signature = StrSexpVector((cls_name, )),
                            where = where)
         r_meth = conversion.ri2py(r_meth)
         if as_property:
@@ -237,8 +243,8 @@ def set_accessors(cls, cls_name, where, acs):
         else:
             setattr(cls, python_name, lambda self: r_meth(self))
 
+def get_classnames(packname):
+    res = methods_env['getClasses'](where = StrSexpVector(("package:%s" %packname, )))
+    return tuple(res)
 
-
-
-
-methods_env = rinterface.baseenv.get('as.environment')(rinterface.StrSexpVector(('package:methods', )))
+methods_env = rinterface.baseenv.get('as.environment')(StrSexpVector(('package:methods', )))
