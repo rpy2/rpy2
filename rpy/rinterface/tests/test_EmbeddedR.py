@@ -39,7 +39,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         sys.stdout = stdout
         tmp_file.flush()
         tmp_file.seek(0)
-        self.assertEquals('haha', ''.join(tmp_file.readlines()))
+        self.assertEquals('haha', ''.join(s.decode() for s in tmp_file))
         tmp_file.close()
 
 
@@ -297,7 +297,7 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = tmp_file
         try:
             res = rinterface.baseenv["file.choose"]()
-        except rinterface.RRuntimeError, rre:
+        except rinterface.RRuntimeError:
             pass
         except Exception, e:
             sys.stderr = stderr
@@ -340,7 +340,7 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = tmp_file
         try:
             res = rinterface.baseenv["file.show"](filename)
-        except rinterface.RRuntimeError, rre:
+        except rinterface.RRuntimeError:
             pass
         except Exception, e:
             sys.stderr = stderr

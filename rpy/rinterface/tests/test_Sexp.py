@@ -1,7 +1,7 @@
 import unittest
 import copy
 import gc
-import rpy2.rinterface as rinterface
+from rpy2 import rinterface, robjects
 
 rinterface.initr()
 
@@ -37,10 +37,10 @@ class SexpTestCase(unittest.TestCase):
 
     def testList_attrs(self):
         x = rinterface.IntSexpVector((1,2,3))
-        self.assertEquals(0, len(x.list_attrs))
-        x.do_slot_assign('a', r.IntVector((33,)))
-        self.assertEquals(1, len(x.list_attrs))
-        self.assertTrue('a' in x.list_attrs)
+        self.assertEquals(0, len(x.list_attrs()))
+        x.do_slot_assign('a', robjects.IntVector((33,)))
+        self.assertEquals(1, len(x.list_attrs()))
+        self.assertTrue('a' in x.list_attrs())
 
     def testDo_slot(self):
         data_func = rinterface.baseenv.get("data")

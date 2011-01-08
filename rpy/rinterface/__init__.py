@@ -1,5 +1,9 @@
 import os, sys
 
+PY3K = False
+if sys.version_info[0] > 2:
+    PY3K = True
+
 try:
     R_HOME = (os.environ["R_HOME"], )
 except KeyError:
@@ -117,8 +121,12 @@ class ComplexSexpVector(SexpVector):
 
 
 # wrapper in case someone changes sys.stdout:
-def consolePrint(x):
-    sys.stdout.write(x)
+if PY3K:
+    def consolePrint(x):
+        sys.stdout.write(x.encode())
+else:
+    def consolePrint(x):
+        sys.stdout.write(x)
 
 set_writeconsole(consolePrint)
 
