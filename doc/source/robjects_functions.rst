@@ -37,25 +37,27 @@ In Python it can then write:
 
 .. note::
 
-   The object base.rank is an instance of
+   In the example, the object `base.rank` is an instance of
    :class:`functions.SignatureTranslatedFunction`,
    a child class of :class:`functions.Function`, and the translation of 
-   the argument names made during
-   the creation of the instance.
-   This saves the need to translate the names at each function
-   call, and allow to perform sanity check regarding possible 
-   ambiguous translation with an acceptable cost (since this is 
-   only performed when the instance is created).
+   the argument names is made during the creation of the instance.
+   Making the translation during the creation obviously 
+   saves the need to perform translation operations on parameter names,
+   such as replacing `.` with `_`,
+   at each function call, and allows `rpy2` to perform sanity checks
+   regarding possible ambiguous translations; the cost of doing it is
+   acceptable cost since this is only performed when the instance is created.
 
-   If translation is not desired, the class :class:`functions.Function` 
+   If no translation is desired, the class :class:`functions.Function` 
    can be used. With
    that class, using the special Python syntax `**kwargs` is one way to specify
-   named arguments that contain a dot '.'
+   named arguments to R functions that contain a dot '.'
 
-   It is important to understand that the translation is done by inspecting
+   One will note that the translation is done by inspecting
    the signature of the R function, and that not much can be guessed from the
    R ellipsis '...' whenever present. Arguments falling in the '...' will need
-   to have their R names passes, as show in the example below:
+   to have their R names passed to the constructor for
+   :class:`functions.SignatureTranslatedFunction`as show in the example below:
 
    >>> graphics = importr('graphics')
    >>> graphics.par(cex_axis = 0.5)
