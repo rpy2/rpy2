@@ -65,8 +65,10 @@ Ending R
 
 Ending the R process is possible, but starting it again with
 :func:`initr` does appear to lead to an R process that is hardly usable.
-For that reason, the use of :func:`endEmbeddedR` should be considered
+For that reason, the use of :func:`endr` should be considered
 carefully, if at all.
+
+.. autofunction:: endr()
 
 R space and Python space
 ------------------------
