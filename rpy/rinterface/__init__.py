@@ -81,14 +81,19 @@ except:
 
 from rpy2.rinterface.rinterface import *
 
+class BytesSexpVector(SexpVector):
+    """
+    Vector of bytes ('raw' in R terminology).
+    """
+    def __init__(self, v):
+        super(BytesSexpVector, self).__init__(v, RAWSXP)
+
 class StrSexpVector(SexpVector):
     """ 
     Vector of strings.
     """
-
     def __init__(self, v):
         super(StrSexpVector, self).__init__(v, STRSXP)
-
 
 class FloatSexpVector(SexpVector):
     """ 

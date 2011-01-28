@@ -2834,6 +2834,7 @@ newSEXP(PyObject *object, int rType)
   double *numeric_ptr;
   int   *integer_ptr;
   int    *logical_ptr;
+  char *raw_ptr;
   switch(rType) {
   case REALSXP:
     PROTECT(sexp = NEW_NUMERIC(length));
@@ -2892,6 +2893,27 @@ newSEXP(PyObject *object, int rType)
 	  logical_ptr[i] = NA_LOGICAL;
 	}
       }
+    }
+    UNPROTECT(1);
+    break;
+  case RAWSXP:
+    PROTECT(sexp = NEW_RAW(length));
+    raw_ptr = (char *)RAW_POINTER(sexp);
+    char *buffer;
+    Py_ssize_t size_tmp;
+    int ok;
+    for (i = 0; i < length; ++i) {
+      item = PySequence_Fast_GET_ITEM(seq_object, i);
+#if (PY_VERSION_HEX < 0x03010000)
+      ok = PyString_AsStringAndSize(item, &buffer, &size_tmp);
+#else
+      ok = PyBytes_AsStringAndSize(item, &buffer, &size_tmp);
+#endif
+      if (size_tmp > 1) {
+	/*FIXME: raise an error */
+	printf("Invalid input for RAW. Truncating...\n");
+      }
+      raw_ptr[i] = buffer[0];
     }
     UNPROTECT(1);
     break;

@@ -43,6 +43,12 @@ class WrapperSexpVectorTestCase(unittest.TestCase):
         ok = is_complex(sexp)[0]
         self.assertTrue(ok)
 
+    def testBytes(self):
+        sexp = ri.BytesSexpVector(['a', 'b'])
+        is_raw = ri.globalenv.get("is.raw")
+        ok = is_raw(sexp)[0]
+        self.assertTrue(ok)
+
 class NAValuesTestCase(unittest.TestCase):
     def testRtoNAInteger(self):
         na_int = ri.NAIntegerType()

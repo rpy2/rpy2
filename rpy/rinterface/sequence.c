@@ -115,6 +115,8 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
     double vd;
     int vi;
     Rcomplex vc;
+    /* Rbyte vr; */
+    char *vr;
     const char *vs;
     SEXP tmp, sexp_item; /* needed by LANGSXP */
     i_R = (R_len_t)i;
@@ -154,6 +156,14 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
       } else {
 	res = PyComplex_FromDoubles(vc.r, vc.i);
       }
+      break;
+    case RAWSXP:
+      vr = ((char *)RAW_POINTER(*sexp)) + i_R;
+#if (PY_VERSION_HEX < 0x03010000)
+      res = PyString_FromStringAndSize(vr, 1);
+#else
+      res = PyBytes_FromStringAndSize(vr, 1);
+#endif
       break;
     case STRSXP:
       sexp_item = STRING_ELT(*sexp, i_R);
@@ -295,6 +305,12 @@ VectorSexp_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh)
         COMPLEX_POINTER(res_sexp)[slice_i] = (COMPLEX_POINTER(*sexp))[slice_i + ilow];
       }
       break;
+    case RAWSXP:
+      res_sexp = allocVector(RAWSXP, slice_len);
+      memcpy(RAW_POINTER(res_sexp),
+	     RAW_POINTER(*sexp) + ilow,
+	     (ihigh - ilow) * sizeof(char));
+      break;
     case STRSXP:
       res_sexp = allocVector(STRSXP, slice_len);
       for (slice_i = 0; slice_i < slice_len; slice_i++) {
@@ -422,6 +438,9 @@ VectorSexp_ass_item(PySexpObject* object, Py_ssize_t i, PyObject* val)
   case CPLXSXP:
     (COMPLEX_POINTER(*sexp))[i_R] = (COMPLEX_POINTER(*sexp_val))[0];
     break;
+  case RAWSXP:
+    (RAW_POINTER(*sexp))[i_R] = (RAW_POINTER(*sexp_val))[0];
+    break;
   case STRSXP:
     SET_STRING_ELT(*sexp, i_R, STRING_ELT(*sexp_val, 0));
     break;
@@ -546,6 +565,11 @@ VectorSexp_ass_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh, Py
       for (slice_i = 0; slice_i < slice_len; slice_i++) {
         (COMPLEX_POINTER(*sexp))[slice_i + ilow] = COMPLEX_POINTER(sexp_val)[slice_i];
       }
+      break;
+    case RAWSXP:
+      memcpy(RAW_POINTER(*sexp) + ilow,
+	     RAW_POINTER(sexp_val),
+	     (ihigh-ilow) * sizeof(char));
       break;
     case STRSXP:
       for (slice_i = 0; slice_i < slice_len; slice_i++) {
