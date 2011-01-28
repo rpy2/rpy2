@@ -22,12 +22,12 @@ In R, it generally looks like:
 
 In the call to `lm`, the argument is a `formula`, and it can read like
 *model y using x*.
-A formula is a `R` language object, and the terms in the formula
+A formula is a :program:`R` language object, and the terms in the formula
 are evaluated in the environment it was defined in. Without further
 specification, that environment is the environment in which the
 the formula is created.
 
-The class :class:`robjects.Formula` is representing an `R` formula.
+The class :class:`robjects.Formula` is representing an :program:`R` formula.
 
 .. code-block:: python
 
@@ -48,7 +48,7 @@ The class :class:`robjects.Formula` is representing an `R` formula.
 
 One drawback with that approach is that pretty printing of
 the `fit` object is note quite as good as what one would
-expect when working in `R`: the `call` item now displays the code
+expect when working in :program:`R`: the `call` item now displays the code
 for the function use to perform the fit.
 
 If one still wants to avoid polluting the R global environment,

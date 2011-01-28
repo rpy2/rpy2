@@ -131,6 +131,8 @@ File choosing a on basic R console has very little bells and whistles.
 Other
 =====
 
+.. _rinterface-callbacks_cleanup:
+
 Clean up
 --------
 

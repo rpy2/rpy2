@@ -1,6 +1,6 @@
 
-`r`: the instance of `R`
-========================
+`r`: the instance of :program:`R`
+=================================
 
 This class is currently a singleton, with
 its one representation instanciated when the
@@ -110,7 +110,7 @@ x^2
 
 The astute reader will quickly realize that R objects named
 by python variables can
-be plugged into code through their `R` representation:
+be plugged into code through their :program:`R` representation:
 
 >>> x = robjects.r.rnorm(100)
 >>> robjects.r('hist(%s, xlab="x", main="hist(x)")' %x.r_repr())

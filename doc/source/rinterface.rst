@@ -70,6 +70,16 @@ carefully, if at all.
 
 .. autofunction:: endr()
 
+.. note::
+
+   When writing a GUI for R, a developper may want to either prevent a user
+   to call :program:`R` `quit()`, or ensure that specific code is executed
+   before terminating R (for example a confirmation dialog window
+   "do you really want to terminate ?").
+   This can be done by replacing the callback `cleanup` with an appropriate
+   function (see :ref:`rinterface-callbacks_cleanup`).
+
+
 R space and Python space
 ------------------------
 
@@ -404,7 +414,7 @@ The class :class:`Sexp` is the base class for all R objects.
 
    .. attribute:: named
 
-      `R` does not count references for its object. This method
+      :program:`R` does not count references for its object. This method
       returns the `NAMED` value (an integer). 
       See the R-extensions manual for further details.
 
@@ -518,7 +528,7 @@ Indexing
 
 The indexing is working like it would on regular `Python`
 tuples or lists.
-The indexing starts at 0 (zero), which differs from `R`, 
+The indexing starts at 0 (zero), which differs from :program:`R`, 
 where indexing start at 1 (one).
 
 .. note::
@@ -771,9 +781,9 @@ Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 LookupError: 'pi' not found
 
-`R` can look specifically for functions, which is happening when
+:program:`R` can look specifically for functions, which is happening when
 a parsed function call is evaluated.
-The following example of an `R` interactive session should demonstrate it:
+The following example of an :program:`R` interactive session should demonstrate it:
 
 .. code-block:: r
 
@@ -805,14 +815,14 @@ should return an R function).
 R packages as environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In a `Python` programmer's perspective, it would be nice to map loaded `R`
-packages as modules and provide access to `R` objects in packages the
+In a `Python` programmer's perspective, it would be nice to map loaded :program:`R`
+packages as modules and provide access to :program:`R` objects in packages the
 same way than `Python` object in modules are accessed.
 
 This is unfortunately not possible in a completely
 robust way: the dot character `.`
 can be used for symbol names in R (like pretty much any character), and
-this can make an exact correspondance between `R` and `Python` names 
+this can make an exact correspondance between :program:`R` and `Python` names 
 rather difficult.
 :mod:`rpy` uses transformation functions that translates '.' to '_' and back,
 but this can lead to complications since '_' can also be used for R symbols 
@@ -839,7 +849,7 @@ to use, one can consider making a function such as the one below:
 >>> class_env['knn']
 
 
-For example, we can reimplement in `Python` the `R` function 
+For example, we can reimplement in `Python` the :program:`R` function 
 returning the search path (`search`).
 
 .. code-block:: python
