@@ -1062,7 +1062,7 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
 #else
     item_tmp = PyNumber_Long(item);
 #endif
-    if (item != NAInteger_New(0)) {
+    if (item == NAInteger_New(0)) {
       integer_ptr[ii] = NA_INTEGER;
     } else if (item_tmp) {
 #if (PY_VERSION_HEX < 0x03010000)
@@ -1141,14 +1141,14 @@ IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     printf("    object a sequence\n");
 #endif 
 
-    SEXP *sexpp = NULL;
-    if (RPy_SeqToINTSXP(object, sexpp) == -1) {
+    SEXP sexp;
+    if (RPy_SeqToINTSXP(object, &sexp) == -1) {
       /* RPy_SeqToINTSXP returns already raises an exception in case of problem
        */
       embeddedR_freelock();
       return -1;
     }
-    RPY_SEXP((PySexpObject *)self) = *sexpp;
+    RPY_SEXP((PySexpObject *)self) = sexp;
     #ifdef RPY_DEBUG_OBJECTINIT
     printf("  SEXP vector is %p.\n", RPY_SEXP((PySexpObject *)self));
     #endif
