@@ -28,6 +28,12 @@ typedef Py_ssize_t (*charbufferproc)(PyObject *, Py_ssize_t, char **);
 #endif
 
 
+/*
+ * Highest possible SEXP type (used for quick resolution of valid/invalid SEXP)
+ */
+#define RPY_MAX_VALIDSEXTYPE 99
+
+
 /* Representation of R objects (instances) as instances in Python.
  */
 typedef struct {
