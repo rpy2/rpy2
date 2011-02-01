@@ -141,9 +141,9 @@ def consoleFlush():
 set_flushconsole(consoleFlush)
 
 def consoleRead(prompt):
-    input = raw_input(prompt)
-    input += "\n"
-    return input
+    text = raw_input(prompt)
+    text += "\n"
+    return text
 
 set_readconsole(consoleRead)
 
