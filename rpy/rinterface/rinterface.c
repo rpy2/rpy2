@@ -2081,6 +2081,65 @@ static PyTypeObject IntVectorSexp_Type = {
 };
 
 
+/* Take an arbitray Python sequence and a target pointer SEXP
+   and build an R vector of integers.
+   The function return 0 on success, -1 on failure. In the case
+   of a failure, it will also create an exception with an informative
+   message that can be propagated up.
+*/
+static int
+RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
+{
+  Py_ssize_t ii;
+  PyObject *seq_object, *item, *item_tmp;
+  SEXP new_sexp;
+ 
+  seq_object = PySequence_Fast(object,
+			       "Cannot create R object from non-sequence object.");
+  if (! seq_object) {
+    return -1;
+  }
+
+  const Py_ssize_t length = PySequence_Fast_GET_SIZE(seq_object);
+
+  if (lenght > R_LEN_T_MAX) {
+    PyErr_Format(PyExc_ValueError,
+		 "The Python sequence is longer than the longuest possible vector in R");
+  }
+
+  PROTECT(new_sexp = NEW_INTEGER(length));
+  *sexpp = new_sexp;
+  int *integer_ptr = INTEGER(new_sexp);
+
+  for (ii = 0; ii < length; ++ii) {
+    item = PySequence_Fast_GET_ITEM(seq_object, ii);
+#if (PY_VERSION_HEX < 0x03010000)
+    item_tmp = PyNumber_Int(item);
+#else
+    item_tmp = PyNumber_Long(item);
+#endif
+    if (item != NAInteger_New(0)) {
+      integer_ptr[ii] = NA_INTEGER;
+    } else if (item_tmp) {
+#if (PY_VERSION_HEX < 0x03010000)
+      long l = PyInt_AS_LONG(item_tmp);
+#else
+      long l = PyLong_AS_LONG(item_tmp);
+#endif
+      integer_ptr[ii] = RPY_RINT_FROM_LONG(l);
+    } else {
+      UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Error while trying to convert element %i to an integer.",
+		   ii);
+      return -1;
+    }
+    Py_XDECREF(item_tmp);
+  }
+  UNPROTECT(1);
+  return 0;
+}
+
 static int
 IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -2097,10 +2156,8 @@ IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   PyObject *object;
   PySexpObject *rpyobject;
   int sexptype = INTSXP;
-  PyObject *copy = Py_False;
   static char *kwlist[] = {"sexpvector", NULL};
 
-  /* FIXME: handle the copy argument */
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O", 
                                     kwlist,
                                     &object)) {
@@ -2118,6 +2175,10 @@ IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     /* Check that the type is the same 
        FIXME: allow type conversion ?
     */
+#ifdef RPY_VERBOSE
+    printf("    object already a VectorSexp_Type\n");
+#endif 
+
     rpyobject = (PySexpObject *)object;
     if (sexptype != TYPEOF(RPY_SEXP(rpyobject))) {
       PyErr_Format(PyExc_ValueError, "Invalid SEXP type '%i' (should be %i).", 
@@ -2132,15 +2193,18 @@ IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
       return -1;
     }
   } else if (PySequence_Check(object)) {
-    SEXP sexp = newSEXP(object, sexptype);
-    if (sexp == NULL) {
-      /* newSEXP returning NULL will also have raised an exception
-       * (not-so-clear design :/ )
+#ifdef RPY_VERBOSE
+    printf("    object a sequence\n");
+#endif 
+
+    SEXP *sexpp = NULL;
+    if (RPy_SeqToINTSXP(object, sexpp) == -1) {
+      /* RPy_SeqToINTSXP returns already raises an exception in case of problem
        */
       embeddedR_freelock();
       return -1;
     }
-    RPY_SEXP((PySexpObject *)self) = sexp;
+    RPY_SEXP((PySexpObject *)self) = *sexpp;
     #ifdef RPY_DEBUG_OBJECTINIT
     printf("  SEXP vector is %p.\n", RPY_SEXP((PySexpObject *)self));
     #endif

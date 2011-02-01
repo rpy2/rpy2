@@ -138,6 +138,23 @@ class NAValuesTestCase(unittest.TestCase):
         na_str = ri.NACharacterType()
         self.assertEquals("NA_character_", repr(na_str))
 
+
+class IntSexpVectorTestCase(unittest.TestCase):
+    def testInitFromSeq(self):
+        seq = range(3)
+        v = ri.IntSexpVector(seq)
+        self.assertEquals(3, len(v))
+        for x,y in zip(seq, v):
+            self.assertEquals(x, y)
+
+    def testInitFromSeqInvalidInt(self):
+        seq = (1, 'b', 3)
+        self.assertRaises(ValueError, ri.IntSexpVector, seq)
+
+    def testInitFromSeqInvalidOverflow(self):
+        # test for Python long > int raising an error
+        self.assertTrue(False) # no test yet
+
 class SexpVectorTestCase(unittest.TestCase):
 
     def testMissinfType(self):
@@ -185,7 +202,6 @@ class SexpVectorTestCase(unittest.TestCase):
         isInteger = ri.globalenv.get("is.integer")
         ok = isInteger(sexp)[0]
         self.assertTrue(ok)
-
         sexp = ri.SexpVector(["a", ], ri.INTSXP)
         isNA = ri.globalenv.get("is.na")
         ok = isNA(sexp)[0]
@@ -534,6 +550,7 @@ class SexpVectorTestCase(unittest.TestCase):
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpVectorTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(WrapperSexpVectorTestCase))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(IntSexpVectorTestCase))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(NAValuesTestCase))
     return suite
 
