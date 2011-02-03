@@ -151,9 +151,12 @@ class IntSexpVectorTestCase(unittest.TestCase):
         seq = (1, 'b', 3)
         self.assertRaises(ValueError, ri.IntSexpVector, seq)
 
+
     def testInitFromSeqInvalidOverflow(self):
-        # test for Python long > int raising an error
-        self.assertTrue(False) # no test yet
+        v = ri.IntSexpVector((sys.maxint-1, sys.maxint))
+        self.assertEquals(sys.maxint-1, v[0])
+        self.assertEquals(sys.maxint, v[1])
+        self.assertRaises(OverflowError, ri.IntSexpVector, sys.maxint+1)
 
 class SexpVectorTestCase(unittest.TestCase):
 

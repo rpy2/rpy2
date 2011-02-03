@@ -1027,7 +1027,7 @@ static PyTypeObject IntVectorSexp_Type = {
 
 /* Take an arbitray Python sequence and a target pointer SEXP
    and build an R vector of integers.
-   The function return 0 on success, -1 on failure. In the case
+   The function returns 0 on success, -1 on failure. In the case
    of a failure, it will also create an exception with an informative
    message that can be propagated up.
 */
@@ -1070,7 +1070,15 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
 #else
       long l = PyLong_AS_LONG(item_tmp);
 #endif
-      integer_ptr[ii] = RPY_RINT_FROM_LONG(l);
+      if ((l > INT_MAX) || (l < INT_MIN)) {
+	UNPROTECT(1);
+	PyErr_Format(PyExc_OverflowError,
+		     "Integer overflow with element %i.",
+		     ii);	
+	return -1;
+      } else {
+	integer_ptr[ii] = (int)l;
+      }
     } else {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
@@ -1166,4 +1174,6 @@ IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   embeddedR_freelock();
   return 0;
 }
+
+
 
