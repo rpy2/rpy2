@@ -38,7 +38,7 @@
 #include "sequence.h"
 
 
-/* len(x) */
+/* len(x) or object.__len__() */
 static Py_ssize_t VectorSexp_len(PySexpObject* object)
 {
   if (rpy_has_status(RPY_R_BUSY)) {
@@ -60,7 +60,11 @@ static Py_ssize_t VectorSexp_len(PySexpObject* object)
   return len;
 }
 
-/* a[i] */
+/* a[i] or object.__getitem__(i).
+This only considers the case where 'i' is an integer.
+R can also get item on names, but that's currently exposed at a higher level
+in rpy2.
+*/
 static PyObject *
 VectorSexp_item(PySexpObject* object, Py_ssize_t i)
 {
@@ -91,7 +95,7 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
 #endif
   }
 
-  /* On 64bits, Python is apparently able to use larger integer
+  /* On 64bits platforms, Python is apparently able to use larger integer
    * than R for indexing. */
   if (i >= R_LEN_T_MAX) {
     PyErr_Format(PyExc_IndexError, "Index value exceeds what R can handle.");
@@ -880,6 +884,7 @@ static PyTypeObject VectorSexp_Type = {
 static int
 VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
+
 #ifdef RPY_VERBOSE
   printf("%p: VectorSexp initializing...\n", self);
 #endif 
@@ -956,6 +961,91 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   embeddedR_freelock();
   return 0;
 }
+
+
+/* transition to replace the current VectorSexp_init()
+   and make VectorSexp_init() an abstract class */
+static int
+VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
+			int (*seq_to_R)(), int sexptype)
+{
+
+  if (! (rpy_has_status(RPY_R_INITIALIZED))) {
+    PyErr_Format(PyExc_RuntimeError, 
+                 "R must be initialized before any instance can be created.");
+    return -1;
+  }
+
+  PyObject *object;
+  PySexpObject *rpyobject;
+  static char *kwlist[] = {"sexpvector", NULL};
+
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O", 
+                                    kwlist,
+                                    &object)) {
+    return -1;
+  }
+
+  if (rpy_has_status(RPY_R_BUSY)) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return -1;
+  }
+  embeddedR_setlock();
+
+  if (PyObject_IsInstance(object, 
+                          (PyObject*)&VectorSexp_Type)) {
+#ifdef RPY_VERBOSE
+    printf("    object already a VectorSexp_Type\n");
+#endif 
+
+    rpyobject = (PySexpObject *)object;
+    if (sexptype != TYPEOF(RPY_SEXP(rpyobject))) {
+      PyErr_Format(PyExc_ValueError, "Invalid SEXP type '%i' (should be %i).", 
+		   TYPEOF(RPY_SEXP(rpyobject)), sexptype);
+      embeddedR_freelock();
+      return -1;
+    }
+    /* call parent's constructor */
+    if (Sexp_init(self, args, NULL) == -1) {
+      /* PyErr_Format(PyExc_RuntimeError, "Error initializing instance."); */
+      embeddedR_freelock();
+      return -1;
+    }
+  } else if (PySequence_Check(object)) {
+#ifdef RPY_VERBOSE
+    printf("    object a sequence\n");
+#endif 
+
+    SEXP sexp = R_NilValue;
+    if (seq_to_R(object, &sexp) == -1) {
+      /* RPy_SeqToINTSXP returns already raises an exception in case of problem
+       */
+      embeddedR_freelock();
+      return -1;
+    }
+
+    R_PreserveObject(sexp);
+#ifdef RPY_DEBUG_PRESERVE
+    preserved_robjects += 1;
+    printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
+	   sexp, preserved_robjects);
+#endif  
+
+    RPY_SEXP((PySexpObject *)self) = sexp;
+    #ifdef RPY_DEBUG_OBJECTINIT
+    printf("  SEXP vector is %p.\n", RPY_SEXP((PySexpObject *)self));
+    #endif
+    /* SET_NAMED(RPY_SEXP((PySexpObject *)self), 2); */
+  } else {
+    PyErr_Format(PyExc_ValueError, "Invalid sexpvector.");
+    embeddedR_freelock();
+    return -1;
+  }
+
+  embeddedR_freelock();
+  return 0;
+}
+
 
  
 PyDoc_STRVAR(IntVectorSexp_Type_doc,
@@ -1052,9 +1142,11 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
   }
 
   PROTECT(new_sexp = NEW_INTEGER(length));
-  *sexpp = new_sexp;
   int *integer_ptr = INTEGER(new_sexp);
 
+  /*FIXME: Optimization possible for array.array by using memcpy().
+   * With Python >= 2.7, this could be extended to memoryviews.
+   */
   for (ii = 0; ii < length; ++ii) {
     item = PySequence_Fast_GET_ITEM(seq_object, ii);
 #if (PY_VERSION_HEX < 0x03010000)
@@ -1070,7 +1162,7 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
 #else
       long l = PyLong_AS_LONG(item_tmp);
 #endif
-      if ((l > INT_MAX) || (l < INT_MIN)) {
+      if ((l > (long)INT_MAX) || (l < (long)INT_MIN)) {
 	UNPROTECT(1);
 	PyErr_Format(PyExc_OverflowError,
 		     "Integer overflow with element %i.",
@@ -1089,6 +1181,7 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
     Py_XDECREF(item_tmp);
   }
   UNPROTECT(1);
+  *sexpp = new_sexp;
   return 0;
 }
 
@@ -1098,82 +1191,173 @@ IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 #ifdef RPY_VERBOSE
   printf("%p: IntVectorSexp initializing...\n", self);
 #endif 
-
-  if (! (rpy_has_status(RPY_R_INITIALIZED))) {
-    PyErr_Format(PyExc_RuntimeError, 
-                 "R must be initialized before any instance can be created.");
-    return -1;
-  }
-
-  PyObject *object;
-  PySexpObject *rpyobject;
-  int sexptype = INTSXP;
-  static char *kwlist[] = {"sexpvector", NULL};
-
-  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O", 
-                                    kwlist,
-                                    &object)) {
-    return -1;
-  }
-
-  if (rpy_has_status(RPY_R_BUSY)) {
-    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
-    return -1;
-  }
-  embeddedR_setlock();
-
-  if (PyObject_IsInstance(object, 
-                          (PyObject*)&VectorSexp_Type)) {
-    /* Check that the type is the same 
-       FIXME: allow type conversion ?
-    */
-#ifdef RPY_VERBOSE
-    printf("    object already a VectorSexp_Type\n");
-#endif 
-
-    rpyobject = (PySexpObject *)object;
-    if (sexptype != TYPEOF(RPY_SEXP(rpyobject))) {
-      PyErr_Format(PyExc_ValueError, "Invalid SEXP type '%i' (should be %i).", 
-		   TYPEOF(RPY_SEXP(rpyobject)), sexptype);
-      embeddedR_freelock();
-      return -1;
-    }
-    /* call parent's constructor */
-    if (Sexp_init(self, args, NULL) == -1) {
-      /* PyErr_Format(PyExc_RuntimeError, "Error initializing instance."); */
-      embeddedR_freelock();
-      return -1;
-    }
-  } else if (PySequence_Check(object)) {
-#ifdef RPY_VERBOSE
-    printf("    object a sequence\n");
-#endif 
-
-    SEXP sexp;
-    if (RPy_SeqToINTSXP(object, &sexp) == -1) {
-      /* RPy_SeqToINTSXP returns already raises an exception in case of problem
-       */
-      embeddedR_freelock();
-      return -1;
-    }
-    RPY_SEXP((PySexpObject *)self) = sexp;
-    #ifdef RPY_DEBUG_OBJECTINIT
-    printf("  SEXP vector is %p.\n", RPY_SEXP((PySexpObject *)self));
-    #endif
-    /* SET_NAMED(RPY_SEXP((PySexpObject *)self), 2); */
-  } else {
-    PyErr_Format(PyExc_ValueError, "Invalid sexpvector.");
-    embeddedR_freelock();
-    return -1;
-  }
-
+  int res = VectorSexp_init_private(self, args, kwds, 
+				    (RPy_seqobjtosexpproc)RPy_SeqToINTSXP, 
+				    INTSXP);
 #ifdef RPY_VERBOSE
   printf("done (IntVectorSexp_init).\n");
 #endif 
+  return res;
+}
 
-  embeddedR_freelock();
+
+
+/* Take an arbitray Python sequence and a target pointer SEXP
+   and build an R vector of "numeric" values (double* in C, float in Python).
+   The function returns 0 on success, -1 on failure. In the case
+   of a failure, it will also create an exception with an informative
+   message that can be propagated up.
+*/
+static int
+RPy_SeqToREALSXP(PyObject *object, SEXP *sexpp)
+{
+  Py_ssize_t ii;
+  PyObject *seq_object, *item, *item_tmp;
+  SEXP new_sexp;
+ 
+  seq_object = PySequence_Fast(object,
+			       "Cannot create R object from non-sequence object.");
+  if (! seq_object) {
+    return -1;
+  }
+
+  const Py_ssize_t length = PySequence_Fast_GET_SIZE(seq_object);
+
+  if (length > R_LEN_T_MAX) {
+    PyErr_Format(PyExc_ValueError,
+		 "The Python sequence is longer than the longuest possible vector in R");
+  }
+
+  PROTECT(new_sexp = NEW_INTEGER(length));
+  double *double_ptr = NUMERIC_POINTER(new_sexp);
+  /*FIXME: Optimization possible for array.array by using memcpy().
+   * With Python >= 2.7, this could be extended to memoryviews.
+   */
+  for (ii = 0; ii < length; ++ii) {
+    item = PySequence_Fast_GET_ITEM(seq_object, ii);
+    item_tmp = PyNumber_Float(item);
+    if (item == NAReal_New(0)) {
+      double_ptr[ii] = NA_REAL;
+    } else if (item_tmp) {
+      double value = PyFloat_AS_DOUBLE(item_tmp);
+      double_ptr[ii] = value;
+    } else {
+      UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Error while trying to convert element %i to a double.",
+		   ii);
+      return -1;
+    }
+    Py_XDECREF(item_tmp);
+  }
+  UNPROTECT(1);
   return 0;
 }
 
+
+/* Take an arbitray Python sequence and a target pointer SEXP
+   and build an R vector of strings (character in R, char* in C).
+   The function returns 0 on success, -1 on failure. In the case
+   of a failure, it will also create an exception with an informative
+   message that can be propagated up.
+*/
+static int
+RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
+{
+  Py_ssize_t ii;
+  PyObject *seq_object, *item, *item_tmp;
+  SEXP new_sexp, str_R;
+ 
+  seq_object = PySequence_Fast(object,
+			       "Cannot create R object from non-sequence object.");
+  if (! seq_object) {
+    return -1;
+  }
+
+  const Py_ssize_t length = PySequence_Fast_GET_SIZE(seq_object);
+
+  if (length > R_LEN_T_MAX) {
+    PyErr_Format(PyExc_ValueError,
+		 "The Python sequence is longer than the longuest possible vector in R");
+  }
+
+  PROTECT(new_sexp = NEW_CHARACTER(length));
+
+  for (ii = 0; ii < length; ++ii) {
+    item = PySequence_Fast_GET_ITEM(seq_object, ii);
+
+    if (item == NACharacter_New(0)) {
+      SET_STRING_ELT(new_sexp, ii, NA_STRING);
+      continue;
+    }
+    
+#if (PY_VERSION_HEX < 0x03010000)
+    if (PyString_Check(item)) {
+      /* INCREF since item_tmp is DECREFed later */
+      item_tmp = item;
+      Py_INCREF(item_tmp);
+      str_R = mkChar(PyString_AS_STRING(item_tmp));
+    } else if (PyUnicode_Check(item)) {
+      item_tmp = PyUnicode_AsUTF8String(item);
+      if (item_tmp == NULL) {
+	UNPROTECT(1);
+	PyErr_Format(PyExc_ValueError,
+		     "Error raised by codec for element %i.",
+		     ii);	
+	return -1;	
+      }
+      const char *string = PyString_AsString(item_tmp);
+      str_R = mkCharCE(string, CE_UTF8);
+    }
+#else
+    /* Only difference with Python < 3.1 is that PyString case is dropped. 
+       Technically a macro would avoid code duplication.
+    */
+    if (PyUnicode_check(item)) {
+      item_tmp = PyUnicode_AsUTF8String(item);
+      if (item_tmp == NULL) {
+	UNPROTECT(1);
+	PyErr_Format(PyExc_ValueError,
+		     "Error raised by codec for element %i.",
+		     ii);	
+	return -1;	
+      }
+      const char *string = PyString_AsString(item_tmp);
+      str_R = mkCharCE(string, CE_UTF8);
+    }
+#endif
+    else {
+      /* Last option: try to call str() on the object. */
+      item_tmp = PyObject_Str(item);
+      if (item_tmp == NULL) {
+	UNPROTECT(1);
+	PyErr_Format(PyExc_ValueError,
+		     "Error raised when calling str() for element %i.",
+		     ii);	
+	return -1;	
+      }
+#if (PY_VERSION_HEX < 0x03010000)
+      str_R = mkChar(PyString_AS_STRING(item_tmp));
+#else
+      item_tmp2 = PyUnicode_AsUTF8String(item_tmp);
+      if (item_tmp2 == NULL) {
+	UNPROTECT(1);
+	PyErr_Format(PyExc_ValueError,
+		     "Error raised by codec for str(element %i).",
+		     ii);	
+	return -1;	
+      }
+      const char *string = PyString_AsString(item_tmp2);
+      str_R = mkCharCE(string, CE_UTF8);
+      Py_DECREF(item_tmp2);
+#endif      
+    }
+    
+    SET_STRING_ELT(new_sexp, ii, str_R);
+    Py_XDECREF(item_tmp);
+  }
+  UNPROTECT(1);
+  return 0;
+}
 
 

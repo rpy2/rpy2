@@ -156,7 +156,7 @@ class IntSexpVectorTestCase(unittest.TestCase):
         v = ri.IntSexpVector((sys.maxint-1, sys.maxint))
         self.assertEquals(sys.maxint-1, v[0])
         self.assertEquals(sys.maxint, v[1])
-        self.assertRaises(OverflowError, ri.IntSexpVector, sys.maxint+1)
+        self.assertRaises(OverflowError, ri.IntSexpVector, (sys.maxint+1, ))
 
 class SexpVectorTestCase(unittest.TestCase):
 
