@@ -1417,7 +1417,7 @@ static int
 RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 {
   Py_ssize_t ii;
-  PyObject *seq_object, *item, *item_tmp;
+  PyObject *seq_object, *item, *item_tmp, *item_tmp2;
   SEXP new_sexp, str_R;
  
   seq_object = PySequence_Fast(object,
