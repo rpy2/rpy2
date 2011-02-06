@@ -1339,6 +1339,74 @@ FloatVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
 
 
+
+PyDoc_STRVAR(StrVectorSexp_Type_doc,
+             "R vector of Python strings");
+
+static int
+StrVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
+
+static PyTypeObject StrVectorSexp_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+#if (PY_VERSION_HEX < 0x03010000)
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+#else
+	PyVarObject_HEAD_INIT(NULL, 0)
+#endif
+        "rpy2.rinterface.FloatSexpVector",        /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        0,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                    /*tp_as_sequence*/
+#if (PY_VERSION_HEX < 0x03010000)
+        0,                      /*tp_as_mapping*/
+#else
+	0,
+#endif
+        0,                      /*tp_hash*/
+        0,              /*tp_call*/
+        0,              /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
+#else
+        0,                      /*tp_as_buffer*/
+        0,  /*tp_flags*/
+#endif
+        StrVectorSexp_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,            /*tp_getset*/
+        &VectorSexp_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        (initproc)StrVectorSexp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        0,               /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
+
+
 /* Take an arbitray Python sequence and a target pointer SEXP
    and build an R vector of strings (character in R, char* in C).
    The function returns 0 on success, -1 on failure. In the case
@@ -1441,7 +1509,22 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
     Py_XDECREF(item_tmp);
   }
   UNPROTECT(1);
+  *sexpp = new_sexp;
   return 0;
 }
 
+static int
+StrVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+#ifdef RPY_VERBOSE
+  printf("%p: StrVectorSexp initializing...\n", self);
+#endif 
+  int res = VectorSexp_init_private(self, args, kwds, 
+				    (RPy_seqobjtosexpproc)RPy_SeqToSTRSXP, 
+				    STRSXP);
+#ifdef RPY_VERBOSE
+  printf("done (StrVectorSexp_init).\n");
+#endif 
+  return res;
+}
 
