@@ -95,13 +95,6 @@ class StrSexpVector(SexpVector):
     def __init__(self, v):
         super(StrSexpVector, self).__init__(v, STRSXP)
 
-class FloatSexpVector(SexpVector):
-    """ 
-    Vector of floats.
-    """
-    def __init__(self, v):        
-        super(FloatSexpVector, self).__init__(v, REALSXP)
-
 class BoolSexpVector(SexpVector):
     """ 
     Vector of booleans (logical in R terminology).
