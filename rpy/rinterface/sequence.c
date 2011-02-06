@@ -1465,7 +1465,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
     /* Only difference with Python < 3.1 is that PyString case is dropped. 
        Technically a macro would avoid code duplication.
     */
-    if (PyUnicode_check(item)) {
+    if (PyUnicode_Check(item)) {
       item_tmp = PyUnicode_AsUTF8String(item);
       if (item_tmp == NULL) {
 	UNPROTECT(1);
@@ -1474,7 +1474,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 		     ii);	
 	return -1;	
       }
-      const char *string = PyString_AsString(item_tmp);
+      const char *string = PyBytes_AsString(item_tmp);
       str_R = mkCharCE(string, CE_UTF8);
     }
 #endif
@@ -1499,7 +1499,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 		     ii);	
 	return -1;	
       }
-      const char *string = PyString_AsString(item_tmp2);
+      const char *string = PyBytes_AsString(item_tmp2);
       str_R = mkCharCE(string, CE_UTF8);
       Py_DECREF(item_tmp2);
 #endif      
