@@ -1417,7 +1417,7 @@ static int
 RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 {
   Py_ssize_t ii;
-  PyObject *seq_object, *item, *item_tmp, *item_tmp2;
+  PyObject *seq_object, *item, *item_tmp;
   SEXP new_sexp, str_R;
  
   seq_object = PySequence_Fast(object,
@@ -1491,7 +1491,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 #if (PY_VERSION_HEX < 0x03010000)
       str_R = mkChar(PyString_AS_STRING(item_tmp));
 #else
-      item_tmp2 = PyUnicode_AsUTF8String(item_tmp);
+      PyObject *item_tmp2 = PyUnicode_AsUTF8String(item_tmp);
       if (item_tmp2 == NULL) {
 	UNPROTECT(1);
 	PyErr_Format(PyExc_ValueError,
