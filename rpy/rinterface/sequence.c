@@ -1675,3 +1675,147 @@ BoolVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   return res;
 }
 
+
+PyDoc_STRVAR(ByteVectorSexp_Type_doc,
+             "R vector of bytes");
+
+static int
+ByteVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
+
+static PyTypeObject ByteVectorSexp_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+#if (PY_VERSION_HEX < 0x03010000)
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+#else
+	PyVarObject_HEAD_INIT(NULL, 0)
+#endif
+        "rpy2.rinterface.ByteSexpVector",        /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        0,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                    /*tp_as_sequence*/
+#if (PY_VERSION_HEX < 0x03010000)
+        0,                      /*tp_as_mapping*/
+#else
+	0,
+#endif
+        0,                      /*tp_hash*/
+        0,              /*tp_call*/
+        0,              /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
+#else
+        0,                      /*tp_as_buffer*/
+        0,  /*tp_flags*/
+#endif
+        ByteVectorSexp_Type_doc,/*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,            /*tp_getset*/
+        &VectorSexp_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        (initproc)ByteVectorSexp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        0,               /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
+
+
+/* Take an arbitray Python sequence and a target pointer SEXP
+   and build an R vector of "raw" values (bytes).
+   The function returns 0 on success, -1 on failure. In the case
+   of a failure, it will also create an exception with an informative
+   message that can be propagated up.
+*/
+static int
+RPy_SeqToRAWSXP(PyObject *object, SEXP *sexpp)
+{
+  Py_ssize_t ii;
+  PyObject *seq_object, *item;
+  SEXP new_sexp;
+ 
+  seq_object = PySequence_Fast(object,
+			       "Cannot create R object from non-sequence object.");
+  if (! seq_object) {
+    return -1;
+  }
+
+  const Py_ssize_t length = PySequence_Fast_GET_SIZE(seq_object);
+
+  if (length > R_LEN_T_MAX) {
+    PyErr_Format(PyExc_ValueError,
+		 "The Python sequence is longer than the longuest possible vector in R");
+  }
+
+  PROTECT(new_sexp = NEW_RAW(length));
+  char *raw_ptr = (char *)RAW_POINTER(new_sexp);
+  /*FIXME: Optimization possible for array.array by using memcpy().
+   * With Python >= 2.7, this could be extended to memoryviews.
+   */
+  for (ii = 0; ii < length; ++ii) {
+    item = PySequence_Fast_GET_ITEM(seq_object, ii);
+    Py_ssize_t size_tmp;
+    char *buffer;
+    int ok;
+#if (PY_VERSION_HEX < 0x03010000)
+    ok = PyString_AsStringAndSize(item, &buffer, &size_tmp);
+#else
+    ok = PyBytes_AsStringAndSize(item, &buffer, &size_tmp);
+#endif
+    if (ok == -1) {
+      UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Element %i is not a byte.",
+		   ii);
+      return -1;      
+    } else if (size_tmp > 1) {
+      UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Element %i contains more than one byte.",
+		   ii);
+      return -1;
+    }
+    raw_ptr[ii] = buffer[0];
+  }
+  UNPROTECT(1);
+  *sexpp = new_sexp;
+  return 0;
+}
+
+static int
+ByteVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+#ifdef RPY_VERBOSE
+  printf("%p: ByteVectorSexp initializing...\n", self);
+#endif 
+  int res = VectorSexp_init_private(self, args, kwds, 
+				    (RPy_seqobjtosexpproc)RPy_SeqToRAWSXP, 
+				    RAWSXP);
+#ifdef RPY_VERBOSE
+  printf("done (ByteVectorSexp_init).\n");
+#endif 
+  return res;
+}
+

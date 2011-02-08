@@ -81,13 +81,6 @@ except:
 
 from rpy2.rinterface.rinterface import *
 
-class BytesSexpVector(SexpVector):
-    """
-    Vector of bytes ('raw' in R terminology).
-    """
-    def __init__(self, v):
-        super(BytesSexpVector, self).__init__(v, RAWSXP)
-
 class ListSexpVector(SexpVector):
     """ 
     Vector of objects (list in R terminology).
