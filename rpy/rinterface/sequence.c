@@ -1355,7 +1355,7 @@ static PyTypeObject StrVectorSexp_Type = {
 #else
 	PyVarObject_HEAD_INIT(NULL, 0)
 #endif
-        "rpy2.rinterface.FloatSexpVector",        /*tp_name*/
+        "rpy2.rinterface.StrSexpVector",        /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
@@ -1545,7 +1545,7 @@ static PyTypeObject BoolVectorSexp_Type = {
 #else
 	PyVarObject_HEAD_INIT(NULL, 0)
 #endif
-        "rpy2.rinterface.FloatSexpVector",        /*tp_name*/
+        "rpy2.rinterface.BoolSexpVector",        /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
