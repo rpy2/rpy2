@@ -3045,6 +3045,8 @@ PyInit_rinterface(void)
     return;
   if (PyType_Ready(&StrVectorSexp_Type) < 0)
     return;
+  if (PyType_Ready(&BoolVectorSexp_Type) < 0)
+    return;
   if (PyType_Ready(&EnvironmentSexp_Type) < 0)
     return;
   if (PyType_Ready(&S4Sexp_Type) < 0)
@@ -3167,6 +3169,7 @@ PyInit_rinterface(void)
   PyModule_AddObject(m, "IntSexpVector", (PyObject *)&IntVectorSexp_Type);
   PyModule_AddObject(m, "FloatSexpVector", (PyObject *)&FloatVectorSexp_Type);
   PyModule_AddObject(m, "StrSexpVector", (PyObject *)&StrVectorSexp_Type);
+  PyModule_AddObject(m, "BoolSexpVector", (PyObject *)&BoolVectorSexp_Type);
   PyModule_AddObject(m, "SexpEnvironment", (PyObject *)&EnvironmentSexp_Type);
   PyModule_AddObject(m, "SexpS4", (PyObject *)&S4Sexp_Type);
   PyModule_AddObject(m, "SexpLang", (PyObject *)&LangSexp_Type);

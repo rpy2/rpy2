@@ -88,13 +88,6 @@ class BytesSexpVector(SexpVector):
     def __init__(self, v):
         super(BytesSexpVector, self).__init__(v, RAWSXP)
 
-class BoolSexpVector(SexpVector):
-    """ 
-    Vector of booleans (logical in R terminology).
-    """
-    def __init__(self, v):        
-        super(BoolSexpVector, self).__init__(v, LGLSXP)
-
 class ListSexpVector(SexpVector):
     """ 
     Vector of objects (list in R terminology).
