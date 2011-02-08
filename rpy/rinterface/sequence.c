@@ -1598,7 +1598,7 @@ static PyTypeObject BoolVectorSexp_Type = {
 
 
 /* Take an arbitray Python sequence and a target pointer SEXP
-   and build an R vector of "numeric" values (double* in C, float in Python).
+   and build an R vector of "logical" values (booleans).
    The function returns 0 on success, -1 on failure. In the case
    of a failure, it will also create an exception with an informative
    message that can be propagated up.
