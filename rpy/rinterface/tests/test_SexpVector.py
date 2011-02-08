@@ -11,6 +11,7 @@ def evalr(string):
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon
 
+IS_PYTHON3 = sys.version_info[0] == 3
 
 class WrapperSexpVectorTestCase(unittest.TestCase):
     def testInt(self):
@@ -157,6 +158,36 @@ class IntSexpVectorTestCase(unittest.TestCase):
         self.assertEquals(sys.maxint-1, v[0])
         self.assertEquals(sys.maxint, v[1])
         self.assertRaises(OverflowError, ri.IntSexpVector, (sys.maxint+1, ))
+
+class ByteSexpVectorTestCase(unittest.TestCase):
+
+    def testInitFromBytes(self):
+        if IS_PYTHON3:
+            seq = b'abc'
+        else:
+            seq = 'abc'
+        v = ri.ByteSexpVector(seq)
+        self.assertEquals(3, len(v))
+        for x,y in zip(seq, v):
+            self.assertEquals(x, y)
+
+    def testInitFromSeqOfBytes(self):
+        if IS_PYTHON3:
+            seq = (b'a', b'b', b'c')
+        else:
+            seq = ('a', 'b', 'c')
+        v = ri.ByteSexpVector(seq)
+        self.assertEquals(3, len(v))
+        for x,y in zip(seq, v):
+            self.assertEquals(x, y)
+
+    def testInitFromSeqInvalidByte(self):
+        if IS_PYTHON3:
+            seq = (b'a', 2, b'c')
+        else:
+            seq = ('a', 2, 'c')
+        self.assertRaises(ValueError, ri.ByteSexpVector, seq)
+
 
 class SexpVectorTestCase(unittest.TestCase):
 
@@ -552,8 +583,12 @@ class SexpVectorTestCase(unittest.TestCase):
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpVectorTestCase)
-    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(WrapperSexpVectorTestCase))
-    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(IntSexpVectorTestCase))
+    suite.addTest(unittest.TestLoader().\
+                      loadTestsFromTestCase(WrapperSexpVectorTestCase))
+    suite.addTest(unittest.TestLoader().\
+                      loadTestsFromTestCase(IntSexpVectorTestCase))
+    suite.addTest(unittest.TestLoader().\
+                      loadTestsFromTestCase(ByteSexpVectorTestCase))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(NAValuesTestCase))
     return suite
 
