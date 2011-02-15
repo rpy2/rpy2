@@ -79,7 +79,7 @@ Changes
 :mod:`rpy2.rinterface`:
 
 - :class:`IntSexpVector`, :class:`FloatSexpVector`,
-  :class:`StrSexpVector`, :class:`BoolSexpVector`
+  :class:`StrSexpVector`, :class:`BoolSexpVector`, :class:`ComplexSexpVector`
   are now defined at the C level, improving performances
   and memory footprint whenever a large number of instances are created.
 
