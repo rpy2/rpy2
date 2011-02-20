@@ -31,6 +31,7 @@ The documentation for a package is represented with the class
 >>> base_help = rh.Package('base')
 >>> base_help.fetch('sum')
 
+
 Documentation page
 ------------------
 
@@ -42,7 +43,35 @@ class :class:`Page`
    :members:
 
 
->>> hp = rh.Page(base_help.fetch('sum'))
+>>> hp = base_help.fetch('sum')
 
->>> print(ho.to_docstrings())
+>>> hp.sections.keys()
+('title', 'name', 'alias', 'keyword', 'description', 'usage', 'arguments', 'deta
+ils', 'value', 'section', 'references', 'seealso')
+
+.. note::
+
+   >>> print(''.join(hp.to_docstring(('details',))))
+
+   ::
+
+     details
+     -------
+
+
+        This is a generic function: methods can be defined for it
+        directly or via the  Summary  group generic.
+        For this to work properly, the arguments   should be
+        unnamed, and dispatch is on the first argument.
+ 
+        If  na.rm  is  FALSE  an  NA 
+        value in any of the arguments will cause
+        a value of  NA  to be returned, otherwise
+        NA  values are ignored.
+ 
+        Logical true values are regarded as one, false values as zero.
+        For historical reasons,  NULL  is accepted and treated as if it
+        were  integer(0) .
+ 
+
 
