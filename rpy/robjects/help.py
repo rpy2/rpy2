@@ -138,7 +138,8 @@ class Package(object):
 
 
     def __repr__(self):
-        r = 'R package %s  '%self.__package_name + super(self, Package).__repr__()
+        r = 'R package %s %s' %(self.__package_name,
+                                super(Package, self).__repr__())
         return r
 
 class HelpNotFound(KeyError):
