@@ -300,7 +300,7 @@ class Vector(RObjectMixin, SexpVector):
                           
 
 
-class StrVector(Vector):
+class StrVector(Vector, StrSexpVector):
     """      Vector of string elements
 
     StrVector(seq) -> StrVector.
@@ -328,7 +328,7 @@ class StrVector(Vector):
         res = self._factorconstructor(self)
         return conversion.ri2py(res)
 
-class IntVector(Vector):
+class IntVector(Vector, IntSexpVector):
     """ Vector of integer elements 
     IntVector(seq) -> IntVector.
 
@@ -350,7 +350,7 @@ class IntVector(Vector):
         res = self._tabulate(self)
         return conversion.ri2py(res)
 
-class BoolVector(Vector):
+class BoolVector(Vector, BoolSexpVector):
     """ Vector of boolean (logical) elements 
     BoolVector(seq) -> BoolVector.
 
@@ -363,7 +363,7 @@ class BoolVector(Vector):
         obj = BoolSexpVector(obj)
         super(BoolVector, self).__init__(obj)
 
-class ComplexVector(Vector):
+class ComplexVector(Vector, ComplexSexpVector):
     """ Vector of complex elements 
 
     ComplexVector(seq) -> ComplexVector
@@ -378,7 +378,7 @@ class ComplexVector(Vector):
         obj = ComplexSexpVector(obj)
         super(ComplexVector, self).__init__(obj)
 
-class FloatVector(Vector):
+class FloatVector(Vector, FloatSexpVector):
     """ Vector of float (double) elements 
 
     FloatVector(seq) -> FloatVector.

@@ -76,6 +76,9 @@ Changes
 
 - :class:`rpy2.robjects.packages.Package` now inherits from :class:`types.ModuleType`
 
+- classes representing R vector also inherit their type-specific
+  rinterface-level counterpart.
+
 :mod:`rpy2.rinterface`:
 
 - :class:`IntSexpVector`, :class:`FloatSexpVector`,
@@ -89,6 +92,7 @@ Bugs fixed
 - Better and more explicit detection system for needed libraries when
   compiling rpy2 (ported to release 2.1.6)
 
+- 
 
 Release 2.1.9
 =============
