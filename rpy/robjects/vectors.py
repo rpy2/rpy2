@@ -499,7 +499,11 @@ class ListVector(Vector):
                 if isinstance(x, ListVector):
                     res.append(super(ListVector, self).__repr__())
                 else:
-                    res.append("  %s: %s%s  %s" %(self.names[i],
+                    try:
+                        name = self.names[i]
+                    except TypeError, te:
+                        name = '<no name>'
+                    res.append("  %s: %s%s  %s" %(name,
                                                   type(x),
                                                   os.linesep,
                                                   x.__repr_content__()))
@@ -508,7 +512,11 @@ class ListVector(Vector):
                 if isinstance(x, ListVector):
                     res.append(super(ListVector, self).__repr__())
                 else:
-                    res.append("  %s: %s%s  %s" %(self.names[i],
+                    try:
+                        name = self.names[i]
+                    except TypeError, te:
+                        name = '<no name>'
+                    res.append("  %s: %s%s  %s" %(name,
                                                   type(x),
                                                   os.linesep,
                                                   x.__repr_content__()))
@@ -517,7 +525,11 @@ class ListVector(Vector):
                 if isinstance(x, ListVector):
                     res.append(super(ListVector, self).__repr__())
                 else:
-                    res.append("  %s: %s%s  %s" %(self.names[i],
+                    try:
+                        name = self.names[i]
+                    except TypeError, te:
+                        name = '<no name>'
+                    res.append("  %s: %s%s  %s" %(name,
                                                   type(x),
                                                   os.linesep,
                                                   x.__repr_content__()))
