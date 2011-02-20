@@ -181,16 +181,34 @@ Install from source
 
 .. _install-easyinstall:
 
-easy_install
-^^^^^^^^^^^^
+easy_install and pip
+^^^^^^^^^^^^^^^^^^^^
 
 The source package is on the PYthon Package Index (PYPI), and the
-*easy_install* script can be used whenever available.
+*easy_install* or *pip* scripts can be used whenever available.
 The shell command will then just be:
 
 .. code-block:: bash
 
    easy_install rpy2
+
+   # or
+
+   pip install rpy2
+
+Upgrading an existing installation is done with:
+
+.. code-block:: bash
+
+   easy_install rpy2 --upgrade
+
+   # or
+
+   pip install rpy2 --upgrade
+
+Both utilities have a list of options and their respective documentation should
+be checked for details.
+
 
 .. _install-setup:
 
@@ -316,6 +334,12 @@ The package is made of several sub-packages or modules:
 Higher-level interface similar to the one in RPy-1.x.
 This is provided for compatibility reasons, as well as to facilitate the migration
 to RPy2.
+
+:mod:`rpy2.interactive`
+-----------------------
+
+High-level interface, with an eye for interactive work. Largely based
+on :mod:`rpy2.robjects` (See below).
 
 
 :mod:`rpy2.robjects`
