@@ -81,13 +81,6 @@ except:
 
 from rpy2.rinterface.rinterface import *
 
-class ListSexpVector(SexpVector):
-    """ 
-    Vector of objects (list in R terminology).
-    """
-    def __init__(self, v):        
-        super(ListSexpVector, self).__init__(v, VECSXP)
-
 
 # wrapper in case someone changes sys.stdout:
 if PY3K:

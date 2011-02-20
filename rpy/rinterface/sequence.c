@@ -1185,6 +1185,18 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
   return 0;
 }
 
+/* Make an R INTSEXP from a Python int or long scalar */
+static SEXP 
+IntVectorSexp_AsSexp(PyObject *pyfloat) {
+  int status;
+  SEXP sexp;
+  PyObject *seq_tmp = PyTuple_New(1);
+  PyTuple_SetItem(seq_tmp, 0, pyfloat);
+  status = RPy_SeqToINTSXP(seq_tmp, &sexp);
+  Py_DECREF(seq_tmp);
+  return sexp;
+}
+
 static int
 IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -1320,6 +1332,18 @@ RPy_SeqToREALSXP(PyObject *object, SEXP *sexpp)
   UNPROTECT(1);
   *sexpp = new_sexp;
   return 0;
+}
+
+/* Make an R NUMERIC SEXP from a Python float scalar */
+static SEXP 
+FloatVectorSexp_AsSexp(PyObject *pyfloat) {
+  int status;
+  SEXP sexp;
+  PyObject *seq_tmp = PyTuple_New(1);
+  PyTuple_SetItem(seq_tmp, 0, pyfloat);
+  status = RPy_SeqToREALSXP(seq_tmp, &sexp);
+  Py_DECREF(seq_tmp);
+  return sexp;
 }
 
 static int
@@ -1513,6 +1537,18 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
   return 0;
 }
 
+/* Make an R STRSEXP from a Python string scalar */
+static SEXP 
+StrVectorSexp_AsSexp(PyObject *pyfloat) {
+  int status;
+  SEXP sexp;
+  PyObject *seq_tmp = PyTuple_New(1);
+  PyTuple_SetItem(seq_tmp, 0, pyfloat);
+  status = RPy_SeqToSTRSXP(seq_tmp, &sexp);
+  Py_DECREF(seq_tmp);
+  return sexp;
+}
+
 static int
 StrVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -1659,6 +1695,19 @@ RPy_SeqToLGLSXP(PyObject *object, SEXP *sexpp)
   *sexpp = new_sexp;
   return 0;
 }
+
+/* Make an R LGLSEXP from a Python bool scalar */
+static SEXP 
+BoolVectorSexp_AsSexp(PyObject *pyfloat) {
+  int status;
+  SEXP sexp;
+  PyObject *seq_tmp = PyTuple_New(1);
+  PyTuple_SetItem(seq_tmp, 0, pyfloat);
+  status = RPy_SeqToLGLSXP(seq_tmp, &sexp);
+  Py_DECREF(seq_tmp);
+  return sexp;
+}
+
 
 static int
 BoolVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
@@ -1938,6 +1987,18 @@ RPy_SeqToCPLXSXP(PyObject *object, SEXP *sexpp)
   return 0;
 }
 
+/* Make an R LGLSEXP from a Python complex scalar */
+static SEXP 
+ComplexVectorSexp_AsSexp(PyObject *pyfloat) {
+  int status;
+  SEXP sexp;
+  PyObject *seq_tmp = PyTuple_New(1);
+  PyTuple_SetItem(seq_tmp, 0, pyfloat);
+  status = RPy_SeqToCPLXSXP(seq_tmp, &sexp);
+  Py_DECREF(seq_tmp);
+  return sexp;
+}
+
 static int
 ComplexVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -1949,6 +2010,186 @@ ComplexVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 				    CPLXSXP);
 #ifdef RPY_VERBOSE
   printf("done (ComplexVectorSexp_init).\n");
+#endif 
+  return res;
+}
+
+
+PyDoc_STRVAR(ListVectorSexp_Type_doc,
+             "R list.");
+
+static int
+ListVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
+
+static PyTypeObject ListVectorSexp_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+#if (PY_VERSION_HEX < 0x03010000)
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+#else
+	PyVarObject_HEAD_INIT(NULL, 0)
+#endif
+        "rpy2.rinterface.ListSexpVector",        /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        0,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                    /*tp_as_sequence*/
+#if (PY_VERSION_HEX < 0x03010000)
+        0,                      /*tp_as_mapping*/
+#else
+	0,
+#endif
+        0,                      /*tp_hash*/
+        0,              /*tp_call*/
+        0,              /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
+#else
+        0,                      /*tp_as_buffer*/
+        0,  /*tp_flags*/
+#endif
+        ListVectorSexp_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,            /*tp_getset*/
+        &VectorSexp_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        (initproc)ListVectorSexp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        0,               /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
+
+
+/* Take an arbitray Python sequence and a target pointer SEXP
+   and build an R list.
+   The function returns 0 on success, -1 on failure. In the case
+   of a failure, it will also create an exception with an informative
+   message that can be propagated up.
+*/
+static int
+RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
+{
+  Py_ssize_t ii;
+  PyObject *seq_object, *item;
+  SEXP new_sexp, new_sexp_item;
+ 
+  seq_object = PySequence_Fast(object,
+			       "Cannot create R object from non-sequence object.");
+  if (! seq_object) {
+    return -1;
+  }
+
+  const Py_ssize_t length = PySequence_Fast_GET_SIZE(seq_object);
+
+  if (length > R_LEN_T_MAX) {
+    PyErr_Format(PyExc_ValueError,
+		 "The Python sequence is longer than the longuest possible vector in R");
+    return -1;
+  }
+
+  PROTECT(new_sexp = NEW_LIST(length));
+
+  for (ii = 0; ii < length; ++ii) {
+    item = PySequence_Fast_GET_ITEM(seq_object, ii);
+    
+    if (PyObject_TypeCheck(item, &Sexp_Type)) {
+      /* if element in the list already represents an R object, 
+       * add it as is */
+      SET_ELEMENT(new_sexp, ii, RPY_SEXP((PySexpObject *)item));
+    } else if (PyFloat_Check(item)) {
+      /* if element is a float, put it silently into a vector of length 1 */
+      /* FIXME: PROTECT ? */
+      new_sexp_item = FloatVectorSexp_AsSexp(item);
+      if (new_sexp_item) {
+	SET_ELEMENT(new_sexp, ii, new_sexp_item);
+      } else {
+	UNPROTECT(1);
+	return -1;
+      }
+    } else if (PyBool_Check(item)) {
+      new_sexp_item = BoolVectorSexp_AsSexp(item);
+      if (new_sexp_item) {
+	SET_ELEMENT(new_sexp, ii, new_sexp_item);
+      } else {
+	UNPROTECT(1);
+	return -1;
+      }
+    } else if (PyLong_Check(item)
+#if (PY_VERSION_HEX < 0x03010000)
+	       || PyInt_Check(item)) {
+#endif	       
+      new_sexp_item = IntVectorSexp_AsSexp(item);
+      if (new_sexp_item) {
+	SET_ELEMENT(new_sexp, ii, new_sexp_item);
+      } else {
+	UNPROTECT(1);
+	return -1;
+      }
+    } else if (PyUnicode_Check(item)
+#if (PY_VERSION_HEX < 0x03010000)
+	       || PyString_Check(item)) {
+#endif
+      new_sexp_item = StrVectorSexp_AsSexp(item);
+      if (new_sexp_item) {
+	SET_ELEMENT(new_sexp, ii, new_sexp_item);
+      } else {
+	UNPROTECT(1);
+	return -1;
+      }
+    } else if (PyComplex_Check(item)) {
+      new_sexp_item = FloatVectorSexp_AsSexp(item);
+      if (new_sexp_item) {
+	SET_ELEMENT(new_sexp, ii, new_sexp_item);
+      } else {
+	UNPROTECT(1);
+	return -1;
+      }
+    } else {
+      UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Element %i cannot be implicitly cast to an R object.",
+		   ii);
+      return -1;
+    }
+  }
+  UNPROTECT(1);
+  *sexpp = new_sexp;
+  return 0;
+}
+
+static int
+ListVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+#ifdef RPY_VERBOSE
+  printf("%p: ListVectorSexp initializing...\n", self);
+#endif 
+  int res = VectorSexp_init_private(self, args, kwds, 
+				    (RPy_seqobjtosexpproc)RPy_SeqToVECSXP, 
+				    VECSXP);
+#ifdef RPY_VERBOSE
+  printf("done (ListVectorSexp_init).\n");
 #endif 
   return res;
 }
