@@ -159,7 +159,7 @@ class RS4Auto_Type(type):
             if page_help is None:
                 cls_dict['__doc__'] = 'Unable to fetch R documentation for the class'
             else:
-                cls_dict['__doc__'] = ''.join(rhelp.Page(page_help).to_docstring())
+                cls_dict['__doc__'] = ''.join(page_help.to_docstring())
         
         for slt_name in cls_def.slots:
             #FIXME: sanity check on the slot name

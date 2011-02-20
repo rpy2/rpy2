@@ -3,15 +3,23 @@ R help system.
 
 """
 import os, itertools
+
 import rpy2.rinterface as rinterface
+
 import conversion as conversion
 import packages as packages
 import rpy2.rlike.container as rlc
+
+lazyload_dbfetch = rinterface.baseenv['lazyLoadDBfetch']
 
 class Page(object):
     """ An R documentation page. 
     The original R structure is a nested sequence of components,
     corresponding to the latex-like .Rd file 
+
+    An help page is divided into sections, the names for the sections
+    are the keys for the dict attribute 'sections', and a given section
+    can be extracted with the square-bracket operator.
 
     In R the S3 class 'Rd' is the closest entity to this class.
     """
@@ -28,7 +36,13 @@ class Page(object):
                 sections[rd_tag] = lst
             for sub_elt in elt:
                 lst.append(sub_elt)
-        self.sections = sections
+        self._sections = sections
+
+    def _section_get(self):
+        return self._sections
+
+    sections = property(_section_get, None, 
+                        "Sections in the in help page as a dict.")
 
     def __getitem__(self, item):
         """ Get a section """
@@ -40,7 +54,10 @@ class Page(object):
         return self.sections.iteritems
 
     def to_docstring(self, section_names = None):
-        """ return a string that can be used a Python docstring. """
+        """ section_names: list of selection names to consider. If None
+        all sections are used.
+
+        Returns a string that can be used a Python docstring. """
         s = []
 
         if section_names is None:
@@ -126,11 +143,13 @@ class Package(object):
         _eval  = rinterface.baseenv['eval']
         devnull_func = rinterface.parse('function(x) {}')
         devnull_func = _eval(devnull_func)
-        res = rinterface.baseenv['lazyLoadDBfetch'](rdx_variables.rx(rkey)[0], 
-                                                    rpath,
-                                                    self._rdx.rx2("compressed"),
-                                                    devnull_func)
-        return conversion.ri2py(res)
+        res = lazyload_dbfetch(rdx_variables.rx(rkey)[0], 
+                               rpath,
+                               self._rdx.rx2("compressed"),
+                               devnull_func)
+        p_res = Page(res)
+        return p_res
+        #return conversion.ri2py(res)
 
     package_path = property(lambda self: str(self.__package_path),
                             None, None,
