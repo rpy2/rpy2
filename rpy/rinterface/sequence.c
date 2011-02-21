@@ -2139,6 +2139,8 @@ RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
     } else if (PyLong_Check(item)
 #if (PY_VERSION_HEX < 0x03010000)
 	       || PyInt_Check(item)) {
+#else
+        ) {
 #endif	       
       new_sexp_item = IntVectorSexp_AsSexp(item);
       if (new_sexp_item) {
@@ -2150,6 +2152,8 @@ RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
     } else if (PyUnicode_Check(item)
 #if (PY_VERSION_HEX < 0x03010000)
 	       || PyString_Check(item)) {
+#else
+        ) {
 #endif
       new_sexp_item = StrVectorSexp_AsSexp(item);
       if (new_sexp_item) {
