@@ -352,7 +352,7 @@ coding skills are necessary as the code below demonstrates it.
    # call R's optim() with our cost funtion
    res = stats.optim(start_params, cost_fr)
 
-For convenience, the code examples uses the higher-level interface
+For convenience, the code example uses the higher-level interface
 robjects whenever possible.
 
 The lower-level function :func:`rternalize` will take an arbitray
