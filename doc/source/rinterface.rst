@@ -244,36 +244,6 @@ number of objects already preserved.
 NAMED
 ^^^^^
 
-R's object tracking differs from Python as it does not involve
-reference counting. It is using at attribute NAMED (more on this below),
-and a list of objects to be `preserved` (from garbage collection).
-Rpy2 is using its own reference counting system in order to bridge R with
-Python and keep the pass-by-reference approach familiar to Python users.
-
-At the time of writting, the implementation of R is such as
-adding an item to the list of preserved objects is of constant time-complexity
-while removing an item from the list of preserved object is linear in the
-number of objects already preserved.
-
-
-NAMED
-^^^^^
-
-R's object tracking differs from Python as it does not involve
-reference counting. It is using at attribute NAMED (more on this below),
-and a list of objects to be `preserved` (from garbage collection).
-Rpy2 is using its own reference counting system in order to bridge R with
-Python and keep the pass-by-reference approach familiar to Python users.
-
-At the time of writting, the implementation of R is such as
-adding an item to the list of preserved objects is of constant time-complexity
-while removing an item from the list of preserved object is linear in the
-number of objects already preserved.
-
-
-NAMED
-^^^^^
-
 Whenever the pass-by-value paradigm is applied stricly,
 garbage collection is straightforward as objects only live within
 the scope they are declared, but R is using a slight modification
