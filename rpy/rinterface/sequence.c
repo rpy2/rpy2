@@ -1011,36 +1011,43 @@ VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
       embeddedR_freelock();
       return -1;
     }
-  } else if (PySequence_Check(object)) {
-#ifdef RPY_VERBOSE
-    printf("    object a sequence\n");
-#endif 
-
-    SEXP sexp = R_NilValue;
-    if (seq_to_R(object, &sexp) == -1) {
-      /* RPy_SeqToINTSXP returns already raises an exception in case of problem
-       */
-      embeddedR_freelock();
-      return -1;
-    }
-
-    R_PreserveObject(sexp);
-#ifdef RPY_DEBUG_PRESERVE
-    preserved_robjects += 1;
-    printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
-	   sexp, preserved_robjects);
-#endif  
-
-    RPY_SEXP((PySexpObject *)self) = sexp;
-    #ifdef RPY_DEBUG_OBJECTINIT
-    printf("  SEXP vector is %p.\n", RPY_SEXP((PySexpObject *)self));
-    #endif
-    /* SET_NAMED(RPY_SEXP((PySexpObject *)self), 2); */
   } else {
-    PyErr_Format(PyExc_ValueError, "Invalid sexpvector.");
-    embeddedR_freelock();
-    return -1;
-  }
+    int is_sequence = PySequence_Check(object);
+    if ( !is_sequence ) {
+      Py_ssize_t length = PyObject_Length(object);
+      if (length != -1) {
+	PyErr_Format(PyExc_ValueError,
+		     "The object does not have a length.");
+	embeddedR_freelock();	
+	return -1;
+      }
+    } else {
+#ifdef RPY_VERBOSE
+      printf("    object a sequence\n");
+#endif 
+      
+      SEXP sexp = R_NilValue;
+      if (seq_to_R(object, &sexp) == -1) {
+	/* RPy_SeqToINTSXP returns already raises an exception in case of problem
+	 */
+	embeddedR_freelock();
+	return -1;
+      }
+      
+      R_PreserveObject(sexp);
+#ifdef RPY_DEBUG_PRESERVE
+      preserved_robjects += 1;
+      printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
+	     sexp, preserved_robjects);
+#endif  
+      
+      RPY_SEXP((PySexpObject *)self) = sexp;
+#ifdef RPY_DEBUG_OBJECTINIT
+      printf("  SEXP vector is %p.\n", RPY_SEXP((PySexpObject *)self));
+#endif
+      /* SET_NAMED(RPY_SEXP((PySexpObject *)self), 2); */
+    }
+  } 
 
   embeddedR_freelock();
   return 0;
@@ -1184,6 +1191,75 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
   *sexpp = new_sexp;
   return 0;
 }
+
+/* Take an arbitray Python iterable, a length, and a target pointer SEXP
+   and build an R vector of integers.
+   The function returns 0 on success, -1 on failure. In the case
+   of a failure, it will also create an exception with an informative
+   message that can be propagated up.
+*/
+static int
+RPy_IterToINTSXP(PyObject *object, const Py_ssize_t length, SEXP *sexpp)
+{
+
+  PyObject *seq_object, *item, *item_tmp;
+  SEXP new_sexp;
+
+ 
+  if (length > R_LEN_T_MAX) {
+    PyErr_Format(PyExc_ValueError,
+		 "The length exceeds what the longuest possible R vector can be.");
+  }
+
+  PROTECT(new_sexp = NEW_INTEGER(length));
+  int *integer_ptr = INTEGER(new_sexp);
+
+  Py_ssize_t ii = 0;
+  while (ii < length) {
+    item = PyIter_Next(object);
+    if (item == NULL) {
+      UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Error while trying to retrive element %i in the iterator.",
+		   ii);
+      return -1;
+    }
+#if (PY_VERSION_HEX < 0x03010000)
+    item_tmp = PyNumber_Int(item);
+#else
+    item_tmp = PyNumber_Long(item);
+#endif
+    if (item == NAInteger_New(0)) {
+      integer_ptr[ii] = NA_INTEGER;
+    } else if (item_tmp) {
+#if (PY_VERSION_HEX < 0x03010000)
+      long l = PyInt_AS_LONG(item_tmp);
+#else
+      long l = PyLong_AS_LONG(item_tmp);
+#endif
+      if ((l > (long)INT_MAX) || (l < (long)INT_MIN)) {
+	UNPROTECT(1);
+	PyErr_Format(PyExc_OverflowError,
+		     "Integer overflow with element %i.",
+		     ii);	
+	return -1;
+      } else {
+	integer_ptr[ii] = (int)l;
+      }
+    } else {
+      UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Error while trying to convert element %i to an integer.",
+		   ii);
+      return -1;
+    }
+    Py_XDECREF(item_tmp);
+  }
+  UNPROTECT(1);
+  *sexpp = new_sexp;
+  return 0;
+}
+
 
 /* Make an R INTSEXP from a Python int or long scalar */
 static SEXP 
