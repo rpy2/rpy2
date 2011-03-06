@@ -9,5 +9,6 @@ static PySequenceMethods VectorSexp_sequenceMethods;
 
 
 typedef int (* RPy_seqobjtosexpproc)(PyObject *, SEXP *);
+typedef int (* RPy_iterobjtosexpproc)(PyObject *, Py_ssize_t, SEXP *);
 
 #endif 

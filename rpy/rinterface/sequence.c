@@ -967,7 +967,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
    and make VectorSexp_init() an abstract class */
 static int
 VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
-			int (*seq_to_R)(), int sexptype)
+			int (*seq_to_R)(), int (*iter_to_R)(), int sexptype)
 {
 
   if (! (rpy_has_status(RPY_R_INITIALIZED))) {
@@ -1013,11 +1013,24 @@ VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
     }
   } else {
     int is_sequence = PySequence_Check(object);
+    SEXP sexp;
     if ( !is_sequence ) {
       Py_ssize_t length = PyObject_Length(object);
       if (length != -1) {
 	PyErr_Format(PyExc_ValueError,
 		     "The object does not have a length.");
+	embeddedR_freelock();	
+	return -1;
+      } else if (iter_to_R == NULL) {
+	/*FIXME: temporary, while the different implementations are written */
+      } else if (iter_to_R(object, length, &sexp) == -1) {
+	/* RPy_SeqTo*SXP returns already raises an exception in case of problem
+	 */
+	embeddedR_freelock();
+	return -1;
+      } else {
+	PyErr_Format(PyExc_ValueError,
+		     "Unexpected problem when building R vector from non-sequence.");
 	embeddedR_freelock();	
 	return -1;
       }
@@ -1028,7 +1041,7 @@ VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
       
       SEXP sexp = R_NilValue;
       if (seq_to_R(object, &sexp) == -1) {
-	/* RPy_SeqToINTSXP returns already raises an exception in case of problem
+	/* RPy_SeqTo*SXP returns already raises an exception in case of problem
 	 */
 	embeddedR_freelock();
 	return -1;
@@ -1254,6 +1267,7 @@ RPy_IterToINTSXP(PyObject *object, const Py_ssize_t length, SEXP *sexpp)
       return -1;
     }
     Py_XDECREF(item_tmp);
+    ii++;
   }
   UNPROTECT(1);
   *sexpp = new_sexp;
@@ -1279,9 +1293,13 @@ IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 #ifdef RPY_VERBOSE
   printf("%p: IntVectorSexp initializing...\n", self);
 #endif 
-  int res = VectorSexp_init_private(self, args, kwds, 
-				    (RPy_seqobjtosexpproc)RPy_SeqToINTSXP, 
-				    INTSXP);
+  int res;
+
+  res = VectorSexp_init_private(self, args, kwds, 
+				(RPy_seqobjtosexpproc)RPy_SeqToINTSXP,
+				(RPy_iterobjtosexpproc)RPy_IterToINTSXP,
+				INTSXP);
+
 #ifdef RPY_VERBOSE
   printf("done (IntVectorSexp_init).\n");
 #endif 
@@ -1409,6 +1427,57 @@ RPy_SeqToREALSXP(PyObject *object, SEXP *sexpp)
   *sexpp = new_sexp;
   return 0;
 }
+/* Take an arbitray Python iterator, length, and a target pointer SEXP
+   and build an R vector of "numeric" values (double* in C, float in Python).
+   The function returns 0 on success, -1 on failure. In the case
+   of a failure, it will also create an exception with an informative
+   message that can be propagated up.
+*/
+static int
+RPy_IterToREALSXP(PyObject *object, Py_ssize_t length, SEXP *sexpp)
+{
+  Py_ssize_t ii;
+  PyObject *seq_object, *item, *item_tmp;
+  SEXP new_sexp;
+ 
+  if (length > R_LEN_T_MAX) {
+    PyErr_Format(PyExc_ValueError,
+		 "The Python sequence is longer than the longuest possible vector in R");
+  }
+  
+  PROTECT(new_sexp = NEW_NUMERIC(length));
+  double *double_ptr = NUMERIC_POINTER(new_sexp);
+  
+  ii = 0;
+  while (ii < length) {
+    item = PyIter_Next(object);
+    if (item == NULL) {
+      UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Error while trying to retrive element %i in the iterator.",
+		   ii);
+      return -1;
+    }
+    item_tmp = PyNumber_Float(item);
+    if (item == NAReal_New(0)) {
+      double_ptr[ii] = NA_REAL;
+    } else if (item_tmp) {
+      double value = PyFloat_AS_DOUBLE(item_tmp);
+      double_ptr[ii] = value;
+    } else {
+      UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Error while trying to convert element %i to a double.",
+		   ii);
+      return -1;
+    }
+    Py_XDECREF(item_tmp);
+    ii++;
+  }
+  UNPROTECT(1);
+  *sexpp = new_sexp;
+  return 0;
+}
 
 /* Make an R NUMERIC SEXP from a Python float scalar */
 static SEXP 
@@ -1430,6 +1499,7 @@ FloatVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 #endif 
   int res = VectorSexp_init_private(self, args, kwds, 
 				    (RPy_seqobjtosexpproc)RPy_SeqToREALSXP, 
+				    (RPy_iterobjtosexpproc)RPy_IterToREALSXP, 
 				    REALSXP);
 #ifdef RPY_VERBOSE
   printf("done (FloatVectorSexp_init).\n");
@@ -1632,7 +1702,8 @@ StrVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   printf("%p: StrVectorSexp initializing...\n", self);
 #endif 
   int res = VectorSexp_init_private(self, args, kwds, 
-				    (RPy_seqobjtosexpproc)RPy_SeqToSTRSXP, 
+				    (RPy_seqobjtosexpproc)RPy_SeqToSTRSXP,
+				    NULL,
 				    STRSXP);
 #ifdef RPY_VERBOSE
   printf("done (StrVectorSexp_init).\n");
@@ -1793,6 +1864,7 @@ BoolVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 #endif 
   int res = VectorSexp_init_private(self, args, kwds, 
 				    (RPy_seqobjtosexpproc)RPy_SeqToLGLSXP, 
+				    NULL,
 				    LGLSXP);
 #ifdef RPY_VERBOSE
   printf("done (BoolVectorSexp_init).\n");
@@ -1936,7 +2008,8 @@ ByteVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   printf("%p: ByteVectorSexp initializing...\n", self);
 #endif 
   int res = VectorSexp_init_private(self, args, kwds, 
-				    (RPy_seqobjtosexpproc)RPy_SeqToRAWSXP, 
+				    (RPy_seqobjtosexpproc)RPy_SeqToRAWSXP,
+				    NULL,
 				    RAWSXP);
 #ifdef RPY_VERBOSE
   printf("done (ByteVectorSexp_init).\n");
@@ -2083,6 +2156,7 @@ ComplexVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 #endif 
   int res = VectorSexp_init_private(self, args, kwds, 
 				    (RPy_seqobjtosexpproc)RPy_SeqToCPLXSXP, 
+				    NULL,
 				    CPLXSXP);
 #ifdef RPY_VERBOSE
   printf("done (ComplexVectorSexp_init).\n");
@@ -2267,6 +2341,7 @@ ListVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 #endif 
   int res = VectorSexp_init_private(self, args, kwds, 
 				    (RPy_seqobjtosexpproc)RPy_SeqToVECSXP, 
+				    NULL,
 				    VECSXP);
 #ifdef RPY_VERBOSE
   printf("done (ListVectorSexp_init).\n");
