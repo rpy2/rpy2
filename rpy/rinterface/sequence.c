@@ -991,7 +991,7 @@ VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
     return -1;
   }
   embeddedR_setlock();
-
+  SEXP sexp = R_NilValue;
   if (PyObject_IsInstance(object, 
                           (PyObject*)&VectorSexp_Type)) {
 #ifdef RPY_VERBOSE
@@ -1013,10 +1013,9 @@ VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
     }
   } else {
     int is_sequence = PySequence_Check(object);
-    SEXP sexp;
     if ( !is_sequence ) {
       Py_ssize_t length = PyObject_Length(object);
-      if (length != -1) {
+      if (length == -1) {
 	PyErr_Format(PyExc_ValueError,
 		     "The object does not have a length.");
 	embeddedR_freelock();	
@@ -1039,7 +1038,6 @@ VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
       printf("    object a sequence\n");
 #endif 
       
-      SEXP sexp = R_NilValue;
       if (seq_to_R(object, &sexp) == -1) {
 	/* RPy_SeqTo*SXP returns already raises an exception in case of problem
 	 */
@@ -1436,7 +1434,6 @@ RPy_SeqToREALSXP(PyObject *object, SEXP *sexpp)
 static int
 RPy_IterToREALSXP(PyObject *object, Py_ssize_t length, SEXP *sexpp)
 {
-  Py_ssize_t ii;
   PyObject *seq_object, *item, *item_tmp;
   SEXP new_sexp;
  
@@ -1448,7 +1445,7 @@ RPy_IterToREALSXP(PyObject *object, Py_ssize_t length, SEXP *sexpp)
   PROTECT(new_sexp = NEW_NUMERIC(length));
   double *double_ptr = NUMERIC_POINTER(new_sexp);
   
-  ii = 0;
+  Py_ssize_t ii = 0;
   while (ii < length) {
     item = PyIter_Next(object);
     if (item == NULL) {

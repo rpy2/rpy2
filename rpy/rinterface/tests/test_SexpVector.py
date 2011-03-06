@@ -148,6 +148,13 @@ class IntSexpVectorTestCase(unittest.TestCase):
         for x,y in zip(seq, v):
             self.assertEquals(x, y)
 
+    def testInitFromIter(self):
+        it = xrange(3)
+        v = ri.IntSexpVector(it)
+        self.assertEquals(3, len(v))
+        for x,y in zip(xrange(3), v):
+            self.assertEquals(x, y)
+        
     def testInitFromSeqInvalidInt(self):
         seq = (1, 'b', 3)
         self.assertRaises(ValueError, ri.IntSexpVector, seq)
@@ -158,6 +165,27 @@ class IntSexpVectorTestCase(unittest.TestCase):
         self.assertEquals(sys.maxint-1, v[0])
         self.assertEquals(sys.maxint, v[1])
         self.assertRaises(OverflowError, ri.IntSexpVector, (sys.maxint+1, ))
+
+class FloatSexpVectorTestCase(unittest.TestCase):
+    def testInitFromSeq(self):
+        seq = (1.0, 2.0, 3.0)
+        v = ri.FloatSexpVector(seq)
+        self.assertEquals(3, len(v))
+        for x,y in zip(seq, v):
+            self.assertEquals(x, y)
+
+    def testInitFromIter(self):
+        seq = (1.0, 2.0, 3.0)
+        it = iter(seq)
+        v = ri.FloatSexpVector(it)
+        self.assertEquals(3, len(v))
+        for x,y in zip(seq, v):
+            self.assertEquals(x, y)
+        
+    def testInitFromSeqInvalidFloat(self):
+        seq = (1.0, 'b', 3.0)
+        self.assertRaises(ValueError, ri.FloatSexpVector, seq)
+
 
 class ByteSexpVectorTestCase(unittest.TestCase):
 
@@ -587,6 +615,8 @@ def suite():
                       loadTestsFromTestCase(WrapperSexpVectorTestCase))
     suite.addTest(unittest.TestLoader().\
                       loadTestsFromTestCase(IntSexpVectorTestCase))
+    suite.addTest(unittest.TestLoader().\
+                      loadTestsFromTestCase(FloatSexpVectorTestCase))
     suite.addTest(unittest.TestLoader().\
                       loadTestsFromTestCase(ByteSexpVectorTestCase))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(NAValuesTestCase))
