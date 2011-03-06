@@ -12,20 +12,18 @@ class PackageTestCase(unittest.TestCase):
     def testFetch(self):
         base_help = rh.Package('base')
         f = base_help.fetch('RdUtils')
-        self.assertEquals('\\title', f[0].do_slot('Rd_tag')[0])
+        self.assertTrue('title' in f.sections.keys())
 
 class PageTestCase(unittest.TestCase):
     
     def testInit(self):
         base_help = rh.Package('base')
-        f = base_help.fetch('RdUtils')
-        p = rh.Page(f)
+        p = base_help.fetch('RdUtils')
         self.assertEquals('title', p.sections.keys()[0])
     
     def testToDocstring(self):
         base_help = rh.Package('base')
-        f = base_help.fetch('RdUtils')
-        p = rh.Page(f)
+        p = base_help.fetch('RdUtils')
         ds = p.to_docstring()
         self.assertEquals('title', ds[0])
         self.assertEquals('-----', ds[2])
