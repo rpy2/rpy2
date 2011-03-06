@@ -280,6 +280,19 @@ on the topic:
 >>> str(help_doc)
 [...long output...]
 
+.. warning::
+
+   The help message so produced is not a string returned to the console
+   but is directly printed by R to the standard output. The call to
+   :func:`str` only returns an empty string, and the reason for this is a
+   somewhat involved for an introductory documentation.
+   This behaviour is rooted in :program:`R` itself and in :mod:`rpy2` the
+   string representation of R objects is the string representation as
+   given by the :program:`R` console,
+   which in that case takes a singular route.
+
+   For a Python friendly help to the R help system, consider the module
+   :mod:`rpy2.robjects.help`.
 
 
 Locate topics among available packages

@@ -13,8 +13,22 @@ Unlike `Python` docstrings the R documentation lives outside
 objects, and is organised on documentation pages. Each documentation
 page has `aliases`, and often aliases are corresponding to the names of
 R objects defined in a package. This way, querying the documentation
-for the function `sum` in the R package `base` becomes a matter of calling
-the topic `sum`.
+for the function `sum` in the R package `base` becomes a matter of finding
+where in the documentation the alias `sum` is found and retrieving it.
+
+Querying on aliases
+-------------------
+
+When working with R, a frequent use case for using the documention
+is to query on an alias (a function name, a dataset, or a class name)
+and retrieve the associated documentation.
+
+To do so with rpy2's interface to the help system, the easiest is to
+use the function :func:`pages`. The function return a :class:`tuple`
+of :class:`Page` instances.
+
+.. autofunction:: rpy2.robjects.help.pages(topic)
+
 
 Package documentation
 ---------------------

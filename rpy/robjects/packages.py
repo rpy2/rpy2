@@ -7,6 +7,8 @@ from rpy2.robjects.constants import NULL
 
 _require = rinterface.baseenv['require']
 _as_env = rinterface.baseenv['as.environment']
+_find_package = rinterface.baseenv['.find.package']
+_packages = rinterface.baseenv['.packages']
 
 def quiet_require(name, lib_loc = None):
     """ Load an R package /quietly/ (suppressing messages to the console). """
@@ -19,9 +21,10 @@ def quiet_require(name, lib_loc = None):
     return ok
 
 def get_packagepath(package):
-    """ return the path to an R package """
-    res = rinterface.baseenv['.find.package'](rinterface.StrSexpVector((package, )))
+    """ return the path to an R package installed """
+    res = _find_package(rinterface.StrSexpVector((package, )))
     return res[0]
+
 
 class Package(ModuleType):
     """ Models an R package
@@ -136,3 +139,4 @@ def wherefrom(symbol, startenv = rinterface.globalenv):
             else:
                 tryagain = True
     return conversion.ri2py(env)
+

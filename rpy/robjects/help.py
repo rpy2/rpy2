@@ -51,7 +51,7 @@ class Page(object):
     def iteritems(self):
         """ iterator through the sections names and content
         in the documentation Page. """
-        return self.sections.iteritems
+        return self.sections.iteritems        
 
     def to_docstring(self, section_names = None):
         """ section_names: list of selection names to consider. If None
@@ -90,6 +90,12 @@ class Package(object):
     __paths_info = 'paths.rds'
     __anindex_info = 'AnIndex'
 
+    def __package_name_get(self):
+        return self.__package_name
+
+    name = property(__package_name_get, None, None, 
+                    'Name of the package as known by R')
+
     def __init__(self, package_name, package_path = None):
         self.__package_name = package_name
         if package_path is None:
@@ -97,8 +103,8 @@ class Package(object):
         self.__package_path = package_path
         #FIXME: handle the case of missing "aliases.rds"
         rpath = rinterface.StrSexpVector((os.path.join(package_path,
-                                               'help',
-                                               self.__aliases_info), ))
+                                                       'help',
+                                                       self.__aliases_info), ))
         rds = rinterface.baseenv['.readRDS'](rpath)
         rds = rinterface.StrSexpVector(rds)
         class2methods = {}
@@ -118,8 +124,8 @@ class Package(object):
         self.class2methods = class2methods
         self.object2alias = object2alias
         rpath = rinterface.StrSexpVector((os.path.join(package_path,
-                                               'help',
-                                               package_name + '.rdx'), ))
+                                                       'help',
+                                                       package_name + '.rdx'), ))
         self._rdx = conversion.ri2py(rinterface.baseenv['.readRDS'](rpath))
 
 
@@ -132,8 +138,8 @@ class Package(object):
         """
         rdx_variables = self._rdx.rx2('variables')
         if key not in rdx_variables.names:
-            raise HelpNotFound("No help could be fetched", 
-                               topic=key, package=self.__package_name)
+            raise HelpNotFoundError("No help could be fetched", 
+                                    topic=key, package=self.__package_name)
         
         rkey = rinterface.StrSexpVector(rinterface.StrSexpVector((key, )))
         rpath = rinterface.StrSexpVector((os.path.join(self.package_path,
@@ -161,9 +167,29 @@ class Package(object):
                                 super(Package, self).__repr__())
         return r
 
-class HelpNotFound(KeyError):
+class HelpNotFoundError(KeyError):
+    """ Exception raised when an help topic cannot be found. """
     def __init__(self, msg, topic=None, package=None):
-        super(HelpNotFound, self).__init__(msg)
+        super(HelpNotFoundError, self).__init__(msg)
         self.topic = topic
         self.package = package
+
         
+def pages(topic):
+    """ Get help pages corresponding a given topic. """
+    res = list()
+    
+    for path in packages.libpaths():
+        for name in packages._packages(**{'all.available': True, 
+                                          'lib.loc': path}):
+            #FIXME: what if the same package is installed
+            #       at different locations ?
+            pack = Package(name)
+            try:
+                page = pack.fetch(topic)
+                res.append(page)
+            except HelpNotFoundError, hnfe:
+                pass
+            
+    return tuple(res)
+
