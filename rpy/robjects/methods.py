@@ -149,12 +149,12 @@ class RS4Auto_Type(type):
             try:
                 #R's classes are sometimes documented with a prefix 'class.'
                 page_help = pack_help.fetch('class.' + cls_def.__rname__)
-            except rhelp.HelpNotFound, hnf:
+            except rhelp.HelpNotFoundError, hnf:
                 pass
             if page_help is None:
                 try:
                     page_help = pack_help.fetch(cls_def.__rname__)
-                except rhelp.HelpNotFound, hnf:
+                except rhelp.HelpNotFoundError, hnf:
                     pass
             if page_help is None:
                 cls_dict['__doc__'] = 'Unable to fetch R documentation for the class'
