@@ -9,6 +9,7 @@ _require = rinterface.baseenv['require']
 _as_env = rinterface.baseenv['as.environment']
 _find_package = rinterface.baseenv['.find.package']
 _packages = rinterface.baseenv['.packages']
+_libpaths = rinterface.baseenv['.libPaths']
 
 def quiet_require(name, lib_loc = None):
     """ Load an R package /quietly/ (suppressing messages to the console). """

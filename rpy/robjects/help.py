@@ -5,6 +5,7 @@ R help system.
 import os, itertools
 
 import rpy2.rinterface as rinterface
+from rpy2.rinterface import StrSexpVector
 
 import conversion as conversion
 import packages as packages
@@ -102,11 +103,11 @@ class Package(object):
             package_path = packages.get_packagepath(package_name)
         self.__package_path = package_path
         #FIXME: handle the case of missing "aliases.rds"
-        rpath = rinterface.StrSexpVector((os.path.join(package_path,
-                                                       'help',
-                                                       self.__aliases_info), ))
+        rpath = StrSexpVector((os.path.join(package_path,
+                                            'help',
+                                            self.__aliases_info), ))
         rds = rinterface.baseenv['.readRDS'](rpath)
-        rds = rinterface.StrSexpVector(rds)
+        rds = StrSexpVector(rds)
         class2methods = {}
         object2alias = {}
         for k, v in itertools.izip(rds.do_slot('names'), rds):
@@ -123,9 +124,9 @@ class Package(object):
 
         self.class2methods = class2methods
         self.object2alias = object2alias
-        rpath = rinterface.StrSexpVector((os.path.join(package_path,
-                                                       'help',
-                                                       package_name + '.rdx'), ))
+        rpath = StrSexpVector((os.path.join(package_path,
+                                            'help',
+                                            package_name + '.rdx'), ))
         self._rdx = conversion.ri2py(rinterface.baseenv['.readRDS'](rpath))
 
 
@@ -141,10 +142,10 @@ class Package(object):
             raise HelpNotFoundError("No help could be fetched", 
                                     topic=key, package=self.__package_name)
         
-        rkey = rinterface.StrSexpVector(rinterface.StrSexpVector((key, )))
-        rpath = rinterface.StrSexpVector((os.path.join(self.package_path,
-                                                       'help',
-                                                       self.__package_name + '.rdb'),))
+        rkey = StrSexpVector(rinterface.StrSexpVector((key, )))
+        rpath = StrSexpVector((os.path.join(self.package_path,
+                                            'help',
+                                            self.__package_name + '.rdb'),))
         
         _eval  = rinterface.baseenv['eval']
         devnull_func = rinterface.parse('function(x) {}')
@@ -179,9 +180,9 @@ def pages(topic):
     """ Get help pages corresponding a given topic. """
     res = list()
     
-    for path in packages.libpaths():
+    for path in packages._libpaths():
         for name in packages._packages(**{'all.available': True, 
-                                          'lib.loc': path}):
+                                          'lib.loc': StrSexpVector((path,))}):
             #FIXME: what if the same package is installed
             #       at different locations ?
             pack = Package(name)
