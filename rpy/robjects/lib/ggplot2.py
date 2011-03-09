@@ -576,12 +576,10 @@ scale_shape_manual = ScaleShapeManual.new
 
 
 class Options(robjects.Vector):
-    pass
+   pass
+
 class Theme(Options):
-    @classmethod
-    def new(cls, base_size = 12):
-        res = cls(cls._constructor(base_size = base_size))
-        return res
+   pass
 
 class ThemeBlank(Theme):
     _constructor = ggplot2.theme_blank
@@ -589,12 +587,17 @@ class ThemeBlank(Theme):
     def new(cls):
         res = cls(cls._constructor())
         return res
+
 theme_blank = ThemeBlank.new
 
 theme_get = ggplot2.theme_get
 
 class ThemeGrey(Theme):
     _constructor = ggplot2.theme_grey
+    @classmethod
+    def new(cls, base_size = 12):
+       res = cls(cls._constructor(base_size = base_size))
+       return res
 
 theme_grey = ThemeGrey.new
 
@@ -610,7 +613,11 @@ theme_rect = ThemeRect.new
 
 class ThemeSegment(Theme):
     _constructor = ggplot2.theme_rect
-    
+    @classmethod
+    def new(cls, colour = 'black', size = 0.5, linetype = 1):
+       res = cls(cls._constructor(colour = colour, size = size,
+                                  linetype = linetype))
+       return res
 theme_segment = ThemeSegment.new
 
 # Theme text is not a vector :/
@@ -628,14 +635,28 @@ theme_text = ThemeText.new
 
 class ThemeBW(Theme):
     _constructor = ggplot2.theme_bw
+    @classmethod
+    def new(cls, base_size = 12):
+       res = cls(cls._constructor(base_size = base_size))
+       return res
+
 theme_bw = ThemeBW.new
 
 class ThemeGray(Theme):
     _constructor = ggplot2.theme_gray
+    @classmethod
+    def new(cls, base_size = 12):
+       res = cls(cls._constructor(base_size = base_size))
+       return res
 theme_gray = ThemeGray.new
 
 class ThemeLine(Theme):
     _constructor = ggplot2.theme_line
+    @classmethod
+    def new(cls, colour = 'black', size = 0.5, linetype = 1):
+       res = cls(cls._constructor(colour = colour, size = size,
+                                  linetype = linetype))
+       return res
 theme_line = ThemeLine.new
 
 #theme_render
