@@ -229,7 +229,7 @@ Missing values
 ---------------
 
 R has a built-in concept of *missing values*, and of types for missing values.
-This now better integrated into rpy2 (see Section :ref:`missing_values`)
+This now better integrated into rpy2 (see Section :ref:`robjects-missing_values`)
 
 Graphics
 --------

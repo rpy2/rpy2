@@ -200,7 +200,7 @@ explicitly:
 There is much that can be achieved with vectors, having them to behave
 more like Python lists or R vectors.
 A comprehensive description of the behavior of vectors is found in
-:ref:`robjects-vectors`.
+:mod:`robjects.vector`.
 
 Creating rpy2 vectors
 ---------------------
@@ -317,7 +317,7 @@ giving a similar result to what is obtained from an R session.
    ('topic', 'title', 'Package', 'LibPath')
 
    However, this is beyond the scope of an introduction, and one should
-   master the content of Section :ref:`robjects-vectors` before anything else.
+   master the content of the module :mod:`robjects.vector` before anything else.
 
 
 Examples
