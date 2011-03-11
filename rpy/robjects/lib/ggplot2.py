@@ -576,7 +576,8 @@ scale_shape_manual = ScaleShapeManual.new
 
 
 class Options(robjects.Vector):
-   pass
+   def __init__(self, obj):
+      self.__sexp__ = obj.__sexp__
 
 class Theme(Options):
    pass
