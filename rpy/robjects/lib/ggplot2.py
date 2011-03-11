@@ -579,6 +579,10 @@ class Options(robjects.Vector):
    def __init__(self, obj):
       self.__sexp__ = obj.__sexp__
 
+   def __repr__(self):
+      s = '<instance of %s : %i>' %(type(self), id(self)) 
+      return s
+
 class Theme(Options):
    pass
 
