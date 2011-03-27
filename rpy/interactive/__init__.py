@@ -11,6 +11,7 @@ a comfortable experience with autocompletion-capable python consoles.
 
 
 from rpy2.robjects.packages import importr as _importr
+from rpy2.robjects.packages import _loaded_namespaces
 from rpy2.robjects.vectors import IntVector, FloatVector, ComplexVector
 from rpy2.robjects.vectors import Array, Matrix
 from rpy2.robjects.vectors import StrVector
@@ -68,7 +69,8 @@ def importr(packname, newname=None):
 
     return packinstance
 
-importr('base')
+for packname in _loaded_namespaces():
+    importr(packname)
 
 packages = Packages()
 #classes = S4Classes()

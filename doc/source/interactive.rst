@@ -68,6 +68,9 @@ R Packages can be:
 Loading installed packages
 --------------------------
 
+When starting R, the *base* package as well as by default the packages
+*grDevices*, *graphics*, *methods*, *stats*, and *utils* are loaded.
+
 We start with the loading of R packages since this is a very common
 operation in R, and since R is typically distributed
 with *recommended* packages one can immediately start playing with.
@@ -75,26 +78,26 @@ with *recommended* packages one can immediately start playing with.
 Loading installed R packages can be done through the function :func:`importr`. 
 
 >>> import rpy2.interactive as r
->>> r.importr("graphics")
-rpy2.robjecs.packages.Package as a <module 'graphics' (built-in)>
+>>> r.importr("cluster")
+rpy2.robjecs.packages.Package as a <module 'cluster' (built-in)>
 
 The function returns a package object, and also adds a reference to it
 in :attr:`r.packages`
 
->>> r.packages.graphics
-rpy2.robjecs.packages.Package as a <module 'graphics' (built-in)>
+>>> r.packages.cluster
+rpy2.robjecs.packages.Package as a <module 'cluster' (built-in)>
 
-All objects in the R package *graphics* can subsequently be accessed
+All objects in the R package *cluster* can subsequently be accessed
 through that module-like object. For example, for the function barplot:
 
->>> r.packages.graphics.barplot
-<SignatureTranslatedFunction - Python:0x9f2f3ec / R:0x9c81f5c>
+>>> r.packages.cluster.silhouette
+<SignatureTranslatedFunction - Python:0x24f9418 / R:0x2f5b008>
 
 
-Similarly, the recommended package *stats*, and *datasets*
+Similarly, other packages such as *nlme*, and *datasets*
 can be loaded.
 
->>> r.importr("stats")
+>>> r.importr("nlme")
 rpy2.robjecs.packages.Package as a <module 'stats' (built-in)>
 >>> r.importr("datasets")
 rpy2.robjecs.packages.Package as a <module 'datasets' (built-in)>
