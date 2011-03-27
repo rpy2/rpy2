@@ -1213,7 +1213,7 @@ static int
 RPy_IterToINTSXP(PyObject *object, const Py_ssize_t length, SEXP *sexpp)
 {
 
-  PyObject *seq_object, *item, *item_tmp;
+  PyObject *item, *item_tmp;
   SEXP new_sexp;
 
  
@@ -1434,7 +1434,7 @@ RPy_SeqToREALSXP(PyObject *object, SEXP *sexpp)
 static int
 RPy_IterToREALSXP(PyObject *object, Py_ssize_t length, SEXP *sexpp)
 {
-  PyObject *seq_object, *item, *item_tmp;
+  PyObject *item, *item_tmp;
   SEXP new_sexp;
  
   if (length > R_LEN_T_MAX) {

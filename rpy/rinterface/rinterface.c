@@ -3049,55 +3049,158 @@ PyInit_rinterface(void)
   /* Finalize the type object including setting type of the new type
          * object; doing it here is required for portability to Windows 
          * without requiring C++. */
-  if (PyType_Ready(&Sexp_Type) < 0)
+  if (PyType_Ready(&Sexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&ClosureSexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&ClosureSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&VectorSexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&VectorSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&IntVectorSexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&IntVectorSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&FloatVectorSexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&FloatVectorSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&StrVectorSexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&StrVectorSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&BoolVectorSexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&BoolVectorSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&ByteVectorSexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&ByteVectorSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&ComplexVectorSexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&ComplexVectorSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&ListVectorSexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&ListVectorSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&EnvironmentSexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&EnvironmentSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&S4Sexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&S4Sexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&LangSexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&LangSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&ExtPtrSexp_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&ExtPtrSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-
+#else
+    return NULL;
+#endif
+  }
 
   /* Required because NA types inherit from basic Python types */
-  if (PyType_Ready(&PyBool_Type) < 0) {
+  if (PyType_Ready(&PyBool_Type) < 0)  {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
   }
+
   if (PyType_Ready(&PyLong_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
   }
 
   /* NA types */
-  if (PyType_Ready(&NAInteger_Type) < 0)
+  if (PyType_Ready(&NAInteger_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&NALogical_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&NALogical_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&NAReal_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&NAReal_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&NAComplex_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&NAComplex_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  if (PyType_Ready(&NACharacter_Type) < 0)
+#else
+    return NULL;
+#endif
+  }
+  if (PyType_Ready(&NACharacter_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
+  }
 
   PyObject *m, *d;
 #if (PY_VERSION_HEX < 0x03010000)
@@ -3105,15 +3208,24 @@ PyInit_rinterface(void)
 #else
   m = PyModule_Create(&rinterfacemodule);
 #endif
-  if (m == NULL)
+  if (m == NULL) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
+  }
   d = PyModule_GetDict(m);
 
   /* Add SXP types */
   validSexpType = calloc(RPY_MAX_VALIDSEXTYPE, sizeof(char *));
   if (! validSexpType) {
     PyErr_NoMemory();
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
   }
 
   ADD_SEXP_CONSTANT(m, NILSXP);
@@ -3172,13 +3284,13 @@ PyInit_rinterface(void)
                 );
 #else
   if (PyTuple_SetItem(initOptions, 0, PyBytes_FromString("rpy2")) < 0) 
-    return;
+    return NULL;
   if (PyTuple_SetItem(initOptions, 1, PyBytes_FromString("--quiet")) < 0)
-    return;
+    return NULL;
   if (PyTuple_SetItem(initOptions, 2, PyBytes_FromString("--vanilla")) < 0)
-    return;
+    return NULL;
   if (PyTuple_SetItem(initOptions, 3, PyBytes_FromString("--no-save")) < 0)
-    return;
+    return NULL;
 #endif
 
   /* Add an extra ref. It should remain impossible to delete it */
@@ -3213,14 +3325,24 @@ PyInit_rinterface(void)
   PyModule_AddObject(m, "NA_Character", NACharacter_New(1));
 
   /* Missing */
-  if (PyType_Ready(&MissingArg_Type) < 0)
+  if (PyType_Ready(&MissingArg_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
+  }
   PyModule_AddObject(m, "MissingArgType", (PyObject *)&MissingArg_Type);
   PyModule_AddObject(m, "MissingArg", MissingArg_Type_New(1));
 
   /* NULL */
-  if (PyType_Ready(&RNULL_Type) < 0)
+  if (PyType_Ready(&RNULL_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
+  }
   PyModule_AddObject(m, "RNULLType", (PyObject *)&RNULL_Type);
   /*FIXME: shouldn't RNULLArg disappear ? */
   PyModule_AddObject(m, "RNULLArg", RNULL_Type_New(1));
@@ -3230,8 +3352,13 @@ PyInit_rinterface(void)
   if (RPyExc_RuntimeError == NULL) {
     RPyExc_RuntimeError = PyErr_NewException("rpy2.rinterface.RRuntimeError", 
                                              NULL, NULL);
-    if (RPyExc_RuntimeError == NULL)
+    if (RPyExc_RuntimeError == NULL) {
+#if (PY_VERSION_HEX < 0x03010000)
       return;
+#else
+      return NULL;
+#endif
+    }
   }
   
   Py_INCREF(RPyExc_RuntimeError);
@@ -3240,8 +3367,13 @@ PyInit_rinterface(void)
   embeddedR_isInitialized = Py_False;
   Py_INCREF(Py_False);
 
-  if (PyModule_AddObject(m, "isInitialized", embeddedR_isInitialized) < 0)
+  if (PyModule_AddObject(m, "isInitialized", embeddedR_isInitialized) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
+  }
 
   globalEnv = (PySexpObject *)Sexp_new(&EnvironmentSexp_Type, 
                                        Py_None, Py_None);
@@ -3250,7 +3382,11 @@ PyInit_rinterface(void)
   if (PyDict_SetItemString(d, "globalenv", (PyObject *)globalEnv) < 0)
   {
     Py_DECREF(globalEnv);
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
   }
   Py_DECREF(globalEnv);
 
@@ -3261,7 +3397,11 @@ PyInit_rinterface(void)
                            (PyObject *)baseNameSpaceEnv) < 0)
   {
     Py_DECREF(baseNameSpaceEnv);
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
   }
   Py_DECREF(baseNameSpaceEnv);
 
@@ -3272,7 +3412,11 @@ PyInit_rinterface(void)
                            (PyObject *)emptyEnv) < 0)
   {
     Py_DECREF(emptyEnv);
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
   }
   Py_DECREF(emptyEnv);
 
@@ -3281,7 +3425,11 @@ PyInit_rinterface(void)
   if (PyDict_SetItemString(d, "R_NilValue", (PyObject *)rpy_R_NilValue) < 0)
   {
     Py_DECREF(rpy_R_NilValue);
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
   }
   Py_DECREF(rpy_R_NilValue);  
 
@@ -3291,7 +3439,11 @@ PyInit_rinterface(void)
                            (PyObject *)R_PyObject_type_tag) < 0)
   {
     Py_DECREF(R_PyObject_type_tag);
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
   }
   Py_DECREF(R_PyObject_type_tag);
 
