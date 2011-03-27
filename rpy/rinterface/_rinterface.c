@@ -3039,7 +3039,7 @@ PyMODINIT_FUNC
 #if (PY_VERSION_HEX < 0x03010000)
 init_rinterface(void)
 #else
-PyInit_rinterface(void)
+PyInit__rinterface(void)
 #endif
 {
   /* PyMODINIT_FUNC */
