@@ -334,7 +334,7 @@ def getRinterface_ext():
     include_dirs = []
     
     rinterface_ext = Extension(
-            name = pack_name + '.rinterface.rinterface',
+            name = pack_name + '.rinterface._rinterface',
             sources = [ \
             #os.path.join('rpy', 'rinterface', 'embeddedr.c'), 
             #os.path.join('rpy', 'rinterface', 'r_utils.c'),
@@ -342,7 +342,7 @@ def getRinterface_ext():
             #os.path.join('rpy', 'rinterface', 'sequence.c'),
             #os.path.join('rpy', 'rinterface', 'sexp.c'),
             os.path.join(package_prefix,
-                         'rpy', 'rinterface', 'rinterface.c')
+                         'rpy', 'rinterface', '_rinterface.c')
                        ],
             depends = [os.path.join(package_prefix,
                                     'rpy', 'rinterface', 'embeddedr.h'), 

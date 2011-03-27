@@ -3022,7 +3022,7 @@ static char **validSexpType;
 #else
 static struct PyModuleDef rinterfacemodule = {
    PyModuleDef_HEAD_INIT,
-   "rinterface",           /* name of module */
+   "_rinterface",           /* name of module */
    module_doc,               /* module documentation, may be NULL */
    -1,                     /* size of per-interpreter state */
    EmbeddedR_methods       /* method table */
@@ -3037,7 +3037,7 @@ static struct PyModuleDef rinterfacemodule = {
 
 PyMODINIT_FUNC
 #if (PY_VERSION_HEX < 0x03010000)
-initrinterface(void)
+init_rinterface(void)
 #else
 PyInit_rinterface(void)
 #endif
@@ -3204,7 +3204,7 @@ PyInit_rinterface(void)
 
   PyObject *m, *d;
 #if (PY_VERSION_HEX < 0x03010000)
-  m = Py_InitModule3("rinterface", EmbeddedR_methods, module_doc);
+  m = Py_InitModule3("_rinterface", EmbeddedR_methods, module_doc);
 #else
   m = PyModule_Create(&rinterfacemodule);
 #endif

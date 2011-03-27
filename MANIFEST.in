@@ -7,7 +7,7 @@ include MPL_LICENSE GPL_LICENSE LGPL_LICENSE
 
 
 include rpy/rinterface/rpy_rinterface.h
-include rpy/rinterface/rinterface.c
+include rpy/rinterface/_rinterface.c
 
 include rpy/rinterface/sexp.c
 include rpy/rinterface/sexp.h

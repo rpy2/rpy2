@@ -75,7 +75,7 @@ except:
     pass
 
 
-from rpy2.rinterface.rinterface import *
+from rpy2.rinterface._rinterface import *
 
 
 # wrapper in case someone changes sys.stdout:
