@@ -89,7 +89,7 @@ Changes
 - :class:`IntSexpVector`, :class:`FloatSexpVector`,
   :class:`StrSexpVector`, :class:`BoolSexpVector`, :class:`ComplexSexpVector`
   are now defined at the C level, improving performances
-  and memory footprint whenever a large number of instances are created.
+  and memory footprint whenever a lot of instances are created.
 
 Bugs fixed
 ----------
