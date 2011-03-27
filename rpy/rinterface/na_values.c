@@ -138,7 +138,7 @@ static PyNumberMethods NAInteger_NumberMethods = {
   (binaryfunc)NA_binaryfunc, /* nb_inplace_divide; */
 #endif
   (binaryfunc)NA_binaryfunc, /* nb_inplace_remainder; */
-  (binaryfunc)NA_binaryfunc, /* nb_inplace_power; */
+  (ternaryfunc)NA_ternaryfunc, /* nb_inplace_power; */
   0, /* nb_inplace_lshift; */
   0, /* nb_inplace_rshift; */
   0, /* nb_inplace_and; */
