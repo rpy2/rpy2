@@ -5,7 +5,7 @@ import conversion
 
 import rpy2.rlike.container as rlc
 
-import copy, os, itertools
+import sys, copy, os, itertools
 import time
 
 from rpy2.rinterface import Sexp, SexpVector, StrSexpVector, IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, R_NilValue
@@ -298,7 +298,9 @@ class Vector(RObjectMixin, SexpVector):
         return super(Vector, self).__repr__() + os.linesep + \
             self.__repr_content__()
                           
-
+#name alias if Python 3 (iteritems no longer existing for dict objects)
+if sys.version_info[0] == 3:
+    Vector.items = Vector.iteritems
 
 class StrVector(Vector, StrSexpVector):
     """      Vector of string elements

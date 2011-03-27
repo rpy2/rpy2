@@ -96,7 +96,7 @@ functions, or for interactive users much more familiar with the :mod:`numpy` syn
    in numpy.
    
    Python buffers, as defined in :pep:`3118`, is the way to the future,
-   and rpy2 is already offering them although as a (poorly documented)
+   and rpy2 is already offering them... although as a (poorly documented)
    experimental feature.
 
 From `numpy` to `rpy2`:
@@ -105,11 +105,17 @@ From `numpy` to `rpy2`:
 The conversion of `numpy` objects to `rpy2` objects can be 
 activated by importing the module :mod:`numpy2ri`::
 
-  import rpy2.robjects.numpy2ri
+  from rpy2.robjects.numpy2ri import numpy2ri
+  ro.conversion.py2ri = numpy2ri
 
-That import alone is sufficient to switch an automatic conversion
+This is sufficient to switch an automatic conversion
 of `numpy` objects into `rpy2` objects.
 
+.. warning::
+
+   In earlier versions of rpy2, the import was all that was needed to
+   have the conversion. A side-effect when importing a module can
+   lead to problems, and there is now a step to make the conversion active.
 
 .. note::
 

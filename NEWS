@@ -34,6 +34,7 @@ New Features
 
      x[k] for x in v
 
+
 :mod:`rpy2.rinterface`:
 
 - :data:`NA_Complex` and :class:`NAComplexType` for missing complex values.
@@ -78,6 +79,10 @@ Changes
 
 - classes representing R vector also inherit their type-specific
   rinterface-level counterpart.
+
+- Importing the :class:`rpy2.robjects.numpy2ri` is no longer sufficient
+  to active the conversion. Explicit activation is now needed.
+
 
 :mod:`rpy2.rinterface`:
 

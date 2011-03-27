@@ -59,7 +59,7 @@ def numpy2ri(o):
     return res
 
 
-ro.conversion.py2ri = numpy2ri
+
 
 
 def ri2numpy(o):
@@ -70,4 +70,5 @@ def ri2numpy(o):
     else:
         res = ro.default_ri2py(o)
     return res
+
 
