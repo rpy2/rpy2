@@ -166,6 +166,22 @@ static PyOS_sighandler_t python_sighandler, last_sighandler;
 /* #endif   */
 
 
+#if defined(_RPY_STRNDUP_) /* OSX 10.5 and 10.6, and older BSD */
+inline char* strndup (const char *s, size_t n)
+{
+  size_t len = strlen (s);
+  char *ret;
+  
+  if (len <= n)
+    return strdup (s);
+  
+  ret = malloc(n + 1);
+  strncpy(ret, s, n);
+  ret[n] = '\0';
+  return ret;
+} 
+#endif
+
 PyDoc_STRVAR(module_doc,
              "Low-level functions to interface with R.\n\
  One should mostly consider calling the functions defined here when\

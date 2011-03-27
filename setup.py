@@ -80,6 +80,7 @@ class build(_build):
 
 class build_ext(_build_ext):
     """
+    -DRPY_STRNDUP          : definition of strndup()
     -DRPY_VERBOSE
     -DRPY_DEBUG_PRESERV
     -DRPY_DEBUG_PROMISE    : evaluation of promises
