@@ -967,7 +967,8 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
    and make VectorSexp_init() an abstract class */
 static int
 VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
-			int (*seq_to_R)(), int (*iter_to_R)(), int sexptype)
+			RPy_seqobjtosexpproc seq_to_R, 
+			RPy_iterobjtosexpproc iter_to_R, int sexptype)
 {
 
   if (! (rpy_has_status(RPY_R_INITIALIZED))) {
