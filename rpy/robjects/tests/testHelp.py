@@ -7,7 +7,7 @@ class PackageTestCase(unittest.TestCase):
 
     def testInit(self):
         base_help = rh.Package('base')
-        self.assertEquals('Sd2Rd', base_help.object2alias['RdUtils'])
+        self.assertEqual('Sd2Rd', base_help.object2alias['RdUtils'])
 
     def testFetch(self):
         base_help = rh.Package('base')
@@ -19,14 +19,14 @@ class PageTestCase(unittest.TestCase):
     def testInit(self):
         base_help = rh.Package('base')
         p = base_help.fetch('RdUtils')
-        self.assertEquals('title', p.sections.keys()[0])
+        self.assertEqual('title', p.sections.keys()[0])
     
     def testToDocstring(self):
         base_help = rh.Package('base')
         p = base_help.fetch('RdUtils')
         ds = p.to_docstring()
-        self.assertEquals('title', ds[0])
-        self.assertEquals('-----', ds[2])
+        self.assertEqual('title', ds[0])
+        self.assertEqual('-----', ds[2])
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(PackageTestCase)

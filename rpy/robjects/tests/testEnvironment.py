@@ -6,7 +6,7 @@ import array
 class EnvironmentTestCase(unittest.TestCase):
     def testNew(self):
         env = robjects.Environment()
-        self.assertEquals(rinterface.ENVSXP, env.typeof)
+        self.assertEqual(rinterface.ENVSXP, env.typeof)
 
     def testNewValueError(self):
         self.assertRaises(ValueError, robjects.Environment, 'a')

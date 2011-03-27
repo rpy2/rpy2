@@ -63,12 +63,12 @@ class SexpEnvironmentTestCase(unittest.TestCase):
 
     def testGet_functionOnly(self):
         hist = rinterface.globalenv.get("hist", wantfun = False)
-        self.assertEquals(rinterface.CLOSXP, hist.typeof)
+        self.assertEqual(rinterface.CLOSXP, hist.typeof)
         rinterface.globalenv["hist"] = rinterface.SexpVector(["foo", ], 
                                                              rinterface.STRSXP)
 
         hist = rinterface.globalenv.get("hist", wantfun = True)
-        self.assertEquals(rinterface.CLOSXP, hist.typeof)
+        self.assertEqual(rinterface.CLOSXP, hist.typeof)
         
     def testGet_emptyString(self):
         self.assertRaises(ValueError, rinterface.globalenv.get, "")
@@ -88,11 +88,11 @@ class SexpEnvironmentTestCase(unittest.TestCase):
     def testLength(self):
         newEnv = rinterface.globalenv.get("new.env")
         env = newEnv()
-        self.assertEquals(0, len(env))
+        self.assertEqual(0, len(env))
         env["a"] = rinterface.SexpVector([123, ], rinterface.INTSXP)
-        self.assertEquals(1, len(env))
+        self.assertEqual(1, len(env))
         env["b"] = rinterface.SexpVector([123, ], rinterface.INTSXP)
-        self.assertEquals(2, len(env))
+        self.assertEqual(2, len(env))
 
     def testIter(self):
         newEnv = rinterface.globalenv.get("new.env")
@@ -100,7 +100,7 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         env["a"] = rinterface.SexpVector([123, ], rinterface.INTSXP)
         env["b"] = rinterface.SexpVector([456, ], rinterface.INTSXP)
         symbols = [x for x in env]
-        self.assertEquals(2, len(symbols))
+        self.assertEqual(2, len(symbols))
         for s in ["a", "b"]:
             self.assertTrue(s in symbols)
 

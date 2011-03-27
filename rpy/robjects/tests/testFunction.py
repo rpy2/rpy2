@@ -31,23 +31,23 @@ class FunctionTestCase(unittest.TestCase):
         ri_vec = robjects.rinterface.SexpVector([1,2,3], 
                                                 robjects.rinterface.INTSXP)
         res = ro_f(ri_vec)
-        self.assertEquals(6, res[0])
+        self.assertEqual(6, res[0])
 
     def testCallClosureWithRObject(self):
         ri_f = rinterface.baseenv["sum"]
         ro_vec = robjects.Vector(array.array('i', [1,2,3]))
         res = ri_f(ro_vec)
-        self.assertEquals(6, res[0])
+        self.assertEqual(6, res[0])
 
     def testFormals(self):
         ri_f = robjects.r('function(x, y) TRUE')
         res = ri_f.formals()
         #FIXME: no need for as.list when paired list are handled
         res = robjects.r['as.list'](res)
-        self.assertEquals(2, len(res))
+        self.assertEqual(2, len(res))
         n = res.names
-        self.assertEquals("x", n[0])
-        self.assertEquals("y", n[1])
+        self.assertEqual("x", n[0])
+        self.assertEqual("y", n[1])
 
 class SignatureTranslatedFunctionTestCase(unittest.TestCase):
     def testNewInvalid(self):

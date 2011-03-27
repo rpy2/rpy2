@@ -39,7 +39,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         sys.stdout = stdout
         tmp_file.flush()
         tmp_file.seek(0)
-        self.assertEquals('haha', ''.join(s.decode() for s in tmp_file))
+        self.assertEqual('haha', ''.join(s.decode() for s in tmp_file))
         tmp_file.close()
 
 
@@ -69,19 +69,19 @@ class EmbeddedRTestCase(unittest.TestCase):
 
     def testStr_typeint(self):
         t = rinterface.baseenv['letters']
-        self.assertEquals('STRSXP', rinterface.str_typeint(t.typeof))
+        self.assertEqual('STRSXP', rinterface.str_typeint(t.typeof))
         t = rinterface.baseenv['pi']
-        self.assertEquals('REALSXP', rinterface.str_typeint(t.typeof))
+        self.assertEqual('REALSXP', rinterface.str_typeint(t.typeof))
 
     def testStr_typeint_invalid(self):
         self.assertRaises(LookupError, rinterface.str_typeint, 99)
 
     def testGet_initoptions(self):
         options = rinterface.get_initoptions()
-        self.assertEquals(len(rinterface.initoptions),
+        self.assertEqual(len(rinterface.initoptions),
                           len(options))
         for o1, o2 in itertools.izip(rinterface.initoptions, options):
-            self.assertEquals(o1, o2)
+            self.assertEqual(o1, o2)
         
     def testSet_initoptions(self):
         self.assertRaises(RuntimeError, rinterface.set_initoptions, 
@@ -89,16 +89,16 @@ class EmbeddedRTestCase(unittest.TestCase):
 
     def testParse(self):
         xp = rinterface.parse("2 + 3")
-        self.assertEquals(rinterface.EXPRSXP, xp.typeof)
-        self.assertEquals(2.0, xp[0][1][0])
-        self.assertEquals(3.0, xp[0][2][0])
+        self.assertEqual(rinterface.EXPRSXP, xp.typeof)
+        self.assertEqual(2.0, xp[0][1][0])
+        self.assertEqual(3.0, xp[0][2][0])
 
     def testRternalize(self):
         def f(x, y):
             return x[0]+y[0]
         rfun = rinterface.rternalize(f)
         res = rfun(1, 2)
-        self.assertEquals(3, res[0])
+        self.assertEqual(3, res[0])
 
 
     def testExternalPython(self):
@@ -109,8 +109,8 @@ class EmbeddedRTestCase(unittest.TestCase):
         _python = rinterface.StrSexpVector(('.Python', ))
         res = rinterface.baseenv['.External'](_python,
                                               rpy_fun, 1)
-        self.assertEquals(3, res[0])
-        self.assertEquals(1, len(res))
+        self.assertEqual(3, res[0])
+        self.assertEqual(1, len(res))
 
     def testExternalPythonFromExpression(self):
         xp_name = rinterface.StrSexpVector(('expression',))
@@ -172,10 +172,10 @@ class CallbacksTestCase(unittest.TestCase):
             buf.append(x)
 
         rinterface.set_writeconsole(f)
-        self.assertEquals(rinterface.get_writeconsole(), f)
+        self.assertEqual(rinterface.get_writeconsole(), f)
         code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
         rinterface.baseenv["print"](code)
-        self.assertEquals('[1] "3"\n', str.join('', buf))
+        self.assertEqual('[1] "3"\n', str.join('', buf))
 
     def testWriteConsoleWithError(self):
         def f(x):
@@ -205,9 +205,9 @@ class CallbacksTestCase(unittest.TestCase):
             flush['count'] = flush['count'] + 1
 
         rinterface.set_flushconsole(f)
-        self.assertEquals(rinterface.get_flushconsole(), f)
+        self.assertEqual(rinterface.get_flushconsole(), f)
         rinterface.baseenv.get("flush.console")()
-        self.assertEquals(1, flush['count'])
+        self.assertEqual(1, flush['count'])
         rinterface.set_writeconsole(rinterface.consoleFlush)
 
     @onlyAQUAorWindows
@@ -236,9 +236,9 @@ class CallbacksTestCase(unittest.TestCase):
         def sayyes(prompt):
             return yes
         rinterface.set_readconsole(sayyes)
-        self.assertEquals(rinterface.get_readconsole(), sayyes)
+        self.assertEqual(rinterface.get_readconsole(), sayyes)
         res = rinterface.baseenv["readline"]()
-        self.assertEquals(yes.strip(), res[0])
+        self.assertEqual(yes.strip(), res[0])
         rinterface.set_readconsole(rinterface.consoleRead)
 
     def testReadConsoleWithError(self):
@@ -279,9 +279,9 @@ class CallbacksTestCase(unittest.TestCase):
         def chooseMe(prompt):
             return me
         rinterface.set_choosefile(chooseMe)
-        self.assertEquals(rinterface.get_choosefile(), chooseMe)
+        self.assertEqual(rinterface.get_choosefile(), chooseMe)
         res = rinterface.baseenv["file.choose"]()
-        self.assertEquals(me, res[0])
+        self.assertEqual(me, res[0])
         rinterface.set_choosefile(rinterface.chooseFile)
 
     def testChooseFileWithError(self):
@@ -322,8 +322,8 @@ class CallbacksTestCase(unittest.TestCase):
         filename = file_path(r_home(rinterface.StrSexpVector(("doc", ))), 
                              rinterface.StrSexpVector(("COPYRIGHTS", )))
         res = rinterface.baseenv["file.show"](filename)
-        self.assertEquals(filename[0], sf[1][1])
-        self.assertEquals('R Information', sf[0])
+        self.assertEqual(filename[0], sf[1][1])
+        self.assertEqual('R Information', sf[0])
 
     def testShowFilesWithError(self):
         def f(fileheaders, wtitle, fdel, pager):
@@ -374,7 +374,7 @@ class ObjectDispatchTestCase(unittest.TestCase):
         formula = rinterface.globalenv.get('formula')
         obj = formula(rinterface.StrSexpVector(['y ~ x', ]))
         self.assertTrue(isinstance(obj, rinterface.SexpVector))
-        self.assertEquals(rinterface.LANGSXP, obj.typeof)
+        self.assertEqual(rinterface.LANGSXP, obj.typeof)
 
     def testObjectDispatchVector(self):
         letters = rinterface.globalenv.get('letters')
@@ -388,7 +388,7 @@ class ObjectDispatchTestCase(unittest.TestCase):
     def testObjectDispatchRawVector(self):
         raw = rinterface.baseenv.get('raw')
         #rawvec = raw(rinterface.IntSexpVector((10, )))
-        #self.assertEquals(rinterface.RAWSXP, rawvec.typeof)
+        #self.assertEqual(rinterface.RAWSXP, rawvec.typeof)
 
 class SerializeTestCase(unittest.TestCase):
     def testUnserialize(self):

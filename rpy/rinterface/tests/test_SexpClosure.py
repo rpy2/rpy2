@@ -23,7 +23,7 @@ class SexpClosureTestCase(unittest.TestCase):
         
     def testTypeof(self):
         sexp = rinterface.globalenv.get("plot")
-        self.assertEquals(sexp.typeof, rinterface.CLOSXP)
+        self.assertEqual(sexp.typeof, rinterface.CLOSXP)
 
     def testRError(self):
         sum = rinterface.baseenv["sum"]
@@ -39,11 +39,11 @@ class SexpClosureTestCase(unittest.TestCase):
 
         fun.closureenv()["y"] = rinterface.SexpVector([1, ], 
                                                       rinterface.INTSXP)
-        self.assertEquals('a', fun(vec)[0])
+        self.assertEqual('a', fun(vec)[0])
 
         fun.closureenv()["y"] = rinterface.SexpVector([2, ], 
                                                       rinterface.INTSXP)
-        self.assertEquals('b', fun(vec)[0])
+        self.assertEqual('b', fun(vec)[0])
 
     def testCallS4SetClass(self):
         # R's package "methods" can perform uncommon operations
@@ -75,7 +75,7 @@ class SexpClosureTestCase(unittest.TestCase):
         names = [x for x in mylist.do_slot("names")]
         
         for i in range(4):
-            self.assertEquals(('a', 'b', '', 'c')[i], names[i])
+            self.assertEqual(('a', 'b', '', 'c')[i], names[i])
 
     def testRcallOrdDictEnv(self):
         ad = rlc.OrdDict( ((None, rinterface.parse('sum(x)')),) )
@@ -83,12 +83,12 @@ class SexpClosureTestCase(unittest.TestCase):
         env_a['x'] = rinterface.IntSexpVector([1,2,3])
         sum_a = rinterface.baseenv['eval'].rcall(tuple(ad.items()), 
                                                  env_a)
-        self.assertEquals(6, sum_a[0])
+        self.assertEqual(6, sum_a[0])
         env_b = rinterface.baseenv['new.env']()
         env_b['x'] = rinterface.IntSexpVector([4,5,6])
         sum_b = rinterface.baseenv['eval'].rcall(tuple(ad.items()), 
                                                  env_b)
-        self.assertEquals(15, sum_b[0])        
+        self.assertEqual(15, sum_b[0])        
         
     def testErrorInCall(self):
         mylist = rinterface.baseenv['list']
@@ -100,23 +100,23 @@ class SexpClosureTestCase(unittest.TestCase):
         fun = rinterface.baseenv["eval"](exp)
         nonmissing = rinterface.SexpVector([0, ], rinterface.INTSXP)
         missing = rinterface.MissingArg
-        self.assertEquals(False, fun(nonmissing)[0])
-        self.assertEquals(True, fun(missing)[0])
+        self.assertEqual(False, fun(nonmissing)[0])
+        self.assertEqual(True, fun(missing)[0])
 
     def testScalarConvertInteger(self):
-        self.assertEquals('integer',
+        self.assertEqual('integer',
                           rinterface.baseenv["typeof"](1)[0])
 
     def testScalarConvertLong(self):
-        self.assertEquals('integer',
+        self.assertEqual('integer',
                           rinterface.baseenv["typeof"](long(1))[0])
 
     def testScalarConvertDouble(self):
-        self.assertEquals('double', 
+        self.assertEqual('double', 
                           rinterface.baseenv["typeof"](1.0)[0])
 
     def testScalarConvertBoolean(self):
-        self.assertEquals('logical', 
+        self.assertEqual('logical', 
                           rinterface.baseenv["typeof"](True)[0])
         
 

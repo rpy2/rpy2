@@ -25,41 +25,41 @@ def testArrayStructInt(self, numericModule):
     px = [1, -2, 3]
     x = rinterface.SexpVector(px, rinterface.INTSXP)
     nx = numericModule.asarray(x)
-    self.assertEquals(nx.dtype.kind, 'i')
+    self.assertEqual(nx.dtype.kind, 'i')
     for orig, new in itertools.izip(px, nx):
-        self.assertEquals(orig, new)
+        self.assertEqual(orig, new)
 
     # change value in the Python array... makes it change in the R vector
     nx[1] = 12
-    self.assertEquals(x[1], 12)
+    self.assertEqual(x[1], 12)
 
 def testArrayStructDouble(self, numericModule):
     px = [1.0, -2.0, 3.0]
     x = rinterface.SexpVector(px, rinterface.REALSXP)
     nx = numericModule.asarray(x)
-    self.assertEquals(nx.dtype.kind, 'f')
+    self.assertEqual(nx.dtype.kind, 'f')
     for orig, new in itertools.izip(px, nx):
-        self.assertEquals(orig, new)
+        self.assertEqual(orig, new)
     
     # change value in the Python array... makes it change in the R vector
     nx[1] = 333.2
-    self.assertEquals(x[1], 333.2)
+    self.assertEqual(x[1], 333.2)
 
 def testArrayStructComplex(self, numericModule):
     px = [1+2j, 2+5j, -1+0j]
     x = rinterface.SexpVector(px, rinterface.CPLXSXP)
     nx = numericModule.asarray(x)
-    self.assertEquals(nx.dtype.kind, 'c')
+    self.assertEqual(nx.dtype.kind, 'c')
     for orig, new in itertools.izip(px, nx):
-        self.assertEquals(orig, new)
+        self.assertEqual(orig, new)
     
 def testArrayStructBoolean(self, numericModule):
     px = [True, False, True]
     x = rinterface.SexpVector(px, rinterface.LGLSXP)
     nx = numericModule.asarray(x)
-    self.assertEquals('i', nx.dtype.kind) # not 'b', see comments in array.c
+    self.assertEqual('i', nx.dtype.kind) # not 'b', see comments in array.c
     for orig, new in itertools.izip(px, nx):
-        self.assertEquals(orig, new)
+        self.assertEqual(orig, new)
 
 
 class SexpVectorNumericTestCase(unittest.TestCase):
@@ -85,7 +85,7 @@ class SexpVectorNumericTestCase(unittest.TestCase):
         for i in range(5):
             for j in range(2):
                 for k in range(3):
-                    self.assertEquals(extract(rarray, i+1, j+1, k+1)[0], 
+                    self.assertEqual(extract(rarray, i+1, j+1, k+1)[0], 
                                       npyarray[i, j, k])
 
 def suite():

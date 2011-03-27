@@ -55,7 +55,7 @@ class WherefromTestCase(unittest.TestCase):
     def testWherefrom(self):
         stats = robjects.packages.importr('stats')
         rnorm_pack = robjects.packages.wherefrom('rnorm')
-        self.assertEquals('package:stats',
+        self.assertEqual('package:stats',
                           rnorm_pack.do_slot('name')[0])
         
 def suite():

@@ -119,7 +119,7 @@ class ConcreteDeviceTestCase(unittest.TestCase):
 
     def testSize(self):
         size = self.gd.size()
-        self.assertEquals(size, [1,2,3,4])
+        self.assertEqual(size, [1,2,3,4])
 
     def testLine(self):
         res = rinterface.globalenv.get('plot.new')()

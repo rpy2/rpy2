@@ -16,7 +16,7 @@ class MethodsTestCase(unittest.TestCase):
         acs = (('length', None, True, None), )
         methods.set_accessors(A, "A", None, acs)
         a = A()
-        self.assertEquals(123, a.length[0])
+        self.assertEqual(123, a.length[0])
 
 
     def testRS4_TypeNoAccessors(self):
@@ -51,12 +51,12 @@ class MethodsTestCase(unittest.TestCase):
 
 
         ra = R_A()
-        self.assertEquals(123, ra.get_length()[0])
-        self.assertEquals(123, ra.length[0])
+        self.assertEqual(123, ra.get_length()[0])
+        self.assertEqual(123, ra.length[0])
 
         a = A()
-        self.assertEquals(123, a.get_length()[0])
-        self.assertEquals(123, a.length[0])
+        self.assertEqual(123, a.get_length()[0])
+        self.assertEqual(123, a.length[0])
         
         
     def testGetclassdef(self):

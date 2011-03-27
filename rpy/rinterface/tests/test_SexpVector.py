@@ -58,7 +58,7 @@ class NAValuesTestCase(unittest.TestCase):
 
     def testNAIntegertoR(self):
         na_int = ri.NAIntegerType()
-        self.assertEquals(True, ri.baseenv["is.na"](na_int)[0])
+        self.assertEqual(True, ri.baseenv["is.na"](na_int)[0])
 
     def testNAIntegerBinaryfunc(self):
         na_int = ri.NAIntegerType()
@@ -68,12 +68,12 @@ class NAValuesTestCase(unittest.TestCase):
         na_int = ri.NAIntegerType()
         x = ri.IntSexpVector((1, na_int, 2))
         self.assertTrue(x[1] is na_int)
-        self.assertEquals(1, x[0])
-        self.assertEquals(2, x[2])
+        self.assertEqual(1, x[0])
+        self.assertEqual(2, x[2])
 
     def testNAIntegerRepr(self):
         na_int = ri.NAIntegerType()
-        self.assertEquals("NA_integer_", repr(na_int))
+        self.assertEqual("NA_integer_", repr(na_int))
 
     def testRtoNALogical(self):
         na_lgl = ri.NALogicalType()
@@ -82,18 +82,18 @@ class NAValuesTestCase(unittest.TestCase):
 
     def testNALogicaltoR(self):
         na_lgl = ri.NALogicalType()
-        self.assertEquals(True, ri.baseenv["is.na"](na_lgl)[0])
+        self.assertEqual(True, ri.baseenv["is.na"](na_lgl)[0])
 
     def testNALogicalInVector(self):
         na_bool = ri.NALogicalType()
         x = ri.BoolSexpVector((True, na_bool, False))
         self.assertTrue(x[1] is na_bool)
-        self.assertEquals(True, x[0])
-        self.assertEquals(False, x[2])
+        self.assertEqual(True, x[0])
+        self.assertEqual(False, x[2])
 
     def testNAIntegerRepr(self):
         na_bool = ri.NALogicalType()
-        self.assertEquals("NA", repr(na_bool))
+        self.assertEqual("NA", repr(na_bool))
 
     def testRtoNAReal(self):
         na_real = ri.NARealType()
@@ -102,7 +102,7 @@ class NAValuesTestCase(unittest.TestCase):
 
     def testNARealtoR(self):
         na_real = ri.NARealType()
-        self.assertEquals(True, ri.baseenv["is.na"](na_real)[0])
+        self.assertEqual(True, ri.baseenv["is.na"](na_real)[0])
 
     def testNARealBinaryfunc(self):
         na_real = ri.NARealType()
@@ -112,12 +112,12 @@ class NAValuesTestCase(unittest.TestCase):
         na_float = ri.NARealType()
         x = ri.FloatSexpVector((1.1, na_float, 2.2))
         self.assertTrue(x[1] is na_float)
-        self.assertEquals(1.1, x[0])
-        self.assertEquals(2.2, x[2])
+        self.assertEqual(1.1, x[0])
+        self.assertEqual(2.2, x[2])
 
     def testNARealRepr(self):
         na_float = ri.NARealType()
-        self.assertEquals("NA_real_", repr(na_float))
+        self.assertEqual("NA_real_", repr(na_float))
 
     def testRtoNACharacter(self):
         na_character = ri.NACharacterType()
@@ -126,34 +126,34 @@ class NAValuesTestCase(unittest.TestCase):
         
     def testNACharactertoR(self):
         na_character = ri.NACharacterType()
-        self.assertEquals(True, ri.baseenv["is.na"](ri.StrSexpVector((na_character, )))[0])
+        self.assertEqual(True, ri.baseenv["is.na"](ri.StrSexpVector((na_character, )))[0])
         
     def testNACharacterInVector(self):
         na_str = ri.NACharacterType()
         x = ri.StrSexpVector(("ab", na_str, "cd"))
         self.assertTrue(x[1] is na_str)
-        self.assertEquals("ab", x[0])
-        self.assertEquals("cd", x[2])
+        self.assertEqual("ab", x[0])
+        self.assertEqual("cd", x[2])
 
     def testNACharacterRepr(self):
         na_str = ri.NACharacterType()
-        self.assertEquals("NA_character_", repr(na_str))
+        self.assertEqual("NA_character_", repr(na_str))
 
 
 class IntSexpVectorTestCase(unittest.TestCase):
     def testInitFromSeq(self):
         seq = range(3)
         v = ri.IntSexpVector(seq)
-        self.assertEquals(3, len(v))
+        self.assertEqual(3, len(v))
         for x,y in zip(seq, v):
-            self.assertEquals(x, y)
+            self.assertEqual(x, y)
 
     def testInitFromIter(self):
         it = xrange(3)
         v = ri.IntSexpVector(it)
-        self.assertEquals(3, len(v))
+        self.assertEqual(3, len(v))
         for x,y in zip(xrange(3), v):
-            self.assertEquals(x, y)
+            self.assertEqual(x, y)
         
     def testInitFromSeqInvalidInt(self):
         seq = (1, 'b', 3)
@@ -162,25 +162,25 @@ class IntSexpVectorTestCase(unittest.TestCase):
 
     def testInitFromSeqInvalidOverflow(self):
         v = ri.IntSexpVector((sys.maxint-1, sys.maxint))
-        self.assertEquals(sys.maxint-1, v[0])
-        self.assertEquals(sys.maxint, v[1])
+        self.assertEqual(sys.maxint-1, v[0])
+        self.assertEqual(sys.maxint, v[1])
         self.assertRaises(OverflowError, ri.IntSexpVector, (sys.maxint+1, ))
 
 class FloatSexpVectorTestCase(unittest.TestCase):
     def testInitFromSeq(self):
         seq = (1.0, 2.0, 3.0)
         v = ri.FloatSexpVector(seq)
-        self.assertEquals(3, len(v))
+        self.assertEqual(3, len(v))
         for x,y in zip(seq, v):
-            self.assertEquals(x, y)
+            self.assertEqual(x, y)
 
     def testInitFromIter(self):
         seq = (1.0, 2.0, 3.0)
         it = iter(seq)
         v = ri.FloatSexpVector(it)
-        self.assertEquals(3, len(v))
+        self.assertEqual(3, len(v))
         for x,y in zip(seq, v):
-            self.assertEquals(x, y)
+            self.assertEqual(x, y)
         
     def testInitFromSeqInvalidFloat(self):
         seq = (1.0, 'b', 3.0)
@@ -195,9 +195,9 @@ class ByteSexpVectorTestCase(unittest.TestCase):
         else:
             seq = 'abc'
         v = ri.ByteSexpVector(seq)
-        self.assertEquals(3, len(v))
+        self.assertEqual(3, len(v))
         for x,y in zip(seq, v):
-            self.assertEquals(x, y)
+            self.assertEqual(x, y)
 
     def testInitFromSeqOfBytes(self):
         if IS_PYTHON3:
@@ -205,9 +205,9 @@ class ByteSexpVectorTestCase(unittest.TestCase):
         else:
             seq = ('a', 'b', 'c')
         v = ri.ByteSexpVector(seq)
-        self.assertEquals(3, len(v))
+        self.assertEqual(3, len(v))
         for x,y in zip(seq, v):
-            self.assertEquals(x, y)
+            self.assertEqual(x, y)
 
     def testInitFromSeqInvalidByte(self):
         if IS_PYTHON3:
@@ -302,22 +302,22 @@ class SexpVectorTestCase(unittest.TestCase):
         isCharacter = ri.globalenv.get("is.character")
         ok = isCharacter(sexp)[0]
         self.assertTrue(ok)
-        self.assertEquals('abc', sexp[0])
+        self.assertEqual('abc', sexp[0])
 
     def testNewUnicodeSymbol(self):
         sexp = ri.SexpVector((u'\u21a7', ), ri.STRSXP)
         isCharacter = ri.globalenv.get("is.character")
         ok = isCharacter(sexp)[0]
         self.assertTrue(ok)
-        self.assertEquals(u'\u21a7', sexp[0])
+        self.assertEqual(u'\u21a7', sexp[0])
         
     def testNewList(self):
         vec = ri.ListSexpVector([1,'b',3,'d',5])
         ok = ri.baseenv["is.list"](vec)[0]
         self.assertTrue(ok)
-        self.assertEquals(5, len(vec))
-        self.assertEquals(1, vec[0][0])
-        self.assertEquals('b', vec[1][0])
+        self.assertEqual(5, len(vec))
+        self.assertEqual(1, vec[0][0])
+        self.assertEqual('b', vec[1][0])
 
     def testNewVector(self):
         sexp_char = ri.SexpVector(["abc", ], 
@@ -330,7 +330,7 @@ class SexpVectorTestCase(unittest.TestCase):
         ok = isList(sexp)[0]
         self.assertTrue(ok)
 
-        self.assertEquals(2, len(sexp))
+        self.assertEqual(2, len(sexp))
 
 
     def testNew_InvalidType_NotAType(self):
@@ -364,27 +364,27 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertTrue(idem(letters_R, myList[1]))
 
         letters_R = ri.globalenv.get("letters")
-        self.assertEquals('z', letters_R[-1])
+        self.assertEqual('z', letters_R[-1])
 
 
     def testGetItemLang(self):
         formula = ri.baseenv.get('formula')
         f = formula(ri.StrSexpVector(['y ~ x', ]))
         y = f[0]
-        self.assertEquals(ri.SYMSXP, y.typeof)
+        self.assertEqual(ri.SYMSXP, y.typeof)
 
     def testGetItemExpression(self):
         expression = ri.baseenv.get('expression')
         e = expression(ri.StrSexpVector(['a', ]),
                        ri.StrSexpVector(['b', ]))
         y = e[0]
-        self.assertEquals(ri.STRSXP, y.typeof)
+        self.assertEqual(ri.STRSXP, y.typeof)
 
     def testGetItemPairList(self):
         pairlist = ri.baseenv.get('pairlist')
         pl = pairlist(a = ri.StrSexpVector([1, ]))
         y = pl[0]
-        self.assertEquals(ri.LISTSXP, y.typeof)
+        self.assertEqual(ri.LISTSXP, y.typeof)
 
     def testGetItemNegativeOutOfBound(self):
         letters_R = ri.globalenv.get("letters")
@@ -401,65 +401,65 @@ class SexpVectorTestCase(unittest.TestCase):
     def testGetSliceFloat(self):
         vec = ri.FloatSexpVector([1.0,2.0,3.0])
         vec = vec[0:2]
-        self.assertEquals(2, len(vec))
-        self.assertEquals(1.0, vec[0])
-        self.assertEquals(2.0, vec[1])
+        self.assertEqual(2, len(vec))
+        self.assertEqual(1.0, vec[0])
+        self.assertEqual(2.0, vec[1])
 
     def testGetSliceInt(self):
         vec = ri.IntSexpVector([1,2,3])
         vec = vec[0:2]
-        self.assertEquals(2, len(vec))
-        self.assertEquals(1, vec[0])
-        self.assertEquals(2, vec[1])
+        self.assertEqual(2, len(vec))
+        self.assertEqual(1, vec[0])
+        self.assertEqual(2, vec[1])
 
     def testGetSliceIntNegative(self):
         vec = ri.IntSexpVector([1,2,3])
         vec = vec[-2:-1]
-        self.assertEquals(1, len(vec))
-        self.assertEquals(2, vec[0])
+        self.assertEqual(1, len(vec))
+        self.assertEqual(2, vec[0])
 
     def testGetSliceMissingBoundary(self):
         vec = ri.IntSexpVector(range(10))
         vec_slice = vec[:2]
-        self.assertEquals(2, len(vec_slice))
-        self.assertEquals(0, vec_slice[0])
-        self.assertEquals(1, vec_slice[1])
+        self.assertEqual(2, len(vec_slice))
+        self.assertEqual(0, vec_slice[0])
+        self.assertEqual(1, vec_slice[1])
         vec_slice = vec[8:]
-        self.assertEquals(2, len(vec_slice))
-        self.assertEquals(8, vec_slice[0])
-        self.assertEquals(9, vec_slice[1])
+        self.assertEqual(2, len(vec_slice))
+        self.assertEqual(8, vec_slice[0])
+        self.assertEqual(9, vec_slice[1])
         vec_slice = vec[-2:]
-        self.assertEquals(2, len(vec_slice))
-        self.assertEquals(8, vec_slice[0])
-        self.assertEquals(9, vec_slice[1])
+        self.assertEqual(2, len(vec_slice))
+        self.assertEqual(8, vec_slice[0])
+        self.assertEqual(9, vec_slice[1])
 
     def testGetSliceBool(self):
         vec = ri.BoolSexpVector([True,False,True])
         vec = vec[0:2]
-        self.assertEquals(2, len(vec))
-        self.assertEquals(True, vec[0])
-        self.assertEquals(False, vec[1])
+        self.assertEqual(2, len(vec))
+        self.assertEqual(True, vec[0])
+        self.assertEqual(False, vec[1])
 
     def testGetSliceStr(self):
         vec = ri.StrSexpVector(['a','b','c'])
         vec = vec[0:2]
-        self.assertEquals(2, len(vec))
-        self.assertEquals('a', vec[0])
-        self.assertEquals('b', vec[1])
+        self.assertEqual(2, len(vec))
+        self.assertEqual('a', vec[0])
+        self.assertEqual('b', vec[1])
 
     def testGetSliceComplex(self):
         vec = ri.ComplexSexpVector([1+2j,2+3j,3+4j])
         vec = vec[0:2]
-        self.assertEquals(2, len(vec))
-        self.assertEquals(1+2j, vec[0])
-        self.assertEquals(2+3j, vec[1])
+        self.assertEqual(2, len(vec))
+        self.assertEqual(1+2j, vec[0])
+        self.assertEqual(2+3j, vec[1])
 
     def testGetSliceList(self):
         vec = ri.ListSexpVector([1,'b',True])
         vec = vec[0:2]
-        self.assertEquals(2, len(vec))
-        self.assertEquals(1, vec[0][0])
-        self.assertEquals('b', vec[1][0])
+        self.assertEqual(2, len(vec))
+        self.assertEqual(1, vec[0][0])
+        self.assertEqual('b', vec[1][0])
 
     def testAssignItemDifferentType(self):
         c_R = ri.globalenv.get("c")
@@ -544,51 +544,51 @@ class SexpVectorTestCase(unittest.TestCase):
     def testSetSliceFloat(self):
         vec = ri.FloatSexpVector([1.0,2.0,3.0])
         vec[0:2] = ri.FloatSexpVector([11.0, 12.0])
-        self.assertEquals(3, len(vec))
-        self.assertEquals(11.0, vec[0])
-        self.assertEquals(12.0, vec[1])
-        self.assertEquals(3.0, vec[2])
+        self.assertEqual(3, len(vec))
+        self.assertEqual(11.0, vec[0])
+        self.assertEqual(12.0, vec[1])
+        self.assertEqual(3.0, vec[2])
 
     def testSetSliceInt(self):
         vec = ri.IntSexpVector([1,2,3])
         vec[0:2] = ri.IntSexpVector([11,12])
-        self.assertEquals(3, len(vec))
-        self.assertEquals(11, vec[0])
-        self.assertEquals(12, vec[1])
+        self.assertEqual(3, len(vec))
+        self.assertEqual(11, vec[0])
+        self.assertEqual(12, vec[1])
 
     def testSetSliceIntNegative(self):
         vec = ri.IntSexpVector([1,2,3])
         vec[-2:-1] = ri.IntSexpVector([33,])
-        self.assertEquals(3, len(vec))
-        self.assertEquals(33, vec[1])
+        self.assertEqual(3, len(vec))
+        self.assertEqual(33, vec[1])
 
     def testSetSliceBool(self):
         vec = ri.BoolSexpVector([True,False,True])
         vec[0:2] = ri.BoolSexpVector([False, False])
-        self.assertEquals(3, len(vec))
-        self.assertEquals(False, vec[0])
-        self.assertEquals(False, vec[1])
+        self.assertEqual(3, len(vec))
+        self.assertEqual(False, vec[0])
+        self.assertEqual(False, vec[1])
 
     def testSetSliceStr(self):
         vec = ri.StrSexpVector(['a','b','c'])
         vec[0:2] = ri.StrSexpVector(['d','e'])
-        self.assertEquals(3, len(vec))
-        self.assertEquals('d', vec[0])
-        self.assertEquals('e', vec[1])
+        self.assertEqual(3, len(vec))
+        self.assertEqual('d', vec[0])
+        self.assertEqual('e', vec[1])
 
     def testSetSliceComplex(self):
         vec = ri.ComplexSexpVector([1+2j,2+3j,3+4j])
         vec[0:2] = ri.ComplexSexpVector([11+2j,12+3j])
-        self.assertEquals(3, len(vec))
-        self.assertEquals(11+2j, vec[0])
-        self.assertEquals(12+3j, vec[1])
+        self.assertEqual(3, len(vec))
+        self.assertEqual(11+2j, vec[0])
+        self.assertEqual(12+3j, vec[1])
 
     def testSetSliceList(self):
         vec = ri.ListSexpVector([1,'b',True])
         vec[0:2] = ri.ListSexpVector([False, 2])
-        self.assertEquals(3, len(vec))
-        self.assertEquals(False, vec[0][0])
-        self.assertEquals(2, vec[1][0])
+        self.assertEqual(3, len(vec))
+        self.assertEqual(False, vec[0][0])
+        self.assertEqual(2, vec[1][0])
 
 
     def testMissingRPreserveObjectBug(self):
@@ -596,17 +596,17 @@ class SexpVectorTestCase(unittest.TestCase):
         xx = range(100000)
         x = ri.SexpVector(xx, ri.INTSXP)
         rgc()    
-        self.assertEquals(0, x[0])
+        self.assertEqual(0, x[0])
 
     def testIndexInteger(self):
         x = ri.IntSexpVector((1,2,3))
-        self.assertEquals(0, x.index(1))
-        self.assertEquals(2, x.index(3))
+        self.assertEqual(0, x.index(1))
+        self.assertEqual(2, x.index(3))
 
     def testIndexStr(self):
         x = ri.StrSexpVector(('a','b','c'))
-        self.assertEquals(0, x.index('a'))
-        self.assertEquals(2, x.index('c'))
+        self.assertEqual(0, x.index('a'))
+        self.assertEqual(2, x.index('c'))
 
 
 def suite():
