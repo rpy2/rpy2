@@ -45,7 +45,11 @@ class WrapperSexpVectorTestCase(unittest.TestCase):
         self.assertTrue(ok)
 
     def testByte(self):
-        sexp = ri.ByteSexpVector(['a', 'b'])
+        if IS_PYTHON3:
+            seq = (b'a', b'b')
+        else:
+            seq = ('a', 'b')
+        sexp = ri.ByteSexpVector(seq)
         is_raw = ri.globalenv.get("is.raw")
         ok = is_raw(sexp)[0]
         self.assertTrue(ok)
