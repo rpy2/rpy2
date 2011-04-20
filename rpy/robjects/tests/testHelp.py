@@ -7,7 +7,7 @@ class PackageTestCase(unittest.TestCase):
 
     def testInit(self):
         base_help = rh.Package('base')
-        self.assertEqual('Sd2Rd', base_help.object2alias['RdUtils'])
+        self.assertEqual('NULL', base_help.object2alias['NULL'])
 
     def testFetch(self):
         base_help = rh.Package('base')
