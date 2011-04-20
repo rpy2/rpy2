@@ -51,10 +51,11 @@ New Features
 - :meth:`rinterface.SexpVector.index`, of similar behaviour to :meth:`list.index`.
 
 - :meth:`rpy2.rinterface.Sexp.list_attrs` to list the names of all R attributes
-  of a given object.
+  for a given object.
 
 - :class:`rpy2.rinterface.ByteSexpVector` to represent R 'raw' vectors.
 
+- constant `R_LEN_T_MAX` to store what is the maximum length for a vector in R.
 
 :mod:`rpy2.rlike`:
 
