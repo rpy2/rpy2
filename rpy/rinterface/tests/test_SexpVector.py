@@ -179,11 +179,10 @@ class FloatSexpVectorTestCase(unittest.TestCase):
             self.assertEqual(x, y)
 
     def testInitFromIter(self):
-        seq = (1.0, 2.0, 3.0)
-        it = iter(seq)
+        it = xrange(10)
         v = ri.FloatSexpVector(it)
-        self.assertEqual(3, len(v))
-        for x,y in zip(seq, v):
+        self.assertEqual(10, len(v))
+        for x,y in zip(xrange(10), v):
             self.assertEqual(x, y)
         
     def testInitFromSeqInvalidFloat(self):
