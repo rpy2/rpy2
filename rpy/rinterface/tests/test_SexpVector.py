@@ -165,10 +165,10 @@ class IntSexpVectorTestCase(unittest.TestCase):
 
 
     def testInitFromSeqInvalidOverflow(self):
-        v = ri.IntSexpVector((sys.maxint-1, sys.maxint))
-        self.assertEqual(sys.maxint-1, v[0])
-        self.assertEqual(sys.maxint, v[1])
-        self.assertRaises(OverflowError, ri.IntSexpVector, (sys.maxint+1, ))
+        v = ri.IntSexpVector((ri.R_LEN_T_MAX-1, ri.R_LEN_T_MAX))
+        self.assertEqual(ri.R_LEN_T_MAX-1, v[0])
+        self.assertEqual(ri.R_LEN_T_MAX, v[1])
+        self.assertRaises(OverflowError, ri.IntSexpVector, (ri.R_LEN_T_MAX+1, ))
 
 class FloatSexpVectorTestCase(unittest.TestCase):
     def testInitFromSeq(self):
