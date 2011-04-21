@@ -76,7 +76,7 @@ class SexpVectorNumericTestCase(unittest.TestCase):
     @only_numpy
     def testArrayStructNumpyBoolean(self):
         testArrayStructBoolean(self, numpy)
-
+    @only_numpy
     def testArrayShapeLen3(self):
         extract = rinterface.baseenv['[']
         rarray = rinterface.baseenv['array'](rinterface.IntSexpVector(range(30)),
