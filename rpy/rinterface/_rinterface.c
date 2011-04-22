@@ -59,6 +59,7 @@
 #endif
 
 #include <R.h>
+#include <Rversion.h>
 #include <Rinternals.h>
 #include <Rdefines.h>
 
@@ -191,7 +192,7 @@ PyDoc_STRVAR(module_doc,
 \n\
 ");
 
-
+static PyObject *RPY_R_VERSION_BUILD;
 static PySexpObject *globalEnv;
 static PySexpObject *baseNameSpaceEnv;
 static PySexpObject *emptyEnv;
@@ -3263,6 +3264,22 @@ PyInit__rinterface(void)
   /* ADD_INT_CONSTANT(m, NA_LOGICAL); */
   /* ADD_INT_CONSTANT(m, NA_INTEGER); */
 
+
+  RPY_R_VERSION_BUILD = PyTuple_New(4);
+  int ii;
+  for (ii=0; ii<4; ii++) {
+#if (PY_VERSION_HEX < 0x03010000)  
+    PYASSERT_ZERO(
+		  PyTuple_SetItem(RPY_R_VERSION_BUILD, ii, 
+				  PyString_FromString(RPY_R_VERSION_LIST[ii]))
+		  );
+#else
+    if (PyTuple_SetItem(RPY_R_VERSION_BUILD, ii, 
+			PyBytes_FromString(RPY_R_VERSION_LIST[ii])) < 0) 
+      return NULL;
+#endif
+  }
+
   initOptions = PyTuple_New(4);
 
 #if (PY_VERSION_HEX < 0x03010000)  
@@ -3296,6 +3313,7 @@ PyInit__rinterface(void)
   /* Add an extra ref. It should remain impossible to delete it */
   Py_INCREF(initOptions);
 
+  PyModule_AddObject(m, "R_VERSION_BUILD", RPY_R_VERSION_BUILD);
   PyModule_AddObject(m, "initoptions", initOptions);
   PyModule_AddObject(m, "Sexp", (PyObject *)&Sexp_Type);
   PyModule_AddObject(m, "SexpClosure", (PyObject *)&ClosureSexp_Type);

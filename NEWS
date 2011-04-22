@@ -57,6 +57,8 @@ New Features
 
 - constant `R_LEN_T_MAX` to store what is the maximum length for a vector in R.
 
+- tuple `R_VERSION_BUILD` to store the version of R rpy2 was built against
+
 :mod:`rpy2.rlike`:
 
 - :class:`container.OrdDict` get proper methods :meth:`keys` and `get`
