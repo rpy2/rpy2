@@ -22,6 +22,18 @@ from rpy2.robjects import methods
 import process_revents as revents
 
 
+import rpy2.rinterface as ri
+_reval = ri.baseenv['eval']
+_parse = ri.parse
+_StrSexpVector = ri.StrSexpVector
+def eval(self, string):
+    p = _parse(_StrSexpVector((string, )))
+    res = _reval(p)
+    return res
+del(_reval)
+del(_parse)
+del(ri)
+
 class Packages(object):
     __instance = None
     def __new__(cls):
@@ -64,8 +76,7 @@ def importr(packname, newname=None):
     #         __rname__ = cn
     #     newcn = cn.replace('.', '_')
     #     d[newcn] = AutoS4
-    # S4Classes().__dict__[newname] = d
-    
+    # S4Classes().__dict__[newname] = d    
 
     return packinstance
 

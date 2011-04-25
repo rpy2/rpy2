@@ -8,7 +8,7 @@ import rpy2.rlike.container as rlc
 import sys, copy, os, itertools
 import time
 
-from rpy2.rinterface import Sexp, SexpVector, StrSexpVector, IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, R_NilValue
+from rpy2.rinterface import Sexp, SexpVector, StrSexpVector, IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, R_NilValue, NA_Real, NA_Integer, NA_Character
 
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
@@ -266,7 +266,9 @@ class Vector(RObjectMixin, SexpVector):
 
     def __repr_content__(self):
         def p_str(x, max_width = 8):
-            if isinstance(x, long) or isinstance(x, int):
+            if x is NA_Real or x is NA_Integer or x is NA_Character:
+                res = repr(x)
+            elif isinstance(x, long) or isinstance(x, int):
                 res = '%8i' %x
             elif isinstance(x, float):
                 res = '%8f' %x
