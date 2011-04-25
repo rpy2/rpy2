@@ -115,7 +115,8 @@ of `numpy` objects into `rpy2` objects.
 
    In earlier versions of rpy2, the import was all that was needed to
    have the conversion. A side-effect when importing a module can
-   lead to problems, and there is now a step to make the conversion active.
+   lead to problems, and there is now an extra step to make the
+   conversion active: call the function :func:`rpy2.robjects.activate`.
 
 .. note::
 

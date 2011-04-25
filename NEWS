@@ -84,7 +84,8 @@ Changes
   rinterface-level counterpart.
 
 - Importing the :class:`rpy2.robjects.numpy2ri` is no longer sufficient
-  to active the conversion. Explicit activation is now needed.
+  to active the conversion. Explicit activation is now needed; the function
+  `activate` can do that.
 
 
 :mod:`rpy2.rinterface`:

@@ -72,3 +72,8 @@ def ri2numpy(o):
     return res
 
 
+
+
+def activate():
+    robjects.conversion.py2ri = rpyn.numpy2ri
+    robjects.conversion.ri2numpy = rpyn.ri2numpy 
