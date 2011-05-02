@@ -93,9 +93,29 @@ class MatrixTestCase(unittest.TestCase):
             self.assertEqual((2, 0)[i], val)
 
     def testDot(self):
-        m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2, ncol=2)        
+        m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2, ncol=2)
         m2 = m.dot(m)
         self.assertEqual((2,3,6,11), tuple(m2))
+
+    def testColnames(self):
+        m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2, ncol=2)
+        self.assertEqual(rinterface.NULL, m.colnames)
+        m.colnames = robjects.StrVector(('a', 'b'))
+        self.assertEqual(2, len(m.colnames))
+        self.assertEqual('a', m.colnames[0])
+        self.assertEqual('b', m.colnames[1])
+        self.assertRaises(ValueError, m.__setattr__, 'colnames', 
+                          robjects.StrVector(('a', 'b', 'c')))
+
+    def testRownames(self):
+        m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2, ncol=2)
+        self.assertEqual(rinterface.NULL, m.rownames)
+        m.rownames = robjects.StrVector(('c', 'd'))
+        self.assertEqual(2, len(m.rownames))
+        self.assertEqual('c', m.rownames[0])
+        self.assertEqual('d', m.rownames[1])
+        self.assertRaises(ValueError, m.__setattr__, 'rownames', 
+                          robjects.StrVector(('a', 'b', 'c')))
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(ArrayTestCase)

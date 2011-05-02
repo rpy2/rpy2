@@ -8,7 +8,7 @@ import rpy2.rlike.container as rlc
 import sys, copy, os, itertools
 import time
 
-from rpy2.rinterface import Sexp, SexpVector, StrSexpVector, IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, R_NilValue, NA_Real, NA_Integer, NA_Character
+from rpy2.rinterface import Sexp, SexpVector, StrSexpVector, IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, R_NilValue, NA_Real, NA_Integer, NA_Character, NULL
 
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
@@ -473,6 +473,8 @@ class ListVector(Vector):
     or dict.
 
     """
+    _vector = rinterface.baseenv['vector']
+
     def __init__(self, tlist):
         if isinstance(tlist, rinterface.SexpVector):
             if tlist.typeof != rinterface.VECSXP:
@@ -539,6 +541,13 @@ class ListVector(Vector):
                                                   x.__repr_content__()))
         res = super(ListVector, self).__repr__() + os.linesep + \
             os.linesep.join(res)
+        return res
+
+    @staticmethod
+    def from_length(length):
+        """ Create a list of given length """
+        res = ListVector._vector(StrSexpVector(("list", )), length)
+        res = conversion.ri2py(res)
         return res
 
 class DateVector(FloatVector):
@@ -688,7 +697,21 @@ class Matrix(Array):
         """
         res = self._rownames(self)
         return conversion.ri2py(res)
-    rownames = property(__rownames_get, None, None, "Row names")
+    def __rownames_set(self, rn):
+        if isinstance(rn, StrSexpVector):
+            if len(rn) != self.nrow:
+                raise ValueError('Invalid length.')
+            if self.dimnames is NULL:
+                dn = ListVector.from_length(2)
+                self.do_slot_assign('dimnames', dn)
+            else:
+                dn = self.dimnames
+            dn[0] = rn
+        else:
+            raise ValueError('The rownames attribute can only be an R string vector.')
+    rownames = property(__rownames_get, __rownames_set, None, "Row names")
+
+            
 
     def __colnames_get(self):
         """ Column names
@@ -697,7 +720,19 @@ class Matrix(Array):
         """
         res = self._colnames(self)
         return conversion.ri2py(res)
-    colnames = property(__colnames_get, None, None, "Column names")
+    def __colnames_set(self, cn):
+        if isinstance(cn, StrSexpVector):
+            if len(cn) != self.ncol:
+                raise ValueError('Invalid length.')
+            if self.dimnames is NULL:
+                dn = ListVector.from_length(2)
+                self.do_slot_assign('dimnames', dn)
+            else:
+                dn = self.dimnames
+            dn[1] = cn
+        else:
+            raise ValueError('The colnames attribute can only be an R string vector.')
+    colnames = property(__colnames_get, __colnames_set, None, "Column names")
         
     def transpose(self):
         """ transpose the matrix """
