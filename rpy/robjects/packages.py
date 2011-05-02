@@ -79,7 +79,8 @@ class Package(ModuleType):
                                        'a Python object attribute')
             self._rpy2r[rpyname] = rname
             rpyobj = conversion.ri2py(self._env[rname])
-            rpyobj.__rname__ = rname
+            if hasattr(rpyobj, '__rname__'):
+                rpyobj.__rname__ = rname
             #FIXME: shouldn't the original R name be also in the __dict__ ?
             self.__dict__[rpyname] = rpyobj
 

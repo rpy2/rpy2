@@ -26,7 +26,7 @@ from rpy2.rinterface import Sexp, SexpVector, SexpClosure, SexpEnvironment, Sexp
 _globalenv = rinterface.globalenv
 
 # missing values
-from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Complex
+from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Complex, NULL
 
 _reval = rinterface.baseenv['eval']
 
@@ -82,6 +82,8 @@ def default_ri2py(o):
     elif isinstance(o, SexpS4):
         res = RS4(o)
     elif isinstance(o, SexpExtPtr):
+        res = o
+    elif o is NULL:
         res = o
     else:
         res = RObject(o)
