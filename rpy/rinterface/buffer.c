@@ -168,32 +168,13 @@ VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
 static Py_ssize_t
 VectorSexp_getsegcount(PySexpObject *self, Py_ssize_t *lenp)
 {
-  printf("getsegcount\n");
-  SEXP sexp = RPY_SEXP(self);
 
-  switch (TYPEOF(sexp)) {
-  case REALSXP:
-    *lenp = GET_LENGTH(sexp) * sizeof(double);
-    break;
-  case INTSXP:
-    *lenp = GET_LENGTH(sexp) * sizeof(int);
-    break;
-  case LGLSXP:
-    *lenp = GET_LENGTH(sexp) * sizeof(int);
-    break;
-  case CPLXSXP:
-    *lenp = GET_LENGTH(sexp) * sizeof(Rcomplex);
-    break;
-  case RAWSXP:
-    *lenp = GET_LENGTH(sexp) * 1;
-    break;
-  default:
-    PyErr_Format(PyExc_ValueError, "Buffer for this type not yet supported.");
-    *lenp = 0;
-    return -1;
+  if (lenp == NULL) {
+    return 1;
+  } else {
+    printf("--->\n");
+    return 0;
   }
-
-  return 0;
 }
 
 static Py_ssize_t
