@@ -19,6 +19,7 @@ from rpy2.robjects.vectors import ListVector, DataFrame
 from rpy2.robjects.environments import Environment
 from rpy2.robjects import Formula, RS4
 from rpy2.robjects import methods
+from rpy2.robjects import conversion
 import process_revents as revents
 
 
@@ -26,12 +27,11 @@ import rpy2.rinterface as ri
 _reval = ri.baseenv['eval']
 _parse = ri.parse
 _StrSexpVector = ri.StrSexpVector
-def eval(self, string):
-    p = _parse(_StrSexpVector((string, )))
+def eval(string):
+    p = _parse(string)
     res = _reval(p)
+    res = conversion.ri2py(res)
     return res
-del(_reval)
-del(_parse)
 del(ri)
 
 class Packages(object):
