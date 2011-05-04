@@ -12,6 +12,16 @@ import packages as packages
 import rpy2.rlike.container as rlc
 
 lazyload_dbfetch = rinterface.baseenv['lazyLoadDBfetch']
+tmp = rinterface.baseenv['R.Version']()
+tmp_major = int(tmp[tmp.do_slot('names').index('major')][0])
+tmp_minor = float(tmp[tmp.do_slot('names').index('minor')][0])
+if (tmp_major > 2) or (tmp_major == 2 and tmp_minor >= 13):
+    readRDS = rinterface.baseenv['readRDS']
+else:
+    readRDS = rinterface.baseenv['.readRDS']
+del(tmp)
+del(tmp_major)
+del(tmp_minor)
 
 class Page(object):
     """ An R documentation page. 
@@ -106,7 +116,7 @@ class Package(object):
         rpath = StrSexpVector((os.path.join(package_path,
                                             'help',
                                             self.__aliases_info), ))
-        rds = rinterface.baseenv['.readRDS'](rpath)
+        rds = readRDS(rpath)
         rds = StrSexpVector(rds)
         class2methods = {}
         object2alias = {}
@@ -127,7 +137,7 @@ class Package(object):
         rpath = StrSexpVector((os.path.join(package_path,
                                             'help',
                                             package_name + '.rdx'), ))
-        self._rdx = conversion.ri2py(rinterface.baseenv['.readRDS'](rpath))
+        self._rdx = conversion.ri2py(readRDS(rpath))
 
 
     def fetch(self, key):
