@@ -95,6 +95,11 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEqual(2.0, xp[0][1][0])
         self.assertEqual(3.0, xp[0][2][0])
 
+    def testParseUnicode(self):
+        xp = rinterface.parse(u'"\u21a7"')
+        self.assertEqual(1, len(xp))
+        self.assertEqual(1, len(xp[0]))
+
     def testRternalize(self):
         def f(x, y):
             return x[0]+y[0]

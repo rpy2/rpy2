@@ -1346,19 +1346,26 @@ EmbeddedR_parse(PyObject *self, PyObject *pystring)
     return NULL;
   }
 
+  PyObject *pybytes;
+  char *string;
 #if (PY_VERSION_HEX < 0x03010000)
-  if (! PyString_Check(pystring)) {
+  if (PyUnicode_Check(pystring)) {
+    pybytes = PyUnicode_AsUTF8String(pystring);
+    string = PyBytes_AsString(pybytes);
+  } else if (PyString_Check(pystring)) {
+    string = PyString_AsString(pystring);
+  } else {
     PyErr_Format(PyExc_ValueError, "The object to parse must be a string.");
     return NULL;
   }
-  char *string = PyString_AsString(pystring);
+
 #else
   if (! PyUnicode_Check(pystring)) {
     PyErr_Format(PyExc_ValueError, "The object to parse must be a unicode string");
     return NULL;
   }
-  PyObject *pybytes = PyUnicode_AsLatin1String(pystring);
-  char *string = PyBytes_AsString(pybytes);
+  pybytes = PyUnicode_AsUTF8String(pystring);
+  string = PyBytes_AsString(pybytes);
 #endif
 
   embeddedR_setlock();
