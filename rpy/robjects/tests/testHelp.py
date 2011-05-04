@@ -3,6 +3,7 @@ import rpy2.robjects as robjects
 import rpy2.robjects.help as rh
 rinterface = robjects.rinterface
 
+
 class PackageTestCase(unittest.TestCase):
 
     def testInit(self):

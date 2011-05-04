@@ -1,8 +1,11 @@
 import unittest
 import rpy2.robjects as robjects
 ri = robjects.rinterface
-import array, time
+import array, time, sys
 import rpy2.rlike.container as rlc
+
+IS_PYTHON3 = sys.version_info[0] == 3
+
 
 rlist = robjects.baseenv["list"]
 
@@ -192,6 +195,16 @@ class FactorVectorTestCase(unittest.TestCase):
             self.assertEqual(a, b)
 
 class DateTimeVectorTestCase(unittest.TestCase):
+    
+    def setUp(self):
+        if IS_PYTHON3:
+            self._accept2dyear = time.accept2dyear
+        time.accept2dyear = False
+
+    def tearDown(self):
+        if IS_PYTHON3:
+            time.accept2dyear = self._accept2dyear
+
     def testPOSIXlt_fromPythonTime(self):
         x = [time.struct_time(range(9)), time.struct_time(range(9))]
         res = robjects.POSIXlt(x)
