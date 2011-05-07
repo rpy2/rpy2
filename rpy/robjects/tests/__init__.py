@@ -11,6 +11,7 @@ import testRobjects
 import testMethods
 import testPackages
 import testHelp
+import testLanguage
 
 # wrap this nicely so a warning is issued if no numpy present
 import testNumpyConversions
@@ -28,6 +29,7 @@ def suite():
     suite_Methods = testMethods.suite()
     suite_Packages = testPackages.suite()
     suite_Help = testHelp.suite()
+    suite_Language = testLanguage.suite()
     alltests = unittest.TestSuite([suite_RObject,
                                    suite_Vector,                   
                                    suite_Array,
@@ -39,7 +41,8 @@ def suite():
                                    suite_Methods,
                                    suite_NumpyConversions,
                                    suite_Packages,
-                                   suite_Help
+                                   suite_Help,
+                                   suite_Language
                                    ])
     return alltests
 
