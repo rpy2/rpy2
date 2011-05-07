@@ -20,19 +20,9 @@ from rpy2.robjects.environments import Environment
 from rpy2.robjects import Formula, RS4
 from rpy2.robjects import methods
 from rpy2.robjects import conversion
+from rpy2.robjects.language import eval
+
 import process_revents as revents
-
-
-import rpy2.rinterface as ri
-_reval = ri.baseenv['eval']
-_parse = ri.parse
-_StrSexpVector = ri.StrSexpVector
-def eval(string):
-    p = _parse(string)
-    res = _reval(p)
-    res = conversion.ri2py(res)
-    return res
-del(ri)
 
 class Packages(object):
     __instance = None
