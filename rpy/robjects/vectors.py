@@ -609,7 +609,9 @@ class POSIXct(POSIXt, FloatVector):
         if isinstance(seq, Sexp):
             super(self, FloatSexpVector)(seq)
         else:
-            #FIXME: check that seq a sequence of time.struct_time objects
+            for elt in seq:
+                if not isinstance(elt, time.struct_time):
+                    raise ValueError('All elements must inherit from time.struct_time')
             as_posixct = baseenv_ri['as.POSIXct']
             origin = StrSexpVector([time.strftime("%Y-%m-%d", 
                                                   time.gmtime(0)),])

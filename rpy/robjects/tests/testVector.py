@@ -219,6 +219,12 @@ class DateTimeVectorTestCase(unittest.TestCase):
         res = robjects.POSIXlt(x)
         self.assertEqual(2, len(x))
 
+    def testPOSIXct_fromInvalidPythonTime(self):
+        x = [time.struct_time(_dateval_tuple), 
+             time.struct_time(_dateval_tuple)]
+        x.append('foo')
+        self.assertRaises(ValueError, robjects.POSIXct, x)
+
     def testPOSIXct_fromPythonTime(self):
         x = [time.struct_time(_dateval_tuple), 
              time.struct_time(_dateval_tuple)]
