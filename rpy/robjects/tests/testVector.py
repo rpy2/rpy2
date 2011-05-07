@@ -194,6 +194,8 @@ class FactorVectorTestCase(unittest.TestCase):
         for a, b in zip(values, it):
             self.assertEqual(a, b)
 
+_dateval_tuple = (1984, 1, 6, 6, 22, 0, 1, 6, 0) 
+
 class DateTimeVectorTestCase(unittest.TestCase):
     
     def setUp(self):
@@ -205,13 +207,21 @@ class DateTimeVectorTestCase(unittest.TestCase):
         if IS_PYTHON3:
             time.accept2dyear = self._accept2dyear
 
+    def testPOSIXlt_fromInvalidPythonTime(self):
+        x = [time.struct_time(_dateval_tuple), 
+             time.struct_time(_dateval_tuple)]
+        x.append('foo')
+        self.assertRaises(ValueError, robjects.POSIXlt, x)
+        
     def testPOSIXlt_fromPythonTime(self):
-        x = [time.struct_time(range(9)), time.struct_time(range(9))]
+        x = [time.struct_time(_dateval_tuple), 
+             time.struct_time(_dateval_tuple)]
         res = robjects.POSIXlt(x)
         self.assertEqual(2, len(x))
 
     def testPOSIXct_fromPythonTime(self):
-        x = [time.struct_time(range(9)), time.struct_time(range(9))]
+        x = [time.struct_time(_dateval_tuple), 
+             time.struct_time(_dateval_tuple)]
         res = robjects.POSIXct(x)
         self.assertEqual(2, len(x))
 
