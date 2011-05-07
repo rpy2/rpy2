@@ -7,6 +7,7 @@ import rpy2.rlike.container as rlc
 
 import sys, copy, os, itertools
 import time
+from time import struct_time, mktime
 
 from rpy2.rinterface import Sexp, SexpVector, StrSexpVector, IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, R_NilValue, NA_Real, NA_Integer, NA_Character, NULL
 
@@ -576,12 +577,12 @@ class POSIXlt(POSIXt, Vector):
             super(self, Vector)(seq)
         else:
             for elt in seq:
-                if not isinstance(elt, time.struct_time):
+                if not isinstance(elt, struct_time):
                     raise ValueError('All elements must inherit from time.struct_time')
             as_posixlt = baseenv_ri['as.POSIXlt']
             origin = StrSexpVector([time.strftime("%Y-%m-%d", 
                                                   time.gmtime(0)),])
-            rvec = FloatSexpVector([time.mktime(x) for x in seq]) 
+            rvec = FloatSexpVector([mktime(x) for x in seq]) 
             sexp = as_posixlt(rvec, origin = origin)
             self.__sexp__ = sexp.__sexp__
 
@@ -589,7 +590,7 @@ class POSIXlt(POSIXt, Vector):
         # "[[" operator returns the components of a time object
         # (and yes, this is confusing)
         tmp = self.rx2(i-1)
-        return time.struct_time(*tuple(tmp))
+        return struct_time(*tuple(tmp))
         
 class POSIXct(POSIXt, FloatVector):
     """ Representation of dates as seconds since Epoch.
@@ -610,12 +611,12 @@ class POSIXct(POSIXt, FloatVector):
             super(self, FloatSexpVector)(seq)
         else:
             for elt in seq:
-                if not isinstance(elt, time.struct_time):
+                if not isinstance(elt, struct_time):
                     raise ValueError('All elements must inherit from time.struct_time')
             as_posixct = baseenv_ri['as.POSIXct']
             origin = StrSexpVector([time.strftime("%Y-%m-%d", 
                                                   time.gmtime(0)),])
-            rvec = FloatSexpVector([time.mktime(x) for x in seq]) 
+            rvec = FloatSexpVector([mktime(x) for x in seq]) 
             sexp = as_posixct(rvec, origin = origin)
             self.__sexp__ = sexp.__sexp__
         
