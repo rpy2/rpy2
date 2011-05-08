@@ -4,6 +4,7 @@ import rpy2.robjects.conversion as conversion
 from rpy2.rlike.container import OrdDict
 from rpy2.robjects.packages import importr
 
+NULL = robjects.NULL
 
 #getmethod = robjects.baseenv.get("getMethod")
 
@@ -193,9 +194,11 @@ def grid_conversion(robj):
     pyobj = original_conversion(robj)
 
     if not isinstance(pyobj, robjects.RS4):
-        rclass = tuple(pyobj.rclass)
+        rcls = pyobj.rclass
+        if rcls is NULL:
+            rcls = (None, )
         try:
-            cls = _grid_dict[rclass[0]]
+            cls = _grid_dict[rcls[0]]
             pyobj = cls(pyobj)
         except KeyError, ke:
             pass

@@ -5,6 +5,8 @@ import rpy2.rinterface as rinterface
 from rpy2.robjects.packages import importr
 import copy
 
+NULL = robjects.NULL
+
 #getmethod = robjects.baseenv.get("getMethod")
 
 rimport = robjects.baseenv.get('library')
@@ -681,7 +683,11 @@ def ggplot2_conversion(robj):
 
     pyobj = original_conversion(robj)
 
-    if 'ggplot' in pyobj.rclass:
+    rcls = pyobj.rclass
+    if rcls is NULL:
+       rcls = (None, )
+
+    if 'ggplot' in rcls:
        pyobj = GGPlot(pyobj)
 
     return pyobj

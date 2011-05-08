@@ -61,6 +61,8 @@ New Features
 
 - tuple `R_VERSION_BUILD` to store the version of R rpy2 was built against
 
+- getter :attr:`Sexp.rclass` to return the R class associated with an object 
+
 :mod:`rpy2.rlike`:
 
 - :class:`container.OrdDict` get proper methods :meth:`keys` and `get`

@@ -355,6 +355,23 @@ PyDoc_STRVAR(Sexp_sexp_doc,
              "Opaque C pointer to the underlying R object");
 
 static PyObject*
+Sexp_rclass_get(PyObject *self)
+{
+  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;;
+  }
+
+  SEXP res_R = GET_CLASS(sexp);
+  PyObject *res = (PyObject *)newPySexpObject(res_R, 1);
+  return res;
+}
+PyDoc_STRVAR(Sexp_rclass_doc,
+             "R class name");
+
+
+static PyObject*
 Sexp_refcount_get(PyObject *self)
 {
   PySexpObject* rpyobj = (PySexpObject*)self;
@@ -608,6 +625,10 @@ static PyGetSetDef Sexp_getsets[] = {
    (getter)Sexp_typeof_get,
    (setter)0,
    Sexp_typeof_doc},
+  {"rclass", 
+   (getter)Sexp_rclass_get,
+   (setter)0,
+   Sexp_rclass_doc},
   {"__sexp__",
    (getter)Sexp_sexp_get,
    (setter)Sexp_sexp_set,
