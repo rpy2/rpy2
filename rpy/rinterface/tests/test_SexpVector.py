@@ -163,7 +163,6 @@ class IntSexpVectorTestCase(unittest.TestCase):
         seq = (1, 'b', 3)
         self.assertRaises(ValueError, ri.IntSexpVector, seq)
 
-
     def testInitFromSeqInvalidOverflow(self):
         v = ri.IntSexpVector((ri.R_LEN_T_MAX-1, ri.R_LEN_T_MAX))
         self.assertEqual(ri.R_LEN_T_MAX-1, v[0])
@@ -224,6 +223,11 @@ class SexpVectorTestCase(unittest.TestCase):
 
     def testMissinfType(self):
         self.assertRaises(ValueError, ri.SexpVector, [2, ])
+
+    def testDel(self):
+        v = ri.IntSexpVector(range(10))
+        self.assertRaises(TypeError, v.__delitem__, 3)
+
 
 #FIXME: end and initializing again causes currently a lot a trouble...
     def testNewWithoutInit(self):

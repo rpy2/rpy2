@@ -370,6 +370,11 @@ VectorSexp_ass_item(PySexpObject* object, Py_ssize_t i, PyObject* val)
   R_len_t i_R, len_R;
   int self_typeof;
 
+  if (val == NULL) {
+    PyErr_Format(PyExc_TypeError, "Object does not support item deletion.");
+    return -1;
+  }
+
   /* Check for 64 bits platforms */
   if (i >= R_LEN_T_MAX) {
     PyErr_Format(PyExc_IndexError, "Index value exceeds what R can handle.");
