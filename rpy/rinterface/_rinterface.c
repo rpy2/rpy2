@@ -2100,21 +2100,6 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   embeddedR_setlock();
 
 
-  if (value == NULL) {
-    /* deletion of the item 'key' */
-    
-  }
-
-  int is_PySexpObject = PyObject_TypeCheck(value, &Sexp_Type);
-  if (! is_PySexpObject) {
-    embeddedR_freelock();
-    PyErr_Format(PyExc_ValueError, 
-                 "All parameters must be of type Sexp_Type.");
-    return -1;
-  }
-
-
-
   SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
@@ -2124,6 +2109,72 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 #endif
     return -1;
   }
+
+
+  SEXP sym;
+  
+  if (value == NULL) {
+    /* deletion of the item 'key' */
+    if (rho_R == R_BaseNamespace) {
+      PyErr_Format(PyExc_ValueError, "Variables from the R base namespace cannot be removed.");
+      embeddedR_freelock();
+#if (PY_VERSION_HEX >= 0x03010000)
+      Py_DECREF(pybytes);
+#endif
+      return -1;
+    }
+    if (rho_R == R_BaseEnv) {
+      PyErr_Format(PyExc_ValueError, "Variables from the R base environment cannot be removed.");
+      embeddedR_freelock();
+#if (PY_VERSION_HEX >= 0x03010000)
+      Py_DECREF(pybytes);
+#endif
+      return -1;
+    }
+    if (rho_R == R_EmptyEnv) {
+      PyErr_Format(PyExc_ValueError, "Cannot remove variables from the empty environment.");
+      embeddedR_freelock();
+#if (PY_VERSION_HEX >= 0x03010000)
+      Py_DECREF(pybytes);
+#endif
+      return -1;
+    }
+    if (R_EnvironmentIsLocked(rho_R)) {
+      PyErr_Format(PyExc_ValueError, "Cannot remove bindings from a locked environment.");
+      embeddedR_freelock();
+#if (PY_VERSION_HEX >= 0x03010000)
+      Py_DECREF(pybytes);
+#endif
+      return -1;
+    }
+    sym = Rf_install(name);
+    SEXP res_rm = rpy_remove(sym, rho_R, R_BaseEnv);
+    if (! res_rm) {
+      embeddedR_freelock();
+#if (PY_VERSION_HEX >= 0x03010000)
+      Py_DECREF(pybytes);
+#endif
+      PyErr_Format(PyExc_RuntimeError, "Could not remove variable from environment.");
+      return -1;
+    } else {
+      embeddedR_freelock();
+#if (PY_VERSION_HEX >= 0x03010000)
+      Py_DECREF(pybytes);
+#endif
+      return 0;
+    }
+  }
+
+  int is_PySexpObject = PyObject_TypeCheck(value, &Sexp_Type);
+  if (! is_PySexpObject) {
+#if (PY_VERSION_HEX >= 0x03010000)
+    Py_DECREF(pybytes);
+#endif    embeddedR_freelock();
+    PyErr_Format(PyExc_ValueError, 
+                 "All parameters must be of type Sexp_Type.");
+    return -1;
+  }
+
 
   SEXP sexp_copy;
   SEXP sexp = RPY_SEXP((PySexpObject *)value);
@@ -2135,10 +2186,10 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 #endif
     return -1;
   }
-  SEXP sym = Rf_install(name);
 #if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
 #endif
+  sym = Rf_install(name);
   PROTECT(sexp_copy = Rf_duplicate(sexp));
   Rf_defineVar(sym, sexp_copy, rho_R);
   UNPROTECT(1);

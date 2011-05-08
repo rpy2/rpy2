@@ -124,3 +124,33 @@ SEXP rpy_list_attr(SEXP sexp)
   return res;
 }
 
+SEXP rpy_remove(SEXP symbol, SEXP env, SEXP rho)
+{
+  SEXP c_R, call_R, res, fun_R;
+
+  PROTECT(fun_R = rpy_findFun(install("rm"), rho));
+
+  if(!isEnvironment(rho)) error("'rho' should be an environment");
+  /* incatation to summon R */
+  PROTECT(c_R = call_R = allocList(2+1));
+  SET_TYPEOF(c_R, LANGSXP);
+  SETCAR(c_R, fun_R);
+  c_R = CDR(c_R);
+
+  /* first argument is the name of the variable to be removed */
+  SETCAR(c_R, symbol);
+  SET_TAG(c_R, install("list"));
+  c_R = CDR(c_R);
+
+  /* second argument is the environment in which the variable 
+     should be removed  */
+  SETCAR(c_R, env);
+  SET_TAG(c_R, install("envir"));
+  c_R = CDR(c_R);
+
+  int error = 0;
+  PROTECT(res = R_tryEval(call_R, rho, &error));
+
+  UNPROTECT(3);
+  return res;
+}
