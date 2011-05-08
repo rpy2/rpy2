@@ -230,3 +230,140 @@ RNULL_Type_New(int new)
   RPY_NA_NEW(RNULL_Type, RNULLType_tp_new)
 }
 
+
+
+
+/* Unbound marker value */
+
+PyDoc_STRVAR(UnboundValue_Type_doc,
+"Unbound marker (R_UnboundValue in R's C API)."
+);
+
+#if (PY_VERSION_HEX < 0x03010000)
+staticforward PyTypeObject UnboundValue_Type;
+#else
+static PyTypeObject UnboundValue_Type;
+#endif
+
+static PyObject*
+UnboundValueType_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  static PySexpObject *self = NULL;
+  static char *kwlist[] = {0};
+
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
+    return NULL;
+  }
+
+  if (self == NULL) {
+    self = (PySexpObject*)(Sexp_Type.tp_new(&UnboundValue_Type, Py_None, Py_None));
+    if (self == NULL) {
+      return NULL;
+    }
+  }
+  Py_XINCREF(self);
+  return (PyObject *)self;
+}
+
+static PyObject*
+UnboundValueType_tp_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+  static char *kwlist[] = {0};
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
+    return NULL;
+  }
+  return 0;
+}
+
+static PyObject*
+UnboundValueType_repr(PyObject *self)
+{
+  static PyObject* repr = NULL;
+  if (repr == NULL) {
+#if (PY_VERSION_HEX < 0x03010000)
+    repr = PyString_FromString("rpy2.rinterface.UnboundValue");
+#else
+    repr = PyUnicode_FromString("rpy2.rinterface.UnboundValue");
+#endif
+  }
+  Py_XINCREF(repr);
+  return repr;
+}
+
+static PyObject*
+UnboundValueType_str(PyObject *self)
+{
+  static PyObject* repr = NULL;
+  if (repr == NULL) {
+#if (PY_VERSION_HEX < 0x03010000)  
+    repr = PyString_FromString("UnboundValue");
+#else
+    repr = PyUnicode_FromString("UnboundValue");
+#endif
+  }
+  Py_XINCREF(repr);
+  return repr;
+}
+
+static PyTypeObject UnboundValue_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+#if (PY_VERSION_HEX < 0x03010000)
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+#else
+	PyVarObject_HEAD_INIT(NULL, 0)
+#endif
+        "rpy2.rinterface.UnboundValueType",       /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        UnboundValueType_repr,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,                      /*tp_call*/
+        UnboundValueType_str,                      /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+        0,                      /*tp_as_buffer*/
+#if (PY_VERSION_HEX < 0x03010000)
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
+#else
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE, /*tp_flags*/
+#endif
+        UnboundValue_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0, //NAInteger_methods,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,                      /*tp_getset*/
+        &Sexp_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        (initproc)UnboundValueType_tp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        UnboundValueType_tp_new,                      /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
+
+
+static PyObject*
+UnboundValue_Type_New(int new)
+{
+  RPY_NA_NEW(UnboundValue_Type, UnboundValueType_tp_new)
+}
+

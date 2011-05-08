@@ -1198,6 +1198,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   RPY_SEXP(emptyEnv) = R_EmptyEnv;
   RPY_SEXP((PySexpObject *)MissingArg_Type_New(0)) = R_MissingArg;
   RPY_SEXP((PySexpObject *)RNULL_Type_New(0)) = R_NilValue;
+  RPY_SEXP((PySexpObject *)UnboundValue_Type_New(0)) = R_UnboundValue;
   RPY_SEXP(rpy_R_NilValue) = R_NilValue;
 
   errMessage_SEXP = findVar(install("geterrmessage"), 
@@ -2082,13 +2083,6 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   }
 #endif
 
-  int is_PySexpObject = PyObject_TypeCheck(value, &Sexp_Type);
-  if (! is_PySexpObject) {
-    PyErr_Format(PyExc_ValueError, 
-                 "All parameters must be of type Sexp_Type.");
-    return -1;
-  }
-
 #if (PY_VERSION_HEX < 0x03010000)
   name = PyString_AsString(key);
 #else
@@ -2104,6 +2098,22 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
     return -1;
   }
   embeddedR_setlock();
+
+
+  if (value == NULL) {
+    /* deletion of the item 'key' */
+    
+  }
+
+  int is_PySexpObject = PyObject_TypeCheck(value, &Sexp_Type);
+  if (! is_PySexpObject) {
+    embeddedR_freelock();
+    PyErr_Format(PyExc_ValueError, 
+                 "All parameters must be of type Sexp_Type.");
+    return -1;
+  }
+
+
 
   SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
@@ -3359,6 +3369,17 @@ PyInit__rinterface(void)
   }
   PyModule_AddObject(m, "MissingArgType", (PyObject *)&MissingArg_Type);
   PyModule_AddObject(m, "MissingArg", MissingArg_Type_New(1));
+
+  /* Unbound */
+  if (PyType_Ready(&UnboundValue_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
+    return;
+#else
+    return NULL;
+#endif
+  }
+  PyModule_AddObject(m, "UnboundValueType", (PyObject *)&UnboundValue_Type);
+  PyModule_AddObject(m, "UnboundValue", UnboundValue_Type_New(1));
 
   /* NULL */
   if (PyType_Ready(&RNULL_Type) < 0) {

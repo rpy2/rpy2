@@ -46,7 +46,9 @@ New Features
 - :func:`rpy2.rinterface.rternalise` to wrap Python function as :class:`SexpClosure` that can
   be called by R just as it was a function of its own.
 
-- :class:`rpy2.rinterface.NULL` for the R NULL value (singleton)
+- :class:`rpy2.rinterface.RNULLType` for R's C-level NULL value and 
+  :class:`rpy2.rinterface.UnboundValueType` for R's C-level R_UnboundValue
+  (both singletons).
 
 - :meth:`rinterface.SexpVector.index`, of similar behaviour to :meth:`list.index`.
 

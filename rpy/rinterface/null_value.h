@@ -6,6 +6,7 @@
 #endif
 
 static PyTypeObject RNULL_Type;
+static PyTypeObject UnboundValue_Type;
 
 #endif
 
