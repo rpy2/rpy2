@@ -131,7 +131,7 @@ SEXP rpy_remove(SEXP symbol, SEXP env, SEXP rho)
   PROTECT(fun_R = rpy_findFun(install("rm"), rho));
 
   if(!isEnvironment(rho)) error("'rho' should be an environment");
-  /* incatation to summon R */
+  /* incantation to summon R */
   PROTECT(c_R = call_R = allocList(2+1));
   SET_TYPEOF(c_R, LANGSXP);
   SETCAR(c_R, fun_R);
@@ -139,7 +139,7 @@ SEXP rpy_remove(SEXP symbol, SEXP env, SEXP rho)
 
   /* first argument is the name of the variable to be removed */
   SETCAR(c_R, symbol);
-  SET_TAG(c_R, install("list"));
+  //SET_TAG(c_R, install("list"));
   c_R = CDR(c_R);
 
   /* second argument is the environment in which the variable 
