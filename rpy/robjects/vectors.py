@@ -267,7 +267,7 @@ class Vector(RObjectMixin, SexpVector):
 
     def __repr_content__(self):
         def p_str(x, max_width = 8):
-            if x is NA_Real or x is NA_Integer or x is NA_Character:
+            if x is NA_Real or x is NA_Integer or x is NA_Character or x is NA_Logical:
                 res = repr(x)
             elif isinstance(x, long) or isinstance(x, int):
                 res = '%8i' %x
