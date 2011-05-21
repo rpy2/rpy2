@@ -49,7 +49,6 @@ else:
 from distutils.core import Extension
 
 
-
 class build(_build):
     user_options = _build.user_options + \
         [
@@ -330,6 +329,13 @@ def getRinterface_ext():
 
     define_macros.append(('CSTACK_DEFNS', 1))
     define_macros.append(('RIF_HAS_RSIGHAND', 1))
+
+
+    if sys.byteorder == 'big':
+        define_macros.append(('RPY_BIGENDIAN', 1))
+    else:
+        pass
+
 
     include_dirs = []
     
