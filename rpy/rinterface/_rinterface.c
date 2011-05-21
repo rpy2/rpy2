@@ -2109,7 +2109,7 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 #endif
     return -1;
   }
-
+  
 
   SEXP sym;
   
@@ -2169,7 +2169,8 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   if (! is_PySexpObject) {
 #if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
-#endif    embeddedR_freelock();
+#endif    
+    embeddedR_freelock();
     PyErr_Format(PyExc_ValueError, 
                  "All parameters must be of type Sexp_Type.");
     return -1;

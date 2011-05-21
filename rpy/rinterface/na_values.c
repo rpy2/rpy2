@@ -418,8 +418,40 @@ PyDoc_STRVAR(NAReal_Type_doc,
 static PyObject*
 NAReal_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-  RPY_NA_TP_NEW("NARealType", PyFloat_Type, PyFloat_FromDouble, 
-                (double)NA_REAL)
+  //printf("--->0x%llx\n", *(unsigned long long *)&(NAREAL_IEEE.value));
+  static PyObject *self = NULL;
+  static char *kwlist[] = {0};
+  PyObject *py_value;
+
+  assert(PyType_IsSubtype(type, &PyFloat_Type));
+
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
+    return NULL;
+  }
+
+  if (self == NULL) {
+    //py_value = PyFloat_FromDouble((double)(NAREAL_IEEE.value));
+    //(double)0x7ff00000000007a2
+    //NA_REAL
+    py_value = PyFloat_FromDouble(NA_REAL);
+    if (py_value == NULL) {
+      return NULL;
+    }
+    assert(PyFloat_CheckExact(py_value));
+    self = type->tp_alloc(type, 0);
+    if (self == NULL) {
+      //printf("--->\n");
+      Py_DECREF(py_value);
+      return NULL;
+    }
+    ((PyFloatObject *)self)->ob_fval = ((PyFloatObject *)py_value)->ob_fval;
+    //((PyFloatObject *)self)->ob_fval = (double)(NAREAL_IEEE.value);
+    Py_DECREF(py_value);
+  }
+  Py_INCREF(self);
+  return self;
+  /* RPY_NA_TP_NEW("NARealType", PyFloat_Type, PyFloat_FromDouble, */
+  /* 		  NA_REAL); */
 }
 
 static PyObject*
