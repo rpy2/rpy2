@@ -1189,7 +1189,7 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
       if ((l > (long)INT_MAX) || (l < (long)INT_MIN)) {
 	UNPROTECT(1);
 	PyErr_Format(PyExc_OverflowError,
-		     "Integer overflow with element %i.",
+		     "Integer overflow with element %zd.",
 		     ii);	
 	return -1;
       } else {
@@ -1198,7 +1198,7 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
     } else {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
-		   "Error while trying to convert element %i to an integer.",
+		   "Error while trying to convert element %zd to an integer.",
 		   ii);
       return -1;
     }
@@ -1237,7 +1237,7 @@ RPy_IterToINTSXP(PyObject *object, const Py_ssize_t length, SEXP *sexpp)
     if (item == NULL) {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
-		   "Error while trying to retrive element %i in the iterator.",
+		   "Error while trying to retrive element %zd in the iterator.",
 		   ii);
       return -1;
     }
@@ -1257,7 +1257,7 @@ RPy_IterToINTSXP(PyObject *object, const Py_ssize_t length, SEXP *sexpp)
       if ((l > (long)INT_MAX) || (l < (long)INT_MIN)) {
 	UNPROTECT(1);
 	PyErr_Format(PyExc_OverflowError,
-		     "Integer overflow with element %i.",
+		     "Integer overflow with element %zd.",
 		     ii);	
 	return -1;
       } else {
@@ -1266,7 +1266,7 @@ RPy_IterToINTSXP(PyObject *object, const Py_ssize_t length, SEXP *sexpp)
     } else {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
-		   "Error while trying to convert element %i to an integer.",
+		   "Error while trying to convert element %zd to an integer.",
 		   ii);
       return -1;
     }
@@ -1421,7 +1421,7 @@ RPy_SeqToREALSXP(PyObject *object, SEXP *sexpp)
     } else {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
-		   "Error while trying to convert element %i to a double.",
+		   "Error while trying to convert element %zd to a double.",
 		   ii);
       return -1;
     }
@@ -1457,7 +1457,7 @@ RPy_IterToREALSXP(PyObject *object, Py_ssize_t length, SEXP *sexpp)
     if (item == NULL) {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
-		   "Error while trying to retrive element %i in the iterator.",
+		   "Error while trying to retrive element %zd in the iterator.",
 		   ii);
       return -1;
     }
@@ -1470,7 +1470,7 @@ RPy_IterToREALSXP(PyObject *object, Py_ssize_t length, SEXP *sexpp)
     } else {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
-		   "Error while trying to convert element %i to a double.",
+		   "Error while trying to convert element %zd to a double.",
 		   ii);
       return -1;
     }
@@ -1627,7 +1627,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
       if (item_tmp == NULL) {
 	UNPROTECT(1);
 	PyErr_Format(PyExc_ValueError,
-		     "Error raised by codec for element %i.",
+		     "Error raised by codec for element %zd.",
 		     ii);	
 	return -1;	
       }
@@ -1643,7 +1643,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
       if (item_tmp == NULL) {
 	UNPROTECT(1);
 	PyErr_Format(PyExc_ValueError,
-		     "Error raised by codec for element %i.",
+		     "Error raised by codec for element %zd.",
 		     ii);	
 	return -1;	
       }
@@ -1657,7 +1657,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
       if (item_tmp == NULL) {
 	UNPROTECT(1);
 	PyErr_Format(PyExc_ValueError,
-		     "Error raised when calling str() for element %i.",
+		     "Error raised when calling str() for element %zd.",
 		     ii);	
 	return -1;	
       }
@@ -1668,7 +1668,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
       if (item_tmp2 == NULL) {
 	UNPROTECT(1);
 	PyErr_Format(PyExc_ValueError,
-		     "Error raised by codec for str(element %i).",
+		     "Error raised by codec for str(element %zd).",
 		     ii);	
 	return -1;	
       }
@@ -1834,7 +1834,7 @@ RPy_SeqToLGLSXP(PyObject *object, SEXP *sexpp)
 	/* FIXME: PyObject_Not() will have raised an exception,
 	* may be the text for the exception should be reported ?*/
 	PyErr_Format(PyExc_ValueError,
-		     "Error while evaluating 'not <element %i>'.",
+		     "Error while evaluating 'not <element %zd>'.",
 		   ii);
 	return -1;
 	break;
@@ -1987,13 +1987,13 @@ RPy_SeqToRAWSXP(PyObject *object, SEXP *sexpp)
     if (ok == -1) {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
-		   "Element %i is not a byte.",
+		   "Element %zd is not a byte.",
 		   ii);
       return -1;      
     } else if (size_tmp > 1) {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
-		   "Element %i contains more than one byte.",
+		   "Element %zd contains more than one byte.",
 		   ii);
       return -1;
     }
@@ -2129,7 +2129,7 @@ RPy_SeqToCPLXSXP(PyObject *object, SEXP *sexpp)
     } else {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
-		   "Element %i is not a complex",
+		   "Element %zd is not a complex",
 		   ii);
       return -1;
     }
@@ -2326,7 +2326,7 @@ RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
     } else {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
-		   "Element %i cannot be implicitly cast to an R object.",
+		   "Element %zd cannot be implicitly cast to an R object.",
 		   ii);
       return -1;
     }
