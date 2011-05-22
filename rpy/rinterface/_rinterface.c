@@ -2148,7 +2148,19 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
       return -1;
     }
     sym = Rf_install(name);
-    SEXP res_rm = rpy_remove(sym, rho_R, R_BaseEnv);
+    SEXP res_rm;
+    res_rm = findVarInFrame(rho_R, sym);
+    
+    if (res_rm == R_UnboundValue) {
+      PyErr_Format(PyExc_KeyError, "'%s' not found", name);
+#if (PY_VERSION_HEX >= 0x03010000)
+      Py_DECREF(pybytes);
+#endif
+      embeddedR_freelock();
+      return -1;
+    }
+    
+    res_rm = rpy_remove(sym, rho_R, R_BaseEnv);
     if (! res_rm) {
       embeddedR_freelock();
 #if (PY_VERSION_HEX >= 0x03010000)

@@ -113,6 +113,9 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         self.assertEqual(1, len(env))
         self.assertTrue('b' in env)
 
+    def testDelKeyError(self):
+        self.assertRaises(KeyError, rinterface.globalenv.__delitem__, 'foo')
+
     def testDelBaseError(self):
         self.assertRaises(ValueError, rinterface.baseenv.__delitem__, 'letters')
 
