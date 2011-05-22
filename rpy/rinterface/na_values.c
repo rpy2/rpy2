@@ -364,7 +364,7 @@ static PyTypeObject NALogical_Type = {
 	PyVarObject_HEAD_INIT(NULL, 0)
 #endif
         "rpy2.rinterface.NALogicalType",       /*tp_name*/
-        sizeof(PyObject),   /*tp_basicsize*/
+        sizeof(PyLongObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
         0, /*tp_dealloc*/
