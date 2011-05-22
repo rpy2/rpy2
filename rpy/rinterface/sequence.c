@@ -155,7 +155,7 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
       break;
     case CPLXSXP:
       vc = COMPLEX_POINTER(*sexp)[i_R];
-      if (vc.r == NA_REAL && vc.i == NA_REAL) {
+      if (vc.r == NAREAL_IEEE.value && vc.i == NAREAL_IEEE.value) {
 	res = NAComplex_New(1);
       } else {
 	res = PyComplex_FromDoubles(vc.r, vc.i);

@@ -703,26 +703,18 @@ PyDoc_STRVAR(NAComplex_Type_doc,
 static PyObject*
 NAComplex_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-  static PyObject *self = NULL;
-  static char *kwlist[] = {0};
+  //static PyObject *self = NULL;
+  //static char *kwlist[] = {0};
+
+  Py_complex pyvalue = {(double)NAREAL_IEEE.value,
+			(double)NAREAL_IEEE.value};
+
    
   assert(PyType_IsSubtype(type, &PyComplex_Type));
 
-  if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
-    return NULL;
-  }
+  RPY_NA_TP_NEW('Complex', PyComplex_Type, 
+		PyComplex_FromCComplex, pyvalue);
 
-  if (self == NULL) {
-    Py_complex py_value;
-    py_value.real = (double)NA_REAL;
-    py_value.imag = (double)NA_REAL;
-    self = PyComplex_FromCComplex(py_value);
-    if (self == NULL) {
-      return NULL;
-    }
-  }
-  Py_XINCREF(self);                                                     \
-  return (PyObject *)self;        
 }
 
 static PyObject*
