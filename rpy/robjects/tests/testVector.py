@@ -157,7 +157,7 @@ class VectorTestCase(unittest.TestCase):
     def testRepr(self):
         vec = robjects.IntVector((1,2,3))
         s = repr(vec).split('\n')
-        self.assertEquals('[       1,        2,        3]', s[1])
+        self.assertEqual('[       1,        2,        3]', s[1])
 
     def testIteritems(self):
         vec = robjects.IntVector(range(3))
