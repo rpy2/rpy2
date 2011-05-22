@@ -9,7 +9,7 @@ import sys, copy, os, itertools
 import time
 from time import struct_time, mktime
 
-from rpy2.rinterface import Sexp, SexpVector, StrSexpVector, IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, R_NilValue, NA_Real, NA_Integer, NA_Character, NULL
+from rpy2.rinterface import Sexp, SexpVector, StrSexpVector, IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, R_NilValue, NA_Real, NA_Integer, NA_Character, NA_Logical, NULL
 
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
