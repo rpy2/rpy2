@@ -177,6 +177,7 @@ class CallbacksTestCase(unittest.TestCase):
         rinterface.set_readconsole(rinterface.consoleRead)
         rinterface.set_readconsole(rinterface.consoleFlush)
         rinterface.set_choosefile(rinterface.chooseFile)
+        sys.last_value = None
 
     def testSetWriteConsole(self):
         buf = []
@@ -206,9 +207,10 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = stderr
         tmp_file.flush()
         tmp_file.seek(0)
-        errorstring = ''.join(tmp_file.readlines())
-        self.assertTrue(errorstring.startswith('Traceback'))
-        tmp_file.close()
+        self.assertEquals("Doesn't work.", str(sys.last_value))
+        #errorstring = ''.join(tmp_file.readlines())
+        #self.assertTrue(errorstring.startswith('Traceback'))
+        #tmp_file.close()
 
     @onlyAQUAorWindows
     def testSetFlushConsole(self):
@@ -239,9 +241,10 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = stderr
         tmp_file.flush()
         tmp_file.seek(0)
-        errorstring = ''.join(tmp_file.readlines())
-        self.assertTrue(errorstring.startswith('Traceback'))
-        tmp_file.close()
+        self.assertEquals("Doesn't work.", str(sys.last_value))
+        #errorstring = ''.join(tmp_file.readlines())
+        #self.assertTrue(errorstring.startswith('Traceback'))
+        #tmp_file.close()
 
     def testSetReadConsole(self):
         yes = "yes\n"
@@ -270,9 +273,10 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = stderr
         tmp_file.flush()
         tmp_file.seek(0)
-        errorstring = ''.join(tmp_file.readlines())
-        self.assertTrue(errorstring.startswith('Traceback'))
-        tmp_file.close()
+        self.assertEquals("Doesn't work.", str(sys.last_value))
+        #errorstring = ''.join(tmp_file.readlines())
+        #self.assertTrue(errorstring.startswith('Traceback'))
+        #tmp_file.close()
         
     def testSetShowMessage(self):
         def f(message):
@@ -317,9 +321,10 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = stderr
         tmp_file.flush()
         tmp_file.seek(0)
-        errorstring = ''.join(tmp_file.readlines())
-        self.assertTrue(errorstring.startswith('Traceback'))
-        tmp_file.close()
+        self.assertEquals("Doesn't work.", str(sys.last_value))
+        #errorstring = ''.join(tmp_file.readlines())
+        #self.assertTrue(errorstring.startswith('Traceback'))
+        #tmp_file.close()
 
     def testSetShowFiles(self):
         sf = []
@@ -339,7 +344,7 @@ class CallbacksTestCase(unittest.TestCase):
 
     def testShowFilesWithError(self):
         def f(fileheaders, wtitle, fdel, pager):
-            raise Exception("Doesn't work")
+            raise Exception("Doesn't work.")
 
         rinterface.set_showfiles(f)
         file_path = rinterface.baseenv["file.path"]
@@ -360,9 +365,10 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = stderr
         tmp_file.flush()
         tmp_file.seek(0)
-        errorstring = ''.join(tmp_file.readlines())
-        self.assertTrue(errorstring.startswith('Traceback'))
-        tmp_file.close()
+        self.assertEquals("Doesn't work.", str(sys.last_value))
+        #errorstring = ''.join(tmp_file.readlines())
+        #self.assertTrue(errorstring.startswith('Traceback'))
+        #tmp_file.close()
 
     def testSetCleanUp(self):
         orig_cleanup = rinterface.get_cleanup()
