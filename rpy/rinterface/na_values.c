@@ -170,7 +170,7 @@ static PyTypeObject NAInteger_Type = {
 	PyVarObject_HEAD_INIT(NULL, 0)
 #endif
         "rpy2.rinterface.NAIntegerType",       /*tp_name*/
-        sizeof(PyObject),   /*tp_basicsize*/
+        sizeof(PyLongObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
         0, /*tp_dealloc*/
@@ -640,7 +640,11 @@ static PyTypeObject NACharacter_Type = {
 	PyVarObject_HEAD_INIT(NULL, 0)
 #endif
         "rpy2.rinterface.NACharacterType",       /*tp_name*/
-        sizeof(PyObject),   /*tp_basicsize*/
+#if (PY_VERSION_HEX < 0x03010000)
+        sizeof(PyStringObject),             /*tp_basicsize*/
+#else
+	sizeof(PyUnicodeOjbect),             /*tp_basicsize*/
+#endif
         0,                      /*tp_itemsize*/
         /* methods */
         0, /*tp_dealloc*/
@@ -813,7 +817,7 @@ static PyTypeObject NAComplex_Type = {
 	PyVarObject_HEAD_INIT(NULL, 0)
 #endif
         "rpy2.rinterface.NAComplexType",       /*tp_name*/
-        sizeof(PyObject),   /*tp_basicsize*/
+        sizeof(PyComplexObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
         0, /*tp_dealloc*/
