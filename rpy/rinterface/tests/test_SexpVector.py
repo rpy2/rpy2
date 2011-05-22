@@ -1,5 +1,5 @@
 import unittest
-import sys
+import sys, struct
 import rpy2.rinterface as ri
 
 ri.initr()
@@ -167,7 +167,10 @@ class IntSexpVectorTestCase(unittest.TestCase):
         v = ri.IntSexpVector((ri.R_LEN_T_MAX-1, ri.R_LEN_T_MAX))
         self.assertEqual(ri.R_LEN_T_MAX-1, v[0])
         self.assertEqual(ri.R_LEN_T_MAX, v[1])
-        self.assertRaises(OverflowError, ri.IntSexpVector, (ri.R_LEN_T_MAX+1, ))
+        # check 64-bit architecture
+        if struct.calcsize("P") >= 8:
+            self.assertRaises(OverflowError, 
+                              ri.IntSexpVector, (ri.R_LEN_T_MAX+1, ))
 
 class FloatSexpVectorTestCase(unittest.TestCase):
     def testInitFromSeq(self):
