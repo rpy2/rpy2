@@ -193,7 +193,7 @@ class ByteSexpVectorTestCase(unittest.TestCase):
 
     def testInitFromBytes(self):
         if IS_PYTHON3:
-            seq = b'abc'
+            seq = (b'a', b'b', b'c')
         else:
             seq = 'abc'
         v = ri.ByteSexpVector(seq)
