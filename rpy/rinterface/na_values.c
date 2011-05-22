@@ -643,7 +643,7 @@ static PyTypeObject NACharacter_Type = {
 #if (PY_VERSION_HEX < 0x03010000)
         sizeof(PyStringObject),             /*tp_basicsize*/
 #else
-	sizeof(PyUnicodeOjbect),             /*tp_basicsize*/
+	sizeof(PyUnicodeObject),             /*tp_basicsize*/
 #endif
         0,                      /*tp_itemsize*/
         /* methods */
