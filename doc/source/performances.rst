@@ -97,23 +97,24 @@ code runs.
 =============== ============================================= ==========
 Function        Sequence                                      Speedup   
 =============== ============================================= ==========
-builtin python  array.array                                   42.16     
-builtin python  FloatVector                                   0.56      
-builtin python  list                                          24.97     
-builtin python  numpy.array                                   1.82      
-builtin python  SexpVector                                    14.58     
-pure python     array.array                                   8.08      
-pure python     FloatVector                                   0.56      
-pure python     list                                          9.96      
-pure python     numpy.array                                   1.62      
-pure python     SexpVector                                    6.51      
-reduce python   array.array                                   5.49      
-reduce python   FloatVector                                   0.50      
-reduce python   list                                          5.48      
-reduce python   numpy.array                                   1.34      
-reduce python   SexpVector                                    3.93      
+builtin python  array.array                                   33.18     
+builtin python  FloatVector                                   0.70      
+builtin python  list                                          37.43     
+builtin python  numpy.array                                   1.46      
+builtin python  SexpVector                                    21.12     
+pure python     array.array                                   10.13     
+pure python     FloatVector                                   0.65      
+pure python     list                                          11.53     
+pure python     numpy.array                                   1.32      
+pure python     SexpVector                                    7.03      
+reduce python   array.array                                   5.22      
+reduce python   FloatVector                                   0.60      
+reduce python   list                                          5.19      
+reduce python   numpy.array                                   1.37      
+reduce python   SexpVector                                    5.13      
 R               R                                             1.00      
 =============== ============================================= ==========
+
 
 
 The object one iterates through matters much for the speed, and
