@@ -154,6 +154,11 @@ class VectorTestCase(unittest.TestCase):
         vec[0] = robjects.NA_Character
         self.assertTrue(robjects.baseenv['is.na'](vec)[0])
 
+    def testRepr(self):
+        vec = robjects.IntVector((1,2,3))
+        s = repr(vec).split('\n')
+        self.assertEquals('[       1,        2,        3]', s[1])
+
     def testIteritems(self):
         vec = robjects.IntVector(range(3))
         vec.names = robjects.StrVector('abc')
