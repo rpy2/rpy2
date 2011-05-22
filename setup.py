@@ -237,7 +237,8 @@ class RConfig(object):
                              '^-l(?P<libraries>[^ ]+)$',
                              '^-I(?P<include_dirs>[^ ]+)$',
                              '^(?P<framework_dirs>-F[^ ]+?)$',
-                             '^(?P<frameworks>-framework [^ ]+)$')
+                             '^(?P<frameworks>-framework [^ ]+)$',
+                             '^(?P<extra_link_args>-Wl[^ ]+)$')
         pp = [re.compile(x) for x in possible_patterns]
         # sanity check of what is returned into rconfig
         rconfig_m = None        
