@@ -60,6 +60,13 @@ in the module variable `initoptions`.
    your path (:envvar:`PATH` on unix-alikes, or :envvar:`Path` on Microsoft Windows) or
    have the environment variable :envvar:`R_HOME` defined. 
 
+   Should the initialization fail, a mismatch between the version of the R
+   rpy2 was compiled against and the R rpy2 is run with should be investigated.
+   The variable :attr:`rpy2.rinterface.R_BUILD_VERSION` contains information
+   about the R version rpy2 was built against.
+   rpy2 is relatively independent of R versions, but changes in the R C API
+   might cause problems.
+
 Ending R
 ^^^^^^^^
 
