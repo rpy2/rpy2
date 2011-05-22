@@ -57,7 +57,7 @@ In Python it can then write:
    the signature of the R function, and that not much can be guessed from the
    R ellipsis '...' whenever present. Arguments falling in the '...' will need
    to have their R names passed to the constructor for
-   :class:`functions.SignatureTranslatedFunction`as show in the example below:
+   :class:`functions.SignatureTranslatedFunction` as show in the example below:
 
    >>> graphics = importr('graphics')
    >>> graphics.par(cex_axis = 0.5)
