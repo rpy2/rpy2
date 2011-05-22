@@ -726,8 +726,8 @@ Convenience classes are provided to create vectors of a given type:
 
 
 
-:meth:`__getitem__` / :meth:`__setitem__`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:meth:`__getitem__` / :meth:`__setitem__` / :meth:`__delitem__`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The *[* operator will only look for a symbol in the environment
 without looking further in the path of enclosing environments.
@@ -744,7 +744,16 @@ simple as assigning a value to a key in a Python dictionary:
 
 >>> x = rinterface.IntSexpVector([123, ])
 >>> rinterface.globalenv["x"] = x
+>>> len(x)
+1
+>>> tuple(rinterface.globalenv)
+('x', )
 
+Removing an element can be done like one would do it for a Python :class:`dict`:
+
+>>> del(rinterface.globalenv['x'])
+>>> len(x)
+0
 
 .. note::
    Not all R environment are hash tables, and this may
