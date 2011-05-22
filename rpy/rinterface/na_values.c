@@ -430,10 +430,10 @@ NAReal_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   }
 
   if (self == NULL) {
-    //py_value = PyFloat_FromDouble((double)(NAREAL_IEEE.value));
+    py_value = PyFloat_FromDouble((double)(NAREAL_IEEE.value));
     //(double)0x7ff00000000007a2
     //NA_REAL
-    py_value = PyFloat_FromDouble(NA_REAL);
+    //py_value = PyFloat_FromDouble(NA_REAL);
     if (py_value == NULL) {
       return NULL;
     }
@@ -546,7 +546,7 @@ static PyTypeObject NAReal_Type = {
 	PyVarObject_HEAD_INIT(NULL, 0)
 #endif
         "rpy2.rinterface.NARealType",       /*tp_name*/
-        sizeof(PyObject),   /*tp_basicsize*/
+        sizeof(PyFloatObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
         /* methods */
         0, /*tp_dealloc*/
