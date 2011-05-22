@@ -9,7 +9,7 @@ class OrderTestCase(unittest.TestCase):
         expected = (1, 2, 3, 4, 5)
         res = rfi.order(seq)
         for va, vb in itertools.izip(expected, res):
-            self.assertEquals(va, seq[vb])
+            self.assertEqual(va, seq[vb])
 
 
 def suite():

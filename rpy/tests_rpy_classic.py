@@ -17,17 +17,17 @@ class RpyClassicTestCase(unittest.TestCase):
         three = rpy.r.sum(1,2)
         three = three[0] # is this what is happening w/ rpy, or the list is
         # ...automatically dropped ?
-        self.assertEquals(3, three)
+        self.assertEqual(3, three)
         # positional + keywords
         onetwothree = rpy.r.seq(1, 3, by=0.5)
-        self.assertEquals([1.0, 1.5, 2.0, 2.5, 3.0], onetwothree)
+        self.assertEqual([1.0, 1.5, 2.0, 2.5, 3.0], onetwothree)
 
     def testFunctionCallWithRObj(self):
         rpy.set_default_mode(rpy.NO_CONVERSION)
         onetwo = rpy.r.seq(1, 2)
         three = rpy.r.sum(onetwo)
         rpy.set_default_mode(rpy.BASIC_CONVERSION)
-        self.assertEquals(3, three.sexp[0])
+        self.assertEqual(3, three.sexp[0])
 
     def testCallable(self):
         rpy.set_default_mode(rpy.NO_CONVERSION)

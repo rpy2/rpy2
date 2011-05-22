@@ -2,21 +2,30 @@ import rpy2.robjects.methods
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
 from rpy2.rlike.container import OrdDict
+from rpy2.robjects.packages import importr
+
+NULL = robjects.NULL
 
 #getmethod = robjects.baseenv.get("getMethod")
 
-rimport = robjects.baseenv.get('library')
-rimport('grid')
+grid = importr('grid')
 
 grid_env = robjects.baseenv['as.environment']('package:grid')
 
 
-layout = grid_env['grid.layout']
-newpage = grid_env['grid.newpage']
-grill = grid_env['grid.grill']
+layout  = grid.grid_layout
+newpage = grid.grid_newpage
+grill   = grid.grid_grill
+edit    = grid.grid_edit
+get     = grid.grid_get
+remove  = grid.grid_remove
+add     = grid.grid_add
+xaxis   = grid.grid_xaxis
+yaxis   = grid.grid_yaxis
 
 
 class Grob(robjects.RObject):
+    """ Graphical object """
     _grob = grid_env['grob']
     _draw = grid_env['grid.draw']
 
@@ -31,10 +40,12 @@ class Grob(robjects.RObject):
 
     @classmethod
     def grob(cls, **kwargs):
+        """ Constructor (uses the R function grid::grob())"""
         res = cls._grob(**kwargs)
         return res
 
     def draw(self, recording = True):
+        """ Draw a graphical object (calling the R function grid::grid.raw())"""
         self._draw(self, recording = recording)
 
 grob = Grob.grob
@@ -59,8 +70,64 @@ class Text(Grob):
     _constructor = grid_env['textGrob']
 text = Text
 
+
+class GTree(Grob):
+    """ gTree """
+    _gtree = grid_env['gTree']
+    _grobtree = grid_env['grobTree']
+
+    @classmethod
+    def gtree(cls, **kwargs):
+        """ Constructor (uses the R function grid::gTree())"""
+        res = cls._gtree(**kwargs)
+        return res
+
+    @classmethod
+    def grobtree(cls, **kwargs):
+        """ Constructor (uses the R function grid::grobTree())"""
+        res = cls._grobtree(**kwargs)
+        return res
+
+class Axis(GTree):
+    pass
+
+class XAxis(Axis):
+    _xaxis = xaxis
+    _xaxisgrob = grid.xaxisGrob
+
+    @classmethod
+    def xaxis(cls, **kwargs):
+        """ Constructor (uses the R function grid::xaxis())"""
+        res = cls._xaxis(**kwargs)
+        return res
+
+    @classmethod
+    def xaxisgrob(cls, **kwargs):
+        """ Constructor (uses the R function grid::xaxisgrob())"""
+        res = cls._xaxisgrob(**kwargs)
+        return res
+
+class YAxis(Axis):
+    _yaxis = yaxis
+    _yaxisgrob = grid.yaxisGrob
+
+    @classmethod
+    def yaxis(cls, **kwargs):
+        """ Constructor (uses the R function grid::yaxis())"""
+        res = cls._yaxis(**kwargs)
+        return res
+
+    @classmethod
+    def yaxisgrob(cls, **kwargs):
+        """ Constructor (uses the R function grid::yaxisgrob())"""
+        res = cls._yaxisgrob(**kwargs)
+        return res
+
         
 class Viewport(robjects.RObject):
+    """ Drawing context.
+    Viewports can be thought of as nodes in a scene graph. """
+
     _pushviewport = grid_env['pushViewport']
     _popviewport = grid_env['popViewport']
     _current = grid_env['current.viewport']
@@ -75,10 +142,12 @@ class Viewport(robjects.RObject):
 
     @classmethod
     def pop(cls, n):
+        """ Pop n viewports from the stack. """
         cls._popviewport(n)
 
     @classmethod
     def current(cls):
+        """ Return the current viewport in the stack. """
         cls._current()
 
     @classmethod
@@ -87,26 +156,34 @@ class Viewport(robjects.RObject):
 
     @classmethod
     def down(cls, name, strict = False, recording = True):
+        """ Return the number of Viewports it went down """
         cls._downviewport(name, strict = strict, recording = recording)
 
     @classmethod
     def seek(cls, name, recording = True):
+        """ Seek and return a Viewport given its name """
         cls._seek(name, recording = recording)
 
     @classmethod
     def up(cls, n, recording = True):
+        """ Go up n viewports """
         cls._downviewport(n, recording = recording)
 
     @classmethod
     def viewport(cls, **kwargs):
+        """ Constructor: create a Viewport """
         res = cls._viewport(**kwargs)
         return res
 
 viewport = Viewport.viewport
 
 
+
 _grid_dict = {
     'grob': Grob,
+    'gTree': GTree,
+    'xaxis': XAxis,
+    'yaxis': YAxis,
     'viewport': Viewport
 }
 
@@ -117,9 +194,11 @@ def grid_conversion(robj):
     pyobj = original_conversion(robj)
 
     if not isinstance(pyobj, robjects.RS4):
-        rclass = tuple(pyobj.rclass)
+        rcls = pyobj.rclass
+        if rcls is NULL:
+            rcls = (None, )
         try:
-            cls = _grid_dict[rclass[0]]
+            cls = _grid_dict[rcls[0]]
             pyobj = cls(pyobj)
         except KeyError, ke:
             pass

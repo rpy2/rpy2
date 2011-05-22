@@ -16,7 +16,7 @@ class MethodsTestCase(unittest.TestCase):
         acs = (('length', None, True, None), )
         methods.set_accessors(A, "A", None, acs)
         a = A()
-        self.assertEquals(123, a.length[0])
+        self.assertEqual(123, a.length[0])
 
 
     def testRS4_TypeNoAccessors(self):
@@ -51,14 +51,33 @@ class MethodsTestCase(unittest.TestCase):
 
 
         ra = R_A()
-        self.assertEquals(123, ra.get_length()[0])
-        self.assertEquals(123, ra.length[0])
+        self.assertEqual(123, ra.get_length()[0])
+        self.assertEqual(123, ra.length[0])
 
         a = A()
-        self.assertEquals(123, a.get_length()[0])
-        self.assertEquals(123, a.length[0])
+        self.assertEqual(123, a.get_length()[0])
+        self.assertEqual(123, a.length[0])
         
         
+    def testGetclassdef(self):
+        robjects.r('library(stats4)')
+        cr = methods.getclassdef('mle', 'stats4')
+        self.assertFalse(cr.virtual)
+
+    def testRS4Auto_Type(self):
+        robjects.r('library(stats4)')
+        class MLE(robjects.methods.RS4):
+            __metaclass__ = robjects.methods.RS4Auto_Type
+            __rname__ = 'mle'
+            __rpackagename__ = 'stats4'
+        
+    def testRS4Auto_Type_nopackname(self):
+        robjects.r('library(stats4)')
+        class MLE(robjects.methods.RS4):
+            __metaclass__ = robjects.methods.RS4Auto_Type
+            __rname__ = 'mle'
+
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(MethodsTestCase)
     return suite

@@ -197,10 +197,10 @@ explicitly:
 >>> robjects.r['pi'][0]
 3.1415926535897931
 
-There much that can be achieved with vector, having them to behave
+There is much that can be achieved with vectors, having them to behave
 more like Python lists or R vectors.
 A comprehensive description of the behavior of vectors is found in
-:ref:`robjects-vectors`.
+:mod:`robjects.vector`.
 
 Creating rpy2 vectors
 ---------------------
@@ -258,6 +258,68 @@ c(3L, 2L, 1L)
 More information on functions is in Section :ref:`robjects-functions`.
 
 
+Getting help
+============
+
+R has a builtin help system that, just like the pydoc strings are used frequently
+in python during interactive sessions, is used very frequently by R programmmers.
+This help system is accessible from R function, therefore accessible from rpy2.
+
+Help on a topic within a given package, or currently loaded packages
+---------------------------------------------------------------------
+
+>>> from rpy2.robjects.packages import importr
+>>> utils = importr("utils") 
+>>> help_doc = utils.help("help")
+>>> help_doc[0]
+'/where/R/is/installed/library/utils/help/help'
+
+Converting the object returned to a string will produce the full help text
+on the topic:
+
+>>> str(help_doc)
+[...long output...]
+
+.. warning::
+
+   The help message so produced is not a string returned to the console
+   but is directly printed by R to the standard output. The call to
+   :func:`str` only returns an empty string, and the reason for this is a
+   somewhat involved for an introductory documentation.
+   This behaviour is rooted in :program:`R` itself and in :mod:`rpy2` the
+   string representation of R objects is the string representation as
+   given by the :program:`R` console,
+   which in that case takes a singular route.
+
+   For a Python friendly help to the R help system, consider the module
+   :mod:`rpy2.robjects.help`.
+
+
+Locate topics among available packages
+--------------------------------------
+
+>>> help_where = utils.help_search("help")
+
+As before with `help`, the result can be printed / converted to a string,
+giving a similar result to what is obtained from an R session.
+
+.. note::
+
+   The data structure returned can otherwise be used to access the information
+   returned in details.
+
+   >>> tuple(help_where)
+   (<StrVector - Python:0x1f9a968 / R:0x247f908>,
+    <StrVector - Python:0x1f9a990 / R:0x25079d0>,
+    <StrVector - Python:0x1f9a9b8 / R:0x247f928>,
+    <Matrix - Python:0x1f9a850 / R:0x1ec0390>)
+   >>> tuple(help_where[3].colnames)
+   ('topic', 'title', 'Package', 'LibPath')
+
+   However, this is beyond the scope of an introduction, and one should
+   master the content of the module :mod:`robjects.vector` before anything else.
+
+
 Examples
 ========
 
@@ -303,6 +365,13 @@ presented in this documentation:
 More about plots and graphics in R, as well as more advanced
 plots are presented in Section :ref:`graphics`.
 
+.. warning::
+
+   By default, the embedded R will open an interactive plotting device,
+   that is a window in which the plot is located.
+   Processing interactive events on that devices, such as resizing or closing
+   the window must be explicitly required
+   (see Section :ref:`rinterface-interactive-processevents`).
 
 Linear models
 -------------
@@ -324,23 +393,24 @@ One way to achieve the same with :mod:`rpy2.robjects` is
 
 .. code-block:: python
 
-   import rpy2.robjects as robjects
+   from rpy2.robjects import FloatVector
+   from rpy2.robjects.packages import importr
+   stats = importr('stats')
+   base = importr('base')
 
-   r = robjects.r
-
-   ctl = robjects.FloatVector([4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14])
-   trt = robjects.FloatVector([4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69])
-   group = r.gl(2, 10, 20, labels = ["Ctl","Trt"])
+   ctl = FloatVector([4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14])
+   trt = FloatVector([4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69])
+   group = base.gl(2, 10, 20, labels = ["Ctl","Trt"])
    weight = ctl + trt
 
    robjects.globalenv["weight"] = weight
    robjects.globalenv["group"] = group
-   lm_D9 = r.lm("weight ~ group")
-   print(r.anova(lm_D9))
+   lm_D9 = stats.lm("weight ~ group")
+   print(stats.anova(lm_D9))
 
    # omitting the intercept
-   lm_D90 = r.lm("weight ~ group - 1")
-   print(r.summary(lm_D90))
+   lm_D90 = stats.lm("weight ~ group - 1")
+   print(base.summary(lm_D90))
 
 This way to perform a linear fit it matching precisely the way in R presented
 above, but there are other ways (see Section :ref:`robjects-formula`
@@ -397,7 +467,7 @@ The R code is
   plot(pca, main="Eigen values")
   biplot(pca, main="biplot")
 
-The :mod:`rpy2.robjects` code can be as close of the
+The :mod:`rpy2.robjects` code can be as close to the
 R code as possible:
 
 .. testcode::
@@ -425,8 +495,28 @@ However, the same example can be made a little more tidier
    m = base.matrix(stats.rnorm(100), ncol = 5)
    pca = stats.princomp(m)
    graphics.plot(pca, main = "Eigen values")
-   stats.biplot(pca, main = "biplot")      
-   
+   stats.biplot(pca, main = "biplot") 
+
+Creating an R vector or matrix, and filling its cells using Python code
+-----------------------------------------------------------------------
+
+.. testcode::
+
+   from rpy2.robjects import NA_real
+   from rpy2.rlike.container import TaggedList
+   from rpy2.robjects.packages import importr
+
+   base = importr('base')
+
+   # create a numerical matrix of size 100x10 filled with NAs 
+   m = base.matrix(NA_Real, nrow=100, ncol=10)
+
+   # fill the matrix
+   for row_i in xrange(1, 100+1):
+       for col_i in xrange(1, 10+1):
+           m.rx[TaggedList((row_i, ), (col_i, ))] = row_i + col_i * 100
+
+
 
 One more example
 ----------------

@@ -10,6 +10,8 @@ import testEnvironment
 import testRobjects
 import testMethods
 import testPackages
+import testHelp
+import testLanguage
 
 # wrap this nicely so a warning is issued if no numpy present
 import testNumpyConversions
@@ -26,6 +28,8 @@ def suite():
     suite_NumpyConversions = testNumpyConversions.suite()
     suite_Methods = testMethods.suite()
     suite_Packages = testPackages.suite()
+    suite_Help = testHelp.suite()
+    suite_Language = testLanguage.suite()
     alltests = unittest.TestSuite([suite_RObject,
                                    suite_Vector,                   
                                    suite_Array,
@@ -36,7 +40,9 @@ def suite():
                                    suite_Robjects,
                                    suite_Methods,
                                    suite_NumpyConversions,
-                                   suite_Packages
+                                   suite_Packages,
+                                   suite_Help,
+                                   suite_Language
                                    ])
     return alltests
 
@@ -44,3 +50,8 @@ def main():
     r = unittest.TestResult()
     suite().run(r)
     return r
+
+if __name__ == '__main__':    
+    tr = unittest.TextTestRunner(verbosity = 2)
+    suite = suite()
+    tr.run(suite)

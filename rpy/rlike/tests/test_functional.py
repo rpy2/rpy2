@@ -12,7 +12,7 @@ class TapplyTestCase(unittest.TestCase):
                     'c': 4}
         res = rlf.tapply(seq, tags, sum)
         for k, v in res:
-            self.assertEquals(expected[k], v)
+            self.assertEqual(expected[k], v)
 
 class VectorizeTestCase(unittest.TestCase):
 
@@ -25,7 +25,7 @@ class VectorizeTestCase(unittest.TestCase):
         res = f_iter(seq)
 
         for va, vb in itertools.izip(seq, res):
-            self.assertEquals(va ** 2, vb)
+            self.assertEqual(va ** 2, vb)
 
     def testIterify(self):
         self.simpleFunction(rlf.iterify)

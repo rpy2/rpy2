@@ -148,13 +148,18 @@ Package *ggplot2*
 Introduction
 ------------
 
-The R package *ggplot2* is expected to be installed in the *R*
+The R package *ggplot2* implements the Grammar of Graphics.
+While more documentation on the package and its usage with R can be found
+on the `ggplot2 website`_, this section will introduce the basic concepts required
+to build plots. Obviously, the *R* package *ggplot2* is expected to be installed in the *R*
 used from *rpy2*.
 
-The package is using the *grid* lower-level plotting infrastructure, modelled in 
-:mod:`rpy2.robjects.lib.grid`. Whenever separate plots on the same device,
-or arbitrary graphical elements overlaid, are wished it may require interacting
-with that infrastructure.
+.. _ggplot2 website: http://had.co.nz/ggplot2/
+ 
+The package is using the *grid* lower-level plotting infrastructure, that can be accessed
+through the module :mod:`rpy2.robjects.lib.grid`. Whenever separate plots on the same device,
+or arbitrary graphical elements overlaid, or significant plot customization, or editing
+are needed, some knowledge of *grid* will be required.
 
 Here again, having data in a :class:`DataFrame` is expected
 (see :ref:`robjects-dataframes` for more information on such objects).
@@ -190,7 +195,7 @@ graphical representations.
 Like it was shown for *lattice*, a third variable can be represented
 on the same plot using color encoding, and this is now done by
 specifying that as a mapping (the parameter *col* when calling
-the :class:`Aes`):
+the constructor for the :class:`AesString`).
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2mtcarscolcyl-begin
@@ -329,7 +334,7 @@ The constructor for :class:`GeomSmooth` also accepts a parameter
 
 
 Encoding the information in the column *cyl* is again
-only a matter of specifying it in the :class:`AES` mapping.
+only a matter of specifying it in the :class:`AesString` mapping.
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2smoothbycylwithcolours-begin
@@ -343,7 +348,7 @@ only a matter of specifying it in the :class:`AES` mapping.
 
 
 As can already be observed in the examples with :class:`GeomSmooth`,
-several *geometry* objects can be added on the top of eachother
+several *geometry* objects can be added on the top of each other
 in order to create the final plot. For example, a marginal *rug*
 can be added to the axis of a regular scatterplot:
 
@@ -363,6 +368,16 @@ can be added to the axis of a regular scatterplot:
 .. image:: _static/graphics_ggplot2geompointdensity2d.png
    :scale: 50
 
+
+Polygons can be used for maps, as shown in the relatively artificial
+example below:
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2mappolygon-begin
+   :end-before: #-- ggplot2mappolygon-end
+   
+.. image:: _static/graphics_ggplot2map_polygon.png
+   :scale: 50
 
 
 Facets
@@ -429,6 +444,35 @@ used the grammar of graphics) are still specified the usual way.
 .. image:: _static/graphics_ggplot2smoothblue.png
    :scale: 50
 
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2smoothblue-begin
+   :end-before: #-- ggplot2smoothblue-end
+
+   
+.. image:: _static/graphics_ggplot2smoothblue.png
+   :scale: 50
+
+Complex example
+^^^^^^^^^^^^^^^
+
+This example uses *ggplot2* to plot 4 datasets (all combinations of 2
+colors and 2 linetypes/marker types). It contains examples of mapping
+attributes to colors, line types, and labels; using python to
+manipulate data in an R DataFrame; the *melt* operator (from the
+*reshape* package) to transform the data from a "vertical"
+representation to a "horizontal" representation suitable for
+*ggplot2*; and numerous customizations of the output graph, including
+axis labels, colors, line types, line and marker sizes, and log-scale
+major and minor lines. 
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2perfcolor-begin
+   :end-before: #-- ggplot2perfcolor-end
+   
+.. image:: _static/graphics_ggplot2perfcolor_both.png
+   :scale: 50
+
 .. module:: rpy2.robjects.lib.grid
    :synopsis: High-level interface with R
 
@@ -437,13 +481,13 @@ Package *grid*
 
 The *grid* package is the underlying plotting environment for *lattice*
 and *ggplot2* figures. In few words, it consists in pushing and poping systems
-of coordinates (*viewports*) into a stack, 
-and plotting graphical elements into them.
-
+of coordinates (*viewports*) into a stack, and plotting graphical elements into them.
+The system can be thought of as a scene graph, with each *viewport* a node in
+the graph.
 
 >>> from rpy2.robjects.lib import grid
 
-Getting a new page is achieve by calling the function :func:`grid.newpage`.
+Getting a new page is achieved by calling the function :func:`grid.newpage`.
 
 Calling :func:`layout` will create a layout, e.g. create a layout with one row
 and 3 columns:
@@ -462,34 +506,44 @@ Pushing into the current viewport, can be done by using the class method
 
 Example:
 
-.. code-block:: python
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- grid-begin
+   :end-before: #-- grid-end
+   
+.. image:: _static/graphics_grid.png
+   :scale: 50
 
-   # create a rows/columns layout
-   lt = grid.layout(1, 3)
-   vp = grid.viewport(layout = lt)
-   # push it the plotting stack
-   vp.push()
 
-   # create a viewport located at (1,1) in the layout
-   vp = grid.Viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
-   # create a (unit) rectangle in that viewport
-   grid.rect(vp = vp).draw()
-
-   vp = grid.Viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
-   # create text in the viewport at (1,2)
-   grid.text("foo", vp = vp).draw()
-
-   vp = grid.Viewport(**{'layout.pos.col':3, 'layout.pos.row': 1})
-   # create a (unit) circle in the viewport (1,3)
-   grid.circle(vp = vp).draw()
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- gridwithggplot2-begin
+   :end-before: #-- gridwithggplot2-end
+   
+.. image:: _static/graphics_ggplot2withgrid.png
+   :scale: 50
 
 .. autoclass:: rpy2.robjects.lib.grid.Viewport(o)
    :show-inheritance:
    :members:
    :undoc-members:
 
+.. autoclass:: rpy2.robjects.lib.grid.Grob(o)
+   :show-inheritance:
+   :members:
+   :undoc-members:
+
+.. autoclass:: rpy2.robjects.lib.grid.GTree(o)
+   :show-inheritance:
+   :members:
+   :undoc-members:
 
 
+
+
+Class diagram
+-------------
+
+.. inheritance-diagram:: rpy2.robjects.lib.grid
+   :parts: 1
 
 
 

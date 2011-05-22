@@ -13,8 +13,8 @@ def suite():
 
     suite_rpy_classic = rpy2.tests_rpy_classic.suite()
 
-    alltests = unittest.TestSuite([suite_robjects, 
-                                   suite_rinterface, 
+    alltests = unittest.TestSuite([suite_rinterface,
+                                   suite_robjects, 
                                    suite_rlike,
                                    suite_rpy_classic
                                    ])

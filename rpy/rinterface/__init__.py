@@ -3,7 +3,10 @@ import os, sys
 try:
     R_HOME = (os.environ["R_HOME"], )
 except KeyError:
-    R_HOME = os.popen("R RHOME").readlines()
+    tmp = os.popen("R RHOME")
+    R_HOME = tmp.readlines()
+    tmp.close()
+    del(tmp)
 
 if len(R_HOME) == 0:
     if sys.platform == 'win32':
@@ -72,57 +75,11 @@ except:
     pass
 
 
-from rpy2.rinterface.rinterface import *
-
-class StrSexpVector(SexpVector):
-    """ 
-    Vector of strings.
-    """
-    def __init__(self, v):
-        super(StrSexpVector, self).__init__(v, STRSXP)
-
-
-class IntSexpVector(SexpVector):
-    """ 
-    Vector of integers.
-    """
-    def __init__(self, v):        
-        super(IntSexpVector, self).__init__(v, INTSXP)
-
-
-class FloatSexpVector(SexpVector):
-    """ 
-    Vector of floats.
-    """
-    def __init__(self, v):        
-        super(FloatSexpVector, self).__init__(v, REALSXP)
-
-class BoolSexpVector(SexpVector):
-    """ 
-    Vector of booleans (logical in R terminology).
-    """
-    def __init__(self, v):        
-        super(BoolSexpVector, self).__init__(v, LGLSXP)
-
-class ListSexpVector(SexpVector):
-    """ 
-    Vector of objects (list in R terminology).
-    """
-    def __init__(self, v):        
-        super(ListSexpVector, self).__init__(v, VECSXP)
-
-class ComplexSexpVector(SexpVector):
-    """ 
-    Vector of complex (complex in R terminology).
-    """
-    def __init__(self, v):        
-        super(ComplexSexpVector, self).__init__(v, CPLXSXP)
-
+from rpy2.rinterface._rinterface import *
 
 
 # wrapper in case someone changes sys.stdout:
 def consolePrint(x):
-    """This is the default callback for R's console. It simply writes to stdout."""
     sys.stdout.write(x)
 
 set_writeconsole(consolePrint)
@@ -133,14 +90,16 @@ def consoleFlush():
 set_flushconsole(consoleFlush)
 
 def consoleRead(prompt):
-    input = raw_input(prompt)
-    input += "\n"
-    return input
+    text = raw_input(prompt)
+    text += "\n"
+    return text
 
 set_readconsole(consoleRead)
 
+
 def consoleMessage(x):
     sys.stdout.write(x)
+
 set_showmessage(consoleMessage)
 
 
@@ -161,7 +120,20 @@ def showFiles(wtitle, titlefiles, rdel, pager):
     return 0
 set_showfiles(showFiles)
 
+def rternalize(function):
+    """ Takes an arbitrary Python function and wrap it
+    in such a way that it can be called from the R side. """
+    assert callable(function) #FIXME: move the test down to C
+    rpy_fun = SexpExtPtr(function, tag = python_type_tag)
+    #rpy_type = ri.StrSexpVector(('.Python', ))
+    #FIXME: this is a hack. Find a better way.
+    template = parse('function(...) { .External(".Python", foo, ...) }')
+    template[0][2][1][2] = rpy_fun
+    return baseenv['eval'](template)
+
 # def cleanUp(saveact, status, runlast):
 #     return True
 
 # setCleanUp(cleanUp)
+
+

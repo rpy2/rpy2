@@ -1,11 +1,238 @@
-Release 2.1-dev
-===============
+Release 2.2.0-dev
+=================
 
-Known problems
---------------
+New Features
+------------
 
-- Numpy arrays with unicode elements seem to be now causing a
-  segfault
+- Support for Python 3, and for some of its features ported to Python 2.7
+
+:mod:`rpy2.robjects`:
+
+- :meth:`Environment.keys` to list the keys
+
+- classes :class:`robjects.vectors.POSIXlt` and 
+  :class:`robjects.vectors.POSIXlt` to represent vectors of R
+  dates/time
+
+- :func:`packages.get_packagepath` to get the path to an R package
+
+- module :mod:`rpy2.robjects.help` to expose the R help system to Python
+
+- Metaclass utilities in :mod:`rpy2.robjects.methods`, allowing to reflect
+  automatically R S4 classes as Python classes.
+
+- :meth:`rpy2.robjects.vectors.FactorVector.iter_labels` to iterate over the labels
+
+- :class:`rpy2.robjects.vectors.ListVector` to represent R lists.
+
+- Constructor for :class:`rpy2.robjects.vectors.ListVector` and 
+  :class:`rpy2.robjects.vectors.DataFrame` accept any iterable at the condition
+  that the elements iterated through also valid subscripts for it (e.g., given
+  an iterable v, the following is valid:
+
+  .. code-block:: python
+
+     x[k] for x in v
+
+
+:mod:`rpy2.rinterface`:
+
+- :data:`NA_Complex` and :class:`NAComplexType` for missing complex values.
+
+- :class:`SexpExtPtr` to represent R objects of type EXTPTR (external pointers).
+
+- :func:`rpy2.rinterface.parse` to parse a string a R code
+
+- :func:`rpy2.rinterface.rternalise` to wrap Python function as :class:`SexpClosure` that can
+  be called by R just as it was a function of its own.
+
+- :class:`rpy2.rinterface.RNULLType` for R's C-level NULL value and 
+  :class:`rpy2.rinterface.UnboundValueType` for R's C-level R_UnboundValue
+  (both singletons).
+
+- :meth:`rinterface.SexpVector.index`, of similar behaviour to :meth:`list.index`.
+
+- :meth:`rpy2.rinterface.Sexp.list_attrs` to list the names of all R attributes
+  for a given object.
+
+- :class:`rpy2.rinterface.ByteSexpVector` to represent R 'raw' vectors.
+
+- constant `R_LEN_T_MAX` to store what is the maximum length for a vector in R.
+
+- tuple `R_VERSION_BUILD` to store the version of R rpy2 was built against
+
+- getter :attr:`Sexp.rclass` to return the R class associated with an object 
+
+:mod:`rpy2.rlike`:
+
+- :class:`container.OrdDict` get proper methods :meth:`keys` and `get`
+
+:mod:`rpy2.interactive`:
+
+- A new sub-package to provide utilities for interactive work, either for
+  handling R interactive events or use Python for interactive programming
+  (as often done with the R console)
+
+Changes
+-------
+
+:mod:`rpy2.robjects`:
+
+- NA_bool, NA_real, NA_integer, NA_character and NA_complex are now
+  deprecated (and removed).
+  NA_Logical, NA_Real, NA_Integer, NA_Character, NA_Complex should be used.
+
+- :class:`rpy2.robjects.packages.Package` now inherits from :class:`types.ModuleType`
+
+- classes representing R vector also inherit their type-specific
+  rinterface-level counterpart.
+
+- Importing the :class:`rpy2.robjects.numpy2ri` is no longer sufficient
+  to active the conversion. Explicit activation is now needed; the function
+  `activate` can do that.
+
+
+:mod:`rpy2.rinterface`:
+
+- :class:`IntSexpVector`, :class:`FloatSexpVector`,
+  :class:`StrSexpVector`, :class:`BoolSexpVector`, :class:`ComplexSexpVector`
+  are now defined at the C level, improving performances
+  and memory footprint whenever a lot of instances are created.
+
+Bugs fixed
+----------
+
+- Better and more explicit detection system for needed libraries when
+  compiling rpy2 (ported to release 2.1.6)
+
+- Long-standing issue with readline fixed (issue #10)
+
+
+Release 2.1.9
+=============
+
+Bugs fixed
+----------
+
+- The R class in rpy2.robjects is now truly a singleton
+
+- When using numpy 1.5 and Python >= 2.7, the exposed buffer for R numerical (double)
+  vectors or arrays was wrong.
+
+
+Release 2.1.8
+=============
+
+Bugs fixed
+----------
+
+- Fixed issue with R arrays with more than 2 dimensions and numpy arrays
+  (issue #47 - backported from the branch 2.2.x).
+
+
+Release 2.1.7
+=============
+
+Bugs fixed
+----------
+
+- More fixes for the automated detection of include and libraries at build time.
+
+
+Release 2.1.6
+=============
+
+Bugs fixed
+----------
+
+- Further fixes in the automatic detection of includes and libraries
+  needed to compile rpy2 against R. The detection code has
+  been refactored (backport from the 2.2.x branch)
+
+
+Release 2.1.5
+=============
+
+Bugs fixed
+----------
+
+- fixes the automatic detection of R_HOME/lib during building/compiling
+  when R_HOME/lib is not in lib/ (issue #54)
+
+
+Release 2.1.4
+=============
+
+New features
+------------
+
+- :mod:`rpy2.robjects.lib.ggplot2` now has the functions :func:`limits`,
+  :func:`xlim`, :func:`ylim` exposed (patch contributed anonymously)
+
+Bugs fixed
+----------
+
+- Install script when the BLAS library used by R is specified as a library
+  file (patch by Michael Kuhn)
+
+
+Release 2.1.3
+=============
+
+Bugs fixed
+----------
+
+- Spurious error message when using DataFrame.from_csvfile() without
+  specifying col_names  or row_names
+
+- Patch to finally compile with Python < 2.6 (contribDuted by Denis Barbier)
+
+
+Release 2.1.2
+=============
+
+New Features
+------------
+
+:mod:`rpy2.robjects`:
+
+- NA_Logical, NA_Real, NA_Integer, NA_Character from :mod:`rpy2.rinterface` 
+  are imported by robjects.
+
+Changes
+-------
+
+:mod:`rpy2.robjects`:
+
+- NA_bool, NA_real, NA_integer, NA_character and NA_complex are now
+  robjects-level vectors
+  (they were rinterface-level vectors).
+  Consider using the rinterface-defined NAs instead of them.
+
+Bugs fixed
+----------
+
+- Missing conditional C definition to compile with Python 2.4 # issue 38
+
+- Fixed error when calling robjects.vectors.Vector.iteritems() on an R 
+  vector without names
+
+- Fixed automatic conversion issues (issue #41)
+
+
+Release 2.1.1
+=============
+
+Bugs fixed
+----------
+
+- Issues with NA values # issue 37
+
+- Missing manual scale functions in :mod:`rpy2.robjects.lib.ggplot2` # issue 39
+
+
+Release 2.1.0
+=============
 
 New Features
 ------------
@@ -27,7 +254,8 @@ New Features
 - Delegating classes :class:`ExtractDelegator` and 
   :class:`DoubleExtractDelegator` for extracting the R-way
 
-- :class:`DataFrame` (formerly *RDataFrame*) can now be created from :`rlike.container.OrdDict`
+- :class:`DataFrame` (formerly *RDataFrame*) can now be created 
+  from :`rlike.container.OrdDict`
   instances, or any other object inheriting from dict.
 
 - :class:`FactorVector` to represent R factors
@@ -47,13 +275,26 @@ New Features
 
 - :meth:`Vector.sample` to draw a (random) sample of arbitrary size from a vector
 
-- :data:`NA_bool`, :data:`NA_real`, :data:`NA_integer`, :data:`NA_character`, 
-  :data:`NA_complex` as aliases for R's missing values.
+- :data:`NA_Bool`, :data:`NA_Real`, :data:`NA_Integer`, :data:`NA_Character`, 
+  :data:`NA_Complex` as aliases for R's missing values.
 
 - :data:`ComplexVector` for vectors of complex (real + imaginary) elements
 
-- :mod:`packages` to provide utilty functions to handle R packages
+- :mod:`packages` to provide utility functions to handle R packages
   (import of R packages)
+
+- :mod:`functions` to provide classes related to R functions, with the new 
+  class :class:`SignatureTranslatedFunction`
+
+- :meth:`DataFrame.iter_row` and :meth:`DataFrame.iter_column`, iterating
+  through rows and columns respectively.
+
+- :meth:`DataFrame.cbind` and :meth:`DataFrame.rbind` for binding columns or
+  rows to a DataFrame.
+
+- :meth:`Vector.iteritems` to iterate on pairs of names and values.
+
+- :attr:`Robject.__rname__` to store the "R name"
 
 :mod:`rpy2.rinterface`:
 
@@ -61,7 +302,7 @@ New Features
   :func:`set_showmessage`, :func:`set_flushconsole`,
   :func:`set_choosefile`, :func:`set_showfiles`
 
-- New object :data:`R_MissingArg`, exposing R's special object for representing
+- New object :data:`MissingArg`, exposing R's special object for representing
   a "missing" parameter in a function call.
   (#this was first a patch by Nathaniel Smith with a function getMissingArgSexp)
 
@@ -93,13 +334,26 @@ New Features
 - :meth:`colnames`, :meth:`rownames` for :class:`Array` (formerly *RArray*) are now 
   property-style getters
 
-- Crash when trying to create a SexpVector of a non-vector type
-
 - Pairlists (LISTSXP) now handled
 
 - Experimental function :func:`set_interactive` to set whether R is in interactive
   mode or not (#following an issue reported by Yaroslav Halchenko)
 
+- New object :data:`R_NilValue`, exposing R's special object for representing
+  a "NULL".
+
+- :data:`ComplexSexpVector` for vectors of complex (real + imaginary) elements
+
+- Scalar Python parameters of type :class:`int`, :class:`long`,
+  :class:`double`, :class:`bool`, and :class:`None` 
+  in a call (using :class:`SexpClosure`) are now automatically converted
+  to length-one R vectors (at the exception of None, converted
+  to R_NilValue).
+
+- Python slices can now be used on R vector-like objects 
+
+- Better handling of R's missing values NA, `NA_integer_`, `NA_real_`, 
+  and `NA_character_`.
 
 :mod:`rpy2.rlike`:
 
@@ -109,7 +363,6 @@ New Features
 - static method :meth:`from_iteritems` for :class:`TaggedList`,
   for creating a TaggedList from any object having a method :meth:`iteritems`
 
-- :data:`ComplexSexpVector` for vectors of complex (real + imaginary) elements
 
 Changes
 -------
@@ -137,13 +390,13 @@ Changes
   (see in `.rx` and `.rx2` in the new features)
 
 - :meth:`colnames`, :meth:`rownames`, :meth:`nrow`, :meth:`ncol` 
-  for :class:`RDataFrame` are now property-style getters
+  for :class:`DataFrame` are now property-style getters
 
 - :meth:`nrow`, :meth:`ncol` for :class:`Array` 
   are now property-style getters
 
 - static method :meth:`from_csvfile` and 
-  instance method :meth:`to_csvfile` for :class:`RDataFrame`
+  instance method :meth:`to_csvfile` for :class:`DataFrame`
 
 - module :mod:`lib` to store modules representing R packages
 
@@ -153,6 +406,10 @@ Changes
   :class:`DataFrame` (from *RDataFrame*), :class:`Array` (from *RArray*),
   :class:`Matrix` (from *RMatrix*), :class:`Environment` (from *REnvironment*),
   :class:`Function` (from *RFunction*), :class:`Vector` (from *RVector*).
+
+- :class:`robjects.vectors.Vector` lost the (now redundant) methods
+  `subset` and `assign`. Those operations were just aliases to the 
+  :class:`ExtractDelegator`
 
 :mod:`rpy2.rinterface`:
 
@@ -176,6 +433,12 @@ Changes
 - :meth:`tags` of :class:`TaggedList` is now a property (with a getter
   and a setter)
 
+:mod:`rpy2.rpy_classic`:
+
+- R named lists are returned as Python :class:`dict`, like rpy-1.x does it, with the
+  notable difference that duplicate names are not silently overwritten: an exception
+  of class :class:`ValueError` is thrown whenever happening
+
 
 Bugs fixed
 ----------
@@ -186,8 +449,12 @@ Bugs fixed
 - :class:`rinterface.SexpVector` will now properly raise an exception
   when trying to create vector-like object of impossible type
 
+- Crash when trying to create a SexpVector of a non-vector type
+
 - R objects of class *matrix* are now properly converted into :class:`RMatrix`
   (instead of :class:`Array`)
+
+- :meth:`Robj.as_py` was not working at all (and now it does to some extent)
 
 
 Release 2.0.7

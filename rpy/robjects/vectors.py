@@ -5,14 +5,19 @@ import conversion
 
 import rpy2.rlike.container as rlc
 
-import copy
+import sys, copy, os, itertools
+import time
+from time import struct_time, mktime
+
+from rpy2.rinterface import Sexp, SexpVector, StrSexpVector, IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, R_NilValue, NA_Real, NA_Integer, NA_Character, NA_Logical, NULL
 
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
 utils_ri = rinterface.baseenv['as.environment'](rinterface.StrSexpVector(("package:utils", )))
 
 class ExtractDelegator(object):
-    """ Delegate the R 'extraction' of items in a vector
+    """ Delegate the R 'extraction' ("[") and 'replacement' ("[<-")
+    of items in a vector
     or vector-like object. This can help making syntactic
     niceties possible."""
     
@@ -51,29 +56,51 @@ class ExtractDelegator(object):
     def __getitem__(self, item):
         fun = self._extractfunction
         args = rlc.TaggedList(item)
-        for i, k,v in enumerate(args.iteritems()):
+        for i, (k, v) in enumerate(args.iteritems()):
             args[i] = conversion.py2ro(v)
         args.insert(0, self._parent)
-        res = fun.rcall(args.items())
+        res = fun.rcall(args.items(),
+                        globalenv_ri)
         res = conversion.py2ro(res)
         return res
 
     def __setitem__(self, item, value):
-        """ Assign a given value to a given index position in the vector """
-        args = rlc.TaggedList.from_iteritems(item)
-        for i, (k,v) in enumerate(args.iteritems()):
-            args[i] = conversion.py2ro(v)       
-        args.append(conversion.py2ro(value), tag = None)
-        args.insert(0, self._parent, tag = None)
+        """ Assign a given value to a given index position in the vector.
+        The index position can either be:
+        - an int: x[1] = y
+        - a tuple of ints: x[1, 2, 3] = y
+        - an iteritem-able object (such as a dict): x[{'i': 1}] = y
+        """
         fun = self._replacefunction
-        res = fun.rcall(tuple(args.iteritems()),
-                        globalenv_ri)
+        if type(item) is tuple:
+            args = list([None, ] * (len(item)+2))
+            for i, v in enumerate(item):
+                args[i+1] = conversion.py2ro(v)
+            args[-1] = conversion.py2ro(value)
+            args[0] = self._parent
+            res = fun(*args)
+        elif (type(item) is dict) or (type(item) is rlc.TaggedList):
+            args = rlc.TaggedList.from_iteritems(item)
+            for i, (k, v) in enumerate(args.iteritems()):
+                args[i] = conversion.py2ro(v)
+            args.append(conversion.py2ro(value), tag = None)
+            args.insert(0, self._parent, tag = None)
+            res = fun.rcall(tuple(args.iteritems()),
+                            globalenv_ri)
+        else:
+            args = [self._parent,
+                    conversion.py2ro(item),
+                    conversion.py2ro(value)]
+            res = fun(*args)
         #FIXME: check refcount and copying
         self._parent.__sexp__ = res.__sexp__
 
 
 class DoubleExtractDelegator(ExtractDelegator):
-
+    """ Delegate the R 'extraction' ("[[") and "replacement" ("[[<-")
+    of items in a vector
+    or vector-like object. This can help making syntactic
+    niceties possible."""
     _extractfunction = rinterface.baseenv['[[']
     _replacefunction = rinterface.baseenv['[[<-']
 
@@ -81,9 +108,8 @@ class DoubleExtractDelegator(ExtractDelegator):
     
 class VectorOperationsDelegator(object):
     """
-    Delegate operations such as __getitem__, __add__, etc..
-    to an R call of the corresponding function on its parent
-    attribute.
+    Delegate operations such as __getitem__, __add__, etc...
+    to the corresponding R function.
     This permits a convenient coexistence between
     operators on Python sequence object with their R conterparts.
     """
@@ -124,28 +150,62 @@ class VectorOperationsDelegator(object):
         res = globalenv_ri.get("&")(self._parent, conversion.py2ri(x))
         return conversion.ri2py(res)
 
+    # Comparisons
+
+    def __lt__(self, x):
+        res = globalenv_ri.get("<")(self._parent, conversion.py2ri(x))
+        return conversion.ri2py(res)
+
+    def __le__(self, x):
+        res = globalenv_ri.get("<=")(self._parent, conversion.py2ri(x))
+        return conversion.ri2py(res)
+
+    def __eq__(self, x):
+        res = globalenv_ri.get("==")(self._parent, conversion.py2ri(x))
+        return conversion.ri2py(res)
+
+    def __ne__(self, x):
+        res = globalenv_ri.get("!=")(self._parent, conversion.py2ri(x))
+        return conversion.ri2py(res)
+
+    def __gt__(self, x):
+        res = globalenv_ri.get(">")(self._parent, conversion.py2ri(x))
+        return conversion.ri2py(res)
+
+    def __ge__(self, x):
+        res = globalenv_ri.get(">=")(self._parent, conversion.py2ri(x))
+        return conversion.ri2py(res)
+    
+    # 
+    def __neg__(self):
+        res = globalenv_ri.get("-")(self._parent)
+        return res
 
 
-class Vector(RObjectMixin, rinterface.SexpVector):
-    """ R vector-like object. Items in those instances can
-       be accessed with the method "__getitem__" ("[" operator),
-       or with the method "subset"."""
+class Vector(RObjectMixin, SexpVector):
+    """ Vector(seq) -> Vector.
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python object.
+    In the later case, a conversion will be attempted using
+    conversion.py2ri().
+    
+    R vector-like object. Items can be accessed with:
+
+    - the method "__getitem__" ("[" operator)
+
+    - the delegators rx or rx2 
+
+"""
     _sample = rinterface.baseenv['sample']
 
     def __init__(self, o):
-        if not isinstance(o, rinterface.SexpVector):
+        if not isinstance(o, SexpVector):
             o = conversion.py2ri(o)
         super(Vector, self).__init__(o)
         self.ro = VectorOperationsDelegator(self)
         self.rx = ExtractDelegator(self)
         self.rx2 = DoubleExtractDelegator(self)
-
-    def subset(self, *args, **kwargs):
-        #FIXME: remove this method
-        return self.rx(*args, **kwargs)
-        
-    def assign(self, index, value):
-        self.rx[index] = value
 
     def __add__(self, x):
         res = baseenv_ri.get("c")(self, conversion.py2ri(x))
@@ -154,13 +214,19 @@ class Vector(RObjectMixin, rinterface.SexpVector):
 
     def __getitem__(self, i):
         res = super(Vector, self).__getitem__(i)
-        if isinstance(res, rinterface.Sexp):
+        if isinstance(res, Sexp):
             res = conversion.ri2py(res)
         return res
 
     def __setitem__(self, i, value):
         value = conversion.py2ri(value)
         res = super(Vector, self).__setitem__(i, value)
+
+    def __getslice__(self, i, j):
+        res = super(Vector, self).__getslice__(i, j)
+        if isinstance(res, Sexp):
+            res = conversion.ri2py(res)
+        return res
 
     def _names_get(self):
         res = baseenv_ri.get('names')(self)
@@ -174,10 +240,20 @@ class Vector(RObjectMixin, rinterface.SexpVector):
     names = property(_names_get, _names_set, 
                      "Names for the items in the vector.")
 
+    def iteritems(self):
+        """ iterate over names and values """
+        if self.names.rsame(R_NilValue):
+            it_names = itertools.cycle((None, ))
+        else:
+            it_names = iter(self.names)
+        it_self  = iter(self)
+        for v, k in zip(it_self, it_names):
+            yield (k, v)
+
     def sample(self, n, replace = False, probabilities = None):
         """ Draw a sample of size n from the vector. 
         If 'replace' is True, the sampling is done with replacement.
-        The optional argument 'probabilities' indicates sampling probabilities. """
+        The optional argument 'probabilities' can indicate sampling probabilities. """
 
         assert isinstance(n, int)
         assert isinstance(replace, bool)
@@ -189,24 +265,87 @@ class Vector(RObjectMixin, rinterface.SexpVector):
         res = conversion.ri2py(res)
         return res
 
-class StrVector(Vector):
-    """ Vector of string elements """
+    def __repr_content__(self):
+        def p_str(x, max_width = 8):
+            if x is NA_Real or x is NA_Integer or x is NA_Character or x is NA_Logical:
+                res = repr(x)
+            elif isinstance(x, long) or isinstance(x, int):
+                res = '%8i' %x
+            elif isinstance(x, float):
+                res = '%8f' %x
+            else:
+                if isinstance(x, str):
+                    x = x.__repr__()
+                else:
+                    tmp = ['', None, None, '']
+                    x = type(x).__name__                    
+                if len(x) < max_width:
+                    res = x
+                else:
+                    res = "%s..." %x[ : (max_width - 3)]
+            return res
+
+        l = len(self)
+        if l < 7:
+            s = '[' + \
+                ', '.join((p_str(x, max_width = 52 / l) for x in self[ : 8])) +\
+                ']'
+        else:
+            s = '[' + \
+                ', '.join((p_str(x) for x in self[ : 3])) + ', ..., ' + \
+                ', '.join((p_str(x) for x in self[-3 : ])) + \
+                ']'
+        return s
+
+    def __repr__(self):        
+        return super(Vector, self).__repr__() + os.linesep + \
+            self.__repr_content__()
+                          
+#name alias if Python 3 (iteritems no longer existing for dict objects)
+if sys.version_info[0] == 3:
+    Vector.items = Vector.iteritems
+
+class StrVector(Vector, StrSexpVector):
+    """      Vector of string elements
+
+    StrVector(seq) -> StrVector.
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python sequence.
+    In the later case, all elements in the sequence should be either
+    strings, or have a str() representation.
+    """
+
     _factorconstructor = rinterface.baseenv['factor']
+
     def __init__(self, obj):
-        obj = rinterface.StrSexpVector(obj)
+        obj = StrSexpVector(obj)
         super(StrVector, self).__init__(obj)
 
     def factor(self):
-        """ construct a factor vector from the vector of strings """
+        """
+        factor() -> FactorVector
+
+        Construct a factor vector from a vector of strings. 
+        
+        """
+
         res = self._factorconstructor(self)
         return conversion.ri2py(res)
 
-class IntVector(Vector):
-    """ Vector of integer elements """
+class IntVector(Vector, IntSexpVector):
+    """ Vector of integer elements 
+    IntVector(seq) -> IntVector.
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python sequence.
+    In the later case, all elements in the sequence should be either
+    integers, or have an int() representation.
+    """
     _tabulate = rinterface.baseenv['tabulate']
 
     def __init__(self, obj):
-        obj = rinterface.IntSexpVector(obj)
+        obj = IntSexpVector(obj)
         super(IntVector, self).__init__(obj)
 
     def tabulate(self, nbins = None):
@@ -216,26 +355,65 @@ class IntVector(Vector):
         res = self._tabulate(self)
         return conversion.ri2py(res)
 
-class BoolVector(Vector):
-    """ Vector of boolean (logical) elements """
+class BoolVector(Vector, BoolSexpVector):
+    """ Vector of boolean (logical) elements 
+    BoolVector(seq) -> BoolVector.
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python sequence.
+    In the later case, all elements in the sequence should be either
+    booleans, or have a bool() representation.
+    """
     def __init__(self, obj):
-        obj = rinterface.BoolSexpVector(obj)
+        obj = BoolSexpVector(obj)
         super(BoolVector, self).__init__(obj)
 
-class ComplexVector(Vector):
-    """ Vector of complex elements """
+class ComplexVector(Vector, ComplexSexpVector):
+    """ Vector of complex elements 
+
+    ComplexVector(seq) -> ComplexVector
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python sequence.
+    In the later case, all elements in the sequence should be either
+    complex, or have a complex() representation.
+    
+    """
     def __init__(self, obj):
-        obj = rinterface.ComplexSexpVector(obj)
+        obj = ComplexSexpVector(obj)
         super(ComplexVector, self).__init__(obj)
 
-class FloatVector(Vector):
-    """ Vector of float (double) elements """
+class FloatVector(Vector, FloatSexpVector):
+    """ Vector of float (double) elements 
+
+    FloatVector(seq) -> FloatVector.
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python sequence.
+    In the later case, all elements in the sequence should be either
+    float, or have an float() representation.
+
+    """
     def __init__(self, obj):
-        obj = rinterface.FloatSexpVector(obj)
+        obj = FloatSexpVector(obj)
         super(FloatVector, self).__init__(obj)
 
 class FactorVector(IntVector):
-    """ Vector of 'factors' """
+    """ Vector of 'factors' 
+
+    FactorVector(obj,
+                 levels = rinterface.MissingArg,
+                 labels = rinterface.MissingArg,
+                 exclude = rinterface.MissingArg,
+                 ordered = rinterface.MissingArg) -> FactorVector
+
+    obj: StrVector or StrSexpVector
+    levels: StrVector or StrSexpVector
+    labels: StrVector or StrSexpVector (of same length as levels)
+    exclude: StrVector or StrSexpVector
+    ordered: boolean
+
+    """
 
     _factor = baseenv_ri['factor']
     _levels = baseenv_ri['levels']
@@ -243,18 +421,21 @@ class FactorVector(IntVector):
     _nlevels = baseenv_ri['nlevels']
     _isordered = baseenv_ri['is.ordered']
     
-    def __init__(self, obj, levels = rinterface.R_MissingArg,
-                 labels = rinterface.R_MissingArg,
-                 exclude = rinterface.R_MissingArg,
-                 ordered = rinterface.R_MissingArg):
-        if not isinstance(obj, rinterface.Sexp):
-            obj = rinterface.StrSexpVector(obj)
+    def __init__(self, obj, levels = rinterface.MissingArg,
+                 labels = rinterface.MissingArg,
+                 exclude = rinterface.MissingArg,
+                 ordered = rinterface.MissingArg):
+        if not isinstance(obj, Sexp):
+            obj = StrSexpVector(obj)
         res = self._factor(obj,
                            levels = levels,
                            labels = labels,
                            exclude = exclude,
                            ordered = ordered)
         self.__sexp__ = res.__sexp__
+        self.ro = VectorOperationsDelegator(self)
+        self.rx = ExtractDelegator(self)
+        self.rx2 = DoubleExtractDelegator(self)
 
     def __levels_get(self):
         res = self._levels(self)
@@ -276,7 +457,172 @@ class FactorVector(IntVector):
     isordered = property(__isordered_get, None, None,
                          "are the levels in the factor ordered ?")
 
+    def iter_labels(self):
+        """ Iterate the over the labels, that is iterate over
+        the items returning associated label for each item """
+        levels = self.levels
+        for x in self:
+            yield levels[x-1]
+
+class ListVector(Vector):
+    """ R list (vector of arbitray elements)
+
+    ListVector(iteritemable) -> ListVector.
+
+    The parameter 'iteritemable' can be any object inheriting from 
+    rpy2.rlike.container.TaggedList, rpy2.rinterface.SexpVector of type VECSXP,
+    or dict.
+
+    """
+    _vector = rinterface.baseenv['vector']
+
+    def __init__(self, tlist):
+        if isinstance(tlist, rinterface.SexpVector):
+            if tlist.typeof != rinterface.VECSXP:
+                raise ValueError("tlist should of typeof VECSXP")
+            super(ListVector, self).__init__(tlist)
+        elif isinstance(tlist, rlc.TaggedList):
+            kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
+            kv = tuple(kv)
+            df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
+            super(ListVector, self).__init__(df)
+        elif hasattr(tlist, "__iter__"):
+            if not callable(tlist.__iter__):
+                raise ValueError("tlist should have a /method/ __iter__ (not an attribute)")
+            kv = [(str(k), conversion.py2ri(tlist[k])) for k in tlist]
+            kv = tuple(kv)
+            df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
+            super(ListVector, self).__init__(df)
+        else:
+            raise ValueError("tlist can be either "+
+                             "an iter-able " +
+                             " or an instance of rpy2.rinterface.SexpVector" +
+                             " of type VECSXP, or a Python dict.")
+
+    def __repr__(self):        
+        res = []
+        if len(self) < 7:
+            for i, x in enumerate(self):
+                if isinstance(x, ListVector):
+                    res.append(super(ListVector, self).__repr__())
+                else:
+                    try:
+                        name = self.names[i]
+                    except TypeError, te:
+                        name = '<no name>'
+                    res.append("  %s: %s%s  %s" %(name,
+                                                  type(x),
+                                                  os.linesep,
+                                                  x.__repr_content__()))
+        else:
+            for i, x in enumerate(self[:3]):
+                if isinstance(x, ListVector):
+                    res.append(super(ListVector, self).__repr__())
+                else:
+                    try:
+                        name = self.names[i]
+                    except TypeError, te:
+                        name = '<no name>'
+                    res.append("  %s: %s%s  %s" %(name,
+                                                  type(x),
+                                                  os.linesep,
+                                                  x.__repr_content__()))
+            res.append('  ...')
+            for i, x in enumerate(self[-3:]):
+                if isinstance(x, ListVector):
+                    res.append(super(ListVector, self).__repr__())
+                else:
+                    try:
+                        name = self.names[i]
+                    except TypeError, te:
+                        name = '<no name>'
+                    res.append("  %s: %s%s  %s" %(name,
+                                                  type(x),
+                                                  os.linesep,
+                                                  x.__repr_content__()))
+        res = super(ListVector, self).__repr__() + os.linesep + \
+            os.linesep.join(res)
+        return res
+
+    @staticmethod
+    def from_length(length):
+        """ Create a list of given length """
+        res = ListVector._vector(StrSexpVector(("list", )), length)
+        res = conversion.ri2py(res)
+        return res
+
+class DateVector(FloatVector):
+    """ Vector of dates """
+    pass
+
+class POSIXt(object):
+    """ POSIX time vector. This is an abstract class. """
+    pass
+
+class POSIXlt(POSIXt, Vector):
+    """ Representation of dates with a 9-component structure
+    (similar to Python's time.struct_time).
+
+    POSIXlt(seq) -> POSIXlt.
+        
+    The constructor accepts either an R vector
+    or a sequence (an object with the Python
+    sequence interface) of time.struct_time objects. 
+    """
+
+    def __init__(self, seq):
+        """ 
+        """
+        if isinstance(seq, Sexp):
+            super(self, Vector)(seq)
+        else:
+            for elt in seq:
+                if not isinstance(elt, struct_time):
+                    raise ValueError('All elements must inherit from time.struct_time')
+            as_posixlt = baseenv_ri['as.POSIXlt']
+            origin = StrSexpVector([time.strftime("%Y-%m-%d", 
+                                                  time.gmtime(0)),])
+            rvec = FloatSexpVector([mktime(x) for x in seq]) 
+            sexp = as_posixlt(rvec, origin = origin)
+            self.__sexp__ = sexp.__sexp__
+
+    def __getitem__(self, i):
+        # "[[" operator returns the components of a time object
+        # (and yes, this is confusing)
+        tmp = self.rx2(i-1)
+        return struct_time(*tuple(tmp))
+        
+class POSIXct(POSIXt, FloatVector):
+    """ Representation of dates as seconds since Epoch.
+    This form is preferred to POSIXlt for inclusion in a DataFrame.
+
+    POSIXlt(seq) -> POSIXlt.
     
+    The constructor accepts either an R vector floats
+    or a sequence (an object with the Python
+    sequence interface) of time.struct_time objects.
+    """
+
+    def __init__(self, seq):
+        """ 
+        """
+
+        if isinstance(seq, Sexp):
+            super(self, FloatSexpVector)(seq)
+        else:
+            for elt in seq:
+                if not isinstance(elt, struct_time):
+                    raise ValueError('All elements must inherit from time.struct_time')
+            as_posixct = baseenv_ri['as.POSIXct']
+            origin = StrSexpVector([time.strftime("%Y-%m-%d", 
+                                                  time.gmtime(0)),])
+            rvec = FloatSexpVector([mktime(x) for x in seq]) 
+            sexp = as_posixct(rvec, origin = origin)
+            self.__sexp__ = sexp.__sexp__
+        
+        
+
+
 class Array(Vector):
     """ An R array """
     _dimnames_get = baseenv_ri['dimnames']
@@ -356,7 +702,21 @@ class Matrix(Array):
         """
         res = self._rownames(self)
         return conversion.ri2py(res)
-    rownames = property(__rownames_get, None, None, "Row names")
+    def __rownames_set(self, rn):
+        if isinstance(rn, StrSexpVector):
+            if len(rn) != self.nrow:
+                raise ValueError('Invalid length.')
+            if self.dimnames is NULL:
+                dn = ListVector.from_length(2)
+                self.do_slot_assign('dimnames', dn)
+            else:
+                dn = self.dimnames
+            dn[0] = rn
+        else:
+            raise ValueError('The rownames attribute can only be an R string vector.')
+    rownames = property(__rownames_get, __rownames_set, None, "Row names")
+
+            
 
     def __colnames_get(self):
         """ Column names
@@ -365,7 +725,19 @@ class Matrix(Array):
         """
         res = self._colnames(self)
         return conversion.ri2py(res)
-    colnames = property(__colnames_get, None, None, "Column names")
+    def __colnames_set(self, cn):
+        if isinstance(cn, StrSexpVector):
+            if len(cn) != self.ncol:
+                raise ValueError('Invalid length.')
+            if self.dimnames is NULL:
+                dn = ListVector.from_length(2)
+                self.do_slot_assign('dimnames', dn)
+            else:
+                dn = self.dimnames
+            dn[1] = cn
+        else:
+            raise ValueError('The colnames attribute can only be an R string vector.')
+    colnames = property(__colnames_get, __colnames_set, None, "Column names")
         
     def transpose(self):
         """ transpose the matrix """
@@ -391,7 +763,7 @@ class Matrix(Array):
             nu = min(tuple(self.dim))
         if nv is None:
             nv = min(tuple(self.dim))
-        res = self._crossprod(self, nu = nu, nv = nv, linpack = False)
+        res = self._svd(self, nu = nu, nv = nv, LINPACK = False)
         return conversion.ri2py(res)
 
     def dot(self, m):
@@ -401,40 +773,46 @@ class Matrix(Array):
 
     def eigen(self):
         """ Eigen values """
-        res = self._eigen(self, m)
+        res = self._eigen(self)
         return conversion.ri2py(res)
 
-class DataFrame(Vector):
+class DataFrame(ListVector):
     """ R 'data.frame'.
     """
     _dataframe_name = rinterface.StrSexpVector(('data.frame',))
-    _read_csv = utils_ri['read.csv']
-    _write_csv = utils_ri['write.csv']
+    _read_csv  = utils_ri['read.csv']
+    _write_table = utils_ri['write.table']
+    _cbind     = rinterface.baseenv['cbind.data.frame']
+    _rbind     = rinterface.baseenv['rbind.data.frame']
     
     def __init__(self, tlist):
         """ Create a new data frame.
 
         :param tlist: rpy2.rlike.container.TaggedList or rpy2.rinterface.SexpVector (and of class 'data.frame' for R)
         """
-        if isinstance(tlist, rlc.TaggedList):
-            df = baseenv_ri.get("data.frame").rcall(tlist.items(), globalenv_ri)
-            super(DataFrame, self).__init__(df)
-        elif isinstance(tlist, rinterface.SexpVector):
+        if isinstance(tlist, rinterface.SexpVector):
             if tlist.typeof != rinterface.VECSXP:
                 raise ValueError("tlist should of typeof VECSXP")
             if not globalenv_ri.get('inherits')(tlist, self._dataframe_name)[0]:
                 raise ValueError('tlist should of R class "data.frame"')
             super(DataFrame, self).__init__(tlist)
-        elif isinstance(tlist, dict):
+        elif isinstance(tlist, rlc.TaggedList):
             kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
             kv = tuple(kv)
             df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
             super(DataFrame, self).__init__(df)
+        elif hasattr(tlist, "__iter__"):
+            if not callable(tlist.__iter__):
+                raise ValueError("tlist should have a /method/ __iter__ (not an attribute)")
+            kv = [(str(k), conversion.py2ri(tlist[k])) for k in tlist]
+            df = baseenv_ri.get("data.frame").rcall(tuple(kv), globalenv_ri)
+            super(DataFrame, self).__init__(df)
         else:
             raise ValueError("tlist can be either "+
-                             "an instance of rpy2.rlike.container.TaggedList," +
+                             "an instance of an iter-able class" +
+                             "(such a Python dict, rpy2.rlike.container OrdDict" +
                              " or an instance of rpy2.rinterface.SexpVector" +
-                             " of type VECSXP, or a Python dict.")
+                             " of type VECSXP")
     
     def _get_nrow(self):
         """ Number of rows. 
@@ -449,78 +827,126 @@ class DataFrame(Vector):
     ncol = property(_get_ncol, None, None)
     
     def _get_rownames(self):
-        """ Row names
-        
-        :rtype: SexpVector
-        """
         res = baseenv_ri["rownames"](self)
         return conversion.ri2py(res)
-    rownames = property(_get_rownames, None, None)
+
+    def _set_rownames(self, rownames):
+        res = baseenv_ri["rownames<-"](self, conversion.py2ri(rownames))
+        self.__sexp__ = res.__sexp__
+
+    rownames = property(_get_rownames, _set_rownames, None, 
+                        "Row names")
 
     def _get_colnames(self):
-        """ Column names
-
-        :rtype: SexpVector
-        """
         res = baseenv_ri["colnames"](self)
         return conversion.ri2py(res)
-    colnames = property(_get_colnames, None, None)
+
+    def _set_colnames(self, colnames):
+        res = baseenv_ri["colnames<-"](self, conversion.py2ri(colnames))
+        self.__sexp__ = res.__sexp__
         
+    colnames = property(_get_colnames, _set_colnames, None)
+
+
+    def cbind(self, *args, **kwargs):
+        """ bind objects as supplementary columns """
+        new_args   = [self, ] + [conversion.ri2py(x) for x in args]
+        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs.iteritems()])
+        res = self._cbind(*new_args, **new_kwargs)
+        return conversion.ri2py(res)
+
+    def rbind(self, *args, **kwargs):
+        """ bind objects as supplementary rows """
+        new_args   = [conversion.ri2py(x) for x in args]
+        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs.iteritems()])
+        res = self._rbind(self, *new_args, **new_kwargs)
+        return conversion.ri2py(res)
+
+
     @staticmethod
     def from_csvfile(path, header = True, sep = ",",
-                     quote = "\"", dec = ".",
-                     fill = True, comment_char = ""):
-        """ Create an instance from data in a .csv file. """
+                     quote = "\"", dec = ".", 
+                     row_names = rinterface.MissingArg,
+                     col_names = rinterface.MissingArg,
+                     fill = True, comment_char = "",
+                     as_is = False):
+        """ Create an instance from data in a .csv file. 
+
+        path         : string with a path 
+        header       : boolean (heading line with column names or not)
+        sep          : separator character
+        quote        : quote character
+        row_names    : column name, or column index for column names (warning: indexing starts at one in R)
+        fill         : boolean (fill the lines when less entries than columns)
+        comment_char : comment character
+        as_is        : boolean (keep the columns of strings as such, or turn them into factors) 
+        """
         path = conversion.py2ro(path)
         header = conversion.py2ro(header)
         sep = conversion.py2ro(sep)
         quote = conversion.py2ro(quote)
         dec = conversion.py2ro(dec)
+        if row_names is not rinterface.MissingArg:
+            row_names = conversion.py2ro(row_names)
+        if col_names is not rinterface.MissingArg:
+            col_names = conversion.py2ro(col_names)
         fill = conversion.py2ro(fill)
         comment_char = conversion.py2ro(comment_char)
-        res = DataFrame._read_csv(path, header = header, sep = sep,
-                                  quote = quote, dec = dec,
-                                  fill = fill,
-                                  comment_char = comment_char)
-
+        as_is = conversion.py2ro(as_is)
+        res = DataFrame._read_csv(path, 
+                                  **{'header': header, 'sep': sep,
+                                     'quote': quote, 'dec': dec,
+                                     'row.names': row_names,
+                                     'col.names': col_names,
+                                     'fill': fill,
+                                     'comment.char': comment_char,
+                                     'as.is': as_is})
+        res = conversion.ri2py(res)
         return res
 
-    def to_csvfile(self, path, append = False):
-        """ Save the data into a .csv file. """
+    def to_csvfile(self, path, quote = True, sep = ",", eol = os.linesep, na = "NA", dec = ".", 
+                   row_names = True, col_names = True, qmethod = "escape", append = False):
+        """ Save the data into a .csv file. 
+
+        path         : string with a path 
+        quote        : quote character
+        sep          : separator character
+        eol          : end-of-line character(s)
+        na           : string for missing values
+        dec          : string for decimal separator
+        row_names    : boolean (save row names, or not)
+        col_names    : boolean (save column names, or not)
+        comment_char : method to 'escape' special characters
+        append       : boolean (append if the file in the path is already existing, or not)
+        """
         path = conversion.py2ro(path)
         append = conversion.py2ro(append)
-        res = self._write_csv(path, append = append)
+        sep = conversion.py2ro(sep)
+        eol = conversion.py2ro(eol)
+        na = conversion.py2ro(na)
+        dec = conversion.py2ro(dec)
+        row_names = conversion.py2ro(row_names)
+        col_names = conversion.py2ro(col_names)
+        qmethod = conversion.py2ro(qmethod)
+        res = self._write_table(self, **{'file': path, 'quote': quote, 'sep': sep, 
+                                         'eol': eol, 'na': na, 'dec': dec,
+                                         'row.names': row_names, 
+                                         'col.names': col_names, 'qmethod': qmethod, 'append': append})
         return res
     
-class Function(RObjectMixin, rinterface.SexpClosure):
-    """ An R function.
-    
-    """
+    def iter_row(self):
+        """ iterator across rows """
+        for i in xrange(self.nrow):
+            yield self.rx(i+1, rinterface.MissingArg)
 
-    __formals = baseenv_ri.get('formals')
-    __local = baseenv_ri.get('local')
-    __call = baseenv_ri.get('call')
-    __assymbol = baseenv_ri.get('as.symbol')
-    __newenv = baseenv_ri.get('new.env')
+    def iter_column(self):
+        """ iterator across columns """
+        for i in xrange(self.ncol):
+            yield self.rx(rinterface.MissingArg, i+1)
 
-    _local_env = None
 
-    def __init__(self, *args, **kwargs):
-        super(Function, self).__init__(*args, **kwargs)
-        self._local_env = self.__newenv(hash=rinterface.BoolSexpVector((True, )))
+# end of definition for DataFrame
 
-    def __call__(self, *args, **kwargs):
-        new_args = [conversion.py2ri(a) for a in args]
-	new_kwargs = {}
-        for k, v in kwargs.iteritems():
-            new_kwargs[k] = conversion.py2ri(v)
-        res = super(Function, self).__call__(*new_args, **new_kwargs)
-        res = conversion.ri2py(res)
-        return res
-
-    def formals(self):
-        """ Return the signature of the underlying R function 
-        (as the R function 'formals()' would). """
-        res = self.__formals(self)
-        res = conversion.ri2py(res)
-        return res
+__all__ = ['Vector', 'StrVector', 'IntVector', 'BoolVector', 'ComplexVector',
+           'FloatVector', 'FactorVector', 'ListVector', 'POSIXlt', 'POSIXct',
+           'Array', 'Matrix', 'DataFrame']

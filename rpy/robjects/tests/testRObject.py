@@ -17,7 +17,7 @@ class RObjectTestCase(unittest.TestCase):
         self.assertTrue(identical(ro_v, ri_v)[0])
 
         del(ri_v)
-        self.assertEquals(rinterface.INTSXP, ro_v.typeof)
+        self.assertEqual(rinterface.INTSXP, ro_v.typeof)
 
     def testR_repr(self):
         obj = robjects.baseenv["pi"]
@@ -32,15 +32,23 @@ class RObjectTestCase(unittest.TestCase):
 
 
     def testRclass(self):
-        self.assertEquals("character",
+        self.assertEqual("character",
                           robjects.baseenv["letters"].rclass[0])
-        self.assertEquals("numeric",
+        self.assertEqual("numeric",
                           robjects.baseenv["pi"].rclass[0])
-        self.assertEquals("function",
+        self.assertEqual("function",
                           robjects.globalenv.get("help").rclass[0])
 
+    def testRclass_set(self):
+        x = robjects.r("1:3")
+        old_class = x.rclass
+        x.rclass = robjects.StrVector(("Foo", )) + x.rclass
+        self.assertEqual("Foo",
+                          x.rclass[0])
+        self.assertEqual(old_class[0], x.rclass[1])
+
     def testDo_slot(self):
-        self.assertEquals("A1.4, p. 270",
+        self.assertEqual("A1.4, p. 270",
                           robjects.globalenv.get("BOD").do_slot("reference")[0])
 
 
@@ -69,7 +77,7 @@ class RS4TestCase(unittest.TestCase):
         
     def testSlotNames(self):
         ainstance = robjects.r('new("A", a=1, b="c")')
-        self.assertEquals(('a', 'b'), tuple(ainstance.slotnames()))
+        self.assertEqual(('a', 'b'), tuple(ainstance.slotnames()))
 
     def testIsClass(self):
         ainstance = robjects.r('new("A", a=1, b="c")')

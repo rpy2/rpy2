@@ -1,5 +1,5 @@
-import os
-import sys
+import os, sys
+import tempfile
 import rpy2.rinterface
 
 rpy2.rinterface.initr()
@@ -8,7 +8,7 @@ import conversion
 
 class RObjectMixin(object):
     """ Class to provide methods common to all RObject instances """
-    name = None
+    __rname__ = None
 
     __tempfile = rpy2.rinterface.baseenv.get("tempfile")
     __file = rpy2.rinterface.baseenv.get("file")
@@ -18,27 +18,30 @@ class RObjectMixin(object):
     __readlines = rpy2.rinterface.baseenv.get("readLines")
     __unlink = rpy2.rinterface.baseenv.get("unlink")
     __rclass = rpy2.rinterface.baseenv.get("class")
+    __rclass_set = rpy2.rinterface.baseenv.get("class<-")
     __show = rpy2.rinterface.baseenv.get("show")
 
     def __str__(self):
         if sys.platform == 'win32':
-            tfile = self.__tempfile()
-            tmp = self.__file(tfile, open = rpy2.rinterface.StrSexpVector(["w", ]))
+            tmpf = tempfile.NamedTemporaryFile()
+            tmp = self.__file(rpy2.rinterface.StrSexpVector([tmpf.name,]), 
+                              open = rpy2.rinterface.StrSexpVector(["r+", ]))
+            self.__sink(tmp)
         else:
-            tmp = self.__fifo(rpy2.rinterface.StrSexpVector(["", ]))
-        self.__sink(tmp)
+            writeconsole = rpy2.rinterface.get_writeconsole()
+            s = []
+            def f(x):
+                s.append(x)
+            rpy2.rinterface.set_writeconsole(f)
         self.__show(self)
-        self.__sink()
         if sys.platform == 'win32':
-            self.__close(tmp)
-            tmp = self.__file(tfile, open = rpy2.rinterface.StrSexpVector(["r", ]))
-        s = self.__readlines(tmp)
-        if sys.platform == 'win32':
-            self.__close(tmp)
-            self.__unlink(tfile)
+            self.__sink()
+            s = tmpf.readlines()
+            tmpf.close()
+            s = str.join(os.linesep, s)
         else:
-            self.__close(tmp)
-        s = str.join(os.linesep, s)
+            rpy2.rinterface.set_writeconsole(writeconsole)
+            s = str.join('', s)
         return s
 
     def r_repr(self):
@@ -49,15 +52,21 @@ class RObjectMixin(object):
 
     def _rclass_get(self):
         try:
-            return self.__rclass(self)
+            res = self.__rclass(self)
+            #res = conversion.ri2py(res)
+            return res
         except rpy2.rinterface.RRuntimeError, rre:
             if self.typeof == rpy2.rinterface.SYMSXP:
                 #unevaluated expression: has no class
                 return (None, )
             else:
-                raise rre        
-    rclass = property(_rclass_get, None, None,
-                      "name of the R class for the object.")
+                raise rre
+    def _rclass_set(self, value):
+        res = self.__rclass_set(self, value)
+        self.__sexp__ = res.__sexp__
+            
+    rclass = property(_rclass_get, _rclass_set, None,
+                      "R class for the object, stored an R string vector.")
 
 
 def repr_robject(o, linesep=os.linesep):

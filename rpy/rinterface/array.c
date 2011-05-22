@@ -1,5 +1,42 @@
-/* A. Belopolsky's Array interface */
+/* A. Belopolsky's Array interface, modified as seen fit 
+ * to accommodate changes in numpy and in Python 3. 
+ * This will be phased out
+ * as Numpy is now using memoryviews.
+ * Laurent Gautier - 2010
+ */
 
+/*
+ ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ * 
+ * Copyright (C) 2008-2011 Laurent Gautier
+ *
+ * Portions created by Alexander Belopolsky are 
+ * Copyright (C) 2006 Alexander Belopolsky.
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
 
 #include <Python.h>
 #include <Rdefines.h>
@@ -9,11 +46,14 @@
 #define ARRAY_INTERFACE_VERSION 2
 
 /* Array Interface flags */
-#define CONTIGUOUS    0x001
-#define FORTRAN       0x002
-#define ALIGNED       0x100
-#define NOTSWAPPED    0x200
-#define WRITEABLE     0x400
+#define NPY_CONTIGUOUS    0x0001
+#define NPY_FORTRAN       0x0002
+#define NPY_ENSURECOPY    0x0020
+#define NPY_ALIGNED       0x0100
+#define NPY_NOTSWAPPED    0x0200
+#define NPY_WRITEABLE     0x0400
+#define NPY_BEHAVED       (NPY_ALIGNED | NPY_WRITEABLE)
+#define NPY_FARRAY        (NPY_FORTRAN | NPY_BEHAVED)
 
 typedef struct {
   int version;
@@ -29,6 +69,9 @@ typedef struct {
 static char
 sexp_typekind(SEXP sexp)
 {
+  /* Given an SEXP object, this returns the corresponding
+   * Type in the numpy world.
+   */
   switch (TYPEOF(sexp)) {
   case REALSXP: return 'f';
   case INTSXP: return 'i';
@@ -73,27 +116,35 @@ sexp_itemsize(SEXP sexp)
   return 0;
 }
 
-static int
-sexp_rank(SEXP sexp)
-{
-  SEXP dim = getAttrib(sexp, R_DimSymbol);
-  if (dim == R_NilValue)
-    return 1;
-  return LENGTH(dim);
-}
+/* static int */
+/* sexp_rank(SEXP sexp) */
+/* { */
+/*   /\* Return the number of dimensions for the array  */
+/*    * (e.g., a vector will return 1, a matrix 2, ...) */
+/*    *\/ */
+/*   SEXP dim = getAttrib(sexp, R_DimSymbol); */
+/*   if (dim == R_NilValue) */
+/*     return 1; */
+/*   return GET_LENGTH(dim); */
+/* } */
 
-static void
-sexp_shape(SEXP sexp, Py_intptr_t* shape, int nd)
-{
-  int i;
-  SEXP dim = getAttrib(sexp, R_DimSymbol);
-  if (dim == R_NilValue)
-    shape[0] = LENGTH(sexp);
-  else for (i = 0; i < nd; ++i) {
-      shape[i] = INTEGER(dim)[i];
-    }
-}
+/* static void */
+/* sexp_shape(SEXP sexp, Py_intptr_t* shape, int nd) */
+/* { */
+/*   /\* Set the numpy 'shape', that is a vector of Py_intptr_t */
+/*    * containing the size of each dimension (see sexp_rank). */
+/*    *\/ */
+/*   int i; */
+/*   SEXP dim = getAttrib(sexp, R_DimSymbol); */
+/*   if (dim == R_NilValue) */
+/*     shape[0] = LENGTH(sexp); */
+/*   else for (i = 0; i < nd; ++i) { */
+/*       shape[i] = INTEGER(dim)[i]; */
+/*     } */
+/* } */
 
+
+#if (PY_VERSION_HEX < 0x02070000)  
 static void
 array_struct_free(void *ptr, void *arr)
 {
@@ -102,48 +153,69 @@ array_struct_free(void *ptr, void *arr)
   Py_DECREF((PyObject *)arr);
   PyMem_Free(inter);
 }
+#else
+static void
+array_struct_free(PyObject *rpynumpycapsule)
+{
+  PyArrayInterface *inter = 
+    (PyArrayInterface *)(PyCapsule_GetPointer(rpynumpycapsule,
+					      NULL));
+  PyMem_Free(inter->shape);
+  PyMem_Free(inter);
+}
+#endif
 
-
-PyObject* 
+static PyObject* 
 array_struct_get(PySexpObject *self)
 {
+  /* Get an array structure as understood by the numpy package from
+     'self' (a SexpVector).
+   */
   SEXP sexp = RPY_SEXP(self);
   if (!sexp) {
     PyErr_SetString(PyExc_AttributeError, "Null sexp");
     return NULL;
   }
-  PyArrayInterface *inter;
+
   char typekind =  sexp_typekind(sexp);
   if (!typekind) {
     PyErr_SetString(PyExc_AttributeError, "Unsupported SEXP type");
     return NULL;
   }
+
+  /* allocate memory for the array description (this is what will be returned) */
+  PyArrayInterface *inter;
   inter = (PyArrayInterface *)PyMem_Malloc(sizeof(PyArrayInterface));
   if (!inter) {
     return PyErr_NoMemory();
   }
-  int nd = sexp_rank(sexp);
-  int i;
+
   inter->version = ARRAY_INTERFACE_VERSION;
+
+  int nd = sexp_rank(sexp);
   inter->nd = nd;
+
   inter->typekind = typekind;
   inter->itemsize = sexp_itemsize(sexp);
-  inter->flags = FORTRAN|ALIGNED|NOTSWAPPED|WRITEABLE;
-  inter->shape = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t)*nd*2);
+  inter->flags = (NPY_FARRAY | NPY_NOTSWAPPED);
+  inter->shape = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t)*nd);
   sexp_shape(sexp, inter->shape, nd);
-  inter->strides = inter->shape + nd;
-  Py_intptr_t stride = inter->itemsize;
-  inter->strides[0] = stride;
-  for (i = 1; i < nd; ++i) {
-    stride *= inter->shape[i-1];
-    inter->strides[i] = stride;
-  }
+  inter->strides = (Py_intptr_t*)PyMem_Malloc(sizeof(Py_intptr_t)*nd);
+  sexp_strides(sexp, inter->strides, inter->itemsize,
+	       inter->shape, nd);
+
   inter->data = sexp_typepointer(sexp);
   if (inter->data == NULL) {
     PyErr_SetString(PyExc_RuntimeError, "Error while mapping type.");
     return NULL;
   }
   Py_INCREF(self);
+#if (PY_VERSION_HEX < 0x02070000) 
   return PyCObject_FromVoidPtrAndDesc(inter, self, array_struct_free);
+#else
+  return PyCapsule_New(inter,
+		       NULL, /* Numpy does not seem to give a name */
+		       (PyCapsule_Destructor) array_struct_free);
+#endif
 }
 

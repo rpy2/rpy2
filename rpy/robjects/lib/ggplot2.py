@@ -1,20 +1,23 @@
 import rpy2.robjects.methods
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
-
+import rpy2.rinterface as rinterface
+from rpy2.robjects.packages import importr
 import copy
+
+NULL = robjects.NULL
 
 #getmethod = robjects.baseenv.get("getMethod")
 
 rimport = robjects.baseenv.get('library')
-rimport('ggplot2')
+ggplot2 = importr('ggplot2')
 
 ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
 
 StrVector = robjects.StrVector
 
 def as_symbol(x):
-   res = robjects.baseenv["parse"](text = x)
+   res = rinterface.parse(x)
    return res
 
 class GGPlot(robjects.RObject):
@@ -28,7 +31,7 @@ class GGPlot(robjects.RObject):
         res = cls(cls._constructor(data))
         return res
     
-    def plot(self, vp = robjects.NULL):
+    def plot(self, vp = robjects.constants.NULL):
         self._rprint(self, vp = vp)
 
     def __add__(self, obj):
@@ -39,8 +42,7 @@ ggplot = GGPlot.new
 
 
 class Aes(robjects.Vector):
-    _constructor = ggplot2_env['aes_string']
-    #_constructor = ggplot2_env['aes']
+    _constructor = ggplot2_env['aes']
     
     @classmethod
     def new(cls, **kwargs):
@@ -50,6 +52,19 @@ class Aes(robjects.Vector):
        res = cls(cls._constructor(**new_kwargs))
        return res
 aes = Aes.new
+
+class AesString(robjects.Vector):
+    _constructor = ggplot2_env['aes_string']
+    
+    @classmethod
+    def new(cls, **kwargs):
+       new_kwargs = copy.copy(kwargs)
+       for k,v in kwargs.iteritems():
+          new_kwargs[k] = as_symbol(v)
+       res = cls(cls._constructor(**new_kwargs))
+       return res
+aes_string = AesString.new
+
 
 class Layer(robjects.RObject):
     _constructor = ggplot2_env['layer']
@@ -202,7 +217,8 @@ class FacetWrap(Facet):
 facet_wrap = FacetWrap.new
 
 class Geom(GBaseObject):
-    pass
+   pass
+       
 
 class GeomAbline(Geom):
    _constructor = ggplot2_env['geom_abline']
@@ -384,12 +400,25 @@ class ScaleX(Scale):
 class ScaleY(Scale):
    pass
 
+class Limits(Scale):
+   _constructor = ggplot2_env['limits']
+limits = Limits.new
+
+class XLim(Scale):
+   _constructor = ggplot2_env['xlim']
+xlim = XLim.new
+
+class YLim(Scale):
+   _constructor = ggplot2_env['ylim']
+ylim = YLim.new
+
+
 class ScaleXContinuous(ScaleX):
    _constructor = ggplot2_env['scale_x_continuous']
-scale_x_continous = ScaleXContinuous.new
+scale_x_continuous = ScaleXContinuous.new
 class ScaleYContinuous(ScaleY):
    _constructor = ggplot2_env['scale_y_continuous']
-scale_y_continous = ScaleYContinuous.new
+scale_y_continuous = ScaleYContinuous.new
 class ScaleXDiscrete(ScaleX):
    _constructor = ggplot2_env['scale_x_discrete']
 scale_x_discrete = ScaleXDiscrete.new
@@ -483,15 +512,33 @@ scale_y_sqrt = ScaleYSqrt.new
 class ScaleColourBrewer(ScaleColour):
    _constructor = ggplot2_env['scale_colour_brewer']
 scale_colour_brewer = ScaleColourBrewer.new
+class ScaleColourContinuous(ScaleColour):
+   _constructor = ggplot2_env['scale_colour_continuous']
+scale_colour_continuous = ScaleColourContinuous.new
+class ScaleColourDiscrete(ScaleColour):
+   _constructor = ggplot2_env['scale_colour_discrete']
+scale_colour_discrete = ScaleColourDiscrete.new
 class ScaleColourGradient(ScaleColour):
    _constructor = ggplot2_env['scale_colour_gradient']
 scale_colour_gradient = ScaleColourGradient.new
 class ScaleColourGradient2(ScaleColour):
    _constructor = ggplot2_env['scale_colour_gradient2']
 scale_colour_gradient2 = ScaleColourGradient2.new
+class ScaleColourGradientN(ScaleColour):
+   _constructor = ggplot2_env['scale_colour_gradientn']
+scale_colour_gradientn = ScaleColourGradientN.new
 class ScaleColourGrey(ScaleColour):
    _constructor = ggplot2_env['scale_colour_grey']
 scale_colour_grey = ScaleColourGrey.new
+class ScaleColourHue(ScaleColour):
+   _constructor = ggplot2_env['scale_colour_hue']
+scale_colour_hue = ScaleColourHue.new
+class ScaleColourIdentity(ScaleColour):
+   _constructor = ggplot2_env['scale_colour_identity']
+scale_colour_identity = ScaleColourIdentity.new
+class ScaleColourManual(ScaleColour):
+   _constructor = ggplot2_env['scale_colour_manual']
+scale_colour_manual = ScaleColourManual.new
 class ScaleFillBrewer(ScaleFill):
    _constructor = ggplot2_env['scale_fill_brewer']
 scale_fill_brewer = ScaleFillBrewer.new
@@ -522,15 +569,125 @@ scale_fill_identity = ScaleFillIdentity.new
 class ScaleFillManual(ScaleFill):
    _constructor = ggplot2_env['scale_fill_manual']
 scale_fill_manual = ScaleFillManual.new
+class ScaleLinetypeManual(ScaleLinetype):
+   _constructor = ggplot2_env['scale_linetype_manual']
+scale_linetype_manual = ScaleLinetypeManual.new
+class ScaleShapeManual(ScaleShape):
+   _constructor = ggplot2_env['scale_shape_manual']
+scale_shape_manual = ScaleShapeManual.new
+
+
+class Options(robjects.Vector):
+   def __init__(self, obj):
+      self.__sexp__ = obj.__sexp__
+
+   def __repr__(self):
+      s = '<instance of %s : %i>' %(type(self), id(self)) 
+      return s
+
+class Theme(Options):
+   pass
+
+class ThemeBlank(Theme):
+    _constructor = ggplot2.theme_blank
+    @classmethod
+    def new(cls):
+        res = cls(cls._constructor())
+        return res
+
+theme_blank = ThemeBlank.new
+
+theme_get = ggplot2.theme_get
+
+class ThemeGrey(Theme):
+    _constructor = ggplot2.theme_grey
+    @classmethod
+    def new(cls, base_size = 12):
+       res = cls(cls._constructor(base_size = base_size))
+       return res
+
+theme_grey = ThemeGrey.new
+
+class ThemeRect(Theme):
+    _constructor = ggplot2.theme_rect
+    @classmethod
+    def new(cls, fill = robjects.NA_Logical, colour = "black", 
+            size = 0.5, linetype = 1):
+       res = cls(cls._constructor(fill = fill, colour = colour, 
+                                  size = size, linetype = linetype))
+       return res
+theme_rect = ThemeRect.new
+
+class ThemeSegment(Theme):
+    _constructor = ggplot2.theme_rect
+    @classmethod
+    def new(cls, colour = 'black', size = 0.5, linetype = 1):
+       res = cls(cls._constructor(colour = colour, size = size,
+                                  linetype = linetype))
+       return res
+theme_segment = ThemeSegment.new
+
+# Theme text is not a vector :/
+class ThemeText(robjects.Function):
+    _constructor = ggplot2.theme_text
+    @classmethod
+    def new(cls, family = "", face = "plain", colour = "black", size = 10,
+            hjust = 0.5, vjust = 0.5, angle = 0, lineheight = 1.1):
+       res = cls(cls._constructor(family = family, face = face, 
+                                  colour = colour, size = size,
+                                  hjust = hjust, vjust = vjust, 
+                                  angle = angle, lineheight = lineheight))
+       return res
+theme_text = ThemeText.new
+
+class ThemeBW(Theme):
+    _constructor = ggplot2.theme_bw
+    @classmethod
+    def new(cls, base_size = 12):
+       res = cls(cls._constructor(base_size = base_size))
+       return res
+
+theme_bw = ThemeBW.new
+
+class ThemeGray(Theme):
+    _constructor = ggplot2.theme_gray
+    @classmethod
+    def new(cls, base_size = 12):
+       res = cls(cls._constructor(base_size = base_size))
+       return res
+theme_gray = ThemeGray.new
+
+class ThemeLine(Theme):
+    _constructor = ggplot2.theme_line
+    @classmethod
+    def new(cls, colour = 'black', size = 0.5, linetype = 1):
+       res = cls(cls._constructor(colour = colour, size = size,
+                                  linetype = linetype))
+       return res
+theme_line = ThemeLine.new
+
+#theme_render
+theme_set = ggplot2.theme_set
+
+theme_update = ggplot2.theme_update  
+
+gplot = ggplot2.qplot
+
+map_data = ggplot2.map_data
 
 opts = ggplot2_env['opts']
+
 
 original_conversion = conversion.ri2py
 def ggplot2_conversion(robj):
 
     pyobj = original_conversion(robj)
 
-    if 'ggplot' in pyobj.rclass:
+    rcls = pyobj.rclass
+    if rcls is NULL:
+       rcls = (None, )
+
+    if 'ggplot' in rcls:
        pyobj = GGPlot(pyobj)
 
     return pyobj

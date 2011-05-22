@@ -97,8 +97,8 @@ class ConcreteDeviceTestCase(unittest.TestCase):
         def polyline(self, x, y):
             self._file.write('polyline(%f, %f)' %(x, y))
             
-        def clip(self):
-            pass
+        def clip(self, x1, y1, x2, y2):
+            self._file.write('clip(%f, %f, %f, %f)' %(x1, y1, x2, y2))
 
     def setUp(self):
         #f = tempfile.NamedTemporaryFile()
@@ -119,7 +119,7 @@ class ConcreteDeviceTestCase(unittest.TestCase):
 
     def testSize(self):
         size = self.gd.size()
-        self.assertEquals(size, [1,2,3,4])
+        self.assertEqual(size, [1,2,3,4])
 
     def testLine(self):
         res = rinterface.globalenv.get('plot.new')()
@@ -132,4 +132,6 @@ def suite():
     return suite
 
 if __name__ == '__main__':
-     unittest.main()
+    tr = unittest.TextTestRunner(verbosity = 2)
+    tr.run(suite())
+ 

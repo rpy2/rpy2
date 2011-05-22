@@ -25,13 +25,13 @@ class RInstanceTestCase(unittest.TestCase):
         myList = as_list_R(mySeq)
         
         for i, li in enumerate(myList):
-            self.assertEquals(i, myList[i][0])
+            self.assertEqual(i, myList[i][0])
 
     def testEval(self):
         # vector long enough to span across more than one line
         x = robjects.baseenv['seq'](1, 50, 2)
         res = robjects.r('sum(%s)' %x.r_repr())
-        self.assertEquals(625, res[0])
+        self.assertEqual(625, res[0])
         
 class MappingTestCase(unittest.TestCase):
 
@@ -71,39 +71,39 @@ class MappingTestCase(unittest.TestCase):
         py = 1
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEquals(rinterface.INTSXP, rob.typeof)
+        self.assertEqual(rinterface.INTSXP, rob.typeof)
 
     def testMapperPy2R_boolean(self):        
         py = True
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEquals(rinterface.LGLSXP, rob.typeof)
+        self.assertEqual(rinterface.LGLSXP, rob.typeof)
 
     def testMapperPy2R_str(self):        
         py = 'houba'
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEquals(rinterface.STRSXP, rob.typeof)
+        self.assertEqual(rinterface.STRSXP, rob.typeof)
 
     def testMapperPy2R_unicode(self):        
         py = u'houba'
         self.assertTrue(isinstance(py, unicode))
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEquals(rinterface.STRSXP, rob.typeof)
+        self.assertEqual(rinterface.STRSXP, rob.typeof)
         #FIXME: more tests
 
     def testMapperPy2R_float(self):
         py = 1.0
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEquals(rinterface.REALSXP, rob.typeof)
+        self.assertEqual(rinterface.REALSXP, rob.typeof)
 
     def testMapperPy2R_complex(self):
         py = 1.0 + 2j
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEquals(rinterface.CPLXSXP, rob.typeof)
+        self.assertEqual(rinterface.CPLXSXP, rob.typeof)
 
 
     def testOverride_ri2py(self):

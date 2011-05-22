@@ -1,5 +1,32 @@
-
-/* Copyright Laurent Gautier - 2009 */
+/*
+ ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ * 
+ * Copyright (C) 2008-2011 Laurent Gautier
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
 
 #include <Python.h>
 #include <R.h>
@@ -42,6 +69,7 @@ static inline void rpy_GrDev_CallBack(pDevDesc dd, PyObject *name)
 
   Py_XDECREF(result);  
 }
+
 
 static PyObject *GrDev_close_name;
 static void rpy_Close(pDevDesc dd)
@@ -122,7 +150,7 @@ static void rpy_Size(double *left, double *right,
     *bottom = PyFloat_AsDouble(PyTuple_GetItem(result, 2));
     *top = PyFloat_AsDouble(PyTuple_GetItem(result, 3));
   }
-
+  Py_DECREF(lrbt);
   Py_XDECREF(result);  
 }
 
@@ -131,9 +159,9 @@ PyDoc_STRVAR(GrDev_size_doc,
 static PyObject* GrDev_size(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, 
-	       "Device size not implemented.\n"
-	       "[ expected signature is ((left, right, bottom, top)) \n]"
-	       "[ should return a tuple of length 4]");
+               "Device size not implemented.\n"
+               "[ expected signature is ((left, right, bottom, top)) \n]"
+               "[ should return a tuple of length 4]");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -188,6 +216,10 @@ static void rpy_Clip(double x0, double x1, double y0, double y1, pDevDesc dd)
                                       NULL);
 
   rpy_printandclear_error();
+  Py_DECREF(py_x0);
+  Py_DECREF(py_x1);
+  Py_DECREF(py_y0);
+  Py_DECREF(py_y1);
   Py_XDECREF(result);
 }
 
@@ -211,12 +243,23 @@ static double rpy_StrWidth(const char *str, const pGEcontext gc, pDevDesc dd)
 
   /* FIXME give the callback access to gc */
   PyObject *self = (PyObject *)dd->deviceSpecific;
+#if (PY_VERSION_HEX < 0x03010000)
   PyObject *py_str = PyString_FromString(str);
-  result = PyObject_CallMethodObjArgs(self, GrDev_strwidth_name, py_str);
+#else
+  PyObject *py_str = PyUnicode_FromString(str);
+#endif
+  result = PyObject_CallMethodObjArgs(self, GrDev_strwidth_name, py_str, NULL);
 
+  rpy_printandclear_error();
+  /*FIXME: only one of the two error should be printed. */
+  if (!PyFloat_Check(result)) {
+    PyErr_SetString(PyExc_TypeError,
+		    "The value returned by strwidth must be a float");
+  }
   rpy_printandclear_error();
 
   double r_res = PyFloat_AsDouble(result);
+  Py_DECREF(py_str);
   Py_DECREF(result);  
 
   return r_res;
@@ -245,7 +288,11 @@ static void rpy_Text(double x, double y, const char *str,
   /* FIXME optimize ? */
   PyObject *py_x = PyFloat_FromDouble(x);
   PyObject *py_y = PyFloat_FromDouble(y);
+#if (PY_VERSION_HEX < 0x03010000)
   PyObject *py_str = PyString_FromString(str);
+#else
+  PyObject *py_str = PyUnicode_FromString(str);
+#endif
   PyObject *py_rot = PyFloat_FromDouble(rot);
   PyObject *py_hadj = PyFloat_FromDouble(hadj);
   /* FIXME pass gc ? */
@@ -255,8 +302,12 @@ static void rpy_Text(double x, double y, const char *str,
                                       NULL);
 
   rpy_printandclear_error();
-
-  Py_DECREF(result);  
+  Py_DECREF(py_x);
+  Py_DECREF(py_y);
+  Py_DECREF(py_str);
+  Py_DECREF(py_rot);
+  Py_DECREF(py_hadj);
+  Py_XDECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_text_doc,
@@ -291,8 +342,11 @@ static void rpy_Rect(double x0, double x1, double y0, double y1,
                                       NULL);
 
   rpy_printandclear_error();
-
-  Py_DECREF(result);  
+  Py_DECREF(py_x0);
+  Py_DECREF(py_x1);
+  Py_DECREF(py_y0);
+  Py_DECREF(py_y1);
+  Py_XDECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_rect_doc,
@@ -325,7 +379,10 @@ static void rpy_Circle(double x, double y, double r,
                                       NULL);
 
   rpy_printandclear_error();
-  Py_DECREF(result);  
+  Py_DECREF(py_x);
+  Py_DECREF(py_y);
+  Py_DECREF(py_r);
+  Py_XDECREF(result);  
 }
 
 PyDoc_STRVAR(GrDev_circle_doc,
@@ -360,6 +417,10 @@ static void rpy_Line(double x1, double y1,
                                       NULL);
 
   rpy_printandclear_error();
+  Py_DECREF(py_x1);
+  Py_DECREF(py_y1);
+  Py_DECREF(py_x2);
+  Py_DECREF(py_y2);
   Py_DECREF(result);  
 }
 
@@ -368,8 +429,8 @@ PyDoc_STRVAR(GrDev_line_doc,
 static PyObject* GrDev_line(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, 
-	       "Device line not implemented.\n"
-	       "[expected signature is (x1, y1, x2, y2)]");
+               "Device line not implemented.\n"
+               "[expected signature is (x1, y1, x2, y2)]");
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -397,6 +458,8 @@ static void rpy_PolyLine(int n, double *x, double *y,
                                       NULL);
 
   rpy_printandclear_error();
+  Py_DECREF(py_x);
+  Py_DECREF(py_y);
   Py_DECREF(result);  
 }
 
@@ -424,13 +487,23 @@ static void rpy_Polygon(int n, double *x, double *y,
 #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: Polygon.\n");
 #endif
-  PyObject *py_x = PyFloat_FromDouble(*x);
-  PyObject *py_y = PyFloat_FromDouble(*y);
+  PyObject *py_n = PyLong_FromLong(n);
+  /* FIXME: optimize by moving py_x and py_y to Python buffers */
+  PyObject *py_x = PyTuple_New((Py_ssize_t)n);
+  PyObject *py_y = PyTuple_New((Py_ssize_t)n);
+  int i;
+  for (i = 0; i < n; i++) {
+    PyTuple_SET_ITEM(py_x, (Py_ssize_t)i, PyFloat_FromDouble(x[i]));
+    PyTuple_SET_ITEM(py_y, (Py_ssize_t)i, PyFloat_FromDouble(y[i]));
+  }
   /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_polygon_name, 
-                                      py_x, py_y,
+                                      py_n, py_x, py_y,
                                       NULL);
   rpy_printandclear_error();
+  Py_DECREF(py_x);
+  Py_DECREF(py_y);
+  Py_DECREF(py_n);
   Py_DECREF(result);  
 }
 
@@ -444,8 +517,7 @@ static PyObject* GrDev_polygon(PyObject *self, PyObject *args)
 }
 
 static PyObject* GrDev_locator_name;
-static Rboolean rpy_Locator(double *x, double *y, 
-                        const pGEcontext gc, pDevDesc dd)
+static Rboolean rpy_Locator(double *x, double *y, pDevDesc dd)
 {
   PyObject *result;
 
@@ -456,13 +528,15 @@ static Rboolean rpy_Locator(double *x, double *y,
   PyObject *self = (PyObject *)dd->deviceSpecific;
   /* FIXME optimize ? */
 #ifdef RPY_DEBUG_GRDEV
-  printf("FIXME: Polygon.\n");
+  printf("FIXME: Locator.\n");
 #endif
-  PyObject *py_x = PyFloat_FromDouble(*x);
-  PyObject *py_y = PyFloat_FromDouble(*y);
-  /* FIXME pass gc ? */
-  result = PyObject_CallMethodObjArgs(self, GrDev_polygon_name, 
-                                      py_x, py_y,
+  //PyObject *py_x = PyList_New(0);
+  //PyObject *py_y = PyList_New(0);
+
+  /* FIXME: pass gc ? */
+  /* FIXME: test !dd->dev->locator before proceed ? */
+  result = PyObject_CallMethodObjArgs(self, GrDev_locator_name, 
+                                      //py_x, py_y,
                                       NULL);
 
   rpy_printandclear_error();
@@ -474,12 +548,19 @@ static Rboolean rpy_Locator(double *x, double *y,
     PyErr_Format(PyExc_ValueError, "Callback 'size' should return a tuple of length 2.");
     rpy_printandclear_error();    
   } else {
-    *x = PyFloat_AsDouble(PyTuple_GetItem(result, 0));
-    *y = PyFloat_AsDouble(PyTuple_GetItem(result, 1));
+    x[0] = PyFloat_AsDouble(PyTuple_GET_ITEM(result, 0));
+    y[0] = PyFloat_AsDouble(PyTuple_GET_ITEM(result, 1));
+    //int i;
+      //for (i = 0; i < n; i++) {
+      //x[i] = PyFloat_AsDouble(PyList_GET_ITEM(py_x, (Py_ssize_t)i));
+      //y[i] = PyFloat_AsDouble(PyList_GET_ITEM(py_y, (Py_ssize_t)i));
+      //}
   }
 
   Rboolean res_r = TRUE;
   printf("FIXME: return TRUE or FALSE");
+  //Py_DECREF(py_x);
+  //Py_DECREF(py_y);
   Py_DECREF(result);
   return res_r;
 }
@@ -503,11 +584,16 @@ static void rpy_Mode(int mode, pDevDesc dd)
   /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
+#if (PY_VERSION_HEX < 0x03010000)
   PyObject *py_mode = PyInt_FromLong((long)mode);
+#else
+  PyObject *py_mode = PyLong_FromLong((long)mode);
+#endif
   result = PyObject_CallMethodObjArgs(self, GrDev_mode_name, 
                                       py_mode,
                                       NULL);
   rpy_printandclear_error();
+  Py_DECREF(py_mode);
   Py_DECREF(result);  
 }
 
@@ -536,14 +622,18 @@ static void rpy_MetricInfo(int c, const pGEcontext gc,
 #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: MetricInfo.\n");
 #endif
+#if (PY_VERSION_HEX < 0x03010000)
   PyObject *py_c = PyInt_FromLong((long)c);
-  PyObject *py_ascent = PyFloat_FromDouble(*ascent);
-  PyObject *py_descent = PyFloat_FromDouble(*descent);
-  PyObject *py_width = PyFloat_FromDouble(*width);
+#else
+  PyObject *py_c = PyLong_FromLong((long)c);
+#endif
+  //PyObject *py_ascent = PyFloat_FromDouble(*ascent);
+  //PyObject *py_descent = PyFloat_FromDouble(*descent);
+  //PyObject *py_width = PyFloat_FromDouble(*width);
   /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_metricinfo_name, 
                                       py_c,
-                                      py_ascent, py_descent, py_width,
+                                      //py_ascent, py_descent, py_width,
                                       NULL);
 
   rpy_printandclear_error();
@@ -560,6 +650,10 @@ static void rpy_MetricInfo(int c, const pGEcontext gc,
     *descent = PyFloat_AsDouble(PyTuple_GetItem(result, 1));
     *width = PyFloat_AsDouble(PyTuple_GetItem(result, 2));
   }
+  Py_DECREF(py_c);
+  //Py_DECREF(py_ascent);
+  //Py_DECREF(py_descent);
+  //Py_DECREF(py_width);
   Py_DECREF(result);
 
 }
@@ -589,7 +683,11 @@ static SEXP rpy_GetEvent(SEXP rho, const char *prompt)
 #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: MetricInfo.\n");
 #endif
+#if (PY_VERSION_HEX < 0x03010000)
   PyObject *py_prompt = PyString_FromString(prompt);
+#else
+  PyObject *py_prompt = PyUnicode_FromString(prompt);
+#endif
   /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_getevent_name,
                                       py_prompt,
@@ -603,6 +701,7 @@ static SEXP rpy_GetEvent(SEXP rho, const char *prompt)
   /* FIXME: handle refcount and protection of the resulting r_res */
   printf("FIXME: handle refcount and protection of the resulting r_res");
   Py_DECREF(result);
+  Py_DECREF(py_prompt);
   return r_res;
 }
 
@@ -703,7 +802,11 @@ GrDev_dealloc(PyGrDevObject *self)
 #endif
   R_ReleaseObject(self->devnum);
   PyMem_Free(((PyGrDevObject *)self)->grdev);
+#if (PY_VERSION_HEX < 0x03010000)
   self->ob_type->tp_free((PyObject*)self);
+#else
+  Py_TYPE(self)->tp_free((PyObject*)self);
+#endif
 #ifdef RPY_DEBUG_GRDEV
   printf("  done.\n");
 #endif
@@ -713,10 +816,17 @@ static PyObject*
 GrDev_repr(PyObject *self)
 {
   pDevDesc devdesc = ((PyGrDevObject *)self)->grdev;
+#if (PY_VERSION_HEX < 0x03010000)
   return PyString_FromFormat("<%s - Python:\%p / R graphical device:\%p>",
                              self->ob_type->tp_name,
                              self,
                              devdesc);
+#else
+  return PyUnicode_FromFormat("<%s - Python:\%p / R graphical device:\%p>",
+			      Py_TYPE(self)->tp_name,
+			      self,
+			      devdesc);
+#endif
 }
 
 static PyMethodDef GrDev_methods[] = {
@@ -758,84 +868,11 @@ static PyMethodDef GrDev_methods[] = {
   {NULL, NULL}          /* sentinel */
 };
 
+RPY_GRDEV_BOOL_GETSET(hasTextUTF8,
+		      "UTF8 capabilities of the device.")
 
-PyDoc_STRVAR(GrDev_hasTextUTF8_doc,
-             "UTF8 capabilities of the device.");
-static PyObject*
-GrDev_hasTextUTF8_get(PyObject *self)
-{
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->hasTextUTF8 == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
-}
-static int
-GrDev_hasTextUTF8_set(PyObject *self, PyObject *value)
-{
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute hasTextUTF8 cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute hasTextUTF8 must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->hasTextUTF8 = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->hasTextUTF8 = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute hasTextUTF8.");
-    return -1;
-  }
-  return 0;
-}
-
-PyDoc_STRVAR(GrDev_wantSymbolUTF8_doc,
-             "UTF8 capabilities of the device.");
-static PyObject*
-GrDev_wantSymbolUTF8_get(PyObject *self)
-{
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->wantSymbolUTF8 == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
-}
-static int
-GrDev_wantSymbolUTF8_set(PyObject *self, PyObject *value)
-{
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute wantSymbolUTF8 cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute wantSymbolUTF8 must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->wantSymbolUTF8 = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->wantSymbolUTF8 = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute hasTextUTF8.");
-    return -1;
-  }
-  return 0;
-}
+RPY_GRDEV_BOOL_GETSET(wantSymbolUTF8,
+		      "UTF8 capabilities of the device.")
 
 PyDoc_STRVAR(GrDev_left_doc,
              "Left coordinate.");
@@ -849,18 +886,7 @@ GrDev_left_get(PyObject *self)
 static int
 GrDev_left_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute left cannot be deleted");
-    return -1;
-  }
-  if (! PyFloat_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute left must be a float");
-    return -1;
-  }
-  ((PyGrDevObject *)self)->grdev->left = PyFloat_AsDouble(value);    
-  return 0;
+  RPY_GRDEV_FLOAT_SET(self, value, left);
 }
 
 
@@ -876,18 +902,7 @@ GrDev_right_get(PyObject *self)
 static int
 GrDev_right_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute right cannot be deleted");
-    return -1;
-  }
-  if (! PyFloat_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute right must be a float");
-    return -1;
-  }
-  ((PyGrDevObject *)self)->grdev->right = PyFloat_AsDouble(value);    
-  return 0;
+  RPY_GRDEV_FLOAT_SET(self, value, right);
 }
 
 PyDoc_STRVAR(GrDev_top_doc,
@@ -902,18 +917,7 @@ GrDev_top_get(PyObject *self)
 static int
 GrDev_top_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute top cannot be deleted");
-    return -1;
-  }
-  if (! PyFloat_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute top must be a float");
-    return -1;
-  }
-  ((PyGrDevObject *)self)->grdev->top = PyFloat_AsDouble(value);    
-  return 0;
+  RPY_GRDEV_FLOAT_SET(self, value, top);
 }
 
 PyDoc_STRVAR(GrDev_bottom_doc,
@@ -928,218 +932,23 @@ GrDev_bottom_get(PyObject *self)
 static int
 GrDev_bottom_set(PyObject *self, PyObject *value)
 {
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute bottom cannot be deleted");
-    return -1;
-  }
-  if (! PyFloat_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute bottom must be a float");
-    return -1;
-  }
-  ((PyGrDevObject *)self)->grdev->bottom = PyFloat_AsDouble(value);    
-  return 0;
+  RPY_GRDEV_FLOAT_SET(self, value, bottom);
 }
 
-PyDoc_STRVAR(GrDev_canGenMouseDown_doc,
-             "Ability to generate mouse down events.");
-static PyObject*
-GrDev_canGenMouseDown_get(PyObject *self)
-{
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->canGenMouseDown == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
-}
-static int
-GrDev_canGenMouseDown_set(PyObject *self, PyObject *value)
-{
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenMouseDown cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenMouseDown must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->canGenMouseDown = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->canGenMouseDown = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute canGenMouseDown.");
-    return -1;
-  }
-  return 0;
-}
+RPY_GRDEV_BOOL_GETSET(canGenMouseDown,
+             "Ability to generate mouse down events.")
 
+RPY_GRDEV_BOOL_GETSET(canGenMouseMove,
+             "Ability to generate mouse move events.")
 
-PyDoc_STRVAR(GrDev_canGenMouseMove_doc,
-             "Ability to generate mouse move events.");
-static PyObject*
-GrDev_canGenMouseMove_get(PyObject *self)
-{
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->canGenMouseMove == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
-}
-static int
-GrDev_canGenMouseMove_set(PyObject *self, PyObject *value)
-{
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenMouseMove cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenMouseMove must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->canGenMouseMove = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->canGenMouseMove = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute canGenMouseMove.");
-    return -1;
-  }
-  return 0;
-}
+RPY_GRDEV_BOOL_GETSET(canGenMouseUp,
+             "Ability to generate mouse up events.")
 
+RPY_GRDEV_BOOL_GETSET(canGenKeybd,
+             "Ability to generate keyboard events.")
 
-PyDoc_STRVAR(GrDev_canGenMouseUp_doc,
-             "Ability to generate mouse up events.");
-static PyObject*
-GrDev_canGenMouseUp_get(PyObject *self)
-{
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->canGenMouseUp == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
-}
-static int
-GrDev_canGenMouseUp_set(PyObject *self, PyObject *value)
-{
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenMouseUp cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenMouseUp must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->canGenMouseUp = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->canGenMouseUp = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute canGenMouseUp.");
-    return -1;
-  }
-  return 0;
-}
-
-
-PyDoc_STRVAR(GrDev_canGenKeybd_doc,
-             "Ability to generate keyboard events.");
-static PyObject*
-GrDev_canGenKeybd_get(PyObject *self)
-{
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->canGenKeybd == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
-}
-static int
-GrDev_canGenKeybd_set(PyObject *self, PyObject *value)
-{
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenKeydb cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute canGenKeybd must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->canGenKeybd = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->canGenKeybd = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute canGenKeybd.");
-    return -1;
-  }
-  return 0;
-}
-
-PyDoc_STRVAR(GrDev_displayListOn_doc,
-             "Status of the display list.");
-static PyObject*
-GrDev_displayListOn_get(PyObject *self)
-{
-  PyObject *res;
-  if (((PyGrDevObject *)self)->grdev->displayListOn == TRUE) {
-    res = Py_True;
-  } else {
-    res = Py_False;
-  }
-  Py_INCREF(res);
-  return res;
-}
-static int
-GrDev_displayListOn_set(PyObject *self, PyObject *value)
-{
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute displayListOn cannot be deleted");
-    return -1;
-  }
-  if (! PyBool_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The attribute displayListOn must be a boolean");
-    return -1;
-  }
-  if (value == Py_True) {
-    ((PyGrDevObject *)self)->grdev->displayListOn = TRUE;    
-  } else if (value == Py_False) {
-    ((PyGrDevObject *)self)->grdev->displayListOn = FALSE;
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-                    "Mysterious error when setting the attribute displayListOn.");
-    return -1;
-  }
-  return 0;
-}
-
+RPY_GRDEV_BOOL_GETSET(displayListOn,
+             "Status of the display list.")
 
 PyDoc_STRVAR(GrDev_devnum_doc,
              "Device number.");
@@ -1150,7 +959,11 @@ static PyObject* GrDev_devnum_get(PyObject* self)
     Py_INCREF(Py_None);
     res = Py_None;
   } else {
+#if (PY_VERSION_HEX < 0x03010000)
     res = PyInt_FromLong((long)RPY_DEV_NUM(self));
+#else
+    res = PyLong_FromLong((long)RPY_DEV_NUM(self));
+#endif
   }
   return res;
 
@@ -1248,9 +1061,11 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   configureDevice(dd, self);
   pGEDevDesc gdd = GEcreateDevDesc(dd);
-
+#if (PY_VERSION_HEX < 0x03010000)
   GEaddDevice2(gdd, self->ob_type->tp_name);
-
+#else
+  GEaddDevice2(gdd, Py_TYPE(self)->tp_name);
+#endif
   ((PyGrDevObject *)self)->devnum = ScalarInteger(ndevNumber(dd) + 1);
   R_PreserveObject(((PyGrDevObject *)self)->devnum);
   /* FIXME: protect device number ? */
@@ -1268,8 +1083,12 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
 static PyTypeObject GrDev_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
+#if (PY_VERSION_HEX < 0x03010000)
         PyObject_HEAD_INIT(NULL)
         0,                      /*ob_size*/
+#else
+	PyVarObject_HEAD_INIT(NULL, 0)
+#endif
         "rpy2.rinterface.GraphicalDevice",   /*tp_name*/
         sizeof(PyGrDevObject),  /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -1278,7 +1097,11 @@ static PyTypeObject GrDev_Type = {
         0,                      /*tp_print*/
         0,                      /*tp_getattr*/
         0,                      /*tp_setattr*/
+#if (PY_VERSION_HEX < 0x03010000)
         0,                      /*tp_compare*/
+#else
+        0,                      /*tp_reserved*/
+#endif
         GrDev_repr,             /*tp_repr*/
         0,                      /*tp_as_number*/
         0,                      /*tp_as_sequence*/
@@ -1310,8 +1133,17 @@ static PyTypeObject GrDev_Type = {
         GrDev_new,               /*tp_new*/
         0,                      /*tp_free*/
         0,                      /*tp_is_gc*/
+#if (PY_VERSION_HEX < 0x03010000)
+#else
+	0,                      /*tp_bases*/
+	0,                      /*tp_mro*/
+	0,                      /*tp_cache*/
+	0,                      /*tp_subclasses*/
+	0                       /*tp_weaklist*/
+#endif
 };
 
+/* Additional methods for RpyDevice */
 static PyMethodDef rpydevice_methods[] = {
   {NULL,                NULL}           /* sentinel */
 };
@@ -1322,10 +1154,25 @@ static PyMethodDef rpydevice_methods[] = {
 #define PyMODINIT_FUNC void
 #endif
 
-PyMODINIT_FUNC
-initrpy_device(void)
-{
+#if (PY_VERSION_HEX < 0x03010000)
+#else
+static struct PyModuleDef rpydevicemodule = {
+   PyModuleDef_HEAD_INIT,
+   "rpy_device",           /* name of module */
+   module_doc,             /* module documentation, may be NULL */
+   -1,                     /* size of per-interpreter state of the module */
+   NULL, NULL, NULL, NULL, NULL
+ };
+#endif
 
+PyMODINIT_FUNC
+#if (PY_VERSION_HEX < 0x03010000)
+initrpy_device(void)
+#else
+PyInit_rpy_device(void)
+#endif
+{
+#if (PY_VERSION_HEX < 0x03010000)
   GrDev_close_name = PyString_FromString("close");
   GrDev_activate_name = PyString_FromString("activate");
   GrDev_deactivate_name = PyString_FromString("deactivate");
@@ -1343,15 +1190,51 @@ initrpy_device(void)
   GrDev_mode_name = PyString_FromString("mode");
   GrDev_metricinfo_name = PyString_FromString("metricinfo");
   GrDev_getevent_name = PyString_FromString("getevent");
-
-  if (PyType_Ready(&GrDev_Type) < 0)
+#else
+  GrDev_close_name = PyUnicode_FromString("close");
+  GrDev_activate_name = PyUnicode_FromString("activate");
+  GrDev_deactivate_name = PyUnicode_FromString("deactivate");
+  GrDev_size_name = PyUnicode_FromString("size");
+  GrDev_newpage_name = PyUnicode_FromString("newpage");
+  GrDev_clip_name = PyUnicode_FromString("clip");
+  GrDev_strwidth_name = PyUnicode_FromString("strwidth");
+  GrDev_text_name = PyUnicode_FromString("text");
+  GrDev_rect_name = PyUnicode_FromString("rect");
+  GrDev_circle_name = PyUnicode_FromString("circle");
+  GrDev_line_name = PyUnicode_FromString("line");
+  GrDev_polyline_name = PyUnicode_FromString("polyline");
+  GrDev_polygon_name = PyUnicode_FromString("polygon");
+  GrDev_locator_name = PyUnicode_FromString("locator");
+  GrDev_mode_name = PyUnicode_FromString("mode");
+  GrDev_metricinfo_name = PyUnicode_FromString("metricinfo");
+  GrDev_getevent_name = PyUnicode_FromString("getevent");
+#endif
+  if (PyType_Ready(&GrDev_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
+#else
+    return NULL;
+#endif
+  }
   
   PyObject *m, *d;
+#if (PY_VERSION_HEX < 0x03010000)
   m = Py_InitModule3("rpy_device", rpydevice_methods, module_doc);
-  if (m == NULL)
+#else
+  m = PyModule_Create(&rpydevicemodule);
+#endif
+  if (m == NULL) {
+#if (PY_VERSION_HEX < 0x03010000)
     return;
-  d = PyModule_GetDict(m);
+#else
+    return NULL;
+#endif
+  }
 
+  d = PyModule_GetDict(m);
   PyModule_AddObject(m, "GraphicalDevice", (PyObject *)&GrDev_Type);  
+#if (PY_VERSION_HEX < 0x03010000)
+#else
+  return m;
+#endif
 }
