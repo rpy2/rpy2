@@ -429,12 +429,13 @@ if __name__ == '__main__':
                     pack_name + '.interactive.tests'
                     ],
         classifiers = ['Programming Language :: Python',
+                       'Programming Language :: Python :: 2',
                        'Programming Language :: Python :: 3',
                        'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
                        'License :: OSI Approved :: GNU Affero General Public License v3',
                        'Intended Audience :: Developers',
                        'Intended Audience :: Science/Research',
-                       'Development Status :: 4 - Beta'
+                       'Development Status :: 5 - Production/Stable'
                        ],
         data_files = [(os.path.join('rpy2', 'images'), 
                        [os.path.join('doc', 'source', 'rpy2_logo.png')])],
