@@ -207,7 +207,7 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = stderr
         tmp_file.flush()
         tmp_file.seek(0)
-        self.assertEquals("Doesn't work.", str(sys.last_value))
+        self.assertEqual("Doesn't work.", str(sys.last_value))
         #errorstring = ''.join(tmp_file.readlines())
         #self.assertTrue(errorstring.startswith('Traceback'))
         #tmp_file.close()
@@ -241,7 +241,7 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = stderr
         tmp_file.flush()
         tmp_file.seek(0)
-        self.assertEquals("Doesn't work.", str(sys.last_value))
+        self.assertEqual("Doesn't work.", str(sys.last_value))
         #errorstring = ''.join(tmp_file.readlines())
         #self.assertTrue(errorstring.startswith('Traceback'))
         #tmp_file.close()
@@ -273,7 +273,7 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = stderr
         tmp_file.flush()
         tmp_file.seek(0)
-        self.assertEquals("Doesn't work.", str(sys.last_value))
+        self.assertEqual("Doesn't work.", str(sys.last_value))
         #errorstring = ''.join(tmp_file.readlines())
         #self.assertTrue(errorstring.startswith('Traceback'))
         #tmp_file.close()
@@ -321,7 +321,7 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = stderr
         tmp_file.flush()
         tmp_file.seek(0)
-        self.assertEquals("Doesn't work.", str(sys.last_value))
+        self.assertEqual("Doesn't work.", str(sys.last_value))
         #errorstring = ''.join(tmp_file.readlines())
         #self.assertTrue(errorstring.startswith('Traceback'))
         #tmp_file.close()
@@ -365,7 +365,7 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = stderr
         tmp_file.flush()
         tmp_file.seek(0)
-        self.assertEquals("Doesn't work.", str(sys.last_value))
+        self.assertEqual("Doesn't work.", str(sys.last_value))
         #errorstring = ''.join(tmp_file.readlines())
         #self.assertTrue(errorstring.startswith('Traceback'))
         #tmp_file.close()
