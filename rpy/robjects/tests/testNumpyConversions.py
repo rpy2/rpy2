@@ -17,8 +17,9 @@ class MissingNumpyDummyTestCase(unittest.TestCase):
 class NumpyConversionsTestCase(unittest.TestCase):
 
     def setUp(self):
-        robjects.conversion.py2ri = rpyn.numpy2ri
-        robjects.conversion.ri2numpy = rpyn.ri2numpy
+        #self._py2ri = robjects.conversion.py2ri
+        #self._ri2py = robjects.conversion.ri2py
+        rpyn.activate()
 
     def tearDown(self):
         robjects.conversion.py2ri = robjects.default_py2ri
