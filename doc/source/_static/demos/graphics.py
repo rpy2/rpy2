@@ -1,6 +1,8 @@
 
 #-- setup-begin
 from rpy2 import robjects
+from rpy2.robjects import Formula
+from rpy2.robjects.vectors import IntVector, FloatVector
 from rpy2.robjects.lib import grid
 from rpy2.robjects.packages import importr
 
@@ -22,15 +24,15 @@ xyplot = lattice.xyplot
 rnorm = stats.rnorm
 dataf_rnorm = robjects.DataFrame({'value': rnorm(300, mean=0) + rnorm(100, mean=3),
                                   'other_value': rnorm(300, mean=0) + rnorm(100, mean=3),
-                                  'mean': robjects.IntVector([0, ]*300 + [3, ] * 100)})
+                                  'mean': IntVector([0, ]*300 + [3, ] * 100)})
 #-- dataset-end
 
 grdevices.png('../../_static/graphics_lattice_xyplot_1.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- xyplot1-begin
 datasets = importr('datasets')
 mtcars = datasets.mtcars
-formula = robjects.Formula('mpg ~ wt')
+formula = Formula('mpg ~ wt')
 formula.getenvironment()['mpg'] = mtcars.rx2('mpg')
 formula.getenvironment()['wt'] = mtcars.rx2('wt')
 
@@ -40,7 +42,7 @@ rprint(p)
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_lattice_xyplot_2.png',
-    width = 512, height = 512)
+    width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- xyplot2-begin
 p = lattice.xyplot(formula, groups = mtcars.rx2('cyl'))
 rprint(p)
@@ -48,17 +50,55 @@ rprint(p)
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_lattice_xyplot_3.png',
-    width = 512, height = 512)
+    width = 912, height = 512, antialias="subpixel", type="cairo")
 #-- xyplot3-begin
-formula = robjects.Formula('mpg ~ wt | cyl')
+formula = Formula('mpg ~ wt | cyl')
 formula.getenvironment()['mpg'] = mtcars.rx2('mpg')
 formula.getenvironment()['wt'] = mtcars.rx2('wt')
 formula.getenvironment()['cyl'] = mtcars.rx2('cyl')
 
-p = lattice.xyplot(formula, layout=robjects.IntVector((3, 1)))
+p = lattice.xyplot(formula, layout = IntVector((3, 1)))
 rprint(p)
 #-- xyplot3-end
 grdevices.dev_off()
+
+grdevices.png('../../_static/graphics_lattice_bwplot_1.png',
+    width = 912, height = 512, antialias="subpixel", type="cairo")
+#-- bwplot1-begin
+p = lattice.bwplot(Formula('mpg ~ factor(cyl) | gear'),
+                   data = mtcars, fill = 'grey')
+rprint(p, nrow=1)
+#-- bwplot1-end
+grdevices.dev_off()
+
+
+
+grdevices.png('../../_static/graphics_lattice_wireframe_1.png',
+    width = 612, height = 612, antialias="subpixel", type="cairo")
+#-- wireframe1-begin
+volcano = datasets.volcano
+p = lattice.wireframe(volcano, shade = True,
+                      zlab = "",
+                      aspect = FloatVector((61.0/87, 0.4)),
+                      light_source = IntVector((10,0,10)))
+rprint(p)
+#-- wireframe1-end
+grdevices.dev_off()
+
+grdevices.png('../../_static/graphics_lattice_wireframe_2.png',
+    width = 912, height = 612, antialias="subpixel", type="cairo")
+#-- wireframe2-begin
+reshape = importr('reshape')
+dataf = reshape.melt(volcano)
+dataf = dataf.cbind(ct = lattice.equal_count(dataf.rx2("value"), number=3, overlap=1/4))
+p = lattice.wireframe(Formula('value ~ X1 * X2 | ct'), data = dataf, shade = True,
+                      aspect = FloatVector((61.0/87, 0.4)),
+                      light_source = IntVector((10,0,10)))
+rprint(p, nrow = 1)
+#-- wireframe2-end
+grdevices.dev_off()
+
+
 
 
 #-- setupggplot2-begin
@@ -74,7 +114,7 @@ mtcars = datasets.mtcars
 #-- setupggplot2-end
 
 grdevices.png('../../_static/graphics_ggplot2mtcars.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2mtcars-begin
 gp = ggplot2.ggplot(mtcars)
 
@@ -87,7 +127,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2geombin2d.png',
-              width = 1000, height = 350)
+              width = 1000, height = 350, antialias="subpixel", type="cairo")
 grid.newpage()
 grid.viewport(layout=grid.layout(1, 3)).push()
 
@@ -130,7 +170,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2geomboxplot.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2geomboxplot-begin
 gp = ggplot2.ggplot(mtcars)
 
@@ -150,11 +190,11 @@ pp = gp + \
      ggplot2.aes_string(x='wt') + \
      ggplot2.geom_histogram()
 
-pp.plot()
+#pp.plot()
 #-- ggplot2geomhistogram-end
 
 grdevices.png('../../_static/graphics_ggplot2geomhistogram.png',
-              width = 900, height = 412)
+              width = 900, height = 412, antialias="subpixel", type="cairo")
 grid.newpage()
 grid.viewport(layout=grid.layout(1, 3)).push()
 
@@ -174,7 +214,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2geomhistogramfillcyl.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2geomhistogramfillcyl-begin
 gp = ggplot2.ggplot(mtcars)
 
@@ -188,7 +228,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2geompointdensity2d.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2geompointdensity2d-begin
 gp = ggplot2.ggplot(dataf_rnorm)
 
@@ -203,7 +243,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2geomfreqpolyfillcyl.png',
-              width = 812, height = 412)
+              width = 812, height = 412, antialias="subpixel", type="cairo")
 grid.newpage()
 grid.viewport(layout=grid.layout(1, 2)).push()
 
@@ -228,7 +268,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2geompointandrug.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2geompointandrug-begin
 gp = ggplot2.ggplot(mtcars)
 
@@ -244,7 +284,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2mtcarscolcyl.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2mtcarscolcyl-begin
 gp = ggplot2.ggplot(mtcars)
 
@@ -258,7 +298,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2_ggplot_1.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot1-begin
 pp = gp + \
      ggplot2.aes_string(x='wt', y='mpg') + \
@@ -273,7 +313,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2aescolsize.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2aescolsize-begin
 pp = gp + \
      ggplot2.aes_string(x='wt', y='mpg', size='factor(carb)',
@@ -285,7 +325,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2aescolboxplot.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2aescolboxplot-begin
 gp = ggplot2.ggplot(mtcars)
 
@@ -301,7 +341,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2_qplot_4.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- qplot4-begin
 pp = gp + \
      ggplot2.aes_string(x='wt', y='mpg') + \
@@ -312,7 +352,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2_qplot_5.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- qplot3addline-begin
 pp = gp + \
      ggplot2.aes_string(x='wt', y='mpg') + \
@@ -325,7 +365,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2addsmooth.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2addsmooth-begin
 pp = gp + \
      ggplot2.aes_string(x='wt', y='mpg') + \
@@ -338,7 +378,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2addsmoothmethods.png',
-              width = 1024, height = 340)
+              width = 1024, height = 340, antialias="subpixel", type="cairo")
 
 #-- ggplot2addsmoothmethods-begin
 grid.newpage()
@@ -365,7 +405,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2smoothblue.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2smoothblue-begin
 pp = gp + \
      ggplot2.aes_string(x='wt', y='mpg') + \
@@ -377,7 +417,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2smoothbycyl.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2smoothbycyl-begin
 pp = gp + \
      ggplot2.aes_string(x='wt', y='mpg') + \
@@ -389,7 +429,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2_smoothbycylwithcolours.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2smoothbycylwithcolours-begin
 pp = ggplot2.ggplot(mtcars) + \
      ggplot2.aes_string(x='wt', y='mpg', col='factor(cyl)') + \
@@ -402,7 +442,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2smoothbycylfacetcyl.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2smoothbycylfacetcyl-begin
 pp = gp + \
      ggplot2.aes_string(x='wt', y='mpg') + \
@@ -418,7 +458,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2histogramfacetcyl.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2histogramfacetcyl-begin
 pp = gp + \
      ggplot2.aes_string(x='wt') + \
@@ -430,7 +470,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2perfcolor_both.png',
-              width = 900, height = 412)
+              width = 900, height = 412, antialias="subpixel", type="cairo")
 grid.newpage()
 grid.viewport(layout=grid.layout(1, 2)).push()
 #-- ggplot2perfcolor-begin
@@ -551,7 +591,7 @@ grdevices.dev_off()
 
 
 # grdevices.png('../../_static/graphics_ggplot2coordtranssqrt.png',
-#               width = 512, height = 512)
+#               width = 612, height = 612)
 # #-- ggplot2coordtranssqrt-begin
 # pp = gp + \
 #      ggplot2.aes_string(x='wt', y='mpg') + \
@@ -563,7 +603,7 @@ grdevices.dev_off()
 # grdevices.dev_off()
 
 # grdevices.png('../../_static/graphics_ggplot2coordtransreverse.png',
-#               width = 512, height = 512)
+#               width = 612, height = 612)
 # #-- ggplot2coordtransreverse-begin
 # pp = gp + \
 #      ggplot2.aes_string(x='wt', y='mpg') + \
@@ -576,7 +616,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2map_polygon.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- ggplot2mappolygon-begin
 map = importr('maps')
 fr = ggplot2.map_data('france')
@@ -596,7 +636,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_grid.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- grid-begin
 grid.newpage()
 # create a rows/columns layout
@@ -624,7 +664,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2withgrid.png',
-              width = 512, height = 512)
+              width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- gridwithggplot2-begin
 grid.newpage()
 
