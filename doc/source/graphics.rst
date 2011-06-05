@@ -456,6 +456,8 @@ used the grammar of graphics) are still specified the usual way.
 Complex example
 ^^^^^^^^^^^^^^^
 
+.. sectionauthor:: John Owens
+
 This example uses *ggplot2* to plot 4 datasets (all combinations of 2
 colors and 2 linetypes/marker types). It contains examples of mapping
 attributes to colors, line types, and labels; using python to
