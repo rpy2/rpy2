@@ -139,6 +139,40 @@ this done by specifying it in the formula.
    :scale: 50
 
 
+Box plot
+--------
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- bwplot1-begin
+   :end-before: #-- bwplot1-end
+
+.. image:: _static/graphics_lattice_bwplot_1.png
+   :scale: 50
+
+Other plots
+-----------
+
+The R package lattice contains a number of other plots, which unfortunately cannot all be detailled here.
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- wireframe1-begin
+   :end-before: #-- wireframe1-end
+
+.. image:: _static/graphics_lattice_wireframe_1.png
+   :scale: 50
+
+Splitting the information into different panels can also be specified in the formula. Here we show an artifial
+example where the split is made according to the values plotted on the Z axis.
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- wireframe2-begin
+   :end-before: #-- wireframe2-end
+
+.. image:: _static/graphics_lattice_wireframe_2.png
+   :scale: 50
+
+
+
 .. module:: rpy2.robjects.lib.ggplot2
    :synopsis: High-level interface with R
 
@@ -516,12 +550,19 @@ Example:
    :scale: 50
 
 
+Custom ggplot2 layout with grid
+-------------------------------
+
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- gridwithggplot2-begin
    :end-before: #-- gridwithggplot2-end
    
 .. image:: _static/graphics_ggplot2withgrid.png
    :scale: 50
+
+
+Classes
+-------
 
 .. autoclass:: rpy2.robjects.lib.grid.Viewport(o)
    :show-inheritance:
