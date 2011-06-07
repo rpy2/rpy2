@@ -1743,7 +1743,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 
 
 static PySexpObject*
-Sexp_closureEnv(PyObject *self)
+SexpClosure_env_get(PyObject *self)
 {
   SEXP closureEnv, sexp;
   sexp = RPY_SEXP((PySexpObject*)self);
@@ -1760,19 +1760,26 @@ Sexp_closureEnv(PyObject *self)
   embeddedR_freelock();
   return newPySexpObject(closureEnv, 1);
 }
-PyDoc_STRVAR(Sexp_closureEnv_doc,
+PyDoc_STRVAR(SexpClosure_env_doc,
              "\n\
-Returns the environment the object is defined in.\n\
+Environment the object is defined in.\n\
 This corresponds to the C-level function CLOENV(SEXP).\n\
 \n\
 :rtype: :class:`rpy2.rinterface.SexpEnvironment`\n");
 
 static PyMethodDef ClosureSexp_methods[] = {
-  {"closureenv", (PyCFunction)Sexp_closureEnv, METH_NOARGS,
-   Sexp_closureEnv_doc},
   {"rcall", (PyCFunction)Sexp_rcall, METH_VARARGS,
    SexpClosure_rcall_doc},
   {NULL, NULL}          /* sentinel */
+};
+
+
+static PyGetSetDef ClosureSexp_getsets[] = {
+  {"closureenv",
+   (getter)SexpClosure_env_get,
+   (setter)0,
+   SexpClosure_env_doc},
+  {NULL, NULL, NULL, NULL}
 };
 
 PyDoc_STRVAR(ClosureSexp_Type_doc,
@@ -1780,8 +1787,6 @@ PyDoc_STRVAR(ClosureSexp_Type_doc,
 In R a function is defined within an enclosing \
 environment, thus the name closure. \
 In Python, 'nested scopes' could be the closest similar thing.\
-\n\
-The closure can be accessed with the method 'closureenv'.\
 ");
 
 static int
@@ -1826,7 +1831,7 @@ static PyTypeObject ClosureSexp_Type = {
         0,                      /*tp_iternext*/
         ClosureSexp_methods,           /*tp_methods*/
         0,                      /*tp_members*/
-        0,                      /*tp_getset*/
+        ClosureSexp_getsets,    /*tp_getset*/
         &Sexp_Type,             /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/

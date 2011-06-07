@@ -2,7 +2,12 @@
 Release 2.3.0-dev
 =================
 
+Changes
+-------
 
+:mod:`rpy2.rinterface`:
+
+- :attr:`SexpClosure.env` to replace the method `closureenv`.
 
 
 Release 2.2.0
