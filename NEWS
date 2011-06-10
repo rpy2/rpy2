@@ -1,5 +1,14 @@
-Release 2.2.0-dev
-=================
+Release 2.2.1
+=============
+
+Bugs fixed
+----------
+
+- MANIFEST.in was missing from MANIFEST.in, required with Python 3
+
+
+Release 2.2.0
+=============
 
 New Features
 ------------
