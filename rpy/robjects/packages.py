@@ -7,6 +7,9 @@ from rpy2.robjects.constants import NULL
 
 _require = rinterface.baseenv['require']
 _as_env = rinterface.baseenv['as.environment']
+_package_has_namespace = rinterface.baseenv['packageHasNamespace']
+_system_file = rinterface.baseenv['system.file']
+_get_namespace = rinterface.baseenv['getNamespace']
 _find_package = rinterface.baseenv['.find.package']
 _packages = rinterface.baseenv['.packages']
 _libpaths = rinterface.baseenv['.libPaths']
@@ -114,7 +117,12 @@ def importr(name,
         ok = _require(rinterface.StrSexpVector([name, ]), **{'lib.loc': lib_loc})[0]
     if not ok:
         raise LibraryError("The R package %s could not be imported" %name)
-    env = _as_env(rinterface.StrSexpVector(['package:'+name, ]))
+    if _package_has_namespace(rinterface.StrSexpVector((name, )), 
+                              _system_file(package = rinterface.StrSexpVector((name, )))):
+        env = _get_namespace(rinterface.StrSexpVector((name, )))
+    else:
+        env = _as_env(rinterface.StrSexpVector(['package:'+name, ]))
+
     if signature_translation:
         pack = SignatureTranslatedPackage(env, name, 
                                           translation = robject_translations)
