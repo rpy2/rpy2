@@ -22,12 +22,26 @@ will want to have a look at it.
 More details can be found on the 
 `rnumpy page <http://bitbucket.org/njs/rnumpy/wiki/Home>`_
 
+Bioinformatics
+==============
+
+Cloud computing
+---------------
+
+`rpy2` is among the many bioinformatics-oriented packages
+provided `CloudBioLinux <http://cloudbiolinux.org/>`_. Check it out if
+you are considering a project involving cloud computing.
+
+
 Bioconductor
-============
+------------
 
 Bioconductor is a popular set of R packages for bioinformatics.
 A number of classes defined within that project are exposed as Python classes through rpy2,
 in the project `rpy2-bioconductor-extensions <http://pypi.python.org/pypi/rpy2-bioconductor-extensions/0.2-dev>`_.
+
+The `blog of Brad Chapman <http://bcbio.wordpress.com/>`_ also has good examples about how to use `rpy2` for bioinformatics tasks (or Python for bioinformatics
+in general).
 
 
 .. _interactive-sessions:
