@@ -71,6 +71,31 @@ objects that are R functions see their named arguments translated as similar way
  'strip_white': 'strip.white'}
 
 
+R namespaces
+^^^^^^^^^^^^
+
+In R, a `namespace` is describing something specific in which symbols can be
+exported, or kept internal. A lot of recent R packages are declaring a
+namespace but this is not mandatory, although recommended in some R
+development circles.
+
+Namespaces and the ability to control the export of symbols
+were introduced several years ago in R and were probably meant
+to address the relative lack of control on symbol encapsulation an R
+programmer has. Without it importing a package is in R is like
+systematically writing `import *` on all packages and modules used in Python,
+that will predictably create potential problems as the number
+of packages used is increasing.
+
+Since Python does not generally have the same requirement by default,
+:func:`importr` exposes all objects in an namespace, 
+no matter they are exported or not.
+
+
+
+Class diagram
+^^^^^^^^^^^^^
+
 .. automodule:: rpy2.robjects.packages
    :members:
 
