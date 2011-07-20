@@ -1,3 +1,12 @@
+Release 2.2.2
+=============
+
+Bugs fixed
+----------
+
+- With the robjects layer, repr() on a list containing non-vector elements
+  was failing
+
 Release 2.2.1
 =============
 
