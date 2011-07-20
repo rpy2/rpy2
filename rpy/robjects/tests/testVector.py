@@ -159,6 +159,11 @@ class VectorTestCase(unittest.TestCase):
         s = repr(vec).split('\n')
         self.assertEqual('[       1,        2,        3]', s[1])
 
+    def testReprNonVectorInList(self):
+        vec = robjects.ListVector({'a': 1, 'b': robjects.Formula('y ~ x')})
+        s = repr(vec).split('\n')
+        self.assertEqual('[IntVector, Formula]', s[1])
+
     def testIteritems(self):
         vec = robjects.IntVector(range(3))
         vec.names = robjects.StrVector('abc')
