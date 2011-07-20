@@ -513,7 +513,7 @@ class ListVector(Vector):
                     res.append("  %s: %s%s  %s" %(name,
                                                   type(x),
                                                   os.linesep,
-                                                  x.__repr_content__()))
+                                                  x.__repr__()))
         else:
             for i, x in enumerate(self[:3]):
                 if isinstance(x, ListVector):
@@ -526,7 +526,7 @@ class ListVector(Vector):
                     res.append("  %s: %s%s  %s" %(name,
                                                   type(x),
                                                   os.linesep,
-                                                  x.__repr_content__()))
+                                                  x.__repr__()))
             res.append('  ...')
             for i, x in enumerate(self[-3:]):
                 if isinstance(x, ListVector):
@@ -539,7 +539,7 @@ class ListVector(Vector):
                     res.append("  %s: %s%s  %s" %(name,
                                                   type(x),
                                                   os.linesep,
-                                                  x.__repr_content__()))
+                                                  x.__repr__()))
         res = super(ListVector, self).__repr__() + os.linesep + \
             os.linesep.join(res)
         return res
