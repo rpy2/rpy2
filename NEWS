@@ -10,6 +10,24 @@ Changes
 - :attr:`SexpClosure.env` to replace the method `closureenv`.
 
 
+Release 2.2.2
+=============
+
+Bugs fixed
+----------
+
+- With the robjects layer, repr() on a list containing non-vector elements
+  was failing
+
+Release 2.2.1
+=============
+
+Bugs fixed
+----------
+
+- MANIFEST.in was missing from MANIFEST.in, required with Python 3
+
+
 Release 2.2.0
 =============
 
