@@ -119,7 +119,7 @@ class Package(object):
         rds = readRDS(rpath)
         rds = StrSexpVector(rds)
         class2methods = {}
-        object2alias = {}
+        alias2object = {}
         for k, v in itertools.izip(rds.do_slot('names'), rds):
             if v.startswith("class."):
                 classname = v[len("class."):]
@@ -130,10 +130,10 @@ class Package(object):
                 methods.append(k.split(',')[0])
                 class2methods[classname] = methods
             else:
-                object2alias[v] = k
+                alias2object[k] = v
 
         self.class2methods = class2methods
-        self.object2alias = object2alias
+        self.alias2object = alias2object
         rpath = StrSexpVector((os.path.join(package_path,
                                             'help',
                                             package_name + '.rdx'), ))
