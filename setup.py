@@ -183,6 +183,8 @@ def get_rversion(r_home):
     if rversion.startswith("WARNING"):
         rversion = rp.readline()
     m = re.match('^R version ([^ ]+) .+$', rversion)
+    if len(m.groups()) == 0:
+        raise ValueError("The R version could not be indentified when running R '--version'")
     rversion = m.groups()[0]
     rversion = rversion.split('.')
     rversion[0] = int(rversion[0])
