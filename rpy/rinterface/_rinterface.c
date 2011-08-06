@@ -3020,24 +3020,46 @@ do_Python(SEXP args)
   }
   PyObject *pyf = R_ExternalPtrAddr(sexp);
 
+  /* Result for the evaluation of the Python function */
+  PyObject *pyres;
   /* create argument list */
   PyObject *pyargs = PyList_New(0);
-  PyObject *pyres;
+  /* named arguments */
+  PyObject *pynargs = PyDict_New();
+  const char *tag;
+  int ok_setnamedarg;
   for (args = CDR(args); args != R_NilValue; args = CDR(args)) {
     sexp = CAR(args);
-    if (R_PyObject_TYPE_CHECK(sexp)) {
-      PyList_Append(pyargs, (PyObject *)R_ExternalPtrAddr(sexp));
-    }
-    else {
-      PyList_Append(pyargs, (PyObject *)newPySexpObject(sexp, 1));
+    if (isNull(TAG(args))) {
+      /* unnamed argument */
+      if (R_PyObject_TYPE_CHECK(sexp)) {
+	PyList_Append(pyargs, (PyObject *)R_ExternalPtrAddr(sexp));
+      }
+      else {
+	PyList_Append(pyargs, (PyObject *)newPySexpObject(sexp, 1));
+      }
+    } else {
+      tag = CHAR(PRINTNAME(TAG(args)));
+      /* named argument */
+      if (R_PyObject_TYPE_CHECK(sexp)) {
+	ok_setnamedarg = PyDict_SetItemString(pynargs, tag, 
+					      (PyObject *)R_ExternalPtrAddr(sexp));
+      }
+      else {
+	ok_setnamedarg = PyDict_SetItemString(pynargs, tag, 
+					      (PyObject *)newPySexpObject(sexp, 1));
+      }
+      if (ok_setnamedarg == -1) {
+	error("rpy2: Error while setting a named argument");
+      }
     }
   }
+
   PyObject *pyargstup = PyList_AsTuple(pyargs);
-  /*FIXME: named arguments are not supported yet */
 
   /* free the R lock as we are leaving the R side back to Python */
   embeddedR_freelock();
-  pyres = PyObject_Call(pyf, pyargstup, NULL);
+  pyres = PyObject_Call(pyf, pyargstup, pynargs);
   embeddedR_setlock();
   if (!pyres) {
     PyObject *exctype;
@@ -3057,7 +3079,7 @@ do_Python(SEXP args)
       Py_DECREF(excstr);
     } 
     else {
-      error("Python error");
+      error("rpy2: Python error.");
     }
     PyErr_Clear();
   }
