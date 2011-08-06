@@ -107,6 +107,17 @@ class EmbeddedRTestCase(unittest.TestCase):
         res = rfun(1, 2)
         self.assertEqual(3, res[0])
 
+    def testRternalizeNamedArgs(self):
+        def f(x, y, z=None):
+            if z is None:
+                return x[0]+y[0]
+            else:
+                return z
+        rfun = rinterface.rternalize(f)
+        res = rfun(1, 2)
+        self.assertEqual(3, res[0])
+        res = rfun(1, 2, z=8)
+        self.assertEqual(8, res[0])
 
     def testExternalPython(self):
         def f(x):
