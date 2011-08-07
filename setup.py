@@ -1,5 +1,5 @@
 
-import os, os.path, sys, shutil, re, itertools
+import os, os.path, sys, shutil, re, itertools, warnings
 from collections import namedtuple
 from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build import build as _build
@@ -64,11 +64,11 @@ class build(_build):
              "(<r-home>/lib otherwise)"),
         ('r-home-modules=', None,
          "full path for the R shared modules/ directory " +\
-             "(<r-home>/modules otherwise)") 
-        ]
-    boolean_options = _build.boolean_options #+ \
-        #['r-autoconfig', ]
+             "(<r-home>/modules otherwise)"),
+        ('ignore-check-rversion', None, 'ignore checks for supported R versions')]
 
+    boolean_options = _build.boolean_options + \
+        ['ignore_check_rversion', ]
 
     def initialize_options(self):
         _build.initialize_options(self)
@@ -76,6 +76,8 @@ class build(_build):
         self.r_home = None
         self.r_home_lib = None
         self.r_home_modules = None
+        self.ignore_check_rversion = False
+
 
 class build_ext(_build_ext):
     """
@@ -102,9 +104,11 @@ class build_ext(_build_ext):
              "(<r-home>/lib otherwise)"),
         ('r-home-modules=', None,
          "full path for the R shared modules/ directory" +\
-             "(<r-home>/modules otherwise)")]
+             "(<r-home>/modules otherwise)"),
+        ('ignore-check-rversion', None, 'ignore checks for supported R versions')]
 
-    boolean_options = _build_ext.boolean_options #+ \
+    boolean_options = _build_ext.boolean_options + \
+        ['ignore-check-rversion', ] #+ \
         #['r-autoconfig', ]
 
     def initialize_options(self):
@@ -113,11 +117,13 @@ class build_ext(_build_ext):
         self.r_home = None
         self.r_home_lib = None
         self.r_home_modules = None
+        self.ignore_check_rversion = False
 
     def finalize_options(self):
         self.set_undefined_options('build',
                                    #('r_autoconfig', 'r_autoconfig'),
                                    ('r_home', 'r_home'))
+
         _build_ext.finalize_options(self) 
         if self.r_home is None:
             tmp = os.popen("R RHOME")
@@ -142,8 +148,12 @@ class build_ext(_build_ext):
         for r_home in self.r_home:
             r_home = r_home.strip()
         rversion = get_rversion(r_home)
-        if cmp_version(rversion[:2], [2, 8]) == -1:
-            raise SystemExit("Error: R >= 2.8 required.")
+        if rversion[0] == 'development' or \
+                cmp_version(rversion[:2], [2, 8]) == -1:
+            if self.ignore_check_rversion:
+                warnings.warn("R did not seem to have the minimum required version number")
+            else:
+                raise SystemExit("Error: R >= 2.8 required (and R told '%s')." %'.'.join(rversion))    
         rversions.append(rversion)
 
         config = RConfig()
@@ -182,13 +192,19 @@ def get_rversion(r_home):
     #Twist if 'R RHOME' spits out a warning
     if rversion.startswith("WARNING"):
         rversion = rp.readline()
-    m = re.match('^R version ([^ ]+) .+$', rversion)
-    if len(m.groups()) == 0:
-        raise ValueError("The R version could not be indentified when running R '--version'")
-    rversion = m.groups()[0]
-    rversion = rversion.split('.')
-    rversion[0] = int(rversion[0])
-    rversion[1] = int(rversion[1])
+    m = re.match('^R ([^ ]+) ([^ ]+) .+$', rversion)
+    if m is None:
+        rp.close()
+        # return dummy version 0.0
+        rversion = [0, 0]
+    else:
+        rversion = m.groups()[1]
+        if m.groups()[0] == 'version':
+            rversion = rversion.split('.')
+            rversion[0] = int(rversion[0])
+            rversion[1] = int(rversion[1])
+        else:
+            rversion = ['development', '']
     rp.close()
     return rversion
 
