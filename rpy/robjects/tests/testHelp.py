@@ -8,7 +8,7 @@ class PackageTestCase(unittest.TestCase):
 
     def testInit(self):
         base_help = rh.Package('base')
-        self.assertEqual('NULL', base_help.object2alias['NULL'])
+        self.assertEqual('NULL', base_help.alias2object['NULL'])
 
     def testFetch(self):
         base_help = rh.Package('base')
