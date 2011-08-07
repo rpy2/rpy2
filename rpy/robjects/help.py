@@ -204,3 +204,27 @@ def pages(topic):
             
     return tuple(res)
 
+
+def docstring(package, alias):
+    if not isinstance(package, Package):
+        package = Package(package)
+    page = package.fetch(alias)
+    usage = page.to_docstring(('usage', ))
+    start_i = 0
+    # cut out "usage\n----"
+    start_i += 3
+    # heading \n
+    while usage[start_i] == '\n':
+        start_i += 1
+    entry = []
+    at_the_end = False
+    while not at_the_end:
+        entry.append(usage[start_i])
+        at_the_end = usage[start_i].endswith('\n')
+        start_i += 1
+
+    entry = ''.join(entry)
+    entry = entry.strip()
+    # heading \n
+    while usage[start_i] == '\n':
+        start_i += 1
