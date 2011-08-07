@@ -79,6 +79,33 @@ for (i in 1:%i) {
     time_end = time.time()
     queue.put(time_end - time_beg)
 
+def test_sumr_compile(queue, func, n, setup_func):
+    array, module = setup_func("R")
+    r_loopsum = """
+#-- purer_sum-begin
+function(x)
+{
+  total = 0;
+  for (elt in x) {
+    total <- total + elt
+  } 
+}
+#-- purer_sum-end
+"""
+    
+    rdo_loopsum = """
+f <- %s
+for (i in 1:%i) {
+  res <- f(x)
+}
+"""
+    compiler = ro.packages.importr("compiler")
+    rcode = rdo_loopsum %("compiler::compile("+r_loopsum+")", n)
+    time_beg = time.time()
+    #print(rcode)
+    module.r(rcode)
+    time_end = time.time()
+    queue.put(time_end - time_beg)
 
 
 def test_sum(queue, func, array_type, n, setup_func):
@@ -113,8 +140,13 @@ for label_func, func, label_sequence, n_loop in combos:
     p.join()
     times.append(res)
 
-times_r = []
 
+combos_r = [(label_func, None, None, n_loop) \
+                for label_func, func in (("R", None), \
+                                             ("R compiled", None))            
+            for n_loop in n_loops]
+
+times_r = []
 # pure R
 for n_loop in n_loops:
     p = multiprocessing.Process(target = test_sumr, args = (q, func,
@@ -125,14 +157,25 @@ for n_loop in n_loops:
     p.join()
     times_r.append(res)
 
+# pure R compiled
+for n_loop in n_loops:
+    p = multiprocessing.Process(target = test_sumr_compile, 
+                                args = (q, func,
+                                        n_loop,
+                                        setup_func))
+    p.start()
+    res = q.get()
+    p.join()
+    times_r.append(res)
+
 
 
 from rpy2.robjects.vectors import DataFrame, FloatVector, StrVector, IntVector
 d = {}
-d['code'] = StrVector([x[0] for x in combos]) + StrVector(["R" for x in times_r])
-d['sequence'] = StrVector([x[-2] for x in combos]) + StrVector(["R" for x in times_r])
-d['time'] = FloatVector([x for x in times]) + FloatVector([x for x in times_r])
-d['n_loop']    = IntVector([x[-1] for x in combos]) + IntVector([x for x in n_loops])
+d['code'] = StrVector([x[0] for x in combos]) + StrVector([x[0] for x in combos_r])
+d['sequence'] = StrVector([x[-2] for x in combos]) + StrVector([x[0] for x in combos_r])
+d['time'] = FloatVector([x for x in times]) + FloatVector([x[0] for x in combos_r])
+d['n_loop']    = IntVector([x[-1] for x in combos]) + IntVector([x[1] for x in combos_r])
 d['group'] = StrVector([d['code'][x] + ':' + d['sequence'][x] for x in xrange(len(d['n_loop']))])
 dataf = DataFrame(d)
 
