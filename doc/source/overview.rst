@@ -79,7 +79,7 @@ versions to run rpy2 with.
 Software Versions
 ======== ===========
  Python   2.6; 2.7
- R        2.12; 2.13
+ R        2.13; 2.14
 ======== ===========
 
 Python 2.4 might compile, but there is much less testing done with
@@ -87,6 +87,23 @@ those platforms and likely limited hope for free support.
 
 Python 3.2 will install, but at the time of writing still has a couple
 of minor issues.
+
+.. warning::
+
+   When building rpy2, it is checked that this is against a recommended
+   version of R. Building against a different version is possible, although
+   not supported at all, through the flag *--ignore-check-rversion*
+
+   .. code-block:: bash
+
+      python setup.py build_ext --ignore-check-rversion install
+   
+   Since recently, development R is no longer returning
+   an R version and the check ends with an error
+   "Error: R >= <some version> required (and R told 'development.').".
+   The flag *--ignore-check-rversion* is then required in order to build.
+   
+
 
 .. note::
 
