@@ -1062,7 +1062,7 @@ GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
   if (!PyRinterface_IsInitialized()) {
     PyErr_Format(PyExc_RuntimeError, 
-                 "R must be initialized before any call to R functions is possible.");
+                 "R must be initialized before instances of GraphicalDevice can be created.");
     return NULL;
   }
 
