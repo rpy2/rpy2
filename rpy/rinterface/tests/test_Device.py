@@ -1,6 +1,6 @@
 import unittest
 import rpy2.rinterface as rinterface
-import rpy2.rinterface.rpy_device as rdevice
+import rpy2.rinterface._rpy_device as rdevice
 import sys, os, subprocess, time, tempfile, signal
 import tempfile
 

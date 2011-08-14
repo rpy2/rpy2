@@ -31,7 +31,7 @@
 #include <Python.h>
 #include <Rdefines.h>
 #include <Rinternals.h>
-#include "rpy_rinterface.h"
+#include "_rinterface.h"
 
 #include "embeddedr.h"
 #include "sexp.h"

@@ -380,7 +380,7 @@ def getRinterface_ext():
                        os.path.join(package_prefix,
                                     'rpy', 'rinterface', 'sexp.h'),
                        os.path.join(package_prefix,
-                                    'rpy', 'rinterface', 'rpy_rinterface.h'),
+                                    'rpy', 'rinterface', '_rinterface.h'),
                        os.path.join(package_prefix,
                                     'rpy', 'rinterface', 'rpy_device.h')
                        ],
@@ -395,9 +395,9 @@ def getRinterface_ext():
             )
 
     rpy_device_ext = Extension(
-        pack_name + '.rinterface.rpy_device',
+        pack_name + '.rinterface._rpy_device',
             [
-            os.path.join('rpy', 'rinterface', 'rpy_device.c'),
+            os.path.join('rpy', 'rinterface', '_rpy_device.c'),
              ],
             include_dirs = include_dirs + 
                             [os.path.join('rpy', 'rinterface'), ],

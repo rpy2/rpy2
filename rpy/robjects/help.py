@@ -93,6 +93,48 @@ class Page(object):
             s.append(os.linesep)
         return s
 
+    def section_docstring(self, section):
+        assert(section in ('usage', 'arguments'))
+
+        if section == 'usage':
+            delim = '('
+        else:
+            delim = ':'
+
+        doc = self.to_docstring((section, ))
+
+        doc_iter = enumerate(doc)
+        for elt_i, elt in doc_iter:
+            ## cut out "<section>\n----"
+            if elt_i < 3:
+                continue
+            break
+        for elt_i, elt in doc_iter:
+            if elt == '\n':
+                continue
+            break
+        res = {}
+        entry = []
+        at_the_end = False
+        for elt_i, elt in doc_iter:
+            if at_the_end:
+                entry = ''.join(entry)
+                entry = entry.strip()
+                i = entry.find(delim)
+                if i == -1:
+                    if entry == '':
+                        continue
+                    else:
+                        raise Exception("Delimiter not found in entry '%s'" %entry)
+                res[entry[:i]] = entry[(i+1):]
+                entry = []
+                at_the_end = False
+                continue
+            entry.append(elt)
+            at_the_end = elt.endswith('\n')
+
+        return res
+
 class Package(object):
     """ The R documentation (aka help) for a package """
     __package_path = None
@@ -209,22 +251,6 @@ def docstring(package, alias):
     if not isinstance(package, Package):
         package = Package(package)
     page = package.fetch(alias)
-    usage = page.to_docstring(('usage', ))
-    start_i = 0
-    # cut out "usage\n----"
-    start_i += 3
-    # heading \n
-    while usage[start_i] == '\n':
-        start_i += 1
-    entry = []
-    at_the_end = False
-    while not at_the_end:
-        entry.append(usage[start_i])
-        at_the_end = usage[start_i].endswith('\n')
-        start_i += 1
+    usage = page.section_docstring('usage')
+    arguments = page.section_docstring('arguments')
 
-    entry = ''.join(entry)
-    entry = entry.strip()
-    # heading \n
-    while usage[start_i] == '\n':
-        start_i += 1

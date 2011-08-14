@@ -34,7 +34,7 @@
 #include <Python.h>
 #include <Rdefines.h>
 
-#include "rpy_rinterface.h"
+#include "_rinterface.h"
 #include "buffer.h"
 
 static int

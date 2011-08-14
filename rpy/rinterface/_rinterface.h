@@ -1,8 +1,9 @@
+#ifndef Py_RINTERFACE_H_
+#define Py_RINTERFACE_H_
 
-#ifndef _RPY_RI_H_
-#define _RPY_RI_H_
-
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <R.h>
 #include <Rinternals.h>
@@ -11,7 +12,6 @@
 #if defined (__APPLE__)
 #define _RPY_STRNDUP_
 #endif
-
 
 /* Back-compatibility with Python 2.4 */
 #if (PY_VERSION_HEX < 0x02050000)
@@ -31,7 +31,6 @@ typedef Py_ssize_t (*charbufferproc)(PyObject *, Py_ssize_t, char **);
 #if (PY_VERSION_HEX < 0x02060000)
 #define Py_SIZE(ob)   (((PyVarObject*)(ob))->ob_size)
 #endif
-
 
 /*
  * Highest possible SEXP type (used for quick resolution of valid/invalid SEXP)
@@ -197,5 +196,40 @@ typedef struct {
   return res;                                                           \
 
 
-#endif /* !RPY_RI_H */
+  /* C API functions */
+#define PyRinterface_API_NAME "rpy2.rinterface._rinterface._C_API"
+#define PyRinterface_IsInitialized_NUM 0
+#define PyRinterface_IsInitialized_RETURN int
+#define PyRinterface_IsInitialized_PROTO (void)
+  
+  /* Total nmber of C API pointers */
+#define PyRinterface_API_pointers 1
+
+#ifdef _RINTERFACE_MODULE 
+  /* This section is used when compiling _rinterface.c */
+  static PyObject *embeddedR_isInitialized;
+
+#else
+  /* This section is used in modules that use _rinterface's API */
+
+  static void **PyRinterface_API;
+
+#define PyRinterface_IsInitialized \
+  (*(PyRinterface_IsInitialized_RETURN (*)PyRinterface_IsInitialized_PROTO) PyRinterface_API[PyRinterface_IsInitialized_NUM])
+
+static int
+import_rinterface(void)
+{
+  PyRinterface_API = (void **)PyCapsule_Import(PyRinterface_API_NAME, 0);
+  return (PyRinterface_API != NULL) ? 0 : -1;
+}
+#endif
+
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* !Py_RINTERFACE_H_ */
 

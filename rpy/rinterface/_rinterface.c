@@ -54,6 +54,9 @@
 #define PY_SSIZE_T_CLEAN 
 #include "Python.h"
 
+#define _RINTERFACE_MODULE
+#include "_rinterface.h"
+
 #if Win32
 #include <winsock2.h>
 #endif
@@ -93,7 +96,6 @@ staticforward PyObject* EmbeddedR_unserialize(PyObject* self, PyObject* args);
 static PyObject* EmbeddedR_unserialize(PyObject* self, PyObject* args);
 #endif
 
-#include "rpy_rinterface.h"
 #include "embeddedr.h"
 #include "na_values.h"
 #include "sexp.h"
@@ -182,6 +184,13 @@ inline char* strndup (const char *s, size_t n)
   return ret;
 } 
 #endif
+
+static int
+PyRinterface_IsInitialized(void)
+{
+  int res = (embeddedR_isInitialized == Py_True) ? 1 : 0;
+  return res;
+}
 
 PyDoc_STRVAR(module_doc,
              "Low-level functions to interface with R.\n\
@@ -3312,6 +3321,9 @@ PyInit__rinterface(void)
   }
 
   PyObject *m, *d;
+  static void *PyRinterface_API[PyRinterface_API_pointers];
+  PyObject *c_api_object;
+
 #if (PY_VERSION_HEX < 0x03010000)
   m = Py_InitModule3("_rinterface", EmbeddedR_methods, module_doc);
 #else
@@ -3323,6 +3335,22 @@ PyInit__rinterface(void)
 #else
     return NULL;
 #endif
+  }
+
+  /* Initialize the C API pointer array */
+  PyRinterface_API[ PyRinterface_IsInitialized_NUM ] =	\
+    (void *)PyRinterface_IsInitialized;
+  /* Create a Capsule containing the API pointer array's address */
+  c_api_object = PyCapsule_New((void *)PyRinterface_API, 
+			       PyRinterface_API_NAME, NULL);
+  if (c_api_object == NULL) {
+#if (PY_VERSION_HEX < 0x03010000)
+    return;
+#else
+    return NULL;
+#endif
+  } else {
+    PyModule_AddObject(m, "_C_API", c_api_object);
   }
   d = PyModule_GetDict(m);
 
@@ -3504,7 +3532,7 @@ PyInit__rinterface(void)
   embeddedR_isInitialized = Py_False;
   Py_INCREF(Py_False);
 
-  if (PyModule_AddObject(m, "isInitialized", embeddedR_isInitialized) < 0) {
+  if (PyModule_AddObject(m, "is_initialized", embeddedR_isInitialized) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;
 #else

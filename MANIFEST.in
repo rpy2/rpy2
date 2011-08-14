@@ -6,7 +6,7 @@ include NEWS README AUTHORS
 include MPL_LICENSE GPL_LICENSE LGPL_LICENSE
 
 
-include rpy/rinterface/rpy_rinterface.h
+include rpy/rinterface/_rinterface.h
 include rpy/rinterface/_rinterface.c
 
 include rpy/rinterface/sexp.c
@@ -33,7 +33,7 @@ include rpy/rinterface/embeddedr.h
 include rpy/rinterface/r_utils.c
 include rpy/rinterface/r_utils.h
 
-include rpy/rinterface/rpy_device.c
+include rpy/rinterface/_rpy_device.c
 include rpy/rinterface/rpy_device.h
 
 include rpy/rinterface/rexternalptr.c
