@@ -1059,6 +1059,13 @@ GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: New GrDev\n");
 #endif
+
+  if (!PyRinterface_IsInitialized()) {
+    PyErr_Format(PyExc_RuntimeError, 
+                 "R must be initialized before any call to R functions is possible.");
+    return NULL;
+  }
+
   PyGrDevObject *self;
   self = (PyGrDevObject *)type->tp_alloc(type, 0);
 
@@ -1082,12 +1089,6 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
   printf("FIXME: Initializing GrDev\n");
 #endif
 
-  if (!PyRinterface_IsInitialized()) {
-    PyErr_Format(PyExc_RuntimeError, 
-                 "R must be initialized before any call to R functions is possible.");
-    return -1;
-  }
-
   pDevDesc dd = ((PyGrDevObject *)self)->grdev;
 
   configureDevice(dd, self);
@@ -1104,7 +1105,7 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
   /* pDevDesc grdev = malloc(); */
   /* FIXME: handle allocation error */
   /* self->grdev = grdev; */
-  printf("  done.\n");
+  
   return 0;
 }
 
