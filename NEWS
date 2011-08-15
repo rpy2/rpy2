@@ -9,6 +9,14 @@ Changes
 
 - :attr:`SexpClosure.env` to replace the method `closureenv`.
 
+Release 2.2.3
+=============
+
+Bugs fixed
+----------
+
+- Dynamic construction of S4 classes was looking for R help as 'class.<class>'
+  rather than '<class>-class'
 
 Release 2.2.2
 =============
