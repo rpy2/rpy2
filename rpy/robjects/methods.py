@@ -148,7 +148,7 @@ class RS4Auto_Type(type):
             page_help = None
             try:
                 #R's classes are sometimes documented with a prefix 'class.'
-                page_help = pack_help.fetch('class.' + cls_def.__rname__)
+                page_help = pack_help.fetch(cls_def.__rname__ + "-class")
             except rhelp.HelpNotFoundError, hnf:
                 pass
             if page_help is None:
