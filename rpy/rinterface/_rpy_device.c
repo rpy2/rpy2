@@ -54,6 +54,31 @@ static inline void rpy_printandclear_error(void)
   }
 }
 
+SEXP rpy_devoff(SEXP devnum, SEXP rho)
+{
+  SEXP c_R, call_R, res, fun_R;
+
+  PROTECT(fun_R = PyRinterface_FindFun(install("dev.off"), rho));
+
+  if(!isEnvironment(rho)) error("'rho' should be an environment");
+  /* incantation to summon R */
+  PROTECT(c_R = call_R = allocList(2+1));
+  SET_TYPEOF(c_R, LANGSXP);
+  SETCAR(c_R, fun_R);
+  c_R = CDR(c_R);
+
+  /* first argument is the device number to be closed */
+  SETCAR(c_R, devnum);
+  //SET_TAG(c_R, install("list"));
+  c_R = CDR(c_R);
+  int error = 0;
+  PROTECT(res = R_tryEval(call_R, rho, &error));
+
+  UNPROTECT(3);
+  return res;
+}
+
+
 /* evaluate a call to a Python callback for the device */
 static inline void rpy_GrDev_CallBack(pDevDesc dd, PyObject *name)
 {
@@ -820,6 +845,7 @@ GrDev_clear(PyGrDevObject *self)
 static void
 GrDev_dealloc(PyGrDevObject *self)
 {
+  rpy_devoff(self->devnum, R_BaseEnv);
   /* FIXME */
 #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: Deallocating GrDev.\n");

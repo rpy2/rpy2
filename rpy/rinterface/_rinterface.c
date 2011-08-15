@@ -192,6 +192,35 @@ PyRinterface_IsInitialized(void)
   return res;
 }
 
+static SEXP
+PyRinterface_FindFun(SEXP symbol, SEXP rho)
+{
+    SEXP vl;
+    while (rho != R_EmptyEnv) {
+        /* This is not really right.  Any variable can mask a function */
+        vl = findVarInFrame3(rho, symbol, TRUE);
+
+        if (vl != R_UnboundValue) {
+            if (TYPEOF(vl) == PROMSXP) {
+                PROTECT(vl);
+                vl = eval(vl, rho);
+                UNPROTECT(1);
+            }
+            if (TYPEOF(vl) == CLOSXP || TYPEOF(vl) == BUILTINSXP ||
+                TYPEOF(vl) == SPECIALSXP)
+               return (vl);
+
+            if (vl == R_MissingArg) {
+              printf("R_MissingArg in rpy_FindFun.\n");
+              return R_UnboundValue;
+            }
+        }
+        rho = ENCLOS(rho);
+    }
+    return R_UnboundValue;
+}
+
+
 PyDoc_STRVAR(module_doc,
              "Low-level functions to interface with R.\n\
  One should mostly consider calling the functions defined here when\
@@ -1926,7 +1955,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   }
 
   if (PyObject_IsTrue(wantFun)) {
-    res_R = rpy_findFun(install(name), rho_R);
+    res_R = PyRinterface_FindFun(install(name), rho_R);
   } else {
     res_R = findVar(install(name), rho_R);
   }

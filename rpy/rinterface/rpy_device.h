@@ -73,4 +73,6 @@ typedef struct {
   }									\
   return res								
 
+SEXP rpy_devoff(SEXP devnum, SEXP rho);
+
 #endif /* !RPY_RD_H */

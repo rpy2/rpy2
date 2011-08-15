@@ -396,17 +396,18 @@ def getRinterface_ext():
 
     rpy_device_ext = Extension(
         pack_name + '.rinterface._rpy_device',
-            [
-            os.path.join('rpy', 'rinterface', '_rpy_device.c'),
-             ],
-            include_dirs = include_dirs + 
-                            [os.path.join('rpy', 'rinterface'), ],
-            libraries = ['R', ],
-            library_dirs = r_libs,
-            define_macros = define_macros,
-            runtime_library_dirs = r_libs,
-            #extra_compile_args=['-O0', '-g'],
-            extra_link_args = extra_link_args
+        [
+            os.path.join(package_prefix,
+                         'rpy', 'rinterface', '_rpy_device.c'),
+            ],
+        include_dirs = include_dirs + 
+        [os.path.join('rpy', 'rinterface'), ],
+        libraries = ['R', ],
+        library_dirs = r_libs,
+        define_macros = define_macros,
+        runtime_library_dirs = r_libs,
+        #extra_compile_args=['-O0', '-g'],
+        extra_link_args = extra_link_args
         )
 
     return [rinterface_ext, rpy_device_ext]

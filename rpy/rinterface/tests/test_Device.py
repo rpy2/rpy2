@@ -6,9 +6,18 @@ import tempfile
 
 rinterface.initr()
 
+class AbstractDevice(rdevice.GraphicalDevice):
+    def __init__(self):
+        super(AbstractDevice, self).__init__()
+    def activate(self):
+        self._activated = True
+    def deactivate(self):
+        self._activated = False
+
+
 class AbstractDeviceTestCase(unittest.TestCase):
     def setUp(self):
-        self.gd = rdevice.GraphicalDevice()
+        self.gd = AbstractDevice()
 
     def tearDown(self):
         self.gd = None
@@ -60,50 +69,50 @@ class AbstractDeviceTestCase(unittest.TestCase):
     def testDisplayListOn(self):
         self._testGetSetBooleanAttr("displayListOn")
   
-   
+
+class CodeDevice(rdevice.GraphicalDevice):
+
+    def __init__(self, filehandle):
+        super(CodeDevice, self).__init__()
+        self._activated = None
+        self._open = True
+        self._pagecount = 0
+        self._file = filehandle
+
+    def activate(self):
+        self._activated = True
+
+    def deactivate(self):
+        self._activated = False
+
+    def close(self):
+        self._activated = None
+        self._open = False
+        self._file.close()
+
+    def size(self, lrbt):
+        return (1,2,3,4)
+
+    def newpage(self):
+        self._file.write('#--- new page\n')
+        self._pagecount = self._pagecount + 1
+
+    def line(self, x1, y1, x2, y2):
+        self._file.write('line(%f, %f, %f, %f)' %(x1, y1, x2, y2))
+
+    def polyline(self, x, y):
+        self._file.write('polyline(%f, %f)' %(x, y))
+
+    def clip(self, x1, y1, x2, y2):
+        self._file.write('clip(%f, %f, %f, %f)' %(x1, y1, x2, y2))
+
         
 class ConcreteDeviceTestCase(unittest.TestCase):
     
-    class CodeDevice(rdevice.GraphicalDevice):
-        
-        def __init__(self, filehandle):
-            super(ConcreteDeviceTestCase.CodeDevice, self).__init__()
-            self._activated = None
-            self._open = True
-            self._pagecount = 0
-            self._file = filehandle
-            
-        def activate(self):
-            self._activated = True
-
-        def deactivate(self):
-            self._activated = False
-
-        def close(self):
-            self._activated = None
-            self._open = False
-            self._file.close()
-            
-        def size(self, lrbt):
-            return (1,2,3,4)
-
-        def newpage(self):
-            self._file.write('#--- new page\n')
-            self._pagecount = self._pagecount + 1
-
-        def line(self, x1, y1, x2, y2):
-            self._file.write('line(%f, %f, %f, %f)' %(x1, y1, x2, y2))
-
-        def polyline(self, x, y):
-            self._file.write('polyline(%f, %f)' %(x, y))
-            
-        def clip(self, x1, y1, x2, y2):
-            self._file.write('clip(%f, %f, %f, %f)' %(x1, y1, x2, y2))
-
     def setUp(self):
         #f = tempfile.NamedTemporaryFile()
         f = file('/tmp/foo', mode='w')
-        self.gd = ConcreteDeviceTestCase.CodeDevice(f)
+        self.gd = CodeDevice(f)
 
     def tearDown(self):
         self.gd.close()
@@ -128,7 +137,7 @@ class ConcreteDeviceTestCase(unittest.TestCase):
         
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(AbstractDeviceTestCase)
-    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ConcreteDeviceTestCase))
+    #suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ConcreteDeviceTestCase))
     return suite
 
 if __name__ == '__main__':

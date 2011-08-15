@@ -198,16 +198,23 @@ typedef struct {
 
   /* C API functions */
 #define PyRinterface_API_NAME "rpy2.rinterface._rinterface._C_API"
+  /* -- check initialization */
 #define PyRinterface_IsInitialized_NUM 0
 #define PyRinterface_IsInitialized_RETURN int
 #define PyRinterface_IsInitialized_PROTO (void)
+  /* -- check findfun */
+#define PyRinterface_FindFun_NUM 1
+#define PyRinterface_FindFun_RETURN SEXP
+#define PyRinterface_FindFun_PROTO (SEXP, SEXP)
+
   
   /* Total nmber of C API pointers */
-#define PyRinterface_API_pointers 1
+#define PyRinterface_API_pointers 2
 
 #ifdef _RINTERFACE_MODULE 
   /* This section is used when compiling _rinterface.c */
   static PyObject *embeddedR_isInitialized;
+  static SEXP PyRinterface_FindFun(SEXP symbol, SEXP rho);
 
 #else
   /* This section is used in modules that use _rinterface's API */
@@ -216,6 +223,12 @@ typedef struct {
 
 #define PyRinterface_IsInitialized \
   (*(PyRinterface_IsInitialized_RETURN (*)PyRinterface_IsInitialized_PROTO) PyRinterface_API[PyRinterface_IsInitialized_NUM])
+
+#define PyRinterface_FindFun \
+  (*(PyRinterface_FindFun_RETURN (*)PyRinterface_FindFun_PROTO) PyRinterface_API[PyRinterface_FindFun_NUM])
+
+
+
 
 static int
 import_rinterface(void)
