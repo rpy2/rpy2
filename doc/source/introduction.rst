@@ -502,7 +502,7 @@ Creating an R vector or matrix, and filling its cells using Python code
 
 .. testcode::
 
-   from rpy2.robjects import NA_real
+   from rpy2.robjects import NA_Real
    from rpy2.rlike.container import TaggedList
    from rpy2.robjects.packages import importr
 
