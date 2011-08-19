@@ -69,8 +69,6 @@ trying to import rpy2 results in an error.
 Requirements
 ------------
 
-Python version 2.5 or greater, as well as R-2.8.0 or greater are required
-
 Currently the development is done on UNIX-alike operating systems with the
 following version for the softwares, and those are the recommended
 versions to run rpy2 with.
@@ -82,8 +80,7 @@ Software Versions
  R        2.13; 2.14
 ======== ===========
 
-Python 2.4 might compile, but there is much less testing done with
-those platforms and likely limited hope for free support.
+Older Python like 2.5 or even 2.4 might compile, but there is much less testing done with those platforms, if any, and likely limited hope for free support.
 
 Python 3.2 will install, but at the time of writing still has a couple
 of minor issues.
@@ -104,20 +101,12 @@ of minor issues.
    The flag *--ignore-check-rversion* is then required in order to build.
    
 
+Rpy2 will require compiled libraries and development headers from: R, Python, and readline
 
 .. note::
-
+   
    When compiling R from source, do not forget to specify
    *--enable-R-shlib* at the *./configure* step.
-
-   gcc-4.4 is used for compiling the C parts on Linux.
-   gcc-4.0 seems to be the default on OS X Leopard and yet produce
-   fully functional binaries.
-
-.. note::
-
-   If installing from a linux distribution, the Python-dev package will
-   obviously be required to compile rpy2
 
 .. note::
 
