@@ -2,6 +2,17 @@
 Release 2.3.0-dev
 =================
 
+New Features
+------------
+
+:mod:`rpy2.rinterface`:
+
+- C-level API, allowing other C-level modules to make use of utilities
+  without going through the Python level. The exact definition of
+  the API is not yet fixed. For now there is 
+  PyRinteractive_IsInitialized() to assess whether R was initialized
+  (through :mod:`rpy2.rinterface` or not).
+
 Changes
 -------
 
