@@ -20,9 +20,12 @@ from rpy2.robjects.environments import Environment
 from rpy2.robjects import Formula, RS4
 from rpy2.robjects import methods
 from rpy2.robjects import conversion
+from rpy2.robjects import help as rhelp
 from rpy2.robjects.language import eval
 
 import process_revents as revents
+
+from os import linesep
 
 class Packages(object):
     __instance = None
@@ -66,8 +69,25 @@ def importr(packname, newname=None):
     #         __rname__ = cn
     #     newcn = cn.replace('.', '_')
     #     d[newcn] = AutoS4
-    # S4Classes().__dict__[newname] = d    
-
+    # S4Classes().__dict__[newname] = d 
+    
+    doc = rhelp.Package(packname)
+    for k in packinstance.__dict__:
+        try:
+            p = doc.fetch(k)
+        except rhelp.HelpNotFoundError, hnfe:
+            continue
+        except:
+            print('Error with: %s' %k)
+            continue
+        try:
+            arguments = p.arguments()
+        except KeyError, ke:
+            continue
+        docstring = linesep.join((p.title(),
+                                  '',
+                                  linesep.join('  %s -- %s' %(x,y) for x,y in arguments)))
+        packinstance.__dict__[k].__doc__ = docstring
     return packinstance
 
 for packname in _loaded_namespaces():

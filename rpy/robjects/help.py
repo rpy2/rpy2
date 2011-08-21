@@ -168,6 +168,13 @@ class Page(object):
                 continue
         return res
 
+    def title(self):
+        """ Get the title """
+        section = self._sections['title']
+        
+        res = ''.join(_Rd_deparse(x)[0] for x in section)
+        return res
+
     def iteritems(self):
         """ iterator through the sections names and content
         in the documentation Page. """
@@ -240,13 +247,18 @@ class Package(object):
           AnnotatedDataFrame in the package Biobase is 'AnnotatedDataFrame-class'.
         """
 
-        c = self._dbcon.execute('SELECT alias FROM rd_alias_meta WHERE alias=?', (alias, ))
-        res = c.fetchall()
-        if len(res) == 0:
+        c = self._dbcon.execute('SELECT rd_meta_rowid, alias FROM rd_alias_meta WHERE alias=?', 
+                                (alias, ))
+        res_alias = c.fetchall()
+        if len(res_alias) == 0:
             raise HelpNotFoundError("No help could be fetched", 
-                                    topic=alias, package=self.__package_name)
+                                    topic = alias, package = self.__package_name)
         
-        rkey = StrSexpVector(rinterface.StrSexpVector((alias, )))
+        c = self._dbcon.execute('SELECT name FROM rd_meta WHERE rowid=?', 
+                                (res_alias[0][0], ))
+        res = c.fetchall()
+
+        rkey = StrSexpVector(rinterface.StrSexpVector((res[0][0], )))
         rpath = StrSexpVector((os.path.join(self.package_path,
                                             'help',
                                             self.__package_name + '.rdb'),))
