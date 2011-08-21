@@ -4,14 +4,15 @@ R help system.
 """
 import os, itertools
 
+import sqlite3
+
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
 
-import conversion as conversion
-import packages as packages
+import conversion
+import packages
 import rpy2.rlike.container as rlc
 
-lazyload_dbfetch = rinterface.baseenv['lazyLoadDBfetch']
 tmp = rinterface.baseenv['R.Version']()
 tmp_major = int(tmp[tmp.do_slot('names').index('major')][0])
 tmp_minor = float(tmp[tmp.do_slot('names').index('minor')][0])
@@ -19,9 +20,100 @@ if (tmp_major > 2) or (tmp_major == 2 and tmp_minor >= 13):
     readRDS = rinterface.baseenv['readRDS']
 else:
     readRDS = rinterface.baseenv['.readRDS']
+
 del(tmp)
 del(tmp_major)
 del(tmp_minor)
+
+_eval = rinterface.baseenv['eval']
+def quiet_require(name, lib_loc = None):
+    """ Load an R package /quietly/ (suppressing messages to the console). """
+    if lib_loc == None:
+        lib_loc = "NULL"
+    expr_txt = "suppressPackageStartupMessages(base::require(%s, lib.loc=%s))" \
+        %(name, lib_loc)
+    expr = rinterface.parse(expr_txt)
+    ok = _eval(expr)
+    return ok
+quiet_require('tools')
+_get_namespace = rinterface.baseenv['getNamespace']
+_lazyload_dbfetch = rinterface.baseenv['lazyLoadDBfetch']
+tools_ns = _get_namespace(StrSexpVector(('tools',)))
+#_Rd_get_argument_table = tools_ns['.Rd_get_argument_table']
+_Rd_db = tools_ns['Rd_db']
+_Rd_deparse = tools_ns['.Rd_deparse']
+
+__rd_meta = os.path.join('Meta', 'Rd.rds')
+__package_meta = os.path.join('Meta', 'package.rds')
+
+def create_metaRd_db(dbcon):
+    dbcon.execute('''
+CREATE TABLE package (
+name TEXT UNIQUE,
+title TEXT,
+version TEXT,
+description TEXT
+);
+''')
+    dbcon.execute('''
+CREATE TABLE rd_meta (
+id INTEGER, file TEXT UNIQUE, name TEXT, type TEXT, title TEXT, encoding TEXT,
+package_rowid INTEGER
+);
+''')
+    dbcon.execute('''
+CREATE INDEX type_idx ON rd_meta (type);
+''')
+    dbcon.execute('''
+CREATE TABLE rd_alias_meta (
+rd_meta_rowid INTEGER, alias TEXT
+);
+''')
+    dbcon.execute('''
+CREATE INDEX alias_idx ON rd_alias_meta (alias);
+''')
+    dbcon.commit()
+
+def populate_metaRd_db(package_name, dbcon, package_path = None):
+    if package_path is None:
+        package_path = packages.get_packagepath(package_name)
+
+    rpath = StrSexpVector((os.path.join(package_path,
+                                        __package_meta),))
+    
+    rds = readRDS(rpath)
+    desc = rds[rds.do_slot('names').index('DESCRIPTION')]
+    db_res = dbcon.execute('insert into package values (?,?,?,?)',
+                           (desc[desc.do_slot('names').index('Package')],
+                            desc[desc.do_slot('names').index('Title')],
+                            desc[desc.do_slot('names').index('Version')],
+                            desc[desc.do_slot('names').index('Description')],
+                            ))
+    package_rowid = db_res.lastrowid
+               
+    rpath = StrSexpVector((os.path.join(package_path,
+                                        __rd_meta),))
+    
+    rds = readRDS(rpath)
+    FILE_I = rds.do_slot("names").index('File')
+    NAME_I = rds.do_slot("names").index('Name')
+    TYPE_I = rds.do_slot("names").index('Type')
+    TITLE_I = rds.do_slot("names").index('Title')
+    ENCODING_I = rds.do_slot("names").index('Encoding')
+    ALIAS_I = rds.do_slot("names").index('Aliases')
+    for row_i in xrange(len(rds[0])):
+        db_res = dbcon.execute('insert into rd_meta values (?,?,?,?,?,?,?)',
+                               (row_i,
+                                rds[FILE_I][row_i], 
+                                rds[NAME_I][row_i],
+                                rds[TYPE_I][row_i], 
+                                rds[TITLE_I][row_i],
+                                rds[ENCODING_I][row_i],
+                                package_rowid))
+        rd_rowid = db_res.lastrowid
+        for alias in rds[ALIAS_I][row_i]:
+            dbcon.execute('insert into rd_alias_meta values (?,?)',
+                          (rd_rowid, alias))
 
 class Page(object):
     """ An R documentation page. 
@@ -38,9 +130,9 @@ class Page(object):
     def __init__(self, struct_rdb):
         sections = rlc.OrdDict()
         for elt in struct_rdb:
-            rd_tag = elt.do_slot("Rd_tag")[0]
-            if rd_tag.startswith('\\'):
-                rd_tag = rd_tag[1:]
+            rd_tag = elt.do_slot("Rd_tag")[0][1:]
+            if rd_tag == 'section':
+                rd_section = rd_tag[0]
             lst = sections.get(rd_tag)
             if lst is None:
                 lst = []
@@ -58,6 +150,23 @@ class Page(object):
     def __getitem__(self, item):
         """ Get a section """
         return self.sections[item]
+    
+    def arguments(self):
+        """ Get the arguments and their description as a list of 2-tuples. """
+        section = self._sections['arguments']
+        res = list()
+        for item in section:
+            if item.do_slot("Rd_tag")[0] == '\\item':
+                if len(item) != 2:
+                    continue
+                arg_name = _Rd_deparse(item[0])[0]
+                if arg_name == '\\dots':
+                    arg_name = '...'
+                arg_desc = _Rd_deparse(item[1])[0]
+                res.append((arg_name, arg_desc))
+            else:
+                continue
+        return res
 
     def iteritems(self):
         """ iterator through the sections names and content
@@ -93,53 +202,13 @@ class Page(object):
             s.append(os.linesep)
         return s
 
-    def section_docstring(self, section):
-        assert(section in ('usage', 'arguments'))
-
-        if section == 'usage':
-            delim = '('
-        else:
-            delim = ':'
-
-        doc = self.to_docstring((section, ))
-
-        doc_iter = enumerate(doc)
-        for elt_i, elt in doc_iter:
-            ## cut out "<section>\n----"
-            if elt_i < 3:
-                continue
-            break
-        for elt_i, elt in doc_iter:
-            if elt == '\n':
-                continue
-            break
-        res = {}
-        entry = []
-        at_the_end = False
-        for elt_i, elt in doc_iter:
-            if at_the_end:
-                entry = ''.join(entry)
-                entry = entry.strip()
-                i = entry.find(delim)
-                if i == -1:
-                    if entry == '':
-                        continue
-                    else:
-                        raise Exception("Delimiter not found in entry '%s'" %entry)
-                res[entry[:i]] = entry[(i+1):]
-                entry = []
-                at_the_end = False
-                continue
-            entry.append(elt)
-            at_the_end = elt.endswith('\n')
-
-        return res
 
 class Package(object):
     """ The R documentation (aka help) for a package """
     __package_path = None
     __package_name = None
     __aliases_info = 'aliases.rds'
+    __hsearch_meta = os.path.join('Meta', 'hsearch.rds')
     __paths_info = 'paths.rds'
     __anindex_info = 'AnIndex'
 
@@ -154,58 +223,42 @@ class Package(object):
         if package_path is None:
             package_path = packages.get_packagepath(package_name)
         self.__package_path = package_path
-        #FIXME: handle the case of missing "aliases.rds"
-        rpath = StrSexpVector((os.path.join(package_path,
-                                            'help',
-                                            self.__aliases_info), ))
-        rds = readRDS(rpath)
-        rds = StrSexpVector(rds)
-        class2methods = {}
-        alias2object = {}
-        for k, v in itertools.izip(rds.do_slot('names'), rds):
-            if v.startswith("class."):
-                classname = v[len("class."):]
-                if classname in class2methods:
-                    methods = class2methods[classname]
-                else:
-                    methods = []
-                methods.append(k.split(',')[0])
-                class2methods[classname] = methods
-            else:
-                alias2object[k] = v
 
-        self.class2methods = class2methods
-        self.alias2object = alias2object
-        rpath = StrSexpVector((os.path.join(package_path,
-                                            'help',
-                                            package_name + '.rdx'), ))
-        self._rdx = conversion.ri2py(readRDS(rpath))
+        rd_meta_dbcon = sqlite3.connect(':memory:')
+        create_metaRd_db(rd_meta_dbcon)
+        populate_metaRd_db(package_name, rd_meta_dbcon, package_path = package_path)
+        self._dbcon = rd_meta_dbcon
 
+        path = os.path.join(package_path, 'help', package_name + '.rdx')
+        self._rdx = readRDS(StrSexpVector((path, )))
 
-    def fetch(self, key):
-        """ Fetch the documentation page associated with a given key. 
+    def fetch(self, alias):
+        """ Fetch the documentation page associated with a given alias. 
         
-        - for S4 classes, the class name is *often* prefixed with 'class.'.
-          For example, the key to the documentation for the class
-          AnnotatedDataFrame in the package Biobase is 'class.AnnotatedDataFrame'.
+        - for S4 classes, the class name is *often* suffixed with '-class'.
+          For example, the alias to the documentation for the class
+          AnnotatedDataFrame in the package Biobase is 'AnnotatedDataFrame-class'.
         """
-        rdx_variables = self._rdx.rx2('variables')
-        if key not in rdx_variables.names:
+
+        c = self._dbcon.execute('SELECT alias FROM rd_alias_meta WHERE alias=?', (alias, ))
+        res = c.fetchall()
+        if len(res) == 0:
             raise HelpNotFoundError("No help could be fetched", 
-                                    topic=key, package=self.__package_name)
+                                    topic=alias, package=self.__package_name)
         
-        rkey = StrSexpVector(rinterface.StrSexpVector((key, )))
+        rkey = StrSexpVector(rinterface.StrSexpVector((alias, )))
         rpath = StrSexpVector((os.path.join(self.package_path,
                                             'help',
                                             self.__package_name + '.rdb'),))
         
+        rdx_variables = self._rdx[self._rdx.do_slot('names').index('variables')]
         _eval  = rinterface.baseenv['eval']
         devnull_func = rinterface.parse('function(x) {}')
         devnull_func = _eval(devnull_func)
-        res = lazyload_dbfetch(rdx_variables.rx(rkey)[0], 
-                               rpath,
-                               self._rdx.rx2("compressed"),
-                               devnull_func)
+        res = _lazyload_dbfetch(rdx_variables[rdx_variables.do_slot('names').index(rkey[0])],
+                                rpath,
+                                self._rdx[self._rdx.do_slot('names').index("compressed")],
+                                devnull_func)
         p_res = Page(res)
         return p_res
         #return conversion.ri2py(res)

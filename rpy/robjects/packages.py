@@ -48,6 +48,7 @@ class Package(ModuleType):
         self._rpy2r = {}
         self.__fill_rpy2r__()
         self.__update_dict__()
+                
 
     def __update_dict__(self):
         """ Update the __dict__ according to what is in the R environment """
@@ -98,7 +99,7 @@ class SignatureTranslatedPackage(Package):
         for name, robj in self.__dict__.iteritems():
             if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
                 self.__dict__[name] = SignatureTranslatedFunction(self.__dict__[name])
-
+                
 
 class LibraryError(ImportError):
     """ Error occuring when importing an R library """
