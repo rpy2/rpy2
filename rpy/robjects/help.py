@@ -254,11 +254,10 @@ class Package(object):
             raise HelpNotFoundError("No help could be fetched", 
                                     topic = alias, package = self.__package_name)
         
-        c = self._dbcon.execute('SELECT name FROM rd_meta WHERE rowid=?', 
+        c = self._dbcon.execute('SELECT file, name FROM rd_meta WHERE rowid=?', 
                                 (res_alias[0][0], ))
         res = c.fetchall()
-
-        rkey = StrSexpVector(rinterface.StrSexpVector((res[0][0], )))
+        rkey = StrSexpVector((res[0][0][:-3], ))
         rpath = StrSexpVector((os.path.join(self.package_path,
                                             'help',
                                             self.__package_name + '.rdb'),))
