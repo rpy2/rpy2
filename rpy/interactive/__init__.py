@@ -8,7 +8,7 @@ The package aims at being simple rather than exhaustively complete
 a comfortable experience with autocompletion-capable python consoles.
 """
 
-
+from collections import OrderedDict
 
 from rpy2.robjects.packages import importr as _importr
 from rpy2.robjects.packages import _loaded_namespaces
@@ -50,6 +50,14 @@ class S4Classes(object):
         raise AttributeError("Attributes cannot be set. Use 'importr'")
 
 def importr(packname, newname=None):
+    """ Wrapper around rpy2.robjects.packages.importr, 
+    adding the following features:
+    
+    - package instance added to the pseudo-module 'packages'
+
+    - automatic pydoc generation from the R help pages
+
+    """
 
     assert isinstance(packname, str)
     packinstance = _importr(packname)
@@ -72,22 +80,41 @@ def importr(packname, newname=None):
     # S4Classes().__dict__[newname] = d 
     
     doc = rhelp.Package(packname)
-    for k in packinstance.__dict__:
+    for obj_name in packinstance.__dict__:
+        obj = packinstance.__dict__[obj_name]
         try:
-            p = doc.fetch(k)
+            p = doc.fetch(obj.__rname__)
         except rhelp.HelpNotFoundError, hnfe:
             continue
+        except AttributeError, ae:
+            print('Pydoc generator: oddity with "%s"' %(obj_name, ))
+            continue
         except:
-            print('Error with: %s' %k)
+            print('Pydoc generator: oddity with "%s" ("%s")' %(obj_name, obj.__rname__))
             continue
         try:
             arguments = p.arguments()
         except KeyError, ke:
             continue
-        docstring = linesep.join((p.title(),
-                                  '',
-                                  linesep.join('  %s -- %s' %(x,y) for x,y in arguments)))
-        packinstance.__dict__[k].__doc__ = docstring
+        # Assume uniqueness of values in the dict. This is making sense since
+        # parameters to the function should have unique names ans... this appears to be enforced
+        # by R when declaring a function
+
+        arguments = OrderedDict(arguments)
+        docstring = [p.title(), '']
+
+        if hasattr(obj, '_prm_translate'):
+            docstring.extend(['', 'parameters:'])
+            for k, v in obj._prm_translate.iteritems():
+                try:
+                    docstring.append('%s -- %s' %(k, arguments[v]))
+                except KeyError:
+                    print('Pydoc generator: oddity with R\'s "%s" over the parameter "%s"' %(obj_name, v))
+
+        docstring.extend(['', 'Returns:', p.value()])
+        docstring.extend(['', 'See Also:', p.seealso()])
+        docstring = linesep.join(docstring)
+        obj.__doc__ = docstring
     return packinstance
 
 for packname in _loaded_namespaces():

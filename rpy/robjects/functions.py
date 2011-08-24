@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.rinterface as rinterface
 #import rpy2.robjects.conversion as conversion
@@ -57,7 +58,7 @@ class SignatureTranslatedFunction(Function):
     def __init__(self, sexp, init_prm_translate = None):
         super(SignatureTranslatedFunction, self).__init__(sexp)
         if init_prm_translate is None:
-            prm_translate = {}
+            prm_translate = OrderedDict()
         else:
             assert isinstance(init_prm_translate, dict)
             prm_translate = init_prm_translate
@@ -66,8 +67,11 @@ class SignatureTranslatedFunction(Function):
                 py_param = r_param.replace('.', '_')
                 if py_param in prm_translate:
                     raise ValueError("Error: '%s' already in the transalation table" %r_param)
-                if py_param != r_param:
-                    prm_translate[py_param] = r_param
+                #FIXME: systematically add the parameter to the translation, as it makes it faster for generating
+                # dynamically the pydoc string from the R help.
+                #if py_param != r_param:
+                #    prm_translate[py_param] = r_param
+                prm_translate[py_param] = r_param
         self._prm_translate = prm_translate
         if hasattr(sexp, '__rname__'):
             self.__rname__ = sexp.__rname__

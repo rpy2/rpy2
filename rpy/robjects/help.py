@@ -160,10 +160,12 @@ class Page(object):
                 if len(item) != 2:
                     continue
                 arg_name = _Rd_deparse(item[0])[0]
-                if arg_name == '\\dots':
-                    arg_name = '...'
                 arg_desc = _Rd_deparse(item[1])[0]
-                res.append((arg_name, arg_desc))
+                for x in arg_name.split(','):
+                    x = x.lstrip()
+                    if x.endswith('\\dots'):
+                        x = '...'
+                    res.append((x, arg_desc))
             else:
                 continue
         return res
@@ -174,6 +176,25 @@ class Page(object):
         
         res = ''.join(_Rd_deparse(x)[0] for x in section)
         return res
+
+    def value(self):
+        """ Get the value returned """
+
+        section = self._sections.get('value', None)
+        if section is None:
+            return ''
+        else:
+            res = ''.join(_Rd_deparse(x)[0] for x in section)
+            return res
+
+    def seealso(self):
+        """ Get the other documentation entries recommended """
+        section = self._sections.get('seealso', None)
+        if section is None:
+            return ''
+        else:
+            res = ''.join(_Rd_deparse(x)[0] for x in section)
+            return res
 
     def iteritems(self):
         """ iterator through the sections names and content
