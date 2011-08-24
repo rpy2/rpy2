@@ -10,6 +10,7 @@ _as_env = rinterface.baseenv['as.environment']
 _package_has_namespace = rinterface.baseenv['packageHasNamespace']
 _system_file = rinterface.baseenv['system.file']
 _get_namespace = rinterface.baseenv['getNamespace']
+_get_namespace_exports = rinterface.baseenv['getNamespaceExports']
 _find_package = rinterface.baseenv['.find.package']
 _packages = rinterface.baseenv['.packages']
 _libpaths = rinterface.baseenv['.libPaths']
@@ -37,7 +38,8 @@ class Package(ModuleType):
     that locked environments should mostly be considered).
      """
     
-    def __init__(self, env, name, translation = {}):
+    def __init__(self, env, name, translation = {}, 
+                 exported_names = None):
         """ Create a Python module-like object from an R environment,
         using the specified translation if defined. """
         super(Package, self).__init__(name)
@@ -46,10 +48,13 @@ class Package(ModuleType):
         self._translation = translation
         mynames = tuple(self.__dict__)
         self._rpy2r = {}
+        if exported_names is None:
+            exported_names = set(self._env.keys())
+        self._exported_names = exported_names
         self.__fill_rpy2r__()
         self.__update_dict__()
+        self._exported_names = self._exported_names.difference(mynames)
                 
-
     def __update_dict__(self):
         """ Update the __dict__ according to what is in the R environment """
         for elt in self._rpy2r:
@@ -82,6 +87,9 @@ class Package(ModuleType):
                                        ' is conflicting with ' +\
                                        'a Python object attribute')
             self._rpy2r[rpyname] = rname
+            if (rpyname != rname) and (rname in self._exported_names):
+                self._exported_names.remove(rname)
+                self._exported_names.add(rpyname)
             rpyobj = conversion.ri2py(self._env[rname])
             if hasattr(rpyobj, '__rname__'):
                 rpyobj.__rname__ = rname
@@ -112,23 +120,30 @@ def importr(name,
             robject_translations = {}, signature_translation = True,
             suppress_messages = True):
     """ Import an R package (and return a module-like object). """
+
+    rname = rinterface.StrSexpVector((name, ))
+
     if suppress_messages:
         ok = quiet_require(name, lib_loc = lib_loc)
     else:
-        ok = _require(rinterface.StrSexpVector([name, ]), **{'lib.loc': lib_loc})[0]
+        ok = _require(rinterface.StrSexpVector(rname), **{'lib.loc': lib_loc})[0]
     if not ok:
         raise LibraryError("The R package %s could not be imported" %name)
-    if _package_has_namespace(rinterface.StrSexpVector((name, )), 
-                              _system_file(package = rinterface.StrSexpVector((name, )))):
-        env = _get_namespace(rinterface.StrSexpVector((name, )))
+    if _package_has_namespace(rname, 
+                              _system_file(package = rname)):
+        env = _get_namespace(rname)
+        exported_names = set(_get_namespace_exports(rname))
     else:
         env = _as_env(rinterface.StrSexpVector(['package:'+name, ]))
+        exported_names = None
 
     if signature_translation:
         pack = SignatureTranslatedPackage(env, name, 
-                                          translation = robject_translations)
+                                          translation = robject_translations,
+                                          exported_names = exported_names)
     else:
-        pack = Package(env, name, translation = robject_translations)
+        pack = Package(env, name, translation = robject_translations,
+                       exported_names = exported_names)
         
     return pack
 

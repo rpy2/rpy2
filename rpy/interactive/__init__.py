@@ -82,6 +82,8 @@ def importr(packname, newname=None):
     doc = rhelp.Package(packname)
     for obj_name in packinstance.__dict__:
         obj = packinstance.__dict__[obj_name]
+        if obj_name not in packinstance._exported_names:
+            continue
         try:
             p = doc.fetch(obj.__rname__)
         except rhelp.HelpNotFoundError, hnfe:
