@@ -26,6 +26,7 @@ from rpy2.robjects.language import eval
 import process_revents as revents
 
 from os import linesep
+import re
 
 class Packages(object):
     __instance = None
@@ -79,6 +80,10 @@ def importr(packname, newname=None):
     #     d[newcn] = AutoS4
     # S4Classes().__dict__[newname] = d 
     
+    p_latex_code = re.compile('\\\\code{([^}]+)}')
+    p_latex_link = re.compile('\\\\link{([^}]+)}')
+    p_latex_any = re.compile('\\\\[^[]+{([^}]+)}')
+
     doc = rhelp.Package(packname)
     for obj_name in packinstance.__dict__:
         obj = packinstance.__dict__[obj_name]
@@ -87,8 +92,10 @@ def importr(packname, newname=None):
         try:
             p = doc.fetch(obj.__rname__)
         except rhelp.HelpNotFoundError, hnfe:
+            # No R documentation could be found for the object
             continue
         except AttributeError, ae:
+            # No __rname__ for the object
             print('Pydoc generator: oddity with "%s"' %(obj_name, ))
             continue
         except:
@@ -106,15 +113,31 @@ def importr(packname, newname=None):
         docstring = [p.title(), '']
 
         if hasattr(obj, '_prm_translate'):
-            docstring.extend(['', 'parameters:'])
+            docstring.extend(['', 'Parameters:', ''])
             for k, v in obj._prm_translate.iteritems():
                 try:
-                    docstring.append('%s -- %s' %(k, arguments[v]))
+                    tmp = arguments[v]
+                    tmp = re.sub(p_latex_code, "'\\1'", tmp)
+                    tmp = re.sub(p_latex_any, '\\1', tmp)
+                    docstring.append('%s -- %s' %(k, tmp))
                 except KeyError:
-                    print('Pydoc generator: oddity with R\'s "%s" over the parameter "%s"' %(obj_name, v))
+                    # This is an inconsistency in the R documentation
+                    # (the parameter in the function's signature does
+                    # not have an entry in the R documentation).
+                    # Do nothing.
+                    # 
+                    pass
+                    #print('Pydoc generator: oddity with R\'s "%s" over the parameter "%s"' %(obj_name, v))
 
-        docstring.extend(['', 'Returns:', p.value()])
-        docstring.extend(['', 'See Also:', p.seealso()])
+        tmp = p.value()
+        tmp = re.sub(p_latex_code, "'\\1'", tmp)
+        tmp = re.sub(p_latex_any, '\\1', tmp)
+
+        docstring.extend(['', 'Returns:', tmp])
+        tmp = p.seealso()
+        tmp = re.sub(p_latex_code, "'\\1'", tmp)
+        tmp = re.sub(p_latex_any, '\\1', tmp)
+        docstring.extend(['', 'See Also:', tmp])
         docstring = linesep.join(docstring)
         obj.__doc__ = docstring
     return packinstance
