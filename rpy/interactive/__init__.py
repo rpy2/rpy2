@@ -50,7 +50,7 @@ class S4Classes(object):
     def __setattr__(self, name, value):
         raise AttributeError("Attributes cannot be set. Use 'importr'")
 
-def importr(packname, newname=None):
+def importr(packname, newname = None, verbose = False):
     """ Wrapper around rpy2.robjects.packages.importr, 
     adding the following features:
     
@@ -88,11 +88,15 @@ def importr(packname, newname=None):
     for obj_name in packinstance.__dict__:
         obj = packinstance.__dict__[obj_name]
         if obj_name not in packinstance._exported_names:
+            if verbose:
+                print('Pydoc generator: "%s" not exported' %(obj_name, ))
             continue
         try:
             p = doc.fetch(obj.__rname__)
         except rhelp.HelpNotFoundError, hnfe:
             # No R documentation could be found for the object
+            if verbose:
+                print('Pydoc generator: no help for "%s"' %(obj_name, ))
             continue
         except AttributeError, ae:
             # No __rname__ for the object
@@ -101,16 +105,19 @@ def importr(packname, newname=None):
         except:
             print('Pydoc generator: oddity with "%s" ("%s")' %(obj_name, obj.__rname__))
             continue
+
+        docstring = [p.title(), '[ %s ]' %p._type, '']
+
         try:
             arguments = p.arguments()
         except KeyError, ke:
-            continue
+            #FIXME: no arguments - should the handling differ a bit ?
+            arguments = tuple()
         # Assume uniqueness of values in the dict. This is making sense since
         # parameters to the function should have unique names ans... this appears to be enforced
         # by R when declaring a function
 
         arguments = OrderedDict(arguments)
-        docstring = [p.title(), '']
 
         if hasattr(obj, '_prm_translate'):
             docstring.extend(['', 'Parameters:', ''])
@@ -126,7 +133,9 @@ def importr(packname, newname=None):
                     # not have an entry in the R documentation).
                     # Do nothing.
                     # 
-                    pass
+                    if verbose:
+                        print('Pydoc generator: no help for parameter "%s" in %s' %(k, obj_name))
+                    docstring.append('%s -- [error fetching the documentation]' %(k))
                     #print('Pydoc generator: oddity with R\'s "%s" over the parameter "%s"' %(obj_name, v))
 
         tmp = p.value()

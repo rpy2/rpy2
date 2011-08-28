@@ -127,7 +127,7 @@ class Page(object):
     In R the S3 class 'Rd' is the closest entity to this class.
     """
 
-    def __init__(self, struct_rdb):
+    def __init__(self, struct_rdb, _type = ''):
         sections = rlc.OrdDict()
         for elt in struct_rdb:
             rd_tag = elt.do_slot("Rd_tag")[0][1:]
@@ -140,6 +140,7 @@ class Page(object):
             for sub_elt in elt:
                 lst.append(sub_elt)
         self._sections = sections
+        self._type = _type
 
     def _section_get(self):
         return self._sections
@@ -275,10 +276,12 @@ class Package(object):
             raise HelpNotFoundError("No help could be fetched", 
                                     topic = alias, package = self.__package_name)
         
-        c = self._dbcon.execute('SELECT file, name FROM rd_meta WHERE rowid=?', 
+        c = self._dbcon.execute('SELECT file, name, type FROM rd_meta WHERE rowid=?', 
                                 (res_alias[0][0], ))
+        # since the selection is on a verified rowid we are sure to exactly get one row
         res = c.fetchall()
         rkey = StrSexpVector((res[0][0][:-3], ))
+        _type = res[0][2]
         rpath = StrSexpVector((os.path.join(self.package_path,
                                             'help',
                                             self.__package_name + '.rdb'),))
@@ -291,7 +294,7 @@ class Package(object):
                                 rpath,
                                 self._rdx[self._rdx.do_slot('names').index("compressed")],
                                 devnull_func)
-        p_res = Page(res)
+        p_res = Page(res, _type = _type)
         return p_res
         #return conversion.ri2py(res)
 
