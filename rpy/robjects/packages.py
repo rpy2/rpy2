@@ -38,6 +38,14 @@ class Package(ModuleType):
     that locked environments should mostly be considered).
      """
     
+    _env = None
+    __rname__ = None
+    _translation = None
+    _rpy2r = None
+    __fill_rpy2r__ = None
+    __update_dict__ = None
+    _exported_names = None
+
     def __init__(self, env, name, translation = {}, 
                  exported_names = None):
         """ Create a Python module-like object from an R environment,

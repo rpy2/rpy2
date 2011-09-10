@@ -197,6 +197,16 @@ class Page(object):
             res = ''.join(_Rd_deparse(x)[0] for x in section)
             return res
 
+    def usage(self):
+        section = self._sections.get('usage', None)
+        if section is None:
+            res = ''
+        else:
+            res = (_Rd_deparse(x)[0] for x in section)
+            res = ''.join(res)
+            
+        return res
+
     def iteritems(self):
         """ iterator through the sections names and content
         in the documentation Page. """

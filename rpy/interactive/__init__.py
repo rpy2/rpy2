@@ -83,13 +83,14 @@ def importr(packname, newname = None, verbose = False):
     p_latex_code = re.compile('\\\\code{([^}]+)}')
     p_latex_link = re.compile('\\\\link{([^}]+)}')
     p_latex_any = re.compile('\\\\[^[]+{([^}]+)}')
+    p_latex_usage = re.compile('\\\\method{(?P<method>[^}]+)}{(?P<class>[^}]+)}(?P<signature>.+)')
 
     doc = rhelp.Package(packname)
     for obj_name in packinstance.__dict__:
         obj = packinstance.__dict__[obj_name]
-        if obj_name not in packinstance._exported_names:
-            if verbose:
-                print('Pydoc generator: "%s" not exported' %(obj_name, ))
+        # ignore class-defined attributes to only consider
+        # the ones defined dynamically
+        if hasattr(type(packinstance), obj_name):
             continue
         try:
             p = doc.fetch(obj.__rname__)
@@ -106,7 +107,40 @@ def importr(packname, newname = None, verbose = False):
             print('Pydoc generator: oddity with "%s" ("%s")' %(obj_name, obj.__rname__))
             continue
 
-        docstring = [p.title(), '[ %s ]' %p._type, '']
+        if obj_name in packinstance._exported_names:
+            exported = True
+        else:
+            exported = False
+            #if verbose:
+            #    print('Pydoc generator: "%s" not exported' %(obj_name, ))
+            #continue
+
+        docstring = [p.title(), 
+                     '[ %s - %s exported ]' %(p._type, 'not' if not exported else ''), 
+                     '** Experimental dynamic conversion of the associated R documentation **',
+                     '']
+
+
+        tmp_usage = p.usage().split(linesep)
+        for i, row in enumerate(tmp_usage):
+            tmp_m = p_latex_usage.match(row)
+            if tmp_m is not None:
+                tmp_usage[i] = '%s_%s%s' %(tmp_m.group('method'), 
+                                           tmp_m.group('class'),
+                                           tmp_m.group('signature'))
+        tmp_usage = linesep.join(tmp_usage)
+        docstring.extend([tmp_usage, ''])
+
+
+        if obj_name not in packinstance._exported_names:
+            tmp = p.seealso()
+            tmp = re.sub(p_latex_code, "'\\1'", tmp)
+            tmp = re.sub(p_latex_any, '\\1', tmp)
+            docstring.extend(['', 'See Also:', tmp])
+            docstring = linesep.join(docstring)
+            obj.__doc__ = docstring
+            continue
+
 
         try:
             arguments = p.arguments()
