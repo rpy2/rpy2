@@ -171,6 +171,16 @@ class Page(object):
                 continue
         return res
 
+    def description(self):
+        """ Get the description of the entry """
+
+        section = self._sections.get('description', None)
+        if section is None:
+            return ''
+        else:
+            res = ''.join(_Rd_deparse(x)[0] for x in section)
+            return res
+
     def title(self):
         """ Get the title """
         section = self._sections['title']

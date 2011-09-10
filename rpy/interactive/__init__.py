@@ -82,7 +82,8 @@ def importr(packname, newname = None, verbose = False):
     
     p_latex_code = re.compile('\\\\code{([^}]+)}')
     p_latex_link = re.compile('\\\\link{([^}]+)}')
-    p_latex_any = re.compile('\\\\[^[]+{([^}]+)}')
+    p_latex_any_curly = re.compile('\\\\[^ ]+{([^}]+)}')
+    p_latex_any = re.compile('\\\\([^ ]+)')
     p_latex_usage = re.compile('\\\\method{(?P<method>[^}]+)}{(?P<class>[^}]+)}(?P<signature>.+)')
 
     doc = rhelp.Package(packname)
@@ -117,9 +118,12 @@ def importr(packname, newname = None, verbose = False):
 
         docstring = [p.title(), 
                      '[ %s - %s exported ]' %(p._type, 'not' if not exported else ''), 
-                     '** Experimental dynamic conversion of the associated R documentation **',
-                     '']
+                     '** Experimental dynamic conversion of the associated R documentation **']
 
+        tmp = p.description()
+        tmp = re.sub(p_latex_any_curly, "'\\1'", tmp)
+        docstring.append(tmp)
+        docstring.append('')
 
         tmp_usage = p.usage().split(linesep)
         for i, row in enumerate(tmp_usage):
@@ -135,7 +139,8 @@ def importr(packname, newname = None, verbose = False):
         if obj_name not in packinstance._exported_names:
             tmp = p.seealso()
             tmp = re.sub(p_latex_code, "'\\1'", tmp)
-            tmp = re.sub(p_latex_any, '\\1', tmp)
+            tmp = re.sub(p_latex_any_curly, '\\1', tmp)
+            tmp = re.sub(p_latex_any, "'\\1'", tmp)
             docstring.extend(['', 'See Also:', tmp])
             docstring = linesep.join(docstring)
             obj.__doc__ = docstring
@@ -159,7 +164,8 @@ def importr(packname, newname = None, verbose = False):
                 try:
                     tmp = arguments[v]
                     tmp = re.sub(p_latex_code, "'\\1'", tmp)
-                    tmp = re.sub(p_latex_any, '\\1', tmp)
+                    tmp = re.sub(p_latex_any_curly, '\\1', tmp)
+                    tmp = re.sub(p_latex_any, "'\\1'", tmp)
                     docstring.append('%s -- %s' %(k, tmp))
                 except KeyError:
                     # This is an inconsistency in the R documentation
@@ -179,7 +185,8 @@ def importr(packname, newname = None, verbose = False):
         docstring.extend(['', 'Returns:', tmp])
         tmp = p.seealso()
         tmp = re.sub(p_latex_code, "'\\1'", tmp)
-        tmp = re.sub(p_latex_any, '\\1', tmp)
+        tmp = re.sub(p_latex_any_curly, '\\1', tmp)
+        tmp = re.sub(p_latex_any, "'\\1'", tmp)
         docstring.extend(['', 'See Also:', tmp])
         docstring = linesep.join(docstring)
         obj.__doc__ = docstring
