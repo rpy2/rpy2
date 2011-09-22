@@ -181,6 +181,10 @@ class VectorOperationsDelegator(object):
         res = globalenv_ri.get("-")(self._parent)
         return res
 
+    def __contains__(self, what):
+        res = globalenv_ri.get("%in%")(self._parent, what)
+        return res
+
 
 class Vector(RObjectMixin, SexpVector):
     """ Vector(seq) -> Vector.
