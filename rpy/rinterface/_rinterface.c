@@ -1070,6 +1070,27 @@ void Re_Busy(int which)
 }
 #endif
 
+static void
+end_r(void)
+{
+  /* taken from the tests/Embedded/shutdown.c in the R source tree */
+  
+  R_dot_Last();
+  R_RunExitFinalizers();
+  /* CleanEd(); */
+  Rf_KillAllDevices();
+  
+  R_CleanTempDir();
+  /* PrintWarnings(); */
+  R_gc();
+  /* */
+		
+  /*NOTE: This is only part of the procedure to terminate
+    R - more in EmbeddedR_end()*/
+  
+}
+
+
 static PyObject* EmbeddedR_init(PyObject *self) 
 {
 
@@ -1233,7 +1254,18 @@ static PyObject* EmbeddedR_init(PyObject *self)
 #ifdef RPY_VERBOSE
   printf("R initialized - status: %i\n", status);
 #endif
-
+  
+  int register_endr = Py_AtExit( end_r );
+  if (register_endr != 0) {
+    register_endr = PyErr_WarnEx(PyExc_RuntimeWarning,
+				 "'rpy2.rinterface.endr' could not be "
+				 "registered as a cleanup function "
+				 "(limit exceed).",
+				 1);
+    /*FIXME: what if -1 returned ? calling end_r will leave the process unable
+      to try to initialize R anyway. */
+  }
+  
   return res;
 }
 PyDoc_STRVAR(EmbeddedR_init_doc,
@@ -1248,18 +1280,8 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
    * deallocated in Python ?
    *other possibility would be to have a fallback for "unreachable" objects ? 
    */
-  /*FIXME: rpy has something to terminate R. Check the details of what they are. */
-  /* taken from the tests/Embedded/shutdown.c in the R source tree */
 
-  R_dot_Last();           
-  R_RunExitFinalizers();  
-  /* CleanEd(); */
-  Rf_KillAllDevices();
-  
-  R_CleanTempDir();
-  /* PrintWarnings(); */
-  R_gc();
-  /* */
+  end_r();
 
   Rf_endEmbeddedR((int)fatal);
   
