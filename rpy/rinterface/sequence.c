@@ -1045,7 +1045,7 @@ VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
 #endif 
       
       if (seq_to_R(object, &sexp) == -1) {
-	/* RPy_SeqTo*SXP returns already raises an exception in case of problem
+	/* RPy_SeqTo*SXP already raises an exception in case of problem
 	 */
 	embeddedR_freelock();
 	return -1;
@@ -1163,6 +1163,8 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
   if (length > R_LEN_T_MAX) {
     PyErr_Format(PyExc_ValueError,
 		 "The Python sequence is longer than the longuest possible vector in R");
+    Py_XDECREF(seq_object);
+    return -1;
   }
 
   PROTECT(new_sexp = NEW_INTEGER(length));
@@ -1190,7 +1192,8 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
 	UNPROTECT(1);
 	PyErr_Format(PyExc_OverflowError,
 		     "Integer overflow with element %zd.",
-		     ii);	
+		     ii);
+	Py_XDECREF(seq_object);
 	return -1;
       } else {
 	integer_ptr[ii] = (int)l;
@@ -1200,12 +1203,14 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
       PyErr_Format(PyExc_ValueError,
 		   "Error while trying to convert element %zd to an integer.",
 		   ii);
+      Py_XDECREF(seq_object);
       return -1;
     }
     Py_XDECREF(item_tmp);
   }
   UNPROTECT(1);
   *sexpp = new_sexp;
+  Py_XDECREF(seq_object);
   return 0;
 }
 
@@ -1403,6 +1408,8 @@ RPy_SeqToREALSXP(PyObject *object, SEXP *sexpp)
   if (length > R_LEN_T_MAX) {
     PyErr_Format(PyExc_ValueError,
 		 "The Python sequence is longer than the longuest possible vector in R");
+    Py_XDECREF(seq_object);
+    return -1;
   }
 
   PROTECT(new_sexp = NEW_NUMERIC(length));
@@ -1423,12 +1430,14 @@ RPy_SeqToREALSXP(PyObject *object, SEXP *sexpp)
       PyErr_Format(PyExc_ValueError,
 		   "Error while trying to convert element %zd to a double.",
 		   ii);
+      Py_XDECREF(seq_object);
       return -1;
     }
     Py_XDECREF(item_tmp);
   }
   UNPROTECT(1);
   *sexpp = new_sexp;
+  Py_XDECREF(seq_object);
   return 0;
 }
 /* Take an arbitray Python iterator, length, and a target pointer SEXP
@@ -1604,6 +1613,8 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
   if (length > R_LEN_T_MAX) {
     PyErr_Format(PyExc_ValueError,
 		 "The Python sequence is longer than the longuest possible vector in R");
+    Py_XDECREF(seq_object);
+    return -1;
   }
 
   PROTECT(new_sexp = NEW_CHARACTER(length));
@@ -1628,7 +1639,8 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 	UNPROTECT(1);
 	PyErr_Format(PyExc_ValueError,
 		     "Error raised by codec for element %zd.",
-		     ii);	
+		     ii);
+	Py_XDECREF(seq_object);
 	return -1;	
       }
       const char *string = PyString_AsString(item_tmp);
@@ -1644,8 +1656,9 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 	UNPROTECT(1);
 	PyErr_Format(PyExc_ValueError,
 		     "Error raised by codec for element %zd.",
-		     ii);	
-	return -1;	
+		     ii);
+	Py_XDECREF(seq_object);
+	return -1;
       }
       const char *string = PyBytes_AsString(item_tmp);
       str_R = mkCharCE(string, CE_UTF8);
@@ -1658,8 +1671,9 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 	UNPROTECT(1);
 	PyErr_Format(PyExc_ValueError,
 		     "Error raised when calling str() for element %zd.",
-		     ii);	
-	return -1;	
+		     ii);
+	Py_XDECREF(seq_object);	
+	return -1;
       }
 #if (PY_VERSION_HEX < 0x03010000)
       str_R = mkChar(PyString_AS_STRING(item_tmp));
@@ -1669,8 +1683,9 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 	UNPROTECT(1);
 	PyErr_Format(PyExc_ValueError,
 		     "Error raised by codec for str(element %zd).",
-		     ii);	
-	return -1;	
+		     ii);
+	Py_XDECREF(seq_object);
+	return -1;
       }
       const char *string = PyBytes_AsString(item_tmp2);
       str_R = mkCharCE(string, CE_UTF8);
@@ -1683,6 +1698,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
   }
   UNPROTECT(1);
   *sexpp = new_sexp;
+  Py_XDECREF(seq_object);
   return 0;
 }
 
@@ -1807,6 +1823,8 @@ RPy_SeqToLGLSXP(PyObject *object, SEXP *sexpp)
   if (length > R_LEN_T_MAX) {
     PyErr_Format(PyExc_ValueError,
 		 "The Python sequence is longer than the longuest possible vector in R");
+    Py_XDECREF(seq_object);
+    return -1;
   }
 
   PROTECT(new_sexp = NEW_LOGICAL(length));
@@ -1836,6 +1854,7 @@ RPy_SeqToLGLSXP(PyObject *object, SEXP *sexpp)
 	PyErr_Format(PyExc_ValueError,
 		     "Error while evaluating 'not <element %zd>'.",
 		   ii);
+	Py_XDECREF(seq_object);
 	return -1;
 	break;
       }
@@ -1843,6 +1862,7 @@ RPy_SeqToLGLSXP(PyObject *object, SEXP *sexpp)
   }
   UNPROTECT(1);
   *sexpp = new_sexp;
+  Py_XDECREF(seq_object);
   return 0;
 }
 
@@ -1967,6 +1987,8 @@ RPy_SeqToRAWSXP(PyObject *object, SEXP *sexpp)
   if (length > R_LEN_T_MAX) {
     PyErr_Format(PyExc_ValueError,
 		 "The Python sequence is longer than the longuest possible vector in R");
+    Py_XDECREF(seq_object);
+    return -1;
   }
 
   PROTECT(new_sexp = NEW_RAW(length));
@@ -1989,18 +2011,21 @@ RPy_SeqToRAWSXP(PyObject *object, SEXP *sexpp)
       PyErr_Format(PyExc_ValueError,
 		   "Element %zd is not a byte.",
 		   ii);
+      Py_XDECREF(seq_object);
       return -1;      
     } else if (size_tmp > 1) {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
 		   "Element %zd contains more than one byte.",
 		   ii);
+      Py_XDECREF(seq_object);
       return -1;
     }
     raw_ptr[ii] = buffer[0];
   }
   UNPROTECT(1);
   *sexpp = new_sexp;
+  Py_XDECREF(seq_object);
   return 0;
 }
 
@@ -2111,6 +2136,8 @@ RPy_SeqToCPLXSXP(PyObject *object, SEXP *sexpp)
   if (length > R_LEN_T_MAX) {
     PyErr_Format(PyExc_ValueError,
 		 "The Python sequence is longer than the longuest possible vector in R");
+    Py_XDECREF(seq_object);
+    return -1;
   }
 
   PROTECT(new_sexp = NEW_COMPLEX(length));
@@ -2131,11 +2158,13 @@ RPy_SeqToCPLXSXP(PyObject *object, SEXP *sexpp)
       PyErr_Format(PyExc_ValueError,
 		   "Element %zd is not a complex",
 		   ii);
+      Py_XDECREF(seq_object);
       return -1;
     }
   }
   UNPROTECT(1);
   *sexpp = new_sexp;
+  Py_XDECREF(seq_object);
   return 0;
 }
 
@@ -2259,6 +2288,7 @@ RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
   if (length > R_LEN_T_MAX) {
     PyErr_Format(PyExc_ValueError,
 		 "The Python sequence is longer than the longuest possible vector in R");
+    Py_XDECREF(seq_object);
     return -1;
   }
 
@@ -2279,6 +2309,7 @@ RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
 	SET_ELEMENT(new_sexp, ii, new_sexp_item);
       } else {
 	UNPROTECT(1);
+	Py_XDECREF(seq_object);
 	return -1;
       }
     } else if (PyBool_Check(item)) {
@@ -2287,6 +2318,7 @@ RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
 	SET_ELEMENT(new_sexp, ii, new_sexp_item);
       } else {
 	UNPROTECT(1);
+	Py_XDECREF(seq_object);
 	return -1;
       }
     } else if (PyLong_Check(item)
@@ -2300,6 +2332,7 @@ RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
 	SET_ELEMENT(new_sexp, ii, new_sexp_item);
       } else {
 	UNPROTECT(1);
+	Py_XDECREF(seq_object);
 	return -1;
       }
     } else if (PyUnicode_Check(item)
@@ -2313,6 +2346,7 @@ RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
 	SET_ELEMENT(new_sexp, ii, new_sexp_item);
       } else {
 	UNPROTECT(1);
+	Py_XDECREF(seq_object);
 	return -1;
       }
     } else if (PyComplex_Check(item)) {
@@ -2321,6 +2355,7 @@ RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
 	SET_ELEMENT(new_sexp, ii, new_sexp_item);
       } else {
 	UNPROTECT(1);
+	Py_XDECREF(seq_object);
 	return -1;
       }
     } else {
@@ -2328,11 +2363,13 @@ RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
       PyErr_Format(PyExc_ValueError,
 		   "Element %zd cannot be implicitly cast to an R object.",
 		   ii);
+      Py_XDECREF(seq_object);
       return -1;
     }
   }
   UNPROTECT(1);
   *sexpp = new_sexp;
+  Py_XDECREF(seq_object);
   return 0;
 }
 
