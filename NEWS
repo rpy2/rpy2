@@ -38,6 +38,11 @@ Bugs fixed
 - Dynamic construction of S4 classes was looking for R help as 'class.<class>'
   rather than '<class>-class'
 
+- The cleanup of temporary directories created by R was not happening if
+  the Python process terminated without calline :func:`rpy2.rinterface.endr()`
+  (issue #68, and proof-of-principle fix by chrish42)
+
+
 Release 2.2.2
 =============
 
