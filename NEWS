@@ -1,3 +1,12 @@
+Release 2.2.4
+=============
+
+Bugs fixed
+----------
+
+- Memory leak when creating R vectors from Python (issue #82)
+
+
 Release 2.2.3
 =============
 
