@@ -49,12 +49,27 @@ can be used to modify the options.
 Default parameters for the initialization are otherwise
 in the module variable `initoptions`.
 
+.. warning::
+   Currently the set of default initialization option contains `--vanilla`,
+   which implies that :envvar:`R_LIBS`, whenever set, is ignored.
+   The initialization options will have to be set _before_ the :program:`R`
+   is started.
+
+   This can be achieved very simply by added the following lines before initializing
+   the embedded R, or importing :mod:`rpy2.robjects` as this action performs an initialization.
+
+   .. code-block:: python
+      
+      import rpy2.rinterface
+      rpy2.rinterface.set_initoptions(('rpy2', '--verbose', '--no-save'))
+      
 
 
 .. index::
    single: initialize R_HOME
 
 .. note::
+
    If calling :func:`initr` returns an error stating that
    :envvar:`R_HOME` is not defined, you should either have the :program:`R` executable in
    your path (:envvar:`PATH` on unix-alikes, or :envvar:`Path` on Microsoft Windows) or
@@ -1145,6 +1160,7 @@ Class diagram
 =============
 
 .. inheritance-diagram:: rpy2.rinterface
+   :parts: 1
 
 
 Misc. variables
