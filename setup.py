@@ -264,7 +264,7 @@ class RConfig(object):
                         # if the configuration points to an existing library, 
                         # use it
                         if os.path.exists(string):
-                            rc += RConfig(library = substring)
+                            rc += RConfig(libraries = substring)
                             ok = True
                             break
             if not ok:
