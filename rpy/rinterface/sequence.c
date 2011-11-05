@@ -475,7 +475,6 @@ static int
 VectorSexp_ass_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *val)
 {
   R_len_t len_R;
-  int self_typeof;
 
   if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
@@ -538,8 +537,6 @@ VectorSexp_ass_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh, Py
 
     R_len_t slice_len = ihigh-ilow;
     R_len_t slice_i;
-    const char *vs;
-    SEXP tmp, sexp_item; /* tmp and sexp_item needed for case LANGSXP */
 
     SEXP sexp_val = RPY_SEXP((PySexpObject *)val);
     if (! sexp_val) {
@@ -1292,6 +1289,9 @@ IntVectorSexp_AsSexp(PyObject *pyfloat) {
   PyObject *seq_tmp = PyTuple_New(1);
   PyTuple_SetItem(seq_tmp, 0, pyfloat);
   status = RPy_SeqToINTSXP(seq_tmp, &sexp);
+  if (status == -1) {
+    return NULL;
+  }
   Py_DECREF(seq_tmp);
   return sexp;
 }
@@ -1499,6 +1499,9 @@ FloatVectorSexp_AsSexp(PyObject *pyfloat) {
   PyObject *seq_tmp = PyTuple_New(1);
   PyTuple_SetItem(seq_tmp, 0, pyfloat);
   status = RPy_SeqToREALSXP(seq_tmp, &sexp);
+  if (status == -1) {
+    return NULL;
+  }
   Py_DECREF(seq_tmp);
   return sexp;
 }
@@ -1710,6 +1713,9 @@ StrVectorSexp_AsSexp(PyObject *pyfloat) {
   PyObject *seq_tmp = PyTuple_New(1);
   PyTuple_SetItem(seq_tmp, 0, pyfloat);
   status = RPy_SeqToSTRSXP(seq_tmp, &sexp);
+  if (status == -1) {
+    return NULL;
+  }
   Py_DECREF(seq_tmp);
   return sexp;
 }
@@ -1874,6 +1880,9 @@ BoolVectorSexp_AsSexp(PyObject *pyfloat) {
   PyObject *seq_tmp = PyTuple_New(1);
   PyTuple_SetItem(seq_tmp, 0, pyfloat);
   status = RPy_SeqToLGLSXP(seq_tmp, &sexp);
+  if (status == -1) {
+    return NULL;
+  }
   Py_DECREF(seq_tmp);
   return sexp;
 }
@@ -2176,6 +2185,9 @@ ComplexVectorSexp_AsSexp(PyObject *pyfloat) {
   PyObject *seq_tmp = PyTuple_New(1);
   PyTuple_SetItem(seq_tmp, 0, pyfloat);
   status = RPy_SeqToCPLXSXP(seq_tmp, &sexp);
+  if (status == -1) {
+    return NULL;
+  }
   Py_DECREF(seq_tmp);
   return sexp;
 }

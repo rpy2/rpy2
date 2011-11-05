@@ -178,7 +178,8 @@ VectorSexp_getsegcount(PySexpObject *self, Py_ssize_t *lenp)
 }
 
 static Py_ssize_t
-VectorSexp_getreadbuf(PySexpObject *self, Py_ssize_t segment, void **ptrptr)
+VectorSexp_getreadbuf(PySexpObject *self, Py_ssize_t segment, 
+		      void **ptrptr)
 {
   if (segment != 0) {
     PyErr_SetString(PyExc_ValueError,
