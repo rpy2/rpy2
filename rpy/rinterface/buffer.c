@@ -179,7 +179,7 @@ VectorSexp_getsegcount(PySexpObject *self, Py_ssize_t *lenp)
 
 static Py_ssize_t
 VectorSexp_getreadbuf(PySexpObject *self, Py_ssize_t segment, 
-		      void **ptrptr)
+		      const void **ptrptr)
 {
   if (segment != 0) {
     PyErr_SetString(PyExc_ValueError,
@@ -191,23 +191,23 @@ VectorSexp_getreadbuf(PySexpObject *self, Py_ssize_t segment,
 
   switch (TYPEOF(sexp)) {
   case REALSXP:
-    *ptrptr = NUMERIC_POINTER(sexp);
+    *ptrptr = (void *)NUMERIC_POINTER(sexp);
     len = GET_LENGTH(sexp) * sizeof(double);
     break;
   case INTSXP:
-    *ptrptr = INTEGER_POINTER(sexp);
+    *ptrptr = (void *)INTEGER_POINTER(sexp);
     len = GET_LENGTH(sexp) * sizeof(int);
     break;
   case LGLSXP:
-    *ptrptr = LOGICAL_POINTER(sexp);
+    *ptrptr = (void *)LOGICAL_POINTER(sexp);
     len = GET_LENGTH(sexp) * sizeof(int);
     break;
   case CPLXSXP:
-    *ptrptr = COMPLEX_POINTER(sexp);
+    *ptrptr = (void *)COMPLEX_POINTER(sexp);
     len = GET_LENGTH(sexp) * sizeof(Rcomplex);
     break;
   case RAWSXP:
-    *ptrptr = RAW_POINTER(sexp);
+    *ptrptr = (void *)RAW_POINTER(sexp);
     len = GET_LENGTH(sexp) * 1;
     break;
   default:
@@ -215,22 +215,22 @@ VectorSexp_getreadbuf(PySexpObject *self, Py_ssize_t segment,
     *ptrptr = NULL;
     return -1;
   }
-  return 0;
+  return len;
 }
 
 static Py_ssize_t
-VectorSexp_getwritebuf(PySexpObject *self, Py_ssize_t segment, void **ptrptr)
+VectorSexp_getwritebuf(PySexpObject *self, Py_ssize_t segment, const void **ptrptr)
 {
   printf("getwritebuf\n");
   /*FIXME: introduce a "writeable" flag for SexpVector objects ? */
-  return VectorSexp_getreadbuf(self, segment, (void **)ptrptr);
+  return VectorSexp_getreadbuf(self, segment, ptrptr);
 }
 
 static Py_ssize_t
 VectorSexp_getcharbuf(PySexpObject *self, Py_ssize_t segment, const char **ptrptr)
 {
   /*FIXME: introduce a "writeable" flag for SexpVector objects ? */
-  return VectorSexp_getreadbuf(self, segment, (void **)ptrptr);
+  return VectorSexp_getreadbuf(self, segment, (const void **)ptrptr);
 }
 #endif
 
