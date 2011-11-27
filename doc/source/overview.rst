@@ -76,14 +76,15 @@ versions to run rpy2 with.
 ======== ===========
 Software Versions
 ======== ===========
- Python   2.6; 2.7
- R        2.13; 2.14
+ Python   2.7
+ R        2.14
 ======== ===========
 
+Most likely, Python 2.6 will just work.
 Older Python like 2.5 or even 2.4 might compile, but there is much less testing done with those platforms, if any, and likely limited hope for free support.
 
 Python 3.2 will install, but at the time of writing still has a couple
-of minor issues.
+of minor issues. Python 3.3 is touted as the "production-ready" Python 3, so more time will be spent on Python when it is out.
 
 .. warning::
 
@@ -111,7 +112,18 @@ Rpy2 will require compiled libraries and development headers from: R, Python, an
 .. note::
 
    On OS X, the *XCode* tools will be required in order to compile rpy2.
+   
+   On OS X "Snow Leopard" (10.6.8), it was reported that setting architecture flags was sometimes needed
 
+   .. code-block:: bash
+
+      env ARCHFLAGS="-arch i386 -arch x86_64" pip install rpy2
+
+   or 
+
+   .. code-block:: bash
+
+      env ARCHFLAGS="-arch i386 -arch x86_64" python setup.py build install
 
 Download
 --------
