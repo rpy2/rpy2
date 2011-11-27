@@ -410,7 +410,20 @@ if __name__ == '__main__':
                     'build_ext': build_ext},
         name = pack_name,
         version = pack_version,
-        description = "Python interface to the R language",
+        description = """
+About rpy2
+==========
+
+Rpy2 is a Python interface to the R language, mainly constitutued
+of a low-level interface (rpy2.rinterface) close to R's C-level API
+and a high-level interface with convenience classes and features
+(rpy2.robjects).
+
+The high-level interface is implemented using the low-level interface
+and other high-level interfaces are possible. The original rpy interface
+can be implemented with the low-level interface (rpy2.rpy_classic) 
+
+""",
         url = "http://rpy.sourceforge.net",
         license = "AGPLv3.0 (except rpy2.rinterface: LGPL)",
         author = "Laurent Gautier",
