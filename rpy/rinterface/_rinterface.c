@@ -66,7 +66,9 @@
 #include <Rinternals.h>
 #include <Rdefines.h>
 
+#ifndef Win32
 #include <Rinterface.h>
+#endif
 #include <R_ext/Complex.h>
 #include <Rembedded.h>
 
@@ -79,7 +81,10 @@
 
 /*FIXME:  required to fix the R issue with setting static char* values
  for readline variable (making Python's readline crash when trying to free them) */
+
+#ifdef HAS_READLINE
 #include <readline/readline.h>
+#endif
 
 /* From Defn.h */
 #ifdef HAVE_POSIX_SETJMP
@@ -961,16 +966,20 @@ EmbeddedR_CleanUp(SA_TYPE saveact, int status, int runLast)
   }
 
   if (saveact == SA_SAVEASK) {
+#ifndef Win32
     if (R_Interactive) {
+#endif
       /* if (cleanUpCallback != NULL) {  */
         
       /*        } */
       /* } else { */
         saveact = SaveAction;
       /* } */
+#ifndef Win32
     } else {
         saveact = SaveAction;
     }
+#endif
   }
   switch (saveact) {
   case SA_SAVE:
@@ -1221,7 +1230,10 @@ static PyObject* EmbeddedR_init(PyObject *self)
     return NULL;
   }
 
+#ifndef Win32
   R_Interactive = TRUE;
+#endif
+
 #ifdef RIF_HAS_RSIGHAND
   R_SignalHandlers = 0;
 #endif  
@@ -1240,10 +1252,12 @@ static PyObject* EmbeddedR_init(PyObject *self)
   ptr_R_ShowFiles = EmbeddedR_ShowFiles;
 #endif
 
+#ifdef CSTACK_DEFNS
   /* Taken from JRI:
    * disable stack checking, because threads will thow it off */
   R_CStackLimit = (uintptr_t) -1;
   /* --- */
+#endif
 
   setup_Rmainloop();
 
@@ -1281,12 +1295,14 @@ static PyObject* EmbeddedR_init(PyObject *self)
 
   /*FIXME: setting readline variables so R's oddly static declarations
    become harmless*/
+#ifdef HAS_READLINE
   char *rl_completer, *rl_basic;
   rl_completer = strndup(rl_completer_word_break_characters, 200);
   rl_completer_word_break_characters = rl_completer;
 
   rl_basic = strndup(rl_basic_word_break_characters, 200);
   rl_basic_word_break_characters = rl_basic;
+#endif
   /* --- */
 
 #ifdef RPY_VERBOSE
@@ -3336,6 +3352,7 @@ PyInit__rinterface(void)
   }
 
   /* NA types */
+  NAInteger_Type.tp_base=&PyLong_Type;
   if (PyType_Ready(&NAInteger_Type) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;
@@ -3343,6 +3360,7 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
+  NALogical_Type.tp_base=&PyLong_Type;
   if (PyType_Ready(&NALogical_Type) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;
@@ -3350,6 +3368,7 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
+  NAReal_Type.tp_base=&PyFloat_Type;
   if (PyType_Ready(&NAReal_Type) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;
@@ -3357,6 +3376,7 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
+  NAComplex_Type.tp_base=&PyComplex_Type;
   if (PyType_Ready(&NAComplex_Type) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;
@@ -3364,6 +3384,13 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
+  
+#if (PY_VERSION_HEX < 0x03010000)
+        NACharacter_Type.tp_base=&PyString_Type;
+#else
+		NACharacter_Type.tp_base=&PyUnicode_Type;
+#endif
+
   if (PyType_Ready(&NACharacter_Type) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;

@@ -54,16 +54,17 @@ if sys.platform == 'win32':
     os.environ['PATH'] += ';' + os.path.join(R_HOME, 'lib')
 
     # Load the R dll using the explicit path
-    # First try the bin dir:
-    Rlib = os.path.join(R_HOME, 'bin', 'R.dll')
-    # Then the lib dir:
-    if not os.path.exists(Rlib):
-        Rlib = os.path.join(R_HOME, 'lib', 'R.dll')
+    R_DLL_DIRS=['bin', 'lib']
+    # Try dirs from R_DLL_DIRS
+    for r_dir in R_DLL_DIRS:
+        Rlib = os.path.join(R_HOME, r_dir, 'i386', 'R.dll')
+        if not os.path.exists(Rlib):
+            continue
+        win32api.LoadLibrary( Rlib )
+        break
     # Otherwise fail out!
     if not os.path.exists(Rlib):
         raise RuntimeError("Unable to locate R.dll within %s" % R_HOME)
-
-    win32api.LoadLibrary( Rlib )
 
 
 # cleanup the namespace
@@ -135,5 +136,3 @@ def rternalize(function):
 #     return True
 
 # setCleanUp(cleanUp)
-
-

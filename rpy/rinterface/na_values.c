@@ -203,7 +203,7 @@ static PyTypeObject NAInteger_Type = {
         0,                      /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-        &PyLong_Type,           /*tp_base*/
+        0, //&PyLong_Type,           /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
@@ -397,7 +397,7 @@ static PyTypeObject NALogical_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-        &PyLong_Type,             /*tp_base*/
+        0, //&PyLong_Type,             /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
@@ -579,7 +579,7 @@ static PyTypeObject NAReal_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-        &PyFloat_Type,             /*tp_base*/
+        0, //&PyFloat_Type,             /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
@@ -678,9 +678,9 @@ static PyTypeObject NACharacter_Type = {
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
 #if (PY_VERSION_HEX < 0x03010000)
-        &PyString_Type,             /*tp_base*/
+        0, // &PyString_Type,             /*tp_base*/
 #else
-	&PyUnicode_Type,
+		0, // &PyUnicode_Type,
 #endif
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
@@ -842,7 +842,7 @@ static PyTypeObject NAComplex_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-        &PyComplex_Type,             /*tp_base*/
+        0, //&PyComplex_Type,             /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/

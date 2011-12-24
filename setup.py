@@ -10,6 +10,8 @@ from distutils.core import Extension
 pack_name = 'rpy2'
 pack_version = __import__('rpy').__version__
 
+default_lib_directory = 'bin' if sys.platform=='win32' else 'lib'
+
 package_prefix='.'
 if sys.version_info >= (3,):
     print("Using 2to3 to translate Python2-only idioms into Python3 code. Please wait...")
@@ -61,7 +63,7 @@ class build(_build):
              "(see r-autoconfig for an automatic configuration)"),
         ('r-home-lib=', None,
          "full path for the R shared lib/ directory " +\
-             "(<r-home>/lib otherwise)"),
+            "(<r-home>/%s otherwise)" % default_lib_directory),
         ('r-home-modules=', None,
          "full path for the R shared modules/ directory " +\
              "(<r-home>/modules otherwise)"),
@@ -101,7 +103,7 @@ class build_ext(_build_ext):
              "(see r-autoconfig for an automatic configuration)"),
         ('r-home-lib=', None,
          "full path for the R shared lib/ directory" +\
-             "(<r-home>/lib otherwise)"),
+            "(<r-home>/%s otherwise)" % default_lib_directory),
         ('r-home-modules=', None,
          "full path for the R shared modules/ directory" +\
              "(<r-home>/modules otherwise)"),
@@ -159,7 +161,7 @@ class build_ext(_build_ext):
         config = RConfig()
         for about in ('--ldflags', '--cppflags', 
                       'LAPACK_LIBS', 'BLAS_LIBS'):
-            config += get_rconfig(r_home, about)
+            config += get_rconfig(r_home, about, sys.platform == "win32")
 
         print(config.__repr__())
 
@@ -273,8 +275,8 @@ class RConfig(object):
                     ok = True
                     break
                 elif rconfig_m is None:
-                    if allow_empty and (rconfig == ''):
-                        print(cmd + '\nreturned an empty string.\n')
+                    if allow_empty:
+                        print('\nreturned an empty string.\n')
                         rc += RConfig()
                         ok = True
                         break
@@ -345,9 +347,9 @@ def getRinterface_ext():
     else:
         define_macros.append(('R_INTERFACE_PTRS', 1))
         define_macros.append(('HAVE_POSIX_SIGJMP', 1))
-
-    define_macros.append(('CSTACK_DEFNS', 1))
-    define_macros.append(('RIF_HAS_RSIGHAND', 1))
+        define_macros.append(('RIF_HAS_RSIGHAND', 1))
+        define_macros.append(('CSTACK_DEFNS', 1))
+        define_macros.append(('HAS_READLINE', 1))
 
 
     if sys.byteorder == 'big':
