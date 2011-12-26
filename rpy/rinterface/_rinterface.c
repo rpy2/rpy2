@@ -3352,7 +3352,9 @@ PyInit__rinterface(void)
   }
 
   /* NA types */
+#ifdef Win32
   NAInteger_Type.tp_base=&PyLong_Type;
+#endif
   if (PyType_Ready(&NAInteger_Type) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;
@@ -3360,7 +3362,9 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
+#ifdef Win32
   NALogical_Type.tp_base=&PyLong_Type;
+#endif
   if (PyType_Ready(&NALogical_Type) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;
@@ -3368,7 +3372,9 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
+#ifdef Win32
   NAReal_Type.tp_base=&PyFloat_Type;
+#endif
   if (PyType_Ready(&NAReal_Type) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;
@@ -3376,7 +3382,9 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
+#ifdef Win32
   NAComplex_Type.tp_base=&PyComplex_Type;
+#endif
   if (PyType_Ready(&NAComplex_Type) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;
@@ -3385,10 +3393,10 @@ PyInit__rinterface(void)
 #endif
   }
   
-#if (PY_VERSION_HEX < 0x03010000)
-        NACharacter_Type.tp_base=&PyString_Type;
-#else
-		NACharacter_Type.tp_base=&PyUnicode_Type;
+#if defined(Win32) & PY_VERSION_HEX < 0x03010000
+  NACharacter_Type.tp_base=&PyString_Type;
+#elif defined(Win32)
+  NACharacter_Type.tp_base=&PyUnicode_Type;
 #endif
 
   if (PyType_Ready(&NACharacter_Type) < 0) {
