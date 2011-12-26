@@ -149,8 +149,10 @@ class build_ext(_build_ext):
         config = RConfig()
         for about in ('--ldflags', '--cppflags', 
                       'LAPACK_LIBS', 'BLAS_LIBS'):
-            config += get_rconfig(r_home, about)
-
+            if sys.platform == "win32":
+                config += get_rconfig(r_home, about, True)
+            else:
+                config += get_rconfig(r_home, about)
         print(config.__repr__())
 
         self.include_dirs.extend(config._include_dirs)
@@ -255,8 +257,13 @@ class RConfig(object):
                     ok = True
                     break
                 elif rconfig_m is None:
-                    if allow_empty and (rconfig == ''):
-                        print(cmd + '\nreturned an empty string.\n')
+
+                    if allow_empty:
+                        if sys.platform == 'win32':
+                            if (rconfig == ''):
+                                print(cmd + '\nreturned an empty string.\n')
+                            else:
+                                print('\nreturned an empty string.\n')
                         rc += RConfig()
                         ok = True
                         break
@@ -327,9 +334,10 @@ def getRinterface_ext():
     else:
         define_macros.append(('R_INTERFACE_PTRS', 1))
         define_macros.append(('HAVE_POSIX_SIGJMP', 1))
+        define_macros.append(('RIF_HAS_RSIGHAND', 1))
 
     define_macros.append(('CSTACK_DEFNS', 1))
-    define_macros.append(('RIF_HAS_RSIGHAND', 1))
+
 
 
     if sys.byteorder == 'big':

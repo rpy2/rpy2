@@ -203,7 +203,11 @@ static PyTypeObject NAInteger_Type = {
         0,                      /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
+#ifdef Win32
+	NULL,
+#else
         &PyLong_Type,           /*tp_base*/
+#endif
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
@@ -397,7 +401,11 @@ static PyTypeObject NALogical_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
+#ifdef Win32
+	NULL,
+#else
         &PyLong_Type,             /*tp_base*/
+#endif
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
@@ -579,7 +587,11 @@ static PyTypeObject NAReal_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
+#ifdef Win32
+	NULL,
+#else
         &PyFloat_Type,             /*tp_base*/
+#endif
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
@@ -677,7 +689,9 @@ static PyTypeObject NACharacter_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-#if (PY_VERSION_HEX < 0x03010000)
+#ifdef Win32
+	NULL,
+#elif (PY_VERSION_HEX < 0x03010000)
         &PyString_Type,             /*tp_base*/
 #else
 	&PyUnicode_Type,
@@ -842,7 +856,11 @@ static PyTypeObject NAComplex_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
+#ifdef Win32
+	NULL,
+#else
         &PyComplex_Type,             /*tp_base*/
+#endif
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
