@@ -8,8 +8,12 @@ except KeyError:
     tmp.close()
     del(tmp)
 
+# os.platform strings mapped to the binary directories in a R build
+_win_bindirs = {'win32': 'i386',
+                'win-amd64': 0, #FIXME: where are the 64 bit-binaries located ?
+                'win-ia64': 0}
 if len(R_HOME) == 0:
-    if sys.platform == 'win32':
+    if sys.platform in _win_bindirs.keys():
         try:
             import win32api
             import win32con
@@ -46,24 +50,26 @@ else:
 
 os.environ['R_HOME'] = R_HOME
 
-# Win32-specific code copied from RPy-1.x
-if sys.platform == 'win32':
+# MSWindows-specific code
+_win_ok = False
+if sys.platform in _win_bindirs.keys():
     import win32api
     os.environ['PATH'] += ';' + os.path.join(R_HOME, 'bin')
     os.environ['PATH'] += ';' + os.path.join(R_HOME, 'modules')
     os.environ['PATH'] += ';' + os.path.join(R_HOME, 'lib')
 
     # Load the R dll using the explicit path
-    R_DLL_DIRS=['bin', 'lib']
+    R_DLL_DIRS = ('bin', 'lib')
     # Try dirs from R_DLL_DIRS
     for r_dir in R_DLL_DIRS:
-        Rlib = os.path.join(R_HOME, r_dir, 'i386', 'R.dll')
+        Rlib = os.path.join(R_HOME, r_dir, _win_bindirs[sys.platform], 'R.dll')
         if not os.path.exists(Rlib):
             continue
         win32api.LoadLibrary( Rlib )
+        _win_ok = True
         break
     # Otherwise fail out!
-    if not os.path.exists(Rlib):
+    if not _win_ok:
         raise RuntimeError("Unable to locate R.dll within %s" % R_HOME)
 
 
