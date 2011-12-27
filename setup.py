@@ -470,8 +470,9 @@ can be implemented with the low-level interface (rpy2.rpy_classic)
                        'Intended Audience :: Science/Research',
                        'Development Status :: 4 - Beta'
                        ],
-        data_files = [(os.path.join('rpy2', 'images'), 
-                       [os.path.join('doc', 'source', 'rpy2_logo.png')])],
+        package_data = {
+            'rpy2': ['images/*.png', ],
+            'rpy2': ['doc/source/rpy2_logo.png', ]}
 
         #[pack_name + '.rinterface_' + x for x in rinterface_rversions] + \
             #[pack_name + '.rinterface_' + x + '.tests' for x in rinterface_rversions]
