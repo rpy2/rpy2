@@ -10,8 +10,8 @@ except KeyError:
 
 # os.platform strings mapped to the binary directories in a R build
 _win_bindirs = {'win32': 'i386',
-                'win-amd64': 0, #FIXME: where are the 64 bit-binaries located ?
-                'win-ia64': 0}
+                'win-amd64': 'x64',
+                'win-ia64': 'x64'}
 if len(R_HOME) == 0:
     if sys.platform in _win_bindirs.keys():
         try:
