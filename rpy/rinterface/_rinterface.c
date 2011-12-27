@@ -57,7 +57,7 @@
 #define _RINTERFACE_MODULE
 #include "_rinterface.h"
 
-#if Win32
+#if defined(Win32) || defined(Win64)
 #include <winsock2.h>
 #endif
 
@@ -66,7 +66,7 @@
 #include <Rinternals.h>
 #include <Rdefines.h>
 
-#ifndef Win32
+#if !(defined(Win32) || defined(Win64))
 #include <Rinterface.h>
 #endif
 #include <R_ext/Complex.h>
@@ -137,7 +137,7 @@ static PyObject *initOptions;
 static SEXP errMessage_SEXP;
 static PyObject *RPyExc_RuntimeError = NULL;
 
-#ifdef Win32
+#if (defined(Win32) || defined(Win64))
 /* R instance as a global */
 Rstart Rp;
 #endif
@@ -966,7 +966,7 @@ EmbeddedR_CleanUp(SA_TYPE saveact, int status, int runLast)
   }
 
   if (saveact == SA_SAVEASK) {
-#ifndef Win32
+#if ! (defined(Win32) || defined(Win64))
     if (R_Interactive) {
 #endif
       /* if (cleanUpCallback != NULL) {  */
@@ -975,7 +975,7 @@ EmbeddedR_CleanUp(SA_TYPE saveact, int status, int runLast)
       /* } else { */
         saveact = SaveAction;
       /* } */
-#ifndef Win32
+#if ! (defined(Win32) || defined(Win64))
     } else {
         saveact = SaveAction;
     }
@@ -1089,11 +1089,11 @@ static PyObject* EmbeddedR_ProcessEvents(PyObject *self)
     return NULL;
   }
   embeddedR_setlock();
-#if defined(HAVE_AQUA) || defined(Win32)
+#if defined(HAVE_AQUA) || (defined(Win32) || defined(Win64))
   /* Can the call to R_ProcessEvents somehow fail ? */
   R_ProcessEvents();
 #endif
-#if !defined(Win32)
+#if ! (defined(Win32) || defined(Win64))
   R_runHandlers(R_InputHandlers, R_checkActivity(0, 1));
 #endif
   embeddedR_freelock();
@@ -1106,7 +1106,7 @@ PyDoc_STRVAR(EmbeddedR_ProcessEvents_doc,
              "and R_runHandlers (on other platforms).");
 
 
-#ifdef Win32
+#if defined(Win32) || defined(Win64)
 void win32CallBack()
 {
    /* called during i/o, eval, graphics in ProcessEvents */
@@ -1168,7 +1168,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   }
 
 
-#ifndef Win32
+#if ! (defined(Win32) || defined(Win64))
 
 #else
   /* --- Win32 --- */
@@ -1230,7 +1230,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
     return NULL;
   }
 
-#ifndef Win32
+#if ! (defined(Win32) | defined(Win64))
   R_Interactive = TRUE;
 #endif
 
@@ -1374,11 +1374,11 @@ static PyObject* EmbeddedR_setinteractive(PyObject *self, PyObject *status)
   } else {
     rtruefalse = FALSE;
   }
-  #ifdef Win32
+#if defined(Win32) || defined(Win64)
   Rp->R_Interactive = rtruefalse;
-  #else
+#else
   R_Interactive = rtruefalse;
-  #endif
+#endif
   Py_RETURN_NONE;
 }
 PyDoc_STRVAR(EmbeddedR_setinteractive_doc,
@@ -3352,7 +3352,7 @@ PyInit__rinterface(void)
   }
 
   /* NA types */
-#ifdef Win32
+#if defined(Win32) || defined(Win64)
   NAInteger_Type.tp_base=&PyLong_Type;
 #endif
   if (PyType_Ready(&NAInteger_Type) < 0) {
@@ -3362,7 +3362,7 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
-#ifdef Win32
+#if defined(Win32) || defined(Win64)
   NALogical_Type.tp_base=&PyLong_Type;
 #endif
   if (PyType_Ready(&NALogical_Type) < 0) {
@@ -3372,7 +3372,7 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
-#ifdef Win32
+#if defined(Win32) || defined(Win64)
   NAReal_Type.tp_base=&PyFloat_Type;
 #endif
   if (PyType_Ready(&NAReal_Type) < 0) {
@@ -3382,7 +3382,7 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
-#ifdef Win32
+#if defined(Win32) || defined(Win64)
   NAComplex_Type.tp_base=&PyComplex_Type;
 #endif
   if (PyType_Ready(&NAComplex_Type) < 0) {
@@ -3393,7 +3393,7 @@ PyInit__rinterface(void)
 #endif
   }
   
-#if defined(Win32) & PY_VERSION_HEX < 0x03010000
+#if (defined(Win32) || defined(Win64)) & PY_VERSION_HEX < 0x03010000
   NACharacter_Type.tp_base=&PyString_Type;
 #elif defined(Win32)
   NACharacter_Type.tp_base=&PyUnicode_Type;
