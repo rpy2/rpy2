@@ -8,12 +8,8 @@ except KeyError:
     tmp.close()
     del(tmp)
 
-# os.platform strings mapped to the binary directories in a R build
-_win_bindirs = {'win32': 'i386',
-                'win-amd64': 'x64',
-                'win-ia64': 'x64'}
 if len(R_HOME) == 0:
-    if sys.platform in _win_bindirs.keys():
+    if sys.platform == 'win32':
         try:
             import win32api
             import win32con
@@ -52,7 +48,16 @@ os.environ['R_HOME'] = R_HOME
 
 # MSWindows-specific code
 _win_ok = False
-if sys.platform in _win_bindirs.keys():
+if sys.platform == 'win32':
+    import platform
+    architecture = platform.architecture()[0]
+    if architecture == '32bit':
+        _win_bindir = 'i386'
+    elif architecture == '64bit':
+        _win_bindir = 'x64'
+    else:
+        raise ValueError("Unknown architecture %s" %architecture)
+
     import win32api
     os.environ['PATH'] += ';' + os.path.join(R_HOME, 'bin')
     os.environ['PATH'] += ';' + os.path.join(R_HOME, 'modules')
@@ -62,7 +67,7 @@ if sys.platform in _win_bindirs.keys():
     R_DLL_DIRS = ('bin', 'lib')
     # Try dirs from R_DLL_DIRS
     for r_dir in R_DLL_DIRS:
-        Rlib = os.path.join(R_HOME, r_dir, _win_bindirs[sys.platform], 'R.dll')
+        Rlib = os.path.join(R_HOME, r_dir, _win_bindir, 'R.dll')
         if not os.path.exists(Rlib):
             continue
         win32api.LoadLibrary( Rlib )
