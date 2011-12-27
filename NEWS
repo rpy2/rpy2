@@ -6,6 +6,9 @@ Bugs fixed
 
 - install process: Library location for some of the R installations
 
+- should compile on win32 (thanks to a patch from Evgeny Cherkashin),
+  a work to a limited extend
+
 
 Release 2.2.4
 =============
