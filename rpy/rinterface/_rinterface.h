@@ -1,5 +1,5 @@
-#ifndef Py_RINTERFACE_H_
-#define Py_RINTERFACE_H_
+#ifndef Py__RINTERFACE_H_
+#define Py__RINTERFACE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -213,8 +213,9 @@ typedef struct {
 
 #ifdef _RINTERFACE_MODULE 
   /* This section is used when compiling _rinterface.c */
+  static PyRinterface_IsInitialized_RETURN PyRinterface_IsInitialized PyRinterface_IsInitialized_PROTO;
+  static PyRinterface_FindFun_RETURN PyRinterface_FindFun PyRinterface_FindFun_PROTO;
   static PyObject *embeddedR_isInitialized;
-  static SEXP PyRinterface_FindFun(SEXP symbol, SEXP rho);
 
 #else
   /* This section is used in modules that use _rinterface's API */
@@ -227,9 +228,9 @@ typedef struct {
 #define PyRinterface_FindFun \
   (*(PyRinterface_FindFun_RETURN (*)PyRinterface_FindFun_PROTO) PyRinterface_API[PyRinterface_FindFun_NUM])
 
-
-
-
+/* Return -1 on error, 0 on success.
+ * PyCapsule_Import will set an exception if there's an error.
+ */
 static int
 import_rinterface(void)
 {
@@ -244,5 +245,5 @@ import_rinterface(void)
 }
 #endif
 
-#endif /* !Py_RINTERFACE_H_ */
+#endif /* !Py__RINTERFACE_H_ */
 

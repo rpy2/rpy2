@@ -197,6 +197,7 @@ PyRinterface_IsInitialized(void)
   return res;
 }
 
+/* Return R_UnboundValue when not found. */
 static SEXP
 PyRinterface_FindFun(SEXP symbol, SEXP rho)
 {
@@ -3427,6 +3428,8 @@ PyInit__rinterface(void)
   /* Initialize the C API pointer array */
   PyRinterface_API[ PyRinterface_IsInitialized_NUM ] =	\
     (void *)PyRinterface_IsInitialized;
+  PyRinterface_API[ PyRinterface_FindFun_NUM ] =	\
+    (void *)PyRinterface_FindFun;
   /* Create a Capsule containing the API pointer array's address */
   c_api_object = PyCapsule_New((void *)PyRinterface_API, 
 			       PyRinterface_API_NAME, NULL);
