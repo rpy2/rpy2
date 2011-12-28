@@ -58,21 +58,48 @@ SEXP rpy_devoff(SEXP devnum, SEXP rho)
 {
   SEXP c_R, call_R, res, fun_R;
 
-  PROTECT(fun_R = PyRinterface_FindFun(install("dev.off"), rho));
+#ifdef RPY_DEBUG_GRDEV
+    printf("rpy_devoff(): checking 'rho'.\n");
+#endif
+  if(!isEnvironment(rho)) {
+#ifdef RPY_DEBUG_GRDEV
+    printf("rpy_devoff(): invalid 'rho'.\n");
+#endif
+    error("'rho' should be an environment\n");
+  }
 
-  if(!isEnvironment(rho)) error("'rho' should be an environment");
+#ifdef RPY_DEBUG_GRDEV
+  printf("rpy_devoff(): Looking for dev.off()...\n");
+#endif
+  PROTECT(fun_R = PyRinterface_FindFun(install("dev.off"), rho));
+  if (fun_R == R_UnboundValue)
+    printf("dev.off() could not be found.\n");
+#ifdef RPY_DEBUG_GRDEV
+  printf("rpy_devoff(): found.\n");
+#endif
+
+
   /* incantation to summon R */
-  PROTECT(c_R = call_R = allocList(2+1));
+  PROTECT(c_R = call_R = allocList(2));
   SET_TYPEOF(c_R, LANGSXP);
   SETCAR(c_R, fun_R);
   c_R = CDR(c_R);
 
   /* first argument is the device number to be closed */
   SETCAR(c_R, devnum);
-  //SET_TAG(c_R, install("list"));
+  SET_TAG(c_R, install("which"));
   c_R = CDR(c_R);
   int error = 0;
+
+#ifdef RPY_DEBUG_GRDEV
+  printf("rpy_devoff(): R_tryEval()\n");
+#endif
+
   PROTECT(res = R_tryEval(call_R, rho, &error));
+
+#ifdef RPY_DEBUG_GRDEV
+  printf("rpy_devoff(): unprotecting.\n");
+#endif
 
   UNPROTECT(3);
   return res;
@@ -845,12 +872,18 @@ GrDev_clear(PyGrDevObject *self)
 static void
 GrDev_dealloc(PyGrDevObject *self)
 {
-  rpy_devoff(self->devnum, R_BaseEnv);
-  /* FIXME */
 #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: Deallocating GrDev.\n");
 #endif
+  rpy_devoff(self->devnum, R_GlobalEnv);
+  /* FIXME */
+#ifdef RPY_DEBUG_GRDEV
+  printf("GrDevDealloc: R_ReleaseObject()\n");
+#endif
   R_ReleaseObject(self->devnum);
+#ifdef RPY_DEBUG_GRDEV
+  printf("GrDevDealloc: PyMem_Free()\n");
+#endif
   PyMem_Free(((PyGrDevObject *)self)->grdev);
 #if (PY_VERSION_HEX < 0x03010000)
   self->ob_type->tp_free((PyObject*)self);
@@ -1010,9 +1043,9 @@ static PyObject* GrDev_devnum_get(PyObject* self)
     res = Py_None;
   } else {
 #if (PY_VERSION_HEX < 0x03010000)
-    res = PyInt_FromLong((long)RPY_DEV_NUM(self));
+    res = PyInt_FromLong((long)INTEGER_POINTER(RPY_DEV_NUM(self))[0]);
 #else
-    res = PyLong_FromLong((long)RPY_DEV_NUM(self));
+    res = PyLong_FromLong((long)INTEGER_POINTER(RPY_DEV_NUM(self))[0]);
 #endif
   }
   return res;
