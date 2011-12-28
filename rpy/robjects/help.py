@@ -208,6 +208,7 @@ class Page(object):
             return res
 
     def usage(self):
+        """ Get the usage for the object """
         section = self._sections.get('usage', None)
         if section is None:
             res = ''
@@ -223,10 +224,10 @@ class Page(object):
         return self.sections.iteritems        
 
     def to_docstring(self, section_names = None):
-        """ section_names: list of selection names to consider. If None
+        """ section_names: list of setion names to consider. If None
         all sections are used.
 
-        Returns a string that can be used a Python docstring. """
+        Returns a string that can be used as a Python docstring. """
         s = []
 
         if section_names is None:
@@ -249,11 +250,13 @@ class Page(object):
             walk(self.sections[name])
             s.append(os.linesep)
             s.append(os.linesep)
-        return s
+        return ''.join(s)
 
 
 class Package(object):
-    """ The R documentation (aka help) for a package """
+    """ 
+    The R documentation page (aka help) for a package.
+    """
     __package_path = None
     __package_name = None
     __aliases_info = 'aliases.rds'
@@ -284,9 +287,9 @@ class Package(object):
     def fetch(self, alias):
         """ Fetch the documentation page associated with a given alias. 
         
-        - for S4 classes, the class name is *often* suffixed with '-class'.
-          For example, the alias to the documentation for the class
-          AnnotatedDataFrame in the package Biobase is 'AnnotatedDataFrame-class'.
+        For S4 classes, the class name is *often* suffixed with '-class'.
+        For example, the alias to the documentation for the class
+        AnnotatedDataFrame in the package Biobase is 'AnnotatedDataFrame-class'.
         """
 
         c = self._dbcon.execute('SELECT rd_meta_rowid, alias FROM rd_alias_meta WHERE alias=?', 
@@ -337,7 +340,7 @@ class HelpNotFoundError(KeyError):
 
         
 def pages(topic):
-    """ Get help pages corresponding a given topic. """
+    """ Get help pages corresponding to a given topic. """
     res = list()
     
     for path in packages._libpaths():

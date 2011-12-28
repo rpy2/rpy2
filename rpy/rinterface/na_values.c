@@ -203,7 +203,7 @@ static PyTypeObject NAInteger_Type = {
         0,                      /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-#ifdef Win32
+#if defined(Win32) || defined(Win64)
 	NULL,
 #else	
         &PyLong_Type,           /*tp_base*/
@@ -401,7 +401,7 @@ static PyTypeObject NALogical_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-#ifdef Win32
+#if defined(Win32) || defined(Win64)
 	NULL,
 #else
         &PyLong_Type,             /*tp_base*/
@@ -587,7 +587,7 @@ static PyTypeObject NAReal_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-#ifdef Win32
+#if defined(Win32) || defined(Win64)
 	NULL,
 #else
         &PyFloat_Type,             /*tp_base*/
@@ -689,7 +689,7 @@ static PyTypeObject NACharacter_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-#ifdef Win32
+#if defined(Win32) || defined(Win64)
 	NULL,
 #elif (PY_VERSION_HEX < 0x03010000)
         &PyString_Type,             /*tp_base*/
@@ -856,7 +856,7 @@ static PyTypeObject NAComplex_Type = {
         0, //NAInteger_methods,           /*tp_methods*/
         0,                      /*tp_members*/
         0,                      /*tp_getset*/
-#ifdef Win32
+#if defined(Win32) || defined(Win64)
 	NULL,
 #else
         &PyComplex_Type,             /*tp_base*/

@@ -13,12 +13,31 @@ New Features
   PyRinteractive_IsInitialized() to assess whether R was initialized
   (through :mod:`rpy2.rinterface` or not).
 
+:mod:`rpy2.rinteractive`:
+
+- dynamic build of Python docstrings out of the R manual pages
+
+:mod:`rpy2.robjects.help`:
+
+- build 
 Changes
 -------
 
 :mod:`rpy2.rinterface`:
 
 - :attr:`SexpClosure.env` to replace the method `closureenv`.
+
+
+Release 2.2.5
+=============
+
+Bugs fixed
+----------
+
+- install process: Library location for some of the R installations
+
+- should compile on win32 (thanks to a patch from Evgeny Cherkashin),
+   a work to a limited extend
 
 
 Release 2.2.4
