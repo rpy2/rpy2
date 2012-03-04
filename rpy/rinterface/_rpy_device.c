@@ -880,13 +880,13 @@ GrDev_dealloc(PyGrDevObject *self)
 #ifdef RPY_DEBUG_GRDEV
   printf("GrDevDealloc: R_ReleaseObject()\n");
 #endif
-  R_ReleaseObject(self->devnum);
+  //R_ReleaseObject(self->devnum);
 #ifdef RPY_DEBUG_GRDEV
   printf("GrDevDealloc: PyMem_Free()\n");
 #endif
-  PyMem_Free(((PyGrDevObject *)self)->grdev);
+  //PyMem_Free(((PyGrDevObject *)self)->grdev);
 #if (PY_VERSION_HEX < 0x03010000)
-  self->ob_type->tp_free((PyObject*)self);
+  //self->ob_type->tp_free((PyObject*)self);
 #else
   Py_TYPE(self)->tp_free((PyObject*)self);
 #endif
@@ -1118,6 +1118,8 @@ GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: New GrDev\n");
 #endif
+
+  assert(type != NULL && type->tp_alloc != NULL);
 
   if (!PyRinterface_IsInitialized()) {
     PyErr_Format(PyExc_RuntimeError, 
