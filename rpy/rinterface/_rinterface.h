@@ -12,6 +12,14 @@ extern "C" {
 #if defined (__APPLE__)
 #define _RPY_STRNDUP_
 #endif
+/* strndup is not available on solaris prior to Solaris 5.11 */
+#if defined (sun) || defined (__sun)
+#if defined (__SunOS_5_11)
+#include <strings.h>
+#else
+#define _RPY_STRNDUP_
+#endif
+#endif
 
 /* Back-compatibility with Python 2.4 */
 #if (PY_VERSION_HEX < 0x02050000)
