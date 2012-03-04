@@ -27,6 +27,7 @@ To do so with rpy2's interface to the help system, the easiest is to
 use the function :func:`pages`. The function returns a :class:`tuple`
 of :class:`Page` instances.
 
+
 .. autofunction:: rpy2.robjects.help.pages(topic)
 
 
