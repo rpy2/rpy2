@@ -159,9 +159,10 @@ class build_ext(_build_ext):
         rversions.append(rversion)
 
         config = RConfig()
-        for about in ('--ldflags', '--cppflags', 
-                      'LAPACK_LIBS', 'BLAS_LIBS'):
-            config += get_rconfig(r_home, about, sys.platform == "win32")
+        for about in ('--ldflags', '--cppflags'):
+            config += get_rconfig(r_home, about)
+        for about in ('LAPACK_LIBS', 'BLAS_LIBS'):
+            config += get_rconfig(r_home, about, True)
 
         print(config.__repr__())
 
@@ -172,7 +173,7 @@ class build_ext(_build_ext):
         if self.r_home_modules is None:
             self.library_dirs.extend([os.path.join(r_home, 'modules'), ])
         else:
-            self.library_dirs.extends([self.r_home_modules, ])
+            self.library_dirs.extend([self.r_home_modules, ])
 
         #for e in self.extensions:
         #    self.extra_link_args.extra_link_args(config.extra_link_args)
