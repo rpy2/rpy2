@@ -361,9 +361,6 @@ position_dodge = PositionDodge.new
 class PositionFill(Position):
    _constructor = ggplot2_env['position_fill']
 position_fill = PositionFill.new
-class PositionIdentify(Position):
-   _constructor = ggplot2_env['position_identity']
-position_identity = PositionIdentify.new
 class PositionJitter(Position):
    _constructor = ggplot2_env['position_jitter']
 position_jitter = PositionJitter.new
