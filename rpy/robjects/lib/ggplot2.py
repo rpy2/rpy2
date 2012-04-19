@@ -22,9 +22,9 @@ def as_symbol(x):
 
 class GGPlot(robjects.RObject):
 
-    _constructor = ggplot2_env['ggplot']
-    _rprint = ggplot2_env['print.ggplot']
-    _add = ggplot2_env['+.ggplot']
+    _constructor = ggplot2._env['ggplot']
+    _rprint = ggplot2._env['print.ggplot']
+    _add = ggplot2._env['+.ggplot']
 
     @classmethod
     def new(cls, data):

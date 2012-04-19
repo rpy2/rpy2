@@ -19,7 +19,9 @@ New Features
 
 :mod:`rpy2.robjects.help`:
 
-- build 
+- build dynamic help
+
+
 Changes
 -------
 
