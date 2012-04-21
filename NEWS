@@ -1,3 +1,13 @@
+Release 2.2.6
+=============
+
+Bugs fixed
+----------
+
+- Newest R-2.15 and ggplot2 0.9 broke the ggplot2 interaface 
+  in :mod:`rpy2.robjects.lib.ggplot2`
+
+
 Release 2.2.5
 =============
 
