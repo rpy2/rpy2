@@ -22,7 +22,7 @@ Containers
 
 The module contains data collection-type data structures. 
 :class:`OrdDict` and :class:`TaggedList` are structures
-with which containeed items/elements can be tagged.
+with which contained items/elements can be tagged.
 
 The module can be imported as follows:
 

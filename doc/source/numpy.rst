@@ -16,7 +16,7 @@ High-level interface
 From `rpy2` to `numpy`:
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-R vectors or arrays can be  to :mod:`numpy` arrays using
+R vectors or arrays can be converted to :mod:`numpy` arrays using
 :meth:`numpy.array` or :meth:`numpy.asarray`:
 
 .. code-block:: python
