@@ -13,14 +13,14 @@ all-purpose scripting language, while `R`_ (an open source implementation
 of the S/Splus language)
 is a scripting language mostly popular for data analysis, statistics, and
 graphics. If you are reading this, there are good chances that you are
-at least familiar with one of the two.
+at least familiar with one of both.
 
 .. _Python: http://www.python.org
 .. _R: http://www.r-project.org
 
-Having an interface between both languages, and benefit from the respective
-libraries of one language while working in the other language, appeared
-desirable and an early option to achieve it was the RSPython project,
+Having an interface between both languages to benefit from the
+libraries of one language while working in the other appeared
+desirable; an early option to achieve it was the RSPython project,
 itself part of the `Omegahat project`_.
 
 A bit later, the RPy project appeared and focused on providing simple and
@@ -47,30 +47,30 @@ Upgrading from an older release of rpy2
 
 In order to upgrade one will have to first remove older
 installed rpy2 packages then and only then install
-the recent version of rpy2 wished.
+a version of rpy2.
 
 To do so, or to check whether you have an earlier version
-of rpy2 installed do the following in a Python console:
+of rpy2 installed, do the following in a Python console:
 
 .. code-block:: python
 
    import rpy2
    rpy2.__path__
 
-An error during the execution means that you do not have any older
+An error during execution means that you do not have any older
 version of rpy2 installed and you should proceed to the next section.
 
 If this returns a string containing a path, you should go to that path
-and removed all files and directories starting with *rpy2*. To make sure
+and remove all files and directories starting with *rpy2*. To make sure
 that the cleaning is complete, open a new Python session and check that
-trying to import rpy2 results in an error.
+the above code results in an error.
 
 
 Requirements
 ------------
 
-Currently the development is done on UNIX-alike operating systems with the
-following version for the softwares, and those are the recommended
+Currently the development is done on UNIX-like operating systems with the
+following software versions. Those are the recommended
 versions to run rpy2 with.
 
 ======== ===========
@@ -131,7 +131,7 @@ Download
 The following options are, or could be, available for download:
 
   * Source packages. Released versions are available on Sourceforge as well as
-    on Pypy. Snapshots of the development version can downloaded from
+    on Pypi. Snapshots of the development version can be downloaded from
     bitbucket
 
     .. note::
@@ -141,7 +141,7 @@ The following options are, or could be, available for download:
   * Pre-compiled binary packages for
 
     * Microsoft's Windows (releases are on Sourceforge, irregular snapshots
-      for the dev version on bitbucket) - there is currently not any support for
+      for the dev version on bitbucket) - there is currently no support for
       this platform
 
     * Apple's MacOS X (although Fink and Macports are available, there does not
@@ -156,9 +156,9 @@ that development items such as Python headers and a C compiler are installed.
    Choose files from the `rpy2` package, not `rpy`.
 
 .. note::
-   The *easy_install* system can be used,
-   although it is currently only provided for source
-   (see :ref:`install-easyinstall`)
+   The *pip* or *easy_install* commands can be used,
+   although they currently only provide installation from source
+   (see :ref:`install-easyinstall`).
 
 Linux precompiled binaries
 --------------------------
@@ -205,26 +205,27 @@ easy_install and pip
 ^^^^^^^^^^^^^^^^^^^^
 
 The source package is on the PYthon Package Index (PYPI), and the
-*easy_install* or *pip* scripts can be used whenever available.
+*pip* or *easy_install* scripts can be used whenever available.
 The shell command will then just be:
 
 .. code-block:: bash
 
-   easy_install rpy2
+   # recommended:
+   pip install rpy2
 
    # or
+   easy_install rpy2
 
-   pip install rpy2
 
 Upgrading an existing installation is done with:
 
 .. code-block:: bash
 
-   easy_install rpy2 --upgrade
+	 # recommended:
+   pip install rpy2 --upgrade
 
    # or
-
-   pip install rpy2 --upgrade
+   easy_install rpy2 --upgrade
 
 Both utilities have a list of options and their respective documentation should
 be checked for details.
@@ -235,7 +236,7 @@ be checked for details.
 source archive
 ^^^^^^^^^^^^^^
 
-To install from a downloaded source archive `<rpy_package>` do in a shell:
+To install from a downloaded source archive `<rpy_package>`, do in a shell:
 
 .. code-block:: bash
 
@@ -293,9 +294,9 @@ Whenever more details are needed, one can consider running explicit tests.
 
 .. note:: 
 
-   Running the tests in an interactive session appear to trigger spurious exceptions
-   when testing callback function raising exception. If unsure, just use the first way
-   to test presented in the begining of this section.
+   Running the tests in an interactive session appears to trigger spurious exceptions
+   when testing callback functions raising exceptions.
+	 If unsure, simply use the former way to test (in a shell).
 
 .. warning::
 
@@ -348,37 +349,37 @@ Contents
 
 The package is made of several sub-packages or modules:
 
-:mod:`rpy2.rpy_classic`
------------------------
+:mod:`rpy2.rinterface`
+----------------------
 
-Higher-level interface similar to the one in RPy-1.x.
-This is provided for compatibility reasons, as well as to facilitate the migration
-to RPy2.
+Low-level interface to R, when speed and flexibility
+matter most. Close to R's C-level API.
+
+:mod:`rpy2.robjects`
+--------------------
+
+High-level interface, when ease-of-use matters most.
+Should be the right pick for casual and general use.
+Based on the previous one.
 
 :mod:`rpy2.interactive`
 -----------------------
 
 High-level interface, with an eye for interactive work. Largely based
-on :mod:`rpy2.robjects` (See below).
+on :mod:`rpy2.robjects`.
 
+:mod:`rpy2.rpy_classic`
+-----------------------
 
-:mod:`rpy2.robjects`
---------------------
-
-Higher-level interface, when ease-of-use matters most.
-
-
-:mod:`rpy2.rinterface`
-----------------------
-
-Low-level interface to R, when speed and flexibility
-matter most. Here the programmer gets close(r) to R's C-level
-API.
+High-level interface similar to the one in RPy-1.x.
+This is provided for compatibility reasons, as well as to facilitate the migration
+to RPy2.
 
 :mod:`rpy2.rlike`
 -----------------
 
 Data structures and functions to mimic some of R's features and specificities
+in pure Python (no embedded R process).
 
 
 
@@ -386,13 +387,13 @@ Design notes
 ============
 
 
-When designing rpy2, attention was given to make:
+When designing rpy2, attention was given to:
 
-- the use of the module simple from both a Python or R user's perspective
+- render the use of the module simple from both a Python or R user's perspective,
 
-- minimize the need for knowledge about R, and the need for tricks and workarounds.
+- minimize the need for knowledge about R, and the need for tricks and workarounds,
 
-- the possibility to customize a lot while remaining at the Python level (without having to go down to C-level).
+- allow to customize a lot while remaining at the Python level (without having to go down to C-level).
 
 
 :mod:`rpy2.robjects` implements an extension to the interface in
@@ -415,28 +416,23 @@ to inheritance.
 Acknowledgements
 ================
 
-Acknowledgements go to the following individuals or group of individuals
-for contributions, support, and early testing (by alphabetical order):
+Acknowledgements for contributions, support, and early testing go to (alphabetical order):
 
 Alexander Belopolsky,
 Brad Chapman,
 Peter Cock,
-Contributors,
 Dirk Eddelbuettel,
-JRI author(s),
 Thomas Kluyver,
 Walter Moreira, 
-Numpy list responders,
 Laurent Oget,
 John Owens,
 Nicolas Rapin,
-R authors,
-R-help list responders,
 Grzegorz Slodkowicz,
 Nathaniel Smith,
-Gregory Warnes
-
-
-
-
-    
+Gregory Warnes,
+as well as
+the JRI author(s),
+the R authors,
+R-help list responders,
+Numpy list responders,
+and other contributors.

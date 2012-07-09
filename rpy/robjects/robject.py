@@ -66,7 +66,7 @@ class RObjectMixin(object):
         self.__sexp__ = res.__sexp__
             
     rclass = property(_rclass_get, _rclass_set, None,
-                      "R class for the object, stored an R string vector.")
+                      "R class for the object, stored as an R string vector.")
 
 
 def repr_robject(o, linesep=os.linesep):

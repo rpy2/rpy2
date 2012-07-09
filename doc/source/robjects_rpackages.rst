@@ -39,9 +39,9 @@ differences:
 
 - A check that the translation is not masking other R symbols in the package
   is performed (e.g., both 'print_me' and 'print.me' are present).
-  Should it happen, a :class:`rpy2.robjects.packages.LibraryError` is raised,
-  the optional argument *robject_translations* to :func:`importr`
-  shoud be used.
+  Should it happen, a :class:`rpy2.robjects.packages.LibraryError` is raised.
+  To avoid this, use the optional argument *robject_translations*
+	to :func:`importr`.
 
 - The translation is concerning one package, limiting the risk
   of masking when compared to rpy translating relatively blindly and 
@@ -128,6 +128,16 @@ R is shipped with a set of *recommended packages*
 (the equivalent of a standard library), but there is a large
 (and growing) number of other packages available.
 
-Installing those packages can done from within R, and
-one will consult an R-related documentation if unsure of how to
-do so.
+Installing those packages must be done within R, see the R documentation.
+As a quick help, installing an R package can be done by
+
+.. code-block:: bash
+
+   sudo R
+
+And then in the R console:
+
+.. code-block:: r
+
+   install.packages('foo')
+

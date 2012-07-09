@@ -3,7 +3,7 @@ R objects
 =========
 
 The class :class:`rpy2.robjects.RObject`
-can represent any arbitray R object, although it will often
+can represent any R object, although it will often
 be used for objects without any more specific representation
 in Python/rpy2 (such as :class:`Vector`,
 :class:`functions.Function`, :class:`Environment`).

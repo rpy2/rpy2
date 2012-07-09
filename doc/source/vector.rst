@@ -5,7 +5,7 @@
 Vectors and arrays
 ==================
 
-Beside functions, and environments, most of the objects
+Beside functions and environments, most of the objects
 an R user is interacting with are vector-like.
 For example, this means that any scalar is in fact a vector
 of length one.
@@ -291,7 +291,7 @@ easily by using the method :meth:`Vector.index`, as shown below.
 
 .. note::
 
-   :meth:`Vector.index` has a complexity linear to the length of the vector's length;
+   :meth:`Vector.index` has a complexity linear in the length of the vector's length;
    this should be remembered if performance issues are met.
 
 
@@ -314,7 +314,7 @@ The attributes *rx* and *rx2* used previously can again be used:
 >>> print(x)
 [1] 9 2 3
 
-For the sake of complete compatibility with R the arguments can be named
+For the sake of complete compatibility with R, arguments can be named
 (and passed as a :class:`dict` or :class:`rpy2.rlike.container.TaggedList`).
 
 >>> x = robjects.ListVector({'a': 1, 'b': 2, 'c': 3})
@@ -333,21 +333,18 @@ those available as data objects :data:`NA_Logical`, :data:`NA_Real`,
 :data:`NA_Integer`, :data:`NA_Character`, :data:`NA_Complex`.
 
 >>> x = robjects.IntVector(range(3))
->>> x[0] <- robjects.NA_Integer
+>>> x[0] = robjects.NA_Integer
 >>> print(x)
 [1] NA  1  2
 
 The translation of NA types is done at the item level, returning a pointer to
 the corresponding NA singleton class.
 
->>> xt = tuple(x)
->>> xt
-(NA_integer, 1, 2)
->>> xt[0] is robjects.NA_Integer
+>>> x[0] is robjects.NA_Integer
 True
->>> xt[0] == robjects.NA_Integer
+>>> x[0] == robjects.NA_Integer
 True
->>> [y for y in x if y is not NA_Integer]
+>>> [y for y in x if y is not robjects.NA_Integer]
 [1, 2]
 
 .. note::
@@ -404,8 +401,10 @@ for vector-like objects.
 
 .. note::
    In Python, using the operator ``+`` on two sequences 
-   concatenates them and this behavior has been conserved.
+   concatenates them and this behavior has been conserved:
+
    >>> print(x + 1)
+   [1]  1  2  3  4  5  6  7  8  9 10  1
 
 .. note::
    The boolean operator ``not`` cannot be redefined in Python (at least up to
@@ -551,10 +550,8 @@ Extract the second row:
 :class:`DataFrame`
 ------------------
 
-
-Data frames are important data structures in R, as they are used to
-represent a data to analyze in a study in a relatively 
-large number of cases.
+Data frames are a common way in R to
+represent the data to analyze.
 
 A data frame can be thought of as a tabular representation of data,
 with one variable per column, and one data point per row. Each column
@@ -562,8 +559,8 @@ is an R vector, which implies one type for all elements
 in one given column, and which allows for possibly different types across
 different columns.
 
-If we take the example of data about the pharmacokinetics of theophylline in
-different subjects, the table of data could look like:
+If we consider for example tre data about pharmacokinetics of theophylline in
+different subjects, the data table could look like this:
 
 ======= ====== ==== ==== ====
 Subject Weight Dose Time conc
@@ -575,9 +572,9 @@ Subject Weight Dose Time conc
  ...     ...   ...  ...  ...
 ======= ====== ==== ==== ====
 
-Such representation of the data shares similarities with a table in
+Such data representation shares similarities with a table in
 a relational database: the structure between the variables, or columns,
-is given by other column. In the example above, the grouping of the
+is given by other column. In the example above, the grouping of
 measures by subject is given by the column *Subject*.
 
 
@@ -587,7 +584,7 @@ In :mod:`rpy2.robjects`,
 Creating objects
 ^^^^^^^^^^^^^^^^
 
-Creating an :class:`DataFrame` can be done by:
+Creating a :class:`DataFrame` can be done by:
 
 * Using the constructor for the class
 
@@ -595,11 +592,11 @@ Creating an :class:`DataFrame` can be done by:
 
 * Read data from a file using the instance method :meth:`from_csvfile`
 
-The constructor for :class:`DataFrame` accepts either a 
+The :class:`DataFrame` constructor accepts either an
 :class:`rinterface.SexpVector` 
-(with :attr:`typeof` equal to *VECSXP*, that is an R `list`)
+(with :attr:`typeof` equal to *VECSXP*, that is, an R `list`)
 or any Python object implementing the method :meth:`iteritems`
-(for example :class:`dict`, or :class:`rpy2.rlike.container.OrdDict`)
+(for example :class:`dict` or :class:`rpy2.rlike.container.OrdDict`).
 
 Empty `data.frame`:
 
@@ -612,8 +609,8 @@ from the order in which they are declared):
 >>> d = {'a': robjects.IntVector((1,2,3)), 'b': robjects.IntVector((4,5,6))}
 >>> dataf = robject.DataFrame(d)
 
-To create a :class:`DataFrame` and be certain of the order in which the
-columns are an ordered dictionary can be used:
+To create a :class:`DataFrame` and be certain of the clumn order order,
+an ordered dictionary can be used:
 
 >>> import rpy2.rlike.container as rlc
 >>> od = rlc.OrdDict([('value', robjects.IntVector((1,2,3))),
@@ -667,8 +664,8 @@ with each column being possibly of a different type:
 >>> [column.rclass[0] for column in dataf]
 ['factor', 'integer']
 
-Using R-style access to elements is a little more richer,
-with the *rx2* accessor taking now more importance than earlier.
+Using R-style access to elements is a little richer,
+with the *rx2* accessor taking more importance than earlier.
 
 Like with Python's :meth:`__getitem__` above,
 extracting on one index selects columns:
@@ -681,9 +678,9 @@ extracting on one index selects columns:
 2      y
 3      z
 
-It is important to notice that the result is itself
-of class :class:`DataFrame`. Getting the column as
-a vector is requires the use of *rx2*.
+Note that the result is itself
+of class :class:`DataFrame`. To get the column as
+a vector, use *rx2*:
 
 >>> dataf.rx2(1)
 <Vector - Python:0x8a4bfcc / R:0x8e7dd08>
@@ -694,7 +691,7 @@ Levels: x y z
 
 Since data frames are table-like structure, they
 can be thought of as two-dimensional arrays and
-can therefore be extracted on two indexes.
+can therefore be extracted on two indices.
 
 >>> subdataf = dataf.rx(1, True)
 >>> print(subdataf)
@@ -707,7 +704,7 @@ can therefore be extracted on two indexes.
 1      x     1
 3      z     3
 
-That last example is something extremely common in R. A vector of indices,
+That last example is extremely common in R. A vector of indices,
 here *rows_i*, is used to take a subset of the :class:`DataFrame`.
 
 

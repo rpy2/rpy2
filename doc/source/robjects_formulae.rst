@@ -49,7 +49,7 @@ The class :class:`robjects.Formula` is representing an :program:`R` formula.
 One drawback with that approach is that pretty printing of
 the `fit` object is note quite as good as what one would
 expect when working in :program:`R`: the `call` item now displays the code
-for the function use to perform the fit.
+for the function used to perform the fit.
 
 If one still wants to avoid polluting the R global environment,
 the answer is to evaluate R call within the environment where the

@@ -33,11 +33,11 @@ _reval = rinterface.baseenv['eval']
 #FIXME: close everything when leaving (check RPy for that).
 
 def default_ri2py(o):
-    """ Convert :class:`rpy2.rinterface.Sexp` to higher-level objects,
-    without copying the R objects.
+    """ Convert an :class:`rpy2.rinterface.Sexp` object to a higher-level object,
+    without copying the R object.
 
     :param o: object
-    :rtype: :class:`rpy2.robjects.RObject (and subclasses)`
+    :rtype: :class:`rpy2.robjects.RObject` (and subclasses)
     """
 
     res = None
@@ -93,14 +93,14 @@ conversion.ri2py = default_ri2py
 
 
 def default_py2ri(o):
-    """ Convert arbitrary Python object to :class:`rpy2.rinterface.Sexp` to objects,
-    creating an R object with the content of the Python object in the process
-    (wich means data copying).
+    """ Convert an arbitrary Python object to an :class:`rpy2.rinterface.Sexp` object.
+    Creates an R object with the content of the Python object,
+    wich means data copying.
 
     :param o: object
     :rtype: :class:`rpy2.rinterface.Sexp` (and subclasses)
-
     """
+
     if isinstance(o, RObject):
         res = rinterface.Sexp(o)
     if isinstance(o, Sexp):
@@ -138,9 +138,10 @@ conversion.py2ri = default_py2ri
 
 
 def default_py2ro(o):
-    """ Convert any Python object into an robject.
+    """ Convert any Python object to an robject.
+
     :param o: object
-    :rtype: :class:`rpy2.robjects.RObject (and subclasses)`
+    :rtype: :class:`rpy2.robjects.RObject` (and subclasses)
     """
     res = conversion.py2ri(o)
     return conversion.ri2py(res)

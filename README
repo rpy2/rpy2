@@ -10,8 +10,8 @@ The distutils mechanism can be used:
 python setup.py install
 
 The package is known to compile on Linux, WinXp and MacOSX
-(provided that developper tools are provided).
-In the case you find yourself with this source without an idea
+(provided that developper tools are installed).
+In case you find yourself with this source without any idea
 of what it takes to compile anything on your platform, do
 consider looking for pre-compiled binaries.
 
@@ -19,7 +19,7 @@ Documentation
 =============
 
 Documentation is available either in the source tree (to be built),
-or as built HTML online (see the rpy home page on sourceforge).
+or online (see the rpy home page on sourceforge).
 
 License
 =======

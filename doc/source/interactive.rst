@@ -8,9 +8,8 @@ Overview
 ========
 
 R is very often used as an interactive toplevel, or read-eval-print loop (REPL).
-When analyzing data, this kind of environment is extremely convenient as
-the analyst often does not know beforehand what lies in the data and how this
-is going to be discovered.
+This is convenient when analyzing data: type some code, get the result,
+type some new code and further analysis based on the results.
 
 Python can also be used in a similar fashion, but limitations of the
 default Python console have lead to the creation of alternative consoles
@@ -116,11 +115,6 @@ Available packages
 ------------------
 
 R has a function to list the available packages.
-
-.. note::
-
-   To list the available packages, we have to load the package `utils`.
-   See Section load-packages for details about loading packages
 
 >>> import rpy2.interactive as r
 >>> r.importr("utils")

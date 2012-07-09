@@ -353,7 +353,8 @@ class IntVector(Vector, IntSexpVector):
         super(IntVector, self).__init__(obj)
 
     def tabulate(self, nbins = None):
-        """ Count the number of times integer values are found """
+        """ Like the R function tabulate,
+        count the number of times integer values are found """
         if nbins is None:
             nbins = max(1, max(self))
         res = self._tabulate(self)
@@ -395,7 +396,7 @@ class FloatVector(Vector, FloatSexpVector):
     The parameter 'seq' can be an instance inheriting from
     rinterface.SexpVector, or an arbitrary Python sequence.
     In the later case, all elements in the sequence should be either
-    float, or have an float() representation.
+    float, or have a float() representation.
 
     """
     def __init__(self, obj):
@@ -657,15 +658,15 @@ class Array(Vector):
 
     def __dimnames_get(self):
         """ Return a list of name vectors
-        (like the R function 'dimnames' does it)."""
+        (like the R function 'dimnames' does)."""
 
         res = self._dimnames_get(self)
         res = conversion.ri2py(res)
         return res
 
     def __dimnames_set(self, value):
-        """ Return a list of name vectors
-        (like the R function 'dimnames' does it)."""
+        """ Set list of name vectors
+        (like the R function 'dimnames' does)."""
 
         value = conversion.ri2py(value)
         res = self._dimnames_set(self, value)        

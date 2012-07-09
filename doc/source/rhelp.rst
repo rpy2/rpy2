@@ -9,9 +9,9 @@ R help
 distributed as packages is installed when packages are installed.
 This documentation can be called and searched for from R itself.
 
-Unlike `Python` docstrings the R documentation lives outside
-objects, and is organised on documentation pages. Each documentation
-page has `aliases`, and often aliases are corresponding to the names of
+Unlike `Python` docstrings, the R documentation lives outside
+objects, and is organised in documentation pages. Each documentation
+page has `aliases`, and often aliases corresponds to the names of
 R objects defined in a package. This way, querying the documentation
 for the function `sum` in the R package `base` becomes a matter of finding
 where in the documentation the alias `sum` is found and retrieving it.
@@ -23,8 +23,8 @@ When working with R, a frequent use case for using the documention
 is to query on an alias (a function name, a dataset, or a class name)
 and retrieve the associated documentation.
 
-To do so with rpy2's interface to the help system, the easiest is to
-use the function :func:`pages`. The function returns a :class:`tuple`
+To do so with rpy2's interface to the help system, the easiest way is to
+use the function :func:`pages`, which returns a :class:`tuple`
 of :class:`Page` instances.
 
 
@@ -50,8 +50,8 @@ The documentation for a package is represented with the class
 Documentation page
 ------------------
 
-A particular documentation page is represented as an instance of
-class :class:`Page`
+A documentation page is represented as an instance of
+class :class:`Page`.
 
 .. autoclass:: rpy2.robjects.help.Page(struct_rdb)
    :show-inheritance:

@@ -11,9 +11,9 @@ or from elsewhere to Python/rpy2/R.
 Getting started
 ===============
 
-It is assumed here that the rpy2 package was properly installed.
+It is assumed here that the rpy2 package has been properly installed.
 In python, making a package or module available is achieved by
-importing it.
+importing it:
 
 .. code-block:: python
 
@@ -35,15 +35,15 @@ Getting R objects
 
 In Python the `[` operator is an alias for the  ethod :meth:`__getitem__`.
 
-With :mod:`rpy2.robjects`, 
-the method :meth:`__getitem__` functions like calling a variable from the
-R console.
+The :meth:`__getitem__` method of :mod:`rpy2.robjects.r`,
+evaluates a variable from the R console.
 
 Example in R:
 
 .. code-block:: r
 
-   pi
+   > pi
+   [1] 3.141593
 
 With :mod:`rpy2`:
 
@@ -81,7 +81,8 @@ Example in R:
 
 .. code-block:: r
 
-   pi
+   > pi
+   [1] 3.141593
 
 With :mod:`rpy2`:
 
@@ -92,8 +93,8 @@ With :mod:`rpy2`:
 
 .. warning::
 
-   The result is an R vector. Reading Section
-   :ref:`introduction-vectors` is recommended as it will provide explanations
+   The result is an R vector. The Section
+   :ref:`introduction-vectors` below will provide explanation
    for the following behavior:
    
    >>> piplus2 = robjects.r('pi') + 2
@@ -107,7 +108,7 @@ With :mod:`rpy2`:
 The evaluation is performed in what is known to R users as the 
 `Global Environment`, that is the place one starts at when starting
 the R console. Whenever the `R` code creates variables, those
-variables will be "located" in that `Global Environment` by default.
+variables are "located" in that `Global Environment` by default.
 
 
 Example:
@@ -124,7 +125,7 @@ Example:
            f(3)
 	   ''')
 
-The expression above will return the value 18.85, 
+The expression above returns the value 18.85, 
 but first creates an R function `f`. 
 That function `f` is present in the R `Global Environement`, and can
 be accessed with the `__getitem__` mechanism outlined above:
@@ -191,7 +192,7 @@ we can observe that this is in fact a vector of length 1.
 As such, the python method :meth:`add` will result in a concatenation
 (function `c()` in R), as this is the case for regular python lists.
 
-Accessing the one value in that vector will have to be stated
+Accessing the one value in that vector has to be stated
 explicitly:
 
 >>> robjects.r['pi'][0]
@@ -235,14 +236,14 @@ R functions:
 Calling R functions
 ===================
 
-Calling R functions will be disappointingly similar to calling
+Calling R functions is disappointingly similar to calling
 Python functions:
 
 >>> rsum = robjects.r['sum']
 >>> rsum(robjects.IntVector([1,2,3]))[0]
 6L
 
-Keywords will also be working:
+Keywords are also working:
 
 >>> rsort = robjects.r['sort']
 >>> res = rsort(robjects.IntVector([1,2,3]), decreasing=True)
@@ -252,7 +253,7 @@ c(3L, 2L, 1L)
 
 .. note::
 
-   By default, calling R functions will return R objects.
+   By default, calling R functions return R objects.
 
 
 More information on functions is in Section :ref:`robjects-functions`.
@@ -263,7 +264,7 @@ Getting help
 
 R has a builtin help system that, just like the pydoc strings are used frequently
 in python during interactive sessions, is used very frequently by R programmmers.
-This help system is accessible from R function, therefore accessible from rpy2.
+This help system is accessible from an R function, therefore accessible from rpy2.
 
 Help on a topic within a given package, or currently loaded packages
 ---------------------------------------------------------------------
@@ -274,7 +275,7 @@ Help on a topic within a given package, or currently loaded packages
 >>> help_doc[0]
 '/where/R/is/installed/library/utils/help/help'
 
-Converting the object returned to a string will produce the full help text
+Converting the object returned to a string produces the full help text
 on the topic:
 
 >>> str(help_doc)
@@ -284,7 +285,7 @@ on the topic:
 
    The help message so produced is not a string returned to the console
    but is directly printed by R to the standard output. The call to
-   :func:`str` only returns an empty string, and the reason for this is a
+   :func:`str` only returns an empty string, and the reason for this is
    somewhat involved for an introductory documentation.
    This behaviour is rooted in :program:`R` itself and in :mod:`rpy2` the
    string representation of R objects is the string representation as
@@ -324,7 +325,7 @@ Examples
 ========
 
 This section demonstrates some of the features of
-rpy2 by the example.
+rpy2.
 
 
 Graphics and plots
@@ -345,7 +346,7 @@ Graphics and plots
   r.plot(r.runif(10), y, xlab="runif", ylab="foo/bar", col="red")
 
 Setting dynamically the number of arguments in a function call can be
-done the usual way in python
+done the usual way in python.
 
 There are several ways to plot data in `R`, some of which are
 presented in this documentation:
@@ -367,7 +368,7 @@ plots are presented in Section :ref:`graphics`.
 
 .. warning::
 
-   By default, the embedded R will open an interactive plotting device,
+   By default, the embedded R open an interactive plotting device,
    that is a window in which the plot is located.
    Processing interactive events on that devices, such as resizing or closing
    the window must be explicitly required
@@ -419,8 +420,8 @@ for storing the variables directly in the lookup environment of the formula).
 Q: Now how to extract data from the resulting objects ?
 
 A: Well, it all depends on the object. R is very much designed
-   for interactive sessions, and users often inspect what a
-   function is returning in order to know how to extract information.
+for interactive sessions, and users often inspect what a
+function is returning in order to know how to extract information.
 
 When taking the results from the code above, one could go like:
 
@@ -481,7 +482,7 @@ R code as possible:
   r.plot(pca, main="Eigen values")
   r.biplot(pca, main="biplot")
 
-However, the same example can be made a little more tidier
+However, the same example can be made a little tidier
 (with respect to being specific about R functions used)
 
 .. testcode::

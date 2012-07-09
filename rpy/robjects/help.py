@@ -124,7 +124,7 @@ class Page(object):
     are the keys for the dict attribute 'sections', and a given section
     can be extracted with the square-bracket operator.
 
-    In R the S3 class 'Rd' is the closest entity to this class.
+    In R, the S3 class 'Rd' is the closest entity to this class.
     """
 
     def __init__(self, struct_rdb, _type = ''):
@@ -146,7 +146,7 @@ class Page(object):
         return self._sections
 
     sections = property(_section_get, None, 
-                        "Sections in the in help page as a dict.")
+                        "Sections in the in help page, as a dict.")
 
     def __getitem__(self, item):
         """ Get a section """
@@ -224,7 +224,7 @@ class Page(object):
         return self.sections.iteritems        
 
     def to_docstring(self, section_names = None):
-        """ section_names: list of setion names to consider. If None
+        """ section_names: list of section names to consider. If None
         all sections are used.
 
         Returns a string that can be used as a Python docstring. """
