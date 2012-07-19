@@ -24,11 +24,11 @@ R_HOME: C:\Program Files\R\R-2.13.1
 R_USER: C:\Users\username\Documents
 
 
-4. Append path to R executable to PATH
---------------------------------------
+4. Append path to R (and Rtools) executable(s) to PATH
+------------------------------------------------------
 Control Panel | Advanced tab | Environmental Variables
 
-example path: "C:\Program Files\R\R-2.13.1\bin\i386"
+example paths: C:\Program Files\R\R-2.13.1\bin\i386; C:\Rtools\bin
 
 
 5. Build rpy2
