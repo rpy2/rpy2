@@ -80,50 +80,24 @@ Software Versions
  R        2.14
 ======== ===========
 
-Most likely, Python 2.6 will just work.
-Older Python like 2.5 or even 2.4 might compile, but there is much less testing done with those platforms, if any, and likely limited hope for free support.
+Running Rpy2 will require compiled libraries for R, Python, and readline;
+building rpy2 will require the corresponding development headers 
+(check the documentation for more information about builing rpy2). 
 
-Python 3.2 will install, but at the time of writing still has a couple
-of minor issues. Python 3.3 is touted as the "production-ready" Python 3, so more time will be spent on Python when it is out.
+Python 2.6 might just work, but over time an increasing amount of features present 
+in 2.7 (backported from the Python 3 series) have been used.
+Python 3.2 will install, but at the time of writing might still have minor issues.
+Python 3.3 is advertised as the Python 3.x that is "production-ready",
+so more time will be spent on Python when it is out. From rpy2-2.4.x, the main
+Python version will be the released 3.x (3.3, or 3.4). 
 
-.. warning::
+Older Python like 2.5 or even 2.4 might compile, but there is much less testing done with those
+platforms, if any, and likely limited hope for free support.
 
-   When building rpy2, it is checked that this is against a recommended
-   version of R. Building against a different version is possible, although
-   not supported at all, through the flag *--ignore-check-rversion*
+Rpy2 is not expected to work at all with an R version < 2.8. The use of the
+latest rpy2 with an R version older than the current release is not adviced (and mostly
+unsupported).
 
-   .. code-block:: bash
-
-      python setup.py build_ext --ignore-check-rversion install
-   
-   Since recently, development R is no longer returning
-   an R version and the check ends with an error
-   "Error: R >= <some version> required (and R told 'development.').".
-   The flag *--ignore-check-rversion* is then required in order to build.
-   
-
-Rpy2 will require compiled libraries and development headers from: R, Python, and readline
-
-.. note::
-   
-   When compiling R from source, do not forget to specify
-   *--enable-R-shlib* at the *./configure* step.
-
-.. note::
-
-   On OS X, the *XCode* tools will be required in order to compile rpy2.
-   
-   On OS X "Snow Leopard" (10.6.8), it was reported that setting architecture flags was sometimes needed
-
-   .. code-block:: bash
-
-      env ARCHFLAGS="-arch i386 -arch x86_64" pip install rpy2
-
-   or 
-
-   .. code-block:: bash
-
-      env ARCHFLAGS="-arch i386 -arch x86_64" python setup.py build install
 
 Download
 --------
@@ -261,6 +235,63 @@ Other options to build the package are:
    --r-home-lib # for exotic location of the R shared libraries
 
    --r-home-modules # for R shared modules
+
+
+Compiling on Linux
+^^^^^^^^^^^^^^^^^^
+
+Given that you have the libraries and development headers listed above, this
+should be butter smooth.
+
+The most frequent errors seem to be because of missing headers.
+
+Compiling on OS X
+^^^^^^^^^^^^^^^^^
+
+*XCode* tools will be required in order to compile rpy2. Please refer to the documentation on the Apple
+site for more details about what they are and how to install them.
+
+On OS X "Snow Leopard" (10.6.8), it was reported that setting architecture flags was sometimes needed
+
+.. code-block:: bash
+
+   env ARCHFLAGS="-arch i386 -arch x86_64" pip install rpy2
+
+or 
+
+.. code-block:: bash
+
+   env ARCHFLAGS="-arch i386 -arch x86_64" python setup.py build install
+
+Some people have reported trouble with OS X "Lion". Please check the bug tracker if you are in that situation.
+
+
+Using rpy2 with other versions of R or Python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+.. warning::
+
+   When building rpy2, it is checked that this is against a recommended
+   version of R. Building against a different version is possible, although
+   not supported at all, through the flag *--ignore-check-rversion*
+
+   .. code-block:: bash
+
+      python setup.py build_ext --ignore-check-rversion install
+   
+   Since recently, development R is no longer returning
+   an R version and the check ends with an error
+   "Error: R >= <some version> required (and R told 'development.').".
+   The flag *--ignore-check-rversion* is then required in order to build.
+   
+
+.. note::
+   
+   When compiling R from source, do not forget to specify
+   *--enable-R-shlib* at the *./configure* step.
+
+
 
 
 .. index::

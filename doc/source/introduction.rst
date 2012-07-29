@@ -497,6 +497,8 @@ However, the same example can be made a little more tidier
    graphics.plot(pca, main = "Eigen values")
    stats.biplot(pca, main = "biplot") 
 
+
+
 Creating an R vector or matrix, and filling its cells using Python code
 -----------------------------------------------------------------------
 
@@ -516,7 +518,9 @@ Creating an R vector or matrix, and filling its cells using Python code
        for col_i in xrange(1, 10+1):
            m.rx[TaggedList((row_i, ), (col_i, ))] = row_i + col_i * 100
 
+.. testoutput::
 
+   None
 
 One more example
 ----------------
