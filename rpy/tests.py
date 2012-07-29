@@ -1,3 +1,9 @@
+if __name__ == "__main__":
+    import sys, rpy2.rinterface
+    sys.stdout.write("rpy2 version: %s\n" % rpy2.__version__)
+    sys.stdout.write("built against R version: %s\n" % '-'.join(rpy2.rinterface.R_VERSION_BUILD))
+    sys.stdout.flush()
+
 import unittest
 
 import rpy2.robjects.tests
