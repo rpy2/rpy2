@@ -6,11 +6,12 @@
 
 typedef struct {
   PyObject_HEAD;
-  SEXP devnum;
   pDevDesc grdev;
 } PyGrDevObject;
 
-#define RPY_DEV_NUM(obj) (((PyGrDevObject *)obj)->devnum)
+#define RPY_DEV_NUM(obj) ( 1 + ndevNumber(((PyGrDevObject *)obj)->grdev) )
+
+#define RPY_DEV_KILLED(obj) ( ((PyGrDevObject *)obj)->killed )
 
 #define RPY_GRDEV_BOOL_GET(self, attrname)	\
   PyObject *res;							\

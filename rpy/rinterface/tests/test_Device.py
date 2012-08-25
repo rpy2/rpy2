@@ -32,14 +32,14 @@ class AbstractDeviceTestCase(unittest.TestCase):
         self.assertFalse(getattr(gd, name))
         self.assertRaises(TypeError, setattr, gd, name, None)
 
-    # def _testGetSetDoubleAttr(self, name):
-    #     gd = self.gd
-    #     gd = rdevice.GraphicalDevice()
-    #     setattr(gd, name, 100.0)
-    #     self.assertTrue(getattr(gd, name))
-    #     setattr(gd, name, 0.0)
-    #     self.assertFalse(getattr(gd, name))
-    #     self.assertRaises(TypeError, setattr, gd, name, None)
+    def _testGetSetDoubleAttr(self, name):
+        gd = self.gd
+        gd = rdevice.GraphicalDevice()
+        setattr(gd, name, 100.0)
+        self.assertTrue(getattr(gd, name))
+        setattr(gd, name, 0.0)
+        self.assertFalse(getattr(gd, name))
+        self.assertRaises(TypeError, setattr, gd, name, None)
 
     def testHasTextUTF8(self):
         self._testGetSetBooleanAttr("hasTextUTF8")
@@ -47,17 +47,17 @@ class AbstractDeviceTestCase(unittest.TestCase):
     def testWantSymbolUTF8(self):
        self._testGetSetBooleanAttr("wantSymbolUTF8")
     
-    # def testLeft(self):
-    #     self._testGetSetDoubleAttr("left")
+    def testLeft(self):
+        self._testGetSetDoubleAttr("left")
 
-    # def testRight(self):
-    #     self._testGetSetDoubleAttr("right")
+    def testRight(self):
+        self._testGetSetDoubleAttr("right")
 
-    # def testTop(self):
-    #     self._testGetSetDoubleAttr("top")
+    def testTop(self):
+        self._testGetSetDoubleAttr("top")
 
-    # def testBottom(self):
-    #     self._testGetSetDoubleAttr("bottom")
+    def testBottom(self):
+        self._testGetSetDoubleAttr("bottom")
 
     def testCanGenMouseDown(self):
         self._testGetSetBooleanAttr("canGenMouseDown")

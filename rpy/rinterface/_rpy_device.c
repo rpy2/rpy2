@@ -40,7 +40,9 @@
 
 
 PyDoc_STRVAR(module_doc,
-             "Graphical output devices for R.");
+             "Graphical devices for R. They can be interactive "
+	     "(e.g., the X11 window that open during an interactive R session),"
+	     " or not (e.g., PDF or PNG files).");
 
 static inline void rpy_printandclear_error(void)
 {
@@ -125,16 +127,82 @@ static inline void rpy_GrDev_CallBack(pDevDesc dd, PyObject *name)
 
 
 static PyObject *GrDev_close_name;
+
+int
+_GrDev_close(PyObject *self)
+{
+  PyObject *res;
+  PyObject *tp, *v, *tb;
+  int closed = 1;
+  int is_zombie;
+  /* if _GrDev_close() is called from a destructor
+     (quite likely because of R's GEkillDevice()),
+     we need to resurrect the object as calling close()
+     can invoke arbitrary code (see Python's own iobase.c)
+   */
+  is_zombie = (Py_REFCNT(self) == 0);
+  if (is_zombie) {
+    ++Py_REFCNT(self);
+  }
+  PyErr_Fetch(&tp, &v, &tb);
+  res = PyObject_GetAttrString(self, "closed");
+  /* if the attribute "closed" does not exist, ignore */
+  if (res == NULL)
+    PyErr_Clear();
+  else {
+    closed = PyObject_IsTrue(res);
+    Py_DECREF(res);
+    if (closed == -1)
+      PyErr_Clear();
+  }
+  if (closed == 0) {
+    pDevDesc devdesc = ((PyGrDevObject *)self)->grdev;
+    rpy_GrDev_CallBack(devdesc,
+		       GrDev_close_name);
+    /* FIXME: Shouldn't the result be checked ? */
+  }
+  PyErr_Restore(tp, v, tb);
+  if (is_zombie) {
+    if (--Py_REFCNT(self) != 0) {
+      /* The object lives again. The following code is taken from
+	 slot_tp_del in typeobject.c. */
+      Py_ssize_t refcnt = Py_REFCNT(self);
+      _Py_NewReference(self);
+      Py_REFCNT(self) = refcnt;
+      /* If Py_REF_DEBUG, _Py_NewReference bumped _Py_RefTotal, so
+       * we need to undo that. */
+      _Py_DEC_REFTOTAL;
+      /* If Py_TRACE_REFS, _Py_NewReference re-added self to the object
+       * chain, so no more to do there.
+       * If COUNT_ALLOCS, the original decref bumped tp_frees, and
+       * _Py_NewReference bumped tp_allocs:  both of those need to be
+       * undone.
+       */
+#ifdef COUNT_ALLOCS
+      --Py_TYPE(self)->tp_frees;
+      --Py_TYPE(self)->tp_allocs;
+#endif
+      return -1;
+    }
+  }
+  return 0;
+}
+
 static void rpy_Close(pDevDesc dd)
 {
-  rpy_GrDev_CallBack(dd, GrDev_close_name);
+  printf("Closing device.\n");
+  /* this callback is special because it can be called from
+   a code path going through a Python destructor for the device */
+  _GrDev_close(dd->deviceSpecific);
 }
+
 
 PyDoc_STRVAR(GrDev_close_doc,
              "Close the graphical output device.");
 static PyObject* GrDev_close(PyObject *self)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device closing not implemented.");
+  return NULL;
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -872,22 +940,24 @@ GrDev_clear(PyGrDevObject *self)
 static void
 GrDev_dealloc(PyGrDevObject *self)
 {
+  
 #ifdef RPY_DEBUG_GRDEV
-  printf("FIXME: Deallocating GrDev.\n");
+  printf("FIXME: Deallocating GrDev (device number %i).\n", RPY_DEV_NUM(self));
 #endif
-  rpy_devoff(self->devnum, R_GlobalEnv);
-  /* FIXME */
-#ifdef RPY_DEBUG_GRDEV
-  printf("GrDevDealloc: R_ReleaseObject()\n");
-#endif
-  //R_ReleaseObject(self->devnum);
+  pGEDevDesc dd = GEgetDevice(RPY_DEV_NUM(self)-1);
+  /* Caution: GEkillDevice will call the method "close()" for the the device. */
+  if (dd) GEkillDevice(dd);
+
 #ifdef RPY_DEBUG_GRDEV
   printf("GrDevDealloc: PyMem_Free()\n");
 #endif
+  printf("--> skipping PyMem_Free(((PyGrDevObject *)self)->grdev) \n");
   //PyMem_Free(((PyGrDevObject *)self)->grdev);
 #if (PY_VERSION_HEX < 0x03010000)
-  //self->ob_type->tp_free((PyObject*)self);
+  //printf("--> skipping self->ob_type->tp_free((PyObject*)self) \n");
+  self->ob_type->tp_free((PyObject*)self);
 #else
+  Py_CLEAR(self->dict);
   Py_TYPE(self)->tp_free((PyObject*)self);
 #endif
 #ifdef RPY_DEBUG_GRDEV
@@ -1038,18 +1108,24 @@ PyDoc_STRVAR(GrDev_devnum_doc,
 static PyObject* GrDev_devnum_get(PyObject* self)
 {
   PyObject* res;
-  if ( ((PyGrDevObject *)self)->devnum == R_NilValue) {
+  if ( RPY_DEV_NUM(self) == 0) {
     Py_INCREF(Py_None);
     res = Py_None;
   } else {
 #if (PY_VERSION_HEX < 0x03010000)
-    res = PyInt_FromLong((long)INTEGER_POINTER(RPY_DEV_NUM(self))[0]);
+    res = PyInt_FromLong((long)RPY_DEV_NUM(self));
 #else
-    res = PyLong_FromLong((long)INTEGER_POINTER(RPY_DEV_NUM(self))[0]);
+    res = PyLong_FromLong((long)RPY_DEV_NUM(self));
 #endif
   }
   return res;
 
+}
+
+static PyObject *
+rpydev_closed_get(PyObject *self, void *context)
+{
+  return PyBool_FromLong(PyObject_HasAttrString(self, "__GrDev_closed"));
 }
 
  
@@ -1103,6 +1179,8 @@ static PyGetSetDef GrDev_getsets[] = {
    (getter)GrDev_devnum_get,
    NULL,
    GrDev_devnum_doc},
+  {"closed",
+   (getter)rpydev_closed_get, NULL, NULL},
   /* */
   {NULL, NULL, NULL, NULL}          /* sentinel */
 };
@@ -1111,9 +1189,6 @@ static PyGetSetDef GrDev_getsets[] = {
 static PyObject*
 GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-
-  /* FIXME: should this be checked and raise an exception if necessary ? */
-  /* R_CheckDeviceAvailable(); */
 
 #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: New GrDev\n");
@@ -1130,12 +1205,16 @@ GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   PyGrDevObject *self;
   self = (PyGrDevObject *)type->tp_alloc(type, 0);
 
-  if (! self)
+  if (! self) {
     PyErr_NoMemory();
+  }
 
   self->grdev = (pDevDesc)PyMem_Malloc(1 * sizeof(DevDesc));
-  /* FIXME: fallback if memory allocation error ? */
-  self->devnum = R_NilValue;
+  if (self->grdev == NULL) {
+    PyErr_Format(PyExc_RuntimeError, 
+                 "Could not allocate memory for an R device description.");
+    return NULL;    
+  }
 #ifdef RPY_DEBUG_GRDEV
   printf("  done.\n");
 #endif
@@ -1150,17 +1229,28 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
   printf("FIXME: Initializing GrDev\n");
 #endif
 
-  pDevDesc dd = ((PyGrDevObject *)self)->grdev;
+  if (!PyRinterface_IsInitialized()) {
+    PyErr_Format(PyExc_RuntimeError, 
+                 "R must be initialized before instances of GraphicalDevice can be created.");
+    return -1;
+  }
 
-  configureDevice(dd, self);
-  pGEDevDesc gdd = GEcreateDevDesc(dd);
+  if (R_CheckDeviceAvailableBool() != TRUE) {
+    PyErr_Format(PyExc_RuntimeError, 
+                 "Too many open R devices.");
+    return -1;
+  }
+
+  pDevDesc dev = ((PyGrDevObject *)self)->grdev;
+
+  configureDevice(dev, self);
+  pGEDevDesc gdd = GEcreateDevDesc(dev);
 #if (PY_VERSION_HEX < 0x03010000)
   GEaddDevice2(gdd, self->ob_type->tp_name);
 #else
   GEaddDevice2(gdd, Py_TYPE(self)->tp_name);
 #endif
-  ((PyGrDevObject *)self)->devnum = ScalarInteger(ndevNumber(dd) + 1);
-  R_PreserveObject(((PyGrDevObject *)self)->devnum);
+  GEinitDisplayList(gdd);
   /* FIXME: protect device number ? */
   /* allocate memory for the pDevDesc structure ? */
   /* pDevDesc grdev = malloc(); */
@@ -1170,9 +1260,15 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
   return 0;
 }
 
+
+
+
 /*
  * Generic graphical device.
  */
+PyDoc_STRVAR(GrDev_doc,
+             "Python-defined graphical device for R.");
+
 static PyTypeObject GrDev_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
@@ -1206,7 +1302,7 @@ static PyTypeObject GrDev_Type = {
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
-        0,                      /*tp_doc*/
+        GrDev_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
         0,/*(inquiry)Sexp_clear, tp_clear*/
         0,                      /*tp_richcompare*/
