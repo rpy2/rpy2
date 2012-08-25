@@ -110,11 +110,10 @@ class RS4_Type(type):
 # playground to experiment with more metaclass-level automation
 
 class RS4Auto_Type(type):
-    """ This type (metaclass) will take an R S4 class
-    and create a Python class out of it, fetching the
-    R documention page and putting into the Python docstring
-    on the fly.
-    A class with this metaclass will have the following optional
+    """ This type (metaclass) takes an R S4 class
+    and create a Python class out of it,
+    copying the R documention page into the Python docstring.
+    A class with this metaclass has the following optional
     attributes: __rname__, __rpackagename__, __attr__translation,
     __meth_translation__.
     """

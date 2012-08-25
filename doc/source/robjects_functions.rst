@@ -8,7 +8,7 @@
 Functions
 =========
 
-R functions are callable objects, and be called almost like any regular
+R functions are callable objects, and can be called almost like any regular
 Python function:
 
 >>> plot = robjects.r.plot
@@ -26,7 +26,7 @@ Let's take an example in R:
 
    rank(0, na.last = TRUE)
 
-In Python it can then write:
+In Python one can write:
 
 .. code-block:: python
 
@@ -37,7 +37,7 @@ In Python it can then write:
 
 .. note::
 
-   In the example, the object `base.rank` is an instance of
+   In this example, the object `base.rank` is an instance of
    :class:`functions.SignatureTranslatedFunction`,
    a child class of :class:`functions.Function`, and the translation of 
    the argument names is made during the creation of the instance.

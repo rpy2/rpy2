@@ -47,7 +47,7 @@ this feature matters most to you.
 >>> robjects.r.as_null
 # AttributeError raised
 >>> import rpy2.rpy_classic as rpy
->>> rpy.set_default_mode(NO_CONVERSION)
+>>> rpy.set_default_mode(rpy.NO_CONVERSION)
 >>> rpy.r.as_null
 # R function as.null() returned
 

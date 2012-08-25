@@ -8,11 +8,10 @@ Overview
 ========
 
 R is very often used as an interactive toplevel, or read-eval-print loop (REPL).
-When analyzing data this is kind of environment is extremely convenient as
-the analyst often does not know beforehand what lies in the data and how this
-is going to be discovered.
+This is convenient when analyzing data: type some code, get the result,
+type some new code and further analysis based on the results.
 
-Python is can also be used in a similar fashion, but limitations of the
+Python can also be used in a similar fashion, but limitations of the
 default Python console have lead to the creation of alternative consoles
 and interactive development editors
 (idle, ipython, bpython, emacs mode, komodo, ...).
@@ -20,7 +19,7 @@ Features such as code highlighting, autocompletion, and convenient display of
 help strings or function signatures have made those valuable tools.
 
 The package :mod:`rpy2.interactive` aims at interactive users, but can be used
-in non-interactive code as well. It is trading trading flexibility
+in non-interactive code as well. It is trading flexibility
 or performances for ease-of-use.
  
 >>> import rpy2.interactive as r
@@ -115,12 +114,7 @@ a graphical example:
 Available packages
 ------------------
 
-R has a function to check was are the available packages.
-
-.. note::
-
-   To list the available packages, we have to load the package `utils`.
-   See Section load-packages for details about loading packages
+R has a function to list the available packages.
 
 >>> import rpy2.interactive as r
 >>> r.importr("utils")

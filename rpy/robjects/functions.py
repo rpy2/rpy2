@@ -51,8 +51,8 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         return res
 
 class SignatureTranslatedFunction(Function):
-    """ Python representation of an R function such as 
-    the character '.' is replaced with '_' whenever present in the R argument name. """
+    """ Python representation of an R function, where
+    the character '.' is replaced with '_' in the R arguments names. """
     _prm_translate = None
 
     def __init__(self, sexp, init_prm_translate = None):

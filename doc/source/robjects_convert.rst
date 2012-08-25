@@ -10,7 +10,7 @@ Switching between a conversion and a no conversion mode,
 an operation often present when working with RPy-1.x, is no longer
 necessary with rpy2.
 
-The approach taken is to have R-wrapping objects that implement
+The approach of rpy2 is to have R-wrapping objects that implement
 interfaces of builtin Python types whenever possible, letting the
 Python layer access the objects the usual way and the wrapped R objects be
 used as they are by the R functions. For example, R vectors are mapped
@@ -19,7 +19,7 @@ protocol, so elements can be accessed easily.
 
 There is a low-level mapping between `R` and `Python` objects
 performed behind the (Python-level) scene, done at the :mod:`rpy2.rinterface` level,
-while an higher-level mapping is done between low-level objects and
+while a higher-level mapping is done between low-level objects and
 higher-level objects. The later is performed by the functions:
 
 :meth:`conversion.ri2py`
@@ -35,8 +35,8 @@ higher-level objects. The later is performed by the functions:
    is merely a call to :meth:`conversion.py2ri` 
    followed by a call to :meth:`conversion.ri2py`.
 
-Those functions can be re-routed to satisfy all requirements, with
-the easiest option being to write a custom function calling itself
+Those functions can be redefined to suits one's need.
+The easiest option is to write a custom function calling
 the default function when the custom conversion should not apply.
 
 A simple example
@@ -58,7 +58,7 @@ of writing a new function `ri2py` that handles this, as shown below:
 
    robjects.conversion.ri2py = my_ri2py
 
-Once this is done, we can verify immediately that this is working with:
+Then we can test it with:
 
 >>> pi = robjects.r.pi
 >>> type(pi)

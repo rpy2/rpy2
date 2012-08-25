@@ -23,9 +23,10 @@ class RObjectMixin(object):
 
     def __str__(self):
         if sys.platform == 'win32':
-            tmpf = tempfile.NamedTemporaryFile()
-            tmp = self.__file(rpy2.rinterface.StrSexpVector([tmpf.name,]), 
-                              open = rpy2.rinterface.StrSexpVector(["r+", ]))
+            tmpf = tempfile.NamedTemporaryFile(delete=False)
+            tfname = tmpf.name
+            tmp = self.__file(rpy2.rinterface.StrSexpVector([tfname,]),
+                              open=rpy2.rinterface.StrSexpVector(["r+", ]))
             self.__sink(tmp)
         else:
             writeconsole = rpy2.rinterface.get_writeconsole()
@@ -38,6 +39,12 @@ class RObjectMixin(object):
             self.__sink()
             s = tmpf.readlines()
             tmpf.close()
+            try:
+                del tmpf
+                os.unlink(tfname)
+            except WindowsError:
+                if os.path.exists(tfname):
+                    print 'Unable to unlink tempfile %s' % tfname
             s = str.join(os.linesep, s)
         else:
             rpy2.rinterface.set_writeconsole(writeconsole)
@@ -66,7 +73,7 @@ class RObjectMixin(object):
         self.__sexp__ = res.__sexp__
             
     rclass = property(_rclass_get, _rclass_set, None,
-                      "R class for the object, stored an R string vector.")
+                      "R class for the object, stored as an R string vector.")
 
 
 def repr_robject(o, linesep=os.linesep):

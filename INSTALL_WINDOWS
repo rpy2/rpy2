@@ -1,0 +1,45 @@
+rpy2 Installation Hints for Windows OS (tested on Windows 7)
+============================================================
+
+1. Install R
+------------
+http://cran.r-project.org/bin/windows/base/
+
+
+2. Install Rtools
+-----------------
+http://cran.r-project.org/bin/windows/Rtools/
+
+
+3. Define environmental variables
+---------------------------------
+Control Panel | Advanced tab | Environmental Variables
+
+define the following: RHOME, R_HOME, R_USER
+
+examples
+~~~~~~~~ 
+RHOME: C:\Program Files\R\R-2.13.1
+R_HOME: C:\Program Files\R\R-2.13.1
+R_USER: C:\Users\username\Documents
+
+
+4. Append path to R (and Rtools) executable(s) to PATH
+------------------------------------------------------
+Control Panel | Advanced tab | Environmental Variables
+
+example paths: C:\Program Files\R\R-2.13.1\bin\i386; C:\Rtools\bin
+
+
+5. Build rpy2
+-------------
+1. Download and execute the binary executable 
+
+or 
+
+2. Download the source and build:
+
+In the rpy2 folder...
+
+python setup.py build
+python setup.py install

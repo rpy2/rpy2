@@ -6,9 +6,7 @@ Numpy
 A popular solution for scientific computing with Python is :mod:`numpy` 
 (previous instances were :mod:`Numpy` and :mod:`numarray`).
 
-:mod:`rpy2` has features for facilitating the integration with code using
-:mod:`numpy` in both directions: from `rpy2` to `numpy`, and from `numpy`
-to `rpy2`.
+:mod:`rpy2` has features to ease bidirectional communication with :mod:`numpy`.
 
 High-level interface
 --------------------
@@ -16,7 +14,7 @@ High-level interface
 From `rpy2` to `numpy`:
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-R vectors or arrays can be  to :mod:`numpy` arrays using
+R vectors or arrays can be converted to :mod:`numpy` arrays using
 :meth:`numpy.array` or :meth:`numpy.asarray`:
 
 .. code-block:: python
