@@ -946,6 +946,7 @@ GrDev_dealloc(PyGrDevObject *self)
 #endif
   pGEDevDesc dd = GEgetDevice(RPY_DEV_NUM(self)-1);
   /* Caution: GEkillDevice will call the method "close()" for the the device. */
+  /* (See GrDev_close for details) */
   if (dd) GEkillDevice(dd);
 
 #ifdef RPY_DEBUG_GRDEV
@@ -954,10 +955,8 @@ GrDev_dealloc(PyGrDevObject *self)
   printf("--> skipping PyMem_Free(((PyGrDevObject *)self)->grdev) \n");
   //PyMem_Free(((PyGrDevObject *)self)->grdev);
 #if (PY_VERSION_HEX < 0x03010000)
-  //printf("--> skipping self->ob_type->tp_free((PyObject*)self) \n");
   self->ob_type->tp_free((PyObject*)self);
 #else
-  Py_CLEAR(self->dict);
   Py_TYPE(self)->tp_free((PyObject*)self);
 #endif
 #ifdef RPY_DEBUG_GRDEV
