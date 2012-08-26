@@ -30,8 +30,10 @@ dataf_rnorm = robjects.DataFrame({'value': rnorm(300, mean=0) + rnorm(100, mean=
 grdevices.png('../../_static/graphics_lattice_xyplot_1.png',
               width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- xyplot1-begin
-datasets = importr('datasets')
-mtcars = datasets.mtcars
+utils = importr('utils')
+tmpenv = robjects.Environment()
+utils.data("mtcars", package = "datasets", envir = tmpenv)
+mtcars = tmpenv["mtcars"]
 formula = Formula('mpg ~ wt')
 formula.getenvironment()['mpg'] = mtcars.rx2('mpg')
 formula.getenvironment()['wt'] = mtcars.rx2('wt')
@@ -76,7 +78,9 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_lattice_wireframe_1.png',
     width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- wireframe1-begin
-volcano = datasets.volcano
+utils.data("volcano", package = "datasets", envir = tmpenv)
+volcano = tmpenv["volcano"]
+
 p = lattice.wireframe(volcano, shade = True,
                       zlab = "",
                       aspect = FloatVector((61.0/87, 0.4)),
@@ -88,10 +92,11 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_lattice_wireframe_2.png',
     width = 912, height = 612, antialias="subpixel", type="cairo")
 #-- wireframe2-begin
-reshape = importr('reshape')
-dataf = reshape.melt(volcano)
+reshape2 = importr('reshape2')
+dataf = reshape2.melt(volcano)
 dataf = dataf.cbind(ct = lattice.equal_count(dataf.rx2("value"), number=3, overlap=1/4))
-p = lattice.wireframe(Formula('value ~ X1 * X2 | ct'), data = dataf, shade = True,
+p = lattice.wireframe(Formula('value ~ Var1 * Var2 | ct'), 
+                      data = dataf, shade = True,
                       aspect = FloatVector((61.0/87, 0.4)),
                       light_source = IntVector((10,0,10)))
 rprint(p, nrow = 1)
@@ -108,8 +113,8 @@ import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 base = importr('base')
 
-datasets = importr('datasets')
-mtcars = datasets.mtcars
+utils.data("mtcars", package = "datasets", envir = tmpenv)
+mtcars = tmpenv["mtcars"]
 
 #-- setupggplot2-end
 
@@ -534,13 +539,13 @@ gflops_range = [ round(math.log10(min(perfs))),
 # note there's two measurements per line.
 # instead we want data that looks like this:
 # [date, perf, color, perftype] where perftype is perf1 or perf2
-# the right operator for this is "melt" in the "reshape" package
+# the right operator for this is "melt" in the "reshape2" package
 
 # melt from horizontal into vertical format
-df = ro.r.melt(df, 
-               id_var=['Date','color'], 
-               measure=['Perf1','Perf2'], 
-               variable_name='PerfType')
+df = reshape2.melt(df, 
+                   id_vars=['Date','color'], 
+                   measure_vars=['Perf1','Perf2'], 
+                   variable_name='PerfType')
 # rename resulting value column to Performance
 df.names[tuple(df.colnames).index('value')] = 'Performance'
 
@@ -559,7 +564,7 @@ df.names[tuple(df.colnames).index('value')] = 'Performance'
 for col_i, yscale in enumerate(['log', 'linear']): 
   vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 1})
   pp = ggplot2.ggplot(df) + \
-      ggplot2.aes_string(x='Date', y='Performance', color='color', 
+      ggplot2.aes_string(x='variable', y='Performance', color='color', 
                          shape='PerfType', linetype='PerfType') + \
       ggplot2.opts(**{'title' : 
                       'Performance vs. Color',
@@ -584,7 +589,7 @@ for col_i, yscale in enumerate(['log', 'linear']):
                                    (gflops_range[0] - 1, gflops_range[1], 
                                     gflops_range[1] - gflops_range[0])))
 
-  pp.plot(vp = vp)
+  #pp.plot(vp = vp)
 #-- ggplot2perfcolor-end
 grdevices.dev_off()
 
@@ -672,14 +677,17 @@ grid.newpage()
 vp = grid.viewport(width = 1, height = 1) 
 vp.push()
 
-p = ggplot2.ggplot(datasets.rock) + \
+utils.data("rock", package = "datasets", envir = tmpenv)
+rock = tmpenv["rock"]
+
+p = ggplot2.ggplot(rock) + \
     ggplot2.geom_point(ggplot2.aes_string(x = 'area', y = 'peri')) + \
     ggplot2.theme_bw()
 p.plot(vp = vp)
 
 vp = grid.viewport(width = 0.6, height = 0.6, x = 0.37, y=0.69)
 vp.push()
-p = ggplot2.ggplot(datasets.rock) + \
+p = ggplot2.ggplot(rock) + \
     ggplot2.geom_point(ggplot2.aes_string(x = 'area', y = 'shape')) + \
     ggplot2.opts(**{'axis.text.x': ggplot2.theme_text(angle = 45)})
 

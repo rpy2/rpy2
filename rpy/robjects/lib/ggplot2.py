@@ -36,7 +36,9 @@ class GGPlot(robjects.RObject):
 
     def __add__(self, obj):
         res = self._add(self, obj)
-        return res
+        if res.rclass[0] != 'ggplot':
+           raise ValueError("Added object did not give a ggplot result (get class '%s')." % res.rclass[0])
+        return GGPlot(res)
 
 ggplot = GGPlot.new
 
@@ -375,13 +377,9 @@ class ScaleAlpha(Scale):
    _constructor = ggplot2_env['scale_alpha']
 scale_alpha = ScaleAlpha.new
 class ScaleColour(Scale):
-   def new(*args, **kwargs):
-      return self.__init__(*args, **kwargs)      
-scale_colour = ScaleColour.new
+   pass
 class ScaleDiscrete(Scale):
-   def new(*args, **kwargs):
-      return self.__init__(*args, **kwargs)      
-scale_discrete = ScaleDiscrete.new
+   pass
 class ScaleLinetype(Scale):
    _constructor = ggplot2_env['scale_linetype']
 scale_linetype = ScaleLinetype.new

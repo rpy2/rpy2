@@ -35,7 +35,7 @@ class Grob(robjects.RObject):
             od[None] = conversion.py2ro(item)
         for k, v in kwargs.iteritems():
             od[k] = conversion.py2ro(v)
-        res = self._constructor.rcall(od.items(), robjects.globalenv)
+        res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
         self.__sexp__ = res.__sexp__
 
     @classmethod
