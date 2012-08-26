@@ -127,7 +127,26 @@ def importr(name,
             lib_loc = None,
             robject_translations = {}, signature_translation = True,
             suppress_messages = True):
-    """ Import an R package (and return a module-like object). """
+    """ Import an R package.
+
+    Arguments:
+
+    - name: name of the R package
+
+    - lib_loc: specific location for the R library (default: None)
+
+    - robject_translations: dict (default: {})
+
+    - signature_translation: dict (default: {})
+
+    - suppress_message: Suppress messages R usually writes on the console
+      (defaut: True)
+
+    Return:
+
+    - an instance of class SignatureTranslatedPackage, or of class Package 
+
+    """
 
     rname = rinterface.StrSexpVector((name, ))
 
