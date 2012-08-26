@@ -103,7 +103,8 @@ class CodeDevice(rdevice.GraphicalDevice):
         self._file.write('line(%f, %f, %f, %f)' %(x1, y1, x2, y2))
 
     def polyline(self, x, y):
-        self._file.write('polyline(%f, %f)' %(x, y))
+        for xx, yy in zip(x, y):
+            self._file.write('polyline(%f, %f)' %(xx, yy))
 
     def clip(self, x1, y1, x2, y2):
         self._file.write('clip(%f, %f, %f, %f)' %(x1, y1, x2, y2))
@@ -139,7 +140,7 @@ class ConcreteDeviceTestCase(unittest.TestCase):
         
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(AbstractDeviceTestCase)
-    #suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ConcreteDeviceTestCase))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ConcreteDeviceTestCase))
     return suite
 
 if __name__ == '__main__':
