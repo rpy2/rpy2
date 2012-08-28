@@ -77,7 +77,7 @@ versions to run rpy2 with.
 Software Versions
 ======== ===========
  Python   2.7
- R        2.14
+ R        2.15
 ======== ===========
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
@@ -86,18 +86,28 @@ building rpy2 will require the corresponding development headers
 
 Python 2.6 might just work, but over time an increasing amount of features present 
 in 2.7 (backported from the Python 3 series) have been used.
-Python 3.2 will install, but at the time of writing might still have minor issues.
-Python 3.3 is advertised as the Python 3.x that is "production-ready",
-so more time will be spent on Python when it is out. From rpy2-2.4.x, the main
-Python version will be the released 3.x (3.3, or 3.4). 
+Python 3.2 will install, is expected to work, but at the time of writing 
+is less tested and might still have minor issues.
 
-Older Python like 2.5 or even 2.4 might compile, but there is much less testing done with those
-platforms, if any, and likely limited hope for free support.
+Python 3.3 is advertised as the Python 3.x that is "production-ready",
+so more time will be spent on Python when it is out. From rpy2-2.4.x and onward,
+the main Python version will be the released 3.x at the time (3.3, or 3.4). 
+
+Older Python like 2.5 or even 2.4 might compile, but there is much less
+testing done with those platforms, if any, and likely limited hope
+for free support.
 
 Rpy2 is not expected to work at all with an R version < 2.8. The use of the
-latest rpy2 with an R version older than the current release is not adviced (and mostly
-unsupported).
+latest rpy2 with an R version older than the current release is not
+adviced (and mostly unsupported).
 
+Alternative Python implementations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+CPython is the target implementation, and because of presence of C code
+in rpy2 is it currently not possible to run the package on Jython.
+For that same reason, running it with Pypy is expected to require
+some effort.
 
 Download
 --------
