@@ -13,7 +13,6 @@ using some of the different graphics systems available to R users.
 The purpose of this section is to get users going, and be able to figure out
 by reading the R documentation how to perform the same plot in rpy2.
 
-
 .. module:: rpy2.robjects.lib.grdevices
    :synopsis: High-level interface with R
 
@@ -23,7 +22,8 @@ Graphical devices
 With `R`, all graphics are plotted into a so-called graphical device.
 Graphical devices can be interactive, like for example `X11`, 
 or non-interactive, like `png` or `pdf`. Non-interactive devices
-appear to be files.
+appear to be files. It is possible to create custom graphical devices
+from Python/rpy2, but this an advanced topic (see :ref:`graphicaldevices-custom`).
 
 By default an interactive R session will open an interactive device
 when needing one. If a non-interactive graphical device is needed,
@@ -33,7 +33,6 @@ one will have to specify it.
 
    Do not forget to close a non-interactive device when done.
    This can be required to flush pending data from the buffer.
-
 
 The module :mod:`grdevices` aims at representing the R package
 grDevices*. Example with the R functions *png* and *dev.off*:
