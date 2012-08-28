@@ -198,7 +198,8 @@ static void rpy_Close(pDevDesc dd)
 
 
 PyDoc_STRVAR(GrDev_close_doc,
-             "Close the graphical output device.");
+             "Callback to implement: close the device."
+	     "");
 static PyObject* GrDev_close(PyObject *self)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device closing not implemented.");
@@ -214,7 +215,7 @@ static void rpy_Activate(pDevDesc dd)
 }
 
 PyDoc_STRVAR(GrDev_activate_doc,
-             "Activate the graphical output device.");
+             "Callback to implement: activation of the graphical device.");
 static PyObject* GrDev_activate(PyObject *self)
 {
   /* error("Not implemented."); */
@@ -231,7 +232,7 @@ static void rpy_Deactivate(pDevDesc dd)
 }
 
 PyDoc_STRVAR(GrDev_deactivate_doc,
-             "Deactivate the graphical output device.");
+             "Callback to implement: deactivate the graphical device.");
 static PyObject* GrDev_deactivate(PyObject *self)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device deactivation not implemented.");
@@ -278,7 +279,7 @@ static void rpy_Size(double *left, double *right,
 }
 
 PyDoc_STRVAR(GrDev_size_doc,
-             "Set the size of the graphical device.\n"
+             "Callback to implement: set the size of the graphical device.\n"
 	     "The callback must return a tuple of 4 Python float (C double).\n"
 	     "These could be:\n"
 	     "left = 0\nright= <WindowWidth>\nbottom = <WindowHeight>\ntop=0\n"
@@ -312,7 +313,7 @@ static void rpy_NewPage(const pGEcontext gc, pDevDesc dd)
 }
 
 PyDoc_STRVAR(GrDev_newpage_doc,
-             "Create a new page for the graphical device.\n"
+             "Callback to implement: create a new page for the graphical device.\n"
 	     "If the device can only handle one page, "
 	     "the callback will have to eventually terminate clean an existing page.");
 static PyObject* GrDev_newpage(PyObject *self, PyObject *args)
@@ -354,7 +355,7 @@ static void rpy_Clip(double x0, double x1, double y0, double y1,
 }
 
 PyDoc_STRVAR(GrDev_clip_doc,
-             "Clip the graphical device.\n"
+             "Callback to implement: clip the graphical device.\n"
 	     "The callback method will receive 4 arguments (Python floats) corresponding "
 	     "to the x0, x1, y0, y1 respectively.");
 static PyObject* GrDev_clip(PyObject *self, PyObject *args)
@@ -398,6 +399,7 @@ static double rpy_StrWidth(const char *str, const pGEcontext gc, pDevDesc dd)
 }
 
 PyDoc_STRVAR(GrDev_strwidth_doc,
+	     "Callback to implement: strwidth(text) -> width\n\n"
              "Width (in pixels) of a text when represented on the graphical device.\n"
 	     "The callback will return a Python float (C double).");
 static PyObject* GrDev_strwidth(PyObject *self, PyObject *args)
@@ -445,7 +447,7 @@ static void rpy_Text(double x, double y, const char *str,
 }
 
 PyDoc_STRVAR(GrDev_text_doc,
-             "Display text.\n"
+             "Callback to implement: display text on the device.\n"
 	     "The callback will receive the parameters:\n"
 	     "x, y (position), string, rot (angle in degrees), hadj (some horizontal spacing parameter ?)");
 static PyObject* GrDev_text(PyObject *self, PyObject *args)
@@ -486,7 +488,7 @@ static void rpy_Rect(double x0, double x1, double y0, double y1,
 }
 
 PyDoc_STRVAR(GrDev_rect_doc,
-             "Draw a rectangle on the graphical device.\n"
+             "Callback to implement: draw a rectangle on the graphical device.\n"
 	     "The callback will receive 4 parameters x0, x1, y0, y1.");
 static PyObject* GrDev_rect(PyObject *self, PyObject *args)
 {
@@ -523,7 +525,7 @@ static void rpy_Circle(double x, double y, double r,
 }
 
 PyDoc_STRVAR(GrDev_circle_doc,
-             "Draw a circle on the graphical device.\n"
+             "Callback to implement: draw a circle on the graphical device.\n"
 	     "The callback will receive the parameters x, y, radius");
 static PyObject* GrDev_circle(PyObject *self, PyObject *args)
 {
@@ -563,7 +565,7 @@ static void rpy_Line(double x1, double y1,
 }
 
 PyDoc_STRVAR(GrDev_line_doc,
-             "Draw a line on the graphical device.\n"
+             "Callback to implement: draw a line on the graphical device.\n"
 	     "The callback will receive the arguments x1, y1, x2, y2.");
 static PyObject* GrDev_line(PyObject *self, PyObject *args)
 {
@@ -608,7 +610,7 @@ static void rpy_PolyLine(int n, double *x, double *y,
 }
 
 PyDoc_STRVAR(GrDev_polyline_doc,
-             "Draw a polyline on the graphical device.");
+             "Callback to implement: draw a polyline on the graphical device.");
 static PyObject* GrDev_polyline(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device polyline not implemented.");
@@ -652,7 +654,7 @@ static void rpy_Polygon(int n, double *x, double *y,
 }
 
 PyDoc_STRVAR(GrDev_polygon_doc,
-             "Draw a polygon on the graphical device.");
+             "Callback to implement: draw a polygon on the graphical device.");
 static PyObject* GrDev_polygon(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device polygon not implemented.");
@@ -710,7 +712,7 @@ static Rboolean rpy_Locator(double *x, double *y, pDevDesc dd)
 }
 
 PyDoc_STRVAR(GrDev_locator_doc,
-             "Locator on the graphical device.");
+             "Callback to implement: locator on the graphical device.");
 static PyObject* GrDev_locator(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device locator not implemented.");
@@ -742,7 +744,7 @@ static void rpy_Mode(int mode, pDevDesc dd)
 }
 
 PyDoc_STRVAR(GrDev_mode_doc,
-             "Mode on the graphical device.");
+             "Callback to implement: mode of the graphical device.");
 static PyObject* GrDev_mode(PyObject *self)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device mode not implemented.");
@@ -803,7 +805,7 @@ static void rpy_MetricInfo(int c, const pGEcontext gc,
 }
 
 PyDoc_STRVAR(GrDev_metricinfo_doc,
-             "MetricInfo on the graphical device.");
+             "Callback to implement: MetricInfo on the graphical device.");
 static PyObject* GrDev_metricinfo(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device metricinfo not implemented.");
@@ -850,7 +852,7 @@ static SEXP rpy_GetEvent(SEXP rho, const char *prompt)
 }
 
 PyDoc_STRVAR(GrDev_getevent_doc,
-             "Get even on the graphical device.");
+             "Callback to implement: get event on the graphical device.");
 static PyObject* GrDev_getevent(PyObject *self, PyObject *args)
 {
   PyErr_Format(PyExc_NotImplementedError, "Device getevent not implemented.");
