@@ -9,7 +9,6 @@ import sqlite3
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
 
-import conversion
 import packages
 import rpy2.rlike.container as rlc
 
@@ -47,6 +46,11 @@ __rd_meta = os.path.join('Meta', 'Rd.rds')
 __package_meta = os.path.join('Meta', 'package.rds')
 
 def create_metaRd_db(dbcon):
+    """ Create an database to store R help pages.
+
+    dbcon: database connection (assumed to be SQLite - may or may not work
+           with other databases)
+    """
     dbcon.execute('''
 CREATE TABLE package (
 name TEXT UNIQUE,
@@ -75,6 +79,14 @@ CREATE INDEX alias_idx ON rd_alias_meta (alias);
     dbcon.commit()
 
 def populate_metaRd_db(package_name, dbcon, package_path = None):
+    """ Populate a database with the meta-information
+    associated with an R package: version, description, title, and
+    aliases (those are what the R help system is organised around).
+
+    - package_name: a string
+    - dbcon: a database connection
+    - package_path: path the R package installation (default: None)
+    """
     if package_path is None:
         package_path = packages.get_packagepath(package_name)
 
@@ -319,7 +331,6 @@ class Package(object):
                                 devnull_func)
         p_res = Page(res, _type = _type)
         return p_res
-        #return conversion.ri2py(res)
 
     package_path = property(lambda self: str(self.__package_path),
                             None, None,
