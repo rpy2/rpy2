@@ -91,8 +91,12 @@ from rpy2.rinterface._rinterface import *
 
 
 # wrapper in case someone changes sys.stdout:
-def consolePrint(x):
-    sys.stdout.write(x)
+if sys.version_info[0] == 3:
+    def consolePrint(x):
+        sys.stdout.write(bytes(x, 'utf-8'))
+else:
+    def consolePrint(x):
+        sys.stdout.write(x)
 
 set_writeconsole(consolePrint)
 

@@ -33,7 +33,6 @@ class MethodsTestCase(unittest.TestCase):
         robjects.r['setClass']("R_A", robjects.r('list(foo="numeric")'))
         robjects.r['setMethod']("length", signature="R_A",
                                 definition = robjects.r("function(x) 123"))
-
         
         class R_A(methods.RS4):
             __metaclass__ = methods.RS4_Type
