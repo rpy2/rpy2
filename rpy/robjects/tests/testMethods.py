@@ -36,7 +36,6 @@ class MethodsTestCase(unittest.TestCase):
         
         class R_A(methods.RS4):
             __metaclass__ = methods.RS4_Type
-            __slots__ = ('get_length', 'length')
             __accessors__ = (('length', None,
                               'get_length', False, 'get the length'),
                              ('length', None,
