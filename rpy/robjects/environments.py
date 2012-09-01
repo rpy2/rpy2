@@ -2,12 +2,15 @@ import rpy2.rinterface as rinterface
 from rpy2.robjects.robject import RObjectMixin, RObject
 import conversion
 
+_new_env = rinterface.baseenv["new.env"]
+
 class Environment(RObjectMixin, rinterface.SexpEnvironment):
     """ An R environement. """
     
     def __init__(self, o=None):
         if o is None:
-            o = rinterface.baseenv["new.env"](hash=rinterface.SexpVector([True, ], rinterface.LGLSXP))
+            o = _new_env(hash=rinterface.SexpVector([True, ], 
+                                                    rinterface.LGLSXP))
         super(Environment, self).__init__(o)
 
     def __getitem__(self, item):

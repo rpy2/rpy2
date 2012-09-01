@@ -45,6 +45,21 @@ class PackagesTestCase(unittest.TestCase):
                           robjects.packages.Package,
                           env, "dummy_package")
 
+class SignatureTranslatedAnonymousPackagesTestCase(unittest.TestCase):
+    def testNew(self):
+        string = """
+   square <- function(x) {
+       return(x^2)
+   }
+
+   cube <- function(x) {
+       return(x^3)
+   }
+   """
+        powerpack = packages.SignatureTranslatedAnonymousPackage(string, "powerpack")
+        self.assertTrue(hasattr(powerpack, 'square'))
+        self.assertTrue(hasattr(powerpack, 'cube'))
+
 
 class ImportrTestCase(unittest.TestCase):
     def testImportStats(self):
@@ -61,6 +76,8 @@ class WherefromTestCase(unittest.TestCase):
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(PackagesTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ImportrTestCase))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(WherefromTestCase))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(SignatureTranslatedAnonymousPackagesTestCase))
     return suite
 
 if __name__ == '__main__':

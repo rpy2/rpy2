@@ -4,6 +4,7 @@ import rpy2.robjects.lib
 import conversion as conversion
 from rpy2.robjects.functions import SignatureTranslatedFunction
 from rpy2.robjects.constants import NULL
+from rpy2.robjects import Environment
 
 _require = rinterface.baseenv['require']
 _as_env = rinterface.baseenv['as.environment']
@@ -15,6 +16,20 @@ _find_package = rinterface.baseenv['.find.package']
 _packages = rinterface.baseenv['.packages']
 _libpaths = rinterface.baseenv['.libPaths']
 _loaded_namespaces = rinterface.baseenv['loadedNamespaces']
+_globalenv = rinterface.globalenv
+
+_reval = rinterface.baseenv['eval']
+
+def reval(string, envir = _globalenv):
+    """ Evaluate a string as R code
+    - string: a string
+    - envir: an environment in which the environment should take place
+             (default: R's global environment)
+    """
+    p = rinterface.parse(string)
+    res = _reval(p, envir = envir)
+    return res
+
 
 def quiet_require(name, lib_loc = None):
     """ Load an R package /quietly/ (suppressing messages to the console). """
@@ -116,6 +131,13 @@ class SignatureTranslatedPackage(Package):
             if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
                 self.__dict__[name] = SignatureTranslatedFunction(self.__dict__[name])
                 
+
+class SignatureTranslatedAnonymousPackage(SignatureTranslatedPackage):
+    def __init__(self, string, name):
+        env = Environment()
+        reval(string, env)
+        super(SignatureTranslatedAnonymousPackage, self).__init__(env,
+                                                                  name)
 
 class LibraryError(ImportError):
     """ Error occuring when importing an R library """

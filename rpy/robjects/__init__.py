@@ -30,6 +30,16 @@ from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Co
 
 _reval = rinterface.baseenv['eval']
 
+def reval(string, envir = _globalenv):
+    """ Evaluate a string as R code
+    - string: a string
+    - envir: an environment in which the environment should take place
+             (default: R's global environment)
+    """
+    p = rinterface.parse(string)
+    res = _reval(p, envir = envir)
+    return res
+
 #FIXME: close everything when leaving (check RPy for that).
 
 def default_ri2py(o):
