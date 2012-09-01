@@ -70,6 +70,54 @@ objects that are R functions see their named arguments translated as similar way
  'na_strings': 'na.strings',
  'strip_white': 'strip.white'}
 
+Importing arbitrary R code as a package
+---------------------------------------
+
+R packages are not the only way to distribute code. From this
+author's experience there exists R code circulating as .R files.
+
+This is most likely not a good thing, but as a Python developers
+this also what you might be given with the task to implement an
+application (such a web service) around that code. In most working
+places you will not have the option to refuse the code until
+it is packaged; fortunately rpy2 is trying to make this situation
+as simple as possible.
+
+It is possible to take R code in a string, such as for example
+the content of a .R file and wrap it up as an rpy2 R package.
+If you are given various R files, it is possible to wrap all
+of them into their own package-like structure, making concerns such conflicting
+names in the respective files unnecessary.
+
+
+
+.. code-block:: r
+
+   square <- function(x) {
+       return(x^2)
+   }
+
+   cube <- function(x) {
+       return(x^3)
+   }
+
+.. code-block:: python
+
+   string = """
+   square <- function(x) {
+       return(x^2)
+   }
+
+   cube <- function(x) {
+       return(x^3)
+   }
+   """
+
+   powerpack = SignatureTranslatedAnonymousPackage(string, "powerpack")
+
+The R functions `square` and `cube` can be called with `powerpack.square()`
+and `powerpack.cube`.
+
 
 R namespaces
 ^^^^^^^^^^^^
