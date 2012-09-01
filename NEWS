@@ -21,6 +21,8 @@ New Features
 
 - build dynamic help
 
+- build anonymous R packages from strings
+
 
 Changes
 -------
