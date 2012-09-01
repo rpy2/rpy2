@@ -3,6 +3,7 @@ import rpy2.robjects as robjects
 ri = robjects.rinterface
 import array, time, sys
 import rpy2.rlike.container as rlc
+from collections import OrderedDict
 
 IS_PYTHON3 = sys.version_info[0] == 3
 
@@ -160,7 +161,9 @@ class VectorTestCase(unittest.TestCase):
         self.assertEqual('[       1,        2,        3]', s[1])
 
     def testReprNonVectorInList(self):
-        vec = robjects.ListVector({'a': 1, 'b': robjects.Formula('y ~ x')})
+        vec = robjects.ListVector(OrderedDict((('a', 1), 
+                                               ('b', robjects.Formula('y ~ x')),
+                                               )))
         s = repr(vec).split('\n')
         self.assertEqual('[IntVector, Formula]', s[1])
 
