@@ -13,6 +13,9 @@ New Features
   PyRinteractive_IsInitialized() to assess whether R was initialized
   (through :mod:`rpy2.rinterface` or not).
 
+- C-module _rpy_device, allowing one to implement R graphical devices
+  in Python [(very) experimental]
+
 :mod:`rpy2.rinteractive`:
 
 - dynamic build of Python docstrings out of the R manual pages
