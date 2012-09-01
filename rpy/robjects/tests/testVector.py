@@ -209,13 +209,10 @@ _dateval_tuple = (1984, 1, 6, 6, 22, 0, 1, 6, 0)
 class DateTimeVectorTestCase(unittest.TestCase):
     
     def setUp(self):
-        if IS_PYTHON3:
-            self._accept2dyear = time.accept2dyear
         time.accept2dyear = False
 
     def tearDown(self):
-        if IS_PYTHON3:
-            time.accept2dyear = self._accept2dyear
+        pass
 
     def testPOSIXlt_fromInvalidPythonTime(self):
         x = [time.struct_time(_dateval_tuple), 
