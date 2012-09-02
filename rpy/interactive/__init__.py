@@ -61,8 +61,9 @@ def importr(packname, newname = None, verbose = False):
     """
 
     assert isinstance(packname, str)
-    packinstance = _importr(packname)
+    packinstance = _importr(packname, on_conflict = 'warn')
 
+    # fix the package name (dots possible in R package names)
     if newname is None:
         newname = packname.replace('.', '_')
 

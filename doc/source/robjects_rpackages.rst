@@ -41,22 +41,50 @@ differences:
   is performed (e.g., both 'print_me' and 'print.me' are present).
   Should it happen, a :class:`rpy2.robjects.packages.LibraryError` is raised.
   To avoid this, use the optional argument *robject_translations*
-	to :func:`importr`.
+  in the function :func:`importr`.
+  .. code-block:: python
 
-- The translation is concerning one package, limiting the risk
+     d = {'print.me': 'print_dot_me', 'print_me': 'print_uscore_me'}
+     thatpackage = importr('thatpackage', robject_translations = d)
+
+- Thanks to the module-like encapsulation,
+  translation is restricted to one package, limiting the risk
   of masking when compared to rpy translating relatively blindly and 
   retrieving the first match
 
+
+.. _robjects-packages-evildot:
+
 .. note:: 
 
-   The translation of '.' into '_' is clearly not sufficient, as
-   R symbols can use a lot more characters illegal in Python symbols.
-   Those more exotic symbols can be accessed through :attr:`__dict__`.
-   
-   Example:
+   There has been (sometimes vocal) concerns over the seemingly unnecessary
+   trouble with not translating blindly '.' into '_' for all R symbols in
+   packages, as rpy was doing it.
 
-   >>> utils.__dict__['?']
-   <Function - Python:0x913796c / R:0x9366fac>
+   Fortunately the R development team is providing 
+   a real-life example in R's standard library 
+   (the /recommended packages/) to demonstrate the point a final time: the
+   R package `tools` contains a function `package.dependencies`
+   and a function `package_dependencies`, with different behaviour,
+   signatures, and documentation pages.
+
+   If using :mod:`rpy2.robjects.packages`, we leave how to resolve this
+   up to you. One way is to do:
+
+   .. code-block:: python
+
+     d = {'package_dependencies': 'package_dot_dependencies',
+          'package_dependencies': 'package_uscore_dependencies'}
+     tools = importr('tools', robject_translations = d)
+
+The translation of '.' into '_' is clearly not sufficient, as
+R symbols can use a lot more characters illegal in Python symbols.
+Those more exotic symbols can be accessed through :attr:`__dict__`.
+   
+Example:
+
+>>> utils.__dict__['?']
+<Function - Python:0x913796c / R:0x9366fac>
 
 In addition to the translation of robjects symbols,
 objects that are R functions see their named arguments translated as similar way
