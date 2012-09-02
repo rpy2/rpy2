@@ -97,9 +97,11 @@ class Package(ModuleType):
                     rpyname = rname.replace('.', '_')
                     if rpyname in self._rpy2r:
                         msg = ('Conflict when converting R symbol'+\
+                                   ' in the package "%s"' +\
                                    ' to a Python symbol ' +\
                                    '(%s -> %s while there is already'+\
-                                   ' %s)') %(rname, rpyname,
+                                   ' %s)') %(self.__rname__,
+                                             rname, rpyname,
                                              rpyname)
                         raise LibraryError(msg)
                 else:
