@@ -125,6 +125,7 @@ files from a code repository (for example GitHub).
 Using a `snippet on stackoverflow`_:
 
 .. code-block:: r
+
    library(devtools)
    source_url('https://raw.github.com/hadley/stringr/master/R/c.r')
 
