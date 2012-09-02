@@ -1,4 +1,5 @@
 from types import ModuleType
+from warnings import warn
 import rpy2.rinterface as rinterface
 import rpy2.robjects.lib
 import conversion as conversion
@@ -62,9 +63,13 @@ class Package(ModuleType):
     _exported_names = None
 
     def __init__(self, env, name, translation = {}, 
-                 exported_names = None):
+                 exported_names = None, on_conflict = 'fail'):
         """ Create a Python module-like object from an R environment,
-        using the specified translation if defined. """
+        using the specified translation if defined. 
+
+        - on_conflict: 'fail' or 'warn' (default: 'fail')
+        """
+
         super(Package, self).__init__(name)
         self._env = env
         self.__rname__ = name
@@ -74,19 +79,24 @@ class Package(ModuleType):
         if exported_names is None:
             exported_names = set(self._env.keys())
         self._exported_names = exported_names
-        self.__fill_rpy2r__()
-        self.__update_dict__()
+        self.__fill_rpy2r__(on_conflict = on_conflict)
         self._exported_names = self._exported_names.difference(mynames)
                 
-    def __update_dict__(self):
+    def __update_dict__(self, on_conflict = 'fail'):
         """ Update the __dict__ according to what is in the R environment """
         for elt in self._rpy2r:
             del(self.__dict__[elt])
-        self._rpy2r = {}
-        self.__fill_rpy2r__()
+        self._rpy2r.clear()
+        self.__fill_rpy2r__(on_conflict = on_conflict)
 
-    def __fill_rpy2r__(self):
-        """ Fill the attribute _rpy2r """
+    def __fill_rpy2r__(self, on_conflict = 'fail'):
+        """ Fill the attribute _rpy2r.
+
+        - on_conflict: 'fail' or 'warn' (default: 'fail')
+        """
+
+        assert(on_conflict in ('fail', 'warn'))
+
         name = self.__rname__
         for rname in self._env:
             if rname in self._translation:
@@ -103,12 +113,16 @@ class Package(ModuleType):
                                    ' %s)') %(self.__rname__,
                                              rname, rpyname,
                                              rpyname)
-                        raise LibraryError(msg)
+                        if on_conflict == 'fail':
+                            raise LibraryError(msg)
+                        else:
+                            warn(msg)
+                            continue
                 else:
                     rpyname = rname
                 if rpyname in self.__dict__ or rpyname == '__dict__':
                     raise LibraryError('The symbol ' + rname +\
-                                       ' in the package ' + name + \
+                                       ' in the package "' + name + '"' +\
                                        ' is conflicting with ' +\
                                        'a Python object attribute')
             self._rpy2r[rpyname] = rname
@@ -127,8 +141,8 @@ class Package(ModuleType):
         return 'rpy2.robjecs.packages.Package as a ' + s
 
 class SignatureTranslatedPackage(Package):
-    def __fill_rpy2r__(self):
-        super(SignatureTranslatedPackage, self).__fill_rpy2r__()
+    def __fill_rpy2r__(self, on_conflict = 'fail'):
+        super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
         for name, robj in self.__dict__.iteritems():
             if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
                 self.__dict__[name] = SignatureTranslatedFunction(self.__dict__[name])
@@ -149,8 +163,10 @@ class LibraryError(ImportError):
 
 def importr(name, 
             lib_loc = None,
-            robject_translations = {}, signature_translation = True,
-            suppress_messages = True):
+            robject_translations = {}, 
+            signature_translation = True,
+            suppress_messages = True,
+            on_conflict = 'fail'):
     """ Import an R package.
 
     Arguments:
@@ -165,6 +181,8 @@ def importr(name,
 
     - suppress_message: Suppress messages R usually writes on the console
       (defaut: True)
+
+      - on_conflict: 'fail' or 'warn' (default: 'fail')
 
     Return:
 
@@ -191,10 +209,12 @@ def importr(name,
     if signature_translation:
         pack = SignatureTranslatedPackage(env, name, 
                                           translation = robject_translations,
-                                          exported_names = exported_names)
+                                          exported_names = exported_names,
+                                          on_conflict = on_conflict)
     else:
         pack = Package(env, name, translation = robject_translations,
-                       exported_names = exported_names)
+                       exported_names = exported_names,
+                       on_conflict = on_conflict)
         
     return pack
 
