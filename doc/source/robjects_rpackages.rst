@@ -118,6 +118,51 @@ names in the respective files unnecessary.
 The R functions `square` and `cube` can be called with `powerpack.square()`
 and `powerpack.cube`.
 
+Package-less R code can be accessible from an URL, and some R users
+will just source it from the URL. A recent use-case is to source
+files from a code repository (for example GitHub).
+
+Using a `snippet on stackoverflow`_:
+
+.. code-block:: r
+   library(devtools)
+   source_url('https://raw.github.com/hadley/stringr/master/R/c.r')
+
+.. _snippet on stackoverflow: http://stackoverflow.com/questions/7715723/sourcing-r-script-over-https
+
+.. note::
+
+   If concerned about computer security, you'll want to think about 
+   the origin of the code and to which level you trust the origin
+   to be what it really is.
+
+Python has utilities to read data from URLs.
+
+
+.. code-block:: python
+
+   import urllib2
+   from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
+
+   bioc_url = urllib2.urlopen('https://raw.github.com/hadley/stringr/master/R/c.r')
+   string = ''.join(bioc_url.readlines())
+
+   stringr_c = SignatureTranslatedAnonymousPackage(string, "stringr_c")
+
+The object `stringr_c` encapsulates the funtions defined in the R file
+into something like what the rpy2 `importr` is returning.
+
+>>> type(stringr_c)
+rpy2.robjects.packages.SignatureTranslatedAnonymousPackage
+>>> stringr_c._rpy2r.keys()
+['str_join', 'str_c']
+
+Unlike the R code first shown, this is not writing anything into the 
+the R global environment.
+
+>>> from rpy2.robjects import globalenv
+>>> globalenv.keys()
+()
 
 R namespaces
 ^^^^^^^^^^^^
