@@ -2,25 +2,12 @@
 Related projects
 ****************
 
+Other interfaces
+================
 
-rnumpy
-======
+The `rtools <http://pypi.python.org/pypi/rtools>`_ package proposes
+variations on the higher-level interface in rpy2.
 
-.. warning::
-
-   :mod:`rnumpy` was developped for rpy2-2.0.x series and few modifications
-   to it might be needed in order for it to work with more recent versions
-   of rpy2.
-
-The :mod:`rnumpy` interface builds on :mod:`rpy2.rinterface`
-and offers a different approach to the one in :mod:`rpy2.robjects`.
-
-Users familiar with :mod:`numpy` and with working in interactive sessions 
-with *ipython* (more on ipython at :ref:`interactive-sessions`) 
-will want to have a look at it.
-
-More details can be found on the 
-`rnumpy page <http://bitbucket.org/njs/rnumpy/wiki/Home>`_
 
 Bioinformatics
 ==============
@@ -29,7 +16,7 @@ Cloud computing
 ---------------
 
 `rpy2` is among the many bioinformatics-oriented packages
-provided `CloudBioLinux <http://cloudbiolinux.org/>`_. Check it out if
+provided with `CloudBioLinux <http://cloudbiolinux.org/>`_. Check it out if
 you are considering a project involving cloud computing.
 
 
@@ -37,8 +24,9 @@ Bioconductor
 ------------
 
 Bioconductor is a popular set of R packages for bioinformatics.
-A number of classes defined within that project are exposed as Python classes through rpy2,
-in the project `rpy2-bioconductor-extensions <http://pypi.python.org/pypi/rpy2-bioconductor-extensions/0.2-dev>`_.
+A number of classes defined within that project are exposed as Python
+classes through rpy2,
+in the project `rpy2-bioconductor-extensions <http://pypi.python.org/pypi/rpy2-bioconductor-extensions/0.2-dev>`_. The bioconductor project is evolving quite rapidely the mapping might not longer be working.
 
 The `blog of Brad Chapman <http://bcbio.wordpress.com/>`_ also has good examples about how to use `rpy2` for bioinformatics tasks (or Python for bioinformatics
 in general).
@@ -63,10 +51,31 @@ want it when working with :mod:`rpy2`.
 
 Obviously the Python console can be used, but there exist improvements to it, making
 the user experience more pleasant with features such as history and autocompletion.
-Example of such enhanced consoles are:
 
-* ipython: interactive-python shell, developed under of the `scipy <http://scipy.org>`
-  (Scientific Python) umbrella
+ipython: interactive-python shell
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Developed under of the `scipy <http://scipy.org>` (Scientific Python) umbrella,
+ipython has an "R magic" mode since its release 0.13.
+
+Ipython has also a system of noteboks and a server backend,
+very convenient for running R on remote servers. Check its
+documentation. 
+
+.. note::
+
+   Historical note:
+   
+   The "R magic" bears similarities with the extension to rpy2 :mod:`rnumpy`,
+   developped for rpy2-2.0.x series and seemingly unmaintained since then.
+
+   More details on rnumpy can be found on the 
+   `rnumpy page <http://bitbucket.org/njs/rnumpy/wiki/Home>`_
+
+
+
+Other interactive environments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * bpython: curse-based enhancement to the Python console
 
