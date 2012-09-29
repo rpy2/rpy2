@@ -16,6 +16,12 @@ New Features
 - C-module _rpy_device, allowing one to implement R graphical devices
   in Python [(very) experimental]
 
+- Tracking of R objects kept protected from garbage collection by rpy2
+  is now possible.
+
+- New method :meth:`Sexp.rid` to return the identifier of the R object
+  represented by a Python/rpy2 object
+
 :mod:`rpy2.rinteractive`:
 
 - dynamic build of Python docstrings out of the R manual pages

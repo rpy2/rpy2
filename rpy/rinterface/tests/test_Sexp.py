@@ -129,11 +129,14 @@ class SexpTestCase(unittest.TestCase):
         self.assertFalse(sexp.rsame(sexp3))
         self.assertEqual(0, sexp3.named)
 
+    def testRID(self):
+        globalenv_id = rinterface.baseenv.get('.GlobalEnv').rid
+        self.assertEquals(globalenv_id, rinterface.globalenv.rid)
+        
 class RNULLTestCase(unittest.TestCase):
     def testRNULLType_nonzero(self):
         NULL = rinterface.RNULLType()
         self.assertFalse(NULL)
-
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpTestCase)
