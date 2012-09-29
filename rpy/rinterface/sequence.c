@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  * 
- * Copyright (C) 2008-2011 Laurent Gautier
+ * Copyright (C) 2008-2012 Laurent Gautier
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -1048,7 +1048,8 @@ VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
 	return -1;
       }
       
-      R_PreserveObject(sexp);
+      //R_PreserveObject(sexp);
+      Rpy_PreserveObject(sexp);
 #ifdef RPY_DEBUG_PRESERVE
       preserved_robjects += 1;
       printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
