@@ -370,6 +370,20 @@ Sexp_rclass_get(PyObject *self)
 PyDoc_STRVAR(Sexp_rclass_doc,
              "R class name");
 
+static PyObject*
+Sexp_rid_get(PyObject *self)
+{
+  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return NULL;;
+  }
+  PyObject *res = PyLong_FromVoidPtr((void *)sexp);
+  return res;
+}
+PyDoc_STRVAR(Sexp_rid_doc,
+             "ID for the associated R object (Hint: that's a memory address)");
+
 
 static PyObject*
 Sexp_refcount_get(PyObject *self)
@@ -629,6 +643,10 @@ static PyGetSetDef Sexp_getsets[] = {
    (getter)Sexp_rclass_get,
    (setter)0,
    Sexp_rclass_doc},
+  {"rid", 
+   (getter)Sexp_rid_get,
+   (setter)0,
+   Sexp_rid_doc},
   {"__sexp__",
    (getter)Sexp_sexp_get,
    (setter)Sexp_sexp_set,
