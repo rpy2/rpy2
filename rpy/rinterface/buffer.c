@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  * 
- * Copyright (C) 2008-2011 Laurent Gautier
+ * Copyright (C) 2008-2012 Laurent Gautier
  * 
  * Portions created by Alexander Belopolsky are 
  * Copyright (C) 2006 Alexander Belopolsky.

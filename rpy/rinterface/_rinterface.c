@@ -23,7 +23,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  * 
- * Copyright (C) 2008-2011 Laurent Gautier
+ * Copyright (C) 2008-2012 Laurent Gautier
  *
  * Portions created by Alexander Belopolsky are 
  * Copyright (C) 2006 Alexander Belopolsky.
@@ -1274,6 +1274,9 @@ static PyObject* EmbeddedR_init(PyObject *self)
   RPY_SEXP((PySexpObject *)RNULL_Type_New(0)) = R_NilValue;
   RPY_SEXP((PySexpObject *)UnboundValue_Type_New(0)) = R_UnboundValue;
   RPY_SEXP(rpy_R_NilValue) = R_NilValue;
+  PROTECT(RPY_R_Precious = allocVector(LISTSXP, 0));
+  UNPROTECT(1);
+  R_PreserveObject(RPY_R_Precious);
 
   errMessage_SEXP = findVar(install("geterrmessage"), 
                             R_BaseNamespace);
@@ -1288,7 +1291,8 @@ static PyObject* EmbeddedR_init(PyObject *self)
   PROTECT(type_tag = allocVector(STRSXP, 1));
   SET_STRING_ELT(type_tag, 0, mkChar("Python"));
   UNPROTECT(1);
-  R_PreserveObject(type_tag);
+  //R_PreserveObject(type_tag);
+  Rpy_PreserveObject(type_tag);
   RPY_SEXP(R_PyObject_type_tag) = type_tag;
 
   /* register the symbols */
@@ -2610,7 +2614,8 @@ static PySexpObject*
   }
   /*FIXME: recode to have the test for NILSXP in a cleaner workflow */
   if (sexp_ok && preserve && TYPEOF(sexp_ok) != NILSXP) {
-    R_PreserveObject(sexp_ok);
+    //R_PreserveObject(sexp_ok);
+    Rpy_PreserveObject(sexp_ok);
 #ifdef RPY_DEBUG_PRESERVE
     preserved_robjects += 1;
     printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
@@ -2660,8 +2665,10 @@ static PySexpObject*
     preserved_robjects -= 1;
     printf("-- %i\n", preserved_robjects);
 #endif
-    if (preserve)
-      R_ReleaseObject(sexp_ok);
+    if (preserve) {
+      //R_ReleaseObject(sexp_ok);
+      Rpy_ReleaseObject(sexp_ok);
+    }
     PyErr_NoMemory();
     return NULL;
   }
@@ -2936,7 +2943,8 @@ newSEXP(PyObject *object, int rType)
   Py_DECREF(seq_object);
 
   if (sexp != NULL) {
-    R_PreserveObject(sexp);
+    //R_PreserveObject(sexp);
+    Rpy_PreserveObject(sexp);
 #ifdef RPY_DEBUG_PRESERVE
     preserved_robjects += 1;
     printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
@@ -3061,6 +3069,8 @@ static PyMethodDef EmbeddedR_methods[] = {
   {"unserialize",       (PyCFunction)EmbeddedR_unserialize, METH_VARARGS,
    "unserialize(str, rtype)\n"
    "Unserialize an R object from its string representation."},
+  {"protected_rids", (PyCFunction)Rpy_ProtectedIDs, METH_NOARGS,
+   Rpy_ProtectedIDs_doc},
   {NULL,                NULL}           /* sentinel */
 };
 
