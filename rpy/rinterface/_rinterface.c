@@ -1274,9 +1274,10 @@ static PyObject* EmbeddedR_init(PyObject *self)
   RPY_SEXP((PySexpObject *)RNULL_Type_New(0)) = R_NilValue;
   RPY_SEXP((PySexpObject *)UnboundValue_Type_New(0)) = R_UnboundValue;
   RPY_SEXP(rpy_R_NilValue) = R_NilValue;
-  PROTECT(RPY_R_Precious = allocVector(LISTSXP, 0));
-  UNPROTECT(1);
-  R_PreserveObject(RPY_R_Precious);
+  //PROTECT(RPY_R_Precious = allocVector(LISTSXP, 0));
+  //UNPROTECT(1);
+  //R_PreserveObject(RPY_R_Precious);
+  RPY_R_Precious = PyDict_New();
 
   errMessage_SEXP = findVar(install("geterrmessage"), 
                             R_BaseNamespace);
