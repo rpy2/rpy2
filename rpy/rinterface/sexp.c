@@ -55,7 +55,8 @@ void SexpObject_clear(SexpObject *sexpobj)
       preserved_robjects -= 1;
       printf("-- %i\n", preserved_robjects);
 #endif 
-    R_ReleaseObject(sexpobj->sexp);
+      //R_ReleaseObject(sexpobj->sexp);
+      Rpy_ReleaseObject(sexpobj->sexp);
     }
     PyMem_Free(sexpobj);
     /* self->ob_type->tp_free((PyObject*)self); */
