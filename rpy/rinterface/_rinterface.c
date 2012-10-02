@@ -1267,17 +1267,27 @@ static PyObject* EmbeddedR_init(PyObject *self)
   embeddedR_isInitialized = Py_True;
   Py_INCREF(embeddedR_isInitialized);
 
-  RPY_SEXP(globalEnv) = R_GlobalEnv;
-  RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
-  RPY_SEXP(emptyEnv) = R_EmptyEnv;
-  RPY_SEXP((PySexpObject *)MissingArg_Type_New(0)) = R_MissingArg;
-  RPY_SEXP((PySexpObject *)RNULL_Type_New(0)) = R_NilValue;
-  RPY_SEXP((PySexpObject *)UnboundValue_Type_New(0)) = R_UnboundValue;
-  RPY_SEXP(rpy_R_NilValue) = R_NilValue;
+  /* FIXME: Attempt at using a container distinct from R's PreciousList */
+  /* (currently replaced by a Python dict and R's PreciousList) */
   //PROTECT(RPY_R_Precious = allocVector(LISTSXP, 0));
   //UNPROTECT(1);
   //R_PreserveObject(RPY_R_Precious);
   RPY_R_Precious = PyDict_New();
+
+  RPY_SEXP(globalEnv) = R_GlobalEnv;
+  Rpy_PreserveObject(R_GlobalEnv);
+
+  RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
+  Rpy_PreserveObject(R_BaseNamespace);
+
+  RPY_SEXP(emptyEnv) = R_EmptyEnv;
+  Rpy_PreserveObject(R_EmptyEnv);
+
+  RPY_SEXP((PySexpObject *)MissingArg_Type_New(0)) = R_MissingArg;
+  RPY_SEXP((PySexpObject *)RNULL_Type_New(0)) = R_NilValue;
+  RPY_SEXP((PySexpObject *)UnboundValue_Type_New(0)) = R_UnboundValue;
+  RPY_SEXP(rpy_R_NilValue) = R_NilValue;
+
 
   errMessage_SEXP = findVar(install("geterrmessage"), 
                             R_BaseNamespace);

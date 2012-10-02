@@ -28,6 +28,17 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+/* 
+ * As usual with rpy2, we have a Python objects that exposes an R object.
+ * In this file the type is ExtPtrSexp and the R object is an
+ * "external pointer" object that points to a 
+ * Python object. This allows us to pass around a Python object within
+ * the R side of rpy2.
+ *
+ * 
+*/
+
+
 /* Finalizer for R external pointers that are arbitrary Python objects */
 static void
 R_PyObject_decref(SEXP s)
@@ -94,6 +105,7 @@ ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   R_RegisterCFinalizerEx(rres, (R_CFinalizer_t)R_PyObject_decref, TRUE);
   UNPROTECT(1);
   RPY_SEXP(self) = rres;
+  Rpy_PreserveObject(rres);
 
 #ifdef RPY_VERBOSE
   printf("done.\n");

@@ -10,6 +10,7 @@ static void embeddedR_freelock(void);
 static unsigned int rpy_has_status(unsigned int);
 static unsigned int embeddedR_status;
 static void Rpy_PreserveObject(SEXP object);
+static int _Rpy_PreserveObject(SEXP object);
 static Py_ssize_t Rpy_ReleaseObject(SEXP object);
 #endif
 

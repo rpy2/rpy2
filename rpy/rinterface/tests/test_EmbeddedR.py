@@ -182,13 +182,13 @@ except Exception%s e:
         self.assertFalse(ret_code is None) # Interruption failed
 
     def testRpyMemory(self):
-        x = rinterface.SexpVector(xrange(10), ri.INTSXP)
-        y = rinterface.SexpVector(xrange(10), ri.INTSXP)
+        x = rinterface.SexpVector(xrange(10), rinterface.INTSXP)
+        y = rinterface.SexpVector(xrange(10), rinterface.INTSXP)
         x_rid = x.rid
-        self.assertTrue(x_rid in ri.protected_rids())
+        self.assertTrue(x_rid in rinterface.protected_rids())
         del(x)
         gc.collect(); gc.collect()
-        self.assertFalse(x_rid in ri.protected_rids())
+        self.assertFalse(x_rid in rinterface.protected_rids())
 
 class CallbacksTestCase(unittest.TestCase):
     def tearDown(self):
