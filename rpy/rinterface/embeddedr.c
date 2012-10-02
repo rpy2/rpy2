@@ -21,12 +21,8 @@ static inline unsigned int rpy_has_status(unsigned int status) {
   return (embeddedR_status & status) == status;
 }
 
-static inline void Rpy_PreserveObject(SEXP object) {
-  /* R_ReleaseObject(RPY_R_Precious); */
-  /* PROTECT(RPY_R_Precious); */
-  /* RPY_R_Precious = CONS(object, RPY_R_Precious); */
-  /* UNPROTECT(1); */
-  /* R_PreserveObject(RPY_R_Precious); */
+/* Keep track of R objects preserved by rpy2 */
+static int _Rpy_PreserveObject(SEXP object) {
   PyObject *key = PyLong_FromVoidPtr((void *)object);
   PyObject *val = PyDict_GetItem(RPY_R_Precious, key);
   /* val is a borrowed reference */
@@ -40,6 +36,16 @@ static inline void Rpy_PreserveObject(SEXP object) {
   PyObject *newval = PyLong_FromLong(val_count);
   int res = PyDict_SetItem(RPY_R_Precious, key, newval);
   Py_DECREF(newval);
+  return res;
+} 
+
+static void Rpy_PreserveObject(SEXP object) {
+  /* R_ReleaseObject(RPY_R_Precious); */
+  /* PROTECT(RPY_R_Precious); */
+  /* RPY_R_Precious = CONS(object, RPY_R_Precious); */
+  /* UNPROTECT(1); */
+  /* R_PreserveObject(RPY_R_Precious); */
+  int res = _Rpy_PreserveObject(object);
   if (res == -1) {
     printf("Error while logging preserved object\n");
   }
@@ -47,14 +53,12 @@ static inline void Rpy_PreserveObject(SEXP object) {
 }
 
 static Py_ssize_t Rpy_ReleaseObject(SEXP object) {
-  PyObject *ikey, *ivalue;
-  Py_ssize_t ipos = 0;
-
   PyObject *key = PyLong_FromVoidPtr((void *)object);
   PyObject *val = PyDict_GetItem(RPY_R_Precious, key);
   PyObject *newval;
   if (val == NULL) {
-    printf("Releasing a non-preserved object (!?)\n");
+    printf("Error: Trying to release object ID %ld while not preserved\n",
+	   PyLong_AsLong(key));
     return -1;
   } 
   long val_count = PyLong_AsLong(val);
@@ -62,12 +66,14 @@ static Py_ssize_t Rpy_ReleaseObject(SEXP object) {
 
   switch (val_count) {
   case 0:
-    printf("Preserved object with a count of zero (!?)\n");
+    printf("Error: Preserved object ID %ld with a count of zero\n",
+	   PyLong_AsLong(key));
     break;
   case 1:
     res = PyDict_DelItem(RPY_R_Precious, key);
     if (res == -1)
-      printf("Error while deleting preserved object\n");    
+      printf("Error: Occured while deleting preserved object ID %ld\n", 
+	     PyLong_AsLong(key));    
     break;
   default:
     val_count--;
@@ -75,7 +81,8 @@ static Py_ssize_t Rpy_ReleaseObject(SEXP object) {
     res = PyDict_SetItem(RPY_R_Precious, key, newval);
     Py_DECREF(newval);
     if (res == -1)
-      printf("Error while logging preserved object\n");    
+      printf("Error: Decrementing count for reserved object ID %ld\n",
+	     PyLong_AsLong(key));    
     break;
   }
   R_ReleaseObject(object);
