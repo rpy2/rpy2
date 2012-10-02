@@ -5,6 +5,6 @@
 #error rexternalptr.h should not be included
 #endif
 
-static SEXP R_PyObject_decref(SEXP s);
+static void R_PyObject_decref(SEXP s);
 
 #endif

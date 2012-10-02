@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 /* Finalizer for R external pointers that are arbitrary Python objects */
-static SEXP
+static void
 R_PyObject_decref(SEXP s)
 {
   PyObject* pyo = (PyObject*)R_ExternalPtrAddr(s);
@@ -74,8 +74,8 @@ ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
     return -1;
   }
   
-  /*FIXME: twist here - MakeExternalPtr will "preserve" the tag
-   * but the tag is already preserved (when exposed as a Python object) */
+  /*FIXME: twist here - MakeExternalPtr will "preserve" the tag */
+  /* but the tag is already preserved (when exposed as a Python object) */
   /* R_ReleaseObject(pytag->sObj->sexp); */
   SEXP rtag, rprotected, rres;
   if (pytag == Py_None) {
@@ -90,7 +90,9 @@ ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   }
   Py_INCREF(pyextptr);
   rres  = R_MakeExternalPtr(pyextptr, rtag, rprotected);
-  R_RegisterCFinalizer(rres, (R_CFinalizer_t)R_PyObject_decref);
+  PROTECT(rres);
+  R_RegisterCFinalizerEx(rres, (R_CFinalizer_t)R_PyObject_decref, TRUE);
+  UNPROTECT(1);
   RPY_SEXP(self) = rres;
 
 #ifdef RPY_VERBOSE
