@@ -48,7 +48,6 @@ R_PyObject_decref(SEXP s)
     Py_DECREF(pyo);
     R_ClearExternalPtr(s);
   }
-  return R_NilValue;
 }
 
 

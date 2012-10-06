@@ -105,12 +105,25 @@ class SexpTestCase(unittest.TestCase):
 
     def testSexp_sexp_destroyCobj(self):
         sexp = rinterface.IntSexpVector([1,2,3])
+        self.assertEquals(1, sexp.__sexp_refcount__)
         cobj = sexp.__sexp__
+        self.assertEquals(2, sexp.__sexp_refcount__)
         del(cobj)
         gc.collect()
-        # no real test, just make sure that it does
+        self.assertEquals(1, sexp.__sexp_refcount__)
+        del(sexp)
+        gc.collect()
+        # no real test after, just make sure that it does
         # not cause a segfault
 
+    def testSexp_sexp_set(self):
+        x = rinterface.IntSexpVector([1,2,3])
+        x_s = x.__sexp__
+        self.assertEquals(2, x.__sexp_refcount__)
+        y = rinterface.IntSexpVector([4,5,6])
+        x.__sexp__ = y.__sexp__
+        self.assertEquals(2, x.__sexp_refcount__)
+        self.assertEquals(x.__sexp_refcount__, y.__sexp_refcount__)
         
     def testSexp_deepcopy(self):
         sexp = rinterface.IntSexpVector([1,2,3])
