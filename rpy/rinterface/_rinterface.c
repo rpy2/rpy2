@@ -278,7 +278,7 @@ static inline PyObject* EmbeddedR_setAnyCallback(PyObject *self,
                                                  PyObject **target)
 {
   
-  PyObject *result = NULL;
+  PyObject *result;
   PyObject *function;
   
   if ( PyArg_ParseTuple(args, "O:console", 
@@ -300,6 +300,7 @@ static inline PyObject* EmbeddedR_setAnyCallback(PyObject *self,
     result = Py_None;
   } else {
     PyErr_SetString(PyExc_TypeError, "The parameter should be a callable.");
+    return NULL;
   }
   return result;
   
@@ -852,20 +853,19 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
   if (! arglist) {
     PyErr_Print();
     PyErr_NoMemory();
-    /*FIXME: decref PyObject arguments ?*/
+    /* FIXME: decref PyObject arguments ? */
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
 
   result = PyEval_CallObject(showFilesCallback, arglist);
 
-  PyObject* pythonerror = PyErr_Occurred();
-  if (pythonerror != NULL) {
+  if (PyErr_Occurred()) {
     /* All R actions should be stopped since the Python callback failed,
      and the Python exception raised up.*/
     /* FIXME: Print the exception in the meanwhile */
     PyErr_Print();
-    //PyErr_Clear();
+    PyErr_Clear();
     Py_XDECREF(arglist);
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
@@ -873,6 +873,7 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
   
   if (result == NULL) {
     /* FIXME: can this be reached ? result == NULL while no error ? */
+    printf("Error: trouble with chooseFileCallback, we should not be here.\n");
     Py_XDECREF(arglist);
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
@@ -1533,7 +1534,6 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 #else 
   PyOS_setsig(SIGINT, python_sighandler);
 #endif
-
   if (errorOccurred) {
     res_R = R_NilValue;
     if (interrupted) {
@@ -1729,14 +1729,15 @@ Sexp_rcall(PyObject *self, PyObject *args)
   PROTECT(res_R = do_eval_expr(call_R, RPY_SEXP((PySexpObject *)env)));
   protect_count += 1;
 
-  if (res_R == R_NilValue) {
+  if (PyErr_Occurred()) {
     /* Python exception set during the call to do_eval_expr() */
-    if (! PyErr_Occurred() ) {
-      printf("Error: R_NilValue returned while no exception set.\n");
+    if (res_R == R_NilValue) {
+      UNPROTECT(protect_count);
+      embeddedR_freelock();
+      return NULL;
+    } else {
+      printf("Warning: Exception while result not R_NilValue.\n");
     }
-    UNPROTECT(protect_count);
-    embeddedR_freelock();
-    return NULL;
   }
 
   /* FIXME: standardize R outputs */
