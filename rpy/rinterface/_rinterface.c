@@ -149,7 +149,7 @@ int interrupted = 0;
 static void
 interrupt_R(int signum)
 {
-  /* printf('interrupted.\n'); */
+  printf("-->interrupted.\n");
   interrupted = 1;
   error("Interrupted");
 }
@@ -670,6 +670,10 @@ static PyObject * EmbeddedR_getChooseFile(PyObject *self,
 PyDoc_STRVAR(EmbeddedR_getChooseFile_doc,
              "Retrieve current R console output handler (see setChooseFile).");
 
+/* Callback to replace R's default function for choosing a file
+   This return 1 on success, 0 on failure.
+   In the case of failure the calling function will fail as 
+*/
 static int
 EmbeddedR_ChooseFile(int new, char *buf, int len)
 {
@@ -711,6 +715,7 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   
   if (result == NULL) {
     /* FIXME: can this be reached ? result == NULL while no error ? */
+    printf("Error: trouble with chooseFileCallback, we should not be here.\n");
     Py_XDECREF(arglist);
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
@@ -787,7 +792,7 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
-   
+  
   if (nfile < 1) {
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
@@ -847,7 +852,7 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
   if (! arglist) {
     PyErr_Print();
     PyErr_NoMemory();
-    /*FIXME: decref PyObject arguments */
+    /*FIXME: decref PyObject arguments ?*/
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
@@ -1272,7 +1277,6 @@ static PyObject* EmbeddedR_init(PyObject *self)
   //PROTECT(RPY_R_Precious = allocVector(LISTSXP, 0));
   //UNPROTECT(1);
   //R_PreserveObject(RPY_R_Precious);
-  RPY_R_Precious = PyDict_New();
 
   RPY_SEXP(globalEnv) = R_GlobalEnv;
   Rpy_PreserveObject(R_GlobalEnv);
@@ -1407,6 +1411,7 @@ PyDoc_STRVAR(EmbeddedR_setinteractive_doc,
 
 
 
+/* Create a Python exception from an R error */
 static void
 EmbeddedR_exception_from_errmessage(void)
 {
@@ -1416,8 +1421,8 @@ EmbeddedR_exception_from_errmessage(void)
   SETCAR(expr, errMessage_SEXP);
   PROTECT(res = Rf_eval(expr, R_GlobalEnv));
   const char *message = CHARACTER_VALUE(res);
-  UNPROTECT(2);
   PyErr_SetString(RPyExc_RuntimeError, message);
+  UNPROTECT(2);
 }
 
 
@@ -1494,11 +1499,11 @@ EmbeddedR_parse(PyObject *self, PyObject *pystring)
 
 
 /* Evaluate a SEXP. It must be constructed by hand. It raises a Python
-   exception if an error ocurred in the evaluation */
+   exception if an error ocurred during the evaluation */
 SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 
-  SEXP res_R = NULL;
-  int error = 0;
+  SEXP res_R = R_NilValue;
+  int errorOccurred = 0;
 
   /* FIXME: if env_R is null, use R_BaseEnv
    * shouldn't it be R_GlobalContext (but then it throws a NULL error) ? */
@@ -1518,9 +1523,9 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 
   python_sighandler = last_sighandler;
 
-  /* FIXME: evaluate expression in the given */
+  /* FIXME: evaluate expression in the given environment */
   interrupted = 0;
-  res_R = R_tryEval(expr_R, env_R, &error);
+  res_R = R_tryEval(expr_R, env_R, &errorOccurred);
 
   /* Py_END_ALLOW_THREADS */
 #ifdef _WIN32
@@ -1529,8 +1534,8 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
   PyOS_setsig(SIGINT, python_sighandler);
 #endif
 
-  /* printf("interrupted: %i\n", interrupted); */
-  if (error) {
+  if (errorOccurred) {
+    res_R = R_NilValue;
     if (interrupted) {
       printf("Keyboard interrupt.\n");
       PyErr_SetNone(PyExc_KeyboardInterrupt);
@@ -1538,7 +1543,6 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
     } else {
       EmbeddedR_exception_from_errmessage();
     }
-    return NULL;
   }
   return res_R;
 }
@@ -1547,7 +1551,7 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 
 static PyTypeObject EnvironmentSexp_Type;
 
-/* This is the method to call when invoking an 'Sexp' */
+/* This is the method to call when invoking a 'Sexp' */
 static PyObject *
 Sexp_rcall(PyObject *self, PyObject *args)
 {
@@ -1725,9 +1729,11 @@ Sexp_rcall(PyObject *self, PyObject *args)
   PROTECT(res_R = do_eval_expr(call_R, RPY_SEXP((PySexpObject *)env)));
   protect_count += 1;
 
-  if (! res_R) {
-    /* EmbeddedR_exception_from_errmessage(); */
-    /* PyErr_Format(PyExc_RuntimeError, "Error while running R code"); */
+  if (res_R == R_NilValue) {
+    /* Python exception set during the call to do_eval_expr() */
+    if (! PyErr_Occurred() ) {
+      printf("Error: R_NilValue returned while no exception set.\n");
+    }
     UNPROTECT(protect_count);
     embeddedR_freelock();
     return NULL;
@@ -1830,6 +1836,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   PyTuple_SET_ITEM(new_args, 1, (PyObject *)globalEnv);
 
   res = Sexp_rcall(self, new_args);
+
   Py_DECREF(new_args);
   return res;
 }
@@ -2623,10 +2630,16 @@ static PySexpObject*
   else {
     sexp_ok = sexp;
   }
+
+  int preserve_status;
   /*FIXME: recode to have the test for NILSXP in a cleaner workflow */
   if (sexp_ok && preserve && TYPEOF(sexp_ok) != NILSXP) {
     //R_PreserveObject(sexp_ok);
-    Rpy_PreserveObject(sexp_ok);
+    preserve_status = Rpy_PreserveObject(sexp_ok);
+    if (preserve_status == -1) {
+      /* Python error set/propagated by Rpy_PreserveObject */
+      return NULL;
+    }
 #ifdef RPY_DEBUG_PRESERVE
     preserved_robjects += 1;
     printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
@@ -2669,6 +2682,7 @@ static PySexpObject*
     object = (PySexpObject *)Sexp_new(&Sexp_Type, Py_None, Py_None);
     break;
   }
+
   if (!object) {
 #ifdef RPY_DEBUG_PRESERVE
     printf("  PRESERVE -- Sexp_clear: R_ReleaseObject -- %p ", 
@@ -2677,9 +2691,10 @@ static PySexpObject*
     printf("-- %i\n", preserved_robjects);
 #endif
     if (preserve) {
-      //R_ReleaseObject(sexp_ok);
-      Rpy_ReleaseObject(sexp_ok);
+      preserve_status = Rpy_ReleaseObject(sexp_ok);
     }
+    /* FIXME: Override possible error message from Rpy_ReleaseObject 
+    (should an aggregated error message be made ? */
     PyErr_NoMemory();
     return NULL;
   }
@@ -3559,6 +3574,11 @@ PyInit__rinterface(void)
 
   /* Add an extra ref. It should remain impossible to delete it */
   Py_INCREF(initOptions);
+
+  Rpy_R_Precious = PyDict_New();
+  PyModule_AddObject(m, "_Rpy_R_Precious", Rpy_R_Precious);
+  /* Add an extra ref. It should remain impossible to delete it */
+  Py_INCREF(Rpy_R_Precious);
 
   PyModule_AddObject(m, "R_VERSION_BUILD", RPY_R_VERSION_BUILD);
   PyModule_AddObject(m, "initoptions", initOptions);

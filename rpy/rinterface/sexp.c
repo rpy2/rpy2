@@ -36,8 +36,11 @@
 
 void SexpObject_clear(SexpObject *sexpobj)
 {
+  if (sexpobj->count == 0) {
+    printf("Warning: clearing an R object with a refcount of zero.\n");
+  }
 
-  (*sexpobj).count--;
+  sexpobj->count--;
 
 #ifdef RPY_VERBOSE
   printf("R:%p -- sexp count is %i...", 
@@ -55,8 +58,11 @@ void SexpObject_clear(SexpObject *sexpobj)
       preserved_robjects -= 1;
       printf("-- %i\n", preserved_robjects);
 #endif 
-      //R_ReleaseObject(sexpobj->sexp);
-      Rpy_ReleaseObject(sexpobj->sexp);
+      int preserve_status = Rpy_ReleaseObject(sexpobj->sexp);
+      if (preserve_status == -1) {
+	PyErr_Print();
+	PyErr_Clear();
+      }
     }
     PyMem_Free(sexpobj);
     /* self->ob_type->tp_free((PyObject*)self); */
@@ -251,21 +257,18 @@ PyDoc_STRVAR(Sexp_named_doc,
 This method corresponds to the macro NAMED.\n\
 See the R-extensions manual for further details.");
 
-#if (PY_VERSION_HEX < 0x02070000)  
-void SexpObject_CObject_destroy(void *cobj)
-{
-  SexpObject* sexpobj_ptr = (SexpObject *)cobj;
-  SexpObject_clear(sexpobj_ptr);
-}
-#else
 void SexpObject_CObject_destroy(PyObject *rpycapsule)
 {
   SexpObject *sexpobj_ptr = (SexpObject *)(PyCapsule_GetPointer(rpycapsule,
 								"rpy2.rinterface._C_API_"));
   SexpObject_clear(sexpobj_ptr);
 }
-#endif
 
+/* Get the underlying R object exposed by rpy2 as a Python capsule.
+   This is needed to overcome the pass-by-value (pass-by-need) paradigm
+   in R and provide the appearance of pass-by-reference from the Python
+   side.
+ */
 static PyObject*
 Sexp_sexp_get(PyObject *self, void *closure)
 {
@@ -276,10 +279,9 @@ Sexp_sexp_get(PyObject *self, void *closure)
     return NULL;;
   }
 
-  
-  RPY_INCREF(rpyobj);  
+  /* Increment reference counting for the R object */
+  rpyobj->sObj->count++;
 #if (PY_VERSION_HEX < 0x02070000)  
-  /*FIXME: memory leak when INCREF ? */
   PyObject *res = PyCObject_FromVoidPtr(rpyobj->sObj, 
                                         SexpObject_CObject_destroy);
 #else
@@ -291,30 +293,20 @@ Sexp_sexp_get(PyObject *self, void *closure)
   return res;
 }
 
+/* Assign a new underlying R object to the Python representation */
 static int
 Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure)
 {
 
-#if (PY_VERSION_HEX < 0x02070000)  
-  if (! PyCObject_Check(obj)) {
-    PyErr_SetString(PyExc_TypeError, "The value must be a CObject.");
-    return -1;
-  }
-#else
   if (! PyCapsule_CheckExact(obj)) {
     PyErr_SetString(PyExc_TypeError, "The value must be a Capsule");
     return -1;
   }
-#endif
 
   SexpObject *sexpobj_orig = ((PySexpObject*)self)->sObj;
 
-#if (PY_VERSION_HEX < 0x02070000)  
-  SexpObject *sexpobj = (SexpObject *)(PyCObject_AsVoidPtr(obj));
-#else
-  SexpObject *sexpobj = (SexpObject *)(PyCapsule_GetPointer(obj,
+  SexpObject *sexpobj_new = (SexpObject *)(PyCapsule_GetPointer(obj,
 							    "rpy2.rinterface._C_API_"));
-#endif
 
   if (obj == NULL) {
     PyErr_SetString(PyExc_TypeError, 
@@ -326,29 +318,32 @@ Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure)
   #ifdef RPY_DEBUG_COBJECT
   printf("Setting %p (count: %i) to %p (count: %i)\n", 
          sexpobj_orig, (int)sexpobj_orig->count,
-         sexpobj, (int)sexpobj->count);
+         sexpobj_new, (int)sexpobj_new->count);
   #endif
 
   if ( (sexpobj_orig->sexp != R_NilValue) &
-       (TYPEOF(sexpobj_orig->sexp) != TYPEOF(sexpobj->sexp))
+       (TYPEOF(sexpobj_orig->sexp) != TYPEOF(sexpobj_new->sexp))
       ) {
     PyErr_Format(PyExc_ValueError, 
                  "Mismatch in SEXP type (as returned by typeof)");
     return -1;
   }
 
-  SEXP sexp = sexpobj->sexp;
+  SEXP sexp = sexpobj_new->sexp;
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     return -1;
   }
 
-  /*FIXME: increment count seems needed, but is this leak free ? */
-  sexpobj->count += 2;
-  sexpobj_orig->count += 1;
 
-  SexpObject_clear(sexpobj_orig);
+  //sexpobj_orig->count += 1;
+
+
+  /* Increment the refcount for the R object newly assigned by one*/
+  sexpobj_new->count += 1;
   RPY_SEXP(((PySexpObject*)self)) = sexp;
+  /* Decrement the refcount for the R object formerly assigned by one*/
+  SexpObject_clear(sexpobj_orig);
 
   return 0;
 }
