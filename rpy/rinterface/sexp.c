@@ -34,50 +34,11 @@
 #include "embeddedr.h"
 #include "sexp.h"
 
-void SexpObject_clear(SexpObject *sexpobj)
-{
-  if (sexpobj->count == 0) {
-    printf("Warning: clearing an R object with a refcount of zero.\n");
-  }
-
-  sexpobj->count--;
-
-#ifdef RPY_VERBOSE
-  printf("R:%p -- sexp count is %i...", 
-         sexpobj->sexp, sexpobj->count);
-#endif
-  if (((*sexpobj).count == 0) && (*sexpobj).sexp) {
-#ifdef RPY_VERBOSE
-    printf("freeing SEXP resources...");
-#endif 
-
-    if (sexpobj->sexp != R_NilValue) {
-#ifdef RPY_DEBUG_PRESERVE
-      printf("  PRESERVE -- Sexp_clear: R_ReleaseObject -- %p ", 
-             sexpobj->sexp);
-      preserved_robjects -= 1;
-      printf("-- %i\n", preserved_robjects);
-#endif 
-      int preserve_status = Rpy_ReleaseObject(sexpobj->sexp);
-      if (preserve_status == -1) {
-	PyErr_Print();
-	PyErr_Clear();
-      }
-    }
-    PyMem_Free(sexpobj);
-    /* self->ob_type->tp_free((PyObject*)self); */
-#ifdef RPY_VERBOSE
-    printf("done.\n");
-#endif 
-  }  
-}
 
 static void
 Sexp_clear(PySexpObject *self)
 {
-  
-  SexpObject_clear(self->sObj);
-
+  Rpy_ReleaseObject(self->sObj->sexp);
 }
 
 
@@ -257,12 +218,6 @@ PyDoc_STRVAR(Sexp_named_doc,
 This method corresponds to the macro NAMED.\n\
 See the R-extensions manual for further details.");
 
-void SexpObject_CObject_destroy(PyObject *rpycapsule)
-{
-  SexpObject *sexpobj_ptr = (SexpObject *)(PyCapsule_GetPointer(rpycapsule,
-								"rpy2.rinterface._C_API_"));
-  SexpObject_clear(sexpobj_ptr);
-}
 
 /* Get the underlying R object exposed by rpy2 as a Python capsule.
    This is needed to overcome the pass-by-value (pass-by-need) paradigm
@@ -279,18 +234,16 @@ Sexp_sexp_get(PyObject *self, void *closure)
     return NULL;;
   }
 
-  /* Increment reference counting for the R object */
-  rpyobj->sObj->count++;
-#if (PY_VERSION_HEX < 0x02070000)  
-  PyObject *res = PyCObject_FromVoidPtr(rpyobj->sObj, 
-                                        SexpObject_CObject_destroy);
-#else
-  PyObject *res = PyCapsule_New((void *)(rpyobj->sObj),
-				"rpy2.rinterface._C_API_",
-				SexpObject_CObject_destroy);
-#endif
-  
-  return res;
+  PyObject *key = PyLong_FromVoidPtr((void *)rpyobj->sObj->sexp);
+  PyObject *capsule = PyDict_GetItem(Rpy_R_Precious, key);
+  if (capsule == NULL) {
+    printf("Error: Could not get the capsule for the SEXP. This means trouble.\n");
+    return NULL;
+  }
+  Py_DECREF(key);
+  /* capsule is a borrowed reference: INCREF */
+  Py_INCREF(capsule);
+  return capsule;
 }
 
 /* Assign a new underlying R object to the Python representation */
@@ -335,15 +288,10 @@ Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure)
     return -1;
   }
 
-
-  //sexpobj_orig->count += 1;
-
-
   /* Increment the refcount for the R object newly assigned by one*/
-  sexpobj_new->count += 1;
-  RPY_SEXP(((PySexpObject*)self)) = sexp;
-  /* Decrement the refcount for the R object formerly assigned by one*/
-  SexpObject_clear(sexpobj_orig);
+  sexpobj_new = Rpy_PreserveObject(sexpobj_new->sexp);
+  ((PySexpObject*)self)->sObj = sexpobj_new;
+  Rpy_ReleaseObject(sexpobj_orig->sexp);
 
   return 0;
 }
@@ -675,15 +623,10 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   if (! self)
     PyErr_NoMemory();
 
-  self->sObj = (SexpObject *)PyMem_Malloc(1 * sizeof(SexpObject));
-  if (! self->sObj) {
-    Py_DECREF(self);
-    PyErr_NoMemory();
+  self->sObj = Rpy_PreserveObject(R_NilValue);
+  if (self->sObj == NULL) {
+    printf("Error in Sexp_new. This is not looking good...\n");
   }
-
-  RPY_COUNT(self) = 1;
-  RPY_SEXP(self) = R_NilValue;
-  /* RPY_RPYONLY(self) = rpy_only; */
 
   #ifdef RPY_VERBOSE
   printf("done.\n");
@@ -705,19 +648,16 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   PyObject *copy = Py_True;
   int sexptype = -1;
-  SexpObject *tmpSexpObject;
 
-
-  static char *kwlist[] = {"sexp", "sexptype", "copy", NULL};
+  static char *kwlist[] = {"sexp", "sexptype", NULL};
   /* FIXME: handle the copy argument */
 
   /* the "sexptype" is as a quick hack to make calls from
    the constructor of SexpVector */
-  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|iO!", 
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|i", 
                                     kwlist,
                                     &sourceObject,
-                                    &sexptype,
-                                    &PyBool_Type, &copy)) {
+                                    &sexptype)) {
     return -1;
   }
 
@@ -728,22 +668,19 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     return -1;
   }
 
-  if (PyObject_IsTrue(copy)) {
-    tmpSexpObject = ((PySexpObject *)self)->sObj;
-    if (tmpSexpObject != ((PySexpObject *)sourceObject)->sObj) {
-      ((PySexpObject *)self)->sObj = ((PySexpObject *)sourceObject)->sObj;
-      PyMem_Free(tmpSexpObject);
-    }
-    RPY_INCREF((PySexpObject *)self);
+  /* Since sourceObject is a Sexp_Type, the R object is
+   already tracked. */
+  SexpObject *oldSexpObject = ((PySexpObject *)self)->sObj;
+  SexpObject *newSexpObject = Rpy_PreserveObject(((PySexpObject *)sourceObject)->sObj->sexp);
+  ((PySexpObject *)self)->sObj = newSexpObject;
+  Rpy_ReleaseObject(oldSexpObject->sexp);
+  
+  RPY_INCREF((PySexpObject *)self);
 #ifdef RPY_VERBOSE
-    printf("Python: %p / R: %p - sexp count is now %i.\n", 
-           (PySexpObject *)self, RPY_SEXP((PySexpObject *)self), RPY_COUNT((PySexpObject *)self));
+  printf("Python: %p / R: %p - sexp count is now %i.\n", 
+	 (PySexpObject *)self, RPY_SEXP((PySexpObject *)self), RPY_COUNT((PySexpObject *)self));
 #endif 
 
-  } else {
-    PyErr_Format(PyExc_ValueError, "Cast without copy is not yet implemented.");
-    return -1;
-  }
 
 #ifdef RPY_VERBOSE
   printf("done.\n");

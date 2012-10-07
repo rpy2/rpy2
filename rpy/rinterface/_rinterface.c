@@ -263,10 +263,6 @@ static PyTypeObject NAComplex_Type;
 static PyObject* NACharacter_New(int new);
 static PyTypeObject NACharacter_Type;
 
-
-/* early definition of functions */
-static SEXP newSEXP(PyObject *object, const int rType);
-
 /* type tag for Python external methods */
 static PySexpObject *R_PyObject_type_tag;
 static void RegisterExternalSymbols(void);
@@ -1279,20 +1275,33 @@ static PyObject* EmbeddedR_init(PyObject *self)
   //UNPROTECT(1);
   //R_PreserveObject(RPY_R_Precious);
 
-  RPY_SEXP(globalEnv) = R_GlobalEnv;
-  Rpy_PreserveObject(R_GlobalEnv);
+  SexpObject *sexpobj_ptr = Rpy_PreserveObject(R_GlobalEnv);
+  Rpy_ReleaseObject(globalEnv->sObj->sexp);
+  globalEnv->sObj = sexpobj_ptr;
 
-  RPY_SEXP(baseNameSpaceEnv) = R_BaseNamespace;
-  Rpy_PreserveObject(R_BaseNamespace);
+  sexpobj_ptr = Rpy_PreserveObject(R_BaseNamespace);
+  Rpy_ReleaseObject(baseNameSpaceEnv->sObj->sexp);
+  baseNameSpaceEnv->sObj = sexpobj_ptr;
+  
+  sexpobj_ptr = Rpy_PreserveObject(R_EmptyEnv);
+  Rpy_ReleaseObject(emptyEnv->sObj->sexp);
+  emptyEnv->sObj = sexpobj_ptr;
 
-  RPY_SEXP(emptyEnv) = R_EmptyEnv;
-  Rpy_PreserveObject(R_EmptyEnv);
+  sexpobj_ptr = Rpy_PreserveObject(R_MissingArg);
+  Rpy_ReleaseObject(((PySexpObject *)MissingArg_Type_New(0))->sObj->sexp);
+  ((PySexpObject *)MissingArg_Type_New(0))->sObj = sexpobj_ptr;
+    
+  sexpobj_ptr = Rpy_PreserveObject(R_NilValue);
+  Rpy_ReleaseObject(((PySexpObject *)RNULL_Type_New(0))->sObj->sexp);
+  ((PySexpObject *)RNULL_Type_New(0))->sObj = sexpobj_ptr;
 
-  RPY_SEXP((PySexpObject *)MissingArg_Type_New(0)) = R_MissingArg;
-  RPY_SEXP((PySexpObject *)RNULL_Type_New(0)) = R_NilValue;
-  RPY_SEXP((PySexpObject *)UnboundValue_Type_New(0)) = R_UnboundValue;
-  RPY_SEXP(rpy_R_NilValue) = R_NilValue;
+  sexpobj_ptr = Rpy_PreserveObject(R_UnboundValue);
+  Rpy_ReleaseObject(((PySexpObject *)UnboundValue_Type_New(0))->sObj->sexp);
+  ((PySexpObject *)UnboundValue_Type_New(0))->sObj = sexpobj_ptr;
 
+  sexpobj_ptr = Rpy_PreserveObject(R_NilValue);
+  Rpy_ReleaseObject(rpy_R_NilValue->sObj->sexp);
+  rpy_R_NilValue->sObj = sexpobj_ptr;
 
   errMessage_SEXP = findVar(install("geterrmessage"), 
                             R_BaseNamespace);
@@ -1306,10 +1315,12 @@ static PyObject* EmbeddedR_init(PyObject *self)
   SEXP type_tag;
   PROTECT(type_tag = allocVector(STRSXP, 1));
   SET_STRING_ELT(type_tag, 0, mkChar("Python"));
-  UNPROTECT(1);
+
   //R_PreserveObject(type_tag);
-  Rpy_PreserveObject(type_tag);
-  RPY_SEXP(R_PyObject_type_tag) = type_tag;
+  sexpobj_ptr = Rpy_PreserveObject(type_tag);
+  UNPROTECT(1);
+  Rpy_ReleaseObject(R_PyObject_type_tag->sObj->sexp);
+  R_PyObject_type_tag->sObj = sexpobj_ptr;
 
   /* register the symbols */
   RegisterExternalSymbols();
@@ -1362,9 +1373,17 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
 
   embeddedR_status = embeddedR_status & (! RPY_R_INITIALIZED);
 
-  RPY_SEXP(globalEnv) = R_EmptyEnv;
-  RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
-  RPY_SEXP(emptyEnv) = R_EmptyEnv;
+  SexpObject *sexpobj_ptr = Rpy_PreserveObject(R_EmptyEnv);
+  Rpy_ReleaseObject(globalEnv->sObj->sexp);
+  globalEnv->sObj = sexpobj_ptr;
+
+  sexpobj_ptr = Rpy_PreserveObject(R_EmptyEnv);
+  Rpy_ReleaseObject(baseNameSpaceEnv->sObj->sexp);
+  baseNameSpaceEnv->sObj = sexpobj_ptr;
+
+  sexpobj_ptr = Rpy_PreserveObject(R_EmptyEnv);
+  Rpy_ReleaseObject(emptyEnv->sObj->sexp);
+  emptyEnv->sObj = sexpobj_ptr;
 
   errMessage_SEXP = R_NilValue; 
 
@@ -1555,7 +1574,6 @@ static PyTypeObject EnvironmentSexp_Type;
 static PyObject *
 Sexp_rcall(PyObject *self, PyObject *args)
 {
-  
   if (! (rpy_has_status(RPY_R_INITIALIZED))) {
     PyErr_Format(PyExc_RuntimeError, 
                  "R must be initialized before any call to R functions is possible.");
@@ -2632,12 +2650,12 @@ static PySexpObject*
     sexp_ok = sexp;
   }
 
-  int preserve_status;
+  SexpObject *sexpobj_ptr;
   /*FIXME: recode to have the test for NILSXP in a cleaner workflow */
   if (sexp_ok && preserve && TYPEOF(sexp_ok) != NILSXP) {
     //R_PreserveObject(sexp_ok);
-    preserve_status = Rpy_PreserveObject(sexp_ok);
-    if (preserve_status == -1) {
+    sexpobj_ptr = Rpy_PreserveObject(sexp_ok);
+    if (sexpobj_ptr == NULL) {
       /* Python error set/propagated by Rpy_PreserveObject */
       return NULL;
     }
@@ -2692,7 +2710,12 @@ static PySexpObject*
     printf("-- %i\n", preserved_robjects);
 #endif
     if (preserve) {
-      preserve_status = Rpy_ReleaseObject(sexp_ok);
+      int release_status = Rpy_ReleaseObject(sexp_ok);
+      if (release_status == -1) {
+	printf("Error: double trouble. Error while releasing the R object\n");
+	PyErr_Print();
+	PyErr_Clear();
+      }
     }
     /* FIXME: Override possible error message from Rpy_ReleaseObject 
     (should an aggregated error message be made ? */
@@ -2700,7 +2723,9 @@ static PySexpObject*
     return NULL;
   }
   /* PyObject_Init(&object, &ClosureSexp_Type); */
-  RPY_SEXP(object) = sexp_ok;
+  if (Rpy_ReplaceSexp(object, sexp_ok) == -1) {
+    return NULL;
+  }
   /* FIXME: Increment reference ? */
   /* Py_INCREF(object); */
   return object;
@@ -2969,15 +2994,15 @@ newSEXP(PyObject *object, int rType)
 
   Py_DECREF(seq_object);
 
-  if (sexp != NULL) {
-    //R_PreserveObject(sexp);
-    Rpy_PreserveObject(sexp);
-#ifdef RPY_DEBUG_PRESERVE
-    preserved_robjects += 1;
-    printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
-           sexp, preserved_robjects);
-#endif 
-  }
+/*   if (sexp != NULL) { */
+/*     //R_PreserveObject(sexp); */
+/*     SexpObject *sexpobjet_ptr = Rpy_PreserveObject(sexp); */
+/* #ifdef RPY_DEBUG_PRESERVE */
+/*     preserved_robjects += 1; */
+/*     printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n",  */
+/*            sexp, preserved_robjects); */
+/* #endif  */
+/*   } */
 
 #ifdef RPY_VERBOSE
   printf("  new SEXP for Python:%p is %p.\n", object, sexp);
@@ -3672,9 +3697,28 @@ PyInit__rinterface(void)
 #endif
   }
 
+  emptyEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
+                                     Py_None, Py_None);
+  SexpObject *sexpobj_ptr = Rpy_PreserveObject(R_EmptyEnv);
+  Rpy_ReleaseObject(emptyEnv->sObj->sexp);
+  emptyEnv->sObj = sexpobj_ptr;
+  if (PyDict_SetItemString(d, "emptyenv", 
+                           (PyObject *)emptyEnv) < 0)
+  {
+    Py_DECREF(emptyEnv);
+#if (PY_VERSION_HEX < 0x03010000)
+    return;
+#else
+    return NULL;
+#endif
+  }
+  Py_DECREF(emptyEnv);
+
   globalEnv = (PySexpObject *)Sexp_new(&EnvironmentSexp_Type, 
                                        Py_None, Py_None);
-  RPY_SEXP(globalEnv) = R_EmptyEnv;
+  sexpobj_ptr = Rpy_PreserveObject(R_EmptyEnv);
+  Rpy_ReleaseObject(globalEnv->sObj->sexp);
+  globalEnv->sObj = sexpobj_ptr;
 
   if (PyDict_SetItemString(d, "globalenv", (PyObject *)globalEnv) < 0)
   {
@@ -3689,7 +3733,10 @@ PyInit__rinterface(void)
 
   baseNameSpaceEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
                                              Py_None, Py_None);
-  RPY_SEXP(baseNameSpaceEnv) = R_EmptyEnv;
+  sexpobj_ptr = Rpy_PreserveObject(R_EmptyEnv);
+  Rpy_ReleaseObject(baseNameSpaceEnv->sObj->sexp);
+  baseNameSpaceEnv->sObj = sexpobj_ptr;
+
   if (PyDict_SetItemString(d, "baseenv", 
                            (PyObject *)baseNameSpaceEnv) < 0)
   {
@@ -3702,21 +3749,6 @@ PyInit__rinterface(void)
   }
   Py_DECREF(baseNameSpaceEnv);
 
-  emptyEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
-                                     Py_None, Py_None);
-  RPY_SEXP(emptyEnv) = R_EmptyEnv;
-  if (PyDict_SetItemString(d, "emptyenv", 
-                           (PyObject *)emptyEnv) < 0)
-  {
-    Py_DECREF(emptyEnv);
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
-    return NULL;
-#endif
-  }
-  Py_DECREF(emptyEnv);
-
   rpy_R_NilValue = (PySexpObject*)Sexp_new(&Sexp_Type,
                                            Py_None, Py_None);
   if (PyDict_SetItemString(d, "R_NilValue", (PyObject *)rpy_R_NilValue) < 0)
@@ -3728,11 +3760,11 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
-  Py_DECREF(rpy_R_NilValue);  
+  Py_DECREF(rpy_R_NilValue);
 
   R_PyObject_type_tag = (PySexpObject*)Sexp_new(&VectorSexp_Type,
 						Py_None, Py_None);
-  if (PyDict_SetItemString(d, "python_type_tag", 
+  if (PyDict_SetItemString(d, "python_type_tag",
                            (PyObject *)R_PyObject_type_tag) < 0)
   {
     Py_DECREF(R_PyObject_type_tag);

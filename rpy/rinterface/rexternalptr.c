@@ -84,6 +84,12 @@ ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
     return -1;
   }
   
+  if (rpy_has_status(RPY_R_BUSY)) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return -1;
+  }
+  embeddedR_setlock();
+
   /*FIXME: twist here - MakeExternalPtr will "preserve" the tag */
   /* but the tag is already preserved (when exposed as a Python object) */
   /* R_ReleaseObject(pytag->sObj->sexp); */
@@ -98,17 +104,21 @@ ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   } else {
     rprotected = RPY_SEXP((PySexpObject *)pyprotected);
   }
+  /* FIXME: is the INCREF needed ? */
   Py_INCREF(pyextptr);
   rres  = R_MakeExternalPtr(pyextptr, rtag, rprotected);
   PROTECT(rres);
   R_RegisterCFinalizerEx(rres, (R_CFinalizer_t)R_PyObject_decref, TRUE);
   UNPROTECT(1);
-  RPY_SEXP(self) = rres;
-  Rpy_PreserveObject(rres);
+  if (Rpy_ReplaceSexp((PySexpObject *)self, rres) == -1) {
+      embeddedR_freelock();
+      return -1;
+  }
 
 #ifdef RPY_VERBOSE
   printf("done.\n");
 #endif 
+  embeddedR_freelock();
   return 0;
 }
 
