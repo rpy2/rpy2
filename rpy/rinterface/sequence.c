@@ -899,16 +899,14 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   PyObject *object;
   int sexptype = -1;
-  PyObject *copy = Py_False;
-  static char *kwlist[] = {"sexpvector", "sexptype", "copy", NULL};
+  static char *kwlist[] = {"sexpvector", "sexptype", NULL};
 
 
   /* FIXME: handle the copy argument */
-  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|iO!", 
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|i", 
                                     kwlist,
                                     &object,
-                                    &sexptype,
-                                    &PyBool_Type, &copy)) {
+                                    &sexptype)) {
     return -1;
   }
 
@@ -938,6 +936,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
      */
 
     SEXP sexp = newSEXP(object, sexptype);
+    PROTECT(1); /* sexp is not preserved*/
     if (sexp == NULL) {
       /* newSEXP returning NULL will also have raised an exception
        * (not-so-clear design :/ )
@@ -945,7 +944,13 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
       embeddedR_freelock();
       return -1;
     }
-    RPY_SEXP((PySexpObject *)self) = sexp;
+    if (Rpy_ReplaceSexp((PySexpObject *)self, sexp) == -1) {
+      embeddedR_freelock();
+      UNPROTECT(1);
+      return -1;
+    }
+    UNPROTECT(1);
+
     #ifdef RPY_DEBUG_OBJECTINIT
     printf("  SEXP vector is %p.\n", RPY_SEXP((PySexpObject *)self));
     #endif
@@ -1056,7 +1061,10 @@ VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
 	     sexp, preserved_robjects);
 #endif  
       
-      RPY_SEXP((PySexpObject *)self) = sexp;
+      if (Rpy_ReplaceSexp((PySexpObject *)self, sexp) == -1) {
+	embeddedR_freelock();
+	return -1;
+      }
 #ifdef RPY_DEBUG_OBJECTINIT
       printf("  SEXP vector is %p.\n", RPY_SEXP((PySexpObject *)self));
 #endif

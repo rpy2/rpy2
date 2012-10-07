@@ -21,39 +21,15 @@ extern "C" {
 #endif
 #endif
 
-/* Back-compatibility with Python 2.4 */
-#if (PY_VERSION_HEX < 0x02050000)
-#define PY_SSIZE_T_MAX INT_MAX
-#define PY_SSIZE_T_MIN INT_MIN
-typedef int Py_ssize_t;
-typedef inquiry lenfunc;
-typedef intargfunc ssizeargfunc;
-typedef intobjargproc ssizeobjargproc;
-typedef PyObject *(*ssizessizeargfunc)(PyObject *, Py_ssize_t, Py_ssize_t);
-typedef int(*ssizessizeobjargproc)(PyObject *, Py_ssize_t, Py_ssize_t, PyObject *);
-typedef Py_ssize_t (*readbufferproc)(PyObject *, Py_ssize_t, void **);
-typedef Py_ssize_t (*writebufferproc)(PyObject *, Py_ssize_t, void **);
-typedef Py_ssize_t (*segcountproc)(PyObject *, Py_ssize_t *);
-typedef Py_ssize_t (*charbufferproc)(PyObject *, Py_ssize_t, char **);
-#endif
-#if (PY_VERSION_HEX < 0x02060000)
-#define Py_SIZE(ob)   (((PyVarObject*)(ob))->ob_size)
-#endif
-
 /*
  * Highest possible SEXP type (used for quick resolution of valid/invalid SEXP)
  */
 #define RPY_MAX_VALIDSEXTYPE 99
 
-
-/* Representation of R objects (instances) as instances in Python.
- */
 typedef struct {
   Py_ssize_t count;
-  /* unsigned short int rpy_only; */
   SEXP sexp;
 } SexpObject;
-
 
 typedef struct {
   PyObject_HEAD 
@@ -64,11 +40,11 @@ typedef struct {
 
 #define RPY_COUNT(obj) (((obj)->sObj)->count)
 #define RPY_SEXP(obj) (((obj)->sObj)->sexp)
-/* #define RPY_SEXP(obj) ((obj)->sexp) */
-/* #define RPY_RPYONLY(obj) (((obj)->sObj)->rpy_only) */
+  /* #define RPY_SEXP(obj) ((obj)->sexp) */
+  /* #define RPY_RPYONLY(obj) (((obj)->sObj)->rpy_only) */
 
 #define RPY_INCREF(obj) (((obj)->sObj)->count++)
-#define RPY_DECREF(obj) (((obj)->sObj)->count--)
+  /* #define RPY_DECREF(obj) (((obj)->sObj)->count--) */
 
 
   

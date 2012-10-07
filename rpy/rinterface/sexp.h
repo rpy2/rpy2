@@ -2,7 +2,7 @@
 #define _RPY_PRIVATE_SEXP_H_
 
 #ifndef _RPY_RINTERFACE_MODULE_
-#error sexp.h should not be included
+#error sexp.h should not be included directly
 #endif
 
 #include <Python.h>

@@ -185,10 +185,10 @@ except Exception%s e:
         x = rinterface.SexpVector(xrange(10), rinterface.INTSXP)
         y = rinterface.SexpVector(xrange(10), rinterface.INTSXP)
         x_rid = x.rid
-        self.assertTrue(x_rid in rinterface.protected_rids())
+        self.assertTrue(x_rid in set(z[0] for z in rinterface.protected_rids()))
         del(x)
         gc.collect(); gc.collect()
-        self.assertFalse(x_rid in rinterface.protected_rids())
+        self.assertFalse(x_rid in set(z[0] for z in rinterface.protected_rids()))
 
 class CallbacksTestCase(unittest.TestCase):
     def tearDown(self):
