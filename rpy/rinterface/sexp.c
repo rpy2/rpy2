@@ -666,8 +666,13 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
    already tracked. */
   SexpObject *oldSexpObject = ((PySexpObject *)self)->sObj;
   SexpObject *newSexpObject = Rpy_PreserveObject(((PySexpObject *)sourceObject)->sObj->sexp);
+  if (newSexpObject == NULL) {
+    return -1;
+  }
   ((PySexpObject *)self)->sObj = newSexpObject;
-  Rpy_ReleaseObject(oldSexpObject->sexp);
+  if (Rpy_ReleaseObject(oldSexpObject->sexp) == -1) {
+    return -1;
+  }
   
   RPY_INCREF((PySexpObject *)self);
 #ifdef RPY_VERBOSE
