@@ -920,10 +920,10 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
                           (PyObject*)&VectorSexp_Type)) {
     /* call parent's constructor */
       if (Sexp_init(self, args, NULL) == -1) {
-      /* PyErr_Format(PyExc_RuntimeError, "Error initializing instance."); */
-      embeddedR_freelock();
-      return -1;
-    }
+	/* PyErr_Format(PyExc_RuntimeError, "Error initializing instance."); */
+	embeddedR_freelock();
+	return -1;
+      }
   } else if (PySequence_Check(object)) {
     if ((sexptype < 0) || (sexptype > RPY_MAX_VALIDSEXTYPE) || 
         (! validSexpType[sexptype])) {
@@ -934,13 +934,13 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     /* FIXME: implemement automagic type ?
      *(RPy has something)... or leave it to extensions ? 
      */
-
     SEXP sexp = newSEXP(object, sexptype);
     PROTECT(1); /* sexp is not preserved*/
     if (sexp == NULL) {
       /* newSEXP returning NULL will also have raised an exception
        * (not-so-clear design :/ )
        */
+      UNPROTECT(1);
       embeddedR_freelock();
       return -1;
     }
