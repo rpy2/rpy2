@@ -251,16 +251,86 @@ way Python objects are usually copied (using :func:`copy.deepcopy`,
 Memory management and garbage collection
 ----------------------------------------
 
-R's object tracking differs from Python as it does not involve
+The tracking tracking of R object (:c:type:`SEXP` in R's C-API) 
+differs from Python as it does not involve
 reference counting. It is using at attribute NAMED (more on this below),
-and a list of objects to be `preserved` (from garbage collection).
+and only considers for collection objects that are not preserved by
+being contained in an other R object (for floating object, R's C-API
+has 2 functions :c:func:`R_PreserveObject` and :c:func:`R_ReleaseObject` that do little more than placing object is in a container called :c:data:`R_PreciousList`).
+
 Rpy2 is using its own reference counting system in order to bridge R with
 Python and keep the pass-by-reference approach familiar to Python users.
 
-At the time of writting, the implementation of R is such as
-adding an item to the list of preserved objects is of constant time-complexity
-while removing an item from the list of preserved object is linear in the
-number of objects already preserved.
+At the C level, rpy2 uses a simple structure to keep the R object along
+a counter of reference.
+
+.. code-block:: c
+
+   typedef struct {
+       Py_ssize_t count;
+       SEXP sexp;
+   } SexpObject;
+
+The number of times an R object is used in rpy2, therefore is protected
+from garbage collection, is available:
+
+>>> import rpy2.rinterface as ri
+>>> ri.initr()
+>>> x = ri.SexpIntVector([1,2,3])
+>>> x.__sexp_refcount__
+2
+
+To keep closer to the pass-by-reference approach in Python,
+the :c:type:`SexpObject` for a given R object is not part of a Python object
+representing it. The Python object holds a reference to it, and each different
+Python object pointing to the same R object will increase the counter.
+The Python objects exposing R objects look like:
+
+.. code-block:: c
+
+   typedef struct {
+       PyObject_HEAD 
+       SexpObject *sObj;
+   } PySexpObject;
+
+
+In addition to that a structure keeps a record of R objects tracked.
+
+
+After the usual initialization bit
+
+.. code-block:: python
+
+   import rpy2.rinterface as ri
+   ri.initr()
+
+we expose the R variable `letters` to Python:
+
+>>> letters = ri.baseenv.get('letters')
+>>> letters.rid # this is session-dependent, you'll have a different number
+123456
+>>> letters.__sexp_refcount__
+2
+>>> letters_again = ri.baseenv.get('letters')
+>>> letters_again.__sexp_refcount__
+3
+>>> letters.__sexp_refcount__ # same reference count
+3
+>>> letters_again.rid # same R ID as before 
+123456
+
+
+.. note::
+
+   The starting count it `2` because behind the scene the structure
+   that keeps track
+   of objects is itself an construct with Python objects.
+
+   >>> letters_cstruct = letters.__sexp__
+   >>> del(letters)
+   >>> letters_cstruct.__sexp_refcount__
+   1
+
 
 
 NAMED
