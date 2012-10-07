@@ -256,18 +256,16 @@ Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure)
     return -1;
   }
 
-  SexpObject *sexpobj_orig = ((PySexpObject*)self)->sObj;
-
   SexpObject *sexpobj_new = (SexpObject *)(PyCapsule_GetPointer(obj,
-							    "rpy2.rinterface._C_API_"));
-
-  if (obj == NULL) {
+								"rpy2.rinterface._C_API_"));
+  
+  if (sexpobj_new == NULL) {
     PyErr_SetString(PyExc_TypeError, 
 		    "The value must be a CObject or a Capsule of name 'rpy2.rinterface._C_API_'.");
     return -1;
   }
 
-
+  SexpObject *sexpobj_orig = ((PySexpObject*)self)->sObj;
   #ifdef RPY_DEBUG_COBJECT
   printf("Setting %p (count: %i) to %p (count: %i)\n", 
          sexpobj_orig, (int)sexpobj_orig->count,
@@ -288,12 +286,8 @@ Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure)
     return -1;
   }
 
-  /* Increment the refcount for the R object newly assigned by one*/
-  sexpobj_new = Rpy_PreserveObject(sexpobj_new->sexp);
-  ((PySexpObject*)self)->sObj = sexpobj_new;
-  Rpy_ReleaseObject(sexpobj_orig->sexp);
+  return Rpy_ReplaceSexp((PySexpObject *)self, sexp);
 
-  return 0;
 }
 PyDoc_STRVAR(Sexp_sexp_doc,
              "Opaque C pointer to the underlying R object");

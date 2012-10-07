@@ -103,26 +103,33 @@ class SexpTestCase(unittest.TestCase):
         self.assertRaises(ValueError, sexp.__setattr__, '__sexp__', cobj)
 
 
-    def testSexp_sexp_destroyCobj(self):
+    def testSexp_sexp_UniqueCapsule(self):
         sexp = rinterface.IntSexpVector([1,2,3])
-        self.assertEquals(1, sexp.__sexp_refcount__)
+        sexp_count = sexp.__sexp_refcount__
         cobj = sexp.__sexp__
-        self.assertEquals(2, sexp.__sexp_refcount__)
+        # check that no increase in the refcount: the capsule is unique
+        self.assertEquals(sexp_count, sexp.__sexp_refcount__)
+        self.assertEquals(sexp_count, 
+                          dict(rinterface.protected_rids())[sexp.rid])
         del(cobj)
         gc.collect()
-        self.assertEquals(1, sexp.__sexp_refcount__)
+        self.assertEquals(sexp_count, sexp.__sexp_refcount__)
+        self.assertEquals(sexp_count, 
+                          dict(rinterface.protected_rids())[sexp.rid])
+        sexp_rid = sexp.rid
         del(sexp)
         gc.collect()
-        # no real test after, just make sure that it does
-        # not cause a segfault
+        self.assertFalse(sexp_rid in dict(rinterface.protected_rids()))
+        
 
     def testSexp_sexp_set(self):
         x = rinterface.IntSexpVector([1,2,3])
         x_s = x.__sexp__
         self.assertEquals(2, x.__sexp_refcount__)
         y = rinterface.IntSexpVector([4,5,6])
+        y_count = y.__sexp_refcount__
         x.__sexp__ = y.__sexp__
-        self.assertEquals(2, x.__sexp_refcount__)
+        self.assertEquals(y_count+1, x.__sexp_refcount__)
         self.assertEquals(x.__sexp_refcount__, y.__sexp_refcount__)
         
     def testSexp_deepcopy(self):
