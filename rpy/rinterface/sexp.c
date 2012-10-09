@@ -616,7 +616,6 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
   if (! self)
     PyErr_NoMemory();
-
   self->sObj = Rpy_PreserveObject(R_NilValue);
   if (self->sObj == NULL) {
     printf("Error in Sexp_new. This is not looking good...\n");
