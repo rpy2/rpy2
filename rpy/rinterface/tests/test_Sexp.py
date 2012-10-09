@@ -89,11 +89,19 @@ class SexpTestCase(unittest.TestCase):
 
     def testSexp_sexp(self):
         sexp = rinterface.IntSexpVector([1,2,3])
-        cobj = sexp.__sexp__
-        sexp = rinterface.IntSexpVector([4,5,6,7])
-        self.assertEqual(4, len(sexp))
-        sexp.__sexp__ = cobj
-        self.assertEqual(3, len(sexp))
+        sexp_count = sexp.__sexp_refcount__
+        sexp_cobj = sexp.__sexp__
+        d = dict(rinterface._rinterface.protected_rids())
+        self.assertEquals(sexp_count, d[sexp.rid])
+        self.assertEquals(sexp_count, sexp.__sexp_refcount__)
+        sexp2 = rinterface.IntSexpVector([4,5,6,7])
+        sexp2_rid = sexp2.rid
+        sexp2.__sexp__ = sexp_cobj
+        del(sexp)
+        gc.collect()
+        d = dict(rinterface._rinterface.protected_rids())
+        self.assertEqual(None, d.get(sexp2_rid))
+
 
     def testSexp_sexp_wrongtypeof(self):
         sexp = rinterface.IntSexpVector([1,2,3])

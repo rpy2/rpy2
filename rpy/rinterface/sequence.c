@@ -935,7 +935,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
      *(RPy has something)... or leave it to extensions ? 
      */
     SEXP sexp = newSEXP(object, sexptype);
-    PROTECT(1); /* sexp is not preserved*/
+    PROTECT(sexp); /* sexp is not preserved*/
     if (sexp == NULL) {
       /* newSEXP returning NULL will also have raised an exception
        * (not-so-clear design :/ )
@@ -1054,13 +1054,11 @@ VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
       }
       
       //R_PreserveObject(sexp);
-      Rpy_PreserveObject(sexp);
 #ifdef RPY_DEBUG_PRESERVE
       preserved_robjects += 1;
       printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
 	     sexp, preserved_robjects);
 #endif  
-      
       if (Rpy_ReplaceSexp((PySexpObject *)self, sexp) == -1) {
 	embeddedR_freelock();
 	return -1;
@@ -1317,7 +1315,6 @@ IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 				(RPy_seqobjtosexpproc)RPy_SeqToINTSXP,
 				(RPy_iterobjtosexpproc)RPy_IterToINTSXP,
 				INTSXP);
-
 #ifdef RPY_VERBOSE
   printf("done (IntVectorSexp_init).\n");
 #endif 

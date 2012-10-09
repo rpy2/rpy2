@@ -26,39 +26,41 @@ static void SexpObject_clear(SexpObject *sexpobj)
   if (sexpobj->count <= 0) {
     printf("Warning: clearing an R object with a refcount <= zero.\n");
   }
+  
+  if (sexpobj->sexp != R_NilValue) {
+    R_ReleaseObject(sexpobj->sexp);
+    PyMem_Free(sexpobj);
+  }
 
-  sexpobj->count--;
+/*   sexpobj->count--; */
 
-#ifdef RPY_VERBOSE
-  printf("R:%p -- sexp count is %i...", 
-         sexpobj->sexp, sexpobj->count);
-#endif
-  if (((*sexpobj).count == 0) && (*sexpobj).sexp) {
-#ifdef RPY_VERBOSE
-    printf("freeing SEXP resources...");
-#endif 
-
-/*     if (sexpobj->sexp != R_NilValue) { */
-/* #ifdef RPY_DEBUG_PRESERVE */
-/*       printf("  PRESERVE -- Sexp_clear: R_ReleaseObject -- %p ",  */
-/*              sexpobj->sexp); */
-/*       preserved_robjects -= 1; */
-/*       printf("-- %i\n", preserved_robjects); */
+/* #ifdef RPY_VERBOSE */
+/*   printf("R:%p -- sexp count is %i...",  */
+/*          sexpobj->sexp, sexpobj->count); */
+/* #endif */
+/*   if (((*sexpobj).count == 0) && (*sexpobj).sexp) { */
+/* #ifdef RPY_VERBOSE */
+/*     printf("freeing SEXP resources..."); */
 /* #endif  */
-/*       int preserve_status = Rpy_ReleaseObject(sexpobj->sexp); */
-/*       if (preserve_status == -1) { */
-/* 	PyErr_Print(); */
-/* 	PyErr_Clear(); */
-/*       } */
-/*     } */
-    if (sexpobj->sexp != R_NilValue) {
-      PyMem_Free(sexpobj);
-    }
-    /* self->ob_type->tp_free((PyObject*)self); */
-#ifdef RPY_VERBOSE
-    printf("done.\n");
-#endif 
-  }  
+
+/* /\*     if (sexpobj->sexp != R_NilValue) { *\/ */
+/* /\* #ifdef RPY_DEBUG_PRESERVE *\/ */
+/* /\*       printf("  PRESERVE -- Sexp_clear: R_ReleaseObject -- %p ",  *\/ */
+/* /\*              sexpobj->sexp); *\/ */
+/* /\*       preserved_robjects -= 1; *\/ */
+/* /\*       printf("-- %i\n", preserved_robjects); *\/ */
+/* /\* #endif  *\/ */
+/* /\*       int preserve_status = Rpy_ReleaseObject(sexpobj->sexp); *\/ */
+/* /\*       if (preserve_status == -1) { *\/ */
+/* /\* 	PyErr_Print(); *\/ */
+/* /\* 	PyErr_Clear(); *\/ */
+/* /\*       } *\/ */
+/* /\*     } *\/ */
+/*     /\* self->ob_type->tp_free((PyObject*)self); *\/ */
+/* #ifdef RPY_VERBOSE */
+/*     printf("done.\n"); */
+/* #endif  */
+/*   }   */
 }
 
 static void SexpObject_CObject_destroy(PyObject *rpycapsule)
@@ -136,6 +138,7 @@ static SexpObject* Rpy_PreserveObject(SEXP object) {
   if (res == NULL) {
     printf("Error while logging preserved object (exception propagated up).\n");
   } else if (object != R_NilValue) {
+    //printf("Preserving %p (type %i)\n", object, TYPEOF(object));
     R_PreserveObject(object);
   }
   return res;
@@ -194,32 +197,58 @@ static int Rpy_ReleaseObject(SEXP object) {
 
   switch (sexpobj_ptr->count) {
   case 0:
-    if (object == R_NilValue) {
-      break;
-    } else {
+    if (object != R_NilValue) {
       res = -1;
       PyErr_Format(PyExc_ValueError,
 		   "Preserved object ID %ld with a count of zero\n", 
 		   PyLong_AsLong(key));
       Py_DECREF(key);
       return res;
-      break;
     }
+    break;
   case 1:
     /* By deleting the capsule from the dictionary, the count of the SexpObject
       will go down by one, reach zero, and the release of the R object 
       will be performed. */
     if (object == R_NilValue) {
       sexpobj_ptr->count--;
-      break;
     } else {
       res = PyDict_DelItem(Rpy_R_Precious, key);
       if (res == -1)
 	PyErr_Format(PyExc_ValueError,
 		     "Occured while deleting preserved object ID %ld\n",  
 		     PyLong_AsLong(key));
+    }
+    break;
+  case 2:
+    /* When the refcount is exactly 2, we could have the following possible
+     * situations:
+     * A- 1 PySexpObject, 1 SexpObject in a capsule
+     * B- 2 SexpObject in a capsule
+     * C- 2 PySexObject
+     * Only A is effectively possible because each PySexpObject has
+     * an associated capsule (rules out C) and each capsule is unique
+     * for a given SEXP (rules out B).
+     * In addition to that, the reference counting in rpy2 is independent
+     * from Python's reference counting. This is means that in the situation A/
+     * above we can have n pointers to the PySexpObject and m pointers
+     * to the SexpObject. 
+     */
+    //  ob_refcnt;
+    if (PyLong_AsLong(key) == 0) {
+      printf("Count 2 for: %ld (R_NilValue %p)\n");
       break;
     }
+    if (object == R_NilValue) {
+      sexpobj_ptr->count--;
+    } else {
+      res = PyDict_DelItem(Rpy_R_Precious, key);
+      if (res == -1)
+  	PyErr_Format(PyExc_ValueError,
+  		     "Occured while deleting preserved object ID %ld\n",
+  		     PyLong_AsLong(key));
+    }
+    break;
   default:
     sexpobj_ptr->count--;
     break;
