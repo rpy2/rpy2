@@ -4,14 +4,19 @@ import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.robjects.packages import importr
 import copy
+import warnings
 
 NULL = robjects.NULL
 
 #getmethod = robjects.baseenv.get("getMethod")
 
 rimport = robjects.baseenv.get('library')
+
 ggplot2 = importr('ggplot2')
 
+TARGET_VERSION = '0.9.2.1'
+if ggplot2.__version__ != TARGET_VERSION:
+   warnings.warn('This was designed againt ggplot2 version %s but you have %s' % (TARGET_VERSION, ggplot2.__version__))
 ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
 
 StrVector = robjects.StrVector
@@ -24,7 +29,7 @@ class GGPlot(robjects.RObject):
 
     _constructor = ggplot2._env['ggplot']
     _rprint = ggplot2._env['print.ggplot']
-    _add = ggplot2._env['+.ggplot']
+    _add = ggplot2._env['%+%']
 
     @classmethod
     def new(cls, data):
@@ -36,7 +41,7 @@ class GGPlot(robjects.RObject):
 
     def __add__(self, obj):
         res = self._add(self, obj)
-        if res.rclass[0] != 'ggplot':
+        if res.rclass[0] != 'gg':
            raise ValueError("Added object did not give a ggplot result (get class '%s')." % res.rclass[0])
         return GGPlot(res)
 
@@ -528,6 +533,25 @@ class Options(robjects.Vector):
       s = '<instance of %s : %i>' %(type(self), id(self)) 
       return s
 
+
+class Element(Options):
+   pass
+
+class ElementText(Element):
+    _constructor = ggplot2.element_text
+    @classmethod
+    def new(cls, family = "", face = "plain", colour = "black", size = 10,
+            hjust = 0.5, vjust = 0.5, angle = 0, lineheight = 1.1, 
+            color = NULL):
+       res = cls(cls._constructor(family = family, face = face, 
+                                  colour = colour, size = size,
+                                  hjust = hjust, vjust = vjust, 
+                                  angle = angle, lineheight = lineheight))
+       return res
+element_text = ElementText.new
+
+
+
 class Theme(Options):
    pass
 
@@ -570,18 +594,6 @@ class ThemeSegment(Theme):
        return res
 theme_segment = ThemeSegment.new
 
-# Theme text is not a vector :/
-class ThemeText(robjects.Function):
-    _constructor = ggplot2.theme_text
-    @classmethod
-    def new(cls, family = "", face = "plain", colour = "black", size = 10,
-            hjust = 0.5, vjust = 0.5, angle = 0, lineheight = 1.1):
-       res = cls(cls._constructor(family = family, face = face, 
-                                  colour = colour, size = size,
-                                  hjust = hjust, vjust = vjust, 
-                                  angle = angle, lineheight = lineheight))
-       return res
-theme_text = ThemeText.new
 
 class ThemeBW(Theme):
     _constructor = ggplot2.theme_bw
@@ -630,7 +642,7 @@ def ggplot2_conversion(robj):
     if rcls is NULL:
        rcls = (None, )
 
-    if 'ggplot' in rcls:
+    if 'gg' in rcls:
        pyobj = GGPlot(pyobj)
 
     return pyobj
