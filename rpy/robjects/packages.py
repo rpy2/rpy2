@@ -12,6 +12,7 @@ _as_env = rinterface.baseenv['as.environment']
 _package_has_namespace = rinterface.baseenv['packageHasNamespace']
 _system_file = rinterface.baseenv['system.file']
 _get_namespace = rinterface.baseenv['getNamespace']
+_get_namespace_version = rinterface.baseenv['getNamespaceVersion']
 _get_namespace_exports = rinterface.baseenv['getNamespaceExports']
 _find_package = rinterface.baseenv['.find.package']
 _packages = rinterface.baseenv['.packages']
@@ -61,9 +62,11 @@ class Package(ModuleType):
     __fill_rpy2r__ = None
     __update_dict__ = None
     _exported_names = None
+    __version__ = None
 
     def __init__(self, env, name, translation = {}, 
-                 exported_names = None, on_conflict = 'fail'):
+                 exported_names = None, on_conflict = 'fail',
+                 version = None):
         """ Create a Python module-like object from an R environment,
         using the specified translation if defined. 
 
@@ -81,6 +84,7 @@ class Package(ModuleType):
         self._exported_names = exported_names
         self.__fill_rpy2r__(on_conflict = on_conflict)
         self._exported_names = self._exported_names.difference(mynames)
+        self.__version__ = version
                 
     def __update_dict__(self, on_conflict = 'fail'):
         """ Update the __dict__ according to what is in the R environment """
@@ -201,20 +205,23 @@ def importr(name,
     if _package_has_namespace(rname, 
                               _system_file(package = rname)):
         env = _get_namespace(rname)
+        version = _get_namespace_version(rname)[0]
         exported_names = set(_get_namespace_exports(rname))
     else:
         env = _as_env(rinterface.StrSexpVector(['package:'+name, ]))
         exported_names = None
-
+        version = None
     if signature_translation:
         pack = SignatureTranslatedPackage(env, name, 
                                           translation = robject_translations,
                                           exported_names = exported_names,
-                                          on_conflict = on_conflict)
+                                          on_conflict = on_conflict,
+                                          version = version)
     else:
         pack = Package(env, name, translation = robject_translations,
                        exported_names = exported_names,
-                       on_conflict = on_conflict)
+                       on_conflict = on_conflict,
+                       version = version)
         
     return pack
 

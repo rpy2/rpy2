@@ -689,7 +689,7 @@ vp = grid.viewport(width = 0.6, height = 0.6, x = 0.37, y=0.69)
 vp.push()
 p = ggplot2.ggplot(rock) + \
     ggplot2.geom_point(ggplot2.aes_string(x = 'area', y = 'shape')) + \
-    ggplot2.opts(**{'axis.text.x': ggplot2.theme_text(angle = 45)})
+    ggplot2.opts(**{'axis.text.x': ggplot2.element_text(angle = 45)})
 
 p.plot(vp = vp)
 
