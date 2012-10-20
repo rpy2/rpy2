@@ -76,16 +76,15 @@ versions to run rpy2 with.
 ======== ===========
 Software Versions
 ======== ===========
- Python   2.7, 3.3
- R        2.15, 2.16
+ Python   3.3
+ R        2.16
 ======== ===========
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
 building rpy2 will require the corresponding development headers 
 (check the documentation for more information about builing rpy2). 
 
-Python 3 versions < 3.3 and Python 2 versions < 2.7 are not supported.
-Consider using an earlier
+Python versions < 3.3 are not supported. Consider using an earlier
 version of rpy2 if you cannot / do not want to upgrade Python.
 
 Rpy2 is not expected to work at all with an R version < 2.8. The use of the
