@@ -663,6 +663,8 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   /* Since sourceObject is a Sexp_Type, the R object is
    already tracked. */
+
+  
   SexpObject *oldSexpObject = ((PySexpObject *)self)->sObj;
   SexpObject *newSexpObject = Rpy_PreserveObject(((PySexpObject *)sourceObject)->sObj->sexp);
   if (newSexpObject == NULL) {
@@ -673,7 +675,7 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
     return -1;
   }
   
-  RPY_INCREF((PySexpObject *)self);
+  //RPY_INCREF((PySexpObject *)self);
 #ifdef RPY_VERBOSE
   printf("Python: %p / R: %p - sexp count is now %i.\n", 
 	 (PySexpObject *)self, RPY_SEXP((PySexpObject *)self), RPY_COUNT((PySexpObject *)self));

@@ -208,7 +208,7 @@ class R(object):
             orig_ae = ae
 
         try:
-            return self[attr]
+            return self.__getitem__(attr)
         except LookupError, le:
             raise orig_ae
 
