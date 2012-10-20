@@ -110,7 +110,7 @@ static PyObject* EmbeddedR_unserialize(PyObject* self, PyObject* args);
 #include "sequence.h"
 #include "rexternalptr.h"
 
-static PySexpObject* newPySexpObject(const SEXP sexp, const int preserve);
+static PySexpObject* newPySexpObject(const SEXP sexp);
 /* Helper variable to quickly resolve SEXP types.
  * An array of strings giving either
  * the SEXP name (INTSXP, REALSXP, etc...), or a NULL
@@ -1502,7 +1502,7 @@ EmbeddedR_parse(PyObject *self, PyObject *pystring)
     /*FIXME: Fetch parsing error details*/
     return NULL;
   }
-  cmdpy = newPySexpObject(cmdexpr, 1);
+  cmdpy = newPySexpObject(cmdexpr);
   UNPROTECT(2);
   embeddedR_freelock();
   return cmdpy;
@@ -1762,7 +1762,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
   extern void Rf_PrintWarnings(void);
   Rf_PrintWarnings(); /* show any warning messages */
 
-  PyObject *res = (PyObject *)newPySexpObject(res_R, 1);
+  PyObject *res = (PyObject *)newPySexpObject(res_R);
   UNPROTECT(protect_count);
   embeddedR_freelock();
   return res;
@@ -1877,7 +1877,7 @@ SexpClosure_env_get(PyObject *self)
   embeddedR_setlock();
   closureEnv = CLOENV(sexp);
   embeddedR_freelock();
-  return newPySexpObject(closureEnv, 1);
+  return newPySexpObject(closureEnv);
 }
 PyDoc_STRVAR(SexpClosure_env_doc,
              "\n\
@@ -2043,7 +2043,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
 
   if (res_R != R_UnboundValue) {
     /* FIXME rpy_only */
-    res = newPySexpObject(res_R, 1);
+    res = newPySexpObject(res_R);
   } else {
     PyErr_Format(PyExc_LookupError, "'%s' not found", name);
     res = NULL;
@@ -2077,7 +2077,7 @@ EnvironmentSexp_frame(PyObject *self)
   embeddedR_setlock();
 
   res_R = FRAME(RPY_SEXP((PySexpObject *)self));
-  res = newPySexpObject(res_R, 1);
+  res = newPySexpObject(res_R);
   return (PyObject *)res;
 }
 PyDoc_STRVAR(EnvironmentSexp_frame_doc,
@@ -2100,7 +2100,7 @@ EnvironmentSexp_enclos(PyObject *self)
   SEXP res_R = NULL;
   PySexpObject *res;
   res_R = ENCLOS(RPY_SEXP((PySexpObject *)self));
-  res = newPySexpObject(res_R, 1);
+  res = newPySexpObject(res_R);
   embeddedR_freelock();
   return (PyObject *)res;
 }
@@ -2179,7 +2179,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
     Py_DECREF(pybytes);
 #endif
     embeddedR_freelock();
-    return newPySexpObject(res_R, 1);
+    return newPySexpObject(res_R);
   }
   PyErr_Format(PyExc_LookupError, "'%s' not found", name);
 #if (PY_VERSION_HEX >= 0x03010000)
@@ -2380,7 +2380,7 @@ EnvironmentSexp_iter(PyObject *sexpEnvironment)
   }
   SEXP symbols;
   PROTECT(symbols = R_lsInternal(rho_R, TRUE));
-  PySexpObject *seq = newPySexpObject(symbols, 1);
+  PySexpObject *seq = newPySexpObject(symbols);
   Py_INCREF(seq);
   UNPROTECT(1);
  
@@ -2621,15 +2621,11 @@ static PyTypeObject LangSexp_Type = {
  * Given an R SEXP object, it creates a 
  * PySexpObject that is an rpy2 Python representation
  * of an R object.
- * if preserve is not 0, it the resulting object is 'preserved'
- * (that flag is made necessary by the getters in SexpExtPtr,
- * as its SEXP items are already preserved by R).
  *
  * In case of error, this returns NULL.
  */
-
 static PySexpObject*
-  newPySexpObject(const SEXP sexp, const int preserve)
+  newPySexpObject(const SEXP sexp)
 {
   PySexpObject *object;
   SEXP sexp_ok, env_R;
@@ -2651,20 +2647,6 @@ static PySexpObject*
   }
 
   SexpObject *sexpobj_ptr;
-  /*FIXME: recode to have the test for NILSXP in a cleaner workflow */
-  if (sexp_ok && preserve && TYPEOF(sexp_ok) != NILSXP) {
-    //R_PreserveObject(sexp_ok);
-    sexpobj_ptr = Rpy_PreserveObject(sexp_ok);
-    if (sexpobj_ptr == NULL) {
-      /* Python error set/propagated by Rpy_PreserveObject */
-      return NULL;
-    }
-#ifdef RPY_DEBUG_PRESERVE
-    preserved_robjects += 1;
-    printf("  PRESERVE -- R_PreserveObject -- %p -- %i\n", 
-           sexp_ok, preserved_robjects);
-#endif 
-  }
 
   switch (TYPEOF(sexp_ok)) {
   case NILSXP:
@@ -2709,14 +2691,6 @@ static PySexpObject*
     preserved_robjects -= 1;
     printf("-- %i\n", preserved_robjects);
 #endif
-    if (preserve) {
-      int release_status = Rpy_ReleaseObject(sexp_ok);
-      if (release_status == -1) {
-	printf("Error: double trouble. Error while releasing the R object\n");
-	PyErr_Print();
-	PyErr_Clear();
-      }
-    }
     /* FIXME: Override possible error message from Rpy_ReleaseObject 
     (should an aggregated error message be made ? */
     PyErr_NoMemory();
@@ -3014,29 +2988,6 @@ newSEXP(PyObject *object, int rType)
 
 /* --- Find a variable in an environment --- */
 
-/* FIXME: is this any longer useful ? */
-static PySexpObject*
-EmbeddedR_findVar(PyObject *self, PyObject *args)
-{
-  char *name;
-  SEXP rho_R = R_GlobalEnv, res;
-  PyObject rho;
-
-  if (!PyArg_ParseTuple(args, "s", &name, &rho)) { 
-    return NULL; 
-  }
-
-  res = findVar(install(name), rho_R);
-
-
-  if (res != R_UnboundValue) {
-    return newPySexpObject(res, 1);
-  }
-  PyErr_Format(PyExc_LookupError, "'%s' not found", name);
-  return NULL;
-}
-PyDoc_STRVAR(EmbeddedR_findVar_doc,
-             "Find a variable in R's .GlobalEnv.");
 
 static PyObject*
 EmbeddedR_sexpType(PyObject *self, PyObject *args)
@@ -3110,8 +3061,6 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_setCleanUp_doc},
   {"get_cleanup",      (PyCFunction)EmbeddedR_getCleanUp,     METH_VARARGS,
    EmbeddedR_getCleanUp_doc},
-  {"findVarEmbeddedR",  (PyCFunction)EmbeddedR_findVar,  METH_VARARGS,
-   EmbeddedR_findVar_doc},
   {"parse",  (PyCFunction)EmbeddedR_parse,  METH_O,
    EmbeddedR_parse_doc},
   {"process_revents", (PyCFunction)EmbeddedR_ProcessEvents, METH_NOARGS,
@@ -3176,7 +3125,7 @@ do_Python(SEXP args)
 	PyList_Append(pyargs, (PyObject *)R_ExternalPtrAddr(sexp));
       }
       else {
-	PyList_Append(pyargs, (PyObject *)newPySexpObject(sexp, 1));
+	PyList_Append(pyargs, (PyObject *)newPySexpObject(sexp));
       }
     } else {
       tag = CHAR(PRINTNAME(TAG(args)));
@@ -3187,7 +3136,7 @@ do_Python(SEXP args)
       }
       else {
 	ok_setnamedarg = PyDict_SetItemString(pynargs, tag, 
-					      (PyObject *)newPySexpObject(sexp, 1));
+					      (PyObject *)newPySexpObject(sexp));
       }
       if (ok_setnamedarg == -1) {
 	error("rpy2: Error while setting a named argument");

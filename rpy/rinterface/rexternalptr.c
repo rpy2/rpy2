@@ -161,7 +161,7 @@ ExtPtrSexp_tag(PySexpObject *self)
   }
   embeddedR_setlock();
   SEXP rtag = R_ExternalPtrTag(self->sObj->sexp);
-  PySexpObject *res = newPySexpObject(rtag, 0);
+  PySexpObject *res = newPySexpObject(rtag);
   embeddedR_freelock();
   return res;
 }
@@ -179,7 +179,7 @@ ExtPtrSexp_protected(PySexpObject *self)
   }
   embeddedR_setlock();
   SEXP rtag = R_ExternalPtrProtected(self->sObj->sexp);
-  PySexpObject *res = newPySexpObject(rtag, 0);
+  PySexpObject *res = newPySexpObject(rtag);
   embeddedR_freelock();
   return res;
 }

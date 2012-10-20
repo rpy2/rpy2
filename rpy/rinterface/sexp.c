@@ -110,7 +110,7 @@ Sexp_list_attr(PyObject *self)
   }
   SEXP res_R;
   PROTECT(res_R = rpy_list_attr(sexp));
-  PyObject *res = (PyObject *)newPySexpObject(res_R, 1);
+  PyObject *res = (PyObject *)newPySexpObject(res_R);
   UNPROTECT(1);
   return res;
 }
@@ -148,7 +148,7 @@ Sexp_do_slot(PyObject *self, PyObject *name)
 #if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
 #endif
-  PyObject *res = (PyObject *)newPySexpObject(res_R, 1);
+  PyObject *res = (PyObject *)newPySexpObject(res_R);
   return res;
 }
 PyDoc_STRVAR(Sexp_do_slot_doc,
@@ -302,7 +302,7 @@ Sexp_rclass_get(PyObject *self)
   }
 
   SEXP res_R = GET_CLASS(sexp);
-  PyObject *res = (PyObject *)newPySexpObject(res_R, 1);
+  PyObject *res = (PyObject *)newPySexpObject(res_R);
   return res;
 }
 PyDoc_STRVAR(Sexp_rclass_doc,
@@ -384,7 +384,7 @@ Sexp_duplicate(PyObject *self, PyObject *kwargs)
     return NULL;;
   }
   PROTECT(sexp_copy = Rf_duplicate(sexp_self));
-  res = (PyObject *) newPySexpObject(sexp_copy, 1);
+  res = (PyObject *) newPySexpObject(sexp_copy);
   UNPROTECT(1);
   return res;
 }
@@ -493,7 +493,7 @@ EmbeddedR_unserialize(PyObject* self, PyObject* args)
                  " (expected %i but got %i)", rtype, TYPEOF(raw_sexp));
     return NULL;
   }
-  res = (PyObject*)newPySexpObject(sexp_ser, 1);
+  res = (PyObject*)newPySexpObject(sexp_ser);
   
   UNPROTECT(2);
   embeddedR_freelock();

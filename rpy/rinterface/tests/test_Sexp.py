@@ -133,12 +133,27 @@ class SexpTestCase(unittest.TestCase):
     def testSexp_sexp_set(self):
         x = rinterface.IntSexpVector([1,2,3])
         x_s = x.__sexp__
-        self.assertEquals(2, x.__sexp_refcount__)
+        x_rid = x.rid
+        # The Python reference count of the capsule is incremented,
+        # not the rpy2 reference count
+        self.assertEquals(1, x.__sexp_refcount__)
         y = rinterface.IntSexpVector([4,5,6])
         y_count = y.__sexp_refcount__
+        y_rid = y.rid
+        self.assertEquals(1, y_count)
+        self.assertTrue(x_rid in [elt[0] for elt in rinterface.protected_rids()])
         x.__sexp__ = y.__sexp__
-        self.assertEquals(y_count+1, x.__sexp_refcount__)
+        self.assertFalse(x_rid in [elt[0] for elt in rinterface.protected_rids()])
+        self.assertEquals(x.rid, y.rid)
+        self.assertEquals(y_rid, y.rid)
+        # now both x and y point to the same capsule, making
+        # the rpy2 reference count to 2
         self.assertEquals(x.__sexp_refcount__, y.__sexp_refcount__)
+        self.assertEquals(y_count+1, x.__sexp_refcount__)
+        del(x)
+        self.assertTrue(y_rid in [elt[0] for elt in rinterface.protected_rids()])
+        del(y)
+        self.assertFalse(y_rid in [elt[0] for elt in rinterface.protected_rids()])
         
     def testSexp_deepcopy(self):
         sexp = rinterface.IntSexpVector([1,2,3])

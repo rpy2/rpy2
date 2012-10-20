@@ -236,18 +236,20 @@ static int Rpy_ReleaseObject(SEXP object) {
      */
     //  ob_refcnt;
     if (PyLong_AsLong(key) == 0) {
-      printf("Count 2 for: %ld (R_NilValue %p)\n");
+      printf("Count 2 for: 0\n");
       break;
     }
-    if (object == R_NilValue) {
-      sexpobj_ptr->count--;
-    } else {
-      res = PyDict_DelItem(Rpy_R_Precious, key);
-      if (res == -1)
-  	PyErr_Format(PyExc_ValueError,
-  		     "Occured while deleting preserved object ID %ld\n",
-  		     PyLong_AsLong(key));
-    }
+    sexpobj_ptr->count--;
+    /* if (object == R_NilValue) { */
+    /*   sexpobj_ptr->count--; */
+    /* } else { */
+    /*   //printf("-->use to delete %ld here\n", PyLong_AsLong(key)); */
+    /*   res = PyDict_DelItem(Rpy_R_Precious, key); */
+    /*   if (res == -1) */
+    /*   	PyErr_Format(PyExc_ValueError, */
+    /*   		     "Occured while deleting preserved object ID %ld\n", */
+    /*   		     PyLong_AsLong(key)); */
+    /* } */
     break;
   default:
     sexpobj_ptr->count--;
@@ -314,9 +316,11 @@ static PyObject* Rpy_ProtectedIDs(PyObject *self) {
 /* return 0 on success, -1 on failure (and set an exception) */
 static inline int Rpy_ReplaceSexp(PySexpObject *pso, SEXP rObj) {
   SexpObject *sexpobj_ptr = Rpy_PreserveObject(rObj);
+  //printf("target: %zd\n", sexpobj_ptr->count);
   if (sexpobj_ptr == NULL) {
     return -1;
   }
+  //printf("orig: %zd\n", pso->sObj->count);
   int res = Rpy_ReleaseObject(pso->sObj->sexp);
   pso->sObj = sexpobj_ptr;
   return res;
