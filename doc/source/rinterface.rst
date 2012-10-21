@@ -175,10 +175,17 @@ For example:
 >>> x = rinterface.IntVector((1,2,3))
 
 creates a fully usable R vector, but it does not have an associtated
-R symbol (it is in memory, but cannot be called by name). It is will be
-protected from garbage collection until the Python garbage collector
-claims it.
+R symbol (it is in memory, but cannot be called by name fomr R). It is 
+also protected from garbage collection until, until
+`x` is deleted and the Python garbage collector destroys `x`.
 
+.. note::
+
+   To finalize the recovery of the memory used, the R garbage collector
+   must be also be called. This should happen automatically while running
+   R code when a threshold of memory usage is reached, but it
+   is also possible to call explicitly both garbage collectors.
+   See :ref:`rinterface-memory` for more details.
 
 Pass-by-value paradigm
 ----------------------
@@ -248,6 +255,9 @@ are copied. Whenever this is not a good thing, R objects can be copied the
 way Python objects are usually copied (using :func:`copy.deepcopy`,
 :class:`Sexp` implements :meth:`Sexp.__deepcopy__`).
 
+
+.. _rinterface-memory:
+
 Memory management and garbage collection
 ----------------------------------------
 
@@ -276,9 +286,9 @@ from garbage collection, is available:
 
 >>> import rpy2.rinterface as ri
 >>> ri.initr()
->>> x = ri.SexpIntVector([1,2,3])
+>>> x = ri.IntSexpVector([1,2,3])
 >>> x.__sexp_refcount__
-2
+1
 
 To keep closer to the pass-by-reference approach in Python,
 the :c:type:`SexpObject` for a given R object is not part of a Python object
@@ -296,7 +306,6 @@ The Python objects exposing R objects look like:
 
 In addition to that a structure keeps a record of R objects tracked.
 
-
 After the usual initialization bit
 
 .. code-block:: python
@@ -309,28 +318,41 @@ we expose the R variable `letters` to Python:
 >>> letters = ri.baseenv.get('letters')
 >>> letters.rid # this is session-dependent, you'll have a different number
 123456
->>> letters.__sexp_refcount__
-2
+>>> letters.__sexp_refcount__ # may vary (see note below)
+1
 >>> letters_again = ri.baseenv.get('letters')
 >>> letters_again.__sexp_refcount__
-3
+2
 >>> letters.__sexp_refcount__ # same reference count
-3
+2
 >>> letters_again.rid # same R ID as before 
 123456
 
 
 .. note::
 
-   The starting count it `2` because behind the scene the structure
-   that keeps track
-   of objects is itself an construct with Python objects.
+   The exact count will depend on what has happened with the current Python
+   process, that is whether the R object is already tracked by rpy2 or not.
 
-   >>> letters_cstruct = letters.__sexp__
-   >>> del(letters)
-   >>> letters_cstruct.__sexp_refcount__
-   1
 
+The underlying R object can be passed around as an opaque C structure,
+using the attribute :attr:`__sexp__` (a Python `capsule`).
+Behind the scene, that C structure
+is a singleton: given an R object, it is created with the first Python object
+exposing it and a counter is increased (and decreased) as other Python object
+expose it as well (and those objects are eventually garbage collected). 
+
+The tracking of the capsule itself is what is protects the
+object from garbage collection on the R side.
+
+>>> letters_cstruct = letters.__sexp__
+>>> del(letters, letters_again)
+
+The underlying R object is available for collection after the capsule
+is deleted (that particular object won't be deleted because R itself tracks it
+as part of the base package).
+
+>>> del(letters_cstruct)
 
 
 NAMED
