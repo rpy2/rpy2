@@ -73,7 +73,7 @@ static void SexpObject_CObject_destroy(PyObject *rpycapsule)
 /* Keep track of R objects preserved by rpy2 
    Return NULL on failure (a Python exception being set) 
  */
-static SexpObject* _Rpy_PreserveObject(SEXP object) {
+static SexpObject* Rpy_PreserveObject(SEXP object) {
   /* PyDict can be confused if an error has been raised.
      We put aside the exception if the case, to restore it at the end.
      FIXME: this situation can occur because of presumed shortcomings
@@ -113,6 +113,9 @@ static SexpObject* _Rpy_PreserveObject(SEXP object) {
       return NULL;
     }
     Py_DECREF(capsule);
+    if (object != R_NilValue) {
+      R_PreserveObject(object);
+    }
   } else {
     /* Reminder: capsule is a borrowed reference */
     sexpobj_ptr = (SexpObject *)(PyCapsule_GetPointer(capsule,
@@ -133,16 +136,6 @@ static SexpObject* _Rpy_PreserveObject(SEXP object) {
   return sexpobj_ptr;
 } 
 
-static SexpObject* Rpy_PreserveObject(SEXP object) {
-  SexpObject *res = _Rpy_PreserveObject(object);
-  if (res == NULL) {
-    printf("Error while logging preserved object (exception propagated up).\n");
-  } else if (object != R_NilValue) {
-    //printf("Preserving %p (type %i)\n", object, TYPEOF(object));
-    R_PreserveObject(object);
-  }
-  return res;
-}
 /* static int Rpy_PreserveObject(SEXP object) { */
 /* R_ReleaseObject(RPY_R_Precious); */
 /* PROTECT(RPY_R_Precious); */
@@ -235,10 +228,10 @@ static int Rpy_ReleaseObject(SEXP object) {
      * to the SexpObject. 
      */
     //  ob_refcnt;
-    if (PyLong_AsLong(key) == 0) {
-      printf("Count 2 for: 0\n");
-      break;
-    }
+    /* if (PyLong_AsLong(key) == 0) { */
+    /*   printf("Count 2 for: 0\n"); */
+    /*   break; */
+    /* } */
     sexpobj_ptr->count--;
     /* if (object == R_NilValue) { */
     /*   sexpobj_ptr->count--; */
@@ -321,7 +314,8 @@ static inline int Rpy_ReplaceSexp(PySexpObject *pso, SEXP rObj) {
     return -1;
   }
   //printf("orig: %zd\n", pso->sObj->count);
-  int res = Rpy_ReleaseObject(pso->sObj->sexp);
+  SEXP sexp = pso->sObj->sexp;
   pso->sObj = sexpobj_ptr;
+  int res = Rpy_ReleaseObject(sexp);
   return res;
 }

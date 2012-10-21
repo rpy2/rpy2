@@ -664,6 +664,11 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   /* Since sourceObject is a Sexp_Type, the R object is
    already tracked. */
 
+  /* int swap = Rpy_ReplaceSexp(((PySexpObject *)self)->sObj, */
+  /* 			     ((PySexpObject *)sourceObject)->sObj->sexp); */
+  /* if (swap == -1) { */
+  /*   return -1; */
+  /* } */
   
   SexpObject *oldSexpObject = ((PySexpObject *)self)->sObj;
   SexpObject *newSexpObject = Rpy_PreserveObject(((PySexpObject *)sourceObject)->sObj->sexp);
@@ -685,7 +690,6 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 #ifdef RPY_VERBOSE
   printf("done.\n");
 #endif 
-
   /* SET_NAMED(RPY_SEXP((PySexpObject *)self), (unsigned int)2); */
   return 0;
 }
