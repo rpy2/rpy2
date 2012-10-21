@@ -1708,6 +1708,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
         goto fail;
       }
     }
+    
     if (! tmp_R) {
       PyErr_Format(PyExc_ValueError, "NULL SEXP.");
       Py_DECREF(tmp_obj);
@@ -1805,6 +1806,7 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   /* Tuple to hold (name, value) pairs for Sexp_rcall().
    * This must be DECREFed when exiting.
    */
+
   params = PyTuple_New(n_params);
 
   /* Populate with unnamed parameters first */
@@ -1824,7 +1826,8 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
 
     PyTuple_SET_ITEM(params, p_i,
                      tmp_pair);
-    /* PyTuple_SET_ITEM() "steals" a reference, so no DECREF necessary */
+    /* PyTuple_SET_ITEM() "steals" a reference, 
+       so no DECREF necessary */
   }
 
   if (n_namedparams > 0) {
@@ -1848,6 +1851,10 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
     }
   }
 
+  /* Build a tuple with the parameters for Sexp_rcall():
+     - params built above
+     - an R environment
+     */
   new_args = PyTuple_New(2);
   PyTuple_SET_ITEM(new_args, 0, params);
   /* reference to params stolen, no need to change refcount for params */
@@ -1855,7 +1862,6 @@ Sexp_call(PyObject *self, PyObject *args, PyObject *kwds)
   PyTuple_SET_ITEM(new_args, 1, (PyObject *)globalEnv);
 
   res = Sexp_rcall(self, new_args);
-
   Py_DECREF(new_args);
   return res;
 }
@@ -1875,9 +1881,11 @@ SexpClosure_env_get(PyObject *self)
     return NULL;
   }
   embeddedR_setlock();
-  closureEnv = CLOENV(sexp);
+  PROTECT(closureEnv = CLOENV(sexp));
   embeddedR_freelock();
-  return newPySexpObject(closureEnv);
+  PySexpObject *res = newPySexpObject(closureEnv);
+  UNPROTECT(1);
+  return res;
 }
 PyDoc_STRVAR(SexpClosure_env_doc,
              "\n\
@@ -2636,11 +2644,12 @@ static PySexpObject*
   }
   /* FIXME: let the possibility to manipulate un-evaluated promises ? */
   if (TYPEOF(sexp) == PROMSXP) {
-    env_R = PRENV(sexp);
-    sexp_ok = eval(sexp, env_R);
+    PROTECT(env_R = PRENV(sexp));
+    PROTECT(sexp_ok = eval(sexp, env_R));
 #ifdef RPY_DEBUG_PROMISE
     printf("  evaluating promise %p into %p.\n", sexp, sexp_ok);
 #endif 
+    UNPROTECT(2);
   } 
   else {
     sexp_ok = sexp;

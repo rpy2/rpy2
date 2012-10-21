@@ -1020,6 +1020,8 @@ VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
       return -1;
     }
   } else {
+    /* The parameter is not already a PySexpObject. Create
+     the necessary PySexpObjects. */
     int is_sequence = PySequence_Check(object);
     if ( !is_sequence ) {
       Py_ssize_t length = PyObject_Length(object);
