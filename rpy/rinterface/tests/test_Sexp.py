@@ -92,8 +92,8 @@ class SexpTestCase(unittest.TestCase):
         sexp_count = sexp.__sexp_refcount__
         sexp_cobj = sexp.__sexp__
         d = dict(rinterface._rinterface.protected_rids())
-        self.assertEquals(sexp_count, d[sexp.rid])
-        self.assertEquals(sexp_count, sexp.__sexp_refcount__)
+        self.assertEqual(sexp_count, d[sexp.rid])
+        self.assertEqual(sexp_count, sexp.__sexp_refcount__)
         sexp2 = rinterface.IntSexpVector([4,5,6,7])
         sexp2_rid = sexp2.rid
         sexp2.__sexp__ = sexp_cobj
@@ -116,14 +116,14 @@ class SexpTestCase(unittest.TestCase):
         sexp_count = sexp.__sexp_refcount__
         cobj = sexp.__sexp__
         # check that no increase in the refcount: the capsule is unique
-        self.assertEquals(sexp_count, sexp.__sexp_refcount__)
-        self.assertEquals(sexp_count, 
-                          dict(rinterface.protected_rids())[sexp.rid])
+        self.assertEqual(sexp_count, sexp.__sexp_refcount__)
+        self.assertEqual(sexp_count, 
+                         dict(rinterface.protected_rids())[sexp.rid])
         del(cobj)
         gc.collect()
-        self.assertEquals(sexp_count, sexp.__sexp_refcount__)
-        self.assertEquals(sexp_count, 
-                          dict(rinterface.protected_rids())[sexp.rid])
+        self.assertEqual(sexp_count, sexp.__sexp_refcount__)
+        self.assertEqual(sexp_count, 
+                         dict(rinterface.protected_rids())[sexp.rid])
         sexp_rid = sexp.rid
         del(sexp)
         gc.collect()
@@ -136,20 +136,20 @@ class SexpTestCase(unittest.TestCase):
         x_rid = x.rid
         # The Python reference count of the capsule is incremented,
         # not the rpy2 reference count
-        self.assertEquals(1, x.__sexp_refcount__)
+        self.assertEqual(1, x.__sexp_refcount__)
         y = rinterface.IntSexpVector([4,5,6])
         y_count = y.__sexp_refcount__
         y_rid = y.rid
-        self.assertEquals(1, y_count)
+        self.assertEqual(1, y_count)
         self.assertTrue(x_rid in [elt[0] for elt in rinterface.protected_rids()])
         x.__sexp__ = y.__sexp__
         self.assertFalse(x_rid in [elt[0] for elt in rinterface.protected_rids()])
-        self.assertEquals(x.rid, y.rid)
-        self.assertEquals(y_rid, y.rid)
+        self.assertEqual(x.rid, y.rid)
+        self.assertEqual(y_rid, y.rid)
         # now both x and y point to the same capsule, making
         # the rpy2 reference count to 2
-        self.assertEquals(x.__sexp_refcount__, y.__sexp_refcount__)
-        self.assertEquals(y_count+1, x.__sexp_refcount__)
+        self.assertEqual(x.__sexp_refcount__, y.__sexp_refcount__)
+        self.assertEqual(y_count+1, x.__sexp_refcount__)
         del(x)
         self.assertTrue(y_rid in [elt[0] for elt in rinterface.protected_rids()])
         del(y)
@@ -174,7 +174,7 @@ class SexpTestCase(unittest.TestCase):
 
     def testRID(self):
         globalenv_id = rinterface.baseenv.get('.GlobalEnv').rid
-        self.assertEquals(globalenv_id, rinterface.globalenv.rid)
+        self.assertEqual(globalenv_id, rinterface.globalenv.rid)
         
 class RNULLTestCase(unittest.TestCase):
     def testRNULLType_nonzero(self):
