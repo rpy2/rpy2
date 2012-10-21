@@ -9,4 +9,5 @@ Miscellaneous topics
    rpy_classic
    related_projects
    performances
+   graphicaldevices
 
