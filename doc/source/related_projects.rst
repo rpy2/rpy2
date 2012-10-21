@@ -2,11 +2,6 @@
 Related projects
 ****************
 
-Other interfaces
-================
-
-The `rtools <http://pypi.python.org/pypi/rtools>`_ package proposes
-variations on the higher-level interface in rpy2.
 
 
 Bioinformatics
@@ -58,18 +53,18 @@ ipython: interactive-python shell
 Developed under of the `scipy <http://scipy.org>` (Scientific Python) umbrella,
 ipython has an "R magic" mode since its release 0.13.
 
-Ipython has also a system of noteboks and a server backend,
-very convenient for running R on remote servers. Check its
-documentation. 
+Used with Ipython system of noteboks and a server backend, it is possible to
+have a lab notebook tracking code and figures in interactive session, as well as
+broadcast or share a session. Check the documentation of iPython for further details. 
 
 .. note::
 
-   Historical note:
-   
-   The "R magic" bears similarities with the extension to rpy2 :mod:`rnumpy`,
-   developped for rpy2-2.0.x series and seemingly unmaintained since then.
+   The "R magic" seems to be a continuation of the extension to rpy2 :mod:`rnumpy`,
+   developped for rpy2-2.0.x series and unfortunately seemingly unmaintained since then.
+   It is truly great to see no one else but the iPython developers themselves find interest
+   in having R accessible from iPython.
 
-   More details on rnumpy can be found on the 
+   Code historians can find details on the 
    `rnumpy page <http://bitbucket.org/njs/rnumpy/wiki/Home>`_
 
 
@@ -100,6 +95,17 @@ The `RPyGTK project <http://code.google.com/p/rpygtk/>`_ demonstrates how
 :mod:`rpy2` can be used to implement a full-blown GUI for R using python.
 
 
+Alternative interfaces
+=======================
+
+The `rtools <http://pypi.python.org/pypi/rtools>`_ package proposes additions / customizations of the higher-level
+interface in rpy2.
+
+The `pandas <http://pypi.python.org/pypi/pandas>` package proposes an interpretation of data frames in Python,
+tied to numpy structures. A custom interfacing with rpy2 is mentioned, but it appears not as much developed as
+the rest of the project.
+
+
 R-like data strucutures
 =======================
 
@@ -110,3 +116,4 @@ In :mod:`rpy2` the original R `data.frame` is represented by
 has a pure Python implementation of them (with a compatibility
 layer with :mod:`rpy2` providing a seamless transition
 whenever needed.
+
