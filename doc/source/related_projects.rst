@@ -48,7 +48,7 @@ Obviously the Python console can be used, but there exist improvements to it, ma
 the user experience more pleasant with features such as history and autocompletion.
 
 ipython: interactive-python shell
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------
 
 Developed under of the `scipy <http://scipy.org>` (Scientific Python) umbrella,
 ipython has an "R magic" mode since its release 0.13.
@@ -70,7 +70,7 @@ broadcast or share a session. Check the documentation of iPython for further det
 
 
 Other interactive environments
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 
 * bpython: curse-based enhancement to the Python console
 
