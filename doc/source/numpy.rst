@@ -35,7 +35,7 @@ present an interface recognized by `numpy`.
    import numpy
 
    datasets = importr('datasets')
-   ostatus = datasets.occupationalStatus
+   ostatus = datasets.data.fetch('occupationalStatus')['occupationalStatus']
    ostatus_np = numpy.array(ostatus)
    ostatus_npnc = numpy.asarray(ostatus)
 
