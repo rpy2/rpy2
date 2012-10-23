@@ -30,10 +30,8 @@ dataf_rnorm = robjects.DataFrame({'value': rnorm(300, mean=0) + rnorm(100, mean=
 grdevices.png('../../_static/graphics_lattice_xyplot_1.png',
               width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- xyplot1-begin
-utils = importr('utils')
-tmpenv = robjects.Environment()
-utils.data("mtcars", package = "datasets", envir = tmpenv)
-mtcars = tmpenv["mtcars"]
+datasets = importr('datasets')
+mtcars = datasets.data.fetch('mtcars')['mtcars']
 formula = Formula('mpg ~ wt')
 formula.getenvironment()['mpg'] = mtcars.rx2('mpg')
 formula.getenvironment()['wt'] = mtcars.rx2('wt')
@@ -113,8 +111,7 @@ import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 base = importr('base')
 
-utils.data("mtcars", package = "datasets", envir = tmpenv)
-mtcars = tmpenv["mtcars"]
+mtcars = datasets.data.fetch('mtcars')['mtcars']
 
 #-- setupggplot2-end
 

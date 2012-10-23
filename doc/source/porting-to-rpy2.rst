@@ -57,7 +57,7 @@ R's own collection of datasets:
 .. code-block:: python
 
    datasets = importr('datasets')
-   faithful_data = datasets.faithful
+   faithful_data = datasets.data.fetch('faithful')['faithful']
 
 Summary
 """""""
