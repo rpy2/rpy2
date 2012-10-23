@@ -24,14 +24,21 @@ New Features
 
 :mod:`rpy2.rinteractive`:
 
-- dynamic build of Python docstrings out of the R manual pages
+- Dynamic build of Python docstrings out of the R manual pages
 
 :mod:`rpy2.robjects.help`:
 
-- build dynamic help
+- Build dynamic help
 
-- build anonymous R packages from strings
+:mod:`rpy2.robjects.packages:
 
+- Build anonymous R packages from strings
+
+- When using :func:`importr`, the datasets are added as an attribute
+  :attr:`data`, itself an instance of a new class :class:`PackageData`.
+  It no longer possible to access datasets are regular objects from
+  a code package (because of changes in R), and the new system is
+  more robust against quirks.
 
 Changes
 -------
