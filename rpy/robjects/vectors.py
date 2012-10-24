@@ -5,7 +5,7 @@ import conversion
 
 import rpy2.rlike.container as rlc
 
-import sys, copy, os, itertools
+import sys, copy, os, itertools, math
 import time
 from time import struct_time, mktime
 
@@ -286,13 +286,13 @@ class Vector(RObjectMixin, SexpVector):
                 if len(x) < max_width:
                     res = x
                 else:
-                    res = "%s..." %x[ : (max_width - 3)]
+                    res = "%s..." % (x[ : (max_width - 3)])
             return res
 
         l = len(self)
         if l < 7:
             s = '[' + \
-                ', '.join((p_str(x, max_width = 52 / l) for x in self[ : 8])) +\
+                ', '.join((p_str(x, max_width = math.floor(52 / l)) for x in self[ : 8])) +\
                 ']'
         else:
             s = '[' + \
