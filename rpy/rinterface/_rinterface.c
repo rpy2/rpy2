@@ -439,9 +439,10 @@ EmbeddedR_ShowMessage(const char *buf)
   PyOS_setsig(SIGINT, python_sighandler);
   arglist = Py_BuildValue("(s)", buf);
   if (! arglist) {
-    PyErr_NoMemory();
-/*     signal(SIGINT, old_int); */
-/*     return NULL;  */
+    //PyErr_NoMemory();
+    printf("Ouch. Likely a out of memory.\n");
+    signal(SIGINT, old_int);
+    return;
   }
 
   if (showMessageCallback == NULL) {
@@ -627,13 +628,13 @@ PyDoc_STRVAR(EmbeddedR_getFlushConsole_doc,
 static void
 EmbeddedR_FlushConsole(void)
 {
-  PyObject *result;
 
   const int is_threaded = PyEval_ThreadsInitialized();
   PyGILState_STATE gstate;
   RPY_GIL_ENSURE(is_threaded, gstate);
 
-  result = PyEval_CallObject(flushConsoleCallback, NULL);
+  //PyObject *result (returned by call below);
+  PyEval_CallObject(flushConsoleCallback, NULL);
   PyObject* pythonerror = PyErr_Occurred();
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
@@ -2655,8 +2656,6 @@ static PySexpObject*
     sexp_ok = sexp;
   }
 
-  SexpObject *sexpobj_ptr;
-
   switch (TYPEOF(sexp_ok)) {
   case NILSXP:
     object = (PySexpObject *)RNULL_Type_New(1);
@@ -2816,6 +2815,11 @@ newSEXP(PyObject *object, int rType)
 #else
       ok = PyBytes_AsStringAndSize(item, &buffer, &size_tmp);
 #endif
+      if (ok == -1) {
+	PyErr_Clear();
+	printf("Error while converting to Bytes element %zd.\n", i);
+	continue;
+      }
       if (size_tmp > 1) {
 	/*FIXME: raise an error */
 	printf("Invalid input for RAW. Truncating...\n");
@@ -3512,19 +3516,50 @@ PyInit__rinterface(void)
 
 
   RPY_R_VERSION_BUILD = PyTuple_New(4);
-  int ii;
-  for (ii=0; ii<4; ii++) {
-#if (PY_VERSION_HEX < 0x03010000)  
-    PYASSERT_ZERO(
-		  PyTuple_SetItem(RPY_R_VERSION_BUILD, ii, 
-				  PyString_FromString(RPY_R_VERSION_LIST[ii]))
-		  );
-#else
-    if (PyTuple_SetItem(RPY_R_VERSION_BUILD, ii, 
-			PyBytes_FromString(RPY_R_VERSION_LIST[ii])) < 0) 
-      return NULL;
+#if (PY_VERSION_HEX < 0x03010000)
+  PYASSERT_ZERO(
+		PyTuple_SetItem(RPY_R_VERSION_BUILD, 0, 
+				PyString_FromString(R_MAJOR))
+		);
+  PYASSERT_ZERO(
+		PyTuple_SetItem(RPY_R_VERSION_BUILD, 1, 
+				PyString_FromString(R_MINOR))
+		);
+  PYASSERT_ZERO(
+		PyTuple_SetItem(RPY_R_VERSION_BUILD, 2, 
+				PyString_FromString(R_STATUS))
+		);
+# else
+  if (PyTuple_SetItem(RPY_R_VERSION_BUILD, 0, 
+		      PyUnicode_FromString(R_MAJOR)) < 0) 
+    return NULL;
+  if (PyTuple_SetItem(RPY_R_VERSION_BUILD, 1, 
+		      PyUnicode_FromString(R_MINOR)) < 0) 
+    return NULL;
+  if (PyTuple_SetItem(RPY_R_VERSION_BUILD, 2, 
+		      PyUnicode_FromString(R_STATUS)) < 0) 
+    return NULL;
 #endif
-  }
+
+#if (PY_VERSION_HEX < 0x03010000) && (R_VERSION < __RPY_RSVN_SWITCH_VERSION__)
+  PYASSERT_ZERO(
+		PyTuple_SetItem(RPY_R_VERSION_BUILD, 3, 
+				PyString_FromString(R_SVN_REVISION))
+		);  
+#elif (PY_VERSION_HEX < 0x03010000)
+  PYASSERT_ZERO(
+		PyTuple_SetItem(RPY_R_VERSION_BUILD, 3, 
+				PyLong_FromLong(R_SVN_REVISION))
+		);
+#elif (R_VERSION < __RPY_RSVN_SWITCH_VERSION__)
+  if (PyTuple_SetItem(RPY_R_VERSION_BUILD, 3, 
+		      PyLong_FromLong(R_SVN_REVISION)) < 0) 
+    return NULL;
+#else
+  if (PyTuple_SetItem(RPY_R_VERSION_BUILD, 3, 
+		      PyLong_FromLong(R_SVN_REVISION)) < 0) 
+    return NULL;
+#endif
 
   initOptions = PyTuple_New(4);
 
