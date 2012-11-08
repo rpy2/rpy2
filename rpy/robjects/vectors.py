@@ -286,7 +286,7 @@ class Vector(RObjectMixin, SexpVector):
                 if len(x) < max_width:
                     res = x
                 else:
-                    res = "%s..." % (x[ : (max_width - 3)])
+                    res = "%s..." % (str(x[ : (max_width - 3)]))
             return res
 
         l = len(self)
