@@ -1,7 +1,7 @@
 import os, sys
 
 if (sys.version_info.major == 2) and (sys.version_info.minor < 7):
-    raise RuntimeError("Python 2.7 are required to run rpy2")
+    raise RuntimeError("Python 2.7 or 3.3 are required to run rpy2")
 
 try:
     R_HOME = (os.environ["R_HOME"], )
