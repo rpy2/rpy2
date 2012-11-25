@@ -1,7 +1,7 @@
 
 #-- setup-begin
 from rpy2 import robjects
-from rpy2.robjects import Formula
+from rpy2.robjects import Formula, Environment
 from rpy2.robjects.vectors import IntVector, FloatVector
 from rpy2.robjects.lib import grid
 from rpy2.robjects.packages import importr
@@ -11,6 +11,7 @@ rprint = robjects.globalenv.get("print")
 stats = importr('stats')
 grdevices = importr('grDevices')
 base = importr('base')
+datasets = importr('datasets')
 #-- setup-end
 
 #-- setuplattice-begin
@@ -76,7 +77,7 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_lattice_wireframe_1.png',
     width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- wireframe1-begin
-utils.data("volcano", package = "datasets", envir = tmpenv)
+tmpenv = datasets.data.fetch("volcano")
 volcano = tmpenv["volcano"]
 
 p = lattice.wireframe(volcano, shade = True,
@@ -674,7 +675,7 @@ grid.newpage()
 vp = grid.viewport(width = 1, height = 1) 
 vp.push()
 
-utils.data("rock", package = "datasets", envir = tmpenv)
+tmpenv = datasets.data.fetch("rock")
 rock = tmpenv["rock"]
 
 p = ggplot2.ggplot(rock) + \
