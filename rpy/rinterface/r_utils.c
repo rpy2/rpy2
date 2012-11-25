@@ -98,10 +98,16 @@ SEXP rpy_list_attr(SEXP sexp)
 
 SEXP rpy_remove(SEXP symbol, SEXP env, SEXP rho)
 {
-  SEXP c_R, call_R, res, fun_R;
+  SEXP c_R, call_R, res;
 
-  PROTECT(fun_R = PyRinterface_FindFun(install("rm"), rho));
-
+  static SEXP fun_R = NULL;
+  if (fun_R == NULL) {
+    PROTECT(fun_R = PyRinterface_FindFun(install("rm"), rho));
+    /* FIXME: or use the rpy2 object tracking layer ?*/
+    R_PreserveObject(fun_R);
+    UNPROTECT(1);
+  }
+  
   if(!isEnvironment(rho)) error("'rho' should be an environment");
   /* incantation to summon R */
   PROTECT(c_R = call_R = allocList(2+1));
@@ -123,7 +129,7 @@ SEXP rpy_remove(SEXP symbol, SEXP env, SEXP rho)
   int error = 0;
   PROTECT(res = R_tryEval(call_R, rho, &error));
 
-  UNPROTECT(3);
+  UNPROTECT(2);
   return res;
 }
 
