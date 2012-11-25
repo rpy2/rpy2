@@ -555,6 +555,15 @@ element_text = ElementText.new
 class Theme(Options):
    pass
 
+class ElementBlank(Theme):
+    _constructor = ggplot2.element_blank
+    @classmethod
+    def new(cls):
+        res = cls(cls._constructor())
+        return res
+
+element_blank = ElementBlank.new
+
 class ThemeBlank(Theme):
     _constructor = ggplot2.theme_blank
     @classmethod
@@ -631,6 +640,8 @@ gplot = ggplot2.qplot
 map_data = ggplot2.map_data
 
 opts = ggplot2_env['opts']
+
+theme = ggplot2_env['theme']
 
 
 original_conversion = conversion.ri2py
