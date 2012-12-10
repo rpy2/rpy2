@@ -17,7 +17,7 @@ the package to the R `search path`).
    from rpy2.robjects.packages import importr
    utils = importr("utils")
 
-The object :obj:`utils` is now a module-like object, in the sense that
+The object :obj:`utils` is now a namespace object, in the sense that
 its :attr:`__dict__` contains keys corresponding to the R symbols.
 For example the R function *data()* can be accessed like:
 
@@ -47,7 +47,7 @@ differences:
      d = {'print.me': 'print_dot_me', 'print_me': 'print_uscore_me'}
      thatpackage = importr('thatpackage', robject_translations = d)
 
-- Thanks to the module-like encapsulation,
+- Thanks to the namespace encapsulation,
   translation is restricted to one package, limiting the risk
   of masking when compared to rpy translating relatively blindly and 
   retrieving the first match
