@@ -87,7 +87,7 @@ in :attr:`r.packages`
 rpy2.robjecs.packages.Package as a <module 'cluster' (built-in)>
 
 All objects in the R package *cluster* can subsequently be accessed
-through that module-like object. For example, for the function barplot:
+through that namespace object. For example, for the function barplot:
 
 >>> r.packages.cluster.silhouette
 <SignatureTranslatedFunction - Python:0x24f9418 / R:0x2f5b008>

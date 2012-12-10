@@ -59,7 +59,7 @@ With :mod:`rpy2`:
    
    Whenever one wishes to be specific about where the symbol
    should be looked for (which should be most of the time),
-   it possible to wrap R packages in Python module-like objects
+   it possible to wrap R packages in Python namespace objects
    (see :ref:`robjects-packages`).
    
    For more details on environments, see Section 
