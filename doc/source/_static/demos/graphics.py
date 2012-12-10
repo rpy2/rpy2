@@ -141,7 +141,7 @@ gp = ggplot2.ggplot(dataf_rnorm)
 pp = gp + \
      ggplot2.aes_string(x='value', y='other_value') + \
      ggplot2.geom_bin2d() + \
-     ggplot2.opts(title =  'geom_bin2d')
+     ggplot2.ggtitle('geom_bin2d')
 pp.plot(vp = vp)
 #-- ggplot2geombin2d-end
 
@@ -152,7 +152,7 @@ gp = ggplot2.ggplot(dataf_rnorm)
 pp = gp + \
      ggplot2.aes_string(x='value', y='other_value') + \
      ggplot2.geom_density2d() + \
-     ggplot2.opts(title =  'geom_density2d')
+     ggplot2.ggtitle('geom_density2d')
 pp.plot(vp = vp)
 #-- ggplot2geomdensity2d-end
 
@@ -163,7 +163,7 @@ gp = ggplot2.ggplot(dataf_rnorm)
 pp = gp + \
      ggplot2.aes_string(x='value', y='other_value') + \
      ggplot2.geom_hex() + \
-     ggplot2.opts(title =  'geom_hex')
+     ggplot2.ggtitle('geom_hex')
 pp.plot(vp = vp)
 #-- ggplot2geomhexbin-end
 
@@ -211,7 +211,7 @@ for col_i in range(3):
    pp = gp + \
         ggplot2.aes_string(x='wt') + \
         ggplot2.geom_histogram(col=outline_color, fill=fill_color) + \
-        ggplot2.opts(title =  'col=%s - fill=%s' %params[col_i])
+        ggplot2.ggtitle('col=%s - fill=%s' %params[col_i])
    pp.plot(vp = vp)
 grdevices.dev_off()
 
@@ -239,7 +239,7 @@ pp = gp + \
      ggplot2.aes_string(x='value', y='other_value') + \
      ggplot2.geom_point(alpha = 0.3) + \
      ggplot2.geom_density2d(ggplot2.aes_string(col = '..level..')) + \
-     ggplot2.opts(title =  'point + density')
+     ggplot2.ggtitle('point + density')
 pp.plot()
 #-- ggplot2geompointdensity2d-end
 grdevices.dev_off()
@@ -399,7 +399,7 @@ for col_i in (1,2,3):
         ggplot2.aes_string(x='wt', y='mpg') + \
         ggplot2.geom_point() + \
         ggplot2.stat_smooth(method = method, formula=formula) + \
-        ggplot2.opts(title = method + ' - ' + formula)
+        ggplot2.ggtitle(method + ' - ' + formula)
    pp.plot(vp = vp)
 
 #-- ggplot2addsmoothmethods-end
@@ -554,7 +554,7 @@ df.names[tuple(df.colnames).index('value')] = 'Performance'
 
 # plot with both log and linear y scales
 # aes_string: set the axis labels and what we're plotting
-# opts: set the title and the thickness of the lines
+# opts: sets thickness of the lines
 #   note the use of **{} to allow setting "legend.key.size" as a keyword
 # scale_colour_manual: associate color datasets with actual colors and names
 # geom_point and geom_line: thicker points and lines
@@ -564,9 +564,8 @@ for col_i, yscale in enumerate(['log', 'linear']):
   pp = ggplot2.ggplot(df) + \
       ggplot2.aes_string(x='variable', y='Performance', color='color', 
                          shape='PerfType', linetype='PerfType') + \
-      ggplot2.opts(**{'title' : 
-                      'Performance vs. Color',
-                      'legend.key.size' : ro.r.unit(1.4, "lines") } ) + \
+      ggplot2.ggtitle('Performance vs. Color') + \
+      ggplot2.opts(**{'legend.key.size' : ro.r.unit(1.4, "lines") } ) + \
       ggplot2.scale_colour_manual("Color", 
                                   values=colormap,
                                   breaks=colormap.names,

@@ -643,6 +643,7 @@ opts = ggplot2_env['opts']
 
 theme = ggplot2_env['theme']
 
+ggtitle = ggplot2.ggtitle
 
 original_conversion = conversion.ri2py
 def ggplot2_conversion(robj):
