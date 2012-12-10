@@ -456,7 +456,7 @@ if __name__ == '__main__':
                        'License :: OSI Approved :: GNU Affero General Public License v3',
                        'Intended Audience :: Developers',
                        'Intended Audience :: Science/Research',
-                       'Development Status :: 4 - Beta'
+                       'Development Status :: 5 - Production/Stable'
                        ],
         package_data = {
             'rpy2': ['images/*.png', ],
