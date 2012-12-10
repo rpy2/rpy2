@@ -565,7 +565,7 @@ for col_i, yscale in enumerate(['log', 'linear']):
       ggplot2.aes_string(x='variable', y='Performance', color='color', 
                          shape='PerfType', linetype='PerfType') + \
       ggplot2.ggtitle('Performance vs. Color') + \
-      ggplot2.opts(**{'legend.key.size' : ro.r.unit(1.4, "lines") } ) + \
+      ggplot2.theme(**{'legend.key.size' : ro.r.unit(1.4, "lines") } ) + \
       ggplot2.scale_colour_manual("Color", 
                                   values=colormap,
                                   breaks=colormap.names,
@@ -686,7 +686,7 @@ vp = grid.viewport(width = 0.6, height = 0.6, x = 0.37, y=0.69)
 vp.push()
 p = ggplot2.ggplot(rock) + \
     ggplot2.geom_point(ggplot2.aes_string(x = 'area', y = 'shape')) + \
-    ggplot2.opts(**{'axis.text.x': ggplot2.element_text(angle = 45)})
+    ggplot2.theme(**{'axis.text.x': ggplot2.element_text(angle = 45)})
 
 p.plot(vp = vp)
 
