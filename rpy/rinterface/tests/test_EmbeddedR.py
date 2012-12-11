@@ -3,7 +3,7 @@ import itertools
 import pickle
 import rpy2
 import rpy2.rinterface as rinterface
-import sys, os, subprocess, time, tempfile, signal, gc
+import sys, os, subprocess, time, tempfile, io, signal, gc
 
 IS_PYTHON3 = sys.version_info[0] == 3
 
@@ -30,7 +30,7 @@ class EmbeddedRTestCase(unittest.TestCase):
 
 
     def testConsolePrint(self):
-        tmp_file = tempfile.NamedTemporaryFile()
+        tmp_file = io.StringIO()
         stdout = sys.stdout
         sys.stdout = tmp_file
         try:
@@ -41,7 +41,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         sys.stdout = stdout
         tmp_file.flush()
         tmp_file.seek(0)
-        self.assertEqual('haha', ''.join(s.decode() for s in tmp_file))
+        self.assertEqual('haha', ''.join(s for s in tmp_file).rstrip())
         tmp_file.close()
 
 
