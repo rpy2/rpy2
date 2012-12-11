@@ -3,7 +3,7 @@ import itertools
 import pickle
 import rpy2
 import rpy2.rinterface as rinterface
-import sys, os, subprocess, time, tempfile, signal, gc
+import sys, os, subprocess, time, tempfile, io, signal, gc
 
 IS_PYTHON3 = sys.version_info[0] == 3
 
@@ -30,19 +30,35 @@ class EmbeddedRTestCase(unittest.TestCase):
 
 
     def testConsolePrint(self):
-        tmp_file = tempfile.NamedTemporaryFile()
-        stdout = sys.stdout
-        sys.stdout = tmp_file
-        try:
-            rinterface.consolePrint('haha')
-        except Exception, e:
+        if sys.version_info[0] == 3:
+            tmp_file = io.StringIO()
+            stdout = sys.stdout
+            sys.stdout = tmp_file
+            try:
+                rinterface.consolePrint('haha')
+            except Exception, e:
+                sys.stdout = stdout
+                raise e
             sys.stdout = stdout
-            raise e
-        sys.stdout = stdout
-        tmp_file.flush()
-        tmp_file.seek(0)
-        self.assertEqual('haha', ''.join(s.decode() for s in tmp_file))
-        tmp_file.close()
+            tmp_file.flush()
+            tmp_file.seek(0)
+            self.assertEqual('haha', ''.join(s for s in tmp_file).rstrip())
+            tmp_file.close()
+        else:
+            # no need to test which Python 2, only 2.7 supported
+            tmp_file = tempfile.NamedTemporaryFile()
+            stdout = sys.stdout
+            sys.stdout = tmp_file
+            try:
+                rinterface.consolePrint('haha')
+            except Exception, e:
+                sys.stdout = stdout
+                raise e
+            sys.stdout = stdout
+            tmp_file.flush()
+            tmp_file.seek(0)
+            self.assertEqual('haha', ''.join(s.decode() for s in tmp_file))
+            tmp_file.close()
 
 
     def testCallErrorWhenEndedR(self):
