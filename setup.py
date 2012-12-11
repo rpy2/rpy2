@@ -188,7 +188,17 @@ def get_rversion(r_home):
     r_exec = os.path.join(r_home, 'bin', 'R')
     # Twist if Win32
     if sys.platform == "win32":
-        rp = os.popen3('"'+r_exec+'" --version')[2]
+        if sys.version_info >= (3,):
+            import subprocess
+            p = subprocess.Popen('"'+r_exec+'" --version',
+                                 shell=True,
+                                 stdin=subprocess.PIPE, 
+                                 stdout=subprocess.PIPE, 
+                                 stderr=subprocess.STDOUT, 
+                                 close_fds=True)
+            rp = (p.stdin, p.stdout, p.stderr)
+        else:
+            rp = os.popen3('"'+r_exec+'" --version')[2]
     else:
         rp = os.popen('"'+r_exec+'" --version')
     rversion = rp.readline()
