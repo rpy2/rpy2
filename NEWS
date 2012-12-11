@@ -1,3 +1,13 @@
+Release 2.3.1
+=============
+
+Bugs fixed
+----------
+
+- default console print callback with Python (issue #112 linked to it)
+
+- deprecation warnings with ggplot2 (issue #111 and contributed patch)
+
 
 Release 2.3.0
 =============
