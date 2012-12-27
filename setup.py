@@ -299,8 +299,8 @@ class RConfig(object):
                             ok = True
                             break
             if not ok:
-                raise ValueError('Invalid substring\n' + substring 
-                                 + '\nin string\n' + string)
+                raise ValueError('Invalid substring `' + substring + '`' +
+                                 + '\nin string `' + string + '`')
         return rc
             
     def __repr__(self):
@@ -340,7 +340,12 @@ def get_rconfig(r_home, about, allow_empty = False):
     if rconfig.startswith("WARNING"):
         rconfig = rp.readline()
     rconfig = rconfig.strip()
-    rc = RConfig.from_string(rconfig, allow_empty = allow_empty)
+    try:
+        rc = RConfig.from_string(rconfig, allow_empty = allow_empty)
+    except ValueError as ve:
+        print(ve)
+        sys.exit("Problem while running `{0}`\n".format(cmd))
+        
     rp.close()
     return rc
 
