@@ -63,7 +63,7 @@ class build(_build):
              "(see r-autoconfig for an automatic configuration)"),
         ('r-home-lib=', None,
          "full path for the R shared lib/ directory " +\
-            "(<r-home>/%s otherwise)" % default_lib_directory),
+            "(<r-home>/{0} otherwise)".format(default_lib_directory)),
         ('r-home-modules=', None,
          "full path for the R shared modules/ directory " +\
              "(<r-home>/modules otherwise)"),
@@ -103,7 +103,7 @@ class build_ext(_build_ext):
              "(see r-autoconfig for an automatic configuration)"),
         ('r-home-lib=', None,
          "full path for the R shared lib/ directory" +\
-            "(<r-home>/%s otherwise)" % default_lib_directory),
+            "(<r-home>/{0} otherwise)".format(default_lib_directory)),
         ('r-home-modules=', None,
          "full path for the R shared modules/ directory" +\
              "(<r-home>/modules otherwise)"),
@@ -155,7 +155,7 @@ class build_ext(_build_ext):
             if self.ignore_check_rversion:
                 warnings.warn("R did not seem to have the minimum required version number")
             else:
-                raise SystemExit("Error: R >= 2.8 required (and R told '%s')." %'.'.join(rversion))    
+                raise SystemExit("Error: R >= 2.8 required (and R told '{0}').".format('.'.join(rversion)))
         rversions.append(rversion)
 
         config = RConfig()
@@ -301,8 +301,8 @@ class RConfig(object):
                             ok = True
                             break
             if not ok:
-                raise ValueError('Invalid substring\n' + substring 
-                                 + '\nin string\n' + string)
+                raise ValueError('Invalid substring `' + substring + '`' +
+                                 + '\nin string `' + string + '`')
         return rc
             
     def __repr__(self):
@@ -346,8 +346,17 @@ def get_rconfig(r_home, about, allow_empty = False):
     if rconfig.startswith("WARNING"):
         rconfig = rp.readline()
     rconfig = rconfig.strip()
+<<<<<<< local
     print rconfig
     rc = RConfig.from_string(rconfig, allow_empty = allow_empty)
+=======
+    try:
+        rc = RConfig.from_string(rconfig, allow_empty = allow_empty)
+    except ValueError as ve:
+        print(ve)
+        sys.exit("Problem while running `{0}`\n".format(cmd))
+        
+>>>>>>> other
     rp.close()
     return rc
 
