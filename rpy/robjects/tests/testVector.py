@@ -165,7 +165,7 @@ class VectorTestCase(unittest.TestCase):
                                                ('b', robjects.Formula('y ~ x')),
                                                )))
         s = repr(vec).split('\n')
-        self.assertEqual('[IntVector, Formula]', s[1])
+        self.assertEqual('[IntVector, Formula]', s[1].strip())
 
     def testIteritems(self):
         vec = robjects.IntVector(range(3))
