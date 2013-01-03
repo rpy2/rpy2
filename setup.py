@@ -188,6 +188,8 @@ def get_rversion(r_home):
     r_exec = os.path.join(r_home, 'bin', 'R')
     # Twist if Win32
     if sys.platform == "win32":
+        if "64 bit" in sys.version:
+            r_exec = os.path.join(r_home, 'bin', 'x64', 'R')
         if sys.version_info >= (3,):
             import subprocess
             p = subprocess.Popen('"'+r_exec+'" --version',
@@ -332,14 +334,19 @@ class RConfig(object):
 
 
 def get_rconfig(r_home, about, allow_empty = False):
-    r_exec = os.path.join(r_home, 'bin', 'R')
+    if sys.platform == "win32" and "64 bit" in sys.version:
+        r_exec = os.path.join(r_home, 'bin', 'x64', 'R')
+    else:
+        r_exec = os.path.join(r_home, 'bin', 'R')
     cmd = '"'+r_exec+'" CMD config '+about
+    print cmd
     rp = os.popen(cmd)
     rconfig = rp.readline()
     #Twist if 'R RHOME' spits out a warning
     if rconfig.startswith("WARNING"):
         rconfig = rp.readline()
     rconfig = rconfig.strip()
+    print rconfig
     rc = RConfig.from_string(rconfig, allow_empty = allow_empty)
     rp.close()
     return rc
@@ -348,6 +355,7 @@ def getRinterface_ext():
     #r_libs = [os.path.join(RHOME, 'lib'), os.path.join(RHOME, 'modules')]
     r_libs = []
     extra_link_args = []
+    extra_compile_args = []
 
     #FIXME: crude way (will break in many cases)
     #check how to get how to have a configure step
@@ -355,6 +363,13 @@ def getRinterface_ext():
 
     if sys.platform == 'win32':
         define_macros.append(('Win32', 1))
+        if "64 bit" in sys.version:
+            define_macros.append(('Win64', 1))
+            extra_link_args.append('-m64')
+            extra_compile_args.append('-m64')
+            # MS_WIN64 only defined by pyconfig.h for MSVC. 
+            # See http://bugs.python.org/issue4709
+            define_macros.append(('MS_WIN64', 1))
     else:
         define_macros.append(('R_INTERFACE_PTRS', 1))
         define_macros.append(('HAVE_POSIX_SIGJMP', 1))
@@ -367,7 +382,6 @@ def getRinterface_ext():
         define_macros.append(('RPY_BIGENDIAN', 1))
     else:
         pass
-
 
     include_dirs = []
     
@@ -403,8 +417,9 @@ def getRinterface_ext():
             library_dirs = r_libs,
             define_macros = define_macros,
             runtime_library_dirs = r_libs,
+            extra_compile_args=extra_compile_args,
             #extra_compile_args=['-O0', '-g'],
-            #extra_link_args = extra_link_args
+            extra_link_args = extra_link_args
             )
 
     rpy_device_ext = Extension(
@@ -419,6 +434,7 @@ def getRinterface_ext():
         library_dirs = r_libs,
         define_macros = define_macros,
         runtime_library_dirs = r_libs,
+        extra_compile_args=extra_compile_args,
         #extra_compile_args=['-O0', '-g'],
         extra_link_args = extra_link_args
         )
