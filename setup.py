@@ -346,17 +346,13 @@ def get_rconfig(r_home, about, allow_empty = False):
     if rconfig.startswith("WARNING"):
         rconfig = rp.readline()
     rconfig = rconfig.strip()
-<<<<<<< local
-    print rconfig
-    rc = RConfig.from_string(rconfig, allow_empty = allow_empty)
-=======
+
     try:
         rc = RConfig.from_string(rconfig, allow_empty = allow_empty)
     except ValueError as ve:
         print(ve)
         sys.exit("Problem while running `{0}`\n".format(cmd))
         
->>>>>>> other
     rp.close()
     return rc
 
