@@ -1,5 +1,5 @@
 import socket
-import sys
+import sys, struct, cStringIO, pickle
 
 HOST, PORT = sys.argv[1].split(":")
 PORT = int(PORT)
@@ -10,11 +10,17 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Connect to server and send data
 sock.connect((HOST, PORT))
-sock.send(data + "\n")
+
+message = cStringIO.StringIO()
+message.write(struct.pack('10s', 'CMD_eval'))
+func_name = 'rnorm'
+pickle.dump(func_name, message)
+pickle.dump(10, message)
+sock.send(message.getvalue())
 
 # Receive data from the server and shut down
-received = sock.recv(1024)
+cmd = sock.recv(10).split('\x00')[0]
+size = struct.unpack(">Q", sock.recv(8))[0]
+data = pickle.loads(sock.recv(size))
 sock.close()
 
-print "Sent:     %s" % data
-print "Received: %s" % received
