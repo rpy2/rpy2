@@ -73,7 +73,7 @@ differences:
 
    .. code-block:: python
 
-     d = {'package_dependencies': 'package_dot_dependencies',
+     d = {'package.dependencies': 'package_dot_dependencies',
           'package_dependencies': 'package_uscore_dependencies'}
      tools = importr('tools', robject_translations = d)
 

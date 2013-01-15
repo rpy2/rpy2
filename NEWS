@@ -6,6 +6,13 @@ Bug fixed
 
 - building on Win64 (pull request #6)
 
+- Fetching data from an R package through `importr` was masking
+  any R object called `data` in that package. The data are now
+  under the attribute name `__rdata__`. This is not completely
+  safe either, although much less likely, a warning will
+  be issued if still masking anything.
+  
+
 Changes
 -------
 
