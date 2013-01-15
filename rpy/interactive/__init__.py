@@ -17,6 +17,7 @@ from rpy2.robjects.vectors import Array, Matrix
 from rpy2.robjects.vectors import StrVector
 from rpy2.robjects.vectors import ListVector, DataFrame
 from rpy2.robjects.environments import Environment
+from rpy2.rinterface import NULL
 from rpy2.robjects import Formula, RS4
 from rpy2.robjects import methods
 from rpy2.robjects import conversion
