@@ -130,6 +130,7 @@ class Package(ModuleType):
     __update_dict__ = None
     _exported_names = None
     __version__ = None
+    __rdata__ = None
 
     def __init__(self, env, name, translation = {}, 
                  exported_names = None, on_conflict = 'fail',
@@ -254,9 +255,10 @@ def importr(name,
     - suppress_message: Suppress messages R usually writes on the console
       (defaut: True)
 
-      - on_conflict: 'fail' or 'warn' (default: 'fail')
+    - on_conflict: 'fail' or 'warn' (default: 'fail')
 
-      - data: embed a PackageData objects (default: True)
+    - data: embed a PackageData objects under the attribute 
+      name __rdata__ (default: True)
 
     Return:
 
@@ -293,7 +295,9 @@ def importr(name,
                        on_conflict = on_conflict,
                        version = version)
     if data:
-        pack.data = PackageData(name, lib_loc = lib_loc)
+        if pack.__rdata__ is not None:
+            warn('While importing the R package "%s", the rpy2 Package object is masking a translated R symbol "__rdata__" already present' % name)
+        pack.__rdata__ = PackageData(name, lib_loc = lib_loc)
 
     return pack
 

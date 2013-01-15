@@ -69,7 +69,7 @@ class ImportrTestCase(unittest.TestCase):
     def testImportDatasets(self):
         datasets = robjects.packages.importr('datasets')
         self.assertTrue(isinstance(datasets, robjects.packages.Package))
-        self.assertTrue(isinstance(datasets.data, 
+        self.assertTrue(isinstance(datasets.__rdata__, 
                                    robjects.packages.PackageData))
         
 class WherefromTestCase(unittest.TestCase):
