@@ -1,3 +1,17 @@
+Release 2.3.2
+=============
+
+Bug fixed
+---------
+
+- building on Win64 (pull request #6)
+
+Changes
+-------
+
+- More informative error message when failing to build because `R CMD config`
+  does not return what is expected
+
 Release 2.3.1
 =============
 
