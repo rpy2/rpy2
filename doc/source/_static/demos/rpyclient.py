@@ -13,6 +13,7 @@ sock.connect((HOST, PORT))
 
 message = cStringIO.StringIO()
 message.write(struct.pack('10s', 'CMD_eval'))
+# The R call to make is `rnorm(10)`
 func_name = 'rnorm'
 pickle.dump(func_name, message)
 pickle.dump(10, message)
