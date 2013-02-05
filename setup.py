@@ -339,7 +339,7 @@ def get_rconfig(r_home, about, allow_empty = False):
     else:
         r_exec = os.path.join(r_home, 'bin', 'R')
     cmd = '"'+r_exec+'" CMD config '+about
-    print cmd
+    print(cmd)
     rp = os.popen(cmd)
     rconfig = rp.readline()
     #Twist if 'R RHOME' spits out a warning
