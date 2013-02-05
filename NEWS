@@ -2,6 +2,11 @@
 Release 2.4.0-dev
 =================
 
+Changes
+-------
+
+- Python 3-only. Python 2 is no longer supported.
+
 
 Release 2.3.2
 =============

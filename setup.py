@@ -13,41 +13,10 @@ pack_version = __import__('rpy').__version__
 default_lib_directory = 'bin' if sys.platform=='win32' else 'lib'
 
 package_prefix='.'
-if sys.version_info >= (3,):
-    print("Using 2to3 to translate Python2-only idioms into Python3 code. Please wait...")
-    # Python 3 and we need to translate code
-    package_prefix = os.path.join('build', 'python3_rpy')
-    from distutils import filelist, dir_util, file_util, util#, log
-    #log.set_verbosity(1)
-    fl = filelist.FileList()
-    tmp = open("MANIFEST.in")
-    for line in tmp:
-        line = line.rstrip()
-        if line != '':
-            fl.process_template_line(line)
-    tmp.close()
-    dir_util.create_tree(package_prefix, fl.files)
-    outfiles_2to3 = []
-    #dist_script = os.path.join("build", "src", "distribute_setup.py")
-    for f in fl.files:
-        outf, copied = file_util.copy_file(f, os.path.join(package_prefix, f), 
-                                           update=1)
-        if copied and outf.endswith(".py"): #and outf != dist_script:
-            outfiles_2to3.append(outf)
-        if copied and outf.endswith('api_tests.txt'):
-            # XXX support this in distutils as well
-            from lib2to3.main import main
-            main('lib2to3.fixes', ['-wd', os.path.join(package_prefix, 
-                                                       'tests', 'api_tests.txt')])
+if sys.version_info < (3,):
+    sys.exit("Only Python 3 is supported.")
 
-    util.run_2to3(outfiles_2to3)
-
-    # arrange setup to use the copy
-    sys.path.insert(0, package_prefix)
-    src_root = package_prefix
-    print('done.')
-else:
-    from distutils.core import setup    
+from distutils.core import setup    
 from distutils.core import Extension
 
 
