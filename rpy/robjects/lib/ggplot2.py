@@ -54,7 +54,7 @@ class Aes(robjects.Vector):
     @classmethod
     def new(cls, **kwargs):
        new_kwargs = copy.copy(kwargs)
-       for k,v in kwargs.iteritems():
+       for k,v in kwargs.items():
           new_kwargs[k] = as_symbol(v)
        res = cls(cls._constructor(**new_kwargs))
        return res
@@ -66,7 +66,7 @@ class AesString(robjects.Vector):
     @classmethod
     def new(cls, **kwargs):
        new_kwargs = copy.copy(kwargs)
-       for k,v in kwargs.iteritems():
+       for k,v in kwargs.items():
           new_kwargs[k] = as_symbol(v)
        res = cls(cls._constructor(**new_kwargs))
        return res

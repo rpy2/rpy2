@@ -122,7 +122,7 @@ class VectorTestCase(unittest.TestCase):
         #FIXME: simplify this
         r_names = robjects.baseenv["c"](*v_names)
         vec = robjects.baseenv["names<-"](vec, r_names)
-        for i in xrange(len(vec)):
+        for i in range(len(vec)):
             self.assertEqual(v_names[i], vec.names[i])
 
         vec.names[0] = 'x'
@@ -131,7 +131,7 @@ class VectorTestCase(unittest.TestCase):
         vec = robjects.Vector(array.array('i', [1,2,3]))
         names = ['x', 'y', 'z']
         vec.names = names
-        for i in xrange(len(vec)):
+        for i in range(len(vec)):
             self.assertEqual(names[i], vec.names[i])
 
     def testNAInteger(self):
@@ -167,19 +167,19 @@ class VectorTestCase(unittest.TestCase):
         s = repr(vec).split('\n')
         self.assertEqual('[IntVector, Formula]', s[1].strip())
 
-    def testIteritems(self):
+    def testItems(self):
         vec = robjects.IntVector(range(3))
         vec.names = robjects.StrVector('abc')
-        names = [k for k,v in vec.iteritems()]
+        names = [k for k,v in vec.items()]
         self.assertEqual(['a', 'b', 'c'], names)
-        values = [v for k,v in vec.iteritems()]
+        values = [v for k,v in vec.items()]
         self.assertEqual([0, 1, 2], values)
 
-    def testIteritemsNoNames(self):
+    def testItemsNoNames(self):
         vec = robjects.IntVector(range(3))
-        names = [k for k,v in vec.iteritems()]
+        names = [k for k,v in vec.items()]
         self.assertEqual([None, None, None], names)
-        values = [v for k,v in vec.iteritems()]
+        values = [v for k,v in vec.items()]
         self.assertEqual([0, 1, 2], values)
 
 class FactorVectorTestCase(unittest.TestCase):

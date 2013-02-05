@@ -1,7 +1,7 @@
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.rinterface as rinterface
 #import rpy2.robjects.conversion as conversion
-import conversion
+from . import conversion
 
 import rpy2.rlike.container as rlc
 
@@ -45,7 +45,7 @@ class ExtractDelegator(object):
 
         args = [conversion.py2ro(x) for x in args]
         kwargs = copy.copy(kwargs)
-        for k, v in kwargs.itervalues():
+        for k, v in kwargs.values():
             kwargs[k] = conversion.py2ro(v)
         fun = self._extractfunction
         args.insert(0, self._parent)
@@ -56,7 +56,7 @@ class ExtractDelegator(object):
     def __getitem__(self, item):
         fun = self._extractfunction
         args = rlc.TaggedList(item)
-        for i, (k, v) in enumerate(args.iteritems()):
+        for i, (k, v) in enumerate(args.items()):
             args[i] = conversion.py2ro(v)
         args.insert(0, self._parent)
         res = fun.rcall(args.items(),
@@ -69,7 +69,7 @@ class ExtractDelegator(object):
         The index position can either be:
         - an int: x[1] = y
         - a tuple of ints: x[1, 2, 3] = y
-        - an iteritem-able object (such as a dict): x[{'i': 1}] = y
+        - a object with a method items() (such as a dict): x[{'i': 1}] = y
         """
         fun = self._replacefunction
         if type(item) is tuple:
@@ -80,12 +80,12 @@ class ExtractDelegator(object):
             args[0] = self._parent
             res = fun(*args)
         elif (type(item) is dict) or (type(item) is rlc.TaggedList):
-            args = rlc.TaggedList.from_iteritems(item)
-            for i, (k, v) in enumerate(args.iteritems()):
+            args = rlc.TaggedList.from_items(item)
+            for i, (k, v) in enumerate(args.items()):
                 args[i] = conversion.py2ro(v)
             args.append(conversion.py2ro(value), tag = None)
             args.insert(0, self._parent, tag = None)
-            res = fun.rcall(tuple(args.iteritems()),
+            res = fun.rcall(tuple(args.items()),
                             globalenv_ri)
         else:
             args = [self._parent,
@@ -244,7 +244,7 @@ class Vector(RObjectMixin, SexpVector):
     names = property(_names_get, _names_set, 
                      "Names for the items in the vector.")
 
-    def iteritems(self):
+    def items(self):
         """ iterate over names and values """
         if self.names.rsame(R_NilValue):
             it_names = itertools.cycle((None, ))
@@ -273,7 +273,7 @@ class Vector(RObjectMixin, SexpVector):
         def p_str(x, max_width = 8):
             if x is NA_Real or x is NA_Integer or x is NA_Character or x is NA_Logical:
                 res = repr(x)
-            elif isinstance(x, long) or isinstance(x, int):
+            elif isinstance(x, int):
                 res = '%8i' %x
             elif isinstance(x, float):
                 res = '%8f' %x
@@ -305,9 +305,6 @@ class Vector(RObjectMixin, SexpVector):
         return super(Vector, self).__repr__() + os.linesep + \
             self.__repr_content__()
                           
-#name alias if Python 3 (iteritems no longer existing for dict objects)
-if sys.version_info[0] == 3:
-    Vector.items = Vector.iteritems
 
 class StrVector(Vector, StrSexpVector):
     """      Vector of string elements
@@ -472,9 +469,9 @@ class FactorVector(IntVector):
 class ListVector(Vector, ListSexpVector):
     """ R list (vector of arbitray elements)
 
-    ListVector(iteritemable) -> ListVector.
+    ListVector(items-able) -> ListVector.
 
-    The parameter 'iteritemable' can be any object inheriting from 
+    The parameter 'items-able' can be any object inheriting from 
     rpy2.rlike.container.TaggedList, rpy2.rinterface.SexpVector of type VECSXP,
     or dict.
 
@@ -487,7 +484,7 @@ class ListVector(Vector, ListSexpVector):
                 raise ValueError("tlist should of typeof VECSXP")
             super(ListVector, self).__init__(tlist)
         elif isinstance(tlist, rlc.TaggedList):
-            kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
+            kv = [(k, conversion.py2ri(v)) for k,v in tlist.items()]
             kv = tuple(kv)
             df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
             super(ListVector, self).__init__(df)
@@ -513,7 +510,7 @@ class ListVector(Vector, ListSexpVector):
                 else:
                     try:
                         name = self.names[i]
-                    except TypeError, te:
+                    except TypeError as te:
                         name = '<no name>'
                     res.append("  %s: %s%s  %s" %(name,
                                                   type(x),
@@ -526,7 +523,7 @@ class ListVector(Vector, ListSexpVector):
                 else:
                     try:
                         name = self.names[i]
-                    except TypeError, te:
+                    except TypeError as te:
                         name = '<no name>'
                     res.append("  %s: %s%s  %s" %(name,
                                                   type(x),
@@ -539,7 +536,7 @@ class ListVector(Vector, ListSexpVector):
                 else:
                     try:
                         name = self.names[i]
-                    except TypeError, te:
+                    except TypeError as te:
                         name = '<no name>'
                     res.append("  %s: %s%s  %s" %(name,
                                                   type(x),
@@ -802,7 +799,7 @@ class DataFrame(ListVector):
                 raise ValueError('tlist should of R class "data.frame"')
             super(DataFrame, self).__init__(tlist)
         elif isinstance(tlist, rlc.TaggedList):
-            kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
+            kv = [(k, conversion.py2ri(v)) for k,v in tlist.items()]
             kv = tuple(kv)
             df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
             super(DataFrame, self).__init__(df)
@@ -856,14 +853,14 @@ class DataFrame(ListVector):
     def cbind(self, *args, **kwargs):
         """ bind objects as supplementary columns """
         new_args   = [self, ] + [conversion.ri2py(x) for x in args]
-        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs.iteritems()])
+        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs.items()])
         res = self._cbind(*new_args, **new_kwargs)
         return conversion.ri2py(res)
 
     def rbind(self, *args, **kwargs):
         """ bind objects as supplementary rows """
         new_args   = [conversion.ri2py(x) for x in args]
-        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs.iteritems()])
+        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs.items()])
         res = self._rbind(self, *new_args, **new_kwargs)
         return conversion.ri2py(res)
 
@@ -941,12 +938,12 @@ class DataFrame(ListVector):
     
     def iter_row(self):
         """ iterator across rows """
-        for i in xrange(self.nrow):
+        for i in range(self.nrow):
             yield self.rx(i+1, rinterface.MissingArg)
 
     def iter_column(self):
         """ iterator across columns """
-        for i in xrange(self.ncol):
+        for i in range(self.ncol):
             yield self.rx(rinterface.MissingArg, i+1)
 
 

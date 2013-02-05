@@ -14,13 +14,15 @@ import itertools
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
+from . import conversion
+
 from rpy2.robjects.robject import RObjectMixin, RObject
 from rpy2.robjects.vectors import *
 from rpy2.robjects.functions import Function, SignatureTranslatedFunction
 from rpy2.robjects.environments import Environment
 from rpy2.robjects.methods import RS4
 
-import conversion
+
 
 from rpy2.rinterface import Sexp, SexpVector, SexpClosure, SexpEnvironment, SexpS4, SexpExtPtr
 _globalenv = rinterface.globalenv
@@ -53,7 +55,7 @@ def default_ri2py(o):
     res = None
     try:
         rcls = o.do_slot("class")
-    except LookupError, le:
+    except LookupError as le:
         rcls = [None]
 
     if isinstance(o, RObject):
@@ -68,7 +70,7 @@ def default_ri2py(o):
                     res = vectors.Matrix(o)
                 else:
                     res = vectors.Array(o)
-            except LookupError, le:
+            except LookupError as le:
                 if o.typeof == rinterface.INTSXP:
                     if 'factor' in rcls:
                         res = vectors.FactorVector(o)
@@ -124,7 +126,7 @@ def default_py2ri(o):
             raise(ValueError("Nothing can be done for this array type at the moment."))
     elif isinstance(o, bool):
         res = rinterface.SexpVector([o, ], rinterface.LGLSXP)
-    elif isinstance(o, int) or isinstance(o, long):
+    elif isinstance(o, int):
         # special case for NA_Logical
         if o is rinterface.NA_Logical:
             res = rinterface.SexpVector([o, ], rinterface.LGLSXP)
@@ -133,8 +135,6 @@ def default_py2ri(o):
     elif isinstance(o, float):
         res = rinterface.SexpVector([o, ], rinterface.REALSXP)
     elif isinstance(o, str):
-        res = rinterface.SexpVector([o, ], rinterface.STRSXP)
-    elif isinstance(o, unicode):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
     elif isinstance(o, list):
         res = r.list(*[conversion.ri2py(conversion.py2ri(x)) for x in o])
@@ -204,12 +204,12 @@ class R(object):
     def __getattribute__(self, attr):
         try:
             return super(R, self).__getattribute__(attr)
-        except AttributeError, ae:
+        except AttributeError as ae:
             orig_ae = ae
 
         try:
             return self.__getitem__(attr)
-        except LookupError, le:
+        except LookupError as le:
             raise orig_ae
 
     def __getitem__(self, item):

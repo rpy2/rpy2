@@ -1,4 +1,3 @@
-import itertools
 import rpy2.rlike.indexing as rli
 
 class OrdDict(dict):
@@ -16,7 +15,7 @@ class OrdDict(dict):
     def __init__(self, c=[]):
 
         if isinstance(c, TaggedList) or isinstance(c, OrdDict):
-            c = c.iteritems()
+            c = c.items()
         elif isinstance(c, dict):
             #FIXME: allow instance from OrdDict ?
             raise ValueError('A regular dictionnary does not ' +\
@@ -30,7 +29,7 @@ class OrdDict(dict):
             self[k] = v
 
     def __copy__(self):
-        cp = OrdDict(c = tuple(self.iteritems()))
+        cp = OrdDict(c = tuple(self.items()))
         return cp
         
     def __cmp__(self, o):
@@ -62,7 +61,7 @@ class OrdDict(dict):
 
     def __repr__(self):
         s = 'o{'
-        for k,v in self.iteritems():
+        for k,v in self.items():
             s += "'" + str(k) + "': " + str(v) + ", "
         s += '}'
         return s
@@ -79,7 +78,7 @@ class OrdDict(dict):
             self.__l.append((key, value))
             return
 
-        if self.has_key(key):
+        if key in self:
             i = self.index(key)
             self.__l[i] = (key, value)
         else:
@@ -96,19 +95,19 @@ class OrdDict(dict):
 
     def items(self):
         """ Return an ordered list of all key/value pairs """
-        res = [self.byindex(i) for i in xrange(len(self.__l))]
+        res = [self.byindex(i) for i in range(len(self.__l))]
         return tuple(res)
 
     def get(self, k, d = None):
         """ OD.get(k[,d]) -> OD[k] if k in OD, else d.  d defaults to None """
         try:
             res = self[k]
-        except KeyError, ke:
+        except KeyError as ke:
             res = d
         return res
 
-    def iteritems(self):
-        """ OD.iteritems() -> an iterator over the (key, value) items of D """
+    def items(self):
+        """ OD.items() -> an iterator over the (key, value) items of D """
         return iter(self.__l)
 
     def keys(self):
@@ -119,7 +118,7 @@ class OrdDict(dict):
         """ Reverse the order of the elements in-place (no copy)."""
         l = self.__l
         n = len(self.__l)
-        for i in xrange(n//2):
+        for i in range(n//2):
             tmp = l[i]
             l[i] = l[n-i-1]
             kv = l[i]
@@ -146,7 +145,7 @@ class TaggedList(list):
     def __add__(self, tl):
         try:
             tags = tl.tags
-        except AttributeError, ae:
+        except AttributeError as ae:
             raise ValueError('Can only concatenate TaggedLists.')
         res = TaggedList(list(self) + list(tl),
                          tags = self.tags + tl.tags)
@@ -174,9 +173,9 @@ class TaggedList(list):
         return self
 
     @staticmethod
-    def from_iteritems(tagval):
+    def from_items(tagval):
         res = TaggedList([])
-        for k,v in tagval.iteritems():
+        for k,v in tagval.items():
             res.append(v, tag=k)
         return res
     
@@ -212,7 +211,7 @@ class TaggedList(list):
         else:
             itertags = [None, ] * len(iterable)
 
-        for tag, item in itertools.izip(itertags, iterable):
+        for tag, item in zip(itertags, iterable):
             self.append(item, tag=tag)
 
 
@@ -235,7 +234,7 @@ class TaggedList(list):
         :rtype: tuple of 2-element tuples (tag, item)
         """
 
-        res = [(tag, item) for tag, item in itertools.izip(self.__tags, self)]
+        res = [(tag, item) for tag, item in zip(self.__tags, self)]
         return tuple(res)
 
     def iterontag(self, tag):
@@ -251,9 +250,9 @@ class TaggedList(list):
                 yield self[i]
             i += 1
 
-    def iteritems(self):
-        """ OD.iteritems() -> an iterator over the (key, value) items of D """
-        for tag, item in itertools.izip(self.__tags, self):
+    def items(self):
+        """ OD.items() -> an iterator over the (key, value) items of D """
+        for tag, item in zip(self.__tags, self):
             yield (tag, item)
         
     def itertags(self):
@@ -287,7 +286,7 @@ class TaggedList(list):
         
         """
         found = False
-        for i in xrange(len(self)):
+        for i in range(len(self)):
             if self[i] == value:
                 found = True
                 break

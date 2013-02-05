@@ -1,8 +1,8 @@
 from types import ModuleType
 from warnings import warn
 import rpy2.rinterface as rinterface
+from . import conversion
 import rpy2.robjects.lib
-import conversion as conversion
 from rpy2.robjects.functions import SignatureTranslatedFunction
 from rpy2.robjects.constants import NULL
 from rpy2.robjects import Environment
@@ -215,7 +215,7 @@ class Package(ModuleType):
 class SignatureTranslatedPackage(Package):
     def __fill_rpy2r__(self, on_conflict = 'fail'):
         super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
-        for name, robj in self.__dict__.iteritems():
+        for name, robj in self.__dict__.items():
             if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
                 self.__dict__[name] = SignatureTranslatedFunction(self.__dict__[name])
                 
@@ -313,7 +313,7 @@ def wherefrom(symbol, startenv = rinterface.globalenv):
         try:
             obj = env[symbol]
             tryagain = False
-        except LookupError, knf:
+        except LookupError as knf:
             env = env.enclos()
             if env.rsame(rinterface.emptyenv):
                 tryagain = False

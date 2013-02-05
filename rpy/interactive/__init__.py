@@ -97,12 +97,12 @@ def importr(packname, newname = None, verbose = False):
             continue
         try:
             p = doc.fetch(obj.__rname__)
-        except rhelp.HelpNotFoundError, hnfe:
+        except rhelp.HelpNotFoundError as hnfe:
             # No R documentation could be found for the object
             if verbose:
                 print('Pydoc generator: no help for "%s"' %(obj_name, ))
             continue
-        except AttributeError, ae:
+        except AttributeError as ae:
             # No __rname__ for the object
             print('Pydoc generator: oddity with "%s"' %(obj_name, ))
             continue
@@ -151,7 +151,7 @@ def importr(packname, newname = None, verbose = False):
 
         try:
             arguments = p.arguments()
-        except KeyError, ke:
+        except KeyError as ke:
             #FIXME: no arguments - should the handling differ a bit ?
             arguments = tuple()
         # Assume uniqueness of values in the dict. This is making sense since
@@ -162,7 +162,7 @@ def importr(packname, newname = None, verbose = False):
 
         if hasattr(obj, '_prm_translate'):
             docstring.extend(['', 'Parameters:', ''])
-            for k, v in obj._prm_translate.iteritems():
+            for k, v in obj._prm_translate.items():
                 try:
                     tmp = arguments[v]
                     tmp = re.sub(p_latex_code, "'\\1'", tmp)

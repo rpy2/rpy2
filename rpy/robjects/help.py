@@ -2,14 +2,13 @@
 R help system.
 
 """
-import os, itertools
-
+import os
 import sqlite3
 
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
 
-import packages
+from . import packages
 import rpy2.rlike.container as rlc
 
 tmp = rinterface.baseenv['R.Version']()
@@ -113,7 +112,7 @@ def populate_metaRd_db(package_name, dbcon, package_path = None):
     TITLE_I = rds.do_slot("names").index('Title')
     ENCODING_I = rds.do_slot("names").index('Encoding')
     ALIAS_I = rds.do_slot("names").index('Aliases')
-    for row_i in xrange(len(rds[0])):
+    for row_i in range(len(rds[0])):
         db_res = dbcon.execute('insert into rd_meta values (?,?,?,?,?,?,?)',
                                (row_i,
                                 rds[FILE_I][row_i], 
@@ -230,10 +229,10 @@ class Page(object):
             
         return res
 
-    def iteritems(self):
+    def items(self):
         """ iterator through the sections names and content
         in the documentation Page. """
-        return self.sections.iteritems        
+        return self.sections.items        
 
     def to_docstring(self, section_names = None):
         """ section_names: list of section names to consider. If None
@@ -363,7 +362,7 @@ def pages(topic):
             try:
                 page = pack.fetch(topic)
                 res.append(page)
-            except HelpNotFoundError, hnfe:
+            except HelpNotFoundError as hnfe:
                 pass
             
     return tuple(res)

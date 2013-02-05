@@ -33,7 +33,7 @@ class Grob(robjects.RObject):
         od = OrdDict()
         for item in args:
             od[None] = conversion.py2ro(item)
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             od[k] = conversion.py2ro(v)
         res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
         self.__sexp__ = res.__sexp__
@@ -200,7 +200,7 @@ def grid_conversion(robj):
         try:
             cls = _grid_dict[rcls[0]]
             pyobj = cls(pyobj)
-        except KeyError, ke:
+        except KeyError as ke:
             pass
 
     return pyobj

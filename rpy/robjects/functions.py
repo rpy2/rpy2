@@ -2,7 +2,7 @@ from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.rinterface as rinterface
 #import rpy2.robjects.conversion as conversion
-import conversion
+from . import conversion
 
 baseenv_ri = rinterface.baseenv
 
@@ -30,7 +30,7 @@ class Function(RObjectMixin, rinterface.SexpClosure):
     def __call__(self, *args, **kwargs):
         new_args = [conversion.py2ri(a) for a in args]
         new_kwargs = {}
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             new_kwargs[k] = conversion.py2ri(v)
         res = super(Function, self).__call__(*new_args, **new_kwargs)
         res = conversion.ri2py(res)
