@@ -84,7 +84,8 @@ Running Rpy2 will require compiled libraries for R, Python, and readline;
 building rpy2 will require the corresponding development headers 
 (check the documentation for more information about builing rpy2). 
 
-Python 2.6 might just work, but be aware that over time an increasing number
+At the time of writing, Python 2.6 has been reported to not work with
+rpy2 any longer, as over time an increasing number
 of features present in 2.7 (backported from the Python 3 series)
 have been used in rpy2.
 
