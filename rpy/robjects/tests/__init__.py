@@ -16,6 +16,9 @@ import testLanguage
 # wrap this nicely so a warning is issued if no numpy present
 import testNumpyConversions
 
+# wrap this nicely so a warning is issued if no numpy present
+import testPandasConversions
+
 def suite():
     suite_RObject = testRObject.suite()
     suite_Vector = testVector.suite()
@@ -26,6 +29,7 @@ def suite():
     suite_Formula = testFormula.suite()
     suite_Robjects = testRobjects.suite()
     suite_NumpyConversions = testNumpyConversions.suite()
+    suite_PandasConversions = testPandasConversions.suite()
     suite_Methods = testMethods.suite()
     suite_Packages = testPackages.suite()
     suite_Help = testHelp.suite()
@@ -40,6 +44,7 @@ def suite():
                                    suite_Robjects,
                                    suite_Methods,
                                    suite_NumpyConversions,
+                                   suite_PandasConversions,
                                    suite_Packages,
                                    suite_Help,
                                    suite_Language
