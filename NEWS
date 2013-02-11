@@ -1,6 +1,10 @@
 Release 2.3.3
 =============
 
+New features
+------------
+
+- New module pandas2ri to convert from mod:`pandas` `DataFrame` objects
 
 Release 2.3.2
 =============
@@ -8,7 +12,7 @@ Release 2.3.2
 Bug fixed
 ---------
 
-- building on Win64 (pull request #6)
+- Building on Win64 (pull request #6)
 
 - Fetching data from an R package through `importr` was masking
   any R object called `data` in that package. The data are now
