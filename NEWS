@@ -59,6 +59,7 @@ Bugs fixed
 - Testing the Python version was crashing of a number of unsupported Python
   versions (<= 2.6) (PR #117)
 
+
 New features
 ------------
 
@@ -75,7 +76,7 @@ Release 2.3.2
 Bug fixed
 ---------
 
-- building on Win64 (pull request #6)
+- Building on Win64 (pull request #6)
 
 - Fetching data from an R package through `importr` was masking
   any R object called `data` in that package. The data are now
