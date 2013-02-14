@@ -41,8 +41,8 @@ Changes
 Release 2.3.3
 =============
 
-Bugs fixed
-----------
+Bug fixed
+---------
 
 - Some of the data.frames converted from :mod:`pandas` were triggering
   a :class:`TypeError` when calling :func:`repr`
