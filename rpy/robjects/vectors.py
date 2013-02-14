@@ -271,6 +271,7 @@ class Vector(RObjectMixin, SexpVector):
 
     def __repr_content__(self):
         def p_str(x, max_width = 8):
+            max_width = int(max_width)
             if x is NA_Real or x is NA_Integer or x is NA_Character or x is NA_Logical:
                 res = repr(x)
             elif isinstance(x, long) or isinstance(x, int):
@@ -281,8 +282,7 @@ class Vector(RObjectMixin, SexpVector):
                 if isinstance(x, str):
                     x = x.__repr__()
                 else:
-                    tmp = ['', None, None, '']
-                    x = type(x).__name__                    
+                    x = type(x).__name__    
                 if len(x) < max_width:
                     res = x
                 else:
@@ -292,12 +292,12 @@ class Vector(RObjectMixin, SexpVector):
         l = len(self)
         if l < 7:
             s = '[' + \
-                ', '.join((p_str(x, max_width = math.floor(52 / l)) for x in self[ : 8])) +\
+                ', '.join((p_str(elt, max_width = math.floor(52 / l)) for elt in self[ : 8])) +\
                 ']'
         else:
             s = '[' + \
-                ', '.join((p_str(x) for x in self[ : 3])) + ', ..., ' + \
-                ', '.join((p_str(x) for x in self[-3 : ])) + \
+                ', '.join((p_str(elt) for elt in self[ : 3])) + ', ..., ' + \
+                ', '.join((p_str(elt) for elt in self[-3 : ])) + \
                 ']'
         return s
 
