@@ -37,6 +37,11 @@ class PandasConversionsTestCase(unittest.TestCase):
         self.assertEqual(pd_df.shape[0], rp_df.nrow)
         self.assertEqual(pd_df.shape[1], rp_df.ncol)
 
+    def testSeries(self):
+        Series = pandas.core.series.Series
+        s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
+        rp_s = robjects.conversion.py2ri(s)
+
     def testRepr(self):
         # this should go to testVector, with other tests for repr()
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),
