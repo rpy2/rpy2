@@ -7,10 +7,14 @@ Bug fixed
 - Some of the data.frames converted from :mod:`pandas` were triggering
   a :class:`TypeError` when calling :func:`repr`
 
+- In :mod:`rpy2.robjects.lib.ggplot2`, a mapping to `coord_fixed` was
+  missing (PR #120)
+
 New features
 ------------
 
 - New module pandas2ri to convert from mod:`pandas` `DataFrame` objects
+
 
 Release 2.3.2
 =============
