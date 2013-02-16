@@ -187,6 +187,10 @@ stat_vline = StatVline.new
 class Coord(GBaseObject):
    pass
 
+class CoordFixed(Coord):
+   _constructor = ggplot2_env['coord_fixed']
+coord_fixed = CoordFixed.new
+
 class CoordCartesian(Coord):
    _constructor = ggplot2_env['coord_cartesian']
 coord_cartesian = CoordCartesian.new
