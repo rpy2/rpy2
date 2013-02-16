@@ -17,6 +17,8 @@ Bug fixed
 - In :mod:`rpy2.robjects.lib.ggplot2`, a mapping to `coord_fixed` was
   missing (PR #120)
 
+- Using the parameter `lib_loc` in a call to
+  :func:`rpy2.robjects.packages.importr` was resulting in an error (PR #119)
 
 
 Release 2.3.2

@@ -42,6 +42,8 @@ def quiet_require(name, lib_loc = None):
     """ Load an R package /quietly/ (suppressing messages to the console). """
     if lib_loc == None:
         lib_loc = "NULL"
+    else:
+        lib_loc = "\"%s\"" % lib_loc
     expr_txt = "suppressPackageStartupMessages(base::require(%s, lib.loc=%s))" \
         %(name, lib_loc)
     expr = rinterface.parse(expr_txt)
