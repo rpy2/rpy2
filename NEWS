@@ -59,7 +59,6 @@ Bug fixed
 - Testing the Python version was crashing of a number of unsupported Python
   versions (<= 2.6) (PR #117)
 
-
 New features
 ------------
 
