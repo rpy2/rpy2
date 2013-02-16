@@ -65,12 +65,20 @@ class ImportrTestCase(unittest.TestCase):
     def testImportStats(self):
         stats = robjects.packages.importr('stats')
         self.assertTrue(isinstance(stats, robjects.packages.Package))
+
+    def testImportStatsWithLibLoc(self):
+        path = robjects.packages.get_packagepath('stats')
+        stats = robjects.packages.importr('stats', 
+                                          lib_loc = path)
+        self.assertTrue(isinstance(stats, robjects.packages.Package))
         
     def testImportDatasets(self):
         datasets = robjects.packages.importr('datasets')
         self.assertTrue(isinstance(datasets, robjects.packages.Package))
         self.assertTrue(isinstance(datasets.__rdata__, 
                                    robjects.packages.PackageData))
+
+
         
 class WherefromTestCase(unittest.TestCase):
     def testWherefrom(self):
