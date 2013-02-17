@@ -36,7 +36,7 @@ def no_warnings(func):
         _options(warn = -1)
         try:
             res = func(*args, **kwargs)
-        except Exception, e:
+        except Exception as e:
             # restore the old warn setting before propagating
             # the exception up
             _options(warn = oldwarn)
