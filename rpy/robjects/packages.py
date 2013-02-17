@@ -26,6 +26,28 @@ _data = rinterface.baseenv['::'](StrSexpVector(('utils', )),
                                  StrSexpVector(('data', )))
 
 _reval = rinterface.baseenv['eval']
+_options = rinterface.baseenv['options']
+
+
+def no_warnings(func):
+    def run_withoutwarnings(*args, **kwargs):
+        warn_i = _options().do_slot('names').index('warn')
+        oldwarn = _options()[warn_i][0]
+        _options(warn = -1)
+        try:
+            res = func(*args, **kwargs)
+        except Exception, e:
+            # restore the old warn setting before propagating
+            # the exception up
+            _options(warn = oldwarn)
+            raise e
+        _options(warn = oldwarn)
+        return res
+    return run_withoutwarnings
+
+@no_warnings
+def _eval_quiet(expr):
+    return _reval(expr)
 
 def reval(string, envir = _globalenv):
     """ Evaluate a string as R code
@@ -37,17 +59,16 @@ def reval(string, envir = _globalenv):
     res = _reval(p, envir = envir)
     return res
 
-
 def quiet_require(name, lib_loc = None):
     """ Load an R package /quietly/ (suppressing messages to the console). """
     if lib_loc == None:
         lib_loc = "NULL"
     else:
-        lib_loc = "\"%s\"" % lib_loc
+        lib_loc = "\"%s\"" % (lib_loc.replace('"', '\\"'))
     expr_txt = "suppressPackageStartupMessages(base::require(%s, lib.loc=%s))" \
         %(name, lib_loc)
     expr = rinterface.parse(expr_txt)
-    ok = rinterface.baseenv['eval'](expr)
+    ok = _eval_quiet(expr)
     return ok
 
 def get_packagepath(package):
