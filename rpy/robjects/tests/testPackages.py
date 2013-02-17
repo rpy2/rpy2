@@ -1,6 +1,7 @@
 import unittest
 import rpy2.robjects as robjects
 import rpy2.robjects.packages as packages
+from rpy2.rinterface import RRuntimeError
 rinterface = robjects.rinterface
 
 class PackagesTestCase(unittest.TestCase):
@@ -76,6 +77,11 @@ class ImportrTestCase(unittest.TestCase):
                 suppress_messages=False)
         self.assertTrue(isinstance(stats, robjects.packages.Package))
 
+    def testImportStatsWithLibLocWithQuote(self):
+        path = 'coin"coin'
+
+        with self.assertRaises(RRuntimeError):
+            robjects.packages.importr('dummy_inexistant', lib_loc=path)
         
     def testImportDatasets(self):
         datasets = robjects.packages.importr('datasets')
