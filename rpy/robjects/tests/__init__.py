@@ -1,20 +1,20 @@
 import unittest
 
-import testRObject
-import testVector
-import testArray
-import testDataFrame
-import testFormula
-import testFunction
-import testEnvironment
-import testRobjects
-import testMethods
-import testPackages
-import testHelp
-import testLanguage
+from . import testRObject
+from . import testVector
+from . import testArray
+from . import testDataFrame
+from . import testFormula
+from . import testFunction
+from . import testEnvironment
+from . import testRobjects
+from . import testMethods
+from . import testPackages
+from . import testHelp
+from . import testLanguage
 
 # wrap this nicely so a warning is issued if no numpy present
-import testNumpyConversions
+from . import testNumpyConversions
 
 def suite():
     suite_RObject = testRObject.suite()
