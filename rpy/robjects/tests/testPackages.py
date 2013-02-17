@@ -69,6 +69,13 @@ class ImportrTestCase(unittest.TestCase):
         stats = robjects.packages.importr('stats', 
                                           lib_loc = path)
         self.assertTrue(isinstance(stats, robjects.packages.Package))
+
+    def testImportStatsWithLibLocAndSuppressMessages(self):
+        path = robjects.packages.get_packagepath('stats')
+        stats = robjects.packages.importr('stats', lib_loc=path,
+                suppress_messages=False)
+        self.assertTrue(isinstance(stats, robjects.packages.Package))
+
         
     def testImportDatasets(self):
         datasets = robjects.packages.importr('datasets')
