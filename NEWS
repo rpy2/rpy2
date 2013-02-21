@@ -14,7 +14,7 @@ Bug fixed
   :func:`rpy2.robjects.packages.importr` was resulting in an error (PR #119)
 
 - Creating a `layer` through the `rpy2.robjects.lib.ggplot2` interface did
-  accept parameters (PR #122)
+  not accept parameters (PR #122)
 
 New features
 ------------
