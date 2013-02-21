@@ -79,22 +79,17 @@ class Layer(robjects.RObject):
 
     @classmethod
     def new(cls,
-            geom, geom_params,
-            stat, stat_params,
-            data,
-            aesthetics,
-            position,
-            params):
+            *args, **kwargs):
 
-        args = [conversion.py2ro(x) for x in (geom, geom_params,
-                                              stat, stat_params,
-                                              data,
-                                              aesthetics,
-                                              position,
-                                              params)]
+       for i, elt in enumerate(args):
+          args[i] = conversion.py2ro(elt)
 
-        res = cls(cls.contructor)(*args)
+       for k in kwargs:
+          kwargs[k] = conversion.py2ro(kwargs[k])
+
+        res = cls(cls.contructor)(*args, **kwargs)
         return res
+
 layer = Layer.new        
 
 class GBaseObject(robjects.RObject):
