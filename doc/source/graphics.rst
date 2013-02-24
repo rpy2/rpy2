@@ -413,6 +413,22 @@ example below:
    :scale: 50
 
 
+Axes
+^^^^
+
+Axes can be transformed and configured in various ways.
+
+A common transformation is the log-transform of the coordinates.
+
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- ggplot2mtcarscoordtrans-begin
+   :end-before: #-- ggplot2mtcarscoordtrans-end
+
+
+.. image:: _static/graphics_ggplot2mtcars_coordtrans.png
+   :scale: 50
+
+
 Facets
 ^^^^^^
 

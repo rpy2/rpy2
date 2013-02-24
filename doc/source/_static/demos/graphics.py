@@ -301,7 +301,7 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2_ggplot_1.png',
-              width = 612, height = 612, antialias="subpixel", type="cairo")
+              width = 936, height = 312, antialias="subpixel", type="cairo")
 #-- ggplot1-begin
 pp = gp + \
      ggplot2.aes_string(x='wt', y='mpg') + \
@@ -634,6 +634,28 @@ p.plot()
 #-- ggplot2mappolygon-end
 grdevices.dev_off()
 
+
+
+grdevices.png('../../_static/graphics_ggplot2mtcars_coordtrans.png',
+              width = 936, height = 312, antialias="subpixel", type="cairo")
+#-- ggplot2mtcarscoordtrans-begin
+grid.newpage()
+grid.viewport(layout=grid.layout(1, 3)).push()
+
+diamonds = ggplot2.ggplot2.__rdata__.fetch('diamonds')['diamonds']
+gp = ggplot2.ggplot(diamonds)
+
+for col_i, trans in enumerate(("identity", "log2", "sqrt")):
+   vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 1})
+   pp = gp + \
+       ggplot2.aes_string(x='carat', y='price') + \
+       ggplot2.geom_point(alpha = 0.05) + \
+       ggplot2.coord_trans(x = trans, y = trans) + \
+       ggplot2.ggtitle(trans)
+   
+   pp.plot(vp = vp)
+#-- ggplot2mtcarscoordtrans-end
+grdevices.dev_off()
 
 
 
