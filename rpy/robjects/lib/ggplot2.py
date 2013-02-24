@@ -86,9 +86,9 @@ class Layer(robjects.RObject):
 
        for k in kwargs:
           kwargs[k] = conversion.py2ro(kwargs[k])
-
-        res = cls(cls.contructor)(*args, **kwargs)
-        return res
+          
+       res = cls(cls.contructor)(*args, **kwargs)
+       return res
 
 layer = Layer.new        
 
