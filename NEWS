@@ -16,6 +16,9 @@ Bug fixed
 - Creating a `layer` through the `rpy2.robjects.lib.ggplot2` interface did
   not accept parameters (PR #122)
 
+- Testing the Python version was crashing of a number of unsupported Python
+  versions (<= 2.6) (PR #117)
+
 New features
 ------------
 

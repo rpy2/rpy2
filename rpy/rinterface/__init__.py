@@ -1,7 +1,15 @@
 import os, sys
 
-if (sys.version_info.major == 2) and (sys.version_info.minor < 7):
-    raise RuntimeError("Python 2.7 or 3.3 are required to run rpy2")
+
+try:
+    if ((sys.version_info.major == 2) and (sys.version_info.minor < 7)) or \
+            ((sys.version_info.major == 3) and (sys.version_info.minor < 3)):
+        raise RuntimeError("Python (>=2.7 and < 3.0) or >=3.3 are required to run rpy2")
+except AttributeError:
+    # Python 2.6 and earlier do not represent version_info as
+    # a namedtuple
+    import warnings
+    warnings.warn("Unsupported Python version. Python (>=2.7 and < 3.0) or >=3.3 are thought to be required to run rpy2.")
 
 try:
     R_HOME = (os.environ["R_HOME"], )
