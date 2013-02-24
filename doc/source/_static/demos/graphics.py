@@ -32,7 +32,7 @@ grdevices.png('../../_static/graphics_lattice_xyplot_1.png',
               width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- xyplot1-begin
 datasets = importr('datasets')
-mtcars = datasets.data.fetch('mtcars')['mtcars']
+mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
 formula = Formula('mpg ~ wt')
 formula.getenvironment()['mpg'] = mtcars.rx2('mpg')
 formula.getenvironment()['wt'] = mtcars.rx2('wt')
@@ -77,7 +77,7 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_lattice_wireframe_1.png',
     width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- wireframe1-begin
-tmpenv = datasets.data.fetch("volcano")
+tmpenv = datasets.__rdata__.fetch("volcano")
 volcano = tmpenv["volcano"]
 
 p = lattice.wireframe(volcano, shade = True,
@@ -112,7 +112,7 @@ import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 base = importr('base')
 
-mtcars = datasets.data.fetch('mtcars')['mtcars']
+mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
 
 #-- setupggplot2-end
 
@@ -674,7 +674,7 @@ grid.newpage()
 vp = grid.viewport(width = 1, height = 1) 
 vp.push()
 
-tmpenv = datasets.data.fetch("rock")
+tmpenv = datasets.__rdata__.fetch("rock")
 rock = tmpenv["rock"]
 
 p = ggplot2.ggplot(rock) + \
