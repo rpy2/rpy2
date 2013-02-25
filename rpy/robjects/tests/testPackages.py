@@ -96,9 +96,8 @@ class ImportrTestCase(unittest.TestCase):
 
             robjects.packages.importr('dummy_inexistant', lib_loc=path)
 
-            if sys.version_info[0] == 3:
-                sys.stdout = stdout
-                tmp_file.close()
+            sys.stdout = stdout
+            tmp_file.close()
 
         
     def testImportDatasets(self):
