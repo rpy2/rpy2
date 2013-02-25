@@ -1,8 +1,12 @@
 import unittest
+import sys, io, tempfile
 import rpy2.robjects as robjects
 import rpy2.robjects.packages as packages
 from rpy2.rinterface import RRuntimeError
 rinterface = robjects.rinterface
+
+
+
 
 class PackagesTestCase(unittest.TestCase):
 
@@ -81,7 +85,21 @@ class ImportrTestCase(unittest.TestCase):
         path = 'coin"coin'
 
         with self.assertRaises(RRuntimeError):
+            if sys.version_info[0] == 3:
+                tmp_file = io.StringIO()
+            else:
+                # no need to test which Python 2, only 2.7 supported
+                tmp_file = tempfile.NamedTemporaryFile()
+
+            stdout = sys.stdout
+            sys.stdout = tmp_file
+
             robjects.packages.importr('dummy_inexistant', lib_loc=path)
+
+            if sys.version_info[0] == 3:
+                sys.stdout = stdout
+                tmp_file.close()
+
         
     def testImportDatasets(self):
         datasets = robjects.packages.importr('datasets')
