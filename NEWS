@@ -34,6 +34,10 @@ New features
 
 - New module pandas2ri to convert from mod:`pandas` `DataFrame` objects
 
+- New classes :class:`rpy2.robjects.lib.grid.Unit` and
+  :class:`rpy2.robjects.lib.grid.Gpar` to model their counterparts in
+  R's `grid` package as they were previously missing from rpy2.
+
 
 Release 2.3.2
 =============

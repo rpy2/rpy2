@@ -1,3 +1,12 @@
+"""
+Mapping of the R library "grid" for graphics.
+
+The R library provides a low-level coordinate
+system and graphic primitives to built visualizations.
+
+
+"""
+
 import rpy2.robjects.methods
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
@@ -23,6 +32,52 @@ add     = grid.grid_add
 xaxis   = grid.grid_xaxis
 yaxis   = grid.grid_yaxis
 
+
+class Unit(robjects.RObject):
+    """ Vector of unit values (as in R's grid package) """
+    _unit = grid_env['unit']
+
+    def __init__(self, *args, **kwargs):
+        od = OrdDict()
+        for item in args:
+            od[None] = conversion.py2ro(item)
+        for k, v in kwargs.iteritems():
+            od[k] = conversion.py2ro(v)
+        res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
+        self.__sexp__ = res.__sexp__
+
+    @classmethod
+    def unit(cls, *args, **kwargs):
+        """ Constructor (uses the R function grid::unit())"""
+        res = cls._unit(*args, **kwargs)
+        return res
+
+unit = Unit.unit
+
+class Gpar(robjects.RObject):
+    """ Graphical parameters """
+    _gpar = grid_env['gpar']
+    _get_gpar = grid_env['get.gpar']
+
+    def __init__(self, *args, **kwargs):
+        od = OrdDict()
+        for item in args:
+            od[None] = conversion.py2ro(item)
+        for k, v in kwargs.iteritems():
+            od[k] = conversion.py2ro(v)
+        res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
+        self.__sexp__ = res.__sexp__
+
+    @classmethod
+    def gpar(cls, *args, **kwargs):
+        """ Constructor (uses the R function grid::gpar())"""
+        res = cls._gpar(*args, **kwargs)
+        return res
+
+    def get(self, names = None):
+        return self._get_gpar(names)
+
+gpar = Gpar.gpar
 
 class Grob(robjects.RObject):
     """ Graphical object """
