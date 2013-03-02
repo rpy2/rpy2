@@ -429,6 +429,16 @@ A common transformation is the log-transform of the coordinates.
    :scale: 50
 
 
+.. note:: 
+
+   The red square is an example of adding graphical 
+   elements to a ggplot2 figure.
+
+   .. literalinclude:: _static/demos/graphics.py
+      :start-after: #-- ggplot2mtcarscoordtransannot-begin
+      :end-before: #-- ggplot2mtcarscoordtransannot-end
+
+
 Facets
 ^^^^^^
 

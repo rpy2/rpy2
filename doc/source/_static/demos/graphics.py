@@ -637,24 +637,46 @@ grdevices.dev_off()
 
 
 grdevices.png('../../_static/graphics_ggplot2mtcars_coordtrans.png',
-              width = 936, height = 312, antialias="subpixel", type="cairo")
+              width = 936, height = 624, antialias="subpixel", type="cairo")
 #-- ggplot2mtcarscoordtrans-begin
+from rpy2.robjects.lib import grid
 grid.newpage()
-grid.viewport(layout=grid.layout(1, 3)).push()
+grid.viewport(layout=grid.layout(2, 3)).push()
 
 diamonds = ggplot2.ggplot2.__rdata__.fetch('diamonds')['diamonds']
 gp = ggplot2.ggplot(diamonds)
 
 for col_i, trans in enumerate(("identity", "log2", "sqrt")):
+   # fetch viewport at position col_i+1 on the first row
    vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 1})
    pp = gp + \
        ggplot2.aes_string(x='carat', y='price') + \
-       ggplot2.geom_point(alpha = 0.05) + \
+       ggplot2.geom_point(alpha = 0.1, size = 1) + \
        ggplot2.coord_trans(x = trans, y = trans) + \
-       ggplot2.ggtitle(trans)
-   
+       ggplot2.ggtitle("%s on axis" % trans)   
+   # plot into the viewport
    pp.plot(vp = vp)
+
+   # fetch viewport at position col_i+1 on the second row
+   vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 2})
+   pp = gp + \
+       ggplot2.aes_string(x='%s(carat)' % trans, y='%s(price)' % trans) + \
+       ggplot2.geom_point(alpha = 0.1, size = 1) + \
+       ggplot2.ggtitle("%s(<variable>)" % trans)   
+   pp.plot(vp = vp)
+
 #-- ggplot2mtcarscoordtrans-end
+
+#-- ggplot2mtcarscoordtransannot-begin
+vp = grid.viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
+grid.rect(x = grid.unit(0.7, "npc"),
+          y = grid.unit(0.2, "npc"),
+          width = grid.unit(0.1, "npc"),
+          height = grid.unit(0.1, "npc"),
+          gp = grid.gpar(fill = "red"),
+          vp = vp).draw()
+#-- ggplot2mtcarscoordtransannot-end
+
 grdevices.dev_off()
 
 
