@@ -14,7 +14,7 @@ rimport = robjects.baseenv.get('library')
 
 ggplot2 = importr('ggplot2')
 
-TARGET_VERSION = '0.9.3'
+TARGET_VERSION = '0.9.3.1'
 if ggplot2.__version__ != TARGET_VERSION:
    warnings.warn('This was designed againt ggplot2 version %s but you have %s' % (TARGET_VERSION, ggplot2.__version__))
 ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
