@@ -1,6 +1,12 @@
 Relase 2.3.4
 ============
 
+Bugs fixed
+----------
+
+- Spurious error when running unit tests with Python 3 and numpy
+  installed
+
 Changes
 -------
 
@@ -10,8 +16,8 @@ Changes
 Release 2.3.3
 =============
 
-Bug fixed
----------
+Bugs fixed
+----------
 
 - Some of the data.frames converted from :mod:`pandas` were triggering
   a :class:`TypeError` when calling :func:`repr`
