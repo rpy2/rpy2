@@ -8,11 +8,20 @@ Changes
 - Python 3-only. Python 2 is no longer supported.
 
 
+Relase 2.3.4
+============
+
+Changes
+-------
+
+- Bumped target version of ggplot2 to 0.9.3.1
+
+
 Release 2.3.3
 =============
 
-Bug fixed
----------
+Bugs fixed
+----------
 
 - Some of the data.frames converted from :mod:`pandas` were triggering
   a :class:`TypeError` when calling :func:`repr`
