@@ -49,6 +49,10 @@ class NumpyConversionsTestCase(unittest.TestCase):
         self.checkHomogeneous(c, "complex", "complex")
 
     def testVectorCharacter(self):
+        if sys.version_info[0] == 3:
+            # bail out - strings are unicode and this is tested next
+            # test below
+            return
         s = numpy.array(["a", "b", "c"], dtype="S")
         self.checkHomogeneous(s, "character", "character")
 
