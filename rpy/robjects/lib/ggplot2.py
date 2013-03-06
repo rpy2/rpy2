@@ -1,3 +1,48 @@
+"""
+Wrapper for the popular R library ggplot2.
+
+With rpy2, the most convenient general way to
+import packages is to use `importr()`, for example
+with ggplot2::
+
+    from rpy2.robjects.packages import importr
+    ggplot2 = robjects.baseenv.get('ggplot2')
+
+This module is an supplementary layer in which an attempt
+at modelling the package as it was really developped
+as Python package is made. Behind the scene, `importr()`
+is used and can be accessed with:
+
+    from robjects.robjects.lib import ggplot2
+    ggplot2.ggplot2
+
+Ggplot2 is designed using a prototype-based approach to
+Object-Oriented Programming, and this module is trying
+to define class-hierachies so the nature of a given
+instance can be identified more easily.
+
+The main families of classes are:
+
+- GGplot
+- Aes and AesString
+- Layer
+- Stat
+
+A downside of the approach is that the code in the
+module is 'hand-made'. In hindsight, this can be tedious
+to maintain and document but this is a good showcase of
+"manual" mapping of R code into Python classes.
+
+The codebase in R for ggplot2 has evolved since this
+was initially written, and many functions have
+signature-defined parameters (used to be ellipsis
+about everywhere). Metaprogramming will hopefully
+be added to shorten the Python code in the module,
+and provide a more dynamic mapping.
+
+"""
+
+
 import rpy2.robjects.methods
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
@@ -26,6 +71,11 @@ def as_symbol(x):
    return res
 
 class GGPlot(robjects.RObject):
+   """ A Grammar of Graphics Plot.
+
+   GGPlot instances can be added to one an other in order to construct
+   the final plot (the method `__add__()` is implemented).
+   """
 
     _constructor = ggplot2._env['ggplot']
     _rprint = ggplot2._env['print.ggplot']
@@ -33,26 +83,33 @@ class GGPlot(robjects.RObject):
 
     @classmethod
     def new(cls, data):
-        res = cls(cls._constructor(data))
-        return res
+       """ Constructor for the class GGplot. """
+       res = cls(cls._constructor(data))
+       return res
     
     def plot(self, vp = robjects.constants.NULL):
-        self._rprint(self, vp = vp)
+       self._rprint(self, vp = vp)
 
     def __add__(self, obj):
-        res = self._add(self, obj)
-        if res.rclass[0] != 'gg':
-           raise ValueError("Added object did not give a ggplot result (get class '%s')." % res.rclass[0])
-        return GGPlot(res)
+       res = self._add(self, obj)
+       if res.rclass[0] != 'gg':
+          raise ValueError("Added object did not give a ggplot result (get class '%s')." % res.rclass[0])
+       return GGPlot(res)
 
 ggplot = GGPlot.new
 
 
 class Aes(robjects.Vector):
+   """ Aesthetics mapping, using expressions rather than string
+   (this is the most common form when using the package in R - it might
+   be easier to use AesString when working in Python using rpy2 -
+   see class AesString in this Python module).
+   """
     _constructor = ggplot2_env['aes']
     
     @classmethod
     def new(cls, **kwargs):
+       """Constructor for the class Aes."""
        new_kwargs = copy.copy(kwargs)
        for k,v in kwargs.items():
           new_kwargs[k] = as_symbol(v)
@@ -61,10 +118,24 @@ class Aes(robjects.Vector):
 aes = Aes.new
 
 class AesString(robjects.Vector):
+   """ Aesthetics mapping, using strings rather than expressions (the later
+   being most common form when using the package in R - see class Aes
+   in this Python module).
+
+   This associates dimensions in the data sets (columns in the DataFrame),
+   possibly with a transformation applied on-the-fly (e.g., "log(value)",
+   or "cost / benefits") to graphical "dimensions" in a chosen graphical
+   representation (e.g., x-axis, color of points, size, etc...).
+
+   Not all graphical representations have all dimensions. Refer to the
+   documentation of ggplot2, online tutorials, or Hadley's book for
+   more details.
+   """
     _constructor = ggplot2_env['aes_string']
     
     @classmethod
     def new(cls, **kwargs):
+       """Constructor for the class AesString."""
        new_kwargs = copy.copy(kwargs)
        for k,v in kwargs.items():
           new_kwargs[k] = as_symbol(v)
@@ -74,13 +145,15 @@ aes_string = AesString.new
 
 
 class Layer(robjects.RObject):
+   """ At this level, aesthetics mapping can (should ?) be specified
+   (see Aes and AesString). """
     _constructor = ggplot2_env['layer']
     #_dollar = proto_env["$.proto"]
 
     @classmethod
     def new(cls,
             *args, **kwargs):
-
+       """ Constructor for the class Layer. """
        for i, elt in enumerate(args):
           args[i] = conversion.py2ro(elt)
 
@@ -101,131 +174,168 @@ class GBaseObject(robjects.RObject):
        return res
 
 class Stat(GBaseObject):
+   """ A "statistical" processing of the data in order
+   to make a plot, or a plot element.
+
+   This is an abstract class; material classes are called
+   Stat* (e.g., StatAbline, StatBin, etc...). """
    pass
 
 class StatAbline(Stat):
+   """ Line from slope and intercept. """
    _constructor = ggplot2_env['stat_abline']
 stat_abline = StatAbline.new
 
 class StatBin(Stat):
+   """ Bin data. """
    _constructor = ggplot2_env['stat_bin']
 stat_bin = StatBin.new
 
 class StatBin2D(Stat):
+   """ 2D binning of data into squares/rectangles. """
    _constructor = ggplot2_env['stat_bin2d']
 stat_bin2d = StatBin2D.new
 
 class StatBinhex(Stat):
+   """ 2D binning of data into hexagons. """
    _constructor = ggplot2_env['stat_binhex']
 stat_binhex = StatBinhex.new
    
 class StatBoxplot(Stat):
+   """ Components of box and whisker plot. """
    _constructor = ggplot2_env['stat_boxplot']
 stat_boxplot = StatBoxplot.new
 
 class StatContour(Stat):
+   """ Contours of 3D data. """
    _constructor = ggplot2_env['stat_contour']
 stat_contour = StatContour.new
 
 class StatDensity(Stat):
+   """ 1D density estimate """
    _constructor = ggplot2_env['stat_density']
 stat_density = StatDensity.new
 
 class StatDensity2D(Stat):
+   """ 2D density estimate """
    _constructor = ggplot2_env['stat_density2d']
 stat_density2d = StatDensity2D.new
 
 class StatFunction(Stat):
+   """ Superimpose a function """
    _constructor = ggplot2_env['stat_function']
 stat_function = StatFunction.new
 
 class StatHline(Stat):
+   """ Horizontal line """
    _constructor = ggplot2_env['stat_hline']
 stat_hline = StatHline.new
 
 class StatIdentity(Stat):
+   """ Identity function """
    _constructor = ggplot2_env['stat_identity']
 stat_identity = StatIdentity.new
 
 class StatQQ(Stat):
+   """ Calculation for quantile-quantile plot. """
    _constructor = ggplot2_env['stat_qq']
 stat_qq = StatQQ.new
 
 class StatQuantile(Stat):
+   """ Continuous quantiles """
    _constructor = ggplot2_env['stat_quantile']
 stat_quantile = StatQuantile.new
 
 class StatSmooth(Stat):
+   """ Smoothing function """
    _constructor = ggplot2_env['stat_smooth']
 stat_smooth = StatSmooth.new
 
 class StatSpoke(Stat):
+   """ Convert angle and radius to xend and yend """
    _constructor = ggplot2_env['stat_spoke']
 stat_spoke = StatSpoke.new
 
 class StatSum(Stat):
+   """ Sum unique values.
+   Useful when overplotting. """
    _constructor = ggplot2_env['stat_sum']
 stat_sum = StatSum.new
 
 class StatSummary(Stat):
+   """ Summarize values for y at every unique value for x"""
    _constructor = ggplot2_env['stat_summary']
 stat_summary = StatSummary.new
 
 class StatUnique(Stat):
+   """ Remove duplicates. """
    _constructor = ggplot2_env['stat_unique']
 stat_unique = StatUnique.new
 
 class StatVline(Stat):
+   """ Vertival line. """
    _constructor = ggplot2_env['stat_vline']
 stat_vline = StatVline.new
 
 class Coord(GBaseObject):
+   """ Coordinates """
    pass
 
 class CoordFixed(Coord):
+   """ Cartesian coordinates with fixed relationship
+   (that is fixed ratio between units in axes).
+   CoordEquel seems to be identical to this class."""
    _constructor = ggplot2_env['coord_fixed']
 coord_fixed = CoordFixed.new
 
 class CoordCartesian(Coord):
+   """ Cartesian coordinates. """
    _constructor = ggplot2_env['coord_cartesian']
 coord_cartesian = CoordCartesian.new
 
 class CoordEqual(Coord):
+   """ This class seems to be identical to CoordFixed. """
    _constructor = ggplot2_env['coord_equal']
 coord_equal = CoordEqual.new
 
 class CoordFlip(Coord):
+   """ Flip horizontal and vertical coordinates. """
    _constructor = ggplot2_env['coord_flip']
 coord_flip = CoordFlip.new
 
 class CoordMap(Coord):
+   """ Map projections. """
    _constructor = ggplot2_env['coord_map']
 coord_map = CoordMap.new
 
 class CoordPolar(Coord):
+   """ Polar coordinates. """
    _constructor = ggplot2_env['coord_polar']
 coord_polar = CoordPolar.new
 
 class CoordTrans(Coord):
+   """ Apply transformations (functions) to a cartesian coordinate system. """
    _constructor = ggplot2_env['coord_trans']
 coord_trans = CoordTrans.new
 
 
 class Facet(GBaseObject):
+   """ Panels """
    pass
 
 class FacetGrid(Facet):
+   """ Panels in a grid. """
    _constructor = ggplot2_env['facet_grid']
 facet_grid = FacetGrid.new
 
 class FacetWrap(Facet):
+   """ Sequence of panels in a 2D layout """
    _constructor = ggplot2_env['facet_wrap']
 facet_wrap = FacetWrap.new
 
 class Geom(GBaseObject):
    pass
        
-
 class GeomAbline(Geom):
    _constructor = ggplot2_env['geom_abline']
 geom_abline = GeomAbline.new
