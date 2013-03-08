@@ -476,6 +476,7 @@ if __name__ == '__main__':
                     pack_name + '.robjects',
                     pack_name + '.robjects.tests',
                     pack_name + '.robjects.lib',
+                    pack_name + '.robjects.lib.tests',
                     pack_name + '.interactive',
                     pack_name + '.interactive.tests'
                     ],
