@@ -7,6 +7,8 @@ Bugs fixed
 - Spurious error when running unit tests with Python 3 and numpy
   installed
 
+- Missing mapping to ggplot2's `geom_dotplot` function
+
 Changes
 -------
 
