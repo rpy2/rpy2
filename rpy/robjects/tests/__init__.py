@@ -16,6 +16,9 @@ from . import testLanguage
 # wrap this nicely so a warning is issued if no numpy present
 from . import testNumpyConversions
 
+# mapped R libraries
+import rpy2.robjects.lib.tests
+
 def suite():
     suite_RObject = testRObject.suite()
     suite_Vector = testVector.suite()
@@ -30,6 +33,8 @@ def suite():
     suite_Packages = testPackages.suite()
     suite_Help = testHelp.suite()
     suite_Language = testLanguage.suite()
+    # lib
+    #suite_lib = rpy2.robjects.lib.tests.suite()
     alltests = unittest.TestSuite([suite_RObject,
                                    suite_Vector,                   
                                    suite_Array,
@@ -42,7 +47,8 @@ def suite():
                                    suite_NumpyConversions,
                                    suite_Packages,
                                    suite_Help,
-                                   suite_Language
+                                   suite_Language,
+                                   #suite_lib
                                    ])
     return alltests
 
