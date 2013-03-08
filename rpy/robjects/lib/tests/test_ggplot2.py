@@ -14,7 +14,7 @@ class GGPlot2TestCase(unittest.TestCase):
     def testGGPlot(self):
         mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
         gp = ggplot2.ggplot(mtcars)
-        self.assertTrue(isinstance(pp, ggplot2.GGPlot))
+        self.assertTrue(isinstance(gp, ggplot2.GGPlot))
 
     def testAdd(self):
         mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
