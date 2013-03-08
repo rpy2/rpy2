@@ -191,8 +191,8 @@ used from *rpy2*.
  
 The package is using the *grid* lower-level plotting infrastructure, that can be accessed
 through the module :mod:`rpy2.robjects.lib.grid`. Whenever separate plots on the same device,
-or arbitrary graphical elements overlaid, or significant plot customization, or editing
-are needed, some knowledge of *grid* will be required.
+or arbitrary graphical elements overlaid, or significant plot customization, or editing,
+are needed some knowledge of *grid* will be required.
 
 Here again, having data in a :class:`DataFrame` is expected
 (see :ref:`robjects-dataframes` for more information on such objects).
@@ -204,6 +204,7 @@ Here again, having data in a :class:`DataFrame` is expected
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- dataset-begin
    :end-before: #-- dataset-end
+
 
 
 Plot
@@ -413,6 +414,7 @@ example below:
    :scale: 50
 
 
+
 Axes
 ^^^^
 
@@ -512,6 +514,8 @@ used the grammar of graphics) are still specified the usual way.
 .. image:: _static/graphics_ggplot2smoothblue.png
    :scale: 50
 
+.. automodule:: rpy2.robjects.lib.ggplot2
+   :members:
 ..
    Complex example
    ^^^^^^^^^^^^^^^
@@ -537,6 +541,8 @@ used the grammar of graphics) are still specified the usual way.
 
    .. module:: rpy2.robjects.lib.grid
       :synopsis: High-level interface with R
+
+
 
 Package *grid*
 ==============
