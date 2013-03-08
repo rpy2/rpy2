@@ -239,7 +239,7 @@ stat_identity = StatIdentity.new
 
 class StatQQ(Stat):
     """ Calculation for quantile-quantile plot. """
-   _constructor = ggplot2_env['stat_qq']
+    _constructor = ggplot2_env['stat_qq']
 stat_qq = StatQQ.new
 
 class StatQuantile(Stat):
@@ -296,7 +296,7 @@ coord_cartesian = CoordCartesian.new
 
 class CoordEqual(Coord):
     """ This class seems to be identical to CoordFixed. """
-   _constructor = ggplot2_env['coord_equal']
+    _constructor = ggplot2_env['coord_equal']
 coord_equal = CoordEqual.new
 
 class CoordFlip(Coord):
@@ -376,6 +376,10 @@ geom_density = GeomDensity.new
 class GeomDensity2D(Geom):
     _constructor = ggplot2_env['geom_density2d']
 geom_density2d = GeomDensity2D.new
+
+class GeomDotplot(Geom):
+    _constructor = ggplot2_env['geom_dotplot']
+geom_dotplot = GeomDotplot.new
 
 class GeomErrorBar(Geom):
     _constructor = ggplot2_env['geom_errorbar']
