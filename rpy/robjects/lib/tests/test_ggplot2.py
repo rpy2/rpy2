@@ -2,6 +2,7 @@ import unittest
 from rpy2.robjects.lib import ggplot2
 from rpy2.robjects.packages import importr
 datasets = importr('datasets')
+mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
 
 class GGPlot2TestCase(unittest.TestCase):
 
@@ -12,12 +13,10 @@ class GGPlot2TestCase(unittest.TestCase):
         pass
 
     def testGGPlot(self):
-        mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
         gp = ggplot2.ggplot(mtcars)
-        self.assertTrue(isinstance(pp, ggplot2.GGPlot))
+        self.assertTrue(isinstance(gp, ggplot2.GGPlot))
 
     def testAdd(self):
-        mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
         gp = ggplot2.ggplot(mtcars)
         pp = gp + \
             ggplot2.aes_string(x='wt', y='mpg') + \
