@@ -1,12 +1,12 @@
 import unittest
 
-#import test_ggplot2
+import test_ggplot2
 
 def suite():
-    #suite_ggplot2 = test_ggplot2.suite()
-    #alltests = unittest.TestSuite([suite_ggplot2, ])
-    #return alltests
-    pass
+    suite_ggplot2 = test_ggplot2.suite()
+    alltests = unittest.TestSuite([suite_ggplot2, ])
+    return alltests
+    #pass
 
 def main():
     r = unittest.TestResult()
