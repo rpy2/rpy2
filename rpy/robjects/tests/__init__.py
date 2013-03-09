@@ -38,7 +38,7 @@ def suite():
     suite_Help = testHelp.suite()
     suite_Language = testLanguage.suite()
     # lib
-    #suite_lib = rpy2.robjects.lib.tests.suite()
+    suite_lib = rpy2.robjects.lib.tests.suite()
     alltests = unittest.TestSuite([suite_RObject,
                                    suite_Vector,                   
                                    suite_Array,
@@ -53,7 +53,7 @@ def suite():
                                    suite_Packages,
                                    suite_Help,
                                    suite_Language,
-                                   #suite_lib
+                                   suite_lib
                                    ])
     return alltests
 
