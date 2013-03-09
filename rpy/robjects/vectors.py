@@ -45,7 +45,7 @@ class ExtractDelegator(object):
            - an index is itself a vector of elements to select
         """
 
-        conv_args = list(None for x in xrange(len(args)))
+        conv_args = list(None for x in range(len(args)))
         for i, x in enumerate(args):
             if x is MissingArg:
                 conv_args[i] = x
