@@ -710,10 +710,11 @@ class Matrix(Array):
                 raise ValueError('Invalid length.')
             if self.dimnames is NULL:
                 dn = ListVector.from_length(2)
+                dn[0] = rn
                 self.do_slot_assign('dimnames', dn)
             else:
                 dn = self.dimnames
-            dn[0] = rn
+                dn[0] = rn
         else:
             raise ValueError('The rownames attribute can only be an R string vector.')
     rownames = property(__rownames_get, __rownames_set, None, "Row names")
@@ -733,10 +734,11 @@ class Matrix(Array):
                 raise ValueError('Invalid length.')
             if self.dimnames is NULL:
                 dn = ListVector.from_length(2)
+                dn[1] = cn
                 self.do_slot_assign('dimnames', dn)
             else:
                 dn = self.dimnames
-            dn[1] = cn
+                dn[1] = cn
         else:
             raise ValueError('The colnames attribute can only be an R string vector.')
     colnames = property(__colnames_get, __colnames_set, None, "Column names")
