@@ -9,7 +9,9 @@ import sys, copy, os, itertools, math
 import time
 from time import struct_time, mktime
 
-from rpy2.rinterface import Sexp, SexpVector, ListSexpVector, StrSexpVector, IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, R_NilValue, NA_Real, NA_Integer, NA_Character, NA_Logical, NULL
+from rpy2.rinterface import Sexp, SexpVector, ListSexpVector, StrSexpVector, \
+    IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, \
+    R_NilValue, NA_Real, NA_Integer, NA_Character, NA_Logical, NULL, MissingArg
 
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
@@ -43,13 +45,18 @@ class ExtractDelegator(object):
            - an index is itself a vector of elements to select
         """
 
-        args = [conversion.py2ro(x) for x in args]
+        conv_args = list(None for x in xrange(len(args)))
+        for i, x in enumerate(args):
+            if x is MissingArg:
+                conv_args[i] = x
+            else:
+                conv_args[i] = conversion.py2ro(x)
         kwargs = copy.copy(kwargs)
         for k, v in kwargs.values():
             kwargs[k] = conversion.py2ro(v)
         fun = self._extractfunction
-        args.insert(0, self._parent)
-        res = fun(*args, **kwargs)
+        conv_args.insert(0, self._parent)
+        res = fun(*conv_args, **kwargs)
         res = conversion.py2ro(res)
         return res
 
@@ -57,6 +64,8 @@ class ExtractDelegator(object):
         fun = self._extractfunction
         args = rlc.TaggedList(item)
         for i, (k, v) in enumerate(args.items()):
+            if v is MissingArg:
+                continue
             args[i] = conversion.py2ro(v)
         args.insert(0, self._parent)
         res = fun.rcall(args.items(),
@@ -75,6 +84,8 @@ class ExtractDelegator(object):
         if type(item) is tuple:
             args = list([None, ] * (len(item)+2))
             for i, v in enumerate(item):
+                if v is MissingArg:
+                    continue
                 args[i+1] = conversion.py2ro(v)
             args[-1] = conversion.py2ro(value)
             args[0] = self._parent
