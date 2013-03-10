@@ -42,6 +42,7 @@ differences:
   Should it happen, a :class:`rpy2.robjects.packages.LibraryError` is raised.
   To avoid this, use the optional argument *robject_translations*
   in the function :func:`importr`.
+
   .. code-block:: python
 
      d = {'print.me': 'print_dot_me', 'print_me': 'print_uscore_me'}
