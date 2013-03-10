@@ -38,7 +38,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'rpy2'
-copyright = u'2008-2011, Laurent Gautier'
+copyright = u'2008-2013, Laurent Gautier'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
