@@ -9,10 +9,18 @@ Bugs fixed
 
 - Missing mapping to ggplot2's `geom_dotplot` function
 
+- Warnings are not longer printed (see Changes below)
+
 Changes
 -------
 
 - Bumped target version of ggplot2 to 0.9.3.1
+
+- Warnings are not longer printed. The C-level function in R became
+  hidden in R-3.0, and the cost of an R-level check/print is relatively
+  high if the R code called is very short. This might evolve into
+  printing warnings only if interactive mode in Python (if this can
+  be checked reliably).
 
 
 Release 2.3.3

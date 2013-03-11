@@ -1760,9 +1760,13 @@ Sexp_rcall(PyObject *self, PyObject *args)
     }
   }
 
+  /* Unexplained hidding of the function R_PrintWarnings()
+   * in the codebase (and inquiries about alternative options
+   * on the R-dev list completely ignored).
+   */
   /* FIXME: standardize R outputs */
-  extern void Rf_PrintWarnings(void);
-  Rf_PrintWarnings(); /* show any warning messages */
+  /* extern void Rf_PrintWarnings(void); */
+  /* Rf_PrintWarnings(); /\* show any warning messages *\/ */
 
   PyObject *res = (PyObject *)newPySexpObject(res_R);
   UNPROTECT(protect_count);
