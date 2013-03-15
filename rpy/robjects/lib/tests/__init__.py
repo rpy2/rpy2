@@ -1,10 +1,17 @@
 import unittest
+from rpy2.rinterface import RRuntimeError
 
-import test_ggplot2
+try:
+    import test_ggplot2
+except RRuntimeError:
+    test_ggplot2 = None
 
 def suite():
-    suite_ggplot2 = test_ggplot2.suite()
-    alltests = unittest.TestSuite([suite_ggplot2, ])
+    if test_ggplot2:
+        suite_ggplot2 = test_ggplot2.suite()
+        alltests = unittest.TestSuite([suite_ggplot2, ])
+    else:
+        alltests = unittest.TestSuite([])
     return alltests
     #pass
 
