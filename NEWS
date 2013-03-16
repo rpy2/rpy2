@@ -9,8 +9,8 @@ Changes
 New features
 ------------
 
-- New :meth:`GGplot._repr_png` and :meth:`GGplot.png` to plot
-  automatically ggplot2 figure in iPython's console
+- New module :mod:`rpy2.interactive.ipython` (so far plotting
+  automatically a ggplot2 figure in the iPython's console)
 
 
 Relase 2.3.4
