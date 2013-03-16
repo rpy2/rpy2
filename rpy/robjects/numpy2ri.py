@@ -76,5 +76,5 @@ def ri2numpy(o):
 
 def activate():
     conversion.py2ri = numpy2ri
-    conversion.ri2numpy = ri2numpy 
+    conversion.ri2py = ri2numpy 
 
