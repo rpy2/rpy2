@@ -14,7 +14,10 @@ _system_file = rinterface.baseenv['system.file']
 _get_namespace = rinterface.baseenv['getNamespace']
 _get_namespace_version = rinterface.baseenv['getNamespaceVersion']
 _get_namespace_exports = rinterface.baseenv['getNamespaceExports']
-_find_package = rinterface.baseenv['.find.package']
+try:
+    _find_package = rinterface.baseenv['find.package']
+except LookupError:
+    _find_package = rinterface.baseenv['.find.package']
 _packages = rinterface.baseenv['.packages']
 _libpaths = rinterface.baseenv['.libPaths']
 _loaded_namespaces = rinterface.baseenv['loadedNamespaces']
