@@ -56,8 +56,9 @@ NULL = robjects.NULL
 #getmethod = robjects.baseenv.get("getMethod")
 
 rimport = robjects.baseenv.get('library')
-
 ggplot2 = importr('ggplot2')
+# lazy importr() of R's graphical devices
+grdevices = None
 
 TARGET_VERSION = '0.9.3.1'
 if ggplot2.__version__ != TARGET_VERSION:
@@ -95,6 +96,29 @@ class GGPlot(robjects.RObject):
         if res.rclass[0] != 'gg':
             raise ValueError("Added object did not give a ggplot result (get class '%s')." % res.rclass[0])
         return GGPlot(res)
+
+    # special representation for ipython
+    def _repr_png_(self, width = 800, height = 600):
+        if grdevices is None:
+           _grdevices = importr('grDevices')
+        else:
+           _grdevices = grDevices
+        # Hack with a temp file (use buffer later ?)
+        import uuid   
+        fn = '{uuid}.png'.format(uuid = uuid.uuid4())
+        _grdevices.png(fn, width = width, height = height)
+        self.plot()
+        _grdevices.dev_off()
+        import io
+        with io.OpenWrapper(fn, mode='rb') as data:
+           res = data.read()
+        return res
+
+    def png(self, width = 800, height = 600):
+        """ Build an Ipython "Image" (requires iPython). """
+        from IPython.core.display import Image
+        return Image(self._repr_png_(width = width, height = height), 
+                     embed=True)
 
 ggplot = GGPlot.new
 

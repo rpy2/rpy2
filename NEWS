@@ -6,6 +6,12 @@ Changes
 
 - Python 3-only. Python 2 is no longer supported.
 
+New features
+------------
+
+- New :meth:`GGplot._repr_png` and :meth:`GGplot.png` to plot
+  automatically ggplot2 figure in iPython's console
+
 
 Relase 2.3.4
 ============
