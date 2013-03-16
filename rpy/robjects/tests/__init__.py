@@ -16,11 +16,12 @@ from . import testLanguage
 # wrap this nicely so a warning is issued if no numpy present
 from . import testNumpyConversions
 
+# wrap this nicely so a warning is issued if no pandas
+from . import testPandasConversions
+
 # mapped R libraries
 import rpy2.robjects.lib.tests
 
-# wrap this nicely so a warning is issued if no numpy present
-import testPandasConversions
 
 def suite():
     suite_RObject = testRObject.suite()
