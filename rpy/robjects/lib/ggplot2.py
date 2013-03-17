@@ -89,7 +89,7 @@ class GGPlot(robjects.RObject):
         res = self._add(self, obj)
         if res.rclass[0] != 'gg':
             raise ValueError("Added object did not give a ggplot result (get class '%s')." % res.rclass[0])
-        return GGPlot(res)
+        return self.__class__(res)
 
 ggplot = GGPlot.new
 
