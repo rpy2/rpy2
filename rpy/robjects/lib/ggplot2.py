@@ -79,6 +79,7 @@ class GGPlot(robjects.RObject):
     @classmethod
     def new(cls, data):
         """ Constructor for the class GGplot. """
+        data = conversion.py2ri(data)
         res = cls(cls._constructor(data))
         return res
     

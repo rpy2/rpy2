@@ -10,7 +10,7 @@ import tempfile
 
 grdevices = importr('grDevices')
 
-# automatic plotting of ggplot2 figures
+# automatic plotting of ggplot2 figures in the notebook
 
 class GGPlot(ggplot2.GGPlot):
 
