@@ -15,39 +15,40 @@ grdevices = importr('grDevices')
 class GGPlot(ggplot2.GGPlot):
 
     # special representation for ipython
-    def _repr_png_(self, width = 800, height = 600):
+    def _repr_png_(self, width = 600, height = 400):
         # Hack with a temp file (use buffer later ?)
-        fn = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.png',
+        fn = tempfile.NamedTemporaryFile(mode = 'wb', suffix = '.png',
                                          delete = False)
-
-        grdevices.png(fn, width = width, height = height)
+        fn.close()
+        grdevices.png(fn.name, width = width, height = height)
         self.plot()
         grdevices.dev_off()
         import io
-        with io.OpenWrapper(fn, mode='rb') as data:
+        with io.OpenWrapper(fn.name, mode='rb') as data:
            res = data.read()
         return res
 
-    def _repr_svg_(self, width = 7, height = 5):
+    def _repr_svg_(self, width = 6, height = 4):
         # Hack with a temp file (use buffer later ?)
-        fn = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.svg',
+        fn = tempfile.NamedTemporaryFile(mode = 'wb', suffix = '.svg',
                                          delete = False)
-        grdevices.svg(fn, width = width, height = height)
+        fn.close()
+        grdevices.svg(fn.name, width = width, height = height)
         self.plot()
         grdevices.dev_off()
         import io
-        with io.OpenWrapper(fn, mode='rb') as data:
-           res = data.read()
+        with io.OpenWrapper(fn.name, mode='rb') as data:
+           res = data.read().decode('utf-8')
         return res
 
-    def png(self, width = 800, height = 600):
+    def png(self, width = 600, height = 400):
         """ Build an Ipython "Image" (requires iPython). """
         return Image(self._repr_png_(width = width, height = height), 
                      embed=True)
 
-    def svg(self, width = 7, height = 5):
+    def svg(self, width = 6, height = 4):
         """ Build an Ipython "Image" (requires iPython). """
         return Image(self._repr_svg_(width = width, height = height), 
                      embed=True)
 
-
+ggplot = GGPlot.new
