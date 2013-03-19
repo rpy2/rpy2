@@ -6,17 +6,17 @@ import packages is to use `importr()`, for example
 with ggplot2::
 
     from rpy2.robjects.packages import importr
-    ggplot2 = robjects.baseenv.get('ggplot2')
+    ggplot2 = importr('ggplot2')
 
 This module is an supplementary layer in which an attempt
-at modelling the package as it was really developped
+at modelling the package as it was really developed
 as Python package is made. Behind the scene, `importr()`
 is used and can be accessed with:
 
     from robjects.robjects.lib import ggplot2
     ggplot2.ggplot2
 
-Ggplot2 is designed using a prototype-based approach to
+GGplot2 is designed using a prototype-based approach to
 Object-Oriented Programming, and this module is trying
 to define class-hierachies so the nature of a given
 instance can be identified more easily.
@@ -43,7 +43,6 @@ and provide a more dynamic mapping.
 """
 
 
-import rpy2.robjects.methods
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
@@ -53,9 +52,6 @@ import warnings
 
 NULL = robjects.NULL
 
-#getmethod = robjects.baseenv.get("getMethod")
-
-rimport = robjects.baseenv.get('library')
 ggplot2 = importr('ggplot2')
 
 TARGET_VERSION = '0.9.3.1'
