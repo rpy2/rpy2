@@ -504,6 +504,10 @@ class ScaleSize(Scale):
     _constructor = ggplot2_env['scale_size']
 scale_size = ScaleSize.new
 
+class ScaleShapeDiscrete(Scale):
+   _constructor = ggplot2_env['scale_shape_discrete']
+scale_shape_discrete = ScaleShapeDiscrete.new
+
 class ScaleFill(Scale):
     pass
 class ScaleX(Scale):
