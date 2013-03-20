@@ -293,7 +293,7 @@ PyDoc_STRVAR(Sexp_sexp_doc,
              "Opaque C pointer to the underlying R object");
 
 static PyObject*
-Sexp_rclass_get(PyObject *self)
+Sexp_rclass_get(PyObject *self, void *closure)
 {
   SEXP sexp = RPY_SEXP(((PySexpObject*)self));
   if (! sexp) {
@@ -301,12 +301,36 @@ Sexp_rclass_get(PyObject *self)
     return NULL;;
   }
 
-  SEXP res_R = GET_CLASS(sexp);
+  SEXP res_R = R_data_class(sexp);
   PyObject *res = (PyObject *)newPySexpObject(res_R);
   return res;
 }
+
+/* Return -1 on failure, with an exception set. */
+static int
+Sexp_rclass_set(PyObject *self, PyObject *value, void *closure)
+{
+  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return -1;
+  }
+
+
+  if (! PyObject_IsInstance(value, 
+			    (PyObject*)&Sexp_Type)) {
+    PyErr_Format(PyExc_ValueError, "Value must be a Sexp.");
+    return NULL;
+  }
+  SEXP sexp_class = RPY_SEXP((PySexpObject*)value);
+  SET_CLASS(sexp, sexp_class);
+  printf("--->\n");
+  return 0;
+}
 PyDoc_STRVAR(Sexp_rclass_doc,
-             "R class name");
+             "R class name (and in R the class is an attribute and can be set).");
+
+
 
 static PyObject*
 Sexp_rid_get(PyObject *self)
@@ -579,7 +603,7 @@ static PyGetSetDef Sexp_getsets[] = {
    Sexp_typeof_doc},
   {"rclass", 
    (getter)Sexp_rclass_get,
-   (setter)0,
+   (setter)Sexp_rclass_set,
    Sexp_rclass_doc},
   {"rid", 
    (getter)Sexp_rid_get,

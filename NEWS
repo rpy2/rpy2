@@ -1,3 +1,32 @@
+Relase 2.3.5
+============
+
+Bugs fixed
+----------
+
+- Missing mapping to ggplot2's `scale_shape_discrete` function
+
+- Better handling of dates in Pandas
+
+Changes
+-------
+
+- The attribute :attr:`rclass` is no longer read-only and can be set
+  (since R allows it)
+
+- Importing the module :mod:`rpy2.interactive` no longer activates
+  event processing by default (triggering concurrency errors
+  when used with ipython).
+
+New features
+------------
+
+- New module :mod:`rpy2.interactive.ipython` (so far plotting
+  automatically a ggplot2 figure in the iPython's console)
+
+- It is now possible to set the :attr:`rclass`.
+
+
 Relase 2.3.4
 ============
 
