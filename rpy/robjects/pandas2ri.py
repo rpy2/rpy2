@@ -45,8 +45,7 @@ def pandas2ri(obj):
 
 def ri2pandas(o):
     if isinstance(o, DataFrame):
-        #pass
-        NotImplementedError("Conversion from rpy2 DataFrame to pandas' DataFrame")
+        raise NotImplementedError("Conversion from rpy2 DataFrame to pandas' DataFrame")
     else:
         res = ro.default_ri2py(o)
     return res

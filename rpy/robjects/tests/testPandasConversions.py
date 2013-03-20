@@ -3,6 +3,8 @@ import rpy2.robjects as robjects
 
 from collections import OrderedDict
 
+# XXX - this is inconsistent with how test_ggplot2 is handled
+# See rpy2/robjects/lib/tests/__init__.py for the details
 try:
     import pandas
     import numpy
@@ -41,6 +43,7 @@ class PandasConversionsTestCase(unittest.TestCase):
         Series = pandas.core.series.Series
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
         rp_s = robjects.conversion.py2ri(s)
+        self.assertIsInstance(rp_s, robjects.Array)
 
     def testRepr(self):
         # this should go to testVector, with other tests for repr()
@@ -56,6 +59,17 @@ class PandasConversionsTestCase(unittest.TestCase):
         s = s.split('\n')
         self.assertEqual('[Array, Array, Array, FactorV..., FactorV...]', s[1].strip())
 
+    def testPandas2ri(self):
+        # XXX - not a full test, just tests that the function returns the right
+        # class. This is currently also the case with some of the tests above
+        # (e.g., testSeries)
+        rdataf = robjects.r('data.frame(a=1:2, b=c("a", "b"))')
+        # Note - I'm following the convention above, but this conflates
+        # .activate() with testing the function, so it's not as "unit" as it
+        # could be.
+        pandas_df = robjects.conversion.ri2py(rdataf)
+        self.assertIsInstance(pandas_df, pandas.DataFrame)
+
 def suite():
     if has_pandas:
         return unittest.TestLoader().loadTestsFromTestCase(PandasConversionsTestCase)
@@ -63,5 +77,5 @@ def suite():
         return unittest.TestLoader().loadTestsFromTestCase(MissingPandasDummyTestCase)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(defaultTest='suite')
 
