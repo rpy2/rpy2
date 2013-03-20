@@ -2,6 +2,7 @@ import unittest
 import rpy2.robjects as robjects
 
 from collections import OrderedDict
+from datetime import datetime
 
 try:
     import pandas
@@ -30,7 +31,10 @@ class PandasConversionsTestCase(unittest.TestCase):
              ('i', numpy.array([1, 2, 3], dtype="i")),
              ('f', numpy.array([1, 2, 3], dtype="f")),
              ('s', numpy.array(["a", "b", "c"], dtype="S")),
-             ('u', numpy.array([u"a", u"b", u"c"], dtype="U")))
+             ('u', numpy.array([u"a", u"b", u"c"], dtype="U")),
+             ('dates', [datetime(2012, 5, 2), 
+                        datetime(2012, 6, 3), 
+                        datetime(2012, 7, 1)]))
         od = OrderedDict(l)
         pd_df = pandas.core.frame.DataFrame(od)
         rp_df = robjects.conversion.py2ri(pd_df)

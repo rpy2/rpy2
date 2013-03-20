@@ -16,6 +16,8 @@ numpy2ri.activate()
 
 original_conversion = conversion.py2ri
 
+ISOdate = rinterface.baseenv['ISOdate']
+
 def pandas2ri(obj):
     if isinstance(obj, PandasDataFrame):
         od = OrderedDict()
@@ -32,8 +34,18 @@ def pandas2ri(obj):
             # only other alternative to 'O' is integer, I think
             return original_conversion(obj)        
     elif isinstance(obj, PandasSeries):
-        # converted as a numpy array
-        res = original_conversion(obj) 
+        if obj.dtype == '<M8[ns]':
+            # time series
+            #FIXME: not the most efficient
+            d = [IntVector([x.year for x in obj]),
+                 IntVector([x.month for x in obj]),
+                 IntVector([x.day for x in obj]),
+                 IntVector([x.minute for x in obj]),
+                 IntVector([x.second for x in obj])]
+            res = ISOdate(*d)
+        else:
+            # converted as a numpy array
+            res = original_conversion(obj) 
         # "index" is equivalent to "names" in R
         if obj.ndim == 1:
             res.names = ListVector({'x': ro.conversion.py2ri(obj.index)})
