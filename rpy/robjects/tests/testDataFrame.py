@@ -20,8 +20,8 @@ class DataFrameTestCase(unittest.TestCase):
         numbers = robjects.r('1:5')
         self.assertRaises(ValueError, robjects.DataFrame, numbers)
 
-        rlist = robjects.r('list(a=1, b=2, c=3)')
-        self.assertRaises(ValueError, robjects.DataFrame, rlist)
+        rfunc = robjects.r('sum')
+        self.assertRaises(ValueError, robjects.DataFrame, rfunc)
 
         rdataf = robjects.r('data.frame(a=1:2, b=c("a", "b"))')
         dataf = robjects.DataFrame(rdataf)        

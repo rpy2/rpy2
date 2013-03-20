@@ -229,6 +229,7 @@ class Vector(RObjectMixin, SexpVector):
 
     def __getitem__(self, i):
         res = super(Vector, self).__getitem__(i)
+        
         if isinstance(res, Sexp):
             res = conversion.ri2py(res)
         return res
@@ -799,35 +800,46 @@ class DataFrame(ListVector):
     _write_table = utils_ri['write.table']
     _cbind     = rinterface.baseenv['cbind.data.frame']
     _rbind     = rinterface.baseenv['rbind.data.frame']
+    _is_list   = rinterface.baseenv['is.list']
     
-    def __init__(self, tlist):
+    def __init__(self, obj):
         """ Create a new data frame.
 
-        :param tlist: rpy2.rlike.container.TaggedList or rpy2.rinterface.SexpVector (and of class 'data.frame' for R)
+        :param obj: object inheriting from rpy2.rinterface.SexpVector,
+                    or inheriting from TaggedList
+                    or a mapping name -> value
         """
-        if isinstance(tlist, rinterface.SexpVector):
-            if tlist.typeof != rinterface.VECSXP:
-                raise ValueError("tlist should of typeof VECSXP")
-            if not globalenv_ri.get('inherits')(tlist, self._dataframe_name)[0]:
-                raise ValueError('tlist should of R class "data.frame"')
-            super(DataFrame, self).__init__(tlist)
-        elif isinstance(tlist, rlc.TaggedList):
-            kv = [(k, conversion.py2ri(v)) for k,v in tlist.items()]
+        if isinstance(obj, rinterface.SexpVector):
+            if obj.typeof != rinterface.VECSXP:
+                raise ValueError("obj should of typeof VECSXP"+\
+                                     " (and we get %s)" % rinterface.str_typeint(obj.typeof))
+            if self._is_list(obj)[0] or \
+                    globalenv_ri.get('inherits')(obj, self._dataframe_name)[0]:
+                #FIXME: is it really a good idea to pass R lists
+                # to the constructor ?
+                super(DataFrame, self).__init__(obj)
+            else:
+                raise ValueError(
+            "When passing R objects to build a DataFrame," +\
+                " the R object must be a list or inherit from" +\
+                " the R class 'data.frame'")
+        elif isinstance(obj, rlc.TaggedList):
+            kv = [(k, conversion.py2ri(v)) for k,v in obj.items()]
             kv = tuple(kv)
             df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
             super(DataFrame, self).__init__(df)
-        elif hasattr(tlist, "__iter__"):
-            if not callable(tlist.__iter__):
-                raise ValueError("tlist should have a /method/ __iter__ (not an attribute)")
-            kv = [(str(k), conversion.py2ri(tlist[k])) for k in tlist]
+        else:
+            try:
+                kv = [(str(k), conversion.py2ri(obj[k])) for k in obj]
+            except TypeError:
+                raise ValueError("obj can be either "+
+                                 "an instance of an iter-able class" +
+                                 "(such a Python dict, rpy2.rlike.container OrdDict" +
+                                 " or an instance of rpy2.rinterface.SexpVector" +
+                                 " of type VECSXP")
+            
             df = baseenv_ri.get("data.frame").rcall(tuple(kv), globalenv_ri)
             super(DataFrame, self).__init__(df)
-        else:
-            raise ValueError("tlist can be either "+
-                             "an instance of an iter-able class" +
-                             "(such a Python dict, rpy2.rlike.container OrdDict" +
-                             " or an instance of rpy2.rinterface.SexpVector" +
-                             " of type VECSXP")
     
     def _get_nrow(self):
         """ Number of rows. 
@@ -862,6 +874,14 @@ class DataFrame(ListVector):
         
     colnames = property(_get_colnames, _set_colnames, None)
 
+    def __getitem__(self, i):
+        # Make sure this is not a List returned
+        # FIXME: should this be optimzed ?
+        tmp = super(DataFrame, self).__getitem__(i)
+        if tmp.typeof == rinterface.VECSXP:
+            return DataFrame(tmp)
+        else:
+            return conversion.ri2py(tmp)
 
     def cbind(self, *args, **kwargs):
         """ bind objects as supplementary columns """
