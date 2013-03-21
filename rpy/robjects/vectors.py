@@ -7,7 +7,9 @@ import rpy2.rlike.container as rlc
 
 import sys, copy, os, itertools, math
 import time
-from time import struct_time, mktime
+from datetime import datetime
+from time import struct_time, mktime, tzname
+from operator import attrgetter
 
 from rpy2.rinterface import Sexp, SexpVector, ListSexpVector, StrSexpVector, \
     IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, \
@@ -620,26 +622,83 @@ class POSIXct(POSIXt, FloatVector):
     sequence interface) of time.struct_time objects.
     """
 
+    _as_posixct = baseenv_ri['as.POSIXct']
+    _ISOdatetime = baseenv_ri['ISOdatetime']
+
     def __init__(self, seq):
-        """ 
+        """ Create a POSIXct from either an R vector or a sequence
+        of Python dates.
         """
 
         if isinstance(seq, Sexp):
             super(self, FloatSexpVector)(seq)
+        elif isinstance(seq[0], struct_time):
+            sexp = POSIXct.sexp_from_struct_time(seq)
+            self.__sexp__ = sexp.__sexp__            
+        elif isinstance(seq[0], datetime):
+            sexp = POSIXct.sexp_from_datetime(seq)
+            self.__sexp__ = sexp.__sexp__                        
         else:
-            for elt in seq:
-                if not isinstance(elt, struct_time):
-                    raise ValueError('All elements must inherit from time.struct_time')
-            as_posixct = baseenv_ri['as.POSIXct']
-            origin = StrSexpVector([time.strftime("%Y-%m-%d", 
-                                                  time.gmtime(0)),])
-            rvec = FloatSexpVector([mktime(x) for x in seq]) 
-            sexp = as_posixct(rvec, origin = origin)
-            self.__sexp__ = sexp.__sexp__
-        
-        
+            raise ValueError('All elements must inherit from time.struct_time or datetime.datetime.')
+
+    @staticmethod
+    def _sexp_from_seq(seq, tz_info_getter, isodatetime_columns):
+        """ return a POSIXct vector from a sequence of time.struct_time 
+        elements. """
+        tz_count = 0
+        tz_info = None
+        for elt in seq:
+            tmp = tz_info_getter(elt)
+            if tz_info is None:
+                tz_info = tmp
+                tz_count = 1
+            elif tz_info == tmp:
+                tz_count += 1
+            else:
+                # different time zones
+                #FIXME: create a list of time zones with tz_count times
+                # tz_info, add the current tz_info and append further.
+                raise ValueError("Sequences of dates with different time zones not yet allowed.")
+
+        if tz_info is None:
+            tz_info = tzname[0]
+        # We could use R's as.POSIXct instead of ISOdatetime
+        # since as.POSIXct is used by it anyway, but the overall
+        # interface for dates and conversion between formats
+        # is not exactly straightforward. Someone with more
+        # time should look into this.
+
+        d = isodatetime_columns(seq)
+        sexp = POSIXct._ISOdatetime(*d, tz = StrSexpVector((tz_info, )))
+        return sexp
 
 
+    @staticmethod
+    def sexp_from_struct_time(seq):
+        def f(seq):
+            return [IntVector([x.tm_year for x in seq]),
+                    IntVector([x.tm_mon for x in seq]),
+                    IntVector([x.tm_mday for x in seq]),
+                    IntVector([x.tm_hour for x in seq]),
+                    IntVector([x.tm_min for x in seq]),
+                    IntVector([x.tm_sec for x in seq])]
+        return POSIXct._sexp_from_seq(seq, attrgetter('tm_zone'), f)
+    
+    @staticmethod
+    def sexp_from_datetime(seq):
+        """ return a POSIXct vector from a sequence of
+        datetime.datetime elements. """
+        def f(seq):
+            return [IntVector([x.year for x in seq]),
+                    IntVector([x.month for x in seq]),
+                    IntVector([x.day for x in seq]),
+                    IntVector([x.hour for x in seq]),
+                    IntVector([x.minute for x in seq]),
+                    IntVector([x.second for x in seq])]
+        
+        return POSIXct._sexp_from_seq(seq, attrgetter('tzinfo'), f)
+       
+        
 class Array(Vector):
     """ An R array """
     _dimnames_get = baseenv_ri['dimnames']
