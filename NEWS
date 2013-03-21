@@ -1,6 +1,13 @@
 Release 2.4.0-dev
 =================
 
+Bugs fixed
+----------
+
+- Missing mapping to ggplot2's `scale_shape_discrete` function
+
+- Constructor for POSIXct improved (and fixed)
+
 Changes
 -------
 

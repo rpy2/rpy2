@@ -2,6 +2,8 @@ import unittest
 import rpy2.robjects as robjects
 ri = robjects.rinterface
 import array, time, sys
+import time
+import datetime
 import rpy2.rlike.container as rlc
 from collections import OrderedDict
 
@@ -233,11 +235,18 @@ class DateTimeVectorTestCase(unittest.TestCase):
         x = [time.struct_time(_dateval_tuple), 
              time.struct_time(_dateval_tuple)]
         x.append('foo')
-        self.assertRaises(ValueError, robjects.POSIXct, x)
+        # string 'foo' does not have attribute 'tm_zone'  
+        self.assertRaises(AttributeError, robjects.POSIXct, x)
 
     def testPOSIXct_fromPythonTime(self):
         x = [time.struct_time(_dateval_tuple), 
              time.struct_time(_dateval_tuple)]
+        res = robjects.POSIXct(x)
+        self.assertEqual(2, len(x))
+
+    def testPOSIXct_fromPythonDatetime(self):
+        x = [datetime.datetime(*_dateval_tuple[:-2]), 
+             datetime.datetime(*_dateval_tuple[:-2])]
         res = robjects.POSIXct(x)
         self.assertEqual(2, len(x))
 
