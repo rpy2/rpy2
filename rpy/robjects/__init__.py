@@ -11,6 +11,7 @@ License: GPLv3.0 (although a dual license can be worked out)
 import os, sys
 import array
 import itertools
+from datetime import datetime
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
@@ -77,7 +78,10 @@ def default_ri2py(o):
                     else:
                         res = vectors.IntVector(o)
                 elif o.typeof == rinterface.REALSXP:
-                    res = vectors.FloatVector(o)
+                    if o.rclass[0] == 'POSIXct':
+                        res = vectors.POSIXct(o)
+                    else:
+                        res = vectors.FloatVector(o)
                 elif o.typeof == rinterface.STRSXP:
                     res = vectors.StrVector(o)
                 elif o.typeof == rinterface.VECSXP:
