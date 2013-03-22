@@ -16,7 +16,7 @@ numpy2ri.activate()
 
 original_conversion = conversion.py2ri
 
-ISOdate = rinterface.baseenv['ISOdate']
+ISOdatetime = rinterface.baseenv['ISOdatetime']
 
 def pandas2ri(obj):
     if isinstance(obj, PandasDataFrame):
@@ -36,13 +36,15 @@ def pandas2ri(obj):
     elif isinstance(obj, PandasSeries):
         if obj.dtype == '<M8[ns]':
             # time series
-            #FIXME: not the most efficient
             d = [IntVector([x.year for x in obj]),
                  IntVector([x.month for x in obj]),
                  IntVector([x.day for x in obj]),
                  IntVector([x.minute for x in obj]),
                  IntVector([x.second for x in obj])]
-            res = ISOdate(*d)
+            res = ISOdatetime(*d)
+            #FIXME: can the POSIXct be created from the POSIXct constructor ?
+            # (is '<M8[ns]' mapping to Python datetime.datetime ?)
+            res = POSIXct(res)
         else:
             # converted as a numpy array
             res = original_conversion(obj) 
