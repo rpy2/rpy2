@@ -4,13 +4,13 @@ import unittest
 import rpy2
 # import rpy2.robjects.tests
 
-import rpy2.rinterface.tests
+# import rpy2.rinterface.tests
 # import rpy2.rlike.tests
 #import rpy2.interactive.tests
 
-import rpy2.tests.tests_rpy_classic
+import rpy2.tests_rpy_classic
 
-def load_tests(loader, standard_tests, pattern):
+def old_load_tests(loader, standard_tests, pattern):
     '''Intercept `python -m unittest discover` run from the module root
     
     Specifically, discover won't look at tests_rpy_classic.py'''
@@ -22,14 +22,16 @@ def load_tests(loader, standard_tests, pattern):
     # at least in a virtualenv that lacks various packages, like numpy,
     # pandas
     suite_robjects = loader.discover('robjects', pattern, rpy_root)
-    suite_rinterface = rpy2.rinterface.tests.suite()
-    # This loads some stuff that results in a core dump
-    # suite_rinterface = loader.discover('rinterface/tests', pattern, this_dir)
+    # suite_rinterface = rpy2.rinterface.tests.load_tests(None, None, None)
+    # Raw discovery here loads some stuff that results in a core dump, so
+    # we'll retain a load_tests() in rinterface.tests for now.
+    suite_rinterface = loader.discover('rinterface', pattern, rpy_root)
     # suite_rlike = rpy2.rlike.tests.suite()
     suite_rlike = loader.discover('rlike', pattern, rpy_root)
+    # This was previously disabled
     #suite_interactive = rpy2.interactive.tests.suite()
 
-    suite_rpy_classic = rpy2.tests.tests_rpy_classic.suite()
+    suite_rpy_classic = rpy2.tests_rpy_classic.suite()
 
     standard_tests.addTests([suite_rinterface,
                              suite_robjects,
@@ -39,8 +41,17 @@ def load_tests(loader, standard_tests, pattern):
                              ])
     return standard_tests
 
+def main():
+    # We want to replace this with a discover call once we clean up rinterface
+    # alltests = load_tests(unittest.TestLoader(), unittest.TestSuite(),
+    rpy_root = dirname(rpy2.__file__)
+    alltests = unittest.TestLoader().discover(rpy_root, pattern='test*')
+    unittest.TextTestRunner(verbosity=1).run(alltests)
 
 if __name__ == "__main__":
-    alltests = load_tests(unittest.TestLoader(), unittest.TestSuite(),
-                          'test*.py')
-    unittest.TextTestRunner(verbosity=1).run(alltests)
+    import sys, rpy2.rinterface
+    sys.stdout.write("rpy2 version: %s\n" % rpy2.__version__)
+    sys.stdout.write("built against R version: %s\n" % '-'.join(str(x) for x in rpy2.rinterface.R_VERSION_BUILD))
+    sys.stdout.flush()
+
+    main()
