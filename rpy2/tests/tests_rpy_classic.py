@@ -5,7 +5,7 @@ import rpy2.rinterface
 
 
 class RpyClassicTestCase(unittest.TestCase):
-    
+
     def testAttributeExpansion(self):
         rpy.set_default_mode(rpy.BASIC_CONVERSION)
         wtest = rpy.r.wilcox_test
