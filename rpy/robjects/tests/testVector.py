@@ -250,6 +250,11 @@ class DateTimeVectorTestCase(unittest.TestCase):
         res = robjects.POSIXct(x)
         self.assertEqual(2, len(x))
 
+    def testPOSIXct_fromSexp(self):
+        sexp = robjects.r('ISOdate(2013, 12, 11)')
+        res = robjects.POSIXct(sexp)
+        self.assertEqual(1, len(res))
+
 class ExtractDelegatorTestCase(unittest.TestCase):
 
     def setUp(self):
