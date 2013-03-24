@@ -631,7 +631,7 @@ class POSIXct(POSIXt, FloatVector):
         """
 
         if isinstance(seq, Sexp):
-            super(self, FloatSexpVector)(seq)
+            super(FloatVector, self).__init__(seq)
         elif isinstance(seq[0], struct_time):
             sexp = POSIXct.sexp_from_struct_time(seq)
             self.__sexp__ = sexp.__sexp__            
