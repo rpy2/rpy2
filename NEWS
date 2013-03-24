@@ -8,11 +8,6 @@ Bugs fixed
 
 - Better handling of dates in Pandas
 
-Bugs fixed
-----------
-
-- Missing mapping to ggplot2's `scale_shape_discrete` function
-
 - Constructor for POSIXct improved (and fixed)
 
 Changes
