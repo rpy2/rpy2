@@ -3,21 +3,17 @@ import rpy2.robjects as robjects
 
 from collections import OrderedDict
 
-# XXX - this is inconsistent with how test_ggplot2 is handled
-# See rpy2/robjects/lib/tests/__init__.py for the details
+has_pandas = True
 try:
     import pandas
     import numpy
-    has_pandas = True
     import rpy2.robjects.pandas2ri as rpyp
 except:
     has_pandas = False
 
 
-class MissingPandasDummyTestCase(unittest.TestCase):
-    def testMissingPandas(self):
-        self.assertTrue(False) # pandas is missing. No tests.
 
+@unittest.skipUnless(has_pandas, "pandas is not available in python")
 class PandasConversionsTestCase(unittest.TestCase):
 
     def setUp(self):
