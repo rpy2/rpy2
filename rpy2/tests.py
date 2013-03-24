@@ -1,37 +1,32 @@
+#!/usr/bin/env python
+
+'''tests.py - run all the tests worth running
+
+The goal is that "ERRORS" and "FAILURES" are true failures, and expected
+problems sould be dealt with using decorators.'''
+
 from os.path import dirname
 import unittest
 
 import rpy2
-# import rpy2.robjects.tests
+import rpy2.tests_rpy_classic
 
-# import rpy2.rinterface.tests
-# import rpy2.rlike.tests
-#import rpy2.interactive.tests
-
-# import rpy2.tests_rpy_classic
-
-def old_load_tests(loader, standard_tests, pattern):
-    '''Intercept `python -m unittest discover` run from the module root
-    
-    Specifically, discover won't look at tests_rpy_classic.py'''
+def faster_load_tests(loader, standard_tests, pattern):
+    '''Run tests a little faster than TestLoader.discover()'''
     # A little funny for now while we re-arrange tests a bit
     rpy_root = dirname(rpy2.__file__)
 
-    # suite_robjects = rpy2.robjects.tests.suite()
-    # This catches some extra tests (bypassing the suite() functions),
-    # at least in a virtualenv that lacks various packages, like numpy,
+    # This now catches some extra tests (bypassing the suite() functions),
+    # at least in a virtualenv that lacks various packages, like numpy &
     # pandas
     suite_robjects = loader.discover('robjects', pattern, rpy_root)
-    # suite_rinterface = rpy2.rinterface.tests.load_tests(None, None, None)
-    # Raw discovery here loads some stuff that results in a core dump, so
-    # we'll retain a load_tests() in rinterface.tests for now.
     suite_rinterface = loader.discover('rinterface', pattern, rpy_root)
-    # suite_rlike = rpy2.rlike.tests.suite()
     suite_rlike = loader.discover('rlike', pattern, rpy_root)
-    # This was previously disabled
+
+    # This contains no functional tests
     #suite_interactive = rpy2.interactive.tests.suite()
 
-    # suite_rpy_classic = rpy2.tests_rpy_classic.suite()
+    suite_rpy_classic = rpy2.tests_rpy_classic.suite()
 
     standard_tests.addTests([suite_rinterface,
                              suite_robjects,
@@ -42,9 +37,17 @@ def old_load_tests(loader, standard_tests, pattern):
     return standard_tests
 
 def main():
-    # alltests = load_tests(unittest.TestLoader(), unittest.TestSuite(),
-    rpy_root = dirname(rpy2.__file__)
-    alltests = unittest.defaultTestLoader.discover(rpy2, pattern='test*')
+    # For some reason, the commented code is slow and loads some things twice
+    # One specific message is regarding package_dependencies from the tools
+    # package.
+    # rpy_root = dirname(rpy2.__file__)
+    # alltests = unittest.defaultTestLoader.discover(rpy2, pattern='test*')
+
+    # This is still pretty generic and requires very little maintenence (except
+    # for the robjects.tests.load_tests() function, which is still coded by hand
+    alltests = faster_load_tests(unittest.defaultTestLoader,
+                                 unittest.TestSuite(),
+                                 'test*')
     unittest.TextTestRunner(verbosity=1).run(alltests)
 
 if __name__ == "__main__":
