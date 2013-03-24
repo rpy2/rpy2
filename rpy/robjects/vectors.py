@@ -679,7 +679,7 @@ class POSIXct(POSIXt, FloatVector):
                     IntVector([x.tm_hour for x in seq]),
                     IntVector([x.tm_min for x in seq]),
                     IntVector([x.tm_sec for x in seq])]
-        return POSIXct._sexp_from_seq(seq, attrgetter('tm_zone'), f)
+        return POSIXct._sexp_from_seq(seq, lambda elt: time.tzname[0], f)
     
     @staticmethod
     def sexp_from_datetime(seq):
