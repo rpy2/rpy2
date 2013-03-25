@@ -36,7 +36,7 @@ def faster_load_tests(loader, standard_tests, pattern):
                              ])
     return standard_tests
 
-def main():
+def main(verbosity=1):
     # For some reason, the commented code is slow and loads some things twice
     # One specific message is regarding package_dependencies from the tools
     # package.
@@ -48,7 +48,7 @@ def main():
     alltests = faster_load_tests(unittest.defaultTestLoader,
                                  unittest.TestSuite(),
                                  'test*')
-    unittest.TextTestRunner(verbosity=1).run(alltests)
+    unittest.TextTestRunner(verbosity=verbosity).run(alltests)
 
 if __name__ == "__main__":
     import sys, rpy2.rinterface
@@ -57,4 +57,7 @@ if __name__ == "__main__":
         for x in rpy2.rinterface.R_VERSION_BUILD))
     sys.stdout.flush()
 
-    main()
+    if len(sys.argv) > 1:
+        main(verbosity=2)
+    else:
+        main(verbosity=1)

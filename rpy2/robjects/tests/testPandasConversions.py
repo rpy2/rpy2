@@ -12,7 +12,6 @@ except:
     has_pandas = False
 
 
-
 @unittest.skipUnless(has_pandas, "pandas is not available in python")
 class PandasConversionsTestCase(unittest.TestCase):
 
@@ -55,6 +54,7 @@ class PandasConversionsTestCase(unittest.TestCase):
         s = s.split('\n')
         self.assertEqual('[Array, Array, Array, FactorV..., FactorV...]', s[1].strip())
 
+    @unittest.expectedFailure
     def testPandas2ri(self):
         # XXX - not a full test, just tests that the function returns the right
         # class. This is currently also the case with some of the tests above
