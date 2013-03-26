@@ -14,7 +14,7 @@ default_lib_directory = 'bin' if sys.platform=='win32' else 'lib'
 
 package_prefix='.'
 if sys.version_info < (3,):
-    sys.exit("Only Python 3 is supported.")
+    sys.exit("Currently, rpy2 {version} is only supporting Python 3.".format(version=pack_version))
 
 from distutils.core import setup    
 from distutils.core import Extension
