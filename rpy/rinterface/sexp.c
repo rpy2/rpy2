@@ -324,7 +324,6 @@ Sexp_rclass_set(PyObject *self, PyObject *value, void *closure)
   }
   SEXP sexp_class = RPY_SEXP((PySexpObject*)value);
   SET_CLASS(sexp, sexp_class);
-  printf("--->\n");
   return 0;
 }
 PyDoc_STRVAR(Sexp_rclass_doc,
