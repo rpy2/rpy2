@@ -1,8 +1,8 @@
 import unittest
 
-import test_container
-import test_functional
-import test_indexing
+from . import test_container
+from . import test_functional
+from . import test_indexing
 
 def suite():
     suite_container = test_container.suite()

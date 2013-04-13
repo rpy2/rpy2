@@ -1,6 +1,6 @@
 import rpy2.rinterface as rinterface
 from rpy2.robjects.robject import RObjectMixin, RObject
-import conversion
+from . import conversion
 
 _new_env = rinterface.baseenv["new.env"]
 

@@ -244,9 +244,9 @@ class SexpVectorTestCase(unittest.TestCase):
             try:
                 tmp = ri.SexpVector([1,2], ri.INTSXP)
                 res = (False, None)
-            except RuntimeError, re:
+            except RuntimeError as re:
                 res = (True, re)
-            except Exception, e:
+            except Exception as e:
                 res = (False, e)
             queue.put(res)
         q = multiprocessing.Queue()
