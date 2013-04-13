@@ -13,6 +13,7 @@
  * License.
  * 
  * Copyright (C) 2008-2012 Laurent Gautier
+ * Portions copyright (C) 2012-2013 Beau Benjamin Bruce
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -38,24 +39,49 @@
 #include "_rinterface.h"
 #include "rpy_device.h"
 
+/* #define RPY_DEBUG_GRDEV */
 
 PyDoc_STRVAR(module_doc,
              "Graphical devices for R. They can be interactive "
-	     "(e.g., the X11 window that open during an interactive R session),"
-	     " or not (e.g., PDF or PNG files).");
+	         "(e.g., the X11 window that open during an interactive R session),"
+	         " or not (e.g., PDF or PNG files).");
 
-static inline void rpy_printandclear_error(void)
+static inline void rpy_on_error(void)
 {
   PyObject* pythonerror = PyErr_Occurred();
   if (pythonerror != NULL) {
-    /* All R actions should be stopped since the Python callback failed,
-     and the Python exception raised up.*/
-    /* FIXME: Print the exception in the meanwhile */
-    PyErr_Print();
-    PyErr_Clear();
+    /* FIXME: All R actions should be stopped since the Python callback failed,
+     and the Python exception raised up. For, now print Python errror */
+    PyErr_Print(); 
   }
 }
 
+static PyObject* rpy_build_gc_dict(const pGEcontext gc) 
+{
+  PyObject* result;
+  result = Py_BuildValue("{s:l,s:l,s:d,s:d,s:i,s:i,s:i,s:d,s:d,s:d,s:d,s:i,s:s}",
+						 "col",gc->col,
+						 "fill",gc->fill,
+						 "gamma",gc->gamma,
+						 "lwd",gc->lwd,
+						 "lty",gc->lty,
+						 "lend",gc->lend,
+						 "ljoin",gc->ljoin,
+						 "lmitre",gc->lmitre,
+						 "cex",gc->cex,
+						 "ps",gc->ps,
+						 "lineheight",gc->lineheight,
+						 "fontface",gc->fontface,
+						 "fontfamily",gc->fontfamily
+					   );
+  if(result == NULL) {
+	return NULL;
+  }
+  
+  return result;
+}
+
+/* FIXME: Is this attached to anything? */
 SEXP rpy_devoff(SEXP devnum, SEXP rho)
 {
   SEXP c_R, call_R, res, fun_R;
@@ -108,803 +134,504 @@ SEXP rpy_devoff(SEXP devnum, SEXP rho)
 }
 
 
-/* evaluate a call to a Python callback for the device */
-static inline void rpy_GrDev_CallBack(pDevDesc dd, PyObject *name)
+/* evaluate a generic callback to Python for device functions */
+static inline void rpy_GrDev_CallBack(pDevDesc dd, char *name)
 {
   PyObject *result;
 
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  result = PyObject_CallMethodObjArgs(self, name, NULL);
-
-  rpy_printandclear_error();
-
-  Py_XDECREF(result);  
+  if(self != NULL) {
+	result = PyObject_CallMethod(self, name, NULL);
+	rpy_on_error();
+	Py_XDECREF(result);
+  }  
 }
 
+/********************************************************************************
+ * Device functions
+ *
+ * Implement python docstrings, 
+ * default python callbacks (just tell you they are not implemented), and
+ * callback wrappers (rpy_...) that interface between C and python
+ * 
+ * RPY_GRDEV_FULLCALLBACKSET and RPY_GRDEV_SMALLCALLBACKSET macros assist 
+ ********************************************************************************/
 
-static PyObject *GrDev_close_name;
+RPY_GRDEV_FULLCALLBACKSET(activate,"Callback to implement: activation of the graphical device.");
 
-int
-_GrDev_close(PyObject *self)
+RPY_GRDEV_SMALLCALLBACKSET(circle,
+       "Callback to implement: draw a circle on the graphical device.\n\
+	    The callback will receive the parameters x, y, radius, and gc");
+static void rpy_circle(double x, double y, double r,
+                       const pGEcontext gc, pDevDesc dd)
 {
-  PyObject *res;
-  PyObject *tp, *v, *tb;
-  int closed = 1;
-  int is_zombie;
-  /* if _GrDev_close() is called from a destructor
-     (quite likely because of R's GEkillDevice()),
-     we need to resurrect the object as calling close()
-     can invoke arbitrary code (see Python's own iobase.c)
-   */
-  is_zombie = (Py_REFCNT(self) == 0);
-  if (is_zombie) {
-    ++Py_REFCNT(self);
-  }
-  PyErr_Fetch(&tp, &v, &tb);
-  res = PyObject_GetAttrString(self, "closed");
-  /* if the attribute "closed" does not exist, ignore */
-  if (res == NULL)
-    PyErr_Clear();
-  else {
-    closed = PyObject_IsTrue(res);
-    Py_DECREF(res);
-    if (closed == -1)
-      PyErr_Clear();
-  }
-  if (closed == 0) {
-    pDevDesc devdesc = ((PyGrDevObject *)self)->grdev;
-    rpy_GrDev_CallBack(devdesc,
-		       GrDev_close_name);
-    /* FIXME: Shouldn't the result be checked ? */
-  }
-  PyErr_Restore(tp, v, tb);
-  if (is_zombie) {
-    if (--Py_REFCNT(self) != 0) {
-      /* The object lives again. The following code is taken from
-	 slot_tp_del in typeobject.c. */
-      Py_ssize_t refcnt = Py_REFCNT(self);
-      _Py_NewReference(self);
-      Py_REFCNT(self) = refcnt;
-      /* If Py_REF_DEBUG, _Py_NewReference bumped _Py_RefTotal, so
-       * we need to undo that. */
-      _Py_DEC_REFTOTAL;
-      /* If Py_TRACE_REFS, _Py_NewReference re-added self to the object
-       * chain, so no more to do there.
-       * If COUNT_ALLOCS, the original decref bumped tp_frees, and
-       * _Py_NewReference bumped tp_allocs:  both of those need to be
-       * undone.
-       */
-#ifdef COUNT_ALLOCS
-      --Py_TYPE(self)->tp_frees;
-      --Py_TYPE(self)->tp_allocs;
+#ifdef RPY_DEBUG_GRDEV
+  printf("Circle.\n");
 #endif
-      return -1;
-    }
-  }
-  return 0;
-}
 
-static void rpy_Close(pDevDesc dd)
-{
-  printf("Closing device.\n");
-  /* this callback is special because it can be called from
-   a code path going through a Python destructor for the device */
-  _GrDev_close(dd->deviceSpecific);
-}
-
-
-PyDoc_STRVAR(GrDev_close_doc,
-             "Callback to implement: close the device."
-	     "");
-static PyObject* GrDev_close(PyObject *self)
-{
-  PyErr_Format(PyExc_NotImplementedError, "Device closing not implemented.");
-  return NULL;
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_activate_name;
-static void rpy_Activate(pDevDesc dd)
-{
-  rpy_GrDev_CallBack(dd, GrDev_activate_name);
-}
-
-PyDoc_STRVAR(GrDev_activate_doc,
-             "Callback to implement: activation of the graphical device.");
-static PyObject* GrDev_activate(PyObject *self)
-{
-  /* error("Not implemented."); */
-  PyErr_Format(PyExc_NotImplementedError, "Device activation not implemented.");
-  /* printf("done.\n"); */
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_deactivate_name;
-static void rpy_Deactivate(pDevDesc dd)
-{
-  rpy_GrDev_CallBack(dd, GrDev_deactivate_name);
-}
-
-PyDoc_STRVAR(GrDev_deactivate_doc,
-             "Callback to implement: deactivate the graphical device.");
-static PyObject* GrDev_deactivate(PyObject *self)
-{
-  PyErr_Format(PyExc_NotImplementedError, "Device deactivation not implemented.");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_size_name;
-static void rpy_Size(double *left, double *right, 
-                     double *bottom, double *top,
-                     pDevDesc dd)
-{
   PyObject *result;
-
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-  printf("FIXME: size(left=%f, right=%f, bottom=%f, top=%f)\n", 
-         *left, *right, *bottom, *top);
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
 
-  //PyObject *lrbt = Py_BuildValue("(dddd)", *left, *right, *bottom, *top);
-  //result = PyObject_CallMethodObjArgs(self, GrDev_size_name, 
-  //                                    lrbt, NULL);
-  result = PyObject_CallMethodObjArgs(self, GrDev_size_name, 
-                                      NULL, NULL);
-  rpy_printandclear_error();
+  PyObject *py_gc = rpy_build_gc_dict(gc);
+  result = PyObject_CallMethod(self, "circle", "dddO", x, y, r, py_gc);
+  Py_DECREF(py_gc);
 
-  if (! PyTuple_Check(result) ) {
-    PyErr_Format(PyExc_ValueError, "Callback 'size' should return a tuple.");
-    rpy_printandclear_error();
-  } else if (PyTuple_Size(result) != 4) {
-    PyErr_Format(PyExc_ValueError, "Callback 'size' should return a tuple of length 4.");
-    rpy_printandclear_error();
-  } else {
-    *left = PyFloat_AsDouble(PyTuple_GetItem(result, 0));
-    *right = PyFloat_AsDouble(PyTuple_GetItem(result, 1));
-    *bottom = PyFloat_AsDouble(PyTuple_GetItem(result, 2));
-    *top = PyFloat_AsDouble(PyTuple_GetItem(result, 3));
-  }
-  //Py_DECREF(lrbt);
+  rpy_on_error();
   Py_XDECREF(result);  
+
 }
 
-PyDoc_STRVAR(GrDev_size_doc,
-             "Callback to implement: set the size of the graphical device.\n"
-	     "The callback must return a tuple of 4 Python float (C double).\n"
-	     "These could be:\n"
-	     "left = 0\nright= <WindowWidth>\nbottom = <WindowHeight>\ntop=0\n"
-	     );
-static PyObject* GrDev_size(PyObject *self, PyObject *args)
-{
-  PyErr_Format(PyExc_NotImplementedError, 
-               "Device size not implemented.\n"
-               "[ expected signature is ((left, right, bottom, top)) \n]"
-               "[ should return a tuple of length 4]");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_newpage_name;
-static void rpy_NewPage(const pGEcontext gc, pDevDesc dd)
-{
-  PyObject *result;
-
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-
-  /* FIXME give the callback access to gc */
-  PyObject *self = (PyObject *)dd->deviceSpecific;
-  result = PyObject_CallMethodObjArgs(self, GrDev_newpage_name, NULL);
-
-  rpy_printandclear_error();
-
-  Py_XDECREF(result);  
-}
-
-PyDoc_STRVAR(GrDev_newpage_doc,
-             "Callback to implement: create a new page for the graphical device.\n"
-	     "If the device can only handle one page, "
-	     "the callback will have to eventually terminate clean an existing page.");
-static PyObject* GrDev_newpage(PyObject *self, PyObject *args)
-{
-  printf("FIXME: newpage.\n");
-  /* PyErr_Format(PyExc_NotImplementedError, "Not implemented."); */
-  Py_INCREF(Py_None);
-  printf("  done.\n");
-  return Py_None;
-}
-
-static PyObject* GrDev_clip_name;
-static void rpy_Clip(double x0, double x1, double y0, double y1, 
+RPY_GRDEV_SMALLCALLBACKSET(clip,
+             "Callback to implement: clip the graphical device.\n\
+	         The callback method will receive 4 arguments (Python floats) corresponding \
+	         to x0, x1, y0, y1 respectively.");
+static void rpy_clip(double x0, double x1, double y0, double y1, 
 		     pDevDesc dd)
 {
-  PyObject *result;
-
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-
-  PyObject *self = (PyObject *)dd->deviceSpecific;
-  /* FIXME optimize ? (may be an array ?) */
-  PyObject *py_x0 = PyFloat_FromDouble(x0);
-  PyObject *py_x1 = PyFloat_FromDouble(x1);
-  PyObject *py_y0 = PyFloat_FromDouble(y0);
-  PyObject *py_y1 = PyFloat_FromDouble(y1);
-  result = PyObject_CallMethodObjArgs(self, GrDev_clip_name, 
-                                      py_x0, py_x1,
-                                      py_y0, py_y1,
-                                      NULL);
-
-  rpy_printandclear_error();
-  Py_DECREF(py_x0);
-  Py_DECREF(py_x1);
-  Py_DECREF(py_y0);
-  Py_DECREF(py_y1);
-  Py_XDECREF(result);
-}
-
-PyDoc_STRVAR(GrDev_clip_doc,
-             "Callback to implement: clip the graphical device.\n"
-	     "The callback method will receive 4 arguments (Python floats) corresponding "
-	     "to the x0, x1, y0, y1 respectively.");
-static PyObject* GrDev_clip(PyObject *self, PyObject *args)
-{
-  PyErr_Format(PyExc_NotImplementedError, "Device clip not implemented.");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_strwidth_name;
-static double rpy_StrWidth(const char *str, const pGEcontext gc, pDevDesc dd)
-{
-  PyObject *result;
-
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-
-  /* FIXME give the callback access to gc */
-  PyObject *self = (PyObject *)dd->deviceSpecific;
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *py_str = PyString_FromString(str);
-#else
-  PyObject *py_str = PyUnicode_FromString(str);
+#ifdef RPY_DEBUG_GRDEV
+  printf("Clipping. %f, %f, %f, %f\n", x0, x1, y0, y1);
 #endif
-  result = PyObject_CallMethodObjArgs(self, GrDev_strwidth_name, py_str, NULL);
 
-  rpy_printandclear_error();
-  /*FIXME: only one of the two error should be printed. */
-  if (!PyFloat_Check(result)) {
-    PyErr_SetString(PyExc_TypeError,
-		    "The value returned by strwidth must be a float");
-  }
-  rpy_printandclear_error();
+  PyObject *result;
 
-  double r_res = PyFloat_AsDouble(result);
-  Py_DECREF(py_str);
-  Py_DECREF(result);  
+  PyObject *self = (PyObject *)dd->deviceSpecific;
+  result = PyObject_CallMethod(self, "clip", "dddd", x0, x1, y0, y1);
+
+  rpy_on_error();
+  Py_XDECREF(result);  
+}
+
+RPY_GRDEV_FULLCALLBACKSET(close,"Callback to implement: close the device.")
+
+RPY_GRDEV_FULLCALLBACKSET(deactivate,"Callback to implement: deactivate the graphical device.")
+
+RPY_GRDEV_SMALLCALLBACKSET(getEvent,
+             "GetEvent is no longer used by R, but kept for back compatibility\n\
+              Not implemented.");
+static SEXP rpy_getEvent(SEXP rho, const char *prompt)
+{
+#ifdef RPY_DEBUG_GRDEV
+  printf("GetEvent.\n");
+#endif
+
+  SEXP r_res = R_NilValue;
 
   return r_res;
 }
 
-PyDoc_STRVAR(GrDev_strwidth_doc,
-	     "Callback to implement: strwidth(text) -> width\n\n"
-             "Width (in pixels) of a text when represented on the graphical device.\n"
-	     "The callback will return a Python float (C double).");
-static PyObject* GrDev_strwidth(PyObject *self, PyObject *args)
-{
-  PyErr_Format(PyExc_NotImplementedError, "Device strwidth not implemented.");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_text_name;
-static void rpy_Text(double x, double y, const char *str,
-                     double rot, double hadj,
-		     const pGEcontext gc, pDevDesc dd)
-{
-    PyObject *result;
-
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-
-  PyObject *self = (PyObject *)dd->deviceSpecific;
-  /* FIXME optimize ? */
-  PyObject *py_x = PyFloat_FromDouble(x);
-  PyObject *py_y = PyFloat_FromDouble(y);
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *py_str = PyString_FromString(str);
-#else
-  PyObject *py_str = PyUnicode_FromString(str);
-#endif
-  PyObject *py_rot = PyFloat_FromDouble(rot);
-  PyObject *py_hadj = PyFloat_FromDouble(hadj);
-  /* FIXME pass gc ? */
-  result = PyObject_CallMethodObjArgs(self, GrDev_text_name, 
-                                      py_x, py_y,
-                                      py_str, py_rot, py_hadj,
-                                      NULL);
-
-  rpy_printandclear_error();
-  Py_DECREF(py_x);
-  Py_DECREF(py_y);
-  Py_DECREF(py_str);
-  Py_DECREF(py_rot);
-  Py_DECREF(py_hadj);
-  Py_XDECREF(result);  
-}
-
-PyDoc_STRVAR(GrDev_text_doc,
-             "Callback to implement: display text on the device.\n"
-	     "The callback will receive the parameters:\n"
-	     "x, y (position), string, rot (angle in degrees), hadj (some horizontal spacing parameter ?)");
-static PyObject* GrDev_text(PyObject *self, PyObject *args)
-{
-  PyErr_Format(PyExc_NotImplementedError, "Device text not implemented.");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_rect_name;
-static void rpy_Rect(double x0, double x1, double y0, double y1,
-                     const pGEcontext gc, pDevDesc dd)
-{
-  PyObject *result;
-
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-
-  PyObject *self = (PyObject *)dd->deviceSpecific;
-  /* FIXME optimize ? */
-  PyObject *py_x0 = PyFloat_FromDouble(x0);
-  PyObject *py_x1 = PyFloat_FromDouble(x1);
-  PyObject *py_y0 = PyFloat_FromDouble(y0);
-  PyObject *py_y1 = PyFloat_FromDouble(y1);
-  /* FIXME pass gc ? */
-  result = PyObject_CallMethodObjArgs(self, GrDev_rect_name, 
-                                      py_x0, py_x1,
-                                      py_y0, py_y1,
-                                      NULL);
-
-  rpy_printandclear_error();
-  Py_DECREF(py_x0);
-  Py_DECREF(py_x1);
-  Py_DECREF(py_y0);
-  Py_DECREF(py_y1);
-  Py_XDECREF(result);  
-}
-
-PyDoc_STRVAR(GrDev_rect_doc,
-             "Callback to implement: draw a rectangle on the graphical device.\n"
-	     "The callback will receive 4 parameters x0, x1, y0, y1.");
-static PyObject* GrDev_rect(PyObject *self, PyObject *args)
-{
-  PyErr_Format(PyExc_NotImplementedError, "Device rect not implemented.");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_circle_name;
-static void rpy_Circle(double x, double y, double r,
-                       const pGEcontext gc, pDevDesc dd)
-{
-  PyObject *result;
-
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-
-  PyObject *self = (PyObject *)dd->deviceSpecific;
-  /* FIXME optimize ? */
-  PyObject *py_x = PyFloat_FromDouble(x);
-  PyObject *py_y = PyFloat_FromDouble(y);
-  PyObject *py_r = PyFloat_FromDouble(r);
-  /* FIXME pass gc ? */
-  result = PyObject_CallMethodObjArgs(self, GrDev_circle_name, 
-                                      py_x, py_y, py_r,
-                                      NULL);
-
-  rpy_printandclear_error();
-  Py_DECREF(py_x);
-  Py_DECREF(py_y);
-  Py_DECREF(py_r);
-  Py_XDECREF(result);  
-}
-
-PyDoc_STRVAR(GrDev_circle_doc,
-             "Callback to implement: draw a circle on the graphical device.\n"
-	     "The callback will receive the parameters x, y, radius");
-static PyObject* GrDev_circle(PyObject *self, PyObject *args)
-{
-  PyErr_Format(PyExc_NotImplementedError, "Device circle not implemented.");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_line_name;
-static void rpy_Line(double x1, double y1, 
+RPY_GRDEV_SMALLCALLBACKSET(line,
+            "Callback to implement: draw a line on the graphical device.\n\
+	        The callback will receive the arguments x1, y1, x2, y2, and gc.");
+static void rpy_line(double x1, double y1, 
                      double x2, double y2,
                      const pGEcontext gc, pDevDesc dd)
 {
-  PyObject *result;
-
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-
-  PyObject *self = (PyObject *)dd->deviceSpecific;
-  /* FIXME optimize ? */
-  PyObject *py_x1 = PyFloat_FromDouble(x1);
-  PyObject *py_y1 = PyFloat_FromDouble(y1);
-  PyObject *py_x2 = PyFloat_FromDouble(x2);
-  PyObject *py_y2 = PyFloat_FromDouble(y2);
-  /* FIXME pass gc ? */
-  result = PyObject_CallMethodObjArgs(self, GrDev_line_name, 
-                                      py_x1, py_y1, py_x2, py_y2,
-                                      NULL);
-
-  rpy_printandclear_error();
-  Py_DECREF(py_x1);
-  Py_DECREF(py_y1);
-  Py_DECREF(py_x2);
-  Py_DECREF(py_y2);
-  Py_DECREF(result);  
-}
-
-PyDoc_STRVAR(GrDev_line_doc,
-             "Callback to implement: draw a line on the graphical device.\n"
-	     "The callback will receive the arguments x1, y1, x2, y2.");
-static PyObject* GrDev_line(PyObject *self, PyObject *args)
-{
-  PyErr_Format(PyExc_NotImplementedError, 
-               "Device line not implemented.\n"
-               "[expected signature is (x1, y1, x2, y2)]");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_polyline_name;
-static void rpy_PolyLine(int n, double *x, double *y, 
-                         const pGEcontext gc, pDevDesc dd)
-{
-  PyObject *result;
-
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-
-  PyObject *self = (PyObject *)dd->deviceSpecific;
-  #ifdef RPY_DEBUG_GRDEV
-  printf("FIXME: PolyLine.\n");
-  #endif
-  /* FIXME optimize ? Yes ! MemoryViews.*/
-  PyObject *py_x = PyTuple_New((Py_ssize_t)n);
-  PyObject *py_y = PyTuple_New((Py_ssize_t)n);
-  int i;
-  for (i = 0; i < n; i++) {
-    PyTuple_SET_ITEM(py_x, (Py_ssize_t)i, PyFloat_FromDouble(x[i]));
-    PyTuple_SET_ITEM(py_y, (Py_ssize_t)i, PyFloat_FromDouble(y[i]));
-  }
-  /* FIXME pass gc ? */
-  result = PyObject_CallMethodObjArgs(self, GrDev_polyline_name, 
-                                      py_x, py_y,
-                                      NULL);
-
-  rpy_printandclear_error();
-  Py_DECREF(py_x);
-  Py_DECREF(py_y);
-  Py_DECREF(result);  
-}
-
-PyDoc_STRVAR(GrDev_polyline_doc,
-             "Callback to implement: draw a polyline on the graphical device.");
-static PyObject* GrDev_polyline(PyObject *self, PyObject *args)
-{
-  PyErr_Format(PyExc_NotImplementedError, "Device polyline not implemented.");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_polygon_name;
-static void rpy_Polygon(int n, double *x, double *y, 
-                        const pGEcontext gc, pDevDesc dd)
-{
-  PyObject *result;
-
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-
-  PyObject *self = (PyObject *)dd->deviceSpecific;
-  /* FIXME optimize ? */
 #ifdef RPY_DEBUG_GRDEV
-  printf("FIXME: Polygon.\n");
+  printf("Line.\n");
 #endif
-  PyObject *py_n = PyLong_FromLong(n);
-  /* FIXME: optimize by moving py_x and py_y to Python buffers */
-  PyObject *py_x = PyTuple_New((Py_ssize_t)n);
-  PyObject *py_y = PyTuple_New((Py_ssize_t)n);
-  int i;
-  for (i = 0; i < n; i++) {
-    PyTuple_SET_ITEM(py_x, (Py_ssize_t)i, PyFloat_FromDouble(x[i]));
-    PyTuple_SET_ITEM(py_y, (Py_ssize_t)i, PyFloat_FromDouble(y[i]));
-  }
-  /* FIXME pass gc ? */
-  result = PyObject_CallMethodObjArgs(self, GrDev_polygon_name, 
-                                      py_n, py_x, py_y,
-                                      NULL);
-  rpy_printandclear_error();
-  Py_DECREF(py_x);
-  Py_DECREF(py_y);
-  Py_DECREF(py_n);
-  Py_DECREF(result);  
-}
 
-PyDoc_STRVAR(GrDev_polygon_doc,
-             "Callback to implement: draw a polygon on the graphical device.");
-static PyObject* GrDev_polygon(PyObject *self, PyObject *args)
-{
-  PyErr_Format(PyExc_NotImplementedError, "Device polygon not implemented.");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_locator_name;
-static Rboolean rpy_Locator(double *x, double *y, pDevDesc dd)
-{
   PyObject *result;
 
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
+  PyObject *self = (PyObject *)dd->deviceSpecific;
+
+  PyObject *py_gc = rpy_build_gc_dict(gc);
+  result = PyObject_CallMethod(self, "line", "ddddO", x1, y1, x2, y2, py_gc);
+  Py_DECREF(py_gc);
+
+  rpy_on_error();
+  Py_XDECREF(result);  
+
+}
+
+RPY_GRDEV_SMALLCALLBACKSET(locator,
+             "Callback to implement: draw a polygon on the graphical device.\n\
+             Callback to implement: locator on the graphical device.\n\
+             Should return 3-tuple: (x,y,done)\n\
+			 done = 0 if should continue locating, done = 1 if not");
+static Rboolean rpy_locator(double *x, double *y, pDevDesc dd)
+{
+
+#ifdef RPY_DEBUG_GRDEV
+  printf("Locator.\n");
+#endif
+
+  PyObject *result;
+  int done;
+  Rboolean retbool;
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  /* FIXME optimize ? */
-#ifdef RPY_DEBUG_GRDEV
-  printf("FIXME: Locator.\n");
-#endif
-  //PyObject *py_x = PyList_New(0);
-  //PyObject *py_y = PyList_New(0);
 
-  /* FIXME: pass gc ? */
-  /* FIXME: test !dd->dev->locator before proceed ? */
-  result = PyObject_CallMethodObjArgs(self, GrDev_locator_name, 
-                                      //py_x, py_y,
-                                      NULL);
+  result = PyObject_CallMethod(self, "locator", NULL);
 
-  rpy_printandclear_error();
+  rpy_on_error();
 
-  if (! PyTuple_Check(result) ) {
-    PyErr_Format(PyExc_ValueError, "Callback 'size' should return a tuple.");
-    rpy_printandclear_error();
-  } else if (PyTuple_Size(result) != 2) {
-    PyErr_Format(PyExc_ValueError, "Callback 'size' should return a tuple of length 2.");
-    rpy_printandclear_error();    
+  if (!PyTuple_Check(result) && PyTuple_Size(result) != 3) {
+    PyErr_Format(PyExc_ValueError, "Callback 'locator' should return a tuple of length 3.");
+    rpy_on_error();
+	retbool = FALSE;
   } else {
-    x[0] = PyFloat_AsDouble(PyTuple_GET_ITEM(result, 0));
-    y[0] = PyFloat_AsDouble(PyTuple_GET_ITEM(result, 1));
-    //int i;
-      //for (i = 0; i < n; i++) {
-      //x[i] = PyFloat_AsDouble(PyList_GET_ITEM(py_x, (Py_ssize_t)i));
-      //y[i] = PyFloat_AsDouble(PyList_GET_ITEM(py_y, (Py_ssize_t)i));
-      //}
+	double rx, ry;
+	PyArg_ParseTuple(result, "ddi", &rx, &ry, &done);
+	*x = rx;
+	*y = ry;
+	if(done == 1) {
+	  retbool = FALSE;
+	} else {
+	  retbool = TRUE;
+	}
   }
 
-  Rboolean res_r = TRUE;
-  printf("FIXME: return TRUE or FALSE");
-  //Py_DECREF(py_x);
-  //Py_DECREF(py_y);
-  Py_DECREF(result);
-  return res_r;
+  rpy_on_error();
+  Py_XDECREF(result);  
+  return retbool;
+
 }
 
-PyDoc_STRVAR(GrDev_locator_doc,
-             "Callback to implement: locator on the graphical device.");
-static PyObject* GrDev_locator(PyObject *self, PyObject *args)
-{
-  PyErr_Format(PyExc_NotImplementedError, "Device locator not implemented.");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_mode_name;
-static void rpy_Mode(int mode, pDevDesc dd)
-{
-  PyObject *result;
-
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-
-  PyObject *self = (PyObject *)dd->deviceSpecific;
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *py_mode = PyInt_FromLong((long)mode);
-#else
-  PyObject *py_mode = PyLong_FromLong((long)mode);
-#endif
-  result = PyObject_CallMethodObjArgs(self, GrDev_mode_name, 
-                                      py_mode,
-                                      NULL);
-  rpy_printandclear_error();
-  Py_DECREF(py_mode);
-  Py_DECREF(result);  
-}
-
-PyDoc_STRVAR(GrDev_mode_doc,
-             "Callback to implement: mode of the graphical device.");
-static PyObject* GrDev_mode(PyObject *self)
-{
-  PyErr_Format(PyExc_NotImplementedError, "Device mode not implemented.");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-static PyObject* GrDev_metricinfo_name;
-static void rpy_MetricInfo(int c, const pGEcontext gc, 
+RPY_GRDEV_SMALLCALLBACKSET(metricInfo,
+             "Callback to implement: metricinfo on the graphical device.\n\
+              Callback recieves a character and gc.  Returns a 3-tuple of\n\
+              ascent, decscent, and width.");
+static void rpy_metricInfo(int c, const pGEcontext gc, 
                            double* ascent, double* descent, double *width,
                            pDevDesc dd)
 {
+#ifdef RPY_DEBUG_GRDEV
+  printf("MetricInfo.\n");
+#endif
+
   PyObject *result;
 
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
-  
   PyObject *self = (PyObject *)dd->deviceSpecific;
-  /* FIXME optimize ? */
-#ifdef RPY_DEBUG_GRDEV
-  printf("FIXME: MetricInfo.\n");
-#endif
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *py_c = PyInt_FromLong((long)c);
-#else
-  PyObject *py_c = PyLong_FromLong((long)c);
-#endif
-  //PyObject *py_ascent = PyFloat_FromDouble(*ascent);
-  //PyObject *py_descent = PyFloat_FromDouble(*descent);
-  //PyObject *py_width = PyFloat_FromDouble(*width);
-  /* FIXME pass gc ? */
-  result = PyObject_CallMethodObjArgs(self, GrDev_metricinfo_name, 
-                                      py_c,
-                                      //py_ascent, py_descent, py_width,
-                                      NULL);
 
-  rpy_printandclear_error();
+  PyObject *py_gc = rpy_build_gc_dict(gc);
+  if(c < 0) c = -c;
+  result = PyObject_CallMethod(self, "metricInfo", "iO", c, py_gc);
+  Py_DECREF(py_gc);
 
+  rpy_on_error();
 
-  if (! PyTuple_Check(result) ) {
-    PyErr_Format(PyExc_ValueError, "Callback 'size' should return a tuple.");
-    rpy_printandclear_error();
-  } else if (PyTuple_Size(result) != 3) {
-    PyErr_Format(PyExc_ValueError, "Callback 'metricinfo' should return a tuple of length 3.");
-    rpy_printandclear_error();    
+  if (!PyTuple_Check(result) || PyTuple_Size(result) != 3) {
+    PyErr_Format(PyExc_TypeError, "Callback 'size' should return a tuple of length 3.");
   } else {
-    *ascent = PyFloat_AsDouble(PyTuple_GetItem(result, 0));
-    *descent = PyFloat_AsDouble(PyTuple_GetItem(result, 1));
-    *width = PyFloat_AsDouble(PyTuple_GetItem(result, 2));
+	double a, d, w;
+	PyArg_ParseTuple(result, "ddd", &a, &d, &w);
+	*ascent = a;
+	*descent = d;
+	*width = w;
+	rpy_on_error();
   }
-  Py_DECREF(py_c);
-  //Py_DECREF(py_ascent);
-  //Py_DECREF(py_descent);
-  //Py_DECREF(py_width);
-  Py_DECREF(result);
+
+#ifdef RPY_DEBUG_GRDEV
+  printf("MetricInfo: %c, %f, %f, %f\n", c, *ascent, *descent, *width);
+#endif
+
+  Py_XDECREF(result);
 
 }
 
-PyDoc_STRVAR(GrDev_metricinfo_doc,
-             "Callback to implement: MetricInfo on the graphical device.");
-static PyObject* GrDev_metricinfo(PyObject *self, PyObject *args)
+RPY_GRDEV_SMALLCALLBACKSET(mode,
+      "Callback to implement: mode of the graphical device. Accepts mode as argument.");
+static void rpy_mode(int mode, pDevDesc dd)
 {
-  PyErr_Format(PyExc_NotImplementedError, "Device metricinfo not implemented.");
-  Py_INCREF(Py_None);
-  return Py_None;
-}
+#ifdef RPY_DEBUG_GRDEV
+  printf("Mode.\n");
+#endif
 
-static PyObject* GrDev_getevent_name;
-static SEXP rpy_GetEvent(SEXP rho, const char *prompt)
-{
-  SEXP r_res = R_NilValue;
   PyObject *result;
 
-  pGEDevDesc dd = GEcurrentDevice();
-  /* Restore the Python handler */
-  /* FIXME */
-  /* PyOS_setsig(SIGINT, python_sighandler); */
+  PyObject *self = (PyObject *)dd->deviceSpecific;
 
-  PyObject *self = (PyObject *)dd->dev->deviceSpecific;
-  /* FIXME optimize ? */
-#ifdef RPY_DEBUG_GRDEV
-  printf("FIXME: MetricInfo.\n");
-#endif
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *py_prompt = PyString_FromString(prompt);
-#else
-  PyObject *py_prompt = PyUnicode_FromString(prompt);
-#endif
-  /* FIXME pass gc ? */
-  result = PyObject_CallMethodObjArgs(self, GrDev_getevent_name,
-                                      py_prompt,
-                                      NULL);
-
-  rpy_printandclear_error();
-  /* FIXME: check that the method only returns PySexp ? */
-  printf("FIXME: check that only PySexp returned.\n");
-
-  r_res = RPY_SEXP((PySexpObject *)result);
-  /* FIXME: handle refcount and protection of the resulting r_res */
-  printf("FIXME: handle refcount and protection of the resulting r_res");
-  Py_DECREF(result);
-  Py_DECREF(py_prompt);
-  return r_res;
+  result = PyObject_CallMethod(self, "mode", "l", mode);
+  rpy_on_error();
+  Py_XDECREF(result);  
 }
 
-PyDoc_STRVAR(GrDev_getevent_doc,
-             "Callback to implement: get event on the graphical device.");
-static PyObject* GrDev_getevent(PyObject *self, PyObject *args)
+RPY_GRDEV_SMALLCALLBACKSET(newPage,
+             "Callback to implement: create a new page for the graphical device.\n\
+	         If the device can only handle one page,\n\
+	         the callback will have to eventually terminate and clean an existing page.\n\
+             Accepts gc as argument.");
+static void rpy_newPage(const pGEcontext gc, pDevDesc dd)
 {
-  PyErr_Format(PyExc_NotImplementedError, "Device getevent not implemented.");
-  Py_INCREF(Py_None);
-  return Py_None;
+#ifdef RPY_DEBUG_GRDEV
+  printf("New page.\n");
+#endif
+
+  PyObject *result;
+
+  PyObject *self = (PyObject *)dd->deviceSpecific;
+
+  PyObject *py_gc = rpy_build_gc_dict(gc);
+  result = PyObject_CallMethod(self, "newPage", "O", py_gc);
+  Py_DECREF(py_gc);
+
+  rpy_on_error();
+  Py_XDECREF(result);  
 }
 
+RPY_GRDEV_SMALLCALLBACKSET(polyline,
+             "Callback to implement: draw a polyline on the graphical device.\n\
+              Accepts tuple of x coordinates, tuple of corresponding y coordinates,\n\
+              and the gc.");
+static void rpy_polyline(int n, double *x, double *y, 
+                         const pGEcontext gc, pDevDesc dd)
+{
+#ifdef RPY_DEBUG_GRDEV
+  printf("Polyline.\n");
+#endif
 
+  PyObject *result;
+
+  PyObject *self = (PyObject *)dd->deviceSpecific;
+
+  PyObject *py_x = PyTuple_New((Py_ssize_t)n);
+  PyObject *py_y = PyTuple_New((Py_ssize_t)n);
+
+  int i;
+  for (i = 0; i < n; i++) {
+    PyTuple_SET_ITEM(py_x, (Py_ssize_t)i, PyFloat_FromDouble(x[i]));
+    PyTuple_SET_ITEM(py_y, (Py_ssize_t)i, PyFloat_FromDouble(y[i]));
+  }
+
+  PyObject *py_gc = rpy_build_gc_dict(gc);
+
+  result = PyObject_CallMethod(self, "polyline", "OOO", py_x, py_y, py_gc);
+
+  Py_DECREF(py_gc);
+  Py_DECREF(py_x);
+  Py_DECREF(py_y);
+  
+  rpy_on_error();
+  Py_XDECREF(result);  
+}
+
+RPY_GRDEV_SMALLCALLBACKSET(polygon,
+             "Callback to implement: draw a polygon on the graphical device.\n\
+              Accepts tuple of x coordinates, tuple of corresponding y coordinates,\n\
+              and the gc.");
+static void rpy_polygon(int n, double *x, double *y, 
+                        const pGEcontext gc, pDevDesc dd)
+{
+#ifdef RPY_DEBUG_GRDEV
+  printf("Polygon.\n");
+#endif 
+
+  PyObject *result;
+
+  PyObject *self = (PyObject *)dd->deviceSpecific;
+
+  PyObject *py_x = PyTuple_New((Py_ssize_t)n);
+  PyObject *py_y = PyTuple_New((Py_ssize_t)n);
+
+  int i;
+  for (i = 0; i < n; i++) {
+    PyTuple_SET_ITEM(py_x, (Py_ssize_t)i, PyFloat_FromDouble(x[i]));
+    PyTuple_SET_ITEM(py_y, (Py_ssize_t)i, PyFloat_FromDouble(y[i]));
+  }
+
+  PyObject *py_gc = rpy_build_gc_dict(gc);
+
+  result = PyObject_CallMethod(self, "polygon", "OOO", py_x, py_y, py_gc);
+
+  Py_DECREF(py_gc);
+  Py_DECREF(py_x);
+  Py_DECREF(py_y);
+
+  rpy_on_error();
+  Py_DECREF(result);  
+}
+
+RPY_GRDEV_SMALLCALLBACKSET(rect,
+  "Callback to implement: draw a rectangle on the graphical device.\n\
+   The callback will receive 5 parameters x0, x1, y0, y1, and the gc.");
+static void rpy_rect(double x0, double x1, double y0, double y1,
+                     const pGEcontext gc, pDevDesc dd)
+{
+#ifdef RPY_DEBUG_GRDEV
+  printf("Rect.\n");
+#endif
+
+  PyObject *result;
+
+  PyObject *self = (PyObject *)dd->deviceSpecific;
+
+  PyObject *py_gc = rpy_build_gc_dict(gc);
+  result = PyObject_CallMethod(self, "rect", "ddddO", x0, x1, y0, y1, py_gc);
+  Py_DECREF(py_gc);
+
+  rpy_on_error();
+  Py_XDECREF(result);  
+
+}
+
+RPY_GRDEV_SMALLCALLBACKSET(size,
+             "Callback to implement: set the size of the graphical device.\n\
+              The callback must return a tuple of 4 Python float (C double).\n\
+	          These could be:\n\
+	          left = 0\nright= <WindowWidth>\nbottom = <WindowHeight>\ntop=0\n"
+	         );
+static void rpy_size(double *left, double *right, 
+                     double *bottom, double *top,
+                     pDevDesc dd)
+{
+#ifdef RPY_DEBUG_GRDEV
+  printf("Sizing device.\n");
+  printf("Size in: %f, %f, %f, %f\n", *left, *right, *bottom, *top);
+#endif
+
+  PyObject *result;
+
+  PyObject *self = (PyObject *)dd->deviceSpecific;
+
+  result = PyObject_CallMethod(self, "size", NULL);
+  rpy_on_error();
+
+  if (!PyTuple_Check(result) || PyTuple_Size(result) != 4) {
+    PyErr_Format(PyExc_TypeError, "Callback 'size' should return a tuple of length 4.");
+  } else {
+	double l, r, b, t;
+	PyArg_ParseTuple(result, "dddd", &l, &r, &b, &t);
+	*left = l;
+	*right = r;
+    *bottom = b;
+	*top = t;
+	rpy_on_error();
+  }
+
+#ifdef RPY_DEBUG_GRDEV
+  printf("Size out: %f, %f, %f, %f\n", *left, *right, *bottom, *top);
+#endif
+
+  Py_XDECREF(result);  
+}
+
+RPY_GRDEV_SMALLCALLBACKSET(strWidth, 
+	     "Callback to implement: strwidth(text) -> width\n\
+          Width (in pixels) of a text when represented on the graphical device.\n\
+          String and gc passed as arguments.\n\
+	      The callback will return a Python float (C double).");
+static double rpy_strWidth(const char *str, const pGEcontext gc, pDevDesc dd)
+{
+#ifdef RPY_DEBUG_GRDEV
+  printf("String width.\n");
+#endif 
+
+  PyObject *result;
+
+  PyObject *self = (PyObject *)dd->deviceSpecific;
+
+  PyObject *py_gc = rpy_build_gc_dict(gc);
+  result = PyObject_CallMethod(self, "strWidth", "sO", str, py_gc);
+  Py_DECREF(py_gc);
+
+  rpy_on_error();
+
+  if (!PyFloat_Check(result)) {
+    PyErr_Format(PyExc_TypeError,
+				 "The value returned by strwidth must be a float");
+  }
+
+  double out = PyFloat_AsDouble(result);
+
+  Py_DECREF(result);  
+
+  return out;
+}
+
+RPY_GRDEV_SMALLCALLBACKSET(text,
+  "Callback to implement: display text on the device.\n\
+  The callback will receive the parameters:\n				\
+  x, y (position), string, rot (angle in degrees), hadj (horizontal adj), and gc");
+static void rpy_text(double x, double y, const char *str,
+                     double rot, double hadj,
+		             const pGEcontext gc, pDevDesc dd)
+{
+#ifdef RPY_DEBUG_GRDEV
+  printf("Text.\n");
+#endif
+
+  PyObject *result;
+
+  PyObject *self = (PyObject *)dd->deviceSpecific;
+
+  PyObject *py_gc = rpy_build_gc_dict(gc);
+  result = PyObject_CallMethod(self, "text", "ddsddO", x, y, str, rot, hadj, py_gc);
+  Py_DECREF(py_gc);
+
+  rpy_on_error();
+  Py_XDECREF(result);  
+}
+
+/********************************************************************************
+ * rpy_resize notify regarding a resize from within python
+ ********************************************************************************/
+static PyObject* rpy_resize(PyObject *self, PyObject *args)
+{
+#ifdef RPY_DEBUG_GRDEV
+  printf("Resizing device.\n");
+#endif
+
+  GEDevDesc *gd = GEgetDevice(curDevice());
+  if (gd) {
+	pDevDesc dd = gd->dev;
+	if (dd) {
+	  dd->size(&(dd->left), &(dd->right), &(dd->bottom), &(dd->top), dd);
+	  GEplayDisplayList(gd);
+	  }
+  }
+  Py_RETURN_NONE;
+}
 
 void configureDevice(pDevDesc dd, PyObject *self)
 {
+#ifdef RPY_DEBUG_GRDEV
+  printf("Configuring device.\n");
+#endif
+
   /* setup structure */
   dd->deviceSpecific = (void *) self;
-  dd->close = rpy_Close;
-  dd->activate = rpy_Activate;
-  dd->deactivate = rpy_Deactivate;
-  dd->size = rpy_Size;
-  dd->newPage = rpy_NewPage;
-  dd->clip = rpy_Clip;
+  dd->close = rpy_close;
+  dd->activate = rpy_activate;
+  dd->deactivate = rpy_deactivate;
+  dd->size = rpy_size;
+  dd->newPage = rpy_newPage;
+  dd->clip = rpy_clip;
   /* Next two are unused */
-  dd->strWidth = rpy_StrWidth;
-  dd->text = rpy_Text;
-  dd->rect = rpy_Rect;
-  dd->circle = rpy_Circle;
-  dd->line = rpy_Line;
-  dd->polyline = rpy_PolyLine;
-  dd->polygon = rpy_Polygon;
-  dd->locator = rpy_Locator;
-  dd->mode = rpy_Mode;
-  dd->metricInfo = rpy_MetricInfo;
-  dd->getEvent = rpy_GetEvent;
+  dd->strWidth = rpy_strWidth;
+  dd->text = rpy_text;
+  dd->rect = rpy_rect;
+  dd->circle = rpy_circle;
+  dd->line = rpy_line;
+  dd->polyline = rpy_polyline;
+  dd->polygon = rpy_polygon;
+  dd->locator = rpy_locator;
+  dd->mode = rpy_mode;
+  dd->metricInfo = rpy_metricInfo;
+  /* add path, raster, cap functions -- see GraphicsDevice.h */
+  dd->getEvent = rpy_getEvent;
+  dd->holdflush = NULL; // new in 2.14.0 - can be left unimplemented as NULL (GraphicsDevice.h)
   /* FIXME: initialization from self.attribute */
   dd->hasTextUTF8 = TRUE; /*PyObject_GetAttrString(self, ); */
   dd->wantSymbolUTF8 = TRUE;   /* FIXME: initialization from self.attribute */
-  dd->strWidthUTF8 = rpy_StrWidth;
-  dd->textUTF8 = rpy_Text;
+  dd->strWidthUTF8 = rpy_strWidth;
+  dd->textUTF8 = rpy_text;
 
-  dd->left = 0;   /* FIXME: initialization from self.attribute */
-  dd->right = 100;   /* FIXME: initialization from self.attribute */
-  dd->bottom = 100;   /* FIXME: initialization from self.attribute */
-  dd->top = 0;   /* FIXME: initialization from self.attribute */
+  dd->left = dd->clipLeft = 0;   /* FIXME: initialization from self.attribute */
+  dd->right = dd->clipRight = 720;   /* FIXME: initialization from self.attribute */
+  dd->bottom = dd->clipBottom = 720;   /* FIXME: initialization from self.attribute */
+  dd->top = dd->clipTop = 0;   /* FIXME: initialization from self.attribute */
 
   /* starting parameters */
   dd->startfont = 1; 
-  dd->startps = 12.0; /* ps *  */
+  dd->startps = 15.0; /* ps *  */
   dd->startcol = R_RGB(0, 0, 0);
   dd->startfill = R_TRANWHITE;
   dd->startlty = LTY_SOLID; 
-  dd->startgamma = 1;
+  dd->startgamma = 1.0;
         
-  /* dd->cra[0] = 0.9 * 12; */
-  /* dd->cra[1] = 1.2 * 12; */
+  dd->cra[0] = 0.9*15.0;
+  dd->cra[1] = 1.2*15.0;
         
   /* character addressing offsets */
   dd->xCharOffset = 0.4900;
@@ -912,13 +639,13 @@ void configureDevice(pDevDesc dd, PyObject *self)
   dd->yLineBias = 0.1;
 
   /* inches per raster unit */
-  dd->ipr[0] = 1;
-  dd->ipr[1] = 1;
+  dd->ipr[0] = 1.0/72.0;
+  dd->ipr[1] = 1.0/72.0;
 
   /* device capabilities */
-  dd->canClip = FALSE;
+  dd->canClip = TRUE;         /* flag for clipping capability */
   dd->canHAdj = 0; /* text adjustment 0, 1, or 2 */
-  dd->canChangeGamma = FALSE; /* FIXME: what is this ? */
+  dd->canChangeGamma = FALSE; /* flag for if device handles gamma correction */
 
   dd->canGenMouseDown = TRUE; /* can the device generate mousedown events */
   dd->canGenMouseMove = TRUE; /* can the device generate mousemove events */
@@ -927,42 +654,42 @@ void configureDevice(pDevDesc dd, PyObject *self)
   dd->canGenKeybd = TRUE;     /* can the device generate keyboard events */
     
   dd->displayListOn = TRUE;
-        
-  /* finish */
-}
 
-static void
-GrDev_clear(PyGrDevObject *self)
-{
-  /* FIXME */
-  printf("FIXME: Clearing GrDev.\n");
-  printf("  done.\n");
+  /* finish */
 }
 
 static void
 GrDev_dealloc(PyGrDevObject *self)
 {
-  
 #ifdef RPY_DEBUG_GRDEV
-  printf("FIXME: Deallocating GrDev (device number %i).\n", RPY_DEV_NUM(self));
+  printf("Deallocating graphics device (GrDev_dealloc)\n");
 #endif
-  pGEDevDesc dd = GEgetDevice(RPY_DEV_NUM(self)-1);
-  /* Caution: GEkillDevice will call the method "close()" for the the device. */
-  /* (See GrDev_close for details) */
+
+  pGEDevDesc dd = GEgetDevice(RPY_DEV_NUM(self)-1); 
+
+  // Need to preserve error state as we enter callbacks
+  PyObject *err_type, *err_value, *err_traceback;
+  int have_error = PyErr_Occurred() ? 1 : 0;
+
+  if (have_error)
+	PyErr_Fetch(&err_type, &err_value, &err_traceback);
+  
+  /* Caution: GEkillDevice calls free for self->grdev
+     and the method "close()" for the the device. 
+     (See GrDev_close for details) */
   if (dd) GEkillDevice(dd);
 
-#ifdef RPY_DEBUG_GRDEV
-  printf("GrDevDealloc: PyMem_Free()\n");
-#endif
-  printf("--> skipping PyMem_Free(((PyGrDevObject *)self)->grdev) \n");
-  //PyMem_Free(((PyGrDevObject *)self)->grdev);
+  if (have_error)
+	PyErr_Restore(err_type, err_value, err_traceback);
+
 #if (PY_VERSION_HEX < 0x03010000)
   self->ob_type->tp_free((PyObject*)self);
 #else
   Py_TYPE(self)->tp_free((PyObject*)self);
 #endif
+
 #ifdef RPY_DEBUG_GRDEV
-  printf("  done.\n");
+  printf("GrDev_dealloc done.\n");
 #endif
 }
 
@@ -983,126 +710,60 @@ GrDev_repr(PyObject *self)
 #endif
 }
 
+/**********************************************************************
+ * Expose methods
+ **********************************************************************/
 static PyMethodDef GrDev_methods[] = {
-  {"close", (PyCFunction)GrDev_close, METH_NOARGS,
-   GrDev_close_doc},
-  {"activate", (PyCFunction)GrDev_activate, METH_NOARGS,
-   GrDev_activate_doc},
-  {"deactivate", (PyCFunction)GrDev_deactivate, METH_NOARGS,
-   GrDev_deactivate_doc},
-  {"size", (PyCFunction)GrDev_size, METH_VARARGS,
-   GrDev_size_doc},
-  {"newpage", (PyCFunction)GrDev_newpage, METH_VARARGS,
-   GrDev_newpage_doc},
-  {"clip", (PyCFunction)GrDev_clip, METH_VARARGS,
-   GrDev_clip_doc},
-  {"strwidth", (PyCFunction)GrDev_strwidth, METH_VARARGS,
-   GrDev_strwidth_doc},
-  {"text", (PyCFunction)GrDev_text, METH_VARARGS,
-   GrDev_text_doc},
-  {"rect", (PyCFunction)GrDev_rect, METH_VARARGS,
-   GrDev_rect_doc},
-  {"circle", (PyCFunction)GrDev_circle, METH_VARARGS,
-   GrDev_circle_doc},
-  {"line", (PyCFunction)GrDev_line, METH_VARARGS,
-   GrDev_line_doc},
-  {"polyline", (PyCFunction)GrDev_polyline, METH_VARARGS,
-   GrDev_polyline_doc},
-  {"polygon", (PyCFunction)GrDev_polygon, METH_VARARGS,
-   GrDev_polygon_doc},
-  {"locator", (PyCFunction)GrDev_locator, METH_VARARGS,
-   GrDev_locator_doc},
-  {"mode", (PyCFunction)GrDev_mode, METH_VARARGS,
-   GrDev_mode_doc},
-  {"metricinfo", (PyCFunction)GrDev_metricinfo, METH_VARARGS,
-   GrDev_metricinfo_doc},
-  {"getevent", (PyCFunction)GrDev_getevent, METH_VARARGS,
-   GrDev_getevent_doc},
+  RPY_GRDEV_METHOD(activate,NO),
+  RPY_GRDEV_METHOD(circle,VAR),
+  RPY_GRDEV_METHOD(clip,VAR),
+  RPY_GRDEV_METHOD(close,NO),
+  RPY_GRDEV_METHOD(deactivate,NO),
+  RPY_GRDEV_METHOD(getEvent,VAR),
+  RPY_GRDEV_METHOD(line,VAR),
+  RPY_GRDEV_METHOD(locator,VAR),
+  RPY_GRDEV_METHOD(metricInfo,VAR),
+  RPY_GRDEV_METHOD(mode,VAR),
+  RPY_GRDEV_METHOD(polyline,VAR),
+  RPY_GRDEV_METHOD(polygon,VAR),
+  RPY_GRDEV_METHOD(rect,VAR),
+  RPY_GRDEV_METHOD(size,VAR),
+  RPY_GRDEV_METHOD(strWidth,VAR),
+  RPY_GRDEV_METHOD(text,VAR),
+  RPY_GRDEV_METHOD(newPage,VAR),
+  {"resize", (PyCFunction)rpy_resize, METH_VARARGS,
+   "request a resize"},
   /* */
-  {NULL, NULL}          /* sentinel */
+  {NULL, NULL, 0, NULL}          /* sentinel */
 };
 
-RPY_GRDEV_BOOL_GETSET(hasTextUTF8,
-		      "UTF8 capabilities of the device.")
+/**********************************************************************
+ * Getters/setters for NewDevDesc structure (GraphicsDevice.h)
+ **********************************************************************/
+RPY_GRDEV_FLOAT_GETSET(self,left,"Left coordinate.");
+RPY_GRDEV_FLOAT_GETSET(self,right,"Right coordinate.");
+RPY_GRDEV_FLOAT_GETSET(self,top,"Top coordinate.");
+RPY_GRDEV_FLOAT_GETSET(self,bottom,"Bottom coordinate.");
 
-RPY_GRDEV_BOOL_GETSET(wantSymbolUTF8,
-		      "UTF8 capabilities of the device.")
+RPY_GRDEV_FLOAT_GETSET(self,clipLeft,"Left clip coordinate.");
+RPY_GRDEV_FLOAT_GETSET(self,clipRight,"Right clip coordinate.");
+RPY_GRDEV_FLOAT_GETSET(self,clipTop,"Top clip coordinate.");
+RPY_GRDEV_FLOAT_GETSET(self,clipBottom,"Bottom clip coordinate.");
 
-PyDoc_STRVAR(GrDev_left_doc,
-             "Left coordinate.");
-static PyObject*
-GrDev_left_get(PyObject *self)
-{
-  PyObject *res;
-  res = PyFloat_FromDouble(((PyGrDevObject *)self)->grdev->left);
-  return res;
-}
-static int
-GrDev_left_set(PyObject *self, PyObject *value)
-{
-  RPY_GRDEV_FLOAT_SET(self, value, left);
-}
+RPY_GRDEV_FLOAT_GETSET(self,xCharOffset,"X character addressing offset (unused).");
+RPY_GRDEV_FLOAT_GETSET(self,yCharOffset,"Y character addressing offset.");
+RPY_GRDEV_FLOAT_GETSET(self,yLineBias,"1/2 interline space as frac of line height.");
 
+RPY_GRDEV_BOOL_GETSET(hasTextUTF8,"UTF8 capabilities of the device.")
+RPY_GRDEV_BOOL_GETSET(wantSymbolUTF8,"UTF8 capabilities of the device.")
 
-PyDoc_STRVAR(GrDev_right_doc,
-             "Right coordinate.");
-static PyObject*
-GrDev_right_get(PyObject *self)
-{
-  PyObject *res;
-  res = PyFloat_FromDouble(((PyGrDevObject *)self)->grdev->right);
-  return res;
-}
-static int
-GrDev_right_set(PyObject *self, PyObject *value)
-{
-  RPY_GRDEV_FLOAT_SET(self, value, right);
-}
+RPY_GRDEV_BOOL_GETSET(displayListOn,"Status of the display list.")
 
-PyDoc_STRVAR(GrDev_top_doc,
-             "Top coordinate.");
-static PyObject*
-GrDev_top_get(PyObject *self)
-{
-  PyObject *res;
-  res = PyFloat_FromDouble(((PyGrDevObject *)self)->grdev->top);
-  return res;
-}
-static int
-GrDev_top_set(PyObject *self, PyObject *value)
-{
-  RPY_GRDEV_FLOAT_SET(self, value, top);
-}
+RPY_GRDEV_BOOL_GETSET(canGenMouseDown,"Ability to generate mouse down events.")
+RPY_GRDEV_BOOL_GETSET(canGenMouseMove,"Ability to generate mouse move events.")
+RPY_GRDEV_BOOL_GETSET(canGenMouseUp,"Ability to generate mouse up events.")
+RPY_GRDEV_BOOL_GETSET(canGenKeybd,"Ability to generate keyboard events.")
 
-PyDoc_STRVAR(GrDev_bottom_doc,
-             "Bottom coordinate.");
-static PyObject*
-GrDev_bottom_get(PyObject *self)
-{
-  PyObject *res;
-  res = PyFloat_FromDouble(((PyGrDevObject *)self)->grdev->bottom);
-  return res;
-}
-static int
-GrDev_bottom_set(PyObject *self, PyObject *value)
-{
-  RPY_GRDEV_FLOAT_SET(self, value, bottom);
-}
-
-RPY_GRDEV_BOOL_GETSET(canGenMouseDown,
-             "Ability to generate mouse down events.")
-
-RPY_GRDEV_BOOL_GETSET(canGenMouseMove,
-             "Ability to generate mouse move events.")
-
-RPY_GRDEV_BOOL_GETSET(canGenMouseUp,
-             "Ability to generate mouse up events.")
-
-RPY_GRDEV_BOOL_GETSET(canGenKeybd,
-             "Ability to generate keyboard events.")
-
-RPY_GRDEV_BOOL_GETSET(displayListOn,
-             "Status of the display list.")
 
 PyDoc_STRVAR(GrDev_devnum_doc,
              "Device number.");
@@ -1123,67 +784,32 @@ static PyObject* GrDev_devnum_get(PyObject* self)
 
 }
 
-static PyObject *
-rpydev_closed_get(PyObject *self, void *context)
-{
-  return PyBool_FromLong(PyObject_HasAttrString(self, "__GrDev_closed"));
-}
-
- 
 static PyGetSetDef GrDev_getsets[] = {
-  {"hasTextUTF8", 
-   (getter)GrDev_hasTextUTF8_get,
-   (setter)GrDev_hasTextUTF8_set,
-   GrDev_hasTextUTF8_doc},
-  {"wantSymbolUTF8", 
-   (getter)GrDev_wantSymbolUTF8_get,
-   (setter)GrDev_wantSymbolUTF8_set,
-   GrDev_wantSymbolUTF8_doc},
-  {"left", 
-   (getter)GrDev_left_get,
-   (setter)GrDev_left_set,
-   GrDev_left_doc},
-  {"right", 
-   (getter)GrDev_right_get,
-   (setter)GrDev_right_set,
-   GrDev_right_doc},
-  {"top", 
-   (getter)GrDev_top_get,
-   (setter)GrDev_top_set,
-   GrDev_top_doc},
-  {"bottom", 
-   (getter)GrDev_bottom_get,
-   (setter)GrDev_bottom_set,
-   GrDev_bottom_doc},
-  {"canGenMouseDown", 
-   (getter)GrDev_canGenMouseDown_get,
-   (setter)GrDev_canGenMouseDown_set,
-   GrDev_canGenMouseDown_doc},
-  {"canGenMouseMove", 
-   (getter)GrDev_canGenMouseMove_get,
-   (setter)GrDev_canGenMouseMove_set,
-   GrDev_canGenMouseMove_doc},
-  {"canGenMouseUp", 
-   (getter)GrDev_canGenMouseUp_get,
-   (setter)GrDev_canGenMouseUp_set,
-   GrDev_canGenMouseUp_doc},
-  {"canGenKeybd", 
-   (getter)GrDev_canGenKeybd_get,
-   (setter)GrDev_canGenKeybd_set,
-   GrDev_canGenKeybd_doc},
-  {"displayListOn", 
-   (getter)GrDev_displayListOn_get,
-   (setter)GrDev_displayListOn_set,
-   GrDev_displayListOn_doc},
+  RPY_GRDEV_GETSET(left),
+  RPY_GRDEV_GETSET(right),
+  RPY_GRDEV_GETSET(top),
+  RPY_GRDEV_GETSET(bottom),
+  RPY_GRDEV_GETSET(clipLeft),
+  RPY_GRDEV_GETSET(clipRight),
+  RPY_GRDEV_GETSET(clipTop),
+  RPY_GRDEV_GETSET(clipBottom),
+  RPY_GRDEV_GETSET(xCharOffset),
+  RPY_GRDEV_GETSET(yCharOffset),
+  RPY_GRDEV_GETSET(yLineBias),
+  RPY_GRDEV_GETSET(hasTextUTF8),
+  RPY_GRDEV_GETSET(wantSymbolUTF8),
+  RPY_GRDEV_GETSET(canGenMouseDown),
+  RPY_GRDEV_GETSET(canGenMouseUp),
+  RPY_GRDEV_GETSET(canGenMouseMove),
+  RPY_GRDEV_GETSET(canGenKeybd),
+  RPY_GRDEV_GETSET(displayListOn),
   /* */
   {"devnum",
    (getter)GrDev_devnum_get,
    NULL,
    GrDev_devnum_doc},
-  {"closed",
-   (getter)rpydev_closed_get, NULL, NULL},
   /* */
-  {NULL, NULL, NULL, NULL}          /* sentinel */
+  {NULL}          /* sentinel */
 };
 
 
@@ -1192,33 +818,35 @@ GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
 
 #ifdef RPY_DEBUG_GRDEV
-  printf("FIXME: New GrDev\n");
+  printf("Allocating graphics device (GrDev_new)\n");
 #endif
 
-  assert(type != NULL && type->tp_alloc != NULL);
+  PyGrDevObject *self;
 
   if (!PyRinterface_IsInitialized()) {
     PyErr_Format(PyExc_RuntimeError, 
-                 "R must be initialized before instances of GraphicalDevice can be created.");
+                 "R must be initialized before graphical device instances can be created.");
     return NULL;
   }
 
-  PyGrDevObject *self;
   self = (PyGrDevObject *)type->tp_alloc(type, 0);
 
-  if (! self) {
+  if (self != NULL) {
+	self->grdev = (pDevDesc)calloc(1, sizeof(DevDesc));
+	if (self->grdev == NULL) {
+	  PyErr_Format(PyExc_RuntimeError, 
+				   "Could not allocate memory for an R device description.");
+	  Py_DECREF(self);
+	  return NULL;
+	}
+  } else {	
     PyErr_NoMemory();
   }
 
-  self->grdev = (pDevDesc)PyMem_Malloc(1 * sizeof(DevDesc));
-  if (self->grdev == NULL) {
-    PyErr_Format(PyExc_RuntimeError, 
-                 "Could not allocate memory for an R device description.");
-    return NULL;    
-  }
 #ifdef RPY_DEBUG_GRDEV
-  printf("  done.\n");
+  printf("GrDev_new done.\n");
 #endif
+  
   return(PyObject *)self;
 }
 
@@ -1226,13 +854,14 @@ GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static int
 GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
+
 #ifdef RPY_DEBUG_GRDEV
-  printf("FIXME: Initializing GrDev\n");
+  printf("Initializing graphics device (GrDev_init)\n");
 #endif
 
   if (!PyRinterface_IsInitialized()) {
     PyErr_Format(PyExc_RuntimeError, 
-                 "R must be initialized before instances of GraphicalDevice can be created.");
+                 "R must be initialized before graphical device instances can be created.");
     return -1;
   }
 
@@ -1245,23 +874,21 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
   pDevDesc dev = ((PyGrDevObject *)self)->grdev;
 
   configureDevice(dev, self);
+
   pGEDevDesc gdd = GEcreateDevDesc(dev);
+
 #if (PY_VERSION_HEX < 0x03010000)
   GEaddDevice2(gdd, self->ob_type->tp_name);
 #else
   GEaddDevice2(gdd, Py_TYPE(self)->tp_name);
 #endif
-  GEinitDisplayList(gdd);
-  /* FIXME: protect device number ? */
-  /* allocate memory for the pDevDesc structure ? */
-  /* pDevDesc grdev = malloc(); */
-  /* FIXME: handle allocation error */
-  /* self->grdev = grdev; */
+
+#ifdef RPY_DEBUG_GRDEV
+  printf("GrDev_init done.\n");
+#endif
   
   return 0;
 }
-
-
 
 
 /*
@@ -1310,7 +937,7 @@ static PyTypeObject GrDev_Type = {
         0,                      /*tp_weaklistoffset*/
         0,                      /*tp_iter*/
         0,                      /*tp_iternext*/
-        GrDev_methods,           /*tp_methods*/
+        GrDev_methods,          /*tp_methods*/
         0,                      /*tp_members*/
         GrDev_getsets,            /*tp_getset*/
         0,                      /*tp_base*/
@@ -1335,10 +962,8 @@ static PyTypeObject GrDev_Type = {
 
 /* Additional methods for RpyDevice */
 static PyMethodDef rpydevice_methods[] = {
-  {NULL,                NULL}           /* sentinel */
+  {NULL, NULL, 0, NULL}          /* sentinel */
 };
-
-
 
 #ifndef PyMODINIT_FUNC  /* declarations for DLL import/export */
 #define PyMODINIT_FUNC void
@@ -1362,43 +987,6 @@ init_rpy_device(void)
 PyInit__rpy_device(void)
 #endif
 {
-#if (PY_VERSION_HEX < 0x03010000)
-  GrDev_close_name = PyString_FromString("close");
-  GrDev_activate_name = PyString_FromString("activate");
-  GrDev_deactivate_name = PyString_FromString("deactivate");
-  GrDev_size_name = PyString_FromString("size");
-  GrDev_newpage_name = PyString_FromString("newpage");
-  GrDev_clip_name = PyString_FromString("clip");
-  GrDev_strwidth_name = PyString_FromString("strwidth");
-  GrDev_text_name = PyString_FromString("text");
-  GrDev_rect_name = PyString_FromString("rect");
-  GrDev_circle_name = PyString_FromString("circle");
-  GrDev_line_name = PyString_FromString("line");
-  GrDev_polyline_name = PyString_FromString("polyline");
-  GrDev_polygon_name = PyString_FromString("polygon");
-  GrDev_locator_name = PyString_FromString("locator");
-  GrDev_mode_name = PyString_FromString("mode");
-  GrDev_metricinfo_name = PyString_FromString("metricinfo");
-  GrDev_getevent_name = PyString_FromString("getevent");
-#else
-  GrDev_close_name = PyUnicode_FromString("close");
-  GrDev_activate_name = PyUnicode_FromString("activate");
-  GrDev_deactivate_name = PyUnicode_FromString("deactivate");
-  GrDev_size_name = PyUnicode_FromString("size");
-  GrDev_newpage_name = PyUnicode_FromString("newpage");
-  GrDev_clip_name = PyUnicode_FromString("clip");
-  GrDev_strwidth_name = PyUnicode_FromString("strwidth");
-  GrDev_text_name = PyUnicode_FromString("text");
-  GrDev_rect_name = PyUnicode_FromString("rect");
-  GrDev_circle_name = PyUnicode_FromString("circle");
-  GrDev_line_name = PyUnicode_FromString("line");
-  GrDev_polyline_name = PyUnicode_FromString("polyline");
-  GrDev_polygon_name = PyUnicode_FromString("polygon");
-  GrDev_locator_name = PyUnicode_FromString("locator");
-  GrDev_mode_name = PyUnicode_FromString("mode");
-  GrDev_metricinfo_name = PyUnicode_FromString("metricinfo");
-  GrDev_getevent_name = PyUnicode_FromString("getevent");
-#endif
   if (PyType_Ready(&GrDev_Type) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;
@@ -1407,7 +995,7 @@ PyInit__rpy_device(void)
 #endif
   }
   
-  PyObject *m, *d;
+  PyObject *m;
 #if (PY_VERSION_HEX < 0x03010000)
   m = Py_InitModule3("_rpy_device", rpydevice_methods, module_doc);
 #else
@@ -1428,6 +1016,7 @@ PyInit__rpy_device(void)
     return NULL;
 #endif
 
+  PyObject *d;
   d = PyModule_GetDict(m);
   PyModule_AddObject(m, "GraphicalDevice", (PyObject *)&GrDev_Type);  
 #if (PY_VERSION_HEX < 0x03010000)

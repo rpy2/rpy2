@@ -321,7 +321,6 @@ static PyObject* EmbeddedR_getAnyCallback(PyObject *self,
   return result;
 }
 
-
 static PyObject* writeConsoleCallback = NULL;
 
 static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
@@ -380,6 +379,82 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   }
 
   result = PyEval_CallObject(writeConsoleCallback, arglist);
+  PyObject* pythonerror = PyErr_Occurred();
+  if (pythonerror != NULL) {
+    /* All R actions should be stopped since the Python callback failed,
+     and the Python exception raised up.*/
+    /* FIXME: Print the exception in the meanwhile */
+    PyErr_Print();
+    PyErr_Clear();
+  }
+
+  Py_DECREF(arglist);
+/*   signal(SIGINT, old_int); */
+  
+  Py_XDECREF(result);  
+  RPY_GIL_RELEASE(is_threaded, gstate);
+}
+
+
+
+static PyObject* writeConsoleCallbackEx = NULL;
+
+static PyObject* EmbeddedR_setWriteConsoleEx(PyObject *self,
+                                           PyObject *args)
+{
+  PyObject *res = EmbeddedR_setAnyCallback(self, args, &writeConsoleCallbackEx);
+  return res;
+}
+
+PyDoc_STRVAR(EmbeddedR_setWriteConsoleEx_doc,
+             "set_writeconsoleex(f)\n\n"
+             "Set how to handle output from the R console with either None"
+             " or a function f such as f(output) returns None"
+             " (f only has side effects).");
+
+static PyObject * EmbeddedR_getWriteConsoleEx(PyObject *self,
+                                            PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, writeConsoleCallbackEx);
+}
+
+PyDoc_STRVAR(EmbeddedR_getWriteConsoleEx_doc,
+             "get_writeconsoleex()\n\n"
+             "Retrieve the current R console output handler"
+             " (see set_writeconsoleex)");
+
+
+
+static void
+EmbeddedR_WriteConsoleEx(const char *buf, int len, int type)
+{
+  PyObject *arglist;
+  PyObject *result;
+  const int is_threaded = PyEval_ThreadsInitialized();
+  PyGILState_STATE gstate;
+  RPY_GIL_ENSURE(is_threaded, gstate);
+
+  /* It is necessary to restore the Python handler when using a Python
+     function for I/O. */
+
+  PyOS_setsig(SIGINT, python_sighandler);
+
+#if (PY_VERSION_HEX < 0x03010000)
+  arglist = Py_BuildValue("(s,i)", buf);
+#else
+  arglist = Py_BuildValue("(s,i)", buf);
+#endif
+
+  if (! arglist) {    PyErr_NoMemory();
+/*     signal(SIGINT, old_int); */
+/*     return NULL; */
+  }
+
+  if (writeConsoleCallbackEx == NULL) {
+    return;
+  }
+
+  result = PyEval_CallObject(writeConsoleCallbackEx, arglist);
   PyObject* pythonerror = PyErr_Occurred();
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
@@ -1207,7 +1282,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   /* Rp->CharacterMode = LinkDLL; */
   Rp->ReadConsole = EmbeddedR_ReadConsole;
   Rp->WriteConsole = NULL;
-  Rp->WriteConsoleEx = EmbeddedR_WriteConsole;
+  Rp->WriteConsoleEx = EmbeddedR_WriteConsoleEx;
 
   Rp->Busy = Re_Busy;
   Rp->ShowMessage = EmbeddedR_ShowMessage;
@@ -1246,7 +1321,8 @@ static PyObject* EmbeddedR_init(PyObject *self)
   ptr_R_CleanUp = EmbeddedR_CleanUp;
   /* Redirect R console output */
   ptr_R_ShowMessage = EmbeddedR_ShowMessage;
-  ptr_R_WriteConsole = EmbeddedR_WriteConsole;
+  ptr_R_WriteConsole = NULL;
+  ptr_R_WriteConsoleEx = EmbeddedR_WriteConsoleEx;
   ptr_R_FlushConsole = EmbeddedR_FlushConsole;
   R_Outputfile = NULL;
   R_Consolefile = NULL;
@@ -3054,6 +3130,10 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_setWriteConsole_doc},
   {"get_writeconsole",   (PyCFunction)EmbeddedR_getWriteConsole,  METH_VARARGS,
    EmbeddedR_getWriteConsole_doc},
+  {"set_writeconsoleex",   (PyCFunction)EmbeddedR_setWriteConsoleEx,  METH_VARARGS,
+   EmbeddedR_setWriteConsoleEx_doc},
+  {"get_writeconsoleex",   (PyCFunction)EmbeddedR_getWriteConsoleEx,  METH_VARARGS,
+   EmbeddedR_getWriteConsoleEx_doc},
   {"set_readconsole",    (PyCFunction)EmbeddedR_setReadConsole,   METH_VARARGS,
    EmbeddedR_setReadConsole_doc},
   {"get_readconsole",    (PyCFunction)EmbeddedR_getReadConsole,   METH_VARARGS,

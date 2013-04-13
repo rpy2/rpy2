@@ -106,13 +106,13 @@ if sys.version_info.major == 3:
     # Print became a regular function in Python 3, making
     # the workaround (mostly) unnecessary (python2to3 still needs it
     # wrapped in a function
-    def consolePrint(x):
+    def consolePrint(x,i):
         print(x)
 else:
-    def consolePrint(x):
+    def consolePrint(x,i):
         sys.stdout.write(x)
 
-set_writeconsole(consolePrint)
+set_writeconsoleex(consolePrint)
 
 def consoleFlush():
     sys.stdout.flush()
