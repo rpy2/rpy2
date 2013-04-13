@@ -153,10 +153,10 @@ class IntSexpVectorTestCase(unittest.TestCase):
             self.assertEqual(x, y)
 
     def testInitFromIter(self):
-        it = xrange(3)
+        it = range(3)
         v = ri.IntSexpVector(it)
         self.assertEqual(3, len(v))
-        for x,y in zip(xrange(3), v):
+        for x,y in zip(range(3), v):
             self.assertEqual(x, y)
         
     def testInitFromSeqInvalidInt(self):
@@ -181,10 +181,10 @@ class FloatSexpVectorTestCase(unittest.TestCase):
             self.assertEqual(x, y)
 
     def testInitFromIter(self):
-        it = xrange(10)
+        it = range(10)
         v = ri.FloatSexpVector(it)
         self.assertEqual(10, len(v))
-        for x,y in zip(xrange(10), v):
+        for x,y in zip(range(10), v):
             self.assertEqual(x, y)
         
     def testInitFromSeqInvalidFloat(self):
@@ -404,7 +404,7 @@ class SexpVectorTestCase(unittest.TestCase):
     def testGetItemOutOfBound(self):
         myVec = ri.SexpVector([0, 1, 2, 3, 4, 5], ri.INTSXP)
         self.assertRaises(IndexError, myVec.__getitem__, 10)
-        if (sys.maxint > ri.R_LEN_T_MAX):
+        if (sys.maxsize > ri.R_LEN_T_MAX):
             self.assertRaises(IndexError, myVec.__getitem__, 
                               ri.R_LEN_T_MAX+1)
 

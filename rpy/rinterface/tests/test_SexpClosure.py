@@ -105,11 +105,7 @@ class SexpClosureTestCase(unittest.TestCase):
 
     def testScalarConvertInteger(self):
         self.assertEqual('integer',
-                          rinterface.baseenv["typeof"](1)[0])
-
-    def testScalarConvertLong(self):
-        self.assertEqual('integer',
-                          rinterface.baseenv["typeof"](long(1))[0])
+                          rinterface.baseenv["typeof"](int(1))[0])
 
     def testScalarConvertDouble(self):
         self.assertEqual('double', 

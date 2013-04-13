@@ -6,7 +6,7 @@ def default_key(x):
 def order(seq, key = default_key, reverse = False):
     """ Return the order in which to take the items to obtained
     a sorted sequence."""
-    o = range(len(seq))
+    o = list(range(len(seq)))
 
     def wrap_key(x):
         x = seq[x]
