@@ -339,7 +339,7 @@ The underlying R object can be passed around as an opaque C structure,
 using the attribute :attr:`__sexp__` (a Python `capsule`).
 Behind the scene, that C structure
 is a singleton: given an R object, it is created with the first Python object
-exposing it and a counter is increased (and decreased) as other Python object
+exposing it and a counter is increased (and decreased) as other Python objects
 expose it as well (and those objects are eventually garbage collected). 
 
 The tracking of the capsule itself is what is protects the
