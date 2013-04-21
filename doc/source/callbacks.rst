@@ -52,19 +52,21 @@ Write console
 
 The 'write console' function is called whenever output is sent to the R console.
 
-A suitable callback function will be such as it accepts one parameter of class :class:`str`
-and only has side-effects (does not return anything).
+A suitable callback function will be such as it accepts one parameter of class :class:`str`, one of that in an :class:`int`, 
+and the function only has side-effects (does not return anything).
 
 The pair of functions 
-:func:`rpy2.rinterface.set_writeconsole` and :func:`rpy2.rinterface.get_writeconsole`
+:func:`rpy2.rinterface.set_writeconsoleex` and :func:`rpy2.rinterface.get_writeconsoleex`
 can be used to set and retrieve the callback function respectively.
 
 The default callback function, called :func:`rinterface.consolePrint`
 is a simple write to :data:`sys.stdout`
 
-.. autofunction:: rpy2.rinterface.consolePrint(x)
+.. autofunction:: rpy2.rinterface.consolePrint(x, i)
 
-   :param x: :class:`str`
+   :param x: :class:`str` the message for the console
+   :param i: :class:`int` the type of message (0 is regular message,
+	     1 is error or warning)
    :rtype: None
 
 An example should make it obvious::

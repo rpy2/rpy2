@@ -13,6 +13,11 @@ Changes
 
 - Python 3-only. Python 2 is no longer supported.
 
+- The function :func:`set_writeconsole` and func:`get_writeconsole` are
+  now called :func:`set_writeconsoleex` and func:`get_writeconsoleex`.
+  The callback function must have a signature like `(message, messagetype)`
+  (see the documentation for details).
+
 New features
 ------------
 
