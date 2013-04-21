@@ -31,7 +31,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         stdout = sys.stdout
         sys.stdout = tmp_file
         try:
-            rinterface.consolePrint('haha')
+            rinterface.consolePrint('haha', 0)
         except Exception as e:
             sys.stdout = stdout
             raise e
@@ -149,9 +149,9 @@ sys.path.insert(0, '%s')
 import rpy2.rinterface as ri
 
 ri.initr()
-def f(x):
+def f(x, i):
   pass
-ri.set_writeconsole(f)
+ri.set_writeconsoleex(f)
 rcode = "i <- 0; "
 rcode += "while(TRUE) { "
 rcode += "i <- i+1; "
@@ -185,27 +185,27 @@ except Exception as e:
 
 class CallbacksTestCase(unittest.TestCase):
     def tearDown(self):
-        rinterface.set_writeconsole(rinterface.consolePrint)
+        rinterface.set_writeconsoleex(rinterface.consolePrint)
         rinterface.set_readconsole(rinterface.consoleRead)
         rinterface.set_readconsole(rinterface.consoleFlush)
         rinterface.set_choosefile(rinterface.chooseFile)
         sys.last_value = None
 
-    def testSetWriteConsole(self):
+    def testSetWriteConsoleEx(self):
         buf = []
-        def f(x):
+        def f(x, i):
             buf.append(x)
 
-        rinterface.set_writeconsole(f)
-        self.assertEqual(rinterface.get_writeconsole(), f)
+        rinterface.set_writeconsoleex(f)
+        self.assertEqual(rinterface.get_writeconsoleex(), f)
         code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
         rinterface.baseenv["print"](code)
         self.assertEqual('[1] "3"\n', str.join('', buf))
 
-    def testWriteConsoleWithError(self):
-        def f(x):
+    def testWriteConsoleExWithError(self):
+        def f(x, i):
             raise CustomException("Doesn't work.")
-        rinterface.set_writeconsole(f)
+        rinterface.set_writeconsoleex(f)
 
         tmp_file = tempfile.NamedTemporaryFile()
         stderr = sys.stderr
@@ -234,7 +234,7 @@ class CallbacksTestCase(unittest.TestCase):
         self.assertEqual(rinterface.get_flushconsole(), f)
         rinterface.baseenv.get("flush.console")()
         self.assertEqual(1, flush['count'])
-        rinterface.set_writeconsole(rinterface.consoleFlush)
+        rinterface.set_writeconsoleex(rinterface.consoleFlush)
 
     @onlyAQUAorWindows
     def testFlushConsoleWithError(self):
@@ -313,9 +313,9 @@ class CallbacksTestCase(unittest.TestCase):
         rinterface.set_choosefile(rinterface.chooseFile)
 
     def testChooseFileWithError(self):
-        def noconsole(x):
+        def noconsole(x, i):
             pass
-        rinterface.set_writeconsole(noconsole) # reverted by the tearDown method
+        rinterface.set_writeconsoleex(noconsole) # reverted by the tearDown method
         def f(prompt):
             raise Exception("Doesn't work.")
         rinterface.set_choosefile(f)

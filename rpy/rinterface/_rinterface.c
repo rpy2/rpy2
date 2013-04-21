@@ -295,6 +295,7 @@ static inline PyObject* EmbeddedR_setAnyCallback(PyObject *self,
     Py_INCREF(Py_None);
     result = Py_None;
   } else {
+    /* PyArg_ParseTuple failed */
     PyErr_SetString(PyExc_TypeError, "The parameter should be a callable.");
     return NULL;
   }
@@ -321,37 +322,38 @@ static PyObject* EmbeddedR_getAnyCallback(PyObject *self,
   return result;
 }
 
+static PyObject* writeConsoleCallbackEx = NULL;
 
-static PyObject* writeConsoleCallback = NULL;
-
-static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
-                                           PyObject *args)
+static PyObject* EmbeddedR_setWriteConsoleEx(PyObject *self,
+					     PyObject *args)
 {
-  PyObject *res = EmbeddedR_setAnyCallback(self, args, &writeConsoleCallback);
+  PyObject *res = EmbeddedR_setAnyCallback(self, args, &writeConsoleCallbackEx);
   return res;
 }
 
-PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
-             "set_writeconsole(f)\n\n"
+PyDoc_STRVAR(EmbeddedR_setWriteConsoleEx_doc,
+             "set_writeconsoleex(f)\n\n"
              "Set how to handle output from the R console with either None"
-             " or a function f such as f(output) returns None"
-             " (f only has side effects).");
+             " or a function f such as f(message, mtype) returns None"
+             " (f only has side effects, and will process the message,"
+	     " eventually taking into in consideration the message type -"
+	     " either 0 a regular message or 1 a warning or an error).");
 
-static PyObject * EmbeddedR_getWriteConsole(PyObject *self,
+static PyObject * EmbeddedR_getWriteConsoleEx(PyObject *self,
                                             PyObject *args)
 {
-  return EmbeddedR_getAnyCallback(self, args, writeConsoleCallback);
+  return EmbeddedR_getAnyCallback(self, args, writeConsoleCallbackEx);
 }
 
-PyDoc_STRVAR(EmbeddedR_getWriteConsole_doc,
-             "get_writeconsole()\n\n"
+PyDoc_STRVAR(EmbeddedR_getWriteConsoleEx_doc,
+             "get_writeconsoleex()\n\n"
              "Retrieve the current R console output handler"
-             " (see set_writeconsole)");
+             " (see set_writeconsoleex)");
 
 
 
 static void
-EmbeddedR_WriteConsole(const char *buf, int len)
+EmbeddedR_WriteConsoleEx(const char *buf, int len, int type)
 {
   PyObject *arglist;
   PyObject *result;
@@ -364,22 +366,18 @@ EmbeddedR_WriteConsole(const char *buf, int len)
 
   PyOS_setsig(SIGINT, python_sighandler);
 
-#if (PY_VERSION_HEX < 0x03010000)
-  arglist = Py_BuildValue("(s)", buf);
-#else
-  arglist = Py_BuildValue("(s)", buf);
-#endif
+  arglist = Py_BuildValue("(s,i)", buf);
 
   if (! arglist) {    PyErr_NoMemory();
 /*     signal(SIGINT, old_int); */
 /*     return NULL; */
   }
 
-  if (writeConsoleCallback == NULL) {
+  if (writeConsoleCallbackEx == NULL) {
     return;
   }
 
-  result = PyEval_CallObject(writeConsoleCallback, arglist);
+  result = PyEval_CallObject(writeConsoleCallbackEx, arglist);
   PyObject* pythonerror = PyErr_Occurred();
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
@@ -1207,7 +1205,7 @@ static PyObject* EmbeddedR_init(PyObject *self)
   /* Rp->CharacterMode = LinkDLL; */
   Rp->ReadConsole = EmbeddedR_ReadConsole;
   Rp->WriteConsole = NULL;
-  Rp->WriteConsoleEx = EmbeddedR_WriteConsole;
+  Rp->WriteConsoleEx = EmbeddedR_WriteConsoleEx;
 
   Rp->Busy = Re_Busy;
   Rp->ShowMessage = EmbeddedR_ShowMessage;
@@ -1246,8 +1244,11 @@ static PyObject* EmbeddedR_init(PyObject *self)
   ptr_R_CleanUp = EmbeddedR_CleanUp;
   /* Redirect R console output */
   ptr_R_ShowMessage = EmbeddedR_ShowMessage;
-  ptr_R_WriteConsole = EmbeddedR_WriteConsole;
+  ptr_R_WriteConsole = NULL; /* must be set to null for 
+				WriteConsolEx to be used*/
+  ptr_R_WriteConsoleEx = EmbeddedR_WriteConsoleEx;
   ptr_R_FlushConsole = EmbeddedR_FlushConsole;
+  /* ensure that stderr and stdout are pointing the console */
   R_Outputfile = NULL;
   R_Consolefile = NULL;
   /* Redirect R console input */
@@ -3050,10 +3051,10 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_end_doc},
   {"set_interactive",   (PyCFunction)EmbeddedR_setinteractive,  METH_O,
    EmbeddedR_setinteractive_doc},
-  {"set_writeconsole",   (PyCFunction)EmbeddedR_setWriteConsole,  METH_VARARGS,
-   EmbeddedR_setWriteConsole_doc},
-  {"get_writeconsole",   (PyCFunction)EmbeddedR_getWriteConsole,  METH_VARARGS,
-   EmbeddedR_getWriteConsole_doc},
+  {"set_writeconsoleex",   (PyCFunction)EmbeddedR_setWriteConsoleEx,  METH_VARARGS,
+   EmbeddedR_setWriteConsoleEx_doc},
+  {"get_writeconsoleex",   (PyCFunction)EmbeddedR_getWriteConsoleEx,  METH_VARARGS,
+   EmbeddedR_getWriteConsoleEx_doc},
   {"set_readconsole",    (PyCFunction)EmbeddedR_setReadConsole,   METH_VARARGS,
    EmbeddedR_setReadConsole_doc},
   {"get_readconsole",    (PyCFunction)EmbeddedR_getReadConsole,   METH_VARARGS,
