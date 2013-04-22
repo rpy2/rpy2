@@ -514,8 +514,6 @@ used the grammar of graphics) are still specified the usual way.
 .. image:: _static/graphics_ggplot2smoothblue.png
    :scale: 50
 
-.. automodule:: rpy2.robjects.lib.ggplot2
-   :members:
 ..
    Complex example
    ^^^^^^^^^^^^^^^
