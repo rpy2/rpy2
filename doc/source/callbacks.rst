@@ -72,12 +72,13 @@ is a simple write to :data:`sys.stdout`
 An example should make it obvious::
 
    buf = []
-   def f(x):
+   def f(x, i):
        # function that append its argument to the list 'buf'
+       # (no matter the value for "i")
        buf.append(x)
 
    # output from the R console will now be appended to the list 'buf'
-   rinterface.set_writeconsole(f)
+   rinterface.set_writeconsoleex(f)
 
    date = rinterface.baseenv['date']
    rprint = rinterface.baseenv['print']
@@ -88,12 +89,12 @@ An example should make it obvious::
 
 
    # restore default function
-   rinterface.set_writeconsole(rinterface.consolePrint)
+   rinterface.set_writeconsoleex(rinterface.consolePrint)
 
 
-.. autofunction:: rpy2.rinterface.set_writeconsole(f)
+.. autofunction:: rpy2.rinterface.set_writeconsoleex(f)
 
-.. autofunction:: rpy2.rinterface.get_writeconsole()
+.. autofunction:: rpy2.rinterface.get_writeconsoleex()
 
    :rtype: a callable
 
