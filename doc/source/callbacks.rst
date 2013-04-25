@@ -52,30 +52,33 @@ Write console
 
 The 'write console' function is called whenever output is sent to the R console.
 
-A suitable callback function will be such as it accepts one parameter of class :class:`str`
-and only has side-effects (does not return anything).
+A suitable callback function will be such as it accepts one parameter of class :class:`str`, one of that in an :class:`int`, 
+and the function only has side-effects (does not return anything).
 
 The pair of functions 
-:func:`rpy2.rinterface.set_writeconsole` and :func:`rpy2.rinterface.get_writeconsole`
+:func:`rpy2.rinterface.set_writeconsoleex` and :func:`rpy2.rinterface.get_writeconsoleex`
 can be used to set and retrieve the callback function respectively.
 
 The default callback function, called :func:`rinterface.consolePrint`
 is a simple write to :data:`sys.stdout`
 
-.. autofunction:: rpy2.rinterface.consolePrint(x)
+.. autofunction:: rpy2.rinterface.consolePrint(x, i)
 
-   :param x: :class:`str`
+   :param x: :class:`str` the message for the console
+   :param i: :class:`int` the type of message (0 is regular message,
+	     1 is error or warning)
    :rtype: None
 
 An example should make it obvious::
 
    buf = []
-   def f(x):
+   def f(x, i):
        # function that append its argument to the list 'buf'
+       # (no matter the value for "i")
        buf.append(x)
 
    # output from the R console will now be appended to the list 'buf'
-   rinterface.set_writeconsole(f)
+   rinterface.set_writeconsoleex(f)
 
    date = rinterface.baseenv['date']
    rprint = rinterface.baseenv['print']
@@ -86,12 +89,12 @@ An example should make it obvious::
 
 
    # restore default function
-   rinterface.set_writeconsole(rinterface.consolePrint)
+   rinterface.set_writeconsoleex(rinterface.consolePrint)
 
 
-.. autofunction:: rpy2.rinterface.set_writeconsole(f)
+.. autofunction:: rpy2.rinterface.set_writeconsoleex(f)
 
-.. autofunction:: rpy2.rinterface.get_writeconsole()
+.. autofunction:: rpy2.rinterface.get_writeconsoleex()
 
    :rtype: a callable
 

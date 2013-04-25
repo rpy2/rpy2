@@ -21,8 +21,7 @@ class MethodsTestCase(unittest.TestCase):
 
     def testRS4_TypeNoAccessors(self):
         robjects.r['setClass']("Foo", robjects.r('list(foo="numeric")'))
-        class Foo(methods.RS4):
-            __metaclass__ = methods.RS4_Type
+        class Foo(methods.RS4, metaclass = methods.RS4_Type):
             def __init__(self):
                 obj = robjects.r['new']('R_A')
                 self.__sexp__ = obj.__sexp__
@@ -34,8 +33,7 @@ class MethodsTestCase(unittest.TestCase):
         robjects.r['setMethod']("length", signature="R_A",
                                 definition = robjects.r("function(x) 123"))
         
-        class R_A(methods.RS4):
-            __metaclass__ = methods.RS4_Type
+        class R_A(methods.RS4, metaclass=methods.RS4_Type):
             __accessors__ = (('length', None,
                               'get_length', False, 'get the length'),
                              ('length', None,
@@ -64,15 +62,13 @@ class MethodsTestCase(unittest.TestCase):
 
     def testRS4Auto_Type(self):
         robjects.r('library(stats4)')
-        class MLE(robjects.methods.RS4):
-            __metaclass__ = robjects.methods.RS4Auto_Type
+        class MLE(robjects.methods.RS4, metaclass = robjects.methods.RS4Auto_Type):
             __rname__ = 'mle'
             __rpackagename__ = 'stats4'
         
     def testRS4Auto_Type_nopackname(self):
         robjects.r('library(stats4)')
-        class MLE(robjects.methods.RS4):
-            __metaclass__ = robjects.methods.RS4Auto_Type
+        class MLE(robjects.methods.RS4, metaclass = robjects.methods.RS4Auto_Type):
             __rname__ = 'mle'
 
 

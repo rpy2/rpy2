@@ -102,15 +102,8 @@ from rpy2.rinterface._rinterface import *
 
 
 # wrapper in case someone changes sys.stdout:
-if sys.version_info.major == 3:
-    # Print became a regular function in Python 3, making
-    # the workaround (mostly) unnecessary (python2to3 still needs it
-    # wrapped in a function
-    def consolePrint(x,i):
-        print(x)
-else:
-    def consolePrint(x,i):
-        sys.stdout.write(x)
+def consolePrint(x, i):
+    print(x)
 
 set_writeconsoleex(consolePrint)
 

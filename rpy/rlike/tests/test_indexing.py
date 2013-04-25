@@ -8,7 +8,7 @@ class OrderTestCase(unittest.TestCase):
         seq  = (  2,   1,   5,   3,   4)
         expected = (1, 2, 3, 4, 5)
         res = rfi.order(seq)
-        for va, vb in itertools.izip(expected, res):
+        for va, vb in zip(expected, res):
             self.assertEqual(va, seq[vb])
 
 

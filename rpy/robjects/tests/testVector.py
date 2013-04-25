@@ -258,10 +258,10 @@ class DateTimeVectorTestCase(unittest.TestCase):
 class ExtractDelegatorTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.console = robjects.rinterface.get_writeconsole()
+        self.console = robjects.rinterface.get_writeconsoleex()
 
     def tearDown(self):
-        robjects.rinterface.set_writeconsole(self.console)
+        robjects.rinterface.set_writeconsoleex(self.console)
 
     def testExtractByIndex(self):
         seq_R = robjects.baseenv["seq"]
@@ -295,9 +295,9 @@ class ExtractDelegatorTestCase(unittest.TestCase):
         # R indexing starts at one
         myIndex = robjects.Vector(['a', 'b', 'c'])
 
-        def noconsole(x):
+        def noconsole(x, i):
             pass
-        robjects.rinterface.set_writeconsole(noconsole)
+        robjects.rinterface.set_writeconsoleex(noconsole)
 
         self.assertRaises(ri.RRuntimeError, mySeq.rx, myIndex)
 
