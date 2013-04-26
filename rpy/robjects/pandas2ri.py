@@ -8,7 +8,7 @@ from pandas.core.series import Series as PandasSeries
 from pandas.core.index import Index as PandasIndex
 
 from collections import OrderedDict
-from rpy2.robjects.vectors import DataFrame, Vector, ListVector, StrVector
+from rpy2.robjects.vectors import DataFrame, Vector, ListVector, StrVector, IntVector, POSIXct
 
 # pandas is requiring numpy. We add the numpy conversion as implicit
 import rpy2.robjects.numpy2ri as numpy2ri
@@ -39,6 +39,7 @@ def pandas2ri(obj):
             d = [IntVector([x.year for x in obj]),
                  IntVector([x.month for x in obj]),
                  IntVector([x.day for x in obj]),
+                 IntVector([x.hour for x in obj]),
                  IntVector([x.minute for x in obj]),
                  IntVector([x.second for x in obj])]
             res = ISOdatetime(*d)
