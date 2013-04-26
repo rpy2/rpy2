@@ -327,7 +327,7 @@ Whenever more details are needed, one can consider running explicit tests.
 
    Running the tests in an interactive session appears to trigger spurious exceptions
    when testing callback functions raising exceptions.
-	 If unsure, simply use the former way to test (in a shell).
+   If unsure, simply use the former way to test (in a shell).
 
 .. warning::
 
