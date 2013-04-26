@@ -301,8 +301,54 @@ Sexp_rclass_get(PyObject *self, void *closure)
     return NULL;;
   }
 
-  SEXP res_R = R_data_class(sexp, TRUE);
-  PyObject *res = (PyObject *)newPySexpObject(res_R);
+  /* SEXP res_R = R_data_class(sexp, TRUE);*/
+  /* R_data_class is not exported, although R's own
+   package "methods" needs it as part of the API.
+   We are getting the R class by ourselves. This
+   is problematic since we are now exposed to changes
+   in the behaviour of R_data_class. */
+  SEXP res_R = getAttrib(sexp, R_ClassSymbol);
+  int nclasses = length(res_R);
+  if (nclasses == 0) {
+    /* if no explicit class, R will still consider the presence
+     of dimensions, then the "TYPEOF" */
+    SEXP sexp_dim = getAttrib(sexp, R_DimSymbol);
+    int nd = length(sexp_dim);
+    if(nd > 0) {
+      if(nd == 2)
+	res_R = mkChar("matrix");
+      else
+	res_R = mkChar("array");
+    } else {
+      SEXPTYPE t = TYPEOF(sexp);
+      switch(t) {
+      case CLOSXP:
+      case SPECIALSXP:
+      case BUILTINSXP:
+	res_R = mkChar("function");
+	break;
+      case REALSXP:
+	res_R = mkChar("numeric");
+	break;
+      case SYMSXP:
+	res_R = mkChar("name");
+	break;
+      case LANGSXP:
+	/* res_R = lang2str(sexp, t);*/
+	/* lang2str is not part of the R API, yadayadayada....*/
+	res_R = rpy_lang2str(sexp, t);
+	break;
+      default:
+	res_R = Rf_type2str(t);
+      }
+    } 
+  } else {
+    res_R = asChar(res_R);
+  }
+  PROTECT(res_R);
+  SEXP class_Rstring = ScalarString(res_R);
+  UNPROTECT(1);
+  PyObject *res = (PyObject *)newPySexpObject(class_Rstring);
   return res;
 }
 
