@@ -1,3 +1,12 @@
+Release 2.3.6
+=============
+
+Bugs fixed
+----------
+
+- Several reports of segfault on OS X (since rpy2-2.3.1 - PR #108)
+
+
 Relase 2.3.5
 ============
 

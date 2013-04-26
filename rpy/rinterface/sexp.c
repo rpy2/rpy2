@@ -301,7 +301,7 @@ Sexp_rclass_get(PyObject *self, void *closure)
     return NULL;;
   }
 
-  SEXP res_R = R_data_class(sexp);
+  SEXP res_R = R_data_class(sexp, TRUE);
   PyObject *res = (PyObject *)newPySexpObject(res_R);
   return res;
 }
