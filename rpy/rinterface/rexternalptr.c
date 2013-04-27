@@ -72,8 +72,11 @@ ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
     return -1;
   }
 
-  PyObject *pyextptr = Py_None;
+  /* Python object that will be an external pointer for R. */
+  PyObject *pyextptr = Py_None; 
+  /* Tag associated with the external pointer (optional) */
   PyObject *pytag = Py_None;
+  /* (optional) */
   PyObject *pyprotected = Py_None;
   static char *kwlist[] = {"extptr", "tag", "protected", NULL};
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!O!", 
@@ -108,13 +111,14 @@ ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   Py_INCREF(pyextptr);
   rres  = R_MakeExternalPtr(pyextptr, rtag, rprotected);
   PROTECT(rres);
-  R_RegisterCFinalizerEx(rres, (R_CFinalizer_t)R_PyObject_decref, TRUE);
-  UNPROTECT(1);
+  printf("Warning: R external pointer without finalizer.\n");
+  //R_RegisterCFinalizerEx(rres, (R_CFinalizer_t)R_PyObject_decref, TRUE);
   if (Rpy_ReplaceSexp((PySexpObject *)self, rres) == -1) {
       embeddedR_freelock();
+      UNPROTECT(1);
       return -1;
   }
-
+  UNPROTECT(1);
 #ifdef RPY_VERBOSE
   printf("done.\n");
 #endif 
