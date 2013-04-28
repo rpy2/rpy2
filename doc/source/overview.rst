@@ -94,8 +94,7 @@ yet the preferred and recommended Python version for rpy2 but it
 is expected to work just as well as Python 2.7. It is just
 a little less "battle tested". From rpy2-2.4.x and onward,
 the main Python version will be the released 3.x at the time (3.3, or 3.4).
-Earlier version of Python 3 are not supported (they might work, they might not
- - you are on your own).
+Earlier version of Python 3 are not supported (they might work, they might not - you are on your own).
 
 Older Python like 2.5 or even 2.4 might compile, but there is much less
 testing done with those platforms, if any, and likely limited hope
@@ -341,7 +340,7 @@ Whenever more details are needed, one can consider running explicit tests.
 
    Running the tests in an interactive session appears to trigger spurious exceptions
    when testing callback functions raising exceptions.
-	 If unsure, simply use the former way to test (in a shell).
+   If unsure, simply use the former way to test (in a shell).
 
 .. warning::
 
