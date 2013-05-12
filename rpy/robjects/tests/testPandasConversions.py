@@ -43,6 +43,14 @@ class PandasConversionsTestCase(unittest.TestCase):
         self.assertEqual(pd_df.shape[0], rp_df.nrow)
         self.assertEqual(pd_df.shape[1], rp_df.ncol)
 
+    def testDataFrame_PR130(self):
+        # PR #130
+        a = pandas.core.frame.DataFrame(dict(dates=['05-01-2001', '04-01-2013'], 
+                                             not_necessary=[1, 2]))
+        a.dates = pandas.to_datetime(a.dates)
+        r_dataf = rpyp.pandas2ri(a)
+        self.assertIsInstance(r_dataf, robjects.DataFrame)
+
     def testSeries(self):
         Series = pandas.core.series.Series
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])

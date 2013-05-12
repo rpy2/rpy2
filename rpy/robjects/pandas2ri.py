@@ -26,7 +26,14 @@ def pandas2ri(obj):
                 od[name] = StrVector(values)
             else:
                 od[name] = ro.conversion.py2ri(values)
-        return DataFrame(od)
+        res = DataFrame(od)
+        # # "index" is equivalent to "names" in R
+        # if obj.ndim == 1:
+        #     res.names = ListVector({'x': ro.conversion.py2ri(obj.index)})
+        #     pass
+        # else:
+        #     res.dimnames = ListVector(ro.conversion.py2ri(obj.index))
+        return res
     elif isinstance(obj, PandasIndex):
         if obj.dtype.kind == 'O':
             return StrVector(obj)
@@ -49,11 +56,6 @@ def pandas2ri(obj):
         else:
             # converted as a numpy array
             res = original_conversion(obj) 
-        # "index" is equivalent to "names" in R
-        if obj.ndim == 1:
-            res.names = ListVector({'x': ro.conversion.py2ri(obj.index)})
-        else:
-            res.dimnames = ListVector(ro.conversion.py2ri(obj.index))
         return res
     else:
         return original_conversion(obj) 
