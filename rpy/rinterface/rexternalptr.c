@@ -111,8 +111,7 @@ ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   Py_INCREF(pyextptr);
   rres  = R_MakeExternalPtr(pyextptr, rtag, rprotected);
   PROTECT(rres);
-  printf("Warning: R external pointer without finalizer.\n");
-  //R_RegisterCFinalizerEx(rres, (R_CFinalizer_t)R_PyObject_decref, TRUE);
+  R_RegisterCFinalizerEx(rres, (R_CFinalizer_t)R_PyObject_decref, TRUE);
   if (Rpy_ReplaceSexp((PySexpObject *)self, rres) == -1) {
       embeddedR_freelock();
       UNPROTECT(1);
