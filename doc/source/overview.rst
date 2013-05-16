@@ -127,9 +127,10 @@ The following options are, or could be, available for download:
 
   * Pre-compiled binary packages for
 
-    * Microsoft's Windows (releases are on Sourceforge, irregular snapshots
-      for the dev version on bitbucket) - there is currently no support for
-      this platform
+    * Microsoft's Windows - unofficial and unsupported binaries are provided
+      by Christoph Gohlke (http://www.lfd.uci.edu/~gohlke/pythonlibs/); 
+      there is otherwise currently
+      close to no support for this platform
 
     * Apple's MacOS X (although Fink and Macports are available, there does not
       seem to be binaries currently available)
