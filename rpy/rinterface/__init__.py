@@ -70,8 +70,8 @@ if sys.platform == 'win32':
         raise ValueError("Unknown architecture %s" %architecture)
 
     import win32api
-    os.environ['PATH'] += ';' + os.path.join(R_HOME, 'bin')
-    os.environ['PATH'] += ';' + os.path.join(R_HOME, 'modules')
+    os.environ['PATH'] += ';' + os.path.join(R_HOME, 'bin', _win_bindir)
+    os.environ['PATH'] += ';' + os.path.join(R_HOME, 'modules', _win_bindir)
     os.environ['PATH'] += ';' + os.path.join(R_HOME, 'lib')
 
     # Load the R dll using the explicit path

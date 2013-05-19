@@ -166,7 +166,7 @@ def get_rversion(r_home):
                                  stdin=subprocess.PIPE, 
                                  stdout=subprocess.PIPE, 
                                  stderr=subprocess.STDOUT, 
-                                 close_fds=True)
+                                 close_fds=sys.platform!="win32")
             rp = p.stdout
         else:
             rp = os.popen3('"'+r_exec+'" --version')[2]
@@ -174,17 +174,17 @@ def get_rversion(r_home):
         rp = os.popen('"'+r_exec+'" --version')
     rversion = rp.readline()
     #Twist if 'R RHOME' spits out a warning
-    if rversion.startswith("WARNING"):
+    if rversion.startswith(b"WARNING"):
         rversion = rp.readline()
-    m = re.match('^R ([^ ]+) ([^ ]+) .+$', rversion)
+    m = re.match(b'^R ([^ ]+) ([^ ]+) .+$', rversion)
     if m is None:
         rp.close()
         # return dummy version 0.0
         rversion = [0, 0]
     else:
         rversion = m.groups()[1]
-        if m.groups()[0] == 'version':
-            rversion = rversion.split('.')
+        if m.groups()[0] == b'version':
+            rversion = rversion.split(b'.')
             rversion[0] = int(rversion[0])
             rversion[1] = int(rversion[1])
         else:
