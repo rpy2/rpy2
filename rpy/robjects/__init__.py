@@ -140,6 +140,8 @@ def default_py2ri(o):
         res = rinterface.SexpVector([o, ], rinterface.REALSXP)
     elif isinstance(o, str):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
+    elif isinstance(o, bytes):
+        res = rinterface.SexpVector([o, ], rinterface.RAWSXP)
     elif isinstance(o, list):
         res = r.list(*[conversion.ri2py(conversion.py2ri(x)) for x in o])
     elif isinstance(o, complex):

@@ -348,6 +348,22 @@ class StrVector(Vector, StrSexpVector):
         res = self._factorconstructor(self)
         return conversion.ri2py(res)
 
+class BytesVector(Vector, StrSexpVector):
+    """      Vector of bytes elements
+
+    BytesVector(seq) -> BytesVector.
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python sequence.
+    In the later case, all elements in the sequence should be either
+    bytes, or have a bytes() representation.
+    """
+
+    def __init__(self, obj):
+        obj = ByteSexpVector(obj)
+        super(BytesVector, self).__init__(obj)
+
+
 class IntVector(Vector, IntSexpVector):
     """ Vector of integer elements 
     IntVector(seq) -> IntVector.

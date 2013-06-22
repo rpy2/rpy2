@@ -26,6 +26,9 @@ New features
 
 - It is now possible to set the :attr:`rclass`.
 
+- :class:`rpy2.robjects.BytesVector`, the `robjects` representation of
+  the :class:`rpy2.rinterface.ByteSexpVector`
+
 
 Relase 2.3.4
 ============
