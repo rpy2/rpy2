@@ -15,7 +15,7 @@ grdevices = importr('grDevices')
 class GGPlot(ggplot2.GGPlot):
 
     # special representation for ipython
-    def _repr_png_(self, width = 600, height = 400):
+    def _repr_png_(self, width = 700, height = 500):
         # Hack with a temp file (use buffer later ?)
         fn = tempfile.NamedTemporaryFile(mode = 'wb', suffix = '.png',
                                          delete = False)
@@ -28,6 +28,20 @@ class GGPlot(ggplot2.GGPlot):
            res = data.read()
         return res
 
+    def png(self, width = 700, height = 500):
+        """ Build an Ipython "Image" (requires iPython). """
+        return Image(self._repr_png_(width = width, height = height), 
+                     embed=True)
+
+
+ggplot = GGPlot.new
+
+
+class GGPlotSVG(ggplot2.GGPlot):
+    """ The embedding of several SVG figures into one ipython notebook is
+    giving garbled figures. The SVG functionality is taken out to a
+    child class.
+    """
     def _repr_svg_(self, width = 6, height = 4):
         # Hack with a temp file (use buffer later ?)
         fn = tempfile.NamedTemporaryFile(mode = 'wb', suffix = '.svg',
@@ -41,14 +55,7 @@ class GGPlot(ggplot2.GGPlot):
            res = data.read().decode('utf-8')
         return res
 
-    def png(self, width = 600, height = 400):
-        """ Build an Ipython "Image" (requires iPython). """
-        return Image(self._repr_png_(width = width, height = height), 
-                     embed=True)
-
     def svg(self, width = 6, height = 4):
         """ Build an Ipython "Image" (requires iPython). """
         return Image(self._repr_svg_(width = width, height = height), 
                      embed=True)
-
-ggplot = GGPlot.new
