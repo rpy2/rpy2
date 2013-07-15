@@ -205,17 +205,17 @@ def get_rversion(r_home):
         rp = os.popen('"'+r_exec+'" --version')
     rversion = rp.readline()
     #Twist if 'R RHOME' spits out a warning
-    if rversion.startswith(b"WARNING"):
+    if rversion.startswith("WARNING"):
         rversion = rp.readline()
-    m = re.match(b'^R ([^ ]+) ([^ ]+) .+$', rversion)
+    m = re.match('^R ([^ ]+) ([^ ]+) .+$', rversion)
     if m is None:
         rp.close()
         # return dummy version 0.0
         rversion = [0, 0]
     else:
         rversion = m.groups()[1]
-        if m.groups()[0] == b'version':
-            rversion = rversion.split(b'.')
+        if m.groups()[0] == 'version':
+            rversion = rversion.split('.')
             rversion[0] = int(rversion[0])
             rversion[1] = int(rversion[1])
         else:
