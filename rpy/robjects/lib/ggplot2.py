@@ -640,6 +640,12 @@ class ScaleShapeManual(ScaleShape):
 scale_shape_manual = ScaleShapeManual.new
 
 
+
+guides = ggplot2.guides
+guide_colorbar = ggplot2.guide_colorbar
+guide_colourbar = ggplot2.guide_colourbar
+guide_legend = ggplot2.guide_legend
+
 class Options(robjects.Vector):
    def __init__(self, obj):
       self.__sexp__ = obj.__sexp__

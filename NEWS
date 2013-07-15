@@ -1,6 +1,30 @@
 Release 2.4.0-dev
 =================
 
+
+Release 2.3.7
+=============
+
+Bugs fixed
+----------
+
+- ggplot2's "guides" were missing
+
+
+Release 2.3.6
+=============
+
+Bugs fixed
+----------
+
+- Several reports of segfault on OS X (since rpy2-2.3.1 - PR #109)
+
+- More fixes in converting `DataFrames` with dates from `pandas`
+
+
+Relase 2.3.5
+============
+
 Bugs fixed
 ----------
 
