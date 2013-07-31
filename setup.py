@@ -4,16 +4,11 @@ from collections import namedtuple
 from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build import build as _build
 
-try:
-    # This enables setup.py develop via distribute _or_ setuptools
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
+from distutils.core import setup
 from distutils.core import Extension
 
 pack_name = 'rpy2'
-pack_version = __import__('rpy2').__version__
+pack_version = __import__('rpy').__version__
 
 default_lib_directory = 'bin' if sys.platform=='win32' else 'lib'
 
@@ -35,14 +30,14 @@ if sys.version_info >= (3,):
     outfiles_2to3 = []
     #dist_script = os.path.join("build", "src", "distribute_setup.py")
     for f in fl.files:
-        outf, copied = file_util.copy_file(f, os.path.join(package_prefix, f),
+        outf, copied = file_util.copy_file(f, os.path.join(package_prefix, f), 
                                            update=1)
         if copied and outf.endswith(".py"): #and outf != dist_script:
             outfiles_2to3.append(outf)
         if copied and outf.endswith('api_tests.txt'):
             # XXX support this in distutils as well
             from lib2to3.main import main
-            main('lib2to3.fixes', ['-wd', os.path.join(package_prefix,
+            main('lib2to3.fixes', ['-wd', os.path.join(package_prefix, 
                                                        'tests', 'api_tests.txt')])
 
     util.run_2to3(outfiles_2to3)
@@ -52,7 +47,7 @@ if sys.version_info >= (3,):
     src_root = package_prefix
     print('done.')
 else:
-    from distutils.core import setup
+    from distutils.core import setup    
 from distutils.core import Extension
 
 
@@ -63,7 +58,7 @@ class build(_build):
         # "guess all configuration paths from " +\
         #     "the R executable found in the PATH " +\
         #     "(this overrides r-home)"),
-        ('r-home=', None,
+        ('r-home=', None, 
          "full path for the R home to compile against " +\
              "(see r-autoconfig for an automatic configuration)"),
         ('r-home-lib=', None,
@@ -103,7 +98,7 @@ class build_ext(_build_ext):
         #  "guess all configuration paths from " +\
         #      "the R executable found in the PATH " +\
         #      "(this overrides r-home)"),
-        ('r-home=', None,
+        ('r-home=', None, 
          "full path for the R home to compile against " +\
              "(see r-autoconfig for an automatic configuration)"),
         ('r-home-lib=', None,
@@ -131,7 +126,7 @@ class build_ext(_build_ext):
                                    #('r_autoconfig', 'r_autoconfig'),
                                    ('r_home', 'r_home'))
 
-        _build_ext.finalize_options(self)
+        _build_ext.finalize_options(self) 
         if self.r_home is None:
             tmp = os.popen("R RHOME")
             self.r_home = tmp.readlines()
@@ -160,7 +155,7 @@ class build_ext(_build_ext):
             if self.ignore_check_rversion:
                 warnings.warn("R did not seem to have the minimum required version number")
             else:
-                raise SystemExit("Error: R >= 2.8 required (and R told '%s')." %'.'.join(rversion))
+                raise SystemExit("Error: R >= 2.8 required (and R told '%s')." %'.'.join(rversion))    
         rversions.append(rversion)
 
         config = RConfig()
@@ -199,9 +194,9 @@ def get_rversion(r_home):
             import subprocess
             p = subprocess.Popen('"'+r_exec+'" --version',
                                  shell=True,
-                                 stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT,
+                                 stdin=subprocess.PIPE, 
+                                 stdout=subprocess.PIPE, 
+                                 stderr=subprocess.STDOUT, 
                                  close_fds=True)
             rp = p.stdout
         else:
@@ -241,7 +236,7 @@ def cmp_version(x, y):
 class RConfig(object):
     _include_dirs = None
     _libraries = None
-    _library_dirs = None
+    _library_dirs = None 
     _extra_link_args = None
     _frameworks = None
     _framework_dirs = None
@@ -251,7 +246,7 @@ class RConfig(object):
                  library_dirs = tuple(), extra_link_args = tuple(),
                  frameworks = tuple(),
                  framework_dirs = tuple()):
-        for k in ('include_dirs', 'libraries',
+        for k in ('include_dirs', 'libraries', 
                   'library_dirs', 'extra_link_args'):
             v = locals()[k]
             if not isinstance(v, tuple):
@@ -279,10 +274,10 @@ class RConfig(object):
                              '^(?P<extra_link_args>-Wl[^ ]+)$')
         pp = [re.compile(x) for x in possible_patterns]
         # sanity check of what is returned into rconfig
-        rconfig_m = None
+        rconfig_m = None        
         span = (0, 0)
         rc = RConfig()
-
+        
         for substring in re.split('(?<!-framework) ', string):
             ok = False
             for pattern in pp:
@@ -299,29 +294,29 @@ class RConfig(object):
                         ok = True
                         break
                     else:
-                        # if the configuration points to an existing library,
+                        # if the configuration points to an existing library, 
                         # use it
                         if os.path.exists(string):
                             rc += RConfig(libraries = substring)
                             ok = True
                             break
             if not ok:
-                raise ValueError('Invalid substring\n' + substring
+                raise ValueError('Invalid substring\n' + substring 
                                  + '\nin string\n' + string)
         return rc
-
+            
     def __repr__(self):
         s = 'Configuration for R as a library:' + os.linesep
         s += os.linesep.join(
             ['  ' + x + ': ' + self.__dict__['_'+x].__repr__() \
                  for x in ('include_dirs', 'libraries',
                            'library_dirs', 'extra_link_args')])
-        s += os.linesep + ' # OSX-specific (included in extra_link_args)' + os.linesep
+        s += os.linesep + ' # OSX-specific (included in extra_link_args)' + os.linesep 
         s += os.linesep.join(
             ['  ' + x + ': ' + self.__dict__['_'+x].__repr__() \
                  for x in ('framework_dirs', 'frameworks')]
             )
-
+        
         return s
 
     def __add__(self, config):
@@ -375,7 +370,7 @@ def getRinterface_ext():
             define_macros.append(('Win64', 1))
             extra_link_args.append('-m64')
             extra_compile_args.append('-m64')
-            # MS_WIN64 only defined by pyconfig.h for MSVC.
+            # MS_WIN64 only defined by pyconfig.h for MSVC. 
             # See http://bugs.python.org/issue4709
             define_macros.append(('MS_WIN64', 1))
     else:
@@ -392,35 +387,35 @@ def getRinterface_ext():
         pass
 
     include_dirs = []
-
+    
     rinterface_ext = Extension(
             name = pack_name + '.rinterface._rinterface',
             sources = [ \
-            #os.path.join('rpy', 'rinterface', 'embeddedr.c'),
+            #os.path.join('rpy', 'rinterface', 'embeddedr.c'), 
             #os.path.join('rpy', 'rinterface', 'r_utils.c'),
             #os.path.join('rpy', 'rinterface', 'buffer.c'),
             #os.path.join('rpy', 'rinterface', 'sequence.c'),
             #os.path.join('rpy', 'rinterface', 'sexp.c'),
             os.path.join(package_prefix,
-                         'rpy2', 'rinterface', '_rinterface.c')
+                         'rpy', 'rinterface', '_rinterface.c')
                        ],
             depends = [os.path.join(package_prefix,
-                                    'rpy2', 'rinterface', 'embeddedr.h'),
+                                    'rpy', 'rinterface', 'embeddedr.h'), 
                        os.path.join(package_prefix,
-                                    'rpy2', 'rinterface', 'r_utils.h'),
+                                    'rpy', 'rinterface', 'r_utils.h'),
                        os.path.join(package_prefix,
-                                    'rpy2', 'rinterface', 'buffer.h'),
+                                    'rpy', 'rinterface', 'buffer.h'),
                        os.path.join(package_prefix,
-                                    'rpy2', 'rinterface', 'sequence.h'),
+                                    'rpy', 'rinterface', 'sequence.h'),
                        os.path.join(package_prefix,
-                                    'rpy2', 'rinterface', 'sexp.h'),
+                                    'rpy', 'rinterface', 'sexp.h'),
                        os.path.join(package_prefix,
-                                    'rpy2', 'rinterface', '_rinterface.h'),
+                                    'rpy', 'rinterface', '_rinterface.h'),
                        os.path.join(package_prefix,
-                                    'rpy2', 'rinterface', 'rpy_device.h')
+                                    'rpy', 'rinterface', 'rpy_device.h')
                        ],
             include_dirs = [os.path.join(package_prefix,
-                                         'rpy2', 'rinterface'),] + include_dirs,
+                                         'rpy', 'rinterface'),] + include_dirs,
             libraries = ['R', ],
             library_dirs = r_libs,
             define_macros = define_macros,
@@ -434,10 +429,10 @@ def getRinterface_ext():
         pack_name + '.rinterface._rpy_device',
         [
             os.path.join(package_prefix,
-                         'rpy2', 'rinterface', '_rpy_device.c'),
+                         'rpy', 'rinterface', '_rpy_device.c'),
             ],
-        include_dirs = include_dirs +
-        [os.path.join('rpy2', 'rinterface'), ],
+        include_dirs = include_dirs + 
+        [os.path.join('rpy', 'rinterface'), ],
         libraries = ['R', ],
         library_dirs = r_libs,
         define_macros = define_macros,
@@ -454,7 +449,7 @@ if __name__ == '__main__':
     ri_ext = getRinterface_ext()
     rinterface_exts.append(ri_ext)
 
-    pack_dir = {pack_name: os.path.join(package_prefix, 'rpy2')}
+    pack_dir = {pack_name: os.path.join(package_prefix, 'rpy')}
 
     import distutils.command.install
     for scheme in distutils.command.install.INSTALL_SCHEMES.values():
