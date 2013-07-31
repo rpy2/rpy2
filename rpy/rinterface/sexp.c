@@ -293,7 +293,7 @@ PyDoc_STRVAR(Sexp_sexp_doc,
              "Opaque C pointer to the underlying R object");
 
 static PyObject*
-Sexp_rclass_get(PyObject *self)
+Sexp_rclass_get(PyObject *self, void *closure)
 {
   SEXP sexp = RPY_SEXP(((PySexpObject*)self));
   if (! sexp) {
@@ -301,12 +301,81 @@ Sexp_rclass_get(PyObject *self)
     return NULL;;
   }
 
-  SEXP res_R = GET_CLASS(sexp);
-  PyObject *res = (PyObject *)newPySexpObject(res_R);
+  /* SEXP res_R = R_data_class(sexp, TRUE);*/
+  /* R_data_class is not exported, although R's own
+   package "methods" needs it as part of the API.
+   We are getting the R class by ourselves. This
+   is problematic since we are now exposed to changes
+   in the behaviour of R_data_class. */
+  SEXP res_R = getAttrib(sexp, R_ClassSymbol);
+  int nclasses = length(res_R);
+  if (nclasses == 0) {
+    /* if no explicit class, R will still consider the presence
+     of dimensions, then the "TYPEOF" */
+    SEXP sexp_dim = getAttrib(sexp, R_DimSymbol);
+    int nd = length(sexp_dim);
+    if(nd > 0) {
+      if(nd == 2)
+	res_R = mkChar("matrix");
+      else
+	res_R = mkChar("array");
+    } else {
+      SEXPTYPE t = TYPEOF(sexp);
+      switch(t) {
+      case CLOSXP:
+      case SPECIALSXP:
+      case BUILTINSXP:
+	res_R = mkChar("function");
+	break;
+      case REALSXP:
+	res_R = mkChar("numeric");
+	break;
+      case SYMSXP:
+	res_R = mkChar("name");
+	break;
+      case LANGSXP:
+	/* res_R = lang2str(sexp, t);*/
+	/* lang2str is not part of the R API, yadayadayada....*/
+	res_R = rpy_lang2str(sexp, t);
+	break;
+      default:
+	res_R = Rf_type2str(t);
+      }
+    } 
+  } else {
+    res_R = asChar(res_R);
+  }
+  PROTECT(res_R);
+  SEXP class_Rstring = ScalarString(res_R);
+  UNPROTECT(1);
+  PyObject *res = (PyObject *)newPySexpObject(class_Rstring);
   return res;
 }
+
+/* Return -1 on failure, with an exception set. */
+static int
+Sexp_rclass_set(PyObject *self, PyObject *value, void *closure)
+{
+  SEXP sexp = RPY_SEXP(((PySexpObject*)self));
+  if (! sexp) {
+    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    return -1;
+  }
+
+
+  if (! PyObject_IsInstance(value, 
+			    (PyObject*)&Sexp_Type)) {
+    PyErr_Format(PyExc_ValueError, "Value must be a Sexp.");
+    return NULL;
+  }
+  SEXP sexp_class = RPY_SEXP((PySexpObject*)value);
+  SET_CLASS(sexp, sexp_class);
+  return 0;
+}
 PyDoc_STRVAR(Sexp_rclass_doc,
-             "R class name");
+             "R class name (and in R the class is an attribute and can be set).");
+
+
 
 static PyObject*
 Sexp_rid_get(PyObject *self)
@@ -579,7 +648,7 @@ static PyGetSetDef Sexp_getsets[] = {
    Sexp_typeof_doc},
   {"rclass", 
    (getter)Sexp_rclass_get,
-   (setter)0,
+   (setter)Sexp_rclass_set,
    Sexp_rclass_doc},
   {"rid", 
    (getter)Sexp_rid_get,

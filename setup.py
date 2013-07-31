@@ -197,7 +197,7 @@ def get_rversion(r_home):
                                  stdin=subprocess.PIPE, 
                                  stdout=subprocess.PIPE, 
                                  stderr=subprocess.STDOUT, 
-                                 close_fds=True)
+                                 close_fds=sys.platform!="win32")
             rp = p.stdout
         else:
             rp = os.popen3('"'+r_exec+'" --version')[2]

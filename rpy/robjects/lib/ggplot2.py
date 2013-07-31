@@ -79,6 +79,7 @@ class GGPlot(robjects.RObject):
     @classmethod
     def new(cls, data):
         """ Constructor for the class GGplot. """
+        data = conversion.py2ri(data)
         res = cls(cls._constructor(data))
         return res
     
@@ -89,7 +90,7 @@ class GGPlot(robjects.RObject):
         res = self._add(self, obj)
         if res.rclass[0] != 'gg':
             raise ValueError("Added object did not give a ggplot result (get class '%s')." % res.rclass[0])
-        return GGPlot(res)
+        return self.__class__(res)
 
 ggplot = GGPlot.new
 
@@ -503,6 +504,10 @@ class ScaleSize(Scale):
     _constructor = ggplot2_env['scale_size']
 scale_size = ScaleSize.new
 
+class ScaleShapeDiscrete(Scale):
+   _constructor = ggplot2_env['scale_shape_discrete']
+scale_shape_discrete = ScaleShapeDiscrete.new
+
 class ScaleFill(Scale):
     pass
 class ScaleX(Scale):
@@ -632,6 +637,12 @@ class ScaleShapeManual(ScaleShape):
     _constructor = ggplot2_env['scale_shape_manual']
 scale_shape_manual = ScaleShapeManual.new
 
+
+
+guides = ggplot2.guides
+guide_colorbar = ggplot2.guide_colorbar
+guide_colourbar = ggplot2.guide_colourbar
+guide_legend = ggplot2.guide_legend
 
 class Options(robjects.Vector):
    def __init__(self, obj):

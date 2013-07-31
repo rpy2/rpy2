@@ -7,7 +7,9 @@ import rpy2.rlike.container as rlc
 
 import sys, copy, os, itertools, math
 import time
-from time import struct_time, mktime
+from datetime import datetime
+from time import struct_time, mktime, tzname
+from operator import attrgetter
 
 from rpy2.rinterface import Sexp, SexpVector, ListSexpVector, StrSexpVector, \
     IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, \
@@ -229,6 +231,7 @@ class Vector(RObjectMixin, SexpVector):
 
     def __getitem__(self, i):
         res = super(Vector, self).__getitem__(i)
+        
         if isinstance(res, Sexp):
             res = conversion.ri2py(res)
         return res
@@ -619,26 +622,83 @@ class POSIXct(POSIXt, FloatVector):
     sequence interface) of time.struct_time objects.
     """
 
+    _as_posixct = baseenv_ri['as.POSIXct']
+    _ISOdatetime = baseenv_ri['ISOdatetime']
+
     def __init__(self, seq):
-        """ 
+        """ Create a POSIXct from either an R vector or a sequence
+        of Python dates.
         """
 
         if isinstance(seq, Sexp):
-            super(self, FloatSexpVector)(seq)
+            super(FloatVector, self).__init__(seq)
+        elif isinstance(seq[0], struct_time):
+            sexp = POSIXct.sexp_from_struct_time(seq)
+            self.__sexp__ = sexp.__sexp__            
+        elif isinstance(seq[0], datetime):
+            sexp = POSIXct.sexp_from_datetime(seq)
+            self.__sexp__ = sexp.__sexp__                        
         else:
-            for elt in seq:
-                if not isinstance(elt, struct_time):
-                    raise ValueError('All elements must inherit from time.struct_time')
-            as_posixct = baseenv_ri['as.POSIXct']
-            origin = StrSexpVector([time.strftime("%Y-%m-%d", 
-                                                  time.gmtime(0)),])
-            rvec = FloatSexpVector([mktime(x) for x in seq]) 
-            sexp = as_posixct(rvec, origin = origin)
-            self.__sexp__ = sexp.__sexp__
-        
-        
+            raise ValueError('All elements must inherit from time.struct_time or datetime.datetime.')
+
+    @staticmethod
+    def _sexp_from_seq(seq, tz_info_getter, isodatetime_columns):
+        """ return a POSIXct vector from a sequence of time.struct_time 
+        elements. """
+        tz_count = 0
+        tz_info = None
+        for elt in seq:
+            tmp = tz_info_getter(elt)
+            if tz_info is None:
+                tz_info = tmp
+                tz_count = 1
+            elif tz_info == tmp:
+                tz_count += 1
+            else:
+                # different time zones
+                #FIXME: create a list of time zones with tz_count times
+                # tz_info, add the current tz_info and append further.
+                raise ValueError("Sequences of dates with different time zones not yet allowed.")
+
+        if tz_info is None:
+            tz_info = tzname[0]
+        # We could use R's as.POSIXct instead of ISOdatetime
+        # since as.POSIXct is used by it anyway, but the overall
+        # interface for dates and conversion between formats
+        # is not exactly straightforward. Someone with more
+        # time should look into this.
+
+        d = isodatetime_columns(seq)
+        sexp = POSIXct._ISOdatetime(*d, tz = StrSexpVector((tz_info, )))
+        return sexp
 
 
+    @staticmethod
+    def sexp_from_struct_time(seq):
+        def f(seq):
+            return [IntVector([x.tm_year for x in seq]),
+                    IntVector([x.tm_mon for x in seq]),
+                    IntVector([x.tm_mday for x in seq]),
+                    IntVector([x.tm_hour for x in seq]),
+                    IntVector([x.tm_min for x in seq]),
+                    IntVector([x.tm_sec for x in seq])]
+        return POSIXct._sexp_from_seq(seq, lambda elt: time.tzname[0], f)
+    
+    @staticmethod
+    def sexp_from_datetime(seq):
+        """ return a POSIXct vector from a sequence of
+        datetime.datetime elements. """
+        def f(seq):
+            return [IntVector([x.year for x in seq]),
+                    IntVector([x.month for x in seq]),
+                    IntVector([x.day for x in seq]),
+                    IntVector([x.hour for x in seq]),
+                    IntVector([x.minute for x in seq]),
+                    IntVector([x.second for x in seq])]
+        
+        return POSIXct._sexp_from_seq(seq, attrgetter('tzinfo'), f)
+       
+        
 class Array(Vector):
     """ An R array """
     _dimnames_get = baseenv_ri['dimnames']
@@ -802,35 +862,46 @@ class DataFrame(ListVector):
     _write_table = utils_ri['write.table']
     _cbind     = rinterface.baseenv['cbind.data.frame']
     _rbind     = rinterface.baseenv['rbind.data.frame']
+    _is_list   = rinterface.baseenv['is.list']
     
-    def __init__(self, tlist):
+    def __init__(self, obj):
         """ Create a new data frame.
 
-        :param tlist: rpy2.rlike.container.TaggedList or rpy2.rinterface.SexpVector (and of class 'data.frame' for R)
+        :param obj: object inheriting from rpy2.rinterface.SexpVector,
+                    or inheriting from TaggedList
+                    or a mapping name -> value
         """
-        if isinstance(tlist, rinterface.SexpVector):
-            if tlist.typeof != rinterface.VECSXP:
-                raise ValueError("tlist should of typeof VECSXP")
-            if not globalenv_ri.get('inherits')(tlist, self._dataframe_name)[0]:
-                raise ValueError('tlist should of R class "data.frame"')
-            super(DataFrame, self).__init__(tlist)
-        elif isinstance(tlist, rlc.TaggedList):
-            kv = [(k, conversion.py2ri(v)) for k,v in tlist.iteritems()]
+        if isinstance(obj, rinterface.SexpVector):
+            if obj.typeof != rinterface.VECSXP:
+                raise ValueError("obj should of typeof VECSXP"+\
+                                     " (and we get %s)" % rinterface.str_typeint(obj.typeof))
+            if self._is_list(obj)[0] or \
+                    globalenv_ri.get('inherits')(obj, self._dataframe_name)[0]:
+                #FIXME: is it really a good idea to pass R lists
+                # to the constructor ?
+                super(DataFrame, self).__init__(obj)
+            else:
+                raise ValueError(
+            "When passing R objects to build a DataFrame," +\
+                " the R object must be a list or inherit from" +\
+                " the R class 'data.frame'")
+        elif isinstance(obj, rlc.TaggedList):
+            kv = [(k, conversion.py2ri(v)) for k,v in obj.items()]
             kv = tuple(kv)
             df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
             super(DataFrame, self).__init__(df)
-        elif hasattr(tlist, "__iter__"):
-            if not callable(tlist.__iter__):
-                raise ValueError("tlist should have a /method/ __iter__ (not an attribute)")
-            kv = [(str(k), conversion.py2ri(tlist[k])) for k in tlist]
+        else:
+            try:
+                kv = [(str(k), conversion.py2ri(obj[k])) for k in obj]
+            except TypeError:
+                raise ValueError("obj can be either "+
+                                 "an instance of an iter-able class" +
+                                 "(such a Python dict, rpy2.rlike.container OrdDict" +
+                                 " or an instance of rpy2.rinterface.SexpVector" +
+                                 " of type VECSXP")
+            
             df = baseenv_ri.get("data.frame").rcall(tuple(kv), globalenv_ri)
             super(DataFrame, self).__init__(df)
-        else:
-            raise ValueError("tlist can be either "+
-                             "an instance of an iter-able class" +
-                             "(such a Python dict, rpy2.rlike.container OrdDict" +
-                             " or an instance of rpy2.rinterface.SexpVector" +
-                             " of type VECSXP")
     
     def _get_nrow(self):
         """ Number of rows. 
@@ -865,6 +936,14 @@ class DataFrame(ListVector):
         
     colnames = property(_get_colnames, _set_colnames, None)
 
+    def __getitem__(self, i):
+        # Make sure this is not a List returned
+        # FIXME: should this be optimzed ?
+        tmp = super(DataFrame, self).__getitem__(i)
+        if tmp.typeof == rinterface.VECSXP:
+            return DataFrame(tmp)
+        else:
+            return conversion.ri2py(tmp)
 
     def cbind(self, *args, **kwargs):
         """ bind objects as supplementary columns """

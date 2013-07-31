@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  * 
- * Copyright (C) 2008-2012 Laurent Gautier
+ * Copyright (C) 2008-2013 Laurent Gautier
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -133,3 +133,35 @@ SEXP rpy_remove(SEXP symbol, SEXP env, SEXP rho)
   return res;
 }
 
+SEXP
+rpy_lang2str(SEXP sexp, SEXPTYPE t) {
+  SEXP symbol = CAR(sexp);
+  static struct{
+    SEXP if_sym;
+    SEXP while_sym;
+    SEXP for_sym; 
+    SEXP eq_sym;
+    SEXP gets_sym;
+    SEXP lpar_sym; 
+    SEXP lbrace_sym;
+    SEXP call_sym;
+  } s_str = {0, 0, 0, 0, 0, 0, 0, 0};
+  if(!s_str.if_sym) {
+    s_str.if_sym = install("if");
+    s_str.while_sym = install("while");
+    s_str.for_sym = install("for");
+    s_str.eq_sym = install("=");
+    s_str.gets_sym = install("<-");
+    s_str.lpar_sym = install("(");
+    s_str.lbrace_sym = install("{");
+    s_str.call_sym = install("call");
+  }
+  if(Rf_isSymbol(symbol)) {
+    if(symbol == s_str.if_sym || symbol == s_str.for_sym || symbol == s_str.while_sym ||
+       symbol == s_str.lpar_sym || symbol == s_str.lbrace_sym ||
+       symbol == s_str.eq_sym || symbol == s_str.gets_sym)
+      return PRINTNAME(symbol);
+  }
+  return PRINTNAME(s_str.call_sym);
+	
+}

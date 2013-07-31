@@ -8,13 +8,15 @@ from pandas.core.series import Series as PandasSeries
 from pandas.core.index import Index as PandasIndex
 
 from collections import OrderedDict
-from rpy2.robjects.vectors import DataFrame, Vector, ListVector, StrVector
+from rpy2.robjects.vectors import DataFrame, Vector, ListVector, StrVector, IntVector, POSIXct
 
 # pandas is requiring numpy. We add the numpy conversion as implicit
 import rpy2.robjects.numpy2ri as numpy2ri
 numpy2ri.activate()
 
 original_conversion = conversion.py2ri
+
+ISOdatetime = rinterface.baseenv['ISOdatetime']
 
 def pandas2ri(obj):
     if isinstance(obj, PandasDataFrame):
@@ -32,8 +34,21 @@ def pandas2ri(obj):
             # only other alternative to 'O' is integer, I think
             return original_conversion(obj)        
     elif isinstance(obj, PandasSeries):
-        # converted as a numpy array
-        res = original_conversion(obj) 
+        if obj.dtype == '<M8[ns]':
+            # time series
+            d = [IntVector([x.year for x in obj]),
+                 IntVector([x.month for x in obj]),
+                 IntVector([x.day for x in obj]),
+                 IntVector([x.hour for x in obj]),
+                 IntVector([x.minute for x in obj]),
+                 IntVector([x.second for x in obj])]
+            res = ISOdatetime(*d)
+            #FIXME: can the POSIXct be created from the POSIXct constructor ?
+            # (is '<M8[ns]' mapping to Python datetime.datetime ?)
+            res = POSIXct(res)
+        else:
+            # converted as a numpy array
+            res = original_conversion(obj) 
         # "index" is equivalent to "names" in R
         if obj.ndim == 1:
             res.names = ListVector({'x': ro.conversion.py2ri(obj.index)})

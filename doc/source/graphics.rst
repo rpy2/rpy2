@@ -172,8 +172,6 @@ example where the split is made according to the values plotted on the Z axis.
 
 
 
-.. module:: rpy2.robjects.lib.ggplot2
-   :synopsis: High-level interface with R
 
 Package *ggplot2*
 =================
