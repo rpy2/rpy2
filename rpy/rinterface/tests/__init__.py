@@ -1,4 +1,5 @@
 import unittest
+import sys
 
 import test_SexpVector
 import test_SexpEnvironment
@@ -12,7 +13,11 @@ import test_EmbeddedR
 #import test_EmbeddedR_multithreaded
 
 
-def suite():
+def load_tests(loader, standard_tests, pattern):
+    '''Ignore the test loader and return what we want
+
+    Raw discovery here loads some stuff that results in a core dump, so
+    we'll retain a load_tests() for now.'''
     suite_SexpVector = test_SexpVector.suite()
     suite_SexpEnvironment = test_SexpEnvironment.suite()
     suite_Sexp = test_Sexp.suite()
@@ -35,8 +40,11 @@ def suite():
         ])
     return alltests
 
+def main():
+    tr = unittest.TextTestRunner(verbosity = 2)
+    # We implement the load_tests() API, but ignore what we get
+    suite = load_tests(None, None, None)
+    tr.run(suite)
 
 if __name__ == '__main__':    
-    tr = unittest.TextTestRunner(verbosity = 2)
-    suite = suite()
-    tr.run(suite)
+    main()

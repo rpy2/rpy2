@@ -1,9 +1,18 @@
 import unittest
-from rpy2.robjects.lib import ggplot2
+
+# Try to load R ggplot package, and see if it works
+from rpy2.rinterface import RRuntimeError
+has_ggplot = True
+try:
+    from rpy2.robjects.lib import ggplot2
+except RRuntimeError:
+    has_ggplot = False
+
 from rpy2.robjects.packages import importr
 datasets = importr('datasets')
 mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
 
+@unittest.skipUnless(has_ggplot, 'ggplot2 package not available in R')
 class GGPlot2TestCase(unittest.TestCase):
 
     def testSetup(self):
