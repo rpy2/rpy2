@@ -1,6 +1,9 @@
 from rpy2.robjects.packages import importr as _importr
-
-packages = Packages()
+import rpy2.robjects.help as rhelp
+from rpy2.rinterface import baseenv
+from os import linesep
+from collections import OrderedDict
+import re
 
 class Packages(object):
     __instance = None
@@ -11,6 +14,9 @@ class Packages(object):
 
     def __setattr__(self, name, value):
         raise AttributeError("Attributes cannot be set. Use 'importr'")
+
+packages = Packages()
+_loaded_namespaces = baseenv['loadedNamespaces']
 
 def importr(packname, newname = None, verbose = False):
     """ Wrapper around rpy2.robjects.packages.importr, 
