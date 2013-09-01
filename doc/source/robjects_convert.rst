@@ -8,39 +8,62 @@ Mapping rpy2 objects to arbitrary python objects
 
 Switching between a conversion and a no conversion mode,
 an operation often present when working with RPy-1.x, is no longer
-necessary with rpy2.
+necessary with `rpy2`.
 
-The approach of rpy2 is to have R-wrapping objects that implement
-interfaces of builtin Python types whenever possible, letting the
-Python layer access the objects the usual way and the wrapped R objects be
-used as they are by the R functions. For example, R vectors are mapped
+The approach followed in `rpy2` has 2 levels, and conversion functions
+help moving between them.
+
+:mod:`rpy.rinterface`
+---------------------
+
+Protocols
+^^^^^^^^^
+
+At the lower level (:mod:`rpy2.rinterface`), the Python objects exposing
+R objects implement Python protocols to make them feel as natural to a Python
+programmer as possible. For example, R vectors are mapped
 to Python objects implementing the :meth:`__getitem__` method in the sequence
-protocol, so elements can be accessed easily.
+protocol so elements can be accessed easily, R function are mapped to Python
+objects implementing the :meth:`__call__` so they can be called just as if
+they were functions.
 
-There is a low-level mapping between `R` and `Python` objects
-performed behind the (Python-level) scene, done at the :mod:`rpy2.rinterface` level,
-while a higher-level mapping is done between low-level objects and
-higher-level objects. The later is performed by the functions:
+This is implemented at the C level in `rpy` and there is no easy way to
+customize the way it is done.
 
-:meth:`conversion.ri2py`
-   :mod:`rpy2.rinterface` to Python. By default, this function
-   is just an alias for the function :meth:`default_ri2py`.
+.. note::
 
-:meth:`conversion.py2ri`
-   Python to :mod:`rpy2.rinterface`. By default, this function
-   is just an alias for the function :meth:`default_py2ri`.
+   :mod:`rpy2`-exposed R vector implement the Python buffer protocol, and
+   aim at making as much use of it as possible, but at the time of writing
+   its adoption in other modules remains disappointingly limited.
 
-:meth:`conversion.py2ro`
-   Python to :mod:`rpy2.robjects`. By default, that one function
-   is merely a call to :meth:`conversion.py2ri` 
-   followed by a call to :meth:`conversion.ri2py`.
 
-Those functions can be redefined to suits one's need.
-The easiest option is to write a custom function calling
-the default function when the custom conversion should not apply.
+:func:`ri2ro`
+^^^^^^^^^^^^^
 
-A simple example
-----------------
+At this level the conversion is between lower-level (:mod:`rpy2.rinterface`)
+objects and higher-level objects. By default this conversion method returns
+:mod:`rpy2.robjects` objects, but can be customized to return instances
+of arbitrary classes. For example the :mod:`numpy` optional converter
+will return numpy arrays whenever possible.
+
+
+:mod:`rpy2.robjects`
+--------------------
+
+
+.. note::
+
+   `robjects`-level objects are also implicitly `rinterface`-level objects
+   because of the inheritance relationship in their class definition,
+   but the reverse is not true.
+   The `robjects` level is an higher level of abstraction, aiming at simplifying
+   one's use of R from Python (even if at the cost of performances). See Section
+   XXX for more details.
+
+
+
+Customizing the conversion
+--------------------------
 
 As an example, let's assume that one want to return atomic values
 whenever an R numerical vector is of length one. This is only a matter
@@ -50,13 +73,13 @@ of writing a new function `ri2py` that handles this, as shown below:
 
    import rpy2.robjects as robjects
 
-   def my_ri2py(obj):
-       res = robjects.default_ri2py(obj)
+   def my_ri2ro(obj):
+       res = robjects.default_ri2ro(obj)
        if isinstance(res, robjects.Vector) and (len(res) == 1):
            res = res[0]
        return res
 
-   robjects.conversion.ri2py = my_ri2py
+   robjects.conversion.ri2ro = my_ri2ro
 
 Then we can test it with:
 
@@ -66,16 +89,16 @@ Then we can test it with:
 
 The default behavior can be restored with:
 
->>> robjects.conversion.ri2py = default_ri2py
+>>> robjects.conversion.ri2ro = default_ri2ro
 
 Default functions
 -----------------
 
-The docstrings for :meth:`default_ri2py`, :meth:`default_py2ri`, 
+The docstrings for :meth:`default_ri2ro`, :meth:`default_py2ri`, 
 and :meth:`py2ro` are:
 
-.. autofunction:: rpy2.robjects.default_ri2py
-.. autofunction:: rpy2.robjects.default_py2ri
-.. autofunction:: rpy2.robjects.default_py2ro
+.. autofunction:: rpy2.robjects.default_ri2ro
+.. .. autofunction:: rpy2.robjects.default_py2ri
+.. .. autofunction:: rpy2.robjects.default_py2ro
 
 

@@ -43,7 +43,7 @@ def reval(string, envir = _globalenv):
 
 #FIXME: close everything when leaving (check RPy for that).
 
-def default_ri2py(o):
+def default_ri2ro(o):
     """ Convert an :class:`rpy2.rinterface.Sexp` object to a higher-level object,
     without copying the R object.
 
@@ -103,7 +103,7 @@ def default_ri2py(o):
         res = RObject(o)
     return res
 
-conversion.ri2py = default_ri2py
+conversion.ri2ro = default_ri2ro
 
 
 def default_py2ri(o):
@@ -141,7 +141,7 @@ def default_py2ri(o):
     elif isinstance(o, unicode):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
     elif isinstance(o, list):
-        res = r.list(*[conversion.ri2py(conversion.py2ri(x)) for x in o])
+        res = r.list(*[conversion.ri2ro(conversion.py2ri(x)) for x in o])
     elif isinstance(o, complex):
         res = rinterface.SexpVector([o, ], rinterface.CPLXSXP)
     else:
@@ -158,7 +158,7 @@ def default_py2ro(o):
     :rtype: :class:`rpy2.robjects.RObject` (and subclasses)
     """
     res = conversion.py2ri(o)
-    return conversion.ri2py(res)
+    return conversion.ri2ro(res)
 
 conversion.py2ro = default_py2ro
 
@@ -181,7 +181,7 @@ class Formula(RObjectMixin, rinterface.Sexp):
     def getenvironment(self):
         """ Get the environment in which the formula is finding its symbols."""
         res = self.do_slot(".Environment")
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         return res
 
     def setenvironment(self, val):
@@ -218,7 +218,7 @@ class R(object):
 
     def __getitem__(self, item):
         res = _globalenv.get(item)
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         res.__rname__ = item
         return res
 
@@ -242,6 +242,6 @@ class R(object):
 
 r = R()
 
-globalenv = conversion.ri2py(_globalenv)
-baseenv = conversion.ri2py(rinterface.baseenv)
-emptyenv = conversion.ri2py(rinterface.emptyenv)
+globalenv = conversion.ri2ro(_globalenv)
+baseenv = conversion.ri2ro(rinterface.baseenv)
+emptyenv = conversion.ri2ro(rinterface.emptyenv)

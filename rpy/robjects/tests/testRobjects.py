@@ -37,25 +37,25 @@ class MappingTestCase(unittest.TestCase):
 
     def testMapperR2Python_string(self):
         sexp = rinterface.globalenv.get("letters")
-        ob = robjects.default_ri2py(sexp)
+        ob = robjects.default_ri2ro(sexp)
         self.assertTrue(isinstance(ob, 
                                    robjects.Vector))
 
     def testMapperR2Python_boolean(self):
         sexp = rinterface.globalenv.get("T")
-        ob = robjects.default_ri2py(sexp)
+        ob = robjects.default_ri2ro(sexp)
         self.assertTrue(isinstance(ob, 
                                    robjects.Vector))
 
     def testMapperR2Python_function(self):
         sexp = rinterface.globalenv.get("plot")
-        ob = robjects.default_ri2py(sexp)
+        ob = robjects.default_ri2ro(sexp)
         self.assertTrue(isinstance(ob, 
                                    robjects.Function))
 
     def testMapperR2Python_environment(self):
         sexp = rinterface.globalenv.get(".GlobalEnv")
-        self.assertTrue(isinstance(robjects.default_ri2py(sexp), 
+        self.assertTrue(isinstance(robjects.default_ri2ro(sexp), 
                                    robjects.Environment))
 
     def testMapperR2Python_s4(self):
@@ -64,7 +64,7 @@ class MappingTestCase(unittest.TestCase):
         one = rinterface.IntSexpVector([1, ])
         sexp = rinterface.globalenv.get("new")(classname, 
                                                x=one)
-        self.assertTrue(isinstance(robjects.default_ri2py(sexp), 
+        self.assertTrue(isinstance(robjects.default_ri2ro(sexp), 
                                    robjects.RS4))
 
     def testMapperPy2R_integer(self):
@@ -106,20 +106,20 @@ class MappingTestCase(unittest.TestCase):
         self.assertEqual(rinterface.CPLXSXP, rob.typeof)
 
 
-    def testOverride_ri2py(self):
+    def testOverride_ri2ro(self):
         class Density(object):
             def __init__(self, x):
                 self._x = x
 
         def f(obj):
-            pyobj = robjects.default_ri2py(obj)
+            pyobj = robjects.default_ri2ro(obj)
             inherits = rinterface.baseenv["inherits"]
             classname = rinterface.SexpVector(["density", ], 
                                               rinterface.STRSXP)
             if inherits(pyobj, classname)[0]:
                 pyobj = Density(pyobj)
             return pyobj
-        robjects.conversion.ri2py = f
+        robjects.conversion.ri2ro = f
         x = robjects.r.rnorm(100)
         d = robjects.r.density(x)
 

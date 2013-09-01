@@ -1,3 +1,14 @@
+Release 2.4.0
+=============
+
+Changes
+-------
+
+- Conversion system slightly changed, with the optional
+  conversions for :mod:`numpy` and :mod:`pandas` modified
+  accordingly. The changes should only matter if using
+  third-party conversion functions.
+
 Release 2.3.7
 =============
 

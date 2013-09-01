@@ -1,6 +1,7 @@
 import unittest
 import sys
 import rpy2.robjects as robjects
+import rpy2.robjects.conversion
 r = robjects.r
 
 try:
@@ -23,8 +24,7 @@ class NumpyConversionsTestCase(unittest.TestCase):
         rpyn.activate()
 
     def tearDown(self):
-        robjects.conversion.py2ri = robjects.default_py2ri
-        robjects.conversion.ri2py = robjects.default_ri2py
+        rpyn.deactivate()
 
     def checkHomogeneous(self, obj, mode, storage_mode):
         converted = robjects.conversion.py2ri(obj)
@@ -65,12 +65,11 @@ class NumpyConversionsTestCase(unittest.TestCase):
 
         i2d = numpy.array([[1, 2, 3], [4, 5, 6]], dtype="i")
         i2d_r = robjects.conversion.py2ri(i2d)
-
         self.assertEqual(r["storage.mode"](i2d_r)[0], "integer")
         self.assertEqual(tuple(r["dim"](i2d_r)), (2, 3))
 
         # Make sure we got the row/column swap right:
-        self.assertEqual(i2d_r.rx(1, 2)[0], i2d[0, 1])
+        self.assertEqual(r["["](i2d_r, 1, 2)[0], i2d[0, 1])
 
         f3d = numpy.arange(24, dtype="f").reshape((2, 3, 4))
         f3d_r = robjects.conversion.py2ri(f3d)
@@ -79,7 +78,7 @@ class NumpyConversionsTestCase(unittest.TestCase):
         self.assertEqual(tuple(r["dim"](f3d_r)), (2, 3, 4))
 
         # Make sure we got the row/column swap right:
-        self.assertEqual(f3d_r.rx(1, 2, 3)[0], f3d[0, 1, 2])
+        self.assertEqual(r["["](f3d_r, 1, 2, 3)[0], f3d[0, 1, 2])
 
     def testObjectArray(self):
         o = numpy.array([1, "a", 3.2], dtype=numpy.object_)
@@ -111,14 +110,14 @@ class NumpyConversionsTestCase(unittest.TestCase):
         env = robjects.Environment()
         env["x"] = x
         self.assertEqual(1, len(env))
-        self.assertTrue(isinstance(env["x"], robjects.Array))
+        self.assertEqual(type(x), type(env["x"]))
 
     def testDataFrameToNumpy(self):
         df = robjects.vectors.DataFrame(dict((('a', 1), ('b', 2))))
-        reca = rpyn.ri2numpy(df)
-        self.assertTrue(isinstance(reca, numpy.recarray))
-        self.assertEqual(1, reca.a[0])
-        self.assertEqual(2, reca.b[0])
+        rec = robjects.conversion.ri2ro(df)
+        self.assertEqual(numpy.recarray, type(rec))
+        self.assertEqual(1, rec.a[0])
+        self.assertEqual(2, rec.b[0])
 
     def testAtomicVectorToNumpy(self):
         v = robjects.vectors.IntVector((1,2,3))
@@ -126,10 +125,6 @@ class NumpyConversionsTestCase(unittest.TestCase):
         self.assertTrue(isinstance(a, numpy.ndarray))
         self.assertEqual(1, v[0])
 
-    def testListVectorToNumpyErrorShape(self):
-        vec = robjects.ListVector({'a': robjects.vectors.IntVector((1, 2, 3)), 
-                                   'b': 2})
-        self.assertRaises(ValueError, rpyn.ri2numpy, vec)
 
 def suite():
     if has_numpy:

@@ -15,8 +15,16 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
 
     def __getitem__(self, item):
         res = super(Environment, self).__getitem__(item)
-        res = conversion.ri2py(res)
-        res.__rname__ = item
+        res = conversion.ri2ro(res)
+        # objects in a R environment have an associated name / symbol
+        try:
+            res.__rname__ = item
+        except AttributeError:
+            # the 3rd-party conversion function can return objects
+            # for which __rname__ cannot be set (because of fixed
+            # __slots__ and no __rname__ in the original set
+            # of attributes)
+            pass
         return res
 
     def __setitem__(self, item, value):
@@ -26,10 +34,10 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
     def get(self, item, wantfun = False):
         """ Get a object from its R name/symol
         :param item: string (name/symbol)
-        :rtype: object (as returned by :func:`conversion.ri2py`)
+        :rtype: object (as returned by :func:`conversion.ri2ro`)
         """
         res = super(Environment, self).get(item, wantfun = wantfun)
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         res.__rname__ = item
         return res
 

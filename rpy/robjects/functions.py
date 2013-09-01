@@ -33,7 +33,7 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         for k, v in kwargs.iteritems():
             new_kwargs[k] = conversion.py2ri(v)
         res = super(Function, self).__call__(*new_args, **new_kwargs)
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         return res
 
     def formals(self):
@@ -41,13 +41,13 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         (as the R function 'formals()' would).
         """
         res = self.__formals(self)
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         return res
 
     def rcall(self, *args):
         """ Wrapper around the parent method rpy2.rinterface.SexpClosure.rcall(). """
         res = super(Function, self).rcall(*args)
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         return res
 
 class SignatureTranslatedFunction(Function):

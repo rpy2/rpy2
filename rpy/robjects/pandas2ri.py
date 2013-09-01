@@ -10,11 +10,14 @@ from pandas.core.index import Index as PandasIndex
 from collections import OrderedDict
 from rpy2.robjects.vectors import DataFrame, Vector, ListVector, StrVector, IntVector, POSIXct
 
-# pandas is requiring numpy. We add the numpy conversion as implicit
-import rpy2.robjects.numpy2ri as numpy2ri
-numpy2ri.activate()
+original_py2ri = conversion.py2ri
+original_ri2ro = conversion.ri2ro
 
-original_conversion = conversion.py2ri
+
+# pandas is requiring numpy. We add the numpy conversion will be
+# activate in the function activate() below
+import rpy2.robjects.numpy2ri as numpy2ri
+
 
 ISOdatetime = rinterface.baseenv['ISOdatetime']
 
@@ -25,14 +28,15 @@ def pandas2ri(obj):
             if values.dtype.kind == 'O':
                 od[name] = StrVector(values)
             else:
-                od[name] = ro.conversion.py2ri(values)
+                od[name] = pandas2ri(values)
         return DataFrame(od)
     elif isinstance(obj, PandasIndex):
         if obj.dtype.kind == 'O':
             return StrVector(obj)
         else:
-            # only other alternative to 'O' is integer, I think
-            return original_conversion(obj)        
+            # only other alternative to 'O' is integer, I think,
+            # which goes straight to the numpy converter.
+            return numpy2ri.numpy2ri(obj)        
     elif isinstance(obj, PandasSeries):
         if obj.dtype == '<M8[ns]':
             # time series
@@ -48,24 +52,34 @@ def pandas2ri(obj):
             res = POSIXct(res)
         else:
             # converted as a numpy array
-            res = original_conversion(obj) 
+            res = numpy2ri.numpy2ri(obj)
         # "index" is equivalent to "names" in R
         if obj.ndim == 1:
-            res.names = ListVector({'x': ro.conversion.py2ri(obj.index)})
+            res.do_slot_assign('names', ListVector({'x': pandas2ri(obj.index)}))
         else:
-            res.dimnames = ListVector(ro.conversion.py2ri(obj.index))
+            res.do_slot_assign('dimnames', ListVector(pandas2ri(obj.index)))
         return res
     else:
-        return original_conversion(obj) 
+        return original_py2ri(obj) 
 
 def ri2pandas(o):
     if isinstance(o, DataFrame):
-        raise NotImplementedError("Conversion from rpy2 DataFrame to pandas' DataFrame")
+        # use the numpy converter
+        recarray = numpy2ri.ri2numpy(o)
+        res = PandasDataFrame.from_records(recarray)
     else:
-        res = ro.default_ri2py(o)
+        res = ro.default_ri2ro(o)
     return res
 
 def activate():
+    #FIXME: shouldn't the use of numpy conversion be made
+    #       explicit in the pandas conversion ?
+    #       (and this remove the need to activate it ?)
+    numpy2ri.activate()
     conversion.py2ri = pandas2ri
-    conversion.ri2py = ri2pandas 
+    conversion.ri2ro = ri2pandas 
 
+def deactivate():
+    conversion.py2ri = original_py2ri
+    conversion.ri2ro = original_ri2ro 
+    numpy2ri.deactivate()

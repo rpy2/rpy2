@@ -20,7 +20,7 @@ class RS4(RObjectMixin, rinterface.SexpS4):
         return methods_env['slotNames'](self)
     
     def do_slot(self, name):
-        return conversion.ri2py(super(RS4, self).do_slot(name))
+        return conversion.ri2ro(super(RS4, self).do_slot(name))
 
     @staticmethod
     def isclass(name):
@@ -98,7 +98,7 @@ class RS4_Type(type):
             r_meth = getmethod(StrSexpVector((rname, )), 
                                signature = signature,
                                where = where)
-            r_meth = conversion.ri2py(r_meth)
+            r_meth = conversion.ri2ro(r_meth)
             if as_property:
                 cls_dict[python_name] = property(r_meth, None, None,
                                                  doc = docstring)
@@ -236,7 +236,7 @@ def set_accessors(cls, cls_name, where, acs):
         r_meth = getmethod(StrSexpVector((r_name, )), 
                            signature = StrSexpVector((cls_name, )),
                            where = where)
-        r_meth = conversion.ri2py(r_meth)
+        r_meth = conversion.ri2ro(r_meth)
         if as_property:
             setattr(cls, python_name, property(r_meth, None, None))
         else:

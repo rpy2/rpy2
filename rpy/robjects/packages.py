@@ -227,7 +227,7 @@ class Package(ModuleType):
             if (rpyname != rname) and (rname in self._exported_names):
                 self._exported_names.remove(rname)
                 self._exported_names.add(rpyname)
-            rpyobj = conversion.ri2py(self._env[rname])
+            rpyobj = conversion.ri2ro(self._env[rname])
             if hasattr(rpyobj, '__rname__'):
                 rpyobj.__rname__ = rname
             #FIXME: shouldn't the original R name be also in the __dict__ ?
@@ -346,5 +346,5 @@ def wherefrom(symbol, startenv = rinterface.globalenv):
                 tryagain = False
             else:
                 tryagain = True
-    return conversion.ri2py(env)
+    return conversion.ri2ro(env)
 
