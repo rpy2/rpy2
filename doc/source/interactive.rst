@@ -23,8 +23,9 @@ in non-interactive code as well. It is trading flexibility
 or performances for ease-of-use.
  
 >>> import rpy2.interactive as r
+>>> import rpy2.interactive.packages # this can take few seconds
 >>> v = r.IntVector((1,2,3))
->>> r.importr('datasets')
+>>> r.packages.importr('datasets')
 rpy2.robjecs.packages.Package as a <module 'datasets' (built-in)>
 >>> tuple(r.packages.datasets.trees.names)
 ('Girth', 'Height', 'Volume')
@@ -77,28 +78,30 @@ with *recommended* packages one can immediately start playing with.
 Loading installed R packages can be done through the function :func:`importr`. 
 
 >>> import rpy2.interactive as r
->>> r.importr("cluster")
+>>> import rpy2.interactive.packages # this can take few seconds
+>>> r.packages.importr("cluster")
 rpy2.robjecs.packages.Package as a <module 'cluster' (built-in)>
 
 The function returns a package object, and also adds a reference to it
-in :attr:`r.packages`
+in :attr:`r.packages.packages`
 
->>> r.packages.cluster
+>>> rlib = r.packages.packages
+>>> rlib.cluster
 rpy2.robjecs.packages.Package as a <module 'cluster' (built-in)>
 
 All objects in the R package *cluster* can subsequently be accessed
 through that namespace object. For example, for the function barplot:
 
->>> r.packages.cluster.silhouette
+>>> rlib.cluster.silhouette
 <SignatureTranslatedFunction - Python:0x24f9418 / R:0x2f5b008>
 
 
 Similarly, other packages such as *nlme*, and *datasets*
 can be loaded.
 
->>> r.importr("nlme")
+>>> r.packages.importr("nlme")
 rpy2.robjecs.packages.Package as a <module 'stats' (built-in)>
->>> r.importr("datasets")
+>>> r.packages.importr("datasets")
 rpy2.robjecs.packages.Package as a <module 'datasets' (built-in)>
 
 We can then demonstrate how to access objects in R packages through
@@ -117,8 +120,10 @@ Available packages
 R has a function to list the available packages.
 
 >>> import rpy2.interactive as r
->>> r.importr("utils")
->>> m = r.packages.utils.available_packages()
+>>> import rpy2.interactive.packages # this can take few seconds
+>>> r.packages.importr("utils")
+>>> rlib = r.packages.packages
+>>> m = rlib.utils.available_packages()
 
 The object returned is a :class:`rpy2.robjects.vectors.Matrix`, with one
 package per row (there are many packages in the default CRAN repository).
@@ -146,7 +151,7 @@ package per row (there are many packages in the default CRAN repository).
    
       repos = r.vectors.StrVector(["/".join((bioc_rooturl, bioc_version, x)) for x in bioc_sections])   
 
-      m_bioc = r.packages.utils.available_packages(contriburl = r.packages.utils.contrib_url(repos))   
+      m_bioc = rlib.utils.available_packages(contriburl = r.packages.utils.contrib_url(repos))   
 
 
 
@@ -160,13 +165,14 @@ Installing packages
 
 
 >>> import rpy2.interactive as r
->>> r.importr("utils")
+>>> import rpy2.interactive.packages # this can take few seconds
+>>> rlib = r.packages.packages
+>>> r.packages.importr("utils")
 >>> package_name = "lme4"
->>> r.packages.utils.install_packages(package_name)
+>>> rlib.utils.install_packages(package_name)
 
 Once a package is installed it will be available for future use without having
 the need to install it again (unless a different version of R is used).
-
 
 
 .. module:: rpy2.interactive.process_revents
