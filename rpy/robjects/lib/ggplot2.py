@@ -703,6 +703,16 @@ class ThemeGrey(Theme):
 
 theme_grey = ThemeGrey.new
 
+class ThemeClassic(Theme):
+    _constructor = ggplot2.theme_classic
+    @classmethod
+    def new(cls, base_size = 12, base_family = ""):
+       res = cls(cls._constructor(base_size = base_size,
+                                  base_family = base_family))
+       return res
+
+theme_classic = ThemeClassic.new
+
 class ThemeRect(Theme):
     _constructor = ggplot2.theme_rect
     @classmethod

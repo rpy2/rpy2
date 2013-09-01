@@ -6,6 +6,7 @@ Bugs fixed
 
 - ggplot2's "guides" were missing
 
+- ggplot2's "theme_classic" was missing (PR #143)
 
 Release 2.3.6
 =============
