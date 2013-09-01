@@ -785,19 +785,22 @@ theme = ggplot2_env['theme']
 
 ggtitle = ggplot2.ggtitle
 
-original_conversion = conversion.ri2py
+original_ri2ro = conversion.ri2ro
 def ggplot2_conversion(robj):
 
-    pyobj = original_conversion(robj)
+    pyobj = original_ri2ro(robj)
 
-    rcls = pyobj.rclass
-    if rcls is NULL:
-       rcls = (None, )
+    try:
+       rcls = pyobj.rclass
+    except AttributeError:
+       # conversion lead to something that is no
+       # longer an R object
+       return pyobj
 
-    if 'gg' in rcls:
+    if (rcls is not None) and ('gg' in rcls):
        pyobj = GGPlot(pyobj)
 
     return pyobj
 
-conversion.ri2py = ggplot2_conversion
+conversion.ri2ro = ggplot2_conversion
 

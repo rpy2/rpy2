@@ -1,5 +1,6 @@
 import unittest
 import rpy2.robjects as robjects
+import rpy2.rinterface as rinterface
 
 from collections import OrderedDict
 from datetime import datetime
@@ -10,10 +11,11 @@ try:
     import pandas
     import numpy
     has_pandas = True
-    import rpy2.robjects.pandas2ri as rpyp
 except:
     has_pandas = False
 
+if has_pandas:
+    import rpy2.robjects.pandas2ri as rpyp
 
 class MissingPandasDummyTestCase(unittest.TestCase):
     def testMissingPandas(self):
@@ -21,12 +23,12 @@ class MissingPandasDummyTestCase(unittest.TestCase):
 
 class PandasConversionsTestCase(unittest.TestCase):
 
-    def setUp(self):
+    def testActivate(self):
+        self.assertNotEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
         rpyp.activate()
-
-    def tearDown(self):
-        robjects.conversion.py2ri = robjects.default_py2ri
-        robjects.conversion.ri2py = robjects.default_ri2py
+        self.assertEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
+        rpyp.deactivate()
+        self.assertNotEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
 
     def testDataFrame(self):
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),
@@ -39,7 +41,7 @@ class PandasConversionsTestCase(unittest.TestCase):
                         datetime(2012, 7, 1)]))
         od = OrderedDict(l)
         pd_df = pandas.core.frame.DataFrame(od)
-        rp_df = robjects.conversion.py2ri(pd_df)
+        rp_df = rpyp.pandas2ri(pd_df)
         self.assertEqual(pd_df.shape[0], rp_df.nrow)
         self.assertEqual(pd_df.shape[1], rp_df.ncol)
 
@@ -54,8 +56,8 @@ class PandasConversionsTestCase(unittest.TestCase):
     def testSeries(self):
         Series = pandas.core.series.Series
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
-        rp_s = robjects.conversion.py2ri(s)
-        self.assertIsInstance(rp_s, robjects.Array)
+        rp_s = rpyp.pandas2ri(s)
+        self.assertEqual(rinterface.SexpVector, type(rp_s))
 
     def testRepr(self):
         # this should go to testVector, with other tests for repr()
@@ -66,21 +68,19 @@ class PandasConversionsTestCase(unittest.TestCase):
              ('u', numpy.array([u"a", u"b", u"c"], dtype="U")))
         od = OrderedDict(l)
         pd_df = pandas.core.frame.DataFrame(od)
-        rp_df = robjects.conversion.py2ri(pd_df)
+        rp_df = rpyp.pandas2ri(pd_df)
         s = repr(rp_df) # used to fail with a TypeError
         s = s.split('\n')
         self.assertEqual('[Array, Array, Array, FactorV..., FactorV...]', s[1].strip())
 
     def testPandas2ri(self):
-        # XXX - not a full test, just tests that the function returns the right
-        # class. This is currently also the case with some of the tests above
-        # (e.g., testSeries)
-        rdataf = robjects.r('data.frame(a=1:2, b=c("a", "b"))')
-        # Note - I'm following the convention above, but this conflates
-        # .activate() with testing the function, so it's not as "unit" as it
-        # could be.
-        pandas_df = robjects.conversion.ri2py(rdataf)
+        rdataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")), c=c("a", "b"))')
+        pandas_df = rpyp.ri2pandas(rdataf)
         self.assertIsInstance(pandas_df, pandas.DataFrame)
+        self.assertEquals(('a', 'b', 'c'), tuple(pandas_df.keys()))
+        self.assertEquals(pandas_df['a'].dtype, numpy.dtype('int32'))
+        self.assertEquals(pandas_df['b'].dtype, numpy.dtype('O'))
+        self.assertEquals(pandas_df['c'].dtype, numpy.dtype('O'))
 
 def suite():
     if has_pandas:

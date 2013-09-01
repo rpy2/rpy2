@@ -133,61 +133,61 @@ class VectorOperationsDelegator(object):
 
     def __add__(self, x):
         res = globalenv_ri.get("+")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def __sub__(self, x):
         res = globalenv_ri.get("-")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def __mul__(self, x):
         res = globalenv_ri.get("*")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def __pow__(self, x):
         res = globalenv_ri.get("^")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def __div__(self, x):
         res = globalenv_ri.get("/")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def __divmod__(self, x):
         res = globalenv_ri.get("%%")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def __or__(self, x):
         res = globalenv_ri.get("|")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def __and__(self, x):
         res = globalenv_ri.get("&")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     # Comparisons
 
     def __lt__(self, x):
         res = globalenv_ri.get("<")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def __le__(self, x):
         res = globalenv_ri.get("<=")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def __eq__(self, x):
         res = globalenv_ri.get("==")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def __ne__(self, x):
         res = globalenv_ri.get("!=")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def __gt__(self, x):
         res = globalenv_ri.get(">")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def __ge__(self, x):
         res = globalenv_ri.get(">=")(self._parent, conversion.py2ri(x))
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
     
     # 
     def __neg__(self):
@@ -197,6 +197,7 @@ class VectorOperationsDelegator(object):
     def __contains__(self, what):
         res = globalenv_ri.get("%in%")(self._parent, what)
         return res
+
 
 
 class Vector(RObjectMixin, SexpVector):
@@ -226,14 +227,14 @@ class Vector(RObjectMixin, SexpVector):
 
     def __add__(self, x):
         res = baseenv_ri.get("c")(self, conversion.py2ri(x))
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         return res
 
     def __getitem__(self, i):
         res = super(Vector, self).__getitem__(i)
         
         if isinstance(res, Sexp):
-            res = conversion.ri2py(res)
+            res = conversion.ri2ro(res)
         return res
 
     def __setitem__(self, i, value):
@@ -243,12 +244,12 @@ class Vector(RObjectMixin, SexpVector):
     def __getslice__(self, i, j):
         res = super(Vector, self).__getslice__(i, j)
         if isinstance(res, Sexp):
-            res = conversion.ri2py(res)
+            res = conversion.ri2ro(res)
         return res
 
     def _names_get(self):
         res = baseenv_ri.get('names')(self)
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         return res
 
     def _names_set(self, value):
@@ -280,7 +281,7 @@ class Vector(RObjectMixin, SexpVector):
         res = self._sample(self, IntVector((n,)), 
                            replace = BoolVector((replace, )),
                            prob = probabilities)
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         return res
 
     def __repr_content__(self):
@@ -346,7 +347,7 @@ class StrVector(Vector, StrSexpVector):
         """
 
         res = self._factorconstructor(self)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
 class BytesVector(Vector, StrSexpVector):
     """      Vector of bytes elements
@@ -385,7 +386,7 @@ class IntVector(Vector, IntSexpVector):
         if nbins is None:
             nbins = max(1, max(self))
         res = self._tabulate(self)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
 class BoolVector(Vector, BoolSexpVector):
     """ Vector of boolean (logical) elements 
@@ -471,7 +472,7 @@ class FactorVector(IntVector):
 
     def __levels_get(self):
         res = self._levels(self)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
     def __levels_set(self, value):
         res = self._levels_set(self, conversion.py2ro(value))
         self.__sexp__ = res.__sexp__
@@ -580,7 +581,7 @@ class ListVector(Vector, ListSexpVector):
     def from_length(length):
         """ Create a list of given length """
         res = ListVector._vector(StrSexpVector(("list", )), length)
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         return res
 
 class DateVector(FloatVector):
@@ -728,7 +729,7 @@ class Array(Vector):
 
     def __dim_get(self):
         res = self._dim_get(self)
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         return res
 
     def __dim_set(self, value):
@@ -745,14 +746,14 @@ class Array(Vector):
         (like the R function 'dimnames' does)."""
 
         res = self._dimnames_get(self)
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         return res
 
     def __dimnames_set(self, value):
         """ Set list of name vectors
         (like the R function 'dimnames' does)."""
 
-        value = conversion.ri2py(value)
+        value = conversion.ri2ro(value)
         res = self._dimnames_set(self, value)        
         self.__sexp__ = res.__sexp__
         
@@ -790,7 +791,7 @@ class Matrix(Array):
         :rtype: SexpVector
         """
         res = self._rownames(self)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
     def __rownames_set(self, rn):
         if isinstance(rn, StrSexpVector):
             if len(rn) != self.nrow:
@@ -814,7 +815,7 @@ class Matrix(Array):
         :rtype: SexpVector
         """
         res = self._colnames(self)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
     def __colnames_set(self, cn):
         if isinstance(cn, StrSexpVector):
             if len(cn) != self.ncol:
@@ -833,17 +834,17 @@ class Matrix(Array):
     def transpose(self):
         """ transpose the matrix """
         res = self._transpose(self)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def crossprod(self, m):
         """ crossproduct X'.Y"""
-        res = self._crossprod(self, conversion.ri2py(m))
-        return conversion.ri2py(res)
+        res = self._crossprod(self, conversion.ri2ro(m))
+        return conversion.ri2ro(res)
 
     def tcrossprod(self, m):
         """ crossproduct X.Y'"""
         res = self._tcrossprod(self, m)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def svd(self, nu = None, nv = None, linpack = False):
         """ SVD decomposition.
@@ -855,17 +856,17 @@ class Matrix(Array):
         if nv is None:
             nv = min(tuple(self.dim))
         res = self._svd(self, nu = nu, nv = nv, LINPACK = False)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def dot(self, m):
         """ Matrix multiplication """
         res = self._dot(self, m)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def eigen(self):
         """ Eigen values """
         res = self._eigen(self)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
 class DataFrame(ListVector):
     """ R 'data.frame'.
@@ -930,7 +931,7 @@ class DataFrame(ListVector):
     
     def _get_rownames(self):
         res = baseenv_ri["rownames"](self)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def _set_rownames(self, rownames):
         res = baseenv_ri["rownames<-"](self, conversion.py2ri(rownames))
@@ -941,7 +942,7 @@ class DataFrame(ListVector):
 
     def _get_colnames(self):
         res = baseenv_ri["colnames"](self)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def _set_colnames(self, colnames):
         res = baseenv_ri["colnames<-"](self, conversion.py2ri(colnames))
@@ -951,26 +952,33 @@ class DataFrame(ListVector):
 
     def __getitem__(self, i):
         # Make sure this is not a List returned
-        # FIXME: should this be optimzed ?
-        tmp = super(DataFrame, self).__getitem__(i)
+
+        # 3rd-party conversions could return objects
+        # that no longer inherit from rpy2's R objects.
+        # We need to use the low-level __getitem__
+        # to bypass the conversion mechanism.
+        # R's data.frames have no representation at the C-API level
+        # (they are lists)
+        tmp = rinterface.ListSexpVector.__getitem__(self, i)
+
         if tmp.typeof == rinterface.VECSXP:
             return DataFrame(tmp)
         else:
-            return conversion.ri2py(tmp)
+            return conversion.ri2ro(tmp)
 
     def cbind(self, *args, **kwargs):
         """ bind objects as supplementary columns """
-        new_args   = [self, ] + [conversion.ri2py(x) for x in args]
-        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs.items()])
+        new_args   = [self, ] + [conversion.ri2ro(x) for x in args]
+        new_kwargs = dict([(k, conversion.ri2ro(v)) for k,v in kwargs.items()])
         res = self._cbind(*new_args, **new_kwargs)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
     def rbind(self, *args, **kwargs):
         """ bind objects as supplementary rows """
-        new_args   = [conversion.ri2py(x) for x in args]
-        new_kwargs = dict([(k, conversion.ri2py(v)) for k,v in kwargs.items()])
+        new_args   = [conversion.ri2ro(x) for x in args]
+        new_kwargs = dict([(k, conversion.ri2ro(v)) for k,v in kwargs.items()])
         res = self._rbind(self, *new_args, **new_kwargs)
-        return conversion.ri2py(res)
+        return conversion.ri2ro(res)
 
 
     @staticmethod
@@ -1011,7 +1019,7 @@ class DataFrame(ListVector):
                                      'fill': fill,
                                      'comment.char': comment_char,
                                      'as.is': as_is})
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         return res
 
     def to_csvfile(self, path, quote = True, sep = ",", eol = os.linesep, na = "NA", dec = ".", 
@@ -1056,6 +1064,15 @@ class DataFrame(ListVector):
 
 
 # end of definition for DataFrame
+
+rtypeof2rotype = {
+    rinterface.INTSXP: IntVector,
+    rinterface.REALSXP: FloatVector,
+    rinterface.STRSXP: StrVector,
+    rinterface.CPLXSXP: ComplexVector,
+    rinterface.LGLSXP: BoolVector
+}
+
 
 __all__ = ['Vector', 'StrVector', 'IntVector', 'BoolVector', 'ComplexVector',
            'FloatVector', 'FactorVector', 'ListVector', 'POSIXlt', 'POSIXct',

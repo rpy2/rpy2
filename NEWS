@@ -1,5 +1,24 @@
-Release 2.4.0-dev
-=================
+Release 2.5.0
+=============
+
+Changes
+-------
+
+- Support for Python 3, only (current 3.3)
+
+- Use of a more general C-layer as a bridge to R
+
+
+Release 2.4.0
+=============
+
+Changes
+-------
+
+- Conversion system slightly changed, with the optional
+  conversions for :mod:`numpy` and :mod:`pandas` modified
+  accordingly. The changes should only matter if using
+  third-party conversion functions.
 
 
 Release 2.3.7
