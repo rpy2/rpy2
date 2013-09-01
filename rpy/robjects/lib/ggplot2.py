@@ -671,7 +671,16 @@ class ElementText(Element):
        return res
 element_text = ElementText.new
 
-
+class ElementRect(Element):
+    _constructor = ggplot2.element_rect
+    @classmethod
+    def new(cls, fill = NULL, colour = NULL, size = NULL,
+            linetype = NULL, color = NULL):
+       res = cls(cls._constructor(fill = fill, colour = colour,
+                                  size = size, linetype = linetype,
+                                  color = color))
+       return res
+element_rect = ElementRect.new
 
 class Theme(Options):
    pass

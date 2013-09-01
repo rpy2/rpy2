@@ -12,6 +12,8 @@ Bugs fixed
 
 - ggplot2's "theme_classic" was missing (PR #143)
 
+- ggplot2's "element_rect" was missing (PR #144)
+
 Release 2.3.6
 =============
 
