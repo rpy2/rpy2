@@ -21,6 +21,9 @@ Bugs fixed
 
 - ggplot2's "element_rect" was missing (PR #144)
 
+- :func:`rpy2.interactive.packages` was broken (PR #142)
+
+
 Release 2.3.6
 =============
 
