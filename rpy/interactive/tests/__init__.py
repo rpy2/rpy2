@@ -1,19 +1,22 @@
 import unittest
 
-import testRevents
+try:
+    import testRevents
 
-def suite():
-    suite_Revents = testRevents.suite()
-    alltests = unittest.TestSuite([suite_Revents,
-                                   ])
-    return alltests
+    def suite():
+        suite_Revents = testRevents.suite()
+        alltests = unittest.TestSuite([suite_Revents,
+                                    ])
+        return alltests
 
-def main():
-    r = unittest.TestResult()
-    suite().run(r)
-    return r
+    def main():
+        r = unittest.TestResult()
+        suite().run(r)
+        return r
 
-if __name__ == '__main__':    
-    tr = unittest.TextTestRunner(verbosity = 2)
-    suite = suite()
-    tr.run(suite)
+    if __name__ == '__main__':    
+        tr = unittest.TextTestRunner(verbosity = 2)
+        suite = suite()
+        tr.run(suite)
+except ImportError:
+    pass

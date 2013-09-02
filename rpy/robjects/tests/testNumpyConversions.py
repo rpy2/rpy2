@@ -4,18 +4,16 @@ import rpy2.robjects as robjects
 import rpy2.robjects.conversion
 r = robjects.r
 
+has_numpy = True
 try:
     import numpy
-    has_numpy = True
     import rpy2.robjects.numpy2ri as rpyn
 except:
     has_numpy = False
 
 
-class MissingNumpyDummyTestCase(unittest.TestCase):
-    def testMissingNumpy(self):
-        self.assertTrue(False) # numpy is missing. No tests.
 
+@unittest.skipUnless(has_numpy, 'numpy is not available in python')
 class NumpyConversionsTestCase(unittest.TestCase):
 
     def setUp(self):
