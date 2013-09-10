@@ -18,7 +18,7 @@ def tapply(seq, tag, fun):
     for i, t in enumerate(tag):
         try:
             tag_grp[t].append(i)
-        except LookupError, le:
+        except LookupError as le:
             tag_grp[t] = [i, ]
 
     res = [(tag, fun([seq[i] for i in ti])) for tag, ti in tag_grp.items()]

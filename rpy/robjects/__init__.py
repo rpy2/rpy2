@@ -21,13 +21,21 @@ from rpy2.robjects.functions import Function, SignatureTranslatedFunction
 from rpy2.robjects.environments import Environment
 from rpy2.robjects.methods import RS4
 
-import conversion
+from . import conversion
 
 from rpy2.rinterface import Sexp, SexpVector, SexpClosure, SexpEnvironment, SexpS4, SexpExtPtr
 _globalenv = rinterface.globalenv
 
 # missing values
 from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Complex, NULL
+
+if sys.version_info[0] == 2:
+    py3str = unicode
+    py2bytes = str
+else:
+    long = int
+    py3str = str
+    py3bytes = bytes
 
 _reval = rinterface.baseenv['eval']
 
@@ -54,7 +62,7 @@ def default_ri2ro(o):
     res = None
     try:
         rcls = o.do_slot("class")
-    except LookupError, le:
+    except LookupError as le:
         rcls = [None]
 
     if isinstance(o, RObject):
@@ -69,7 +77,7 @@ def default_ri2ro(o):
                     res = vectors.Matrix(o)
                 else:
                     res = vectors.Array(o)
-            except LookupError, le:
+            except LookupError as le:
                 if o.typeof == rinterface.INTSXP:
                     if 'factor' in rcls:
                         res = vectors.FactorVector(o)
@@ -136,9 +144,9 @@ def default_py2ri(o):
             res = rinterface.SexpVector([o, ], rinterface.INTSXP)
     elif isinstance(o, float):
         res = rinterface.SexpVector([o, ], rinterface.REALSXP)
-    elif isinstance(o, str):
+    elif isinstance(o, py3bytes):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
-    elif isinstance(o, unicode):
+    elif isinstance(o, py3str):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
     elif isinstance(o, list):
         res = r.list(*[conversion.ri2ro(conversion.py2ri(x)) for x in o])
@@ -208,12 +216,12 @@ class R(object):
     def __getattribute__(self, attr):
         try:
             return super(R, self).__getattribute__(attr)
-        except AttributeError, ae:
+        except AttributeError as ae:
             orig_ae = ae
 
         try:
             return self.__getitem__(attr)
-        except LookupError, le:
+        except LookupError as le:
             raise orig_ae
 
     def __getitem__(self, item):

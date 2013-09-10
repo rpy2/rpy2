@@ -2,7 +2,7 @@ from types import ModuleType
 from warnings import warn
 import rpy2.rinterface as rinterface
 import rpy2.robjects.lib
-import conversion as conversion
+from . import conversion
 from rpy2.robjects.functions import SignatureTranslatedFunction
 from rpy2.robjects.constants import NULL
 from rpy2.robjects import Environment
@@ -39,7 +39,7 @@ def no_warnings(func):
         _options(warn = -1)
         try:
             res = func(*args, **kwargs)
-        except Exception, e:
+        except Exception as e:
             # restore the old warn setting before propagating
             # the exception up
             _options(warn = oldwarn)
@@ -241,7 +241,7 @@ class Package(ModuleType):
 class SignatureTranslatedPackage(Package):
     def __fill_rpy2r__(self, on_conflict = 'fail'):
         super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
-        for name, robj in self.__dict__.iteritems():
+        for name, robj in self.__dict__.items():
             if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
                 self.__dict__[name] = SignatureTranslatedFunction(self.__dict__[name])
                 
@@ -340,7 +340,7 @@ def wherefrom(symbol, startenv = rinterface.globalenv):
         try:
             obj = env[symbol]
             tryagain = False
-        except LookupError, knf:
+        except LookupError as knf:
             env = env.enclos()
             if env.rsame(rinterface.emptyenv):
                 tryagain = False

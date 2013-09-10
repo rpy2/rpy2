@@ -9,6 +9,13 @@ Changes
   accordingly. The changes should only matter if using
   third-party conversion functions.
 
+- The Python 3 version is now a first class citizen. `2to3`
+  is no longer used, and the code base is made directly
+  compatible with Python. This lowers significantly the
+  installation time with Python 3 
+  (which matters when developping rpy2).
+
+
 Release 2.3.7
 =============
 

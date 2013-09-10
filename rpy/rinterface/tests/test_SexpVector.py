@@ -11,7 +11,11 @@ def evalr(string):
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon
 
-IS_PYTHON3 = sys.version_info[0] == 3
+if sys.version_info[0] == 2:
+    range = xrange
+    IS_PYTHON3 = False
+else:
+    IS_PYTHON3 = True
 
 class WrapperSexpVectorTestCase(unittest.TestCase):
     def testInt(self):
@@ -153,10 +157,10 @@ class IntSexpVectorTestCase(unittest.TestCase):
             self.assertEqual(x, y)
 
     def testInitFromIter(self):
-        it = xrange(3)
+        it = range(3)
         v = ri.IntSexpVector(it)
         self.assertEqual(3, len(v))
-        for x,y in zip(xrange(3), v):
+        for x,y in zip(range(3), v):
             self.assertEqual(x, y)
         
     def testInitFromSeqInvalidInt(self):
@@ -181,10 +185,10 @@ class FloatSexpVectorTestCase(unittest.TestCase):
             self.assertEqual(x, y)
 
     def testInitFromIter(self):
-        it = xrange(10)
+        it = range(10)
         v = ri.FloatSexpVector(it)
         self.assertEqual(10, len(v))
-        for x,y in zip(xrange(10), v):
+        for x,y in zip(range(10), v):
             self.assertEqual(x, y)
         
     def testInitFromSeqInvalidFloat(self):
@@ -244,9 +248,9 @@ class SexpVectorTestCase(unittest.TestCase):
             try:
                 tmp = ri.SexpVector([1,2], ri.INTSXP)
                 res = (False, None)
-            except RuntimeError, re:
+            except RuntimeError as re:
                 res = (True, re)
-            except Exception, e:
+            except Exception as e:
                 res = (False, e)
             queue.put(res)
         q = multiprocessing.Queue()
@@ -404,7 +408,14 @@ class SexpVectorTestCase(unittest.TestCase):
     def testGetItemOutOfBound(self):
         myVec = ri.SexpVector([0, 1, 2, 3, 4, 5], ri.INTSXP)
         self.assertRaises(IndexError, myVec.__getitem__, 10)
-        if (sys.maxint > ri.R_LEN_T_MAX):
+        #FIXME: R has introduced the use of larger integers
+        #       for vector sizes (and indexing). Is this relevant
+        #       any longer ?
+        if IS_PYTHON3:
+            haslargeint = (sys.maxsize > ri.R_LEN_T_MAX)
+        else:
+            haslargeint = (sys.maxint > ri.R_LEN_T_MAX)
+        if haslargeint:
             self.assertRaises(IndexError, myVec.__getitem__, 
                               ri.R_LEN_T_MAX+1)
 

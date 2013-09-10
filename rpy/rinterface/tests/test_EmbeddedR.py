@@ -1,11 +1,17 @@
 import unittest
-import itertools
 import pickle
 import rpy2
 import rpy2.rinterface as rinterface
 import sys, os, subprocess, time, tempfile, io, signal, gc
 
-IS_PYTHON3 = sys.version_info[0] == 3
+
+
+if sys.version_info[0] == 3:
+    IS_PYTHON3 = True
+else:
+    from itertools import izip as zip
+    range = xrange
+    IS_PYTHON3 = False
 
 rinterface.initr()
 
@@ -36,7 +42,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             sys.stdout = tmp_file
             try:
                 rinterface.consolePrint('haha')
-            except Exception, e:
+            except Exception as e:
                 sys.stdout = stdout
                 raise e
             sys.stdout = stdout
@@ -51,7 +57,7 @@ class EmbeddedRTestCase(unittest.TestCase):
             sys.stdout = tmp_file
             try:
                 rinterface.consolePrint('haha')
-            except Exception, e:
+            except Exception as e:
                 sys.stdout = stdout
                 raise e
             sys.stdout = stdout
@@ -73,9 +79,9 @@ class EmbeddedRTestCase(unittest.TestCase):
             try:
                 tmp = rdate()
                 res = (False, None)
-            except RuntimeError, re:
+            except RuntimeError as re:
                 res = (True, re)
-            except Exception, e:
+            except Exception as e:
                 res = (False, e)
             queue.put(res)
         q = multiprocessing.Queue()
@@ -98,7 +104,7 @@ class EmbeddedRTestCase(unittest.TestCase):
         options = rinterface.get_initoptions()
         self.assertEqual(len(rinterface.initoptions),
                           len(options))
-        for o1, o2 in itertools.izip(rinterface.initoptions, options):
+        for o1, o2 in zip(rinterface.initoptions, options):
             self.assertEqual(o1, o2)
         
     def testSet_initoptions(self):
@@ -198,8 +204,8 @@ except Exception%s e:
         self.assertFalse(ret_code is None) # Interruption failed
 
     def testRpyMemory(self):
-        x = rinterface.SexpVector(xrange(10), rinterface.INTSXP)
-        y = rinterface.SexpVector(xrange(10), rinterface.INTSXP)
+        x = rinterface.SexpVector(range(10), rinterface.INTSXP)
+        y = rinterface.SexpVector(range(10), rinterface.INTSXP)
         x_rid = x.rid
         self.assertTrue(x_rid in set(z[0] for z in rinterface.protected_rids()))
         del(x)
@@ -236,7 +242,7 @@ class CallbacksTestCase(unittest.TestCase):
         try:
             code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
             rinterface.baseenv["print"](code)
-        except Exception, e:
+        except Exception as e:
             sys.stderr = stderr
             raise e
         sys.stderr = stderr
@@ -270,7 +276,7 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = tmp_file
         try:
             res = rinterface.baseenv.get("flush.console")()
-        except Exception, e:
+        except Exception as e:
             sys.stderr = stderr
             raise e
         sys.stderr = stderr
@@ -302,7 +308,7 @@ class CallbacksTestCase(unittest.TestCase):
         sys.stderr = tmp_file
         try:
             res = rinterface.baseenv["readline"]()
-        except Exception, e:
+        except Exception as e:
             sys.stderr = stderr
             raise e
         sys.stderr = stderr
@@ -350,7 +356,7 @@ class CallbacksTestCase(unittest.TestCase):
             res = rinterface.baseenv["file.choose"]()
         except rinterface.RRuntimeError:
             pass
-        except Exception, e:
+        except Exception as e:
             sys.stderr = stderr
             raise e
         sys.stderr = stderr
@@ -394,7 +400,7 @@ class CallbacksTestCase(unittest.TestCase):
             res = rinterface.baseenv["file.show"](filename)
         except rinterface.RRuntimeError:
             pass
-        except Exception, e:
+        except Exception as e:
             sys.stderr = stderr
             raise e
         sys.stderr = stderr

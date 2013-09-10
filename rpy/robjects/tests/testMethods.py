@@ -1,4 +1,5 @@
 import unittest
+import sys
 import rpy2.robjects as robjects
 import rpy2.robjects.methods as methods
 rinterface = robjects.rinterface
@@ -33,16 +34,26 @@ class MethodsTestCase(unittest.TestCase):
         robjects.r['setClass']("R_A", robjects.r('list(foo="numeric")'))
         robjects.r['setMethod']("length", signature="R_A",
                                 definition = robjects.r("function(x) 123"))
-        
-        class R_A(methods.RS4):
-            __metaclass__ = methods.RS4_Type
-            __accessors__ = (('length', None,
-                              'get_length', False, 'get the length'),
-                             ('length', None,
-                              None, True, 'length'))
-            def __init__(self):
-                obj = robjects.r['new']('R_A')
-                self.__sexp__ = obj.__sexp__
+
+        if sys.version_info[0] == 2:
+            class R_A(methods.RS4):
+                __metaclass__ = methods.RS4_Type
+                __accessors__ = (('length', None,
+                                  'get_length', False, 'get the length'),
+                                 ('length', None,
+                                  None, True, 'length'))
+                def __init__(self):
+                    obj = robjects.r['new']('R_A')
+                    self.__sexp__ = obj.__sexp__
+        else:
+            class R_A(methods.RS4, metaclass=methods.RS4_Type):
+                __accessors__ = (('length', None,
+                                  'get_length', False, 'get the length'),
+                                 ('length', None,
+                                  None, True, 'length'))
+                def __init__(self):
+                    obj = robjects.r['new']('R_A')
+                    self.__sexp__ = obj.__sexp__            
 
         class A(R_A):
             __rname__ = 'R_A'
