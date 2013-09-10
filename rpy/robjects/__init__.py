@@ -31,7 +31,7 @@ from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Co
 
 if sys.version_info[0] == 2:
     py3str = unicode
-    py2bytes = str
+    py3bytes = str
 else:
     long = int
     py3str = str
