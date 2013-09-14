@@ -41,7 +41,7 @@ class Unit(robjects.RObject):
         od = OrdDict()
         for item in args:
             od[None] = conversion.py2ro(item)
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             od[k] = conversion.py2ro(v)
         res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
         self.__sexp__ = res.__sexp__
@@ -63,7 +63,7 @@ class Gpar(robjects.RObject):
         od = OrdDict()
         for item in args:
             od[None] = conversion.py2ro(item)
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             od[k] = conversion.py2ro(v)
         res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
         self.__sexp__ = res.__sexp__
@@ -88,7 +88,7 @@ class Grob(robjects.RObject):
         od = OrdDict()
         for item in args:
             od[None] = conversion.py2ro(item)
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             od[k] = conversion.py2ro(v)
         res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
         self.__sexp__ = res.__sexp__
@@ -232,8 +232,6 @@ class Viewport(robjects.RObject):
 
 viewport = Viewport.viewport
 
-
-
 _grid_dict = {
     'grob': Grob,
     'gTree': GTree,
@@ -242,7 +240,7 @@ _grid_dict = {
     'viewport': Viewport
 }
 
-original_conversion = conversion.ri2py
+original_conversion = conversion.ri2ro
 
 def grid_conversion(robj):
 
@@ -260,4 +258,4 @@ def grid_conversion(robj):
 
     return pyobj
 
-conversion.ri2py = grid_conversion
+conversion.ri2ro = grid_conversion
