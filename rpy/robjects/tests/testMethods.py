@@ -22,12 +22,29 @@ class MethodsTestCase(unittest.TestCase):
 
     def testRS4_TypeNoAccessors(self):
         robjects.r['setClass']("Foo", robjects.r('list(foo="numeric")'))
-        class Foo(methods.RS4):
-            __metaclass__ = methods.RS4_Type
-            def __init__(self):
-                obj = robjects.r['new']('R_A')
-                self.__sexp__ = obj.__sexp__
-        f = Foo()
+        if sys.version_info[0] == 2:
+            classdef = """
+from rpy2 import robjects
+from rpy2.robjects import methods
+class Foo(methods.RS4):
+    __metaclass__ = methods.RS4_Type
+    def __init__(self):
+        obj = robjects.r['new']('R_A')
+        self.__sexp__ = obj.__sexp__
+"""
+        else:
+            classdef = """
+from rpy2 import robjects
+from rpy2.robjects import methods
+class Foo(methods.RS4, metaclass = methods.RS4_Type):
+    def __init__(self):
+        obj = robjects.r['new']('R_A')
+        self.__sexp__ = obj.__sexp__
+"""
+        code = compile(classdef, '<string>', 'exec')
+        ns = dict()
+        exec(code, ns)
+        f = ns['Foo']()
         
 
     def testRS4_TypeAccessors(self):
@@ -36,28 +53,38 @@ class MethodsTestCase(unittest.TestCase):
                                 definition = robjects.r("function(x) 123"))
 
         if sys.version_info[0] == 2:
-            class R_A(methods.RS4):
-                __metaclass__ = methods.RS4_Type
-                __accessors__ = (('length', None,
-                                  'get_length', False, 'get the length'),
-                                 ('length', None,
-                                  None, True, 'length'))
-                def __init__(self):
-                    obj = robjects.r['new']('R_A')
-                    self.__sexp__ = obj.__sexp__
+            classdef = """
+from rpy2 import robjects
+from rpy2.robjects import methods
+class R_A(methods.RS4):
+    __metaclass__ = methods.RS4_Type
+    __accessors__ = (('length', None,
+                      'get_length', False, 'get the length'),
+                     ('length', None,
+                      None, True, 'length'))
+    def __init__(self):
+        obj = robjects.r['new']('R_A')
+        self.__sexp__ = obj.__sexp__
+"""
         else:
-            class R_A(methods.RS4, metaclass=methods.RS4_Type):
-                __accessors__ = (('length', None,
-                                  'get_length', False, 'get the length'),
-                                 ('length', None,
-                                  None, True, 'length'))
-                def __init__(self):
-                    obj = robjects.r['new']('R_A')
-                    self.__sexp__ = obj.__sexp__            
-
+            classdef = """
+from rpy2 import robjects
+from rpy2.robjects import methods
+class R_A(methods.RS4, metaclass=methods.RS4_Type):
+    __accessors__ = (('length', None,
+                      'get_length', False, 'get the length'),
+                     ('length', None,
+                      None, True, 'length'))
+    def __init__(self):
+        obj = robjects.r['new']('R_A')
+        self.__sexp__ = obj.__sexp__            
+"""
+        code = compile(classdef, '<string>', 'exec')
+        ns = dict()
+        exec(code, ns)
+        R_A = ns['R_A']
         class A(R_A):
             __rname__ = 'R_A'
-
 
         ra = R_A()
         self.assertEqual(123, ra.get_length()[0])
