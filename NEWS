@@ -15,6 +15,12 @@ Changes
   installation time with Python 3 
   (which matters when developping rpy2).
 
+New features
+------------
+
+- For instances of :class:`rpy2.robjects.Function`,
+  the `__doc__` is now a property fetching information
+  about the parameters in the R signature.
 
 Release 2.3.7
 =============

@@ -1,3 +1,4 @@
+import os
 from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.rinterface as rinterface
@@ -11,17 +12,36 @@ _reval = rinterface.baseenv['eval']
 NULL = _reval(rinterface.parse("NULL"))
 
 
+__formals = baseenv_ri.get('formals')
+__args = baseenv_ri.get('args')
+#_genericsargsenv = baseenv_ri['.GenericArgsEnv']
+#_argsenv = baseenv_ri['.ArgsEnv']
+def _formals_fixed(func):
+    tmp = __args(func)
+    return __formals(tmp)
+
 class Function(RObjectMixin, rinterface.SexpClosure):
     """ Python representation of an R function.
     """
 
-    __formals = baseenv_ri.get('formals')
     __local = baseenv_ri.get('local')
     __call = baseenv_ri.get('call')
     __assymbol = baseenv_ri.get('as.symbol')
     __newenv = baseenv_ri.get('new.env')
 
     _local_env = None
+
+    def _get_doc(self):
+        fm = _formals_fixed(self)
+        doc = list(['Python representation of an R function.',
+                    'R arguments:', ''])
+        for key, val in zip(fm.do_slot('names'), fm):
+            if key == '...':
+                val = 'R ellipsis (any number of parameters)'
+            doc.append('%s: %s' % (key, repr(val)))
+        return os.linesep.join(doc)
+
+    __doc__ = property(_get_doc)
 
     def __init__(self, *args, **kwargs):
         super(Function, self).__init__(*args, **kwargs)
@@ -40,7 +60,7 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         """ Return the signature of the underlying R function 
         (as the R function 'formals()' would).
         """
-        res = self.__formals(self)
+        res = _formals_fixed(self)
         res = conversion.ri2ro(res)
         return res
 
@@ -55,6 +75,19 @@ class SignatureTranslatedFunction(Function):
     the character '.' is replaced with '_' in the R arguments names. """
     _prm_translate = None
 
+    def _get_doc(self):
+        fm = _formals_fixed(self)
+        doc = list(['Python representation of an R function.',
+                    'R arguments:', ''])
+        for key, val in self._prm_translate.items():
+            if key == '___':
+                val = 'R ellipsis (any number of parameters)'
+            doc.append('%s: %s' % (key, repr(val)))
+        return os.linesep.join(doc)
+
+    __doc__ = property(_get_doc)
+
+
     def __init__(self, sexp, init_prm_translate = None):
         super(SignatureTranslatedFunction, self).__init__(sexp)
         if init_prm_translate is None:
@@ -62,16 +95,16 @@ class SignatureTranslatedFunction(Function):
         else:
             assert isinstance(init_prm_translate, dict)
             prm_translate = init_prm_translate
-        if not self.formals().rsame(NULL):
-            for r_param in self.formals().names:
-                py_param = r_param.replace('.', '_')
-                if py_param in prm_translate:
-                    raise ValueError("Error: '%s' already in the transalation table" %r_param)
-                #FIXME: systematically add the parameter to the translation, as it makes it faster for generating
-                # dynamically the pydoc string from the R help.
-                #if py_param != r_param:
-                #    prm_translate[py_param] = r_param
-                prm_translate[py_param] = r_param
+
+        for r_param in self.formals().names:
+            py_param = r_param.replace('.', '_')
+            if py_param in prm_translate:
+                raise ValueError("Error: '%s' already in the transalation table" %r_param)
+            #FIXME: systematically add the parameter to the translation, as it makes it faster for generating
+            # dynamically the pydoc string from the R help.
+            #if py_param != r_param:
+            #    prm_translate[py_param] = r_param
+            prm_translate[py_param] = r_param
         self._prm_translate = prm_translate
         if hasattr(sexp, '__rname__'):
             self.__rname__ = sexp.__rname__
