@@ -328,10 +328,13 @@ def importr(name,
 
     return pack
 
+def data(package):
+    """ Return the PackageData for the given package."""
+    return package.__rdata__
 
 def wherefrom(symbol, startenv = rinterface.globalenv):
     """ For a given symbol, return the environment
-    this symbol is first found in, starting from 'startenv'
+    this symbol is first found in, starting from 'startenv'.
     """
     env = startenv
     obj = None
