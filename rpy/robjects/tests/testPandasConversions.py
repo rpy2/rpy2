@@ -61,7 +61,6 @@ class PandasConversionsTestCase(unittest.TestCase):
         s = s.split('\n')
         self.assertEqual('[Array, Array, Array, FactorV..., FactorV...]', s[1].strip())
 
-    @unittest.expectedFailure
     def testPandas2ri(self):
         rdataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")), c=c("a", "b"))')
         pandas_df = rpyp.ri2pandas(rdataf)
