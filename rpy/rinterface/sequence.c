@@ -122,7 +122,7 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
     /* Rbyte vr; */
     char *vr;
     const char *vs;
-    SEXP tmp, sexp_item; /* needed by LANGSXP */
+    SEXP tmp, sexp_item, sexp_name; /* needed by LANGSXP and LISTSXP*/
     i_R = (R_len_t)i;
     switch (TYPEOF(*sexp)) {
     case REALSXP:
@@ -201,11 +201,16 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
       res = (PyObject *)newPySexpObject(sexp_item);
       break;
     case LISTSXP:
+      /* R-exts says that it is converted to a VECSXP when subsetted */
+      //tmp = nthcdr(*sexp, i_R);
       tmp = nthcdr(*sexp, i_R);
-      sexp_item = allocVector(LISTSXP, 1);
-      SETCAR(sexp_item, CAR(tmp));
-      SET_TAG(sexp_item, TAG(tmp));
+      PROTECT(sexp_item = allocVector(VECSXP,1));
+      SET_VECTOR_ELT(sexp_item, 0, CAR(tmp));
+      PROTECT(sexp_name = allocVector(STRSXP,1));
+      SET_STRING_ELT(sexp_name, i, mkChar(TAG(tmp)));
+      setAttrib(sexp_item, R_NamesSymbol, sexp_name);
       res = (PyObject *)newPySexpObject(sexp_item);
+      UNPROTECT(2);
       break;      
     case LANGSXP:
       sexp_item = CAR(nthcdr(*sexp, i_R));
