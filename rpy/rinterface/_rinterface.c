@@ -2031,8 +2031,14 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   embeddedR_setlock();
 
   const SEXP rho_R = RPY_SEXP((PySexpObject *)self);
+
   if (! rho_R) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    PyErr_Format(PyExc_ValueError, "C-NULL SEXP.");
+    embeddedR_freelock();
+    return NULL;
+  }
+  if (!isEnvironment(rho_R)) {
+    PyErr_Format(PyExc_ValueError, "Trying to apply to a non-environment (typeof is %i).", TYPEOF(rho_R));
     embeddedR_freelock();
     return NULL;
   }
@@ -2178,7 +2184,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
 
   SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    PyErr_Format(PyExc_ValueError, "C-NULL SEXP.");
     embeddedR_freelock();
 #if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
@@ -2186,7 +2192,6 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
     return NULL;
   }
   res_R = findVarInFrame(rho_R, install(name));
-
   if (res_R != R_UnboundValue) {
 #if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
@@ -2650,6 +2655,9 @@ static PySexpObject*
   /* FIXME: let the possibility to manipulate un-evaluated promises ? */
   if (TYPEOF(sexp) == PROMSXP) {
     PROTECT(env_R = PRENV(sexp));
+    if (env_R == R_NilValue) {
+      env_R = R_BaseEnv;
+    }
     PROTECT(sexp_ok = eval(sexp, env_R));
 #ifdef RPY_DEBUG_PROMISE
     printf("  evaluating promise %p into %p.\n", sexp, sexp_ok);
