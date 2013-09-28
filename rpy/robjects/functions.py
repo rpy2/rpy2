@@ -40,6 +40,22 @@ class DocstringProperty(object):
     def __delete__(self, obj):
         raise AttributeError("Cannot delete the attribute")
 
+def _repr_argval(obj):
+    """ Helper functions to display an R object in the docstring.
+    This a hack and will be hopefully replaced the extraction of
+    information from the R help system."""
+    try:
+        l = len(obj)
+        if l == 1:
+            s = repr(obj[0][0])
+        elif l > 1:
+            s = '(%s, ...)' % repr(obj[0][0])
+        else:
+            s = repr(obj)
+    except:
+        s = repr(obj)
+    return s
+
 class Function(RObjectMixin, rinterface.SexpClosure):
     """ Python representation of an R function.
     """
@@ -64,7 +80,7 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         for key, val in zip(fm.do_slot('names'), fm):
             if key == '...':
                 val = 'R ellipsis (any number of parameters)'
-            doc.append('%s: %s' % (key, repr(val)))
+            doc.append('%s: %s' % (key, _repr_argval(val)))
         return os.linesep.join(doc)
 
 
@@ -124,10 +140,15 @@ class SignatureTranslatedFunction(Function):
     def __doc__(self):
         doc = list(['Python representation of an R function.',
                     'R arguments:', ''])
+        fm = _formals_fixed(self)
+        names = fm.do_slot('names')
         for key, val in self._prm_translate.items():
             if key == '___':
-                val = 'R ellipsis (any number of parameters)'
-            doc.append('%s: %s' % (key, repr(val)))
+                description = '(was "..."). R ellipsis (any number of parameters)'
+            else:
+                description = _repr_argval(fm[names.index(val)])
+            doc.append('%s: %s' % (key, description))
+        doc.append('')
         return os.linesep.join(doc)
 
     def __call__(self, *args, **kwargs):
