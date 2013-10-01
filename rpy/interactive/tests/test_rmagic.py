@@ -1,8 +1,10 @@
 from StringIO import StringIO
 
 import numpy as np
+from IPython.testing.globalipapp import get_ipython
 from IPython.testing.decorators import skip_without
 from IPython.extensions import rmagic
+# from IPython.core.getipython import get_ipython
 from rpy2 import rinterface
 import nose.tools as nt
 
