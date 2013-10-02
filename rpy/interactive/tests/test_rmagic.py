@@ -23,8 +23,9 @@ class TestRmagic(unittest.TestCase):
         IPython team's logic.
         '''
         cls.ip = get_ipython()
-        # This is still loading IPython's rmagic
-        cls.ip.magic('load_ext rmagic')
+        # This is just to get a minimally modified version of the changes
+        # working
+        cls.ip.magic('load_ext rpy2.interactive.rmagic')
 
     def test_push(self):
         rm = rmagic.RMagics(self.ip)

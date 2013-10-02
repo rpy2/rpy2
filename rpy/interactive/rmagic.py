@@ -8,15 +8,12 @@ Magic command interface for interactive work with R via rpy2
 
 .. note::
 
-  The ``rpy2`` package needs to be installed separately. It
-  can be obtained using ``easy_install`` or ``pip``.
-
-  You will also need a working copy of R.
+  You will need a working copy of R.
 
 Usage
 =====
 
-To enable the magics below, execute ``%load_ext rmagic``.
+To enable the magics below, execute ``%load_ext rpy2.interactive.rmagic``.
 
 ``%R``
 
@@ -67,7 +64,6 @@ except ImportError:
 from IPython.core.displaypub import publish_display_data
 from IPython.core.magic import (Magics, magics_class, line_magic,
                                 line_cell_magic, needs_local_scope)
-from IPython.testing.skipdoctest import skip_doctest
 from IPython.core.magic_arguments import (
     argument, magic_arguments, parse_argstring
 )
@@ -80,14 +76,14 @@ class RInterpreterError(ri.RRuntimeError):
         self.line = line
         self.err = err.rstrip()
         self.stdout = stdout.rstrip()
-    
+
     def __unicode__(self):
         s = 'Failed to parse and evaluate line %r.\nR error message: %r' % \
                 (self.line, self.err)
         if self.stdout and (self.stdout != self.err):
             s += '\nR stdout:\n' + self.stdout
         return s
-    
+
     if PY3:
         __str__ = __unicode__
     else:
@@ -109,9 +105,11 @@ def Rconverter(Robj, dataframe=False):
 
     Robj: an R object returned from rpy2
     """
-    is_data_frame = ro.r('is.data.frame')
+    # We should use some of the below to be more granular about our conversion
+    # (but this should be core rpy2 functionality)
+    # is_data_frame = ro.r('is.data.frame')
     colnames = ro.r('colnames')
-    rownames = ro.r('rownames') # with pandas, these could be used for the index
+    # rownames = ro.r('rownames') # with pandas, these could be used for the index
     names = ro.r('names')
 
     if dataframe:
@@ -230,7 +228,7 @@ class RMagics(Magics):
         self.Rstdout_cache = []
         return value
 
-    @skip_doctest
+    # @skip_doctest
     @needs_local_scope
     @line_magic
     def Rpush(self, line, local_ns=None):
@@ -271,7 +269,7 @@ class RMagics(Magics):
 
             self.r.assign(input, self.pyconverter(val))
 
-    @skip_doctest
+    # @skip_doctest
     @magic_arguments()
     @argument(
         '-d', '--as_dataframe', action='store_true',
@@ -323,7 +321,7 @@ class RMagics(Magics):
         for output in outputs:
             self.shell.push({output:self.Rconverter(self.r(output),dataframe=args.as_dataframe)})
 
-    @skip_doctest
+    # @skip_doctest
     @magic_arguments()
     @argument(
         '-d', '--as_dataframe', action='store_true',
@@ -366,7 +364,7 @@ class RMagics(Magics):
         return self.Rconverter(self.r(output[0]),dataframe=args.as_dataframe)
 
 
-    @skip_doctest
+    # @skip_doctest
     @magic_arguments()
     @argument(
         '-i', '--input', action='append',
@@ -614,7 +612,7 @@ class RMagics(Magics):
                     ro.r.show(result)
                     text_output += self.flush()
                     ri.set_writeconsole(old_writeconsole)
-        
+
         except RInterpreterError as e:
             print(e.stdout)
             if not e.stdout.endswith(e.err):
