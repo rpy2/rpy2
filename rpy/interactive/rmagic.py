@@ -134,24 +134,14 @@ def pyconverter(pyobj):
     """
     return pyobj
 
-# The default conversion for lists seems to make them a nested list. That has
-# some advantages, but is rarely convenient, so for interactive use, we convert
+# The default conversion for lists is currently to make them an R list. That has
+# some advantages, but can be inconvenient, so for interactive use, we convert
 # lists to a numpy array, which becomes an R vector.
+# XXX - change to use unlist in R?
 @pyconverter.when_type(list)
 def pyconverter_list(pyobj):
     return np.asarray(pyobj)
 
-if pandas2ri is None:
-    # pandas2ri was new in rpy2 2.3.3, so for now we'll fallback to pandas'
-    # conversion function.
-    try:
-        from pandas import DataFrame
-        from pandas.rpy.common import convert_to_r_dataframe
-        @pyconverter.when_type(DataFrame)
-        def pyconverter_dataframe(pyobj):
-            return convert_to_r_dataframe(pyobj, strings_as_factors=True)
-    except ImportError:
-        pass
 
 @magics_class
 class RMagics(Magics):
