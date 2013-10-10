@@ -1,22 +1,11 @@
 import unittest
+from os.path import dirname
 
-try:
-    import testRevents
+def main():
+    tr = unittest.TextTestRunner(verbosity = 2)
+    suite = unittest.defaultTestLoader.discover(dirname(__file__),
+                                                pattern='test*')
+    tr.run(suite)
 
-    def suite():
-        suite_Revents = testRevents.suite()
-        alltests = unittest.TestSuite([suite_Revents,
-                                    ])
-        return alltests
-
-    def main():
-        r = unittest.TestResult()
-        suite().run(r)
-        return r
-
-    if __name__ == '__main__':    
-        tr = unittest.TextTestRunner(verbosity = 2)
-        suite = suite()
-        tr.run(suite)
-except ImportError:
-    pass
+if __name__ == '__main__':
+    main()

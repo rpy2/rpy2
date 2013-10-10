@@ -23,16 +23,15 @@ def faster_load_tests(loader, standard_tests, pattern):
     suite_robjects = loader.discover('robjects', pattern, rpy_root)
     suite_rinterface = loader.discover('rinterface', pattern, rpy_root)
     suite_rlike = loader.discover('rlike', pattern, rpy_root)
-
-    # This contains no functional tests
-    #suite_interactive = rpy2.interactive.tests.suite()
+    # This now contains a test from IPython
+    suite_interactive = loader.discover('interactive', pattern, rpy_root)
 
     suite_rpy_classic = rpy2.tests_rpy_classic.suite()
 
     standard_tests.addTests([suite_rinterface,
                              suite_robjects,
                              suite_rlike,
-                             #suite_interactive,
+                             suite_interactive,
                              suite_rpy_classic
                              ])
     return standard_tests
