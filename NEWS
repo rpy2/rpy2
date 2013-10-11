@@ -22,6 +22,11 @@ New features
   the `__doc__` is now a property fetching information
   about the parameters in the R signature.
 
+- Convenience function :func:`rpy2.robjects.packages.data`
+  to extract the datasets in an R pacakges
+
+- :mod:`ipython`'s `rmagic` is now part of :mod:`rpy`
+
 Release 2.3.7
 =============
 
