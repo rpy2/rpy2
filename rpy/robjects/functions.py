@@ -136,6 +136,15 @@ class SignatureTranslatedFunction(Function):
         if hasattr(sexp, '__rname__'):
             self.__rname__ = sexp.__rname__
 
+    def __call__(self, *args, **kwargs):
+        prm_translate = self._prm_translate
+        for k in tuple(kwargs.keys()):
+            r_k = prm_translate.get(k, None)
+            if r_k is not None:
+                v = kwargs.pop(k)
+                kwargs[r_k] = v
+        return super(SignatureTranslatedFunction, self).__call__(*args, **kwargs)
+class PackageSTFunction(SignatureTranslatedFunction):
     @docstring_property(__doc__)
     def __doc__(self):
         doc = list(['Python representation of an R function.',
@@ -150,12 +159,3 @@ class SignatureTranslatedFunction(Function):
             doc.append('%s: %s' % (key, description))
         doc.append('')
         return os.linesep.join(doc)
-
-    def __call__(self, *args, **kwargs):
-        prm_translate = self._prm_translate
-        for k in tuple(kwargs.keys()):
-            r_k = prm_translate.get(k, None)
-            if r_k is not None:
-                v = kwargs.pop(k)
-                kwargs[r_k] = v
-        return super(SignatureTranslatedFunction, self).__call__(*args, **kwargs)
