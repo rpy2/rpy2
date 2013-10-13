@@ -27,6 +27,13 @@ New features
 - :mod:`ipython`'s `rmagic` is now part of :mod:`rpy`
 
 
+Bugs fixed
+----------
+
+- :meth:`rpy2.rinterface.Sexp.do_slote` was crashing when
+  the parameter was an empty string (PR #155)
+
+
 Release 2.3.8
 =============
 
