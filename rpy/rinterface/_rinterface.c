@@ -2408,6 +2408,37 @@ EnvironmentSexp_iter(PyObject *sexpEnvironment)
   return it;
 }
 
+static PyObject* 
+EnvironmentSexp_keys(PyObject *sexpEnvironment)
+{
+  if (rpy_has_status(RPY_R_BUSY)) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+
+  SEXP rho_R = RPY_SEXP((PySexpObject *)sexpEnvironment);
+
+  if (! rho_R) {
+    PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
+    embeddedR_freelock();
+    return NULL;
+  }
+  SEXP symbols, sexp_item;
+  PROTECT(symbols = R_lsInternal(rho_R, TRUE));
+  int l = LENGTH(symbols);
+  PyObject *keys = PyTuple_New(l);
+  PyObject *val;
+  int i;
+  for (i=0; i<l; i++) {
+    sexp_item = STRING_ELT(*sexp, i_R);
+    PyTuple_SET_ITEM(keys, i, 
+  }
+  UNPROTECT(1);
+  embeddedR_freelock();
+  return keys;
+}
+
 PyDoc_STRVAR(EnvironmentSexp_Type_doc,
 "R object that is an environment.\n"
 "R environments can be seen as similar to Python\n"
@@ -3597,8 +3628,8 @@ PyInit__rinterface(void)
     return NULL;
   if (PyTuple_SetItem(initOptions, 1, PyBytes_FromString("--quiet")) < 0)
     return NULL;
-  if (PyTuple_SetItem(initOptions, 2, PyBytes_FromString("--vanilla")) < 0)
-    return NULL;
+  /* if (PyTuple_SetItem(initOptions, 2, PyBytes_FromString("--vanilla")) < 0) */
+  /*   return NULL; */
   if (PyTuple_SetItem(initOptions, 3, PyBytes_FromString("--no-save")) < 0)
     return NULL;
 #endif

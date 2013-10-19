@@ -14,6 +14,10 @@ Changes
   installation time with Python 3 
   (which matters when developping rpy2).
 
+- The default options to initialize R (`rpy2.rinterface.initoptions') are no longer
+  `('rpy2', '--quiet', '--vanilla', '--no-save')` but now
+  `('rpy2', '--quiet', '--no-save')`.
+
 New features
 ------------
 
