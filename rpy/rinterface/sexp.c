@@ -394,7 +394,7 @@ Sexp_rclass_set(PyObject *self, PyObject *value, void *closure)
   if (! PyObject_IsInstance(value, 
 			    (PyObject*)&Sexp_Type)) {
     PyErr_Format(PyExc_ValueError, "Value must be a Sexp.");
-    return NULL;
+    return -1;
   }
   SEXP sexp_class = RPY_SEXP((PySexpObject*)value);
   SET_CLASS(sexp, sexp_class);
