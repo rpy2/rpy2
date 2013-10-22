@@ -2126,6 +2126,42 @@ EnvironmentSexp_enclos(PyObject *self)
 PyDoc_STRVAR(EnvironmentSexp_enclos_doc,
              "Return the enclosure the environment is in.");
 
+static PyObject* 
+EnvironmentSexp_keys(PyObject *sexpEnvironment)
+{
+  if (rpy_has_status(RPY_R_BUSY)) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+
+  SEXP rho_R = RPY_SEXP((PySexpObject *)sexpEnvironment);
+
+  if (! rho_R) {
+    PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
+    embeddedR_freelock();
+    return NULL;
+  }
+  SEXP symbols, sexp_item;
+  PROTECT(symbols = R_lsInternal(rho_R, TRUE));
+  int l = LENGTH(symbols);
+  PyObject *keys = PyTuple_New(l);
+  char *val;
+  PyObject *val_char;
+  int i;
+  for (i=0; i<l; i++) {
+    val_char = CHAR(STRING_ELT(symbols, i));
+    val = PyString_AsString(val_char);
+    PyTuple_SET_ITEM(keys, i, val);
+  }
+  UNPROTECT(1);
+  embeddedR_freelock();
+  return keys;
+}
+PyDoc_STRVAR(EnvironmentSexp_keys_doc,
+             "Return the symbols/names in the environment as a Python tuple.");
+
+
 static PyMethodDef EnvironmentSexp_methods[] = {
   {"get", (PyCFunction)EnvironmentSexp_findVar, METH_VARARGS | METH_KEYWORDS,
   EnvironmentSexp_findVar_doc},
@@ -2133,6 +2169,8 @@ static PyMethodDef EnvironmentSexp_methods[] = {
   EnvironmentSexp_frame_doc},
   {"enclos", (PyCFunction)EnvironmentSexp_enclos, METH_NOARGS,
   EnvironmentSexp_enclos_doc},
+  {"keys", (PyCFunction)EnvironmentSexp_keys, METH_NOARGS,
+  EnvironmentSexp_keys_doc},
   {NULL, NULL}          /* sentinel */
 };
 
@@ -2408,36 +2446,7 @@ EnvironmentSexp_iter(PyObject *sexpEnvironment)
   return it;
 }
 
-static PyObject* 
-EnvironmentSexp_keys(PyObject *sexpEnvironment)
-{
-  if (rpy_has_status(RPY_R_BUSY)) {
-    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
-    return NULL;
-  }
-  embeddedR_setlock();
 
-  SEXP rho_R = RPY_SEXP((PySexpObject *)sexpEnvironment);
-
-  if (! rho_R) {
-    PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
-    embeddedR_freelock();
-    return NULL;
-  }
-  SEXP symbols, sexp_item;
-  PROTECT(symbols = R_lsInternal(rho_R, TRUE));
-  int l = LENGTH(symbols);
-  PyObject *keys = PyTuple_New(l);
-  PyObject *val;
-  int i;
-  for (i=0; i<l; i++) {
-    sexp_item = STRING_ELT(*sexp, i_R);
-    PyTuple_SET_ITEM(keys, i, 
-  }
-  UNPROTECT(1);
-  embeddedR_freelock();
-  return keys;
-}
 
 PyDoc_STRVAR(EnvironmentSexp_Type_doc,
 "R object that is an environment.\n"
