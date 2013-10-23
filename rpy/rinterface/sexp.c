@@ -195,13 +195,14 @@ Sexp_do_slot_assign(PyObject *self, PyObject *args)
                          &name,
                          &value)) {
     return NULL;
-  }  
-  if (PyUnicode_Size(name) == 0) {
+  }
+  if (PyUnicode_GetLength(name) == 0) {
     PyErr_SetString(PyExc_ValueError, "The name cannot be an empty string");
     return NULL;
-  }    
-  name_str = PyUnicode_AS_STRING(name);
-
+  }
+  PyObject *pybytes = PyUnicode_AsLatin1String(name);
+  name_str = PyBytes_AsString(pybytes);
+  Py_DECREF(pybytes);
 #endif
 
   if (! PyObject_IsInstance(value, 
