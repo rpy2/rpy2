@@ -2151,7 +2151,11 @@ EnvironmentSexp_keys(PyObject *sexpEnvironment)
   int i;
   for (i=0; i<l; i++) {
     val_char = CHAR(STRING_ELT(symbols, i));
+#if (PY_VERSION_HEX < 0x03010000)
     val = PyString_FromString(val_char);
+#else
+    val = PyUnicode_FromString(val_char);
+#endif
     PyTuple_SET_ITEM(keys, i, val);
   }
   UNPROTECT(1);
@@ -2988,7 +2992,7 @@ newSEXP(PyObject *object, int rType)
 	    sexp = NULL;
 	    break;
 	  }
-	  tmp2 = mkCharCE(PyBytes_AsString(pybytes), CE_UTF8);
+	  tmp2 = mkCharCE(PyUnicode_AsUTF8(pybytes), CE_UTF8);
 	  Py_DECREF(pybytes);
 #endif
           if (!tmp2) {
