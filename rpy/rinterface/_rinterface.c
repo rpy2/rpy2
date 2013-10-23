@@ -2146,12 +2146,12 @@ EnvironmentSexp_keys(PyObject *sexpEnvironment)
   PROTECT(symbols = R_lsInternal(rho_R, TRUE));
   int l = LENGTH(symbols);
   PyObject *keys = PyTuple_New(l);
-  char *val;
-  PyObject *val_char;
+  char *val_char;
+  PyObject *val;
   int i;
   for (i=0; i<l; i++) {
     val_char = CHAR(STRING_ELT(symbols, i));
-    val = PyString_AsString(val_char);
+    val = PyString_FromString(val_char);
     PyTuple_SET_ITEM(keys, i, val);
   }
   UNPROTECT(1);

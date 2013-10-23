@@ -30,6 +30,8 @@ New features
 
 - :mod:`ipython`'s `rmagic` is now part of :mod:`rpy`
 
+- new method :meth:`rpy2.rinterface.SexpEnvironment.keys`, returnings
+  the names in the environment as a tuple of Python strings.
 
 Bugs fixed
 ----------
