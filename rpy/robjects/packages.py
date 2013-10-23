@@ -4,7 +4,7 @@ from warnings import warn
 import rpy2.rinterface as rinterface
 import rpy2.robjects.lib
 from . import conversion
-from rpy2.robjects.functions import SignatureTranslatedFunction, docstring_property
+from rpy2.robjects.functions import SignatureTranslatedFunction, docstring_property, DocumentedSTFunction
 from rpy2.robjects.constants import NULL
 from rpy2.robjects import Environment
 from rpy2.robjects.packages_utils import _libpaths, get_packagepath, _packages
@@ -267,6 +267,13 @@ class InstalledSTPackage(SignatureTranslatedPackage):
                 doc.append('[R help was not found]')
         return os.linesep.join(doc)
 
+    def __fill_rpy2r__(self, on_conflict = 'fail'):
+        super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
+        for name, robj in self.__dict__.items():
+            if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
+                self.__dict__[name] = DocumentedSTFunction(self.__dict__[name])
+
+
 class InstalledPackage(Package):
     @docstring_property(__doc__)
     def __doc__(self):
@@ -340,6 +347,7 @@ def importr(name,
         env = _as_env(rinterface.StrSexpVector(['package:'+name, ]))
         exported_names = None
         version = None
+
     if signature_translation:
         pack = InstalledSTPackage(env, name, 
                                   translation = robject_translations,

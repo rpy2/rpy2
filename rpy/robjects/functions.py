@@ -144,7 +144,7 @@ class SignatureTranslatedFunction(Function):
                 v = kwargs.pop(k)
                 kwargs[r_k] = v
         return super(SignatureTranslatedFunction, self).__call__(*args, **kwargs)
-class PackageSTFunction(SignatureTranslatedFunction):
+class DocumentedSTFunction(SignatureTranslatedFunction):
     @docstring_property(__doc__)
     def __doc__(self):
         doc = list(['Python representation of an R function.',
