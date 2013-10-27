@@ -3617,7 +3617,7 @@ PyInit__rinterface(void)
     return NULL;
 #endif
 
-  initOptions = PyTuple_New(4);
+  initOptions = PyTuple_New(3);
 
 #if (PY_VERSION_HEX < 0x03010000)  
   PYASSERT_ZERO(
@@ -3628,12 +3628,12 @@ PyInit__rinterface(void)
                 PyTuple_SetItem(initOptions, 1, 
                                 PyString_FromString("--quiet"))
                 );
+  /* PYASSERT_ZERO( */
+  /*               PyTuple_SetItem(initOptions, 2, */
+  /*                               PyString_FromString("--vanilla")) */
+  /*               ); */
   PYASSERT_ZERO(
-                PyTuple_SetItem(initOptions, 2,
-                                PyString_FromString("--vanilla"))
-                );
-  PYASSERT_ZERO(
-                PyTuple_SetItem(initOptions, 3, 
+                PyTuple_SetItem(initOptions, 2, 
                                 PyString_FromString("--no-save"))
                 );
 #else
@@ -3643,7 +3643,7 @@ PyInit__rinterface(void)
     return NULL;
   /* if (PyTuple_SetItem(initOptions, 2, PyBytes_FromString("--vanilla")) < 0) */
   /*   return NULL; */
-  if (PyTuple_SetItem(initOptions, 3, PyBytes_FromString("--no-save")) < 0)
+  if (PyTuple_SetItem(initOptions, 2, PyBytes_FromString("--no-save")) < 0)
     return NULL;
 #endif
 
