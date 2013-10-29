@@ -207,7 +207,7 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
       PROTECT(sexp_item = allocVector(VECSXP,1));
       SET_VECTOR_ELT(sexp_item, 0, CAR(tmp));
       PROTECT(sexp_name = allocVector(STRSXP,1));
-      SET_STRING_ELT(sexp_name, i, Rf_mkChar(TAG(tmp)));
+      SET_STRING_ELT(sexp_name, i, PRINTNAME(TAG(tmp)));
       setAttrib(sexp_item, R_NamesSymbol, sexp_name);
       res = (PyObject *)newPySexpObject(sexp_item);
       UNPROTECT(2);

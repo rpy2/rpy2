@@ -396,10 +396,12 @@ class SexpVectorTestCase(unittest.TestCase):
 
     def testGetItemPairList(self):
         pairlist = ri.baseenv.get('pairlist')
-        pl = pairlist(a = ri.StrSexpVector([1, ]))
+        pl = pairlist(a = ri.StrSexpVector(['1', ]))
         # R's behaviour is that subsetting returns an R list
         y = pl[0]
         self.assertEqual(ri.VECSXP, y.typeof)
+        self.assertEqual('a', y.do_slot('names')[0])
+        self.assertEqual('1', y[0][0])
 
     def testGetItemNegativeOutOfBound(self):
         letters_R = ri.globalenv.get("letters")
