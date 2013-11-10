@@ -53,13 +53,22 @@ class VectorTestCase(unittest.TestCase):
         self.assertEqual(False, vec[1])
         self.assertEqual(2, len(vec))
 
-    def testNewListVector(self):
-        vec = robjects.ListVector({'a': 1, 'b': 2})
+    def _testNewListVector(self, vec):
         self.assertTrue('a' in vec.names)
         self.assertTrue('b' in vec.names)
         self.assertEqual(2, len(vec))
         self.assertEqual(2, len(vec.names))
 
+    def testNewListVector(self):
+        vec = robjects.ListVector({'a': 1, 'b': 2})
+        self._testNewListVector(vec)
+        s = (('a', 1), ('b', 2))
+        vec = robjects.ListVector(s)
+        self._testNewListVector(vec)
+        it = iter(s)
+        vec = robjects.ListVector(s)
+        self._testNewListVector(vec)
+        
     def testAddOperators(self):
         seq_R = robjects.r["seq"]
         mySeqA = seq_R(0, 3)

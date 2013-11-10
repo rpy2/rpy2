@@ -497,19 +497,22 @@ class ListVector(Vector, ListSexpVector):
 
     ListVector(itemable) -> ListVector.
 
-    The parameter 'itemable' can be any object inheriting from 
-    rpy2.rlike.container.TaggedList, rpy2.rinterface.SexpVector of type VECSXP,
-    or dict.
+    The parameter 'itemable' can be:
 
+    - an object with a method `items()`, such for example a dict,
+    a rpy2.rlike.container.TaggedList, 
+    an rpy2.rinterface.SexpVector of type VECSXP.
+    - an iterable of (name, value) tuples
     """
     _vector = rinterface.baseenv['vector']
 
     def __init__(self, tlist):
         if isinstance(tlist, rinterface.SexpVector):
             if tlist.typeof != rinterface.VECSXP:
-                raise ValueError("tlist should of typeof VECSXP")
+                raise ValueError("tlist should have "
+                                 "tlist.typeof == rinterface.VECSXP")
             super(ListVector, self).__init__(tlist)
-        elif isinstance(tlist, rlc.TaggedList):
+        elif hasattr(tlist, 'items') and callable(tlist.items):
             kv = [(k, conversion.py2ri(v)) for k,v in tlist.items()]
             kv = tuple(kv)
             df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
@@ -517,7 +520,7 @@ class ListVector(Vector, ListSexpVector):
         elif hasattr(tlist, "__iter__"):
             if not callable(tlist.__iter__):
                 raise ValueError("tlist should have a /method/ __iter__ (not an attribute)")
-            kv = [(str(k), conversion.py2ri(tlist[k])) for k in tlist]
+            kv = [(str(k), conversion.py2ri(v)) for k,v in tlist]
             kv = tuple(kv)
             df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
             super(ListVector, self).__init__(df)

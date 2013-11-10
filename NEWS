@@ -3,6 +3,7 @@ Release 2.4.0
 
 Changes
 -------
+
 - Conversion system slightly changed, with the optional
   conversions for :mod:`numpy` and :mod:`pandas` modified
   accordingly. The changes should only matter if using
@@ -17,6 +18,11 @@ Changes
 - The default options to initialize R (`rpy2.rinterface.initoptions') are no longer
   `('rpy2', '--quiet', '--vanilla', '--no-save')` but now
   `('rpy2', '--quiet', '--no-save')`.
+
+- :class:`robjects.vectors.ListVector` can be instanciated from
+  any objects with a method `items()` with the expectation that the method
+  returns an iterable of (name, value) tuples, or even be an iterable
+  of (name, value) tuples.
 
 New features
 ------------
