@@ -254,8 +254,7 @@ class SignatureTranslatedAnonymousPackage(SignatureTranslatedPackage):
 class InstalledSTPackage(SignatureTranslatedPackage):
     @docstring_property(__doc__)
     def __doc__(self):
-        doc = list(['Python representation of an R package.',
-                    'R arguments:', ''])
+        doc = list(['Python representation of an R package.'])
         if not self.__rname__:
             doc.append('<No information available>')
         else:
@@ -271,7 +270,8 @@ class InstalledSTPackage(SignatureTranslatedPackage):
         super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
         for name, robj in self.__dict__.items():
             if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
-                self.__dict__[name] = DocumentedSTFunction(self.__dict__[name])
+                self.__dict__[name] = DocumentedSTFunction(self.__dict__[name],
+                                                           packagename = self.__rname__)
 
 
 class InstalledPackage(Package):

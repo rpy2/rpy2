@@ -2,7 +2,8 @@ import os
 from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.rinterface as rinterface
-#import rpy2.robjects.conversion as conversion
+from rpy2.robjects.help import docstring
+#import rpy2.robjects.conversion conversion
 from . import conversion
 
 baseenv_ri = rinterface.baseenv
@@ -145,17 +146,35 @@ class SignatureTranslatedFunction(Function):
                 kwargs[r_k] = v
         return super(SignatureTranslatedFunction, self).__call__(*args, **kwargs)
 class DocumentedSTFunction(SignatureTranslatedFunction):
+
+    def __init__(self, sexp, init_prm_translate = None,
+                 packagename = None):
+        super(DocumentedSTFunction, 
+              self).__init__(sexp, 
+                             init_prm_translate = init_prm_translate)
+        self.__rpackagename__ = packagename
+
     @docstring_property(__doc__)
     def __doc__(self):
-        doc = list(['Python representation of an R function.',
-                    'R arguments:', ''])
+        doc = ['Python representation of an R function.']
+        description = docstring(self.__rpackagename__,
+                                self.__rname__,
+                                sections=['description'])
+        doc.append(description)
+
         fm = _formals_fixed(self)
         names = fm.do_slot('names')
+        doc.append(self.__rname__+'(')
         for key, val in self._prm_translate.items():
             if key == '___':
                 description = '(was "..."). R ellipsis (any number of parameters)'
             else:
                 description = _repr_argval(fm[names.index(val)])
-            doc.append('%s: %s' % (key, description))
+            doc.append('    %s: %s' % (key, description))
+        doc.extend((')', ''))
+        arguments = docstring(self.__rpackagename__,
+                              self.__rname__,
+                              sections=['arguments'])
+        doc.append(arguments)
         doc.append('')
         return os.linesep.join(doc)
