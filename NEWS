@@ -1,3 +1,61 @@
+Release 2.4.0
+=============
+
+Changes
+-------
+
+- Conversion system slightly changed, with the optional
+  conversions for :mod:`numpy` and :mod:`pandas` modified
+  accordingly. The changes should only matter if using
+  third-party conversion functions.
+ 
+- The Python 3 version is now a first class citizen. `2to3`
+  is no longer used, and the code base is made directly
+  compatible with Python. This lowers significantly the
+  installation time with Python 3 
+  (which matters when developping rpy2).
+
+- The default options to initialize R (`rpy2.rinterface.initoptions') are no longer
+  `('rpy2', '--quiet', '--vanilla', '--no-save')` but now
+  `('rpy2', '--quiet', '--no-save')`.
+
+- :class:`robjects.vectors.ListVector` can be instanciated from
+  any objects with a method `items()` with the expectation that the method
+  returns an iterable of (name, value) tuples, or even be an iterable
+  of (name, value) tuples.
+
+New features
+------------
+
+- For instances of :class:`rpy2.robjects.Function`,
+  the `__doc__` is now a property fetching information
+  about the parameters in the R signature.
+
+- Convenience function :func:`rpy2.robjects.packages.data`
+  to extract the datasets in an R pacakges
+
+- :mod:`ipython`'s `rmagic` is now part of :mod:`rpy`
+
+- new method :meth:`rpy2.rinterface.SexpEnvironment.keys`, returnings
+  the names in the environment as a tuple of Python strings.
+
+Bugs fixed
+----------
+
+- :meth:`rpy2.rinterface.Sexp.do_slote` was crashing when
+  the parameter was an empty string (PR #155)
+
+
+Release 2.3.8
+=============
+
+Bugs fixed
+----------
+
+- Crash with R-3.0.2. Changes in R-3.0.2's C API coupled to a strange behaviour
+  with R promises caused the problem. (PR #150)
+
+
 Release 2.3.7
 =============
 
@@ -5,6 +63,12 @@ Bugs fixed
 ----------
 
 - ggplot2's "guides" were missing
+
+- ggplot2's "theme_classic" was missing (PR #143)
+
+- ggplot2's "element_rect" was missing (PR #144)
+
+- :func:`rpy2.interactive.packages` was broken (PR #142)
 
 
 Release 2.3.6

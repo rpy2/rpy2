@@ -2,15 +2,18 @@
 R help system.
 
 """
-import os, itertools
+import sys, os
 
 import sqlite3
 
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
 
-import packages
+from rpy2.robjects.packages_utils import get_packagepath, _libpaths, _packages
 import rpy2.rlike.container as rlc
+
+if sys.version_info[0] == 2:
+    range = xrange
 
 tmp = rinterface.baseenv['R.Version']()
 tmp_major = int(tmp[tmp.do_slot('names').index('major')][0])
@@ -34,6 +37,7 @@ def quiet_require(name, lib_loc = None):
     expr = rinterface.parse(expr_txt)
     ok = _eval(expr)
     return ok
+
 quiet_require('tools')
 _get_namespace = rinterface.baseenv['getNamespace']
 _lazyload_dbfetch = rinterface.baseenv['lazyLoadDBfetch']
@@ -88,7 +92,7 @@ def populate_metaRd_db(package_name, dbcon, package_path = None):
     - package_path: path the R package installation (default: None)
     """
     if package_path is None:
-        package_path = packages.get_packagepath(package_name)
+        package_path = get_packagepath(package_name)
 
     rpath = StrSexpVector((os.path.join(package_path,
                                         __package_meta),))
@@ -113,7 +117,7 @@ def populate_metaRd_db(package_name, dbcon, package_path = None):
     TITLE_I = rds.do_slot("names").index('Title')
     ENCODING_I = rds.do_slot("names").index('Encoding')
     ALIAS_I = rds.do_slot("names").index('Aliases')
-    for row_i in xrange(len(rds[0])):
+    for row_i in range(len(rds[0])):
         db_res = dbcon.execute('insert into rd_meta values (?,?,?,?,?,?,?)',
                                (row_i,
                                 rds[FILE_I][row_i], 
@@ -285,7 +289,7 @@ class Package(object):
     def __init__(self, package_name, package_path = None):
         self.__package_name = package_name
         if package_path is None:
-            package_path = packages.get_packagepath(package_name)
+            package_path = get_packagepath(package_name)
         self.__package_path = package_path
 
         rd_meta_dbcon = sqlite3.connect(':memory:')
@@ -354,25 +358,25 @@ def pages(topic):
     """ Get help pages corresponding to a given topic. """
     res = list()
     
-    for path in packages._libpaths():
-        for name in packages._packages(**{'all.available': True, 
-                                          'lib.loc': StrSexpVector((path,))}):
+    for path in _libpaths():
+        for name in _packages(**{'all.available': True, 
+                                 'lib.loc': StrSexpVector((path,))}):
             #FIXME: what if the same package is installed
             #       at different locations ?
             pack = Package(name)
             try:
                 page = pack.fetch(topic)
                 res.append(page)
-            except HelpNotFoundError, hnfe:
+            except HelpNotFoundError as hnfe:
                 pass
             
     return tuple(res)
 
 
-def docstring(package, alias):
+def docstring(package, alias, sections=['usage', 'arguments']):
     if not isinstance(package, Package):
         package = Package(package)
     page = package.fetch(alias)
-    usage = page.section_docstring('usage')
-    arguments = page.section_docstring('arguments')
+    return page.to_docstring(sections)
+    
 

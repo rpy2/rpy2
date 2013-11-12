@@ -8,7 +8,14 @@ try:
 except:
     has_pandas = False
 from IPython.testing.globalipapp import get_ipython
+
 from rpy2.interactive import rmagic
+# Importing rmagic has the side effect to activate the conversion
+# to and from pandas objects.
+# We null this out to make the test more unitary
+if rmagic.pandas2ri:
+    rmagic.pandas2ri.deactivate()
+
 # from IPython.core.getipython import get_ipython
 from rpy2 import rinterface
 import nose.tools as nt
@@ -18,7 +25,6 @@ class TestRmagic(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         '''Set up an IPython session just once.
-
         It'd be safer to set it up for each test, but for now, I'm mimicking the
         IPython team's logic.
         '''
@@ -26,6 +32,13 @@ class TestRmagic(unittest.TestCase):
         # This is just to get a minimally modified version of the changes
         # working
         cls.ip.magic('load_ext rpy2.interactive.rmagic')
+
+    def setUp(self):
+        if rmagic.pandas2ri:
+            rmagic.pandas2ri.activate()
+    def tearDown(self):
+        if rmagic.pandas2ri:
+            rmagic.pandas2ri.deactivate()
 
     def test_push(self):
         rm = rmagic.RMagics(self.ip)

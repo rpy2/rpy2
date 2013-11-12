@@ -54,7 +54,11 @@ class SexpTestCase(unittest.TestCase):
         for i, n in enumerate(iris_names):
             self.assertEqual(iris_names[i], names[i])
 
-        self.assertRaises(LookupError, sexp.do_slot, "foo")  
+        self.assertRaises(LookupError, sexp.do_slot, "foo")
+
+    def testDo_slot_emptyString(self):
+        sexp = rinterface.baseenv.get('pi')
+        self.assertRaises(ValueError, sexp.do_slot, "")
 
     def testDo_slot_assign(self):
         data_func = rinterface.baseenv.get("data")
@@ -72,6 +76,13 @@ class SexpTestCase(unittest.TestCase):
         slot = x.do_slot("foo")
         self.assertEqual(1, len(slot))
         self.assertEqual("bar", slot[0])
+
+    def testDo_slot_assign_emptyString(self):
+        #test that assigning slots is also creating the slot
+        x = rinterface.IntSexpVector([1,2,3])
+        self.assertRaises(ValueError, 
+                          x.do_slot_assign, "", 
+                          rinterface.StrSexpVector(["bar", ]))
 
     def testSexp_rsame_true(self):
         sexp_a = rinterface.baseenv.get("letters")

@@ -1,15 +1,15 @@
 import unittest
 import sys
 
-import test_SexpVector
-import test_SexpEnvironment
-import test_Sexp
-import test_SexpClosure
-import test_SexpVectorNumeric
-import test_Device
-import test_SexpExtPtr
+from . import test_SexpVector
+from . import test_SexpEnvironment
+from . import test_Sexp
+from . import test_SexpClosure
+from . import test_SexpVectorNumeric
+from . import test_Device
+from . import test_SexpExtPtr
 
-import test_EmbeddedR
+from . import test_EmbeddedR
 #import test_EmbeddedR_multithreaded
 
 

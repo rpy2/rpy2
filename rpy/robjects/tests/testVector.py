@@ -7,7 +7,8 @@ import datetime
 import rpy2.rlike.container as rlc
 from collections import OrderedDict
 
-IS_PYTHON3 = sys.version_info[0] == 3
+if sys.version_info[0] == 2:
+    range = xrange
 
 
 rlist = robjects.baseenv["list"]
@@ -52,13 +53,22 @@ class VectorTestCase(unittest.TestCase):
         self.assertEqual(False, vec[1])
         self.assertEqual(2, len(vec))
 
-    def testNewListVector(self):
-        vec = robjects.ListVector({'a': 1, 'b': 2})
+    def _testNewListVector(self, vec):
         self.assertTrue('a' in vec.names)
         self.assertTrue('b' in vec.names)
         self.assertEqual(2, len(vec))
         self.assertEqual(2, len(vec.names))
 
+    def testNewListVector(self):
+        vec = robjects.ListVector({'a': 1, 'b': 2})
+        self._testNewListVector(vec)
+        s = (('a', 1), ('b', 2))
+        vec = robjects.ListVector(s)
+        self._testNewListVector(vec)
+        it = iter(s)
+        vec = robjects.ListVector(s)
+        self._testNewListVector(vec)
+        
     def testAddOperators(self):
         seq_R = robjects.r["seq"]
         mySeqA = seq_R(0, 3)
@@ -124,7 +134,7 @@ class VectorTestCase(unittest.TestCase):
         #FIXME: simplify this
         r_names = robjects.baseenv["c"](*v_names)
         vec = robjects.baseenv["names<-"](vec, r_names)
-        for i in xrange(len(vec)):
+        for i in range(len(vec)):
             self.assertEqual(v_names[i], vec.names[i])
 
         vec.names[0] = 'x'
@@ -133,7 +143,7 @@ class VectorTestCase(unittest.TestCase):
         vec = robjects.Vector(array.array('i', [1,2,3]))
         names = ['x', 'y', 'z']
         vec.names = names
-        for i in xrange(len(vec)):
+        for i in range(len(vec)):
             self.assertEqual(names[i], vec.names[i])
 
     def testNAInteger(self):
@@ -169,19 +179,19 @@ class VectorTestCase(unittest.TestCase):
         s = repr(vec).split('\n')
         self.assertEqual('[IntVector, Formula]', s[1].strip())
 
-    def testIteritems(self):
+    def testItems(self):
         vec = robjects.IntVector(range(3))
         vec.names = robjects.StrVector('abc')
-        names = [k for k,v in vec.iteritems()]
+        names = [k for k,v in vec.items()]
         self.assertEqual(['a', 'b', 'c'], names)
-        values = [v for k,v in vec.iteritems()]
+        values = [v for k,v in vec.items()]
         self.assertEqual([0, 1, 2], values)
 
-    def testIteritemsNoNames(self):
+    def testItemsNoNames(self):
         vec = robjects.IntVector(range(3))
-        names = [k for k,v in vec.iteritems()]
+        names = [k for k,v in vec.items()]
         self.assertEqual([None, None, None], names)
-        values = [v for k,v in vec.iteritems()]
+        values = [v for k,v in vec.items()]
         self.assertEqual([0, 1, 2], values)
 
 class FactorVectorTestCase(unittest.TestCase):

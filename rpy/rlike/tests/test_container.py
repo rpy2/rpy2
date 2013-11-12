@@ -1,5 +1,7 @@
 import unittest
-import itertools
+import sys
+if sys.version_info[0] == 2:
+    from itertools import izip as zip
 import rpy2.rlike.container as rlc
 
 class OrdDictTestCase(unittest.TestCase):
@@ -80,7 +82,7 @@ class OrdDictTestCase(unittest.TestCase):
                 ('d', 2), ('e', 1))
         x = rlc.OrdDict(args)
         it = x.items()
-        for ki, ko in itertools.izip(args, it):
+        for ki, ko in zip(args, it):
             self.assertEqual(ki[0], ko[0])
             self.assertEqual(ki[1], ko[1])
 
@@ -226,13 +228,13 @@ class TaggedListTestCase(unittest.TestCase):
         tl.settag(1, 'z')
         self.assertEqual(tl.tags, ('a', 'z', 'c'))
 
-    def testfrom_iteritems(self):
+    def testfrom_items(self):
         od = rlc.OrdDict( (('a', 1), ('b', 2), ('c', 3)) )
-        tl = rlc.TaggedList.from_iteritems(od)
+        tl = rlc.TaggedList.from_items(od)
         self.assertEqual(('a', 'b', 'c'), tl.tags)
         self.assertEqual((1, 2, 3), tuple(tl))
 
-        tl = rlc.TaggedList.from_iteritems({'a':1, 'b':2, 'c':3})
+        tl = rlc.TaggedList.from_items({'a':1, 'b':2, 'c':3})
         self.assertEqual(set(('a', 'b', 'c')), set(tl.tags))
         self.assertEqual(set((1, 2, 3)), set(tuple(tl)))
         

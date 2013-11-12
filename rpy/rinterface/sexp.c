@@ -126,11 +126,20 @@ Sexp_do_slot(PyObject *self, PyObject *name)
 #if (PY_VERSION_HEX < 0x03010000)
   if (! PyString_Check(name)) {
 #else
-    if (! PyUnicode_Check(name)) {
+  if (! PyUnicode_Check(name)) {
 #endif
     PyErr_SetString(PyExc_TypeError, "The name must be a string.");
     return NULL;
   }
+#if (PY_VERSION_HEX < 0x03010000)
+  if (PyString_Size(name) == 0) {
+#else
+  if (PyUnicode_GET_LENGTH(name) == 0) {
+#endif
+    PyErr_SetString(PyExc_ValueError, "The name cannot be an empty string");
+    return NULL;
+  }
+
 #if (PY_VERSION_HEX < 0x03010000)
   char *name_str = PyString_AS_STRING(name);
 #else
@@ -169,12 +178,32 @@ Sexp_do_slot_assign(PyObject *self, PyObject *args)
   }
 
   char *name_str;
-  PyObject *value;
-  if (! PyArg_ParseTuple(args, "sO", 
-                         &name_str,
+  PyObject *name, *value;
+#if (PY_VERSION_HEX < 0x03010000)
+  if (! PyArg_ParseTuple(args, "SO", 
+                         &name,
                          &value)) {
     return NULL;
   }
+  if (PyString_Size(name) == 0) {
+    PyErr_SetString(PyExc_ValueError, "The name cannot be an empty string");
+    return NULL;
+  }    
+  name_str = PyString_AS_STRING(name);
+#else
+  if (! PyArg_ParseTuple(args, "UO", 
+                         &name,
+                         &value)) {
+    return NULL;
+  }
+  if (PyUnicode_GetLength(name) == 0) {
+    PyErr_SetString(PyExc_ValueError, "The name cannot be an empty string");
+    return NULL;
+  }
+  PyObject *pybytes = PyUnicode_AsLatin1String(name);
+  name_str = PyBytes_AsString(pybytes);
+  Py_DECREF(pybytes);
+#endif
 
   if (! PyObject_IsInstance(value, 
                           (PyObject*)&Sexp_Type)) {
@@ -366,7 +395,7 @@ Sexp_rclass_set(PyObject *self, PyObject *value, void *closure)
   if (! PyObject_IsInstance(value, 
 			    (PyObject*)&Sexp_Type)) {
     PyErr_Format(PyExc_ValueError, "Value must be a Sexp.");
-    return NULL;
+    return -1;
   }
   SEXP sexp_class = RPY_SEXP((PySexpObject*)value);
   SET_CLASS(sexp, sexp_class);

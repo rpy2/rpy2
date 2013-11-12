@@ -2,8 +2,8 @@ import itertools
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
-import help as rhelp
-import conversion
+from . import help as rhelp
+from . import conversion
 
 getmethod = rinterface.baseenv.get("getMethod")
 
@@ -20,7 +20,7 @@ class RS4(RObjectMixin, rinterface.SexpS4):
         return methods_env['slotNames'](self)
     
     def do_slot(self, name):
-        return conversion.ri2py(super(RS4, self).do_slot(name))
+        return conversion.ri2ro(super(RS4, self).do_slot(name))
 
     @staticmethod
     def isclass(name):
@@ -73,12 +73,12 @@ class RS4_Type(type):
 
         try:
             cls_rname = cls_dict['__rname__']
-        except KeyError, ke:
+        except KeyError as ke:
             cls_rname = name
 
         try:
             accessors = cls_dict['__accessors__']
-        except KeyError, ke:
+        except KeyError as ke:
             accessors = []
             
         for rname, where, \
@@ -98,7 +98,7 @@ class RS4_Type(type):
             r_meth = getmethod(StrSexpVector((rname, )), 
                                signature = signature,
                                where = where)
-            r_meth = conversion.ri2py(r_meth)
+            r_meth = conversion.ri2ro(r_meth)
             if as_property:
                 cls_dict[python_name] = property(r_meth, None, None,
                                                  doc = docstring)
@@ -120,21 +120,21 @@ class RS4Auto_Type(type):
     def __new__(mcs, name, bases, cls_dict):
         try:
             cls_rname = cls_dict['__rname__']
-        except KeyError, ke:
+        except KeyError as ke:
             cls_rname = name
 
         try:
             cls_rpackagename = cls_dict['__rpackagename__']
-        except KeyError, ke:
+        except KeyError as ke:
             cls_rpackagename = None
 
         try:
             cls_attr_translation = cls_dict['__attr_translation__']
-        except KeyError, ke:
+        except KeyError as ke:
             cls_attr_translation = {}
         try:
             cls_meth_translation = cls_dict['__meth_translation__']
-        except KeyError, ke:
+        except KeyError as ke:
             cls_meth_translation = {}
 
         cls_def = getclassdef(cls_rname, cls_rpackagename)
@@ -148,12 +148,12 @@ class RS4Auto_Type(type):
             try:
                 #R's classes are sometimes documented with a prefix 'class.'
                 page_help = pack_help.fetch(cls_def.__rname__ + "-class")
-            except rhelp.HelpNotFoundError, hnf:
+            except rhelp.HelpNotFoundError as hnf:
                 pass
             if page_help is None:
                 try:
                     page_help = pack_help.fetch(cls_def.__rname__)
-                except rhelp.HelpNotFoundError, hnf:
+                except rhelp.HelpNotFoundError as hnf:
                     pass
             if page_help is None:
                 cls_dict['__doc__'] = 'Unable to fetch R documentation for the class'
@@ -164,7 +164,7 @@ class RS4Auto_Type(type):
             #FIXME: sanity check on the slot name
             try:
                 slt_name = cls_attr_translation[slt_name]
-            except KeyError, ke:
+            except KeyError as ke:
                 # no translation: abort
                 pass
 
@@ -208,7 +208,7 @@ class RS4Auto_Type(type):
             #FIXME: sanity check on the function name
                 try:
                     meth_name = cls_meth_translation[meth_name]
-                except KeyError, ke:
+                except KeyError as ke:
                     # no translation: abort
                     pass
 
@@ -236,7 +236,7 @@ def set_accessors(cls, cls_name, where, acs):
         r_meth = getmethod(StrSexpVector((r_name, )), 
                            signature = StrSexpVector((cls_name, )),
                            where = where)
-        r_meth = conversion.ri2py(r_meth)
+        r_meth = conversion.ri2ro(r_meth)
         if as_property:
             setattr(cls, python_name, property(r_meth, None, None))
         else:

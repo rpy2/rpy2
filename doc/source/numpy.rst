@@ -31,11 +31,11 @@ present an interface recognized by `numpy`.
 
 .. code-block:: python
 
-   from rpy2.robjects.packages import importr
+   from rpy2.robjects.packages import importr, data
    import numpy
 
    datasets = importr('datasets')
-   ostatus = datasets.data.fetch('occupationalStatus')['occupationalStatus']
+   ostatus = data(datasets).fetch('occupationalStatus')['occupationalStatus']
    ostatus_np = numpy.array(ostatus)
    ostatus_npnc = numpy.asarray(ostatus)
 

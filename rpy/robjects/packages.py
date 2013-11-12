@@ -1,11 +1,14 @@
+import os
 from types import ModuleType
 from warnings import warn
 import rpy2.rinterface as rinterface
 import rpy2.robjects.lib
-import conversion as conversion
-from rpy2.robjects.functions import SignatureTranslatedFunction
+from . import conversion
+from rpy2.robjects.functions import SignatureTranslatedFunction, docstring_property, DocumentedSTFunction
 from rpy2.robjects.constants import NULL
 from rpy2.robjects import Environment
+from rpy2.robjects.packages_utils import _libpaths, get_packagepath, _packages
+import rpy2.robjects.help as rhelp
 
 _require = rinterface.baseenv['require']
 _as_env = rinterface.baseenv['as.environment']
@@ -14,12 +17,6 @@ _system_file = rinterface.baseenv['system.file']
 _get_namespace = rinterface.baseenv['getNamespace']
 _get_namespace_version = rinterface.baseenv['getNamespaceVersion']
 _get_namespace_exports = rinterface.baseenv['getNamespaceExports']
-try:
-    _find_package = rinterface.baseenv['find.package']
-except LookupError:
-    _find_package = rinterface.baseenv['.find.package']
-_packages = rinterface.baseenv['.packages']
-_libpaths = rinterface.baseenv['.libPaths']
 _loaded_namespaces = rinterface.baseenv['loadedNamespaces']
 _globalenv = rinterface.globalenv
 _new_env = rinterface.baseenv["new.env"]
@@ -33,13 +30,14 @@ _options = rinterface.baseenv['options']
 
 
 def no_warnings(func):
+    """ Decorator to run R functions without warning. """
     def run_withoutwarnings(*args, **kwargs):
         warn_i = _options().do_slot('names').index('warn')
         oldwarn = _options()[warn_i][0]
         _options(warn = -1)
         try:
             res = func(*args, **kwargs)
-        except Exception, e:
+        except Exception as e:
             # restore the old warn setting before propagating
             # the exception up
             _options(warn = oldwarn)
@@ -73,11 +71,6 @@ def quiet_require(name, lib_loc = None):
     expr = rinterface.parse(expr_txt)
     ok = _eval_quiet(expr)
     return ok
-
-def get_packagepath(package):
-    """ return the path to an R package installed """
-    res = _find_package(rinterface.StrSexpVector((package, )))
-    return res[0]
 
 
 class PackageData(object):
@@ -227,7 +220,7 @@ class Package(ModuleType):
             if (rpyname != rname) and (rname in self._exported_names):
                 self._exported_names.remove(rname)
                 self._exported_names.add(rpyname)
-            rpyobj = conversion.ri2py(self._env[rname])
+            rpyobj = conversion.ri2ro(self._env[rname])
             if hasattr(rpyobj, '__rname__'):
                 rpyobj.__rname__ = rname
             #FIXME: shouldn't the original R name be also in the __dict__ ?
@@ -238,10 +231,15 @@ class Package(ModuleType):
         s = super(Package, self).__repr__()
         return 'rpy2.robjecs.packages.Package as a ' + s
 
+
+
 class SignatureTranslatedPackage(Package):
+    """ R package in which the R functions had their signatures 
+    'translated' (that this the named parameters were made to 
+    to conform Python's rules for vaiable names)."""
     def __fill_rpy2r__(self, on_conflict = 'fail'):
         super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
-        for name, robj in self.__dict__.iteritems():
+        for name, robj in self.__dict__.items():
             if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
                 self.__dict__[name] = SignatureTranslatedFunction(self.__dict__[name])
                 
@@ -252,6 +250,45 @@ class SignatureTranslatedAnonymousPackage(SignatureTranslatedPackage):
         reval(string, env)
         super(SignatureTranslatedAnonymousPackage, self).__init__(env,
                                                                   name)
+
+class InstalledSTPackage(SignatureTranslatedPackage):
+    @docstring_property(__doc__)
+    def __doc__(self):
+        doc = list(['Python representation of an R package.'])
+        if not self.__rname__:
+            doc.append('<No information available>')
+        else:
+            try:
+                doc.append(rhelp.docstring(self.__rname__,
+                                           self.__rname__ + '-package',
+                                           sections=['description']))
+            except rhelp.HelpNotFoundError as hnf:
+                doc.append('[R help was not found]')
+        return os.linesep.join(doc)
+
+    def __fill_rpy2r__(self, on_conflict = 'fail'):
+        super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
+        for name, robj in self.__dict__.items():
+            if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
+                self.__dict__[name] = DocumentedSTFunction(self.__dict__[name],
+                                                           packagename = self.__rname__)
+
+
+class InstalledPackage(Package):
+    @docstring_property(__doc__)
+    def __doc__(self):
+        doc = list(['Python representation of an R package.',
+                    'R arguments:', ''])
+        if not self.__rname__:
+            doc.append('<No information available>')
+        else:
+            try:
+                doc.append(rhelp.docstring(self.__rname__,
+                                           self.__rname__ + '-package',
+                                           sections=['description']))
+            except rhelp.HelpNotFoundError as hnf:
+                doc.append('[R help was not found]')
+        return os.linesep.join(doc)
 
 class LibraryError(ImportError):
     """ Error occuring when importing an R library """
@@ -276,7 +313,7 @@ def importr(name,
 
     - robject_translations: dict (default: {})
 
-    - signature_translation: dict (default: {})
+    - signature_translation: (True or False)
 
     - suppress_message: Suppress messages R usually writes on the console
       (defaut: True)
@@ -310,17 +347,18 @@ def importr(name,
         env = _as_env(rinterface.StrSexpVector(['package:'+name, ]))
         exported_names = None
         version = None
+
     if signature_translation:
-        pack = SignatureTranslatedPackage(env, name, 
-                                          translation = robject_translations,
-                                          exported_names = exported_names,
-                                          on_conflict = on_conflict,
-                                          version = version)
+        pack = InstalledSTPackage(env, name, 
+                                  translation = robject_translations,
+                                  exported_names = exported_names,
+                                  on_conflict = on_conflict,
+                                  version = version)
     else:
-        pack = Package(env, name, translation = robject_translations,
-                       exported_names = exported_names,
-                       on_conflict = on_conflict,
-                       version = version)
+        pack = InstalledPackage(env, name, translation = robject_translations,
+                                exported_names = exported_names,
+                                on_conflict = on_conflict,
+                                version = version)
     if data:
         if pack.__rdata__ is not None:
             warn('While importing the R package "%s", the rpy2 Package object is masking a translated R symbol "__rdata__" already present' % name)
@@ -328,10 +366,13 @@ def importr(name,
 
     return pack
 
+def data(package):
+    """ Return the PackageData for the given package."""
+    return package.__rdata__
 
 def wherefrom(symbol, startenv = rinterface.globalenv):
     """ For a given symbol, return the environment
-    this symbol is first found in, starting from 'startenv'
+    this symbol is first found in, starting from 'startenv'.
     """
     env = startenv
     obj = None
@@ -340,11 +381,11 @@ def wherefrom(symbol, startenv = rinterface.globalenv):
         try:
             obj = env[symbol]
             tryagain = False
-        except LookupError, knf:
+        except LookupError as knf:
             env = env.enclos()
             if env.rsame(rinterface.emptyenv):
                 tryagain = False
             else:
                 tryagain = True
-    return conversion.ri2py(env)
+    return conversion.ri2ro(env)
 

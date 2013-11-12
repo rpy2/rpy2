@@ -4,7 +4,7 @@ import rpy2.rinterface
 
 rpy2.rinterface.initr()
 
-import conversion
+from . import conversion
 
 class RObjectMixin(object):
     """ Class to provide methods common to all RObject instances """
@@ -44,7 +44,7 @@ class RObjectMixin(object):
                 os.unlink(tfname)
             except WindowsError:
                 if os.path.exists(tfname):
-                    print 'Unable to unlink tempfile %s' % tfname
+                    print('Unable to unlink tempfile %s' % tfname)
             s = str.join(os.linesep, s)
         else:
             rpy2.rinterface.set_writeconsole(writeconsole)
@@ -62,7 +62,7 @@ class RObjectMixin(object):
             res = self.__rclass(self)
             #res = conversion.ri2py(res)
             return res
-        except rpy2.rinterface.RRuntimeError, rre:
+        except rpy2.rinterface.RRuntimeError as rre:
             if self.typeof == rpy2.rinterface.SYMSXP:
                 #unevaluated expression: has no class
                 return (None, )

@@ -105,6 +105,9 @@ class ImportrTestCase(unittest.TestCase):
         self.assertTrue(isinstance(datasets, robjects.packages.Package))
         self.assertTrue(isinstance(datasets.__rdata__, 
                                    robjects.packages.PackageData))
+        self.assertTrue(isinstance(robjects.packages.data(datasets), 
+                                   robjects.packages.PackageData))
+        
 
 
         

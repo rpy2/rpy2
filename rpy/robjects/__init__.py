@@ -21,13 +21,21 @@ from rpy2.robjects.functions import Function, SignatureTranslatedFunction
 from rpy2.robjects.environments import Environment
 from rpy2.robjects.methods import RS4
 
-import conversion
+from . import conversion
 
 from rpy2.rinterface import Sexp, SexpVector, SexpClosure, SexpEnvironment, SexpS4, SexpExtPtr
 _globalenv = rinterface.globalenv
 
 # missing values
 from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Complex, NULL
+
+if sys.version_info[0] == 2:
+    py3str = unicode
+    py3bytes = str
+else:
+    long = int
+    py3str = str
+    py3bytes = bytes
 
 _reval = rinterface.baseenv['eval']
 
@@ -43,7 +51,7 @@ def reval(string, envir = _globalenv):
 
 #FIXME: close everything when leaving (check RPy for that).
 
-def default_ri2py(o):
+def default_ri2ro(o):
     """ Convert an :class:`rpy2.rinterface.Sexp` object to a higher-level object,
     without copying the R object.
 
@@ -54,7 +62,7 @@ def default_ri2py(o):
     res = None
     try:
         rcls = o.do_slot("class")
-    except LookupError, le:
+    except LookupError as le:
         rcls = [None]
 
     if isinstance(o, RObject):
@@ -69,7 +77,7 @@ def default_ri2py(o):
                     res = vectors.Matrix(o)
                 else:
                     res = vectors.Array(o)
-            except LookupError, le:
+            except LookupError as le:
                 if o.typeof == rinterface.INTSXP:
                     if 'factor' in rcls:
                         res = vectors.FactorVector(o)
@@ -103,7 +111,7 @@ def default_ri2py(o):
         res = RObject(o)
     return res
 
-conversion.ri2py = default_ri2py
+conversion.ri2ro = default_ri2ro
 
 
 def default_py2ri(o):
@@ -136,12 +144,12 @@ def default_py2ri(o):
             res = rinterface.SexpVector([o, ], rinterface.INTSXP)
     elif isinstance(o, float):
         res = rinterface.SexpVector([o, ], rinterface.REALSXP)
-    elif isinstance(o, str):
+    elif isinstance(o, py3bytes):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
-    elif isinstance(o, unicode):
+    elif isinstance(o, py3str):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
     elif isinstance(o, list):
-        res = r.list(*[conversion.ri2py(conversion.py2ri(x)) for x in o])
+        res = r.list(*[conversion.ri2ro(conversion.py2ri(x)) for x in o])
     elif isinstance(o, complex):
         res = rinterface.SexpVector([o, ], rinterface.CPLXSXP)
     else:
@@ -158,7 +166,7 @@ def default_py2ro(o):
     :rtype: :class:`rpy2.robjects.RObject` (and subclasses)
     """
     res = conversion.py2ri(o)
-    return conversion.ri2py(res)
+    return conversion.ri2ro(res)
 
 conversion.py2ro = default_py2ro
 
@@ -181,7 +189,7 @@ class Formula(RObjectMixin, rinterface.Sexp):
     def getenvironment(self):
         """ Get the environment in which the formula is finding its symbols."""
         res = self.do_slot(".Environment")
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         return res
 
     def setenvironment(self, val):
@@ -208,17 +216,17 @@ class R(object):
     def __getattribute__(self, attr):
         try:
             return super(R, self).__getattribute__(attr)
-        except AttributeError, ae:
+        except AttributeError as ae:
             orig_ae = ae
 
         try:
             return self.__getitem__(attr)
-        except LookupError, le:
+        except LookupError as le:
             raise orig_ae
 
     def __getitem__(self, item):
         res = _globalenv.get(item)
-        res = conversion.ri2py(res)
+        res = conversion.ri2ro(res)
         res.__rname__ = item
         return res
 
@@ -242,6 +250,6 @@ class R(object):
 
 r = R()
 
-globalenv = conversion.ri2py(_globalenv)
-baseenv = conversion.ri2py(rinterface.baseenv)
-emptyenv = conversion.ri2py(rinterface.emptyenv)
+globalenv = conversion.ri2ro(_globalenv)
+baseenv = conversion.ri2ro(rinterface.baseenv)
+emptyenv = conversion.ri2ro(rinterface.emptyenv)
