@@ -13,8 +13,8 @@ from rpy2.ipython import rmagic
 # Importing rmagic has the side effect to activate the conversion
 # to and from pandas objects.
 # We null this out to make the test more unitary
-if rmagic.pandas2ri:
-    rmagic.pandas2ri.deactivate()
+# if rmagic.pandas2ri:
+#     rmagic.pandas2ri.deactivate()
 
 # from IPython.core.getipython import get_ipython
 from rpy2 import rinterface
@@ -35,12 +35,12 @@ class TestRmagic(unittest.TestCase):
         # working
         cls.ip.magic('load_ext rpy2.ipython')
 
-    def setUp(self):
-        if rmagic.pandas2ri:
-            rmagic.pandas2ri.activate()
-    def tearDown(self):
-        if rmagic.pandas2ri:
-            rmagic.pandas2ri.deactivate()
+    # def setUp(self):
+    #     if rmagic.pandas2ri:
+    #         rmagic.pandas2ri.activate()
+    # def tearDown(self):
+    #     if rmagic.pandas2ri:
+    #         rmagic.pandas2ri.deactivate()
 
     def test_push(self):
         rm = rmagic.RMagics(self.ip)
