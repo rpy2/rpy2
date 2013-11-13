@@ -54,13 +54,13 @@ import numpy as np
 
 import rpy2.rinterface as ri
 import rpy2.robjects as ro
-try:
-    from rpy2.robjects import pandas2ri
-    pandas2ri.activate()
-except ImportError:
-    pandas2ri = None
-    from rpy2.robjects import numpy2ri
-    numpy2ri.activate()
+# try:
+#     from rpy2.robjects import pandas2ri
+#     pandas2ri.activate()
+# except ImportError:
+#     pandas2ri = None
+#     from rpy2.robjects import numpy2ri
+#     numpy2ri.activate()
 
 # IPython imports
 
