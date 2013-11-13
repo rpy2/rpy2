@@ -18,6 +18,8 @@ if rmagic.pandas2ri:
 
 # from IPython.core.getipython import get_ipython
 from rpy2 import rinterface
+# XXX Need to get rid of nose tests
+# For now, tests won't run without nose
 import nose.tools as nt
 
 
