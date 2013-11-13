@@ -54,13 +54,13 @@ import numpy as np
 
 import rpy2.rinterface as ri
 import rpy2.robjects as ro
-# try:
-#     from rpy2.robjects import pandas2ri
-#     pandas2ri.activate()
-# except ImportError:
-#     pandas2ri = None
-#     from rpy2.robjects import numpy2ri
-#     numpy2ri.activate()
+try:
+    from rpy2.robjects import pandas2ri
+    pandas2ri.activate()
+except ImportError:
+    pandas2ri = None
+    from rpy2.robjects import numpy2ri
+    numpy2ri.activate()
 
 # IPython imports
 
@@ -197,9 +197,11 @@ class RMagics(Magics):
         old_writeconsole = ri.get_writeconsole()
         ri.set_writeconsole(self.write_console)
         try:
-            res = ro.r("withVisible({%s})" % line)
-            value = res[0] #value (R object)
-            visible = ro.conversion.ri2py(res[1])[0] #visible (boolean)
+            # res = ro.r("withVisible({%s})" % line)
+            # value = res[0] #value (R object)
+            # visible = ro.conversion.ri2py(res[1])[0] #visible (boolean)
+            # ri2py is no longer for this world, I think?
+            value, visible = ro.r("withVisible({%s})" % line)
         except (ri.RRuntimeError, ValueError) as exception:
             warning_or_other_msg = self.flush() # otherwise next return seems to have copy of error
             raise RInterpreterError(line, str_to_unicode(str(exception)), warning_or_other_msg)
