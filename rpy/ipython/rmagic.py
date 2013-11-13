@@ -4,7 +4,8 @@
 Rmagic
 ======
 
-Magic command interface for interactive work with R via rpy2
+Magic command interface for interactive work with R in ipython. %R and %%R are
+the line and cell magics, respectively.
 
 .. note::
 
@@ -13,7 +14,7 @@ Magic command interface for interactive work with R via rpy2
 Usage
 =====
 
-To enable the magics below, execute ``%load_ext rpy2.interactive.rmagic``.
+To enable the magics below, execute ``%load_ext rpy2.ipython``.
 
 ``%R``
 
@@ -47,6 +48,8 @@ from shutil import rmtree
 
 # numpy and rpy2 imports
 
+# XXX rpy2 strives to avoid hard dependencies on numpy. Can we make this
+# optional?
 import numpy as np
 
 import rpy2.rinterface as ri
