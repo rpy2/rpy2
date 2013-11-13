@@ -9,7 +9,7 @@ except:
     has_pandas = False
 from IPython.testing.globalipapp import get_ipython
 
-from rpy2.interactive import rmagic
+from rpy2.ipython import rmagic
 # Importing rmagic has the side effect to activate the conversion
 # to and from pandas objects.
 # We null this out to make the test more unitary
@@ -31,7 +31,7 @@ class TestRmagic(unittest.TestCase):
         cls.ip = get_ipython()
         # This is just to get a minimally modified version of the changes
         # working
-        cls.ip.magic('load_ext rpy2.interactive.rmagic')
+        cls.ip.magic('load_ext rpy2.ipython')
 
     def setUp(self):
         if rmagic.pandas2ri:
