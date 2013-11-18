@@ -15,15 +15,10 @@ else:
     from StringIO import StringIO
 
 from rpy2.ipython import rmagic
-# Importing rmagic has the side effect to activate the conversion
-# to and from pandas objects.
-# We null this out to make the test more unitary
 if rmagic.pandas2ri:
-    rmagic.pandas2ri.deactivate()
     activate = rmagic.pandas2ri.activate
     deactivate = rmagic.pandas2ri.deactivate
 elif rmagic.numpy2ri:
-    rmagic.numpy2ri.deactivate()
     activate = rmagic.numpy2ri.activate
     deactivate = rmagic.numpy2ri.deactivate
 else:
