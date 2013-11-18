@@ -1,4 +1,3 @@
-from StringIO import StringIO
 import unittest
 
 import numpy as np
@@ -8,6 +7,12 @@ try:
 except:
     has_pandas = False
 from IPython.testing.globalipapp import get_ipython
+from IPython.utils.py3compat import PY3
+
+if PY3:
+    from io import StringIO
+else:
+    from StringIO import StringIO
 
 from rpy2.ipython import rmagic
 # Importing rmagic has the side effect to activate the conversion
