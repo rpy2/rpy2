@@ -72,10 +72,14 @@ def ri2pandas(o):
     return res
 
 def activate():
+    global original_py2ri, original_ri2ro
+
     #FIXME: shouldn't the use of numpy conversion be made
     #       explicit in the pandas conversion ?
     #       (and this remove the need to activate it ?)
     numpy2ri.activate()
+    original_py2ri = conversion.py2ri
+    original_ri2ro = conversion.ri2ro
     conversion.py2ri = pandas2ri
     conversion.ri2ro = ri2pandas 
 

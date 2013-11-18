@@ -114,6 +114,7 @@ def ri2numpy(o):
 
 
 def activate():
+    global original_py2ri, original_ri2ro, original_py2ro
     original_py2ri = conversion.py2ri
     original_ri2ro = conversion.ri2ro
     original_py2ro = conversion.py2ro
