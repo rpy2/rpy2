@@ -20,11 +20,24 @@ if has_pandas:
 class PandasConversionsTestCase(unittest.TestCase):
 
     def testActivate(self):
+        robjects.conversion.py2ri = robjects.default_py2ri
         self.assertNotEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
         rpyp.activate()
         self.assertEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
         rpyp.deactivate()
+        self.assertEqual(robjects.default_py2ri, robjects.conversion.py2ri)
+
+    def testActivateTwice(self):
+        robjects.conversion.py2ri = robjects.default_py2ri
         self.assertNotEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
+        rpyp.activate()
+        self.assertEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
+        rpyp.activate()
+        self.assertEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
+        rpyp.deactivate()
+        self.assertEqual(robjects.default_py2ri, robjects.conversion.py2ri)
+        rpyp.deactivate()
+        self.assertEqual(robjects.default_py2ri, robjects.conversion.py2ri)
 
     def testDataFrame(self):
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),

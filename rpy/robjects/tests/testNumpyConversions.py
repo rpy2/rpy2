@@ -24,6 +24,22 @@ class NumpyConversionsTestCase(unittest.TestCase):
     def tearDown(self):
         rpyn.deactivate()
 
+    def testActivate(self):
+        # setUp method has already activated numpy converter
+        self.assertEqual(rpyn.numpy2ri, robjects.conversion.py2ri)
+        rpyn.deactivate()
+        self.assertNotEqual(rpyn.numpy2ri, robjects.conversion.py2ri)
+
+    def testActivateTwice(self):
+        # setUp method has already activated numpy converter
+        self.assertEqual(rpyn.numpy2ri, robjects.conversion.py2ri)
+        rpyn.activate()
+        self.assertEqual(rpyn.numpy2ri, robjects.conversion.py2ri)
+        rpyn.deactivate()
+        self.assertNotEqual(rpyn.numpy2ri, robjects.conversion.py2ri)
+        rpyn.deactivate()
+        self.assertNotEqual(rpyn.numpy2ri, robjects.conversion.py2ri)
+
     def checkHomogeneous(self, obj, mode, storage_mode):
         converted = robjects.conversion.py2ri(obj)
         self.assertEqual(r["mode"](converted)[0], mode)
