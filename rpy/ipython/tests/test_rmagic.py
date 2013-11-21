@@ -33,10 +33,6 @@ else:
 
 # from IPython.core.getipython import get_ipython
 from rpy2 import rinterface
-# XXX Need to get rid of nose tests
-# For now, tests won't run without nose
-import nose.tools as nt
-
 
 class TestRmagic(unittest.TestCase):
     @classmethod
@@ -90,12 +86,12 @@ result = rmagic_addone(12344)
         rinterface.set_writeconsole(sio.write)
         try:
             rm.r('print(df$b[1])')
-            nt.assert_in('[1] bar', sio.getvalue())
+            self.assertIn('[1] bar', sio.getvalue())
         finally:
             rinterface.set_writeconsole(None)
 
         # Values come packaged in arrays, so we unbox them to test.
-        nt.assert_equal(rm.r('df$a[2]')[0], 5)
+        self.assertEqual(rm.r('df$a[2]')[0], 5)
         missing = rm.r('df$c[1]')[0]
         assert np.isnan(missing), missing
 
@@ -117,18 +113,18 @@ result = rmagic_addone(12344)
         w = self.ip.run_line_magic('Rget', '-d datapy')
         np.testing.assert_almost_equal(w['x'], v['x'])
         np.testing.assert_almost_equal(w['y'], v['y'])
-        nt.assert_true(np.all(w['z'] == v['z']))
+        self.assertTrue(np.all(w['z'] == v['z']))
         np.testing.assert_equal(id(w.data), id(v.data))
-        nt.assert_equal(w.dtype, v.dtype)
+        self.assertTrue(w.dtype, v.dtype)
 
         self.ip.run_cell_magic('R', ' -d datar', 'datar=datapy')
 
         u = self.ip.run_line_magic('Rget', ' -d datar')
         np.testing.assert_almost_equal(u['x'], v['x'])
         np.testing.assert_almost_equal(u['y'], v['y'])
-        nt.assert_true(np.all(u['z'] == v['z']))
+        self.assertTrue(np.all(u['z'] == v['z']))
         np.testing.assert_equal(id(u.data), id(v.data))
-        nt.assert_equal(u.dtype, v.dtype)
+        self.assertEqual(u.dtype, v.dtype)
 
 
     def test_cell_magic(self):
@@ -151,16 +147,16 @@ result = rmagic_addone(12344)
         self.ip.push({'x':0})
         self.ip.run_line_magic('R', '-i x -o result result <-x+1')
         result = self.ip.user_ns['result']
-        nt.assert_equal(result[0], 1)
+        self.assertEqual(result[0], 1)
 
         self.ip.run_cell('''def rmagic_addone(u):
         %R -i u -o result result <- u+1
         return result[0]''')
         self.ip.run_cell('result = rmagic_addone(1)')
         result = self.ip.user_ns['result']
-        nt.assert_equal(result, 2)
+        self.assertEqual(result, 2)
 
-        nt.assert_raises(
+        self.assertRaises(
             NameError,
             self.ip.run_line_magic,
             "R",
