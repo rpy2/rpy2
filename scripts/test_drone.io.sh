@@ -10,15 +10,18 @@ NUMPY_VERSION="1.7.1"
 
 # Color escape codes
 GREEN='\e[0;32m'
+RED='\e[0;31m'
 NC='\e[0m'
 
 # Install R and numpy dependencies
-sudo apt-get install r-base python-numpy cython libatlas-dev liblapack-dev gfortran
+sudo apt-get install r-base cython libatlas-dev liblapack-dev gfortran 
 
 # Install ggplot2 r-cran package
 export R_LIBS_USER="$HOME/rlibs/"
 mkdir -p $R_LIBS_USER
 R -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org")'
+
+STATUS=0
 
 # Launch tests for each Python version
 for VERSION in $PYTHON_VERSIONS; do
@@ -36,7 +39,8 @@ for VERSION in $PYTHON_VERSIONS; do
   # Use the astropy wheels repositories to speedup numpy
   # installation
   pip install --use-wheel --find-links http://wheels.astropy.org/ \
-      --find-links http://wheels2.astropy.org/ numpy==$NUMPY_VERSION pandas
+      --find-links http://wheels2.astropy.org/ \
+      numpy==$NUMPY_VERSION pandas ipython
   
   # Build rpy2
   python setup.py build --build-lib build-$VERSION
@@ -45,6 +49,10 @@ for VERSION in $PYTHON_VERSIONS; do
   # Launch tests
   python -m rpy2.tests
   if [ $? -eq 0 ]; then
-    echo -e "${GREEN}Passed tests for Python ${VERSION}${NC}"
+    echo -e "${GREEN}Tests PASSED for Python ${VERSION}${NC}"
+  else
+    STATUS=1
+    echo -e "${RED}Tests FAILED for Python ${VERSION}${NC}"
   fi
 done
+exit $STATUS
