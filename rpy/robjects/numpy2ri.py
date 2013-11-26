@@ -7,9 +7,9 @@ import numpy
 
 #from rpy2.robjects.vectors import DataFrame, Vector, ListVector
 
-original_py2ri = conversion.py2ri
-original_ri2ro = conversion.ri2ro
-original_py2ro = conversion.py2ro
+original_py2ri = None
+original_ri2ro = None
+original_py2ro = None 
 
 # The possible kind codes are listed at
 #   http://numpy.scipy.org/array_interface.shtml
@@ -114,6 +114,12 @@ def ri2numpy(o):
 
 
 def activate():
+    global original_py2ri, original_ri2ro, original_py2ro
+
+    # If module is already activated, there is nothing to do
+    if original_py2ri: 
+        return
+
     original_py2ri = conversion.py2ri
     original_ri2ro = conversion.ri2ro
     original_py2ro = conversion.py2ro
@@ -123,7 +129,14 @@ def activate():
     conversion.py2ro = numpy2ro
 
 def deactivate():
-    """ """
+    global original_py2ri, original_ri2ro, original_py2ro
+
+    # If module has never been activated or already deactivated,
+    # there is nothing to do
+    if not original_py2ri:
+        return
+
     conversion.py2ri = original_py2ri
     conversion.ri2ro = original_ri2ro
     conversion.py2ro = original_py2ro
+    original_py2ri = original_ri2ro = original_py2ro = None

@@ -54,13 +54,12 @@ import numpy as np
 
 import rpy2.rinterface as ri
 import rpy2.robjects as ro
+
 try:
     from rpy2.robjects import pandas2ri
-    pandas2ri.activate()
 except ImportError:
-    pandas2ri = None
     from rpy2.robjects import numpy2ri
-    numpy2ri.activate()
+    pandas2ri = None
 
 # IPython imports
 
@@ -684,6 +683,12 @@ __doc__ = __doc__.format(
 
 def load_ipython_extension(ip):
     """Load the extension in IPython."""
+       
+    if pandas2ri:
+        pandas2ri.activate()
+    else:
+        numpy2ri.activate()
+
     ip.register_magics(RMagics)
     # Initialising rpy2 interferes with readline. Since, at this point, we've
     # probably just loaded rpy2, we reset the delimiters. See issue gh-2759.

@@ -10,8 +10,8 @@ from pandas.core.index import Index as PandasIndex
 from collections import OrderedDict
 from rpy2.robjects.vectors import DataFrame, Vector, ListVector, StrVector, IntVector, POSIXct
 
-original_py2ri = conversion.py2ri
-original_ri2ro = conversion.ri2ro
+original_py2ri = None 
+original_ri2ro = None 
 
 
 # pandas is requiring numpy. We add the numpy conversion will be
@@ -72,14 +72,30 @@ def ri2pandas(o):
     return res
 
 def activate():
+    global original_py2ri, original_ri2ro
+
+    # If module is already activated, there is nothing to do
+    if original_py2ri: 
+        return
+
     #FIXME: shouldn't the use of numpy conversion be made
     #       explicit in the pandas conversion ?
     #       (and this remove the need to activate it ?)
     numpy2ri.activate()
+    original_py2ri = conversion.py2ri
+    original_ri2ro = conversion.ri2ro
     conversion.py2ri = pandas2ri
     conversion.ri2ro = ri2pandas 
 
 def deactivate():
+    global original_py2ri, original_ri2ro
+
+    # If module has never been activated or already deactivated,
+    # there is nothing to do
+    if not original_py2ri:
+        return
+
     conversion.py2ri = original_py2ri
     conversion.ri2ro = original_ri2ro 
+    original_py2ri = original_ri2ro = None
     numpy2ri.deactivate()

@@ -43,7 +43,7 @@ def main(verbosity=1):
     # One specific message is regarding package_dependencies from the tools
     # package.
     # rpy_root = dirname(rpy2.__file__)
-    # alltests = unittest.defaultTestLoader.discover(rpy2, pattern='test*')
+    # alltests = unittest.defaultTestLoader.discover(rpy_root, pattern='test*')
 
     # This is still pretty generic and requires very little maintenence (except
     # for the robjects.tests.load_tests() function, which is still coded by hand
