@@ -50,7 +50,10 @@ def main(verbosity=1):
     alltests = faster_load_tests(unittest.defaultTestLoader,
                                  unittest.TestSuite(),
                                  'test*')
-    unittest.TextTestRunner(verbosity=verbosity).run(alltests)
+    result = unittest.TextTestRunner(verbosity=verbosity).run(alltests)
+
+    # Return exit code 1 if any test failed
+    sys.exit(int(bool(result.failures or result.errors)))
 
 if __name__ == "__main__":
     import sys, rpy2.rinterface
