@@ -179,7 +179,7 @@ class RMagics(Magics):
 
         device : ['png', 'X11', 'svg']
             Device to be used for plotting. 
-            Currently only "png", "X11" and "svg" are supported,
+            Currently only 'png', 'X11' and 'svg' are supported,
             with 'png' and 'svg' being most useful in the notebook,
             and 'X11' allowing interactive plots in the terminal.
 
@@ -446,7 +446,7 @@ class RMagics(Magics):
     @argument_group("SVG", "SVG specific arguments")
     @argument(
         '--isolatesvg',
-        help='Each SVG figure namespace is isolated from the rest of the document',
+        help='Isolate SVG figures namespace from the rest of the document',
         action='store_true',
         default=False
         )
@@ -656,7 +656,8 @@ class RMagics(Magics):
         elif self.device == 'svg':
             self.r('CairoSVG("%s/Rplot.svg", %s)' % (tmpd_fix_slashes, plotting_args))
         elif self.device == 'X11':
-            self.r('X11()')
+            # Open a new X11 device, except if the current one is already an X11 device  
+            self.r('substr(names(dev.cur()), 1, 3) != "X11") { X11(); }')
         else:
             raise RInterpreterError("device must be one of ['png', 'X11' 'svg']")
 
@@ -686,31 +687,29 @@ class RMagics(Magics):
             if tmpd: rmtree(tmpd)
             return
 
-        if self.device in ['png', 'svg']:
-            self.r('dev.off()')
-
-            # read in all the saved image files
-
-            if self.device == 'png':
-                images = [open(imgfile, 'rb').read() for imgfile in glob("%s/Rplots*png" % tmpd)]
-            else:
-                # as onefile=TRUE, there is only one .svg file
-                imgfile = "%s/Rplot.svg" % tmpd
-                # by default, Cairo creates an SVG file every time R is called -- some of these are
-                # empty so we don't publish them
-                images = []
-                if stat(imgfile).st_size >= 1000:
-                    images.append(open(imgfile, 'rb').read())
-
         # publish the printed R objects
         display_data = []
         if text_output:
             display_data.append(('RMagic.R', {'text/plain':text_output}))
 
-        fmt = self.device
-        if fmt in ['png', 'svg']:
+        # publish the R images
+        if self.device in ['png', 'svg']:
+            self.r('dev.off()')
+
+            # read in all the saved image files
+            images = []
+            if self.device == 'png':
+                images = [open(imgfile, 'rb').read() for imgfile in glob("%s/Rplots*png" % tmpd)]
+            else:
+                # as onefile=TRUE, there is only one .svg file
+                imgfile = "%s/Rplot.svg" % tmpd
+                # Cairo creates an SVG file every time R is called 
+                # -- empty ones are not published 
+                if stat(imgfile).st_size >= 1000:
+                    images.append(open(imgfile, 'rb').read())
+
             mimetypes = { 'png' : 'image/png', 'svg' : 'image/svg+xml' }
-            mime = mimetypes[fmt]
+            mime = mimetypes[self.device]
 
             # flush text streams before sending figures, helps a little with output
             for image in images:
