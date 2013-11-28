@@ -445,10 +445,11 @@ class RMagics(Magics):
         )
     @argument_group("SVG", "SVG specific arguments")
     @argument(
-        '--isolatesvg',
-        help='Isolate SVG figures namespace from the rest of the document',
-        action='store_true',
-        default=False
+        '--noisolation',
+        help=('Disable SVG isolation in the Notebook. By default, SVGs are isolated to avoid namespace collisions between figures.'
+              'Disabling SVG isolation allows to reference previous figures or share CSS rules across a set of SVGs.'),
+        action='store_false',
+        default=True
         )
     @argument_group("PNG", "PNG specific arguments")
     @argument(
@@ -686,7 +687,10 @@ class RMagics(Magics):
                 print(e.err)
             if tmpd: rmtree(tmpd)
             return
-
+    
+        # Prepare metadata dictionary
+        md = {}
+        
         # publish the printed R objects
         display_data = []
         if text_output:
@@ -711,6 +715,10 @@ class RMagics(Magics):
             mimetypes = { 'png' : 'image/png', 'svg' : 'image/svg+xml' }
             mime = mimetypes[self.device]
 
+            # By default, isolate SVG images in the Notebook to avoid garbling
+            if images and self.device == "svg" and args.noisolation == False:
+                md = {'image/svg+xml': dict(isolated=True)}
+
             # flush text streams before sending figures, helps a little with output
             for image in images:
                 # synchronization in the console (though it's a bandaid, not a real sln)
@@ -732,12 +740,6 @@ class RMagics(Magics):
         if args.dataframe:
             for output in ','.join(args.dataframe).split(','):
                 self.shell.push({output:self.Rconverter(self.r(output), dataframe=True)})
-
-        # Prepare metadata
-
-        md = {}
-        if args.isolatesvg and fmt == 'svg':
-            md = {'image/svg+xml': dict(isolated=True)}
 
         for tag, disp_d in display_data:
             publish_display_data(tag, disp_d, metadata=md)
