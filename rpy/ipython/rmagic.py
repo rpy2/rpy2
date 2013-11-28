@@ -448,8 +448,8 @@ class RMagics(Magics):
         '--noisolation',
         help=('Disable SVG isolation in the Notebook. By default, SVGs are isolated to avoid namespace collisions between figures.'
               'Disabling SVG isolation allows to reference previous figures or share CSS rules across a set of SVGs.'),
-        action='store_false',
-        default=True
+        action='store_true',
+        default=False
         )
     @argument_group("PNG", "PNG specific arguments")
     @argument(
