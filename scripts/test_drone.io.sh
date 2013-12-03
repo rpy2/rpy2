@@ -14,6 +14,8 @@ RED='\e[0;31m'
 NC='\e[0m'
 
 # Install R and numpy dependencies
+# Ensure that we get a recent R
+sudo add-apt-repository ppa:marutter/rruter
 sudo apt-get install r-base cython libatlas-dev liblapack-dev gfortran 
 
 # Install ggplot2 r-cran package
