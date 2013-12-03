@@ -15,7 +15,8 @@ NC='\e[0m'
 
 # Install R and numpy dependencies
 # Ensure that we get a recent R
-sudo add-apt-repository ppa:marutter/rruter
+sudo add-apt-repository ppa:marutter/rrutter
+sudo apt-get update
 sudo apt-get install r-base cython libatlas-dev liblapack-dev gfortran 
 
 # Install ggplot2 r-cran package
