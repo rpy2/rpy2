@@ -43,8 +43,9 @@ for VERSION in $PYTHON_VERSIONS; do
       numpy==$NUMPY_VERSION pandas ipython
   
   # Build rpy2
-  python setup.py build --build-lib build-$VERSION
-  export PYTHONPATH=build-$VERSION/:$PYTHONPATH
+  python setup.py sdist
+  # Install it (so we also test that the source package is correctly built)
+  pip install dist/rpy2-2.4.0.tar.gz
   
   # Launch tests
   python -m rpy2.tests
