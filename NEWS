@@ -46,6 +46,12 @@ Bugs fixed
   the parameter was an empty string (PR #155)
 
 
+Release 2.3.9
+=============
+
+- Changes in pandas 0.13.0 broke the rpy2 conversion layer (Issue #173)
+
+
 Release 2.3.8
 =============
 
