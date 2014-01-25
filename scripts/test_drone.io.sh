@@ -46,9 +46,9 @@ for VERSION in $PYTHON_VERSIONS; do
       numpy==$NUMPY_VERSION pandas ipython
   
   # Build rpy2
-  python setup.py sdist
+  rpy2build=`python setup.py sdist | tail -n 1 | grep -Po "removing \\'\K[^\\']*"`
   # Install it (so we also test that the source package is correctly built)
-  pip install dist/rpy2-2.4.0.tar.gz
+  pip install dist/${rpy2build}.tar.gz
   
   # Launch tests
   python -m rpy2.tests
