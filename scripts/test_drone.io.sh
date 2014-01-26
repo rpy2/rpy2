@@ -64,7 +64,9 @@ for PYVERSION in $PYTHON_VERSIONS; do
     rpy2build=`python setup.py sdist | tail -n 1 | grep -Po "removing \\'\K[^\\']*"`
     # Install it (so we also test that the source package is correctly built)
     pip install dist/${rpy2build}.tar.gz
-  
+
+    #DEBUG
+    python -c 'import rpy2.ipython'
     # Launch tests
     python -m rpy2.tests
 
