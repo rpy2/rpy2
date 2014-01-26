@@ -81,7 +81,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
   done
 done
 for m in $msg; do
-  echo $m
+  echo -e $m
 done
 if [ STATUS==1 ]; then
   exit 0;
