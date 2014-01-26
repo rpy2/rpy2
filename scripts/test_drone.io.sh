@@ -26,10 +26,10 @@ echo "CI on drone.io" > ${LOGFILE}
 # Ensure that we get recent versions
 echo -n "Installing packages with APT..."
 sudo add-apt-repository ppa:marutter/rrutter >> ${LOGFILE}
-sudo add-apt-repository ppa:jtaylor/ipython >> ${LOGFILE}
+#sudo add-apt-repository ppa:jtaylor/ipython >> ${LOGFILE}
 #sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${LOGFILE}
 sudo apt-get -y update &>> ${LOGFILE}
-for package in r-base cython libatlas-dev libatlas3gf-base liblapack-dev gfortran ipython=1.1.0-1
+for package in r-base libatlas-dev libatlas3gf-base liblapack-dev gfortran
 do
     echo "   ${package}"
     sudo apt-get -qq -y install ${package} &>> ${LOGFILE};
@@ -61,12 +61,17 @@ for PYVERSION in $PYTHON_VERSIONS; do
 
   for NPVERSION in $NUMPY_VERSIONS; do
     echo -e "${GREEN}    Numpy version $NPVERSION ${NC}"
- 
-    pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
-	numpy==$NPVERSION >> ${LOGFILE}
-    #pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
-    pip install pandas >> ${LOGFILE}
 
+    for package in numpy==$NPVERSION pandas ipython; do
+	echo "Installing $package with wheel"
+	pip install --use-wheel \
+	    --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
+	    $package >> ${LOGFILE}
+    done
+
+    #pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
+
+    echo "Building rpy2"
     # Build rpy2
     rpy2build=`python setup.py sdist | tail -n 1 | grep -Po "removing \\'\K[^\\']*"`
     # Install it (so we also test that the source package is correctly built)
