@@ -22,7 +22,7 @@ NC='\e[0m'
 # Ensure that we get recent versions
 sudo add-apt-repository ppa:marutter/rrutter
 sudo add-apt-repository ppa:jtaylor/ipython
-sudo add-apt-repository ppa:pythonxy/pythonxy-devl
+sudo add-apt-repository ppa:pythonxy/pythonxy-devel
 sudo apt-get update
 sudo apt-get install r-base cython libatlas-dev liblapack-dev gfortran
 sudo apt-get install ipython
