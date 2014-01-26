@@ -2,6 +2,10 @@
 #
 # Test script for the Continuous Integration server drone.io
 
+if [ -z $VERBOSE ] ; then
+  VERBOSE=/dev/null;
+fi;
+
 # Define the versions of Python that should be tested
 PYTHON_VERSIONS="2.7 3.3"
 
@@ -20,18 +24,18 @@ NC='\e[0m'
 
 # Install R, ipython, and pandas
 # Ensure that we get recent versions
-sudo add-apt-repository ppa:marutter/rrutter
-sudo add-apt-repository ppa:jtaylor/ipython
-sudo add-apt-repository ppa:pythonxy/pythonxy-devel
-sudo apt-get update
-sudo apt-get install r-base cython libatlas-dev liblapack-dev gfortran
-sudo apt-get install ipython
-sudo apt-get install pandas
+sudo add-apt-repository ppa:marutter/rrutter > ${VERBOSE}
+sudo add-apt-repository ppa:jtaylor/ipython > ${VERBOSE}
+sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${VERBOSE}
+sudo apt-get update > ${VERBOSE}
+sudo apt-get install r-base cython libatlas-dev liblapack-dev gfortran > ${VERBOSE}
+sudo apt-get install ipython > ${VERBOSE}
+sudo apt-get install pandas > ${VERBOSE}
 
 # Install ggplot2 r-cran package
 export R_LIBS_USER="$HOME/rlibs/"
 mkdir -p $R_LIBS_USER
-R -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org")'
+R --slave -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org")' > ${VERBOSE}
 
 STATUS=0
 
@@ -61,12 +65,20 @@ for PYVERSION in $PYTHON_VERSIONS; do
   
     # Launch tests
     python -m rpy2.tests
+
+    # Success if passing the tests in at least one configuration
     if [ $? -eq 0 ]; then
       echo -e "${GREEN}Tests PASSED for Python ${PYVERSION} / Numpy ${NPVERSION} ${NC}"
-    else
       STATUS=1
+    else
+      ((STATUS = 0 || $STATUS))
       echo -e "${RED}Tests FAILED for Python ${PYVERSION} / Numpy ${NPVERSION}${NC}"
     fi
   done
 done
-exit $STATUS
+if [ STATUS==1 ]; then
+  exit 0;
+else
+  exit 1;
+fi
+
