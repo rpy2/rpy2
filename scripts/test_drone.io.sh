@@ -57,7 +57,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
  
     pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
 	numpy==$NPVERSION > ${VERBOSE}
-    pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
+    #pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
     pip install pandas
 
     # Build rpy2
