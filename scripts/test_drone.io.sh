@@ -73,14 +73,14 @@ for PYVERSION in $PYTHON_VERSIONS; do
       summary+=($msg) 
       STATUS=1
     else
-      ((STATUS = 0 || $STATUS))
-      msg="${RED}Tests FAILED for Python ${PYVERSION} / Numpy ${NPVERSION}${NC}"
+      msg="${RED}Tests FAILED for Python ${PYVERSION} / Numpy ${NPVERSION} ${NC}"
       echo -e $msg
       summary+=($msg)
+      ((STATUS = 0 || $STATUS))
     fi
   done
 done
-for m in $msg; do
+for m in ${msg[@]}; do
   echo -e $m
 done
 if [ STATUS==1 ]; then
