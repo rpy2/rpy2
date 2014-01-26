@@ -29,8 +29,11 @@ sudo add-apt-repository ppa:marutter/rrutter >> ${LOGFILE}
 sudo add-apt-repository ppa:jtaylor/ipython >> ${LOGFILE}
 #sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${LOGFILE}
 sudo apt-get -y update &>> ${LOGFILE}
-sudo apt-get -qq -y install r-base cython libatlas-dev libatlas3gf-base liblapack-dev gfortran &>> ${LOGFILE}
-sudo apt-get -qq -y install ipython=1.1.0-1 &>> ${LOGFILE}
+for (package in r-base cython libatlas-dev libatlas3gf-base liblapack-dev gfortran ipython=1.1.0-1)
+do
+    echo "   ${package}"
+    sudo apt-get -qq -y install ${package} &>> ${LOGFILE};
+done 
 #sudo apt-get -qq -y install pandas >> ${LOGFILE}
 echo "[done]"
 
