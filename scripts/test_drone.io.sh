@@ -26,11 +26,11 @@ NC='\e[0m'
 # Ensure that we get recent versions
 sudo add-apt-repository ppa:marutter/rrutter > ${VERBOSE}
 sudo add-apt-repository ppa:jtaylor/ipython > ${VERBOSE}
-sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${VERBOSE}
+#sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${VERBOSE}
 sudo apt-get update &> ${VERBOSE}
 sudo apt-get -qq -y install r-base cython libatlas-dev liblapack-dev gfortran> ${VERBOSE}
 sudo apt-get -qq -y install ipython > ${VERBOSE}
-sudo apt-get -qq -y install pandas > ${VERBOSE}
+#sudo apt-get -qq -y install pandas > ${VERBOSE}
 
 # Install ggplot2 r-cran package
 export R_LIBS_USER="$HOME/rlibs/"
@@ -57,6 +57,8 @@ for PYVERSION in $PYTHON_VERSIONS; do
  
     pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
 	numpy==$NPVERSION > ${VERBOSE}
+    pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
+    pip install pandas
 
     # Build rpy2
     rpy2build=`python setup.py sdist | tail -n 1 | grep -Po "removing \\'\K[^\\']*"`
@@ -80,8 +82,9 @@ for PYVERSION in $PYTHON_VERSIONS; do
     fi
   done
 done
-for m in ${summary[@]}; do
-  echo -e $m
+for ((i = 0; i < ${#summary[@]}; i++))
+do
+  echo -e "${summary[$i]}"
 done
 if [ STATUS==1 ]; then
   exit 0;
