@@ -27,7 +27,7 @@ NC='\e[0m'
 sudo add-apt-repository ppa:marutter/rrutter > ${VERBOSE}
 sudo add-apt-repository ppa:jtaylor/ipython > ${VERBOSE}
 sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${VERBOSE}
-sudo apt-get update > ${VERBOSE}
+sudo apt-get update &> ${VERBOSE}
 sudo apt-get install r-base cython libatlas-dev liblapack-dev gfortran > ${VERBOSE}
 sudo apt-get install ipython > ${VERBOSE}
 sudo apt-get install pandas > ${VERBOSE}
@@ -35,7 +35,7 @@ sudo apt-get install pandas > ${VERBOSE}
 # Install ggplot2 r-cran package
 export R_LIBS_USER="$HOME/rlibs/"
 mkdir -p $R_LIBS_USER
-R --slave -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org")' > ${VERBOSE}
+R --slave -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org")' &> ${VERBOSE}
 
 STATUS=0
 
@@ -44,19 +44,19 @@ for PYVERSION in $PYTHON_VERSIONS; do
   echo -e "${GREEN}Test with Python $PYVERSION ${NC}"
 
   # Create a new virtualenv
-  virtualenv --python=python$PYVERSION env-$PYVERSION/
+  virtualenv --python=python$PYVERSION env-$PYVERSION/ > ${VERBOSE}
   source env-$PYVERSION/bin/activate
   
   # Upgrade pip and install wheel
-  pip install setuptools --upgrade
-  pip install -I --download-cache /tmp pip
-  pip install -I --download-cache /tmp wheel
+  pip install setuptools --upgrade > ${VERBOSE}
+  pip install -I --download-cache /tmp pip > ${VERBOSE}
+  pip install -I --download-cache /tmp wheel > ${VERBOSE}
 
   for NPVERSION in $NUMPY_VERSIONS; do
     echo -e "${GREEN}    Numpy version $NPVERSION ${NC}"
  
     pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
-	numpy==$NPVERSION
+	numpy==$NPVERSION > ${VERBOSE}
 
     # Build rpy2
     rpy2build=`python setup.py sdist | tail -n 1 | grep -Po "removing \\'\K[^\\']*"`
