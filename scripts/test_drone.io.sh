@@ -21,8 +21,12 @@ NC='\e[0m'
 # Install R and numpy dependencies
 # Ensure that we get a recent R
 sudo add-apt-repository ppa:marutter/rrutter
+sudo add-apt-repository ppa:jtaylor/ipython
+sudo add-apt-repository ppa:pythonxy/pythonxy-devl
 sudo apt-get update
-sudo apt-get install r-base cython libatlas-dev liblapack-dev gfortran 
+sudo apt-get install r-base cython libatlas-dev liblapack-dev gfortran
+sudo apt-get install ipython
+sudo apt-get install pandas
 
 # Install ggplot2 r-cran package
 export R_LIBS_USER="$HOME/rlibs/"
@@ -46,14 +50,6 @@ for PYVERSION in $PYTHON_VERSIONS; do
 
   for NPVERSION in $NUMPY_VERSIONS; do
     echo -e "${GREEN}    Numpy version $NPVERSION ${NC}"
-    # Use the astropy wheels repositories to speedup numpy
-    # installation
-    pip wheel $PIPWITHWHEEL_ARGS numpy==$NPVERSION
-    pip install $PIPWITHWHEEL_ARGS numpy==$NPVERSION
-    pip wheel $PIPWITHWHEEL_ARGS pandas
-    pip install $PIPWITHWHEEL_ARGS pandas
-    pip wheel $PIPWITHWHEEL_ARGS ipython
-    pip install $PIPWITHWHEEL_ARGS ipython
   
     # Build rpy2
     rpy2build=`python setup.py sdist | tail -n 1 | grep -Po "removing \\'\K[^\\']*"`
