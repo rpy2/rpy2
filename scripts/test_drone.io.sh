@@ -28,9 +28,9 @@ sudo add-apt-repository ppa:marutter/rrutter > ${VERBOSE}
 sudo add-apt-repository ppa:jtaylor/ipython > ${VERBOSE}
 sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${VERBOSE}
 sudo apt-get update &> ${VERBOSE}
-sudo apt-get -qqy install r-base cython libatlas-dev liblapack-dev gfortran
-sudo apt-get -qqy install ipython
-sudo apt-get -qqy install pandas
+sudo apt-get -qq -y install r-base cython libatlas-dev liblapack-dev gfortran
+sudo apt-get -qq -y install ipython
+sudo apt-get -qq -y install pandas
 
 # Install ggplot2 r-cran package
 export R_LIBS_USER="$HOME/rlibs/"
