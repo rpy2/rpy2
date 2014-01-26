@@ -28,7 +28,7 @@ sudo add-apt-repository ppa:marutter/rrutter > ${VERBOSE}
 sudo add-apt-repository ppa:jtaylor/ipython > ${VERBOSE}
 #sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${VERBOSE}
 sudo apt-get update &> ${VERBOSE}
-sudo apt-get -qq -y install r-base cython libatlas-dev liblapack-dev gfortran> ${VERBOSE}
+sudo apt-get -qq -y install r-base cython libatlas-dev libatlas3gf-base liblapack-dev gfortran> ${VERBOSE}
 sudo apt-get -qq -y install ipython > ${VERBOSE}
 #sudo apt-get -qq -y install pandas > ${VERBOSE}
 
@@ -72,19 +72,19 @@ for PYVERSION in $PYTHON_VERSIONS; do
     if [ $? -eq 0 ]; then
       msg="${GREEN}Tests PASSED for Python ${PYVERSION} / Numpy ${NPVERSION} ${NC}"
       echo -e $msg
-      summary+=($msg) 
+      summary+=("$msg") 
       STATUS=1
     else
       msg="${RED}Tests FAILED for Python ${PYVERSION} / Numpy ${NPVERSION} ${NC}"
       echo -e $msg
-      summary+=($msg)
+      summary+=("$msg")
       ((STATUS = 0 || $STATUS))
     fi
   done
 done
 for ((i = 0; i < ${#summary[@]}; i++))
 do
-  echo -e "${summary[$i]}"
+  echo -e ${summary[$i]}
 done
 if [ STATUS==1 ]; then
   exit 0;
