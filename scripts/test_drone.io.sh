@@ -38,7 +38,7 @@ mkdir -p $R_LIBS_USER
 R --slave -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org")' &> ${VERBOSE}
 
 STATUS=0
-
+summary=()
 # Launch tests for each Python version
 for PYVERSION in $PYTHON_VERSIONS; do
   echo -e "${GREEN}Test with Python $PYVERSION ${NC}"
@@ -68,13 +68,20 @@ for PYVERSION in $PYTHON_VERSIONS; do
 
     # Success if passing the tests in at least one configuration
     if [ $? -eq 0 ]; then
-      echo -e "${GREEN}Tests PASSED for Python ${PYVERSION} / Numpy ${NPVERSION} ${NC}"
+      msg="${GREEN}Tests PASSED for Python ${PYVERSION} / Numpy ${NPVERSION} ${NC}"
+      echo -e $msg
+      summary+=($msg) 
       STATUS=1
     else
       ((STATUS = 0 || $STATUS))
-      echo -e "${RED}Tests FAILED for Python ${PYVERSION} / Numpy ${NPVERSION}${NC}"
+      msg="${RED}Tests FAILED for Python ${PYVERSION} / Numpy ${NPVERSION}${NC}"
+      echo -e $msg
+      summary+=($msg)
     fi
   done
+done
+for m in $msg; do
+  echo $m
 done
 if [ STATUS==1 ]; then
   exit 0;
