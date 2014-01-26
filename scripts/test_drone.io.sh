@@ -5,8 +5,13 @@
 # Define the versions of Python that should be tested
 PYTHON_VERSIONS="2.7 3.3"
 
-# Define the Numpy version to install
-NUMPY_VERSION="1.7.1"
+# Define the target Numpy versions
+NUMPY_VERSIONS="1.7.1 1.8.0"
+
+DEPS_DIR="deps/"
+WHEEL_DIR=$DEPS_DIR"wheelhouse/"
+mkdir -p $WHELL_DIR
+PIPWITHWHEEL_ARGS=" --download-cache /tmp -w $WHEEL_DIR --use-wheel --find-links=$WHEEL_DIR"
 
 # Color escape codes
 GREEN='\e[0;32m'
@@ -27,36 +32,42 @@ R -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org")'
 STATUS=0
 
 # Launch tests for each Python version
-for VERSION in $PYTHON_VERSIONS; do
-  echo -e "${GREEN}Test with Python $VERSION ${NC}"
+for PYVERSION in $PYTHON_VERSIONS; do
+  echo -e "${GREEN}Test with Python $PYVERSION ${NC}"
 
   # Create a new virtualenv
-  virtualenv --no-site-packages --python=python$VERSION env-$VERSION/
-  source env-$VERSION/bin/activate
+  virtualenv --no-site-packages --python=python$PYVERSION env-$PYVERSION/
+  source env-$PYVERSION/bin/activate
   
   # Upgrade pip and install wheel
   pip install setuptools --upgrade
-  pip install pip --upgrade
-  pip install wheel
+  pip install -I --download-cache /tmp pip
+  pip install -I --download-cache /tmp wheel
+
+  for NPVERSION in $NUMPY_VERSIONS; do
+    echo -e "${GREEN}    Numpy version $NPVERSION ${NC}"
+    # Use the astropy wheels repositories to speedup numpy
+    # installation
+    pip wheel $PIPWITHWHEEL_ARGS numpy==$NPVERSION
+    pip install $PIPWITHWHEEL_ARGS numpy==$NPVERSION
+    pip wheel $PIPWITHWHEEL_ARGS pandas
+    pip install $PIPWITHWHEEL_ARGS pandas
+    pip wheel $PIPWITHWHEEL_ARGS ipython
+    pip install $PIPWITHWHEEL_ARGS ipython
   
-  # Use the astropy wheels repositories to speedup numpy
-  # installation
-  pip install --use-wheel --find-links http://wheels.astropy.org/ \
-      --find-links http://wheels2.astropy.org/ \
-      numpy==$NUMPY_VERSION pandas ipython
+    # Build rpy2
+    rpy2build=`python setup.py sdist | tail -n 1 | grep -Po "removing \\'\K[^\\']*"`
+    # Install it (so we also test that the source package is correctly built)
+    pip install dist/${rpy2build}.tar.gz
   
-  # Build rpy2
-  rpy2build=`python setup.py sdist | tail -n 1 | grep -Po "removing \\'\K[^\\']*"`
-  # Install it (so we also test that the source package is correctly built)
-  pip install dist/${rpy2build}.tar.gz
-  
-  # Launch tests
-  python -m rpy2.tests
-  if [ $? -eq 0 ]; then
-    echo -e "${GREEN}Tests PASSED for Python ${VERSION}${NC}"
-  else
-    STATUS=1
-    echo -e "${RED}Tests FAILED for Python ${VERSION}${NC}"
-  fi
+    # Launch tests
+    python -m rpy2.tests
+    if [ $? -eq 0 ]; then
+      echo -e "${GREEN}Tests PASSED for Python ${PYVERSION} / Numpy ${NPVERSION} ${NC}"
+    else
+      STATUS=1
+      echo -e "${RED}Tests FAILED for Python ${PYVERSION} / Numpy ${NPVERSION}${NC}"
+    fi
+  done
 done
 exit $STATUS
