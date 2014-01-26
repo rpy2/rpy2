@@ -2,9 +2,7 @@
 #
 # Test script for the Continuous Integration server drone.io
 
-if [ -z $VERBOSE ] ; then
-  VERBOSE=/dev/null;
-fi;
+LOGFILE=`pwd`/'ci.log'
 
 # Define the versions of Python that should be tested
 PYTHON_VERSIONS="2.7 3.3"
@@ -22,20 +20,26 @@ GREEN='\e[0;32m'
 RED='\e[0;31m'
 NC='\e[0m'
 
+echo "CI on drone.io" > ${LOGFILE}
+
 # Install R, ipython, and pandas
 # Ensure that we get recent versions
-sudo add-apt-repository ppa:marutter/rrutter > ${VERBOSE}
-sudo add-apt-repository ppa:jtaylor/ipython > ${VERBOSE}
-#sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${VERBOSE}
-sudo apt-get update &> ${VERBOSE}
-sudo apt-get -qq -y install r-base cython libatlas-dev libatlas3gf-base liblapack-dev gfortran> ${VERBOSE}
-sudo apt-get -qq -y install ipython > ${VERBOSE}
-#sudo apt-get -qq -y install pandas > ${VERBOSE}
+echo -n "Installing packages with APT..."
+sudo add-apt-repository ppa:marutter/rrutter >> ${LOGFILE}
+sudo add-apt-repository ppa:jtaylor/ipython >> ${LOGFILE}
+#sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${LOGFILE}
+sudo apt-get -y update &>> ${LOGFILE}
+sudo apt-get -qq -y install r-base cython libatlas-dev libatlas3gf-base liblapack-dev gfortran &>> ${LOGFILE}
+sudo apt-get -qq -y install ipython=1.1.0-1 &>> ${LOGFILE}
+#sudo apt-get -qq -y install pandas >> ${LOGFILE}
+echo "[done]"
 
 # Install ggplot2 r-cran package
+echo -n "Installing R packages..."
 export R_LIBS_USER="$HOME/rlibs/"
 mkdir -p $R_LIBS_USER
-R --slave -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org")' &> ${VERBOSE}
+R --slave -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org")' &>> ${VERBOSE}
+echo "[done]"
 
 STATUS=0
 summary=()
@@ -44,21 +48,21 @@ for PYVERSION in $PYTHON_VERSIONS; do
   echo -e "${GREEN}Test with Python $PYVERSION ${NC}"
 
   # Create a new virtualenv
-  virtualenv --python=python$PYVERSION env-$PYVERSION/ > ${VERBOSE}
+  virtualenv --python=python$PYVERSION env-$PYVERSION/ >> ${LOGFILE}
   source env-$PYVERSION/bin/activate
   
   # Upgrade pip and install wheel
-  pip install setuptools --upgrade > ${VERBOSE}
-  pip install -I --download-cache /tmp pip > ${VERBOSE}
-  pip install -I --download-cache /tmp wheel > ${VERBOSE}
+  pip install setuptools --upgrade >> ${LOGFILE}
+  pip install -I --download-cache /tmp pip >> ${LOGFILE}
+  pip install -I --download-cache /tmp wheel >> ${LOGFILE}
 
   for NPVERSION in $NUMPY_VERSIONS; do
     echo -e "${GREEN}    Numpy version $NPVERSION ${NC}"
  
     pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
-	numpy==$NPVERSION > ${VERBOSE}
+	numpy==$NPVERSION >> ${LOGFILE}
     #pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
-    pip install pandas
+    pip install pandas >> ${LOGFILE}
 
     # Build rpy2
     rpy2build=`python setup.py sdist | tail -n 1 | grep -Po "removing \\'\K[^\\']*"`
