@@ -41,7 +41,7 @@ echo "[done]"
 echo -n "Installing R packages..."
 export R_LIBS_USER="$HOME/rlibs/"
 mkdir -p $R_LIBS_USER
-R --slave -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org")' &>> ${VERBOSE}
+R --slave -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org")' &>> ${LOGFILE}
 echo "[done]"
 
 STATUS=0
