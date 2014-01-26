@@ -1,4 +1,5 @@
 import unittest
+from itertools import product
 
 import numpy as np
 has_pandas = True
@@ -156,3 +157,32 @@ result = rmagic_addone(12344)
             self.ip.run_line_magic,
             "R",
             "-i var_not_defined 1+1")
+
+    def test_plotting_args(self):
+        self.ip.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
+
+        cell = '''
+        plot(x, y, pch=23, bg='orange', cex=2)
+        '''
+        
+        png_px_args = [' '.join(('--units=px',w,h,p)) for 
+                       w, h, p in product(['--width=400 ',''],
+                                          ['--height=400',''],
+                                          ['-p=10', ''])]
+
+        for line in png_px_args:
+            self.ip.run_line_magic('Rdevice', 'png')
+            yield self.ip.run_cell_magic, 'R', line, cell
+
+        basic_args = [' '.join((w,h,p)) for w, h, p in product(['--width=6 ',''],
+                                                               ['--height=6',''],
+                                                               ['-p=10', ''])]
+
+        for line in basic_args:
+            self.ip.run_line_magic('Rdevice', 'svg')
+            yield self.ip.run_cell_magic, 'R', line, cell
+
+        png_args = ['--units=in --res=1 ' + s for s in basic_args]
+        for line in png_args:
+            self.ip.run_line_magic('Rdevice', 'png')
+            yield self.ip.run_cell_magic, 'R', line, cell
