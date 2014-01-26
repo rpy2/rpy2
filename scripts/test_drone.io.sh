@@ -28,9 +28,9 @@ sudo add-apt-repository ppa:marutter/rrutter > ${VERBOSE}
 sudo add-apt-repository ppa:jtaylor/ipython > ${VERBOSE}
 sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${VERBOSE}
 sudo apt-get update &> ${VERBOSE}
-sudo apt-get -qq -y install r-base cython libatlas-dev liblapack-dev gfortran
-sudo apt-get -qq -y install ipython
-sudo apt-get -qq -y install pandas
+sudo apt-get -qq -y install r-base cython libatlas-dev liblapack-dev gfortran> ${VERBOSE}
+sudo apt-get -qq -y install ipython > ${VERBOSE}
+sudo apt-get -qq -y install pandas > ${VERBOSE}
 
 # Install ggplot2 r-cran package
 export R_LIBS_USER="$HOME/rlibs/"
@@ -80,7 +80,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
     fi
   done
 done
-for m in ${msg[@]}; do
+for m in ${summary[@]}; do
   echo -e $m
 done
 if [ STATUS==1 ]; then
