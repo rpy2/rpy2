@@ -11,7 +11,7 @@ NUMPY_VERSIONS="1.7.1 1.8.0"
 DEPS_DIR="deps/"
 WHEEL_DIR=$DEPS_DIR"wheelhouse/"
 mkdir -p $WHELL_DIR
-PIPWITHWHEEL_ARGS=" --download-cache /tmp -w $WHEEL_DIR --use-wheel --find-links=$WHEEL_DIR"
+PIPWITHWHEEL_ARGS=" --download-cache /tmp -w $WHEEL_DIR --use-wheel --find-links=file://$WHEEL_DIR"
 
 # Color escape codes
 GREEN='\e[0;32m'
