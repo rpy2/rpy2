@@ -49,6 +49,8 @@ class build(_build):
 
 class build_ext(_build_ext):
     """
+    Custom build of C extensions.
+    
     -DRPY_STRNDUP          : definition of strndup()
     -DRPY_VERBOSE
     -DRPY_DEBUG_PRESERV
@@ -124,6 +126,7 @@ class build_ext(_build_ext):
                 raise SystemExit("Error: R >= 2.8 required (and R told '%s')." %'.'.join(rversion))    
         rversions.append(rversion)
 
+        # Obtain config information from R itself
         config = RConfig()
         for about in ('--ldflags', '--cppflags'):
             config += get_rconfig(r_home, about)
@@ -141,9 +144,9 @@ class build_ext(_build_ext):
         else:
             self.library_dirs.extend([self.r_home_modules, ])
 
-        #for e in self.extensions:
-        #    self.extra_link_args.extra_link_args(config.extra_link_args)
-        #    e.extra_compile_args.extend(extra_link_args)
+        for e in self.extensions:
+            e.extra_link_args.extend( config._extra_link_args )
+            e.extra_compile_args.extend(config._extra_compile_args )
 
     def run(self):
         _build_ext.run(self)
