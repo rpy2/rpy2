@@ -204,16 +204,19 @@ class RConfig(object):
     _libraries = None
     _library_dirs = None 
     _extra_link_args = None
+    _extra_compile_args = None
     _frameworks = None
     _framework_dirs = None
 
     def __init__(self,
                  include_dirs = tuple(), libraries = tuple(),
                  library_dirs = tuple(), extra_link_args = tuple(),
+                 extra_compile_args = tuple(),
                  frameworks = tuple(),
                  framework_dirs = tuple()):
         for k in ('include_dirs', 'libraries', 
-                  'library_dirs', 'extra_link_args'):
+                  'library_dirs', 'extra_link_args',
+                  'extra_compile_args'):
             v = locals()[k]
             if not isinstance(v, tuple):
                 if isinstance(v, str):
