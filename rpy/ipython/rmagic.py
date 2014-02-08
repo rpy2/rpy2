@@ -218,8 +218,23 @@ class RMagics(Magics):
         if device == 'svg':
             try:
                 self.r('library(Cairo)')
-            except ri.RRuntimeError:
-                raise RInterpreterError("unable to load Cairo package -- check to see if it has been installed")
+            except RRuntimeError as rre:
+                import rpy2.robjects.packages
+                if ro.packages.isinstalled('Cairo'):
+                    msg = "An error occurred when trying to load the R package Cairo'\n%s" % str(rre)
+                else:
+                    msg = """
+The R package 'Cairo' is required but it does not appear to be installed/available. Try:
+
+import rpy2.robjects.packages as rpacks
+if not rpacks.isinstalled('Cairo'):
+    utils = rpacks.importr('utils')
+    utils.chooseCRANmirror(ind=1)
+    from rpy2.robjects.vectors import StrVector
+    utils.install_packages(StrVector(['Cairo']))
+
+"""
+                raise RInterpreterError(msg)
         self.device = device
 
     @line_magic
