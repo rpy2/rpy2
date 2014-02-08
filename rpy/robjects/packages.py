@@ -27,8 +27,6 @@ StrSexpVector = rinterface.StrSexpVector
 # (currently the case by default in R).
 _data = rinterface.baseenv['::'](StrSexpVector(('utils', )),
                                  StrSexpVector(('data', )))
-_available_packages = rinterface.baseenv['::'](StrSexpVector(('utils', )),
-                                               StrSexpVector(('available.packages', )))
 
 _reval = rinterface.baseenv['eval']
 _options = rinterface.baseenv['options']
