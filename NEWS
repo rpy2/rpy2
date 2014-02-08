@@ -39,10 +39,13 @@ New features
 - new method :meth:`rpy2.rinterface.SexpEnvironment.keys`, returnings
   the names in the environment as a tuple of Python strings.
 
+- convenience class :class:`robjects.packages.InstalledPackages`, with a companion function
+  :func:`robjects.packages.isinstalled`.
+
 Bugs fixed
 ----------
 
-- :meth:`rpy2.rinterface.Sexp.do_slote` was crashing when
+- :meth:`rpy2.rinterface.Sexp.do_slot` was crashing when
   the parameter was an empty string (PR #155)
 
 

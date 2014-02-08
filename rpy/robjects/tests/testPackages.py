@@ -117,11 +117,21 @@ class WherefromTestCase(unittest.TestCase):
         rnorm_pack = robjects.packages.wherefrom('rnorm')
         self.assertEqual('package:stats',
                           rnorm_pack.do_slot('name')[0])
+
+class InstalledPackagesTestCase(unittest.TestCase):
+    def testNew(self):
+        instapacks = robjects.packages.InstalledPackages()
+        res = instapacks.isinstalled('foo')
+        self.assertTrue(isinstance(res, bool))
+        ncols = len(instapacks.colnames)
+        for row in instapacks:
+            self.assertEqual(ncols, len(row))
         
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(PackagesTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ImportrTestCase))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(WherefromTestCase))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(InstalledPackagesTestCase))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(SignatureTranslatedAnonymousPackagesTestCase))
     return suite
 

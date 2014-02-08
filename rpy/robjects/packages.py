@@ -11,6 +11,7 @@ from rpy2.robjects.packages_utils import _libpaths, get_packagepath, _packages
 import rpy2.robjects.help as rhelp
 
 _require = rinterface.baseenv['require']
+_library = rinterface.baseenv['library']
 _as_env = rinterface.baseenv['as.environment']
 _package_has_namespace = rinterface.baseenv['packageHasNamespace']
 _system_file = rinterface.baseenv['system.file']
@@ -22,8 +23,12 @@ _globalenv = rinterface.globalenv
 _new_env = rinterface.baseenv["new.env"]
 
 StrSexpVector = rinterface.StrSexpVector
+# Fetching symbols in the namespace "utils" assumes that "utils" is loaded
+# (currently the case by default in R).
 _data = rinterface.baseenv['::'](StrSexpVector(('utils', )),
                                  StrSexpVector(('data', )))
+_available_packages = rinterface.baseenv['::'](StrSexpVector(('utils', )),
+                                               StrSexpVector(('available.packages', )))
 
 _reval = rinterface.baseenv['eval']
 _options = rinterface.baseenv['options']
@@ -50,6 +55,9 @@ def no_warnings(func):
 def _eval_quiet(expr):
     return _reval(expr)
 
+# FIXME: should this be part of the API for rinterface ?
+#        (may be it is already the case and there is code
+#        duplicaton ?)
 def reval(string, envir = _globalenv):
     """ Evaluate a string as R code
     - string: a string
@@ -295,6 +303,52 @@ class LibraryError(ImportError):
     pass
 
 
+class InstalledPackages(object):
+    """ R packages installed. """
+    def __init__(self, lib_loc=None):
+        libraryiqr =  _library(**{'lib.loc': lib_loc})
+        lib_results_i = libraryiqr.do_slot('names').index('results')
+        self.lib_results = libraryiqr[lib_results_i]
+        self.nrows, self.ncols = self.lib_results.do_slot('dim')
+        self.colnames = self.lib_results.do_slot('dimnames')[1] # column names
+        self.lib_packname_i = self.colnames.index('Package')
+
+    def isinstalled(self, packagename):
+        if not isinstance(packagename, rinterface.StrSexpVector):
+            rname = rinterface.StrSexpVector((packagename, ))
+        else:
+            if len(packagename) > 1:
+                raise ValueError("Only specify one package name at a time.")
+            rname = packagename
+        nrows, ncols = self.nrows, self.ncols
+        lib_results, lib_packname_i = self.lib_results, self.lib_packname_i
+        for i in range(0+lib_packname_i*nrows, 
+                       nrows*(lib_packname_i+1), 
+                       1):
+            if lib_results[i] == packagename:
+                return True
+        return False
+
+    def __iter__(self):
+        """ Iterate through rows, yield tuples at each iteration """
+        lib_results = self.lib_results
+        nrows, ncols = self.nrows, self.ncols
+        colrg = range(0, ncols)
+        for row_i in range(nrows):
+            yield tuple(lib_results[x*nrows+row_i] for x in colrg)
+
+def isinstalled(name,
+                lib_loc = None):
+    """
+    Find whether an R package is installed 
+    :param name: name of an R package
+    :param lib_loc: specific location for the R library (default: None)
+
+    :rtype: a :class:`bool`
+    """
+    
+    instapack = InstalledPackages(lib_loc)
+    return instapack.isinstalled(name)
 
 def importr(name, 
             lib_loc = None,
