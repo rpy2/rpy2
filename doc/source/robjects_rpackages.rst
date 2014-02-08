@@ -253,16 +253,42 @@ R is shipped with a set of *recommended packages*
 (the equivalent of a standard library), but there is a large
 (and growing) number of other packages available.
 
-Installing those packages must be done within R, see the R documentation.
-As a quick help, installing an R package can be done by
+Installing those packages can be done within R, or using R on the command line.
+The R documentation should be consulted when doing so.
 
-.. code-block:: bash
+It also possible to install R packages from Python/rpy2, and a non interactive way.
 
-   sudo R
+.. code-block:: python
 
-And then in the R console:
+   import rpy2.robjects.packages as rpackages
+   utils = rpackages.importr('utils')
 
-.. code-block:: r
+   utils.chooseCRANmirror(ind=1) # select the first mirror in the list
 
-   install.packages('foo')
+If you are a user of bioconductor:
+
+.. code-block:: python
+
+   utils.chooseBioCmirror(ind=1) # select the first mirror in the list
+
+The `choose<organization>mirror` functions sets an R global option that indicates
+which repository should be used by default.
+The next step is to simply call R's function to install from a repository.
+
+.. code-block:: python
+
+   packnames = ('ggplot2', 'hexbin')
+   from rpy2.robjects.vectors import StrVector
+   utils.install_packages(StrVector(packnames))
+
+.. note::
+
+   The global option that sets the default repository will remain until the R
+   process ends (or the default is changed).
+
+   Calling :func:`install_packages` without first choosing a mirror will require the user 
+   to interactively choose a mirror.
+ 
+   Control on mostly anything is possible; the R documentation should be consulted
+   for more information.
 
