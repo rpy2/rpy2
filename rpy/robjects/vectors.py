@@ -495,14 +495,16 @@ class FactorVector(IntVector):
 class ListVector(Vector, ListSexpVector):
     """ R list (vector of arbitray elements)
 
-    ListVector(itemable) -> ListVector.
+ListVector(itemable) -> ListVector.
 
-    The parameter 'itemable' can be:
+The parameter 'itemable' can be:
 
-    - an object with a method `items()`, such for example a dict,
-    a rpy2.rlike.container.TaggedList, 
-    an rpy2.rinterface.SexpVector of type VECSXP.
-    - an iterable of (name, value) tuples
+- an object with a method `items()`, such for example a dict,
+  a rpy2.rlike.container.TaggedList, 
+  an rpy2.rinterface.SexpVector of type VECSXP.
+
+- an iterable of (name, value) tuples
+
     """
     _vector = rinterface.baseenv['vector']
 

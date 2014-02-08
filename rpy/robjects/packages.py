@@ -58,9 +58,9 @@ def _eval_quiet(expr):
 #        duplicaton ?)
 def reval(string, envir = _globalenv):
     """ Evaluate a string as R code
-    - string: a string
-    - envir: an environment in which the environment should take place
-             (default: R's global environment)
+    :param string: R code
+    :type string: a :class:`str`
+    :param envir: an environment in which the environment should take place (default: R's global environment)
     """
     p = rinterface.parse(string)
     res = _reval(p, envir = envir)
