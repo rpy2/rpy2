@@ -8,7 +8,7 @@ LOGFILE=`pwd`/'ci.log'
 PYTHON_VERSIONS="2.7 3.3"
 
 # Define the target Numpy versions
-NUMPY_VERSIONS="1.7.1 1.8.0"
+NUMPY_VERSIONS="1.8.0"
 
 DEPS_DIR="deps/"
 WHEEL_DIR=$DEPS_DIR"wheelhouse/"
