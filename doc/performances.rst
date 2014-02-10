@@ -97,22 +97,23 @@ code runs.
 =============== ============================================= ==========
 Function        Sequence                                      Speedup   
 =============== ============================================= ==========
-builtin python  array.array                                   33.18     
-builtin python  FloatVector                                   0.70      
-builtin python  list                                          37.43     
-builtin python  numpy.array                                   1.46      
-builtin python  SexpVector                                    21.12     
-pure python     array.array                                   10.13     
-pure python     FloatVector                                   0.65      
-pure python     list                                          11.53     
-pure python     numpy.array                                   1.32      
-pure python     SexpVector                                    7.03      
-reduce python   array.array                                   5.22      
-reduce python   FloatVector                                   0.60      
-reduce python   list                                          5.19      
-reduce python   numpy.array                                   1.37      
-reduce python   SexpVector                                    5.13      
+builtin python  array.array                                   37.13     
+builtin python  FloatVector                                   0.64      
+builtin python  list                                          39.93     
+builtin python  numpy.array                                   1.69      
+builtin python  SexpVector                                    22.33     
+pure python     array.array                                   12.74     
+pure python     FloatVector                                   0.58      
+pure python     list                                          11.66     
+pure python     numpy.array                                   1.58      
+pure python     SexpVector                                    7.25      
+reduce python   array.array                                   4.55      
+reduce python   FloatVector                                   0.53      
+reduce python   list                                          4.76      
+reduce python   numpy.array                                   1.50      
+reduce python   SexpVector                                    3.54      
 R               R                                             1.00      
+R compiled      R compiled                                    8.00      
 =============== ============================================= ==========
 
 
