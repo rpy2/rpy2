@@ -17,7 +17,6 @@ static void SexpObject_clear(SexpObject *sexpobj);
 static void SexpObject_CObject_destroy(PyObject *rpycapsule);
 static unsigned int embeddedR_status;
 static SexpObject* Rpy_PreserveObject(SEXP object);
-static SexpObject* _Rpy_PreserveObject(SEXP object);
 static int Rpy_ReleaseObject(SEXP object);
 static inline int Rpy_ReplaceSexp(PySexpObject *pso, SEXP rObj);
 #endif
