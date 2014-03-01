@@ -219,7 +219,6 @@ class RMagics(Magics):
             try:
                 self.r('library(Cairo)')
             except RRuntimeError as rre:
-                import rpy2.robjects.packages
                 if ro.packages.isinstalled('Cairo'):
                     msg = "An error occurred when trying to load the R package Cairo'\n%s" % str(rre)
                 else:
