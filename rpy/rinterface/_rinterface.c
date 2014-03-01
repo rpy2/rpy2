@@ -2146,11 +2146,11 @@ EnvironmentSexp_keys(PyObject *sexpEnvironment)
   PROTECT(symbols = R_lsInternal(rho_R, TRUE));
   int l = LENGTH(symbols);
   PyObject *keys = PyTuple_New(l);
-  char *val_char;
   PyObject *val;
   int i;
   for (i=0; i<l; i++) {
-    val_char = CHAR(STRING_ELT(symbols, i));
+    sexp_item = STRING_ELT(symbols, i);
+    const char *val_char = CHAR(sexp_item);
 #if (PY_VERSION_HEX < 0x03010000)
     val = PyString_FromString(val_char);
 #else
