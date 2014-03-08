@@ -218,6 +218,10 @@ active and will be taken into account at the next sleep cycle.
 
 .. autofunction:: process_revents()
 
+IPython magic integration (was rmagic)
+======================================
+
+.. automodule:: rpy2.ipython.rmagic
 
 Graphical User interface
 ========================
