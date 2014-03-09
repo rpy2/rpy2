@@ -49,6 +49,14 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 
+rpy2demo_benchmark:
+	@cd _static/demos && python benchmarks.py
+
+rpy2demo_graphics:
+	@cd _static/demos && python graphics.py
+
+rpy2demo_all: rpy2demo_graphics rpy2demo_benchmark
+
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
