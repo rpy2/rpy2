@@ -55,6 +55,7 @@ import numpy as np
 
 import rpy2.rinterface as ri
 import rpy2.robjects as ro
+import rpy2.robjects.packages as rpacks
 
 try:
     from rpy2.robjects import pandas2ri
@@ -183,9 +184,6 @@ class RMagics(Magics):
         super(RMagics, self).__init__(shell)
         self.cache_display_data = cache_display_data
 
-        # XXX - is this still necessary given ro.r?
-        self.r = ro.R()
-
         self.Rstdout_cache = []
         self.pyconverter = pyconverter
         self.Rconverter = Rconverter
@@ -214,10 +212,9 @@ class RMagics(Magics):
             raise ValueError("device must be one of ['png', 'X11' 'svg'], got '%s'", device)
         if device == 'svg':
             try:
-                # XXX - could this be replaced with ro.r.library?
-                self.r('library(Cairo)')
+                self.cairo = rpacks.importr('Cairo')
             except ri.RRuntimeError as rre:
-                if ro.packages.isinstalled('Cairo'):
+                if rpacks.isinstalled('Cairo'):
                     msg = "An error occurred when trying to load the R package Cairo'\n%s" % str(rre)
                 else:
                     msg = """
@@ -317,7 +314,7 @@ if not rpacks.isinstalled('Cairo'):
                     # variable
                     raise NameError("name '%s' is not defined" % input)
 
-            self.r.assign(input, self.pyconverter(val))
+            ro.r.assign(input, self.pyconverter(val))
 
     # @skip_doctest
     @magic_arguments()
@@ -369,8 +366,7 @@ if not rpacks.isinstalled('Cairo'):
         args = parse_argstring(self.Rpull, line)
         outputs = args.outputs
         for output in outputs:
-            # XXX - another maybe non-necessary use of self.r
-            self.shell.push({output:self.Rconverter(self.r(output),dataframe=args.as_dataframe)})
+            self.shell.push({output:self.Rconverter(ro.r(output),dataframe=args.as_dataframe)})
 
     # @skip_doctest
     @magic_arguments()
@@ -412,8 +408,7 @@ if not rpacks.isinstalled('Cairo'):
         '''
         args = parse_argstring(self.Rget, line)
         output = args.output
-        # XXX - another potentially non-necessary use of self.r
-        return self.Rconverter(self.r(output[0]),dataframe=args.as_dataframe)
+        return self.Rconverter(ro.r(output[0]),dataframe=args.as_dataframe)
 
 
     # @skip_doctest
@@ -641,8 +636,7 @@ if not rpacks.isinstalled('Cairo'):
                         val = self.shell.user_ns[input]
                     except KeyError:
                         raise NameError("name '%s' is not defined" % input)
-                # XXX - another possibly non-necessary use of self.r
-                self.r.assign(input, self.pyconverter(val))
+                ro.r.assign(input, self.pyconverter(val))
 
         if getattr(args, 'units') is not None:
             if args.units != "px" and getattr(args, 'res') is None:
@@ -654,6 +648,27 @@ if not rpacks.isinstalled('Cairo'):
         if self.device == 'png':
             plot_arg_names += ['units', 'res']
 
+        # This should eventually replace the below
+
+        # plotting_argdict = {}
+        # for name in plot_arg_names:
+        #     val = getattr(args, name)
+        #     if val is not None:
+        #         plotting_argdict[name] = val
+
+        # # execute the R code in a temporary directory
+        # tmpd = None
+        # if self.device in ['png', 'svg']:
+        #     tmpd = tempfile.mkdtemp()
+        #     tmpd_fix_slashes = tmpd.replace('\\', '/')
+
+        # if self.device == 'png':
+        #     ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
+        #              **plotting_argdict)
+        # elif self.device == 'svg':
+        #     self.cairo.CairoSVG("%s/Rplot.svg" % tmpd_fix_slashes,
+        #                         **plotting_argdict)
+
         plotting_argdict = dict([(n, getattr(args, n)) for n in plot_arg_names])
         plotting_args = ','.join(['%s=%s' % (o,v) for o, v in plotting_argdict.items() if v is not None])
 
@@ -663,14 +678,15 @@ if not rpacks.isinstalled('Cairo'):
             tmpd = tempfile.mkdtemp()
             tmpd_fix_slashes = tmpd.replace('\\', '/')
 
-        # XXX - more possibly non-necessary use of self.r below
         if self.device == 'png':
-            self.r('png("%s/Rplots%%03d.png", %s)' % (tmpd_fix_slashes, plotting_args))
+            ro.r('png("%s/Rplots%%03d.png", %s)' % (tmpd_fix_slashes, plotting_args))
         elif self.device == 'svg':
-            self.r('CairoSVG("%s/Rplot.svg", %s)' % (tmpd_fix_slashes, plotting_args))
+            ro.r('CairoSVG("%s/Rplot.svg", %s)' % (tmpd_fix_slashes, plotting_args))
         elif self.device == 'X11':
-            # Open a new X11 device, except if the current one is already an X11 device  
-            self.r('substr(names(dev.cur()), 1, 3) != "X11") { X11(); }')
+            # Open a new X11 device, except if the current one is already an X11
+            # device
+            ro.r('substr(names(dev.cur()), 1, 3) != "X11") { X11(); }')
+
         else:
             raise RInterpreterError("device must be one of ['png', 'X11' 'svg']")
 
@@ -710,8 +726,7 @@ if not rpacks.isinstalled('Cairo'):
 
         # publish the R images
         if self.device in ['png', 'svg']:
-            # XXX - another possibly non-necessary use of self.r
-            self.r('dev.off()')
+            ro.r('dev.off()')
 
             # read in all the saved image files
             images = []
@@ -746,14 +761,13 @@ if not rpacks.isinstalled('Cairo'):
         # this means that output are assumed to be castable
         # as numpy arrays
 
-        # XXX - more potentially non-necessary uses of self.r below
         if args.output:
             for output in ','.join(args.output).split(','):
-                self.shell.push({output:self.Rconverter(self.r(output), dataframe=False)})
+                self.shell.push({output:self.Rconverter(ro.r(output), dataframe=False)})
 
         if args.dataframe:
             for output in ','.join(args.dataframe).split(','):
-                self.shell.push({output:self.Rconverter(self.r(output), dataframe=True)})
+                self.shell.push({output:self.Rconverter(ro.r(output), dataframe=True)})
 
         for tag, disp_d in display_data:
             publish_display_data(tag, disp_d, metadata=md)
