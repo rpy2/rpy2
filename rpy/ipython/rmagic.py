@@ -268,7 +268,7 @@ if not rpacks.isinstalled('Cairo'):
             raise RInterpreterError(line, str_to_unicode(str(exception)), warning_or_other_msg)
         text_output = self.flush()
         ri.set_writeconsole(old_writeconsole)
-        return text_output, value, visible
+        return text_output, value, visible[0]
 
     def write_console(self, output):
         '''
