@@ -112,17 +112,13 @@ def Rconverter(Robj, dataframe=False):
 
     Robj: an R object returned from rpy2
     """
-    # We should use some of the below to be more granular about our conversion
-    # (but this should be core rpy2 functionality)
-    # is_data_frame = ro.r('is.data.frame')
-    colnames = ro.r('colnames')
-    # rownames = ro.r('rownames') # with pandas, these could be used for the index
-    names = ro.r('names')
-
+    # Note - the below is (somewhat) redundant with numpy2ri and friends
     if dataframe:
         as_data_frame = ro.r('as.data.frame')
-        cols = colnames(Robj)
-        _names = names(Robj)
+        cols = ro.r.colnames(Robj)
+        # We could also get the rownames for a pandas index
+        # But this conversion code should likely be elsewhere
+        _names = ro.r.names(Robj)
         if cols is not ri.NULL:
             Robj = as_data_frame(Robj)
             names = tuple(np.array(cols))
@@ -187,6 +183,7 @@ class RMagics(Magics):
         super(RMagics, self).__init__(shell)
         self.cache_display_data = cache_display_data
 
+        # XXX - is this still necessary given ro.r?
         self.r = ro.R()
 
         self.Rstdout_cache = []
@@ -217,8 +214,9 @@ class RMagics(Magics):
             raise ValueError("device must be one of ['png', 'X11' 'svg'], got '%s'", device)
         if device == 'svg':
             try:
+                # XXX - could this be replaced with ro.r.library?
                 self.r('library(Cairo)')
-            except RRuntimeError as rre:
+            except ri.RRuntimeError as rre:
                 if ro.packages.isinstalled('Cairo'):
                     msg = "An error occurred when trying to load the R package Cairo'\n%s" % str(rre)
                 else:
@@ -251,18 +249,14 @@ if not rpacks.isinstalled('Cairo'):
         boolean indicating whether the return value would be
         visible if the line of code were evaluated in an R REPL.
 
-        R Code evaluation and visibility determination are
-        done via an R call of the form withVisible({<code>})
+        R Code evaluation and visibility determination are done via an R call of
+        the form withVisible(eval(parse(code_string)))
 
         '''
         old_writeconsole = ri.get_writeconsole()
         ri.set_writeconsole(self.write_console)
         try:
-            # res = ro.r("withVisible({%s})" % line)
-            # value = res[0] #value (R object)
-            # visible = ro.conversion.ri2py(res[1])[0] #visible (boolean)
-            # ri2py is no longer for this world, I think?
-            value, visible = ro.r("withVisible({%s\n})" % line)
+            value, visible = ro.r.withVisible(ro.r.eval(ro.r.parse(text=line)))
         except (ri.RRuntimeError, ValueError) as exception:
             warning_or_other_msg = self.flush() # otherwise next return seems to have copy of error
             raise RInterpreterError(line, str_to_unicode(str(exception)), warning_or_other_msg)
@@ -375,6 +369,7 @@ if not rpacks.isinstalled('Cairo'):
         args = parse_argstring(self.Rpull, line)
         outputs = args.outputs
         for output in outputs:
+            # XXX - another maybe non-necessary use of self.r
             self.shell.push({output:self.Rconverter(self.r(output),dataframe=args.as_dataframe)})
 
     # @skip_doctest
@@ -417,6 +412,7 @@ if not rpacks.isinstalled('Cairo'):
         '''
         args = parse_argstring(self.Rget, line)
         output = args.output
+        # XXX - another potentially non-necessary use of self.r
         return self.Rconverter(self.r(output[0]),dataframe=args.as_dataframe)
 
 
@@ -645,6 +641,7 @@ if not rpacks.isinstalled('Cairo'):
                         val = self.shell.user_ns[input]
                     except KeyError:
                         raise NameError("name '%s' is not defined" % input)
+                # XXX - another possibly non-necessary use of self.r
                 self.r.assign(input, self.pyconverter(val))
 
         if getattr(args, 'units') is not None:
@@ -666,6 +663,7 @@ if not rpacks.isinstalled('Cairo'):
             tmpd = tempfile.mkdtemp()
             tmpd_fix_slashes = tmpd.replace('\\', '/')
 
+        # XXX - more possibly non-necessary use of self.r below
         if self.device == 'png':
             self.r('png("%s/Rplots%%03d.png", %s)' % (tmpd_fix_slashes, plotting_args))
         elif self.device == 'svg':
@@ -712,6 +710,7 @@ if not rpacks.isinstalled('Cairo'):
 
         # publish the R images
         if self.device in ['png', 'svg']:
+            # XXX - another possibly non-necessary use of self.r
             self.r('dev.off()')
 
             # read in all the saved image files
@@ -747,6 +746,7 @@ if not rpacks.isinstalled('Cairo'):
         # this means that output are assumed to be castable
         # as numpy arrays
 
+        # XXX - more potentially non-necessary uses of self.r below
         if args.output:
             for output in ','.join(args.output).split(','):
                 self.shell.push({output:self.Rconverter(self.r(output), dataframe=False)})
