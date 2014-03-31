@@ -262,13 +262,13 @@ if not rpacks.isinstalled('Cairo'):
             # value = res[0] #value (R object)
             # visible = ro.conversion.ri2py(res[1])[0] #visible (boolean)
             # ri2py is no longer for this world, I think?
-            value, visible = ro.r("withVisible({%s})" % line)
+            value, visible = ro.r("withVisible({%s\n})" % line)
         except (ri.RRuntimeError, ValueError) as exception:
             warning_or_other_msg = self.flush() # otherwise next return seems to have copy of error
             raise RInterpreterError(line, str_to_unicode(str(exception)), warning_or_other_msg)
         text_output = self.flush()
         ri.set_writeconsole(old_writeconsole)
-        return text_output, value, visible
+        return text_output, value, visible[0]
 
     def write_console(self, output):
         '''
