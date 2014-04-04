@@ -49,9 +49,6 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 
-rpy2graphics:
-	@cd _static/demos && python graphics.py
-
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo

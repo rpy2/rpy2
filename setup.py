@@ -432,7 +432,7 @@ if __name__ == '__main__':
         version = pack_version,
         description = "Python interface to the R language (embedded R)",
         url = "http://rpy.sourceforge.net",
-        license = "AGPLv3.0 (except rpy2.rinterface: LGPL)",
+        license = "GPLv2+",
         author = "Laurent Gautier",
         author_email = "lgautier@gmail.com",
         ext_modules = rinterface_exts[0],
@@ -453,8 +453,7 @@ if __name__ == '__main__':
                     ],
         classifiers = ['Programming Language :: Python',
                        'Programming Language :: Python :: 3',
-                       'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
-                       'License :: OSI Approved :: GNU Affero General Public License v3',
+                       'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
                        'Intended Audience :: Developers',
                        'Intended Audience :: Science/Research',
                        'Development Status :: 5 - Production/Stable'
