@@ -5,4 +5,4 @@
 Changes in rpy2
 ***************
 
-.. include:: ../../NEWS
+.. include:: ../NEWS

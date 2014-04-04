@@ -55,6 +55,7 @@ import numpy as np
 
 import rpy2.rinterface as ri
 import rpy2.robjects as ro
+import rpy2.robjects.packages as rpacks
 
 try:
     from rpy2.robjects import pandas2ri
@@ -112,17 +113,13 @@ def Rconverter(Robj, dataframe=False):
 
     Robj: an R object returned from rpy2
     """
-    # We should use some of the below to be more granular about our conversion
-    # (but this should be core rpy2 functionality)
-    # is_data_frame = ro.r('is.data.frame')
-    colnames = ro.r('colnames')
-    # rownames = ro.r('rownames') # with pandas, these could be used for the index
-    names = ro.r('names')
-
+    # Note - the below is (somewhat) redundant with numpy2ri and friends
     if dataframe:
         as_data_frame = ro.r('as.data.frame')
-        cols = colnames(Robj)
-        _names = names(Robj)
+        cols = ro.r.colnames(Robj)
+        # We could also get the rownames for a pandas index
+        # But this conversion code should likely be elsewhere
+        _names = ro.r.names(Robj)
         if cols is not ri.NULL:
             Robj = as_data_frame(Robj)
             names = tuple(np.array(cols))
@@ -187,8 +184,6 @@ class RMagics(Magics):
         super(RMagics, self).__init__(shell)
         self.cache_display_data = cache_display_data
 
-        self.r = ro.R()
-
         self.Rstdout_cache = []
         self.pyconverter = pyconverter
         self.Rconverter = Rconverter
@@ -217,9 +212,9 @@ class RMagics(Magics):
             raise ValueError("device must be one of ['png', 'X11' 'svg'], got '%s'", device)
         if device == 'svg':
             try:
-                self.r('library(Cairo)')
-            except RRuntimeError as rre:
-                if ro.packages.isinstalled('Cairo'):
+                self.cairo = rpacks.importr('Cairo')
+            except ri.RRuntimeError as rre:
+                if rpacks.isinstalled('Cairo'):
                     msg = "An error occurred when trying to load the R package Cairo'\n%s" % str(rre)
                 else:
                     msg = """
@@ -251,24 +246,20 @@ if not rpacks.isinstalled('Cairo'):
         boolean indicating whether the return value would be
         visible if the line of code were evaluated in an R REPL.
 
-        R Code evaluation and visibility determination are
-        done via an R call of the form withVisible({<code>})
+        R Code evaluation and visibility determination are done via an R call of
+        the form withVisible(eval(parse(code_string)))
 
         '''
         old_writeconsole = ri.get_writeconsole()
         ri.set_writeconsole(self.write_console)
         try:
-            # res = ro.r("withVisible({%s})" % line)
-            # value = res[0] #value (R object)
-            # visible = ro.conversion.ri2py(res[1])[0] #visible (boolean)
-            # ri2py is no longer for this world, I think?
-            value, visible = ro.r("withVisible({%s})" % line)
+            value, visible = ro.r.withVisible(ro.r.eval(ro.r.parse(text=line)))
         except (ri.RRuntimeError, ValueError) as exception:
             warning_or_other_msg = self.flush() # otherwise next return seems to have copy of error
             raise RInterpreterError(line, str_to_unicode(str(exception)), warning_or_other_msg)
         text_output = self.flush()
         ri.set_writeconsole(old_writeconsole)
-        return text_output, value, visible
+        return text_output, value, visible[0]
 
     def write_console(self, output):
         '''
@@ -323,7 +314,7 @@ if not rpacks.isinstalled('Cairo'):
                     # variable
                     raise NameError("name '%s' is not defined" % input)
 
-            self.r.assign(input, self.pyconverter(val))
+            ro.r.assign(input, self.pyconverter(val))
 
     # @skip_doctest
     @magic_arguments()
@@ -375,7 +366,7 @@ if not rpacks.isinstalled('Cairo'):
         args = parse_argstring(self.Rpull, line)
         outputs = args.outputs
         for output in outputs:
-            self.shell.push({output:self.Rconverter(self.r(output),dataframe=args.as_dataframe)})
+            self.shell.push({output:self.Rconverter(ro.r(output),dataframe=args.as_dataframe)})
 
     # @skip_doctest
     @magic_arguments()
@@ -417,7 +408,7 @@ if not rpacks.isinstalled('Cairo'):
         '''
         args = parse_argstring(self.Rget, line)
         output = args.output
-        return self.Rconverter(self.r(output[0]),dataframe=args.as_dataframe)
+        return self.Rconverter(ro.r(output[0]),dataframe=args.as_dataframe)
 
 
     # @skip_doctest
@@ -645,7 +636,7 @@ if not rpacks.isinstalled('Cairo'):
                         val = self.shell.user_ns[input]
                     except KeyError:
                         raise NameError("name '%s' is not defined" % input)
-                self.r.assign(input, self.pyconverter(val))
+                ro.r.assign(input, self.pyconverter(val))
 
         if getattr(args, 'units') is not None:
             if args.units != "px" and getattr(args, 'res') is None:
@@ -657,6 +648,27 @@ if not rpacks.isinstalled('Cairo'):
         if self.device == 'png':
             plot_arg_names += ['units', 'res']
 
+        # This should eventually replace the below
+
+        # plotting_argdict = {}
+        # for name in plot_arg_names:
+        #     val = getattr(args, name)
+        #     if val is not None:
+        #         plotting_argdict[name] = val
+
+        # # execute the R code in a temporary directory
+        # tmpd = None
+        # if self.device in ['png', 'svg']:
+        #     tmpd = tempfile.mkdtemp()
+        #     tmpd_fix_slashes = tmpd.replace('\\', '/')
+
+        # if self.device == 'png':
+        #     ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
+        #              **plotting_argdict)
+        # elif self.device == 'svg':
+        #     self.cairo.CairoSVG("%s/Rplot.svg" % tmpd_fix_slashes,
+        #                         **plotting_argdict)
+
         plotting_argdict = dict([(n, getattr(args, n)) for n in plot_arg_names])
         plotting_args = ','.join(['%s=%s' % (o,v) for o, v in plotting_argdict.items() if v is not None])
 
@@ -667,12 +679,14 @@ if not rpacks.isinstalled('Cairo'):
             tmpd_fix_slashes = tmpd.replace('\\', '/')
 
         if self.device == 'png':
-            self.r('png("%s/Rplots%%03d.png", %s)' % (tmpd_fix_slashes, plotting_args))
+            ro.r('png("%s/Rplots%%03d.png", %s)' % (tmpd_fix_slashes, plotting_args))
         elif self.device == 'svg':
-            self.r('CairoSVG("%s/Rplot.svg", %s)' % (tmpd_fix_slashes, plotting_args))
+            ro.r('CairoSVG("%s/Rplot.svg", %s)' % (tmpd_fix_slashes, plotting_args))
         elif self.device == 'X11':
-            # Open a new X11 device, except if the current one is already an X11 device  
-            self.r('substr(names(dev.cur()), 1, 3) != "X11") { X11(); }')
+            # Open a new X11 device, except if the current one is already an X11
+            # device
+            ro.r('substr(names(dev.cur()), 1, 3) != "X11") { X11(); }')
+
         else:
             raise RInterpreterError("device must be one of ['png', 'X11' 'svg']")
 
@@ -712,7 +726,7 @@ if not rpacks.isinstalled('Cairo'):
 
         # publish the R images
         if self.device in ['png', 'svg']:
-            self.r('dev.off()')
+            ro.r('dev.off()')
 
             # read in all the saved image files
             images = []
@@ -749,11 +763,11 @@ if not rpacks.isinstalled('Cairo'):
 
         if args.output:
             for output in ','.join(args.output).split(','):
-                self.shell.push({output:self.Rconverter(self.r(output), dataframe=False)})
+                self.shell.push({output:self.Rconverter(ro.r(output), dataframe=False)})
 
         if args.dataframe:
             for output in ','.join(args.dataframe).split(','):
-                self.shell.push({output:self.Rconverter(self.r(output), dataframe=True)})
+                self.shell.push({output:self.Rconverter(ro.r(output), dataframe=True)})
 
         for tag, disp_d in display_data:
             publish_display_data(tag, disp_d, metadata=md)

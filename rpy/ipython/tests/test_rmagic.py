@@ -29,6 +29,7 @@ else:
 
 # from IPython.core.getipython import get_ipython
 from rpy2 import rinterface
+from rpy2.robjects import r
 
 class TestRmagic(unittest.TestCase):
     @classmethod
@@ -48,11 +49,10 @@ class TestRmagic(unittest.TestCase):
         deactivate()
 
     def test_push(self):
-        rm = rmagic.RMagics(self.ip)
         self.ip.push({'X':np.arange(5), 'Y':np.array([3,5,4,6,7])})
         self.ip.run_line_magic('Rpush', 'X Y')
-        np.testing.assert_almost_equal(np.asarray(rm.r('X')), self.ip.user_ns['X'])
-        np.testing.assert_almost_equal(np.asarray(rm.r('Y')), self.ip.user_ns['Y'])
+        np.testing.assert_almost_equal(np.asarray(r('X')), self.ip.user_ns['X'])
+        np.testing.assert_almost_equal(np.asarray(r('Y')), self.ip.user_ns['Y'])
 
     def test_push_localscope(self):
         """Test that Rpush looks for variables in the local scope first."""
@@ -71,7 +71,6 @@ result = rmagic_addone(12344)
 
     @unittest.skipUnless(has_pandas, 'pandas is not available in python')
     def test_push_dataframe(self):
-        rm = rmagic.RMagics(self.ip)
         df = pd.DataFrame([{'a': 1, 'b': 'bar'}, {'a': 5, 'b': 'foo', 'c': 20}])
         self.ip.push({'df':df})
         self.ip.run_line_magic('Rpush', 'df')
@@ -81,21 +80,20 @@ result = rmagic_addone(12344)
         sio = StringIO()
         rinterface.set_writeconsole(sio.write)
         try:
-            rm.r('print(df$b[1])')
+            r('print(df$b[1])')
             self.assertIn('[1] bar', sio.getvalue())
         finally:
             rinterface.set_writeconsole(None)
 
         # Values come packaged in arrays, so we unbox them to test.
-        self.assertEqual(rm.r('df$a[2]')[0], 5)
-        missing = rm.r('df$c[1]')[0]
+        self.assertEqual(r('df$a[2]')[0], 5)
+        missing = r('df$c[1]')[0]
         assert np.isnan(missing), missing
 
     def test_pull(self):
-        rm = rmagic.RMagics(self.ip)
-        rm.r('Z=c(11:20)')
+        r('Z=c(11:20)')
         self.ip.run_line_magic('Rpull', 'Z')
-        np.testing.assert_almost_equal(np.asarray(rm.r('Z')), self.ip.user_ns['Z'])
+        np.testing.assert_almost_equal(np.asarray(r('Z')), self.ip.user_ns['Z'])
         np.testing.assert_almost_equal(self.ip.user_ns['Z'], np.arange(11,21))
 
     def test_Rconverter(self):
@@ -159,12 +157,16 @@ result = rmagic_addone(12344)
             "-i var_not_defined 1+1")
 
     def test_plotting_args(self):
+        '''Exercise the plotting machinery
+
+        To pass SVG tests, we need Cairo installed in R.'''
+
         self.ip.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
 
         cell = '''
         plot(x, y, pch=23, bg='orange', cex=2)
         '''
-        
+
         png_px_args = [' '.join(('--units=px',w,h,p)) for 
                        w, h, p in product(['--width=400 ',''],
                                           ['--height=400',''],
@@ -172,7 +174,7 @@ result = rmagic_addone(12344)
 
         for line in png_px_args:
             self.ip.run_line_magic('Rdevice', 'png')
-            yield self.ip.run_cell_magic, 'R', line, cell
+            self.ip.run_cell_magic('R', line, cell)
 
         basic_args = [' '.join((w,h,p)) for w, h, p in product(['--width=6 ',''],
                                                                ['--height=6',''],
@@ -180,9 +182,17 @@ result = rmagic_addone(12344)
 
         for line in basic_args:
             self.ip.run_line_magic('Rdevice', 'svg')
-            yield self.ip.run_cell_magic, 'R', line, cell
+            self.ip.run_cell_magic('R', line, cell)
 
         png_args = ['--units=in --res=1 ' + s for s in basic_args]
         for line in png_args:
             self.ip.run_line_magic('Rdevice', 'png')
-            yield self.ip.run_cell_magic, 'R', line, cell
+            self.ip.run_cell_magic('R', line, cell)
+
+        self.ip.run_line_magic('Rdevice', 'X11')
+        self.ip.run_cell_magic('R', '', cell)
+
+        # This seems like the safest thing to return our state to
+        # But the above X11 problem still results in distal errors in other
+        # tests
+        self.ip.run_line_magic('Rdevice', 'png')
