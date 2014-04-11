@@ -240,15 +240,14 @@ class RConfig(object):
                              '^-I(?P<include_dirs>[^ ]+)$',
                              '^(?P<framework_dirs>-F[^ ]+?)$',
                              '^(?P<frameworks>-framework [^ ]+)$',
-                             '^(?P<extra_link_args>-Wl[^ ]+)$',
-                             '^(?P<extra_link_args>-f[^ ]+)$')
+                             '^(?P<extra_link_args>-Wl[^ ]+)$')
         pp = [re.compile(x) for x in possible_patterns]
         # sanity check of what is returned into rconfig
         rconfig_m = None        
         span = (0, 0)
         rc = RConfig()
         
-        for substring in re.split('(?<!-framework) +', string):
+        for substring in re.split('(?<!-framework) ', string):
             ok = False
             for pattern in pp:
                 rconfig_m = pattern.match(substring)
