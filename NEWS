@@ -1,5 +1,5 @@
 Release 2.4.0
-=============
+=======
 
 Changes
 -------
@@ -48,6 +48,15 @@ Bugs fixed
 - :meth:`rpy2.rinterface.Sexp.do_slot` was crashing when
   the parameter was an empty string (PR #155)
 
+
+
+Release 2.3.10
+==============
+
+Bugs fixed
+----------
+
+- `setup.py build` was broken when new R compiled with OpenMP (Issue #183)
 
 Release 2.3.9
 =============
