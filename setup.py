@@ -258,6 +258,10 @@ class RConfig(object):
             if a is None:
                 continue
             d[n] = a
+        if 'extra_link_args' in d:
+            d['extra_link_args'].append(extra_args)
+        else:
+            d['extra_link_args'] = extra_args            
         rc = RConfig(**d)
         return rc
             
