@@ -1,5 +1,6 @@
 
 import os, os.path, sys, shutil, re, itertools, warnings
+import argparse, shlex
 from collections import namedtuple
 from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build import build as _build
@@ -208,6 +209,15 @@ class RConfig(object):
     _frameworks = None
     _framework_dirs = None
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-L', dest='library_dirs', nargs='*')
+    parser.add_argument('-l', dest='libraries', nargs='*')
+    parser.add_argument('-I', dest='include_dirs', nargs='*')
+    parser.add_argument('-F', dest='framework_dirs', nargs='*')
+    parser.add_argument('-framework', dest='framework', nargs='*')
+    #parser.add_argument('-Wl', dest='extra_link_args', nargs='*')
+    #parser.add_argument('-f', dest='extra_link_args', nargs='*')
+
     def __init__(self,
                  include_dirs = tuple(), libraries = tuple(),
                  library_dirs = tuple(), extra_link_args = tuple(),
@@ -235,43 +245,20 @@ class RConfig(object):
 
     @staticmethod
     def from_string(string, allow_empty = False):
-        possible_patterns = ('^-L(?P<library_dirs>[^ ]+)$',
-                             '^-l(?P<libraries>[^ ]+)$',
-                             '^-I(?P<include_dirs>[^ ]+)$',
-                             '^(?P<framework_dirs>-F[^ ]+?)$',
-                             '^(?P<frameworks>-framework [^ ]+)$',
-                             '^(?P<extra_link_args>-Wl[^ ]+)$')
-        pp = [re.compile(x) for x in possible_patterns]
         # sanity check of what is returned into rconfig
         rconfig_m = None        
         span = (0, 0)
         rc = RConfig()
-        
-        for substring in re.split('(?<!-framework) ', string):
-            ok = False
-            for pattern in pp:
-                rconfig_m = pattern.match(substring)
-                if rconfig_m is not None:
-                    rc += RConfig(**rconfig_m.groupdict())
-                    span = rconfig_m.span()
-                    ok = True
-                    break
-                elif rconfig_m is None:
-                    if allow_empty:
-                        print('\nreturned an empty string.\n')
-                        rc += RConfig()
-                        ok = True
-                        break
-                    else:
-                        # if the configuration points to an existing library, 
-                        # use it
-                        if os.path.exists(string):
-                            rc += RConfig(libraries = substring)
-                            ok = True
-                            break
-            if not ok:
-                raise ValueError('Invalid substring\n' + substring 
-                                 + '\nin string\n' + string)
+        args, extra_args = RConfig.parser.parse_known_args(shlex.split(string))
+        d = dict()
+        for n in dir(args):
+            if n.startswith('_'):
+                continue
+            a = getattr(args, n)
+            if a is None:
+                continue
+            d[n] = a
+        rc = RConfig(**d)
         return rc
             
     def __repr__(self):
