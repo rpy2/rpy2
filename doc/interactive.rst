@@ -27,7 +27,13 @@ or performances for ease-of-use.
 >>> v = r.IntVector((1,2,3))
 >>> r.packages.importr('datasets')
 rpy2.robjecs.packages.Package as a <module 'datasets' (built-in)>
->>> tuple(r.packages.datasets.trees.names)
+>>> data = rpy2.interactive.packages.data
+>>> rpackages = r.packages.packages
+>>> # list of datasets
+>>> data(rpackages.datasets).names()
+# list here
+>>> env = data(rpackages.datasets).fetch('trees')
+>>> tuple(env['trees'].names)
 ('Girth', 'Height', 'Volume')
 
 R vectors
