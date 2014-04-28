@@ -37,11 +37,11 @@ done
 #sudo apt-get -qq -y install pandas >> ${LOGFILE}
 echo "[done]"
 
-# Install ggplot2 r-cran package
+# Install r-cran packages ggplot2 and Cairo
 echo -n "Installing R packages..."
 export R_LIBS_USER="$HOME/rlibs/"
 mkdir -p $R_LIBS_USER
-R --slave -e 'install.packages("ggplot2", repos="http://cran.us.r-project.org")' &>> ${LOGFILE}
+R --slave -e 'install.packages(c("ggplot2", "Cairo"), repos="http://cran.us.r-project.org")' &>> ${LOGFILE}
 echo "[done]"
 
 STATUS=0
