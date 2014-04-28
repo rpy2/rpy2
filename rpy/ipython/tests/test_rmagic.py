@@ -189,6 +189,12 @@ result = rmagic_addone(12344)
             self.ip.run_line_magic('Rdevice', 'png')
             self.ip.run_cell_magic('R', line, cell)
 
+    def test_plotting_args_X11(self):
+        self.ip.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
+
+        cell = '''
+        plot(x, y, pch=23, bg='orange', cex=2)
+        '''
         self.ip.run_line_magic('Rdevice', 'X11')
         self.ip.run_cell_magic('R', '', cell)
 
