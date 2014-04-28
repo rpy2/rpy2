@@ -29,7 +29,7 @@ sudo add-apt-repository ppa:marutter/rrutter >> ${LOGFILE}
 #sudo add-apt-repository ppa:jtaylor/ipython >> ${LOGFILE}
 #sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${LOGFILE}
 sudo apt-get -y update &>> ${LOGFILE}
-for package in r-base libatlas-dev libatlas3gf-base liblapack-dev gfortran
+for package in r-base libatlas-dev libatlas3gf-base liblapack-dev gfortran xvfb xauth xfonts-base
 do
     echo "   ${package}"
     sudo apt-get -qq -y install ${package} &>> ${LOGFILE};
@@ -80,7 +80,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
     #DEBUG
     python -c 'import rpy2.ipython'
     # Launch tests
-    python -m rpy2.tests
+    xvfb-run python -m rpy2.tests
 
     # Success if passing the tests in at least one configuration
     if [ $? -eq 0 ]; then
