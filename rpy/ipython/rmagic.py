@@ -685,7 +685,10 @@ if not rpacks.isinstalled('Cairo'):
         elif self.device == 'X11':
             # Open a new X11 device, except if the current one is already an X11
             # device
-            ro.r('substr(names(dev.cur()), 1, 3) != "X11") { X11(); }')
+            ro.r('''
+            if (substr(names(dev.cur()), 1, 3) != "X11") {
+                X11()
+            }''')
 
         else:
             raise RInterpreterError("device must be one of ['png', 'X11' 'svg']")
