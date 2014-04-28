@@ -189,6 +189,7 @@ result = rmagic_addone(12344)
             self.ip.run_line_magic('Rdevice', 'png')
             self.ip.run_cell_magic('R', line, cell)
 
+    @unittest.skip('Test for X11 skipped.')
     def test_plotting_args_X11(self):
         self.ip.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
 
