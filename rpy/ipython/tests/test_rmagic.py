@@ -47,6 +47,8 @@ class TestRmagic(unittest.TestCase):
     def setUp(self):
         activate()
     def tearDown(self):
+        # This seems like the safest thing to return to a safe state
+        self.ip.run_line_magic('Rdevice', 'png')
         deactivate()
 
     def test_push(self):
@@ -200,7 +202,7 @@ result = rmagic_addone(12344)
             self.ip.run_cell_magic('R', line, cell)
 
     @unittest.skip('Test for X11 skipped.')
-    def test_plotting_args_X11(self):
+    def test_plotting_X11(self):
         self.ip.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
 
         cell = '''
@@ -209,7 +211,3 @@ result = rmagic_addone(12344)
         self.ip.run_line_magic('Rdevice', 'X11')
         self.ip.run_cell_magic('R', '', cell)
 
-        # This seems like the safest thing to return our state to
-        # But the above X11 problem still results in distal errors in other
-        # tests
-        self.ip.run_line_magic('Rdevice', 'png')
