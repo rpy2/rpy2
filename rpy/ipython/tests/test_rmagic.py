@@ -30,6 +30,7 @@ else:
 # from IPython.core.getipython import get_ipython
 from rpy2 import rinterface
 from rpy2.robjects import r
+import rpy2.robjects.packages as rpacks
 
 class TestRmagic(unittest.TestCase):
     @classmethod
@@ -156,10 +157,8 @@ result = rmagic_addone(12344)
             "R",
             "-i var_not_defined 1+1")
 
-    def test_plotting_args(self):
-        '''Exercise the plotting machinery
-
-        To pass SVG tests, we need Cairo installed in R.'''
+    def test_png_plotting_args(self):
+        '''Exercise the PNG plotting machinery'''
 
         self.ip.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
 
@@ -175,6 +174,17 @@ result = rmagic_addone(12344)
         for line in png_px_args:
             self.ip.run_line_magic('Rdevice', 'png')
             self.ip.run_cell_magic('R', line, cell)
+
+    @unittest.skipUnless(rpacks.isinstalled('Cairo'), 'Cairo not installed')
+    def test_svg_plotting_args(self):
+        '''Exercise the plotting machinery
+
+        To pass SVG tests, we need Cairo installed in R.'''
+        self.ip.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
+
+        cell = '''
+        plot(x, y, pch=23, bg='orange', cex=2)
+        '''
 
         basic_args = [' '.join((w,h,p)) for w, h, p in product(['--width=6 ',''],
                                                                ['--height=6',''],
