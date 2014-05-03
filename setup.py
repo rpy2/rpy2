@@ -214,7 +214,7 @@ class RConfig(object):
     parser.add_argument('-l', dest='libraries', nargs='*')
     parser.add_argument('-I', dest='include_dirs', nargs='*')
     parser.add_argument('-F', dest='framework_dirs', nargs='*')
-    parser.add_argument('-framework', dest='framework', nargs='*')
+    parser.add_argument('-framework', dest='frameworks', nargs='*')
     #parser.add_argument('-Wl', dest='extra_link_args', nargs='*')
     #parser.add_argument('-f', dest='extra_link_args', nargs='*')
 
