@@ -100,28 +100,42 @@ result = rmagic_addone(12344)
         np.testing.assert_almost_equal(self.ip.user_ns['Z'], np.arange(11,21))
 
     def test_Rconverter(self):
+        # Set up some helper functions
+        def test_almost_eq_as_arrays(a,b):
+            np.testing.assert_almost_equal(np.asarray(a),
+                                           np.asarray(b) )
+
+        # def test_eq_as_arrays(a,b):
+        #     np.testing.assert_equal(np.asarray(a),
+        #                             np.asarray(b) )
+
         datapy= np.array([(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c')], 
             dtype=[('x', '<i4'), ('y', '<f8'), ('z', '|S1')])
         self.ip.user_ns['datapy'] = datapy
         self.ip.run_line_magic('Rpush', 'datapy')
 
         # test to see if a copy is being made
-        v = self.ip.run_line_magic('Rget', '-d datapy')
-        w = self.ip.run_line_magic('Rget', '-d datapy')
-        np.testing.assert_almost_equal(w['x'], v['x'])
-        np.testing.assert_almost_equal(w['y'], v['y'])
+        v = self.ip.run_line_magic('Rget', 'datapy')
+        w = self.ip.run_line_magic('Rget', 'datapy')
+        # XXX It's not clear why any of these wouldn't be EXACTLY equal
+        test_almost_eq_as_arrays(w['x'], v['x'])
+        test_almost_eq_as_arrays(w['y'], v['y'])
         self.assertTrue(np.all(w['z'] == v['z']))
-        np.testing.assert_equal(id(w.data), id(v.data))
-        self.assertTrue(w.dtype, v.dtype)
+        # We can no longer guarantee this, as it may be a pandas DataFrame
+        # test_eq_as_arrays(id(w.data),
+        #                   id(v.data) )
+        # self.assertTrue(w.dtype, v.dtype)
 
-        self.ip.run_cell_magic('R', ' -d datar', 'datar=datapy')
+        self.ip.run_cell_magic('R', '-o datar', 'datar=datapy')
 
-        u = self.ip.run_line_magic('Rget', ' -d datar')
-        np.testing.assert_almost_equal(u['x'], v['x'])
-        np.testing.assert_almost_equal(u['y'], v['y'])
+        u = self.ip.run_line_magic('Rget', 'datar')
+        test_almost_eq_as_arrays(u['x'], v['x'])
+        test_almost_eq_as_arrays(u['y'], v['y'])
+        # XXX Why do we need this?
         self.assertTrue(np.all(u['z'] == v['z']))
-        np.testing.assert_equal(id(u.data), id(v.data))
-        self.assertEqual(u.dtype, v.dtype)
+        # We can no longer guarantee this, as it may be a pandas DataFrame
+        # test_eq_as_array(id(u.data), id(v.data))
+        # self.assertEqual(u.dtype, v.dtype)
 
 
     def test_cell_magic(self):

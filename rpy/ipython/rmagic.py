@@ -367,15 +367,16 @@ if not rpacks.isinstalled('Cairo'):
         args = parse_argstring(self.Rpull, line)
         outputs = args.outputs
         for output in outputs:
-            self.shell.push({output:self.Rconverter(ro.r(output),dataframe=args.as_dataframe)})
+            self.shell.push({output:
+                             ro.conversion.ri2ro(ro.r(output)) })
 
     # @skip_doctest
     @magic_arguments()
-    @argument(
-        '-d', '--as_dataframe', action='store_true',
-        default=False,
-        help='Convert objects to data.frames before returning to ipython.'
-        )
+    # @argument(
+    #     '-d', '--as_dataframe', action='store_true',
+    #     default=False,
+    #     help='Convert objects to data.frames before returning to ipython.'
+    #     )
     @argument(
         'output',
         nargs=1,
@@ -401,15 +402,16 @@ if not rpacks.isinstalled('Cairo'):
                    ['a', 'b', 'c', 'e']],
                   dtype='|S1')
 
-            In [7]: %Rget -d datapy
-            Out[7]:
-            array([(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c'), (4, 5.0, 'e')],
-                  dtype=[('x', '<i4'), ('y', '<f8'), ('z', '|S1')])
+            # XXX: We likely will stop supporting -d
+            # In [7]: %Rget -d datapy
+            # Out[7]:
+            # array([(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c'), (4, 5.0, 'e')],
+            #       dtype=[('x', '<i4'), ('y', '<f8'), ('z', '|S1')])
 
         '''
         args = parse_argstring(self.Rget, line)
         output = args.output
-        return self.Rconverter(ro.r(output[0]),dataframe=args.as_dataframe)
+        return ro.conversion.ri2ro(ro.r(output[0]))
 
 
     # @skip_doctest
@@ -751,11 +753,12 @@ if not rpacks.isinstalled('Cairo'):
 
         if args.output:
             for output in ','.join(args.output).split(','):
-                self.shell.push({output:self.Rconverter(ro.r(output), dataframe=False)})
+                self.shell.push({output:
+                                 ro.conversion.ri2ro(ro.r(output)) })
 
-        if args.dataframe:
-            for output in ','.join(args.dataframe).split(','):
-                self.shell.push({output:self.Rconverter(ro.r(output), dataframe=True)})
+        # if args.dataframe:
+        #     for output in ','.join(args.dataframe).split(','):
+        #         self.shell.push({output:self.Rconverter(ro.r(output), dataframe=True)})
 
         for tag, disp_d in display_data:
             publish_display_data(tag, disp_d, metadata=md)
@@ -770,7 +773,7 @@ if not rpacks.isinstalled('Cairo'):
         # if in line mode and return_output, return the result as an ndarray
         if return_output and not args.noreturn:
             if result != ri.NULL:
-                return self.Rconverter(result, dataframe=False)
+                return ro.conversion.ri2ro(result)
 
 __doc__ = __doc__.format(
                 R_DOC = ' '*8 + RMagics.R.__doc__,
