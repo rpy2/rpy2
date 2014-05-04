@@ -51,7 +51,7 @@ from shutil import rmtree
 
 # XXX rpy2 strives to avoid hard dependencies on numpy. Can we make this
 # optional?
-import numpy as np
+# import numpy as np
 
 import rpy2.rinterface as ri
 import rpy2.robjects as ro
@@ -98,37 +98,37 @@ class RInterpreterError(ri.RRuntimeError):
         def __str__(self):
             return unicode_to_str(unicode(self), 'utf-8')
 
-def Rconverter(Robj, dataframe=False):
-    """
-    Convert an object in R's namespace to one suitable
-    for ipython's namespace.
-
-    For a data.frame, it tries to return a structured array.
-    It first checks for colnames, then names.
-    If all are NULL, it returns np.asarray(Robj), else
-    it tries to construct a recarray
-
-    Parameters
-    ----------
-
-    Robj: an R object returned from rpy2
-    """
-    # Note - the below is (somewhat) redundant with numpy2ri and friends
-    if dataframe:
-        as_data_frame = ro.r('as.data.frame')
-        cols = ro.r.colnames(Robj)
-        # We could also get the rownames for a pandas index
-        # But this conversion code should likely be elsewhere
-        _names = ro.r.names(Robj)
-        if cols is not ri.NULL:
-            Robj = as_data_frame(Robj)
-            names = tuple(np.array(cols))
-        elif _names is not ri.NULL:
-            names = tuple(np.array(_names))
-        else: # failed to find names
-            return np.asarray(Robj)
-        Robj = np.rec.fromarrays(Robj, names = names)
-    return np.asarray(Robj)
+# def Rconverter(Robj, dataframe=False):
+#     """
+#     Convert an object in R's namespace to one suitable
+#     for ipython's namespace.
+# 
+#     For a data.frame, it tries to return a structured array.
+#     It first checks for colnames, then names.
+#     If all are NULL, it returns np.asarray(Robj), else
+#     it tries to construct a recarray
+# 
+#     Parameters
+#     ----------
+# 
+#     Robj: an R object returned from rpy2
+#     """
+#     # Note - the below is (somewhat) redundant with numpy2ri and friends
+#     if dataframe:
+#         as_data_frame = ro.r('as.data.frame')
+#         cols = ro.r.colnames(Robj)
+#         # We could also get the rownames for a pandas index
+#         # But this conversion code should likely be elsewhere
+#         _names = ro.r.names(Robj)
+#         if cols is not ri.NULL:
+#             Robj = as_data_frame(Robj)
+#             names = tuple(np.array(cols))
+#         elif _names is not ri.NULL:
+#             names = tuple(np.array(_names))
+#         else: # failed to find names
+#             return np.asarray(Robj)
+#         Robj = np.rec.fromarrays(Robj, names = names)
+#     return np.asarray(Robj)
 
 @generic
 def pyconverter(pyobj):
@@ -153,7 +153,7 @@ class RMagics(Magics):
     """A set of magics useful for interactive work with R via rpy2.
     """
 
-    def __init__(self, shell, Rconverter=Rconverter,
+    def __init__(self, shell, # Rconverter=Rconverter,
                  pyconverter=pyconverter,
                  cache_display_data=False,
                  device='png'):
@@ -163,9 +163,9 @@ class RMagics(Magics):
 
         shell : IPython shell
 
-        Rconverter : callable
-            To be called on values taken from R before putting them in the
-            IPython namespace.
+        # Rconverter : callable
+        #     To be called on values taken from R before putting them in the
+        #     IPython namespace.
 
         pyconverter : callable
             To be called on values in ipython namespace before 
@@ -187,7 +187,7 @@ class RMagics(Magics):
 
         self.Rstdout_cache = []
         self.pyconverter = pyconverter
-        self.Rconverter = Rconverter
+        # self.Rconverter = Rconverter
 
         self.set_R_plotting_device(device)
 
@@ -350,9 +350,9 @@ if not rpacks.isinstalled('Cairo'):
                   dtype='|S1')
 
 
-        If --as_dataframe, then each object is returned as a structured array
-        after first passed through "as.data.frame" in R before
-        being calling self.Rconverter. 
+        [OLD BEHAVIOR: If --as_dataframe, then each object is returned as a
+        structured array after first passed through "as.data.frame" in R before
+        being calling self.Rconverter.]
         This is useful when a structured array is desired as output, or
         when the object in R has mixed data types. 
         See the %%R docstring for more examples.
@@ -422,7 +422,7 @@ if not rpacks.isinstalled('Cairo'):
         )
     @argument(
         '-o', '--output', action='append',
-        help='Names of variables to be pushed from rpy2 to shell.user_ns after executing cell body and applying self.Rconverter. Multiple names can be passed separated only by commas with no whitespace.'
+        help='Names of variables to be pushed from rpy2 to shell.user_ns after executing cell body and applying ro.conversion.ri2ro. Multiple names can be passed separated only by commas with no whitespace.'
         )
     @argument(
         '-d', '--dataframe', action='append',
