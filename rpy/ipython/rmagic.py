@@ -113,7 +113,13 @@ def pyconverter(pyobj):
 # **if the list was of uniform (atomic) type**.
 @pyconverter.when_type(list)
 def pyconverter_list(pyobj):
-    return ro.r.unlist(pyobj)
+    # Note that recursive doesn't buy us much here, but it prevents a lot of...
+    # recursion
+    unlisted = ro.r.unlist(pyobj, recursive=False)
+    if len(unlisted) == len(pyobj):
+        return unlisted
+    else:
+        return pyobj
 
 
 @magics_class
