@@ -1,6 +1,7 @@
 import unittest
 from itertools import product
 
+# Currently numpy is a testing requirement, but rpy2 should work without numpy
 import numpy as np
 has_pandas = True
 try:
@@ -16,12 +17,9 @@ else:
     from StringIO import StringIO
 
 from rpy2.ipython import rmagic
-if rmagic.pandas2ri:
-    activate = rmagic.pandas2ri.activate
-    deactivate = rmagic.pandas2ri.deactivate
-elif rmagic.numpy2ri:
-    activate = rmagic.numpy2ri.activate
-    deactivate = rmagic.numpy2ri.deactivate
+if rmagic.py2ri is not None:
+    activate = rmagic.py2ri.activate
+    deactivate = rmagic.py2ri.deactivate
 else:
     def activate():
         pass
@@ -100,16 +98,15 @@ result = rmagic_addone(12344)
         np.testing.assert_almost_equal(self.ip.user_ns['Z'], np.arange(11,21))
 
     def test_Rconverter(self):
-        # Set up some helper functions
-        def test_almost_eq_as_arrays(a,b):
-            np.testing.assert_almost_equal(np.asarray(a),
-                                           np.asarray(b) )
+        # Set up a helper functions
+        def test_eq_arrays(a,b):
+            np.testing.assert_array_equal(a,b)
+            # If we get to dropping numpy requirement, we might use something
+            # like the following:
+            # self.assertSequenceEqual(buffer(a).buffer_info(),
+            #                          buffer(b).buffer_info())
 
-        # def test_eq_as_arrays(a,b):
-        #     np.testing.assert_equal(np.asarray(a),
-        #                             np.asarray(b) )
-
-        datapy= np.array([(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c')], 
+        datapy= np.array([(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c')],
             dtype=[('x', '<i4'), ('y', '<f8'), ('z', '|S1')])
         self.ip.user_ns['datapy'] = datapy
         self.ip.run_line_magic('Rpush', 'datapy')
@@ -117,29 +114,19 @@ result = rmagic_addone(12344)
         # test to see if a copy is being made
         v = self.ip.run_line_magic('Rget', 'datapy')
         w = self.ip.run_line_magic('Rget', 'datapy')
-        # XXX It's not clear why any of these wouldn't be EXACTLY equal
-        test_almost_eq_as_arrays(w['x'], v['x'])
-        test_almost_eq_as_arrays(w['y'], v['y'])
-        self.assertTrue(np.all(w['z'] == v['z']))
-        # We can no longer guarantee this, as it may be a pandas DataFrame
-        # test_eq_as_arrays(id(w.data),
-        #                   id(v.data) )
-        # self.assertTrue(w.dtype, v.dtype)
+        test_eq_arrays(w['x'], v['x'])
+        test_eq_arrays(w['y'], v['y'])
 
         self.ip.run_cell_magic('R', '-o datar', 'datar=datapy')
 
         u = self.ip.run_line_magic('Rget', 'datar')
-        test_almost_eq_as_arrays(u['x'], v['x'])
-        test_almost_eq_as_arrays(u['y'], v['y'])
-        # XXX Why do we need this?
-        self.assertTrue(np.all(u['z'] == v['z']))
-        # We can no longer guarantee this, as it may be a pandas DataFrame
-        # test_eq_as_array(id(u.data), id(v.data))
-        # self.assertEqual(u.dtype, v.dtype)
-
+        w = self.ip.user_ns['datar']
+        test_eq_arrays(u['x'], v['x'])
+        test_eq_arrays(u['y'], v['y'])
+        test_eq_arrays(w['x'], v['x'])
+        test_eq_arrays(w['y'], v['y'])
 
     def test_cell_magic(self):
-
         self.ip.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
         snippet = '''
         print(summary(a))

@@ -54,10 +54,14 @@ import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
 
 try:
-    from rpy2.robjects import pandas2ri
+    from rpy2.robjects import pandas2ri as py2ri
 except ImportError:
-    from rpy2.robjects import numpy2ri
-    pandas2ri = None
+    try:
+        from rpy2.robjects import numpy2ri as py2ri
+    except ImportError:
+        # Give up on numerics
+        py2ri = None
+
 
 # IPython imports
 
@@ -104,9 +108,9 @@ def pyconverter(pyobj):
 
 # The default conversion for lists is currently to make them an R list. That has
 # some advantages, but can be inconvenient (and, it's inconsistent with the way
-# users are used to python lists being automatically converted by python
-# functions for arrays), so for interactive use in the rmagic, we call unlist,
-# which converts lists to vectors **if the list was of uniform (atomic) type**.
+# python lists are automatically converted by numpy functions), so for
+# interactive use in the rmagic, we call unlist, which converts lists to vectors
+# **if the list was of uniform (atomic) type**.
 @pyconverter.when_type(list)
 def pyconverter_list(pyobj):
     return ro.r.unlist(pyobj)
@@ -656,11 +660,11 @@ __doc__ = __doc__.format(
 
 def load_ipython_extension(ip):
     """Load the extension in IPython."""
-       
-    if pandas2ri:
-        pandas2ri.activate()
-    else:
-        numpy2ri.activate()
+
+    if py2ri is not None:
+        # This is pandas2ri if pandas is installed,
+        # or numpy2ri otherwise
+        py2ri.activate()
 
     ip.register_magics(RMagics)
     # Initialising rpy2 interferes with readline. Since, at this point, we've
