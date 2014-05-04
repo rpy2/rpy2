@@ -641,36 +641,10 @@ if not rpacks.isinstalled('Cairo'):
         if getattr(args, 'units') is not None:
             if args.units != "px" and getattr(args, 'res') is None:
                 args.res = 72
-            args.units = '"%s"' % args.units
-
 
         plot_arg_names = ['width', 'height', 'pointsize', 'bg']
         if self.device == 'png':
             plot_arg_names += ['units', 'res']
-
-        # This should eventually replace the below
-
-        # plotting_argdict = {}
-        # for name in plot_arg_names:
-        #     val = getattr(args, name)
-        #     if val is not None:
-        #         plotting_argdict[name] = val
-
-        # # execute the R code in a temporary directory
-        # tmpd = None
-        # if self.device in ['png', 'svg']:
-        #     tmpd = tempfile.mkdtemp()
-        #     tmpd_fix_slashes = tmpd.replace('\\', '/')
-
-        # if self.device == 'png':
-        #     ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
-        #              **plotting_argdict)
-        # elif self.device == 'svg':
-        #     self.cairo.CairoSVG("%s/Rplot.svg" % tmpd_fix_slashes,
-        #                         **plotting_argdict)
-
-        plotting_argdict = dict([(n, getattr(args, n)) for n in plot_arg_names])
-        plotting_args = ','.join(['%s=%s' % (o,v) for o, v in plotting_argdict.items() if v is not None])
 
         # execute the R code in a temporary directory
         tmpd = None
@@ -678,10 +652,20 @@ if not rpacks.isinstalled('Cairo'):
             tmpd = tempfile.mkdtemp()
             tmpd_fix_slashes = tmpd.replace('\\', '/')
 
+        plotting_argdict = {}
+        for name in plot_arg_names:
+            val = getattr(args, name)
+            if val is not None:
+                plotting_argdict[name] = val
+
         if self.device == 'png':
-            ro.r('png("%s/Rplots%%03d.png", %s)' % (tmpd_fix_slashes, plotting_args))
+            # Note: that %% is to pass into R for interpolation there
+            ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
+                     **plotting_argdict)
         elif self.device == 'svg':
-            ro.r('CairoSVG("%s/Rplot.svg", %s)' % (tmpd_fix_slashes, plotting_args))
+            self.cairo.CairoSVG("%s/Rplot.svg" % tmpd_fix_slashes,
+                                **plotting_argdict)
+
         elif self.device == 'X11':
             # Open a new X11 device, except if the current one is already an X11
             # device
