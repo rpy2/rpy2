@@ -49,10 +49,6 @@ from shutil import rmtree
 
 # numpy and rpy2 imports
 
-# XXX rpy2 strives to avoid hard dependencies on numpy. Can we make this
-# optional?
-# import numpy as np
-
 import rpy2.rinterface as ri
 import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
@@ -98,38 +94,6 @@ class RInterpreterError(ri.RRuntimeError):
         def __str__(self):
             return unicode_to_str(unicode(self), 'utf-8')
 
-# def Rconverter(Robj, dataframe=False):
-#     """
-#     Convert an object in R's namespace to one suitable
-#     for ipython's namespace.
-# 
-#     For a data.frame, it tries to return a structured array.
-#     It first checks for colnames, then names.
-#     If all are NULL, it returns np.asarray(Robj), else
-#     it tries to construct a recarray
-# 
-#     Parameters
-#     ----------
-# 
-#     Robj: an R object returned from rpy2
-#     """
-#     # Note - the below is (somewhat) redundant with numpy2ri and friends
-#     if dataframe:
-#         as_data_frame = ro.r('as.data.frame')
-#         cols = ro.r.colnames(Robj)
-#         # We could also get the rownames for a pandas index
-#         # But this conversion code should likely be elsewhere
-#         _names = ro.r.names(Robj)
-#         if cols is not ri.NULL:
-#             Robj = as_data_frame(Robj)
-#             names = tuple(np.array(cols))
-#         elif _names is not ri.NULL:
-#             names = tuple(np.array(_names))
-#         else: # failed to find names
-#             return np.asarray(Robj)
-#         Robj = np.rec.fromarrays(Robj, names = names)
-#     return np.asarray(Robj)
-
 @generic
 def pyconverter(pyobj):
     """Convert Python objects to R objects. Add types using the decorator:
@@ -153,19 +117,13 @@ class RMagics(Magics):
     """A set of magics useful for interactive work with R via rpy2.
     """
 
-    def __init__(self, shell, # Rconverter=Rconverter,
-                 pyconverter=pyconverter,
-                 cache_display_data=False,
-                 device='png'):
+    def __init__(self, shell, pyconverter=pyconverter,
+                 cache_display_data=False, device='png'):
         """
         Parameters
         ----------
 
         shell : IPython shell
-
-        # Rconverter : callable
-        #     To be called on values taken from R before putting them in the
-        #     IPython namespace.
 
         pyconverter : callable
             To be called on values in ipython namespace before 
@@ -187,7 +145,6 @@ class RMagics(Magics):
 
         self.Rstdout_cache = []
         self.pyconverter = pyconverter
-        # self.Rconverter = Rconverter
 
         self.set_R_plotting_device(device)
 
@@ -320,11 +277,6 @@ if not rpacks.isinstalled('Cairo'):
     # @skip_doctest
     @magic_arguments()
     @argument(
-        '-d', '--as_dataframe', action='store_true',
-        default=False,
-        help='Convert objects to data.frames before returning to ipython.'
-        )
-    @argument(
         'outputs',
         nargs='*',
         )
@@ -350,9 +302,6 @@ if not rpacks.isinstalled('Cairo'):
                   dtype='|S1')
 
 
-        [OLD BEHAVIOR: If --as_dataframe, then each object is returned as a
-        structured array after first passed through "as.data.frame" in R before
-        being calling self.Rconverter.]
         This is useful when a structured array is desired as output, or
         when the object in R has mixed data types. 
         See the %%R docstring for more examples.
@@ -372,11 +321,6 @@ if not rpacks.isinstalled('Cairo'):
 
     # @skip_doctest
     @magic_arguments()
-    # @argument(
-    #     '-d', '--as_dataframe', action='store_true',
-    #     default=False,
-    #     help='Convert objects to data.frames before returning to ipython.'
-    #     )
     @argument(
         'output',
         nargs=1,
@@ -401,13 +345,6 @@ if not rpacks.isinstalled('Cairo'):
                    ['2', '3', '2', '5'],
                    ['a', 'b', 'c', 'e']],
                   dtype='|S1')
-
-            # XXX: We likely will stop supporting -d
-            # In [7]: %Rget -d datapy
-            # Out[7]:
-            # array([(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c'), (4, 5.0, 'e')],
-            #       dtype=[('x', '<i4'), ('y', '<f8'), ('z', '|S1')])
-
         '''
         args = parse_argstring(self.Rget, line)
         output = args.output
@@ -423,10 +360,6 @@ if not rpacks.isinstalled('Cairo'):
     @argument(
         '-o', '--output', action='append',
         help='Names of variables to be pushed from rpy2 to shell.user_ns after executing cell body and applying ro.conversion.ri2ro. Multiple names can be passed separated only by commas with no whitespace.'
-        )
-    @argument(
-        '-d', '--dataframe', action='append',
-        help='Convert these objects to data.frames and return as structured arrays.'
         )
     @argument(
         '-n', '--noreturn',
@@ -554,60 +487,6 @@ if not rpacks.isinstalled('Cairo'):
 
         * A trailing ';' will also result in no return value as the last
           value in the line is an empty string.
-
-        The --dataframe argument will attempt to return structured arrays.
-        This is useful for dataframes with
-        mixed data types. Note also that for a data.frame,
-        if it is returned as an ndarray, it is transposed::
-
-            In [18]: dtype=[('x', '<i4'), ('y', '<f8'), ('z', '|S1')]
-
-            In [19]: datapy = np.array([(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c'), (4, 5, 'e')], dtype=dtype)
-
-            In [20]: %%R -o datar
-            datar = datapy
-               ....:
-
-            In [21]: datar
-            Out[21]:
-            array([['1', '2', '3', '4'],
-                   ['2', '3', '2', '5'],
-                   ['a', 'b', 'c', 'e']],
-                  dtype='|S1')
-
-            In [22]: %%R -d datar
-            datar = datapy
-               ....:
-
-            In [23]: datar
-            Out[23]:
-            array([(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c'), (4, 5.0, 'e')], 
-                  dtype=[('x', '<i4'), ('y', '<f8'), ('z', '|S1')])
-
-        The --dataframe argument first tries colnames, then names.
-        If both are NULL, it returns an ndarray (i.e. unstructured)::
-
-            In [1]: %R mydata=c(4,6,8.3); NULL
-
-            In [2]: %R -d mydata
-
-            In [3]: mydata
-            Out[3]: array([ 4. ,  6. ,  8.3])
-
-            In [4]: %R names(mydata) = c('a','b','c'); NULL
-
-            In [5]: %R -d mydata
-
-            In [6]: mydata
-            Out[6]:
-            array((4.0, 6.0, 8.3),
-                  dtype=[('a', '<f8'), ('b', '<f8'), ('c', '<f8')])
-
-            In [7]: %R -o mydata
-
-            In [8]: mydata
-            Out[8]: array([ 4. ,  6. ,  8.3])
-
         '''
 
         args = parse_argstring(self.R, line)
@@ -747,18 +626,10 @@ if not rpacks.isinstalled('Cairo'):
             # which is created only for "svg" and "png"
             rmtree(tmpd)
 
-        # try to turn every output into a numpy array
-        # this means that output are assumed to be castable
-        # as numpy arrays
-
         if args.output:
             for output in ','.join(args.output).split(','):
                 self.shell.push({output:
                                  ro.conversion.ri2ro(ro.r(output)) })
-
-        # if args.dataframe:
-        #     for output in ','.join(args.dataframe).split(','):
-        #         self.shell.push({output:self.Rconverter(ro.r(output), dataframe=True)})
 
         for tag, disp_d in display_data:
             publish_display_data(tag, disp_d, metadata=md)
