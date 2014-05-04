@@ -139,12 +139,13 @@ def pyconverter(pyobj):
     return pyobj
 
 # The default conversion for lists is currently to make them an R list. That has
-# some advantages, but can be inconvenient, so for interactive use, we convert
-# lists to a numpy array, which becomes an R vector.
-# XXX - change to use unlist in R?
+# some advantages, but can be inconvenient (and, it's inconsistent with the way
+# users are used to python lists being automatically converted by python
+# functions for arrays), so for interactive use in the rmagic, we call unlist,
+# which converts lists to vectors **if the list was of uniform (atomic) type**.
 @pyconverter.when_type(list)
 def pyconverter_list(pyobj):
-    return np.asarray(pyobj)
+    return ro.r.unlist(pyobj)
 
 
 @magics_class
