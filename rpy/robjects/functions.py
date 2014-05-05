@@ -48,7 +48,13 @@ def _repr_argval(obj):
     try:
         l = len(obj)
         if l == 1:
-            s = repr(obj[0][0])
+            if obj[0].rid == rinterface.MissingArg.rid:
+                # no default value
+                s = None
+            elif obj[0].rid == rinterface.NULL.rid:
+                s = 'NULL'
+            else:
+                s = repr(obj[0][0])
         elif l > 1:
             s = '(%s, ...)' % repr(obj[0][0])
         else:
@@ -170,7 +176,10 @@ class DocumentedSTFunction(SignatureTranslatedFunction):
                 description = '(was "..."). R ellipsis (any number of parameters)'
             else:
                 description = _repr_argval(fm[names.index(val)])
-            doc.append('    %s: %s' % (key, description))
+            if description is None:
+                doc.append('    %s' % key)                
+            else:
+                doc.append('    %s: %s' % (key, description))
         doc.extend((')', ''))
         arguments = docstring(self.__rpackagename__,
                               self.__rname__,
