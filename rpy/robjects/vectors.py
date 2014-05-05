@@ -987,6 +987,7 @@ class DataFrame(ListVector):
                      row_names = rinterface.MissingArg,
                      col_names = rinterface.MissingArg,
                      fill = True, comment_char = "",
+                     na_strings = [],
                      as_is = False):
         """ Create an instance from data in a .csv file. 
 
@@ -997,6 +998,7 @@ class DataFrame(ListVector):
         row_names    : column name, or column index for column names (warning: indexing starts at one in R)
         fill         : boolean (fill the lines when less entries than columns)
         comment_char : comment character
+        na_strings   : a list of strings which are interpreted to be NA values
         as_is        : boolean (keep the columns of strings as such, or turn them into factors) 
         """
         path = conversion.py2ro(path)
@@ -1011,6 +1013,7 @@ class DataFrame(ListVector):
         fill = conversion.py2ro(fill)
         comment_char = conversion.py2ro(comment_char)
         as_is = conversion.py2ro(as_is)
+        na_strings = conversion.py2ro(na_strings)
         res = DataFrame._read_csv(path, 
                                   **{'header': header, 'sep': sep,
                                      'quote': quote, 'dec': dec,
@@ -1018,6 +1021,7 @@ class DataFrame(ListVector):
                                      'col.names': col_names,
                                      'fill': fill,
                                      'comment.char': comment_char,
+                                     'na.strings': na_strings,
                                      'as.is': as_is})
         res = conversion.ri2ro(res)
         return res
