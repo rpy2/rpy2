@@ -701,7 +701,6 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
   PySexpObject *self = NULL;
   /* unsigned short int rpy_only = 1; */
-
   #ifdef RPY_VERBOSE
   printf("new '%s' object @...\n", type->tp_name);
   #endif 

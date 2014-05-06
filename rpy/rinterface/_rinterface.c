@@ -2621,6 +2621,152 @@ static PyTypeObject S4Sexp_Type = {
         0                      /*tp_is_gc*/
 };
 
+
+/* FIXME: write more doc */
+PyDoc_STRVAR(SymbolSexp_Type_doc,
+"R symbol");
+
+static int
+  SymbolSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds);
+
+static PyTypeObject SymbolSexp_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+#if (PY_VERSION_HEX < 0x03010000)
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+#else
+	PyVarObject_HEAD_INIT(NULL, 0)
+#endif
+        "rpy2.rinterface.SexpSymbol",  /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        0,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,              /*tp_call*/
+        0,                      /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
+        SymbolSexp_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,                      /*tp_getset*/
+        &Sexp_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        (initproc)SymbolSexp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        /* FIXME: add new method */
+        0,                      /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
+
+static int
+SymbolSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
+{
+
+  PyObject *pysymbol;
+  PyObject *copy = Py_False;
+  static char *kwlist[] = {"pysymbol", "copy", NULL};
+  /* FIXME: handle the copy argument */
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", 
+                                    kwlist,
+                                    &pysymbol,
+                                    &PyBool_Type, &copy)) {
+    return -1;
+  }
+
+  if (rpy_has_status(RPY_R_BUSY)) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return -1;
+  }
+  embeddedR_setlock();
+  
+  SEXP rres = R_NilValue;
+  /* Allow initialization from SYMSXP or from a Python string */
+  int alreadySymbol = PyObject_IsInstance(pysymbol,
+					  (PyObject*)&SymbolSexp_Type);
+  if (alreadySymbol) {
+    /* call parent's constructor */
+    if (Sexp_init(self, args, NULL) == -1) {
+      PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
+      embeddedR_freelock();
+      return -1;
+    }
+  }
+#if (PY_VERSION_HEX < 0x03010000)
+  else if (PyString_Check(pysymbol)) {
+    rres = Rf_install(PyString_AS_STRING(pysymbol));
+  } else if (PyUnicode_Check(pysymbol)) {
+    PyObject *utf8_str = PyUnicode_AsUTF8String(pysymbol);
+    if (utf8_str == NULL) {
+      //UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Error raised by codec for symbol.");
+      return -1;	
+    }
+    PyErr_Format(PyExc_ValueError,
+		 "R symbol from UTF-8 is not yet implemented.");
+    return -1;	
+    const char *string = PyString_AsString(utf8_str);
+    rres = install(string);
+    Py_XDECREF(utf8_str);
+  }
+#else
+  /* Only difference with Python < 3.1 is that PyString case is dropped. 
+     Technically a macro would avoid code duplication.
+    */
+  else if (PyUnicode_Check(item)) {
+    utf8_str = PyUnicode_AsUTF8String(pystring);
+    if (utf8_str == NULL) {
+      //UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Error raised by codec for symbol");
+      return -1;	
+    }
+    const char *string = PyBytes_AsString(utf8_str);
+      rres = install(string);
+      Py_XDECREF(utf8_str);
+  }
+#endif
+  else {
+    PyErr_Format(PyExc_ValueError, "Cannot instantiate from this type.");
+    embeddedR_freelock();
+    return -1;
+  }
+  if (Rpy_ReplaceSexp((PySexpObject *)self, rres) == -1) {
+  embeddedR_freelock();
+  return -1;
+}
+
+#ifdef RPY_VERBOSE
+  printf("done.\n");
+#endif 
+  embeddedR_freelock();
+  return 0;
+}
+
+
 /* FIXME: write more doc */
 PyDoc_STRVAR(LangSexp_Type_doc,
 "Language object.");
@@ -2715,6 +2861,9 @@ static PySexpObject*
   switch (TYPEOF(sexp_ok)) {
   case NILSXP:
     object = (PySexpObject *)RNULL_Type_New(1);
+    break;
+  case SYMSXP:
+    object  = (PySexpObject *)Sexp_new(&SymbolSexp_Type, Py_None, Py_None);
     break;
   case CLOSXP:
   case BUILTINSXP:
@@ -3323,6 +3472,13 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
+  if (PyType_Ready(&SymbolSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
+    return;
+#else
+    return NULL;
+#endif
+  }
   if (PyType_Ready(&ClosureSexp_Type) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;
@@ -3658,6 +3814,7 @@ PyInit__rinterface(void)
   PyModule_AddObject(m, "R_VERSION_BUILD", RPY_R_VERSION_BUILD);
   PyModule_AddObject(m, "initoptions", initOptions);
   PyModule_AddObject(m, "Sexp", (PyObject *)&Sexp_Type);
+  PyModule_AddObject(m, "SexpSymbol", (PyObject *)&SymbolSexp_Type);
   PyModule_AddObject(m, "SexpClosure", (PyObject *)&ClosureSexp_Type);
   PyModule_AddObject(m, "SexpVector", (PyObject *)&VectorSexp_Type);
   PyModule_AddObject(m, "IntSexpVector", (PyObject *)&IntVectorSexp_Type);

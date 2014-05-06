@@ -4,6 +4,7 @@ import sys
 from . import test_SexpVector
 from . import test_SexpEnvironment
 from . import test_Sexp
+from . import test_SexpSymbol
 from . import test_SexpClosure
 from . import test_SexpVectorNumeric
 from . import test_Device
@@ -21,6 +22,7 @@ def load_tests(loader, standard_tests, pattern):
     suite_SexpVector = test_SexpVector.suite()
     suite_SexpEnvironment = test_SexpEnvironment.suite()
     suite_Sexp = test_Sexp.suite()
+    suite_SexpSymbol = test_SexpSymbol.suite()
     suite_SexpClosure = test_SexpClosure.suite()
     suite_SexpVectorNumeric = test_SexpVectorNumeric.suite()
     suite_EmbeddedR = test_EmbeddedR.suite()
@@ -30,6 +32,7 @@ def load_tests(loader, standard_tests, pattern):
     alltests = unittest.TestSuite([
         suite_EmbeddedR
         ,suite_Sexp
+        ,suite_SexpSymbol
         ,suite_SexpVector 
         ,suite_SexpEnvironment 
         ,suite_SexpClosure

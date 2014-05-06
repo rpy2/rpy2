@@ -182,7 +182,7 @@ class Page(object):
                     x = x.lstrip()
                     if x.endswith('\\dots'):
                         x = '...'
-                    res.append((x, arg_desc))
+                    res.append((x, ': ', arg_desc, ','))
             else:
                 continue
         return res

@@ -42,6 +42,8 @@ New features
 - convenience class :class:`robjects.packages.InstalledPackages`, with a companion function
   :func:`robjects.packages.isinstalled`.
 
+- new class :class:`rinterface.SexpSymbol` to represent R symbols
+
 Bugs fixed
 ----------
 
