@@ -2708,7 +2708,7 @@ SymbolSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 					  (PyObject*)&SymbolSexp_Type);
   if (alreadySymbol) {
     /* call parent's constructor */
-    if (Sexp_init(self, args, NULL) == -1) {
+    if (Sexp_init((PyObject *)self, args, NULL) == -1) {
       PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
       embeddedR_freelock();
       return -1;
@@ -2736,8 +2736,8 @@ SymbolSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   /* Only difference with Python < 3.1 is that PyString case is dropped. 
      Technically a macro would avoid code duplication.
     */
-  else if (PyUnicode_Check(item)) {
-    utf8_str = PyUnicode_AsUTF8String(pystring);
+  else if (PyUnicode_Check(pysymbol)) {
+    PyObject *utf8_str = PyUnicode_AsUTF8String(pysymbol);
     if (utf8_str == NULL) {
       //UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
