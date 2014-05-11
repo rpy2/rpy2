@@ -18,6 +18,10 @@ class SexpSymbolTestCase(unittest.TestCase):
         symbol = rinterface.SexpSymbol("pi")
         evalsymbol = rinterface.baseenv['eval'](symbol)
         self.assertEqual(evalsymbol.rid, rinterface.baseenv['pi'].rid)
+
+    def testNew_str(self):
+        symbol = rinterface.SexpSymbol("pi")
+        self.assertEqual("pi", str(symbol))
         
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(SexpSymbolTestCase)

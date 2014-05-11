@@ -2627,7 +2627,24 @@ PyDoc_STRVAR(SymbolSexp_Type_doc,
 "R symbol");
 
 static int
-  SymbolSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds);
+  SymbolSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
+
+static PyObject*
+SymbolSexp_tp_str(PySexpObject *self)
+{
+  SEXP sexp = RPY_SEXP(self);
+  /* if (! sexp) {
+   *  PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+   *  return NULL;
+   *}
+   */
+  const char* string = CHAR(PRINTNAME(sexp));
+#if (PY_VERSION_HEX < 0x03010000)
+  return PyString_FromString(string);
+#else
+  return PyUnicode_FromString(string);
+#endif
+}
 
 static PyTypeObject SymbolSexp_Type = {
         /* The ob_type field must be initialized in the module init function
@@ -2653,7 +2670,7 @@ static PyTypeObject SymbolSexp_Type = {
         0,                      /*tp_as_mapping*/
         0,                      /*tp_hash*/
         0,              /*tp_call*/
-        0,                      /*tp_str*/
+        SymbolSexp_tp_str,                      /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
@@ -2682,7 +2699,7 @@ static PyTypeObject SymbolSexp_Type = {
 };
 
 static int
-SymbolSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
+SymbolSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
 
   PyObject *pysymbol;
@@ -2708,7 +2725,7 @@ SymbolSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
 					  (PyObject*)&SymbolSexp_Type);
   if (alreadySymbol) {
     /* call parent's constructor */
-    if (Sexp_init((PyObject *)self, args, NULL) == -1) {
+    if (Sexp_init(self, args, NULL) == -1) {
       PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
       embeddedR_freelock();
       return -1;

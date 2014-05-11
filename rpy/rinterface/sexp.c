@@ -58,7 +58,6 @@ Sexp_dealloc(PySexpObject *self)
 static PyObject*
 Sexp_repr(PyObject *self)
 {
-  /* FIXME: make sure this is making any sense */
   SEXP sexp = RPY_SEXP((PySexpObject *)self);
   /* if (! sexp) {
    *  PyErr_Format(PyExc_ValueError, "NULL SEXP.");
