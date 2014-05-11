@@ -637,7 +637,7 @@ if not rpacks.isinstalled('Cairo'):
                                  ro.conversion.ri2ro(ro.r(output)) })
 
         for tag, disp_d in display_data:
-            publish_display_data(tag, disp_d, metadata=md)
+            publish_display_data(data=disp_d, source=tag, metadata=md)
 
         # this will keep a reference to the display_data
         # which might be useful to other objects who happen to use
