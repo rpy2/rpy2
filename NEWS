@@ -34,7 +34,8 @@ New features
 - Convenience function :func:`rpy2.robjects.packages.data`
   to extract the datasets in an R pacakges
 
-- :mod:`ipython`'s `rmagic` is now part of :mod:`rpy`
+- :mod:`ipython`'s `rmagic` is now part of :mod:`rpy`. To use, `%load_ext
+  rpy2.ipython` from within IPython.
 
 - new method :meth:`rpy2.rinterface.SexpEnvironment.keys`, returnings
   the names in the environment as a tuple of Python strings.
