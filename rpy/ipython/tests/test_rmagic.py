@@ -128,6 +128,8 @@ result = rmagic_addone(12344)
 
     def test_cell_magic(self):
         self.ip.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
+        # For now, print statements are commented out because they print
+        # erroneous ERRORs when running via rpy2.tests
         snippet = '''
         print(summary(a))
         plot(x, y, pch=23, bg='orange', cex=2)

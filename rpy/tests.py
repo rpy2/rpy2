@@ -12,10 +12,20 @@ import unittest
 import rpy2
 import rpy2.tests_rpy_classic
 
-def faster_load_tests(loader, standard_tests, pattern):
-    '''Run tests a little faster than TestLoader.discover()'''
-    # A little funny for now while we re-arrange tests a bit
+def load_tests(loader, tests, pattern):
+    '''Run tests a little faster than with TestLoader.discover()
+
+    Note that we are using the unittest API here, but blithely ignore the values
+    passed in for `tests` and `pattern`'''
+    # For some reason, the commented code directly below is slow and loads some
+    # things twice One specific message is regarding package_dependencies from
+    # the tools package.
+    # rpy_root = dirname(rpy2.__file__)
+    # alltests = unittest.defaultTestLoader.discover(rpy_root, pattern='test*')
+
     rpy_root = dirname(rpy2.__file__)
+    tests = unittest.TestSuite()
+    pattern = 'test*'
 
     # This now catches some extra tests (bypassing the suite() functions),
     # at least in a virtualenv that lacks various packages, like numpy &
@@ -29,31 +39,15 @@ def faster_load_tests(loader, standard_tests, pattern):
 
     suite_rpy_classic = rpy2.tests_rpy_classic.suite()
 
-    standard_tests.addTests([suite_rinterface,
-                             suite_robjects,
-                             suite_rlike,
-                             suite_interactive,
-                             suite_ipython,
-                             suite_rpy_classic
-                             ])
-    return standard_tests
+    tests.addTests([suite_rinterface,
+                    suite_robjects,
+                    suite_rlike,
+                    suite_interactive,
+                    suite_ipython,
+                    suite_rpy_classic
+                    ])
+    return tests
 
-def main(verbosity=1):
-    # For some reason, the commented code is slow and loads some things twice
-    # One specific message is regarding package_dependencies from the tools
-    # package.
-    # rpy_root = dirname(rpy2.__file__)
-    # alltests = unittest.defaultTestLoader.discover(rpy_root, pattern='test*')
-
-    # This is still pretty generic and requires very little maintenence (except
-    # for the robjects.tests.load_tests() function, which is still coded by hand
-    alltests = faster_load_tests(unittest.defaultTestLoader,
-                                 unittest.TestSuite(),
-                                 'test*')
-    result = unittest.TextTestRunner(verbosity=verbosity).run(alltests)
-
-    # Return exit code 1 if any test failed
-    sys.exit(int(bool(result.failures or result.errors)))
 
 if __name__ == "__main__":
     import sys, rpy2.rinterface
@@ -78,8 +72,6 @@ if __name__ == "__main__":
         print("- running linked to R version: %s" % rv[0])
     except KeyError as ke:
         print("The R version dynamically linked cannot be identified.")
-        
-    if len(sys.argv) > 1:
-        main(verbosity=2)
-    else:
-        main(verbosity=1)
+
+    # This will sys.exit() with an appropriate error code
+    unittest.main(buffer=True)
