@@ -26,8 +26,9 @@ or online (see the rpy home page on sourceforge).
 Testing
 =======
 
-The testing machinery uses the new unittest functionality.  The test suite can
-be run (once rpy2 is installed) as follows:
+The testing machinery uses the new unittest functionality, requiring python 2.7+
+(or potentially the backported unittest2 library for older python, but this is
+not supported). The test suite can be run (once rpy2 is installed) as follows:
 
     python -m rpy2.tests
 
