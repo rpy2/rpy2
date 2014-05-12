@@ -184,12 +184,9 @@ class RMagics(Magics):
 The R package 'Cairo' is required but it does not appear to be installed/available. Try:
 
 import rpy2.robjects.packages as rpacks
-if not rpacks.isinstalled('Cairo'):
-    utils = rpacks.importr('utils')
-    utils.chooseCRANmirror(ind=1)
-    from rpy2.robjects.vectors import StrVector
-    utils.install_packages(StrVector(['Cairo']))
-
+utils = rpacks.importr('utils')
+utils.chooseCRANmirror(ind=1)
+utils.install_packages('Cairo')
 """
                 raise RInterpreterError(msg)
         self.device = device
@@ -355,6 +352,53 @@ if not rpacks.isinstalled('Cairo'):
         output = args.output
         return ro.conversion.ri2ro(ro.r(output[0]))
 
+
+    def setup_graphics(self, args):
+        '''Setup graphics in preparation for evaluating R code
+        args : argparse bunch
+            Should be whatever the R magic got'''
+        if getattr(args, 'units') is not None:
+            if args.units != "px" and getattr(args, 'res') is None:
+                args.res = 72
+
+        plot_arg_names = ['width', 'height', 'pointsize', 'bg']
+        if self.device == 'png':
+            plot_arg_names += ['units', 'res']
+
+        argdict = {}
+        for name in plot_arg_names:
+            val = getattr(args, name)
+            if val is not None:
+                argdict[name] = val
+
+        # execute the R code in a temporary directory
+        tmpd = None
+        if self.device in ['png', 'svg']:
+            tmpd = tempfile.mkdtemp()
+            tmpd_fix_slashes = tmpd.replace('\\', '/')
+
+
+        if self.device == 'png':
+            # Note: that %% is to pass into R for interpolation there
+            ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
+                    **argdict)
+        elif self.device == 'svg':
+            self.cairo.CairoSVG("%s/Rplot.svg" % tmpd_fix_slashes,
+                                **argdict)
+
+        elif self.device == 'X11':
+            # Open a new X11 device, except if the current one is already an X11
+            # device
+            ro.r('''
+            if (substr(names(dev.cur()), 1, 3) != "X11") {
+                X11()
+            }''')
+
+        else:
+            # XXX - This isn't actually an R interpreter error...
+            raise RInterpreterError("device must be one of ['png', 'X11' 'svg']")
+
+        return tmpd
 
     # @skip_doctest
     @magic_arguments()
@@ -525,44 +569,7 @@ if not rpacks.isinstalled('Cairo'):
                         raise NameError("name '%s' is not defined" % input)
                 ro.r.assign(input, self.pyconverter(val))
 
-        if getattr(args, 'units') is not None:
-            if args.units != "px" and getattr(args, 'res') is None:
-                args.res = 72
-
-        plot_arg_names = ['width', 'height', 'pointsize', 'bg']
-        if self.device == 'png':
-            plot_arg_names += ['units', 'res']
-
-        # execute the R code in a temporary directory
-        tmpd = None
-        if self.device in ['png', 'svg']:
-            tmpd = tempfile.mkdtemp()
-            tmpd_fix_slashes = tmpd.replace('\\', '/')
-
-        plotting_argdict = {}
-        for name in plot_arg_names:
-            val = getattr(args, name)
-            if val is not None:
-                plotting_argdict[name] = val
-
-        if self.device == 'png':
-            # Note: that %% is to pass into R for interpolation there
-            ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
-                     **plotting_argdict)
-        elif self.device == 'svg':
-            self.cairo.CairoSVG("%s/Rplot.svg" % tmpd_fix_slashes,
-                                **plotting_argdict)
-
-        elif self.device == 'X11':
-            # Open a new X11 device, except if the current one is already an X11
-            # device
-            ro.r('''
-            if (substr(names(dev.cur()), 1, 3) != "X11") {
-                X11()
-            }''')
-
-        else:
-            raise RInterpreterError("device must be one of ['png', 'X11' 'svg']")
+        tmpd = self.setup_graphics(args)
 
         text_output = ''
         try:
@@ -578,7 +585,7 @@ if not rpacks.isinstalled('Cairo'):
                 text_output += text_result
                 if visible:
                     old_writeconsole = ri.get_writeconsole()
-                    ri.set_writeconsole(self.write_console) 
+                    ri.set_writeconsole(self.write_console)
                     ro.r.show(result)
                     text_output += self.flush()
                     ri.set_writeconsole(old_writeconsole)
@@ -589,19 +596,19 @@ if not rpacks.isinstalled('Cairo'):
                 print(e.err)
             if tmpd: rmtree(tmpd)
             return
-    
+        finally:
+            if self.device in ['png', 'svg']:
+                ro.r['dev.off']()
+
         # Prepare metadata dictionary
         md = {}
-        
+
         # publish the printed R objects
         display_data = []
         if text_output:
             display_data.append(('RMagic.R', {'text/plain':text_output}))
 
         # publish the R images
-        if self.device in ['png', 'svg']:
-            ro.r('dev.off()')
-
             # read in all the saved image files
             images = []
             if self.device == 'png':
@@ -609,8 +616,8 @@ if not rpacks.isinstalled('Cairo'):
             else:
                 # as onefile=TRUE, there is only one .svg file
                 imgfile = "%s/Rplot.svg" % tmpd
-                # Cairo creates an SVG file every time R is called 
-                # -- empty ones are not published 
+                # Cairo creates an SVG file every time R is called
+                # -- empty ones are not published
                 if stat(imgfile).st_size >= 1000:
                     images.append(open(imgfile, 'rb').read())
 
