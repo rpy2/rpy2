@@ -1,8 +1,8 @@
-import os
+import os, re
 from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.rinterface as rinterface
-from rpy2.robjects.help import docstring
+from rpy2.robjects import help
 #import rpy2.robjects.conversion conversion
 from . import conversion
 
@@ -52,15 +52,15 @@ def _repr_argval(obj):
                 # no default value
                 s = None
             elif obj[0].rid == rinterface.NULL.rid:
-                s = 'NULL'
+                s = 'rinterface.NULL'
             else:
-                s = repr(obj[0][0])
+                s = str(obj[0][0])
         elif l > 1:
-            s = '(%s, ...)' % repr(obj[0][0])
+            s = '(%s, ...)' % str(obj[0][0])
         else:
-            s = repr(obj)
+            s = str(obj)
     except:
-        s = repr(obj)
+        s = str(obj)
     return s
 
 class Function(RObjectMixin, rinterface.SexpClosure):
@@ -151,6 +151,10 @@ class SignatureTranslatedFunction(Function):
                 v = kwargs.pop(k)
                 kwargs[r_k] = v
         return super(SignatureTranslatedFunction, self).__call__(*args, **kwargs)
+
+pattern_link = re.compile(r'\\link\{(.+?)\}')
+pattern_code = re.compile(r'\\code\{(.+?)\}')
+pattern_samp = re.compile(r'\\samp\{(.+?)\}')
 class DocumentedSTFunction(SignatureTranslatedFunction):
 
     def __init__(self, sexp, init_prm_translate = None,
@@ -163,9 +167,9 @@ class DocumentedSTFunction(SignatureTranslatedFunction):
     @docstring_property(__doc__)
     def __doc__(self):
         doc = ['Python representation of an R function.']
-        description = docstring(self.__rpackagename__,
-                                self.__rname__,
-                                sections=['description'])
+        description = help.docstring(self.__rpackagename__,
+                                     self.__rname__,
+                                     sections=['description'])
         doc.append(description)
 
         fm = _formals_fixed(self)
@@ -177,13 +181,18 @@ class DocumentedSTFunction(SignatureTranslatedFunction):
             else:
                 description = _repr_argval(fm[names.index(val)])
             if description is None:
-                doc.append('    %s' % key)                
+                doc.append('    %s,' % key)                
             else:
-                doc.append('    %s: %s' % (key, description))
+                doc.append('    %s = %s,' % (key, description))
         doc.extend((')', ''))
-        arguments = docstring(self.__rpackagename__,
-                              self.__rname__,
-                              sections=['arguments'])
-        doc.append(arguments)
-        doc.append('')
+        package = help.Package(self.__rpackagename__)
+        page = package.fetch(self.__rname__)
+        for item in page.arguments():
+            description = item.value
+            description = description.replace('\n', '')
+            description, count = pattern_link.subn(r'\1', description)
+            description, count = pattern_code.subn(r'`\1`', description)
+            description, count = pattern_samp.subn(r'`\1`', description)
+            doc.append(' '.join((item.name, ': ', description, ',')))
+            doc.append('')
         return os.linesep.join(doc)

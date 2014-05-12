@@ -3,7 +3,7 @@ R help system.
 
 """
 import sys, os
-
+from collections import namedtuple
 import sqlite3
 
 import rpy2.rinterface as rinterface
@@ -131,6 +131,8 @@ def populate_metaRd_db(package_name, dbcon, package_path = None):
             dbcon.execute('insert into rd_alias_meta values (?,?)',
                           (rd_rowid, alias))
 
+Item = namedtuple('Item', 'name value')
+
 class Page(object):
     """ An R documentation page. 
     The original R structure is a nested sequence of components,
@@ -169,7 +171,7 @@ class Page(object):
         return self.sections[item]
     
     def arguments(self):
-        """ Get the arguments and their description as a list of 2-tuples. """
+        """ Get the arguments and their description as a list of tuples. """
         section = self._sections['arguments']
         res = list()
         for item in section:
@@ -182,7 +184,7 @@ class Page(object):
                     x = x.lstrip()
                     if x.endswith('\\dots'):
                         x = '...'
-                    res.append((x, ': ', arg_desc, ','))
+                    res.append(Item(x, arg_desc))
             else:
                 continue
         return res
