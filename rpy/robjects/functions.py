@@ -133,7 +133,7 @@ class SignatureTranslatedFunction(Function):
             for r_param in formals.names:
                 py_param = r_param.replace('.', '_')
                 if py_param in prm_translate:
-                    raise ValueError("Error: '%s' already in the transalation table" %r_param)
+                    raise ValueError("Error: '%s' already in the translation table" %r_param)
                 #FIXME: systematically add the parameter to the translation, as it makes it faster for generating
                 # dynamically the pydoc string from the R help.
                 #if py_param != r_param:
