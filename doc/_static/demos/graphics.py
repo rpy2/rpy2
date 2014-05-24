@@ -14,6 +14,8 @@ stats = importr('stats')
 grdevices = importr('grDevices')
 base = importr('base')
 datasets = importr('datasets')
+
+grid.activate()
 #-- setup-end
 
 #-- setuplattice-begin
