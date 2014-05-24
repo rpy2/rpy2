@@ -377,7 +377,6 @@ utils.install_packages('Cairo')
             tmpd = tempfile.mkdtemp()
             tmpd_fix_slashes = tmpd.replace('\\', '/')
 
-
         if self.device == 'png':
             # Note: that %% is to pass into R for interpolation there
             ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
@@ -609,6 +608,10 @@ utils.install_packages('Cairo')
             display_data.append(('RMagic.R', {'text/plain':text_output}))
 
         # publish the R images
+        # FIXME: General question: why restrict to X11 ?
+        #        On OS X the device "quartz" is quite popular,
+        #        and there exists other interactive devices (e.g., rgl)
+        if self.device != 'X11':
             # read in all the saved image files
             images = []
             if self.device == 'png':
