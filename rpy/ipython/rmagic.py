@@ -608,10 +608,9 @@ utils.install_packages('Cairo')
             display_data.append(('RMagic.R', {'text/plain':text_output}))
 
         # publish the R images
-        # FIXME: General question: why restrict to X11 ?
-        #        On OS X the device "quartz" is quite popular,
-        #        and there exists other interactive devices (e.g., rgl)
-        if self.device != 'X11':
+        # XXX: Do we want to capture file output for other device types other
+        # than svg & png?
+        if self.device in ['png', 'svg']:
             # read in all the saved image files
             images = []
             if self.device == 'png':
