@@ -5,6 +5,8 @@ from rpy2.robjects import Formula, Environment
 from rpy2.robjects.vectors import IntVector, FloatVector
 from rpy2.robjects.lib import grid
 from rpy2.robjects.packages import importr, data
+from rpy2.rinterface import RRuntimeError
+import warnings
 
 # The R 'print' function
 rprint = robjects.globalenv.get("print")
@@ -630,7 +632,10 @@ p = ggplot2.ggplot(fr) + \
     ggplot2.geom_polygon(ggplot2.aes(x = 'long', y = 'lat',
                                      group = 'group', fill = 'has_o'),
                          col="black")
-p.plot()
+try:
+   p.plot()
+except RRuntimeError as rre:
+   warnings.warn(str(rre))
 #-- ggplot2mappolygon-end
 grdevices.dev_off()
 
