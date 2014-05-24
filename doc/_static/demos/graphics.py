@@ -631,13 +631,10 @@ fr = ggplot2.map_data('france')
 fr = fr.cbind(fr, has_o = base.grepl('o', fr.rx2("region"),
                                      ignore_case = True))
 p = ggplot2.ggplot(fr) + \
-    ggplot2.geom_polygon(ggplot2.aes(x = 'long', y = 'lat',
-                                     group = 'group', fill = 'has_o'),
+    ggplot2.geom_polygon(ggplot2.aes_string(x = 'long', y = 'lat',
+                                            group = 'group', fill = 'has_o'),
                          col="black")
-try:
-   p.plot()
-except RRuntimeError as rre:
-   warnings.warn(str(rre))
+p.plot()
 #-- ggplot2mappolygon-end
 grdevices.dev_off()
 
