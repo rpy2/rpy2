@@ -44,7 +44,6 @@ class build(_build):
         self.r_autoconfig = None
         self.r_home = None
         self.r_home_lib = None
-        self.r_home_modules = None
         self.ignore_check_rversion = False
 
 
@@ -85,7 +84,6 @@ class build_ext(_build_ext):
         self.r_autoconfig = None
         self.r_home = None
         self.r_home_lib = None
-        self.r_home_modules = None
         self.ignore_check_rversion = False
 
     def finalize_options(self):
@@ -136,11 +134,6 @@ class build_ext(_build_ext):
         self.include_dirs.extend(config._include_dirs)
         self.libraries.extend(config._libraries)
         self.library_dirs.extend(config._library_dirs)
-
-        if self.r_home_modules is None:
-            self.library_dirs.extend([os.path.join(r_home, 'modules'), ])
-        else:
-            self.library_dirs.extend([self.r_home_modules, ])
 
         #for e in self.extensions:
         #    self.extra_link_args.extra_link_args(config.extra_link_args)
@@ -232,7 +225,7 @@ class RConfig(object):
                 if isinstance(v, str):
                     v = [v, ]
             v = tuple(set(v))
-            self.__dict__['_'+k] = v
+            setattr(self, '_'+k, v)
         # frameworks are specific to OSX
         for k in ('framework_dirs', 'frameworks'):
             v = locals()[k]
@@ -240,8 +233,8 @@ class RConfig(object):
                 if isinstance(v, str):
                     v = [v, ]
             v = tuple(set(v))
-            self.__dict__['_'+k] = v
-            self.__dict__['_'+'extra_link_args'] = tuple(set(v + self.__dict__['_'+'extra_link_args']))
+            setattr(self, '_'+k, v)
+            self._extra_link_args = tuple(set(v + self._extra_link_args))
 
     @staticmethod
     def from_string(string, allow_empty = False):
