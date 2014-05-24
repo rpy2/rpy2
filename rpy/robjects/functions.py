@@ -133,12 +133,25 @@ class SignatureTranslatedFunction(Function):
             for r_param in formals.names:
                 py_param = r_param.replace('.', '_')
                 if py_param in prm_translate:
-                    raise ValueError("Error: '%s' already in the translation table" %r_param)
-                #FIXME: systematically add the parameter to the translation, as it makes it faster for generating
-                # dynamically the pydoc string from the R help.
-                #if py_param != r_param:
-                #    prm_translate[py_param] = r_param
-                prm_translate[py_param] = r_param
+                    # This means that the signature of the R function
+                    # contains both a version of the parameter name
+                    # with '.' and one with '_'... <sigh>.
+                    prev_r_param = prm_translate[py_param]
+                    prev_py_param = prev_r_param.replace('.', '_d_')
+                    prev_py_param = prev_r_param.replace('_', '_u_')
+                    cur_py_param = r_param.replace('.', '_d_')
+                    cur_py_param = r_param.replace('_', '_u_')
+                    if prev_py_param in prm_translate or prev_py_param == cur_py_param:
+                        # giving up
+                        raise ValueError("Error: '%s' already in the translation table. This means that the signature of the R function contains the parameters '%s' and/or '%s' <sigh> in multiple copies." %(r_param, r_param, prm_translate[py_param]))
+                    del(prm_translate[py_param])
+                    prm_translate[prev_py_param] = prev_r_param
+                    prm_translate[cur_py_param] = r_param
+                else:
+                    #FIXME: systematically add the parameter to
+                    # the translation, as it makes it faster for generating
+                    # dynamically the pydoc string from the R help.
+                    prm_translate[py_param] = r_param
         self._prm_translate = prm_translate
         if hasattr(sexp, '__rname__'):
             self.__rname__ = sexp.__rname__
