@@ -2670,7 +2670,7 @@ static PyTypeObject SymbolSexp_Type = {
         0,                      /*tp_as_mapping*/
         0,                      /*tp_hash*/
         0,              /*tp_call*/
-        SymbolSexp_tp_str,                      /*tp_str*/
+        (reprfunc)SymbolSexp_tp_str,                      /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
