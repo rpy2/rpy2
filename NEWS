@@ -1,5 +1,5 @@
 Release 2.4.0
-=======
+=============
 
 Changes
 -------
@@ -254,7 +254,7 @@ New Features
 
 - Build dynamic help
 
-:mod:`rpy2.robjects.packages:
+:mod:`rpy2.robjects.packages`:
 
 - Build anonymous R packages from strings
 
