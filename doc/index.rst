@@ -42,7 +42,7 @@ Documentation for rpy2
       high-level
    
    R is often used in a read-eval-print loop (REPL), where interactivity is important.
-   Utilities are available in a dedicated sub-package.
+   Utilities are available in :mod:`rpy2.interactive`.
 
    .. toctree::
       :maxdepth: 3

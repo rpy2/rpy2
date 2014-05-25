@@ -7,6 +7,14 @@ Interactive work
 Overview
 ========
 
+.. note::
+
+   This is an experimental package, and some of the ideas experimented
+   here have already made it to :mod:`rpy2.robjects`.
+
+   For interactive work the "R magic" extension to `ipython` is
+   also providing useful features for interactive work.
+
 R is very often used as an interactive toplevel, or read-eval-print loop (REPL).
 This is convenient when analyzing data: type some code, get the result,
 type some new code and further analysis based on the results.

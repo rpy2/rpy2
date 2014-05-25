@@ -47,27 +47,6 @@ want it when working with :mod:`rpy2`.
 Obviously the Python console can be used, but there exist improvements to it, making
 the user experience more pleasant with features such as history and autocompletion.
 
-ipython: interactive-python shell
----------------------------------
-
-Developed under of the `scipy <http://scipy.org>` (Scientific Python) umbrella,
-ipython has an "R magic" mode since its release 0.13.
-
-Used with Ipython system of noteboks and a server backend, it is possible to
-have a lab notebook tracking code and figures in interactive session, as well as
-broadcast or share a session. Check the documentation of iPython for further details. 
-
-.. note::
-
-   The "R magic" seems to be a continuation of the extension to rpy2 :mod:`rnumpy`,
-   developped for rpy2-2.0.x series and unfortunately seemingly unmaintained since then.
-   It is truly great to see no one else but the iPython developers themselves find interest
-   in having R accessible from iPython.
-
-   Code historians can find details on the 
-   `rnumpy page <http://bitbucket.org/njs/rnumpy/wiki/Home>`_
-
-
 
 Other interactive environments
 ------------------------------
