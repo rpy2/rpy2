@@ -680,6 +680,15 @@ class ElementRect(Element):
        return res
 element_rect = ElementRect.new
 
+class Labs(Options):
+   _constructor = ggplot2.labs
+   @classmethod
+   def new(cls, **kwargs):
+      res = cls(cls._constructor(**kwargs))
+      return res
+
+labs = Labs.new
+
 class Theme(Options):
    pass
 
