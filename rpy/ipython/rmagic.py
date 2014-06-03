@@ -496,13 +496,13 @@ utils.install_packages('Cairo')
     @line_cell_magic
     def R(self, line, cell=None, local_ns=None):
         '''
-        Execute code in R, and pull some of the results back into the Python namespace.
+        Execute code in R, optionally returning results to the Python runtime.
 
         In line mode, this will evaluate an expression and convert the returned
         value to a Python object.  The return value is determined by rpy2's
-        behaviour of returning the result of evaluating the final line.
+        behaviour of returning the result of evaluating the final expression.
 
-        Multiple R lines can be executed by joining them with semicolons::
+        Multiple R expressions can be executed by joining them with semicolons::
 
             In [9]: %R X=c(1,4,5,7); sd(X); mean(X)
             Out[9]: array([ 4.25])
@@ -558,17 +558,13 @@ utils.install_packages('Cairo')
 
         The return value is determined by these rules:
 
-        * If the cell is not None, the magic returns None.
-
-        * If the cell evaluates as False, the resulting value is returned
-          unless the final line prints something to the console, in
-          which case None is returned.
+        * If the cell is not None (i.e., has contents), the magic returns None.
 
         * If the final line results in a NULL value when evaluated
           by rpy2, then None is returned.
 
         * No attempt is made to convert the final value to a structured array.
-          Use the --dataframe flag or %Rget to push / return a structured array.
+          Use %Rget to push a structured array.
 
         * If the -n flag is present, there is no return value.
 
@@ -667,7 +663,8 @@ utils.install_packages('Cairo')
         if self.cache_display_data:
             self.display_cache = display_data
 
-        # if in line mode and return_output, return the converted result
+        # We're in line mode and return_output is still True, 
+        # so return the converted result
         if return_output and not args.noreturn:
             if result != ri.NULL:
                 return ro.conversion.ri2ro(result)
