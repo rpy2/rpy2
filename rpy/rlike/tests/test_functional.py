@@ -1,5 +1,7 @@
 import unittest
-import itertools
+import sys
+if sys.version_info[0] == 2:
+    from itertools import izip as zip
 import rpy2.rlike.functional as rlf
 
 class TapplyTestCase(unittest.TestCase):

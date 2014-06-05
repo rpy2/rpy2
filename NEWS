@@ -8,6 +8,11 @@ Changes
 
 - Use of a more general C-layer as a bridge to R
 
+- The function :func:`set_writeconsole` and func:`get_writeconsole` are
+  now called :func:`set_writeconsoleex` and func:`get_writeconsoleex`.
+  The callback function must have a signature like `(message, messagetype)`
+  (see the documentation for details) (#contributed by bbruce)
+
 
 Release 2.4.0
 =============
@@ -19,6 +24,73 @@ Changes
   conversions for :mod:`numpy` and :mod:`pandas` modified
   accordingly. The changes should only matter if using
   third-party conversion functions.
+ 
+- The Python 3 version is now a first class citizen. `2to3`
+  is no longer used, and the code base is made directly
+  compatible with Python. This lowers significantly the
+  installation time with Python 3 
+  (which matters when developping rpy2).
+
+- The default options to initialize R (`rpy2.rinterface.initoptions') are no longer
+  `('rpy2', '--quiet', '--vanilla', '--no-save')` but now
+  `('rpy2', '--quiet', '--no-save')`.
+
+- :class:`robjects.vectors.ListVector` can be instanciated from
+  any objects with a method `items()` with the expectation that the method
+  returns an iterable of (name, value) tuples, or even be an iterable
+  of (name, value) tuples.
+
+New features
+------------
+
+- For instances of :class:`rpy2.robjects.Function`,
+  the `__doc__` is now a property fetching information
+  about the parameters in the R signature.
+
+- Convenience function :func:`rpy2.robjects.packages.data`
+  to extract the datasets in an R pacakges
+
+- :mod:`ipython`'s `rmagic` is now part of :mod:`rpy`. To use, `%load_ext
+  rpy2.ipython` from within IPython.
+
+- new method :meth:`rpy2.rinterface.SexpEnvironment.keys`, returnings
+  the names in the environment as a tuple of Python strings.
+
+- convenience class :class:`robjects.packages.InstalledPackages`, with a companion function
+  :func:`robjects.packages.isinstalled`.
+
+- new class :class:`rinterface.SexpSymbol` to represent R symbols
+
+Bugs fixed
+----------
+
+- :meth:`rpy2.rinterface.Sexp.do_slot` was crashing when
+  the parameter was an empty string (PR #155)
+
+
+
+Release 2.3.10
+==============
+
+Bugs fixed
+----------
+
+- `setup.py build` was broken when new R compiled with OpenMP (Issue #183)
+
+Release 2.3.9
+=============
+
+- Changes in pandas 0.13.0 broke the rpy2 conversion layer (Issue #173)
+
+
+Release 2.3.8
+=============
+
+Bugs fixed
+----------
+
+- Crash with R-3.0.2. Changes in R-3.0.2's C API coupled to a strange behaviour
+  with R promises caused the problem. (PR #150)
 
 
 Release 2.3.7
@@ -55,6 +127,8 @@ Bugs fixed
 
 - Missing mapping to ggplot2's `scale_shape_discrete` function
 
+- Better handling of dates in Pandas
+
 - Constructor for POSIXct improved (and fixed)
 
 Changes
@@ -66,6 +140,13 @@ Changes
   now called :func:`set_writeconsoleex` and func:`get_writeconsoleex`.
   The callback function must have a signature like `(message, messagetype)`
   (see the documentation for details) (#contributed by bbruce)
+
+- The attribute :attr:`rclass` is no longer read-only and can be set
+  (since R allows it)
+
+- Importing the module :mod:`rpy2.interactive` no longer activates
+  event processing by default (triggering concurrency errors
+  when used with ipython).
 
 New features
 ------------
@@ -107,8 +188,9 @@ Changes
 Release 2.3.3
 =============
 
-Bug fixed
----------
+Bugs fixed
+----------
+>>>>>>> other
 
 - Some of the data.frames converted from :mod:`pandas` were triggering
   a :class:`TypeError` when calling :func:`repr`
@@ -119,8 +201,8 @@ Bug fixed
 - Using the parameter `lib_loc` in a call to
   :func:`rpy2.robjects.packages.importr` was resulting in an error (PR #119)
 
-- Creating a `layer` through the `rpy2.robjects.lib.ggplot2` interface did not
-  accept parameters (PR #122)
+- Creating a `layer` through the `rpy2.robjects.lib.ggplot2` interface did
+  not accept parameters (PR #122)
 
 - Testing the Python version was crashing of a number of unsupported Python
   versions (<= 2.6) (PR #117)
@@ -148,7 +230,6 @@ Bug fixed
   under the attribute name `__rdata__`. This is not completely
   safe either, although much less likely, a warning will
   be issued if still masking anything.
-
 
 Changes
 -------

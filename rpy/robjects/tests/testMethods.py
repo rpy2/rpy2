@@ -1,4 +1,5 @@
 import unittest
+import sys
 import rpy2.robjects as robjects
 import rpy2.robjects.methods as methods
 rinterface = robjects.rinterface
@@ -27,7 +28,6 @@ class MethodsTestCase(unittest.TestCase):
                 self.__sexp__ = obj.__sexp__
         f = Foo()
         
-
     def testRS4_TypeAccessors(self):
         robjects.r['setClass']("R_A", robjects.r('list(foo="numeric")'))
         robjects.r['setMethod']("length", signature="R_A",
@@ -44,7 +44,6 @@ class MethodsTestCase(unittest.TestCase):
 
         class A(R_A):
             __rname__ = 'R_A'
-
 
         ra = R_A()
         self.assertEqual(123, ra.get_length()[0])

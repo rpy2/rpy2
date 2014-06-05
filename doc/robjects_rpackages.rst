@@ -74,7 +74,7 @@ differences:
 
    .. code-block:: python
 
-     d = {'package_dependencies': 'package_dot_dependencies',
+     d = {'package.dependencies': 'package_dot_dependencies',
           'package_dependencies': 'package_uscore_dependencies'}
      tools = importr('tools', robject_translations = d)
 
@@ -118,8 +118,6 @@ If you are given various R files, it is possible to wrap all
 of them into their own package-like structure, making concerns such conflicting
 names in the respective files unnecessary.
 
-
-
 .. code-block:: r
 
    square <- function(x) {
@@ -131,6 +129,8 @@ names in the respective files unnecessary.
    }
 
 .. code-block:: python
+
+   from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 
    string = """
    square <- function(x) {
@@ -194,6 +194,51 @@ the R global environment.
 >>> globalenv.keys()
 ()
 
+Using a `snippet on stackoverflow`_:
+
+.. code-block:: r
+
+   library(devtools)
+   source_url('https://raw.github.com/hadley/stringr/master/R/c.r')
+
+.. _snippet on stackoverflow: http://stackoverflow.com/questions/7715723/sourcing-r-script-over-https
+
+.. note::
+
+   If concerned about computer security, you'll want to think about 
+   the origin of the code and to which level you trust the origin
+   to be what it really is.
+
+Python has utilities to read data from URLs.
+
+
+.. code-block:: python
+
+   import urllib2
+   from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
+
+   bioc_url = urllib2.urlopen('https://raw.github.com/hadley/stringr/master/R/c.r')
+   string = ''.join(bioc_url.readlines())
+
+   stringr_c = SignatureTranslatedAnonymousPackage(string, "stringr_c")
+
+The object `stringr_c` encapsulates the funtions defined in the R file
+into something like what the rpy2 `importr` is returning.
+
+>>> type(stringr_c)
+rpy2.robjects.packages.SignatureTranslatedAnonymousPackage
+>>> stringr_c._rpy2r.keys()
+['str_join', 'str_c']
+
+Unlike the R code first shown, this is not writing anything into the 
+the R global environment.
+
+>>> from rpy2.robjects import globalenv
+>>> globalenv.keys()
+()
+
+
+   
 R namespaces
 ^^^^^^^^^^^^
 
@@ -251,16 +296,42 @@ R is shipped with a set of *recommended packages*
 (the equivalent of a standard library), but there is a large
 (and growing) number of other packages available.
 
-Installing those packages must be done within R, see the R documentation.
-As a quick help, installing an R package can be done by
+Installing those packages can be done within R, or using R on the command line.
+The R documentation should be consulted when doing so.
 
-.. code-block:: bash
+It also possible to install R packages from Python/rpy2, and a non interactive way.
 
-   sudo R
+.. code-block:: python
 
-And then in the R console:
+   import rpy2.robjects.packages as rpackages
+   utils = rpackages.importr('utils')
 
-.. code-block:: r
+   utils.chooseCRANmirror(ind=1) # select the first mirror in the list
 
-   install.packages('foo')
+If you are a user of bioconductor:
+
+.. code-block:: python
+
+   utils.chooseBioCmirror(ind=1) # select the first mirror in the list
+
+The `choose<organization>mirror` functions sets an R global option that indicates
+which repository should be used by default.
+The next step is to simply call R's function to install from a repository.
+
+.. code-block:: python
+
+   packnames = ('ggplot2', 'hexbin')
+   from rpy2.robjects.vectors import StrVector
+   utils.install_packages(StrVector(packnames))
+
+.. note::
+
+   The global option that sets the default repository will remain until the R
+   process ends (or the default is changed).
+
+   Calling :func:`install_packages` without first choosing a mirror will require the user 
+   to interactively choose a mirror.
+ 
+   Control on mostly anything is possible; the R documentation should be consulted
+   for more information.
 

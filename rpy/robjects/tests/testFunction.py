@@ -59,6 +59,7 @@ class SignatureTranslatedFunctionTestCase(unittest.TestCase):
         ro_f = SignatureTranslatedFunction(ri_f)        
         self.assertTrue(identical(ri_f, ro_f))
 
+    @unittest.expectedFailure
     def testNewWithTranslation(self):
         ri_f = rinterface.baseenv.get('rank')
         ro_f = SignatureTranslatedFunction(ri_f,

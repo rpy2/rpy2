@@ -1,8 +1,7 @@
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
-from rpy2.robjects import help as rhelp
-
+from . import help as rhelp
 from . import conversion
 
 getmethod = rinterface.baseenv.get("getMethod")

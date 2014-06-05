@@ -1,26 +1,10 @@
 import unittest
-from rpy2.rinterface import RRuntimeError
-
-try:
-    from . import test_ggplot2
-except RRuntimeError:
-    test_ggplot2 = None
-
-def suite():
-    if test_ggplot2:
-        suite_ggplot2 = test_ggplot2.suite()
-        alltests = unittest.TestSuite([suite_ggplot2, ])
-    else:
-        alltests = unittest.TestSuite([])
-    return alltests
-    #pass
+from os.path import dirname
 
 def main():
-    r = unittest.TestResult()
-    suite().run(r)
-    return r
-
-if __name__ == '__main__':    
     tr = unittest.TextTestRunner(verbosity = 2)
-    suite = suite()
+    suite = unittest.TestLoader().discover(dirname(__file__))
     tr.run(suite)
+
+if __name__ == '__main__':
+    main()

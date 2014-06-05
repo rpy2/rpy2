@@ -2032,8 +2032,14 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   embeddedR_setlock();
 
   const SEXP rho_R = RPY_SEXP((PySexpObject *)self);
+
   if (! rho_R) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    PyErr_Format(PyExc_ValueError, "C-NULL SEXP.");
+    embeddedR_freelock();
+    return NULL;
+  }
+  if (!isEnvironment(rho_R)) {
+    PyErr_Format(PyExc_ValueError, "Trying to apply to a non-environment (typeof is %i).", TYPEOF(rho_R));
     embeddedR_freelock();
     return NULL;
   }
@@ -2121,6 +2127,46 @@ EnvironmentSexp_enclos(PyObject *self)
 PyDoc_STRVAR(EnvironmentSexp_enclos_doc,
              "Return the enclosure the environment is in.");
 
+static PyObject* 
+EnvironmentSexp_keys(PyObject *sexpEnvironment)
+{
+  if (rpy_has_status(RPY_R_BUSY)) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return NULL;
+  }
+  embeddedR_setlock();
+
+  SEXP rho_R = RPY_SEXP((PySexpObject *)sexpEnvironment);
+
+  if (! rho_R) {
+    PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
+    embeddedR_freelock();
+    return NULL;
+  }
+  SEXP symbols, sexp_item;
+  PROTECT(symbols = R_lsInternal(rho_R, TRUE));
+  int l = LENGTH(symbols);
+  PyObject *keys = PyTuple_New(l);
+  PyObject *val;
+  int i;
+  for (i=0; i<l; i++) {
+    sexp_item = STRING_ELT(symbols, i);
+    const char *val_char = CHAR(sexp_item);
+#if (PY_VERSION_HEX < 0x03010000)
+    val = PyString_FromString(val_char);
+#else
+    val = PyUnicode_FromString(val_char);
+#endif
+    PyTuple_SET_ITEM(keys, i, val);
+  }
+  UNPROTECT(1);
+  embeddedR_freelock();
+  return keys;
+}
+PyDoc_STRVAR(EnvironmentSexp_keys_doc,
+             "Return the symbols/names in the environment as a Python tuple.");
+
+
 static PyMethodDef EnvironmentSexp_methods[] = {
   {"get", (PyCFunction)EnvironmentSexp_findVar, METH_VARARGS | METH_KEYWORDS,
   EnvironmentSexp_findVar_doc},
@@ -2128,6 +2174,8 @@ static PyMethodDef EnvironmentSexp_methods[] = {
   EnvironmentSexp_frame_doc},
   {"enclos", (PyCFunction)EnvironmentSexp_enclos, METH_NOARGS,
   EnvironmentSexp_enclos_doc},
+  {"keys", (PyCFunction)EnvironmentSexp_keys, METH_NOARGS,
+  EnvironmentSexp_keys_doc},
   {NULL, NULL}          /* sentinel */
 };
 
@@ -2179,7 +2227,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
 
   SEXP rho_R = RPY_SEXP((PySexpObject *)self);
   if (! rho_R) {
-    PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+    PyErr_Format(PyExc_ValueError, "C-NULL SEXP.");
     embeddedR_freelock();
 #if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
@@ -2187,7 +2235,6 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
     return NULL;
   }
   res_R = findVarInFrame(rho_R, install(name));
-
   if (res_R != R_UnboundValue) {
 #if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
@@ -2404,6 +2451,8 @@ EnvironmentSexp_iter(PyObject *sexpEnvironment)
   return it;
 }
 
+
+
 PyDoc_STRVAR(EnvironmentSexp_Type_doc,
 "R object that is an environment.\n"
 "R environments can be seen as similar to Python\n"
@@ -2573,6 +2622,169 @@ static PyTypeObject S4Sexp_Type = {
         0                      /*tp_is_gc*/
 };
 
+
+/* FIXME: write more doc */
+PyDoc_STRVAR(SymbolSexp_Type_doc,
+"R symbol");
+
+static int
+  SymbolSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
+
+static PyObject*
+SymbolSexp_tp_str(PySexpObject *self)
+{
+  SEXP sexp = RPY_SEXP(self);
+  /* if (! sexp) {
+   *  PyErr_Format(PyExc_ValueError, "NULL SEXP.");
+   *  return NULL;
+   *}
+   */
+  const char* string = CHAR(PRINTNAME(sexp));
+#if (PY_VERSION_HEX < 0x03010000)
+  return PyString_FromString(string);
+#else
+  return PyUnicode_FromString(string);
+#endif
+}
+
+static PyTypeObject SymbolSexp_Type = {
+        /* The ob_type field must be initialized in the module init function
+         * to be portable to Windows without using C++. */
+#if (PY_VERSION_HEX < 0x03010000)
+        PyObject_HEAD_INIT(NULL)
+        0,                      /*ob_size*/
+#else
+	PyVarObject_HEAD_INIT(NULL, 0)
+#endif
+        "rpy2.rinterface.SexpSymbol",  /*tp_name*/
+        sizeof(PySexpObject),   /*tp_basicsize*/
+        0,                      /*tp_itemsize*/
+        /* methods */
+        0, /*tp_dealloc*/
+        0,                      /*tp_print*/
+        0,                      /*tp_getattr*/
+        0,                      /*tp_setattr*/
+        0,                      /*tp_compare*/
+        0,                      /*tp_repr*/
+        0,                      /*tp_as_number*/
+        0,                      /*tp_as_sequence*/
+        0,                      /*tp_as_mapping*/
+        0,                      /*tp_hash*/
+        0,              /*tp_call*/
+        (reprfunc)SymbolSexp_tp_str,                      /*tp_str*/
+        0,                      /*tp_getattro*/
+        0,                      /*tp_setattro*/
+        0,                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,     /*tp_flags*/
+        SymbolSexp_Type_doc,                      /*tp_doc*/
+        0,                      /*tp_traverse*/
+        0,                      /*tp_clear*/
+        0,                      /*tp_richcompare*/
+        0,                      /*tp_weaklistoffset*/
+        0,                      /*tp_iter*/
+        0,                      /*tp_iternext*/
+        0,           /*tp_methods*/
+        0,                      /*tp_members*/
+        0,                      /*tp_getset*/
+        &Sexp_Type,             /*tp_base*/
+        0,                      /*tp_dict*/
+        0,                      /*tp_descr_get*/
+        0,                      /*tp_descr_set*/
+        0,                      /*tp_dictoffset*/
+        (initproc)SymbolSexp_init,                      /*tp_init*/
+        0,                      /*tp_alloc*/
+        /* FIXME: add new method */
+        0,                      /*tp_new*/
+        0,                      /*tp_free*/
+        0                      /*tp_is_gc*/
+};
+
+static int
+SymbolSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+
+  PyObject *pysymbol;
+  PyObject *copy = Py_False;
+  static char *kwlist[] = {"pysymbol", "copy", NULL};
+  /* FIXME: handle the copy argument */
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "O|O!", 
+                                    kwlist,
+                                    &pysymbol,
+                                    &PyBool_Type, &copy)) {
+    return -1;
+  }
+
+  if (rpy_has_status(RPY_R_BUSY)) {
+    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
+    return -1;
+  }
+  embeddedR_setlock();
+  
+  SEXP rres = R_NilValue;
+  /* Allow initialization from SYMSXP or from a Python string */
+  int alreadySymbol = PyObject_IsInstance(pysymbol,
+					  (PyObject*)&SymbolSexp_Type);
+  if (alreadySymbol) {
+    /* call parent's constructor */
+    if (Sexp_init(self, args, NULL) == -1) {
+      PyErr_Format(PyExc_RuntimeError, "Error initializing instance.");
+      embeddedR_freelock();
+      return -1;
+    }
+  }
+#if (PY_VERSION_HEX < 0x03010000)
+  else if (PyString_Check(pysymbol)) {
+    rres = Rf_install(PyString_AS_STRING(pysymbol));
+  } else if (PyUnicode_Check(pysymbol)) {
+    PyObject *utf8_str = PyUnicode_AsUTF8String(pysymbol);
+    if (utf8_str == NULL) {
+      //UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Error raised by codec for symbol.");
+      return -1;	
+    }
+    PyErr_Format(PyExc_ValueError,
+		 "R symbol from UTF-8 is not yet implemented.");
+    return -1;	
+    const char *string = PyString_AsString(utf8_str);
+    rres = install(string);
+    Py_XDECREF(utf8_str);
+  }
+#else
+  /* Only difference with Python < 3.1 is that PyString case is dropped. 
+     Technically a macro would avoid code duplication.
+    */
+  else if (PyUnicode_Check(pysymbol)) {
+    PyObject *utf8_str = PyUnicode_AsUTF8String(pysymbol);
+    if (utf8_str == NULL) {
+      //UNPROTECT(1);
+      PyErr_Format(PyExc_ValueError,
+		   "Error raised by codec for symbol");
+      return -1;	
+    }
+    const char *string = PyBytes_AsString(utf8_str);
+      rres = install(string);
+      Py_XDECREF(utf8_str);
+  }
+#endif
+  else {
+    PyErr_Format(PyExc_ValueError, "Cannot instantiate from this type.");
+    embeddedR_freelock();
+    return -1;
+  }
+  if (Rpy_ReplaceSexp((PySexpObject *)self, rres) == -1) {
+  embeddedR_freelock();
+  return -1;
+}
+
+#ifdef RPY_VERBOSE
+  printf("done.\n");
+#endif 
+  embeddedR_freelock();
+  return 0;
+}
+
+
 /* FIXME: write more doc */
 PyDoc_STRVAR(LangSexp_Type_doc,
 "Language object.");
@@ -2651,6 +2863,9 @@ static PySexpObject*
   /* FIXME: let the possibility to manipulate un-evaluated promises ? */
   if (TYPEOF(sexp) == PROMSXP) {
     PROTECT(env_R = PRENV(sexp));
+    if (env_R == R_NilValue) {
+      env_R = R_BaseEnv;
+    }
     PROTECT(sexp_ok = eval(sexp, env_R));
 #ifdef RPY_DEBUG_PROMISE
     printf("  evaluating promise %p into %p.\n", sexp, sexp_ok);
@@ -2664,6 +2879,9 @@ static PySexpObject*
   switch (TYPEOF(sexp_ok)) {
   case NILSXP:
     object = (PySexpObject *)RNULL_Type_New(1);
+    break;
+  case SYMSXP:
+    object  = (PySexpObject *)Sexp_new(&SymbolSexp_Type, Py_None, Py_None);
     break;
   case CLOSXP:
   case BUILTINSXP:
@@ -2941,7 +3159,7 @@ newSEXP(PyObject *object, int rType)
 	    sexp = NULL;
 	    break;
 	  }
-	  tmp2 = mkCharCE(PyBytes_AsString(pybytes), CE_UTF8);
+	  tmp2 = mkCharCE(PyUnicode_AsUTF8(pybytes), CE_UTF8);
 	  Py_DECREF(pybytes);
 #endif
           if (!tmp2) {
@@ -3272,6 +3490,13 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   }
+  if (PyType_Ready(&SymbolSexp_Type) < 0) {
+#if (PY_VERSION_HEX < 0x03010000)
+    return;
+#else
+    return NULL;
+#endif
+  }
   if (PyType_Ready(&ClosureSexp_Type) < 0) {
 #if (PY_VERSION_HEX < 0x03010000)
     return;
@@ -3566,7 +3791,7 @@ PyInit__rinterface(void)
     return NULL;
 #endif
 
-  initOptions = PyTuple_New(4);
+  initOptions = PyTuple_New(3);
 
 #if (PY_VERSION_HEX < 0x03010000)  
   PYASSERT_ZERO(
@@ -3577,12 +3802,12 @@ PyInit__rinterface(void)
                 PyTuple_SetItem(initOptions, 1, 
                                 PyString_FromString("--quiet"))
                 );
+  /* PYASSERT_ZERO( */
+  /*               PyTuple_SetItem(initOptions, 2, */
+  /*                               PyString_FromString("--vanilla")) */
+  /*               ); */
   PYASSERT_ZERO(
-                PyTuple_SetItem(initOptions, 2,
-                                PyString_FromString("--vanilla"))
-                );
-  PYASSERT_ZERO(
-                PyTuple_SetItem(initOptions, 3, 
+                PyTuple_SetItem(initOptions, 2, 
                                 PyString_FromString("--no-save"))
                 );
 #else
@@ -3590,9 +3815,9 @@ PyInit__rinterface(void)
     return NULL;
   if (PyTuple_SetItem(initOptions, 1, PyBytes_FromString("--quiet")) < 0)
     return NULL;
-  if (PyTuple_SetItem(initOptions, 2, PyBytes_FromString("--vanilla")) < 0)
-    return NULL;
-  if (PyTuple_SetItem(initOptions, 3, PyBytes_FromString("--no-save")) < 0)
+  /* if (PyTuple_SetItem(initOptions, 2, PyBytes_FromString("--vanilla")) < 0) */
+  /*   return NULL; */
+  if (PyTuple_SetItem(initOptions, 2, PyBytes_FromString("--no-save")) < 0)
     return NULL;
 #endif
 
@@ -3607,6 +3832,7 @@ PyInit__rinterface(void)
   PyModule_AddObject(m, "R_VERSION_BUILD", RPY_R_VERSION_BUILD);
   PyModule_AddObject(m, "initoptions", initOptions);
   PyModule_AddObject(m, "Sexp", (PyObject *)&Sexp_Type);
+  PyModule_AddObject(m, "SexpSymbol", (PyObject *)&SymbolSexp_Type);
   PyModule_AddObject(m, "SexpClosure", (PyObject *)&ClosureSexp_Type);
   PyModule_AddObject(m, "SexpVector", (PyObject *)&VectorSexp_Type);
   PyModule_AddObject(m, "IntSexpVector", (PyObject *)&IntVectorSexp_Type);

@@ -1,10 +1,11 @@
 
 import os, os.path, sys, shutil, re, itertools, warnings
+import argparse, shlex
 from collections import namedtuple
 from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build import build as _build
 
-from distutils.core import setup
+from setuptools import setup
 from distutils.core import Extension
 
 pack_name = 'rpy2'
@@ -46,7 +47,6 @@ class build(_build):
         self.r_autoconfig = None
         self.r_home = None
         self.r_home_lib = None
-        self.r_home_modules = None
         self.ignore_check_rversion = False
 
 
@@ -87,7 +87,6 @@ class build_ext(_build_ext):
         self.r_autoconfig = None
         self.r_home = None
         self.r_home_lib = None
-        self.r_home_modules = None
         self.ignore_check_rversion = False
 
     def finalize_options(self):
@@ -139,11 +138,6 @@ class build_ext(_build_ext):
         self.libraries.extend(config._libraries)
         self.library_dirs.extend(config._library_dirs)
 
-        if self.r_home_modules is None:
-            self.library_dirs.extend([os.path.join(r_home, 'modules'), ])
-        else:
-            self.library_dirs.extend([self.r_home_modules, ])
-
         #for e in self.extensions:
         #    self.extra_link_args.extra_link_args(config.extra_link_args)
         #    e.extra_compile_args.extend(extra_link_args)
@@ -174,17 +168,17 @@ def get_rversion(r_home):
         rp = os.popen('"'+r_exec+'" --version')
     rversion = rp.readline()
     #Twist if 'R RHOME' spits out a warning
-    if rversion.startswith(b"WARNING"):
+    if rversion.startswith("WARNING"):
         rversion = rp.readline()
-    m = re.match(b'^R ([^ ]+) ([^ ]+) .+$', rversion)
+    m = re.match('^R ([^ ]+) ([^ ]+) .+$', rversion)
     if m is None:
         rp.close()
         # return dummy version 0.0
         rversion = [0, 0]
     else:
         rversion = m.groups()[1]
-        if m.groups()[0] == b'version':
-            rversion = rversion.split(b'.')
+        if m.groups()[0] == 'version':
+            rversion = rversion.split('.')
             rversion[0] = int(rversion[0])
             rversion[1] = int(rversion[1])
         else:
@@ -207,22 +201,34 @@ class RConfig(object):
     _libraries = None
     _library_dirs = None 
     _extra_link_args = None
+    _extra_compile_args = None
     _frameworks = None
     _framework_dirs = None
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-L', dest='library_dirs', nargs='*')
+    parser.add_argument('-l', dest='libraries', nargs='*')
+    parser.add_argument('-I', dest='include_dirs', nargs='*')
+    parser.add_argument('-F', dest='framework_dirs', nargs='*')
+    parser.add_argument('-framework', dest='frameworks', nargs='*')
+    #parser.add_argument('-Wl', dest='extra_link_args', nargs='*')
+    #parser.add_argument('-f', dest='extra_link_args', nargs='*')
 
     def __init__(self,
                  include_dirs = tuple(), libraries = tuple(),
                  library_dirs = tuple(), extra_link_args = tuple(),
+                 extra_compile_args = tuple(),
                  frameworks = tuple(),
                  framework_dirs = tuple()):
         for k in ('include_dirs', 'libraries', 
-                  'library_dirs', 'extra_link_args'):
+                  'library_dirs', 'extra_link_args',
+                  'extra_compile_args'):
             v = locals()[k]
             if not isinstance(v, tuple):
                 if isinstance(v, str):
                     v = [v, ]
             v = tuple(set(v))
-            self.__dict__['_'+k] = v
+            setattr(self, '_'+k, v)
         # frameworks are specific to OSX
         for k in ('framework_dirs', 'frameworks'):
             v = locals()[k]
@@ -230,48 +236,29 @@ class RConfig(object):
                 if isinstance(v, str):
                     v = [v, ]
             v = tuple(set(v))
-            self.__dict__['_'+k] = v
-            self.__dict__['_'+'extra_link_args'] = tuple(set(v + self.__dict__['_'+'extra_link_args']))
+            setattr(self, '_'+k, v)
+            self._extra_link_args = tuple(set(v + self._extra_link_args))
 
     @staticmethod
     def from_string(string, allow_empty = False):
-        possible_patterns = ('^-L(?P<library_dirs>[^ ]+)$',
-                             '^-l(?P<libraries>[^ ]+)$',
-                             '^-I(?P<include_dirs>[^ ]+)$',
-                             '^(?P<framework_dirs>-F[^ ]+?)$',
-                             '^(?P<frameworks>-framework [^ ]+)$',
-                             '^(?P<extra_link_args>-Wl[^ ]+)$')
-        pp = [re.compile(x) for x in possible_patterns]
         # sanity check of what is returned into rconfig
         rconfig_m = None        
         span = (0, 0)
         rc = RConfig()
-        
-        for substring in re.split('(?<!-framework) ', string):
-            ok = False
-            for pattern in pp:
-                rconfig_m = pattern.match(substring)
-                if rconfig_m is not None:
-                    rc += RConfig(**rconfig_m.groupdict())
-                    span = rconfig_m.span()
-                    ok = True
-                    break
-                elif rconfig_m is None:
-                    if allow_empty:
-                        print('\nreturned an empty string.\n')
-                        rc += RConfig()
-                        ok = True
-                        break
-                    else:
-                        # if the configuration points to an existing library, 
-                        # use it
-                        if os.path.exists(string):
-                            rc += RConfig(libraries = substring)
-                            ok = True
-                            break
-            if not ok:
-                raise ValueError('Invalid substring `' + substring + '`' +
-                                 + '\nin string `' + string + '`')
+        args, extra_args = RConfig.parser.parse_known_args(shlex.split(string))
+        d = dict()
+        for n in dir(args):
+            if n.startswith('_'):
+                continue
+            a = getattr(args, n)
+            if a is None:
+                continue
+            d[n] = a
+        if 'extra_link_args' in d:
+            d['extra_link_args'].append(extra_args)
+        else:
+            d['extra_link_args'] = extra_args            
+        rc = RConfig(**d)
         return rc
             
     def __repr__(self):
@@ -308,19 +295,18 @@ def get_rconfig(r_home, about, allow_empty = False):
     else:
         r_exec = os.path.join(r_home, 'bin', 'R')
     cmd = '"'+r_exec+'" CMD config '+about
+    print(cmd)
     rp = os.popen(cmd)
     rconfig = rp.readline()
     #Twist if 'R RHOME' spits out a warning
     if rconfig.startswith("WARNING"):
         rconfig = rp.readline()
     rconfig = rconfig.strip()
-
     try:
         rc = RConfig.from_string(rconfig, allow_empty = allow_empty)
     except ValueError as ve:
         print(ve)
         sys.exit("Problem while running `{0}`\n".format(cmd))
-        
     rp.close()
     return rc
 
@@ -433,7 +419,7 @@ if __name__ == '__main__':
         version = pack_version,
         description = "Python interface to the R language (embedded R)",
         url = "http://rpy.sourceforge.net",
-        license = "AGPLv3.0 (except rpy2.rinterface: LGPL)",
+        license = "GPLv2+",
         author = "Laurent Gautier",
         author_email = "lgautier@gmail.com",
         ext_modules = rinterface_exts[0],
@@ -448,15 +434,16 @@ if __name__ == '__main__':
                     pack_name + '.robjects.lib',
                     pack_name + '.robjects.lib.tests',
                     pack_name + '.interactive',
-                    pack_name + '.interactive.tests'
+                    pack_name + '.interactive.tests',
+                    pack_name + '.ipython',
+                    pack_name + '.ipython.tests'
                     ],
         classifiers = ['Programming Language :: Python',
                        'Programming Language :: Python :: 3',
-                       'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
-                       'License :: OSI Approved :: GNU Affero General Public License v3',
+                       'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
                        'Intended Audience :: Developers',
                        'Intended Audience :: Science/Research',
-                       'Development Status :: 4 - Beta'
+                       'Development Status :: 5 - Production/Stable'
                        ],
         package_data = {
             'rpy2': ['images/*.png', ],

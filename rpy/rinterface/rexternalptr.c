@@ -112,12 +112,12 @@ ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   rres  = R_MakeExternalPtr(pyextptr, rtag, rprotected);
   PROTECT(rres);
   R_RegisterCFinalizerEx(rres, (R_CFinalizer_t)R_PyObject_decref, TRUE);
+  UNPROTECT(1);
   if (Rpy_ReplaceSexp((PySexpObject *)self, rres) == -1) {
       embeddedR_freelock();
-      UNPROTECT(1);
       return -1;
   }
-  UNPROTECT(1);
+
 #ifdef RPY_VERBOSE
   printf("done.\n");
 #endif 

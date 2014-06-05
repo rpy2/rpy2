@@ -1,5 +1,8 @@
 syntax: glob
 build/
+_build/
 *.pyc
 *~
-
+.*.swp
+_*.so
+.DS_Store

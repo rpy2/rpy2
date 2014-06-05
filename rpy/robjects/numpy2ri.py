@@ -7,9 +7,9 @@ import numpy
 
 #from rpy2.robjects.vectors import DataFrame, Vector, ListVector
 
-original_py2ri = conversion.py2ri
-original_ri2ro = conversion.ri2ro
-original_py2ro = conversion.py2ro
+original_py2ri = None
+original_ri2ro = None
+original_py2ro = None 
 
 # The possible kind codes are listed at
 #   http://numpy.scipy.org/array_interface.shtml
@@ -41,6 +41,9 @@ _vectortypes = (rinterface.LGLSXP,
 def numpy2ri(o):
     """ Augmented conversion function, converting numpy arrays into
     rpy2.rinterface-level R structures. """
+    # allow array-likes to also function with this module.
+    if not isinstance(o, numpy.ndarray) and hasattr(o, '__array__'):
+        o = o.__array__()
     if isinstance(o, numpy.ndarray):
         if not o.dtype.isnative:
             raise(ValueError("Cannot pass numpy arrays with non-native byte orders at the moment."))
@@ -114,6 +117,11 @@ def ri2numpy(o):
 
 
 def activate():
+    global original_py2ri, original_ri2ro, original_py2ro
+    # If module is already activated, there is nothing to do
+    if original_py2ri: 
+        return
+
     original_py2ri = conversion.py2ri
     original_ri2ro = conversion.ri2ro
     original_py2ro = conversion.py2ro
@@ -123,8 +131,14 @@ def activate():
     conversion.py2ro = numpy2ro
 
 def deactivate():
-    """ """
+    global original_py2ri, original_ri2ro, original_py2ro
+
+    # If module has never been activated or already deactivated,
+    # there is nothing to do
+    if not original_py2ri:
+        return
+
     conversion.py2ri = original_py2ri
     conversion.ri2ro = original_ri2ro
     conversion.py2ro = original_py2ro
-
+    original_py2ri = original_ri2ro = original_py2ro = None

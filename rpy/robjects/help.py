@@ -2,14 +2,18 @@
 R help system.
 
 """
-import os
+import sys, os
+from collections import namedtuple
 import sqlite3
 
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
 
-from . import packages
+from rpy2.robjects.packages_utils import get_packagepath, _libpaths, _packages
 import rpy2.rlike.container as rlc
+
+if sys.version_info[0] == 2:
+    range = xrange
 
 tmp = rinterface.baseenv['R.Version']()
 tmp_major = int(tmp[tmp.do_slot('names').index('major')][0])
@@ -33,6 +37,7 @@ def quiet_require(name, lib_loc = None):
     expr = rinterface.parse(expr_txt)
     ok = _eval(expr)
     return ok
+
 quiet_require('tools')
 _get_namespace = rinterface.baseenv['getNamespace']
 _lazyload_dbfetch = rinterface.baseenv['lazyLoadDBfetch']
@@ -87,7 +92,7 @@ def populate_metaRd_db(package_name, dbcon, package_path = None):
     - package_path: path the R package installation (default: None)
     """
     if package_path is None:
-        package_path = packages.get_packagepath(package_name)
+        package_path = get_packagepath(package_name)
 
     rpath = StrSexpVector((os.path.join(package_path,
                                         __package_meta),))
@@ -125,6 +130,8 @@ def populate_metaRd_db(package_name, dbcon, package_path = None):
         for alias in rds[ALIAS_I][row_i]:
             dbcon.execute('insert into rd_alias_meta values (?,?)',
                           (rd_rowid, alias))
+
+Item = namedtuple('Item', 'name value')
 
 class Page(object):
     """ An R documentation page. 
@@ -164,7 +171,7 @@ class Page(object):
         return self.sections[item]
     
     def arguments(self):
-        """ Get the arguments and their description as a list of 2-tuples. """
+        """ Get the arguments and their description as a list of tuples. """
         section = self._sections['arguments']
         res = list()
         for item in section:
@@ -177,7 +184,7 @@ class Page(object):
                     x = x.lstrip()
                     if x.endswith('\\dots'):
                         x = '...'
-                    res.append((x, arg_desc))
+                    res.append(Item(x, arg_desc))
             else:
                 continue
         return res
@@ -284,7 +291,7 @@ class Package(object):
     def __init__(self, package_name, package_path = None):
         self.__package_name = package_name
         if package_path is None:
-            package_path = packages.get_packagepath(package_name)
+            package_path = get_packagepath(package_name)
         self.__package_path = package_path
 
         rd_meta_dbcon = sqlite3.connect(':memory:')
@@ -353,9 +360,9 @@ def pages(topic):
     """ Get help pages corresponding to a given topic. """
     res = list()
     
-    for path in packages._libpaths():
-        for name in packages._packages(**{'all.available': True, 
-                                          'lib.loc': StrSexpVector((path,))}):
+    for path in _libpaths():
+        for name in _packages(**{'all.available': True, 
+                                 'lib.loc': StrSexpVector((path,))}):
             #FIXME: what if the same package is installed
             #       at different locations ?
             pack = Package(name)
@@ -368,10 +375,10 @@ def pages(topic):
     return tuple(res)
 
 
-def docstring(package, alias):
+def docstring(package, alias, sections=['usage', 'arguments']):
     if not isinstance(package, Package):
         package = Package(package)
     page = package.fetch(alias)
-    usage = page.section_docstring('usage')
-    arguments = page.section_docstring('arguments')
+    return page.to_docstring(sections)
+    
 

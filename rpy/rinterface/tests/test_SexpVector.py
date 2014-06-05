@@ -11,7 +11,11 @@ def evalr(string):
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon
 
-IS_PYTHON3 = sys.version_info[0] == 3
+if sys.version_info[0] == 2:
+    range = xrange
+    IS_PYTHON3 = False
+else:
+    IS_PYTHON3 = True
 
 class WrapperSexpVectorTestCase(unittest.TestCase):
     def testInt(self):
@@ -392,9 +396,12 @@ class SexpVectorTestCase(unittest.TestCase):
 
     def testGetItemPairList(self):
         pairlist = ri.baseenv.get('pairlist')
-        pl = pairlist(a = ri.StrSexpVector([1, ]))
+        pl = pairlist(a = ri.StrSexpVector(['1', ]))
+        # R's behaviour is that subsetting returns an R list
         y = pl[0]
-        self.assertEqual(ri.LISTSXP, y.typeof)
+        self.assertEqual(ri.VECSXP, y.typeof)
+        self.assertEqual('a', y.do_slot('names')[0])
+        self.assertEqual('1', y[0][0])
 
     def testGetItemNegativeOutOfBound(self):
         letters_R = ri.globalenv.get("letters")
@@ -404,6 +411,9 @@ class SexpVectorTestCase(unittest.TestCase):
     def testGetItemOutOfBound(self):
         myVec = ri.SexpVector([0, 1, 2, 3, 4, 5], ri.INTSXP)
         self.assertRaises(IndexError, myVec.__getitem__, 10)
+        #FIXME: R has introduced the use of larger integers
+        #       for vector sizes (and indexing). Is this relevant
+        #       any longer ?
         if (sys.maxsize > ri.R_LEN_T_MAX):
             self.assertRaises(IndexError, myVec.__getitem__, 
                               ri.R_LEN_T_MAX+1)

@@ -4,7 +4,9 @@ from rpy2 import robjects
 from rpy2.robjects import Formula, Environment
 from rpy2.robjects.vectors import IntVector, FloatVector
 from rpy2.robjects.lib import grid
-from rpy2.robjects.packages import importr
+from rpy2.robjects.packages import importr, data
+from rpy2.rinterface import RRuntimeError
+import warnings
 
 # The R 'print' function
 rprint = robjects.globalenv.get("print")
@@ -12,6 +14,8 @@ stats = importr('stats')
 grdevices = importr('grDevices')
 base = importr('base')
 datasets = importr('datasets')
+
+grid.activate()
 #-- setup-end
 
 #-- setuplattice-begin
@@ -32,7 +36,11 @@ grdevices.png('../../_static/graphics_lattice_xyplot_1.png',
               width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- xyplot1-begin
 datasets = importr('datasets')
+<<<<<<< local
 mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
+=======
+mtcars = data(datasets).fetch('mtcars')['mtcars']
+>>>>>>> other
 formula = Formula('mpg ~ wt')
 formula.getenvironment()['mpg'] = mtcars.rx2('mpg')
 formula.getenvironment()['wt'] = mtcars.rx2('wt')
@@ -77,7 +85,11 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_lattice_wireframe_1.png',
     width = 612, height = 612, antialias="subpixel", type="cairo")
 #-- wireframe1-begin
+<<<<<<< local
 tmpenv = datasets.__rdata__.fetch("volcano")
+=======
+tmpenv = data(datasets).fetch("volcano")
+>>>>>>> other
 volcano = tmpenv["volcano"]
 
 p = lattice.wireframe(volcano, shade = True,
@@ -112,7 +124,11 @@ import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 base = importr('base')
 
+<<<<<<< local
 mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
+=======
+mtcars = data(datasets).fetch('mtcars')['mtcars']
+>>>>>>> other
 
 #-- setupggplot2-end
 
@@ -627,8 +643,8 @@ fr = ggplot2.map_data('france')
 fr = fr.cbind(fr, has_o = base.grepl('o', fr.rx2("region"),
                                      ignore_case = True))
 p = ggplot2.ggplot(fr) + \
-    ggplot2.geom_polygon(ggplot2.aes(x = 'long', y = 'lat',
-                                     group = 'group', fill = 'has_o'),
+    ggplot2.geom_polygon(ggplot2.aes_string(x = 'long', y = 'lat',
+                                            group = 'group', fill = 'has_o'),
                          col="black")
 p.plot()
 #-- ggplot2mappolygon-end
@@ -718,7 +734,11 @@ grid.newpage()
 vp = grid.viewport(width = 1, height = 1) 
 vp.push()
 
+<<<<<<< local
 tmpenv = datasets.__rdata__.fetch("rock")
+=======
+tmpenv = data(datasets).fetch("rock")
+>>>>>>> other
 rock = tmpenv["rock"]
 
 p = ggplot2.ggplot(rock) + \

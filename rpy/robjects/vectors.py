@@ -80,7 +80,7 @@ class ExtractDelegator(object):
         The index position can either be:
         - an int: x[1] = y
         - a tuple of ints: x[1, 2, 3] = y
-        - a object with a method items() (such as a dict): x[{'i': 1}] = y
+        - an item-able object (such as a dict): x[{'i': 1}] = y
         """
         fun = self._replacefunction
         if type(item) is tuple:
@@ -260,7 +260,8 @@ class Vector(RObjectMixin, SexpVector):
                      "Names for the items in the vector.")
 
     def items(self):
-        """ iterate over names and values """
+        """ iterator on names and values """
+        #FIXME: should be a view ?
         if self.names.rsame(R_NilValue):
             it_names = itertools.cycle((None, ))
         else:
@@ -294,7 +295,7 @@ class Vector(RObjectMixin, SexpVector):
             elif isinstance(x, float):
                 res = '%8f' %x
             else:
-                if isinstance(x, str):
+                if isinstance(x, py3str):
                     x = x.__repr__()
                 else:
                     x = type(x).__name__    
@@ -500,11 +501,15 @@ class FactorVector(IntVector):
 class ListVector(Vector, ListSexpVector):
     """ R list (vector of arbitray elements)
 
-    ListVector(items-able) -> ListVector.
+ListVector(itemable) -> ListVector.
 
-    The parameter 'items-able' can be any object inheriting from 
-    rpy2.rlike.container.TaggedList, rpy2.rinterface.SexpVector of type VECSXP,
-    or dict.
+The parameter 'itemable' can be:
+
+- an object with a method `items()`, such for example a dict,
+  a rpy2.rlike.container.TaggedList, 
+  an rpy2.rinterface.SexpVector of type VECSXP.
+
+- an iterable of (name, value) tuples
 
     """
     _vector = rinterface.baseenv['vector']
@@ -512,9 +517,10 @@ class ListVector(Vector, ListSexpVector):
     def __init__(self, tlist):
         if isinstance(tlist, rinterface.SexpVector):
             if tlist.typeof != rinterface.VECSXP:
-                raise ValueError("tlist should of typeof VECSXP")
+                raise ValueError("tlist should have "
+                                 "tlist.typeof == rinterface.VECSXP")
             super(ListVector, self).__init__(tlist)
-        elif isinstance(tlist, rlc.TaggedList):
+        elif hasattr(tlist, 'items') and callable(tlist.items):
             kv = [(k, conversion.py2ri(v)) for k,v in tlist.items()]
             kv = tuple(kv)
             df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
@@ -522,7 +528,7 @@ class ListVector(Vector, ListSexpVector):
         elif hasattr(tlist, "__iter__"):
             if not callable(tlist.__iter__):
                 raise ValueError("tlist should have a /method/ __iter__ (not an attribute)")
-            kv = [(str(k), conversion.py2ri(tlist[k])) for k in tlist]
+            kv = [(str(k), conversion.py2ri(v)) for k,v in tlist]
             kv = tuple(kv)
             df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
             super(ListVector, self).__init__(df)
@@ -987,6 +993,7 @@ class DataFrame(ListVector):
                      row_names = rinterface.MissingArg,
                      col_names = rinterface.MissingArg,
                      fill = True, comment_char = "",
+                     na_strings = [],
                      as_is = False):
         """ Create an instance from data in a .csv file. 
 
@@ -997,6 +1004,7 @@ class DataFrame(ListVector):
         row_names    : column name, or column index for column names (warning: indexing starts at one in R)
         fill         : boolean (fill the lines when less entries than columns)
         comment_char : comment character
+        na_strings   : a list of strings which are interpreted to be NA values
         as_is        : boolean (keep the columns of strings as such, or turn them into factors) 
         """
         path = conversion.py2ro(path)
@@ -1011,6 +1019,7 @@ class DataFrame(ListVector):
         fill = conversion.py2ro(fill)
         comment_char = conversion.py2ro(comment_char)
         as_is = conversion.py2ro(as_is)
+        na_strings = conversion.py2ro(na_strings)
         res = DataFrame._read_csv(path, 
                                   **{'header': header, 'sep': sep,
                                      'quote': quote, 'dec': dec,
@@ -1018,6 +1027,7 @@ class DataFrame(ListVector):
                                      'col.names': col_names,
                                      'fill': fill,
                                      'comment.char': comment_char,
+                                     'na.strings': na_strings,
                                      'as.is': as_is})
         res = conversion.ri2ro(res)
         return res

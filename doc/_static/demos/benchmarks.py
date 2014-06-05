@@ -4,6 +4,7 @@ import sys
 import itertools
 import multiprocessing
 import array, numpy, rpy2.robjects as ro
+import rpy2.robjects.packages
 from rpy2.robjects import Formula
 
 n_loops = (1, 10, 20, 30, 40)
@@ -11,7 +12,7 @@ n_loops = (1, 10, 20, 30, 40)
 def setup_func(kind):
 #-- setup_sum-begin
     n = 20000
-    x_list = [random.random() for i in xrange(n)]
+    x_list = [random.random() for i in range(n)]
     module = None
     if kind == "array.array":
         import array as module
@@ -38,7 +39,7 @@ def setup_func(kind):
         raise ValueError("Unknown kind '%s'" %kind)
     return (res, module)
 
-
+from functools import reduce
 def python_reduce(x):
     total = reduce(lambda x, y: x+y, x)
     return total
@@ -100,7 +101,7 @@ for (i in 1:%i) {
 }
 """
     compiler = ro.packages.importr("compiler")
-    rcode = rdo_loopsum %("compiler::compile("+r_loopsum+")", n)
+    rcode = rdo_loopsum %("compiler::cmpfun("+r_loopsum+")", n)
     time_beg = time.time()
     #print(rcode)
     module.r(rcode)
@@ -111,7 +112,7 @@ for (i in 1:%i) {
 def test_sum(queue, func, array_type, n, setup_func):
     array, module = setup_func(array_type)
     time_beg = time.time()
-    for i in xrange(n):
+    for i in range(n):
         res = func(array)
     time_end = time.time()
     queue.put(time_end - time_beg)
@@ -174,9 +175,9 @@ from rpy2.robjects.vectors import DataFrame, FloatVector, StrVector, IntVector
 d = {}
 d['code'] = StrVector([x[0] for x in combos]) + StrVector([x[0] for x in combos_r])
 d['sequence'] = StrVector([x[-2] for x in combos]) + StrVector([x[0] for x in combos_r])
-d['time'] = FloatVector([x for x in times]) + FloatVector([x[0] for x in combos_r])
-d['n_loop']    = IntVector([x[-1] for x in combos]) + IntVector([x[1] for x in combos_r])
-d['group'] = StrVector([d['code'][x] + ':' + d['sequence'][x] for x in xrange(len(d['n_loop']))])
+d['time'] = FloatVector([x for x in times]) + FloatVector(times_r)
+d['n_loop']    = IntVector([x[-1] for x in combos]) + IntVector([x[3] for x in combos_r])
+d['group'] = StrVector([d['code'][x] + ':' + d['sequence'][x] for x in range(len(d['n_loop']))])
 dataf = DataFrame(d)
 
 
@@ -193,7 +194,7 @@ p = ggplot2.ggplot(dataf) + \
     ggplot2.scale_y_continuous('running time') + \
     ggplot2.scale_x_continuous('repeated n times', ) + \
     ggplot2.xlim(0, max(n_loops)) + \
-    ggplot2.opts(title = "Benchmark (running time)")
+    ggplot2.labs(title = "Benchmark (running time)")
 
 
 from rpy2.robjects.packages import importr
@@ -211,8 +212,7 @@ fit = nlme.lmList(Formula('time ~ n_loop | group'), data = dataf,
 
 
 # scale to R's slope
-speedup = [1/x for x in stats.coef(fit).rx2("n_loop").ro / stats.coef(fit).rx("R:R", True)[1][0]]
-
+speedup = [stats.coef(fit).rx("R:R", True)[1][0]/x for x in stats.coef(fit).rx2("n_loop")]
 # workaround an issue in class mapping
 df = DataFrame(stats.coef(fit))
 
@@ -222,7 +222,7 @@ header = ("Function", "Sequence", "Speedup")
 res = [' '.join(["=" * pad_len[x] for x in range(3)]),
        ' '.join([header[x].ljust(pad_len[x]) for x in range(3)]),
        ' '.join(["=" * pad_len[x] for x in range(3)])]
-for coef_name, sp in itertools.izip(df.rownames, speedup):
+for coef_name, sp in zip(df.rownames, speedup):
     row_content = coef_name.split(':')
     row_content.append('%.2f' %sp)
     res.append(' '.join([row_content[x].ljust(pad_len[x]) for x in range(3)]))

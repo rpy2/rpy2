@@ -7,6 +7,14 @@ Interactive work
 Overview
 ========
 
+.. note::
+
+   This is an experimental package, and some of the ideas experimented
+   here have already made it to :mod:`rpy2.robjects`.
+
+   For interactive work the "R magic" extension to `ipython` is
+   also providing useful features for interactive work.
+
 R is very often used as an interactive toplevel, or read-eval-print loop (REPL).
 This is convenient when analyzing data: type some code, get the result,
 type some new code and further analysis based on the results.
@@ -27,7 +35,13 @@ or performances for ease-of-use.
 >>> v = r.IntVector((1,2,3))
 >>> r.packages.importr('datasets')
 rpy2.robjecs.packages.Package as a <module 'datasets' (built-in)>
->>> tuple(r.packages.datasets.trees.names)
+>>> data = rpy2.interactive.packages.data
+>>> rpackages = r.packages.packages
+>>> # list of datasets
+>>> data(rpackages.datasets).names()
+# list here
+>>> env = data(rpackages.datasets).fetch('trees')
+>>> tuple(env['trees'].names)
 ('Girth', 'Height', 'Volume')
 
 R vectors
@@ -218,6 +232,10 @@ active and will be taken into account at the next sleep cycle.
 
 .. autofunction:: process_revents()
 
+IPython magic integration (was rmagic)
+======================================
+
+.. automodule:: rpy2.ipython.rmagic
 
 Graphical User interface
 ========================

@@ -3,6 +3,14 @@ import rpy2.robjects as robjects
 rinterface = robjects.rinterface
 import array
 
+import sys
+if sys.version_info[0] == 2:
+    py3str = unicode
+    py3bytes = str
+else:
+    py3str = str
+    py3bytes = bytes
+
 class RInstanceTestCase(unittest.TestCase):
 
 
@@ -79,8 +87,8 @@ class MappingTestCase(unittest.TestCase):
         self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEqual(rinterface.LGLSXP, rob.typeof)
 
-    def testMapperPy2R_str(self):        
-        py = 'houba'
+    def testMapperPy2R_py3bytes(self):        
+        py = b'houba'
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEqual(rinterface.STRSXP, rob.typeof)

@@ -1,5 +1,3 @@
-
-
 This is the source tree or distribution for the rpy2 package.
 
 Installation
@@ -7,7 +5,7 @@ Installation
 
 The distutils mechanism can be used:
 
-python setup.py install
+    python setup.py install
 
 The package is known to compile on Linux, WinXp and MacOSX
 (provided that developper tools are installed).
@@ -15,43 +13,44 @@ In case you find yourself with this source without any idea
 of what it takes to compile anything on your platform, do
 consider looking for pre-compiled binaries.
 
+Note that `python setup.py develop` will appear to work, but will result in an
+installation from the `rpy` directory here. The namespaces will be
+incorrect, so don't do that!
+
 Documentation
 =============
 
 Documentation is available either in the source tree (to be built),
 or online (see the rpy home page on sourceforge).
 
+Testing
+=======
+
+The testing machinery uses the new unittest functionality, requiring python 2.7+
+(or potentially the backported unittest2 library for older python, but this is
+not supported). The test suite can be run (once rpy2 is installed) as follows:
+
+    python -m rpy2.tests
+
+By providing an argument, like "-v", you'll get verbose output.
+
+Individual tests can be run as follows:
+
+    python -m unittest rpy2.robjects.tests.testVector
+
+Or test discovery can be used as follows:
+
+    python -m unittest discover rpy2.robjects
+
+Note that a problematic test is picked up if you do test discovery on the rpy2
+root, and you'll get a segfault. So, always use `python -m rpy2.tests` to run
+all tests.
+
 License
 =======
 
-RPy2 is subject to the Mozilla Public License Version 1.1 (the
-"License"); you may not use RPy2 except in compliance with the
-License. You may obtain a copy of the License at
-http://www.mozilla.org/MPL/ (or see the file MPL_LICENSE)
-
-Software distributed under the License is distributed on an "AS IS"
-basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
-the License for the specific language governing rights and
-limitations under the License.
-
-The Original Code is the RPy2 python package, itself subdivived
-into subpackages and modules.
-
-All code is Copyright of the respective author(s).
-See the file AUTHORS for further details regarding authorship.
-
-Alternatively, RPy2 may be used under the terms of either the GNU
-General Public License Version 2 or later (the "GPL", see the file
-GPL_LICENSE), or the GNU Lesser General Public License Version 2.1
-or later (the "LGPL", see the file LGPL_LICENSE), in which case the
-provisions of the GPL or the LGPL are applicable instead of those
-above. If you wish to allow use of your version of this file only
-under the terms of either the GPL or the LGPL, and not to allow
-others to use your version of this file under the terms of the MPL,
-indicate your decision by deleting the provisions above and replace
-them with the notice and other provisions required by the GPL or the
-LGPL. If you do not delete the provisions above, a recipient may use
-your version of this file under the terms of any one of the MPL, the
-GPL or the LGPL.
+RPy2 can be used under the terms of either the GNU
+General Public License Version 2 or later (see the file
+gpl-2.0.txt).
 
 

@@ -5,7 +5,7 @@ import rpy2.rinterface
 
 
 class RpyClassicTestCase(unittest.TestCase):
-    
+
     def testAttributeExpansion(self):
         rpy.set_default_mode(rpy.BASIC_CONVERSION)
         wtest = rpy.r.wilcox_test
@@ -42,7 +42,7 @@ class RpyClassicTestCase(unittest.TestCase):
         self.assertRaises(AttributeError, setattr, pi, 'sexp', None)
 
 def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(RpyClassicTestCase)
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(RpyClassicTestCase)
     return suite
 
 if __name__ == '__main__':

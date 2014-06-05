@@ -122,7 +122,7 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
     /* Rbyte vr; */
     char *vr;
     const char *vs;
-    SEXP tmp, sexp_item; /* needed by LANGSXP */
+    SEXP tmp, sexp_item, sexp_name; /* needed by LANGSXP and LISTSXP*/
     i_R = (R_len_t)i;
     switch (TYPEOF(*sexp)) {
     case REALSXP:
@@ -201,11 +201,16 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
       res = (PyObject *)newPySexpObject(sexp_item);
       break;
     case LISTSXP:
+      /* R-exts says that it is converted to a VECSXP when subsetted */
+      //tmp = nthcdr(*sexp, i_R);
       tmp = nthcdr(*sexp, i_R);
-      sexp_item = allocVector(LISTSXP, 1);
-      SETCAR(sexp_item, CAR(tmp));
-      SET_TAG(sexp_item, TAG(tmp));
+      PROTECT(sexp_item = allocVector(VECSXP,1));
+      SET_VECTOR_ELT(sexp_item, 0, CAR(tmp));
+      PROTECT(sexp_name = allocVector(STRSXP,1));
+      SET_STRING_ELT(sexp_name, 0, PRINTNAME(TAG(tmp)));
+      setAttrib(sexp_item, R_NamesSymbol, sexp_name);
       res = (PyObject *)newPySexpObject(sexp_item);
+      UNPROTECT(2);
       break;      
     case LANGSXP:
       sexp_item = CAR(nthcdr(*sexp, i_R));
@@ -1643,7 +1648,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
       /* INCREF since item_tmp is DECREFed later */
       item_tmp = item;
       Py_INCREF(item_tmp);
-      str_R = mkChar(PyString_AS_STRING(item_tmp));
+      str_R = Rf_mkChar(PyString_AS_STRING(item_tmp));
     } else if (PyUnicode_Check(item)) {
       item_tmp = PyUnicode_AsUTF8String(item);
       if (item_tmp == NULL) {
@@ -1655,7 +1660,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 	return -1;	
       }
       const char *string = PyString_AsString(item_tmp);
-      str_R = mkCharCE(string, CE_UTF8);
+      str_R = Rf_mkCharCE(string, CE_UTF8);
     }
 #else
     /* Only difference with Python < 3.1 is that PyString case is dropped. 
@@ -1672,7 +1677,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 	return -1;	
       }
       const char *string = PyBytes_AsString(item_tmp);
-      str_R = mkCharCE(string, CE_UTF8);
+      str_R = Rf_mkCharCE(string, CE_UTF8);
     }
 #endif
     else {
@@ -1687,7 +1692,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 	return -1;	
       }
 #if (PY_VERSION_HEX < 0x03010000)
-      str_R = mkChar(PyString_AS_STRING(item_tmp));
+      str_R = Rf_mkChar(PyString_AS_STRING(item_tmp));
 #else
       PyObject *item_tmp2 = PyUnicode_AsUTF8String(item_tmp);
       if (item_tmp2 == NULL) {
@@ -1699,7 +1704,7 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 	return -1;	
       }
       const char *string = PyBytes_AsString(item_tmp2);
-      str_R = mkCharCE(string, CE_UTF8);
+      str_R = Rf_mkCharCE(string, CE_UTF8);
       Py_DECREF(item_tmp2);
 #endif      
     }

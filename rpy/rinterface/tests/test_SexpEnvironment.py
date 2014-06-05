@@ -104,6 +104,16 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         for s in ["a", "b"]:
             self.assertTrue(s in symbols)
 
+    def testKeys(self):
+        newEnv = rinterface.globalenv.get("new.env")
+        env = newEnv()
+        env["a"] = rinterface.SexpVector([123, ], rinterface.INTSXP)
+        env["b"] = rinterface.SexpVector([456, ], rinterface.INTSXP)
+        symbols = env.keys()
+        self.assertEqual(2, len(symbols))
+        for s in ["a", "b"]:
+            self.assertTrue(s in symbols)
+
     def testDel(self):
         env = rinterface.globalenv.get("new.env")()
         env["a"] = rinterface.SexpVector([123, ], rinterface.INTSXP)

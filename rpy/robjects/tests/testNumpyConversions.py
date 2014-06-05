@@ -4,18 +4,16 @@ import rpy2.robjects as robjects
 import rpy2.robjects.conversion
 r = robjects.r
 
+has_numpy = True
 try:
     import numpy
-    has_numpy = True
     import rpy2.robjects.numpy2ri as rpyn
 except:
     has_numpy = False
 
 
-class MissingNumpyDummyTestCase(unittest.TestCase):
-    def testMissingNumpy(self):
-        self.assertTrue(False) # numpy is missing. No tests.
 
+@unittest.skipUnless(has_numpy, 'numpy is not available in python')
 class NumpyConversionsTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -25,6 +23,22 @@ class NumpyConversionsTestCase(unittest.TestCase):
 
     def tearDown(self):
         rpyn.deactivate()
+
+    def testActivate(self):
+        # setUp method has already activated numpy converter
+        self.assertEqual(rpyn.numpy2ri, robjects.conversion.py2ri)
+        rpyn.deactivate()
+        self.assertNotEqual(rpyn.numpy2ri, robjects.conversion.py2ri)
+
+    def testActivateTwice(self):
+        # setUp method has already activated numpy converter
+        self.assertEqual(rpyn.numpy2ri, robjects.conversion.py2ri)
+        rpyn.activate()
+        self.assertEqual(rpyn.numpy2ri, robjects.conversion.py2ri)
+        rpyn.deactivate()
+        self.assertNotEqual(rpyn.numpy2ri, robjects.conversion.py2ri)
+        rpyn.deactivate()
+        self.assertNotEqual(rpyn.numpy2ri, robjects.conversion.py2ri)
 
     def checkHomogeneous(self, obj, mode, storage_mode):
         converted = robjects.conversion.py2ri(obj)

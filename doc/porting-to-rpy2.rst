@@ -35,7 +35,7 @@ requires Python knowledge.
 .. code-block:: python
 
    from rpy2.robjects.vectors import DataFrame
-   from rpy2.robjects.packages import importr
+   from rpy2.robjects.packages import importr, data
 
    r_base = importr('base')
 
@@ -57,7 +57,7 @@ R's own collection of datasets:
 .. code-block:: python
 
    datasets = importr('datasets')
-   faithful_data = datasets.data.fetch('faithful')['faithful']
+   faithful_data = data(datasets).fetch('faithful')['faithful']
 
 Summary
 """""""
@@ -229,7 +229,7 @@ Missing values
 ---------------
 
 R has a built-in concept of *missing values*, and of types for missing values.
-This now better integrated into rpy2 (see Section :ref:`robjects-missing_values`)
+This now better integrated into rpy2 (see more about :ref:`missing values<missing_values>`)
 
 Graphics
 --------

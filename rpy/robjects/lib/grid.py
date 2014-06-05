@@ -41,7 +41,8 @@ class Unit(robjects.RObject):
         od = OrdDict()
         for item in args:
             od[None] = conversion.py2ro(item)
-        for k, v in kwargs.iteritems():
+
+        for k, v in kwargs.items():
             od[k] = conversion.py2ro(v)
         res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
         self.__sexp__ = res.__sexp__
@@ -63,7 +64,8 @@ class Gpar(robjects.RObject):
         od = OrdDict()
         for item in args:
             od[None] = conversion.py2ro(item)
-        for k, v in kwargs.iteritems():
+
+        for k, v in kwargs.items():
             od[k] = conversion.py2ro(v)
         res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
         self.__sexp__ = res.__sexp__
@@ -232,8 +234,6 @@ class Viewport(robjects.RObject):
 
 viewport = Viewport.viewport
 
-
-
 _grid_dict = {
     'grob': Grob,
     'gTree': GTree,
@@ -242,11 +242,13 @@ _grid_dict = {
     'viewport': Viewport
 }
 
-original_conversion = conversion.ri2py
+original_py2ri = None
+original_ri2ro = None
+original_py2ro = None
 
-def grid_conversion(robj):
+def grid_ri2ro(robj):
 
-    pyobj = original_conversion(robj)
+    pyobj = original_ri2ro(robj)
 
     if not isinstance(pyobj, robjects.RS4):
         rcls = pyobj.rclass
@@ -260,4 +262,30 @@ def grid_conversion(robj):
 
     return pyobj
 
-conversion.ri2py = grid_conversion
+def activate():
+    global original_py2ri, original_ri2ro, original_py2ro
+
+    # If module is already activated, there is nothing to do
+    if original_py2ri: 
+        return
+
+    original_py2ri = conversion.py2ri
+    original_ri2ro = conversion.ri2ro
+    original_py2ro = conversion.py2ro
+
+    #conversion.py2ri = numpy2ri
+    conversion.ri2ro = grid_ri2ro
+    #conversion.py2ro = numpy2ro
+
+def deactivate():
+    global original_py2ri, original_ri2ro, original_py2ro
+
+    # If module has never been activated or already deactivated,
+    # there is nothing to do
+    if not original_py2ri:
+        return
+
+    conversion.py2ri = original_py2ri
+    conversion.ri2ro = original_ri2ro
+    conversion.py2ro = original_py2ro
+    original_py2ri = original_ri2ro = original_py2ro = None

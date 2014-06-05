@@ -23,13 +23,21 @@ from rpy2.robjects.functions import Function, SignatureTranslatedFunction
 from rpy2.robjects.environments import Environment
 from rpy2.robjects.methods import RS4
 
-
+from . import conversion
 
 from rpy2.rinterface import Sexp, SexpVector, SexpClosure, SexpEnvironment, SexpS4, SexpExtPtr
 _globalenv = rinterface.globalenv
 
 # missing values
 from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Complex, NULL
+
+if sys.version_info[0] == 2:
+    py3str = unicode
+    py3bytes = str
+else:
+    long = int
+    py3str = str
+    py3bytes = bytes
 
 _reval = rinterface.baseenv['eval']
 
@@ -138,7 +146,7 @@ def default_py2ri(o):
             res = rinterface.SexpVector([o, ], rinterface.INTSXP)
     elif isinstance(o, float):
         res = rinterface.SexpVector([o, ], rinterface.REALSXP)
-    elif isinstance(o, str):
+    elif isinstance(o, py3bytes):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
     elif isinstance(o, bytes):
         res = rinterface.SexpVector([o, ], rinterface.RAWSXP)

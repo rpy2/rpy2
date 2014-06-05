@@ -5,8 +5,7 @@ import rpy2.rinterface as rinterface
 from collections import OrderedDict
 from datetime import datetime
 
-# XXX - this is inconsistent with how test_ggplot2 is handled
-# See rpy2/robjects/lib/tests/__init__.py for the details
+has_pandas = True
 try:
     import pandas
     import numpy
@@ -17,10 +16,7 @@ except:
 if has_pandas:
     import rpy2.robjects.pandas2ri as rpyp
 
-class MissingPandasDummyTestCase(unittest.TestCase):
-    def testMissingPandas(self):
-        self.assertTrue(False) # pandas is missing. No tests.
-
+@unittest.skipUnless(has_pandas, "pandas is not available in python")
 class PandasConversionsTestCase(unittest.TestCase):
 
     def testActivate(self):
@@ -28,7 +24,18 @@ class PandasConversionsTestCase(unittest.TestCase):
         rpyp.activate()
         self.assertEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
         rpyp.deactivate()
-        self.assertNotEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
+        self.assertEqual(robjects.default_py2ri, robjects.conversion.py2ri)
+
+    def testActivateTwice(self):
+        robjects.conversion.py2ri = robjects.default_py2ri
+        rpyp.activate()
+        self.assertEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
+        rpyp.activate()
+        self.assertEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
+        rpyp.deactivate()
+        self.assertEqual(robjects.default_py2ri, robjects.conversion.py2ri)
+        rpyp.deactivate()
+        self.assertEqual(robjects.default_py2ri, robjects.conversion.py2ri)
 
     def testDataFrame(self):
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),

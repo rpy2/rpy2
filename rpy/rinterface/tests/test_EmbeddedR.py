@@ -32,15 +32,12 @@ class EmbeddedRTestCase(unittest.TestCase):
         sys.stdout = tmp_file
         try:
             rinterface.consolePrint('haha', 0)
-        except Exception as e:
+        finally:
             sys.stdout = stdout
-            raise e
-        sys.stdout = stdout
         tmp_file.flush()
         tmp_file.seek(0)
         self.assertEqual('haha', ''.join(s for s in tmp_file).rstrip())
         tmp_file.close()
-
 
     def testCallErrorWhenEndedR(self):
         if sys.version_info[0] == 2 and sys.version_info[1] < 6:

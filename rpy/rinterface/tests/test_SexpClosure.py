@@ -1,9 +1,12 @@
 import unittest
+import sys
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
 rinterface.initr()
 
+if sys.version_info[0] == 3:
+    long = int
 
 class SexpClosureTestCase(unittest.TestCase):
 

@@ -172,8 +172,6 @@ example where the split is made according to the values plotted on the Z axis.
 
 
 
-.. module:: rpy2.robjects.lib.ggplot2
-   :synopsis: High-level interface with R
 
 Package *ggplot2*
 =================
@@ -514,6 +512,8 @@ used the grammar of graphics) are still specified the usual way.
 .. image:: _static/graphics_ggplot2smoothblue.png
    :scale: 50
 
+.. automodule:: rpy2.robjects.lib.ggplot2
+   :members:
 ..
    Complex example
    ^^^^^^^^^^^^^^^
