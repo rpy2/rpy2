@@ -198,7 +198,7 @@ utils.install_packages('Cairo')
         """
         self.set_R_plotting_device(line.strip())
 
-    def eval(self, line):
+    def eval(self, code):
         '''
         Parse and evaluate a line of R code with rpy2.
         Returns the output to R's stdout() connection, 
@@ -213,10 +213,11 @@ utils.install_packages('Cairo')
         old_writeconsole = ri.get_writeconsole()
         ri.set_writeconsole(self.write_console)
         try:
-            value, visible = ro.r.withVisible(ro.r.eval(ro.r.parse(text=line)))
+            # Need the newline in case the last line in code is a comment
+            value, visible = ro.r("withVisible({%s\n})" % code)
         except (ri.RRuntimeError, ValueError) as exception:
             warning_or_other_msg = self.flush() # otherwise next return seems to have copy of error
-            raise RInterpreterError(line, str_to_unicode(str(exception)), warning_or_other_msg)
+            raise RInterpreterError(code, str_to_unicode(str(exception)), warning_or_other_msg)
         text_output = self.flush()
         ri.set_writeconsole(old_writeconsole)
         return text_output, value, visible[0]
@@ -371,19 +372,21 @@ utils.install_packages('Cairo')
             if val is not None:
                 argdict[name] = val
 
-        # execute the R code in a temporary directory
         tmpd = None
         if self.device in ['png', 'svg']:
+            # Create a temporary directory for R graphics output
+            # XXX: Do we want to capture file output for other device types other
+            # than svg & png?
             tmpd = tempfile.mkdtemp()
             tmpd_fix_slashes = tmpd.replace('\\', '/')
 
-        if self.device == 'png':
-            # Note: that %% is to pass into R for interpolation there
-            ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
-                    **argdict)
-        elif self.device == 'svg':
-            self.cairo.CairoSVG("%s/Rplot.svg" % tmpd_fix_slashes,
-                                **argdict)
+            if self.device == 'png':
+                # Note: that %% is to pass into R for interpolation there
+                ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
+                        **argdict)
+            elif self.device == 'svg':
+                self.cairo.CairoSVG("%s/Rplot.svg" % tmpd_fix_slashes,
+                                    **argdict)
 
         elif self.device == 'X11':
             # Open a new X11 device, except if the current one is already an X11
@@ -398,6 +401,42 @@ utils.install_packages('Cairo')
             raise RInterpreterError("device must be one of ['png', 'X11' 'svg']")
 
         return tmpd
+
+    def publish_graphics(self, graph_dir):
+        '''Wrap graphic file data for presentation in IPython'''
+        # read in all the saved image files
+        images = []
+        display_data = []
+
+        # Default empty metadata dictionary
+        md = {}
+
+        if self.device == 'png':
+            images = [open(imgfile, 'rb').read() for imgfile in
+                      glob("%s/Rplots*png" % graph_dir)]
+        else:
+            # as onefile=TRUE, there is only one .svg file
+            imgfile = "%s/Rplot.svg" % graph_dir
+            # Cairo creates an SVG file every time R is called
+            # -- empty ones are not published
+            if stat(imgfile).st_size >= 1000:
+                images.append(open(imgfile, 'rb').read())
+
+        mimetypes = { 'png' : 'image/png', 'svg' : 'image/svg+xml' }
+        mime = mimetypes[self.device]
+
+        # By default, isolate SVG images in the Notebook to avoid garbling
+        if images and self.device == "svg" and args.noisolation == False:
+            md = {'image/svg+xml': dict(isolated=True)}
+
+        # flush text streams before sending figures, helps a little with output
+        for image in images:
+            # synchronization in the console (though it's a bandaid, not a real sln)
+            sys.stdout.flush(); sys.stderr.flush()
+            display_data.append(('RMagic.R', {mime: image}))
+
+        return display_data, md
+
 
     # @skip_doctest
     @magic_arguments()
@@ -457,13 +496,13 @@ utils.install_packages('Cairo')
     @line_cell_magic
     def R(self, line, cell=None, local_ns=None):
         '''
-        Execute code in R, and pull some of the results back into the Python namespace.
+        Execute code in R, optionally returning results to the Python runtime.
 
         In line mode, this will evaluate an expression and convert the returned
         value to a Python object.  The return value is determined by rpy2's
-        behaviour of returning the result of evaluating the final line.
+        behaviour of returning the result of evaluating the final expression.
 
-        Multiple R lines can be executed by joining them with semicolons::
+        Multiple R expressions can be executed by joining them with semicolons::
 
             In [9]: %R X=c(1,4,5,7); sd(X); mean(X)
             Out[9]: array([ 4.25])
@@ -519,17 +558,13 @@ utils.install_packages('Cairo')
 
         The return value is determined by these rules:
 
-        * If the cell is not None, the magic returns None.
-
-        * If the cell evaluates as False, the resulting value is returned
-          unless the final line prints something to the console, in
-          which case None is returned.
+        * If the cell is not None (i.e., has contents), the magic returns None.
 
         * If the final line results in a NULL value when evaluated
           by rpy2, then None is returned.
 
         * No attempt is made to convert the final value to a structured array.
-          Use the --dataframe flag or %Rget to push / return a structured array.
+          Use %Rget to push a structured array.
 
         * If the -n flag is present, there is no return value.
 
@@ -590,6 +625,7 @@ utils.install_packages('Cairo')
                     ri.set_writeconsole(old_writeconsole)
 
         except RInterpreterError as e:
+            # XXX - Maybe we should make this red or something?
             print(e.stdout)
             if not e.stdout.endswith(e.err):
                 print(e.err)
@@ -597,47 +633,21 @@ utils.install_packages('Cairo')
             return
         finally:
             if self.device in ['png', 'svg']:
-                ro.r['dev.off']()
+                ro.r('dev.off()')
 
-        # Prepare metadata dictionary
-        md = {}
-
-        # publish the printed R objects
-        display_data = []
         if text_output:
-            display_data.append(('RMagic.R', {'text/plain':text_output}))
+            # display_data.append(('RMagic.R', {'text/plain':text_output}))
+            publish_display_data(data={'text/plain':text_output}, source='RMagic.R')
 
         # publish the R images
-        # XXX: Do we want to capture file output for other device types other
-        # than svg & png?
         if self.device in ['png', 'svg']:
-            # read in all the saved image files
-            images = []
-            if self.device == 'png':
-                images = [open(imgfile, 'rb').read() for imgfile in glob("%s/Rplots*png" % tmpd)]
-            else:
-                # as onefile=TRUE, there is only one .svg file
-                imgfile = "%s/Rplot.svg" % tmpd
-                # Cairo creates an SVG file every time R is called
-                # -- empty ones are not published
-                if stat(imgfile).st_size >= 1000:
-                    images.append(open(imgfile, 'rb').read())
+            display_data, md = self.publish_graphics(tmpd)
 
-            mimetypes = { 'png' : 'image/png', 'svg' : 'image/svg+xml' }
-            mime = mimetypes[self.device]
+            for tag, disp_d in display_data:
+                publish_display_data(data=disp_d, source=tag, metadata=md)
 
-            # By default, isolate SVG images in the Notebook to avoid garbling
-            if images and self.device == "svg" and args.noisolation == False:
-                md = {'image/svg+xml': dict(isolated=True)}
-
-            # flush text streams before sending figures, helps a little with output
-            for image in images:
-                # synchronization in the console (though it's a bandaid, not a real sln)
-                sys.stdout.flush(); sys.stderr.flush()
-                display_data.append(('RMagic.R', {mime: image}))
-
-            # kill the temporary directory
-            # which is created only for "svg" and "png"
+            # kill the temporary directory - currently created only for "svg"
+            # and "png" (else it's None)
             rmtree(tmpd)
 
         if args.output:
@@ -645,8 +655,6 @@ utils.install_packages('Cairo')
                 self.shell.push({output:
                                  ro.conversion.ri2ro(ro.r(output)) })
 
-        for tag, disp_d in display_data:
-            publish_display_data(data=disp_d, source=tag, metadata=md)
 
         # this will keep a reference to the display_data
         # which might be useful to other objects who happen to use
@@ -655,7 +663,8 @@ utils.install_packages('Cairo')
         if self.cache_display_data:
             self.display_cache = display_data
 
-        # if in line mode and return_output, return the result as an ndarray
+        # We're in line mode and return_output is still True, 
+        # so return the converted result
         if return_output and not args.noreturn:
             if result != ri.NULL:
                 return ro.conversion.ri2ro(result)
