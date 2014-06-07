@@ -1,3 +1,13 @@
+Release 2.4.1
+=============
+
+Bugs fixed
+----------
+
+- :meth:`rpy2.ipython` fixed spurious output to notebook cells.
+
+
+
 Release 2.4.0
 =============
 
