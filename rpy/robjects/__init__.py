@@ -170,8 +170,6 @@ def default_py2ro(o):
 
 conversion.py2ro = default_py2ro
 
-
-
 class Formula(RObjectMixin, rinterface.Sexp):
 
     def __init__(self, formula, environment = _globalenv):

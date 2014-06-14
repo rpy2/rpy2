@@ -1,3 +1,13 @@
+Release 2.4.2
+=============
+
+Bugs fixed
+----------
+
+- Assigning an R `DataFrame` into an environment was failing if
+  the conversion for Pandas was activated. (Issue #207)
+
+
 Release 2.4.1
 =============
 

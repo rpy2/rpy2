@@ -17,7 +17,7 @@ def ri2ro(obj):
 def py2ri(obj):
     """ Dummy function for py2ri.
 
-    This function will convert Python objects into rpy2.rinteface
+    This function will convert Python objects into rpy2.rinterface
     (ri) objects.
     """
     raise NotImplementedError("Conversion function undefined")
@@ -29,6 +29,5 @@ def py2ro(obj):
     (ro) objects.
     """
     raise NotImplementedError("Conversion function undefined")
-
 
 
