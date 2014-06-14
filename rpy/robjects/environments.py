@@ -28,7 +28,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         return res
 
     def __setitem__(self, item, value):
-        robj = conversion.py2ro(value)
+        robj = conversion.py2ri(value)
         super(Environment, self).__setitem__(item, robj)
 
     def get(self, item, wantfun = False):
