@@ -20,6 +20,7 @@ if has_pandas:
 class PandasConversionsTestCase(unittest.TestCase):
 
     def testActivate(self):
+        robjects.conversion.py2ri = robjects.default_py2ri
         self.assertNotEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
         rpyp.activate()
         self.assertEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
@@ -28,6 +29,7 @@ class PandasConversionsTestCase(unittest.TestCase):
 
     def testActivateTwice(self):
         robjects.conversion.py2ri = robjects.default_py2ri
+        self.assertNotEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
         rpyp.activate()
         self.assertEqual(rpyp.pandas2ri, robjects.conversion.py2ri)
         rpyp.activate()
@@ -52,14 +54,6 @@ class PandasConversionsTestCase(unittest.TestCase):
         self.assertEqual(pd_df.shape[0], rp_df.nrow)
         self.assertEqual(pd_df.shape[1], rp_df.ncol)
 
-    def testDataFrame_PR130(self):
-        # PR #130
-        a = pandas.core.frame.DataFrame(dict(dates=['05-01-2001', '04-01-2013'], 
-                                             not_necessary=[1, 2]))
-        a.dates = pandas.to_datetime(a.dates)
-        r_dataf = rpyp.pandas2ri(a)
-        self.assertIsInstance(r_dataf, robjects.DataFrame)
-
     def testSeries(self):
         Series = pandas.core.series.Series
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
@@ -80,7 +74,7 @@ class PandasConversionsTestCase(unittest.TestCase):
         s = s.split('\n')
         self.assertEqual('[Array, Array, Array, FactorV..., FactorV...]', s[1].strip())
 
-    def testPandas2ri(self):
+    def testRi2pandas(self):
         rdataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")), c=c("a", "b"))')
         pandas_df = rpyp.ri2pandas(rdataf)
         self.assertIsInstance(pandas_df, pandas.DataFrame)
@@ -88,6 +82,20 @@ class PandasConversionsTestCase(unittest.TestCase):
         self.assertEquals(pandas_df['a'].dtype, numpy.dtype('int32'))
         self.assertEquals(pandas_df['b'].dtype, numpy.dtype('O'))
         self.assertEquals(pandas_df['c'].dtype, numpy.dtype('O'))
+    
+    def testRi2pandas_issue207(self):
+        d = robjects.DataFrame({'x': 1})
+        rpyp.activate()
+        try:
+            ok = True
+            robjects.globalenv['d'] = d
+        except ValueError:
+            ok = False
+        finally:
+            rpyp.deactivate()
+            if 'd' in robjects.globalenv:
+                del(robjects.globalenv['d'])
+        self.assertTrue(ok)
 
 def suite():
     if has_pandas:

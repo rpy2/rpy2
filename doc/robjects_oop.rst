@@ -142,7 +142,8 @@ Example:
    stats4 = importr('stats4')
    from rpy2.robjects.methods import RS4, RS4Auto_Type
    
-   class MLE(RS4, metaclass = RS4Auto_Type):
+   class MLE(RS4):
+     __metaclass__ = RS4Auto_Type
      __rname__ = 'mle'
      __rpackagename__ = 'stats4'
 

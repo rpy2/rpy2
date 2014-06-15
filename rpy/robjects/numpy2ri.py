@@ -118,6 +118,7 @@ def ri2numpy(o):
 
 def activate():
     global original_py2ri, original_ri2ro, original_py2ro
+
     # If module is already activated, there is nothing to do
     if original_py2ri: 
         return

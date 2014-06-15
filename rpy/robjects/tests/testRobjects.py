@@ -93,12 +93,12 @@ class MappingTestCase(unittest.TestCase):
         self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEqual(rinterface.STRSXP, rob.typeof)
 
-    def testMapperPy2R_bytes(self):        
-        py = b'houba'
-        self.assertTrue(isinstance(py, bytes))
+    def testMapperPy2R_py3str(self):        
+        py = u'houba'
+        self.assertTrue(isinstance(py, py3str))
         rob = robjects.default_py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEqual(rinterface.RAWSXP, rob.typeof)
+        self.assertEqual(rinterface.STRSXP, rob.typeof)
         #FIXME: more tests
 
     def testMapperPy2R_float(self):

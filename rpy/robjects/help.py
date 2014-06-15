@@ -236,10 +236,10 @@ class Page(object):
             
         return res
 
-    def items(self):
+    def iteritems(self):
         """ iterator through the sections names and content
         in the documentation Page. """
-        return self.sections.items        
+        return self.sections.iteritems        
 
     def to_docstring(self, section_names = None):
         """ section_names: list of section names to consider. If None

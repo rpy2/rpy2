@@ -53,7 +53,6 @@ def pandas2ri(obj):
         else:
             # converted as a numpy array
             res = numpy2ri.numpy2ri(obj.values)
-
         # "index" is equivalent to "names" in R
         if obj.ndim == 1:
             res.do_slot_assign('names', ListVector({'x': pandas2ri(obj.index)}))

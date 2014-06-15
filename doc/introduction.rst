@@ -127,7 +127,7 @@ Example:
 
 The expression above returns the value 18.85, 
 but first creates an R function `f`. 
-That function `f` is present in the R `Global Environment`, and can
+That function `f` is present in the R `Global Environement`, and can
 be accessed with the `__getitem__` mechanism outlined above:
 
 >>> r_f = robjects.globalenv['f']

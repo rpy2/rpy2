@@ -2051,56 +2051,12 @@ RPy_SeqToRAWSXP(PyObject *object, SEXP *sexpp)
   return 0;
 }
 
-/* Take a Python 'bytes' object and build an R vector of "raw" values (bytes).
-   The function returns 0 on success, -1 on failure. In the case
-   of a failure, it will also create an exception with an informative
-   message that can be propagated up.
-*/
-static int
-RPy_BytesToRAWSXP(PyObject *object, SEXP *sexpp)
-{
-  Py_ssize_t ii;
-  PyObject *seq_object, *item;
-  SEXP new_sexp;
- 
-  if (! PyBytes_Check(object) ) {
-    PyErr_Format(PyExc_TypeError,
-		 "Expected an object of type 'bytes'");
-    return -1;
-  }
-
-  Py_ssize_t length;
-  char *buffer;
-#if (PY_VERSION_HEX < 0x03010000)
-  int ok= PyString_AsStringAndSize(object, &buffer, &length);
-#else
-  int ok = PyBytes_AsStringAndSize(object, &buffer, &length);
-#endif
-  if (ok == -1) {
-    PyErr_Format(PyExc_ValueError,
-		 "Not a byte.");
-    return -1;      
-  }
-  if (length > R_LEN_T_MAX) {
-    PyErr_Format(PyExc_ValueError,
-		 "The Python sequence is longer than the longuest possible vector in R");
-    return -1;
-  }
-  PROTECT(new_sexp = NEW_RAW(length));
-  char *raw_ptr = (char *)RAW_POINTER(new_sexp);
-  memcpy(raw_ptr, buffer, length);
-  UNPROTECT(1);
-  *sexpp = new_sexp;
-  return 0;
-}
-
 static int
 ByteVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
 #ifdef RPY_VERBOSE
   printf("%p: ByteVectorSexp initializing...\n", self);
 #endif 
-  
   int res = VectorSexp_init_private(self, args, kwds, 
 				    (RPy_seqobjtosexpproc)RPy_SeqToRAWSXP,
 				    NULL,

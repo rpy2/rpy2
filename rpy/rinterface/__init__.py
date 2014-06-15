@@ -29,7 +29,7 @@ if len(R_HOME) == 0:
                                          0, win32con.KEY_QUERY_VALUE )
             R_HOME = win32api.RegQueryValueEx(hkey, "InstallPath")[0]
             win32api.RegCloseKey( hkey )
-        except ImportError as ie:
+        except ImportError(ie):
             raise RuntimeError(
                 "No environment variable R_HOME could be found, "
                 "calling the command 'R RHOME' does not return anything, " +\
@@ -102,10 +102,17 @@ from rpy2.rinterface._rinterface import *
 
 
 # wrapper in case someone changes sys.stdout:
-def consolePrint(x, i):
-    print(x)
+if sys.version_info.major == 3:
+    # Print became a regular function in Python 3, making
+    # the workaround (mostly) unnecessary (python2to3 still needs it
+    # wrapped in a function
+    def consolePrint(x):
+        print(x)
+else:
+    def consolePrint(x):
+        sys.stdout.write(x)
 
-set_writeconsoleex(consolePrint)
+set_writeconsole(consolePrint)
 
 def consoleFlush():
     sys.stdout.flush()

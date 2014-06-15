@@ -12,13 +12,13 @@ class SexpClosureTestCase(unittest.TestCase):
 
 
     def setUp(self):
-        self.console = rinterface.get_writeconsoleex()
-        def noconsole(x, i):
+        self.console = rinterface.get_writeconsole()
+        def noconsole(x):
             pass
-        rinterface.set_writeconsoleex(noconsole)
+        rinterface.set_writeconsole(noconsole)
 
     def tearDown(self):
-        rinterface.set_writeconsoleex(self.console)
+        rinterface.set_writeconsole(self.console)
 
     def testNew(self):
         x = "a"
@@ -108,7 +108,11 @@ class SexpClosureTestCase(unittest.TestCase):
 
     def testScalarConvertInteger(self):
         self.assertEqual('integer',
-                          rinterface.baseenv["typeof"](int(1))[0])
+                          rinterface.baseenv["typeof"](1)[0])
+
+    def testScalarConvertLong(self):
+        self.assertEqual('integer',
+                          rinterface.baseenv["typeof"](long(1))[0])
 
     def testScalarConvertDouble(self):
         self.assertEqual('double', 

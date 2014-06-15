@@ -6,13 +6,13 @@ rinterface.initr()
 class SexpExtPtrTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.console = rinterface.get_writeconsoleex()
-        def noconsole(x, i):
+        self.console = rinterface.get_writeconsole()
+        def noconsole(x):
             pass
-        rinterface.set_writeconsoleex(noconsole)
+        rinterface.set_writeconsole(noconsole)
 
     def tearDown(self):
-        rinterface.set_writeconsoleex(self.console)
+        rinterface.set_writeconsole(self.console)
 
     def testNewDefault(self):
         pyobject = "ahaha"

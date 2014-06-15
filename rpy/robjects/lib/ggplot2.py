@@ -55,7 +55,6 @@ NULL = robjects.NULL
 ggplot2 = importr('ggplot2')
 
 TARGET_VERSION = '1.0.0'
-
 if ggplot2.__version__ != TARGET_VERSION:
    warnings.warn('This was designed againt ggplot2 version %s but you have %s' % (TARGET_VERSION, ggplot2.__version__))
 ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
@@ -112,7 +111,6 @@ class Aes(robjects.Vector):
             new_kwargs[k] = as_symbol(v)
         res = cls(cls._constructor(**new_kwargs))
         return res
-
 aes = Aes.new
 
 class AesString(robjects.Vector):

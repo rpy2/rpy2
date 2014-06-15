@@ -15,6 +15,16 @@ from rpy2.rinterface import Sexp, SexpVector, ListSexpVector, StrSexpVector, \
     IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, \
     R_NilValue, NA_Real, NA_Integer, NA_Character, NA_Logical, NULL, MissingArg
 
+if sys.version_info[0] == 2:
+    py3str = unicode
+    py3bytes = str
+    range = xrange
+else:
+    long = int
+    py3str = str
+    py3bytes = bytes
+
+
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
 utils_ri = rinterface.baseenv['as.environment'](rinterface.StrSexpVector(("package:utils", )))
@@ -290,7 +300,7 @@ class Vector(RObjectMixin, SexpVector):
             max_width = int(max_width)
             if x is NA_Real or x is NA_Integer or x is NA_Character or x is NA_Logical:
                 res = repr(x)
-            elif isinstance(x, int):
+            elif isinstance(x, long) or isinstance(x, int):
                 res = '%8i' %x
             elif isinstance(x, float):
                 res = '%8f' %x
@@ -349,22 +359,6 @@ class StrVector(Vector, StrSexpVector):
 
         res = self._factorconstructor(self)
         return conversion.ri2ro(res)
-
-class BytesVector(Vector, StrSexpVector):
-    """      Vector of bytes elements
-
-    BytesVector(seq) -> BytesVector.
-
-    The parameter 'seq' can be an instance inheriting from
-    rinterface.SexpVector, or an arbitrary Python sequence.
-    In the later case, all elements in the sequence should be either
-    bytes, or have a bytes() representation.
-    """
-
-    def __init__(self, obj):
-        obj = ByteSexpVector(obj)
-        super(BytesVector, self).__init__(obj)
-
 
 class IntVector(Vector, IntSexpVector):
     """ Vector of integer elements 

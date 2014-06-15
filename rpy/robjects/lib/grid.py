@@ -41,7 +41,6 @@ class Unit(robjects.RObject):
         od = OrdDict()
         for item in args:
             od[None] = conversion.py2ro(item)
-
         for k, v in kwargs.items():
             od[k] = conversion.py2ro(v)
         res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
@@ -64,7 +63,6 @@ class Gpar(robjects.RObject):
         od = OrdDict()
         for item in args:
             od[None] = conversion.py2ro(item)
-
         for k, v in kwargs.items():
             od[k] = conversion.py2ro(v)
         res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)

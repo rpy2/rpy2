@@ -4,6 +4,15 @@ import rpy2
 import rpy2.rinterface as rinterface
 import sys, os, subprocess, time, tempfile, io, signal, gc
 
+
+
+if sys.version_info[0] == 3:
+    IS_PYTHON3 = True
+else:
+    from itertools import izip as zip
+    range = xrange
+    IS_PYTHON3 = False
+
 rinterface.initr()
 
 
@@ -27,17 +36,36 @@ class EmbeddedRTestCase(unittest.TestCase):
 
 
     def testConsolePrint(self):
-        tmp_file = io.StringIO()
-        stdout = sys.stdout
-        sys.stdout = tmp_file
-        try:
-            rinterface.consolePrint('haha', 0)
-        finally:
+        if sys.version_info[0] == 3:
+            tmp_file = io.StringIO()
+            stdout = sys.stdout
+            sys.stdout = tmp_file
+            try:
+                rinterface.consolePrint('haha')
+            except Exception as e:
+                sys.stdout = stdout
+                raise e
             sys.stdout = stdout
-        tmp_file.flush()
-        tmp_file.seek(0)
-        self.assertEqual('haha', ''.join(s for s in tmp_file).rstrip())
-        tmp_file.close()
+            tmp_file.flush()
+            tmp_file.seek(0)
+            self.assertEqual('haha', ''.join(s for s in tmp_file).rstrip())
+            tmp_file.close()
+        else:
+            # no need to test which Python 2, only 2.7 supported
+            tmp_file = tempfile.NamedTemporaryFile()
+            stdout = sys.stdout
+            sys.stdout = tmp_file
+            try:
+                rinterface.consolePrint('haha')
+            except Exception as e:
+                sys.stdout = stdout
+                raise e
+            sys.stdout = stdout
+            tmp_file.flush()
+            tmp_file.seek(0)
+            self.assertEqual('haha', ''.join(s.decode() for s in tmp_file))
+            tmp_file.close()
+
 
     def testCallErrorWhenEndedR(self):
         if sys.version_info[0] == 2 and sys.version_info[1] < 6:
@@ -139,6 +167,10 @@ class EmbeddedRTestCase(unittest.TestCase):
         rpy_code = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
                                                delete = False)
         rpy2_path = os.path.dirname(rpy2.__path__[0])
+        if IS_PYTHON3:
+            pyexception_as = ' as'
+        else:
+            pyexception_as = ','
 
         rpy_code_str = """
 import sys
@@ -146,9 +178,9 @@ sys.path.insert(0, '%s')
 import rpy2.rinterface as ri
 
 ri.initr()
-def f(x, i):
+def f(x):
   pass
-ri.set_writeconsoleex(f)
+ri.set_writeconsole(f)
 rcode = "i <- 0; "
 rcode += "while(TRUE) { "
 rcode += "i <- i+1; "
@@ -156,9 +188,9 @@ rcode += "Sys.sleep(0.01); "
 rcode += "}"
 try:
   ri.baseenv['eval'](ri.parse(rcode))
-except Exception as e:
+except Exception%s e:
   sys.exit(0)
-  """ %(rpy2_path)
+  """ %(rpy2_path, pyexception_as)
 
         rpy_code.write(rpy_code_str)
         rpy_code.close()
@@ -182,27 +214,27 @@ except Exception as e:
 
 class CallbacksTestCase(unittest.TestCase):
     def tearDown(self):
-        rinterface.set_writeconsoleex(rinterface.consolePrint)
+        rinterface.set_writeconsole(rinterface.consolePrint)
         rinterface.set_readconsole(rinterface.consoleRead)
         rinterface.set_readconsole(rinterface.consoleFlush)
         rinterface.set_choosefile(rinterface.chooseFile)
         sys.last_value = None
 
-    def testSetWriteConsoleEx(self):
+    def testSetWriteConsole(self):
         buf = []
-        def f(x, i):
+        def f(x):
             buf.append(x)
 
-        rinterface.set_writeconsoleex(f)
-        self.assertEqual(rinterface.get_writeconsoleex(), f)
+        rinterface.set_writeconsole(f)
+        self.assertEqual(rinterface.get_writeconsole(), f)
         code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
         rinterface.baseenv["print"](code)
         self.assertEqual('[1] "3"\n', str.join('', buf))
 
-    def testWriteConsoleExWithError(self):
-        def f(x, i):
+    def testWriteConsoleWithError(self):
+        def f(x):
             raise CustomException("Doesn't work.")
-        rinterface.set_writeconsoleex(f)
+        rinterface.set_writeconsole(f)
 
         tmp_file = tempfile.NamedTemporaryFile()
         stderr = sys.stderr
@@ -231,7 +263,7 @@ class CallbacksTestCase(unittest.TestCase):
         self.assertEqual(rinterface.get_flushconsole(), f)
         rinterface.baseenv.get("flush.console")()
         self.assertEqual(1, flush['count'])
-        rinterface.set_writeconsoleex(rinterface.consoleFlush)
+        rinterface.set_writeconsole(rinterface.consoleFlush)
 
     @onlyAQUAorWindows
     def testFlushConsoleWithError(self):
@@ -310,9 +342,9 @@ class CallbacksTestCase(unittest.TestCase):
         rinterface.set_choosefile(rinterface.chooseFile)
 
     def testChooseFileWithError(self):
-        def noconsole(x, i):
+        def noconsole(x):
             pass
-        rinterface.set_writeconsoleex(noconsole) # reverted by the tearDown method
+        rinterface.set_writeconsole(noconsole) # reverted by the tearDown method
         def f(prompt):
             raise Exception("Doesn't work.")
         rinterface.set_choosefile(f)

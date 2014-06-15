@@ -414,7 +414,11 @@ class SexpVectorTestCase(unittest.TestCase):
         #FIXME: R has introduced the use of larger integers
         #       for vector sizes (and indexing). Is this relevant
         #       any longer ?
-        if (sys.maxsize > ri.R_LEN_T_MAX):
+        if IS_PYTHON3:
+            haslargeint = (sys.maxsize > ri.R_LEN_T_MAX)
+        else:
+            haslargeint = (sys.maxint > ri.R_LEN_T_MAX)
+        if haslargeint:
             self.assertRaises(IndexError, myVec.__getitem__, 
                               ri.R_LEN_T_MAX+1)
 

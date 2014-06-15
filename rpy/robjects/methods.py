@@ -1,3 +1,4 @@
+import itertools
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
@@ -186,7 +187,7 @@ class RS4Auto_Type(type):
             # all_methods contains all method/signature pairs
             # having the class we are considering somewhere in the signature
             # (the R/S4 systems allows multiple dispatch)
-            for name, meth in zip(all_methods.do_slot("names"), all_methods):
+            for name, meth in itertools.izip(all_methods.do_slot("names"), all_methods):
                 # R/S4 is storing each method/signature as a string, 
                 # with the argument type separated by the character '#'
                 # We will re-use that name for the Python name

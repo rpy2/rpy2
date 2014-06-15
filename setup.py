@@ -14,9 +14,6 @@ pack_version = __import__('rpy').__version__
 default_lib_directory = 'bin' if sys.platform=='win32' else 'lib'
 
 package_prefix='.'
-if sys.version_info < (3,):
-    sys.exit("Currently, rpy2 {version} is only supporting Python 3.".format(version=pack_version))
-
 from distutils.core import setup    
 from distutils.core import Extension
 
@@ -33,7 +30,7 @@ class build(_build):
              "(see r-autoconfig for an automatic configuration)"),
         ('r-home-lib=', None,
          "full path for the R shared lib/ directory " +\
-            "(<r-home>/{0} otherwise)".format(default_lib_directory)),
+            "(<r-home>/%s otherwise)" % default_lib_directory),
         ('r-home-modules=', None,
          "full path for the R shared modules/ directory " +\
              "(<r-home>/modules otherwise)"),
@@ -72,7 +69,7 @@ class build_ext(_build_ext):
              "(see r-autoconfig for an automatic configuration)"),
         ('r-home-lib=', None,
          "full path for the R shared lib/ directory" +\
-            "(<r-home>/{0} otherwise)".format(default_lib_directory)),
+            "(<r-home>/%s otherwise)" % default_lib_directory),
         ('r-home-modules=', None,
          "full path for the R shared modules/ directory" +\
              "(<r-home>/modules otherwise)"),
@@ -123,7 +120,7 @@ class build_ext(_build_ext):
             if self.ignore_check_rversion:
                 warnings.warn("R did not seem to have the minimum required version number")
             else:
-                raise SystemExit("Error: R >= 2.8 required (and R told '{0}').".format('.'.join(rversion)))
+                raise SystemExit("Error: R >= 2.8 required (and R told '%s')." %'.'.join(rversion))    
         rversions.append(rversion)
 
         config = RConfig()

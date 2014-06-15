@@ -3,6 +3,7 @@ from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.rinterface as rinterface
 from rpy2.robjects import help
+#import rpy2.robjects.conversion conversion
 from . import conversion
 
 baseenv_ri = rinterface.baseenv

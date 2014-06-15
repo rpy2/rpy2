@@ -15,8 +15,6 @@ from datetime import datetime
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
-from . import conversion
-
 from rpy2.robjects.robject import RObjectMixin, RObject
 from rpy2.robjects.vectors import *
 from rpy2.robjects.functions import Function, SignatureTranslatedFunction
@@ -138,7 +136,7 @@ def default_py2ri(o):
             raise(ValueError("Nothing can be done for this array type at the moment."))
     elif isinstance(o, bool):
         res = rinterface.SexpVector([o, ], rinterface.LGLSXP)
-    elif isinstance(o, int):
+    elif isinstance(o, int) or isinstance(o, long):
         # special case for NA_Logical
         if o is rinterface.NA_Logical:
             res = rinterface.SexpVector([o, ], rinterface.LGLSXP)
@@ -148,8 +146,8 @@ def default_py2ri(o):
         res = rinterface.SexpVector([o, ], rinterface.REALSXP)
     elif isinstance(o, py3bytes):
         res = rinterface.SexpVector([o, ], rinterface.STRSXP)
-    elif isinstance(o, bytes):
-        res = rinterface.SexpVector([o, ], rinterface.RAWSXP)
+    elif isinstance(o, py3str):
+        res = rinterface.SexpVector([o, ], rinterface.STRSXP)
     elif isinstance(o, list):
         res = r.list(*[conversion.ri2ro(conversion.py2ri(x)) for x in o])
     elif isinstance(o, complex):
@@ -171,8 +169,6 @@ def default_py2ro(o):
     return conversion.ri2ro(res)
 
 conversion.py2ro = default_py2ro
-
-
 
 class Formula(RObjectMixin, rinterface.Sexp):
 
