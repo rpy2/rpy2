@@ -17,6 +17,9 @@ package_prefix='.'
 from distutils.core import setup    
 from distutils.core import Extension
 
+librpy2 = Extension('librpy2',
+                    sources = ['librpy2'],
+                    include_dirs = ['include/'])
 
 class build(_build):
     user_options = _build.user_options + \
@@ -419,6 +422,7 @@ if __name__ == '__main__':
         license = "GPLv2+",
         author = "Laurent Gautier",
         author_email = "lgautier@gmail.com",
+        #librpy2
         ext_modules = rinterface_exts[0],
         package_dir = pack_dir,
         packages = [pack_name,
