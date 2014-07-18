@@ -432,6 +432,10 @@ class GeomQuantile(Geom):
     _constructor = ggplot2_env['geom_quantile']
 geom_quantile = GeomQuantile.new
 
+class GeomRaster(Geom):
+    _constructor = ggplot2_env['geom_raster']
+geom_raster = GeomRaster.new
+
 class GeomRect(Geom):
     _constructor = ggplot2_env['geom_rect']
 geom_rect = GeomRect.new
