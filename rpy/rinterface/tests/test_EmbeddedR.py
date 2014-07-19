@@ -111,6 +111,14 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertRaises(RuntimeError, rinterface.set_initoptions, 
                           ('aa', '--verbose', '--no-save'))
 
+    def testInitr(self):
+        def init_r(preserve_hash):
+            from rpy2 import rinterface
+            rinterface.initr(r_preservehash=preserve_hash)
+        proc = multiprocessing.Process(target=init_r,
+                                       args=(preserve_hash,))
+        proc.start()
+        proc.join()
     def testParse(self):
         xp = rinterface.parse("2 + 3")
         self.assertEqual(rinterface.EXPRSXP, xp.typeof)

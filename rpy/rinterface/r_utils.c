@@ -96,41 +96,37 @@ SEXP rpy_list_attr(SEXP sexp)
   return res;
 }
 
-SEXP rpy_remove(SEXP symbol, SEXP env, SEXP rho)
+
+SEXP rpy_remove(SEXP symbol, SEXP env, SEXP inherits)
 {
-  SEXP c_R, call_R, res;
+  SEXP internalSym = Rf_install(".Internal");
+  SEXP removeSym = Rf_install("remove");
+  SEXP call;
+  PROTECT(call = Rf_lang2(internalSym,
+			  Rf_lang4(removeSym, 
+				   symbol,
+				   env, 
+				   inherits))
+	  );
+  SEXP result = Rf_eval( call, R_GlobalEnv ) ;
+  UNPROTECT(1);
+  return result;
+}
 
-  static SEXP fun_R = NULL;
-  if (fun_R == NULL) {
-    PROTECT(fun_R = PyRinterface_FindFun(install("rm"), rho));
-    /* FIXME: or use the rpy2 object tracking layer ?*/
-    R_PreserveObject(fun_R);
-    UNPROTECT(1);
-  }
-  
-  if(!isEnvironment(rho)) error("'rho' should be an environment");
-  /* incantation to summon R */
-  PROTECT(c_R = call_R = allocList(2+1));
-  SET_TYPEOF(c_R, LANGSXP);
-  SETCAR(c_R, fun_R);
-  c_R = CDR(c_R);
-
-  /* first argument is the name of the variable to be removed */
-  SETCAR(c_R, symbol);
-  //SET_TAG(c_R, install("list"));
-  c_R = CDR(c_R);
-
-  /* second argument is the environment in which the variable 
-     should be removed  */
-  SETCAR(c_R, env);
-  SET_TAG(c_R, install("envir"));
-  c_R = CDR(c_R);
-
-  int error = 0;
-  PROTECT(res = R_tryEval(call_R, rho, &error));
-
-  UNPROTECT(2);
-  return res;
+SEXP rpy_newenv(SEXP hash, SEXP parent, SEXP size)
+{
+  SEXP internalSym = Rf_install(".Internal");
+  SEXP newenvSym = Rf_install("new.env");
+  SEXP call;
+  PROTECT(call = Rf_lang2(internalSym,
+			  Rf_lang4(newenvSym, 
+				   hash,
+				   parent, 
+				   size))
+	  );
+  SEXP result = Rf_eval( call, R_GlobalEnv ) ;
+  UNPROTECT(1);
+  return result;
 }
 
 SEXP

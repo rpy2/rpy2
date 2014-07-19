@@ -7,6 +7,7 @@
 
 SEXP rpy_serialize(SEXP object, SEXP rho);
 SEXP rpy_unserialize(SEXP connection, SEXP rho);
+SEXP rpy_remove(SEXP symbol, SEXP environment, SEXP rho);
 
 SEXP rpy_list_attr(SEXP sexp);
 
