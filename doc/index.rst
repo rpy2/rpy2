@@ -6,13 +6,18 @@ Documentation for rpy2
 
    .. warning::
       This documentation describe the rpy2 package version |version| on |today|.
-      The API is still changing with time, but snapshots should be good enough
-      for a number of applications. This is believed to be already better than the 
-      released 2.1.x branch.
-      
-      Although care is taken to keep the development branch functional
-      at all times, and this documentation up-to-date, temporary issues may appear:
+      This is still early development for the 2.5 series and 
+      while care is taken to keep the development branch functional
+      at all times, and this documentation up-to-date, temporary issues
+      may appear:
       please remember that this is software under development.
+
+      Use the released series (2.4.x) for production.
+
+
+.. only:: html
+
+   .. img:: _static/rpy2_logo.png
 
 
 .. only:: html
