@@ -203,24 +203,25 @@ def getRinterface_ext():
     parser.add_argument('-L', nargs='*')
     parser.add_argument('-l', nargs='*')
 
+    # compile
     args, unknown = parser.parse_known_args(cppf)
     include_dirs.extend(args.I)
     extra_compile_args.extend(unknown)
+    # link
     args, unknown = parser.parse_known_args(ldf)
-    library_dirs.extend(args.L)
-    libraries.extend(args.l)
+    # OS X's frameworks need special attention
+    if args.L is None:
+        # presumably OS X and framework:
+        libraries.extend([x for x in args.l if x != 'R'])
+    else:
+        library_dirs.extend(args.L)
+        libraries.extend(args.l)
     extra_link_args.extend(unknown)
     
     rinterface_ext = Extension(
             name = pack_name + '.rinterface._rinterface',
-            sources = [ \
-            #os.path.join('rpy', 'rinterface', 'embeddedr.c'), 
-            #os.path.join('rpy', 'rinterface', 'r_utils.c'),
-            #os.path.join('rpy', 'rinterface', 'buffer.c'),
-            #os.path.join('rpy', 'rinterface', 'sequence.c'),
-            #os.path.join('rpy', 'rinterface', 'sexp.c'),
-            os.path.join(package_prefix,
-                         'rpy', 'rinterface', '_rinterface.c')
+            sources = [os.path.join(package_prefix,
+                                    'rpy', 'rinterface', '_rinterface.c')
                        ],
             depends = [os.path.join(package_prefix,
                                     'rpy', 'rinterface', 'embeddedr.h'), 
@@ -260,7 +261,6 @@ def getRinterface_ext():
         define_macros = define_macros,
         runtime_library_dirs = r_libs,
         extra_compile_args=extra_compile_args,
-        #extra_compile_args=['-O0', '-g'],
         extra_link_args = extra_link_args
         )
 
