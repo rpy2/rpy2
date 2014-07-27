@@ -37,7 +37,7 @@ class build_ext(_build_ext):
             super(build_ext, self).initialize_options()
         except TypeError:
             # distutils parent class an old style Python class
-            build_ext.initialize_options(self)
+            _build_ext.initialize_options(self)
         self.r_autoconfig = None
         self.r_home = None
         self.r_home_lib = None
@@ -70,14 +70,14 @@ class build_ext(_build_ext):
             super(build_ext, self).finalize_options() 
         except TypeError:
             # distutils parent class an old style Python class
-            build_ext.finalize_options(self)
+            _build_ext.finalize_options(self)
 
     def run(self):
         try:
             super(build_ext, self).run()
         except TypeError:
             # distutils parent class an old style Python class
-            build_ext.run(self)
+            _build_ext.run(self)
 
 def cmp_version(x, y):
     if (x[0] < y[0]):
