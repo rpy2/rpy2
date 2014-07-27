@@ -1,6 +1,19 @@
 Release 2.5.0-dev
 =================
 
+Changes
+-------
+
+- The script `setup.py` was rewritten for clarity and ease of maintenance.
+  Now it only uses `setuptools`.
+
+
+Release 2.4.3
+=============
+
+Bugs fixed
+----------
+
 
 
 Release 2.4.2

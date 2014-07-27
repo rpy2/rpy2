@@ -1,12 +1,10 @@
 
 import os, os.path, sys, shutil, re, itertools, warnings
-import argparse, shlex
+import argparse, shlex, subprocess
 from collections import namedtuple
-from distutils.command.build_ext import build_ext as _build_ext
-from distutils.command.build import build as _build
 
-from setuptools import setup
-from distutils.core import Extension
+from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext as _build_ext
 
 pack_name = 'rpy2'
 pack_version = __import__('rpy').__version__
@@ -14,41 +12,6 @@ pack_version = __import__('rpy').__version__
 default_lib_directory = 'bin' if sys.platform=='win32' else 'lib'
 
 package_prefix='.'
-from distutils.core import setup    
-from distutils.core import Extension
-
-librpy2 = Extension('librpy2',
-                    sources = ['librpy2'],
-                    include_dirs = ['include/'])
-
-class build(_build):
-    user_options = _build.user_options + \
-        [
-        #('r-autoconfig', None,
-        # "guess all configuration paths from " +\
-        #     "the R executable found in the PATH " +\
-        #     "(this overrides r-home)"),
-        ('r-home=', None, 
-         "full path for the R home to compile against " +\
-             "(see r-autoconfig for an automatic configuration)"),
-        ('r-home-lib=', None,
-         "full path for the R shared lib/ directory " +\
-            "(<r-home>/%s otherwise)" % default_lib_directory),
-        ('r-home-modules=', None,
-         "full path for the R shared modules/ directory " +\
-             "(<r-home>/modules otherwise)"),
-        ('ignore-check-rversion', None, 'ignore checks for supported R versions')]
-
-    boolean_options = _build.boolean_options + \
-        ['ignore_check_rversion', ]
-
-    def initialize_options(self):
-        _build.initialize_options(self)
-        self.r_autoconfig = None
-        self.r_home = None
-        self.r_home_lib = None
-        self.ignore_check_rversion = False
-
 
 class build_ext(_build_ext):
     """
@@ -63,128 +26,58 @@ class build_ext(_build_ext):
     """
     user_options = _build_ext.user_options + \
         [
-        #('r-autoconfig', None,
-        #  "guess all configuration paths from " +\
-        #      "the R executable found in the PATH " +\
-        #      "(this overrides r-home)"),
-        ('r-home=', None, 
-         "full path for the R home to compile against " +\
-             "(see r-autoconfig for an automatic configuration)"),
-        ('r-home-lib=', None,
-         "full path for the R shared lib/ directory" +\
-            "(<r-home>/%s otherwise)" % default_lib_directory),
-        ('r-home-modules=', None,
-         "full path for the R shared modules/ directory" +\
-             "(<r-home>/modules otherwise)"),
-        ('ignore-check-rversion', None, 'ignore checks for supported R versions')]
+            ('ignore-check-rversion', None, 'ignore checks for supported R versions')]
 
     boolean_options = _build_ext.boolean_options + \
         ['ignore-check-rversion', ] #+ \
         #['r-autoconfig', ]
 
     def initialize_options(self):
-        _build_ext.initialize_options(self)
+        try:
+            super(build_ext, self).initialize_options()
+        except TypeError:
+            # distutils parent class an old style Python class
+            build_ext.initialize_options(self)
         self.r_autoconfig = None
         self.r_home = None
         self.r_home_lib = None
         self.ignore_check_rversion = False
 
     def finalize_options(self):
-        self.set_undefined_options('build',
-                                   #('r_autoconfig', 'r_autoconfig'),
-                                   ('r_home', 'r_home'))
+        self.set_undefined_options('build')
+        try:
+            r_home = subprocess.check_output(("R", "RHOME"),
+                                             universal_newlines=True)
+        except:
+            raise SystemExit("Error: Tried to guess R's HOME but no R command in the PATH.")
 
-        _build_ext.finalize_options(self) 
-        if self.r_home is None:
-            tmp = os.popen("R RHOME")
-            self.r_home = tmp.readlines()
-            tmp.close()
-            if len(self.r_home) == 0:
-                raise SystemExit("Error: Tried to guess R's HOME but no R command in the PATH.")
-
-    #Twist if 'R RHOME' spits out a warning
-            if self.r_home[0].startswith("WARNING"):
-                self.r_home = self.r_home[1]
-            else:
-                self.r_home = self.r_home[0]
-            #self.r_home = [self.r_home, ]
-
-        if self.r_home is None:
-            raise SystemExit("Error: --r-home not specified.")
+        r_home = r_home.split(os.linesep)
+        #Twist if 'R RHOME' spits out a warning
+        if r_home[0].startswith("WARNING"):
+            r_home = r_home[1].rstrip()
         else:
-            self.r_home = self.r_home.split(os.pathsep)
+            r_home = r_home[0].rstrip()
 
-        rversions = []
-        for r_home in self.r_home:
-            r_home = r_home.strip()
-        rversion = get_rversion(r_home)
-        if rversion[0] == 'development' or \
-                cmp_version(rversion[:2], [2, 8]) == -1:
+        rexec = RExec(r_home)
+        if rexec.version[0] == 'development' or \
+           cmp_version(rexec.version[:2], [2, 8]) == -1:
             if self.ignore_check_rversion:
                 warnings.warn("R did not seem to have the minimum required version number")
             else:
-                raise SystemExit("Error: R >= 2.8 required (and R told '%s')." %'.'.join(rversion))    
-        rversions.append(rversion)
+                raise SystemExit("Error: R >= 2.8 required (and R told '%s')." %'.'.join(rexec.version))    
 
-        config = RConfig()
-        for about in ('--ldflags', '--cppflags'):
-            config += get_rconfig(r_home, about)
-        for about in ('LAPACK_LIBS', 'BLAS_LIBS'):
-            config += get_rconfig(r_home, about, True)
-
-        print(config.__repr__())
-
-        self.include_dirs.extend(config._include_dirs)
-        self.libraries.extend(config._libraries)
-        self.library_dirs.extend(config._library_dirs)
-
-        #for e in self.extensions:
-        #    self.extra_link_args.extra_link_args(config.extra_link_args)
-        #    e.extra_compile_args.extend(extra_link_args)
+        try:
+            super(build_ext, self).finalize_options() 
+        except TypeError:
+            # distutils parent class an old style Python class
+            build_ext.finalize_options(self)
 
     def run(self):
-        _build_ext.run(self)
-
-
-
-def get_rversion(r_home):
-    r_exec = os.path.join(r_home, 'bin', 'R')
-    # Twist if Win32
-    if sys.platform == "win32":
-        if "64 bit" in sys.version:
-            r_exec = os.path.join(r_home, 'bin', 'x64', 'R')
-        if sys.version_info >= (3,):
-            import subprocess
-            p = subprocess.Popen('"'+r_exec+'" --version',
-                                 shell=True,
-                                 stdin=subprocess.PIPE, 
-                                 stdout=subprocess.PIPE, 
-                                 stderr=subprocess.STDOUT, 
-                                 close_fds=sys.platform!="win32")
-            rp = p.stdout
-        else:
-            rp = os.popen3('"'+r_exec+'" --version')[2]
-    else:
-        rp = os.popen('"'+r_exec+'" --version')
-    rversion = rp.readline()
-    #Twist if 'R RHOME' spits out a warning
-    if rversion.startswith("WARNING"):
-        rversion = rp.readline()
-    m = re.match('^R ([^ ]+) ([^ ]+) .+$', rversion)
-    if m is None:
-        rp.close()
-        # return dummy version 0.0
-        rversion = [0, 0]
-    else:
-        rversion = m.groups()[1]
-        if m.groups()[0] == 'version':
-            rversion = rversion.split('.')
-            rversion[0] = int(rversion[0])
-            rversion[1] = int(rversion[1])
-        else:
-            rversion = ['development', '']
-    rp.close()
-    return rversion
+        try:
+            super(build_ext, self).run()
+        except TypeError:
+            # distutils parent class an old style Python class
+            build_ext.run(self)
 
 def cmp_version(x, y):
     if (x[0] < y[0]):
@@ -196,125 +89,62 @@ def cmp_version(x, y):
             return 0
         return cmp_version(x[1:], y[1:])
 
-class RConfig(object):
-    _include_dirs = None
-    _libraries = None
-    _library_dirs = None 
-    _extra_link_args = None
-    _extra_compile_args = None
-    _frameworks = None
-    _framework_dirs = None
+class RExec(object):
+    """ Compilation-related configuration parameters used by R. """
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-L', dest='library_dirs', nargs='*')
-    parser.add_argument('-l', dest='libraries', nargs='*')
-    parser.add_argument('-I', dest='include_dirs', nargs='*')
-    parser.add_argument('-F', dest='framework_dirs', nargs='*')
-    parser.add_argument('-framework', dest='frameworks', nargs='*')
-    #parser.add_argument('-Wl', dest='extra_link_args', nargs='*')
-    #parser.add_argument('-f', dest='extra_link_args', nargs='*')
-
-    def __init__(self,
-                 include_dirs = tuple(), libraries = tuple(),
-                 library_dirs = tuple(), extra_link_args = tuple(),
-                 extra_compile_args = tuple(),
-                 frameworks = tuple(),
-                 framework_dirs = tuple()):
-        for k in ('include_dirs', 'libraries', 
-                  'library_dirs', 'extra_link_args',
-                  'extra_compile_args'):
-            v = locals()[k]
-            if not isinstance(v, tuple):
-                if isinstance(v, str):
-                    v = [v, ]
-            v = tuple(set(v))
-            setattr(self, '_'+k, v)
-        # frameworks are specific to OSX
-        for k in ('framework_dirs', 'frameworks'):
-            v = locals()[k]
-            if not isinstance(v, tuple):
-                if isinstance(v, str):
-                    v = [v, ]
-            v = tuple(set(v))
-            setattr(self, '_'+k, v)
-            self._extra_link_args = tuple(set(v + self._extra_link_args))
-
-    @staticmethod
-    def from_string(string, allow_empty = False):
-        # sanity check of what is returned into rconfig
-        rconfig_m = None        
-        span = (0, 0)
-        rc = RConfig()
-        args, extra_args = RConfig.parser.parse_known_args(shlex.split(string))
-        d = dict()
-        for n in dir(args):
-            if n.startswith('_'):
-                continue
-            a = getattr(args, n)
-            if a is None:
-                continue
-            d[n] = a
-        if 'extra_link_args' in d:
-            d['extra_link_args'].append(extra_args)
+    def __init__(self, r_home):
+        if sys.platform == "win32" and "64 bit" in sys.version:
+            r_exec = os.path.join(r_home, 'bin', 'x64', 'R')
         else:
-            d['extra_link_args'] = extra_args            
-        rc = RConfig(**d)
-        return rc
-            
-    def __repr__(self):
-        s = 'Configuration for R as a library:' + os.linesep
-        s += os.linesep.join(
-            ['  ' + x + ': ' + self.__dict__['_'+x].__repr__() \
-                 for x in ('include_dirs', 'libraries',
-                           'library_dirs', 'extra_link_args')])
-        s += os.linesep + ' # OSX-specific (included in extra_link_args)' + os.linesep 
-        s += os.linesep.join(
-            ['  ' + x + ': ' + self.__dict__['_'+x].__repr__() \
-                 for x in ('framework_dirs', 'frameworks')]
-            )
-        
-        return s
+            r_exec = os.path.join(r_home, 'bin', 'R')
+        self._r_exec = r_exec
+        self._version = None
 
-    def __add__(self, config):
-        assert isinstance(config, RConfig)
-        res = RConfig(include_dirs = self._include_dirs + \
-                          config._include_dirs,
-                      libraries = self._libraries + config._libraries,
-                      library_dirs = self._library_dirs + \
-                          config._library_dirs,
-                      extra_link_args = self._extra_link_args + \
-                          config._extra_link_args,
-                      frameworks = self._frameworks + config._frameworks,
-                      framework_dirs = self._framework_dirs + config._framework_dirs)
-        return res
+    @property
+    def version(self):
+        if self._version is not None:
+            return self._version
+        output = subprocess.check_output((self._r_exec, '--version'), 
+                                         universal_newlines = True)
+        output = iter(output.split(os.linesep))
+        rversion = next(output)
+        #Twist if 'R RHOME' spits out a warning
+        if rversion.startswith("WARNING"):
+            rversion = next(output)
+        print(rversion)
+        m = re.match('^R ([^ ]+) ([^ ]+) .+$', rversion)
+        if m is None:
+            # return dummy version 0.0
+            rversion = [0, 0]
+        else:
+            rversion = m.groups()[1]
+            if m.groups()[0] == 'version':
+                rversion = [int(x) for x in rversion.split('.')]
+            else:
+                rversion = ['development', '']
+        self._version = rversion
+        return self._version
 
-
-def get_rconfig(r_home, about, allow_empty = False):
-    if sys.platform == "win32" and "64 bit" in sys.version:
-        r_exec = os.path.join(r_home, 'bin', 'x64', 'R')
-    else:
-        r_exec = os.path.join(r_home, 'bin', 'R')
-    cmd = '"'+r_exec+'" CMD config '+about
-    print(cmd)
-    rp = os.popen(cmd)
-    rconfig = rp.readline()
-    #Twist if 'R RHOME' spits out a warning
-    if rconfig.startswith("WARNING"):
-        rconfig = rp.readline()
-    rconfig = rconfig.strip()
-    try:
-        rc = RConfig.from_string(rconfig, allow_empty = allow_empty)
-    except ValueError as ve:
-        print(ve)
-        sys.exit("Problem while running `{0}`\n".format(cmd))
-    rp.close()
-    return rc
+    def cmd_config(self, about, allow_empty=False):
+        cmd = (self._r_exec, 'CMD', 'config', about)
+        print(subprocess.list2cmdline(cmd))
+        output = subprocess.check_output(cmd,
+                                         universal_newlines = True)
+        output = output.split(os.linesep)
+        #Twist if 'R RHOME' spits out a warning
+        if output[0].startswith("WARNING"):
+            output = output[1:]
+            output = rconfig.strip()
+        return output
 
 def getRinterface_ext():
     #r_libs = [os.path.join(RHOME, 'lib'), os.path.join(RHOME, 'modules')]
     r_libs = []
     extra_link_args = []
     extra_compile_args = []
+    include_dirs = []
+    libraries = []
+    library_dirs = []
 
     #FIXME: crude way (will break in many cases)
     #check how to get how to have a configure step
@@ -342,7 +172,44 @@ def getRinterface_ext():
     else:
         pass
 
-    include_dirs = []
+    try:
+        r_home = subprocess.check_output(("R", "RHOME"),
+                                         universal_newlines=True)
+    except:
+        raise SystemExit("Error: Tried to guess R's HOME but no R command in the PATH.")
+
+    r_home = r_home.split(os.linesep)
+    #Twist if 'R RHOME' spits out a warning
+    if r_home[0].startswith("WARNING"):
+        r_home = r_home[1].rstrip()
+    else:
+        r_home = r_home[0].rstrip()
+
+    rexec = RExec(r_home)
+    if rexec.version[0] == 'development' or \
+       cmp_version(rexec.version[:2], [2, 8]) == -1:
+        if self.ignore_check_rversion:
+            warnings.warn("R did not seem to have the minimum required version number")
+        else:
+            raise SystemExit("Error: R >= 2.8 required (and R told '%s')." %'.'.join(rexec.version))    
+
+    ldf = shlex.split(' '.join(rexec.cmd_config('--ldflags')))
+    cppf = shlex.split(' '.join(rexec.cmd_config('--cppflags')))
+    #lapacklibs = rexec.cmd_config('LAPACK_LIBS', True)
+    #blaslibs = rexec.cmd_config('BLAS_LIBS', True)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-I', nargs='*')
+    parser.add_argument('-L', nargs='*')
+    parser.add_argument('-l', nargs='*')
+
+    args, unknown = parser.parse_known_args(cppf)
+    include_dirs.extend(args.I)
+    extra_compile_args.extend(unknown)
+    args, unknown = parser.parse_known_args(ldf)
+    library_dirs.extend(args.L)
+    libraries.extend(args.l)
+    extra_link_args.extend(unknown)
     
     rinterface_ext = Extension(
             name = pack_name + '.rinterface._rinterface',
@@ -377,7 +244,6 @@ def getRinterface_ext():
             define_macros = define_macros,
             runtime_library_dirs = r_libs,
             extra_compile_args=extra_compile_args,
-            #extra_compile_args=['-O0', '-g'],
             extra_link_args = extra_link_args
             )
 
@@ -403,18 +269,16 @@ def getRinterface_ext():
 if __name__ == '__main__':
     rinterface_exts = []
     ri_ext = getRinterface_ext()
-    rinterface_exts.append(ri_ext)
+    rinterface_exts.extend(ri_ext)
 
     pack_dir = {pack_name: os.path.join(package_prefix, 'rpy')}
 
-    import distutils.command.install
-    for scheme in distutils.command.install.INSTALL_SCHEMES.values():
-        scheme['data'] = scheme['purelib']
+    #import setuptools.command.install
+    #for scheme in setuptools.command.install.INSTALL_SCHEMES.values():
+    #    scheme['data'] = scheme['purelib']
 
     setup(
-        #install_requires=['distribute'],
-        cmdclass = {'build': build,
-                    'build_ext': build_ext},
+        cmdclass = {'build_ext': build_ext},
         name = pack_name,
         version = pack_version,
         description = "Python interface to the R language (embedded R)",
@@ -422,8 +286,7 @@ if __name__ == '__main__':
         license = "GPLv2+",
         author = "Laurent Gautier",
         author_email = "lgautier@gmail.com",
-        #librpy2
-        ext_modules = rinterface_exts[0],
+        ext_modules = rinterface_exts,
         package_dir = pack_dir,
         packages = [pack_name,
                     pack_name + '.rlike',
@@ -449,8 +312,5 @@ if __name__ == '__main__':
         package_data = {
             'rpy2': ['images/*.png', ],
             'rpy2': ['doc/source/rpy2_logo.png', ]}
-
-        #[pack_name + '.rinterface_' + x for x in rinterface_rversions] + \
-            #[pack_name + '.rinterface_' + x + '.tests' for x in rinterface_rversions]
         )
 
