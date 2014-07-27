@@ -1,6 +1,13 @@
 Release 2.5.0-dev
 =================
 
+New features
+------------
+
+- Experimental alternative way to preserve R objects from garbage collection.
+  This can be activated with `rinterface.initr(r_preservehash=True)` (default
+  is `False`.
+
 Changes
 -------
 

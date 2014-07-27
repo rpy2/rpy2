@@ -7,8 +7,8 @@ const unsigned int const RPY_R_BUSY = 0x02;
 /* Initial status is 0 */
 static unsigned int embeddedR_status = 0;
 
-/* R's precious list-like*/
-//static SEXP RPY_R_Precious = NULL;
+/* An environment to keep R objects preserved by rpy2 */
+static SEXP RPY_R_PreciousEnv = NULL;
 static PyObject *Rpy_R_Precious;
 
 static inline void embeddedR_setlock(void) {
@@ -21,14 +21,35 @@ static inline unsigned int rpy_has_status(unsigned int status) {
   return (embeddedR_status & status) == status;
 }
 
+/*FIXME: this is not thread safe (calls to R not using
+         locking). Can this is be a source of errors ?
+*/
 static void SexpObject_clear(SexpObject *sexpobj)
 {
   if (sexpobj->count <= 0) {
     printf("Warning: clearing an R object with a refcount <= zero.\n");
   }
-  
-  if (sexpobj->sexp != R_NilValue) {
-    R_ReleaseObject(sexpobj->sexp);
+
+  if ((sexpobj->sexp) != R_NilValue) {
+    /* R objects that needs to be preserved from garbage collection */
+    if (RPY_R_PreciousEnv == NULL) {
+      /* Use the R "precious list" */
+      R_ReleaseObject(sexpobj->sexp);
+    } else {
+      /* Use the environment */
+      static char *name_buf;
+      if (name_buf == NULL) {
+	/* Initialize with the number of characters required for an hexadecimal
+	   representation of a pointer*/
+	name_buf = (char *)calloc(sizeof(name_buf)*2+2+1, sizeof(char)) ; 
+      }
+      sprintf(name_buf, "%p", (void *)(sexpobj->sexp));
+      
+      SEXP res = rpy_remove(Rf_mkString(name_buf), 
+			    RPY_R_PreciousEnv,
+			    Rf_ScalarLogical(FALSE));
+      //Rf_defineVar(name_r, sexpobj->sexp, RPY_R_PreciousEnv);
+    }
     PyMem_Free(sexpobj);
   }
 
@@ -114,7 +135,23 @@ static SexpObject* Rpy_PreserveObject(SEXP object) {
     }
     Py_DECREF(capsule);
     if (object != R_NilValue) {
-      R_PreserveObject(object);
+      /* R objects that needs to be preserved from garbage collection */
+      if (RPY_R_PreciousEnv == NULL) {
+	/* Use the R "precious list" */
+	R_PreserveObject(object);
+      } else {
+	/* Use an enclosing environment instead of R's "precious list" 
+	   to protect the object from garbage collection */
+	static char *name_buf;
+	if (name_buf == NULL) {
+	  /* Initialize with the number of characters required for an hexadecimal
+	     representation of a pointer*/
+	  name_buf = (char *)calloc(sizeof(name_buf)*2+2+1, sizeof(char)) ; 
+	}
+	sprintf(name_buf, "%p", (void *)object);
+	SEXP name_r = Rf_install(name_buf);
+	Rf_defineVar(name_r, object, RPY_R_PreciousEnv);
+      }
     }
   } else {
     /* Reminder: capsule is a borrowed reference */

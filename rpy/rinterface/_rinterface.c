@@ -1142,7 +1142,15 @@ end_r(void)
 
 }
 
-static PyObject* EmbeddedR_init(PyObject *self) 
+
+PyDoc_STRVAR(EmbeddedR_init_doc,
+             "Initialize an embedded R.\n"
+	     "initr(r_preservehash=False) -> return code (an integer)\n"
+	     "\nThe optional argument r_preservehash is using an hash of "
+	     "the memory address as a key in an R environment to "
+	     "preserve R objects from garbage collection.");
+
+static PyObject* EmbeddedR_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
 
   static int status;
@@ -1155,6 +1163,15 @@ static PyObject* EmbeddedR_init(PyObject *self)
 #endif
 /*     PyErr_Format(PyExc_RuntimeError, "R can only be initialized once."); */
 /*     return NULL; */
+  }
+
+
+  PyObject *preservehash = Py_False;
+  static char *kwlist[] = {"r_preservehash", NULL};
+  if (! PyArg_ParseTupleAndKeywords(args, kwds, "|O!", 
+                                    kwlist,
+                                    &PyBool_Type, &preservehash) ){
+    return NULL;
   }
 
   const Py_ssize_t n_args = PySequence_Size(initOptions);
@@ -1270,12 +1287,6 @@ static PyObject* EmbeddedR_init(PyObject *self)
   embeddedR_isInitialized = Py_True;
   Py_INCREF(embeddedR_isInitialized);
 
-  /* FIXME: Attempt at using a container distinct from R's PreciousList */
-  /* (currently replaced by a Python dict and R's PreciousList) */
-  //PROTECT(RPY_R_Precious = allocVector(LISTSXP, 0));
-  //UNPROTECT(1);
-  //R_PreserveObject(RPY_R_Precious);
-
   SexpObject *sexpobj_ptr = Rpy_PreserveObject(R_GlobalEnv);
   Rpy_ReleaseObject(globalEnv->sObj->sexp);
   globalEnv->sObj = sexpobj_ptr;
@@ -1353,12 +1364,20 @@ static PyObject* EmbeddedR_init(PyObject *self)
      to try to initialize R anyway. */
   }
 
+  /* FIXME: Attempt at using an R container distinct from R's PreciousList */
+  /* (currently replaced by a Python dict and R's PreciousList) */
+  if (preservehash == Py_True) {
+    PROTECT(
+	    RPY_R_PreciousEnv = rpy_newenv(Rf_ScalarLogical(TRUE),
+					   R_GlobalEnv, 
+					   Rf_ScalarInteger(29))
+	    );
+    R_PreserveObject(RPY_R_PreciousEnv);
+    UNPROTECT(1);
+  }
+
   return res;
 }
-PyDoc_STRVAR(EmbeddedR_init_doc,
-             "\
-Initialize an embedded R.\
-");
 
 static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
 {
@@ -2344,7 +2363,9 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
       return -1;
     }
     
-    res_rm = rpy_remove(sym, rho_R, R_BaseEnv);
+    res_rm = rpy_remove(Rf_mkString(name), 
+			rho_R, 
+			Rf_ScalarLogical(FALSE));
     if (! res_rm) {
       embeddedR_freelock();
 #if (PY_VERSION_HEX >= 0x03010000)
@@ -3262,7 +3283,7 @@ static PyMethodDef EmbeddedR_methods[] = {
   {"set_initoptions",     (PyCFunction)EmbeddedR_setinitoptions,   
    METH_O,
    EmbeddedR_set_initoptions_doc},
-  {"initr",     (PyCFunction)EmbeddedR_init,   METH_NOARGS,
+  {"initr",     (PyCFunction)EmbeddedR_init, METH_VARARGS | METH_KEYWORDS,
    EmbeddedR_init_doc},
   {"endr",      (PyCFunction)EmbeddedR_end,    METH_O,
    EmbeddedR_end_doc},
