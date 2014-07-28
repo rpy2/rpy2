@@ -199,9 +199,9 @@ def getRinterface_ext():
     #blaslibs = rexec.cmd_config('BLAS_LIBS', True)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-I', nargs='*')
-    parser.add_argument('-L', nargs='*')
-    parser.add_argument('-l', nargs='*')
+    parser.add_argument('-I', action='append')
+    parser.add_argument('-L', action='append')
+    parser.add_argument('-l', action='append')
 
     # compile
     args, unknown = parser.parse_known_args(cppf)
