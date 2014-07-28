@@ -1,5 +1,6 @@
 import unittest
 import pickle
+import multiprocessing
 import rpy2
 import rpy2.rinterface as rinterface
 import sys, os, subprocess, time, tempfile, io, signal, gc
@@ -115,10 +116,12 @@ class EmbeddedRTestCase(unittest.TestCase):
         def init_r(preserve_hash):
             from rpy2 import rinterface
             rinterface.initr(r_preservehash=preserve_hash)
+        preserve_hash = True
         proc = multiprocessing.Process(target=init_r,
                                        args=(preserve_hash,))
         proc.start()
         proc.join()
+
     def testParse(self):
         xp = rinterface.parse("2 + 3")
         self.assertEqual(rinterface.EXPRSXP, xp.typeof)
