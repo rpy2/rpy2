@@ -240,7 +240,7 @@ def getRinterface_ext():
                        ],
             include_dirs = [os.path.join(package_prefix,
                                          'rpy', 'rinterface'),] + include_dirs,
-            libraries = ['R', ],
+            libraries = libraries,
             library_dirs = r_libs,
             define_macros = define_macros,
             runtime_library_dirs = r_libs,
@@ -256,7 +256,7 @@ def getRinterface_ext():
             ],
         include_dirs = include_dirs + 
         [os.path.join('rpy', 'rinterface'), ],
-        libraries = ['R', ],
+        libraries = libraries,
         library_dirs = r_libs,
         define_macros = define_macros,
         runtime_library_dirs = r_libs,
