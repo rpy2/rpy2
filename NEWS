@@ -1,3 +1,12 @@
+Release 2.4.3
+=============
+
+Bugs fixed
+----------
+
+- `geom_raster` was missing from `rpy2.robjects.lib.ggplot2` (pull request #30)
+
+
 Release 2.4.2
 =============
 
