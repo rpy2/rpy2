@@ -6,3 +6,6 @@ _build/
 .*.swp
 _*.so
 .DS_Store
+doc/_static
+dist/
+rpy2.egg-info/
