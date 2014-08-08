@@ -402,8 +402,13 @@ utils.install_packages('Cairo')
 
         return tmpd
 
-    def publish_graphics(self, graph_dir):
-        '''Wrap graphic file data for presentation in IPython'''
+    def publish_graphics(self, graph_dir, isolate_svgs=True):
+        '''Wrap graphic file data for presentation in IPython
+
+        graph_dir : str
+            Probably provided by some tmpdir call
+        isolate_svgs : bool
+            Enable SVG namespace isolation in metadata'''
         # read in all the saved image files
         images = []
         display_data = []
@@ -426,7 +431,7 @@ utils.install_packages('Cairo')
         mime = mimetypes[self.device]
 
         # By default, isolate SVG images in the Notebook to avoid garbling
-        if images and self.device == "svg" and args.noisolation == False:
+        if images and self.device == "svg" and isolate_svgs:
             md = {'image/svg+xml': dict(isolated=True)}
 
         # flush text streams before sending figures, helps a little with output
@@ -476,8 +481,9 @@ utils.install_packages('Cairo')
         '--noisolation',
         help=('Disable SVG isolation in the Notebook. By default, SVGs are isolated to avoid namespace collisions between figures.'
               'Disabling SVG isolation allows to reference previous figures or share CSS rules across a set of SVGs.'),
-        action='store_true',
-        default=False
+        action='store_false',
+        default=True,
+        dest='isolate_svgs'
         )
     @argument_group("PNG", "PNG specific arguments")
     @argument(
@@ -641,7 +647,7 @@ utils.install_packages('Cairo')
 
         # publish the R images
         if self.device in ['png', 'svg']:
-            display_data, md = self.publish_graphics(tmpd)
+            display_data, md = self.publish_graphics(tmpd, args.isolate_svgs)
 
             for tag, disp_d in display_data:
                 publish_display_data(data=disp_d, source=tag, metadata=md)
