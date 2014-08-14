@@ -6,6 +6,7 @@ Bugs fixed
 
 - `geom_raster` was missing from `rpy2.robjects.lib.ggplot2` (pull request #30)
 
+- Regression with `rx2()` introduced with new conversion (issue #219)
 
 Release 2.4.2
 =============
