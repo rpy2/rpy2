@@ -27,6 +27,8 @@ Bugs fixed
 
 - Regression with `rx2()` introduced with new conversion (issue #219)
 
+- Fixed documentation (missing `import`) (issue #213)
+
 
 Release 2.4.2
 =============
