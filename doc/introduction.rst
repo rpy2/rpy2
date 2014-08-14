@@ -351,6 +351,12 @@ done the usual way in python.
 There are several ways to plot data in `R`, some of which are
 presented in this documentation:
 
+The general setup is repeated here:
+.. literalinclude:: _static/demos/graphics.py
+   :start-after: #-- setup-begin
+   :end-before: #-- setup-end
+
+The setup specific to ggplot2 is:
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- setupggplot2-begin
    :end-before: #-- setupggplot2-end
