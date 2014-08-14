@@ -62,10 +62,10 @@ class ExtractDelegator(object):
             if x is MissingArg:
                 conv_args[i] = x
             else:
-                conv_args[i] = conversion.py2ro(x)
+                conv_args[i] = conversion.py2ri(x)
         kwargs = copy.copy(kwargs)
         for k, v in kwargs.values():
-            kwargs[k] = conversion.py2ro(v)
+            kwargs[k] = conversion.py2ri(v)
         fun = self._extractfunction
         conv_args.insert(0, self._parent)
         res = fun(*conv_args, **kwargs)

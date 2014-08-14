@@ -139,6 +139,12 @@ class NumpyConversionsTestCase(unittest.TestCase):
         self.assertTrue(isinstance(a, numpy.ndarray))
         self.assertEqual(1, v[0])
 
+    def testRx2(self):
+        df = robjects.vectors.DataFrame({
+            "A": robjects.vectors.IntVector([1,2,3]), 
+            "B": robjects.vectors.IntVector([1,2,3])})
+        b = df.rx2('B')
+        self.assertEquals(tuple((1,2,3)), tuple(b))
 
 def suite():
     if has_numpy:
