@@ -514,7 +514,7 @@ utils.install_packages('Cairo')
             Out[9]: array([ 4.25])
 
         In cell mode, this will run a block of R code. The resulting value
-        is printed if it would printed be when evaluating the same code
+        is printed if it would be printed when evaluating the same code
         within a standard R REPL.
 
         Nothing is returned to python by default in cell mode::
