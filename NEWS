@@ -15,6 +15,16 @@ Changes
   Now it only uses `setuptools`.
 
 
+Release 2.4.4
+=============
+
+Bugs fixed
+----------
+
+- Use `input` rather than `raw_input` in the default console callback
+  with Python 3 (fixes issue #222)
+
+
 Release 2.4.3
 =============
 
