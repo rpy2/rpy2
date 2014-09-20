@@ -8,6 +8,9 @@ New features
   This can be activated with `rinterface.initr(r_preservehash=True)` (default
   is `False`.
 
+- :class:`GGPlot` object getting a method :meth:`save`
+  mirroring R's `ggplot2::ggsave()`.
+
 Changes
 -------
 

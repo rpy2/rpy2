@@ -92,6 +92,10 @@ class GGPlot(robjects.RObject):
             raise ValueError("Added object did not give a ggplot result (get class '%s')." % res.rclass[0])
         return self.__class__(res)
 
+    def save(self, filename, **kwargs):
+        """ Save the plot ( calls R's `ggplot2::ggsave()` ) """
+        ggplot2.ggsave(filename=filename, plot=self, **kwargs)
+
 ggplot = GGPlot.new
 
 
