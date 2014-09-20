@@ -1,3 +1,33 @@
+<<<<<<< local
+=======
+Release 2.5.0-dev
+=================
+
+New features
+------------
+
+- Experimental alternative way to preserve R objects from garbage collection.
+  This can be activated with `rinterface.initr(r_preservehash=True)` (default
+  is `False`.
+
+Changes
+-------
+
+- The script `setup.py` was rewritten for clarity and ease of maintenance.
+  Now it only uses `setuptools`.
+
+
+Release 2.4.4
+=============
+
+Bugs fixed
+----------
+
+- Use `input` rather than `raw_input` in the default console callback
+  with Python 3 (fixes issue #222)
+
+
+>>>>>>> other
 Release 2.4.3
 =============
 
