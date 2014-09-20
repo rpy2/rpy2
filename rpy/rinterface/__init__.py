@@ -119,10 +119,18 @@ def consoleFlush():
 
 set_flushconsole(consoleFlush)
 
-def consoleRead(prompt):
-    text = raw_input(prompt)
-    text += "\n"
-    return text
+# wrapper in case someone changes sys.stdout:
+if sys.version_info.major == 3:
+    # 'raw_input()' became 'input()' in Python 3
+    def consoleRead(prompt):
+        text = input(prompt)
+        text += "\n"
+        return text
+else:
+    def consoleRead(prompt):
+        text = raw_input(prompt)
+        text += "\n"
+        return text
 
 set_readconsole(consoleRead)
 

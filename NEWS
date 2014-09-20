@@ -8,11 +8,24 @@ New features
   This can be activated with `rinterface.initr(r_preservehash=True)` (default
   is `False`.
 
+- :class:`GGPlot` object getting a method :meth:`save`
+  mirroring R's `ggplot2::ggsave()`.
+
 Changes
 -------
 
 - The script `setup.py` was rewritten for clarity and ease of maintenance.
   Now it only uses `setuptools`.
+
+
+Release 2.4.4
+=============
+
+Bugs fixed
+----------
+
+- Use `input` rather than `raw_input` in the default console callback
+  with Python 3 (fixes issue #222)
 
 
 Release 2.4.3
