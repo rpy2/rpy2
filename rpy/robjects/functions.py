@@ -5,6 +5,7 @@ import rpy2.rinterface as rinterface
 from rpy2.robjects import help
 #import rpy2.robjects.conversion conversion
 from . import conversion
+# XXX: I need to import default_ri2ro
 
 baseenv_ri = rinterface.baseenv
 
@@ -111,7 +112,10 @@ class Function(RObjectMixin, rinterface.SexpClosure):
     def rcall(self, *args):
         """ Wrapper around the parent method rpy2.rinterface.SexpClosure.rcall(). """
         res = super(Function, self).rcall(*args)
-        res = conversion.ri2ro(res)
+        # XXX: Now that ri2ro converts to python objects, we restrict to the
+        # default now for a raw R call. I'm not sure there should be *any*
+        # conversion. However, we need to get this out of __init__.py first!
+        # res = ro.default_ri2ro(res)
         return res
 
 class SignatureTranslatedFunction(Function):

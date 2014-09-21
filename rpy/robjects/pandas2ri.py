@@ -6,6 +6,7 @@ from rpy2.rinterface import SexpVector, INTSXP
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pandas.core.series import Series as PandasSeries
 from pandas.core.index import Index as PandasIndex
+from numpy import recarray
 
 from collections import OrderedDict
 from rpy2.robjects.vectors import DataFrame, Vector, ListVector, StrVector, IntVector, POSIXct
@@ -67,6 +68,14 @@ def py2ri_pandasseries(obj):
         res.do_slot_assign('names', ListVector({'x': conversion.py2ri(obj.index)}))
     else:
         res.do_slot_assign('dimnames', ListVector(conversion.py2ri(obj.index)))
+    return res
+
+@ri2ro.register(SexpVector):
+def ri2ro_vector(obj)
+    # use the numpy converter first
+    res = numpy2ri.ri2numpy(obj)
+    if isinstance(res, recarray):
+        res = PandasDataFrame.from_records(res)
     return res
 
 @ri2ro.register(DataFrame)

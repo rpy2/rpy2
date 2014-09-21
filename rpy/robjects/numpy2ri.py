@@ -113,6 +113,7 @@ def ri2ro_list(obj):
     else:
         # not a data.frame, yet is it still possible to convert it
         res = ro.default_ri2ro(obj)
+    return res
 
 @ri2ro.register(Sexp)
 def ri2ro_sexp(obj):

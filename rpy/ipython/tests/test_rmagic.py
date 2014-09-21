@@ -116,7 +116,9 @@ result = rmagic_addone(12344)
         w = self.ip.run_line_magic('Rget', 'datapy')
         # Note - we're not doing conversion to pandas by default, as there are
         # multiple paths for conversion? So, here we have R proxy objects, which
-        # don't accept string indexing
+        # don't accept direct string indexing
+        # If we decide to keep these as R objects, we could use .rx or .rx2
+        # indexing
         # test_eq_arrays(w['x'], v['x'])
         # test_eq_arrays(w['y'], v['y'])
         test_eq_arrays(w[0], v[0])

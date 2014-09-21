@@ -49,7 +49,6 @@ def reval(string, envir = _globalenv):
     res = _reval(p, envir = envir)
     return res
 
-
 default_converter = conversion.make_converter()
 
 @default_converter.ri2ro.register(RObject)
