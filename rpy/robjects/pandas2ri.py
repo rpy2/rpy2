@@ -38,8 +38,11 @@ def py2ri_pandasindex(obj):
     if obj.dtype.kind == 'O':
         return StrVector(obj)
     else:
-        # only other alternative to 'O' is integer, I think,
-        # which goes straight to the numpy converter.
+        # pandas2ri should definitely not have to know which paths remain to be
+        # converted by numpy2ri
+        # Answer: the thing is that pandas2ri builds on the conversion
+        # rules defined by numpy2ri - deferring to numpy2ri is allowing
+        # us to reuse that code.
         return numpy2ri.numpy2ri(obj)
 
 @py2ri.register(PandasSeries)
@@ -57,7 +60,6 @@ def py2ri_pandasseries(obj):
         # (is '<M8[ns]' mapping to Python datetime.datetime ?)
         res = POSIXct(res)
     else:
-<<<<<<< local
         # converted as a numpy array
         res = numpy2ri.numpy2ri(obj.values)
     # "index" is equivalent to "names" in R
@@ -76,7 +78,6 @@ def ri2ro_dataframe(obj):
 
 def activate():
     global original_converter
-
     # If module is already activated, there is nothing to do
     if original_converter is not None: 
         return
@@ -116,5 +117,4 @@ def deactivate():
     conversion.ri2ro, conversion.py2ri, conversion.py2ro = original_converter
 
     original_converter = None
-
 
