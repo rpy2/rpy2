@@ -76,6 +76,7 @@ def activate():
     '''
     conversion.py2ri = pandas2ri
     conversion.ri2ro = ri2pandas
+    conversion.py2ro = numpy2ri.numpy2ro
 
 def deactivate():
     '''Set conversion paths back to robjects defaults
@@ -84,6 +85,4 @@ def deactivate():
     '''
     conversion.py2ri = ro.default_py2ri
     conversion.ri2ro = ro.default_ri2ro
-    # We revert all three conversion paths in case we're reverting another
-    # subpackage!
     conversion.py2ro = ro.default_py2ro
