@@ -9,3 +9,6 @@ _*.so
 doc/_static
 dist/
 rpy2.egg-info/
+# This should probably go in a (personal) global ignore file, but I (DJC) don't
+# know how and am avoiding yak shaving
+.ropeproject/
