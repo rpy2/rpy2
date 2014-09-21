@@ -57,6 +57,7 @@ def py2ri_pandasseries(obj):
         # (is '<M8[ns]' mapping to Python datetime.datetime ?)
         res = POSIXct(res)
     else:
+<<<<<<< local
         # converted as a numpy array
         res = numpy2ri.numpy2ri(obj.values)
     # "index" is equivalent to "names" in R
