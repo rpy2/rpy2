@@ -114,28 +114,27 @@ result = rmagic_addone(12344)
         # test to see if a copy is being made
         v = self.ip.run_line_magic('Rget', 'datapy')
         w = self.ip.run_line_magic('Rget', 'datapy')
-        # Note - we're not doing conversion to pandas by default, as there are
-        # multiple paths for conversion? So, here we have R proxy objects, which
-        # don't accept direct string indexing
+        # Tests assume at least numpy, and we have working conversion now for
+        # dataframes. This should be a recarray or pandas DataFrame
         # If we decide to keep these as R objects, we could use .rx or .rx2
         # indexing
-        # test_eq_arrays(w['x'], v['x'])
-        # test_eq_arrays(w['y'], v['y'])
-        test_eq_arrays(w[0], v[0])
-        test_eq_arrays(w[1], v[1])
+        test_eq_arrays(w['x'], v['x'])
+        test_eq_arrays(w['y'], v['y'])
+        # test_eq_arrays(w[0], v[0])
+        # test_eq_arrays(w[1], v[1])
 
         self.ip.run_cell_magic('R', '-o datar', 'datar=datapy')
 
         u = self.ip.run_line_magic('Rget', 'datar')
         w = self.ip.user_ns['datar']
-        # test_eq_arrays(u['x'], v['x'])
-        # test_eq_arrays(u['y'], v['y'])
-        # test_eq_arrays(w['x'], v['x'])
-        # test_eq_arrays(w['y'], v['y'])
-        test_eq_arrays(u[0], v[0])
-        test_eq_arrays(u[1], v[1])
-        test_eq_arrays(w[0], v[0])
-        test_eq_arrays(w[1], v[1])
+        test_eq_arrays(u['x'], v['x'])
+        test_eq_arrays(u['y'], v['y'])
+        test_eq_arrays(w['x'], v['x'])
+        test_eq_arrays(w['y'], v['y'])
+        # test_eq_arrays(u[0], v[0])
+        # test_eq_arrays(u[1], v[1])
+        # test_eq_arrays(w[0], v[0])
+        # test_eq_arrays(w[1], v[1])
 
     def test_cell_magic(self):
         self.ip.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})

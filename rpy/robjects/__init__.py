@@ -49,8 +49,7 @@ def reval(string, envir = _globalenv):
     res = _reval(p, envir = envir)
     return res
 
-# XXX: Not sure if this was meant for the above, or the default_XXX functions
-# I've moved to robjects/defaults.py
+# XXX: is this meant for the above, or the default_XXX functions?
 #FIXME: close everything when leaving (check RPy for that).
 
 def default_ri2ro(o):
