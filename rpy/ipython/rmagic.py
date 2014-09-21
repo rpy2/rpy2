@@ -321,8 +321,7 @@ utils.install_packages('Cairo')
         args = parse_argstring(self.Rpull, line)
         outputs = args.outputs
         for output in outputs:
-            self.shell.push({output:
-                             ro.conversion.ri2ro(ro.r(output)) })
+            self.shell.push({output: ro.r(output) })
 
     # @skip_doctest
     @magic_arguments()
@@ -353,7 +352,7 @@ utils.install_packages('Cairo')
         '''
         args = parse_argstring(self.Rget, line)
         output = args.output
-        return ro.conversion.ri2ro(ro.r(output[0]))
+        return ro.r(output[0])
 
 
     def setup_graphics(self, args):
@@ -453,7 +452,7 @@ utils.install_packages('Cairo')
         )
     @argument(
         '-o', '--output', action='append',
-        help='Names of variables to be pushed from rpy2 to shell.user_ns after executing cell body and applying ro.conversion.ri2ro. Multiple names can be passed separated only by commas with no whitespace.'
+        help="Names of variables to be pushed from rpy2 to shell.user_ns after executing cell body (rpy2's internal facilities will apply ri2ro as appropriate). Multiple names can be passed separated only by commas with no whitespace."
         )
     @argument(
         '-n', '--noreturn',
@@ -660,8 +659,7 @@ utils.install_packages('Cairo')
 
         if args.output:
             for output in ','.join(args.output).split(','):
-                self.shell.push({output:
-                                 ro.conversion.ri2ro(ro.r(output)) })
+                self.shell.push({output: ro.r(output) })
 
 
         # this will keep a reference to the display_data
@@ -674,7 +672,7 @@ utils.install_packages('Cairo')
         # We're in line mode and return_output is still True, 
         # so return the converted result
         if return_output and not args.noreturn:
-            if result != ri.NULL:
+            if result is not ri.NULL:
                 return result
 
 __doc__ = __doc__.format(
