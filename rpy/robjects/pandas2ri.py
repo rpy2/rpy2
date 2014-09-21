@@ -10,10 +10,6 @@ from pandas.core.index import Index as PandasIndex
 from collections import OrderedDict
 from rpy2.robjects.vectors import DataFrame, Vector, ListVector, StrVector, IntVector, POSIXct
 
-original_py2ri = None 
-original_ri2ro = None 
-
-
 # pandas is requiring numpy. We add the numpy conversion will be
 # activate in the function activate() below
 import rpy2.robjects.numpy2ri as numpy2ri
@@ -60,7 +56,9 @@ def pandas2ri(obj):
             res.do_slot_assign('dimnames', ListVector(pandas2ri(obj.index)))
         return res
     else:
-        return original_py2ri(obj) 
+        # pandas2ri should definitely not have to know which paths remain to be
+        # converted by numpy2ri
+        return numpy2ri.numpy2ri(obj)
 
 def ri2pandas(o):
     if isinstance(o, DataFrame):
@@ -68,35 +66,24 @@ def ri2pandas(o):
         recarray = numpy2ri.ri2numpy(o)
         res = PandasDataFrame.from_records(recarray)
     else:
-        # res = ro.default_ri2ro(o)
-        res = original_ri2ro(o)
+        res = numpy2ri.ri2numpy(o)
     return res
 
 def activate():
-    global original_py2ri, original_ri2ro
+    '''Set conversion paths back to pandas2ri versions
 
-    # If module is already activated, there is nothing to do
-    if original_py2ri: 
-        return
-
-    #FIXME: shouldn't the use of numpy conversion be made
-    #       explicit in the pandas conversion ?
-    #       (and this remove the need to activate it ?)
-    numpy2ri.activate()
-    original_py2ri = conversion.py2ri
-    original_ri2ro = conversion.ri2ro
+    This will straightforwardly override an existing numpy2ri.activate()
+    '''
     conversion.py2ri = pandas2ri
-    conversion.ri2ro = ri2pandas 
+    conversion.ri2ro = ri2pandas
 
 def deactivate():
-    global original_py2ri, original_ri2ro
+    '''Set conversion paths back to robjects defaults
 
-    # If module has never been activated or already deactivated,
-    # there is nothing to do
-    if not original_py2ri:
-        return
-
-    conversion.py2ri = original_py2ri
-    conversion.ri2ro = original_ri2ro 
-    original_py2ri = original_ri2ro = None
-    numpy2ri.deactivate()
+    Note that this will also revert, e.g., numpy2ri.activate()
+    '''
+    conversion.py2ri = ro.default_py2ri
+    conversion.ri2ro = ro.default_ri2ro
+    # We revert all three conversion paths in case we're reverting another
+    # subpackage!
+    conversion.py2ro = ro.default_py2ro

@@ -7,10 +7,6 @@ import numpy
 
 #from rpy2.robjects.vectors import DataFrame, Vector, ListVector
 
-original_py2ri = None
-original_ri2ro = None
-original_py2ro = None 
-
 # The possible kind codes are listed at
 #   http://numpy.scipy.org/array_interface.shtml
 _kinds = {
@@ -117,29 +113,19 @@ def ri2numpy(o):
 
 
 def activate():
-    global original_py2ri, original_ri2ro, original_py2ro
+    '''Set conversion paths back to numpy2ri versions
 
-    # If module is already activated, there is nothing to do
-    if original_py2ri: 
-        return
-
-    original_py2ri = conversion.py2ri
-    original_ri2ro = conversion.ri2ro
-    original_py2ro = conversion.py2ro
-
+    This will straightforwardly override an existing numpy2ri.activate()
+    '''
     conversion.py2ri = numpy2ri
-    conversion.ri2ro = ri2numpy 
+    conversion.ri2ro = ri2numpy
     conversion.py2ro = numpy2ro
 
 def deactivate():
-    global original_py2ri, original_ri2ro, original_py2ro
+    '''Set conversion paths back to robjects defaults
 
-    # If module has never been activated or already deactivated,
-    # there is nothing to do
-    if not original_py2ri:
-        return
-
-    conversion.py2ri = original_py2ri
-    conversion.ri2ro = original_ri2ro
-    conversion.py2ro = original_py2ro
-    original_py2ri = original_ri2ro = original_py2ro = None
+    Note that this will also revert, e.g., pandas2ri.activate()
+    '''
+    conversion.py2ri = ro.default_py2ri
+    conversion.ri2ro = ro.default_ri2ro
+    conversion.py2ro = ro.default_py2ro
