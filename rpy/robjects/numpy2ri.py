@@ -66,6 +66,7 @@ def numpy2ri(o):
             for field_name in o.dtype.names:
                 df_args.append((field_name, 
                                 conversion.py2ri(o[field_name])))
+            # XXX: Note that an .rcall() currently calls .default_ri2ro!
             res = ro.baseenv["data.frame"].rcall(tuple(df_args), ro.globalenv)
         # It should be impossible to get here:
         else:
@@ -83,7 +84,10 @@ def numpy2ro(o):
     return res
     
 def ri2numpy(o):
-    if isinstance(o, ListSexpVector):
+    # XXX: data.frames are ending up as SexpVectors - not ListSexpVectors
+    # I changed this conditional, but the right fix may be to fix the class
+    # of these things?
+    if isinstance(o, SexpVector):
         if 'data.frame' in o.rclass:
             # R "factor" vectors will not convert well by default
             # (will become integers), so we build a temporary list o2
@@ -102,13 +106,14 @@ def ri2numpy(o):
                 res = numpy.rec.fromarrays(o2)
             else:
                 res = numpy.rec.fromarrays(o2, names=tuple(names))
+        elif (o.typeof in _vectortypes) and (o.typeof != VECSXP):
+            res = numpy.asarray(o)
         else:
             # not a data.frame, yet is it still possible to convert it
             res = ro.default_ri2ro(o)
-    elif (o.typeof in _vectortypes) and (o.typeof != VECSXP):
-        res = numpy.asarray(o)
     else:
         res = ro.default_ri2ro(o)
+
     return res
 
 

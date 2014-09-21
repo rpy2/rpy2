@@ -6,6 +6,7 @@ from rpy2.rinterface import SexpVector, INTSXP
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pandas.core.series import Series as PandasSeries
 from pandas.core.index import Index as PandasIndex
+from numpy import recarray
 
 from collections import OrderedDict
 from rpy2.robjects.vectors import DataFrame, Vector, ListVector, StrVector, IntVector, POSIXct
@@ -61,12 +62,11 @@ def pandas2ri(obj):
         return numpy2ri.numpy2ri(obj)
 
 def ri2pandas(o):
-    if isinstance(o, DataFrame):
-        # use the numpy converter
-        recarray = numpy2ri.ri2numpy(o)
-        res = PandasDataFrame.from_records(recarray)
-    else:
-        res = numpy2ri.ri2numpy(o)
+    # use the numpy converter first
+    res = numpy2ri.ri2numpy(o)
+    if isinstance(res, recarray):
+        res = PandasDataFrame.from_records(res)
+
     return res
 
 def activate():
