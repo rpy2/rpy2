@@ -68,7 +68,8 @@ def ri2pandas(o):
         recarray = numpy2ri.ri2numpy(o)
         res = PandasDataFrame.from_records(recarray)
     else:
-        res = ro.default_ri2ro(o)
+        # res = ro.default_ri2ro(o)
+        res = original_ri2ro(o)
     return res
 
 def activate():
