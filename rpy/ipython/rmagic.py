@@ -675,7 +675,7 @@ utils.install_packages('Cairo')
         # so return the converted result
         if return_output and not args.noreturn:
             if result != ri.NULL:
-                return ro.conversion.ri2ro(result)
+                return result
 
 __doc__ = __doc__.format(
                 R_DOC = ' '*8 + RMagics.R.__doc__,
