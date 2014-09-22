@@ -70,10 +70,10 @@ def py2ri_pandasseries(obj):
         res.do_slot_assign('dimnames', ListVector(conversion.py2ri(obj.index)))
     return res
 
-@ri2ro.register(SexpVector):
-def ri2ro_vector(obj)
+@ri2ro.register(SexpVector)
+def ri2ro_vector(obj):
     # use the numpy converter first
-    res = numpy2ri.ri2numpy(obj)
+    res = numpy2ri.ri2ro(obj)
     if isinstance(res, recarray):
         res = PandasDataFrame.from_records(res)
     return res
