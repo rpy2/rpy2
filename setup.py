@@ -277,6 +277,11 @@ if __name__ == '__main__':
     #for scheme in setuptools.command.install.INSTALL_SCHEMES.values():
     #    scheme['data'] = scheme['purelib']
 
+
+    requires=[]
+    if sys.version_info[0] < 3:
+        requires.append('singledispatch')
+
     setup(
         cmdclass = {'build_ext': build_ext},
         name = pack_name,
@@ -286,6 +291,7 @@ if __name__ == '__main__':
         license = "GPLv2+",
         author = "Laurent Gautier",
         author_email = "lgautier@gmail.com",
+        requires = requires,
         ext_modules = rinterface_exts,
         package_dir = pack_dir,
         packages = [pack_name,
