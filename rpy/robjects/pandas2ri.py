@@ -91,9 +91,9 @@ def activate():
     if original_converter is not None: 
         return
 
+    original_converter = conversion.make_converter(template=conversion.converter)
     numpy2ri.activate()
-    original_converter = conversion.converter 
-    new_converter = conversion.make_converter(template=original_converter)
+    new_converter = conversion.make_converter(template=conversion.converter)
     numpy2ri.deactivate()
 
     for k,v in py2ri.registry.items():
