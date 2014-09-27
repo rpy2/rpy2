@@ -130,7 +130,7 @@ def default_py2ri(o):
 
 @default_converter.py2ri.register(RObject)
 def _(obj):
-    return rinterface.Sexp(o)
+    return rinterface.Sexp(obj)
 
 @default_converter.py2ri.register(Sexp)
 def _(obj):
