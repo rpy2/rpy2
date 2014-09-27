@@ -71,17 +71,17 @@ def py2ri_pandasseries(obj):
     return res
 
 @ri2py.register(SexpVector)
-def ri2ro_vector(obj):
+def ri2py_vector(obj):
     # use the numpy converter first
     res = numpy2ri.ri2py(obj)
     if isinstance(res, recarray):
         res = PandasDataFrame.from_records(res)
     return res
 
-@ri2ro.register(DataFrame)
-def ri2ro_dataframe(obj):
+@ri2py.register(DataFrame)
+def ri2py_dataframe(obj):
     # use the numpy converter
-    recarray = numpy2ri.ri2ro(obj)
+    recarray = numpy2ri.ri2py(obj)
     res = PandasDataFrame.from_records(recarray)
     return res
 

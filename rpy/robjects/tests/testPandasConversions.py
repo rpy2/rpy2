@@ -90,7 +90,7 @@ class PandasConversionsTestCase(unittest.TestCase):
     def testRi2pandas(self):
         rdataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")), c=c("a", "b"))')
         rpyp.activate()
-        pandas_df = robjects.conversion.ri2ro(rdataf)
+        pandas_df = robjects.conversion.ri2py(rdataf)
         rpyp.deactivate()
         self.assertIsInstance(pandas_df, pandas.DataFrame)
         self.assertEquals(('a', 'b', 'c'), tuple(pandas_df.keys()))
