@@ -52,6 +52,9 @@ def reval(string, envir = _globalenv):
 # XXX: is this meant for the above, or the default_XXX functions?
 #FIXME: close everything when leaving (check RPy for that).
 
+# The below default_XXX functions are defined here because they can't be defined
+# in robjects.conversion without creating circular imports.
+
 def default_ri2ro(o):
     """ Convert an :class:`rpy2.rinterface.Sexp` object to a higher-level object,
     without copying the R object.
@@ -113,6 +116,7 @@ def default_ri2ro(o):
     return res
 
 conversion.ri2ro = default_ri2ro
+conversion.default_ri2ro = default_ri2ro
 
 
 def default_py2ri(o):
@@ -158,6 +162,7 @@ def default_py2ri(o):
     return res
 
 conversion.py2ri = default_py2ri
+conversion.default_py2ri = default_py2ri
 
 
 def default_py2ro(o):
@@ -170,6 +175,7 @@ def default_py2ro(o):
     return conversion.ri2ro(res)
 
 conversion.py2ro = default_py2ro
+conversion.default_py2ro = default_py2ro
 
 class Formula(RObjectMixin, rinterface.Sexp):
 

@@ -131,6 +131,6 @@ def deactivate():
 
     Note that this will also revert, e.g., pandas2ri.activate()
     '''
-    conversion.py2ri = ro.default_py2ri
-    conversion.ri2ro = ro.default_ri2ro
-    conversion.py2ro = ro.default_py2ro
+    conversion.py2ri = conversion.default_py2ri
+    conversion.ri2ro = conversion.default_ri2ro
+    conversion.py2ro = conversion.default_py2ro

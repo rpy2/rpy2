@@ -31,3 +31,30 @@ def py2ro(obj):
     raise NotImplementedError("Conversion function undefined")
 
 
+def default_ri2ro(obj):
+    """ Dummy function for default_ri2ro.
+
+    ONLY OVERRIDE FROM robjects.__init__.py!
+    This function will convert rpy2.rinterface (ri) low-level objects
+    into rpy2.robjects (ro) higher-level objects.
+    """
+    raise NotImplementedError("Conversion function undefined")
+
+def default_py2ri(obj):
+    """ Dummy function for default_py2ri.
+
+    ONLY OVERRIDE FROM robjects.__init__.py!
+    This function will convert Python objects into rpy2.rinterface
+    (ri) objects.
+    """
+    raise NotImplementedError("Conversion function undefined")
+
+def default_py2ro(obj):
+    """ Dummy function for default_py2ro.
+
+    ONLY OVERRIDE FROM robjects.__init__.py!
+    This function will convert Python objects into rpy2.robjects
+    (ro) objects.
+    """
+    raise NotImplementedError("Conversion function undefined")
+

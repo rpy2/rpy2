@@ -112,10 +112,10 @@ class Function(RObjectMixin, rinterface.SexpClosure):
     def rcall(self, *args):
         """ Wrapper around the parent method rpy2.rinterface.SexpClosure.rcall(). """
         res = super(Function, self).rcall(*args)
-        # XXX: Now that ri2ro converts to python objects, we restrict to the
-        # default now for a raw R call. I'm not sure there should be *any*
-        # conversion. However, we need to get this out of __init__.py first!
-        # res = ro.default_ri2ro(res)
+        # After, e.g., pandas2ri.activate(), ri2ro converts to non-robjects
+        # classes. So, we restrict to the default now for a raw R call. I'm not
+        # sure there should be *any* conversion.
+        res = conversion.default_ri2ro(res)
         return res
 
 class SignatureTranslatedFunction(Function):
