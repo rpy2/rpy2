@@ -11,6 +11,8 @@ New features
 - :class:`GGPlot` object getting a method :meth:`save`
   mirroring R's `ggplot2::ggsave()`.
 
+- The conversion system is now using generics/single dispatch.
+
 Changes
 -------
 

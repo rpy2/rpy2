@@ -14,10 +14,11 @@ if sys.version_info[0] < 3:
 else:
     from functools import singledispatch
 
-Converter = namedtuple('Converter', 'ri2ro py2ri py2ro')
+Converter = namedtuple('Converter', 'ri2ro py2ri py2ro ri2py')
 
 def make_converter(template=None):
-    """ Create a converter. Parent is an optional converter to use as a parent. """
+    """ Create a converter. `template` is an optional converter to use as base converter,
+    that is the `class -> function` associations will be copied in the new converter. """
 
     @singledispatch
     def ri2ro(obj):
@@ -46,6 +47,14 @@ def make_converter(template=None):
         """
         raise NotImplementedError("Conversion 'py2ro' not defined for objects of type '%s'" % str(type(obj)))
 
+    @singledispatch
+    def ri2py(obj):
+        """ Dummy function for ri2py.
+
+        This function will convert Python objects into Python (presumably non-rpy2) objects.
+        """
+        raise NotImplementedError("Conversion 'ri2py' not defined for objects of type '%s'" % str(type(obj)))
+
     if template is not None:
         for k,v in template.ri2ro.registry.items():
             ri2ro.register(k, v)
@@ -53,8 +62,10 @@ def make_converter(template=None):
             py2ri.register(k, v)
         for k,v in template.py2ro.registry.items():
             py2ro.register(k, v)
+        for k,v in template.ri2py.registry.items():
+            ri2py.register(k, v)
 
-    return Converter(ri2ro, py2ri, py2ro)
+    return Converter(ri2ro, py2ri, py2ro, ri2py)
 
 converter = make_converter()
-ri2ro, py2ri, py2ro = converter
+ri2ro, py2ri, py2ro, ri2py = converter

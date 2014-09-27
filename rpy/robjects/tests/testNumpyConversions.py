@@ -137,18 +137,23 @@ class NumpyConversionsTestCase(unittest.TestCase):
         env = robjects.Environment()
         env["x"] = x
         self.assertEqual(1, len(env))
-        self.assertEqual(type(x), type(env["x"]))
+        # do have an R object of the right type ?
+        x_r = env["x"]
+        self.assertEqual(robjects.rinterface.REALSXP, x_r.typeof)
+        #
+        self.assertEqual((20,), tuple(x_r.dim))
+        
 
     def testDataFrameToNumpy(self):
         df = robjects.vectors.DataFrame(dict((('a', 1), ('b', 2))))
-        rec = conversion.ri2ro(df)
+        rec = conversion.ri2py(df)
         self.assertEqual(numpy.recarray, type(rec))
         self.assertEqual(1, rec.a[0])
         self.assertEqual(2, rec.b[0])
 
     def testAtomicVectorToNumpy(self):
         v = robjects.vectors.IntVector((1,2,3))
-        a = rpyn.ri2ro(v)
+        a = rpyn.ri2py(v)
         self.assertTrue(isinstance(a, numpy.ndarray))
         self.assertEqual(1, v[0])
 

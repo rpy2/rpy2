@@ -36,9 +36,8 @@ _vectortypes = (rinterface.LGLSXP,
                 rinterface.CPLXSXP,
                 rinterface.STRSXP)
 
-
 converter = conversion.make_converter()
-py2ri, ri2ro, py2ro = converter
+py2ri, ri2ro, py2ro, ri2py = converter
 
 @py2ri.register(numpy.ndarray)
 def numpy2ri(o):
@@ -90,8 +89,8 @@ def numpy2ro(obj):
     res = numpy2ri(obj)
     return ro.vectors.rtypeof2rotype[res.typeof](res)
 
-@ri2ro.register(ListSexpVector)
-def ri2ro_list(obj):
+@ri2py.register(ListSexpVector)
+def ri2py_list(obj):
     if 'data.frame' in obj.rclass:
         # R "factor" vectors will not convert well by default
         # (will become integers), so we build a temporary list o2
@@ -112,18 +111,16 @@ def ri2ro_list(obj):
             res = numpy.rec.fromarrays(o2, names=tuple(names))
     else:
         # not a data.frame, yet is it still possible to convert it
-        res = ro.default_ri2ro(obj)
+        res = ro.default_ri2py(obj)
     return res
 
-@ri2ro.register(Sexp)
-def ri2ro_sexp(obj):
+@ri2py.register(Sexp)
+def ri2py_sexp(obj):
     if (obj.typeof in _vectortypes) and (obj.typeof != VECSXP):
         res = numpy.asarray(obj)
     else:
-        res = ro.default_ri2ro(obj)
+        res = ro.default_ri2py(obj)
     return res
-
-
 
 def activate():
     global original_converter
@@ -150,8 +147,13 @@ def activate():
             continue
         new_converter.py2ro.register(k, v)
 
+    for k,v in ri2py.registry.items():
+        if k is object:
+            continue
+        new_converter.ri2py.register(k, v)
+
     conversion.converter = new_converter
-    conversion.ri2ro, conversion.py2ri, conversion.py2ro = new_converter
+    conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py = new_converter
 
 
 def deactivate():
@@ -163,6 +165,6 @@ def deactivate():
         return
 
     conversion.converter = original_converter
-    conversion.ri2ro, conversion.py2ri, conversion.py2ro = original_converter
+    conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py = original_converter
 
     original_converter = None

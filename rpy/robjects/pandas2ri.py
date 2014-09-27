@@ -21,7 +21,7 @@ import rpy2.robjects.numpy2ri as numpy2ri
 ISOdatetime = rinterface.baseenv['ISOdatetime']
 
 converter = conversion.make_converter()
-py2ri, ri2ro, py2ro = converter
+py2ri, ri2ro, py2ro, ri2py = converter
 
 @py2ri.register(PandasDataFrame)
 def py2ri_pandasdataframe(obj):
@@ -70,10 +70,10 @@ def py2ri_pandasseries(obj):
         res.do_slot_assign('dimnames', ListVector(conversion.py2ri(obj.index)))
     return res
 
-@ri2ro.register(SexpVector)
+@ri2py.register(SexpVector)
 def ri2ro_vector(obj):
     # use the numpy converter first
-    res = numpy2ri.ri2ro(obj)
+    res = numpy2ri.ri2py(obj)
     if isinstance(res, recarray):
         res = PandasDataFrame.from_records(res)
     return res
@@ -111,8 +111,13 @@ def activate():
             continue
         new_converter.py2ro.register(k, v)
 
+    for k,v in ri2py.registry.items():
+        if k is object:
+            continue
+        new_converter.ri2py.register(k, v)
+
     conversion.converter = new_converter
-    conversion.ri2ro, conversion.py2ri, conversion.py2ro = new_converter
+    conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py = new_converter
 
 def deactivate():
     global original_converter
@@ -123,7 +128,7 @@ def deactivate():
         return
 
     conversion.converter = original_converter
-    conversion.ri2ro, conversion.py2ri, conversion.py2ro = original_converter
+    conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py = original_converter
 
     original_converter = None
 

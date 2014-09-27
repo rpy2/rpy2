@@ -265,11 +265,12 @@ class R(object):
 r = R()
 
 conversion.converter = default_converter
-conversion.ri2ro, conversion.py2ri, conversion.py2ro = conversion.converter
+conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py = conversion.converter
 
 default_ri2ro = conversion.converter.ri2ro
 default_py2ri = conversion.converter.py2ri
 default_py2ro = conversion.converter.py2ro
+default_ri2py = conversion.converter.ri2py
 
 globalenv = conversion.ri2ro(_globalenv)
 baseenv = conversion.ri2ro(rinterface.baseenv)
