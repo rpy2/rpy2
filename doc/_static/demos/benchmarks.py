@@ -66,7 +66,7 @@ function(x)
 }
 #-- purer_sum-end
 """
-    
+
     rdo_loopsum = """
 f <- %s
 for (i in 1:%i) {
@@ -109,6 +109,26 @@ for (i in 1:%i) {
     queue.put(time_end - time_beg)
 
 
+def test_sumr_builtin(queue, func, n, setup_func):
+    array, module = setup_func("R")
+    r_sum = """
+sum
+"""
+    
+    rdo_loopsum = """
+f <- %s
+for (i in 1:%i) {
+  res <- f(x)
+}
+"""
+    rcode = rdo_loopsum %(r_sum, n)
+    time_beg = time.time()
+    #print(rcode)
+    module.r(rcode)
+    time_end = time.time()
+    queue.put(time_end - time_beg)
+
+
 def test_sum(queue, func, array_type, n, setup_func):
     array, module = setup_func(array_type)
     time_beg = time.time()
@@ -143,8 +163,9 @@ for label_func, func, label_sequence, n_loop in combos:
 
 
 combos_r = [(label_func, None, None, n_loop) \
-                for label_func, func in (("R", None), \
-                                             ("R compiled", None))            
+            for label_func, func in (("R", None), \
+                                     ("R compiled", None), \
+                                     ("R builtin", None))            
             for n_loop in n_loops]
 
 times_r = []
@@ -164,6 +185,16 @@ for n_loop in n_loops:
                                 args = (q, func,
                                         n_loop,
                                         setup_func))
+    p.start()
+    res = q.get()
+    p.join()
+    times_r.append(res)
+
+# R builtin
+for n_loop in n_loops:
+    p = multiprocessing.Process(target = test_sumr_builtin, args = (q, func,
+                                                                    n_loop,
+                                                                    setup_func))
     p.start()
     res = q.get()
     p.join()

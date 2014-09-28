@@ -8,11 +8,16 @@
 Functions
 =========
 
+.. note::
+
+   This section is about calling R functions from Python. To make Python functions
+   callable by R, see the low-level function :func:`rpy2.rinterface.rternalize`.
+
 R functions are callable objects, and can be called almost like any regular
 Python function:
 
->>> plot = robjects.r.plot
->>> rnorm = robjects.r.rnorm
+>>> plot = robjects.r.get('plot')
+>>> rnorm = robjects.r.get('rnorm')
 >>> plot(rnorm(100), ylab="random")
 
 This is all looking fine and simple until R arguments with names 
@@ -73,10 +78,11 @@ In Python one can write:
    .. code-block:: python
 
       from rpy2.robjects.functions import SignatureTranslatedFunction
+      STM = SignatureTranslatedFunction
       from rpy2.robjects.packages import importr
       graphics = importr('graphics')
-      graphics.par = SignatureTranslatedFunction(graphics.par,
-                                                 init_prm_translate = {'cex_axis': 'cex.axis'})
+      graphics.par = STM(graphics.par,
+                         init_prm_translate = {'cex_axis': 'cex.axis'})
 
    >>> graphics.par(cex_axis = 0.5)
    <Vector - Python:0xa2cc90c / R:0xa5f7fd8>
@@ -87,15 +93,16 @@ In Python one can write:
  
    .. code-block:: python
 
-      def iamfeelinglucky(**kwargs):
-          res = {}
-          for k, v in kwargs.iteritems:
-              res[k.replace('_', '.')] = v
-          return res
+      def iamfeelinglucky(func):
+          def f(*args, **kwargs):
+              d = {}
+              for k, v in kwargs.iteritems:
+                  d[k.replace('_', '.')] = v
+              return func(**d)
+          return f
 
-      graphics.par(**(iamfeelinglucky(cex_axis = 0.5)))
-
-    
+      lucky_par = iamfeelinglucky(graphics.par)
+      lucky_path(cex_axis = 0.5)
    
 Things are also not always that simple, as the use of a dictionary does
 not ensure that the order in which the arguments are passed is conserved.

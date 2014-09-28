@@ -449,22 +449,20 @@ coding skills are necessary as the code below demonstrates it.
    from rpy2.robjects.packages import importr
    import rpy2.rinterface as ri
    stats = importr('stats')
-   
-   # Rosenbrock Banana function as a cost function
-   # (as in the R man page for optim())
-   def cost_f(x):
-       x1 = x[0]
-       x2 = x[1]
-       return 100 * (x2 - x1 * x1)**2 + (1 - x1)**2
 
-   # wrap the function f so it can be exposed to R
-   cost_fr = ri.rternalize(cost_f)
+   # cost function, callable from R
+   @ri.rternalize
+   def cost_f(x):
+       # Rosenbrock Banana function as a cost function
+       # (as in the R man page for optim())
+       x1, x2 = x
+       return 100 * (x2 - x1 * x1)**2 + (1 - x1)**2
 
    # starting parameters
    start_params = FloatVector((-1.2, 1))
 
    # call R's optim() with our cost funtion
-   res = stats.optim(start_params, cost_fr)
+   res = stats.optim(start_params, cost_f)
 
 For convenience, the code example uses the higher-level interface
 robjects whenever possible.
