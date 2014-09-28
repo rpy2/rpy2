@@ -186,6 +186,10 @@ def _(obj):
     robj = conversion.py2ri(obj)
     return conversion.ri2ro(robj)
 
+@default_converter.ri2py.register(object)
+def _(obj):
+    return conversion.ri2ro(object)
+
 class Formula(RObjectMixin, rinterface.Sexp):
 
     def __init__(self, formula, environment = _globalenv):
@@ -239,9 +243,10 @@ class R(object):
             raise orig_ae
 
     def __getitem__(self, item):
-        res = _globalenv.get(item)
+        res = _globalenv.get(item)        
         res = conversion.ri2ro(res)
-        res.__rname__ = item
+        if hasattr(res, '__rname__'):
+            res.__rname__ = item
         return res
 
     #FIXME: check that this is properly working

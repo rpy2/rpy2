@@ -6,49 +6,63 @@
 Mapping rpy2 objects to arbitrary python objects
 =====================================================
 
-Switching between a conversion and a no conversion mode,
-an operation often present when working with RPy-1.x, is no longer
-necessary with `rpy2`.
+.. note::
 
-The approach followed in `rpy2` has 2 levels, and conversion functions
-help moving between them.
+   Switching between a conversion and a no conversion mode,
+   an operation often present when working with RPy-1.x, is no longer
+   necessary with `rpy2`.
 
-:mod:`rpy.rinterface`
----------------------
+   The approach followed in `rpy2` has 2 levels (`rinterface` and `robjects`),
+   and conversion functions help moving between them.
+
 
 Protocols
-^^^^^^^^^
+---------
 
-At the lower level (:mod:`rpy2.rinterface`), the Python objects exposing
+At the lower level (:mod:`rpy2.rinterface`), the rpy2 objects exposing
 R objects implement Python protocols to make them feel as natural to a Python
-programmer as possible. For example, R vectors are mapped
-to Python objects implementing the :meth:`__getitem__` method in the sequence
-protocol so elements can be accessed easily, R function are mapped to Python
+programmer as possible. With them they can be passed as arguments to many
+non-rpy2 functions without the need for conversion.
+
+R vectors are mapped to Python objects implementing the methods :meth:`__getitem__` / :meth:`__setitem__` in the sequence
+protocol so elements can be accessed easily. They also implement the Python buffer protocol,
+allowing them be used in :mod:`numpy` functions without the need for data copying or conversion.
+
+R functions are mapped to Python
 objects implementing the :meth:`__call__` so they can be called just as if
 they were functions.
 
-This is implemented at the C level in `rpy` and there is no easy way to
-customize the way it is done.
+R environments are mapped to Python objects implementing :meth:`__getitem__` / :meth:`__setitem__` in the mapping
+protocol so elements can be accessed similarly to in a Python :class:`dict`.
 
 .. note::
 
-   :mod:`rpy2`-exposed R vector implement the Python buffer protocol, and
-   aim at making as much use of it as possible, but at the time of writing
-   its adoption in other modules remains disappointingly limited.
+   The `rinterface` level is largely implemented in C, bridging Python and R C-APIs.
+   There is no easy way to customize it.
 
+
+Conversion functions
+--------------------
 
 :func:`ri2ro`
 ^^^^^^^^^^^^^
 
 At this level the conversion is between lower-level (:mod:`rpy2.rinterface`)
-objects and higher-level objects. By default this conversion method returns
-:mod:`rpy2.robjects` objects, but can be customized to return instances
-of arbitrary classes. For example the :mod:`numpy` optional converter
+objects and higher-level (:mod:`rpy2.robjects`) objects.
+This method is a generic as implemented in :meth:`functools.singledispatch`
+(with Python 2, :meth:`singledispatch.singledispatch`).
+
+
+:func:`ri2py`
+^^^^^^^^^^^^^
+
+At this level the conversion is between lower-level (:mod:`rpy2.rinterface`)
+objects and any objects (presumably non-rpy2 is the conversion can be made).
+This method is a generic as implemented in :meth:`functools.singledispatch`
+(with Python 2, :meth:`singledispatch.singledispatch`).
+
+For example the optional conversion scheme for :mod:`numpy` objects
 will return numpy arrays whenever possible.
-
-
-:mod:`rpy2.robjects`
---------------------
 
 
 .. note::
@@ -57,9 +71,17 @@ will return numpy arrays whenever possible.
    because of the inheritance relationship in their class definition,
    but the reverse is not true.
    The `robjects` level is an higher level of abstraction, aiming at simplifying
-   one's use of R from Python (even if at the cost of performances). See Section
-   XXX for more details.
+   one's use of R from Python (although at the possible cost of performances).
 
+
+:func:`p2ri`
+^^^^^^^^^^^^^
+
+At this level the conversion is between (presumably) non-rpy2 objects
+and rpy2 lower-level (:mod:`rpy2.rinterface`).
+
+This method is a generic as implemented in :meth:`functools.singledispatch`
+(with Python 2, :meth:`singledispatch.singledispatch`).
 
 
 Customizing the conversion
@@ -72,14 +94,13 @@ of writing a new function `ri2py` that handles this, as shown below:
 .. code-block:: python
 
    import rpy2.robjects as robjects
-
+   from rpy2.rinterface import SexpVector
+   
+   @robjects.conversion.ri2ro.register(SexpVector)
    def my_ri2ro(obj):
-       res = robjects.default_ri2ro(obj)
-       if isinstance(res, robjects.Vector) and (len(res) == 1):
-           res = res[0]
-       return res
-
-   robjects.conversion.ri2ro = my_ri2ro
+       if len(obj) == 1:
+           obj = obj[0]
+       return obj
 
 Then we can test it with:
 
@@ -87,18 +108,13 @@ Then we can test it with:
 >>> type(pi)
 <type 'float'>
 
-The default behavior can be restored with:
+At the time of writing :func:`singledispath` does not provide a way to `unregister`.
+Removing the additional conversion rule without restarting Python is left as an
+exercise for the reader.
 
->>> robjects.conversion.ri2ro = default_ri2ro
+.. warning::
 
-Default functions
------------------
-
-The docstrings for :meth:`default_ri2ro`, :meth:`default_py2ri`, 
-and :meth:`py2ro` are:
-
-.. autofunction:: rpy2.robjects.default_ri2ro
-.. .. autofunction:: rpy2.robjects.default_py2ri
-.. .. autofunction:: rpy2.robjects.default_py2ro
-
-
+   The example is bending a little the rpy2 rules, as it is using `ri2ro` while it does not
+   return an `robjects` instance when an R vector of length one. We are getting away with it
+   because atomic Python types such as :class:`int`, :class:`float`, :class:`bool`, :class:`complex`,
+   :class:`str` are well handled by rpy2 at the `rinterface`/C level.
