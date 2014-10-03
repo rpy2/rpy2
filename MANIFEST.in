@@ -48,6 +48,7 @@ include rpy/tests.py
 include rpy/rpy_classic.py
 include rpy/tests_rpy_classic.py
 recursive-include rpy/robjects *.py
+recursive-include rpy/ipython *.py
 recursive-include rpy/interactive *.py
 recursive-include rpy/rlike *.py
 

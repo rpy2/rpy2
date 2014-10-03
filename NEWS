@@ -13,6 +13,8 @@ New features
 
 - The conversion system is now using generics/single dispatch.
 
+- New module :mod:`rpy2.ipython.html` with HTML display for rpy2 objects
+
 Changes
 -------
 
