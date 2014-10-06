@@ -1,4 +1,5 @@
 import itertools
+from types import SimpleNamespace
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
@@ -246,4 +247,39 @@ def get_classnames(packname):
     res = methods_env['getClasses'](where = StrSexpVector(("package:%s" %packname, )))
     return tuple(res)
 
+# Namespace to store the definition of RS4 classes
+rs4classes = SimpleNamespace()
+
+def _getclass(rclsname):
+    if hasattr(rs4classes, rclsname):
+        rcls = getattr(rs4classes, rclsname)
+    else:
+        # dynamically create a class
+        rcls = type(rclsname, 
+                    (RS4, ), 
+                    dict())
+        setattr(rs4classes,
+                rclsname,
+                rcls)
+    return rcls
+
+def rs4instance_factory(robj):
+    """
+    Return an RS4 objects (R objects in the 'S4' class system)
+    as a Python object of type inheriting from `robjects.methods.RS4`.
+
+    The types are located in the namespace `robjects.methods.rs4classes`,
+    and a dummy type is dynamically created whenever necessary.
+    """
+    clslist = None
+    if len(robj.rclass) > 1:
+        raise ValueError('Currently unable to handle more than one class per object')
+    for rclsname in robj.rclass:
+        rcls = _getclass(rclsname)
+        return rcls(robj)
+    if clslist is None:
+        return robj
+
 methods_env = rinterface.baseenv.get('as.environment')(StrSexpVector(('package:methods', )))
+
+

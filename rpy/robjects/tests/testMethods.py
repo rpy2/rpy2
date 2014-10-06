@@ -47,6 +47,14 @@ class Foo(methods.RS4, metaclass = methods.RS4_Type):
         f = ns['Foo']()
         
 
+    def testRS4instance_factory(self):
+        rclassname = 'Foo'
+        robjects.r['setClass'](rclassname, 
+                               robjects.r('list(bar="numeric")'))
+        obj = robjects.r['new'](rclassname)
+        f_rs4i = methods.rs4instance_factory(obj)
+        self.assertEqual(rclassname, type(f_rs4i).__name__)
+
     def testRS4_TypeAccessors(self):
         robjects.r['setClass']("R_A", robjects.r('list(foo="numeric")'))
         robjects.r['setMethod']("length", signature="R_A",
