@@ -15,6 +15,9 @@ New features
 
 - New module :mod:`rpy2.ipython.html` with HTML display for rpy2 objects
 
+- [Experimental] New function :func:`robjects.methods.rs4instance_factory`
+  to type RS4 objects with more specificity.
+
 Changes
 -------
 
