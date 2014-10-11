@@ -9,7 +9,7 @@ raising a NotImplementedError exception.
 import sys
 from collections import namedtuple
 
-if sys.version_info[0] < 3:
+if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 4):
     from singledispatch import singledispatch
 else:
     from functools import singledispatch
