@@ -1,5 +1,18 @@
+import sys
 import itertools
-from types import SimpleNamespace
+if sys.version_info[0] < 3 or \
+   (sys.version_info[0] == 3 and sys.version_info[1] < 4):
+    class SimpleNamespace:
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
+        def __repr__(self):
+            keys = sorted(self.__dict__)
+            items = ("{}={!r}".format(k, self.__dict__[k]) for k in keys)
+            return "{}({})".format(type(self).__name__, ", ".join(items))
+        def __eq__(self, other):
+            return self.__dict__ == other.__dict__
+else:
+    from types import SimpleNamespace
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
