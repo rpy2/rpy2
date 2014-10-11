@@ -5,6 +5,7 @@ css = """
 <style>
 table.rpy2 {
   border: solid 1px rgb(180, 180, 180);
+  border-radius: 4px;
 }
 table.rpy2 th {
   background-color: rgb(215, 215, 215);
@@ -114,10 +115,42 @@ template_ridentifiedobject = jinja2.Template("""
 <ul style="list-style-type: none;">
 <li>{{ clsname }} object</li>
 <li>Origin in R: {{ origin }}</li>
+<li>Class(es) in R:
+  <ul>
+  {%- for rclsname in obj.rclass %}
+    <li>{{ rclsname }}</li>
+  {%- endfor %}
+  </ul>
+</li>
 </ul>
 """)
 
-from rpy2.robjects import vectors, RObject, SignatureTranslatedFunction
+template_rs4 = jinja2.Template("""
+<ul style="list-style-type: none;">
+<li>{{ clsname }} object</li>
+<li>Origin in R: {{ origin }}</li>
+<li>Class(es) in R:
+  <ul>
+  {%- for rclsname in obj.rclass %}
+    <li>{{ rclsname }}</li>
+  {%- endfor %}
+  </ul>
+</li>
+<li> Attributes:
+  <ul>
+  {%- for sln in obj.slotnames() %}
+    <li>{{ sln }}</li>
+  {%- endfor %}
+  </ul>
+</li>
+</ul>
+""")
+
+
+from rpy2.robjects import (vectors, 
+                           RObject, 
+                           SignatureTranslatedFunction,
+                           RS4)
 
 def html_vector(vector):
     html = template_vector.render({
@@ -165,7 +198,7 @@ def wherefrom(name, startenv=rinterface.globalenv):
                 retry = True
     return env
 
-def html_ridentifiedobject(obj):
+def _dict_ridentifiedobject(obj):
     if hasattr(obj, '__rname__') and obj.__rname__ is not None:
         env = wherefrom(obj.__rname__)
         try:
@@ -174,11 +207,21 @@ def html_ridentifiedobject(obj):
             origin = 'package:base ?'
     else:
         origin = '???'
-    html = template_ridentifiedobject.render({
-        'clsname': type(obj).__name__,
-        'origin': origin,
-        'obj': obj})
+    d = {'clsname': type(obj).__name__,
+         'origin': origin,
+         'obj': obj}
+    return d
+
+def html_ridentifiedobject(obj):
+    d = _dict_ridentifiedobject(obj)
+    html = template_ridentifiedobject.render(d)
     return html
+
+def html_rs4(obj):
+    d = _dict_ridentifiedobject(obj)
+    html = template_rs4.render(d)
+    return html
+
 
 def init_printing():
     ip = get_ipython()
@@ -187,6 +230,7 @@ def init_printing():
     html_f.for_type(vectors.ListVector, html_rlist)
     html_f.for_type(vectors.DataFrame, html_rdataframe)
     html_f.for_type(RObject, html_ridentifiedobject)
+    html_f.for_type(RS4, html_rs4)
     html_f.for_type(SignatureTranslatedFunction, html_ridentifiedobject)
     from IPython.display import HTML
     HTML(css)
