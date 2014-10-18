@@ -6,13 +6,18 @@ css = """
 table.rpy2 {
   border: solid 1px rgb(180, 180, 180);
   border-radius: 4px;
+  -moz-border-radius: 4px;
 }
 table.rpy2 th {
   background-color: rgb(215, 215, 215);
+  border-top: none;
 }
 table.rpy2 td {
   text-align: right;
   font-family: monospace;
+}
+table.rpy2 td:first-child {
+  border-left: none;
 }
 </style>
 """
