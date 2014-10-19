@@ -64,16 +64,18 @@ for PYVERSION in $PYTHON_VERSIONS; do
   for NPVERSION in $NUMPY_VERSIONS; do
     echo -e "${GREEN}    Numpy version $NPVERSION ${NC}"
 
+    echo -n "Installing packages:"
     for package in numpy==$NPVERSION pandas ipython; do
-	echo "Installing $package with wheel"
+	echo -n " $package";
 	pip install --use-wheel \
 	    --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
-	    $package >> ${LOGFILE}
+	    $package >> ${LOGFILE};
     done
-    if ['2.7' == $PYVERSION]; then
+    if [ '2.7' -eq $PYVERSION ]; then
+	echo -n " singledispatch"
 	pip install singledispatch >> ${LOGFILE}
     fi;
-
+    echo '.'
     #pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
 
     echo "Building rpy2"
@@ -105,7 +107,7 @@ for ((i = 0; i < ${#summary[@]}; i++))
 do
   echo -e ${summary[$i]}
 done
-if [ STATUS==1 ]; then
+if [ $STATUS -eq 1 ]; then
   exit 0;
 else
   exit 1;
