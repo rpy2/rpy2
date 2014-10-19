@@ -11,9 +11,10 @@ PYTHON_VERSIONS="2.7 3.3 3.4"
 # Define the target Numpy versions
 NUMPY_VERSIONS="1.9.0"
 
+# Settings to install python packages as wheels
 DEPS_DIR="deps/"
-WHEEL_DIR=$DEPS_DIR"wheelhouse/"
-mkdir -p $WHELL_DIR
+WHEEL_DIR=${DEPS_DIR}"wheelhouse/"
+mkdir -p ${WHEEL_DIR}
 PIPWITHWHEEL_ARGS=" --download-cache /tmp -w $WHEEL_DIR --use-wheel --find-links=file://$WHEEL_DIR"
 
 # Color escape codes
