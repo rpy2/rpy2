@@ -3,20 +3,20 @@ from IPython.display import HTML
 
 css = """
 <style>
-table.rpy2 {
+.rpy2_table {
   border: solid 1px rgb(180, 180, 180);
   border-radius: 4px;
   -moz-border-radius: 4px;
 }
-table.rpy2 th {
+.rpy2_table th {
   background-color: rgb(215, 215, 215);
   border-top: none;
 }
-table.rpy2 td {
+.rpy2_table td {
   text-align: right;
   font-family: monospace;
 }
-table.rpy2 td:first-child {
+.rpy2_table td:first-child {
   border-left: none;
 }
 </style>
@@ -35,7 +35,7 @@ template_list = jinja2.Template("""
 """)
 
 template_vector = jinja2.Template(css+"""
-<table class="rpy2">
+<table class="rpy2_table">
 <thead>
 </thead>
 <tbody>
@@ -56,7 +56,7 @@ template_vector = jinja2.Template(css+"""
 
 template_dataframe = jinja2.Template(css+"""
 <emph>{{ clsname }}</emph> with {{ dataf | length }} columns:
-<table class="rpy2">
+<table class="rpy2_table">
   <thead>
     <tr>
 {%- for col_i in range(display_ncolmax - 2) %}

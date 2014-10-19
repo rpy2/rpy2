@@ -69,6 +69,9 @@ for PYVERSION in $PYTHON_VERSIONS; do
 	    --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
 	    $package >> ${LOGFILE}
     done
+    if ['2.7' == $PYVERSION]; then
+	pip install singledispatch >> ${LOGFILE}
+    fi;
 
     #pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
 
