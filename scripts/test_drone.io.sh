@@ -64,15 +64,19 @@ for PYVERSION in $PYTHON_VERSIONS; do
   for NPVERSION in $NUMPY_VERSIONS; do
     echo -e "${GREEN}    Numpy version $NPVERSION ${NC}"
 
-    echo -n "Installing packages:"
+    echo "Installing packages:"
     for package in numpy==$NPVERSION pandas ipython; do
-	echo -n " $package";
+	echo "    $package";
 	pip install --use-wheel \
 	    --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
 	    $package >> ${LOGFILE};
     done
-    if [ '2.7' -eq $PYVERSION ]; then
-	echo -n " singledispatch"
+    if [ '2.7' = $PYVERSION ]; then
+	echo "    singledispatch"
+	pip install singledispatch >> ${LOGFILE}
+    fi;
+    if [ '3.3' = $PYVERSION ]; then
+	echo "    singledispatch"
 	pip install singledispatch >> ${LOGFILE}
     fi;
     echo '.'
