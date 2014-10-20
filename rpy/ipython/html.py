@@ -10,9 +10,9 @@ css = """
   border-radius: 4px;
   -moz-border-radius: 4px;
 }
-.rpy2_table th {
+.rpy2_names {
   background-color: rgb(215, 215, 215);
-  border-top: none;
+  font-weight: bold;
 }
 .rpy2_table th:first-child {
   background-color: rgb(215, 215, 215);
@@ -79,18 +79,27 @@ template_vector_vertical = jinja2.Template("""
   {%- for elt_i in range(display_nrowmax - size_tail) %}
   <tr>
     <td class="rpy2_rowname">{{ elt_i }}</td>
+  {%- if has_vector_names %}
+    <td class="rpy2_names">{{ vector.names[elt_i] }}</td>
+  {%- endif %}
     <td>{{ vector[elt_i]}}</td>
   </tr>
   {%- endfor %}
   {%- if display_nrowmax < (vector | length) %}
   <tr>
     <td class="rpy2_rowname">...</td>
+  {%- if has_vector_names %}
+    <td class="rpy2_names">...</td>
+  {%- endif %}
     <td>...</td>  
   </tr>
   {%- endif %}
   {%- for elt_i in elt_i_tail %}
   <tr>
     <td class="rpy2_rowname">{{ elt_i }}</td>
+  {%- if has_vector_names %}
+    <td class="rpy2_names">{{ vector.names[elt_i] }}</td>
+  {%- endif %}
     <td>{{ vector[elt_i] }}</td>
   </tr>
   {%- endfor %}
@@ -103,8 +112,12 @@ template_dataframe = jinja2.Template("""
 <emph>{{ clsname }}</emph> with {{ dataf.nrow }} rows and {{ dataf | length }} columns:
 <table class="rpy2_table">
   <thead>
-    <tr>
+    <tr class="rpy2_names">
       <th></th>
+      {%- if has_rownames %}
+      <th></th>
+      {%- endif %}
+
 {%- for col_i in range(display_ncolmax - size_coltail) %}
       <th>{{ dataf.names[col_i] }}</th>
 {%- endfor %}
@@ -120,6 +133,9 @@ template_dataframe = jinja2.Template("""
 {%- for row_i in range(display_nrowmax - size_rowtail) %}
     <tr>
       <td class="rpy2_rowname">{{ row_i }}</td>
+      {%- if has_rownames %}
+        <td class="rpy2_names">{{ dataf.rownames[row_i] }}</td>
+      {%- endif %}
   {%- for col_i in range(display_ncolmax - size_coltail) %}
       <td>{{ dataf[col_i][row_i] }}</td>
   {%- endfor %}
@@ -135,6 +151,10 @@ template_dataframe = jinja2.Template("""
 {%- if dataf.nrow > display_nrowmax %}
     <tr>
       <td class="rpy2_rowname">...</td>
+      {%- if has_rownames %}
+        <td class="rpy2_names">...</td>
+      {%- endif %}
+
   {%- for col_i in range(display_ncolmax - size_coltail) %}
       <td>...</td>
   {%- endfor %}
@@ -150,6 +170,9 @@ template_dataframe = jinja2.Template("""
 {%- for row_i in row_i_tail %}
     <tr>
       <td class="rpy2_rowname">{{ row_i }}</td>
+      {%- if has_rownames %}
+        <td class="rpy2_names">{{ dataf.rownames[row_i] }}</td>
+      {%- endif %}
   {%- for col_i in range(display_ncolmax - size_coltail) %}
       <td>{{ dataf[col_i][row_i] }}</td>
   {%- endfor %}
@@ -223,6 +246,7 @@ def html_rlist(vector,
     html = template_vector_vertical.render({
         'clsname': type(vector).__name__,
         'vector': vector,
+        'has_vector_names': vector.names is not rinterface.NULL,
         'display_nrowmax': min(display_nrowmax, len(vector)),
         'size_tail': size_tail,
         'elt_i_tail': range(max(0, len(vector)-size_tail), len(vector))})
@@ -234,6 +258,7 @@ def html_rdataframe(dataf,
                     size_coltail=2, size_rowtail=2):
     html = template_dataframe.render(
         {'dataf': dataf,
+         'has_rownames': dataf.rownames is not None,
          'clsname': type(dataf).__name__,
          'display_nrowmax': min(display_nrowmax, dataf.nrow),
          'display_ncolmax': min(display_ncolmax, dataf.ncol),
