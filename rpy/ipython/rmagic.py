@@ -52,6 +52,7 @@ from shutil import rmtree
 import rpy2.rinterface as ri
 import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
+from rpy2.robjects.conversion import singledispatch
 
 try:
     from rpy2.robjects import pandas2ri as py2ri
@@ -105,6 +106,15 @@ def pyconverter(pyobj):
     @pyconverter.when_type
     """
     return pyobj
+
+@singledispatch
+def ipython2ri(obj):
+    return obj
+
+@singledispatch
+def ri2ipython(obj):
+    return obj
+
 
 # The default conversion for lists is currently to make them an R list. That has
 # some advantages, but can be inconvenient (and, it's inconsistent with the way
@@ -276,8 +286,8 @@ utils.install_packages('Cairo')
                     # the standard python behavior when you use an unnamed
                     # variable
                     raise NameError("name '%s' is not defined" % input)
-
-            ro.r.assign(input, self.pyconverter(val))
+            robj = self.pyconverter(val)
+            ro.r.assign(input, ipython2ri(robj))
 
     # @skip_doctest
     @magic_arguments()
@@ -321,7 +331,7 @@ utils.install_packages('Cairo')
         args = parse_argstring(self.Rpull, line)
         outputs = args.outputs
         for output in outputs:
-            self.shell.push({output: ro.r(output) })
+            self.shell.push({output: ri2ipython(ro.r(output)) })
 
     # @skip_doctest
     @magic_arguments()
@@ -352,7 +362,8 @@ utils.install_packages('Cairo')
         '''
         args = parse_argstring(self.Rget, line)
         output = args.output
-        return ro.r(output[0])
+        res = ro.r(output[0])
+        return ri2ipython(res)
 
 
     def setup_graphics(self, args):
@@ -673,7 +684,7 @@ utils.install_packages('Cairo')
         # so return the converted result
         if return_output and not args.noreturn:
             if result is not ri.NULL:
-                return result
+                return ri2ipython(result)
 
 __doc__ = __doc__.format(
                 R_DOC = ' '*8 + RMagics.R.__doc__,
