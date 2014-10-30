@@ -23,11 +23,11 @@ _kinds = {
     "U": rinterface.STRSXP,
     # "V" -> special-cased below
     #FIXME: datetime64 ?
-    #"datetime64": 
+    #"datetime64":
     }
 
 #FIXME: the following would need further thinking & testing on
-#       32bits architectures 
+#       32bits architectures
 _kinds['float64'] = rinterface.REALSXP
 
 _vectortypes = (rinterface.LGLSXP,
@@ -66,7 +66,7 @@ def numpy2ri(o):
             raise(ValueError("Nothing can be done for this numpy array type %s at the moment." % (o.dtype,)))
         df_args = []
         for field_name in o.dtype.names:
-            df_args.append((field_name, 
+            df_args.append((field_name,
                             conversion.py2ri(o[field_name])))
         res = ro.baseenv["data.frame"].rcall(tuple(df_args), ro.globalenv)
     # It should be impossible to get here:
@@ -74,6 +74,13 @@ def numpy2ri(o):
         raise(ValueError("Unknown numpy array type."))
     return res
 
+@py2ri.register(numpy.integer)
+def npint_py2ri(obj):
+    return ro.int2ri(obj)
+
+@py2ri.register(numpy.floating)
+def npfloat_py2ri(obj):
+    return rinterface.SexpVector([obj, ], rinterface.REALSXP)
 
 @py2ri.register(object)
 def nonnumpy2ri(obj):
@@ -126,12 +133,12 @@ def activate():
     global original_converter
 
     # If module is already activated, there is nothing to do
-    if original_converter is not None: 
+    if original_converter is not None:
         return
 
     original_converter = conversion.converter
     new_converter = conversion.make_converter(template=original_converter)
-    
+
     for k,v in py2ri.registry.items():
         if k is object:
             continue
