@@ -107,6 +107,22 @@ class NumpyConversionsTestCase(unittest.TestCase):
         # Make sure we got the row/column swap right:
         self.assertEqual(r["["](f3d_r, 1, 2, 3)[0], f3d[0, 1, 2])
 
+    def testScalar(self):
+        i32 = numpy.int32(100)
+        i32_r = conversion.py2ri(i32)
+        i32_test = numpy.array(i32_r)[0]
+        self.assertEqual(i32, i32_test)
+
+        i64 = numpy.int64(100)
+        i64_r = conversion.py2ri(i64)
+        i64_test = numpy.array(i64_r)[0]
+        self.assertEqual(i64, i64_test)
+
+        f128 = numpy.float128(100.000000003)
+        f128_r = conversion.py2ri(f128)
+        f128_test = numpy.array(f128_r)[0]
+        self.assertEqual(f128, f128_test)
+
     def testObjectArray(self):
         o = numpy.array([1, "a", 3.2], dtype=numpy.object_)
         o_r = conversion.py2ri(o)
@@ -142,7 +158,7 @@ class NumpyConversionsTestCase(unittest.TestCase):
         self.assertEqual(robjects.rinterface.REALSXP, x_r.typeof)
         #
         self.assertEqual((20,), tuple(x_r.dim))
-        
+
 
     def testDataFrameToNumpy(self):
         df = robjects.vectors.DataFrame(dict((('a', 1), ('b', 2))))
@@ -159,7 +175,7 @@ class NumpyConversionsTestCase(unittest.TestCase):
 
     def testRx2(self):
         df = robjects.vectors.DataFrame({
-            "A": robjects.vectors.IntVector([1,2,3]), 
+            "A": robjects.vectors.IntVector([1,2,3]),
             "B": robjects.vectors.IntVector([1,2,3])})
         b = df.rx2('B')
         self.assertEquals(tuple((1,2,3)), tuple(b))
