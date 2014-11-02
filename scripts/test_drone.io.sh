@@ -9,7 +9,7 @@ PYTHON_VERSIONS="2.7 3.3 3.4"
 #PYTHON_VERSIONS="3.3"
 
 # Define the target Numpy versions
-NUMPY_VERSIONS="1.9.0"
+NUMPY_VERSIONS="1.9.1"
 
 # Settings to install python packages as wheels
 DEPS_DIR="deps/"
@@ -107,6 +107,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
     fi
   done
 done
+echo '=========='
 for ((i = 0; i < ${#summary[@]}; i++))
 do
   echo -e ${summary[$i]}
