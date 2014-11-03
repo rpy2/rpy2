@@ -296,8 +296,8 @@ Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure)
   SexpObject *sexpobj_orig = ((PySexpObject*)self)->sObj;
   #ifdef RPY_DEBUG_COBJECT
   printf("Setting %p (count: %i) to %p (count: %i)\n", 
-         sexpobj_orig, (int)sexpobj_orig->count,
-         sexpobj_new, (int)sexpobj_new->count);
+         sexpobj_orig, (int)sexpobj_orig->pycount,
+         sexpobj_new, (int)sexpobj_new->pycount);
   #endif
 
   if ( (sexpobj_orig->sexp != R_NilValue) &
@@ -430,9 +430,9 @@ Sexp_refcount_get(PyObject *self)
     return NULL;
   }
 #if (PY_VERSION_HEX < 0x03010000)  
-  PyObject *res = PyInt_FromLong((long)(rpyobj->sObj->count));
+  PyObject *res = PyInt_FromLong((long)(rpyobj->sObj->pycount));
 #else
-  PyObject *res = PyLong_FromLong((long)(rpyobj->sObj->count));
+  PyObject *res = PyLong_FromLong((long)(rpyobj->sObj->pycount));
 #endif
   return res;
 }

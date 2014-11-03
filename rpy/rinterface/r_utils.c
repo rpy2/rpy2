@@ -29,6 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 #include <Rdefines.h>
+#include <R_ext/Rallocators.h>
 
 SEXP rpy_serialize(SEXP object, SEXP rho)
 {
@@ -160,4 +161,29 @@ rpy_lang2str(SEXP sexp, SEXPTYPE t) {
   }
   return PRINTNAME(s_str.call_sym);
 	
+}
+
+
+static void *externallymanaged_alloc(R_allocator_t *allocator, 
+				     size_t length)
+{
+  return ((ExternallyManagedVector *)allocator->data)->array;
+}
+
+static void externallymanaged_free(R_allocator_t *allocator, 
+				   void *mem)
+{
+  ((ExternallyManagedVector *)allocator->data)->rfree = 1;
+}
+
+SEXP externallymanaged_vector(SEXPTYPE rtype, void *array, int length)
+{
+  R_allocator_t allocator = {externallymanaged_alloc, 
+			     externallymanaged_free,
+			     0, 0};
+  ExternallyManagedVector *extvector = malloc(sizeof(ExternallyManagedVector));
+  extvector->array = (void *) array;
+  extvector->rfree = 0;
+  allocator.data = extvector;
+  return Rf_allocVector3(rtype, length, &allocator);
 }

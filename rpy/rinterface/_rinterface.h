@@ -26,10 +26,13 @@ extern "C" {
  */
 #define RPY_MAX_VALIDSEXTYPE 99
 
+/* -- SexpObject-begin -- */
 typedef struct {
-  Py_ssize_t count;
+  Py_ssize_t pycount;
+  int rcount;
   SEXP sexp;
 } SexpObject;
+/* -- SexpObject-end -- */
 
 typedef struct {
   PyObject_HEAD 

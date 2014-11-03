@@ -26,7 +26,7 @@ static inline unsigned int rpy_has_status(unsigned int status) {
 */
 static void SexpObject_clear(SexpObject *sexpobj)
 {
-  if (sexpobj->count <= 0) {
+  if (sexpobj->pycount <= 0) {
     printf("Warning: clearing an R object with a refcount <= zero.\n");
   }
 
@@ -123,7 +123,7 @@ static SexpObject* Rpy_PreserveObject(SEXP object) {
       PyErr_NoMemory();
       return NULL;
     }
-    sexpobj_ptr->count = 1;
+    sexpobj_ptr->pycount = 1;
     sexpobj_ptr->sexp = object;
     capsule = PyCapsule_New((void *)(sexpobj_ptr),
 			    "rpy2.rinterface._C_API_",
@@ -158,7 +158,7 @@ static SexpObject* Rpy_PreserveObject(SEXP object) {
     sexpobj_ptr = (SexpObject *)(PyCapsule_GetPointer(capsule,
 						      "rpy2.rinterface._C_API_"));
     if (sexpobj_ptr != NULL) {
-      sexpobj_ptr->count++;
+      sexpobj_ptr->pycount++;
     }
   }
   Py_DECREF(key);
@@ -225,7 +225,7 @@ static int Rpy_ReleaseObject(SEXP object) {
   }
   int res = 0;
 
-  switch (sexpobj_ptr->count) {
+  switch (sexpobj_ptr->pycount) {
   case 0:
     if (object != R_NilValue) {
       res = -1;
@@ -241,7 +241,7 @@ static int Rpy_ReleaseObject(SEXP object) {
       will go down by one, reach zero, and the release of the R object 
       will be performed. */
     if (object == R_NilValue) {
-      sexpobj_ptr->count--;
+      sexpobj_ptr->pycount--;
     } else {
       res = PyDict_DelItem(Rpy_R_Precious, key);
       if (res == -1)
@@ -269,7 +269,7 @@ static int Rpy_ReleaseObject(SEXP object) {
     /*   printf("Count 2 for: 0\n"); */
     /*   break; */
     /* } */
-    sexpobj_ptr->count--;
+    sexpobj_ptr->pycount--;
     /* if (object == R_NilValue) { */
     /*   sexpobj_ptr->count--; */
     /* } else { */
@@ -282,7 +282,7 @@ static int Rpy_ReleaseObject(SEXP object) {
     /* } */
     break;
   default:
-    sexpobj_ptr->count--;
+    sexpobj_ptr->pycount--;
     break;
   }
   
@@ -336,7 +336,7 @@ static PyObject* Rpy_ProtectedIDs(PyObject *self) {
     PyTuple_SET_ITEM(id_count, 0, key);
     sexpobject_ptr = (SexpObject *)(PyCapsule_GetPointer(capsule,
 							 "rpy2.rinterface._C_API_"));
-    PyTuple_SET_ITEM(id_count, 1, PyLong_FromLong(sexpobject_ptr->count));
+    PyTuple_SET_ITEM(id_count, 1, PyLong_FromLong(sexpobject_ptr->pycount));
     PyTuple_SET_ITEM(ids, pos_ids, id_count);
     pos_ids++;
   }
