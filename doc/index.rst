@@ -17,7 +17,7 @@ Documentation for rpy2
 
 .. only:: html
 
-   .. img:: _static/rpy2_logo.png
+   .. image:: _static/rpy2_logo.png
 
 
 .. only:: html

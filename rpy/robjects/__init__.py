@@ -188,14 +188,14 @@ def _(obj):
 
 @default_converter.ri2py.register(object)
 def _(obj):
-    return conversion.ri2ro(object)
+    return conversion.ri2ro(obj)
 
 class Formula(RObjectMixin, rinterface.Sexp):
 
     def __init__(self, formula, environment = _globalenv):
         if isinstance(formula, str):
             inpackage = rinterface.baseenv["::"]
-            asformula = inpackage(rinterface.StrSexpVector(['stats', ]), 
+            asformula = inpackage(rinterface.StrSexpVector(['stats', ]),
                                   rinterface.StrSexpVector(['as.formula', ]))
             formula = rinterface.SexpVector(rinterface.StrSexpVector([formula, ]))
             robj = asformula(formula,
@@ -203,7 +203,7 @@ class Formula(RObjectMixin, rinterface.Sexp):
         else:
             robj = formula
         super(Formula, self).__init__(robj)
-        
+
     def getenvironment(self):
         """ Get the environment in which the formula is finding its symbols."""
         res = self.do_slot(".Environment")
@@ -221,7 +221,7 @@ class Formula(RObjectMixin, rinterface.Sexp):
                            "R environment in which the formula will look for" +
                            " its variables.")
 
-    
+
 class R(object):
     _instance = None
 
@@ -230,7 +230,7 @@ class R(object):
             rinterface.initr()
             cls._instance = object.__new__(cls)
         return cls._instance
-        
+
     def __getattribute__(self, attr):
         try:
             return super(R, self).__getattribute__(attr)
@@ -243,7 +243,7 @@ class R(object):
             raise orig_ae
 
     def __getitem__(self, item):
-        res = _globalenv.get(item)        
+        res = _globalenv.get(item)
         res = conversion.ri2ro(res)
         if hasattr(res, '__rname__'):
             res.__rname__ = item
