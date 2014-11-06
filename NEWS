@@ -1,5 +1,14 @@
-Release 2.5.0-dev
-=================
+Release 2.5.1
+=============
+
+Bug fixed
+---------
+
+- require singledispatch if Python 3.3 (issue #232)
+
+
+Release 2.5.0
+=============
 
 New features
 ------------
