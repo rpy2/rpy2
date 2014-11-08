@@ -4,7 +4,9 @@ Release 2.5.1
 Bug fixed
 ---------
 
-- require singledispatch if Python 3.3 (issue #232)
+- Require singledispatch if Python 3.3 (issue #232)
+
+- Fixed bug when R spits out a warning when asked configuration information (issue #233)
 
 
 Release 2.5.0
