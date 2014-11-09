@@ -218,6 +218,17 @@ def getRinterface_ext():
         libraries.extend(args.l)
     extra_link_args.extend(unknown)
     
+    print("""
+    Compilation parameters for rpy2's C components:
+        include_dirs    = %s
+        library_dirs    = %s
+        libraries       = %s
+        extra_link_args = %s
+    """ % (str(include_dirs),
+           str(library_dirs), 
+           str(libraries), 
+           str(extra_link_args)))
+
     rinterface_ext = Extension(
             name = pack_name + '.rinterface._rinterface',
             sources = [os.path.join(package_prefix,
