@@ -8,6 +8,8 @@ Bug fixed
 
 - Fixed bug when R spits out a warning when asked configuration information (issue #233)
 
+- Restored printing of compilation information when running `setup.py`
+
 
 Release 2.5.0
 =============
