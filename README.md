@@ -1,6 +1,7 @@
 This is the source tree or distribution for the rpy2 package.
 
 [![Build Status](https://drone.io/bitbucket.org/lgautier/rpy2/status.png)](https://drone.io/bitbucket.org/lgautier/rpy2/latest)
+[![PyPi version](https://pypip.in/v/rpy2/badge.png)](https://crate.io/packages/rpy2/)
 
 Installation
 ============
@@ -54,5 +55,3 @@ License
 RPy2 can be used under the terms of either the GNU
 General Public License Version 2 or later (see the file
 gpl-2.0.txt).
-
-
