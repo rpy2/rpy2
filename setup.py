@@ -138,8 +138,6 @@ class RExec(object):
         return output
 
 def getRinterface_ext():
-    #r_libs = [os.path.join(RHOME, 'lib'), os.path.join(RHOME, 'modules')]
-    r_libs = []
     extra_link_args = []
     extra_compile_args = []
     include_dirs = []
@@ -252,9 +250,9 @@ def getRinterface_ext():
             include_dirs = [os.path.join(package_prefix,
                                          'rpy', 'rinterface'),] + include_dirs,
             libraries = libraries,
-            library_dirs = r_libs,
+            library_dirs = library_dirs,
             define_macros = define_macros,
-            runtime_library_dirs = r_libs,
+            runtime_library_dirs = library_dirs,
             extra_compile_args=extra_compile_args,
             extra_link_args = extra_link_args
             )
@@ -268,9 +266,9 @@ def getRinterface_ext():
         include_dirs = include_dirs + 
         [os.path.join('rpy', 'rinterface'), ],
         libraries = libraries,
-        library_dirs = r_libs,
+        library_dirs = library_dirs,
         define_macros = define_macros,
-        runtime_library_dirs = r_libs,
+        runtime_library_dirs = library_dirs,
         extra_compile_args=extra_compile_args,
         extra_link_args = extra_link_args
         )
