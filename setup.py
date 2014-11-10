@@ -9,8 +9,6 @@ from setuptools.command.build_ext import build_ext as _build_ext
 pack_name = 'rpy2'
 pack_version = __import__('rpy').__version__
 
-default_lib_directory = 'bin' if sys.platform=='win32' else 'lib'
-
 package_prefix='.'
 
 class build_ext(_build_ext):
