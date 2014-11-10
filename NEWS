@@ -10,6 +10,8 @@ Bug fixed
 
 - Restored printing of compilation information when running `setup.py`
 
+- Fixed installation issue on some systems (issue #234)
+
 
 Release 2.5.0
 =============
