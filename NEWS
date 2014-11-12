@@ -12,6 +12,9 @@ Bug fixed
 
 - Fixed installation issue on some systems (issue #234)
 
+- Workaround obscure failure message from unittest if Python < 3.4 and
+  :mod:`singledispatch` cannot be imported (issue #235)
+
 
 Release 2.5.0
 =============
