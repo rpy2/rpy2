@@ -1,8 +1,17 @@
+Release 2.5.2
+=============
+
+Bugs fixed
+----------
+
+- String representation of :class:`robjects.R` (issue #238)
+
+
 Release 2.5.1
 =============
 
-Bug fixed
----------
+Bugs fixed
+----------
 
 - Require singledispatch if Python 3.3 (issue #232)
 
