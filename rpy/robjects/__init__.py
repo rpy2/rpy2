@@ -32,6 +32,8 @@ from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Co
 if sys.version_info[0] == 2:
     py3str = unicode
     py3bytes = str
+    import itertools
+    zip = itertools.izip
 else:
     long = int
     py3str = str
@@ -258,7 +260,7 @@ class R(object):
         s = super(R, self).__str__()
         s += os.linesep
         version = self["version"]
-        tmp = [n+': '+val[0] for n, val in itertools.izip(version.names, version)]
+        tmp = [n+': '+val[0] for n, val in zip(version.names, version)]
         s += str.join(os.linesep, tmp)
         return s
 
