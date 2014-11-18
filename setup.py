@@ -11,6 +11,32 @@ pack_version = __import__('rpy').__version__
 
 package_prefix='.'
 
+def _get_r_home(r_bin = "R"):
+    
+    if (os.getenv('R_ENVIRON') is not None) or (os.getenv('R_ENVIRON_USER') is not None):
+        warnings.warn("The environment variable R_ENVIRON or R_ENVIRON_USER is set. Differences between their settings during build time and run time may lead to issues when using rpy2.")
+
+    try:
+        r_home = subprocess.check_output((r_bin, "RHOME"),
+                                         universal_newlines=True)
+    except:
+        raise SystemExit("Error: Tried to guess R's HOME but no command (%s) in the PATH." % r_bin)
+
+    r_home = r_home.split(os.linesep)
+
+    #Twist if 'R RHOME' spits out a warning
+    if r_home[0].startswith("WARNING"):
+        warnings.warning("R emitting a warning: %s" % r_home[0])
+        r_home = r_home[1].rstrip()
+    else:
+        r_home = r_home[0].rstrip()
+
+    if os.path.exists(os.path.join(r_home, 'Renviron.site')):
+        warnings.warn("The optional file '%s' is defined. Modifying it between build time and run time may lead to issues when using rpy2." % os.path.join(r_home, 'Renviron.site'))
+
+    return r_home
+
+
 class build_ext(_build_ext):
     """
     -DRPY_STRNDUP          : definition of strndup()
@@ -43,20 +69,7 @@ class build_ext(_build_ext):
 
     def finalize_options(self):
         self.set_undefined_options('build')
-        try:
-            r_home = subprocess.check_output(("R", "RHOME"),
-                                             universal_newlines=True)
-        except:
-            raise SystemExit("Error: Tried to guess R's HOME but no R command in the PATH.")
-
-        r_home = r_home.split(os.linesep)
-        #Twist if 'R RHOME' spits out a warning
-        if r_home[0].startswith("WARNING"):
-            warnings.warning("R emitting a warning: %s" % r_home[0])
-            r_home = r_home[1].rstrip()
-        else:
-            r_home = r_home[0].rstrip()
-
+        r_home = _get_r_home()
         rexec = RExec(r_home)
         if rexec.version[0] == 'development' or \
            cmp_version(rexec.version[:2], [2, 8]) == -1:
@@ -172,20 +185,7 @@ def getRinterface_ext():
     else:
         pass
 
-    try:
-        r_home = subprocess.check_output(("R", "RHOME"),
-                                         universal_newlines=True)
-    except:
-        raise SystemExit("Error: Tried to guess R's HOME but no R command in the PATH.")
-
-    r_home = r_home.split(os.linesep)
-    #Twist if 'R RHOME' spits out a warning
-    if r_home[0].startswith("WARNING"):
-        warnings.warning("R emitting a warning: %s" % r_home[0])
-        r_home = r_home[1].rstrip()
-    else:
-        r_home = r_home[0].rstrip()
-
+    r_home = _get_r_home()
     rexec = RExec(r_home)
     if rexec.version[0] == 'development' or \
        cmp_version(rexec.version[:2], [2, 8]) == -1:

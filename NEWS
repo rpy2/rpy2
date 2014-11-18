@@ -1,3 +1,14 @@
+Release 2.6.0
+=============
+
+New features
+------------
+
+- Report the existence during build time of a file `.Renviron`,
+  or the definition of the environment variables `R_ENVIRON' or
+  `R_ENVIRON_USER` with a warning. (issue #204)
+
+
 Release 2.5.2
 =============
 
