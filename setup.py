@@ -52,6 +52,7 @@ class build_ext(_build_ext):
         r_home = r_home.split(os.linesep)
         #Twist if 'R RHOME' spits out a warning
         if r_home[0].startswith("WARNING"):
+            warnings.warning("R emitting a warning: %s" % r_home[0])
             r_home = r_home[1].rstrip()
         else:
             r_home = r_home[0].rstrip()
@@ -108,6 +109,7 @@ class RExec(object):
         rversion = next(output)
         #Twist if 'R --version' spits out a warning
         if rversion.startswith("WARNING"):
+            warnings.warning("R emitting a warning: %s" % rversion)
             rversion = next(output)
         print(rversion)
         m = re.match('^R ([^ ]+) ([^ ]+) .+$', rversion)
@@ -132,6 +134,7 @@ class RExec(object):
         output = output.split(os.linesep)
         #Twist if 'R RHOME' spits out a warning
         if output[0].startswith("WARNING"):
+            warnings.warning("R emitting a warning: %s" % output[0])
             output = output[1:]
             output = output.strip()
         return output
@@ -178,6 +181,7 @@ def getRinterface_ext():
     r_home = r_home.split(os.linesep)
     #Twist if 'R RHOME' spits out a warning
     if r_home[0].startswith("WARNING"):
+        warnings.warning("R emitting a warning: %s" % r_home[0])
         r_home = r_home[1].rstrip()
     else:
         r_home = r_home[0].rstrip()
