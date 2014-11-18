@@ -21,6 +21,8 @@ Bugs fixed
 
 - HTMl display of columns of factors in a DataFrame (issue #236)
 
+- HTML display of factors (issue #242)
+
 
 Release 2.5.1
 =============
