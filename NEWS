@@ -6,6 +6,8 @@ Bugs fixed
 
 - String representation of :class:`robjects.R` (issue #238)
 
+- Check during `build_ext` if unsupported version of R (pull request #32)
+
 
 Release 2.5.1
 =============
