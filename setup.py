@@ -106,7 +106,7 @@ class RExec(object):
                                          universal_newlines = True)
         output = iter(output.split(os.linesep))
         rversion = next(output)
-        #Twist if 'R RHOME' spits out a warning
+        #Twist if 'R --version' spits out a warning
         if rversion.startswith("WARNING"):
             rversion = next(output)
         print(rversion)
