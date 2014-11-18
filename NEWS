@@ -8,6 +8,8 @@ Bugs fixed
 
 - Check during `build_ext` if unsupported version of R (pull request #32)
 
+- HTMl display of columns of factors in a DataFrame (issue #236)
+
 
 Release 2.5.1
 =============
