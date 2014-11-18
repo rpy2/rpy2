@@ -112,6 +112,7 @@ class RExec(object):
         print(rversion)
         m = re.match('^R ([^ ]+) ([^ ]+) .+$', rversion)
         if m is None:
+            warnings.warn("Unable to extract R's version number from the string: '%s'" % rversion)
             # return dummy version 0.0
             rversion = [0, 0]
         else:
