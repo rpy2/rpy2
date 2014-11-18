@@ -184,10 +184,7 @@ def getRinterface_ext():
     rexec = RExec(r_home)
     if rexec.version[0] == 'development' or \
        cmp_version(rexec.version[:2], [2, 8]) == -1:
-        if self.ignore_check_rversion:
-            warnings.warn("R did not seem to have the minimum required version number")
-        else:
-            raise SystemExit("Error: R >= 2.8 required (and R told '%s')." %'.'.join(rexec.version))    
+        warnings.warn("R did not seem to have the minimum required version number")
 
     ldf = shlex.split(' '.join(rexec.cmd_config('--ldflags')))
     cppf = shlex.split(' '.join(rexec.cmd_config('--cppflags')))
