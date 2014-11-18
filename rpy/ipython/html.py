@@ -229,6 +229,22 @@ from rpy2.robjects import (vectors,
                            SignatureTranslatedFunction,
                            RS4)
 
+
+class StrFactorVector(vectors.FactorVector):
+
+    def __getitem__(self, item):
+        integer = super(StrFactorVector, self).__getitem__(item)
+        # R is one-offset, Python is zero-offset
+        return self.levels[integer-1]
+
+class StrDataFrame(vectors.DataFrame):
+    
+    def __getitem__(self, item):
+        obj = super(StrDataFrame, self).__getitem__(item)
+        if isinstance(obj, vectors.FactorVector):
+            obj = StrFactorVector(obj)
+        return obj
+
 def html_vector_horizontal(vector,
                 display_ncolmax=10,
                 size_tail=2):
@@ -257,7 +273,7 @@ def html_rdataframe(dataf,
                     display_ncolmax=6,
                     size_coltail=2, size_rowtail=2):
     html = template_dataframe.render(
-        {'dataf': dataf,
+        {'dataf': StrDataFrame(dataf),
          'has_rownames': dataf.rownames is not None,
          'clsname': type(dataf).__name__,
          'display_nrowmax': min(display_nrowmax, dataf.nrow),
