@@ -248,6 +248,8 @@ class StrDataFrame(vectors.DataFrame):
 def html_vector_horizontal(vector,
                 display_ncolmax=10,
                 size_tail=2):
+    if isinstance(vector, vectors.FactorVector):
+        vector = StrFactorVector(vector)
     html = template_vector_horizontal.render({
         'clsname': type(vector).__name__,
         'vector': vector,
