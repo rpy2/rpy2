@@ -1,3 +1,14 @@
+Release 2.5.3
+=============
+
+Changes
+-------
+
+- `setup.py` has `install_requires` in addition to `requires` in the hope to
+   fix the missing dependency with Python 2 (:mod:`singledispatch` is required
+   but not installed).
+
+
 Release 2.5.2
 =============
 

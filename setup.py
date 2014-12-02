@@ -296,6 +296,7 @@ if __name__ == '__main__':
         author = "Laurent Gautier",
         author_email = "lgautier@gmail.com",
         requires = requires,
+        install_requires = requires,
         ext_modules = rinterface_exts,
         package_dir = pack_dir,
         packages = [pack_name,
