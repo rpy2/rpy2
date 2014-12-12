@@ -19,7 +19,13 @@ Changes
    fix the missing dependency with Python 2 (:mod:`singledispatch` is required
    but not installed).
 
+Bugs fixed
+----------
+
 - Extracting configuration information from should now work when R is emitting a warning (issue #247) 
+
+- On OS X the library discovery step can yield nothing (see issue #246). A tentative fix is to issue
+  a warning and keep moving.
 
 
 Release 2.5.2

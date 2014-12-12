@@ -210,7 +210,11 @@ def getRinterface_ext():
     # OS X's frameworks need special attention
     if args.L is None:
         # presumably OS X and framework:
-        libraries.extend([x for x in args.l if x != 'R'])
+        if args.l is None:
+            # hmmm... no libraries at all
+            warnings.warn('No libraries as -l arguments to the compiler.')
+        else:
+            libraries.extend([x for x in args.l if x != 'R'])
     else:
         library_dirs.extend(args.L)
         libraries.extend(args.l)
