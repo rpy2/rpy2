@@ -148,7 +148,7 @@ class RExec(object):
         #Twist if 'R RHOME' spits out a warning
         if output[0].startswith("WARNING"):
             warnings.warning("R emitting a warning: %s" % output[0])
-            output = output[1:]
+            output = output[1]
             output = output.strip()
         return output
 
