@@ -203,7 +203,10 @@ def getRinterface_ext():
 
     # compile
     args, unknown = parser.parse_known_args(cppf)
-    include_dirs.extend(args.I)
+    if args.I is None:
+        warnigs.warn('No include specified')
+    else:
+        include_dirs.extend(args.I)
     extra_compile_args.extend(unknown)
     # link
     args, unknown = parser.parse_known_args(ldf)
