@@ -429,8 +429,9 @@ utils.install_packages('Cairo')
         md = {}
 
         if self.device == 'png':
-            images = [open(imgfile, 'rb').read() for imgfile in
-                      glob("%s/Rplots*png" % graph_dir)]
+            for imgfile in glob("%s/Rplots*png" % graph_dir):
+                if stat(imgfile).st_size >= 1000:                
+                    images.append(open(imgfile, 'rb').read())
         else:
             # as onefile=TRUE, there is only one .svg file
             imgfile = "%s/Rplot.svg" % graph_dir
