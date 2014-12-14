@@ -1,3 +1,13 @@
+Release 2.5.4
+=============
+
+Bugs fixed
+----------
+
+- Filter PNG files on size, preventing empty files causing trouble to be ipython notebook rendering
+  of graphics later on (slight modification of the pull request #39)
+
+
 Release 2.5.3
 =============
 
