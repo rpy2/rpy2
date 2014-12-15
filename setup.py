@@ -132,8 +132,7 @@ class RExec(object):
         #Twist if 'R RHOME' spits out a warning
         if output[0].startswith("WARNING"):
             warnings.warn("R emitting a warning: %s" % output[0])
-            output = output[1]
-            output = output.strip()
+            output = output[1:]
         return output
 
 def getRinterface_ext():
