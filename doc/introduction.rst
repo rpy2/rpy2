@@ -13,11 +13,53 @@ Getting started
 
 It is assumed here that the rpy2 package has been properly installed.
 In python, making a package or module available is achieved by
-importing it:
+importing it. `rpy2` is just a python package. Most users will interact
+with R using the `robjects` layer, a high-level interface that tries
+to hide R behind a Python-like behavior.
 
 .. code-block:: python
 
    import rpy2.robjects as robjects
+
+R packages
+==========
+
+R is  any data analysis toolbox because of the
+breadth and depth of the packages available.
+
+For this introduction, we recommend installing a couple of popular packages.
+
+Downloading and installing R packages is usually performed by fetching R packages
+from a package repository and installing them locally. We can get set with:
+
+.. code-block:: python
+
+   # import rpy2's package module
+   import rpy2.robjects.packages as rpackages
+   # import R's utility package
+   utils = rpackages.importr('utils')
+   # select a mirror for R packages
+   utils.chooseCRANmirror(ind=1) # select the first mirror in the list
+
+We are now ready to install packages using R's own function `install.package`:
+
+.. code-block:: python
+
+   # R package names
+   packnames = ('ggplot2', 'hexbin')
+
+   # R vector of strings
+   from rpy2.robjects.vectors import StrVector
+   # file
+   packnames_to_install = [x for packnames if not rpackages.isinstalled(x)]
+   if len(packnames_to_install) > 0:
+       utils.install_packages(StrVector(packnames_to_install))
+
+The code above can be part of Python you distribute if you are relying on packages not distributed with
+R by default.
+
+
+More documentation about the handling of R packages in `rpy2` can be found Section :ref:`robjects-packages`.
 
 
 The `r` instance
