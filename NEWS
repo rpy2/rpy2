@@ -19,6 +19,8 @@ Bugs fixed
   ipython notebook rendering of graphics later on (slight modification of
   the pull request #39)
 
+- Fix installation left unresolved with rpy2-2.5.3 (issue #248)
+
 - Possible segfault with Python 3.4 (issue #249)
 
 
