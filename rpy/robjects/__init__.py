@@ -237,12 +237,12 @@ class R(object):
         try:
             return super(R, self).__getattribute__(attr)
         except AttributeError as ae:
-            orig_ae = ae
+            orig_ae = str(ae)
 
         try:
             return self.__getitem__(attr)
         except LookupError as le:
-            raise orig_ae
+            raise AttributeError(orig_ae)
 
     def __getitem__(self, item):
         res = _globalenv.get(item)
