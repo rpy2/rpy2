@@ -1,7 +1,11 @@
 This is the source tree or distribution for the rpy2 package.
 
-<a href="https://drone.io/bitbucket.org/lgautier/rpy2/latest"><img alt="Build Status" src="https://drone.io/bitbucket.org/lgautier/rpy2/status.png">]</a>
-<a href="https://crate.io/packages/rpy2/"><img alt="PyPi version" src="https://pypip.in/v/rpy2/badge.png"></a>
+.. image:: https://drone.io/bitbucket.org/lgautier/rpy2/status.png
+        :target: https://drone.io/bitbucket.org/lgautier/rpy2/latest
+
+.. image:: https://pypip.in/v/rpy2/badge.png
+        :target: https://crate.io/packages/rpy2/
+
 
 Installation
 ============
