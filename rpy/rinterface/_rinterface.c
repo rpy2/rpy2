@@ -2252,22 +2252,60 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
 #endif
     return NULL;
   }
-  res_R = findVarInFrame(rho_R, install(name));
-  if (res_R != R_UnboundValue) {
+
+  /* use R's "get" */
+  SEXP rsymb_internal = Rf_install(".Internal");
+  SEXP rsymb_get = Rf_install("get");
+  SEXP rlang_get = Rf_lang5(rsymb_get,
+			    Rf_mkString(name), // x
+  			    rho_R,
+  			    Rf_mkString("any"),
+   			    Rf_ScalarLogical(FALSE));
+  SEXP rcall_get = Rf_lang2(rsymb_internal,
+			    rlang_get);
+  int errorOccurred = 0;
+  res_R = R_tryEval(rcall_get, R_GlobalEnv, &errorOccurred);
+
+  if (errorOccurred) {
+    /* /\* 2 options here: no such key, or the somewhat entertaining */
+    /*    "error on retrieve" (see issue #251) *\/ */
+    SEXP rsymb_exists = Rf_install("exists");
+    SEXP rlang_exists = Rf_lang5(rsymb_exists,
+     				 Rf_mkString(name), // x
+     				 rho_R,
+     				 Rf_mkString("any"),
+     				 Rf_ScalarLogical(FALSE));
+    SEXP rcall_exists = Rf_lang2(rsymb_internal,
+     				 rlang_exists);
+    res_R = R_tryEval(rcall_exists, R_GlobalEnv, &errorOccurred);
+    if (! asLogical(res_R)) {
+      /* Error because of a missing key */
+      PyErr_Format(PyExc_LookupError, "'%s' not found", name);
+#if (PY_VERSION_HEX >= 0x03010000)
+      Py_DECREF(pybytes);
+#endif
+      embeddedR_freelock();
+      return NULL;
+    } else {
+      /* Retrieving the value associated with an existing key
+         triggers an error in R. Don't ask. This is R. */
+      res_R = R_NilValue;
+      EmbeddedR_exception_from_errmessage();
+#if (PY_VERSION_HEX >= 0x03010000)
+      Py_DECREF(pybytes);
+#endif
+      embeddedR_freelock();
+      return NULL;
+    }
+  } else {
+    /* No error */
 #if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
 #endif
     embeddedR_freelock();
     return newPySexpObject(res_R);
   }
-  PyErr_Format(PyExc_LookupError, "'%s' not found", name);
-#if (PY_VERSION_HEX >= 0x03010000)
-    Py_DECREF(pybytes);
-#endif
-  embeddedR_freelock();
-  return NULL;
 }
-
 
 static int
 EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
