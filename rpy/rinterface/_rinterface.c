@@ -1565,7 +1565,7 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 
   /* FIXME: evaluate expression in the given environment */
   interrupted = 0;
-  res_R = R_tryEval(expr_R, env_R, &errorOccurred);
+  res_R = R_tryEvalSilent(expr_R, env_R, &errorOccurred);
 
   /* Py_END_ALLOW_THREADS */
 #ifdef _WIN32
@@ -2264,7 +2264,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
   SEXP rcall_get = Rf_lang2(rsymb_internal,
 			    rlang_get);
   int errorOccurred = 0;
-  res_R = R_tryEval(rcall_get, R_GlobalEnv, &errorOccurred);
+  res_R = R_tryEvalSilent(rcall_get, R_GlobalEnv, &errorOccurred);
 
   if (errorOccurred) {
     /* /\* 2 options here: no such key, or the somewhat entertaining */
@@ -2277,7 +2277,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
      				 Rf_ScalarLogical(FALSE));
     SEXP rcall_exists = Rf_lang2(rsymb_internal,
      				 rlang_exists);
-    res_R = R_tryEval(rcall_exists, R_GlobalEnv, &errorOccurred);
+    res_R = R_tryEvalSilent(rcall_exists, R_GlobalEnv, &errorOccurred);
     if (! asLogical(res_R)) {
       /* Error because of a missing key */
       PyErr_Format(PyExc_LookupError, "'%s' not found", name);

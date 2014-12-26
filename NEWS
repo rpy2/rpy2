@@ -8,6 +8,14 @@ New features
   or the definition of the environment variables `R_ENVIRON' or
   `R_ENVIRON_USER` with a warning. (issue #204)
 
+Bugs fixed
+----------
+
+- The evaluation of R code through R's C-level function `tryEval`
+  caused console output whenever an error occurred. Moving to
+  the seeming experimental `tryEvalSilent` makes evaluations more
+  quiet.
+
 
 Release 2.5.4
 =============
