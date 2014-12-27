@@ -8,7 +8,7 @@ New features
   or the definition of the environment variables `R_ENVIRON' or
   `R_ENVIRON_USER` with a warning. (issue #204)
 
-- Move console writting callback to use `ptr_R_WriteConsoleEx`
+- Moved console writting callback to use `ptr_R_WriteConsoleEx`
   rather than `ptr_R_WriteConsole`. This allows to callbacks
   for warnings and messages. `get/set_writeconsole` is now 
   replaced by `get/set_writeconsole_regular` (regular
