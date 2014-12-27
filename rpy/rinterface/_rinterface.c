@@ -641,6 +641,8 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
 
 static PyObject* flushConsoleCallback = NULL;
 
+static PyObject* resetConsoleCallback = NULL;
+
 static PyObject* EmbeddedR_setFlushConsole(PyObject *self,
                                            PyObject *args)
 {
@@ -649,7 +651,19 @@ static PyObject* EmbeddedR_setFlushConsole(PyObject *self,
 
 PyDoc_STRVAR(EmbeddedR_setFlushConsole_doc,
              "set_flushconsole(f)\n\n"
-             "Set how to handle the flushing to the R conso with either None"
+             "Set how to handle the flushing of the R console with either None"
+             " or a function f such as f() returns None"
+             " (f only has side effects).");
+
+static PyObject* EmbeddedR_setResetConsole(PyObject *self,
+                                           PyObject *args)
+{
+  return EmbeddedR_setAnyCallback(self, args, &resetConsoleCallback);  
+}
+
+PyDoc_STRVAR(EmbeddedR_setResetConsole_doc,
+             "set_resetconsole(f)\n\n"
+             "Set how to handle the reset R console with either None"
              " or a function f such as f() returns None"
              " (f only has side effects).");
 
@@ -683,6 +697,41 @@ EmbeddedR_FlushConsole(void)
     PyErr_Clear();
   }
 
+  RPY_GIL_RELEASE(is_threaded, gstate);
+  return;
+}
+
+static PyObject * EmbeddedR_getResetConsole(PyObject *self,
+                                            PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, resetConsoleCallback);
+}
+
+PyDoc_STRVAR(EmbeddedR_getResetConsole_doc,
+             "get_resetconsole()\n\n"
+             "Retrieve the current R handler to reset the console"
+             " (see set_resetconsole)");
+
+static void
+EmbeddedR_ResetConsole(void)
+{
+
+  const int is_threaded = PyEval_ThreadsInitialized();
+  PyGILState_STATE gstate;
+  RPY_GIL_ENSURE(is_threaded, gstate);
+
+  //PyObject *result (returned by call below);
+  if (resetConsoleCallback != NULL) {
+    PyEval_CallObject(resetConsoleCallback, NULL);
+    PyObject* pythonerror = PyErr_Occurred();
+    if (pythonerror != NULL) {
+      /* All R actions should be stopped since the Python callback failed,
+	 and the Python exception raised up.*/
+      /* FIXME: Print the exception in the meanwhile */
+      PyErr_Print();
+      PyErr_Clear();
+    }
+  }
   RPY_GIL_RELEASE(is_threaded, gstate);
   return;
 }
@@ -1268,6 +1317,7 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args, PyObject *kwds)
   Rp->Busy = Re_Busy;
   Rp->ShowMessage = EmbeddedR_ShowMessage;
   /* Rp->FlushConsole = EmbeddedR_FlushConsole; */
+  Rp->ResetConsole = EmbeddedR_ResetConsole; 
   Rp->CallBack = win32CallBack;
   Rp->R_Quiet = FALSE;
   Rp->R_Interactive = TRUE;
@@ -1305,6 +1355,7 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args, PyObject *kwds)
   ptr_R_WriteConsole = NULL; /* Force use of WriteConsoleEx */
   ptr_R_WriteConsoleEx = EmbeddedR_WriteConsoleEx;
   ptr_R_FlushConsole = EmbeddedR_FlushConsole;
+  ptr_R_ResetConsole = EmbeddedR_ResetConsole;
   R_Outputfile = NULL;
   R_Consolefile = NULL;
   /* Redirect R console input */
@@ -3383,6 +3434,10 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_setFlushConsole_doc},
   {"get_flushconsole",   (PyCFunction)EmbeddedR_getFlushConsole,  METH_VARARGS,
    EmbeddedR_getFlushConsole_doc},
+  {"set_resetconsole",   (PyCFunction)EmbeddedR_setResetConsole,  METH_VARARGS,
+   EmbeddedR_setResetConsole_doc},
+  {"get_resetconsole",   (PyCFunction)EmbeddedR_getResetConsole,  METH_VARARGS,
+   EmbeddedR_getResetConsole_doc},
   {"set_showmessage",    (PyCFunction)EmbeddedR_setShowMessage,   METH_VARARGS,
    EmbeddedR_setShowMessage_doc},
   {"get_showmessage",    (PyCFunction)EmbeddedR_getShowMessage,   METH_VARARGS,

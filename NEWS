@@ -17,6 +17,8 @@ New features
   `get/set_writeconsole_regular` called `get/set_writeconsole` is
   provided.
 
+- Added callback for `ptr_R_ResetConsole`.
+
 Bugs fixed
 ----------
 

@@ -264,6 +264,19 @@ class CallbacksTestCase(unittest.TestCase):
         #self.assertTrue(errorstring.startswith('Traceback'))
         #tmp_file.close()
 
+    def testSetResetConsole(self):
+        reset = [0]
+        def f():
+            reset[0] += 1
+
+        rinterface.set_resetconsole(f)
+        self.assertEqual(rinterface.get_resetconsole(), f)
+        try:
+            rinterface.baseenv['eval'](rinterface.parse('1+"a"'))
+        except rinterface.RRuntimeError:
+            pass
+        self.assertEqual(1, reset[0])
+
     @onlyAQUAorWindows
     def testSetFlushConsole(self):
         flush = {'count': 0}
