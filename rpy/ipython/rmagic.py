@@ -222,8 +222,8 @@ utils.install_packages('Cairo')
         withVisible is a LISPy R function).
 
         '''
-        old_writeconsole = ri.get_writeconsole()
-        ri.set_writeconsole(self.write_console)
+        old_writeconsole_regular = ri.get_writeconsole_regular()
+        ri.set_writeconsole_regular(self.write_console_regular)
         try:
             # Need the newline in case the last line in code is a comment
             value, visible = ro.r("withVisible({%s\n})" % code)
@@ -231,10 +231,10 @@ utils.install_packages('Cairo')
             warning_or_other_msg = self.flush() # otherwise next return seems to have copy of error
             raise RInterpreterError(code, str_to_unicode(str(exception)), warning_or_other_msg)
         text_output = self.flush()
-        ri.set_writeconsole(old_writeconsole)
+        ri.set_writeconsole_regular(old_writeconsole_regular)
         return text_output, value, visible[0]
 
-    def write_console(self, output):
+    def write_console_regular(self, output):
         '''
         A hook to capture R's stdout in a cache.
         '''
@@ -637,11 +637,11 @@ utils.install_packages('Cairo')
                 text_result, result, visible = self.eval(code)
                 text_output += text_result
                 if visible:
-                    old_writeconsole = ri.get_writeconsole()
-                    ri.set_writeconsole(self.write_console)
+                    old_writeconsole_regular = ri.get_writeconsole_regular()
+                    ri.set_writeconsole_regular(self.write_console_regular)
                     ro.r.show(result)
                     text_output += self.flush()
-                    ri.set_writeconsole(old_writeconsole)
+                    ri.set_writeconsole_regular(old_writeconsole_regular)
 
         except RInterpreterError as e:
             # XXX - Maybe we should make this red or something?

@@ -191,7 +191,7 @@ import rpy2.rinterface as ri
 ri.initr()
 def f(x):
   pass
-ri.set_writeconsole(f)
+ri.set_writeconsole_regular(f)
 rcode = "i <- 0; "
 rcode += "while(TRUE) { "
 rcode += "i <- i+1; "
@@ -225,27 +225,27 @@ except Exception%s e:
 
 class CallbacksTestCase(unittest.TestCase):
     def tearDown(self):
-        rinterface.set_writeconsole(rinterface.consolePrint)
+        rinterface.set_writeconsole_regular(rinterface.consolePrint)
         rinterface.set_readconsole(rinterface.consoleRead)
         rinterface.set_readconsole(rinterface.consoleFlush)
         rinterface.set_choosefile(rinterface.chooseFile)
         sys.last_value = None
 
-    def testSetWriteConsole(self):
+    def testSetWriteConsoleRegular(self):
         buf = []
         def f(x):
             buf.append(x)
 
-        rinterface.set_writeconsole(f)
-        self.assertEqual(rinterface.get_writeconsole(), f)
+        rinterface.set_writeconsole_regular(f)
+        self.assertEqual(rinterface.get_writeconsole_regular(), f)
         code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
         rinterface.baseenv["print"](code)
         self.assertEqual('[1] "3"\n', str.join('', buf))
 
-    def testWriteConsoleWithError(self):
+    def testWriteConsoleRegularWithError(self):
         def f(x):
             raise CustomException("Doesn't work.")
-        rinterface.set_writeconsole(f)
+        rinterface.set_writeconsole_regular(f)
 
         tmp_file = tempfile.NamedTemporaryFile()
         stderr = sys.stderr
@@ -274,7 +274,7 @@ class CallbacksTestCase(unittest.TestCase):
         self.assertEqual(rinterface.get_flushconsole(), f)
         rinterface.baseenv.get("flush.console")()
         self.assertEqual(1, flush['count'])
-        rinterface.set_writeconsole(rinterface.consoleFlush)
+        rinterface.set_writeconsole_regular(rinterface.consoleFlush)
 
     @onlyAQUAorWindows
     def testFlushConsoleWithError(self):
@@ -355,7 +355,7 @@ class CallbacksTestCase(unittest.TestCase):
     def testChooseFileWithError(self):
         def noconsole(x):
             pass
-        rinterface.set_writeconsole(noconsole) # reverted by the tearDown method
+        rinterface.set_writeconsole_regular(noconsole) # reverted by the tearDown method
         def f(prompt):
             raise Exception("Doesn't work.")
         rinterface.set_choosefile(f)

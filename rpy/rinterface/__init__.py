@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, warnings
 
 
 try:
@@ -8,7 +8,6 @@ try:
 except AttributeError:
     # Python 2.6 and earlier do not represent version_info as
     # a namedtuple
-    import warnings
     warnings.warn("Unsupported Python version. Python (>=2.7 and < 3.0) or >=3.3 are thought to be required to run rpy2.")
 
 try:
@@ -112,7 +111,17 @@ else:
     def consolePrint(x):
         sys.stdout.write(x)
 
-set_writeconsole(consolePrint)
+def set_writeconsole(func):
+    DeprecationWarning("set_writeconsole is deprecated. Use set_writeconsole_regular or set_writeconsole_warnerror")
+    set_writeconsole_regular(func)
+
+def get_writeconsole():
+    DeprecationWarning("get_writeconsole is deprecated. Use get_writeconsole_regular or get_writeconsole_warnerror")
+    return get_writeconsole_regular()
+
+set_writeconsole_regular(consolePrint)
+
+set_writeconsole_warnerror(warnings.warn)
 
 def consoleFlush():
     sys.stdout.flush()

@@ -12,13 +12,13 @@ class SexpClosureTestCase(unittest.TestCase):
 
 
     def setUp(self):
-        self.console = rinterface.get_writeconsole()
+        self.console = rinterface.get_writeconsole_regular()
         def noconsole(x):
             pass
-        rinterface.set_writeconsole(noconsole)
+        rinterface.set_writeconsole_regular(noconsole)
 
     def tearDown(self):
-        rinterface.set_writeconsole(self.console)
+        rinterface.set_writeconsole_regular(self.console)
 
     def testNew(self):
         x = "a"

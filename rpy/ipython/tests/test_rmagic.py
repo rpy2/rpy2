@@ -79,12 +79,12 @@ result = rmagic_addone(12344)
         # This is converted to factors, which are currently converted back to Python
         # as integers, so for now we test its representation in R.
         sio = StringIO()
-        rinterface.set_writeconsole(sio.write)
+        rinterface.set_writeconsole_regular(sio.write)
         try:
             r('print(df$b[1])')
             self.assertIn('[1] bar', sio.getvalue())
         finally:
-            rinterface.set_writeconsole(None)
+            rinterface.set_writeconsole_regular(None)
 
         # Values come packaged in arrays, so we unbox them to test.
         self.assertEqual(r('df$a[2]')[0], 5)

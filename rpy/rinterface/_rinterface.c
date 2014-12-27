@@ -322,37 +322,75 @@ static PyObject* EmbeddedR_getAnyCallback(PyObject *self,
 }
 
 
-static PyObject* writeConsoleCallback = NULL;
+static PyObject* writeConsoleRegularCallback = NULL;
 
-static PyObject* EmbeddedR_setWriteConsole(PyObject *self,
-                                           PyObject *args)
+static PyObject* EmbeddedR_setWriteConsoleRegular(PyObject *self,
+						  PyObject *args)
 {
-  PyObject *res = EmbeddedR_setAnyCallback(self, args, &writeConsoleCallback);
+  PyObject *res = EmbeddedR_setAnyCallback(self, args, &writeConsoleRegularCallback);
   return res;
 }
 
-PyDoc_STRVAR(EmbeddedR_setWriteConsole_doc,
-             "set_writeconsole(f)\n\n"
-             "Set how to handle output from the R console with either None"
+PyDoc_STRVAR(EmbeddedR_setWriteConsoleRegular_doc,
+             "set_writeconsole_regular(f)\n\n"
+             "Set how to handle regular output from the R console with either None"
              " or a function f such as f(output) returns None"
              " (f only has side effects).");
 
-static PyObject * EmbeddedR_getWriteConsole(PyObject *self,
-                                            PyObject *args)
+static PyObject* writeConsoleWarnErrorCallback = NULL;
+
+static PyObject* EmbeddedR_setWriteConsoleWarnError(PyObject *self,
+						    PyObject *args)
 {
-  return EmbeddedR_getAnyCallback(self, args, writeConsoleCallback);
+  PyObject *res = EmbeddedR_setAnyCallback(self, args, &writeConsoleWarnErrorCallback);
+  return res;
 }
 
-PyDoc_STRVAR(EmbeddedR_getWriteConsole_doc,
-             "get_writeconsole()\n\n"
+PyDoc_STRVAR(EmbeddedR_setWriteConsoleWarnError_doc,
+             "set_writeconsole_warnerror(f)\n\n"
+             "Set how to handle warning or error output from the R console"
+	     " with either None"
+             " or a function f such as f(output) returns None"
+             " (f only has side effects).");
+
+static PyObject * EmbeddedR_getWriteConsoleRegular(PyObject *self,
+						   PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, writeConsoleRegularCallback);
+}
+
+PyDoc_STRVAR(EmbeddedR_getWriteConsoleRegular_doc,
+             "get_writeconsole_regular()\n\n"
              "Retrieve the current R console output handler"
-             " (see set_writeconsole)");
+             " (see set_writeconsole_regular)");
 
+static PyObject * EmbeddedR_getWriteConsoleWarnError(PyObject *self,
+						     PyObject *args)
+{
+  return EmbeddedR_getAnyCallback(self, args, writeConsoleWarnErrorCallback);
+}
 
+PyDoc_STRVAR(EmbeddedR_getWriteConsoleWarnError_doc,
+             "get_writeconsole_warnerror()\n\n"
+             "Retrieve the current R console output handler for warnings and errors."
+             " (see set_writeconsole_warnerror)");
 
 static void
-EmbeddedR_WriteConsole(const char *buf, int len)
+EmbeddedR_WriteConsoleEx(const char *buf, int len, int otype)
 {
+  /* otype can be 0: regular output or 1: error or warning */
+  void *consolecallback;
+  switch(otype) {
+  case 0:
+    consolecallback = writeConsoleRegularCallback;
+    break;
+  case 1:
+    consolecallback = writeConsoleWarnErrorCallback;
+    break;
+  default:
+    printf("unknown otype in EmbeddedR_WriteConsoleEx.\n");   
+  } 
+
   PyObject *arglist;
   PyObject *result;
   const int is_threaded = PyEval_ThreadsInitialized();
@@ -375,11 +413,11 @@ EmbeddedR_WriteConsole(const char *buf, int len)
 /*     return NULL; */
   }
 
-  if (writeConsoleCallback == NULL) {
+  if (consolecallback == NULL) {
     return;
   }
 
-  result = PyEval_CallObject(writeConsoleCallback, arglist);
+  result = PyEval_CallObject(consolecallback, arglist);
   PyObject* pythonerror = PyErr_Occurred();
   if (pythonerror != NULL) {
     /* All R actions should be stopped since the Python callback failed,
@@ -395,6 +433,7 @@ EmbeddedR_WriteConsole(const char *buf, int len)
   Py_XDECREF(result);  
   RPY_GIL_RELEASE(is_threaded, gstate);
 }
+
 
 static PyObject* showMessageCallback = NULL;
 
@@ -1223,8 +1262,8 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args, PyObject *kwds)
   Rp->home = RUser;
   /* Rp->CharacterMode = LinkDLL; */
   Rp->ReadConsole = EmbeddedR_ReadConsole;
-  Rp->WriteConsole = NULL;
-  Rp->WriteConsoleEx = EmbeddedR_WriteConsole;
+  Rp->WriteConsole = NULL; /* Force use of WriteConsoleEx */
+  Rp->WriteConsoleEx = EmbeddedR_WriteConsoleEx;
 
   Rp->Busy = Re_Busy;
   Rp->ShowMessage = EmbeddedR_ShowMessage;
@@ -1263,7 +1302,8 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args, PyObject *kwds)
   ptr_R_CleanUp = EmbeddedR_CleanUp;
   /* Redirect R console output */
   ptr_R_ShowMessage = EmbeddedR_ShowMessage;
-  ptr_R_WriteConsole = EmbeddedR_WriteConsole;
+  ptr_R_WriteConsole = NULL; /* Force use of WriteConsoleEx */
+  ptr_R_WriteConsoleEx = EmbeddedR_WriteConsoleEx;
   ptr_R_FlushConsole = EmbeddedR_FlushConsole;
   R_Outputfile = NULL;
   R_Consolefile = NULL;
@@ -1565,7 +1605,7 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
 
   /* FIXME: evaluate expression in the given environment */
   interrupted = 0;
-  res_R = R_tryEvalSilent(expr_R, env_R, &errorOccurred);
+  res_R = R_tryEval(expr_R, env_R, &errorOccurred);
 
   /* Py_END_ALLOW_THREADS */
 #ifdef _WIN32
@@ -2264,7 +2304,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
   SEXP rcall_get = Rf_lang2(rsymb_internal,
 			    rlang_get);
   int errorOccurred = 0;
-  res_R = R_tryEvalSilent(rcall_get, R_GlobalEnv, &errorOccurred);
+  res_R = R_tryEval(rcall_get, R_GlobalEnv, &errorOccurred);
 
   if (errorOccurred) {
     /* /\* 2 options here: no such key, or the somewhat entertaining */
@@ -3327,10 +3367,14 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_end_doc},
   {"set_interactive",   (PyCFunction)EmbeddedR_setinteractive,  METH_O,
    EmbeddedR_setinteractive_doc},
-  {"set_writeconsole",   (PyCFunction)EmbeddedR_setWriteConsole,  METH_VARARGS,
-   EmbeddedR_setWriteConsole_doc},
-  {"get_writeconsole",   (PyCFunction)EmbeddedR_getWriteConsole,  METH_VARARGS,
-   EmbeddedR_getWriteConsole_doc},
+  {"set_writeconsole_regular",   (PyCFunction)EmbeddedR_setWriteConsoleRegular, 
+   METH_VARARGS, EmbeddedR_setWriteConsoleRegular_doc},
+  {"get_writeconsole_regular",   (PyCFunction)EmbeddedR_getWriteConsoleRegular,  
+   METH_VARARGS, EmbeddedR_getWriteConsoleRegular_doc},
+  {"set_writeconsole_warnerror",   (PyCFunction)EmbeddedR_setWriteConsoleWarnError, 
+   METH_VARARGS, EmbeddedR_setWriteConsoleWarnError_doc},
+  {"get_writeconsole_warnerror",   (PyCFunction)EmbeddedR_getWriteConsoleWarnError,  
+   METH_VARARGS, EmbeddedR_getWriteConsoleWarnError_doc},
   {"set_readconsole",    (PyCFunction)EmbeddedR_setReadConsole,   METH_VARARGS,
    EmbeddedR_setReadConsole_doc},
   {"get_readconsole",    (PyCFunction)EmbeddedR_getReadConsole,   METH_VARARGS,
