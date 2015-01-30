@@ -28,6 +28,16 @@ Bugs fixed
   quiet.
 
 
+Release 2.5.5
+=============
+
+Bugs fixed
+----------
+
+- Crash (segfault) when querying an R object in an R environment triggers an
+  error (symbol exists, but associated values resolves to an error - issue #251)
+
+
 Release 2.5.4
 =============
 
