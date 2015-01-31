@@ -101,14 +101,19 @@ From `numpy` to `rpy2`:
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 The conversion of `numpy` objects to `rpy2` objects can be 
-activated by importing the module :mod:`numpy2ri`::
+achieved by importing the module :mod:`numpy2ri`::
 
   from rpy2.robjects.numpy2ri import numpy2ri
   ro.conversion.py2ri = numpy2ri
 
-This is sufficient to switch an automatic conversion
-of `numpy` objects into `rpy2` objects.
+The activation (and deactivation) of the automatic conversion
+of `numpy` objects into `rpy2` objects can be made with:
 
+.. code-block:: python
+   
+   numpy2ri.activate()
+   numpy2ri.deactivate()
+   
 .. warning::
 
    In earlier versions of rpy2, the import was all that was needed to
