@@ -40,6 +40,8 @@ Bugs fixed
 - Change in the signature of `rcall` was not updated in the documentation
   (issue #259)
 
+- Minor update to the documentation (issue #257)
+
 
 Release 2.5.4
 =============
