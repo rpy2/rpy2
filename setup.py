@@ -123,13 +123,7 @@ class RExec(object):
             output = subprocess.check_output((self._r_exec, '--version'), 
                                          stderr = subprocess.STDOUT,
                                          universal_newlines = True)
-        if not os.linesep in output and '\n' in output:
-            # sometimes R output does not contain system specific line separators
-            splitwith = '\n'
-        else:
-            splitwith = os.linesep
-
-        output = iter(output.split(splitwith))
+        output = iter(output.split('\n'))
         rversion = next(output)
         #Twist if 'R --version' spits out a warning
         if rversion.startswith("WARNING"):
