@@ -28,6 +28,15 @@ Bugs fixed
   quiet.
 
 
+Release 2.5.6
+=============
+
+Bugs fixed
+----------
+
+- Detection of the R version during setup on Win8 (issues #255 and #258)
+
+
 Release 2.5.5
 =============
 
