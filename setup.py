@@ -104,7 +104,12 @@ class RExec(object):
             return self._version
         output = subprocess.check_output((self._r_exec, '--version'), 
                                          universal_newlines = True)
-        output = iter(output.split(os.linesep))
+        if not output:
+            # sometimes R output goes to stderr
+            output = subprocess.check_output((self._r_exec, '--version'), 
+                                         stderr = subprocess.STDOUT,
+                                         universal_newlines = True)
+        output = iter(output.split('\n'))
         rversion = next(output)
         #Twist if 'R RHOME' spits out a warning
         if rversion.startswith("WARNING"):
