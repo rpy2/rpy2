@@ -71,6 +71,13 @@ class PandasConversionsTestCase(unittest.TestCase):
         rpyp.deactivate()
         self.assertEqual(rinterface.SexpVector, type(rp_s))
 
+    def testCategorical(self):
+        factor = robjects.vectors.FactorVector(('a', 'b', 'a'))
+        rpyp.activate()
+        rp_c = robjects.conversion.ri2py(factor)
+        rpyp.deactivate()
+        self.assertEqual(pandas.Categorical, type(rp_c))
+
     def testRepr(self):
         # this should go to testVector, with other tests for repr()
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),

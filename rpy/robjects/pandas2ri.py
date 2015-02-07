@@ -6,7 +6,9 @@ from rpy2.rinterface import SexpVector, INTSXP
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pandas.core.series import Series as PandasSeries
 from pandas.core.index import Index as PandasIndex
+import pandas
 from numpy import recarray
+import numpy
 
 from collections import OrderedDict
 from rpy2.robjects.vectors import DataFrame, Vector, ListVector, StrVector, IntVector, POSIXct
@@ -72,8 +74,13 @@ def py2ri_pandasseries(obj):
 
 @ri2py.register(SexpVector)
 def ri2py_vector(obj):
-    # use the numpy converter first
-    res = numpy2ri.ri2py(obj)
+    # special case for factors
+    if 'factor' in obj.rclass:
+        res = pandas.Categorical.from_codes(numpy.asarray(obj) - 1,
+                                            categories = obj.do_slot('levels'),
+                                            ordered = 'ordered' in obj.rclass)
+    else:
+        res = numpy2ri.ri2py(obj)
     if isinstance(res, recarray):
         res = PandasDataFrame.from_records(res)
     return res

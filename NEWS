@@ -19,6 +19,10 @@ New features
 
 - Added callback for `ptr_R_ResetConsole`.
 
+- :mod:`pandas` :class:`Categerical` objects are automatically handled
+  in the pandas conversion
+
+
 Bugs fixed
 ----------
 
