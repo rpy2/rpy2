@@ -69,7 +69,7 @@ def py2ri_pandasseries(obj):
     if obj.ndim == 1:
         res.do_slot_assign('names', StrVector(tuple(str(x) for x in obj.index)))
     else:
-        res.do_slot_assign('dimnames', ListVector(conversion.py2ri(obj.index)))
+        res.do_slot_assign('dimnames', SexpVector(conversion.py2ri(obj.index)))
     return res
 
 @ri2py.register(SexpVector)
