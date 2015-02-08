@@ -47,6 +47,8 @@ Bugs fixed
   objects was producing robjects-level objects whenever the input was of
   type :class:`list` (discovered while fixing issue #264)
 
+- Implemented suggested fix for issue with unlinking files on Windows
+  (issue #191)
 
 Release 2.5.5
 =============
