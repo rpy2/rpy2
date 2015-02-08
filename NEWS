@@ -40,6 +40,13 @@ Bugs fixed
 
 - Detection of the R version during setup on Win8 (issues #255 and #258)
 
+- Segmentation fault when converting :mod:`pandas` :class:`Series` with
+  elements of type object (issue #264)
+
+- The default converter from Python (non-rpy2) objects to rinterface-level
+  objects was producing robjects-level objects whenever the input was of
+  type :class:`list` (discovered while fixing issue #264)
+
 
 Release 2.5.5
 =============
