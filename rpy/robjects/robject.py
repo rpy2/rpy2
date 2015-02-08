@@ -39,6 +39,7 @@ class RObjectMixin(object):
             self.__sink()
             s = tmpf.readlines()
             tmpf.close()
+            self.__close(tmp)
             try:
                 del tmpf
                 os.unlink(tfname)
