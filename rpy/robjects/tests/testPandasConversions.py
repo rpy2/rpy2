@@ -71,6 +71,17 @@ class PandasConversionsTestCase(unittest.TestCase):
         rpyp.deactivate()
         self.assertEqual(rinterface.SexpVector, type(rp_s))
 
+    def testSeries_issue264(self):
+        Series = pandas.core.series.Series
+        s = Series(('a', 'b', 'c', 'd', 'e'),
+                   index=pandas.Int64Index([0,1,2,3,4]))
+        rpyp.activate()
+        rp_s = robjects.conversion.py2ri(s)
+        rpyp.deactivate()
+        # segfault before the fix
+        str(rp_s)
+        self.assertEqual(rinterface.ListVector, type(rp_s))
+
     def testRepr(self):
         # this should go to testVector, with other tests for repr()
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),
