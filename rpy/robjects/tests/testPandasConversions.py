@@ -80,7 +80,7 @@ class PandasConversionsTestCase(unittest.TestCase):
         rpyp.deactivate()
         # segfault before the fix
         str(rp_s)
-        self.assertEqual(rinterface.ListVector, type(rp_s))
+        self.assertEqual(rinterface.ListSexpVector, type(rp_s))
 
     def testCategorical(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a'))
