@@ -177,7 +177,7 @@ def _(obj):
 
 @default_converter.py2ri.register(list)
 def _(obj):
-    return r.list(*[conversion.ri2ro(conversion.py2ri(x)) for x in obj])
+    return rinterface.ListSexpVector([conversion.py2ri(x) for x in obj])
 
 @default_converter.py2ri.register(complex)
 def _(obj):
