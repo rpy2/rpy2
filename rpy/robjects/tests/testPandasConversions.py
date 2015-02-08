@@ -80,7 +80,7 @@ class PandasConversionsTestCase(unittest.TestCase):
         rpyp.deactivate()
         # segfault before the fix
         str(rp_s)
-        self.assertEqual(rinterface.ListVector, type(rp_s))
+        self.assertEqual(rinterface.ListSexpVector, type(rp_s))
 
     def testRepr(self):
         # this should go to testVector, with other tests for repr()
