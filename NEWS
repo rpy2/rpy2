@@ -16,6 +16,10 @@ Bugs fixed
 - Implemented suggested fix for issue with unlinking files on Windows
   (issue #191)
 
+- Testing rpy2 in the absence of ipython no longer stops with an error
+  (issue #266)
+
+
 Release 2.5.5
 =============
 
