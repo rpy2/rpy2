@@ -45,7 +45,21 @@ def load_tests(loader, tests, pattern):
     suite_rlike = loader.discover('rlike', pattern, rpy_root)
     # This is once again testless
     suite_interactive = loader.discover('interactive', pattern, rpy_root)
-    suite_ipython = loader.discover('ipython', pattern, rpy_root)
+    # ipython is a little trickier because it is an optional
+    # dependency.
+    try:
+        import IPython
+        has_ipython = True
+    except ImportError as ie:
+        has_ipython = False
+    if has_ipython:
+        suite_ipython= loader.discover('ipython', pattern, rpy_root)
+    else:
+        class MissingIpythonTestCase(unittest.TestCase):
+            @unittest.skip("The optional dependency IPython is required in order to test features using it.")
+            def testHasIpython(self):
+                pass
+        suite_ipython = unittest.TestLoader().loadTestsFromTestCase(MissingIpythonTestCase)
 
     suite_rpy_classic = rpy2.tests_rpy_classic.suite()
 
