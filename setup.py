@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 import os, os.path, sys, shutil, re, itertools, warnings
 import argparse, shlex, subprocess
 from collections import namedtuple
