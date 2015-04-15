@@ -140,10 +140,9 @@ Example:
 
    from rpy2.robjects.packages import importr
    stats4 = importr('stats4')
-   from rpy2.robjects.methods import RS4, RS4Auto_Type
+   from rpy2.robjects.methods import RS4Auto
    
-   class MLE(RS4):
-     __metaclass__ = RS4Auto_Type
+   class MLE(RS4Auto):
      __rname__ = 'mle'
      __rpackagename__ = 'stats4'
 
@@ -153,7 +152,7 @@ and methods defined for the class when the class is declared
 (remember that class methods can be declared afterwards, or even in a different
 R package).
 
-.. autoclass:: rpy2.robjects.methods.RS4Auto_Type(sexp)
+.. autoclass:: rpy2.robjects.methods.RS4Auto(sexp)
    :show-inheritance:
    :members:
 
