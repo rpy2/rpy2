@@ -114,7 +114,7 @@ class ConcreteDeviceTestCase(unittest.TestCase):
     
     def setUp(self):
         #f = tempfile.NamedTemporaryFile()
-        f = file('/tmp/foo', mode='w')
+        f = open('/tmp/foo', mode='w')
         self.gd = CodeDevice(f)
 
     def tearDown(self):
