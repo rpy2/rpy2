@@ -100,17 +100,12 @@ functions, or for interactive users much more familiar with the :mod:`numpy` syn
 From `numpy` to `rpy2`:
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The conversion of `numpy` objects to `rpy2` objects can be 
-achieved by importing the module :mod:`numpy2ri`::
-
-  from rpy2.robjects.numpy2ri import numpy2ri
-  ro.conversion.py2ri = numpy2ri
-
 The activation (and deactivation) of the automatic conversion
 of `numpy` objects into `rpy2` objects can be made with:
 
 .. code-block:: python
    
+   from rpy2.robjects import numpy2ri
    numpy2ri.activate()
    numpy2ri.deactivate()
    

@@ -26,7 +26,7 @@ def testArrayStructInt(self, numericModule):
     x = rinterface.SexpVector(px, rinterface.INTSXP)
     nx = numericModule.asarray(x)
     self.assertEqual(nx.dtype.kind, 'i')
-    for orig, new in itertools.izip(px, nx):
+    for orig, new in zip(px, nx):
         self.assertEqual(orig, new)
 
     # change value in the Python array... makes it change in the R vector

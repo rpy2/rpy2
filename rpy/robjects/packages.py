@@ -239,7 +239,7 @@ class Package(ModuleType):
 
     def __repr__(self):
         s = super(Package, self).__repr__()
-        return 'rpy2.robjecs.packages.Package as a ' + s
+        return 'rpy2.robjects.packages.Package as a ' + s
 
 
 

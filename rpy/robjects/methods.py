@@ -1,5 +1,4 @@
 import sys
-import itertools
 if sys.version_info[0] < 3 or \
    (sys.version_info[0] == 3 and sys.version_info[1] < 4):
     class SimpleNamespace:
@@ -16,7 +15,7 @@ else:
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
-from . import help as rhelp
+from . import help as rhelp, zip
 from . import conversion
 
 getmethod = rinterface.baseenv.get("getMethod")
@@ -201,7 +200,7 @@ class RS4Auto_Type(type):
             # all_methods contains all method/signature pairs
             # having the class we are considering somewhere in the signature
             # (the R/S4 systems allows multiple dispatch)
-            for name, meth in itertools.izip(all_methods.do_slot("names"), all_methods):
+            for name, meth in zip(all_methods.do_slot("names"), all_methods):
                 # R/S4 is storing each method/signature as a string, 
                 # with the argument type separated by the character '#'
                 # We will re-use that name for the Python name
@@ -233,6 +232,9 @@ class RS4Auto_Type(type):
                 cls_dict[meth_name] = meth
 
         return type.__new__(mcs, name, bases, cls_dict)
+
+
+RS4Auto = RS4Auto_Type("RS4Auto", (RS4,), {})
 
 
 def set_accessors(cls, cls_name, where, acs):
