@@ -1,4 +1,5 @@
 import sys
+import six
 if sys.version_info[0] < 3 or \
    (sys.version_info[0] == 3 and sys.version_info[1] < 4):
     class SimpleNamespace:
@@ -15,8 +16,8 @@ else:
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
-from . import help as rhelp, zip
-from . import conversion
+from rpy2.robjects import help as rhelp, zip
+from rpy2.robjects import conversion
 
 getmethod = rinterface.baseenv.get("getMethod")
 
@@ -232,9 +233,6 @@ class RS4Auto_Type(type):
                 cls_dict[meth_name] = meth
 
         return type.__new__(mcs, name, bases, cls_dict)
-
-
-RS4Auto = RS4Auto_Type("RS4Auto", (RS4,), {})
 
 
 def set_accessors(cls, cls_name, where, acs):
