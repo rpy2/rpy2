@@ -372,24 +372,9 @@ class CallbacksTestCase(unittest.TestCase):
         def f(prompt):
             raise Exception("Doesn't work.")
         rinterface.set_choosefile(f)
-
-        tmp_file = tempfile.NamedTemporaryFile()
-        stderr = sys.stderr
-        sys.stderr = tmp_file
-        try:
-            res = rinterface.baseenv["file.choose"]()
-        except rinterface.RRuntimeError:
-            pass
-        except Exception as e:
-            sys.stderr = stderr
-            raise e
-        sys.stderr = stderr
-        tmp_file.flush()
-        tmp_file.seek(0)
+        self.assertRaises(rinterface.RRuntimeError,
+                          rinterface.baseenv["file.choose"])
         self.assertEqual("Doesn't work.", str(sys.last_value))
-        #errorstring = ''.join(tmp_file.readlines())
-        #self.assertTrue(errorstring.startswith('Traceback'))
-        #tmp_file.close()
 
     def testSetShowFiles(self):
         sf = []

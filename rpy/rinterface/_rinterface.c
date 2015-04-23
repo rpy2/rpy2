@@ -811,6 +811,7 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
 #else
   PyObject *pybytes = PyUnicode_AsLatin1String(result);
   char *path_str = PyBytes_AsString(pybytes);
+  //char *path_str = PyBytes_AsString(result);
 #endif
 
   if (! path_str) {
