@@ -9,7 +9,7 @@ New features
   `R_ENVIRON_USER` with a warning. (issue #204)
 
 - Moved console writting callback to use `ptr_R_WriteConsoleEx`
-  rather than `ptr_R_WriteConsole`. This allows to callbacks
+  rather than `ptr_R_WriteConsole`. This allows callbacks
   for warnings and messages. `get/set_writeconsole` is now 
   replaced by `get/set_writeconsole_regular` (regular
   output) and `get/set_writeconsole_warnerror` (warning and error).
@@ -20,7 +20,7 @@ New features
 - Added callback for `ptr_R_ResetConsole`.
 
 - :mod:`pandas` :class:`Categerical` objects are automatically handled
-  in the pandas conversion
+  in the pandas converter.
 
 
 Bugs fixed
@@ -28,7 +28,7 @@ Bugs fixed
 
 - The evaluation of R code through R's C-level function `tryEval`
   caused console output whenever an error occurred. Moving to
-  the seeming experimental `tryEvalSilent` makes evaluations more
+  the seemingly experimental `tryEvalSilent` makes evaluations more
   quiet.
 
 
