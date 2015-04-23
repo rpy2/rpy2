@@ -298,7 +298,7 @@ if __name__ == '__main__':
     #    scheme['data'] = scheme['purelib']
 
 
-    requires=[]
+    requires=['six', ]
     if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 4):
         requires.append('singledispatch')
 
