@@ -199,24 +199,20 @@ class Package(ModuleType):
             if rname in self._translation:
                 rpyname = self._translation[rname]
             else:
-                dot_i = rname.find('.')
-                if dot_i > -1:
-                    rpyname = rname.replace('.', '_')
-                    if rpyname in self._rpy2r:
-                        msg = ('Conflict when converting R symbol'+\
-                                   ' in the package "%s"' +\
-                                   ' to a Python symbol ' +\
-                                   '(%s -> %s while there is already'+\
-                                   ' %s)') %(self.__rname__,
-                                             rname, rpyname,
-                                             rpyname)
-                        if on_conflict == 'fail':
-                            raise LibraryError(msg)
-                        else:
-                            warn(msg)
-                            continue
-                else:
-                    rpyname = rname
+                rpyname = rname.replace('.', '_')
+                if rpyname in self._rpy2r:
+                    msg = ('Conflict when converting R symbol'+\
+                               ' in the package "%s"' +\
+                               ' to a Python symbol ' +\
+                               '(%s -> %s while there is already'+\
+                               ' %s)') %(self.__rname__,
+                                         rname, rpyname,
+                                         rpyname)
+                    if on_conflict == 'fail':
+                        raise LibraryError(msg)
+                    else:
+                        warn(msg)
+                        continue
                 if rpyname in self.__dict__ or rpyname == '__dict__':
                     raise LibraryError('The symbol ' + rname +\
                                        ' in the package "' + name + '"' +\
