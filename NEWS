@@ -22,6 +22,10 @@ New features
 - :mod:`pandas` :class:`Categorical` objects are automatically handled
   in the pandas converter.
 
+- The translation of R symbols into Python symbols used in `importr` and
+  underlying classes and methods can be customized with a callback.
+  The default translation turning `.` into `_` is `default_symbol_r2python`. 
+
 
 Bugs fixed
 ----------
