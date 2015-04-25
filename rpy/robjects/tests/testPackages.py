@@ -66,19 +66,22 @@ class SignatureTranslatedAnonymousPackagesTestCase(unittest.TestCase):
 
 class ImportrTestCase(unittest.TestCase):
     def testImportStats(self):
-        stats = robjects.packages.importr('stats')
+        stats = robjects.packages.importr('stats',
+                                          on_conflict='warn')
         self.assertTrue(isinstance(stats, robjects.packages.Package))
 
     def testImportStatsWithLibLoc(self):
         path = robjects.packages.get_packagepath('stats')
         stats = robjects.packages.importr('stats', 
+                                          on_conflict='warn',
                                           lib_loc = path)
         self.assertTrue(isinstance(stats, robjects.packages.Package))
 
     def testImportStatsWithLibLocAndSuppressMessages(self):
         path = robjects.packages.get_packagepath('stats')
         stats = robjects.packages.importr('stats', lib_loc=path,
-                suppress_messages=False)
+                                          on_conflict='warn',
+                                          suppress_messages=False)
         self.assertTrue(isinstance(stats, robjects.packages.Package))
 
     def testImportStatsWithLibLocWithQuote(self):
@@ -113,7 +116,7 @@ class ImportrTestCase(unittest.TestCase):
         
 class WherefromTestCase(unittest.TestCase):
     def testWherefrom(self):
-        stats = robjects.packages.importr('stats')
+        stats = robjects.packages.importr('stats', on_conflict='warn')
         rnorm_pack = robjects.packages.wherefrom('rnorm')
         self.assertEqual('package:stats',
                           rnorm_pack.do_slot('name')[0])
