@@ -9,7 +9,7 @@ PYTHON_VERSIONS="2.7 3.3 3.4"
 #PYTHON_VERSIONS="3.3"
 
 # Define the target Numpy versions
-NUMPY_VERSIONS="1.9.1"
+NUMPY_VERSIONS="1.9.2"
 
 # Settings to install python packages as wheels
 DEPS_DIR="deps/"
@@ -89,7 +89,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
     pip install dist/${rpy2build}.tar.gz
 
     #DEBUG
-    python -c 'import rpy2.ipython'
+    #python -c 'import rpy2.ipython'
     # Launch tests
     python -m rpy2.tests
 
