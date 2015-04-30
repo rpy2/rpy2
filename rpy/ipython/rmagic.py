@@ -72,8 +72,13 @@ from IPython.core.magic import (Magics, magics_class, line_magic,
 from IPython.core.magic_arguments import (
     argument, magic_arguments, parse_argstring, argument_group
 )
-from IPython.external.simplegeneric import generic
 from IPython.utils.py3compat import str_to_unicode, unicode_to_str, PY3
+
+try:
+    from IPython.external.simplegeneric import generic
+except ImportError:
+    # IPython 4.0
+    from simplegeneric import generic
 
 
 if sys.version_info[0] == 3:
