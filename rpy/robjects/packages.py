@@ -1,5 +1,6 @@
 import os
 from types import ModuleType
+from collections import defaultdict
 from warnings import warn
 import rpy2.rinterface as rinterface
 import rpy2.robjects.lib
@@ -143,11 +144,12 @@ class PackageData(object):
 def default_symbol_r2python(rname):
     return rname.replace('.', '_')
 
-def default_symbol_check_after(rpyname, symbol_mapping):
-    if rpyname in symbol_mapping:
-        return (rpyname, "conflict")
-    else:
-        return (rpyname, None)
+def default_symbol_check_after(symbol_mapping):
+    conflicts = dict()
+    for rpyname, rnames in symbol_mapping.items():
+        if len(rnames) > 1:
+            conflicts[rpyname] = rnames
+    return conflicts
 
 class Package(ModuleType):
     """ Models an R package
@@ -183,7 +185,7 @@ class Package(ModuleType):
         - version: version string for the package
         - symbol_r2python: function to convert R symbols into Python symbols.
                            The default translate `.` into `_`.
-        - symbol_check_after: function to check the Python symbol obtained
+        - symbol_check_after: function to check the Python symbols obtained
                               from `symbol_r2python`.
         """
 
@@ -218,37 +220,46 @@ class Package(ModuleType):
         assert(on_conflict in ('fail', 'warn'))
 
         name = self.__rname__
+        symbol_mapping = defaultdict(list)
         for rname in self._env:
             if rname in self._translation:
                 rpyname = self._translation[rname]
             else:
                 rpyname = self._symbol_r2python(rname)
-            rpyname, what_next = self._symbol_check_after(rpyname, 
-                                                          self._rpy2r)
-            if what_next == 'conflict':
-                msg = ('Conflict when converting the R symbol "%s"'+\
-                       ' in the package "%s"' +\
-                       ' to the Python symbol "%s":' +\
-                       ' that Python is already present in' +\
-                       ' the resulting set of converted' +\
-                       ' symbols.') % (rname, self.__rname__,
-                                       rpyname)
-                if on_conflict == 'fail':
-                    msg += ' To turn this exception into a simple' +\
-                           ' warning use the parameter' +\
-                           ' `on_conflict="warn"\`'
-                    raise LibraryError(msg)
-                elif on_conflict == 'warn':
-                    warn(msg)
-                    continue
-                else:
-                    raise ValueError('Invalid value for parameter "on_conflict"')
+            symbol_mapping[rpyname].append(rname)
+        conflicts = self._symbol_check_after(symbol_mapping)
+        if len(conflicts) > 0:
+            msg = ('Conflict when converting R symbols'+\
+                   ' in the package "%s"' +\
+                   ' to Python symbols: ' +\
+                   '\n- ') % self.__rname__
+            msg += '\n- '.join(('%s -> %s' %(k, ', '.join(v)) for k,v in conflicts.items()))
 
+            if on_conflict == 'fail':
+                msg += '\nTo turn this exception into a simple' +\
+                       ' warning use the parameter' +\
+                       ' `on_conflict="warn"\`'
+                raise LibraryError(msg)
+            elif on_conflict == 'warn':
+                for k, v in conflicts.items():
+                    if k in v:
+                        symbol_mapping[k] = [k,]
+                    else:
+                        del(symbol_mapping[k])
+                warn(msg)
+            else:
+                raise ValueError('Invalid value for parameter "on_conflict"')
+
+        for rpyname, rnames in symbol_mapping.items():
             if rpyname in self.__dict__ or rpyname == '__dict__':
                 raise LibraryError('The symbol ' + rname +\
                                    ' in the package "' + name + '"' +\
-                                   ' is conflicting with ' +\
-                                   'a Python object attribute')
+                                   ' is conflicting with' +\
+                                   ' a Python object attribute')
+            # last paranoid check
+            if len(rnames) > 1:
+                raise ValueError('Only one R name should be associated with %s (and we have %s)' % (rpyname, str(rnames)))
+            rname = rnames[0]
             self._rpy2r[rpyname] = rname
             if (rpyname != rname) and (rname in self._exported_names):
                 self._exported_names.remove(rname)
@@ -262,7 +273,6 @@ class Package(ModuleType):
                 rpyobj.__rname__ = rname
             #FIXME: shouldn't the original R name be also in the __dict__ ?
             self.__dict__[rpyname] = rpyobj
-
 
     def __repr__(self):
         s = super(Package, self).__repr__()
