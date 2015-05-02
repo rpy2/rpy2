@@ -143,6 +143,12 @@ class PackageData(object):
 def default_symbol_r2python(rname):
     return rname.replace('.', '_')
 
+def default_symbol_check_after(rpyname, symbol_mapping):
+    if rpyname in symbol_mapping:
+        return (rpyname, "conflict")
+    else:
+        return (rpyname, None)
+
 class Package(ModuleType):
     """ Models an R package
     (and can do so from an arbitrary environment - with the caution
@@ -163,7 +169,8 @@ class Package(ModuleType):
     def __init__(self, env, name, translation = {}, 
                  exported_names = None, on_conflict = 'fail',
                  version = None,
-                 symbol_r2python = default_symbol_r2python):
+                 symbol_r2python = default_symbol_r2python,
+                 symbol_check_after = default_symbol_check_after):
         """ Create a Python module-like object from an R environment,
         using the specified translation if defined. 
 
@@ -176,6 +183,8 @@ class Package(ModuleType):
         - version: version string for the package
         - symbol_r2python: function to convert R symbols into Python symbols.
                            The default translate `.` into `_`.
+        - symbol_check_after: function to check the Python symbol obtained
+                              from `symbol_r2python`.
         """
 
         super(Package, self).__init__(name)
@@ -188,6 +197,7 @@ class Package(ModuleType):
             exported_names = set(self._env.keys())
         self._exported_names = exported_names
         self._symbol_r2python = symbol_r2python
+        self._symbol_check_after = symbol_check_after
         self.__fill_rpy2r__(on_conflict = on_conflict)
         self._exported_names = self._exported_names.difference(mynames)
         self.__version__ = version
@@ -213,29 +223,32 @@ class Package(ModuleType):
                 rpyname = self._translation[rname]
             else:
                 rpyname = self._symbol_r2python(rname)
-                if rpyname in self._rpy2r:
-                    msg = ('Conflict when converting the R symbol "%s"'+\
-                           ' in the package "%s"' +\
-                           ' to the Python symbol "%s":' +\
-                           ' that Python is already present in' +\
-                           ' the resulting set of converted' +\
-                           ' symbols.') % (rname, self.__rname__,
-                                            rpyname)
-                    if on_conflict == 'fail':
-                        msg += ' To turn this exception into a simple' +\
-                               ' warning use the parameter' +\
-                               ' `on_conflict="warn"\`'
-                        raise LibraryError(msg)
-                    elif on_conflict == 'warn':
-                        warn(msg)
-                        continue
-                    else:
-                        raise ValueError('Invalid value for parameter "on_conflict"')
-                if rpyname in self.__dict__ or rpyname == '__dict__':
-                    raise LibraryError('The symbol ' + rname +\
-                                       ' in the package "' + name + '"' +\
-                                       ' is conflicting with ' +\
-                                       'a Python object attribute')
+            rpyname, what_next = self._symbol_check_after(rpyname, 
+                                                          self._rpy2r)
+            if what_next == 'conflict':
+                msg = ('Conflict when converting the R symbol "%s"'+\
+                       ' in the package "%s"' +\
+                       ' to the Python symbol "%s":' +\
+                       ' that Python is already present in' +\
+                       ' the resulting set of converted' +\
+                       ' symbols.') % (rname, self.__rname__,
+                                       rpyname)
+                if on_conflict == 'fail':
+                    msg += ' To turn this exception into a simple' +\
+                           ' warning use the parameter' +\
+                           ' `on_conflict="warn"\`'
+                    raise LibraryError(msg)
+                elif on_conflict == 'warn':
+                    warn(msg)
+                    continue
+                else:
+                    raise ValueError('Invalid value for parameter "on_conflict"')
+
+            if rpyname in self.__dict__ or rpyname == '__dict__':
+                raise LibraryError('The symbol ' + rname +\
+                                   ' in the package "' + name + '"' +\
+                                   ' is conflicting with ' +\
+                                   'a Python object attribute')
             self._rpy2r[rpyname] = rname
             if (rpyname != rname) and (rname in self._exported_names):
                 self._exported_names.remove(rname)
@@ -373,6 +386,7 @@ def importr(name,
             suppress_messages = True,
             on_conflict = 'fail',
             symbol_r2python = default_symbol_r2python,
+            symbol_check_after = default_symbol_check_after,
             data = True):
     """ Import an R package.
 
@@ -392,6 +406,9 @@ def importr(name,
     - on_conflict: 'fail' or 'warn' (default: 'fail')
 
     - symbol_r2python: function to translate R symbols into Python symbols
+
+    - symbol_check_after: function to check the Python symbol obtained
+                          from `symbol_r2python`.
 
     - data: embed a PackageData objects under the attribute 
       name __rdata__ (default: True)
@@ -427,13 +444,15 @@ def importr(name,
                                   exported_names = exported_names,
                                   on_conflict = on_conflict,
                                   version = version,
-                                  symbol_r2python = symbol_r2python)
+                                  symbol_r2python = symbol_r2python,
+                                  symbol_check_after = symbol_check_after)
     else:
         pack = InstalledPackage(env, name, translation = robject_translations,
                                 exported_names = exported_names,
                                 on_conflict = on_conflict,
                                 version = version,
-                                symbol_r2python = symbol_r2python)
+                                symbol_r2python = symbol_r2python,
+                                symbol_check_after = symbol_check_after)
     if data:
         if pack.__rdata__ is not None:
             warn('While importing the R package "%s", the rpy2 Package object is masking a translated R symbol "__rdata__" already present' % name)
