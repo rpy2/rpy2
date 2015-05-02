@@ -36,6 +36,12 @@ Bugs fixed
   quiet.
 
 
+Release 2.5.7
+=============
+
+- `simplegeneric` was moved of ipython 4.0.0 (pull request #43)
+
+
 Release 2.5.6
 =============
 
