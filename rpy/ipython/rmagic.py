@@ -46,6 +46,7 @@ import tempfile
 from glob import glob
 from os import stat
 from shutil import rmtree
+import time
 
 # numpy and rpy2 imports
 
@@ -399,7 +400,9 @@ utils.install_packages('Cairo')
 
             if self.device == 'png':
                 # Note: that %% is to pass into R for interpolation there
-                ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
+                # Timestamp is added to the file name so that the plots are
+                # later sorted in chronological order and assembled in that order
+                ro.r.png("%s/Rplots-%f-%%03d.png" % (tmpd_fix_slashes, time.time()),
                         **argdict)
             elif self.device == 'svg':
                 self.cairo.CairoSVG("%s/Rplot.svg" % tmpd_fix_slashes,
@@ -434,7 +437,7 @@ utils.install_packages('Cairo')
         md = {}
 
         if self.device == 'png':
-            for imgfile in glob("%s/Rplots*png" % graph_dir):
+            for imgfile in sorted( glob("%s/Rplots*png" % graph_dir) ):
                 if stat(imgfile).st_size >= 1000:                
                     images.append(open(imgfile, 'rb').read())
         else:
