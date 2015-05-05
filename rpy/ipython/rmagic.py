@@ -399,7 +399,7 @@ utils.install_packages('Cairo')
 
             if self.device == 'png':
                 # Note: that %% is to pass into R for interpolation there
-                ro.r.png("%s/Rplots-%%03d.png" % tmpd_fix_slashes,
+                ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
                         **argdict)
             elif self.device == 'svg':
                 self.cairo.CairoSVG("%s/Rplot.svg" % tmpd_fix_slashes,
