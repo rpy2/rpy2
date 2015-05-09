@@ -43,6 +43,7 @@ Bugs fixed
   the seemingly experimental `tryEvalSilent` makes evaluations less
   verbose.
 
+- Multiple plots in one ipython cell (pull request #44)
 
 Release 2.5.7
 =============
