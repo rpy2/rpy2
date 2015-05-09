@@ -26,6 +26,14 @@ New features
   underlying classes and methods can be customized with a callback.
   The default translation turning `.` into `_` is `default_symbol_r2python`. 
 
+Changes
+-------
+
+- The automatic name translation from R to Python used in `importr` is
+  now slightly more complex. It will not only translate `.` to `_` but
+  should a conflict arise from the existence in R of both the `.` and `_`
+  versions the `.` version will be appended a `_` (in accordance with
+  :pep:0008). The change was discussed in issue #274).
 
 Bugs fixed
 ----------
