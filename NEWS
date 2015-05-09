@@ -40,8 +40,8 @@ Bugs fixed
 
 - The evaluation of R code through R's C-level function `tryEval`
   caused console output whenever an error occurred. Moving to
-  the seemingly experimental `tryEvalSilent` makes evaluations more
-  quiet.
+  the seemingly experimental `tryEvalSilent` makes evaluations less
+  verbose.
 
 
 Release 2.5.7
