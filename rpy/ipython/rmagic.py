@@ -434,7 +434,7 @@ utils.install_packages('Cairo')
         md = {}
 
         if self.device == 'png':
-            for imgfile in glob("%s/Rplots*png" % graph_dir):
+            for imgfile in sorted( glob("%s/Rplots*png" % graph_dir) ):
                 if stat(imgfile).st_size >= 1000:                
                     images.append(open(imgfile, 'rb').read())
         else:
