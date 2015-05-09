@@ -33,8 +33,8 @@ class PackagesTestCase(unittest.TestCase):
 
     def testNewWithDotConflict(self):
         env = robjects.Environment()
-        env['a.a'] = robjects.StrVector('abcd')
-        env['a_a'] = robjects.IntVector((1,2,3))
+        env['a.a_a'] = robjects.StrVector('abcd')
+        env['a_a.a'] = robjects.IntVector((1,2,3))
         env['c'] = robjects.r(''' function(x) x^2''')
         self.assertRaises(packages.LibraryError,
                           robjects.packages.Package,
