@@ -23,11 +23,21 @@ from rpy2.robjects.methods import RS4
 
 from . import conversion
 
-from rpy2.rinterface import Sexp, SexpVector, SexpClosure, SexpEnvironment, SexpS4, SexpExtPtr
+from rpy2.rinterface import (Sexp, 
+                             SexpVector, 
+                             SexpClosure, 
+                             SexpEnvironment, 
+                             SexpS4, 
+                             SexpExtPtr)
 _globalenv = rinterface.globalenv
 
 # missing values
-from rpy2.rinterface import NA_Real, NA_Integer, NA_Logical, NA_Character, NA_Complex, NULL
+from rpy2.rinterface import (NA_Real, 
+                             NA_Integer, 
+                             NA_Logical, 
+                             NA_Character, 
+                             NA_Complex, 
+                             NULL)
 
 if sys.version_info[0] == 2:
     py3str = unicode
@@ -122,7 +132,8 @@ def _(obj):
 
 
 def default_py2ri(o):
-    """ Convert an arbitrary Python object to an :class:`rpy2.rinterface.Sexp` object.
+    """ Convert an arbitrary Python object to a
+    :class:`rpy2.rinterface.Sexp` object.
     Creates an R object with the content of the Python object,
     wich means data copying.
     :param o: object
