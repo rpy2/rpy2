@@ -1079,5 +1079,6 @@ rtypeof2rotype = {
 
 
 __all__ = ['Vector', 'StrVector', 'IntVector', 'BoolVector', 'ComplexVector',
-           'FloatVector', 'FactorVector', 'ListVector', 'POSIXlt', 'POSIXct',
+           'FloatVector', 'FactorVector', 'Vector',
+           'ListVector', 'POSIXlt', 'POSIXct',
            'Array', 'Matrix', 'DataFrame']

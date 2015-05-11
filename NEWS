@@ -26,6 +26,11 @@ New features
   underlying classes and methods can be customized with a callback.
   The default translation turning `.` into `_` is `default_symbol_r2python`. 
 
+- Utility function `sequence_to_vector` in `robjects` to convert Python
+  sequences (e.g., `list` or `tuple`) to R vector without having to
+  specify the type (the type is inferred from the list).
+
+
 Changes
 -------
 

@@ -16,7 +16,20 @@ import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
 from rpy2.robjects.robject import RObjectMixin, RObject
-from rpy2.robjects.vectors import *
+from rpy2.robjects.vectors import (BoolVector,
+                                   IntVector,
+                                   FloatVector,
+                                   ComplexVector,
+                                   StrVector,
+                                   FactorVector,
+                                   Vector,
+                                   ListVector,
+                                   DateVector,
+                                   POSIXct,
+                                   POSIXlt,
+                                   Array,
+                                   Matrix,
+                                   DataFrame)
 from rpy2.robjects.functions import Function, SignatureTranslatedFunction
 from rpy2.robjects.environments import Environment
 from rpy2.robjects.methods import RS4
@@ -105,6 +118,24 @@ def sexpvector_to_ro(obj):
     return res
 
 default_converter.ri2ro.register(SexpVector, sexpvector_to_ro)
+
+TYPEORDER = {bool: (0, BoolVector),
+             int: (1, IntVector),
+             float: (2, FloatVector),
+             complex: (3, ComplexVector),
+             str: (4, StrVector)}
+def sequence_to_vector(lst):
+    curr_typeorder = -1
+    for i, elt in enumerate(lst):
+        cls = type(elt)
+        if cls in TYPEORDER:
+            if TYPEORDER[cls][0] > curr_typeorder:
+                curr_typeorder, curr_type = TYPEORDER[cls]
+        else:
+            raise ValueError('The element %i in the list has a type that cannot be handled.' % i)
+    res = curr_type(lst)
+    return res
+
 
 @default_converter.ri2ro.register(SexpClosure)
 def _(obj):

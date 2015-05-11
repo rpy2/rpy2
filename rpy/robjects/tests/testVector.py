@@ -372,12 +372,24 @@ class ExtractDelegatorTestCase(unittest.TestCase):
         self.assertTrue(idem(letters, myList.rx("l")[0]))
         self.assertTrue(idem("foo", myList.rx("f")[0]))
 
+class ConversionHelperTestCase(unittest.TestCase):
+
+    def testSequenceToVector(self):
+        res = robjects.sequence_to_vector((1,2,3))
+        self.assertTrue(isinstance(res, robjects.IntVector))
+
+        res = robjects.sequence_to_vector((1,2,3.0))
+        self.assertTrue(isinstance(res, robjects.FloatVector))
+
+        res = robjects.sequence_to_vector((1,2,'a'))
+        self.assertTrue(isinstance(res, robjects.StrVector))
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(VectorTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(FactorVectorTestCase))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(DateTimeVectorTestCase))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ExtractDelegatorTestCase))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ConversionHelperTestCase))
 
     return suite
 

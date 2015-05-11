@@ -54,7 +54,7 @@ NULL = robjects.NULL
 
 ggplot2 = importr('ggplot2')
 
-TARGET_VERSION = '1.0.0'
+TARGET_VERSION = '1.0.1'
 if ggplot2.__version__ != TARGET_VERSION:
    warnings.warn('This was designed againt ggplot2 version %s but you have %s' % (TARGET_VERSION, ggplot2.__version__))
 ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
