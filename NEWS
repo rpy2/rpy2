@@ -34,6 +34,11 @@ New features
   sequences (e.g., `list` or `tuple`) to R vector without having to
   specify the type (the type is inferred from the list).
 
+- :mod:`robjects.vectors` object have a property :attr:`NAvalue` that contains
+  the `NA` value for the vector, allowing generic code on R vectors.
+  For example, testing whether any vector contains `NA` can be written as
+  `any(x is myvector.NAvalue for x in myvector)`. Making numpy /masked/ array
+  is an other application.
 
 Changes
 -------

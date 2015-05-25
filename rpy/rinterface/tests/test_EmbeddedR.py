@@ -192,11 +192,12 @@ ri.initr()
 def f(x):
   pass
 ri.set_writeconsole_regular(f)
-rcode = "i <- 0; "
-rcode += "while(TRUE) { "
-rcode += "i <- i+1; "
-rcode += "Sys.sleep(0.01); "
-rcode += "}"
+rcode = \"\"\"
+i <- 0;
+while(TRUE) {
+    i <- i+1;
+    Sys.sleep(0.01);
+}\"\"\"
 try:
   ri.baseenv['eval'](ri.parse(rcode))
 except Exception%s e:

@@ -11,9 +11,10 @@ from datetime import datetime
 from time import struct_time, mktime, tzname
 from operator import attrgetter
 
-from rpy2.rinterface import Sexp, SexpVector, ListSexpVector, StrSexpVector, \
-    IntSexpVector, BoolSexpVector, ComplexSexpVector, FloatSexpVector, \
-    R_NilValue, NA_Real, NA_Integer, NA_Character, NA_Logical, NULL, MissingArg
+from rpy2.rinterface import (Sexp, SexpVector, ListSexpVector, StrSexpVector,
+                             IntSexpVector, BoolSexpVector, ComplexSexpVector,
+                             FloatSexpVector, R_NilValue, NA_Real, NA_Integer,
+                             NA_Character, NA_Logical, NULL, MissingArg)
 
 if sys.version_info[0] == 2:
     py3str = unicode
@@ -345,6 +346,10 @@ class StrVector(Vector, StrSexpVector):
 
     _factorconstructor = rinterface.baseenv['factor']
 
+    @property
+    def NAvalue(self):
+        return rinterface.NA_Character
+
     def __init__(self, obj):
         obj = StrSexpVector(obj)
         super(StrVector, self).__init__(obj)
@@ -370,6 +375,9 @@ class IntVector(Vector, IntSexpVector):
     integers, or have an int() representation.
     """
     _tabulate = rinterface.baseenv['tabulate']
+    @property
+    def NAvalue(self):
+        return rinterface.NA_Integer
 
     def __init__(self, obj):
         obj = IntSexpVector(obj)
@@ -392,6 +400,10 @@ class BoolVector(Vector, BoolSexpVector):
     In the later case, all elements in the sequence should be either
     booleans, or have a bool() representation.
     """
+    @property
+    def NAvalue(self):
+        return rinterface.NA_Logical
+
     def __init__(self, obj):
         obj = BoolSexpVector(obj)
         super(BoolVector, self).__init__(obj)
@@ -407,6 +419,10 @@ class ComplexVector(Vector, ComplexSexpVector):
     complex, or have a complex() representation.
     
     """
+    @property
+    def NAvalue(self):
+        return rinterface.NA_Complex
+
     def __init__(self, obj):
         obj = ComplexSexpVector(obj)
         super(ComplexVector, self).__init__(obj)
@@ -422,6 +438,10 @@ class FloatVector(Vector, FloatSexpVector):
     float, or have a float() representation.
 
     """
+    @property
+    def NAvalue(self):
+        return rinterface.NA_Real
+
     def __init__(self, obj):
         obj = FloatSexpVector(obj)
         super(FloatVector, self).__init__(obj)
@@ -448,6 +468,10 @@ class FactorVector(IntVector):
     _levels_set = baseenv_ri['levels<-']
     _nlevels = baseenv_ri['nlevels']
     _isordered = baseenv_ri['is.ordered']
+
+    @property
+    def NAvalue(self):
+        return rinterface.NA_Integer
     
     def __init__(self, obj, levels = rinterface.MissingArg,
                  labels = rinterface.MissingArg,
