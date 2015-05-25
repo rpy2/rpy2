@@ -7,6 +7,12 @@ from rpy2.robjects import help
 from . import conversion
 # XXX: I need to import default_ri2ro
 
+from rpy2.robjects.packages_utils import (default_symbol_r2python,
+                                          default_symbol_check_after,
+                                          _map_symbols,
+                                          _fix_map_symbols)
+
+
 baseenv_ri = rinterface.baseenv
 
 #needed to avoid circular imports
@@ -120,11 +126,16 @@ class Function(RObjectMixin, rinterface.SexpClosure):
 
 class SignatureTranslatedFunction(Function):
     """ Python representation of an R function, where
-    the character '.' is replaced with '_' in the R arguments names. """
+    the names in named argument are translated to valid
+    argument names in Python. """
     _prm_translate = None
 
 
-    def __init__(self, sexp, init_prm_translate = None):
+    def __init__(self, sexp,
+                 init_prm_translate = None,
+                 on_conflict = 'warn',
+                 symbol_r2python = default_symbol_r2python,
+                 symbol_check_after = default_symbol_check_after):
         super(SignatureTranslatedFunction, self).__init__(sexp)
         if init_prm_translate is None:
             prm_translate = OrderedDict()
@@ -134,28 +145,25 @@ class SignatureTranslatedFunction(Function):
 
         formals = self.formals()
         if formals is not rinterface.NULL:
-            for r_param in formals.names:
-                py_param = r_param.replace('.', '_')
-                if py_param in prm_translate:
-                    # This means that the signature of the R function
-                    # contains both a version of the parameter name
-                    # with '.' and one with '_'... <sigh>.
-                    prev_r_param = prm_translate[py_param]
-                    prev_py_param = prev_r_param.replace('.', '_d_')
-                    prev_py_param = prev_r_param.replace('_', '_u_')
-                    cur_py_param = r_param.replace('.', '_d_')
-                    cur_py_param = r_param.replace('_', '_u_')
-                    if prev_py_param in prm_translate or prev_py_param == cur_py_param:
-                        # giving up
-                        raise ValueError("Error: '%s' already in the translation table. This means that the signature of the R function contains the parameters '%s' and/or '%s' <sigh> in multiple copies." %(r_param, r_param, prm_translate[py_param]))
-                    del(prm_translate[py_param])
-                    prm_translate[prev_py_param] = prev_r_param
-                    prm_translate[cur_py_param] = r_param
-                else:
-                    #FIXME: systematically add the parameter to
-                    # the translation, as it makes it faster for generating
-                    # dynamically the pydoc string from the R help.
-                    prm_translate[py_param] = r_param
+            (symbol_mapping, 
+             conflicts, 
+             resolutions) = _map_symbols(formals.names,
+                                         translation = prm_translate,
+                                         symbol_r2python = symbol_r2python,
+                                         symbol_check_after = symbol_check_after)
+
+            msg_prefix = 'Conflict when converting R symbols'+\
+                ' in the function\'s signature:\n- '
+            exception = ValueError
+            _fix_map_symbols(symbol_mapping,
+                             conflicts,
+                             on_conflict,
+                             msg_prefix,
+                             exception)
+            symbol_mapping.update(resolutions)
+            reserved_pynames = set(dir(self))
+            
+            prm_translate.update((k, v[0]) for k, v in symbol_mapping.items())
         self._prm_translate = prm_translate
         if hasattr(sexp, '__rname__'):
             self.__rname__ = sexp.__rname__

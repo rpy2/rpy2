@@ -43,7 +43,8 @@ class PackagesTestCase(unittest.TestCase):
 
     def testNewWithDotConflict2(self):
         env = robjects.Environment()
-        env['__dict__'] = robjects.StrVector('abcd')
+        name_in_use = dir(packages.Package(env, "foo"))[0]
+        env[name_in_use] = robjects.StrVector('abcd')
         self.assertRaises(packages.LibraryError,
                           robjects.packages.Package,
                           env, "dummy_package")

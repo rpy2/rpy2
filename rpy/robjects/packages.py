@@ -12,7 +12,11 @@ from rpy2.robjects.constants import NULL
 from rpy2.robjects import Environment
 from rpy2.robjects.packages_utils import (_libpaths, 
                                           get_packagepath, 
-                                          _packages)
+                                          _packages,
+                                          default_symbol_r2python,
+                                          default_symbol_check_after,
+                                          _map_symbols,
+                                          _fix_map_symbols)
 import rpy2.robjects.help as rhelp
 
 _require = rinterface.baseenv['require']
@@ -145,39 +149,6 @@ class PackageData(object):
                  'envir': env})
         return Environment(env)
 
-def default_symbol_r2python(rname):
-    return rname.replace('.', '_')
-
-def default_symbol_check_after(symbol_mapping):
-    # dict to store the Python symbol -> R symbols mapping causing problems.
-    conflicts = dict()
-    resolutions = dict()
-    for py_symbol, r_symbols in symbol_mapping.items():
-        n_r_symbols = len(r_symbols)
-        if n_r_symbols == 1:
-            continue
-        elif n_r_symbols == 2:
-            # more than one R symbol associated with this Python symbol
-            try:
-                idx = r_symbols.index(py_symbol)
-                # there is an R symbol identical to the proposed Python symbol;
-                # we keep that pair mapped, and change the Python symbol for the
-                # other R symbol(s) according to PEP 0008
-                for i, s in enumerate(r_symbols):
-                    if i == idx:
-                        resolutions[py_symbol] = [s,]
-                    else:
-                        new_py_symbol = py_symbol + '_'
-                        resolutions[new_py_symbol] = [s,]
-            except ValueError:
-                # I am unsure about what to do at this point:
-                # add it as a conflict
-                conflicts[py_symbol] = r_symbols 
-        else:
-            # no automatic resolution if more than 2
-            conflicts[py_symbol] = r_symbols 
-    return conflicts, resolutions
-
 class Package(ModuleType):
     """ Models an R package
     (and can do so from an arbitrary environment - with the caution
@@ -247,46 +218,34 @@ class Package(ModuleType):
         assert(on_conflict in ('fail', 'warn'))
 
         name = self.__rname__
-        symbol_mapping = defaultdict(list)
-        for rname in self._env:
-            if rname in self._translation:
-                rpyname = self._translation[rname]
-            else:
-                rpyname = self._symbol_r2python(rname)
-            symbol_mapping[rpyname].append(rname)
-        conflicts, resolutions = self._symbol_check_after(symbol_mapping)
-        if len(conflicts) > 0:
-            msg = ('Conflict when converting R symbols'+\
-                   ' in the package "%s"' +\
-                   ' to Python symbols: ' +\
-                   '\n- ') % self.__rname__
-            msg += '\n- '.join(('%s -> %s' %(k, ', '.join(v)) for k,v in conflicts.items()))
 
-            if on_conflict == 'fail':
-                msg += '\nTo turn this exception into a simple' +\
-                       ' warning use the parameter' +\
-                       ' `on_conflict="warn"\`'
-                raise LibraryError(msg)
-            elif on_conflict == 'warn':
-                for k, v in conflicts.items():
-                    if k in v:
-                        symbol_mapping[k] = [k,]
-                    else:
-                        del(symbol_mapping[k])
-                warn(msg)
-            else:
-                raise ValueError('Invalid value for parameter "on_conflict"')
+        (symbol_mapping, 
+         conflicts, 
+         resolutions) = _map_symbols(self._env,
+                                     translation = self._translation,
+                                     symbol_r2python = self._symbol_r2python,
+                                     symbol_check_after = self._symbol_check_after)
+        msg_prefix = 'Conflict when converting R symbols'+\
+                     ' in the package "%s"' % self.__rname__ +\
+                     ' to Python symbols: \n-'
+        exception = LibraryError
+        _fix_map_symbols(symbol_mapping,
+                         conflicts,
+                         on_conflict,
+                         msg_prefix,
+                         exception)
         symbol_mapping.update(resolutions)
+        reserved_pynames = set(dir(self))
         for rpyname, rnames in symbol_mapping.items():
-            if rpyname in self.__dict__ or rpyname == '__dict__':
-                raise LibraryError('The symbol ' + rname +\
-                                   ' in the package "' + name + '"' +\
-                                   ' is conflicting with' +\
-                                   ' a Python object attribute')
             # last paranoid check
             if len(rnames) > 1:
                 raise ValueError('Only one R name should be associated with %s (and we have %s)' % (rpyname, str(rnames)))
             rname = rnames[0]
+            if rpyname in reserved_pynames:
+                raise LibraryError('The symbol ' + rname +\
+                                   ' in the package "' + name + '"' +\
+                                   ' is conflicting with' +\
+                                   ' a Python object attribute')
             self._rpy2r[rpyname] = rname
             if (rpyname != rname) and (rname in self._exported_names):
                 self._exported_names.remove(rname)
@@ -315,7 +274,10 @@ class SignatureTranslatedPackage(Package):
         super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
         for name, robj in self.__dict__.items():
             if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
-                self.__dict__[name] = SignatureTranslatedFunction(self.__dict__[name])
+                self.__dict__[name] = SignatureTranslatedFunction(self.__dict__[name],
+                                                                  on_conflict = on_conflict,
+                                                                  symbol_r2python = self._symbol_r2python,
+                                                                  symbol_check_after = self._symbol_check_after)
                 
 
 class SignatureTranslatedAnonymousPackage(SignatureTranslatedPackage):

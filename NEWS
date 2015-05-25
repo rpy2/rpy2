@@ -24,7 +24,11 @@ New features
 
 - The translation of R symbols into Python symbols used in `importr` and
   underlying classes and methods can be customized with a callback.
-  The default translation turning `.` into `_` is `default_symbol_r2python`. 
+  The default translation turning `.` into `_` is `default_symbol_r2python`.
+
+- Translation of named arguments in R function is now sharing code with the
+  translation of R symbols (see point above), providing a consistent way to
+  perform translations.
 
 - Utility function `sequence_to_vector` in `robjects` to convert Python
   sequences (e.g., `list` or `tuple`) to R vector without having to
