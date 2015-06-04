@@ -59,34 +59,48 @@ class NumpyConversionsTestCase(unittest.TestCase):
         self.assertEqual(r["storage.mode"](converted)[0], storage_mode)
         self.assertEqual(list(obj), list(converted))
         self.assertTrue(r["is.array"](converted)[0])
+        return converted
 
     def testVectorBoolean(self):
-        b = numpy.array([True, False, True], dtype=numpy.bool_)
-        self.checkHomogeneous(b, "logical", "logical")
+        l = [True, False, True]
+        b = numpy.array(l, dtype=numpy.bool_)
+        b_r = self.checkHomogeneous(b, "logical", "logical")
+        self.assertTupleEqual(tuple(l), tuple(b_r))
 
     def testVectorInteger(self):
-        i = numpy.array([1, 2, 3], dtype="i")
-        self.checkHomogeneous(i, "numeric", "integer")
-
+        l = [1, 2, 3]
+        i = numpy.array(l, dtype="i")
+        i_r = self.checkHomogeneous(i, "numeric", "integer")
+        self.assertTupleEqual(tuple(l), tuple(i_r))
+        
     def testVectorFloat(self):
-        f = numpy.array([1, 2, 3], dtype="f")
-        self.checkHomogeneous(f, "numeric", "double")
-
+        l = [1.0, 2.0, 3.0]
+        f = numpy.array(l, dtype="f")
+        f_r = self.checkHomogeneous(f, "numeric", "double")
+        for orig, conv in zip(l, f_r):
+            self.assertTrue(abs(orig-conv) < 0.000001)
+        
     def testVectorComplex(self):
-        c = numpy.array([1j, 2j, 3j], dtype=numpy.complex_)
-        self.checkHomogeneous(c, "complex", "complex")
+        l = [1j, 2j, 3j]
+        c = numpy.array(l, dtype=numpy.complex_)
+        c_r = self.checkHomogeneous(c, "complex", "complex")
+        for orig, conv in zip(l, c_r):
+            self.assertTrue(abs(orig.real-conv.real) < 0.000001)
+            self.assertTrue(abs(orig.imag-conv.imag) < 0.000001)
 
+    @unittest.skipUnless(sys.version_info[0] < 3,
+                         "Test only relevant if Python < 3.")
     def testVectorCharacter(self):
-        if sys.version_info[0] == 3:
-            # bail out - strings are unicode and this is tested next
-            # test below
-            return
-        s = numpy.array(["a", "b", "c"], dtype="S")
-        self.checkHomogeneous(s, "character", "character")
+        l = ["a", "b", "c"]
+        s = numpy.array(l, dtype="S")
+        s_r = self.checkHomogeneous(s, "character", "character")
+        self.assertTupleEqual(tuple(l), tuple(s_r))
 
     def testVectorUnicodeCharacter(self):
-        u = numpy.array([u"a", u"b", u"c"], dtype="U")
-        self.checkHomogeneous(u, "character", "character")
+        l = [u"a", u"b", u"c"]
+        u = numpy.array(l, dtype="U")
+        u_r = self.checkHomogeneous(u, "character", "character")
+        self.assertTupleEqual(tuple(l), tuple(u_r))
 
     def testArray(self):
 
