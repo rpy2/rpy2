@@ -81,6 +81,7 @@ def py2ri_pandasseries(obj):
 @ri2py.register(SexpVector)
 def ri2py_vector(obj):
     res = numpy2ri.ri2py(obj)
+    return res
     
 @ri2py.register(IntSexpVector)
 def ri2py_intvector(obj):
