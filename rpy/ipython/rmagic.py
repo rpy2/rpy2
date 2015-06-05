@@ -52,16 +52,16 @@ from shutil import rmtree
 import rpy2.rinterface as ri
 import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
-from rpy2.robjects.conversion import singledispatch
+from rpy2.robjects.conversion import make_converter
 
 try:
-    from rpy2.robjects import pandas2ri as py2ri
+    from rpy2.robjects import pandas2ri as template_converter
 except ImportError:
     try:
-        from rpy2.robjects import numpy2ri as py2ri
+        from rpy2.robjects import numpy2ri as template_converter
     except ImportError:
         # Give up on numerics
-        py2ri = None
+        template_converter = ro.conversion.converter
 
 
 # IPython imports
@@ -112,13 +112,9 @@ def pyconverter(pyobj):
     """
     return pyobj
 
-@singledispatch
-def ipython2ri(obj):
-    return obj
 
-@singledispatch
-def ri2ipython(obj):
-    return obj
+converter = make_converter(template = template_converter)
+#converter = make_converter(template = ro.conversion.converter)
 
 
 # The default conversion for lists is currently to make them an R list. That has
@@ -292,7 +288,7 @@ utils.install_packages('Cairo')
                     # variable
                     raise NameError("name '%s' is not defined" % input)
             robj = self.pyconverter(val)
-            ro.r.assign(input, ipython2ri(robj))
+            ro.r.assign(input, robj)
 
     # @skip_doctest
     @magic_arguments()
@@ -336,7 +332,7 @@ utils.install_packages('Cairo')
         args = parse_argstring(self.Rpull, line)
         outputs = args.outputs
         for output in outputs:
-            self.shell.push({output: ri2ipython(ro.r(output)) })
+            self.shell.push({output: converter.ri2py(ro.r(output)) })
 
     # @skip_doctest
     @magic_arguments()
@@ -367,8 +363,10 @@ utils.install_packages('Cairo')
         '''
         args = parse_argstring(self.Rget, line)
         output = args.output
-        res = ro.r(output[0])
-        return ri2ipython(res)
+        # get the R object with the given name, starting from baseenv
+        # in the search path
+        res = ri.baseenv.get(output[0])
+        return converter.ri2py(res)
 
 
     def setup_graphics(self, args):
@@ -690,7 +688,7 @@ utils.install_packages('Cairo')
         # so return the converted result
         if return_output and not args.noreturn:
             if result is not ri.NULL:
-                return ri2ipython(result)
+                return converter.ri2py(result)
 
 __doc__ = __doc__.format(
                 R_DOC = ' '*8 + RMagics.R.__doc__,
@@ -703,10 +701,10 @@ __doc__ = __doc__.format(
 def load_ipython_extension(ip):
     """Load the extension in IPython."""
 
-    if py2ri is not None:
+    if hasattr(template_converter, 'activate'):
         # This is pandas2ri if pandas is installed,
         # or numpy2ri otherwise
-        py2ri.activate()
+        template_converter.activate()
 
     ip.register_magics(RMagics)
     # Initialising rpy2 interferes with readline. Since, at this point, we've

@@ -11,8 +11,14 @@ from numpy import recarray
 import numpy
 
 from collections import OrderedDict
-from rpy2.robjects.vectors import DataFrame, Vector, ListVector, StrVector, IntVector, POSIXct
-
+from rpy2.robjects.vectors import (DataFrame,
+                                   Vector,
+                                   ListVector,
+                                   StrVector,
+                                   IntVector,
+                                   POSIXct)
+from rpy2.rinterface import (IntSexpVector,
+                             ListSexpVector)
 original_converter = None 
 
 # pandas is requiring numpy. We add the numpy conversion will be
@@ -74,6 +80,10 @@ def py2ri_pandasseries(obj):
 
 @ri2py.register(SexpVector)
 def ri2py_vector(obj):
+    res = numpy2ri.ri2py(obj)
+    
+@ri2py.register(IntSexpVector)
+def ri2py_intvector(obj):
     # special case for factors
     if 'factor' in obj.rclass:
         res = pandas.Categorical.from_codes(numpy.asarray(obj) - 1,
@@ -81,8 +91,15 @@ def ri2py_vector(obj):
                                             ordered = 'ordered' in obj.rclass)
     else:
         res = numpy2ri.ri2py(obj)
-    if isinstance(res, recarray):
-        res = PandasDataFrame.from_records(res)
+    return res
+
+@ri2py.register(ListSexpVector)
+def ri2py_listvector(obj):
+    if 'data.frame' in obj.rclass:
+        items = zip(obj.do_slot('names'), (numpy2ri.ri2py(x) for x in obj))
+        res = PandasDataFrame.from_items(items)
+    else:
+        res = numpy2ri.ri2py(obj)
     return res
 
 @ri2py.register(DataFrame)

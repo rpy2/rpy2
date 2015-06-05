@@ -13,17 +13,12 @@ from IPython.utils.py3compat import PY3
 
 if PY3:
     from io import StringIO
+    np_string_type = 'U'
 else:
     from StringIO import StringIO
+    np_string_type = 'S'
 
 from rpy2.ipython import rmagic
-if rmagic.py2ri is not None:
-    activate = rmagic.py2ri.activate
-    deactivate = rmagic.py2ri.deactivate
-else:
-    def activate():
-        pass
-    deactivate = activate
 
 # from IPython.core.getipython import get_ipython
 from rpy2 import rinterface
@@ -43,11 +38,13 @@ class TestRmagic(unittest.TestCase):
         cls.ip.magic('load_ext rpy2.ipython')
 
     def setUp(self):
-        activate()
+        if hasattr(rmagic.template_converter, 'activate'):
+            rmagic.template_converter.activate()
     def tearDown(self):
         # This seems like the safest thing to return to a safe state
         self.ip.run_line_magic('Rdevice', 'png')
-        deactivate()
+        if hasattr(rmagic.template_converter, 'deactivate'):
+            rmagic.template_converter.deactivate()
 
     def test_push(self):
         self.ip.push({'X':np.arange(5), 'Y':np.array([3,5,4,6,7])})
@@ -98,44 +95,53 @@ result = rmagic_addone(12344)
         np.testing.assert_almost_equal(self.ip.user_ns['Z'], np.arange(11,21))
 
     def test_Rconverter(self):
-        # Set up a helper functions
-        def test_eq_arrays(a,b):
-            np.testing.assert_array_equal(a,b)
-            # If we get to dropping numpy requirement, we might use something
-            # like the following:
-            # self.assertSequenceEqual(buffer(a).buffer_info(),
-            #                          buffer(b).buffer_info())
+        # If we get to dropping numpy requirement, we might use something
+        # like the following:
+        # self.assertSequenceEqual(buffer(a).buffer_info(),
+        #                          buffer(b).buffer_info())
 
-        datapy= np.array([(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c')],
-            dtype=[('x', '<i4'), ('y', '<f8'), ('z', '|S1')])
-        self.ip.user_ns['datapy'] = datapy
-        self.ip.run_line_magic('Rpush', 'datapy')
+        # numpy recarray (numpy's version of a data frame)
+        dataf_np= np.array([(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c')],
+                           dtype=[('x', '<i4'), ('y', '<f8'), ('z', '|%s1' % np_string_type)])
+        # store it in the notebook's user namespace
+        self.ip.user_ns['dataf_np'] = dataf_np
+        # equivalent to:
+        #     %Rpush dataf_np
+        # that is send Python object 'dataf_np' into R's globalenv
+        # as 'dataf_np'. The current conversion rules will make it an
+        # R data frame.
+        self.ip.run_line_magic('Rpush', 'dataf_np')
 
-        # test to see if a copy is being made
-        v = self.ip.run_line_magic('Rget', 'datapy')
-        w = self.ip.run_line_magic('Rget', 'datapy')
-        # Note - we're not doing conversion to pandas by default, as there are
-        # multiple paths for conversion? So, here we have R proxy objects, which
-        # don't accept direct string indexing
-        # If we decide to keep these as R objects, we could use .rx or .rx2
-        # indexing
-        # test_eq_arrays(w['x'], v['x'])
-        # test_eq_arrays(w['y'], v['y'])
-        test_eq_arrays(w[0], v[0])
-        test_eq_arrays(w[1], v[1])
+        # Now retreive 'dataf_np' from R's globalenv. Twice because
+        # we want to test whether copies are made
+        fromr_dataf_np = self.ip.run_line_magic('Rget', 'dataf_np')
+        fromr_dataf_np_again = self.ip.run_line_magic('Rget', 'dataf_np')
 
-        self.ip.run_cell_magic('R', '-o datar', 'datar=datapy')
+        # check whether the data frame retrieved has the same content
+        # as the original recarray
+        self.assertEqual(len(dataf_np), len(fromr_dataf_np))
+        for col_i, col_n in enumerate(('x', 'y')):
+            #np.testing.assert_array_equal(dataf_np[col_i],
+            #                              fromr_dataf_np.ix[col_i].values)
+            self.assertSequenceEqual(tuple(dataf_np[col_i]),
+                                     tuple(fromr_dataf_np.ix[col_i].values))
 
-        u = self.ip.run_line_magic('Rget', 'datar')
-        w = self.ip.user_ns['datar']
-        # test_eq_arrays(u['x'], v['x'])
-        # test_eq_arrays(u['y'], v['y'])
-        # test_eq_arrays(w['x'], v['x'])
-        # test_eq_arrays(w['y'], v['y'])
-        test_eq_arrays(u[0], v[0])
-        test_eq_arrays(u[1], v[1])
-        test_eq_arrays(w[0], v[0])
-        test_eq_arrays(w[1], v[1])
+        # modify the data frame retrieved to check whether
+        # a copy was made
+        fromr_dataf_np['x'].values[0] = 11
+        self.assertEqual(11, fromr_dataf_np_again['x'][0])
+        
+        # retrieve `dataf_np` from R into `fromr_dataf_np` in the notebook. 
+        self.ip.run_cell_magic('R',
+                               '-o dataf_np',
+                               'dataf_np_roundtrip=fromr_dataf_np')
+
+        dataf_np_roundtrip = self.ip.user_ns['dataf_np_roundtrip']
+        self.assertSequenceEqual(fromr_dataf_np['x'],
+                                 dataf_np_roundtrip['x'])
+        self.assertSequenceEqual(fromr_dataf_np['y'],
+                                 dataf_np_roundtrip['y'])
+
 
     def test_cell_magic(self):
         self.ip.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
@@ -225,3 +231,5 @@ result = rmagic_addone(12344)
         self.ip.run_line_magic('Rdevice', 'X11')
         self.ip.run_cell_magic('R', '', cell)
 
+if __name__ == '__main__':
+    unittest.main()        
