@@ -3039,15 +3039,27 @@ static PySexpObject*
     object  = (PySexpObject *)Sexp_new(&ClosureSexp_Type, Py_None, Py_None);
     break;
     /*FIXME: BUILTINSXP and SPECIALSXP really like CLOSXP ? */
-  case REALSXP: 
-  case INTSXP: 
+  case REALSXP:
+    object = (PySexpObject *)Sexp_new(&FloatVectorSexp_Type, Py_None, Py_None);
+    break;
+  case INTSXP:
+    object = (PySexpObject *)Sexp_new(&IntVectorSexp_Type, Py_None, Py_None);
+    break;
   case LGLSXP:
-  case CPLXSXP:
-  case VECSXP:
+    object = (PySexpObject *)Sexp_new(&BoolVectorSexp_Type, Py_None, Py_None);
+    break;
+  case STRSXP:
+    object = (PySexpObject *)Sexp_new(&StrVectorSexp_Type, Py_None, Py_None);
+    break;
   case LISTSXP:
+    object = (PySexpObject *)Sexp_new(&ListVectorSexp_Type, Py_None, Py_None);
+    break;
+  case CPLXSXP:
+    object = (PySexpObject *)Sexp_new(&ComplexVectorSexp_Type, Py_None, Py_None);
+    break;
+  case VECSXP:
   case LANGSXP:
   case EXPRSXP:
-  case STRSXP:
   case RAWSXP:
     object = (PySexpObject *)Sexp_new(&VectorSexp_Type, Py_None, Py_None);
     break;

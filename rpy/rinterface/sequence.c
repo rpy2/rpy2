@@ -1115,13 +1115,13 @@ static PyTypeObject IntVectorSexp_Type = {
         0,                      /*tp_iternext*/
         0,           /*tp_methods*/
         0,                      /*tp_members*/
-        IntVectorSexp_getsets,            /*tp_getset*/
+        0,            /*tp_getset*/
         &VectorSexp_Type,             /*tp_base*/
         0,                      /*tp_dict*/
         0,                      /*tp_descr_get*/
         0,                      /*tp_descr_set*/
         0,                      /*tp_dictoffset*/
-        0,                      /*tp_init*/
+        (initproc)IntVectorSexp_init,                      /*tp_init*/
         0,                      /*tp_alloc*/
         0,               /*tp_new*/
         0,                      /*tp_free*/
