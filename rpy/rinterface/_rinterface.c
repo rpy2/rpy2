@@ -3051,13 +3051,13 @@ static PySexpObject*
   case STRSXP:
     object = (PySexpObject *)Sexp_new(&StrVectorSexp_Type, Py_None, Py_None);
     break;
-  case LISTSXP:
+  case VECSXP:
     object = (PySexpObject *)Sexp_new(&ListVectorSexp_Type, Py_None, Py_None);
     break;
   case CPLXSXP:
     object = (PySexpObject *)Sexp_new(&ComplexVectorSexp_Type, Py_None, Py_None);
     break;
-  case VECSXP:
+  case LISTSXP:
   case LANGSXP:
   case EXPRSXP:
   case RAWSXP:
