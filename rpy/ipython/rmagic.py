@@ -332,7 +332,8 @@ utils.install_packages('Cairo')
         args = parse_argstring(self.Rpull, line)
         outputs = args.outputs
         for output in outputs:
-            self.shell.push({output: converter.ri2py(ro.r(output)) })
+            robj = ri.globalenv.get(output)
+            self.shell.push({output: converter.ri2py(robj) })
 
     # @skip_doctest
     @magic_arguments()
@@ -363,9 +364,9 @@ utils.install_packages('Cairo')
         '''
         args = parse_argstring(self.Rget, line)
         output = args.output
-        # get the R object with the given name, starting from baseenv
+        # get the R object with the given name, starting from globalenv
         # in the search path
-        res = ri.baseenv.get(output[0])
+        res = ri.globalenv.get(output[0])
         return converter.ri2py(res)
 
 
