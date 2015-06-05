@@ -69,7 +69,7 @@ class PandasConversionsTestCase(unittest.TestCase):
         rpyp.activate()
         rp_s = robjects.conversion.py2ri(s)
         rpyp.deactivate()
-        self.assertEqual(rinterface.SexpVector, type(rp_s))
+        self.assertEqual(rinterface.FloatSexpVector, type(rp_s))
 
     def testSeries_issue264(self):
         Series = pandas.core.series.Series
