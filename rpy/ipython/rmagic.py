@@ -438,15 +438,17 @@ utils.install_packages('Cairo')
 
         if self.device == 'png':
             for imgfile in sorted( glob("%s/Rplots*png" % graph_dir) ):
-                if stat(imgfile).st_size >= 1000:                
-                    images.append(open(imgfile, 'rb').read())
+                if stat(imgfile).st_size >= 1000:
+                    with open(imgfile, 'rb') as fh_img:
+                        images.append(fh_img.read())
         else:
             # as onefile=TRUE, there is only one .svg file
             imgfile = "%s/Rplot.svg" % graph_dir
             # Cairo creates an SVG file every time R is called
             # -- empty ones are not published
             if stat(imgfile).st_size >= 1000:
-                images.append(open(imgfile, 'rb').read())
+                with open(imgfile, 'rb') as fh_img:
+                    images.append(fh_img.read())
 
         mimetypes = { 'png' : 'image/png', 'svg' : 'image/svg+xml' }
         mime = mimetypes[self.device]
