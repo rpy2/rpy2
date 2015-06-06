@@ -28,8 +28,8 @@ import rpy2.robjects.numpy2ri as numpy2ri
 
 ISOdatetime = rinterface.baseenv['ISOdatetime']
 
-converter = conversion.make_converter()
-py2ri, ri2ro, py2ro, ri2py = converter
+converter = conversion.make_converter('original pandas conversion')
+converter_name, py2ri, ri2ro, py2ro, ri2py, converter_lineage = converter
 
 @py2ri.register(PandasDataFrame)
 def py2ri_pandasdataframe(obj):
@@ -116,9 +116,11 @@ def activate():
     if original_converter is not None: 
         return
 
-    original_converter = conversion.make_converter(template=conversion.converter)
+    original_converter = conversion.make_converter('snapshot before pandas conversion',
+                                                   template=conversion.converter)
     numpy2ri.activate()
-    new_converter = conversion.make_converter(template=conversion.converter)
+    new_converter = conversion.make_converter('snapshot before pandas conversion',
+                                              template=conversion.converter)
     numpy2ri.deactivate()
 
     for k,v in py2ri.registry.items():
@@ -142,7 +144,7 @@ def activate():
         new_converter.ri2py.register(k, v)
 
     conversion.converter = new_converter
-    conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py = new_converter
+    name, conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py, lineage = new_converter
 
 def deactivate():
     global original_converter
@@ -153,7 +155,7 @@ def deactivate():
         return
 
     conversion.converter = original_converter
-    conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py = original_converter
+    name, conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py, lineage = original_converter
 
     original_converter = None
 

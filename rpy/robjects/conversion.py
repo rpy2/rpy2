@@ -14,9 +14,9 @@ if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] 
 else:
     from functools import singledispatch
 
-Converter = namedtuple('Converter', 'ri2ro py2ri py2ro ri2py')
+Converter = namedtuple('Converter', 'name ri2ro py2ri py2ro ri2py lineage')
 
-def make_converter(template=None):
+def make_converter(name, template=None):
     """ Create a converter. `template` is an optional converter to use as base converter,
     that is the `class -> function` associations will be copied in the new converter. """
 
@@ -56,6 +56,9 @@ def make_converter(template=None):
         raise NotImplementedError("Conversion 'ri2py' not defined for objects of type '%s'" % str(type(obj)))
 
     if template is not None:
+        lineage = list(template.lineage)
+        lineage.append(name)
+        lineage = tuple(lineage)
         for k,v in template.ri2ro.registry.items():
             ri2ro.register(k, v)
         for k,v in template.py2ri.registry.items():
@@ -64,8 +67,9 @@ def make_converter(template=None):
             py2ro.register(k, v)
         for k,v in template.ri2py.registry.items():
             ri2py.register(k, v)
+    else:
+        lineage = tuple()
+    return Converter(name, ri2ro, py2ri, py2ro, ri2py, lineage)
 
-    return Converter(ri2ro, py2ri, py2ro, ri2py)
-
-converter = make_converter()
-ri2ro, py2ri, py2ro, ri2py = converter
+converter = make_converter('base converter')
+converter_name, py2ri, ri2ro, py2ro, ri2py, converter_lineage = converter

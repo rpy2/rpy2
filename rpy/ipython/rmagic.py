@@ -55,12 +55,15 @@ import rpy2.robjects.packages as rpacks
 from rpy2.robjects.conversion import make_converter
 
 try:
-    from rpy2.robjects import pandas2ri as template_converter
+    from rpy2.robjects import pandas2ri as baseconversion
+    template_converter = baseconversion.converter
 except ImportError:
     try:
-        from rpy2.robjects import numpy2ri as template_converter
+        from rpy2.robjects import numpy2ri as baseconversion
+        template_converter = baseconversion.converter
     except ImportError:
         # Give up on numerics
+        baseconversion = None
         template_converter = ro.conversion.converter
 
 
@@ -113,7 +116,8 @@ def pyconverter(pyobj):
     return pyobj
 
 
-converter = make_converter(template = template_converter)
+converter = make_converter('ipython converstion',
+                           template = template_converter)
 #converter = make_converter(template = ro.conversion.converter)
 
 
@@ -702,10 +706,10 @@ __doc__ = __doc__.format(
 def load_ipython_extension(ip):
     """Load the extension in IPython."""
 
-    if hasattr(template_converter, 'activate'):
+    if hasattr(baseconversion, 'activate'):
         # This is pandas2ri if pandas is installed,
         # or numpy2ri otherwise
-        template_converter.activate()
+        baseconversion.activate()
 
     ip.register_magics(RMagics)
     # Initialising rpy2 interferes with readline. Since, at this point, we've

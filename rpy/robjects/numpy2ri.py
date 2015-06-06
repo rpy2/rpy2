@@ -36,8 +36,8 @@ _vectortypes = (rinterface.LGLSXP,
                 rinterface.CPLXSXP,
                 rinterface.STRSXP)
 
-converter = conversion.make_converter()
-py2ri, ri2ro, py2ro, ri2py = converter
+converter = conversion.make_converter('original numpy conversion')
+converter_name, py2ri, ri2ro, py2ro, ri2py, converter_lineage = converter
 
 @py2ri.register(numpy.ndarray)
 def numpy2ri(o):
@@ -137,7 +137,8 @@ def activate():
         return
 
     original_converter = conversion.converter
-    new_converter = conversion.make_converter(template=original_converter)
+    new_converter = conversion.make_converter('numpy conversion',
+                                              template=original_converter)
 
     for k,v in py2ri.registry.items():
         if k is object:
@@ -160,7 +161,7 @@ def activate():
         new_converter.ri2py.register(k, v)
 
     conversion.converter = new_converter
-    conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py = new_converter
+    name, conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py, lineage = new_converter
 
 
 def deactivate():
@@ -172,6 +173,6 @@ def deactivate():
         return
 
     conversion.converter = original_converter
-    conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py = original_converter
+    name, conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py, lineage = original_converter
 
     original_converter = None
