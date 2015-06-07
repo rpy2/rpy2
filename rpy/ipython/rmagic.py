@@ -116,7 +116,7 @@ def pyconverter(pyobj):
     return pyobj
 
 
-converter = make_converter('ipython converstion',
+converter = make_converter('ipython conversion',
                            template = template_converter)
 
 
@@ -702,6 +702,39 @@ __doc__ = __doc__.format(
                 RPULL_DOC = ' '*8 + RMagics.Rpull.__doc__,
                 RGET_DOC = ' '*8 + RMagics.Rget.__doc__
 )
+
+
+_switch_conversion_dataframe_doc = """
+    Switch the conversion of R data.frame / rpy2's DataFrame objects on or off.
+
+    With rpy2 version 2.6.0, the conversion of R's data.frame objects
+    (rpy2's DataFrame) to pandas' DataFrame is automatically activated
+    when rmagic is loaded in ipython.
+
+    This is trading convenience for performances since data are
+    currently copied during the conversion. This function provides a simple
+    way to to turn that automatic conversion off.
+    """
+
+def switchoff_conversion_dataframes():
+    __docstring__ = _switch_conversion_dataframe_doc
+    import rpy2.robjects.vectors
+    import rpy2.rinterface
+    converter.ri2py.register(rpy2.robjects.vectors.DataFrame,
+                             lambda x: x)
+    converter.ri2py.register(rpy2.rinterface.ListSexpVector,
+                             lambda x: x)
+
+def switchon_conversion_dataframes():
+    __docstring__ = _switch_conversion_dataframe_doc
+    import rpy2.robjects.vectors
+    import rpy2.rinterface
+    cls = rpy2.rinterface.ListSexpVector
+    converter.ri2py.register(rpy2.robjects.vectors.DataFrame,
+                             rpy2.robjects.pandas2ri.ri2py.registry[cls])
+    converter.ri2py.register(cls,
+                             rpy2.robjects.pandas2ri.ri2py.registry[cls])
+
 
 
 def load_ipython_extension(ip):
