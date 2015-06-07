@@ -118,7 +118,6 @@ def pyconverter(pyobj):
 
 converter = make_converter('ipython converstion',
                            template = template_converter)
-#converter = make_converter(template = ro.conversion.converter)
 
 
 # The default conversion for lists is currently to make them an R list. That has
@@ -667,7 +666,6 @@ utils.install_packages('Cairo')
         if text_output:
             # display_data.append(('RMagic.R', {'text/plain':text_output}))
             publish_display_data(data={'text/plain':text_output}, source='RMagic.R')
-
         # publish the R images
         if self.device in ['png', 'svg']:
             display_data, md = self.publish_graphics(tmpd, args.isolate_svgs)
@@ -681,7 +679,8 @@ utils.install_packages('Cairo')
 
         if args.output:
             for output in ','.join(args.output).split(','):
-                self.shell.push({output: ro.r(output) })
+                output_ipy = converter.ri2py(ri.globalenv.get(output))
+                self.shell.push({output: output_ipy })
 
 
         # this will keep a reference to the display_data
