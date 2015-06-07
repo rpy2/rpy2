@@ -49,6 +49,15 @@ Changes
   versions the `.` version will be appended a `_` (in accordance with
   :pep:0008). The change was discussed in issue #274).
 
+- The ipython 'R magic' is now starting with a default conversion mode
+  that is `pandas2ri` if it can find it, then `numpy2ri` if it can find it,
+  and then the basic conversion.
+
+- R vectors are now typed at the C level (IntSexpVector, FloatSexpVector,
+  ListSexpVector, etc...) whenever retrieving them from the embedded R
+  with the low-level `rinterface`. This is facilitating dispatch on vector
+  type (e.g., with `singledispatch` now used for the conversion system).
+  
 Bugs fixed
 ----------
 
