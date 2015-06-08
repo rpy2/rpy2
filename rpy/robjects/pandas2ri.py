@@ -95,7 +95,7 @@ def ri2py_intvector(obj):
     return res
 
 @ri2py.register(ListSexpVector)
-def ri2py_listvector(obj):
+def ri2py_listvector(obj):        
     if 'data.frame' in obj.rclass:
         items = zip(obj.do_slot('names'), (numpy2ri.ri2py(x) for x in obj))
         res = PandasDataFrame.from_items(items)
