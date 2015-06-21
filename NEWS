@@ -1,3 +1,12 @@
+Release 2.6.1
+=============
+
+Bugs fixed
+----------
+
+- Typo in function name emitting warnins are build time (issue #283)
+
+
 Release 2.6.0
 =============
 
