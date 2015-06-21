@@ -6,7 +6,13 @@ Bugs fixed
 
 - Typo in function name emitting warnins are build time (issue #283)
 
+Changes
+-------
 
+- Loading the `ipython` extension in the absence of `pandas` or `numpy`
+  is now issuing a warning (issue #279)
+  
+  
 Release 2.6.0
 =============
 
