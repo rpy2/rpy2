@@ -54,6 +54,7 @@ import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
 from rpy2.robjects.conversion import make_converter
 
+import warnings
 try:
     from rpy2.robjects import pandas2ri as baseconversion
     template_converter = baseconversion.converter
@@ -61,11 +62,20 @@ except ImportError:
     try:
         from rpy2.robjects import numpy2ri as baseconversion
         template_converter = baseconversion.converter
+        warnings.warn(' '.join(("The Python package 'pandas' is strongly"
+                                "recommended when using `rpy2.ipython`.",
+                                "Unfortunately it could not be loaded,",
+                                "but at least we found 'numpy'.")))
     except ImportError:
         # Give up on numerics
         baseconversion = None
         template_converter = ro.conversion.converter
-
+        warnings.warn(' '.join(("The Python package 'pandas' is strongly",
+                                "recommended when using `rpy2.ipython`.",
+                                "Unfortunately it could not be loaded,",
+                                "and we did not manage to load 'numpy'",
+                                "either.")))
+        
 
 # IPython imports
 
