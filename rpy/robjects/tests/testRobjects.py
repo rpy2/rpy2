@@ -113,6 +113,14 @@ class MappingTestCase(unittest.TestCase):
         self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEqual(rinterface.CPLXSXP, rob.typeof)
 
+    def testMapperPy2R_taggedlist(self):
+        py = robjects.rlc.TaggedList(('a', 'b'),
+                                     tags=('foo', 'bar'))
+        robj = robjects.default_py2ro(py)
+        self.assertTrue(isinstance(robj, robjects.Vector))
+        self.assertEqual(2, len(robj))
+        self.assertEqual(('foo', 'bar'),
+                         tuple(robj.names))
 
     def testOverride_ri2ro(self):
         class Density(object):
