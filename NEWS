@@ -4,7 +4,10 @@ Release 2.6.1
 Bugs fixed
 ----------
 
-- Typo in function name emitting warnins are build time (issue #283)
+- Typo in function name emitting warnings are build time (issue #283)
+
+- The conversion of `TaggedList` instances is now handling the names
+  of items in the list (issue #286)
 
 Changes
 -------
