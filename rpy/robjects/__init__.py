@@ -221,6 +221,12 @@ def _(obj):
 def _(obj):
     return rinterface.ListSexpVector([conversion.py2ri(x) for x in obj])
 
+@default_converter.py2ri.register(rlc.TaggedList)
+def _(obj):
+    res = rinterface.ListSexpVector([conversion.py2ri(x) for x in obj])
+    res.do_slot_assign('names', rinterface.StrSexpVector(obj.tags))
+    return res
+
 @default_converter.py2ri.register(complex)
 def _(obj):
     return rinterface.SexpVector([obj, ], rinterface.CPLXSXP)
