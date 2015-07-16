@@ -50,17 +50,18 @@ class PackagesTestCase(unittest.TestCase):
                           env, "dummy_package")
 
 class SignatureTranslatedAnonymousPackagesTestCase(unittest.TestCase):
-    def testNew(self):
-        string = """
+    string = """
    square <- function(x) {
-       return(x^2)
+    return(x^2)
    }
 
    cube <- function(x) {
-       return(x^3)
+    return(x^3)
    }
    """
-        powerpack = packages.SignatureTranslatedAnonymousPackage(string, "powerpack")
+
+    def testNew(self):
+        powerpack = packages.STAP(self.string, "powerpack")
         self.assertTrue(hasattr(powerpack, 'square'))
         self.assertTrue(hasattr(powerpack, 'cube'))
 

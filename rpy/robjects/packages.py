@@ -264,7 +264,8 @@ class Package(ModuleType):
         s = super(Package, self).__repr__()
         return 'rpy2.robjects.packages.Package as a ' + s
 
-
+# alias
+STF = SignatureTranslatedFunction
 
 class SignatureTranslatedPackage(Package):
     """ R package in which the R functions had their signatures 
@@ -274,11 +275,13 @@ class SignatureTranslatedPackage(Package):
         super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
         for name, robj in self.__dict__.items():
             if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
-                self.__dict__[name] = SignatureTranslatedFunction(self.__dict__[name],
-                                                                  on_conflict = on_conflict,
-                                                                  symbol_r2python = self._symbol_r2python,
-                                                                  symbol_check_after = self._symbol_check_after)
-                
+                self.__dict__[name] = STF(self.__dict__[name],
+                                          on_conflict = on_conflict,
+                                          symbol_r2python = self._symbol_r2python,
+                                          symbol_check_after = self._symbol_check_after)
+
+# alias
+STP = SignatureTranslatedPackage
 
 class SignatureTranslatedAnonymousPackage(SignatureTranslatedPackage):
     def __init__(self, string, name):
@@ -286,6 +289,9 @@ class SignatureTranslatedAnonymousPackage(SignatureTranslatedPackage):
         reval(string, env)
         super(SignatureTranslatedAnonymousPackage, self).__init__(env,
                                                                   name)
+
+# alias
+STAP = SignatureTranslatedAnonymousPackage
 
 class InstalledSTPackage(SignatureTranslatedPackage):
     @docstring_property(__doc__)
