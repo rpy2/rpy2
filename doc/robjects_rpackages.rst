@@ -130,7 +130,8 @@ names in the respective files unnecessary.
 
 .. code-block:: python
 
-   from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
+   from rpy2.robjects.packages import STAP
+   # or for the long name: SignatureTranslatedAnonymousPackage
 
    string = """
    square <- function(x) {
@@ -142,7 +143,7 @@ names in the respective files unnecessary.
    }
    """
 
-   powerpack = SignatureTranslatedAnonymousPackage(string, "powerpack")
+   powerpack = STAP(string, "powerpack")
 
 The R functions `square` and `cube` can be called with `powerpack.square()`
 and `powerpack.cube`.
@@ -156,7 +157,7 @@ Using a `snippet on stackoverflow`_:
 .. code-block:: r
 
    library(devtools)
-   source_url('https://raw.github.com/hadley/stringr/master/R/c.r')
+   source_url('https://gist.github.com/lgautier/f89b53bdfc4bbfa50ad1')
 
 .. _snippet on stackoverflow: http://stackoverflow.com/questions/7715723/sourcing-r-script-over-https
 
@@ -168,24 +169,26 @@ Using a `snippet on stackoverflow`_:
 
 Python has utilities to read data from URLs.
 
-
 .. code-block:: python
 
-   import urllib2
-   from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
+   from urllib.request import urlopen
+   # If (still) using Python 2.7, do instead:
+   # from urllib2 import urlopen
+   
+   from rpy2.robjects.packages import STAP
 
-   bioc_url = urllib2.urlopen('https://raw.github.com/hadley/stringr/master/R/c.r')
-   string = ''.join(bioc_url.readlines())
+   gist_url = urlopen('https://gist.github.com/lgautier/f89b53bdfc4bbfa50ad1')
+   string = gist_url.read()
 
-   stringr_c = SignatureTranslatedAnonymousPackage(string, "stringr_c")
+   r_powertools = STAP(string, "r_powertools")
 
-The object `stringr_c` encapsulates the funtions defined in the R file
+The object `r_powertools` encapsulates the funtions defined in the R file
 into something like what the rpy2 `importr` is returning.
 
->>> type(stringr_c)
+>>> type(r_powertools)
 rpy2.robjects.packages.SignatureTranslatedAnonymousPackage
->>> stringr_c._rpy2r.keys()
-['str_join', 'str_c']
+>>> r_powertools._rpy2r.keys()
+['power', 'square', 'cube']
 
 Unlike the R code first shown, this is not writing anything into the 
 the R global environment.
