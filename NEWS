@@ -1,16 +1,6 @@
 Release 2.7.0
 =============
 
-New features
-------------
-
-- Because of their long names, the classes
-  :class:`SignatureTranslatedAnonymousPackage`,
-  :class:`SignatureTranslatedPackage`, and
-  :class:`SignatureTranslatedFunction`
-  in :mod:`rpy2.robjects.packages` have now the aliases
-  :class:`STAP`, :class:`STP`, and :class:`STF` respectively.
-
 
 Release 2.6.1
 =============
