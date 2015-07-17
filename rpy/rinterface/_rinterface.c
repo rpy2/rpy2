@@ -136,6 +136,7 @@ static PyObject *initOptions;
 
 static SEXP errMessage_SEXP;
 static PyObject *RPyExc_RuntimeError = NULL;
+static PyObject *RPyExc_ParsingError = NULL;
 
 #if (defined(Win32) || defined(Win64))
 /* R instance as a global */
@@ -1545,7 +1546,7 @@ PyDoc_STRVAR(EmbeddedR_setinteractive_doc,
 
 /* Create a Python exception from an R error */
 static void
-EmbeddedR_exception_from_errmessage(void)
+  EmbeddedR_exception_from_errmessage(PyObject *PythonException_Type)
 {
   SEXP expr, res;
   /* PROTECT(errMessage_SEXP) */
@@ -1553,7 +1554,9 @@ EmbeddedR_exception_from_errmessage(void)
   SETCAR(expr, errMessage_SEXP);
   PROTECT(res = Rf_eval(expr, R_GlobalEnv));
   const char *message = CHARACTER_VALUE(res);
-  PyErr_SetString(RPyExc_RuntimeError, message);
+  //RPyExc_RuntimeError
+  //PyErr_SetString(RPyExc_RuntimeError, message);
+  PyErr_SetString(PythonException_Type, message);
   UNPROTECT(2);
 }
 
@@ -1610,8 +1613,7 @@ EmbeddedR_parse(PyObject *self, PyObject *pystring)
   if (status != PARSE_OK) {
     UNPROTECT(2);
     embeddedR_freelock();
-    PyErr_Format(PyExc_ValueError, "Error while parsing the string.");
-    /*FIXME: Fetch parsing error details*/
+    EmbeddedR_exception_from_errmessage(RPyExc_ParsingError);
     return NULL;
   }
   cmdpy = newPySexpObject(cmdexpr);
@@ -1672,7 +1674,7 @@ SEXP do_eval_expr(SEXP expr_R, SEXP env_R) {
       PyErr_SetNone(PyExc_KeyboardInterrupt);
       /* FIXME: handling of interruptions */
     } else {
-      EmbeddedR_exception_from_errmessage();
+      EmbeddedR_exception_from_errmessage(RPyExc_RuntimeError);
     }
   }
   return res_R;
@@ -2382,7 +2384,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
       /* Retrieving the value associated with an existing key
          triggers an error in R. Don't ask. This is R. */
       res_R = R_NilValue;
-      EmbeddedR_exception_from_errmessage();
+      EmbeddedR_exception_from_errmessage(RPyExc_RuntimeError);
 #if (PY_VERSION_HEX >= 0x03010000)
       Py_DECREF(pybytes);
 #endif
@@ -4076,9 +4078,25 @@ PyInit__rinterface(void)
 #endif
     }
   }
-  
+
   Py_INCREF(RPyExc_RuntimeError);
   PyModule_AddObject(m, "RRuntimeError", RPyExc_RuntimeError);
+
+  if (RPyExc_ParsingError == NULL) {
+    RPyExc_ParsingError = PyErr_NewException("rpy2.rinterface.RParsingError", 
+                                             NULL, NULL);
+    if (RPyExc_ParsingError == NULL) {
+#if (PY_VERSION_HEX < 0x03010000)
+      return;
+#else
+      return NULL;
+#endif
+    }
+
+  }
+  
+  Py_INCREF(RPyExc_ParsingError);
+  PyModule_AddObject(m, "RParsingError", RPyExc_ParsingError);
 
   embeddedR_isInitialized = Py_False;
   Py_INCREF(Py_False);
