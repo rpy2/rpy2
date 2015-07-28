@@ -31,11 +31,12 @@ sudo add-apt-repository ppa:marutter/rrutter >> ${LOGFILE}
 #sudo add-apt-repository ppa:jtaylor/ipython >> ${LOGFILE}
 #sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${LOGFILE}
 sudo apt-get -y update &>> ${LOGFILE}
-for package in r-base libatlas-dev libatlas3gf-base liblapack-dev gfortran
-do
-    echo "   ${package}"
-    sudo apt-get -qq -y install ${package} &>> ${LOGFILE};
-done 
+sudo apt-get -qq -y install r-base \
+	                    libatlas-dev \
+	                    libatlas3gf-base \
+		            liblapack-dev \
+		            gfortran &>> ${LOGFILE};
+
 #sudo apt-get -qq -y install pandas >> ${LOGFILE}
 echo "[done]"
 
@@ -68,7 +69,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
     for package in numpy==$NPVERSION pandas ipython; do
 	echo "    $package";
 	pip install --use-wheel \
-	    --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
+	    --find-links https://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
 	    $package >> ${LOGFILE};
     done
     if [ '2.7' = $PYVERSION ]; then
@@ -80,7 +81,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
 	pip install singledispatch >> ${LOGFILE}
     fi;
     echo '.'
-    #pip install --use-wheel --find-links http://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
+    #pip install --use-wheel --find-links https://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
 
     echo "Building rpy2"
     # Build rpy2
