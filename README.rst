@@ -10,15 +10,20 @@ This is the source tree or distribution for the rpy2 package.
 Installation
 ============
 
-The distutils mechanism can be used:
+`pip` should work out of the box:
+
+    pip install rpy2
+
+The package is known to compile on Linux, MacOSX, and Windows
+(provided that developper tools installed are you are ready figure out how yourself).
+
+In case you find yourself with this source without any idea
+of what it takes to compile anything on your platform, try first
 
     python setup.py install
 
-The package is known to compile on Linux, WinXp and MacOSX
-(provided that developper tools are installed).
-In case you find yourself with this source without any idea
-of what it takes to compile anything on your platform, do
-consider looking for pre-compiled binaries.
+If this fails, consider looking for pre-compiled binaries (they are available on Linux Red Hat,
+CentOS, Debian, Ubuntu, etc...) or using the matching Docker container.
 
 Note that `python setup.py develop` will appear to work, but will result in an
 installation from the `rpy` directory here. The namespaces will be
@@ -45,13 +50,11 @@ Individual tests can be run as follows:
 
     python -m unittest rpy2.robjects.tests.testVector
 
-Or test discovery can be used as follows:
+Test discovery can be attempted as follows (not that it may not work):
 
     python -m unittest discover rpy2.robjects
 
-Note that a problematic test is picked up if you do test discovery on the rpy2
-root, and you'll get a segfault. So, always use `python -m rpy2.tests` to run
-all tests.
+Prefer `python -m rpy2.tests` to run all tests.
 
 License
 =======
