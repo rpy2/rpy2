@@ -54,6 +54,7 @@ summary=()
 for PYVERSION in $PYTHON_VERSIONS; do
   echo -e "${GREEN}Test with Python $PYVERSION ${NC}"
 
+  sudo apt-get -qq -y install python$PYVERSION python${PYVERSION}-dev
   # Create a new virtualenv
   virtualenv --python=python$PYVERSION env-$PYVERSION/ >> ${LOGFILE}
   source env-$PYVERSION/bin/activate
