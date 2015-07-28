@@ -14,7 +14,75 @@ if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] 
 else:
     from functools import singledispatch
 
-Converter = namedtuple('Converter', 'name ri2ro py2ri py2ro ri2py lineage')
+
+
+def _ri2ro(obj):
+    """ Dummy function for ri2ro.
+
+    This function will convert rpy2.rinterface (ri) low-level objects
+    into rpy2.robjects (ro) higher-level objects.
+    """
+    raise NotImplementedError("Conversion 'ri2ro' not defined for objects of type '%s'" % str(type(obj)))
+
+def _py2ri(obj):
+    """ Dummy function for py2ri.
+    
+    This function will convert Python objects into rpy2.rinterface
+    (ri) objects.
+    """
+    raise NotImplementedError("Conversion 'py2ri' not defined for objects of type '%s'" % str(type(obj)))
+
+def _py2ro(obj):
+    """ Dummy function for py2ro.
+    
+    This function will convert Python objects into rpy2.robjects
+    (ro) objects.
+    """
+    raise NotImplementedError("Conversion 'py2ro' not defined for objects of type '%s'" % str(type(obj)))
+
+def _ri2py(obj):
+    """ Dummy function for ri2py.
+
+    This function will convert Python objects into Python (presumably non-rpy2) objects.
+    """
+    raise NotImplementedError("Conversion 'ri2py' not defined for objects of type '%s'" % str(type(obj)))
+
+
+
+class Converter(object):
+    
+    name = @property(lambda x: x._name)
+    ri2ro = @property(lambda x: x._ri2ro)
+    py2ri = @property(lambda x: x._py2ri)
+    py2ro = @property(lambda x: x._py2ro)
+    ri2py = @property(lambda x: x._ri2py)
+    lineage = @property(lambda x: x._lineage)
+
+    def __init__(self, name, template=None):
+        #         ri2ro, py2ri, py2ro, ri2py, lineage):
+        self._name = name
+        self._ri2ro = singledispatch(_ri2ro)
+        self._py2ri = singledispatch(_py2ri)
+        self._py2ro = singledispatch(_py2ro)
+        self._ri2py = singledispatch(_ri2py)
+
+        if template is None:
+            lineage = tuple()
+        else:
+            lineage = list(template.lineage)
+            lineage.append(name)
+            lineage = tuple(lineage)
+            for k,v in template.ri2ro.registry.items():
+                self._ri2ro.register(k, v)
+            for k,v in template.py2ri.registry.items():
+                self._py2ri.register(k, v)
+            for k,v in template.py2ro.registry.items():
+                self._py2ro.register(k, v)
+            for k,v in template.ri2py.registry.items():
+                self._ri2py.register(k, v)
+                
+        lineage = lineage
+
 
 def make_converter(name, template=None):
     """ Create a converter. `template` is an optional converter to use as base converter,
