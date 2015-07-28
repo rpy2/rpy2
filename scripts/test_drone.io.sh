@@ -61,8 +61,8 @@ for PYVERSION in $PYTHON_VERSIONS; do
   
   # Upgrade pip and install wheel
   pip install setuptools --upgrade >> ${LOGFILE}
-  pip install -I --download-cache /tmp pip >> ${LOGFILE}
-  pip install -I --download-cache /tmp wheel >> ${LOGFILE}
+  pip install -I pip >> ${LOGFILE}
+  pip install -I wheel >> ${LOGFILE}
 
   for NPVERSION in $NUMPY_VERSIONS; do
     echo -e "${GREEN}    Numpy version $NPVERSION ${NC}"
