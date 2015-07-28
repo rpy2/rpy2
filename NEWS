@@ -7,6 +7,8 @@ New features
 - New exception :class:`rpy2.rinterface.RParsingError`. Errors
   occurring when parsing R code through :func:`rpy2.rinterface.parse`
   raise this exception (previously :class:`rpy2.rinterface.RRuntimeError`).
+
+- New class :class:`rpy2.robjects.conversion.Converter`.
   
 
 Release 2.6.1

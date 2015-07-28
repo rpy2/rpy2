@@ -32,6 +32,7 @@ sudo add-apt-repository ppa:marutter/rrutter >> ${LOGFILE}
 #sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${LOGFILE}
 sudo apt-get -y update &>> ${LOGFILE}
 sudo apt-get -qq -y install r-base \
+                            r-cran-ggplot2 \
 	                    libatlas-dev \
 	                    libatlas3gf-base \
 		            liblapack-dev \
@@ -44,7 +45,7 @@ echo "[done]"
 echo -n "Installing R packages..."
 export R_LIBS_USER="$HOME/rlibs/"
 mkdir -p $R_LIBS_USER
-R --slave -e 'install.packages(c("ggplot2", "Cairo"), repos="http://cran.us.r-project.org")' &>> ${LOGFILE}
+R --slave -e 'install.packages(c("Cairo"), repos="http://cran.us.r-project.org")' &>> ${LOGFILE}
 echo "[done]"
 
 STATUS=0
