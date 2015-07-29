@@ -24,6 +24,10 @@ NC='\e[0m'
 
 echo "CI on drone.io" > ${LOGFILE}
 
+# make debconf silent
+export DEBIAN_FRONTEND=noninteractive
+
+
 # Install R, ipython, and pandas
 # Ensure that we get recent versions
 echo -n "Installing packages with APT..."
