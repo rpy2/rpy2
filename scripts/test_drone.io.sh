@@ -32,6 +32,7 @@ export DEBIAN_FRONTEND=noninteractive
 # Ensure that we get recent versions
 echo -n "Installing packages with APT..."
 sudo add-apt-repository ppa:marutter/rrutter >> ${LOGFILE}
+sudo add-apt-repository ppa:marutter/c2d4u >> ${LOGFILE}
 #sudo add-apt-repository ppa:jtaylor/ipython >> ${LOGFILE}
 #sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${LOGFILE}
 sudo apt-get -y update &>> ${LOGFILE}
