@@ -51,12 +51,12 @@ def _ri2py(obj):
 
 class Converter(object):
     
-    name = @property(lambda x: x._name)
-    ri2ro = @property(lambda x: x._ri2ro)
-    py2ri = @property(lambda x: x._py2ri)
-    py2ro = @property(lambda x: x._py2ro)
-    ri2py = @property(lambda x: x._ri2py)
-    lineage = @property(lambda x: x._lineage)
+    name    = property(lambda self: self._name)
+    ri2ro   = property(lambda self: self._ri2ro)
+    py2ri   = property(lambda self: self._py2ri)
+    py2ro   = property(lambda self: self._py2ro)
+    ri2py   = property(lambda self: self._ri2py)
+    lineage = property(lambda self: self._lineage)
 
     def __init__(self, name, template=None):
         #         ri2ro, py2ri, py2ro, ri2py, lineage):
