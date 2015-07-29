@@ -36,8 +36,8 @@ class Converter(object):
         if template is None:
             lineage = tuple()
         else:
-            #lineage = list(template.lineage)
-            #lineage.append(name)
+            lineage = list(template.lineage)
+            lineage.append(name)
             lineage = tuple(lineage)
             for k,v in template.ri2ro.registry.items():
                 self._ri2ro.register(k, v)
