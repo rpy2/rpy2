@@ -376,12 +376,9 @@ class GeomDensity2D(Geom):
     _constructor = ggplot2_env['geom_density2d']
 geom_density2d = GeomDensity2D.new
 
-try:
-   class GeomDotplot(Geom):
-      _constructor = ggplot2_env['geom_dotplot']
-   geom_dotplot = GeomDotplot.new
-except LookupError:
-   warnings.warn('"geom_dotplot" not available in R\'s ggplot2. Skipping it.')
+class GeomDotplot(Geom):
+   _constructor = ggplot2_env['geom_dotplot']
+geom_dotplot = GeomDotplot.new
    
 class GeomErrorBar(Geom):
     _constructor = ggplot2_env['geom_errorbar']
