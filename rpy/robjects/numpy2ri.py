@@ -36,8 +36,11 @@ _vectortypes = (rinterface.LGLSXP,
                 rinterface.CPLXSXP,
                 rinterface.STRSXP)
 
-converter = conversion.make_converter('original numpy conversion')
-converter_name, py2ri, ri2ro, py2ro, ri2py, converter_lineage = converter
+converter = conversion.Converter('original numpy conversion')
+py2ri = converter.py2ri
+py2ro = converter.py2ro
+ri2py = converter.ri2py
+ri2ro = converter.ri2ro
 
 @py2ri.register(numpy.ndarray)
 def numpy2ri(o):
@@ -137,8 +140,8 @@ def activate():
         return
 
     original_converter = conversion.converter
-    new_converter = conversion.make_converter('numpy conversion',
-                                              template=original_converter)
+    new_converter = conversion.Converter('numpy conversion',
+                                         template=original_converter)
 
     for k,v in py2ri.registry.items():
         if k is object:
@@ -160,19 +163,15 @@ def activate():
             continue
         new_converter.ri2py.register(k, v)
 
-    conversion.converter = new_converter
-    name, conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py, lineage = new_converter
+    conversion.set_conversion(new_converter)
 
 
 def deactivate():
     global original_converter
-
     # If module has never been activated or already deactivated,
     # there is nothing to do
     if original_converter is None:
         return
 
-    conversion.converter = original_converter
-    name, conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py, lineage = original_converter
-
+    conversion.set_conversion(original_converter)
     original_converter = None

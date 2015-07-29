@@ -27,7 +27,6 @@ class NumpyConversionsTestCase(unittest.TestCase):
 
     def testActivate(self):
         rpyn.deactivate()
-        robjects.conversion.py2ri = robjects.default_py2ri
         #FIXME: is the following still making sense ?
         self.assertNotEqual(rpyn.py2ri, conversion.py2ri)
         l = len(conversion.py2ri.registry)
@@ -40,7 +39,6 @@ class NumpyConversionsTestCase(unittest.TestCase):
 
     def testActivateTwice(self):
         rpyn.deactivate()
-        robjects.conversion.py2ri = robjects.default_py2ri
         #FIXME: is the following still making sense ?
         self.assertNotEqual(rpyn.py2ri, conversion.py2ri)
         l = len(conversion.py2ri.registry)

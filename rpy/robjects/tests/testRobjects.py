@@ -45,25 +45,25 @@ class MappingTestCase(unittest.TestCase):
 
     def testMapperR2Python_string(self):
         sexp = rinterface.globalenv.get("letters")
-        ob = robjects.default_ri2ro(sexp)
+        ob = robjects.default_converter.ri2ro(sexp)
         self.assertTrue(isinstance(ob, 
                                    robjects.Vector))
 
     def testMapperR2Python_boolean(self):
         sexp = rinterface.globalenv.get("T")
-        ob = robjects.default_ri2ro(sexp)
+        ob = robjects.default_converter.ri2ro(sexp)
         self.assertTrue(isinstance(ob, 
                                    robjects.Vector))
 
     def testMapperR2Python_function(self):
         sexp = rinterface.globalenv.get("plot")
-        ob = robjects.default_ri2ro(sexp)
+        ob = robjects.default_converter.ri2ro(sexp)
         self.assertTrue(isinstance(ob, 
                                    robjects.Function))
 
     def testMapperR2Python_environment(self):
         sexp = rinterface.globalenv.get(".GlobalEnv")
-        self.assertTrue(isinstance(robjects.default_ri2ro(sexp), 
+        self.assertTrue(isinstance(robjects.default_converter.ri2ro(sexp), 
                                    robjects.Environment))
 
     def testMapperR2Python_s4(self):
@@ -72,51 +72,51 @@ class MappingTestCase(unittest.TestCase):
         one = rinterface.IntSexpVector([1, ])
         sexp = rinterface.globalenv.get("new")(classname, 
                                                x=one)
-        self.assertTrue(isinstance(robjects.default_ri2ro(sexp), 
+        self.assertTrue(isinstance(robjects.default_converter.ri2ro(sexp), 
                                    robjects.RS4))
 
     def testMapperPy2R_integer(self):
         py = 1
-        rob = robjects.default_py2ro(py)
+        rob = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEqual(rinterface.INTSXP, rob.typeof)
 
     def testMapperPy2R_boolean(self):        
         py = True
-        rob = robjects.default_py2ro(py)
+        rob = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEqual(rinterface.LGLSXP, rob.typeof)
 
     def testMapperPy2R_py3bytes(self):        
         py = b'houba'
-        rob = robjects.default_py2ro(py)
+        rob = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEqual(rinterface.STRSXP, rob.typeof)
 
     def testMapperPy2R_py3str(self):        
         py = u'houba'
         self.assertTrue(isinstance(py, py3str))
-        rob = robjects.default_py2ro(py)
+        rob = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEqual(rinterface.STRSXP, rob.typeof)
         #FIXME: more tests
 
     def testMapperPy2R_float(self):
         py = 1.0
-        rob = robjects.default_py2ro(py)
+        rob = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEqual(rinterface.REALSXP, rob.typeof)
 
     def testMapperPy2R_complex(self):
         py = 1.0 + 2j
-        rob = robjects.default_py2ro(py)
+        rob = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
         self.assertEqual(rinterface.CPLXSXP, rob.typeof)
 
     def testMapperPy2R_taggedlist(self):
         py = robjects.rlc.TaggedList(('a', 'b'),
                                      tags=('foo', 'bar'))
-        robj = robjects.default_py2ro(py)
+        robj = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(robj, robjects.Vector))
         self.assertEqual(2, len(robj))
         self.assertEqual(('foo', 'bar'),
@@ -128,7 +128,7 @@ class MappingTestCase(unittest.TestCase):
                 self._x = x
 
         def f(obj):
-            pyobj = robjects.default_ri2ro(obj)
+            pyobj = robjects.default_converter.ri2ro(obj)
             inherits = rinterface.baseenv["inherits"]
             classname = rinterface.SexpVector(["density", ], 
                                               rinterface.STRSXP)

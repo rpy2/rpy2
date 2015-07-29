@@ -52,7 +52,7 @@ from shutil import rmtree
 import rpy2.rinterface as ri
 import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
-from rpy2.robjects.conversion import make_converter
+from rpy2.robjects.conversion import Converter
 
 import warnings
 try:
@@ -126,8 +126,8 @@ def pyconverter(pyobj):
     return pyobj
 
 
-converter = make_converter('ipython conversion',
-                           template = template_converter)
+converter = Converter('ipython conversion',
+                      template = template_converter)
 
 
 # The default conversion for lists is currently to make them an R list. That has

@@ -21,7 +21,6 @@ if has_pandas:
 class PandasConversionsTestCase(unittest.TestCase):
 
     def testActivate(self):
-        robjects.conversion.py2ri = robjects.default_py2ri
         #FIXME: is the following still making sense ?
         self.assertNotEqual(rpyp.py2ri, robjects.conversion.py2ri)
         l = len(robjects.conversion.py2ri.registry)
@@ -33,7 +32,6 @@ class PandasConversionsTestCase(unittest.TestCase):
         self.assertEqual(k, set(conversion.py2ri.registry.keys()))
 
     def testActivateTwice(self):
-        robjects.conversion.py2ri = robjects.default_py2ri
         #FIXME: is the following still making sense ?
         self.assertNotEqual(rpyp.py2ri, robjects.conversion.py2ri)
         l = len(robjects.conversion.py2ri.registry)

@@ -1,6 +1,6 @@
 import rpy2.rinterface as rinterface
 from rpy2.robjects.robject import RObjectMixin, RObject
-from . import conversion
+from rpy2.robjects import conversion
 
 _new_env = rinterface.baseenv["new.env"]
 
@@ -15,7 +15,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
 
     def __getitem__(self, item):
         res = super(Environment, self).__getitem__(item)
-        res = conversion.ri2ro(res)
+        res = conversion.converter.ri2ro(res)
         # objects in a R environment have an associated name / symbol
         try:
             res.__rname__ = item
@@ -28,16 +28,16 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         return res
 
     def __setitem__(self, item, value):
-        robj = conversion.py2ri(value)
+        robj = conversion.converter.py2ri(value)
         super(Environment, self).__setitem__(item, robj)
 
     def get(self, item, wantfun = False):
         """ Get a object from its R name/symol
         :param item: string (name/symbol)
-        :rtype: object (as returned by :func:`conversion.ri2ro`)
+        :rtype: object (as returned by :func:`conversion.converter.ri2ro`)
         """
         res = super(Environment, self).get(item, wantfun = wantfun)
-        res = conversion.ri2ro(res)
+        res = conversion.converter.ri2ro(res)
         res.__rname__ = item
         return res
 

@@ -74,7 +74,7 @@ def reval(string, envir = _globalenv):
     res = _reval(p, envir = envir)
     return res
 
-default_converter = conversion.make_converter('base empty converter')
+default_converter = conversion.Converter('base empty converter')
 
 @default_converter.ri2ro.register(RObject)
 def _(obj):
@@ -319,15 +319,9 @@ class R(object):
 
 r = R()
 
-conversion.converter = default_converter
-converter_name, conversion.ri2ro, conversion.py2ri, conversion.py2ro, conversion.ri2py, converter_lineage = conversion.converter
+conversion.set_conversion(default_converter)
 
-default_ri2ro = conversion.converter.ri2ro
-default_py2ri = conversion.converter.py2ri
-default_py2ro = conversion.converter.py2ro
-default_ri2py = conversion.converter.ri2py
-
-globalenv = conversion.ri2ro(_globalenv)
-baseenv = conversion.ri2ro(rinterface.baseenv)
-emptyenv = conversion.ri2ro(rinterface.emptyenv)
+globalenv = conversion.converter.ri2ro(_globalenv)
+baseenv = conversion.converter.ri2ro(rinterface.baseenv)
+emptyenv = conversion.converter.ri2ro(rinterface.emptyenv)
 
