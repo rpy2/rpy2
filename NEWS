@@ -8,7 +8,13 @@ New features
   occurring when parsing R code through :func:`rpy2.rinterface.parse`
   raise this exception (previously :class:`rpy2.rinterface.RRuntimeError`).
 
-  - New class :class:`rpy2.robjects.conversion.Converter`.
+- New class :class:`rpy2.robjects.conversion.Converter` to replace
+  the `namedtuple` of the same name
+
+- New class :class:`rpy2.robjects.converter.ConversionContext`. This is
+  a context manager allowing an easy setting of local conversion rules.
+  The constructor as an alias called
+  :meth:`rpy2.robjects.constructor.localconverter`.
   
 
 Release 2.6.1
