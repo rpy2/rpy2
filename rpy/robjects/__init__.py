@@ -315,7 +315,7 @@ class R(object):
     def __call__(self, string):
         p = rinterface.parse(string)
         res = self.eval(p)
-        return res
+        return conversion.ri2py(res)
 
 r = R()
 

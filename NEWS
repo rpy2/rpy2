@@ -15,7 +15,13 @@ New features
   a context manager allowing an easy setting of local conversion rules.
   The constructor as an alias called
   :meth:`rpy2.robjects.constructor.localconverter`.
-  
+
+Bugs fixed
+----------
+
+- Conversion rules were not applied when parsing and evaluating string
+  as R with :class:`rpy2.robjects.R`.
+
 
 Release 2.6.1
 =============
