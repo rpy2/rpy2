@@ -121,7 +121,7 @@ def ri2py_list(obj):
             res = numpy.rec.fromarrays(o2, names=tuple(names))
     else:
         # not a data.frame, yet is it still possible to convert it
-        res = ro.default_ri2py(obj)
+        res = ro.default_converter.ri2py(obj)
     return res
 
 @ri2py.register(Sexp)
