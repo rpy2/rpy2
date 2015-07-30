@@ -14,6 +14,15 @@ if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] 
 else:
     from functools import singledispatch
 
+def overlay_converter(src, target):
+    for k,v in src.ri2ro.registry.items():
+        target._ri2ro.register(k, v)
+    for k,v in src.py2ri.registry.items():
+        target._py2ri.register(k, v)
+    for k,v in src.py2ro.registry.items():
+        target._py2ro.register(k, v)
+    for k,v in src.ri2py.registry.items():
+        target._ri2py.register(k, v)
 
 class Converter(object):
     
@@ -39,17 +48,16 @@ class Converter(object):
             lineage = list(template.lineage)
             lineage.append(name)
             lineage = tuple(lineage)
-            for k,v in template.ri2ro.registry.items():
-                self._ri2ro.register(k, v)
-            for k,v in template.py2ri.registry.items():
-                self._py2ri.register(k, v)
-            for k,v in template.py2ro.registry.items():
-                self._py2ro.register(k, v)
-            for k,v in template.ri2py.registry.items():
-                self._ri2py.register(k, v)
-                
+            overlay_converter(template, self)
         self._lineage = lineage
 
+    def __add__(self, converter):
+        assert isinstance(converter, Converter)
+        new_name = '%s + %s' % (self.name, converter.name)
+        new_converter = Converter(new_name, template=self)
+        overlay_converter(converter, new_converter)
+        return new_converter
+    
     @staticmethod
     def make_dispatch_functions():
         @singledispatch
@@ -88,6 +96,24 @@ class Converter(object):
             raise NotImplementedError("Conversion 'ri2py' not defined for objects of type '%s'" % str(type(obj)))
 
         return (ri2ro, py2ri, py2ro, ri2py)
+
+
+class ConversionContext(object):
+    def __init__(self, ctx_converter):
+        assert isinstance(ctx_converter, Converter)
+        self._original_converter = converter
+        self.ctx_converter = Converter('Converter-%i-in-context' % id(self),
+                                       template=ctx_converter)
+
+    def __enter__(self):
+        set_conversion(self.ctx_converter)
+        return self.ctx_converter
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        set_conversion(self._original_converter)
+        return False
+
+localconverter = ConversionContext
     
 converter = None
 py2ri = None
@@ -104,20 +130,3 @@ def set_conversion(this_converter):
     ri2py = converter.ri2py
 
 set_conversion(Converter('base converter'))
-
-
-class ConversionContext(object):
-    def __init__(self, template=None):
-        """
-        template: an instance of class Converter."""
-        assert template is None or isinstance(template, Converter)
-        self._original_converter = converter
-        self._converter = Converter('Converter-%i' % id(self),
-                                    template=template)
-        
-    def __enter__(self):
-        set_conversion(self._converter)
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        set_conversion(self._original_converter)
-        
