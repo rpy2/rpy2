@@ -1,3 +1,12 @@
+Release 2.6.2
+=============
+
+Bugs fixed
+----------
+
+- Check that R >= 3.2 is used at build time (issue #291)
+
+
 Release 2.6.1
 =============
 
