@@ -15,6 +15,13 @@ else:
     from functools import singledispatch
 
 def overlay_converter(src, target):
+    """
+    :param src: source of additional conversion rules
+    :type src: :class:`Converter`
+    :param target: target. The conversion rules in the src will
+                   be added to this object.
+    :type target: :class:`Converter`
+    """
     for k,v in src.ri2ro.registry.items():
         target._ri2ro.register(k, v)
     for k,v in src.py2ri.registry.items():
@@ -25,7 +32,14 @@ def overlay_converter(src, target):
         target._ri2py.register(k, v)
 
 class Converter(object):
-    
+    """
+    Conversion between rpy2's low-level and high-level proxy objects
+    for R objects, and Python (no R) objects.
+
+    Converter objects can be added, the result being
+    a Converter objects combining the translation rules from the
+    different converters.
+    """
     name = property(lambda self: self._name)
     ri2ro = property(lambda self: self._ri2ro)
     py2ri = property(lambda self: self._py2ri)
@@ -99,6 +113,9 @@ class Converter(object):
 
 
 class ConversionContext(object):
+    """
+    Context manager for instances of class Converter.
+    """
     def __init__(self, ctx_converter):
         assert isinstance(ctx_converter, Converter)
         self._original_converter = converter
@@ -122,6 +139,11 @@ ri2ro = None
 ri2py = None
 
 def set_conversion(this_converter):
+    """
+    Set conversion rules in the conversion module.
+    :param this_converter: The conversion rules
+    :type this_converter: :class:`Converter`
+    """
     global converter, py2ri, py2ro, ri2ro, ri2py
     converter = this_converter
     py2ri = converter.py2ri
