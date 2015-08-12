@@ -129,7 +129,7 @@ def ri2py_sexp(obj):
     if (obj.typeof in _vectortypes) and (obj.typeof != VECSXP):
         res = numpy.asarray(obj)
     else:
-        res = ro.default_ri2py(obj)
+        res = ro.default_converter.ri2py(obj)
     return res
 
 def activate():
