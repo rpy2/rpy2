@@ -65,7 +65,7 @@ Summary
 .. code-block:: python
 
    edsummary = r_base.summary(faithful_data.rx2("eruptions"))
-   for k, v in edsummary.iteritems():
+   for k, v in edsummary.items():
       print("%s: %.3f\n" %(k, v))
 
 Stem-and-leaf plot

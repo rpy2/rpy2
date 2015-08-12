@@ -96,7 +96,7 @@ In Python one can write:
       def iamfeelinglucky(func):
           def f(*args, **kwargs):
               d = {}
-              for k, v in kwargs.iteritems:
+              for k, v in kwargs.items():
                   d[k.replace('_', '.')] = v
               return func(**d)
           return f

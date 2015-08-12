@@ -595,7 +595,7 @@ Creating a :class:`DataFrame` can be done by:
 The :class:`DataFrame` constructor accepts either an
 :class:`rinterface.SexpVector` 
 (with :attr:`typeof` equal to *VECSXP*, that is, an R `list`)
-or any Python object implementing the method :meth:`iteritems`
+or any Python object implementing the method :meth:`items`
 (for example :class:`dict` or :class:`rpy2.rlike.container.OrdDict`).
 
 Empty `data.frame`:
