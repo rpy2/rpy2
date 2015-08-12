@@ -30,8 +30,9 @@ Bugs fixed
 ----------
  
 - Check that R >= 3.2 is used at build time (issue #291)
-  Conversion rules were not applied when parsing and evaluating string
-  as R with :class:`rpy2.robjects.R`.
+
+- Conversion rules were not applied when parsing and evaluating string
+  as R code with :class:`rpy2.robjects.R`.
 
 
 Release 2.6.1
