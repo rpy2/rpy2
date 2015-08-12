@@ -16,9 +16,9 @@ mtcars = mtcars_env['mtcars']
 ```python
 from rpy2.robjects.lib.dplyr import (DataFrame,
                                      filter,
-				     mutate,
-				     group_by,
-				     summarize)
+                                     mutate,
+                                     group_by,
+                                     summarize)
 ```
 
 With this we have the choice of chaining (D3-style)
@@ -28,7 +28,7 @@ dataf = (DataFrame(mtcars).
          filter('gear>3').
          mutate(powertoweight='hp*36/wt').
          group_by('gear').
-         summarize(mean_ptw='mean(powertoweight)')
+         summarize(mean_ptw='mean(powertoweight)'))
 
 print(dataf)
 ```
@@ -41,7 +41,7 @@ dataf = (DataFrame(mtcars) >>
          filter('gear>3') >>
          mutate(powertoweight='hp*36/wt') >>
          group_by('gear') >>
-         summarize(mean_ptw='mean(powertoweight)')
+         summarize(mean_ptw='mean(powertoweight)'))
 
 print(dataf)
 ```
