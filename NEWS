@@ -16,6 +16,9 @@ New features
   The constructor as an alias called
   :meth:`rpy2.robjects.constructor.localconverter`.
 
+- New module :mod:`rpy2.robjects.lib.dplyr` providing a custom
+  wrapper for the R library `dplyr`
+
 Bugs fixed
 ----------
 
