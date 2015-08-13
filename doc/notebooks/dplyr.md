@@ -2,7 +2,7 @@
 
 We need 2 things for this:
 
-1. A data frame (using one of R's demo datasets).
+1- A data frame (using one of R's demo datasets).
 
 ```python
 from rpy2.robjects.packages import importr, data
@@ -11,7 +11,7 @@ mtcars_env = data(datasets).fetch('mtcars')
 mtcars = mtcars_env['mtcars']
 ```
 
-2. dplyr
+2- dplyr
 
 ```python
 from rpy2.robjects.lib.dplyr import (DataFrame,
