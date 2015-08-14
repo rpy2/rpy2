@@ -26,20 +26,38 @@ class DataFrame(robjects.DataFrame):
 class GroupedDataFrame(robjects.DataFrame):
     pass
 
+DataFrame.arrange = _wrap(dplyr.arrange_, DataFrame)
 DataFrame.mutate = _wrap(dplyr.mutate_, DataFrame)
+DataFrame.transmute = _wrap(dplyr.transmute_, DataFrame)
 DataFrame.filter = _wrap(dplyr.filter_, DataFrame)
 DataFrame.select = _wrap(dplyr.select_, DataFrame)
 DataFrame.group_by = _wrap(dplyr.group_by_, GroupedDataFrame)
 DataFrame.distinct = _wrap(dplyr.distinct_, DataFrame)
 DataFrame.inner_join = _wrap(dplyr.inner_join, DataFrame)
+DataFrame.left_join = _wrap(dplyr.left_join, DataFrame)
+DataFrame.right_join = _wrap(dplyr.right_join, DataFrame)
+DataFrame.full_join = _wrap(dplyr.full_join, DataFrame)
+DataFrame.semi_join = _wrap(dplyr.semi_join, DataFrame)
+DataFrame.anti_join = _wrap(dplyr.anti_join, DataFrame)
+DataFrame.slice = _wrap(dplyr.slice_, DataFrame)
 
 GroupedDataFrame.summarize = _wrap(dplyr.summarize_, DataFrame)
+GroupedDataFrame.summarise = GroupedDataFrame.summarize
 
+arrange = _make_pipe(dplyr.arrange_, DataFrame)
 mutate = _make_pipe(dplyr.mutate_, DataFrame)
+transmute = _make_pipe(dplyr.transmute_, DataFrame)
 filter = _make_pipe(dplyr.filter_, DataFrame)
 select = _make_pipe(dplyr.select_, DataFrame)
 group_by = _make_pipe(dplyr.group_by_, DataFrame)
 summarize = _make_pipe(dplyr.summarize_, DataFrame)
+summarise = summarize
 distinct = _make_pipe(dplyr.distinct_, DataFrame)
 inner_join = _make_pipe(dplyr.inner_join, DataFrame)
+left_join = _make_pipe(dplyr.left_join, DataFrame)
+right_join = _make_pipe(dplyr.right_join, DataFrame)
+full_join = _make_pipe(dplyr.full_join, DataFrame)
+semi_join = _make_pipe(dplyr.semi_join, DataFrame)
+anti_join = _make_pipe(dplyr.anti_join, DataFrame)
+slice = _make_pipe(dplyr.slice_, DataFrame)
 
