@@ -14,11 +14,7 @@ mtcars = mtcars_env['mtcars']
 2- dplyr
 
 ```python
-from rpy2.robjects.lib.dplyr import (DataFrame,
-                                     filter,
-                                     mutate,
-                                     group_by,
-                                     summarize)
+from rpy2.robjects.lib.dplyr import DataFrame
 ```
 
 With this we have the choice of chaining (D3-style)
@@ -37,6 +33,11 @@ or piping (magrittr style).
 
 
 ```python
+from rpy2.robjects.lib.dplyr import (filter,
+                                     mutate,
+                                     group_by,
+                                     summarize)
+
 dataf = (DataFrame(mtcars) >>
          filter('gear>3') >>
          mutate(powertoweight='hp*36/wt') >>
@@ -46,7 +47,8 @@ dataf = (DataFrame(mtcars) >>
 print(dataf)
 ```
 
-And if the starting point is a pandas data frame, do this and start over again.
+And if the starting point is a pandas data frame,
+do the following and start over again.
 
 ```python 
 from rpy2.robjects import pandas2ri
