@@ -19,6 +19,9 @@ New features
 - New module :mod:`rpy2.robjects.lib.dplyr` providing a custom
   wrapper for the R library `dplyr`
 
+- method :method:`Environment.items()` to iterate through the symbols
+  and associated objects in an R environment.
+
 Bugs fixed
 ----------
 

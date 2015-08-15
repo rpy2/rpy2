@@ -44,3 +44,9 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
     def keys(self):
         """ Return a tuple listing the keys in the object """
         return tuple([x for x in self])
+
+    def items(self):
+        """ Iterate through the symbols and associated objects in
+            this R environment."""
+        for k in self:
+            yield (k, self[k])

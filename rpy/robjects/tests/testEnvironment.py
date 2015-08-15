@@ -16,6 +16,17 @@ class EnvironmentTestCase(unittest.TestCase):
         env['a'] = 123
         self.assertTrue('a' in env)
 
+    def testItems(self):
+        env = robjects.Environment()
+        env['a'] = 123
+        items = list(env.items())
+        self.assertEquals(1, len(items))
+        items.sort(key=lambda x: x[0])
+        for it_a, it_b in zip(items,
+                              (('a', 123),)):
+            self.assertEquals(it_a[0], it_b[0])
+            self.assertEquals(it_a[1][0], it_b[1])
+        
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(EnvironmentTestCase)
     return suite
