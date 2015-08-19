@@ -85,5 +85,30 @@ dataf = (DataFrame(mtcars) >>
 print(dataf)
 ```
 
+It is also possible to carry this out without having to
+place the custom function in R's global environment.
+
+```python
+del(globalenv['mean_np'])
+```
+
+```python
+from rpy2.robjects.lib.dplyr import StringInEnv
+from rpy2.robjects import Environment
+my_env = Environment()
+my_env['mean_np'] = mean_np
+
+dataf = (DataFrame(mtcars) >>
+         filter('gear>3') >>
+         mutate(powertoweight='hp*36/wt') >>
+         group_by('gear') >>
+         summarize(mean_ptw='mean(powertoweight)',
+	           mean_np_ptw=StringInEnv('mean_np(powertoweight)',
+                                           my_env)))
+
+print(dataf)
+```
+
+
 **note**: rpy2's interface to dplyr is implementing a fix to the (non-?)issue 1323
 (https://github.com/hadley/dplyr/issues/1323)
