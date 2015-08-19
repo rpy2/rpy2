@@ -8,7 +8,7 @@ with warnings.catch_warnings():
 from rpy2 import robjects
 
 StringInEnv = namedtuple('StringInEnv', 'string env')
-def _wrap_old(rfunc, cls):
+def _wrap_simple(rfunc, cls):
     """ Create a wrapper for `rfunc` that wrap its result in a call
     to the constructor of class `cls` """
     def func(*args, **kwargs):
@@ -73,6 +73,8 @@ DataFrame.full_join = _wrap(dplyr.full_join, DataFrame)
 DataFrame.semi_join = _wrap(dplyr.semi_join, DataFrame)
 DataFrame.anti_join = _wrap(dplyr.anti_join, DataFrame)
 DataFrame.slice = _wrap(dplyr.slice_, DataFrame)
+
+DataFrame.collect = _wrap_simple(dplyr.collect, DataFrame)
 
 GroupedDataFrame.summarize = _wrap(dplyr.summarize_, DataFrame)
 GroupedDataFrame.summarise = GroupedDataFrame.summarize
