@@ -85,5 +85,5 @@ dataf = (DataFrame(mtcars) >>
 print(dataf)
 ```
 
-**note**: This will only work when the issue 1323 in dplyr is fixed
+**note**: rpy2's interface to dplyr is implementing a fix to the (non-?)issue 1323
 (https://github.com/hadley/dplyr/issues/1323)

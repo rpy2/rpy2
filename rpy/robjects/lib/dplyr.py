@@ -1,21 +1,54 @@
+from collections import namedtuple
 from rpy2.robjects.packages import importr, data
 import warnings
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     dplyr = importr('dplyr', on_conflict="warn")
+    lazyeval = importr('lazyeval', on_conflict="warn")
 from rpy2 import robjects
 
-def _wrap(rfunc, cls):
+StringInEnv = namedtuple('StringInEnv', 'string env')
+def _wrap_old(rfunc, cls):
     """ Create a wrapper for `rfunc` that wrap its result in a call
     to the constructor of class `cls` """
     def func(*args, **kwargs):
     	return cls(rfunc(*args, **kwargs))
     return func
 
-def _make_pipe(rfunc, cls):
+def _wrap(rfunc, cls, env=robjects.globalenv):
+    def func(dataf, *args, **kwargs):
+        args_inenv = list()
+        for v in args:
+            if isinstance(v, StringInEnv):
+                args_inenv.append(lazyeval.as_lazy(v.string, env=v.env))
+            else:
+                args_inenv.append(lazyeval.as_lazy(v, env=env))
+        kwargs_inenv = dict()
+        for k,v in kwargs.items():
+            if isinstance(v, StringInEnv):
+                kwargs_inenv[k] = lazyeval.as_lazy(v.string, env=v.env)
+            else:
+                kwargs_inenv[k] = lazyeval.as_lazy(v, env=env)
+        return cls(rfunc(dataf, *args_inenv, **kwargs_inenv))
+    return func
+
+
+def _make_pipe(rfunc, cls, env=robjects.globalenv):
     def func(*args, **kwargs):
         def func2(obj):
-            return cls(rfunc(obj, *args, **kwargs))
+            args_inenv = list()
+            for v in args:
+                if isinstance(v, StringInEnv):
+                    args_inenv.append(lazyeval.as_lazy(v.string, env=v.env))
+                else:
+                    args_inenv.append(lazyeval.as_lazy(v, env=env))
+            kwargs_inenv = dict()
+            for k,v in kwargs.items():
+                if isinstance(v, StringInEnv):
+                    kwargs_inenv[k] = lazyeval.as_lazy(v.string, env=v.env)
+                else:
+                    kwargs_inenv[k] = lazyeval.as_lazy(v, env=env)
+            return cls(rfunc(obj, *args_inenv, **kwargs_inenv))
         return func2
     return func
 
