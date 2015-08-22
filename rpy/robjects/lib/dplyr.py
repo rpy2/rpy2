@@ -61,7 +61,8 @@ class DataFrame(robjects.DataFrame):
         - destination: database
         - name: table name in the destination database
         """
-        dplyr.copy_to(destination, self, name=name)
+        res = dplyr.copy_to(destination, self, name=name)
+        return type(self)(res)
         
 class GroupedDataFrame(robjects.DataFrame):
     pass

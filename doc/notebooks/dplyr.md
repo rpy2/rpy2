@@ -105,10 +105,21 @@ print(dataf)
 
 ```python
 from rpy2.robjects.lib.dplyr import dplyr
-# in-memory SQLite database
-db = dplyr.src_sqlite(":memory:")
-# copy the table to that database
-dataf.copy_to(db, name="mtcars")
+# in-memory SQLite database broken in dplyr's src_sqlite
+# db = dplyr.src_sqlite(":memory:")
+import tempfile
+with tempfile.NamedTemporaryFile() as db_fh:
+    db = dplyr.src_sqlite(db_fh.name)
+    # copy the table to that database
+    dataf_db = dataf.copy_to(db, name="mtcars")
+    res = (dataf_db >>
+           filter('gear>3') >>
+           mutate(powertoweight='hp*36/wt') >>
+           group_by('gear') >>
+           summarize(mean_ptw='mean(powertoweight)'))#,
+           #          mean_np_ptw='mean_np(powertoweight)'))
+    print(res)
+
 # 
 ```
 
