@@ -56,6 +56,13 @@ class DataFrame(robjects.DataFrame):
     def __rshift__(self, other):
         return other(self)
 
+    def copy_to(self, destination, name, **kwargs):
+        """
+        - destination: database
+        - name: table name in the destination database
+        """
+        dplyr.copy_to(destination, self, name=name)
+        
 class GroupedDataFrame(robjects.DataFrame):
     pass
 

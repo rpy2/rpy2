@@ -47,17 +47,6 @@ dataf = (DataFrame(mtcars) >>
 print(dataf)
 ```
 
-And if the starting point is a pandas data frame,
-do the following and start over again.
-
-```python 
-from rpy2.robjects import pandas2ri
-pandas2ri.activate()
-mtcars = pandas2ri.ri2py(mtcars)
-```
-
-Thrilling, isn't it ?
-
 The strings passed to the dplyr function are evaluated as expression,
 just like this is happening when using dplyr in R. This means that
 when writing `'mean(powertoweight)'` the R function `mean()` is used.
@@ -80,7 +69,7 @@ dataf = (DataFrame(mtcars) >>
          mutate(powertoweight='hp*36/wt') >>
          group_by('gear') >>
          summarize(mean_ptw='mean(powertoweight)',
-	           mean_np_ptw='mean_np(powertoweight)'))
+                   mean_np_ptw='mean_np(powertoweight)'))
 
 print(dataf)
 ```
@@ -103,7 +92,7 @@ dataf = (DataFrame(mtcars) >>
          mutate(powertoweight='hp*36/wt') >>
          group_by('gear') >>
          summarize(mean_ptw='mean(powertoweight)',
-	           mean_np_ptw=StringInEnv('mean_np(powertoweight)',
+                   mean_np_ptw=StringInEnv('mean_np(powertoweight)',
                                            my_env)))
 
 print(dataf)
@@ -112,3 +101,24 @@ print(dataf)
 
 **note**: rpy2's interface to dplyr is implementing a fix to the (non-?)issue 1323
 (https://github.com/hadley/dplyr/issues/1323)
+
+
+```python
+from rpy2.robjects.lib.dplyr import dplyr
+# in-memory SQLite database
+db = dplyr.src_sqlite(":memory:")
+# copy the table to that database
+dataf.copy_to(db, name="mtcars")
+# 
+```
+
+And if the starting point is a pandas data frame,
+do the following and start over again.
+
+```python 
+from rpy2.robjects import pandas2ri
+pandas2ri.activate()
+mtcars = pandas2ri.ri2py(mtcars)
+```
+
+Reuse. Don't reimplement.
