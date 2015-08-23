@@ -102,6 +102,9 @@ print(dataf)
 **note**: rpy2's interface to dplyr is implementing a fix to the (non-?)issue 1323
 (https://github.com/hadley/dplyr/issues/1323)
 
+The seamless translation of transformations to SQL whenever the
+data are in a table can be used directly. Since we are lifting
+the original implementation of `dplyr`, it /just works/.
 
 ```python
 from rpy2.robjects.lib.dplyr import dplyr
@@ -111,13 +114,12 @@ import tempfile
 with tempfile.NamedTemporaryFile() as db_fh:
     db = dplyr.src_sqlite(db_fh.name)
     # copy the table to that database
-    dataf_db = dataf.copy_to(db, name="mtcars")
+    dataf_db = DataFrame(mtcars).copy_to(db, name="mtcars")
     res = (dataf_db >>
            filter('gear>3') >>
            mutate(powertoweight='hp*36/wt') >>
            group_by('gear') >>
-           summarize(mean_ptw='mean(powertoweight)'))#,
-           #          mean_np_ptw='mean_np(powertoweight)'))
+           summarize(mean_ptw='mean(powertoweight)'))
     print(res)
 
 # 
@@ -132,4 +134,4 @@ pandas2ri.activate()
 mtcars = pandas2ri.ri2py(mtcars)
 ```
 
-Reuse. Don't reimplement.
+*Reuse. Get things done. Don't reimplement.*
