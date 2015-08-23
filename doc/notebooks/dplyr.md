@@ -121,8 +121,14 @@ with tempfile.NamedTemporaryFile() as db_fh:
            group_by('gear') >>
            summarize(mean_ptw='mean(powertoweight)'))
     print(res)
-
 # 
+```
+
+Since we are manipulating R objects, anything available to R is also available
+to us. If we want to see the SQL code generated that's:
+
+```python
+print(res.rx2("query")["sql"])
 ```
 
 And if the starting point is a pandas data frame,
@@ -130,8 +136,22 @@ do the following and start over again.
 
 ```python 
 from rpy2.robjects import pandas2ri
-pandas2ri.activate()
-mtcars = pandas2ri.ri2py(mtcars)
+from rpy2.robjects import default_converter
+from rpy2.robjects.conversion import localconverter
+with localconverter(default_converter + pandas2ri.converter) as cv:
+    mtcars = mtcars_env['mtcars']
+    mtcars = pandas2ri.ri2py(mtcars)
+print(type(mtcars))
+```
+
+```python
+dataf = (DataFrame(mtcars).
+         filter('gear>=3').
+         mutate(powertoweight='hp*36/wt').
+         group_by('gear').
+         summarize(mean_ptw='mean(powertoweight)'))
+
+print(dataf)
 ```
 
 *Reuse. Get things done. Don't reimplement.*
