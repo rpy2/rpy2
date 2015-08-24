@@ -49,7 +49,7 @@ print(dataf)
 
 The strings passed to the dplyr function are evaluated as expression,
 just like this is happening when using dplyr in R. This means that
-when writing `'mean(powertoweight)'` the R function `mean()` is used.
+when writing `mean(powertoweight)` the R function `mean()` is used.
 
 Using an Python function is not too difficult though. We can just
 call Python back from R:
@@ -104,7 +104,7 @@ print(dataf)
 
 The seamless translation of transformations to SQL whenever the
 data are in a table can be used directly. Since we are lifting
-the original implementation of `dplyr`, it /just works/.
+the original implementation of `dplyr`, it *just works*.
 
 ```python
 from rpy2.robjects.lib.dplyr import dplyr
@@ -144,14 +144,17 @@ with localconverter(default_converter + pandas2ri.converter) as cv:
 print(type(mtcars))
 ```
 
+Using a local converter let's us also go from the pandas data frame to our dplyr-augmented R data frame.
+
 ```python
-dataf = (DataFrame(mtcars).
-         filter('gear>=3').
-         mutate(powertoweight='hp*36/wt').
-         group_by('gear').
-         summarize(mean_ptw='mean(powertoweight)'))
+with localconverter(default_converter + pandas2ri.converter) as cv:
+    dataf = (DataFrame(mtcars).
+             filter('gear>=3').
+             mutate(powertoweight='hp*36/wt').
+             group_by('gear').
+             summarize(mean_ptw='mean(powertoweight)'))
 
 print(dataf)
 ```
 
-*Reuse. Get things done. Don't reimplement.*
+**Reuse. Get things done. Don't reimplement.**
