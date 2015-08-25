@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  * 
- * Copyright (C) 2008-2013 Laurent Gautier
+ * Copyright (C) 2008-2015 Laurent Gautier
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -30,12 +30,42 @@
 
 #include <Rdefines.h>
 #include <R_ext/Rallocators.h>
+#include "r_utils.h"
 
-SEXP rpy_serialize(SEXP object, SEXP rho)
+/* Return R_UnboundValue when not found. */
+SEXP
+rpy2_findfun(SEXP symbol, SEXP rho)
+{
+    SEXP vl;
+    while (rho != R_EmptyEnv) {
+        /* This is not really right.  Any variable can mask a function */
+        vl = findVarInFrame3(rho, symbol, TRUE);
+
+        if (vl != R_UnboundValue) {
+            if (TYPEOF(vl) == PROMSXP) {
+                PROTECT(vl);
+                vl = eval(vl, rho);
+                UNPROTECT(1);
+            }
+            if (TYPEOF(vl) == CLOSXP || TYPEOF(vl) == BUILTINSXP ||
+                TYPEOF(vl) == SPECIALSXP)
+               return (vl);
+
+            if (vl == R_MissingArg) {
+              printf("R_MissingArg in rpy2_findfun.\n");
+              return R_UnboundValue;
+            }
+        }
+        rho = ENCLOS(rho);
+    }
+    return R_UnboundValue;
+}
+
+SEXP rpy2_serialize(SEXP object, SEXP rho)
 {
   SEXP c_R, call_R, res, fun_R;
 
-  PROTECT(fun_R = PyRinterface_FindFun(install("serialize"), rho));
+  PROTECT(fun_R = rpy2_findfun(install("serialize"), rho));
   if(!isEnvironment(rho)) error("'rho' should be an environment");
   /* obscure incatation to summon R */
   PROTECT(c_R = call_R = allocList(3));
@@ -55,10 +85,10 @@ SEXP rpy_serialize(SEXP object, SEXP rho)
   return res;
 }
 
-SEXP rpy_unserialize(SEXP connection, SEXP rho)
+SEXP rpy2_unserialize(SEXP connection, SEXP rho)
 {
   SEXP c_R, call_R, res, fun_R;
-  PROTECT(fun_R = PyRinterface_FindFun(install("unserialize"), rho));
+  PROTECT(fun_R = rpy2_findfun(install("unserialize"), rho));
   if(!isEnvironment(rho)) error("'rho' should be an environment");
   /* obscure incatation to summon R */
   PROTECT(c_R = call_R = allocList(2));
@@ -75,7 +105,7 @@ SEXP rpy_unserialize(SEXP connection, SEXP rho)
   return res;
 }
 
-SEXP rpy_list_attr(SEXP sexp)
+SEXP rpy2_list_attr(SEXP sexp)
 {
   SEXP attrs, res;
   int nvalues, attr_i;
@@ -98,7 +128,7 @@ SEXP rpy_list_attr(SEXP sexp)
 }
 
 
-SEXP rpy_remove(SEXP symbol, SEXP env, SEXP inherits)
+SEXP rpy2_remove(SEXP symbol, SEXP env, SEXP inherits)
 {
   SEXP internalSym = Rf_install(".Internal");
   SEXP removeSym = Rf_install("remove");
@@ -114,7 +144,7 @@ SEXP rpy_remove(SEXP symbol, SEXP env, SEXP inherits)
   return result;
 }
 
-SEXP rpy_newenv(SEXP hash, SEXP parent, SEXP size)
+SEXP rpy2_newenv(SEXP hash, SEXP parent, SEXP size)
 {
   SEXP internalSym = Rf_install(".Internal");
   SEXP newenvSym = Rf_install("new.env");
@@ -131,7 +161,7 @@ SEXP rpy_newenv(SEXP hash, SEXP parent, SEXP size)
 }
 
 SEXP
-rpy_lang2str(SEXP sexp, SEXPTYPE t) {
+rpy2_lang2str(SEXP sexp, SEXPTYPE t) {
   SEXP symbol = CAR(sexp);
   static struct{
     SEXP if_sym;

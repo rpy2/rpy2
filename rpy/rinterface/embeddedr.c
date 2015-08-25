@@ -45,9 +45,9 @@ static void SexpObject_clear(SexpObject *sexpobj)
       }
       sprintf(name_buf, "%p", (void *)(sexpobj->sexp));
       
-      SEXP res = rpy_remove(Rf_mkString(name_buf), 
-			    RPY_R_PreciousEnv,
-			    Rf_ScalarLogical(FALSE));
+      SEXP res = rpy2_remove(Rf_mkString(name_buf), 
+			     RPY_R_PreciousEnv,
+			     Rf_ScalarLogical(FALSE));
       //Rf_defineVar(name_r, sexpobj->sexp, RPY_R_PreciousEnv);
     }
     PyMem_Free(sexpobj);

@@ -108,7 +108,7 @@ Sexp_list_attr(PyObject *self)
     return NULL;
   }
   SEXP res_R;
-  PROTECT(res_R = rpy_list_attr(sexp));
+  PROTECT(res_R = rpy2_list_attr(sexp));
   PyObject *res = (PyObject *)newPySexpObject(res_R);
   UNPROTECT(1);
   return res;
@@ -364,7 +364,7 @@ Sexp_rclass_get(PyObject *self, void *closure)
       case LANGSXP:
 	/* res_R = lang2str(sexp, t);*/
 	/* lang2str is not part of the R API, yadayadayada....*/
-	res_R = rpy_lang2str(sexp, t);
+	res_R = rpy2_lang2str(sexp, t);
 	break;
       default:
 	res_R = Rf_type2str(t);
@@ -501,7 +501,7 @@ Sexp___getstate__(PyObject *self)
   }
 
   SEXP sexp_ser;
-  PROTECT(sexp_ser = rpy_serialize(sexp, R_GlobalEnv));
+  PROTECT(sexp_ser = rpy2_serialize(sexp, R_GlobalEnv));
   if (TYPEOF(sexp_ser) != RAWSXP) {
     UNPROTECT(1);
     PyErr_Format(PyExc_RuntimeError, 
@@ -580,7 +580,7 @@ EmbeddedR_unserialize(PyObject* self, PyObject* args)
   for (raw_i = 0; raw_i < raw_size; raw_i++) {
     RAW_POINTER(raw_sexp)[raw_i] = raw[raw_i];
   }
-  PROTECT(sexp_ser = rpy_unserialize(raw_sexp, R_GlobalEnv));
+  PROTECT(sexp_ser = rpy2_unserialize(raw_sexp, R_GlobalEnv));
 
   if (TYPEOF(sexp_ser) != rtype) {
     UNPROTECT(2);

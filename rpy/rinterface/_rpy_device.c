@@ -36,6 +36,7 @@
 #include <R_ext/GraphicsDevice.h>
 
 #include "_rinterface.h"
+#include "r_utils.h"
 #include "rpy_device.h"
 
 
@@ -73,7 +74,7 @@ SEXP rpy_devoff(SEXP devnum, SEXP rho)
 #ifdef RPY_DEBUG_GRDEV
   printf("rpy_devoff(): Looking for dev.off()...\n");
 #endif
-  PROTECT(fun_R = PyRinterface_FindFun(install("dev.off"), rho));
+  PROTECT(fun_R = rpy2_findfun(install("dev.off"), rho));
   if (fun_R == R_UnboundValue)
     printf("dev.off() could not be found.\n");
 #ifdef RPY_DEBUG_GRDEV

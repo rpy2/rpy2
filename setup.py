@@ -237,7 +237,7 @@ def getRinterface_ext():
            str(library_dirs), 
            str(libraries), 
            str(extra_link_args)))
-
+    
     rinterface_ext = Extension(
             name = pack_name + '.rinterface._rinterface',
             sources = [os.path.join(package_prefix,
@@ -302,6 +302,15 @@ if __name__ == '__main__':
     if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 4):
         requires.append('singledispatch')
 
+    # additional C library included in rpy2
+    libraries = list()
+    libraries.append(('r_utils',
+                      dict(sources = [os.path.join(package_prefix,
+                                                   'rpy', 'rinterface',
+                                                   'r_utils.c')],
+                           include_dirs = ri_ext[0].include_dirs,
+                           language = 'c')))
+    
     setup(
         cmdclass = {'build_ext': build_ext},
         name = pack_name,
@@ -314,6 +323,7 @@ if __name__ == '__main__':
         requires = requires,
         install_requires = requires,
         ext_modules = rinterface_exts,
+        libraries = libraries,
         package_dir = pack_dir,
         packages = [pack_name,
                     pack_name + '.rlike',

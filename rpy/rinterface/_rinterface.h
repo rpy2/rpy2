@@ -212,9 +212,6 @@ typedef struct {
 #define PyRinterface_IsInitialized \
   (*(PyRinterface_IsInitialized_RETURN (*)PyRinterface_IsInitialized_PROTO) PyRinterface_API[PyRinterface_IsInitialized_NUM])
 
-#define PyRinterface_FindFun \
-  (*(PyRinterface_FindFun_RETURN (*)PyRinterface_FindFun_PROTO) PyRinterface_API[PyRinterface_FindFun_NUM])
-
 /* Return -1 on error, 0 on success.
  * PyCapsule_Import will set an exception if there's an error.
  */

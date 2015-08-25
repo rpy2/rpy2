@@ -123,7 +123,6 @@ static SEXP newSEXP(PyObject *object, const int rType);
 #include "null_value.c"
 #include "na_values.c"
 #include "sexp.c"
-#include "r_utils.c"
 #include "buffer.c"
 #include "array.c"
 #include "sequence.c"
@@ -196,35 +195,6 @@ PyRinterface_IsInitialized(void)
 {
   int res = (embeddedR_isInitialized == Py_True) ? 1 : 0;
   return res;
-}
-
-/* Return R_UnboundValue when not found. */
-static SEXP
-PyRinterface_FindFun(SEXP symbol, SEXP rho)
-{
-    SEXP vl;
-    while (rho != R_EmptyEnv) {
-        /* This is not really right.  Any variable can mask a function */
-        vl = findVarInFrame3(rho, symbol, TRUE);
-
-        if (vl != R_UnboundValue) {
-            if (TYPEOF(vl) == PROMSXP) {
-                PROTECT(vl);
-                vl = eval(vl, rho);
-                UNPROTECT(1);
-            }
-            if (TYPEOF(vl) == CLOSXP || TYPEOF(vl) == BUILTINSXP ||
-                TYPEOF(vl) == SPECIALSXP)
-               return (vl);
-
-            if (vl == R_MissingArg) {
-              printf("R_MissingArg in rpy_FindFun.\n");
-              return R_UnboundValue;
-            }
-        }
-        rho = ENCLOS(rho);
-    }
-    return R_UnboundValue;
 }
 
 
@@ -1461,9 +1431,9 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args, PyObject *kwds)
   /* (currently replaced by a Python dict and R's PreciousList) */
   if (preservehash == Py_True) {
     PROTECT(
-	    RPY_R_PreciousEnv = rpy_newenv(Rf_ScalarLogical(TRUE),
-					   R_GlobalEnv, 
-					   Rf_ScalarInteger(29))
+	    RPY_R_PreciousEnv = rpy2_newenv(Rf_ScalarLogical(TRUE),
+					    R_GlobalEnv, 
+					    Rf_ScalarInteger(29))
 	    );
     R_PreserveObject(RPY_R_PreciousEnv);
     UNPROTECT(1);
@@ -2168,7 +2138,7 @@ EnvironmentSexp_findVar(PyObject *self, PyObject *args, PyObject *kwds)
   }
 
   if (PyObject_IsTrue(wantFun)) {
-    res_R = PyRinterface_FindFun(install(name), rho_R);
+    res_R = rpy2_findfun(install(name), rho_R);
   } else {
     res_R = findVar(install(name), rho_R);
   }
@@ -2495,9 +2465,9 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
       return -1;
     }
     
-    res_rm = rpy_remove(Rf_mkString(name), 
-			rho_R, 
-			Rf_ScalarLogical(FALSE));
+    res_rm = rpy2_remove(Rf_mkString(name), 
+			 rho_R, 
+			 Rf_ScalarLogical(FALSE));
     if (! res_rm) {
       embeddedR_freelock();
 #if (PY_VERSION_HEX >= 0x03010000)
@@ -3854,8 +3824,6 @@ PyInit__rinterface(void)
   /* Initialize the C API pointer array */
   PyRinterface_API[ PyRinterface_IsInitialized_NUM ] =	\
     (void *)PyRinterface_IsInitialized;
-  PyRinterface_API[ PyRinterface_FindFun_NUM ] =	\
-    (void *)PyRinterface_FindFun;
   /* Create a Capsule containing the API pointer array's address */
   c_api_object = PyCapsule_New((void *)PyRinterface_API, 
 			       PyRinterface_API_NAME, NULL);
