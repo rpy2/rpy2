@@ -52,16 +52,16 @@ from shutil import rmtree
 import rpy2.rinterface as ri
 import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
-from rpy2.robjects.conversion import Converter
-
+Converter = ro.conversion.Converter
 import warnings
+template_converter = ro.conversion.converter
 try:
     from rpy2.robjects import pandas2ri as baseconversion
-    template_converter = baseconversion.converter
+    template_converter = template_converter + baseconversion.converter
 except ImportError:
     try:
         from rpy2.robjects import numpy2ri as baseconversion
-        template_converter = baseconversion.converter
+        template_converter = template_converter + baseconversion.converter
         warnings.warn(' '.join(("The Python package 'pandas' is strongly"
                                 "recommended when using `rpy2.ipython`.",
                                 "Unfortunately it could not be loaded,",
@@ -69,7 +69,6 @@ except ImportError:
     except ImportError:
         # Give up on numerics
         baseconversion = None
-        template_converter = ro.conversion.converter
         warnings.warn(' '.join(("The Python package 'pandas' is strongly",
                                 "recommended when using `rpy2.ipython`.",
                                 "Unfortunately it could not be loaded,",

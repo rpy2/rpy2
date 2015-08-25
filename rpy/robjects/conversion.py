@@ -23,13 +23,57 @@ def overlay_converter(src, target):
     :type target: :class:`Converter`
     """
     for k,v in src.ri2ro.registry.items():
+        # skip the root dispatch
+        if k is object and v is _ri2ro:
+            continue
         target._ri2ro.register(k, v)
     for k,v in src.py2ri.registry.items():
+        # skip the root dispatch
+        if k is object and v is _py2ri:
+            continue
         target._py2ri.register(k, v)
     for k,v in src.py2ro.registry.items():
+        # skip the root dispatch
+        if k is object and v is _py2ro:
+            continue
         target._py2ro.register(k, v)
     for k,v in src.ri2py.registry.items():
+        # skip the root dispatch
+        if k is object and v is _ri2py:
+            continue
         target._ri2py.register(k, v)
+
+def _ri2ro(obj):
+    """ Dummy function for ri2ro.
+
+    This function will convert rpy2.rinterface (ri) low-level objects
+    into rpy2.robjects (ro) higher-level objects.
+    """
+    raise NotImplementedError("Conversion 'ri2ro' not defined for objects of type '%s'" % str(type(obj)))
+
+def _py2ri(obj):
+    """ Dummy function for py2ri.
+    
+    This function will convert Python objects into rpy2.rinterface
+    (ri) objects.
+    """
+    raise NotImplementedError("Conversion 'py2ri' not defined for objects of type '%s'" % str(type(obj)))
+
+def _py2ro(obj):
+    """ Dummy function for py2ro.
+
+    This function will convert Python objects into rpy2.robjects
+    (ro) objects.
+    """
+    raise NotImplementedError("Conversion 'py2ro' not defined for objects of type '%s'" % str(type(obj)))
+
+def _ri2py(obj):
+    """ Dummy function for ri2py.
+
+    This function will convert Python objects into Python (presumably non-rpy2) objects.
+    """
+    raise NotImplementedError("Conversion 'ri2py' not defined for objects of type '%s'" % str(type(obj)))
+
 
 class Converter(object):
     """
@@ -68,46 +112,17 @@ class Converter(object):
     def __add__(self, converter):
         assert isinstance(converter, Converter)
         new_name = '%s + %s' % (self.name, converter.name)
-        new_converter = Converter(new_name, template=self)
-        overlay_converter(converter, new_converter)
-        return new_converter
+        # create a copy of `self` as the result converter
+        result_converter = Converter(new_name, template=self)
+        overlay_converter(converter, result_converter)
+        return result_converter
     
     @staticmethod
     def make_dispatch_functions():
-        @singledispatch
-        def ri2ro(obj):
-            """ Dummy function for ri2ro.
-            
-            This function will convert rpy2.rinterface (ri) low-level objects
-            into rpy2.robjects (ro) higher-level objects.
-            """
-            raise NotImplementedError("Conversion 'ri2ro' not defined for objects of type '%s'" % str(type(obj)))
-
-        @singledispatch
-        def py2ri(obj):
-            """ Dummy function for py2ri.
-            
-            This function will convert Python objects into rpy2.rinterface
-            (ri) objects.
-            """
-            raise NotImplementedError("Conversion 'py2ri' not defined for objects of type '%s'" % str(type(obj)))
-
-        @singledispatch
-        def py2ro(obj):
-            """ Dummy function for py2ro.
-            
-            This function will convert Python objects into rpy2.robjects
-            (ro) objects.
-            """
-            raise NotImplementedError("Conversion 'py2ro' not defined for objects of type '%s'" % str(type(obj)))
-
-        @singledispatch
-        def ri2py(obj):
-            """ Dummy function for ri2py.
-
-            This function will convert Python objects into Python (presumably non-rpy2) objects.
-            """
-            raise NotImplementedError("Conversion 'ri2py' not defined for objects of type '%s'" % str(type(obj)))
+        ri2ro = singledispatch(_ri2ro)
+        py2ri = singledispatch(_py2ri)
+        py2ro = singledispatch(_py2ro)
+        ri2py = singledispatch(_ri2py)
 
         return (ri2ro, py2ri, py2ro, ri2py)
 
