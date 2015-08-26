@@ -356,3 +356,20 @@ static inline int Rpy_ReplaceSexp(PySexpObject *pso, SEXP rObj) {
   int res = Rpy_ReleaseObject(sexp);
   return res;
 }
+
+
+PyDoc_STRVAR(EmbeddedR_isInitialized_doc,
+             "is_initialized() -> bool\n"
+	     ""
+	     "Return whether R is initialized.");
+
+static PyObject*
+EmbeddedR_isInitialized(void) {
+  if (rpy2_isinitialized()) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  } else {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+}

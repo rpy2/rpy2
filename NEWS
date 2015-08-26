@@ -28,6 +28,10 @@ Bugs fixed
 - Conversion rules were not applied when parsing and evaluating string
   as R with :class:`rpy2.robjects.R`.
 
+Changes
+-------
+
+- :func:`rpy2.rinterface.is_initialized` is now a function.
 
 Release 2.6.2
 =============

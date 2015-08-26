@@ -32,6 +32,28 @@
 #include <R_ext/Rallocators.h>
 #include "r_utils.h"
 
+static int embeddedR_isinitialized;
+
+int
+rpy2_isinitialized(void)
+{
+  int res = (embeddedR_isinitialized == 1) ? 1 : 0;
+  return res;
+}
+
+int
+rpy2_setinitialized(void)
+{
+  if (embeddedR_isinitialized == 1) {
+    return 1;
+  } else {
+    embeddedR_isinitialized = 1;
+    return 0;
+  }
+}
+
+
+
 /* Return R_UnboundValue when not found. */
 SEXP
 rpy2_findfun(SEXP symbol, SEXP rho)

@@ -128,8 +128,6 @@ static SEXP newSEXP(PyObject *object, const int rType);
 #include "sequence.c"
 #include "rexternalptr.c"
 
-static PyObject *embeddedR_isInitialized;
-
 /* A tuple that holds options to initialize R */
 static PyObject *initOptions;
 
@@ -189,13 +187,6 @@ inline char* strndup (const char *s, size_t n)
   return ret;
 } 
 #endif
-
-static int
-PyRinterface_IsInitialized(void)
-{
-  int res = (embeddedR_isInitialized == Py_True) ? 1 : 0;
-  return res;
-}
 
 
 PyDoc_STRVAR(module_doc,
@@ -1345,10 +1336,10 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   setup_Rmainloop();
 
-  Py_XDECREF(embeddedR_isInitialized);
   embeddedR_status = RPY_R_INITIALIZED;
-  embeddedR_isInitialized = Py_True;
-  Py_INCREF(embeddedR_isInitialized);
+  if (rpy2_setinitialized()) {
+    printf("R is already initialized !");
+  }
 
   SexpObject *sexpobj_ptr = Rpy_PreserveObject(R_GlobalEnv);
   Rpy_ReleaseObject(globalEnv->sObj->sexp);
@@ -3399,6 +3390,8 @@ static PyMethodDef EmbeddedR_methods[] = {
    EmbeddedR_set_initoptions_doc},
   {"initr",     (PyCFunction)EmbeddedR_init, METH_VARARGS | METH_KEYWORDS,
    EmbeddedR_init_doc},
+  {"is_initialized", (PyCFunction)EmbeddedR_isInitialized, METH_NOARGS,
+   EmbeddedR_isInitialized_doc},
   {"endr",      (PyCFunction)EmbeddedR_end,    METH_O,
    EmbeddedR_end_doc},
   {"set_interactive",   (PyCFunction)EmbeddedR_setinteractive,  METH_O,
@@ -3821,9 +3814,6 @@ PyInit__rinterface(void)
 #endif
   }
 
-  /* Initialize the C API pointer array */
-  PyRinterface_API[ PyRinterface_IsInitialized_NUM ] =	\
-    (void *)PyRinterface_IsInitialized;
   /* Create a Capsule containing the API pointer array's address */
   c_api_object = PyCapsule_New((void *)PyRinterface_API, 
 			       PyRinterface_API_NAME, NULL);
@@ -4065,17 +4055,6 @@ PyInit__rinterface(void)
   
   Py_INCREF(RPyExc_ParsingError);
   PyModule_AddObject(m, "RParsingError", RPyExc_ParsingError);
-
-  embeddedR_isInitialized = Py_False;
-  Py_INCREF(Py_False);
-
-  if (PyModule_AddObject(m, "is_initialized", embeddedR_isInitialized) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
-    return NULL;
-#endif
-  }
 
   emptyEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
                                      Py_None, Py_None);
