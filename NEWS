@@ -13,7 +13,7 @@ New features
 
 - New class :class:`rpy2.robjects.converter.ConversionContext`. This is
   a context manager allowing an easy setting of local conversion rules.
-  The constructor as an alias called
+  The constructor has an alias called
   :meth:`rpy2.robjects.constructor.localconverter`.
 
 - New module :mod:`rpy2.robjects.lib.dplyr` providing a custom
