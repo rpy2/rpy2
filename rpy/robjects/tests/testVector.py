@@ -219,6 +219,16 @@ class FactorVectorTestCase(unittest.TestCase):
         for a, b in zip(values, it):
             self.assertEqual(a, b)
 
+    def testFactorWithAttrs(self):
+        # issue #299
+        r_src = """
+        x <- factor(c("a","b","a"))
+        attr(x, "foo") <- "bar"
+        x
+        """
+        x = robjects.r(r_src)
+        self.assertTrue('foo' in x.list_attrs())
+
 _dateval_tuple = (1984, 1, 6, 6, 22, 0, 1, 6, 0) 
 
 class DateTimeVectorTestCase(unittest.TestCase):

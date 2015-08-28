@@ -28,6 +28,10 @@ Bugs fixed
 - Conversion rules were not applied when parsing and evaluating string
   as R with :class:`rpy2.robjects.R`.
 
+- Calling the constructor for :class:`rpy2.robjects.vectors.FactorVector`
+  with an R factor is no longer making a copy, loosing the associated
+  R attributes if any (fixes issue #299).
+
 Changes
 -------
 

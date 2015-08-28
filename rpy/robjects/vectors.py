@@ -473,17 +473,24 @@ class FactorVector(IntVector):
     def NAvalue(self):
         return rinterface.NA_Integer
     
-    def __init__(self, obj, levels = rinterface.MissingArg,
+    def __init__(self, obj,
+                 levels = rinterface.MissingArg,
                  labels = rinterface.MissingArg,
                  exclude = rinterface.MissingArg,
                  ordered = rinterface.MissingArg):
         if not isinstance(obj, Sexp):
             obj = StrSexpVector(obj)
-        res = self._factor(obj,
-                           levels = levels,
-                           labels = labels,
-                           exclude = exclude,
-                           ordered = ordered)
+        if ('factor' in obj.rclass) and \
+           all(p is rinterface.MissingArg for p in (labels,
+                                                    exclude,
+                                                    ordered)):
+            res = obj
+        else:
+            res = self._factor(obj,
+                               levels = levels,
+                               labels = labels,
+                               exclude = exclude,
+                               ordered = ordered)
         self.__sexp__ = res.__sexp__
         self.ro = VectorOperationsDelegator(self)
         self.rx = ExtractDelegator(self)
