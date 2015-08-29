@@ -19,8 +19,15 @@ New features
 - New module :mod:`rpy2.robjects.lib.dplyr` providing a custom
   wrapper for the R library `dplyr`
 
-- method :method:`Environment.items()` to iterate through the symbols
+- Method :method:`Environment.items()` to iterate through the symbols
   and associated objects in an R environment.
+
+- Exception :class:`rpy2.rinterface.ParsingIncompleError`, a child class of
+  :class:`rpy2.rinterface.ParsingError` raised when
+  calling :meth:`rpy2.rinteface.parse` results in R's C-level status
+  to be `PARSE_INCOMPLETE`. This can make Python implementation of an
+  IDE for R easier.
+  
 
 Bugs fixed
 ----------

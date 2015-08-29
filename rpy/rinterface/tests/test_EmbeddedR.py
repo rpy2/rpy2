@@ -133,9 +133,13 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEqual(1, len(xp))
         self.assertEqual(1, len(xp[0]))
 
+    def testParseIncompleteError(self):
+        self.assertRaises(rinterface.RParsingIncompleteError,
+                          rinterface.parse, "2 + 3 /")
+
     def testParseError(self):
         self.assertRaises(rinterface.RParsingError,
-                          rinterface.parse, "2 + 3 /")
+                          rinterface.parse, "2 + 3 , 1")
 
     def testRternalize(self):
         def f(x, y):

@@ -134,6 +134,7 @@ static PyObject *initOptions;
 static SEXP errMessage_SEXP;
 static PyObject *RPyExc_RuntimeError = NULL;
 static PyObject *RPyExc_ParsingError = NULL;
+static PyObject *RPyExc_ParsingIncompleteError = NULL;
 
 #if (defined(Win32) || defined(Win64))
 /* R instance as a global */
@@ -1571,16 +1572,22 @@ EmbeddedR_parse(PyObject *self, PyObject *pystring)
   Py_DECREF(pybytes);
 #endif
   cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
-  if (status != PARSE_OK) {
-    UNPROTECT(2);
-    embeddedR_freelock();
+  switch(status) {
+  case PARSE_OK:
+    cmdpy = newPySexpObject(cmdexpr);
+    break;
+  case PARSE_INCOMPLETE:
+    PyErr_SetString(RPyExc_ParsingIncompleteError, "Incomplete R code statement.");
+    cmdpy = NULL;
+    break;
+  default:
     EmbeddedR_exception_from_errmessage(RPyExc_ParsingError);
-    return NULL;
+    cmdpy = NULL;
+    break;
   }
-  cmdpy = newPySexpObject(cmdexpr);
   UNPROTECT(2);
   embeddedR_freelock();
-  return cmdpy;
+  return cmdpy;  
 }
 
 /*
@@ -4050,11 +4057,24 @@ PyInit__rinterface(void)
       return NULL;
 #endif
     }
-
   }
-  
   Py_INCREF(RPyExc_ParsingError);
   PyModule_AddObject(m, "RParsingError", RPyExc_ParsingError);
+  
+  if (RPyExc_ParsingIncompleteError == NULL) {
+    RPyExc_ParsingIncompleteError = PyErr_NewException("rpy2.rinterface.RParsingIncompleteError", 
+						       RPyExc_ParsingError, NULL);
+    if (RPyExc_ParsingIncompleteError == NULL) {
+#if (PY_VERSION_HEX < 0x03010000)
+      return;
+#else
+      return NULL;
+#endif
+    }
+  }
+  Py_INCREF(RPyExc_ParsingIncompleteError);
+  PyModule_AddObject(m, "RParsingIncompleteError",
+		     RPyExc_ParsingIncompleteError);
 
   emptyEnv = (PySexpObject*)Sexp_new(&EnvironmentSexp_Type,
                                      Py_None, Py_None);
