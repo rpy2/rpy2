@@ -4048,8 +4048,10 @@ PyInit__rinterface(void)
   PyModule_AddObject(m, "RRuntimeError", RPyExc_RuntimeError);
 
   if (RPyExc_ParsingError == NULL) {
-    RPyExc_ParsingError = PyErr_NewException("rpy2.rinterface.RParsingError", 
-                                             NULL, NULL);
+    RPyExc_ParsingError = \
+      PyErr_NewExceptionWithDoc("rpy2.rinterface.RParsingError",
+				"Error when parsing a string as R code.",
+				NULL, NULL);
     if (RPyExc_ParsingError == NULL) {
 #if (PY_VERSION_HEX < 0x03010000)
       return;
@@ -4062,8 +4064,11 @@ PyInit__rinterface(void)
   PyModule_AddObject(m, "RParsingError", RPyExc_ParsingError);
   
   if (RPyExc_ParsingIncompleteError == NULL) {
-    RPyExc_ParsingIncompleteError = PyErr_NewException("rpy2.rinterface.RParsingIncompleteError", 
-						       RPyExc_ParsingError, NULL);
+    RPyExc_ParsingIncompleteError = \
+      PyErr_NewExceptionWithDoc("rpy2.rinterface.RParsingIncompleteError",
+				"Exception raised when a string parsed as"
+				"R code seems like an incomplete code block.",
+				RPyExc_ParsingError, NULL);
     if (RPyExc_ParsingIncompleteError == NULL) {
 #if (PY_VERSION_HEX < 0x03010000)
       return;
