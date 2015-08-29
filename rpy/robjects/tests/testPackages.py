@@ -91,18 +91,18 @@ class ImportrTestCase(unittest.TestCase):
 
         with self.assertRaises(RRuntimeError):
             if sys.version_info[0] == 3:
-                tmp_file = io.StringIO()
+                Tmp_File = io.StringIO
             else:
                 # no need to test which Python 2, only 2.7 supported
-                tmp_file = tempfile.NamedTemporaryFile()
-
-            stdout = sys.stdout
-            sys.stdout = tmp_file
-
-            robjects.packages.importr('dummy_inexistant', lib_loc=path)
-
-            sys.stdout = stdout
-            tmp_file.close()
+                Tmp_File = tempfile.NamedTemporaryFile
+            tmp_file = Tmp_File()
+            try:
+                stdout = sys.stdout
+                sys.stdout = tmp_file
+                robjects.packages.importr('dummy_inexistant', lib_loc=path)
+            finally:
+                sys.stdout = stdout
+                tmp_file.close()
 
         
     def testImportDatasets(self):
