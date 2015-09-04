@@ -44,6 +44,18 @@ Changes
 
 - :func:`rpy2.rinterface.is_initialized` is now a function.
 
+
+Release 2.6.3
+=============
+
+Bug fixed
+---------
+
+- Metaclass `RS4Auto_Type` facilitating the creation of Python
+  classes from R S4 classes was not handling classes without
+  methods (issue #301)
+
+
 Release 2.6.2
 =============
 
