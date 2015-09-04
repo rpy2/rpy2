@@ -198,6 +198,10 @@ class RS4Auto_Type(type):
             all_methods = findmethods(StrSexpVector((funcname, )), 
                                       classes = r_cls_rname)
 
+            # skip if no methods (issue #301). R's findMethods() result
+            # does not have an attribute "names" if of length zero.
+            if len(all_methods) == 0:
+                continue
             # all_methods contains all method/signature pairs
             # having the class we are considering somewhere in the signature
             # (the R/S4 systems allows multiple dispatch)
