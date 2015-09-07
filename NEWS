@@ -39,6 +39,10 @@ Bugs fixed
   with an R factor is no longer making a copy, loosing the associated
   R attributes if any (fixes issue #299).
 
+- `rpy2` could crash when R was unable to dynamically load the C extension for
+  one of its packages (noticed with issue #303).
+  
+
 Changes
 -------
 

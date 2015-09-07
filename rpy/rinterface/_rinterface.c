@@ -390,7 +390,7 @@ EmbeddedR_WriteConsoleEx(const char *buf, int len, int otype)
     PyErr_Clear();
   }
 
-  Py_DECREF(arglist);
+  Py_XDECREF(arglist);
 /*   signal(SIGINT, old_int); */
   
   Py_XDECREF(result);  
