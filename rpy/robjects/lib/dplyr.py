@@ -4,7 +4,12 @@ import warnings
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     dplyr = importr('dplyr', on_conflict="warn")
+    TARGET_VERSION = '0.4.3'
+    if dplyr.__version__ != TARGET_VERSION:
+        warnings.warn('This was designed againt dplyr version %s but you have %s' % (TARGET_VERSION, dplyr.__version__))
     lazyeval = importr('lazyeval', on_conflict="warn")
+
+    
 from rpy2 import robjects
 
 StringInEnv = namedtuple('StringInEnv', 'string env')
