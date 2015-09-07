@@ -25,7 +25,7 @@ New features
 - Exception :class:`rpy2.rinterface.ParsingIncompleError`, a child class of
   :class:`rpy2.rinterface.ParsingError` raised when
   calling :meth:`rpy2.rinteface.parse` results in R's C-level status
-  to be `PARSE_INCOMPLETE`. This can make Python implementation of an
+  to be `PARSE_INCOMPLETE`. This can make a Python implementation of an
   IDE for R easier.
   
 
