@@ -4,7 +4,7 @@
 .. _robjects-conversion:
 
 Mapping rpy2 objects to arbitrary python objects
-=====================================================
+================================================
 
 .. note::
 
@@ -24,7 +24,8 @@ R objects implement Python protocols to make them feel as natural to a Python
 programmer as possible. With them they can be passed as arguments to many
 non-rpy2 functions without the need for conversion.
 
-R vectors are mapped to Python objects implementing the methods :meth:`__getitem__` / :meth:`__setitem__` in the sequence
+R vectors are mapped to Python objects implementing the methods
+:meth:`__getitem__` / :meth:`__setitem__` in the sequence
 protocol so elements can be accessed easily. They also implement the Python buffer protocol,
 allowing them be used in :mod:`numpy` functions without the need for data copying or conversion.
 
@@ -41,9 +42,68 @@ protocol so elements can be accessed similarly to in a Python :class:`dict`.
    There is no easy way to customize it.
 
 
-Conversion functions
---------------------
+Conversion
+----------
 
+In its high-level interface :mod:`rpy2` is using a conversion system that has the task of
+convertion objects between the following 3 representations:
+- lower-level interface to R (:mod:`rpy2.rinterface` level),
+- higher-level interface to R (:mod:`rpy2.robjects` level)
+- other (no :mod:`rpy2`) representations
+
+ For example, if one wanted have all Python :class:`tuple` turned into R `character` vectors
+ (1D arrays of strings) as exposed by `rpy2`'s low-level interface the function would look like:
+ 
+.. code-block:: python
+
+   from rpy2.rinterface import StrSexpVector
+   def tuple_str(tpl):
+       res = StrSexpVector(tpl)
+       return res
+
+  
+The class :class:`rpy2.robjects.conversion.Converter` group such conversion functions
+into one object.
+
+Our conversion function can be registered as follows:
+
+.. code-block:: python
+   
+   from rpy2.robjects.conversion import Converter
+   my_converter = Converter('my converter')
+   my_converter.py2ri.register(tuple, tuple_str)
+   
+This system can be customized globally (See section `Customizing the conversion`)
+or through the use of local converters as context managers. The latter is
+recommended when experimenting or wishing a specific behavior of the conversion
+system that is limited in time.
+
+We can use this to example, if we want to change `rpy2`'s current refusal to handle
+sequences of unspecified type.
+
+The following code is throwing an error that `rpy2` does not know how to handle
+Python sequences.
+
+.. code-block:: python
+
+   x = (1,2,'c')
+
+   from rpy2.robjects.packages import importr
+   base = importr('base')
+
+   res = base.paste(x, collapse="-")
+
+This can be changed by using our converter as an addition to the default conversion scheme:
+
+.. code-block:: python
+
+   from rpy2.robjects import default_converter
+   from rpy2.robjects.conversion import Converter, localconverter
+   with localconverter(default_converter + my_converter) as cv:
+       res = base.paste(x, collapse="-")
+
+   
+  
 :func:`ri2ro`
 ^^^^^^^^^^^^^
 
@@ -85,7 +145,7 @@ This method is a generic as implemented in :meth:`functools.singledispatch`
 
 
 Customizing the conversion
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 As an example, let's assume that one want to return atomic values
 whenever an R numerical vector is of length one. This is only a matter
