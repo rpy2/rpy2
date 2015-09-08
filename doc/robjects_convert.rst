@@ -61,19 +61,34 @@ convertion objects between the following 3 representations:
        res = StrSexpVector(tpl)
        return res
 
-  
-The class :class:`rpy2.robjects.conversion.Converter` group such conversion functions
+
+Converter objects
+^^^^^^^^^^^^^^^^^
+
+The class :class:`rpy2.robjects.conversion.Converter` groups such conversion functions
 into one object.
 
-Our conversion function can be registered as follows:
+Our conversion function defined above can then be registered as follows:
 
 .. code-block:: python
    
    from rpy2.robjects.conversion import Converter
    my_converter = Converter('my converter')
    my_converter.py2ri.register(tuple, tuple_str)
-   
-This system can be customized globally (See section `Customizing the conversion`)
+
+Converter objects are additive, which can be an easy way to create simple combinations of
+conversion rules. For example, creating a converter that adds the rule above to the default
+conversion rules is written:
+
+.. code-block:: python
+		
+   from rpy2.robjects import default_converter
+   default_converter + my_converter
+
+Local conversion rules
+^^^^^^^^^^^^^^^^^^^^^^
+
+The conversion rules can be customized globally (See section `Customizing the conversion`)
 or through the use of local converters as context managers. The latter is
 recommended when experimenting or wishing a specific behavior of the conversion
 system that is limited in time.
@@ -91,6 +106,7 @@ Python sequences.
    from rpy2.robjects.packages import importr
    base = importr('base')
 
+   # error here:
    res = base.paste(x, collapse="-")
 
 This can be changed by using our converter as an addition to the default conversion scheme:
