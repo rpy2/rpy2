@@ -299,6 +299,7 @@ utils.install_packages('Cairo')
                     # the standard python behavior when you use an unnamed
                     # variable
                     raise NameError("name '%s' is not defined" % input)
+
             robj = self.pyconverter(val)
             ro.r.assign(input, robj)
 
@@ -526,6 +527,11 @@ utils.install_packages('Cairo')
         help='Resolution of png plotting device sent as an argument to *png* in R. Defaults to 72 if *units* is one of ["in", "cm", "mm"].'
         )
     @argument(
+        '-c', '--converter',
+        default=None,
+        help='Name of converter variable'
+        )
+    @argument(
         'code',
         nargs='*',
         )
@@ -629,6 +635,19 @@ utils.install_packages('Cairo')
         if local_ns is None:
             local_ns = {}
 
+        if args.converter is None:
+            pass
+        else:
+            try:
+                localconverter = local_ns[args.converter]
+            except KeyError:
+                try:
+                    localconverter = self.shell.user_ns[args.converter]
+                except KeyError:
+                    raise NameError("name '%s' is not defined" % args.converter)
+            if not isinstance(localconverter, Converter):
+                raise ValueError("'%s' must be a Converter object.")
+            
         if args.input:
             for input in ','.join(args.input).split(','):
                 try:
@@ -638,7 +657,10 @@ utils.install_packages('Cairo')
                         val = self.shell.user_ns[input]
                     except KeyError:
                         raise NameError("name '%s' is not defined" % input)
-                ro.r.assign(input, self.pyconverter(val))
+                if args.converter is None:
+                    ro.r.assign(input, self.pyconverter(val))
+                else:
+                    ro.r.assign(input, localconverter.py2ri(val))
 
         tmpd = self.setup_graphics(args)
 
@@ -688,7 +710,10 @@ utils.install_packages('Cairo')
 
         if args.output:
             for output in ','.join(args.output).split(','):
-                output_ipy = converter.ri2py(ri.globalenv.get(output))
+                if args.converter is None:
+                    output_ipy = converter.ri2py(ri.globalenv.get(output))
+                else:
+                    output_ipy = localconverter.ri2py(ri.globalenv.get(output))
                 self.shell.push({output: output_ipy })
 
 
@@ -703,7 +728,10 @@ utils.install_packages('Cairo')
         # so return the converted result
         if return_output and not args.noreturn:
             if result is not ri.NULL:
-                return converter.ri2py(result)
+                if args.converter is None:
+                    return converter.ri2py(result)
+                else:
+                    return localconverter.ri2py(result)
 
 __doc__ = __doc__.format(
                 R_DOC = ' '*8 + RMagics.R.__doc__,
