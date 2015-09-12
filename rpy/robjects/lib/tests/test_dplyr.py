@@ -29,14 +29,14 @@ class DplyrTestCase(unittest.TestCase):
 
     def testFilter_NoFilter(self):
         dataf = dplyr.DataFrame(mtcars)
-        dataf_filter = dplyr.filter(dataf)
+        dataf_filter = dataf.filter()
         self.assertEqual(dataf.nrow, dataf_filter.nrow)
 
     def testFilter_OneFilter(self):
         dataf = dplyr.DataFrame(mtcars)
-        ngear_gt_3 = len(x for x in dataf.rx2('gear') if x > 3)
-        dataf_filter = dplyr.filter(dataf, 'gear > 3')        
-        self.assertEqual(ngear_gt_3, dp_filter.nrow)
+        ngear_gt_3 = len(tuple(x for x in dataf.rx2('gear') if x > 3))
+        dataf_filter = dataf.filter('gear > 3')        
+        self.assertEqual(ngear_gt_3, dataf_filter.nrow)
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DplyrTestCase)
