@@ -51,7 +51,18 @@ class RObjectTestCase(unittest.TestCase):
         self.assertEqual("A1.4, p. 270",
                           robjects.globalenv.get("BOD").do_slot("reference")[0])
 
+    def testSlots(self):
+        x = robjects.r('list(a=1,b=2,c=3)')
+        s = x.slots
+        self.assertEqual(1, len(s))
+        self.assertEqual(('names', ), tuple(s.keys()))
+        self.assertEqual(('a', 'b', 'c'), tuple(s['names']))
 
+        s['names'] = 0
+        self.assertEqual(1, len(s))
+        self.assertEqual(('names', ), tuple(s.keys()))
+        self.assertEqual((0, ), tuple(s['names']))
+        
 import pickle
 
 class RObjectPicklingTestCase(unittest.TestCase):

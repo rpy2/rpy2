@@ -13,10 +13,8 @@ else:
 
 class RInstanceTestCase(unittest.TestCase):
 
-
     def tearDow(self):
         robjects.r._dotter = False
-
 
     def testGetItem(self):
         letters_R = robjects.r["letters"]

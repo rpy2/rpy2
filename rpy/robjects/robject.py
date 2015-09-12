@@ -1,11 +1,53 @@
 import os, sys
 import tempfile
+import weakref
 import rpy2.rinterface
 
 rpy2.rinterface.initr()
 
 from . import conversion
 
+class RSlots(object):
+    """ Attributes of an R object as a Python mapping.
+
+    The parent proxy to the underlying R object is held as a
+    weak reference. The attributes are therefore not protected
+    from garbage collection unless bound to a Python symbol or
+    in an other container.
+    """
+    
+    __slots__ = ['_robj', ]
+    
+    def __init__(self, robj):
+        self._robj = weakref.proxy(robj)
+
+        
+    def __getitem__(self, key):
+        value = self._robj.do_slot(key)
+        return conversion.ri2ro(value)
+        
+    def __setitem__(self, key, value):
+        rpy2_value = conversion.py2ri(value)
+        self._robj.do_slot_assign(key, rpy2_value)
+
+    def __len__(self):
+        return len(self._robj.list_attrs())
+    
+    def keys(self):
+        for k in self._robj.list_attrs():
+            yield k
+
+    def items(self):
+        for k in self._robj.list_attrs():
+            v = self[key]
+            yield (k, v)
+
+    def values(self):
+        for k in self._robj.list_attrs():
+            v = self[key]
+            yield v
+
+        
 class RObjectMixin(object):
     """ Class to provide methods common to all RObject instances """
     __rname__ = None
@@ -20,6 +62,18 @@ class RObjectMixin(object):
     __rclass = rpy2.rinterface.baseenv.get("class")
     __rclass_set = rpy2.rinterface.baseenv.get("class<-")
     __show = rpy2.rinterface.baseenv.get("show")
+
+    __slots = None
+    
+    @property
+    def slots(self):
+        """ Attributes of the underlying R object as a Python mapping.
+
+        The attributes can accessed and assigned by name (as if they
+        were in a Python `dict`)."""
+        if self.__slots is None:
+            self.__slots = RSlots(self)
+        return self.__slots
 
     def __str__(self):
         if sys.platform == 'win32':
@@ -77,15 +131,16 @@ class RObjectMixin(object):
                       "R class for the object, stored as an R string vector.")
 
 
+    
 def repr_robject(o, linesep=os.linesep):
     s = rpy2.rinterface.baseenv.get("deparse")(o)
     s = str.join(linesep, s)
     return s
 
-
-
+    
 class RObject(RObjectMixin, rpy2.rinterface.Sexp):
     """ Base class for all R objects. """
+    
     def __setattr__(self, name, value):
         if name == '_sexp':
             if not isinstance(value, rpy2.rinterface.Sexp):

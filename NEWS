@@ -28,6 +28,11 @@ New features
   to be `PARSE_INCOMPLETE`. This can make a Python implementation of an
   IDE for R easier.
   
+- Attribute :attr:`slots` for :mod:`rpy2.robjects`-level objects. The
+  attribute is a :class:`rpy2.robjects.Rslots` which
+  behaves like a Python mapping to provide access to R-attributes
+  for the object (see issue #275).
+
 
 Bugs fixed
 ----------
