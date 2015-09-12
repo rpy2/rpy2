@@ -40,7 +40,8 @@ from rpy2.rinterface import (Sexp,
                              SexpVector, 
                              SexpClosure, 
                              SexpEnvironment, 
-                             SexpS4, 
+                             SexpS4,
+                             StrSexpVector,
                              SexpExtPtr)
 _globalenv = rinterface.globalenv
 
@@ -62,6 +63,7 @@ else:
     py3str = str
     py3bytes = bytes
 
+_rparse = rinterface.baseenv['parse']
 _reval = rinterface.baseenv['eval']
 
 def reval(string, envir = _globalenv):
@@ -313,7 +315,7 @@ class R(object):
         return s
 
     def __call__(self, string):
-        p = rinterface.parse(string)
+        p = _rparse(text=StrSexpVector((string,)))
         res = self.eval(p)
         return conversion.ri2py(res)
 

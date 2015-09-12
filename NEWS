@@ -48,6 +48,10 @@ Changes
 
 - :func:`rpy2.rinterface.is_initialized` is now a function.
 
+- :meth:`rpy2.robjects.R.__call__` is now calling R's `base::parse()`
+  to parse the string rather the parser through R's C-API. The workaround
+  let's us retrieve R's error message in case of failure (see issue #300)
+
 
 Release 2.6.3
 =============
