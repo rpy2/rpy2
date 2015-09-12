@@ -45,6 +45,8 @@ help:
 	@echo "  pseudoxml  to make pseudoxml-XML files for display purposes"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
+	@echo "  rpy2demo_graphics to build the figures used in the documentation about graphics"
+	@echo "  rpy2demo_benchmark to build the figure(s) used in the documentation about benchmarks"
 
 clean:
 	rm -rf $(BUILDDIR)/*
