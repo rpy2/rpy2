@@ -33,6 +33,9 @@ New features
   behaves like a Python mapping to provide access to R-attributes
   for the object (see issue #275).
 
+- The R "magic" for ipython `%%R` can be passed a local converter
+  (see new features above) by using `-c`.
+
 
 Bugs fixed
 ----------
