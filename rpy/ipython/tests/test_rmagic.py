@@ -22,7 +22,7 @@ from rpy2.ipython import rmagic
 
 # from IPython.core.getipython import get_ipython
 from rpy2 import rinterface
-from rpy2.robjects import r
+from rpy2.robjects import r, vectors, globalenv
 import rpy2.robjects.packages as rpacks
 
 class TestRmagic(unittest.TestCase):
@@ -162,7 +162,33 @@ result = rmagic_addone(12344)
         np.testing.assert_almost_equal(self.ip.user_ns['xc'], [3.2, 0.9])
         np.testing.assert_almost_equal(self.ip.user_ns['r'], np.array([-0.2,  0.9, -1. ,  0.1,  0.2]))
 
+    def test_cell_magic_localconverter(self):
 
+        x = (1,2,3)
+        from rpy2.rinterface import StrSexpVector
+        def tuple_str(tpl):
+            res = StrSexpVector(tpl)
+            return res
+        from rpy2.robjects.conversion import Converter
+        my_converter = Converter('my converter')
+        my_converter.py2ri.register(tuple, tuple_str)
+        from rpy2.robjects import default_converter
+
+        foo = default_converter + my_converter
+        
+        self.ip.push({'x':x,
+                      'foo': foo})
+        snippet = '''
+        x
+        '''
+        self.assertRaises(NotImplementedError,
+                          self.ip.run_cell_magic,
+                          'R', '-i x', snippet)
+        self.ip.run_cell_magic('R', '-i x -c foo',
+                               snippet)
+        self.assertTrue(isinstance(globalenv['x'],
+                                   vectors.StrVector))
+        
     def test_rmagic_localscope(self):
         self.ip.push({'x':0})
         self.ip.run_line_magic('R', '-i x -o result result <-x+1')
