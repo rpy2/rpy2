@@ -23,9 +23,9 @@ New features
   and associated objects in an R environment.
 
 - Exception :class:`rpy2.rinterface.ParsingIncompleError`, a child class of
-  :class:`rpy2.rinterface.ParsingError` raised when
+  :class:`rpy2.rinterface.ParsingError`, raised when
   calling :meth:`rpy2.rinteface.parse` results in R's C-level status
-  to be `PARSE_INCOMPLETE`. This can make a Python implementation of an
+  to be `PARSE_INCOMPLETE`. This can make the Python implementation of an
   IDE for R easier.
   
 - Attribute :attr:`slots` for :mod:`rpy2.robjects`-level objects. The
