@@ -169,7 +169,8 @@ While this is working, one can note that we call the same R function
 functions. What is happening is that the dispatch is performed by R.
 
 If this is ever becoming a performance issue, the specific R function
-dispatched can be used instead:
+dispatched can be prefetched and explicitly called in the Python
+function. For example:
 
 ```python
 from rpy2.robjects.methods import getmethod
