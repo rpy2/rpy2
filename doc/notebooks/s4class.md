@@ -66,7 +66,7 @@ class ExpressionSet(RS4):
 eset_myclass = ExpressionSet(eset)
 ```
 
-## Automatic conversion
+## Custom conversion
 
 The conversion system can also be made aware our new class by customizing
 the handling of S4 objects.
@@ -128,7 +128,58 @@ class ExpressionSet(RS4):
                      "R attribute `exprs`")
 eset_myclass = ExpressionSet(eset)
 
-
 eset_myclass.exprs
+```
 
+## Methods
+
+In R's S4 methods are generic functions served by a multiple dispatch system.
+
+A natural way to expose the S4 method to Python is to use the
+`multipledispatch` package:
+
+```python
+from multipledispatch import dispatch
+
+@dispatch(ExpressionSet)
+def rowmedians(eset,
+               na_rm=False):
+    res = biobase.rowMedians(eset,
+                             na_rm=na_rm)
+    return res
+
+res = rowmedians(eset)
+```
+
+The R method `rowMedians` is also defined for matrices, which we can expose
+on the Python end as well:
+
+```python
+from rpy2.robjects.vectors import Matrix
+@dispatch(Matrix)
+def rowmedians(m,
+               na_rm=False):
+    res = biobase.rowMedians(m,
+                             na_rm=na_rm)
+    return res
+```
+
+While this is working, one can note that we call the same R function
+`rowMedians()` in the package `Biobase` in both Python decorated
+functions. What is happening is that the dispatch is performed by R.
+
+If this is ever becoming a performance issue, the specific R function
+dispatched can be used instead:
+
+```python
+from rpy2.robjects.methods import getmethod
+from rpy2.robjects.vectors import StrVector
+_rowmedians_matrix = getmethod(StrVector(["rowMedians"]),
+                               signature=StrVector(["matrix"]))
+@dispatch(Matrix)
+def rowmedians(m,
+               na_rm=False):
+    res = _rowmedians_matrix(m,
+                             na_rm=na_rm)
+    return res
 ```
