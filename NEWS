@@ -2,6 +2,15 @@ Release 2.8.0
 =============
 
 
+Release 2.7.1
+=============
+ 
+Bugs fixed
+----------
+
+- The :meth:`__repr__` for :mod:`robjects`-level vectors
+  was broken for vectors of length 1 (issue #306)
+
 
 Release 2.7.0
 =============

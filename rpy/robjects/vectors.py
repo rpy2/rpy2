@@ -317,7 +317,9 @@ class Vector(RObjectMixin, SexpVector):
             return res
 
         l = len(self)
-        if l < 7:
+        if l == 0:
+            s = '[]'
+        elif l < 7:
             s = '[' + \
                 ', '.join((p_str(elt, max_width = math.floor(52 / l)) for elt in self[ : 8])) +\
                 ']'
