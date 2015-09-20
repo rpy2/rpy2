@@ -1197,20 +1197,16 @@ GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 #endif
 
   assert(type != NULL && type->tp_alloc != NULL);
-
-  if (!PyRinterface_IsInitialized()) {
+  if (!rpy2_isinitialized()) {
     PyErr_Format(PyExc_RuntimeError, 
                  "R must be initialized before instances of GraphicalDevice can be created.");
     return NULL;
   }
-
   PyGrDevObject *self;
   self = (PyGrDevObject *)type->tp_alloc(type, 0);
-
   if (! self) {
     PyErr_NoMemory();
   }
-
   self->grdev = (pDevDesc)PyMem_Malloc(1 * sizeof(DevDesc));
   if (self->grdev == NULL) {
     PyErr_Format(PyExc_RuntimeError, 
@@ -1231,7 +1227,7 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
   printf("FIXME: Initializing GrDev\n");
 #endif
 
-  if (!PyRinterface_IsInitialized()) {
+  if (!rpy2_isinitialized()) {
     PyErr_Format(PyExc_RuntimeError, 
                  "R must be initialized before instances of GraphicalDevice can be created.");
     return -1;
