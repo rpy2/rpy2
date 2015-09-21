@@ -11,6 +11,15 @@ mtcars_env = data(datasets).fetch('mtcars')
 mtcars = mtcars_env['mtcars']
 ```
 
+In addition to that, and because this tutorial is in a notebook,
+we initialize HTML rendering for R objects (pretty display of
+R data frames).
+
+```python
+import rpy2.ipython.html
+rpy2.ipython.html.init_printing()
+```
+
 2- dplyr
 
 ```python
@@ -26,7 +35,7 @@ dataf = (DataFrame(mtcars).
          group_by('gear').
          summarize(mean_ptw='mean(powertoweight)'))
 
-print(dataf)
+dataf
 ```
 
 or piping (magrittr style).
@@ -44,7 +53,7 @@ dataf = (DataFrame(mtcars) >>
          group_by('gear') >>
          summarize(mean_ptw='mean(powertoweight)'))
 
-print(dataf)
+dataf
 ```
 
 The strings passed to the dplyr function are evaluated as expression,
@@ -71,7 +80,7 @@ dataf = (DataFrame(mtcars) >>
          summarize(mean_ptw='mean(powertoweight)',
                    mean_np_ptw='mean_np(powertoweight)'))
 
-print(dataf)
+dataf
 ```
 
 It is also possible to carry this out without having to
@@ -95,7 +104,7 @@ dataf = (DataFrame(mtcars) >>
                    mean_np_ptw=StringInEnv('mean_np(powertoweight)',
                                            my_env)))
 
-print(dataf)
+dataf
 ```
 
 
@@ -154,7 +163,7 @@ with localconverter(default_converter + pandas2ri.converter) as cv:
              group_by('gear').
              summarize(mean_ptw='mean(powertoweight)'))
 
-print(dataf)
+dataf
 ```
 
 **Reuse. Get things done. Don't reimplement.**
