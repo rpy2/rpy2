@@ -273,6 +273,10 @@ class Formula(RObjectMixin, rinterface.Sexp):
                            "R environment in which the formula will look for" +
                            " its variables.")
 
+class SourceCode(str):
+    def parse(self):
+        res = _rparse(text=ri.StrSexpVector((self,)))
+        return res
 
 class R(object):
     _instance = None

@@ -1,6 +1,14 @@
 Release 2.8.0
 =============
 
+New features
+------------
+
+- New class :class:`rpy2.robjects.SourceCode`. The class extends Python's
+  :class:`str` and is meant to represent R source code. An HTML
+  renderer for the ipython notebook (syntax highlighting using
+  :mod:`pygment` is also added).
+  
 
 Release 2.7.1
 =============
@@ -10,7 +18,6 @@ Bugs fixed
 
 - The :meth:`__repr__` for :mod:`robjects`-level vectors
   was broken for vectors of length 1 (issue #306)
-
 
 Release 2.7.0
 =============

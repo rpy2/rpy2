@@ -223,11 +223,21 @@ template_rs4 = jinja2.Template("""
 </ul>
 """)
 
+template_sourcecode = jinja2.Template("""
+<p>
+R source code:
+</p>
+<style>
+{{ syntax_highlighting }}
+</style>
+{{ sourcecode }}
+""")
 
 from rpy2.robjects import (vectors, 
                            RObject, 
                            SignatureTranslatedFunction,
-                           RS4)
+                           RS4,
+                           SourceCode)
 
 
 class StrFactorVector(vectors.FactorVector):
@@ -244,6 +254,7 @@ class StrDataFrame(vectors.DataFrame):
         if isinstance(obj, vectors.FactorVector):
             obj = StrFactorVector(obj)
         return obj
+
 
 def html_vector_horizontal(vector,
                 display_ncolmax=10,
@@ -287,6 +298,16 @@ def html_rdataframe(dataf,
      })
     return html
 
+def html_sourcecode(sourcecode):
+    from pygments import highlight
+    from pygments.lexers import SLexer
+    from pygments.formatters import HtmlFormatter
+    formatter = HtmlFormatter()
+    htmlcode = highlight(sourcecode, SLexer(), formatter)
+    d = {'sourcecode': htmlcode,
+         'syntax_highlighting': formatter.get_style_defs()}
+    html = template_sourcecode.render(d)
+    return html
 
 # FIXME: wherefrom() is taken from the rpy2 documentation
 # May be it should become part of the rpy2 API
@@ -341,6 +362,7 @@ def init_printing():
     html_f.for_type(RObject, html_ridentifiedobject)
     html_f.for_type(RS4, html_rs4)
     html_f.for_type(SignatureTranslatedFunction, html_ridentifiedobject)
+    html_f.for_type(SourceCode, html_sourcecode)
     from IPython.display import HTML
     HTML(css)
 
