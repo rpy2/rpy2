@@ -23,37 +23,49 @@ import rpy2.robjects as robjects
 R is  any data analysis toolbox because of the
 breadth and depth of the packages available.
 
-For this introduction, we recommend installing a couple of popular packages.
-
-Downloading and installing R packages is usually performed by fetching R packages
-from a package repository and installing them locally. We can get set with:
-
-```python
-# import rpy2's package module
-import rpy2.robjects.packages as rpackages
-# import R's utility package
-utils = rpackages.importr('utils')
-# select a mirror for R packages
-utils.chooseCRANmirror(ind=1) # select the first mirror in the list
-```
-
-We are now ready to install packages using R's own function `install.package`:
+For this introduction, we use few popular R packages.
 
 ```python
 # R package names
 packnames = ('ggplot2', 'hexbin')
 
-# R vector of strings
-from rpy2.robjects.vectors import StrVector
-# file
-packnames_to_install = [x for packnames if not rpackages.isinstalled(x)]
-if len(packnames_to_install) > 0:
-    utils.install_packages(StrVector(packnames_to_install))
+# import rpy2's package module
+import rpy2.robjects.packages as rpackages
+
+if all(rpackages.isinstalled(x) for x in packnames):
+    have_tutorial_packages = True
+else:
+    have_tutorial_packages = False
+```
+
+Downloading and installing R packages is usually performed
+by fetching R packages
+from a package repository and installing them locally.
+We can get set with:
+
+```python
+if not have_tutorial_packages:
+    # import R's utility package
+    utils = rpackages.importr('utils')
+    # select a mirror for R packages
+    utils.chooseCRANmirror(ind=1) # select the first mirror in the list
+```
+
+We are now ready to install packages using R's own function `install.package`:
+
+```python
+if not have_tutorial_packages:
+    # R vector of strings
+    from rpy2.robjects.vectors import StrVector
+    # file
+    packnames_to_install = [x for x in packnames if not rpackages.isinstalled(x)]
+    if len(packnames_to_install) > 0:
+        utils.install_packages(StrVector(packnames_to_install))
 ```
 	   
-The code above can be part of Python you distribute if you are relying on packages not distributed with
+The code above can be part of the Python you distribute if you are relying
+on packages not distributed with
 R by default.
-
 
 More documentation about the handling of R packages in `rpy2` can be found Section :ref:`robjects-packages`.
 
@@ -135,10 +147,8 @@ pi[0]
 ```python
    >>> piplus2 = robjects.r('pi') + 2
    >>> piplus2.r_repr()
-   c(3.14159265358979, 2)
    >>> pi0plus2 = robjects.r('pi')[0] + 2
    >>> print(pi0plus2)
-   5.1415926535897931
 ```
 
 The evaluation is performed in what is known to R users as the 
@@ -149,7 +159,7 @@ variables are "located" in that `Global Environment` by default.
 
 Example:
 
-```r
+```python
 robjects.r('''
 	f <- function(r, verbose=FALSE) {
         if (verbose) {
@@ -160,6 +170,7 @@ robjects.r('''
         f(3)
 ''')
 ```
+
 The expression above returns the value 18.85, 
 but first creates an R function `f`. 
 That function `f` is present in the R `Global Environement`, and can

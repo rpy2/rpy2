@@ -56,6 +56,18 @@ at how a class definition in Python can be made to reflect an R S4 class.
 We take the R class `lmList` in the package `lme4` and show how to write
 a Python wrapper for it.
 
+.. note::
+
+   The information relative to this section is also available
+   as a jupyter notebook `s4class.ipynb`_ (HTML render: `s4class.html`_ )
+
+   .. _s4class.ipynb: _static/notebooks/s4class.ipynb
+   .. _s4class.html: _static/notebooks/s4class.html
+
+   .. toctree::
+      s4class
+
+
 Manual R-in-Python class definition
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. note::

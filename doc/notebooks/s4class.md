@@ -119,9 +119,9 @@ We can make it a property in our Python class:
 ```python
 class ExpressionSet(RS4):
     def _exprs_get(self):
-        return x.slots['assayData']
+        return self.slots['assayData']
     def _exprs_set(self, value):
-        x.slots['assayData'] = value
+        self.slots['assayData'] = value
     exprs = property(_exprs_get,
                      _exprs_set,
                      None,
@@ -140,6 +140,10 @@ A natural way to expose the S4 method to Python is to use the
 
 ```python
 from multipledispatch import dispatch
+from functools import partial
+
+my_namespace = dict()
+dispatch = partial(dispatch, namespace=my_namespace)
 
 @dispatch(ExpressionSet)
 def rowmedians(eset,
@@ -148,7 +152,7 @@ def rowmedians(eset,
                              na_rm=na_rm)
     return res
 
-res = rowmedians(eset)
+res = rowmedians(eset_myclass)
 ```
 
 The R method `rowMedians` is also defined for matrices, which we can expose
