@@ -6,13 +6,13 @@ Documentation for rpy2
 
    .. warning::
       This documentation describe the rpy2 package version |version| on |today|.
-      This is still early development for the 2.7 series and 
+      This is still early development for the 2.8 series and 
       while care is taken to keep the development branch functional
       at all times, and this documentation up-to-date, temporary issues
       may appear:
       please remember that this is software under development.
 
-      Use the released series (2.6.x) for production.
+      Use the released series (2.7.x) for production.
 
 
 .. only:: html
