@@ -47,6 +47,7 @@ help:
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 	@echo "  rpy2demo_graphics to build the figures used in the documentation about graphics"
 	@echo "  rpy2demo_benchmark to build the figure(s) used in the documentation about benchmarks"
+	@echo "  notebooks to build the ipython notebooks used in the documentation"
 
 clean:
 	rm -rf $(BUILDDIR)/*
@@ -59,6 +60,31 @@ rpy2demo_graphics:
 
 rpy2demo_all: rpy2demo_graphics rpy2demo_benchmark
 
+# rule to build ipython notebooks from markdown
+notebooks/%.ipynb : notebooks/%.md
+	notedown -o $@ --run $<
+	cp $@ _static/notebooks/
+
+# rule to build sphinx-friendly ReST from ipython notebooks
+notebooks/%.rst : notebooks/%.ipynb
+	ipython nbconvert --to rst $<
+
+# rule to build HTML render of an ipython notebook
+_static/notebooks/%.html : notebooks/%.ipynb
+	ipython nbconvert --to html $< --output $@
+
+MD_NOTEBOOKS := $(basename $(notdir $(wildcard notebooks/*.md)))
+
+_notebooks: $(MD_NOTEBOOKS:%=notebooks/%.rst)
+
+_notebooks_html: $(MD_NOTEBOOKS:%=_static/notebooks/%.html)
+
+notebooks:
+	@echo "Building IPython notebooks from markdown..."
+	mkdir -p _static/notebooks
+	_notebooks
+	_notebooks_html
+        
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
