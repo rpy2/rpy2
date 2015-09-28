@@ -67,7 +67,7 @@ notebooks/%.ipynb : notebooks/%.md
 
 # rule to build sphinx-friendly ReST from ipython notebooks
 notebooks/%.rst : notebooks/%.ipynb
-	ipython nbconvert --to rst $<
+	@cd generated_rst && ipython nbconvert --to rst ../$<
 
 # rule to build HTML render of an ipython notebook
 _static/notebooks/%.html : notebooks/%.ipynb
