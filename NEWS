@@ -9,6 +9,9 @@ New features
   renderer for the ipython notebook (syntax highlighting using
   :mod:`pygment` is also added).
   
+- The ipython notebook-based sections of the documentation
+  were not building.
+  
 
 Release 2.7.1
 =============
