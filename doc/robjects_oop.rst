@@ -65,7 +65,7 @@ a Python wrapper for it.
    .. _s4class.html: _static/notebooks/s4class.html
 
    .. toctree::
-      s4class
+      generated_rst/s4class
 
 
 Manual R-in-Python class definition
