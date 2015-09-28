@@ -7,6 +7,9 @@ Bugs fixed
 - The :meth:`__repr__` for :mod:`robjects`-level vectors
   was broken for vectors of length 1 (issue #306)
 
+- The ipython notebook-based sections of the documentation
+  were not building
+
 
 Release 2.7.0
 =============
