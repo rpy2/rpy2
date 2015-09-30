@@ -19,7 +19,7 @@ IPython magic integration (was rmagic)
 ======================================
 
 .. automodule:: rpy2.ipython.rmagic
-
+   :members:
 
 .. module:: rpy2.interactive.process_revents
    :synopsis: Processing R events for interactivity
