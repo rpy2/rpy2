@@ -249,7 +249,7 @@ Installing packages
 >>> package_name = "lme4"
 >>> rlib.utils.install_packages(package_name)
 
-Once a package is installed it will be available for future use without having
+Once a package is installed it is available for future use without having
 the need to install it again (unless a different version of R is used).
 
 
