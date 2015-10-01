@@ -38,7 +38,7 @@ Running a server listening on port 9090 is then:
 
 .. code-block:: bash
 
-   python rpyserve.py -h localhost
+   python rpyserve.py --hostname localhost
 
 
 Client
@@ -56,7 +56,7 @@ section, listening on port 9090 is then:
 
 .. code-block:: bash
 
-   echo 'R.version' | python rpyclient.py -h localhost
+   echo 'R.version' | python rpyclient.py --hostname localhost
 
 In this example, the client is querying the R version.
 

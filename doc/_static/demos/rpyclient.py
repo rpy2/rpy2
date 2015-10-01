@@ -34,7 +34,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--port',
                         type=int,
                         default=8080)
-    parser.add_argument('-h', '--hostname',
+    parser.add_argument('--hostname',
                         default='localhost')
     
     options = parser.parse_args()
