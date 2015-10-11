@@ -5,17 +5,24 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     tidyr = importr('tidyr', on_conflict="warn")
     TARGET_VERSION = '0.3.1'
-    if dplyr.__version__ != TARGET_VERSION:
+    if tidyr.__version__ != TARGET_VERSION:
         warnings.warn('This was designed againt tidyr version %s but you have %s' % (TARGET_VERSION, dplyr.__version__))
 
 from rpy2.robjects.lib import dplyr
 
 class DataFrame(dplyr.DataFrame):
     pass
+# override the parent's collect (some of the design in dplyr.py
+# might have to be improved to allow easier subclassing)
+DataFrame.collect = dplyr._wrap_simple(dplyr.dplyr.collect, DataFrame)
 
-DataFrame.gather = dplyr._wrap(tidyr.gather_, DataFrame)
-DataFrame.spread = dplyr._wrap(dplyr.spread_, DataFrame)
+def _wrap(rfunc):
+    def func(dataf, *args, **kwargs):
+        cls = type(dataf)
+        res = rfunc(dataf, *args, **kwargs)
+        return cls(res)
+    return func
 
-gather = dplyr._make_pipe(dplyr.gather_, DataFrame)
-spread = dplyr._make_pipe(dplyr.spread_, DataFrame)
+DataFrame.gather = _wrap(tidyr.gather_)
+DataFrame.spread = _wrap(tidyr.spread_)
 
