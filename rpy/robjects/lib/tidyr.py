@@ -12,9 +12,6 @@ from rpy2.robjects.lib import dplyr
 
 class DataFrame(dplyr.DataFrame):
     pass
-# override the parent's collect (some of the design in dplyr.py
-# might have to be improved to allow easier subclassing)
-DataFrame.collect = dplyr._wrap_simple(dplyr.dplyr.collect, DataFrame)
 
 def _wrap(rfunc):
     def func(dataf, *args, **kwargs):

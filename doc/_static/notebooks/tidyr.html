@@ -223,11 +223,12 @@ R data frames).</p>
 <div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span class="kn">from</span> <span class="nn">rpy2.robjects.vectors</span> <span class="k">import</span> <span class="p">(</span><span class="n">StrVector</span><span class="p">,</span>
+<div class=" highlight hl-ipython3"><pre><span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects.vectors</span> <span class="k">import</span> <span class="p">(</span><span class="n">StrVector</span><span class="p">,</span>
                                    <span class="n">IntVector</span><span class="p">)</span>
-<span class="n">dataf</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">({</span><span class="s">&#39;x&#39;</span><span class="p">:</span> <span class="n">StrVector</span><span class="p">((</span><span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="s">&quot;b&quot;</span><span class="p">)),</span>
-                   <span class="s">&#39;y&#39;</span><span class="p">:</span> <span class="n">IntVector</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)),</span>
-		   <span class="s">&#39;z&#39;</span><span class="p">:</span> <span class="n">IntVector</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">))})</span>
+<span class="n">dataf</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">StrVector</span><span class="p">((</span><span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="s">&quot;b&quot;</span><span class="p">)),</span>
+                              <span class="n">y</span><span class="o">=</span><span class="n">IntVector</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)),</span>
+		              <span class="n">z</span><span class="o">=</span><span class="n">IntVector</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">))))</span>
 <span class="n">dataf</span>
 </pre></div>
 
@@ -249,32 +250,32 @@ R data frames).</p>
     <tr class="rpy2_names">
       <th></th>
       <th></th>
-      <th>y</th>
       <th>z</th>
       <th>x</th>
+      <th>y</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td class="rpy2_rowname">0</td>
         <td class="rpy2_names">1</td>
-      <td>3</td>
       <td>6</td>
       <td>a</td>
+      <td>3</td>
     </tr>
     <tr>
       <td class="rpy2_rowname">1</td>
         <td class="rpy2_names">2</td>
-      <td>4</td>
       <td>7</td>
       <td>b</td>
+      <td>4</td>
     </tr>
     <tr>
       <td class="rpy2_rowname">2</td>
         <td class="rpy2_names">3</td>
-      <td>5</td>
       <td>8</td>
       <td>b</td>
+      <td>5</td>
     </tr>
   </tbody>
 </table>

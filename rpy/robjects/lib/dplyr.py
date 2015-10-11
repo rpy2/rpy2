@@ -1,4 +1,5 @@
 from collections import namedtuple
+from six import with_metaclass
 from rpy2.robjects.packages import importr, data
 import warnings
 with warnings.catch_warnings():
@@ -13,12 +14,6 @@ with warnings.catch_warnings():
 from rpy2 import robjects
 
 StringInEnv = namedtuple('StringInEnv', 'string env')
-def _wrap_simple(rfunc, cls):
-    """ Create a wrapper for `rfunc` that wrap its result in a call
-    to the constructor of class `cls` """
-    def func(*args, **kwargs):
-    	return cls(rfunc(*args, **kwargs))
-    return func
 
 def _wrap(rfunc, cls, env=robjects.globalenv):
     def func(dataf, *args, **kwargs):
@@ -71,6 +66,10 @@ class DataFrame(robjects.DataFrame):
         """
         res = dplyr.copy_to(destination, self, name=name)
         return type(self)(res)
+
+    def collect(self, *args, **kwargs):
+        cls = type(self)
+        return cls(rfunc(self, *args, **kwargs))
         
 class GroupedDataFrame(robjects.DataFrame):
     pass
@@ -89,8 +88,6 @@ DataFrame.full_join = _wrap(dplyr.full_join, None)
 DataFrame.semi_join = _wrap(dplyr.semi_join, None)
 DataFrame.anti_join = _wrap(dplyr.anti_join, None)
 DataFrame.slice = _wrap(dplyr.slice_, None)
-
-DataFrame.collect = _wrap_simple(dplyr.collect, DataFrame)
 
 GroupedDataFrame.summarize = _wrap(dplyr.summarize_, None)
 GroupedDataFrame.summarise = GroupedDataFrame.summarize
