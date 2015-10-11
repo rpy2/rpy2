@@ -10,8 +10,11 @@ New features
   :mod:`pygment` is also added).
   
 - The ipython notebook-based sections of the documentation
-  were not building.
-  
+  are now building.
+
+- New module :mod:`rpy2.robjects.lib.tidyr` providing a custom
+  wrapper for the R library `tidyr`
+
 
 Release 2.7.1
 =============
