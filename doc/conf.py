@@ -215,7 +215,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'rpy2.tex', 'rpy2 Documentation',
-   'Rpy2 contributors', 'manual'),
+   'Laurent Gautier & rpy2 contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -245,7 +245,7 @@ latex_logo = 'rpy2_logo.pdf'
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'rpy2', 'rpy2 Documentation',
-     ['Rpy2 contributors'], 1)
+     ['Laurent Gautier & rpy2 contributors'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -280,9 +280,9 @@ texinfo_documents = [
 
 # Bibliographic Dublin Core info.
 epub_title = 'rpy2'
-epub_author = 'Rpy2 contributors'
-epub_publisher = 'Rpy2 contributors'
-epub_copyright = '2014, Rpy2 contributors'
+epub_author = 'Laurent Gautier & Rpy2 contributors'
+epub_publisher = 'Laurent Gautier & Rpy2 contributors'
+epub_copyright = '2008-2015, Laurent Gautier & Rpy2 contributors'
 
 # The basename for the epub file. It defaults to the project name.
 #epub_basename = 'rpy2'
