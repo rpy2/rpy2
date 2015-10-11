@@ -1,4 +1,5 @@
 from collections import namedtuple
+from six import with_metaclass
 from rpy2.robjects.packages import importr, data
 import warnings
 with warnings.catch_warnings():
@@ -13,12 +14,6 @@ with warnings.catch_warnings():
 from rpy2 import robjects
 
 StringInEnv = namedtuple('StringInEnv', 'string env')
-def _wrap_simple(rfunc, cls):
-    """ Create a wrapper for `rfunc` that wrap its result in a call
-    to the constructor of class `cls` """
-    def func(*args, **kwargs):
-    	return cls(rfunc(*args, **kwargs))
-    return func
 
 def _wrap(rfunc, cls, env=robjects.globalenv):
     def func(dataf, *args, **kwargs):
@@ -34,7 +29,10 @@ def _wrap(rfunc, cls, env=robjects.globalenv):
                 kwargs_inenv[k] = lazyeval.as_lazy(v.string, env=v.env)
             else:
                 kwargs_inenv[k] = lazyeval.as_lazy(v, env=env)
-        return cls(rfunc(dataf, *args_inenv, **kwargs_inenv))
+        if cls is None:
+            return type(dataf)(rfunc(dataf, *args_inenv, **kwargs_inenv))
+        else:
+            return cls(rfunc(dataf, *args_inenv, **kwargs_inenv))
     return func
 
 
@@ -68,28 +66,30 @@ class DataFrame(robjects.DataFrame):
         """
         res = dplyr.copy_to(destination, self, name=name)
         return type(self)(res)
+
+    def collect(self, *args, **kwargs):
+        cls = type(self)
+        return cls(rfunc(self, *args, **kwargs))
         
 class GroupedDataFrame(robjects.DataFrame):
     pass
 
-DataFrame.arrange = _wrap(dplyr.arrange_, DataFrame)
-DataFrame.mutate = _wrap(dplyr.mutate_, DataFrame)
-DataFrame.transmute = _wrap(dplyr.transmute_, DataFrame)
-DataFrame.filter = _wrap(dplyr.filter_, DataFrame)
-DataFrame.select = _wrap(dplyr.select_, DataFrame)
+DataFrame.arrange = _wrap(dplyr.arrange_, None)
+DataFrame.mutate = _wrap(dplyr.mutate_, None)
+DataFrame.transmute = _wrap(dplyr.transmute_, None)
+DataFrame.filter = _wrap(dplyr.filter_, None)
+DataFrame.select = _wrap(dplyr.select_, None)
 DataFrame.group_by = _wrap(dplyr.group_by_, GroupedDataFrame)
-DataFrame.distinct = _wrap(dplyr.distinct_, DataFrame)
-DataFrame.inner_join = _wrap(dplyr.inner_join, DataFrame)
-DataFrame.left_join = _wrap(dplyr.left_join, DataFrame)
-DataFrame.right_join = _wrap(dplyr.right_join, DataFrame)
-DataFrame.full_join = _wrap(dplyr.full_join, DataFrame)
-DataFrame.semi_join = _wrap(dplyr.semi_join, DataFrame)
-DataFrame.anti_join = _wrap(dplyr.anti_join, DataFrame)
-DataFrame.slice = _wrap(dplyr.slice_, DataFrame)
+DataFrame.distinct = _wrap(dplyr.distinct_, None)
+DataFrame.inner_join = _wrap(dplyr.inner_join, None)
+DataFrame.left_join = _wrap(dplyr.left_join, None)
+DataFrame.right_join = _wrap(dplyr.right_join, None)
+DataFrame.full_join = _wrap(dplyr.full_join, None)
+DataFrame.semi_join = _wrap(dplyr.semi_join, None)
+DataFrame.anti_join = _wrap(dplyr.anti_join, None)
+DataFrame.slice = _wrap(dplyr.slice_, None)
 
-DataFrame.collect = _wrap_simple(dplyr.collect, DataFrame)
-
-GroupedDataFrame.summarize = _wrap(dplyr.summarize_, DataFrame)
+GroupedDataFrame.summarize = _wrap(dplyr.summarize_, None)
 GroupedDataFrame.summarise = GroupedDataFrame.summarize
 
 arrange = _make_pipe(dplyr.arrange_, DataFrame)
