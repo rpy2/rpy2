@@ -10,6 +10,9 @@ Bugs fixed
 - The ipython notebook-based sections of the documentation
   were not building
 
+- Classes inheriting from :mod:`dplyr.DataFrame` had dplyr methods
+  returning objects of their parent class.
+
 
 Release 2.7.0
 =============
