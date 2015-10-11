@@ -9,9 +9,6 @@ New features
   renderer for the ipython notebook (syntax highlighting using
   :mod:`pygment` is also added).
   
-- The ipython notebook-based sections of the documentation
-  are now building.
-
 - New module :mod:`rpy2.robjects.lib.tidyr` providing a custom
   wrapper for the R library `tidyr`
 
@@ -24,6 +21,12 @@ Bugs fixed
 
 - The :meth:`__repr__` for :mod:`robjects`-level vectors
   was broken for vectors of length 1 (issue #306)
+
+- The ipython notebook-based sections of the documentation
+  were not building
+
+- Classes inheriting from :mod:`dplyr.DataFrame` had dplyr methods
+  returning objects of their parent class.
 
 Release 2.7.0
 =============
