@@ -13,6 +13,9 @@ from rpy2.robjects.lib import dplyr
 class DataFrame(dplyr.DataFrame):
     pass
 
+DataFrame.summarize = dplyr._wrap(dplyr.summarize, DataFrame)
+DataFrame.summarise = DataFrame.summarize
+
 def _wrap(rfunc):
     def func(dataf, *args, **kwargs):
         cls = type(dataf)
