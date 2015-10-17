@@ -90,7 +90,7 @@ DataFrame.anti_join = _wrap(dplyr.anti_join, None)
 DataFrame.sample_n = _wrap(dplyr.sample_n, None)
 DataFrame.slice = _wrap(dplyr.slice_, None)
 
-GroupedDataFrame.summarize = _wrap(dplyr.summarize_, None)
+GroupedDataFrame.summarize = _wrap(dplyr.summarize_, DataFrame)
 GroupedDataFrame.summarise = GroupedDataFrame.summarize
 
 arrange = _make_pipe(dplyr.arrange_, DataFrame)
