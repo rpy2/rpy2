@@ -106,6 +106,7 @@ DataFrame.full_join = _wrap2(dplyr.full_join, None)
 DataFrame.semi_join = _wrap2(dplyr.semi_join, None)
 DataFrame.anti_join = _wrap2(dplyr.anti_join, None)
 DataFrame.sample_n = _wrap(dplyr.sample_n, None)
+DataFrame.sample_frac = _wrap(dplyr.sample_frac, None)
 DataFrame.slice = _wrap(dplyr.slice_, None)
 
 GroupedDataFrame.summarize = _wrap(dplyr.summarize_, DataFrame)
@@ -127,6 +128,7 @@ full_join = _make_pipe2(dplyr.full_join, DataFrame)
 semi_join = _make_pipe2(dplyr.semi_join, DataFrame)
 anti_join = _make_pipe2(dplyr.anti_join, DataFrame)
 sample_n = _make_pipe(dplyr.sample_n, DataFrame)
+sample_frac = _make_pipe(dplyr.sample_frac, DataFrame)
 slice = _make_pipe(dplyr.slice_, DataFrame)
 
 
