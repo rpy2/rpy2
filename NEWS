@@ -11,6 +11,9 @@ Bugs fixed
   :mod:`rpy2.robjects.lib.dplyr.DataFrame` introduced a regression whenever
   `group_by` is used.
 
+- The methods to perform joins on dplyr `DataFrame` objects where not
+  working properly.
+
 
 Release 2.7.1
 =============
