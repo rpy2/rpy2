@@ -19,8 +19,9 @@ Release 2.7.2
 Bugs fixed
 ----------
 
-- method `sample_n` defined in the R package `rplyr` was missing from
-  the `DataFrame` definition in :mod:`rpy2.robjects.lib.dplyr`
+- methods `sample_n` and `sample_frac` defined in the R package
+  `rplyr` were missing from the `DataFrame` definition in
+  :mod:`rpy2.robjects.lib.dplyr`
 
 - The fix for the inheritance problem with
   :mod:`rpy2.robjects.lib.dplyr.DataFrame` introduced a regression whenever
