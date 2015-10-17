@@ -93,6 +93,7 @@ class GroupedDataFrame(robjects.DataFrame):
     pass
 
 DataFrame.arrange = _wrap(dplyr.arrange_, None)
+DataFrame.distinct = _wrap(dplyr.distinct_, None)
 DataFrame.mutate = _wrap(dplyr.mutate_, None)
 DataFrame.transmute = _wrap(dplyr.transmute_, None)
 DataFrame.filter = _wrap(dplyr.filter_, None)
@@ -113,6 +114,7 @@ GroupedDataFrame.summarize = _wrap(dplyr.summarize_, DataFrame)
 GroupedDataFrame.summarise = GroupedDataFrame.summarize
 
 arrange = _make_pipe(dplyr.arrange_, DataFrame)
+distinct = _make_pipe(dplyr.distinct_, DataFrame)
 mutate = _make_pipe(dplyr.mutate_, DataFrame)
 transmute = _make_pipe(dplyr.transmute_, DataFrame)
 filter = _make_pipe(dplyr.filter_, DataFrame)
