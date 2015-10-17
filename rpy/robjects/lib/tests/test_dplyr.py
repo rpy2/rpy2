@@ -38,6 +38,25 @@ class DplyrTestCase(unittest.TestCase):
         dataf_filter = dataf.filter('gear > 3')        
         self.assertEqual(ngear_gt_3, dataf_filter.nrow)
 
+    def testSplitMergeFunction(self):
+        dataf = dplyr.DataFrame(mtcars)
+        dataf_by_gear = dataf.group_by('gear')
+        dataf_sum_gear = dataf_by_gear.summarize(foo='sum(gear)')
+        self.assertEquals(type(dataf_sum_gear), dplyr.DataFrame)
+    
+    def testJoin(self):
+        dataf_a = dplyr.DataFrame(mtcars)
+        dataf_b = dataf_a.mutate(foo=1)
+        dataf_c = dataf_a.inner_join(dataf_b)
+        all_names = list(dataf_a.colnames)
+        all_names.append('foo')
+        try:
+            # Python 3
+            self.assertCountEqual(all_names, dataf_c.colnames)
+        except AttributeError as ae:
+            # Python 2.7
+            self.assertItemsEqual(all_names, dataf_c.colnames)
+        
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DplyrTestCase)
     return suite
