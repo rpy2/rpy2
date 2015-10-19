@@ -13,6 +13,16 @@ New features
   wrapper for the R library `tidyr`
 
 
+Release 2.7.3
+=============
+
+Bugs fixed
+----------
+
+- method :meth:`DataFrame.collect` in :mod:`rpy2.robjects.lib.dplyr`
+  was not functioning.
+
+
 Release 2.7.2
 =============
 

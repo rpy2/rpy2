@@ -56,6 +56,13 @@ class DplyrTestCase(unittest.TestCase):
         except AttributeError as ae:
             # Python 2.7
             self.assertItemsEqual(all_names, dataf_c.colnames)
+
+    def testCollect(self):
+        dataf = dplyr.DataFrame(mtcars)
+        dataf_collected = dataf.collect()
+        # FIXME: no real test here. Just ensuring that it is returning
+        #        without error
+        self.assertEquals(dplyr.DataFrame, type(dataf_collected))
         
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DplyrTestCase)

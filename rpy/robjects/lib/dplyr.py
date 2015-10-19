@@ -87,7 +87,7 @@ class DataFrame(robjects.DataFrame):
 
     def collect(self, *args, **kwargs):
         cls = type(self)
-        return cls(rfunc(self, *args, **kwargs))
+        return cls(dplyr.collect(self, *args, **kwargs))
         
 class GroupedDataFrame(robjects.DataFrame):
     pass
