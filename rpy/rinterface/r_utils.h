@@ -14,6 +14,11 @@ SEXP rpy2_lang2str(SEXP sexp, SEXPTYPE t);
 
 SEXP externallymanaged_vector(SEXPTYPE rtype, void *array, int length);
 
+SEXP rpy2_newenv(SEXP hash, SEXP parent, SEXP size);
+
+int rpy2_isinitialized(void);
+int rpy2_setinitialized(void);
+
 typedef struct {
   int rfree;
   void *array;
