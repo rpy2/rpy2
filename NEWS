@@ -4,8 +4,11 @@ Release 2.7.3
 Bugs fixed
 ----------
 
-- method :meth:`DataFrame.collect` in :mod:`rpy2.robjects.lib.dplyr`
+- Method :meth:`DataFrame.collect` in :mod:`rpy2.robjects.lib.dplyr`
   was not functioning.
+
+- Applied patch by Matthias Klose to fix implict pointer conversions.
+
 
 Release 2.7.2
 =============
