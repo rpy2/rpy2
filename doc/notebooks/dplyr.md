@@ -60,7 +60,7 @@ The strings passed to the dplyr function are evaluated as expression,
 just like this is happening when using dplyr in R. This means that
 when writing `mean(powertoweight)` the R function `mean()` is used.
 
-Using an Python function is not too difficult though. We can just
+Using a Python function is not too difficult though. We can just
 call Python back from R:
 
 ```python
@@ -153,7 +153,7 @@ with localconverter(default_converter + pandas2ri.converter) as cv:
 print(type(mtcars))
 ```
 
-Using a local converter let's us also go from the pandas data frame to our dplyr-augmented R data frame.
+Using a local converter lets us also go from the pandas data frame to our dplyr-augmented R data frame.
 
 ```python
 with localconverter(default_converter + pandas2ri.converter) as cv:
