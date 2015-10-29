@@ -124,7 +124,7 @@ result = rmagic_addone(12344)
             #np.testing.assert_array_equal(dataf_np[col_i],
             #                              fromr_dataf_np.ix[col_i].values)
             self.assertSequenceEqual(tuple(dataf_np[col_i]),
-                                     tuple(fromr_dataf_np.ix[col_i].values))
+                                     tuple(fromr_dataf_np.ix[col_i+1].values))
 
         # pandas2ri is currently making copies
         # # modify the data frame retrieved to check whether
