@@ -110,7 +110,12 @@ def ri2py_listvector(obj):
 def ri2py_dataframe(obj):
     # use the numpy converter
     recarray = numpy2ri.ri2py(obj)
-    res = PandasDataFrame.from_records(recarray)
+    try:
+        idx = numpy2ri.ri2py(obj.do_slot('row.names'))
+    except LookupError as le:
+        idx = None
+    res = PandasDataFrame.from_records(recarray,
+                                       index=idx)
     return res
 
 def activate():
