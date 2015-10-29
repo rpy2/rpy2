@@ -9,6 +9,9 @@ Bugs fixed
   
 - Applied patch by Matthias Klose to fix implict pointer conversions.
 
+- :mod:`pandas2ri.ri2py_dataframe` is now propagating the row names
+  in the R data frame into an index in the pandas data frame (issue #285)
+
 
 Release 2.7.2
 =============
