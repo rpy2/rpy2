@@ -116,7 +116,7 @@ DataFrame.slice = _wrap(dplyr.slice_, None)
 
 GroupedDataFrame.summarize = _wrap(dplyr.summarize_, DataFrame)
 GroupedDataFrame.summarise = GroupedDataFrame.summarize
-GroupedDataFrame.summarize = _wrap(dplyr.ungroup, DataFrame)
+GroupedDataFrame.ungroup = _wrap(dplyr.ungroup, DataFrame)
 
 arrange = _make_pipe(dplyr.arrange_, DataFrame)
 distinct = _make_pipe(dplyr.distinct_, DataFrame)
