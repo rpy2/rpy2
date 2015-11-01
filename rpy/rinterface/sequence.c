@@ -1099,12 +1099,11 @@ static PyTypeObject IntVectorSexp_Type = {
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
+	0,                      /*tp_as_buffer*/
 #if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        0,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
 #else
-        0,                      /*tp_as_buffer*/
-        0,  /*tp_flags*/
+	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
 #endif
         IntVectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
@@ -1346,12 +1345,11 @@ static PyTypeObject FloatVectorSexp_Type = {
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
+	0,                      /*tp_as_buffer*/
 #if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        0,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
 #else
-        0,                      /*tp_as_buffer*/
-        0,  /*tp_flags*/
+	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
 #endif
         FloatVectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
@@ -1554,12 +1552,11 @@ static PyTypeObject StrVectorSexp_Type = {
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
+	0,                       /*tp_as_buffer*/
 #if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        0,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
 #else
-        0,                      /*tp_as_buffer*/
-        0,  /*tp_flags*/
+	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
 #endif
         StrVectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
@@ -1767,12 +1764,11 @@ static PyTypeObject BoolVectorSexp_Type = {
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
+	0,                      /*tp_as_buffer*/
 #if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        0,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
 #else
-        0,                      /*tp_as_buffer*/
-        0,  /*tp_flags*/
+	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
 #endif
         BoolVectorSexp_Type_doc,/*tp_doc*/
         0,                      /*tp_traverse*/
@@ -1934,12 +1930,11 @@ static PyTypeObject ByteVectorSexp_Type = {
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
+	0,                      /*tp_as_buffer*/
 #if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        0,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
 #else
-        0,                      /*tp_as_buffer*/
-        0,  /*tp_flags*/
+	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
 #endif
         ByteVectorSexp_Type_doc,/*tp_doc*/
         0,                      /*tp_traverse*/
@@ -2083,12 +2078,11 @@ static PyTypeObject ComplexVectorSexp_Type = {
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
+	0,                      /*tp_as_buffer*/
 #if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        0,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
 #else
-        0,                      /*tp_as_buffer*/
-        0,  /*tp_flags*/
+	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
 #endif
         ComplexVectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
@@ -2238,12 +2232,11 @@ static PyTypeObject ListVectorSexp_Type = {
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
+	0,                      /*tp_as_buffer*/
 #if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        0,                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
 #else
-        0,                      /*tp_as_buffer*/
-        0,  /*tp_flags*/
+	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
 #endif
         ListVectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
