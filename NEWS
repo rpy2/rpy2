@@ -13,6 +13,16 @@ New features
   wrapper for the R library `tidyr`
 
 
+Release 2.7.4
+=============
+
+Bugs fixed
+----------
+
+- Python 3.5 highlighted slightly incorrect C-level flags in rpy2 objects
+  declarations, and :mod:`rpy2.robjects` could not be imported
+  
+
 Release 2.7.3
 =============
 
