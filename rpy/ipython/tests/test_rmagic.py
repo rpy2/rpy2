@@ -2,10 +2,14 @@ import unittest
 from itertools import product
 
 # Currently numpy is a testing requirement, but rpy2 should work without numpy
-import numpy as np
-has_pandas = True
+try:
+    import numpy as np
+    has_numpy = True
+except:
+    has_numpy = False
 try:
     import pandas as pd
+    has_pandas = True
 except:
     has_pandas = False
 from IPython.testing.globalipapp import get_ipython
@@ -46,12 +50,14 @@ class TestRmagic(unittest.TestCase):
         if hasattr(rmagic.template_converter, 'deactivate'):
             rmagic.template_converter.deactivate()
 
+    @unittest.skipIf(not has_numpy, 'numpy not installed')
     def test_push(self):
         self.ip.push({'X':np.arange(5), 'Y':np.array([3,5,4,6,7])})
         self.ip.run_line_magic('Rpush', 'X Y')
         np.testing.assert_almost_equal(np.asarray(r('X')), self.ip.user_ns['X'])
         np.testing.assert_almost_equal(np.asarray(r('Y')), self.ip.user_ns['Y'])
 
+    @unittest.skipIf(not has_numpy, 'numpy not installed')
     def test_push_localscope(self):
         """Test that Rpush looks for variables in the local scope first."""
 
@@ -68,6 +74,7 @@ result = rmagic_addone(12344)
         np.testing.assert_equal(result, 12345)
 
     @unittest.skipUnless(has_pandas, 'pandas is not available in python')
+    @unittest.skipIf(not has_numpy, 'numpy not installed')
     def test_push_dataframe(self):
         df = pd.DataFrame([{'a': 1, 'b': 'bar'}, {'a': 5, 'b': 'foo', 'c': 20}])
         self.ip.push({'df':df})
@@ -88,12 +95,14 @@ result = rmagic_addone(12344)
         missing = r('df$c[1]')[0]
         assert np.isnan(missing), missing
 
+    @unittest.skipIf(not has_numpy, 'numpy not installed')
     def test_pull(self):
         r('Z=c(11:20)')
         self.ip.run_line_magic('Rpull', 'Z')
         np.testing.assert_almost_equal(np.asarray(r('Z')), self.ip.user_ns['Z'])
         np.testing.assert_almost_equal(self.ip.user_ns['Z'], np.arange(11,21))
 
+    @unittest.skipIf(not has_numpy, 'numpy not installed')
     def test_Rconverter(self):
         # If we get to dropping numpy requirement, we might use something
         # like the following:
@@ -144,7 +153,7 @@ result = rmagic_addone(12344)
         self.assertSequenceEqual(tuple(fromr_dataf_np['y']),
                                  tuple(dataf_np_roundtrip['y']))
         
-
+    @unittest.skipIf(not has_numpy, 'numpy not installed')
     def test_cell_magic(self):
         self.ip.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
         # For now, print statements are commented out because they print
@@ -208,6 +217,7 @@ result = rmagic_addone(12344)
             "R",
             "-i var_not_defined 1+1")
 
+    @unittest.skipIf(not has_numpy, 'numpy not installed')
     def test_png_plotting_args(self):
         '''Exercise the PNG plotting machinery'''
 
