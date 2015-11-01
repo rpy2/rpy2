@@ -20,8 +20,10 @@ Bugs fixed
 ----------
 
 - Python 3.5 highlighted slightly incorrect C-level flags in rpy2 objects
-  declarations, and :mod:`rpy2.robjects` could not be imported
+  declarations, and :mod:`rpy2.robjects` could not be imported.
   
+- Fixed unit tests for the rmagic when :mod:`numpy` is not installed.
+
 
 Release 2.7.3
 =============
