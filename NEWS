@@ -22,12 +22,13 @@ Bugs fixed
 - method :meth:`DataFrame.collect` in :mod:`rpy2.robjects.lib.dplyr`
   was not functioning.
 
-- - Applied patch by Matthias Klose to fix implict pointer conversions.
+- Applied patch by Matthias Klose to fix implict pointer conversions.
 
 - :mod:`pandas2ri.ri2py_dataframe` is now propagating the row names
   in the R data frame into an index in the pandas data frame (issue #285)
 
-- method `union` defined in the R package `dplyr` was missing from the
+- methods `union`, `intersect`, `setdiff`, `ungroup` defined in the R package
+  `dplyr` were missing from the
   `DataFrame` definition in :mod:`rpy2.robjects.lib.dplyr`
 
 
