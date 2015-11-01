@@ -273,10 +273,31 @@ class Formula(RObjectMixin, rinterface.Sexp):
                            "R environment in which the formula will look for" +
                            " its variables.")
 
+    
+class ParsedCode(rinterface.SexpVector):
+    def __init__(self, source=None):
+        self._source = source
+        super(ParsedCode, self).__init__(self)
+
+    @property
+    def source(self):
+        return self._source
+
+    
 class SourceCode(str):
-    def parse(self):
-        res = _rparse(text=ri.StrSexpVector((self,)))
+    
+    def parse(self, keep_source=True):
+        res = _rparse(text=rinterface.StrSexpVector((self,)))
+        if keep_source:
+            res = ParsedCode(res, source=self)
+        else:
+            res = ParsedCode(res, source=None)
         return res
+    
+    def as_namespace(self, name):
+        """ Name for the namespace """
+        return SignatureTranslatedAnonymousPackage(self,
+                                                   name)
 
 class R(object):
     _instance = None
