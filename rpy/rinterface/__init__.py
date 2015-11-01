@@ -1,4 +1,4 @@
-import os, sys, warnings
+import os, sys, warnings, subprocess
 
 
 try:
@@ -13,9 +13,8 @@ except AttributeError:
 try:
     R_HOME = (os.environ["R_HOME"], )
 except KeyError:
-    tmp = os.popen("R RHOME")
-    R_HOME = tmp.readlines()
-    tmp.close()
+    tmp = subprocess.check_output(("R", "RHOME"), universal_newlines=True)
+    R_HOME = tmp.split(os.linesep)
     del(tmp)
 
 if len(R_HOME) == 0:
