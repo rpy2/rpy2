@@ -132,8 +132,13 @@ result = rmagic_addone(12344)
         for col_i, col_n in enumerate(('x', 'y')):
             #np.testing.assert_array_equal(dataf_np[col_i],
             #                              fromr_dataf_np.ix[col_i].values)
-            self.assertSequenceEqual(tuple(dataf_np[col_i]),
-                                     tuple(fromr_dataf_np.ix[col_i+1].values))
+            if has_pandas:
+                self.assertSequenceEqual(tuple(dataf_np[col_i]),
+                                         tuple(fromr_dataf_np.ix[col_i+1].values))
+            else:
+                # has_numpy then
+                self.assertSequenceEqual(tuple(dataf_np[col_i]),
+                                         tuple(fromr_dataf_np[col_i]))
 
         # pandas2ri is currently making copies
         # # modify the data frame retrieved to check whether
