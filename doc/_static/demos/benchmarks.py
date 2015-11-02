@@ -231,7 +231,8 @@ p = ggplot2.ggplot(dataf) + \
 from rpy2.robjects.packages import importr
 grdevices = importr('grDevices')
 grdevices.png('../../_static/benchmark_sum.png',
-              width = 712, height = 512)
+              width=812, height=612,
+              type="cairo")
 p.plot()
 grdevices.dev_off()
 
