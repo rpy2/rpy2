@@ -62,7 +62,13 @@ rpy2demo_all: rpy2demo_graphics rpy2demo_benchmark
 
 # rule to build ipython notebooks from markdown
 notebooks/%.ipynb : notebooks/%.md
-	notedown -o $@ --run $<
+	notedown \
+                 --precode 'from functools import partial' \
+                           'from rpy2.ipython import html' \
+                           'html.html_rdataframe=partial(html.html_rdataframe, table_class="docutils")' \
+                 --run \
+                 -o $@ \
+	         $<
 	cp $@ _static/notebooks/
 
 # rule to build sphinx-friendly ReST from ipython notebooks
