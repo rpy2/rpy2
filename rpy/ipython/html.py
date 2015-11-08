@@ -51,7 +51,7 @@ template_list = jinja2.Template("""
 
 template_vector_horizontal = jinja2.Template("""
 <emph>{{ clsname }}</emph> with {{ vector | length }} elements:
-<table class="rpy2_table">
+<table class="{{ table_class }}">
 <thead>
 </thead>
 <tbody>
@@ -72,7 +72,7 @@ template_vector_horizontal = jinja2.Template("""
 
 template_vector_vertical = jinja2.Template("""
 <emph>{{ clsname }}</emph> with {{ vector | length }} elements:
-<table class="rpy2_table">
+<table class="{{ table_class }}">
 <thead>
 </thead>
 <tbody>
@@ -110,7 +110,7 @@ template_vector_vertical = jinja2.Template("""
 
 template_dataframe = jinja2.Template("""
 <emph>{{ clsname }}</emph> with {{ dataf.nrow }} rows and {{ dataf | length }} columns:
-<table class="rpy2_table">
+<table class="{{ table_class }}">
   <thead>
     <tr class="rpy2_names">
       <th></th>
@@ -257,11 +257,13 @@ class StrDataFrame(vectors.DataFrame):
 
 
 def html_vector_horizontal(vector,
-                display_ncolmax=10,
-                size_tail=2):
+                           display_ncolmax=10,
+                           size_tail=2,
+                           table_class='rpy2_table'):
     if isinstance(vector, vectors.FactorVector):
         vector = StrFactorVector(vector)
     html = template_vector_horizontal.render({
+        'table_class': table_class,
         'clsname': type(vector).__name__,
         'vector': vector,
         'display_ncolmax': min(display_ncolmax, len(vector)),
@@ -271,8 +273,10 @@ def html_vector_horizontal(vector,
 
 def html_rlist(vector,
                display_nrowmax=10,
-               size_tail=2):
+               size_tail=2,
+               table_class='rpy2_table'):
     html = template_vector_vertical.render({
+        'table_class': table_class,
         'clsname': type(vector).__name__,
         'vector': vector,
         'has_vector_names': vector.names is not rinterface.NULL,
@@ -284,9 +288,11 @@ def html_rlist(vector,
 def html_rdataframe(dataf,
                     display_nrowmax=10,
                     display_ncolmax=6,
-                    size_coltail=2, size_rowtail=2):
+                    size_coltail=2, size_rowtail=2,
+                    table_class='rpy2_table'):
     html = template_dataframe.render(
         {'dataf': StrDataFrame(dataf),
+         'table_class': table_class,
          'has_rownames': dataf.rownames is not None,
          'clsname': type(dataf).__name__,
          'display_nrowmax': min(display_nrowmax, dataf.nrow),
