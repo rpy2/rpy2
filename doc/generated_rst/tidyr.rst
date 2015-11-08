@@ -1,4 +1,10 @@
 
+.. code:: python
+
+    from functools import partial
+    from rpy2.ipython import html
+    html.html_rdataframe=partial(html.html_rdataframe, table_class="docutils")
+
 tidyr in Python
 ===============
 
@@ -19,11 +25,12 @@ frames).
 
 .. code:: python
 
+    from collections import OrderedDict
     from rpy2.robjects.vectors import (StrVector,
                                        IntVector)
-    dataf = DataFrame({'x': StrVector(("a", "b")),
-                       'y': IntVector((3, 4)),
-    		   'z': IntVector((5, 6))})
+    dataf = DataFrame(OrderedDict(x=StrVector(("a", "b", "b")),
+                                  y=IntVector((3, 4, 5)),
+    		              z=IntVector((6, 7, 8))))
     dataf
 
 
@@ -32,31 +39,38 @@ frames).
 .. raw:: html
 
     
-    <emph>DataFrame</emph> with 2 rows and 3 columns:
-    <table class="rpy2_table">
+    <emph>DataFrame</emph> with 3 rows and 3 columns:
+    <table class="docutils">
       <thead>
         <tr class="rpy2_names">
           <th></th>
           <th></th>
-          <th>y</th>
           <th>z</th>
           <th>x</th>
+          <th>y</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td class="rpy2_rowname">0</td>
             <td class="rpy2_names">1</td>
-          <td>3</td>
-          <td>5</td>
+          <td>6</td>
           <td>a</td>
+          <td>3</td>
         </tr>
         <tr>
           <td class="rpy2_rowname">1</td>
             <td class="rpy2_names">2</td>
-          <td>4</td>
-          <td>6</td>
+          <td>7</td>
           <td>b</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td class="rpy2_rowname">2</td>
+            <td class="rpy2_names">3</td>
+          <td>8</td>
+          <td>b</td>
+          <td>5</td>
         </tr>
       </tbody>
     </table>
@@ -70,9 +84,44 @@ frames).
 
 
 
-.. parsed-literal::
+.. raw:: html
 
-    '  z  a  b\n1 5  3 NA\n2 6 NA  4\n'
+    
+    <emph>DataFrame</emph> with 3 rows and 3 columns:
+    <table class="docutils">
+      <thead>
+        <tr class="rpy2_names">
+          <th></th>
+          <th></th>
+          <th>z</th>
+          <th>a</th>
+          <th>b</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="rpy2_rowname">0</td>
+            <td class="rpy2_names">1</td>
+          <td>6</td>
+          <td>3</td>
+          <td>NA</td>
+        </tr>
+        <tr>
+          <td class="rpy2_rowname">1</td>
+            <td class="rpy2_names">2</td>
+          <td>7</td>
+          <td>NA</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td class="rpy2_rowname">2</td>
+            <td class="rpy2_names">3</td>
+          <td>8</td>
+          <td>NA</td>
+          <td>5</td>
+        </tr>
+      </tbody>
+    </table>
 
 
 

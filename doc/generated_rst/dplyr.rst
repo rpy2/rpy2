@@ -1,4 +1,10 @@
 
+.. code:: python
+
+    from functools import partial
+    from rpy2.ipython import html
+    html.html_rdataframe=partial(html.html_rdataframe, table_class="docutils")
+
 dplyr in Python
 ===============
 
@@ -47,7 +53,7 @@ With this we have the choice of chaining (D3-style)
 
     
     <emph>DataFrame</emph> with 2 rows and 2 columns:
-    <table class="rpy2_table">
+    <table class="docutils">
       <thead>
         <tr class="rpy2_names">
           <th></th>
@@ -98,7 +104,7 @@ or piping (magrittr style).
 
     
     <emph>DataFrame</emph> with 2 rows and 2 columns:
-    <table class="rpy2_table">
+    <table class="docutils">
       <thead>
         <tr class="rpy2_names">
           <th></th>
@@ -129,7 +135,7 @@ The strings passed to the dplyr function are evaluated as expression,
 just like this is happening when using dplyr in R. This means that when
 writing ``mean(powertoweight)`` the R function ``mean()`` is used.
 
-Using an Python function is not too difficult though. We can just call
+Using a Python function is not too difficult though. We can just call
 Python back from R:
 
 .. code:: python
@@ -159,14 +165,14 @@ Python back from R:
 
     
     <emph>DataFrame</emph> with 2 rows and 3 columns:
-    <table class="rpy2_table">
+    <table class="docutils">
       <thead>
         <tr class="rpy2_names">
           <th></th>
           <th></th>
           <th>gear</th>
-          <th>mean_ptw</th>
           <th>mean_np_ptw</th>
+          <th>mean_ptw</th>
         </tr>
       </thead>
       <tbody>
@@ -174,15 +180,15 @@ Python back from R:
           <td class="rpy2_rowname">0</td>
             <td class="rpy2_names">1</td>
           <td>4.0</td>
-          <td>1237.1266499803169</td>
           <td>1237.126649980317</td>
+          <td>1237.1266499803169</td>
         </tr>
         <tr>
           <td class="rpy2_rowname">1</td>
             <td class="rpy2_names">2</td>
           <td>5.0</td>
-          <td>2574.0331639315027</td>
           <td>2574.0331639315023</td>
+          <td>2574.0331639315027</td>
         </tr>
       </tbody>
     </table>
@@ -220,14 +226,14 @@ function in R's global environment.
 
     
     <emph>DataFrame</emph> with 2 rows and 3 columns:
-    <table class="rpy2_table">
+    <table class="docutils">
       <thead>
         <tr class="rpy2_names">
           <th></th>
           <th></th>
           <th>gear</th>
-          <th>mean_ptw</th>
           <th>mean_np_ptw</th>
+          <th>mean_ptw</th>
         </tr>
       </thead>
       <tbody>
@@ -235,15 +241,15 @@ function in R's global environment.
           <td class="rpy2_rowname">0</td>
             <td class="rpy2_names">1</td>
           <td>4.0</td>
-          <td>1237.1266499803169</td>
           <td>1237.126649980317</td>
+          <td>1237.1266499803169</td>
         </tr>
         <tr>
           <td class="rpy2_rowname">1</td>
             <td class="rpy2_names">2</td>
           <td>5.0</td>
-          <td>2574.0331639315027</td>
           <td>2574.0331639315023</td>
+          <td>2574.0331639315027</td>
         </tr>
       </tbody>
     </table>
@@ -278,7 +284,7 @@ implementation of ``dplyr``, it *just works*.
 
 .. parsed-literal::
 
-    Source: sqlite 3.8.6 [/tmp/tmp2nueqllw]
+    Source: sqlite 3.8.6 [/tmp/tmppe4vc_96]
     From: <derived table> [?? x 2]
     
         gear mean_ptw
@@ -327,7 +333,7 @@ start over again.
     <class 'pandas.core.frame.DataFrame'>
 
 
-Using a local converter let's us also go from the pandas data frame to
+Using a local converter lets us also go from the pandas data frame to
 our dplyr-augmented R data frame.
 
 .. code:: python
@@ -348,7 +354,7 @@ our dplyr-augmented R data frame.
 
     
     <emph>DataFrame</emph> with 3 rows and 2 columns:
-    <table class="rpy2_table">
+    <table class="docutils">
       <thead>
         <tr class="rpy2_names">
           <th></th>

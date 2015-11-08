@@ -1,4 +1,10 @@
 
+.. code:: python
+
+    from functools import partial
+    from rpy2.ipython import html
+    html.html_rdataframe=partial(html.html_rdataframe, table_class="docutils")
+
 Basic handling
 ==============
 
@@ -134,7 +140,7 @@ wrap the object in our Python class ``ExpressionSet``:
 
 .. parsed-literal::
 
-    <ExpressionSet - Python:0x7fc73404cd88 / R:0x4370d48>
+    <ExpressionSet - Python:0x7f73e12be5c8 / R:0x27efad8>
 
 
 
@@ -203,7 +209,7 @@ method ``exprs()`` in R. We can make it a property in our Python class:
 
 .. parsed-literal::
 
-    <Environment - Python:0x7fc72f894708 / R:0x41b6c40>
+    <Environment - Python:0x7f73e1f71448 / R:0x439ebf0>
 
 
 
