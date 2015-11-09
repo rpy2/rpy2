@@ -1,4 +1,10 @@
 
+.. code:: python
+
+    from functools import partial
+    from rpy2.ipython import html
+    html.html_rdataframe=partial(html.html_rdataframe, table_class="docutils")
+
 Introduction to rpy2
 ====================
 
@@ -213,7 +219,7 @@ Example:
 
 .. parsed-literal::
 
-    <FloatVector - Python:0x7f86fc02c948 / R:0x2e3b9e8>
+    <FloatVector - Python:0x7f888b479788 / R:0x331f1f8>
     [18.849556]
 
 
@@ -431,7 +437,7 @@ setupggplot2-begin :end-before: #-- setupggplot2-end
 ggplot2smoothbycylwithcolours-begin :end-before: #--
 ggplot2smoothbycylwithcolours-end
 
-.. image:: *static/graphics*\ ggplot2\_smoothbycylwithcolours.png
+.. image:: \_static/graphics\_ggplot2\_smoothbycylwithcolours.png
 :scale: 50
 
 More about plots and graphics in R, as well as more advanced plots are
@@ -496,7 +502,7 @@ data structure or reading the R man pages for ``lm`` would tell us.
 Checking its element names is then trivial:
 
             | print(lm\_D9.names) [1] "coefficients" "residuals"
-            "effects" "rank"
+              "effects" "rank"
             |  [5] "fitted.values" "assign" "qr" "df.residual"
             |  [9] "contrasts" "xlevels" "call" "terms"
             | [13] "model"
