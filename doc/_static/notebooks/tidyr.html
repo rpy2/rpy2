@@ -169,6 +169,21 @@ div#notebook {
   <div tabindex="-1" id="notebook" class="border-box-sizing">
     <div class="container" id="notebook-container">
 
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">rpy2.ipython</span> <span class="k">import</span> <span class="n">html</span>
+<span class="n">html</span><span class="o">.</span><span class="n">html_rdataframe</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">html</span><span class="o">.</span><span class="n">html_rdataframe</span><span class="p">,</span> <span class="n">table_class</span><span class="o">=</span><span class="s">&quot;docutils&quot;</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
 <div class="cell border-box-sizing text_cell rendered">
 <div class="prompt input_prompt">
 </div>
@@ -180,7 +195,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span class="kn">from</span> <span class="nn">rpy2.robjects.lib.tidyr</span> <span class="k">import</span> <span class="n">DataFrame</span>
@@ -206,7 +221,7 @@ R data frames).</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">rpy2.ipython.html</span>
@@ -220,7 +235,7 @@ R data frames).</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
@@ -240,19 +255,19 @@ R data frames).</p>
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[3]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[4]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
 <emph>DataFrame</emph> with 3 rows and 3 columns:
-<table class="rpy2_table">
+<table class="docutils">
   <thead>
     <tr class="rpy2_names">
       <th></th>
       <th></th>
       <th>z</th>
-      <th>x</th>
       <th>y</th>
+      <th>x</th>
     </tr>
   </thead>
   <tbody>
@@ -260,22 +275,22 @@ R data frames).</p>
       <td class="rpy2_rowname">0</td>
         <td class="rpy2_names">1</td>
       <td>6</td>
-      <td>a</td>
       <td>3</td>
+      <td>a</td>
     </tr>
     <tr>
       <td class="rpy2_rowname">1</td>
         <td class="rpy2_names">2</td>
       <td>7</td>
-      <td>b</td>
       <td>4</td>
+      <td>b</td>
     </tr>
     <tr>
       <td class="rpy2_rowname">2</td>
         <td class="rpy2_names">3</td>
       <td>8</td>
-      <td>b</td>
       <td>5</td>
+      <td>b</td>
     </tr>
   </tbody>
 </table>
@@ -289,7 +304,7 @@ R data frames).</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span class="n">dataf</span><span class="o">.</span><span class="n">spread</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">)</span>
@@ -303,12 +318,12 @@ R data frames).</p>
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[4]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[5]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
 <emph>DataFrame</emph> with 3 rows and 3 columns:
-<table class="rpy2_table">
+<table class="docutils">
   <thead>
     <tr class="rpy2_names">
       <th></th>
