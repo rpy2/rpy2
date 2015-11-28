@@ -10,19 +10,35 @@ Functions
 
 .. note::
 
-   This section is about calling R functions from Python. To make Python functions
+   This section is about calling R functions from Python.
+   To make Python functions
    callable by R, see the low-level function :func:`rpy2.rinterface.rternalize`.
 
-R functions are callable objects, and can be called almost like any regular
-Python function:
+R functions exposed by :mod:`rpy2`'s high-level interface can be used:
 
->>> plot = robjects.r.get('plot')
->>> rnorm = robjects.r.get('rnorm')
->>> plot(rnorm(100), ylab="random")
+- like any regular Python function as they are callable objects
+  (see Section `Callable`)
+- through their method :meth:`rcall` (see Section `rcall`)
+
+
+Callable
+--------
+
+.. code-block:: python
+		
+   from rpy2.robjects.packages import importr
+   base = importr('base')
+   stats = importr('stats')
+   graphics = importr('graphics')
+   
+   plot = graphics.plot
+   rnorm = stats.rnorm
+   plot(rnorm(100), ylab="random")
 
 This is all looking fine and simple until R arguments with names 
 such as `na.rm` are encountered. By default, this is addressed by
-having a translation of '.' (dot) in the R argument name into a '_' in the Python
+having a translation of '.' (dot) in the R argument name into a
+'_' in the Python
 argument name.
 
 Let's take an example in R:
@@ -30,6 +46,8 @@ Let's take an example in R:
 .. code-block:: r
 
    rank(0, na.last = TRUE)
+   # or without the implicit namespace:
+   base::(0, na.last = TRUE)
 
 In Python one can write:
 
@@ -128,6 +146,43 @@ by a function through the function `formals()`, modelled as a method of
    will return non-null `formals`.
 
 
+:meth:`rcall`
+-------------
+
+The method :meth:`rcall` can be used to specify an R environment
+in which the function should be evaluated.
+
+.. code-block:: python
+		
+   from rpy2.robjects.packages import importr
+   base = importr('base')
+   stats = importr('stats')
+   graphics = importr('graphics')
+   
+   plot = graphics.plot
+   rnorm = stats.rnorm
+
+   from rpy2.robjects import globalenv
+   args = (('x', rnorm(100)),)
+   plot.rcall(args, globalenv)
+
+In the example above the label for y-axis is inferred from the call (in R,
+using the function `deparse()` and this is producing rather undesirable
+long labels.
+
+The method :meth:`rcall` can help overcome this by letting one use
+an environment in which the R objects can be bound to a symbol (a name).
+The call above can then become:
+   
+.. code-block:: python
+
+   from rpy2.robjects import Environment
+   env = Environment()
+   env['x'] = rnorm(100)
+   args = (('x', base.as_symbol('x')),)
+   plot.rcall(args, env)
+
+   
 The R functions as defined in :mod:`rpy2.robjects` inherit from the class
 :class:`rpy2.rinterface.SexpClosure`, and further documentation
 on the behavior of function can be found in Section :ref:`rinterface-functions`.
