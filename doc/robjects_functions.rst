@@ -21,7 +21,7 @@ R functions exposed by :mod:`rpy2`'s high-level interface can be used:
 - through their method :meth:`rcall` (see Section :ref:`robjects-functions-rcall`)
 
 
-.. _robjects-functions-callable
+.. _robjects-functions-callable:
 
 Callable
 --------
@@ -155,7 +155,7 @@ by a function through the function `formals()`, modelled as a method of
    will return non-null `formals`.
 
 
-.. _robjects-functions-callable
+.. _robjects-functions-rcall:
 
 :meth:`rcall`
 -------------
