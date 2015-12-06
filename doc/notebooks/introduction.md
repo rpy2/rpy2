@@ -73,10 +73,10 @@ More documentation about the handling of R packages in `rpy2` can be found Secti
 ## The `r` instance
 
 
-The object :data:`r` in :mod:`rpy2.robjects` represents the running embedded
+The object `r` in `rpy2.robjects` represents the embedded
 `R` process.
 
-If familiar with R and the R console, :data:`r` is a little like a
+If familiar with R and the R console, `r` is a little like a
 communication channel from Python to R.
 
 
@@ -100,26 +100,30 @@ pi = robjects.r['pi']
 pi[0]
 ```
 
-.. note::
-
+<div style="border: solid 1px rgb(50,50,50)">
+<p>
    Under the hood, the variable `pi` is gotten by default from the
    R *base* package, unless an other variable with the name `pi` was
    created in R's `.globalEnv`. 
-   
+</p>
+<p>
    Whenever one wishes to be specific about where the symbol
    should be looked for (which should be most of the time),
    it possible to wrap R packages in Python namespace objects
-   (see :ref:`robjects-packages`).
-   
+   (see Section `robjects-packages`).
+</p>
+<p>
    For more details on environments, see Section 
-   :ref:`robjects-environments`.
-
-   Also, note that *pi* is not a scalar but a vector of length 1
-
+   `robjects-environments`.
+</p>
+<p>
+   Also, note that *pi* is not a scalar but a vector of length 1.
+</p>
+</div>
 
 ### Evaluating R code
 
-The :data:`r` object is also callable, and the string passed to it evaluated
+The `r` object is also callable, and the string passed to it evaluated
 as `R` code.
 
 This can be used to `get` variables, and provide an alternative to
@@ -131,24 +135,26 @@ Example in R:
 pi
 ```
 
-With :mod:`rpy2`:
+With `rpy2`:
 
 ```python
 pi = robjects.r('pi')
 pi[0]
 ```
 
-.. warning::
+<div style="border: solid 1px rgb(50,50,50)">
 
    The result is an R vector. The Section
-   :ref:`introduction-vectors` below will provide explanation
+   `introduction-vectors` will provide an explanation
    for the following behavior:
 
+</div>
+
 ```python
-   >>> piplus2 = robjects.r('pi') + 2
-   >>> piplus2.r_repr()
-   >>> pi0plus2 = robjects.r('pi')[0] + 2
-   >>> print(pi0plus2)
+piplus2 = robjects.r('pi') + 2
+print(piplus2.r_repr())
+pi0plus2 = robjects.r('pi')[0] + 2
+print(pi0plus2)
 ```
 
 The evaluation is performed in what is known to R users as the 
@@ -181,17 +187,22 @@ r_f = robjects.globalenv['f']
 print(r_f.r_repr())
 ```
 
-.. note:: 
+<div style="border: solid 1px rgb(50,50,50)">
 
    As shown earlier, an alternative way to get the function
    is to get it from the :class:`R` singleton
 
+   ```
    >>> r_f = robjects.r['f']
+   ```
 
+</div>
 
 The function r_f is callable, and can be used like a regular Python function.
 
->>> res = r_f(3)
+```python
+res = r_f(3)
+```
 
 Jump to Section :ref:`robjects-introduction-functions` for more on calling
 functions.
@@ -208,12 +219,12 @@ directly into R code to be evaluated.
 
 Simple example:
 
->>> letters = robjects.r['letters']
->>> rcode = 'paste(%s, collapse="-")' %(letters.r_repr())
->>> res = robjects.r(rcode)
->>> print(res)
-"a-b-c-d-e-f-g-h-i-j-k-l-m-n-o-p-q-r-s-t-u-v-w-x-y-z"
-
+```python
+letters = robjects.r['letters']
+rcode = 'paste(%s, collapse="-")' %(letters.r_repr())
+res = robjects.r(rcode)
+print(res)
+```
 
 .. _introduction-vectors:
 
