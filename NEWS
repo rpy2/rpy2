@@ -13,6 +13,16 @@ New features
   wrapper for the R library `tidyr`
 
 
+Release 2.7.5
+=============
+
+Bugs fixed
+----------
+
+- division and floordivision through the delegator `.ro` provided with
+  R vectors wrapped by `robjects`.
+  
+
 Release 2.7.4
 =============
 
