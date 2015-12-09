@@ -158,10 +158,18 @@ class VectorOperationsDelegator(object):
         res = globalenv_ri.get("^")(self._parent, conversion.py2ri(x))
         return conversion.ri2ro(res)
 
-    def __div__(self, x):
-        res = globalenv_ri.get("/")(self._parent, conversion.py2ri(x))
-        return conversion.ri2ro(res)
-
+    if sys.version_info[0] == 2:
+        def __div__(self, x):
+            res = globalenv_ri.get("/")(self._parent, conversion.py2ri(x))
+            return conversion.ri2ro(res)
+    else:
+        def __floordiv__(self, x):
+            res = globalenv_ri.get("%/%")(self._parent, conversion.py2ri(x))
+            return conversion.ri2ro(res)
+        def __truediv__(self, x):
+            res = globalenv_ri.get("/")(self._parent, conversion.py2ri(x))
+            return conversion.ri2ro(res)        
+        
     def __divmod__(self, x):
         res = globalenv_ri.get("%%")(self._parent, conversion.py2ri(x))
         return conversion.ri2ro(res)
