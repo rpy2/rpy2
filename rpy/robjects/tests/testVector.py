@@ -285,13 +285,13 @@ class ExtractDelegatorTestCase(unittest.TestCase):
 
         
     def testFloorDivision(self):
-        x = robjects.vectors.IntVector((2,3,4))
+        v = robjects.vectors.IntVector((2,3,4))
         if sys.version_info[0] == 2:
             # integer division with Python 2
-            res = x.ro / 2
+            res = v.ro / 2
         else:
-            res = x.ro // 2
-        self.assertEqual((1,1,2), tuple(res))
+            res = v.ro // 2
+        self.assertEqual((1,1,2), tuple(int(x) for x in res))
             
     def testExtractByIndex(self):
         seq_R = robjects.baseenv["seq"]
