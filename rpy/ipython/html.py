@@ -203,24 +203,35 @@ template_ridentifiedobject = jinja2.Template("""
 """)
 
 template_rs4 = jinja2.Template("""
-<ul style="list-style-type: none;">
-<li>{{ clsname }} object</li>
-<li>Origin in R: {{ origin }}</li>
-<li>Class(es) in R:
-  <ul>
+<table class="{{ table_class }}">
+<tr>
+  <th colspan="2">{{ clsname }} object</th>
+</tr>
+<tr>
+  <th>Origin in R:</th>
+  <td> {{ origin }}</td>
+</tr>
+<tr>
+  <th>Class(es) in R:</th>
+  <td>
+    <ul>
   {%- for rclsname in obj.rclass %}
-    <li>{{ rclsname }}</li>
+      <li>{{ rclsname }}</li>
   {%- endfor %}
-  </ul>
-</li>
-<li> Attributes:
+    </ul>
+  </td>
+</tr>
+<tr>
+  <th>Attributes:</th>
+  <td>
   <ul>
   {%- for sln in obj.slotnames() %}
     <li>{{ sln }}</li>
   {%- endfor %}
   </ul>
-</li>
-</ul>
+  </td>
+</tr>
+</table>
 """)
 
 template_sourcecode = jinja2.Template("""
@@ -354,8 +365,9 @@ def html_ridentifiedobject(obj):
     html = template_ridentifiedobject.render(d)
     return html
 
-def html_rs4(obj):
+def html_rs4(obj, table_class='rpy2_table'):
     d = _dict_ridentifiedobject(obj)
+    d['table_class']=table_class
     html = template_rs4.render(d)
     return html
 
