@@ -287,7 +287,6 @@ class ExtractDelegatorTestCase(unittest.TestCase):
     def testFloorDivision(self):
         v = robjects.vectors.IntVector((2,3,4))
         if sys.version_info[0] == 2:
-            # integer division with Python 2
             res = v.ro / 2
         else:
             res = v.ro // 2

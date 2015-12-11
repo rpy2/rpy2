@@ -4,8 +4,11 @@ Release 2.7.5
 Bugs fixed
 ----------
 
-- division and floordivision through the delegator `.ro` provided with
-  R vectors wrapped by `robjects`.
+- Division and floordivision through the delegator `.ro` provided with
+  R vectors wrapped by `robjects`. (issue #320)
+
+- Memory leak when unserializing (unpickling) R objects bundled in Python
+  objects (issue #321)
   
 
 Release 2.7.4
