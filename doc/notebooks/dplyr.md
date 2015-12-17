@@ -61,18 +61,25 @@ just like this is happening when using dplyr in R. This means that
 when writing `mean(powertoweight)` the R function `mean()` is used.
 
 Using a Python function is not too difficult though. We can just
-call Python back from R:
+call Python back from R. To achieve this we simply
+use the decorator `rternalize`.
 
 ```python
+# Define a python function, and make
+# it a function R can use through `rternalize`
 from rpy2.rinterface import rternalize
 @rternalize
 def mean_np(x):
     import numpy
     return numpy.mean(x)
 
+# Bind that function to a symbol in R's
+# global environment
 from rpy2.robjects import globalenv
 globalenv['mean_np'] = mean_np
 
+# Write a dplyr chain of operations,
+# using our Python function `mean_np`
 dataf = (DataFrame(mtcars) >>
          filter('gear>3') >>
          mutate(powertoweight='hp*36/wt') >>
