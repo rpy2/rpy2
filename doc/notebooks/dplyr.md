@@ -147,24 +147,31 @@ to us. If we want to see the SQL code generated that's:
 print(res.rx2("query")["sql"])
 ```
 
-And if the starting point is a pandas data frame,
-do the following and start over again.
+The conversion rules in rpy2 make the above easily applicable to pandas data frames,
+completing the "lexical loan" of the dplyr vocabulary from R.
+
 
 ```python 
 from rpy2.robjects import pandas2ri
 from rpy2.robjects import default_converter
 from rpy2.robjects.conversion import localconverter
+
+# Using a conversion context in which the pandas conversion is
+# added to the default conversion rules, the rpy2 object
+# `mtcars` (an R data frame) is converted to a pandas data frame.
 with localconverter(default_converter + pandas2ri.converter) as cv:
     mtcars = mtcars_env['mtcars']
-    mtcars = pandas2ri.ri2py(mtcars)
-print(type(mtcars))
+    pd_mtcars = pandas2ri.ri2py(mtcars)
+print(type(pd_mtcars))
 ```
 
-Using a local converter lets us also go from the pandas data frame to our dplyr-augmented R data frame.
+Using a local converter lets us also go from the pandas data frame
+to our dplyr-augmented R data frame and use the dplyr transformations
+on it.
 
 ```python
 with localconverter(default_converter + pandas2ri.converter) as cv:
-    dataf = (DataFrame(mtcars).
+    dataf = (DataFrame(pd_mtcars).
              filter('gear>=3').
              mutate(powertoweight='hp*36/wt').
              group_by('gear').
