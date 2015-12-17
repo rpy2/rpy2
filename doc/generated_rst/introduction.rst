@@ -80,10 +80,10 @@ found Section :ref:``robjects-packages``.
 The ``r`` instance
 ------------------
 
-The object :data:``r`` in :mod:``rpy2.robjects`` represents the running
-embedded ``R`` process.
+The object ``r`` in ``rpy2.robjects`` represents the embedded ``R``
+process.
 
-If familiar with R and the R console, :data:``r`` is a little like a
+If familiar with R and the R console, ``r`` is a little like a
 communication channel from Python to R.
 
 Getting R objects
@@ -124,26 +124,64 @@ With :mod:``rpy2``:
 
 
 
-.. note::
+.. raw:: html
+
+   <div style="border: solid 1px rgb(50,50,50)">
+
+.. raw:: html
+
+   <p>
 
 Under the hood, the variable ``pi`` is gotten by default from the R
 *base* package, unless an other variable with the name ``pi`` was
 created in R's ``.globalEnv``.
 
+.. raw:: html
+
+   </p>
+
+.. raw:: html
+
+   <p>
+
 Whenever one wishes to be specific about where the symbol should be
 looked for (which should be most of the time), it possible to wrap R
-packages in Python namespace objects (see :ref:``robjects-packages``).
+packages in Python namespace objects (see Section
+``robjects-packages``).
 
-For more details on environments, see Section
-:ref:``robjects-environments``.
+.. raw:: html
 
-Also, note that *pi* is not a scalar but a vector of length 1
+   </p>
+
+.. raw:: html
+
+   <p>
+
+For more details on environments, see Section ``robjects-environments``.
+
+.. raw:: html
+
+   </p>
+
+.. raw:: html
+
+   <p>
+
+Also, note that *pi* is not a scalar but a vector of length 1.
+
+.. raw:: html
+
+   </p>
+
+.. raw:: html
+
+   </div>
 
 Evaluating R code
 ~~~~~~~~~~~~~~~~~
 
-The :data:``r`` object is also callable, and the string passed to it
-evaluated as ``R`` code.
+The ``r`` object is also callable, and the string passed to it evaluated
+as ``R`` code.
 
 This can be used to ``get`` variables, and provide an alternative to the
 method presented above.
@@ -161,7 +199,7 @@ Example in R:
     ERROR: Cell magic `%%R` not found.
 
 
-With :mod:``rpy2``:
+With ``rpy2``:
 
 .. code:: python
 
@@ -177,21 +215,28 @@ With :mod:``rpy2``:
 
 
 
-.. warning::
+.. raw:: html
 
-The result is an R vector. The Section :ref:``introduction-vectors``
-below will provide explanation for the following behavior:
+   <div style="border: solid 1px rgb(50,50,50)">
+
+The result is an R vector. The Section ``introduction-vectors`` will
+provide an explanation for the following behavior:
+
+.. raw:: html
+
+   </div>
 
 .. code:: python
 
-       >>> piplus2 = robjects.r('pi') + 2
-       >>> piplus2.r_repr()
-       >>> pi0plus2 = robjects.r('pi')[0] + 2
-       >>> print(pi0plus2)
+    piplus2 = robjects.r('pi') + 2
+    print(piplus2.r_repr())
+    pi0plus2 = robjects.r('pi')[0] + 2
+    print(pi0plus2)
 
 
 .. parsed-literal::
 
+    c(3.14159265358979, 2)
     5.141592653589793
 
 
@@ -219,7 +264,7 @@ Example:
 
 .. parsed-literal::
 
-    <FloatVector - Python:0x7efe12b70148 / R:0x3baaa58>
+    <FloatVector - Python:0x7f6331892a08 / R:0x2e3a198>
     [18.849556]
 
 
@@ -246,17 +291,25 @@ mechanism outlined above:
     }
 
 
-.. note::
+.. raw:: html
+
+   <div style="border: solid 1px rgb(50,50,50)">
 
 As shown earlier, an alternative way to get the function is to get it
 from the :class:``R`` singleton
 
-            r\_f = robjects.r['f']
+``>>> r_f = robjects.r['f']``
+
+.. raw:: html
+
+   </div>
 
 The function r\_f is callable, and can be used like a regular Python
 function.
 
-            res = r\_f(3)
+.. code:: python
+
+    res = r_f(3)
 
 Jump to Section :ref:``robjects-introduction-functions`` for more on
 calling functions.
@@ -272,10 +325,19 @@ code to be evaluated.
 
 Simple example:
 
-            letters = robjects.r['letters'] rcode = 'paste(%s,
-            collapse="-")' %(letters.r\_repr()) res = robjects.r(rcode)
-            print(res)
-            "a-b-c-d-e-f-g-h-i-j-k-l-m-n-o-p-q-r-s-t-u-v-w-x-y-z"
+.. code:: python
+
+    letters = robjects.r['letters']
+    rcode = 'paste(%s, collapse="-")' %(letters.r_repr())
+    res = robjects.r(rcode)
+    print(res)
+
+
+.. parsed-literal::
+
+    [1] "a-b-c-d-e-f-g-h-i-j-k-l-m-n-o-p-q-r-s-t-u-v-w-x-y-z"
+    
+
 
 .. \_introduction-vectors:
 

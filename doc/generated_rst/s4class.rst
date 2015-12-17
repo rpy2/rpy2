@@ -140,7 +140,7 @@ wrap the object in our Python class ``ExpressionSet``:
 
 .. parsed-literal::
 
-    <ExpressionSet - Python:0x7f73e12be5c8 / R:0x27efad8>
+    <ExpressionSet - Python:0x7f730ee4d088 / R:0x29831c0>
 
 
 
@@ -209,7 +209,7 @@ method ``exprs()`` in R. We can make it a property in our Python class:
 
 .. parsed-literal::
 
-    <Environment - Python:0x7f73e1f71448 / R:0x439ebf0>
+    <Environment - Python:0x7f730ee59d08 / R:0x4ca6b48>
 
 
 
