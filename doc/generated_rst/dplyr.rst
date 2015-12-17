@@ -291,7 +291,7 @@ implementation of ``dplyr``, it *just works*.
 
 .. parsed-literal::
 
-    Source: sqlite 3.8.6 [/tmp/tmpnj1gw8vi]
+    Source: sqlite 3.8.6 [/tmp/tmpk2r9u4gk]
     From: <derived table> [?? x 2]
     
         gear mean_ptw
@@ -321,18 +321,23 @@ available to us. If we want to see the SQL code generated that's:
     
 
 
-And if the starting point is a pandas data frame, do the following and
-start over again.
+The conversion rules in rpy2 make the above easily applicable to pandas
+data frames, completing the "lexical loan" of the dplyr vocabulary from
+R.
 
 .. code:: python
 
     from rpy2.robjects import pandas2ri
     from rpy2.robjects import default_converter
     from rpy2.robjects.conversion import localconverter
+    
+    # Using a conversion context in which the pandas conversion is
+    # added to the default conversion rules, the rpy2 object
+    # `mtcars` (an R data frame) is converted to a pandas data frame.
     with localconverter(default_converter + pandas2ri.converter) as cv:
         mtcars = mtcars_env['mtcars']
-        mtcars = pandas2ri.ri2py(mtcars)
-    print(type(mtcars))
+        pd_mtcars = pandas2ri.ri2py(mtcars)
+    print(type(pd_mtcars))
 
 
 .. parsed-literal::
@@ -341,12 +346,13 @@ start over again.
 
 
 Using a local converter lets us also go from the pandas data frame to
-our dplyr-augmented R data frame.
+our dplyr-augmented R data frame and use the dplyr transformations on
+it.
 
 .. code:: python
 
     with localconverter(default_converter + pandas2ri.converter) as cv:
-        dataf = (DataFrame(mtcars).
+        dataf = (DataFrame(pd_mtcars).
                  filter('gear>=3').
                  mutate(powertoweight='hp*36/wt').
                  group_by('gear').
