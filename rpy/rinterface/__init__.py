@@ -156,14 +156,6 @@ else:
     def consolePrint(x):
         sys.stdout.write(x)
 
-def set_writeconsole(func):
-    DeprecationWarning("set_writeconsole is deprecated. Use set_writeconsole_regular or set_writeconsole_warnerror")
-    set_writeconsole_regular(func)
-
-def get_writeconsole():
-    DeprecationWarning("get_writeconsole is deprecated. Use get_writeconsole_regular or get_writeconsole_warnerror")
-    return get_writeconsole_regular()
-
 set_writeconsole_regular(consolePrint)
 
 set_writeconsole_warnerror(warnings.warn)

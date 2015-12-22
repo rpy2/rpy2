@@ -12,6 +12,12 @@ New features
 - New module :mod:`rpy2.robjects.lib.tidyr` providing a custom
   wrapper for the R library `tidyr`
 
+- The long-deprecated functions :func:`rpy2.rinterface.set_writeconsole` and
+  :func:`rpy2.rinterface.get_writeconsole` are no longer available. One of
+  :func:`rpy2.rinterface.set_writeconsole_regular` / :func:`rpy2.rinterface.set_writeconsole_warnerror`
+  or :func:`rpy2.rinterface.get_writeconsole_regular` / :func:`rpy2.rinterface.get_writeconsole_warnerror`
+  respectively should be used instead.
+  
 
 Release 2.7.5
 =============
