@@ -18,6 +18,9 @@ New features
   or :func:`rpy2.rinterface.get_writeconsole_regular` / :func:`rpy2.rinterface.get_writeconsole_warnerror`
   respectively should be used instead.
   
+- The attribute :attr:`rpy2.robjects.RObject.slots` can now be implictly interated on
+  (the method :meth:`__iter__` is now an alias for :meth:`keys`).
+
 
 Release 2.7.5
 =============

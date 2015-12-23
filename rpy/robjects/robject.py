@@ -20,12 +20,11 @@ class RSlots(object):
     
     def __init__(self, robj):
         self._robj = weakref.proxy(robj)
-
         
     def __getitem__(self, key):
         value = self._robj.do_slot(key)
         return conversion.ri2ro(value)
-        
+
     def __setitem__(self, key, value):
         rpy2_value = conversion.py2ri(value)
         self._robj.do_slot_assign(key, rpy2_value)
@@ -37,6 +36,8 @@ class RSlots(object):
         for k in self._robj.list_attrs():
             yield k
 
+    __iter__=keys
+    
     def items(self):
         for k in self._robj.list_attrs():
             v = self[key]
