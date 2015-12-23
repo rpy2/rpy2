@@ -26,6 +26,7 @@
 
 static int embeddedR_isinitialized;
 
+/* Return whether R has been initialized */
 int
 rpy2_isinitialized(void)
 {
@@ -33,6 +34,7 @@ rpy2_isinitialized(void)
   return res;
 }
 
+/* Set the R initialization flag (not part of R's API, unfortunately). */
 int
 rpy2_setinitialized(void)
 {
