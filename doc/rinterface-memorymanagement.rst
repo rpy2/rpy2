@@ -28,24 +28,36 @@ from garbage collection, is available from Python (obviously read-only):
 
 That counter will increment each time a new Python reference to it is created.
 
->>> letters = ri.letters['letters']
+>>> letters = ri.baseenv['letters']
 >>> letters.__sexp_refcount__
-2
->>> letters_again = ri.letters['letters']
->>> letters_again.__sexp_refcount__
-3
->>> letters.__sexp_refcount__
-3
+1
+>>> letters_again = ri.baseenv['letters']
+>>> # check that the R ID is the same
 >>> letters_again.rid == letters.rid
 True
+>>> # reference count has increased
+>>> letters_again.__sexp_refcount__
+2
+>>> letters.__sexp_refcount__
+2
 
+
+A list of all R IDs protected from garbage collection by rpy2
+along with their reference count can be obtained by calling
+:func:`rpy2.rinterface.protected_rids`.
+      
+>>> letters.rid in set(x[0] for x in ri.protected_rids())
+True
+>>> [x[1] for x in ri.protected_rids() if x[0]==letters.rid]
+2
 
 .. note::
 
    The exact count will depend on what has happened with the current Python
    process, that is whether the R object is already tracked by rpy2 or not.
 
-   
+
+
 To achieve this, and keep close to the pass-by-reference approach in Python,
 the :c:type:`SexpObject` for a given R object is not part of a Python object
 representing it. The Python object only holds a reference to it,
