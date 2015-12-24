@@ -88,9 +88,12 @@ a counter is increased and decreased as other Python objects
 expose it as well.
 
 At the C level, the `struct` :c:type:`SexpObject` is defined as:
-- a reference count on the Python side,
+
+- a reference count on the Python side
+
 - a possible future reference count on the R side
   (currently unused)
+  
 - a pointer to the R :c:type:`SEXPREC`
 
 .. code-block:: c
