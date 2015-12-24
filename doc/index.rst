@@ -70,6 +70,7 @@ Documentation for rpy2
       :maxdepth: 3
 
       rinterface
+      rinterface-memorymanagement
 
    Finally, the documentation covers the subpackage with R-like Python classes
    and functions, callback functions, as well as compatibility with rpy-1.x.
@@ -101,6 +102,7 @@ Documentation for rpy2
       interactive
       numpy
       rinterface
+      rinterface-memorymanagement
       rlike
       miscellaneous
 

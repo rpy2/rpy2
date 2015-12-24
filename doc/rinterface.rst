@@ -404,12 +404,11 @@ Classes
 
 The class :class:`Sexp` is the base class for all R objects.
 
-
 .. class:: Sexp
 
    .. attribute:: __sexp__
 
-      Opaque C pointer to the underlying R object
+      Python C capsule wrapping the pointer to the underlying R object (`SEXP`)
 
    .. attribute:: named
 
@@ -467,6 +466,28 @@ The class :class:`Sexp` is the base class for all R objects.
 
 .. .. autoclass:: rpy2.rinterface.Sexp
 ..   :members:
+
+
+Underlying R object
+^^^^^^^^^^^^^^^^^^^
+
+The underlying R object is a pointer to a c:type::`SEXPREC` as defined in R's
+`Rinternals.h`. That object is wrapped in a c:type::`SexpObj` and placed in
+a Python capsule.
+
+The capsule is providing a relatively safe mechanism to exchange underlying
+R objects between rpy2 objects.
+
+.. code-block:: python
+
+   from rpy2.rinterface import SexpIntVector, SexpFloatVector
+   vector1=SexpIntVector((1, 2, 3))
+   vector2=SexpFloatVector((4.0, 5.0, 6.0))
+
+   vector1.__sexp__ = vector2.__sexp_
+
+
+
 
 
 
