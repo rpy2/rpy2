@@ -184,7 +184,7 @@ typedef struct {
 
 
   /* C API functions */
-#define PyRinterface_API_NAME "rpy2.rinterface._rinterface._C_API"
+#define PyRinterface_API_NAME "rpy2.rinterface._rinterface.SEXPOBJ_C_API"
   /* -- check initialization */
 #define PyRinterface_IsInitialized_NUM 0
 #define PyRinterface_IsInitialized_RETURN int

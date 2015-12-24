@@ -3825,7 +3825,7 @@ PyInit__rinterface(void)
     return NULL;
 #endif
   } else {
-    PyModule_AddObject(m, "_C_API", c_api_object);
+    PyModule_AddObject(m, "SEXPOBJ_C_API", c_api_object);
   }
   d = PyModule_GetDict(m);
 

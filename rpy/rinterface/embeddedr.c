@@ -87,7 +87,7 @@ static void SexpObject_clear(SexpObject *sexpobj)
 static void SexpObject_CObject_destroy(PyObject *rpycapsule)
 {
   SexpObject *sexpobj_ptr = (SexpObject *)(PyCapsule_GetPointer(rpycapsule,
-								"rpy2.rinterface._C_API_"));
+								"rpy2.rinterface._rinterface.SEXPOBJ_C_API"));
   SexpObject_clear(sexpobj_ptr);
 }
 
@@ -126,7 +126,7 @@ static SexpObject* Rpy_PreserveObject(SEXP object) {
     sexpobj_ptr->pycount = 1;
     sexpobj_ptr->sexp = object;
     capsule = PyCapsule_New((void *)(sexpobj_ptr),
-			    "rpy2.rinterface._C_API_",
+			    "rpy2.rinterface._rinterface.SEXPOBJ_C_API",
 			    SexpObject_CObject_destroy);
     if (PyDict_SetItem(Rpy_R_Precious, key, capsule) == -1) {
       Py_DECREF(key);
@@ -156,7 +156,7 @@ static SexpObject* Rpy_PreserveObject(SEXP object) {
   } else {
     /* Reminder: capsule is a borrowed reference */
     sexpobj_ptr = (SexpObject *)(PyCapsule_GetPointer(capsule,
-						      "rpy2.rinterface._C_API_"));
+						      "rpy2.rinterface._rinterface.SEXPOBJ_C_API"));
     if (sexpobj_ptr != NULL) {
       sexpobj_ptr->pycount++;
     }
@@ -212,7 +212,7 @@ static int Rpy_ReleaseObject(SEXP object) {
   } 
 
   SexpObject *sexpobj_ptr = (SexpObject *)(PyCapsule_GetPointer(capsule,
-								"rpy2.rinterface._C_API_"));
+								"rpy2.rinterface._rinterface.SEXPOBJ_C_API"));
   if (sexpobj_ptr == NULL) {
     if (reset_error_state) {
       if (PyErr_Occurred()) {
@@ -335,7 +335,7 @@ static PyObject* Rpy_ProtectedIDs(PyObject *self) {
     Py_INCREF(key);
     PyTuple_SET_ITEM(id_count, 0, key);
     sexpobject_ptr = (SexpObject *)(PyCapsule_GetPointer(capsule,
-							 "rpy2.rinterface._C_API_"));
+							 "rpy2.rinterface._rinterface.SEXPOBJ_C_API"));
     PyTuple_SET_ITEM(id_count, 1, PyLong_FromLong(sexpobject_ptr->pycount));
     PyTuple_SET_ITEM(ids, pos_ids, id_count);
     pos_ids++;

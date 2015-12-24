@@ -140,7 +140,7 @@ ExtPtrSexp_address(PySexpObject *self)
                                         NULL);
 #else
   PyObject *res = PyCapsule_New(R_ExternalPtrAddr(self->sObj->sexp),
-				"rpy2.rinterface._C_API_SEXP_",
+				"rpy2.rinterface._rinterface.SEXPOBJ_C_API",
 				NULL);
 #endif
   embeddedR_freelock();

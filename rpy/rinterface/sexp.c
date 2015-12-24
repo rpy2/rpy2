@@ -262,7 +262,7 @@ Sexp_sexp_get(PyObject *self, void *closure)
     return NULL;;
   }
 
-  PyObject *key = PyLong_FromVoidPtr((void *)rpyobj->sObj->sexp);
+  PyObject *key = PyLong_FromVoidPtr((void *)(rpyobj->sObj->sexp));
   PyObject *capsule = PyDict_GetItem(Rpy_R_Precious, key);
   if (capsule == NULL) {
     printf("Error: Could not get the capsule for the SEXP. This means trouble.\n");
@@ -285,11 +285,11 @@ Sexp_sexp_set(PyObject *self, PyObject *obj, void *closure)
   }
 
   SexpObject *sexpobj_new = (SexpObject *)(PyCapsule_GetPointer(obj,
-								"rpy2.rinterface._C_API_"));
+								"rpy2.rinterface._rinterface.SEXPOBJ_C_API"));
   
   if (sexpobj_new == NULL) {
     PyErr_SetString(PyExc_TypeError, 
-		    "The value must be a CObject or a Capsule of name 'rpy2.rinterface._C_API_'.");
+		    "The value must be a CObject or a Capsule of name 'rpy2.rinterface._rinterface.SEXPOBJ_C_API'.");
     return -1;
   }
 
