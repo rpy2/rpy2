@@ -73,24 +73,22 @@ Currently the development is done on UNIX-like operating systems with the
 following software versions. Those are the recommended
 versions to run rpy2 with.
 
-======== ==================================================
+======== ===================================================
 Software Versions
-======== ==================================================
- Python   3.4, with intended compatibility with 2.7 and 3.3
- R        3.2+ (down to 3.0 probably OK)
-======== ==================================================
+======== ===================================================
+ Python   3.5, with intended compatibility with 2.7 and >3.3
+ R        3.2+ (down to 3.0 may be OK)
+======== ===================================================
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
 building rpy2 will require the corresponding development headers 
 (check the documentation for more information about builing rpy2). 
 
-rpy2 is most likely not working with Python 2.6.
-Older Python like 2.5 or even 2.4 might compile, but there is much less
-testing done with those platforms, if any, and likely limited hope
-for free support.
+rpy2 is almost certainly not working with Python 2.6.
+Older Python versions are even less likely to work.
 
-While Python 3.3 is supported, earlier version of Python 3 are not
-(they might work, they might not - you are on your own).
+While Python 3.3 should be working, earlier version of Python 3 are not
+expected to (they might work, they might not - you are on your own).
 
 Rpy2 is not expected to work at all with an R version < 2.8. The use of the
 latest rpy2 with an R version older than the current release is not
