@@ -22,6 +22,19 @@ New features
   (the method :meth:`__iter__` is now an alias for :meth:`keys`).
 
 
+Release 2.7.6
+=============
+ 
+Changes
+-------
+
+- :mod:`rpy2.robjects.lib.ggplot2` was modified to match the newly released
+  ggplot2-2.0.0. This is introducing API-breaking changes, which breaks the
+  promise to keep the API stable through bugfix releases within series, but
+  without it 2.7.x will not a work with new default installation of the R
+  package ggplot2.
+
+
 Release 2.7.5
 =============
 
