@@ -54,7 +54,7 @@ NULL = robjects.NULL
 
 ggplot2 = importr('ggplot2')
 
-TARGET_VERSION = '1.0.1'
+TARGET_VERSION = '2.0.0'
 if ggplot2.__version__ != TARGET_VERSION:
    warnings.warn('This was designed againt ggplot2 version %s but you have %s' % (TARGET_VERSION, ggplot2.__version__))
 ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
@@ -181,10 +181,6 @@ class Stat(GBaseObject):
     Stat* (e.g., StatAbline, StatBin, etc...). """
     pass
 
-class StatAbline(Stat):
-    """ Line from slope and intercept. """
-    _constructor = ggplot2_env['stat_abline']
-stat_abline = StatAbline.new
 
 class StatBin(Stat):
     """ Bin data. """
@@ -193,14 +189,24 @@ stat_bin = StatBin.new
 
 class StatBin2D(Stat):
     """ 2D binning of data into squares/rectangles. """
-    _constructor = ggplot2_env['stat_bin2d']
+    try:
+       _constructor = ggplot2_env['stat_bin_2d']
+    except:
+       # fallback for versions of ggplot2 < 2.0
+       _constructor = ggplot2_env['stat_bin2d']
 stat_bin2d = StatBin2D.new
+stat_bin_2d=StatBin2D.new
 
 class StatBinhex(Stat):
     """ 2D binning of data into hexagons. """
-    _constructor = ggplot2_env['stat_binhex']
+    try:
+       _constructor = ggplot2_env['stat_bin_hex']
+    except:
+       # fallback for versions of ggplot2 < 2.0
+       _constructor = ggplot2_env['stat_binhex']
 stat_binhex = StatBinhex.new
-   
+stat_bin_hex=StatBinhex.new
+
 class StatBoxplot(Stat):
     """ Components of box and whisker plot. """
     _constructor = ggplot2_env['stat_boxplot']
@@ -218,18 +224,17 @@ stat_density = StatDensity.new
 
 class StatDensity2D(Stat):
     """ 2D density estimate """
-    _constructor = ggplot2_env['stat_density2d']
+    try:
+       _constructor = ggplot2_env['stat_density_2d']
+    except:
+       _constructor = ggplot2_env['stat_density2d']
 stat_density2d = StatDensity2D.new
+stat_density_2d=StatDensity2D.new
 
 class StatFunction(Stat):
     """ Superimpose a function """
     _constructor = ggplot2_env['stat_function']
 stat_function = StatFunction.new
-
-class StatHline(Stat):
-    """ Horizontal line """
-    _constructor = ggplot2_env['stat_hline']
-stat_hline = StatHline.new
 
 class StatIdentity(Stat):
     """ Identity function """
@@ -267,15 +272,19 @@ class StatSummary(Stat):
     _constructor = ggplot2_env['stat_summary']
 stat_summary = StatSummary.new
 
+class StatSummary2D(Stat):
+    """ Summarize values for y at every unique value for x"""
+    try:
+       _constructor = ggplot2_env['stat_summary_2d']
+    except:
+       _constructor = ggplot2_env['stat_summary2d']
+stat_summary2d = StatSummary2D.new
+stat_summary_2d = StatSummary2D.new
+
 class StatUnique(Stat):
     """ Remove duplicates. """
     _constructor = ggplot2_env['stat_unique']
 stat_unique = StatUnique.new
-
-class StatVline(Stat):
-    """ Vertival line. """
-    _constructor = ggplot2_env['stat_vline']
-stat_vline = StatVline.new
 
 class Coord(GBaseObject):
     """ Coordinates """
@@ -373,8 +382,12 @@ class GeomDensity(Geom):
 geom_density = GeomDensity.new
 
 class GeomDensity2D(Geom):
-    _constructor = ggplot2_env['geom_density2d']
+    try:
+       _constructor = ggplot2_env['geom_density_2d']
+    except:
+       _constructor = ggplot2_env['geom_density2d']
 geom_density2d = GeomDensity2D.new
+geom_density_2d = GeomDensity2D.new
 
 class GeomDotplot(Geom):
    _constructor = ggplot2_env['geom_dotplot']
@@ -459,6 +472,11 @@ geom_segment = GeomSegment.new
 class GeomSmooth(Geom):
     _constructor = ggplot2_env['geom_smooth']
 geom_smooth = GeomSmooth.new
+
+class GeomSpoke(Geom):
+    """ Convert angle and radius to xend and yend """
+    _constructor = ggplot2_env['geom_spoke']
+geom_spoke = GeomSpoke.new
 
 class GeomStep(Geom):
     _constructor = ggplot2_env['geom_step']
@@ -709,15 +727,6 @@ class ElementBlank(Theme):
 
 element_blank = ElementBlank.new
 
-class ThemeBlank(Theme):
-    _constructor = ggplot2.theme_blank
-    @classmethod
-    def new(cls):
-        res = cls(cls._constructor())
-        return res
-
-theme_blank = ThemeBlank.new
-
 theme_get = ggplot2.theme_get
 
 class ThemeGrey(Theme):
@@ -739,25 +748,25 @@ class ThemeClassic(Theme):
 
 theme_classic = ThemeClassic.new
 
-class ThemeRect(Theme):
-    _constructor = ggplot2.theme_rect
+class ThemeDark(Theme):
+    _constructor = ggplot2.theme_dark
     @classmethod
-    def new(cls, fill = robjects.NA_Logical, colour = "black", 
-            size = 0.5, linetype = 1):
-       res = cls(cls._constructor(fill = fill, colour = colour, 
-                                  size = size, linetype = linetype))
+    def new(cls, base_size = 12, base_family = ""):
+       res = cls(cls._constructor(base_size = base_size,
+                                  base_family = base_family))
        return res
-theme_rect = ThemeRect.new
 
-class ThemeSegment(Theme):
-    _constructor = ggplot2.theme_rect
+theme_dark = ThemeDark.new
+
+class ThemeLight(Theme):
+    _constructor = ggplot2.theme_light
     @classmethod
-    def new(cls, colour = 'black', size = 0.5, linetype = 1):
-       res = cls(cls._constructor(colour = colour, size = size,
-                                  linetype = linetype))
+    def new(cls, base_size = 12, base_family = ""):
+       res = cls(cls._constructor(base_size = base_size,
+                                  base_family = base_family))
        return res
-theme_segment = ThemeSegment.new
 
+theme_light = ThemeLight.new
 
 class ThemeBW(Theme):
     _constructor = ggplot2.theme_bw
@@ -775,15 +784,37 @@ class ThemeGray(Theme):
        res = cls(cls._constructor(base_size = base_size))
        return res
 theme_gray = ThemeGray.new
+theme_grey = theme_gray
 
-class ThemeLine(Theme):
-    _constructor = ggplot2.theme_line
+class ThemeMinimal(Theme):
+    _constructor = ggplot2.theme_minimal
     @classmethod
-    def new(cls, colour = 'black', size = 0.5, linetype = 1):
-       res = cls(cls._constructor(colour = colour, size = size,
-                                  linetype = linetype))
+    def new(cls, base_size = 12, base_family = ""):
+       res = cls(cls._constructor(base_size = base_size,
+                                  base_family = base_family))
        return res
-theme_line = ThemeLine.new
+
+theme_minimal = ThemeMinimal.new
+
+class ThemeLinedraw(Theme):
+    _constructor = ggplot2.theme_linedraw
+    @classmethod
+    def new(cls, base_size=12, base_family=""):
+       res = cls(cls._constructor(base_size=base_size,
+                                  base_family=base_family))
+       return res
+theme_linedraw = ThemeLinedraw.new
+
+class ThemeVoid(Theme):
+    _constructor = ggplot2.theme_void
+    @classmethod
+    def new(cls, base_size = 12, base_family = ""):
+       res = cls(cls._constructor(base_size = base_size,
+                                  base_family = base_family))
+       return res
+
+theme_void = ThemeVoid.new
+
 
 #theme_render
 theme_set = ggplot2.theme_set
@@ -793,8 +824,6 @@ theme_update = ggplot2.theme_update
 gplot = ggplot2.qplot
 
 map_data = ggplot2.map_data
-
-opts = ggplot2_env['opts']
 
 theme = ggplot2_env['theme']
 
