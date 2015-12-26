@@ -333,7 +333,7 @@ VectorSexp_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh)
       break;
     case LISTSXP:
     default:
-      PyErr_Format(PyExc_ValueError, "Cannot handle type %d", 
+      PyErr_Format(PyExc_ValueError, "Cannot handle R type %d", 
                    TYPEOF(*sexp));
       res_sexp = NULL;
       break;
