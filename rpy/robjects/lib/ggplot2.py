@@ -136,10 +136,7 @@ class AesString(robjects.Vector):
     @classmethod
     def new(cls, **kwargs):
        """Constructor for the class AesString."""
-       new_kwargs = copy.copy(kwargs)
-       for k,v in kwargs.items():
-          new_kwargs[k] = as_symbol(v)
-       res = cls(cls._constructor(**new_kwargs))
+       res = cls(cls._constructor(**kwargs))
        return res
 aes_string = AesString.new
 
