@@ -53,20 +53,18 @@ class EmbeddedRTestCase(unittest.TestCase):
             tmp_file.close()
         else:
             # no need to test which Python 2, only 2.7 supported
-            tmp_file = tempfile.NamedTemporaryFile()
-            stdout = sys.stdout
-            sys.stdout = tmp_file
-            try:
-                rinterface.consolePrint('haha')
-            except Exception as e:
+            with tempfile.NamedTemporaryFile() as tmp_file:
+                stdout = sys.stdout
+                sys.stdout = tmp_file
+                try:
+                    rinterface.consolePrint('haha')
+                except Exception as e:
+                    sys.stdout = stdout
+                    raise e
                 sys.stdout = stdout
-                raise e
-            sys.stdout = stdout
-            tmp_file.flush()
-            tmp_file.seek(0)
-            self.assertEqual('haha', ''.join(s.decode() for s in tmp_file))
-            tmp_file.close()
-
+                tmp_file.flush()
+                tmp_file.seek(0)
+                self.assertEqual('haha', ''.join(s.decode() for s in tmp_file))
 
     def testCallErrorWhenEndedR(self):
         if sys.version_info[0] == 2 and sys.version_info[1] < 6:
@@ -183,22 +181,22 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testInterruptR(self):
         if sys.version_info[0] == 2 and sys.version_info[1] < 6:
             self.assertTrue(False) # Test unit currently requires Python >= 2.6
-        rpy_code = tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
-                                               delete = False)
-        rpy2_path = os.path.dirname(rpy2.__path__[0])
-        if IS_PYTHON3:
-            pyexception_as = ' as'
-        else:
-            pyexception_as = ','
+        with tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
+                                         delete = False) as rpy_code:
+            rpy2_path = os.path.dirname(rpy2.__path__[0])
+            if IS_PYTHON3:
+                pyexception_as = ' as'
+            else:
+                pyexception_as = ','
 
-        rpy_code_str = """
+            rpy_code_str = """
 import sys
 sys.path.insert(0, '%s')
 import rpy2.rinterface as ri
 
 ri.initr()
 def f(x):
-  pass
+    pass
 ri.set_writeconsole_regular(f)
 rcode = \"\"\"
 i <- 0;
@@ -210,10 +208,10 @@ try:
   ri.baseenv['eval'](ri.parse(rcode))
 except Exception%s e:
   sys.exit(0)
-  """ %(rpy2_path, pyexception_as)
+      """ %(rpy2_path, pyexception_as)
 
-        rpy_code.write(rpy_code_str)
-        rpy_code.close()
+            rpy_code.write(rpy_code_str)
+
         child_proc = subprocess.Popen((sys.executable, rpy_code.name))
         time.sleep(1)  # required for the SIGINT to function
         # (appears like a bug w/ subprocess)
@@ -256,22 +254,21 @@ class CallbacksTestCase(unittest.TestCase):
             raise CustomException("Doesn't work.")
         rinterface.set_writeconsole_regular(f)
 
-        tmp_file = tempfile.NamedTemporaryFile()
-        stderr = sys.stderr
-        sys.stderr = tmp_file
-        try:
-            code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
-            rinterface.baseenv["print"](code)
-        except Exception as e:
+        with tempfile.NamedTemporaryFile() as tmp_file:
+            stderr = sys.stderr
+            sys.stderr = tmp_file
+            try:
+                code = rinterface.SexpVector(["3", ], rinterface.STRSXP)
+                rinterface.baseenv["print"](code)
+            except Exception as e:
+                sys.stderr = stderr
+                raise e
             sys.stderr = stderr
-            raise e
-        sys.stderr = stderr
-        tmp_file.flush()
-        tmp_file.seek(0)
-        self.assertEqual("Doesn't work.", str(sys.last_value))
-        #errorstring = ''.join(tmp_file.readlines())
-        #self.assertTrue(errorstring.startswith('Traceback'))
-        #tmp_file.close()
+            tmp_file.flush()
+            tmp_file.seek(0)
+            self.assertEqual("Doesn't work.", str(sys.last_value))
+            #errorstring = ''.join(tmp_file.readlines())
+            #self.assertTrue(errorstring.startswith('Traceback'))
 
     def testSetResetConsole(self):
         reset = [0]
@@ -304,21 +301,20 @@ class CallbacksTestCase(unittest.TestCase):
             raise Exception("Doesn't work.")
         rinterface.set_flushconsole(f)
 
-        tmp_file = tempfile.NamedTemporaryFile()
-        stderr = sys.stderr
-        sys.stderr = tmp_file
-        try:
-            res = rinterface.baseenv.get("flush.console")()
-        except Exception as e:
+        with tempfile.NamedTemporaryFile() as tmp_file:
+            stderr = sys.stderr
+            sys.stderr = tmp_file
+            try:
+                res = rinterface.baseenv.get("flush.console")()
+            except Exception as e:
+                sys.stderr = stderr
+                raise e
             sys.stderr = stderr
-            raise e
-        sys.stderr = stderr
-        tmp_file.flush()
-        tmp_file.seek(0)
-        self.assertEqual("Doesn't work.", str(sys.last_value))
-        #errorstring = ''.join(tmp_file.readlines())
-        #self.assertTrue(errorstring.startswith('Traceback'))
-        #tmp_file.close()
+            tmp_file.flush()
+            tmp_file.seek(0)
+            self.assertEqual("Doesn't work.", str(sys.last_value))
+            #errorstring = ''.join(tmp_file.readlines())
+            #self.assertTrue(errorstring.startswith('Traceback'))
 
     def testSetReadConsole(self):
         yes = "yes\n"
@@ -335,22 +331,21 @@ class CallbacksTestCase(unittest.TestCase):
             raise Exception("Doesn't work.")
         rinterface.set_readconsole(f)
 
-        tmp_file = tempfile.NamedTemporaryFile()
+        with tempfile.NamedTemporaryFile() as tmp_file:
 
-        stderr = sys.stderr
-        sys.stderr = tmp_file
-        try:
-            res = rinterface.baseenv["readline"]()
-        except Exception as e:
+            stderr = sys.stderr
+            sys.stderr = tmp_file
+            try:
+                res = rinterface.baseenv["readline"]()
+            except Exception as e:
+                sys.stderr = stderr
+                raise e
             sys.stderr = stderr
-            raise e
-        sys.stderr = stderr
-        tmp_file.flush()
-        tmp_file.seek(0)
-        self.assertEqual("Doesn't work.", str(sys.last_value))
-        #errorstring = ''.join(tmp_file.readlines())
-        #self.assertTrue(errorstring.startswith('Traceback'))
-        #tmp_file.close()
+            tmp_file.flush()
+            tmp_file.seek(0)
+            self.assertEqual("Doesn't work.", str(sys.last_value))
+            #errorstring = ''.join(tmp_file.readlines())
+            #self.assertTrue(errorstring.startswith('Traceback'))
         
     def testSetShowMessage(self):
         def f(message):
@@ -411,23 +406,22 @@ class CallbacksTestCase(unittest.TestCase):
         filename = file_path(r_home(rinterface.StrSexpVector(("doc", ))), 
                              rinterface.StrSexpVector(("COPYRIGHTS", )))
 
-        tmp_file = tempfile.NamedTemporaryFile()
-        stderr = sys.stderr
-        sys.stderr = tmp_file
-        try:
-            res = rinterface.baseenv["file.show"](filename)
-        except rinterface.RRuntimeError:
-            pass
-        except Exception as e:
+        with tempfile.NamedTemporaryFile() as tmp_file:
+            stderr = sys.stderr
+            sys.stderr = tmp_file
+            try:
+                res = rinterface.baseenv["file.show"](filename)
+            except rinterface.RRuntimeError:
+                pass
+            except Exception as e:
+                sys.stderr = stderr
+                raise e
             sys.stderr = stderr
-            raise e
-        sys.stderr = stderr
-        tmp_file.flush()
-        tmp_file.seek(0)
-        self.assertEqual("Doesn't work.", str(sys.last_value))
-        #errorstring = ''.join(tmp_file.readlines())
-        #self.assertTrue(errorstring.startswith('Traceback'))
-        #tmp_file.close()
+            tmp_file.flush()
+            tmp_file.seek(0)
+            self.assertEqual("Doesn't work.", str(sys.last_value))
+            #errorstring = ''.join(tmp_file.readlines())
+            #self.assertTrue(errorstring.startswith('Traceback'))
 
     def testSetCleanUp(self):
         orig_cleanup = rinterface.get_cleanup()
@@ -478,12 +472,11 @@ class SerializeTestCase(unittest.TestCase):
 
     def testPickle(self):
         x = rinterface.IntSexpVector([1,2,3])
-        f = tempfile.NamedTemporaryFile()
-        pickle.dump(x, f)
-        f.flush()
-        f.seek(0)
-        x_again = pickle.load(f)
-        f.close()
+        with tempfile.NamedTemporaryFile() as f:
+            pickle.dump(x, f)
+            f.flush()
+            f.seek(0)
+            x_again = pickle.load(f)
         identical = rinterface.baseenv["identical"]
         self.assertTrue(identical(x, x_again)[0])
                      

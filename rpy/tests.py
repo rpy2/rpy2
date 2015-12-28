@@ -52,6 +52,7 @@ def load_tests(loader, tests, pattern):
         has_ipython = True
     except ImportError as ie:
         has_ipython = False
+
     if has_ipython:
         suite_ipython= loader.discover('ipython', pattern, rpy_root)
     else:
