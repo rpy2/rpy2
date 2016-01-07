@@ -4,7 +4,7 @@ R objects as Python objects.
 The module is structured around the singleton r of class R,
 that represents an embedded R.
 
-License: GPLv3.0 (although a dual license can be worked out)
+License: GPLv2+
 
 """
 
