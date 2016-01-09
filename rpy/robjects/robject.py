@@ -143,7 +143,7 @@ class RObjectMixin(object):
         robjects-level `__reduce__()`, calling the parent class' `__reduce__()`
         before substituting the current high-level class as a constructor
         """
-        t = super().__reduce__()
+        t = super(type(self), self).__reduce__()
         # fix the constructor and parameters
         l = list(t)
         l[1] = (l[1][0], l[1][1], l[0], type(self))
