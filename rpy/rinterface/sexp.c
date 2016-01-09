@@ -636,7 +636,10 @@ Sexp___reduce__(PyObject* self)
 }
 
 PyDoc_STRVAR(Sexp___reduce___doc,
-             "Prepare an instance for serialization.");
+             "Prepare an instance for serialization, returning a tuple "
+	     "with the following elements (in that order): "
+	     "the constructor (a function), the serialized string, "
+	     "the R `typeof` (an integer), and a dictionary.");
 
 
 static PyMethodDef Sexp_methods[] = {
