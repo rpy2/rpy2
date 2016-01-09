@@ -138,17 +138,20 @@ class RObjectMixin(object):
                       "R class for the object, stored as an R string vector.")
 
 
-    def __reduce__(self):
-        """
-        robjects-level `__reduce__()`, calling the parent class' `__reduce__()`
-        before substituting the current high-level class as a constructor
-        """
-        t = super().__reduce__()
-        # fix the constructor and parameters
-        l = list(t)
-        l[1] = (l[1][0], l[1][1], l[0], type(self))
-        l[0] = _reduce_robjectmixin
-        return tuple(l)
+    # Python 3-only
+    if sys.version_info[0] == 3:
+        def __reduce__(self):
+            """
+            robjects-level `__reduce__()`, calling the parent class'
+            `__reduce__()` before substituting the current high-level
+            class as a constructor.
+            """
+            t = super().__reduce__()
+            # fix the constructor and parameters
+            l = list(t)
+            l[1] = (l[1][0], l[1][1], l[0], type(self))
+            l[0] = _reduce_robjectmixin
+            return tuple(l)
 
     
 def repr_robject(o, linesep=os.linesep):
