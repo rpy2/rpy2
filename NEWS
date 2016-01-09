@@ -21,6 +21,10 @@ New features
 - The attribute :attr:`rpy2.robjects.RObject.slots` can now be implictly interated on
   (the method :meth:`__iter__` is now an alias for :meth:`keys`).
 
+
+Release 2.7.7
+=============
+
 Bugs fixed
 ----------
 
