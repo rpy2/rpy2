@@ -84,10 +84,6 @@ for PYVERSION in $PYTHON_VERSIONS; do
 	echo "    singledispatch"
 	pip install singledispatch >> ${LOGFILE}
     fi;
-    if [ '3.3' = $PYVERSION ]; then
-	echo "    singledispatch"
-	pip install singledispatch >> ${LOGFILE}
-    fi;
     echo '.'
     #pip install --use-wheel --find-links https://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
 
