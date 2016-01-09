@@ -47,7 +47,13 @@ class RSlots(object):
             v = self[key]
             yield v
 
-        
+
+def _reduce_robjectmixin(rdumps, rtypeof,
+                         rinterface_factory,
+                         rpy2type):
+    rinterface_level=rinterface_factory(rdumps, rtypeof)
+    return rpy2type(rinterface_level)
+
 class RObjectMixin(object):
     """ Class to provide methods common to all RObject instances """
     __rname__ = None
@@ -130,8 +136,22 @@ class RObjectMixin(object):
     rclass = property(_rclass_get, _rclass_set, None,
                       "R class for the object, stored as an R string vector.")
 
+    # Python 3-only
+    if sys.version_info[0] == 3:
+        def __reduce__(self):
+            """
+            robjects-level `__reduce__()`, calling the parent class'
+            `__reduce__()` before substituting the current high-level
+            class as a constructor.
+            """
+            t = super().__reduce__()
+            # fix the constructor and parameters
+            l = list(t)
+            l[1] = (l[1][0], l[1][1], l[0], type(self))
+            l[0] = _reduce_robjectmixin
+            return tuple(l)
 
-    
+        
 def repr_robject(o, linesep=os.linesep):
     s = rpy2.rinterface.baseenv.get("deparse")(o)
     s = str.join(linesep, s)

@@ -1,3 +1,13 @@
+Release 2.7.7
+=============
+
+Bugs fixed
+----------
+
+- Pickling `robjects`-level objects resulted in `rinterface`-level objects
+  when unpickled (issue #324) **the fix is only available with Python 3**.
+
+
 Release 2.7.6
 =============
 
