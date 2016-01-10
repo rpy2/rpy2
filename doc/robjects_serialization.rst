@@ -2,8 +2,9 @@
 Object serialization
 ====================
 
-The python pickling system can be used to serialize objects to disk,
-and restore them from their serialized form.
+The R objects in rpy2 are implementing the pickle protocol in Python,
+giving access to Python's pickling (serialize objects to disk,
+and restore them from their serialized form).
 
 .. code-block:: python
 
@@ -11,20 +12,12 @@ and restore them from their serialized form.
    import rpy2.robjects as ro
 
    x = ro.StrVector(('a', 'b', 'c'))
-   base_help.fetch('sum')
-   f = file('/tmp/foo.pso', 'w')
-   pickle.dump(x, f)
-   f.close()
+   
+   x_serialized = pickle.dumps(x, f)
+
+   x_again = pickle.loads(x_serialized)
 
 
-   f = file('/tmp/foo.pso', 'r')
-   x_again = pickle.load(f)
-   f.close()
-
-
-.. warning::
-
-   Currently loading an object from a serialized form restores the object in
-   its low-level form (as in :mod:`rpy2.rinterface`). Higher-level objects
-   can be restored by calling the higher-level casting function
-   :func:`rpy2.robjects.conversion.ri2py` (see :ref:`robjects-conversion`).
+This is also giving access to Python code using the pickling system
+communicate objects across networks or processes such as
+:mod:`multiprocessing` and :mod:`pyspark`.
