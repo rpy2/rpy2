@@ -101,7 +101,8 @@ class PandasConversionsTestCase(unittest.TestCase):
         rpyp.deactivate()
         s = repr(rp_df) # used to fail with a TypeError
         s = s.split('\n')
-        self.assertEqual('[Array, Array, Array, FactorV..., FactorV...]', s[1].strip())
+        self.assertEqual('[BoolVector, IntVector, FloatVe..., FactorV..., FactorV...]',
+                         s[1].strip())
 
     def testRi2pandas(self):
         rdataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")), c=c("a", "b"))')
