@@ -27,6 +27,7 @@ import rpy2.robjects.numpy2ri as numpy2ri
 
 
 ISOdatetime = rinterface.baseenv['ISOdatetime']
+as_vector = rinterface.baseenv['as.vector']
 
 converter = conversion.Converter('original pandas conversion')
 py2ri = converter.py2ri
@@ -57,6 +58,7 @@ def py2ri_pandasindex(obj):
         # us to reuse that code.
         return numpy2ri.numpy2ri(obj)
 
+
 @py2ri.register(PandasSeries)
 def py2ri_pandasseries(obj):
     if obj.dtype == '<M8[ns]':
@@ -73,12 +75,20 @@ def py2ri_pandasseries(obj):
         res = POSIXct(res)
     else:
         # converted as a numpy array
-        res = numpy2ri.numpy2ri(obj.values)
+        func=numpy2ri.converter.py2ri.registry[numpy.ndarray]
+        # current conversion as performed by numpy
+        res=func(obj)
+        if len(obj.shape) == 1:
+            # force into an R vector
+            res=as_vector(res)
+
     # "index" is equivalent to "names" in R
     if obj.ndim == 1:
-        res.do_slot_assign('names', StrVector(tuple(str(x) for x in obj.index)))
+        res.do_slot_assign('names',
+                           StrVector(tuple(str(x) for x in obj.index)))
     else:
-        res.do_slot_assign('dimnames', SexpVector(conversion.py2ri(obj.index)))
+        res.do_slot_assign('dimnames',
+                           SexpVector(conversion.py2ri(obj.index)))
     return res
 
 @ri2py.register(SexpVector)
