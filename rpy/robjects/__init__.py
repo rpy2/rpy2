@@ -109,6 +109,8 @@ def sexpvector_to_ro(obj):
                 res = vectors.POSIXct(obj)
             else:
                 res = vectors.FloatVector(obj)
+        elif obj.typeof == rinterface.LGLSXP:
+            res = vectors.BoolVector(obj)
         elif obj.typeof == rinterface.STRSXP:
             res = vectors.StrVector(obj)
         elif obj.typeof == rinterface.VECSXP:
