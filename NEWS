@@ -7,6 +7,10 @@ Bugs fixed
 - Pickling `robjects`-level objects resulted in `rinterface`-level objects
   when unpickled (issue #324).
 
+- Conversion of :mod:`pandas` data frames made the "columns" in the resulting
+  R data frame R arrays rather than vector. This was sometimes confusing
+  R functions (issue #323).
+
 
 Release 2.7.6
 =============
