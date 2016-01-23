@@ -35,6 +35,7 @@
 #include "sexp.h"
 
 
+/* This is tp_clear() for Sexp objects. */
 static void
 Sexp_clear(PySexpObject *self)
 {
