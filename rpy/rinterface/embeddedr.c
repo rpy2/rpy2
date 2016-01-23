@@ -200,6 +200,7 @@ static int Rpy_ReleaseObject(SEXP object) {
   if (capsule == NULL) {
     if (reset_error_state) {
       PyErr_Restore(ptype, pvalue, ptraceback);
+      printf("Restoring an earlier exception.\n");
       printf("Error:Trying to release object ID %ld while not preserved\n",
 	     PyLong_AsLong(key));
     } else {
