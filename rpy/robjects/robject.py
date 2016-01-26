@@ -83,7 +83,7 @@ class RObjectMixin(object):
 
     def __str__(self):
         if sys.platform == 'win32':
-            tmpf = tempfile.NamedTemporaryFile(delete=False)
+            tmpf = tempfile.NamedTemporaryFile(mode="w+", delete=False)
             tfname = tmpf.name
             tmp = self.__file(rpy2.rinterface.StrSexpVector([tfname,]),
                               open=rpy2.rinterface.StrSexpVector(["r+", ]))
