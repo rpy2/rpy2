@@ -593,36 +593,57 @@ scale_x_sqrt = ScaleXSqrt.new
 class ScaleYSqrt(ScaleY):
     _constructor = ggplot2_env['scale_y_sqrt']
 scale_y_sqrt = ScaleYSqrt.new
+
 class ScaleColourBrewer(ScaleColour):
     _constructor = ggplot2_env['scale_colour_brewer']
 scale_colour_brewer = ScaleColourBrewer.new
+scale_color_brewer = scale_colour_brewer
+
 class ScaleColourContinuous(ScaleColour):
     _constructor = ggplot2_env['scale_colour_continuous']
 scale_colour_continuous = ScaleColourContinuous.new
+scale_color_continuous = scale_colour_continuous
+
 class ScaleColourDiscrete(ScaleColour):
     _constructor = ggplot2_env['scale_colour_discrete']
 scale_colour_discrete = ScaleColourDiscrete.new
+scale_color_discrete = scale_colour_discrete
+
 class ScaleColourGradient(ScaleColour):
     _constructor = ggplot2_env['scale_colour_gradient']
 scale_colour_gradient = ScaleColourGradient.new
+scale_color_gradient = scale_colour_gradient
+
 class ScaleColourGradient2(ScaleColour):
     _constructor = ggplot2_env['scale_colour_gradient2']
 scale_colour_gradient2 = ScaleColourGradient2.new
+scale_color_gradient2 = scale_colour_gradient2
+
 class ScaleColourGradientN(ScaleColour):
     _constructor = ggplot2_env['scale_colour_gradientn']
 scale_colour_gradientn = ScaleColourGradientN.new
+scale_color_gradientn = scale_colour_gradientn
+
 class ScaleColourGrey(ScaleColour):
     _constructor = ggplot2_env['scale_colour_grey']
 scale_colour_grey = ScaleColourGrey.new
+scale_color_grey = scale_colour_grey
+
 class ScaleColourHue(ScaleColour):
     _constructor = ggplot2_env['scale_colour_hue']
 scale_colour_hue = ScaleColourHue.new
+scale_color_hue = scale_colour_hue
+
 class ScaleColourIdentity(ScaleColour):
     _constructor = ggplot2_env['scale_colour_identity']
 scale_colour_identity = ScaleColourIdentity.new
+scale_color_identity = scale_colour_identity
+
 class ScaleColourManual(ScaleColour):
     _constructor = ggplot2_env['scale_colour_manual']
 scale_colour_manual = ScaleColourManual.new
+scale_color_manual = scale_colour_manual
+
 class ScaleFillBrewer(ScaleFill):
     _constructor = ggplot2_env['scale_fill_brewer']
 scale_fill_brewer = ScaleFillBrewer.new
