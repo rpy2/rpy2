@@ -31,7 +31,9 @@ Bugs fixed
 - American English spelling was missing for some of the function names
   to specify colour (color) scales.
   
-  
+- Fix for printing R objects on Windows (pull request #47)
+
+
 Release 2.7.7
 =============
 
