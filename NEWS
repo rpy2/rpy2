@@ -26,6 +26,16 @@ New features
   relevant).
 
 
+Release 2.7.9
+=============
+
+Bug fixed
+---------
+
+- Python objects exposed to R could lead to segfault when the Python process is
+  exiting (issue #331)
+
+
 Release 2.7.8
 =============
 
