@@ -21,7 +21,7 @@ New features
 - The attribute :attr:`rpy2.robjects.RObject.slots` can now be implictly interated on
   (the method :meth:`__iter__` is now an alias for :meth:`keys`).
 
-- The default Python-R conversion is not handling functions. This means that
+- The default Python-R conversion is now handling functions. This means that
   Python function can directly be used as parameters to R functions (when
   relevant).
 
