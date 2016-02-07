@@ -198,6 +198,10 @@ static int Rpy_ReleaseObject(SEXP object) {
   PyObject *capsule = PyDict_GetItem(Rpy_R_Precious, key);
   /* capsule is a borrowed reference */
   if (capsule == NULL) {
+    /* FIXME: should all rpy2 proxy objects have an associated capsule ?
+     *        If yes, why are we here ?
+     */
+    printf("Warning: the rpy2 object we are trying to release has no associated capsule.\n");
     if (reset_error_state) {
       PyErr_Restore(ptype, pvalue, ptraceback);
       printf("Restoring an earlier exception.\n");
