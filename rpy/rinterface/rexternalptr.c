@@ -97,11 +97,25 @@ ExtPtrSexp_init(PySexpObject *self, PyObject *args, PyObject *kwds)
   } else {
     rprotected = RPY_SEXP((PySexpObject *)pyprotected);
   }
-  /* FIXME: is the INCREF needed ? */
+  /* The Python object pointed to by `pyextptr` will have its reference counter
+  *  incremented by one as it will be wrapped in an R "external pointer" object.
+  *  The destructor for the that R "external pointer" will take care of
+  *  decrementing the counter. */
   Py_INCREF(pyextptr);
   rres  = R_MakeExternalPtr(pyextptr, rtag, rprotected);
   PROTECT(rres);
-  R_RegisterCFinalizerEx(rres, (R_CFinalizer_t)R_PyObject_decref, TRUE);
+  /* Register the destructor */
+  /* The extended form of the registration of a finalizer is sometimes causing
+   * a segfault when the Python interpreter is exiting (issue #331). It is
+   * unclear what is causing this (race condition between R and Python's
+   * respective garbage collectors ?), but switching to the short form of the
+   * registration of a finalizer appears to solve the issue without any
+   * visible negative effect (no observed leak).
+   *
+   * For reference, the long form was:
+   * R_RegisterCFinalizerEx(rres, (R_CFinalizer_t)R_PyObject_decref, TRUE); 
+   */
+  R_RegisterCFinalizer(rres, (R_CFinalizer_t)R_PyObject_decref);
   UNPROTECT(1);
   if (Rpy_ReplaceSexp((PySexpObject *)self, rres) == -1) {
       embeddedR_freelock();
