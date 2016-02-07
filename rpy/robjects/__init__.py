@@ -242,8 +242,12 @@ def _(obj):
     return conversion.ri2ro(robj)
 
 @default_converter.py2ri.register(types.FunctionType)
-def _function_to_ri(obj):
-    rfunc = rinterface.rternalize(obj)
+def _function_to_ri(func):
+    def wrap(*args):
+        res = func(*args)
+        res = conversion.py2ro(res)
+        return res
+    rfunc = rinterface.rternalize(wrap)
     return rfunc
 
 @default_converter.ri2py.register(object)
