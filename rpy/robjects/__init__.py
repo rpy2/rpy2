@@ -9,6 +9,7 @@ License: GPLv2+
 """
 
 import os, sys
+import types
 import array
 import itertools
 from datetime import datetime
@@ -239,6 +240,11 @@ def _(obj):
 def _(obj):
     robj = conversion.py2ri(obj)
     return conversion.ri2ro(robj)
+
+@default_converter.py2ri.register(types.FunctionType)
+def _function_to_ri(obj):
+    rfunc = rinterface.rternalize(obj)
+    return rfunc
 
 @default_converter.ri2py.register(object)
 def _(obj):

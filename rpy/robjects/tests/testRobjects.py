@@ -120,6 +120,13 @@ class MappingTestCase(unittest.TestCase):
         self.assertEqual(('foo', 'bar'),
                          tuple(robj.names))
 
+    def testMapperPy2R_function(self):
+        func = lambda x: x
+        rob = robjects.default_converter.py2ro(func)
+        self.assertTrue(isinstance(rob, robjects.SignatureTranslatedFunction))
+        self.assertEqual(rinterface.CLOSXP, rob.typeof)
+
+
     def testOverride_ri2ro(self):
         class Density(object):
             def __init__(self, x):
