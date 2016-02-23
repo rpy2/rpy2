@@ -766,7 +766,7 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
 #if (PY_VERSION_HEX < 0x03010000)
   char *path_str = PyString_AsString(result);
 #else
-  PyObject *pybytes = PyUnicode_AsLatin1String(result);
+  PyObject *pybytes = PyUnicode_AsUTF8String(result);
   char *path_str = PyBytes_AsString(pybytes);
   //char *path_str = PyBytes_AsString(result);
 #endif
