@@ -1802,10 +1802,10 @@ Sexp_rcall(PyObject *self, PyObject *args)
 #if (PY_VERSION_HEX < 0x03010000)
       argNameString = PyString_AsString(argName);
 #else
-      pybytes = PyUnicode_AsLatin1String(argName);
-      argNameString = PyBytes_AsString(pybytes);
+      pybytes = PyUnicode_AsUTF8String(argName);
+      argNameString = Rf_mkCharCE(PyBytes_AsString(pybytes), CE_UTF8);
 #endif
-      SET_TAG(c_R, install(argNameString));
+      SET_TAG(c_R, installChar(argNameString));
 #if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
 #endif

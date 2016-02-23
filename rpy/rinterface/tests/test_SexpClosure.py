@@ -34,6 +34,12 @@ class SexpClosureTestCase(unittest.TestCase):
         
         self.assertRaises(rinterface.RRuntimeError, sum, letters)
 
+    def testUTF8params(self):
+        c = rinterface.globalenv.get('c')
+        d = dict([('哈哈', 1)])
+        res = c(**d)
+        self.assertEqual('哈哈', res.do_slot("names")[0])
+        
     def testClosureenv(self):
         exp = rinterface.parse("function(x) { x[y] }")
         fun = rinterface.baseenv["eval"](exp)

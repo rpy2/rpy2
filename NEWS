@@ -25,6 +25,12 @@ New features
   Python function can directly be used as parameters to R functions (when
   relevant).
 
+Bug Fixed
+---------
+
+- Parameter names to R function that are in UTF-8 are no longer causing a
+  segfault (issue #332)
+  
 
 Release 2.7.9
 =============
