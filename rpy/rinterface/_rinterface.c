@@ -14,7 +14,7 @@
  * Version: GPLv2+
  *
  * 
- * Copyright (C) 2008-2015 Laurent Gautier
+ * Copyright (C) 2008-2016 Laurent Gautier
  *
  * Portions created by Alexander Belopolsky are 
  * Copyright (C) 2006 Alexander Belopolsky.
