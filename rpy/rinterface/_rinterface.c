@@ -552,7 +552,7 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   int is_unicode = PyUnicode_Check(result);
   PyObject *pybytes = NULL;
   if (is_unicode) {
-      pybytes = PyUnicode_AsLatin1String(result);
+      pybytes = PyUnicode_AsUTF8String(result);
       input_str = PyBytes_AsString(pybytes);
   } else if (PyBytes_Check(result)) {
     input_str = PyBytes_AsString(result);
