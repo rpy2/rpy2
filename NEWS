@@ -33,6 +33,9 @@ Bug Fixed
   
 - Looking for a missing key in an R environment (using `__getitem__` or `[`)
   could raise a `LookupError` instead of a `KeyError`.
+
+- R environment can now handle unicode keys as UTF-8 (was previously
+  trying Latin1)
   
 
 Release 2.7.9
