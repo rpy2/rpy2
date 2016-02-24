@@ -31,6 +31,9 @@ Bug Fixed
 - Parameter names to R function that are in UTF-8 are no longer causing a
   segfault (issue #332)
   
+- Looking for a missing key in an R environment (using `__getitem__` or `[`)
+  could raise a `LookupError` instead of a `KeyError`.
+  
 
 Release 2.7.9
 =============

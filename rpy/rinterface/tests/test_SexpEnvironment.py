@@ -81,6 +81,13 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         ok = ge.get("identical")(obj, a)
         self.assertTrue(ok[0])
 
+    def testSubscript_utf8(self):
+        env = rinterface.baseenv['new.env']()
+        env[u'呵呵'] = rinterface.IntSexpVector((1,))
+        self.assertEqual(1, len(env))
+        self.assertEqual(1, len(env[u'呵呵']))
+        self.assertEqual(1, env[u'呵呵'][0])
+
     def testSubscript_missing_utf8(self):
         env = rinterface.baseenv['new.env']()
         self.assertRaises(KeyError, env.__getitem__, u'呵呵')

@@ -2336,7 +2336,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
     res_R = R_tryEvalSilent(rcall_exists, R_GlobalEnv, &errorOccurred);
     if (! asLogical(res_R)) {
       /* Error because of a missing key */
-      PyErr_Format(PyExc_LookupError, "'%s' not found", name);
+      PyErr_Format(PyExc_KeyError, "'%s' not found", name);
 #if (PY_VERSION_HEX >= 0x03010000)
       Py_DECREF(pybytes);
 #endif
