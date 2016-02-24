@@ -2275,7 +2275,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
 #if (PY_VERSION_HEX < 0x03010000)
   name = PyString_AsString(key);
 #else
-  PyObject *pybytes = PyUnicode_AsLatin1String(key);
+  PyObject *pybytes = PyUnicode_AsUTF8String(key);
   if (pybytes == NULL) {
     return NULL;
   }
@@ -2383,7 +2383,7 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 #if (PY_VERSION_HEX < 0x03010000)
   name = PyString_AsString(key);
 #else
-  PyObject *pybytes = PyUnicode_AsLatin1String(key);
+  PyObject *pybytes = PyUnicode_AsUTF8String(key);
   name = PyBytes_AsString(pybytes);
 #endif
 
