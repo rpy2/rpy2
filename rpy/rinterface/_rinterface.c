@@ -1801,11 +1801,13 @@ Sexp_rcall(PyObject *self, PyObject *args)
     if (addArgName) {
 #if (PY_VERSION_HEX < 0x03010000)
       argNameString = PyString_AsString(argName);
+      SET_TAG(c_R, install(argNameString));
 #else
       pybytes = PyUnicode_AsUTF8String(argName);
       argNameString = Rf_mkCharCE(PyBytes_AsString(pybytes), CE_UTF8);
-#endif
       SET_TAG(c_R, installChar(argNameString));
+#endif
+
 #if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
 #endif
@@ -3213,7 +3215,11 @@ newSEXP(PyObject *object, int rType)
 	  sexp = NULL;
 	  break;
 	}
+#if (PY_VERSION_HEX < 0x03010000)
+	str_R = mkChar(string);
+#else
         str_R = mkCharCE(string, CE_UTF8);
+#endif	
 	Py_DECREF(pybytes);
         if (!str_R) {
           PyErr_NoMemory();
