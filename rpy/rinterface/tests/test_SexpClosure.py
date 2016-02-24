@@ -7,6 +7,9 @@ rinterface.initr()
 
 if sys.version_info[0] == 3:
     long = int
+    is_py3 = True
+else:
+    is_py3 = False
 
 class SexpClosureTestCase(unittest.TestCase):
 
@@ -34,6 +37,8 @@ class SexpClosureTestCase(unittest.TestCase):
         
         self.assertRaises(rinterface.RRuntimeError, sum, letters)
 
+    @unittest.skipUnless(is_py3,
+                         "Unicode-named arguments for R functions are only available with Python 3")
     def testUTF8params(self):
         c = rinterface.globalenv.get('c')
         d = dict([(u'哈哈', 1)])
