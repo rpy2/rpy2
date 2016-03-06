@@ -71,8 +71,9 @@ class build_ext(_build_ext):
         self.set_undefined_options('build')
         r_home = _get_r_home()
         rexec = RExec(r_home)
-        if rexec.version[0] == 'development' or \
-           cmp_version(rexec.version[:2], [2, 8]) == -1:
+        if rexec.version[0] == 'development':
+            warnings.warn("Development version of R. Version compatibility check skipped.")
+        elif cmp_version(rexec.version[:2], [2, 8]) == -1:
             if self.ignore_check_rversion:
                 warnings.warn("R did not seem to have the minimum required version number")
             else:

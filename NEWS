@@ -25,6 +25,13 @@ New features
   Python function can directly be used as parameters to R functions (when
   relevant).
 
+Changes
+-------
+
+- Building/installing rpy2 with a development version of R does not require
+  the use of option `--ignore-check-rversion` any longer. A warning is
+  simply issue when the R version is "development".
+  
 Bug Fixed
 ---------
 
