@@ -25,6 +25,8 @@ New features
   Python function can directly be used as parameters to R functions (when
   relevant).
 
+- Ipython display hook `display_png` for ggplot2 graphics.
+
 Changes
 -------
 

@@ -1,12 +1,13 @@
 """ Goodies for ipython """
 
+import os
+import tempfile
+import io
 from rpy2 import robjects
 from rpy2.robjects.packages import importr
 from rpy2.robjects.lib import ggplot2
 
 from IPython.core.display import Image
-
-import tempfile
 
 grdevices = importr('grDevices')
 
@@ -23,7 +24,6 @@ class GGPlot(ggplot2.GGPlot):
         grdevices.png(fn.name, width = width, height = height)
         self.plot()
         grdevices.dev_off()
-        import io
         with io.OpenWrapper(fn.name, mode='rb') as data:
            res = data.read()
         return res
@@ -50,7 +50,6 @@ class GGPlotSVG(ggplot2.GGPlot):
         grdevices.svg(fn.name, width = width, height = height)
         self.plot()
         grdevices.dev_off()
-        import io
         with io.OpenWrapper(fn.name, mode='rb') as data:
            res = data.read().decode('utf-8')
         return res
@@ -59,3 +58,23 @@ class GGPlotSVG(ggplot2.GGPlot):
         """ Build an Ipython "Image" (requires iPython). """
         return Image(self._repr_svg_(width = width, height = height), 
                      embed=True)
+
+
+def display_png(gg, width=800, height=400):
+    """ Hook to render ggplot2 figures"""
+    fn = tempfile.mktemp()
+    try:
+        robjects.r("png")(fn, type="cairo-png", 
+                          width=width, height=height, 
+                          antialias="subpixel")
+        robjects.r("print")(gg)
+        robjects.r("dev.off()")
+        b = io.BytesIO()
+        with open(fn, 'rb') as fh:
+            b.write(fh.read())
+    finally:
+        if os.path.exists(fn):
+            os.unlink(fn)
+    data = b.getvalue()
+    ip_img = Image(data=data, format='png', embed=True)
+    return ip_img._repr_png_()
