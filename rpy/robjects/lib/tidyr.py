@@ -4,9 +4,9 @@ import warnings
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     tidyr = importr('tidyr', on_conflict="warn")
-    TARGET_VERSION = '0.3.1'
+    TARGET_VERSION = '0.4.1'
     if tidyr.__version__ != TARGET_VERSION:
-        warnings.warn('This was designed againt tidyr version %s but you have %s' % (TARGET_VERSION, dplyr.__version__))
+        warnings.warn('This was designed againt tidyr version %s but you have %s' % (TARGET_VERSION, tidyr.__version__))
 
 from rpy2.robjects.lib import dplyr
 
