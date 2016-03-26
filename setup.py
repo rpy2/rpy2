@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os, os.path, sys, shutil, re, itertools, warnings
+import tempfile
 import argparse, shlex, subprocess
 from collections import namedtuple
 
@@ -11,6 +12,34 @@ pack_version = __import__('rpy').__version__
 
 package_prefix='.'
 
+
+def _download_r(url="https://cran.cnr.berkeley.edu/src/base/R-3/R-3.2.4.tar.gz"):
+    download_dir = tempfile.mkdtemp()
+    r_src = os.path.join(download_dir, os.path.basename(url))
+    cmd = ('wget', '-O', r_src, url)
+    output = subprocess.check_output(cmd)
+    return r_src
+
+def _build_r(r_src):
+    assert r_src.endswith('tar.gz')
+    cmd = ('tar', '-xzf', os.path.basename(r_src))
+    r_src_dir = r_src[:-7]
+    output = subprocess.check_output(cmd, cwd=os.path.dirname(r_src))
+
+    cmd = ('./configure', '--enable-R-shlib')
+    output = subprocess.check_output(cmd, cwd=r_src_dir)
+    
+    cmd = ('make',)
+    output = subprocess.check_output(cmd, cwd=r_src_dir)
+    
+    cmd = ('make', 'check')
+    output = subprocess.check_output(cmd, cwd=r_src_dir)
+    return r_src_dir
+
+def _install_r(r_src_dir):
+    cmd = ('make', 'DESTDIR=/sdfsd/', 'install')
+    output = subprocess.check_output(cmd, cwd=r_src_dir)
+    
 def _get_r_home(r_bin = "R"):
     
     if (os.getenv('R_ENVIRON') is not None) or (os.getenv('R_ENVIRON_USER') is not None):
@@ -20,7 +49,14 @@ def _get_r_home(r_bin = "R"):
         r_home = subprocess.check_output((r_bin, "RHOME"),
                                          universal_newlines=True)
     except:
-        raise SystemExit("Error: Tried to guess R's HOME but no command (%s) in the PATH." % r_bin)
+        print("Warning: Tried to guess R's HOME but no command (%s) in the PATH." % r_bin)
+        try:
+            r_src = _download_r()
+            print(r_src)
+            r_src_dir = _build_r(r_src)
+            #_install_r(r_src_dir)
+        except:
+            raise SystemExit("Unable to download R source.")
 
     r_home = r_home.split(os.linesep)
 
@@ -341,7 +377,10 @@ if __name__ == '__main__':
                     pack_name + '.ipython.tests'
                     ],
         classifiers = ['Programming Language :: Python',
+                       'Programming Language :: Python :: 2',
+                       'Programming Language :: Python :: 2.7',
                        'Programming Language :: Python :: 3',
+                       'Programming Language :: Python :: 3.5',
                        'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
                        'Intended Audience :: Developers',
                        'Intended Audience :: Science/Research',
