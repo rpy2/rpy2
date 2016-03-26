@@ -75,12 +75,14 @@ def py2ri_categoryseries(obj):
         res.rclass = StrSexpVector('factor')
     return res
 
+dt_datetime64ns_type = numpy.dtype('datetime64[ns]')
+
 @py2ri.register(PandasSeries)
 def py2ri_pandasseries(obj):
     if obj.dtype.name == 'category':
         res = py2ri_categoryseries(obj)
         res = FactorVector(res)
-    elif obj.dtype.name == '<M8[ns]':
+    elif obj.dtype == dt_datetime64ns_type:
         # time series
         d = [IntVector([x.year for x in obj]),
              IntVector([x.month for x in obj]),
