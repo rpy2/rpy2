@@ -47,7 +47,10 @@ Bug Fixed
 
 - R environment can now handle unicode keys as UTF-8 (was previously
   trying Latin1)
-  
+
+- rpy2 is interrupting attempts to install with Python < 2.7 with an
+  informative error message (issue #338)
+
 
 Release 2.7.9
 =============
