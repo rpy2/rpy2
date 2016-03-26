@@ -80,13 +80,29 @@ class PandasConversionsTestCase(unittest.TestCase):
         str(rp_s)
         self.assertEqual(rinterface.ListSexpVector, type(rp_s))
 
-    def testCategorical(self):
+    def testFactor2Categorical(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a'))
         rpyp.activate()
         rp_c = robjects.conversion.ri2py(factor)
         rpyp.deactivate()
         self.assertEqual(pandas.Categorical, type(rp_c))
 
+    def testCategorical2Factor(self):
+        category = pandas.Series(["a","b","c","a"], dtype="category")
+        rpyp.activate()
+        try:
+            rp_c = robjects.conversion.py2ro(category)
+            self.assertEqual(robjects.vectors.FactorVector, type(rp_c))
+        finally:
+            rpyp.deactivate()
+    
+        rpyp.activate()
+        try:
+            rp_c = robjects.conversion.py2ri(category)
+            self.assertEqual(rinterface.IntSexpVector, type(rp_c))
+        finally:
+            rpyp.deactivate()
+            
     def testRepr(self):
         # this should go to testVector, with other tests for repr()
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),
