@@ -323,6 +323,7 @@ class SexpVectorTestCase(unittest.TestCase):
         isCharacter = ri.globalenv.get("is.character")
         ok = isCharacter(sexp)[0]
         self.assertTrue(ok)
+        self.assertEqual(u'\u21a7', sexp[0])
         self.assertEqual(u'\u21a7'.encode('utf-8'), sexp[0].encode('utf-8'))
         
     def testNewList(self):
