@@ -1,7 +1,10 @@
 import rpy2.robjects as ro
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
-from rpy2.rinterface import SexpVector, INTSXP
+from rpy2.rinterface import (SexpVector,
+                             StrSexpVector,
+                             IntSexpVector,
+                             INTSXP)
 
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pandas.core.series import Series as PandasSeries
@@ -13,6 +16,7 @@ import numpy
 from collections import OrderedDict
 from rpy2.robjects.vectors import (DataFrame,
                                    Vector,
+                                   FactorVector,
                                    ListVector,
                                    StrVector,
                                    IntVector,
@@ -59,9 +63,24 @@ def py2ri_pandasindex(obj):
         return numpy2ri.numpy2ri(obj)
 
 
+def py2ri_categoryseries(obj):
+    for c in obj.cat.categories:
+        if not isinstance(c, str):
+            raise ValueError('Converting pandas "Category" series to R factor is only possible when categories are strings.')
+    res = IntSexpVector(list(x+1 for x in obj.cat.codes))
+    res.do_slot_assign('levels', StrSexpVector(obj.cat.categories))
+    if obj.cat.ordered:
+        res.rclass = StrSexpVector('ordered', 'factor')
+    else:
+        res.rclass = StrSexpVector('factor')
+    return res
+
 @py2ri.register(PandasSeries)
 def py2ri_pandasseries(obj):
-    if obj.dtype == '<M8[ns]':
+    if obj.dtype.name == 'category':
+        res = py2ri_categoryseries(obj)
+        res = FactorVector(res)
+    elif obj.dtype.name == '<M8[ns]':
         # time series
         d = [IntVector([x.year for x in obj]),
              IntVector([x.month for x in obj]),
