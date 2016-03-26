@@ -334,7 +334,10 @@ if __name__ == '__main__':
     #for scheme in setuptools.command.install.INSTALL_SCHEMES.values():
     #    scheme['data'] = scheme['purelib']
 
-
+    if sys.version_info[0] == 2 and sys.version_info[1] < 7:
+        print("rpy2 requires at least Python Version 2.7 (with Python 3.5 or later recommended).")
+        sys.exit(1)
+        
     requires=['six', ]
     if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 4):
         requires.append('singledispatch')
