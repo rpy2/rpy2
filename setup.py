@@ -49,14 +49,16 @@ def _get_r_home(r_bin = "R"):
         r_home = subprocess.check_output((r_bin, "RHOME"),
                                          universal_newlines=True)
     except:
-        print("Warning: Tried to guess R's HOME but no command (%s) in the PATH." % r_bin)
-        try:
-            r_src = _download_r()
-            print(r_src)
-            r_src_dir = _build_r(r_src)
-            #_install_r(r_src_dir)
-        except:
-            raise SystemExit("Unable to download R source.")
+        msg = "Warning: Tried to guess R's HOME but no command (%s) in the PATH." % r_bin
+        print(msg)
+        # try:
+        #     r_src = _download_r()
+        #     print(r_src)
+        #     r_src_dir = _build_r(r_src)
+        #     #_install_r(r_src_dir)
+        # except:
+        #     print("Unable to download R source.")
+        #     sys.exit(1)
 
     r_home = r_home.split(os.linesep)
 
