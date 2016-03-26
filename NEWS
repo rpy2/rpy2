@@ -27,6 +27,8 @@ New features
 
 - Ipython display hook `display_png` for ggplot2 graphics.
 
+- :mod:`pandas` "category" vectors are better handled by the pandas conversion.
+
 Changes
 -------
 
