@@ -74,7 +74,7 @@ def numpy2ri(o):
         res = ro.baseenv["data.frame"].rcall(tuple(df_args), ro.globalenv)
     # It should be impossible to get here:
     else:
-        raise(ValueError("Unknown numpy array type."))
+        raise(ValueError("Unknown numpy array type '%s'." % str(o.dtype)))
     return res
 
 @py2ri.register(numpy.integer)
