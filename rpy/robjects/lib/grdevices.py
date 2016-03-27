@@ -72,8 +72,9 @@ def render_to_bytesio(device, *device_args, **device_kwargs):
     finally:
         if current != dev_cur()[0]:
             dev_off()
-        with open(fn, 'rb') as fh:
-            b.write(fh.read())
         if os.path.exists(fn):
+            with open(fn, 'rb') as fh:
+                b.write(fh.read())
             os.unlink(fn)
+            
 
