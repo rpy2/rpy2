@@ -52,6 +52,7 @@ def render_to_file(device, *device_args, **device_kwargs):
     finally:
         if current != dev_cur()[0]:
             dev_off()
+    
     return fn
 
 @contextmanager
