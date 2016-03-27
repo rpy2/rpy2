@@ -29,6 +29,14 @@ New features
 
 - :mod:`pandas` "category" vectors are better handled by the pandas conversion.
 
+- New module :mod:`rpy2.robjects.lib.grdevices` providing a custom
+  wrapper for the R library 'grDevices', exposing few key functions in
+  the package and providing a context manager (`render_to_bytesio`)
+  designed to simplify the handling of static plots when the file is of
+  little importance (e.g., webserver producing graphics on the fly or figure
+  embedded in a Jupyter notebook).
+
+
 Changes
 -------
 
