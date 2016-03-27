@@ -52,8 +52,6 @@ def render_to_file(device, *device_args, **device_kwargs):
     finally:
         if current != dev_cur()[0]:
             dev_off()
-    
-    return fn
 
 @contextmanager
 def render_to_bytesio(device, *device_args, **device_kwargs):
@@ -78,5 +76,4 @@ def render_to_bytesio(device, *device_args, **device_kwargs):
             b.write(fh.read())
         if os.path.exists(fn):
             os.unlink(fn)
-    return b
 
