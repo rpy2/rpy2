@@ -74,7 +74,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
     echo -e "${GREEN}    Numpy version $NPVERSION ${NC}"
 
     echo "Installing packages:"
-    for package in numpy==$NPVERSION pandas ipython; do
+    for package in numpy==$NPVERSION pandas jupyter; do
 	echo "    $package";
 	pip install --use-wheel \
 	    --find-links https://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
