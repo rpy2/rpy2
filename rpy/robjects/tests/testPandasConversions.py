@@ -51,7 +51,7 @@ class PandasConversionsTestCase(unittest.TestCase):
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),
              ('i', numpy.array([1, 2, 3], dtype="i")),
              ('f', numpy.array([1, 2, 3], dtype="f")),
-             ('s', numpy.array(["a", "b", "c"], dtype="S")),
+             ('s', numpy.array(["b", "c", "d"], dtype="S")),
              ('u', numpy.array([u"a", u"b", u"c"], dtype="U")),
              ('dates', [datetime(2012, 5, 2), 
                         datetime(2012, 6, 3), 
@@ -62,6 +62,7 @@ class PandasConversionsTestCase(unittest.TestCase):
             rp_df = robjects.conversion.py2ri(pd_df)
         self.assertEqual(pd_df.shape[0], rp_df.nrow)
         self.assertEqual(pd_df.shape[1], rp_df.ncol)
+        self.assertSequenceEqual(rp_df.rx2('s'), [b"b", b"c", b"d"])
 
     def testSeries(self):
         Series = pandas.core.series.Series
@@ -78,7 +79,7 @@ class PandasConversionsTestCase(unittest.TestCase):
             rp_s = robjects.conversion.py2ri(s)
         # segfault before the fix
         str(rp_s)
-        self.assertEqual(rinterface.ListSexpVector, type(rp_s))
+        self.assertEqual(rinterface.StrSexpVector, type(rp_s))
 
     def testFactor2Category(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a'))
@@ -108,11 +109,13 @@ class PandasConversionsTestCase(unittest.TestCase):
             rp_df = robjects.conversion.py2ri(pd_df)
         s = repr(rp_df) # used to fail with a TypeError
         s = s.split('\n')
-        self.assertEqual('[BoolVec..., IntVector, FloatVe..., FactorV..., FactorV...]',
+        self.assertEqual('[BoolVec..., IntVector, FloatVe..., Vector, FactorV...]',
                          s[1].strip())
 
     def testRi2pandas(self):
-        rdataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")), c=c("a", "b"))')
+        rdataf = robjects.r('data.frame(a=1:2, '
+                            '           b=I(c("a", "b")), '
+                            '           c=c("a", "b"))')
         with localconverter(default_converter + rpyp.converter) as cv:
             pandas_df = robjects.conversion.ri2py(rdataf)
 

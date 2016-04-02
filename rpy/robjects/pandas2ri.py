@@ -12,6 +12,7 @@ from pandas.core.index import Index as PandasIndex
 import pandas
 from numpy import recarray
 import numpy
+import warnings
 
 from collections import OrderedDict
 from rpy2.robjects.vectors import (DataFrame,
@@ -39,16 +40,24 @@ py2ro = converter.py2ro
 ri2py = converter.ri2py
 ri2ro = converter.ri2ro
 
+# numpy types for Pandas columns that require (even more) special handling
+dt_datetime64ns_type = numpy.dtype('datetime64[ns]')
+dt_O_type = numpy.dtype('O')
+
 @py2ri.register(PandasDataFrame)
 def py2ri_pandasdataframe(obj):
     od = OrderedDict()
     for name, values in obj.iteritems():
-        if values.dtype.kind == 'O':
-            od[name] = StrVector(values)
-        else:
+        try:
             od[name] = conversion.py2ri(values)
+        except Exception as e:
+            warnings.warn('Error while trying to convert '
+                          'the column "%s". Fall back to string conversion. '
+                          'The error is: %s' %\
+                          (name, str(e)))
+            od[name] = StrVector(values)
+        
     return DataFrame(od)
-
 
 @py2ri.register(PandasIndex)
 def py2ri_pandasindex(obj):
@@ -75,8 +84,6 @@ def py2ri_categoryseries(obj):
         res.rclass = StrSexpVector('factor')
     return res
 
-dt_datetime64ns_type = numpy.dtype('datetime64[ns]')
-
 @py2ri.register(PandasSeries)
 def py2ri_pandasseries(obj):
     if obj.dtype.name == 'category':
@@ -96,12 +103,13 @@ def py2ri_pandasseries(obj):
         res = POSIXct(res)
     else:
         # converted as a numpy array
-        func=numpy2ri.converter.py2ri.registry[numpy.ndarray]
+        func = numpy2ri.converter.py2ri.registry[numpy.ndarray]
         # current conversion as performed by numpy
-        res=func(obj)
+        res = func(obj)
         if len(obj.shape) == 1:
-            # force into an R vector
-            res=as_vector(res)
+            if (obj.dtype != dt_O_type):
+                # force into an R vector
+                res=as_vector(res)
 
     # "index" is equivalent to "names" in R
     if obj.ndim == 1:

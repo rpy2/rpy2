@@ -1,8 +1,12 @@
 import rpy2.robjects as ro
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
-from rpy2.rinterface import Sexp, SexpVector, ListSexpVector, \
-    LGLSXP, INTSXP, REALSXP, CPLXSXP, STRSXP, VECSXP, NULL
+from rpy2.rinterface import (Sexp,
+                             SexpVector,
+                             ListSexpVector,
+                             StrSexpVector, ByteSexpVector,
+                             LGLSXP, INTSXP, REALSXP, CPLXSXP,
+                             STRSXP, VECSXP, NULL)
 import numpy
 
 #from rpy2.robjects.vectors import DataFrame, Vector, ListVector
@@ -42,6 +46,15 @@ py2ro = converter.py2ro
 ri2py = converter.ri2py
 ri2ro = converter.ri2ro
 
+def numpy_O_py2ri(o):
+    if all(isinstance(x, str) for x in o):
+        res = StrSexpVector(o)
+    elif all(isinstance(x, bytes) for x in o):
+        res = ByteSexpVector(o)
+    else:
+        res = conversion.py2ri(list(o))
+    return res
+
 @py2ri.register(numpy.ndarray)
 def numpy2ri(o):
     """ Augmented conversion function, converting numpy arrays into
@@ -62,7 +75,7 @@ def numpy2ri(o):
         raise(ValueError("Cannot convert numpy array of unsigned values -- R does not have unsigned integers."))
     # Array-of-PyObject is treated like a Python list:
     elif o.dtype.kind == "O":
-        res = conversion.py2ri(list(o))
+        res = numpy_O_py2ri(o)
     # Record arrays map onto R data frames:
     elif o.dtype.kind == "V":
         if o.dtype.names is None:

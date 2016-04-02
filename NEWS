@@ -36,6 +36,11 @@ New features
   (e.g., webserver producing graphics on the fly or figure embedded in a
   Jupyter notebook).
 
+- Numpy conversion is handling better arrays with `dtype` equal to `"O"`
+  when all objects are either all inheriting from :class:`str` or from
+  :class:`bytes`. Such arrays are now producing :class:`StrSexpVector` or
+  :class:`BytesSexpVector` objects respectively.
+  
 
 Changes
 -------
