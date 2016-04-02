@@ -64,6 +64,8 @@ Bug Fixed
 - rpy2 is interrupting attempts to install with Python < 2.7 with an
   informative error message (issue #338)
 
+- Setting the R class can be done by using a simple Python string (issue #341)
+
 
 Release 2.7.9
 =============

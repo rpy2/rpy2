@@ -47,6 +47,13 @@ class RObjectTestCase(unittest.TestCase):
                           x.rclass[0])
         self.assertEqual(old_class[0], x.rclass[1])
 
+    def testRclass_set_usingstring(self):
+        x = robjects.r("1:3")
+        old_class = x.rclass
+        x.rclass = "Foo"
+        self.assertEqual("Foo",
+                          x.rclass[0])
+        
     def testDo_slot(self):
         self.assertEqual("A1.4, p. 270",
                           robjects.globalenv.get("BOD").do_slot("reference")[0])
