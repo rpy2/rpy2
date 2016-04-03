@@ -1,4 +1,5 @@
 import unittest
+import sys
 import rpy2.robjects as robjects
 from rpy2.robjects import conversion
 import rpy2.rinterface as rinterface
@@ -62,8 +63,15 @@ class PandasConversionsTestCase(unittest.TestCase):
             rp_df = robjects.conversion.py2ri(pd_df)
         self.assertEqual(pd_df.shape[0], rp_df.nrow)
         self.assertEqual(pd_df.shape[1], rp_df.ncol)
-        self.assertSequenceEqual(rp_df.rx2('s'), [b"b", b"c", b"d"])
-
+        if sys.version_info[0] == 3:
+            self.assertSequenceEqual(rp_df.rx2('s'), [b"b", b"c", b"d"])
+        else:
+            # if Python it will be a string, that will turn into a factor
+            col_s = rp_df.rx2('s')
+            self.assertEqual(robjects.vectors.FactorVector,
+                             type(col_s))
+            self.assertSequenceEqual(col_s.levels, [b"b", b"c", b"d"])
+            
     def testSeries(self):
         Series = pandas.core.series.Series
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
@@ -109,8 +117,11 @@ class PandasConversionsTestCase(unittest.TestCase):
             rp_df = robjects.conversion.py2ri(pd_df)
         s = repr(rp_df) # used to fail with a TypeError
         s = s.split('\n')
-        self.assertEqual('[BoolVec..., IntVector, FloatVe..., Vector, FactorV...]',
-                         s[1].strip())
+        if sys.version_info[0] == 3:
+            repr_str = '[BoolVec..., IntVector, FloatVe..., Vector, FactorV...]'
+        else:
+            repr_str = '[BoolVec..., IntVector, FloatVe..., FactorV..., FactorV...]'
+        self.assertEqual(repr_str, s[1].strip())
 
     def testRi2pandas(self):
         rdataf = robjects.r('data.frame(a=1:2, '
