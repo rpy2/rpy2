@@ -41,6 +41,8 @@ New features
   :class:`bytes`. Such arrays are now producing :class:`StrSexpVector` or
   :class:`BytesSexpVector` objects respectively.
   
+- R's own printing of warnings if now transformed to warnings of type
+  `rinterface.RRuntimeWarning` (it used to be a regular `UserWarning`)
 
 Changes
 -------

@@ -1,5 +1,7 @@
 import os, sys, warnings, subprocess
 
+class RRuntimeWarning(RuntimeWarning):
+    pass
 
 try:
     if ((sys.version_info.major == 2) and (sys.version_info.minor < 7)) or \
@@ -187,7 +189,9 @@ else:
 
 set_writeconsole_regular(consolePrint)
 
-set_writeconsole_warnerror(warnings.warn)
+def consoleWarn(x):
+    warnings.warn(x, RRuntimeWarning)
+set_writeconsole_warnerror(consoleWarn)
 
 def consoleFlush():
     sys.stdout.flush()
