@@ -211,14 +211,17 @@ except Exception%s e:
       """ %(rpy2_path, pyexception_as)
 
             rpy_code.write(rpy_code_str)
-
-        child_proc = subprocess.Popen((sys.executable, rpy_code.name))
-        time.sleep(1)  # required for the SIGINT to function
-        # (appears like a bug w/ subprocess)
-        # (the exact sleep time migth be machine dependent :( )
-        child_proc.send_signal(signal.SIGINT)
-        time.sleep(1)  # required for the SIGINT to function
-        ret_code = child_proc.poll()
+        cmd = (sys.executable, rpy_code.name)
+        with open(os.devnull, 'w') as fnull:
+            child_proc = subprocess.Popen(cmd,
+                                          stdout=fnull,
+                                          stderr=fnull)
+            time.sleep(1)  # required for the SIGINT to function
+            # (appears like a bug w/ subprocess)
+            # (the exact sleep time migth be machine dependent :( )
+            child_proc.send_signal(signal.SIGINT)
+            time.sleep(1)  # required for the SIGINT to function
+            ret_code = child_proc.poll()
         self.assertFalse(ret_code is None) # Interruption failed
 
     def testRpyMemory(self):
