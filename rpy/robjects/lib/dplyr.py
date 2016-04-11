@@ -142,13 +142,16 @@ sample_frac = _make_pipe(dplyr.sample_frac, DataFrame)
 slice = _make_pipe(dplyr.slice_, DataFrame)
 
 # family of functions 'src'
-class Src(robjects.ListVector):
+class DataSource(robjects.ListVector):
     @property
-    def tables(self):
+    def tablenames(self):
         """ Call the R function dplyr::src_tbls() and return a vector
         of table names."""
         return tuple(dplyr.src_tbls(self))
-
+    def get_table(self, name):
+        """ "Get" table from a source """
+        return DataFrame(tbl(self, name))
+    
 src = dplyr.src
 src_desc = dplyr.src_desc
 src_tbls = dplyr.src_tbls
@@ -162,3 +165,6 @@ src_mysql = dplyr.src_mysql
 src_postgres = dplyr.src_postgres
 src_sqlite = dplyr.src_sqlite
 
+# family of functions 'tbl'
+
+tbl = dplyr.tbl
