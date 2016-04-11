@@ -141,7 +141,14 @@ sample_n = _make_pipe(dplyr.sample_n, DataFrame)
 sample_frac = _make_pipe(dplyr.sample_frac, DataFrame)
 slice = _make_pipe(dplyr.slice_, DataFrame)
 
-# src family of functions
+# family of functions 'src'
+class Src(robjects.ListVector):
+    @property
+    def tables(self):
+        """ Call the R function dplyr::src_tbls() and return a vector
+        of table names."""
+        return tuple(dplyr.src_tbls(self))
+
 src = dplyr.src
 src_desc = dplyr.src_desc
 src_tbls = dplyr.src_tbls
