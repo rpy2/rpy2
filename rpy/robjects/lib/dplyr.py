@@ -141,4 +141,17 @@ sample_n = _make_pipe(dplyr.sample_n, DataFrame)
 sample_frac = _make_pipe(dplyr.sample_frac, DataFrame)
 slice = _make_pipe(dplyr.slice_, DataFrame)
 
+# src family of functions
+src = dplyr.src
+src_desc = dplyr.src_desc
+src_tbls = dplyr.src_tbls
+
+src_local = dplyr.src_local
+src_df = dplyr.src_df
+src_dt = dplyr.src_dt
+
+src_sql = dplyr.src_sql
+src_mysql = dplyr.src_mysql
+src_postgres = dplyr.src_postgres
+src_sqlite = dplyr.src_sqlite
 
