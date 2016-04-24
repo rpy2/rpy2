@@ -47,8 +47,12 @@ New features
 - The family of functions `src_*` and the function `tbl` in the R package
   `dplyr` have aliases in the module :mod:`rpy2.robjects.lib.dplyr`, and
   a class :class:`DataSource` has been added for convenience.
-  
-  
+
+- :class:`rpy2.robjects.vectors.DataFrame` has a method `head` corresponding
+  to R's method of the same name. The method takes the n first row of a
+  data frame.
+
+
 Changes
 -------
 

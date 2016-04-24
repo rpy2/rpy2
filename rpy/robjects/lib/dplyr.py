@@ -160,10 +160,21 @@ src_local = dplyr.src_local
 src_df = dplyr.src_df
 src_dt = dplyr.src_dt
 
-src_sql = dplyr.src_sql
-src_mysql = dplyr.src_mysql
-src_postgres = dplyr.src_postgres
-src_sqlite = dplyr.src_sqlite
+def src_sql(*args, **kwargs):
+    res = dplyr.src_sql(*args, **kwargs)
+    return DataSource(res)
+
+def src_mysql(*args, **kwargs):
+    res = dplyr.src_mysql(*args, **kwargs)
+    return DataSource(res)
+
+def src_postgres(*args, **kwargs):
+    res = dplyr.src_postgres(*args, **kwargs)
+    return DataSource(res)
+
+def src_sqlite(*args, **kwargs):
+    res = dplyr.src_sqlite(*args, **kwargs)
+    return DataSource(res)
 
 # family of functions 'tbl'
 
