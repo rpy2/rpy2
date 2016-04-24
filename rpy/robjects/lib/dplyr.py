@@ -89,7 +89,7 @@ class DataFrame(robjects.DataFrame):
         cls = type(self)
         return cls(dplyr.collect(self, *args, **kwargs))
         
-class GroupedDataFrame(robjects.DataFrame):
+class GroupedDataFrame(DataFrame):
     pass
 
 DataFrame.arrange = _wrap(dplyr.arrange_, None)

@@ -61,6 +61,12 @@ Changes
 - Building/installing rpy2 with a development version of R does not require
   the use of option `--ignore-check-rversion` any longer. A warning is
   simply issue when the R version is "development".
+
+- On MSWindows, the dependency on `pywin32` was removed (issue #315)
+
+- :class:`GroupedDataFrame` in the dplyr interface module is now inheriting
+  from the definition of DataFrame in that same module (it was previously
+  inheriting from :class:`robjects.vectors.DataFrame`).
   
 Bug Fixed
 ---------
