@@ -1021,7 +1021,10 @@ class DataFrame(ListVector):
         res = self._rbind(self, *new_args, **new_kwargs)
         return conversion.ri2ro(res)
 
-
+    def head(self, *args, n = 6, **kwargs):
+        res = utils_ri['head'](self, *args, n=n, **kwargs)
+        return conversion.ri2ro(res)
+    
     @staticmethod
     def from_csvfile(path, header = True, sep = ",",
                      quote = "\"", dec = ".", 
