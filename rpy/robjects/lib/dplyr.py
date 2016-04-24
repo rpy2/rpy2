@@ -114,11 +114,15 @@ DataFrame.sample_n = _wrap(dplyr.sample_n, None)
 DataFrame.sample_frac = _wrap(dplyr.sample_frac, None)
 DataFrame.slice = _wrap(dplyr.slice_, None)
 
+DataFrame.count = _wrap(dplyr.count_, None)
+DataFrame.tally = _wrap(dplyr.tally, None)
+
 GroupedDataFrame.summarize = _wrap(dplyr.summarize_, DataFrame)
 GroupedDataFrame.summarise = GroupedDataFrame.summarize
 GroupedDataFrame.ungroup = _wrap(dplyr.ungroup, DataFrame)
 
 arrange = _make_pipe(dplyr.arrange_, DataFrame)
+count = _make_pipe(dplyr.count_, DataFrame)
 distinct = _make_pipe(dplyr.distinct_, DataFrame)
 mutate = _make_pipe(dplyr.mutate_, DataFrame)
 transmute = _make_pipe(dplyr.transmute_, DataFrame)
@@ -140,6 +144,7 @@ setdiff = _make_pipe2(dplyr.setdiff, DataFrame)
 sample_n = _make_pipe(dplyr.sample_n, DataFrame)
 sample_frac = _make_pipe(dplyr.sample_frac, DataFrame)
 slice = _make_pipe(dplyr.slice_, DataFrame)
+tally = _make_pipe(dplyr.tally, DataFrame)
 
 # family of functions 'src'
 class DataSource(robjects.ListVector):

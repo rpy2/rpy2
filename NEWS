@@ -52,6 +52,8 @@ New features
   to R's method of the same name. The method takes the n first row of a
   data frame.
 
+- dplyr's functions `count_` and `tally` are now exposed as methods for
+  the class :class:`dplyr.DataFrame`.
 
 Changes
 -------
