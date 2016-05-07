@@ -85,7 +85,13 @@ class DataFrame(robjects.DataFrame):
         res = dplyr.copy_to(destination, self, name=name)
         return type(self)(res)
 
+    def collapse(self, *args, **kwargs):
+        """Call the function `collapse` in the R package `dplyr`."""
+        cls = type(self)
+        return cls(dplyr.collapse(self, *args, **kwargs))
+
     def collect(self, *args, **kwargs):
+        """Call the function `collect` in the R package `dplyr`."""
         cls = type(self)
         return cls(dplyr.collect(self, *args, **kwargs))
         
@@ -154,7 +160,7 @@ class DataSource(robjects.ListVector):
         of table names."""
         return tuple(dplyr.src_tbls(self))
     def get_table(self, name):
-        """ "Get" table from a source """
+        """ "Get" table from a source (R dplyr's function `tbl`). """
         return DataFrame(tbl(self, name))
     
 src = dplyr.src

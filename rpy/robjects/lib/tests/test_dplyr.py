@@ -64,6 +64,14 @@ class DplyrTestCase(unittest.TestCase):
         #        without error
         self.assertEquals(dplyr.DataFrame, type(dataf_collected))
         
+    def testCollect(self):
+        dataf = dplyr.DataFrame(mtcars)
+        dataf_collected = dataf.collect()
+        # FIXME: no real test here. Just ensuring that it is returning
+        #        without error
+        self.assertEquals(dplyr.DataFrame, type(dataf_collected))
+
+        
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DplyrTestCase)
     return suite
