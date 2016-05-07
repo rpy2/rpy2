@@ -323,9 +323,12 @@ static int Rpy_ReleaseObject(SEXP object) {
   /* } */
 
 PyDoc_STRVAR(Rpy_ProtectedIDs_doc,
-             "Return a tuple with the R IDs for the objects protected\
- from R's garbage collection by rpy2, along with the number of rpy2 objects\
- protecting them from collection.\n");
+             "Return a tuple of pairs with each: \n"
+	     "- an R ID for the objects protected from R's garbage collection by rpy2\n"
+	     "- the number of rpy2 objects protecting that R object from collection.\n\n"
+	     "The R ID is a memory pointer for the R-defined C-structure "
+	     "containing all information about the R object. It is available "
+	     "from an rpy2 object through the read-only attribute `rid`.");
 /* Return a tuple with IDs of R objects protected by rpy2 and counts */
 static PyObject* Rpy_ProtectedIDs(PyObject *self) {
   PyObject *key, *capsule;
