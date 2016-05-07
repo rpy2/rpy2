@@ -74,6 +74,10 @@ def _make_pipe2(rfunc, cls, env=robjects.globalenv):
     return func
 
 class DataFrame(robjects.DataFrame):
+    """ DataFrame object extending the object of the same name in
+    `rpy2.robjects.vectors` with functionalities defined in the R
+    package `dplyr`."""
+    
     def __rshift__(self, other):
         return other(self)
 
@@ -154,6 +158,8 @@ tally = _make_pipe(dplyr.tally, DataFrame)
 
 # family of functions 'src'
 class DataSource(robjects.ListVector):
+    """ Source of data tables (e.g., a schema in a relational database). """
+    
     @property
     def tablenames(self):
         """ Call the R function dplyr::src_tbls() and return a vector
