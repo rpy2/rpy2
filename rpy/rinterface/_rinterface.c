@@ -2570,20 +2570,21 @@ EnvironmentSexp_iter(PyObject *sexpEnvironment)
 
 
 PyDoc_STRVAR(EnvironmentSexp_Type_doc,
-"R object that is an environment.\n"
-"R environments can be seen as similar to Python\n"
-"dictionnaries, with the following twists:\n"
-"\n"
-"- an environment can be a list of frames to sequentially\n"
-"search into\n"
-"\n"
-"- the search can be recursively propagated to the enclosing\n"
-"environment whenever the key is not found (in that respect\n"
-"they can be seen as scopings).\n"
-"\n"
-"The subsetting operator \"[\" is made to match Python's\n"
-"behavior, that is the enclosing environments are not\n"
-"inspected upon absence of a given key.\n");
+	     "R object that is an environment. "
+	     "R environments can be seen as similar to Python "
+	     "dictionnaries, with the following twists:\n"
+	     "\n"
+	     "- an environment can be a list of frames to sequentially\n"
+	     "search into\n"
+	     "\n"
+	     "- the search can be sequentially propagated to the enclosing "
+	     "environment(s) whenever the key is not found (in that respect "
+	     "they can be seen as nested scopes).\n"
+	     "\n"
+	     "The subsetting operator \"[\" is made to match Python's "
+	     "behavior, that is the enclosing environments are not "
+	     "inspected upon absence of a given key. The method `get` should "
+	     "be used instead.");
 
 
 static int
