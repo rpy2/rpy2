@@ -90,7 +90,10 @@ class DataFrame(robjects.DataFrame):
         return type(self)(res)
 
     def collapse(self, *args, **kwargs):
-        """Call the function `collapse` in the R package `dplyr`."""
+        """
+        Call the function `collapse` in the R package `dplyr`.
+        """
+        
         cls = type(self)
         return cls(dplyr.collapse(self, *args, **kwargs))
 
