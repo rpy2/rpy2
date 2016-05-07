@@ -41,21 +41,57 @@ True
 >>> letters.__sexp_refcount__
 2
 
+.. note::
+
+   The attribute `rid` is simply the memory address at which the R-defined
+   C-structure containing the R objects is located.
 
 A list of all R IDs protected from garbage collection by rpy2
 along with their reference count can be obtained by calling
 :func:`rpy2.rinterface.protected_rids`.
-      
->>> letters.rid in set(x[0] for x in ri.protected_rids())
+
+We can check that our python object `x` is in indeed listed as protected
+from garbage collection (yet it is not bound to any symbol in R - as far as
+R is concerned it is like an anonymous variable):
+
+>>> x.rid in (elt[0] for elt in ri.protected_rids())
 True
->>> [x[1] for x in ri.protected_rids() if x[0]==letters.rid]
-2
+
+The number of Python/rpy2 objects protecting the R objects from
+garbage collection can is also available.
+
+>>> [elt[1] for elt in ri.protected_rids() if elt[0]==x.rid]
+[1]
 
 .. note::
 
    The exact count will depend on what has happened with the current Python
    process, that is whether the R object is already tracked by rpy2 or not.
 
+   Binding the rpy2 object to a new Python symbol will not increase the count
+   (because Python knows that the two objects are the same, and R has not been
+   involved in that):
+   
+   >>> y = x
+   >>> [elt[1] for elt in ri.protected_rids() if elt[0]==x.rid]
+   [1]
+
+   On the other hand, explictly wrapping again the R object through an rpy2
+   constructor will increase the count by one:
+
+   >>> z = ri.IntSexpVector(x)
+   >>> [elt[1] for elt in ri.protected_rids() if elt[0]==x.rid]
+   [2]
+   >>> x.rid == z.rid
+   True
+
+   In the last case, Python does not know that the 2 objects point to the
+   same underlying R object and this mechanism is intended to prevent a
+   premature garbage collection of the R object.
+
+   >>> del(x); del(y) # remember that we did `y = x`
+   >>> [elt[1] for elt in ri.protected_rids() if elt[0]==z.rid]
+   [1]
 
 
 To achieve this, and keep close to the pass-by-reference approach in Python,
