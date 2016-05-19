@@ -228,6 +228,7 @@ class Viewport(robjects.RObject):
     def viewport(cls, **kwargs):
         """ Constructor: create a Viewport """
         res = cls._viewport(**kwargs)
+        res = cls(res)
         return res
 
 viewport = Viewport.viewport
