@@ -85,6 +85,9 @@ Bug Fixed
 
 - Setting the R class can be done by using a simple Python string (issue #341)
 
+- `rpy2.robjects.lib.grid.viewport` is now returning an instance of class
+  `Viewport` (defined in the same module) (issue #350)
+  
 
 Release 2.7.9
 =============
