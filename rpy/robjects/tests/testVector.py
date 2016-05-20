@@ -170,14 +170,14 @@ class VectorTestCase(unittest.TestCase):
     def testRepr(self):
         vec = robjects.IntVector((1,2,3))
         s = repr(vec).split('\n')
-        self.assertEqual('[       1,        2,        3]', s[1])
+        self.assertEqual('[       1,        2,        3]', s[2])
 
     def testReprNonVectorInList(self):
         vec = robjects.ListVector(OrderedDict((('a', 1), 
                                                ('b', robjects.Formula('y ~ x')),
                                                )))
         s = repr(vec).split('\n')
-        self.assertEqual('[IntVector, Formula]', s[1].strip())
+        self.assertEqual('[IntVector, Formula]', s[2].strip())
 
     def testItems(self):
         vec = robjects.IntVector(range(3))
