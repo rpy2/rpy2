@@ -67,7 +67,10 @@ Changes
 - :class:`GroupedDataFrame` in the dplyr interface module is now inheriting
   from the definition of DataFrame in that same module (it was previously
   inheriting from :class:`robjects.vectors.DataFrame`).
-  
+
+- The default `repr()` for R objects is now printing the R classes
+  (as suggested in issue #349).
+
 Bug Fixed
 ---------
 

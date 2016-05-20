@@ -82,6 +82,16 @@ class RObjectMixin(object):
             self.__slots = RSlots(self)
         return self.__slots
 
+    def __repr__(self):
+        try:
+            rclasses = ('R object with classes: {} mapped to:'
+                        .format(tuple(self.rclass)))
+        except:
+            rclasses = 'Unable to fetch R classes.' + os.linesep
+        res = os.linesep.join((rclasses,
+                               super(RObjectMixin, self).__repr__()))
+        return res
+    
     def __str__(self):
         if sys.platform == 'win32':
             tmpf = tempfile.NamedTemporaryFile(mode="w+", delete=False)
