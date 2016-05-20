@@ -121,7 +121,7 @@ class PandasConversionsTestCase(unittest.TestCase):
             repr_str = '[BoolVec..., IntVector, FloatVe..., Vector, FactorV...]'
         else:
             repr_str = '[BoolVec..., IntVector, FloatVe..., FactorV..., FactorV...]'
-        self.assertEqual(repr_str, s[1].strip())
+        self.assertEqual(repr_str, s[2].strip())
 
     def testRi2pandas(self):
         rdataf = robjects.r('data.frame(a=1:2, '
