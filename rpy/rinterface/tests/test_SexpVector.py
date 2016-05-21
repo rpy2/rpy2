@@ -320,7 +320,7 @@ class SexpVectorTestCase(unittest.TestCase):
 
     def testNewUnicodeSymbol(self):
         u_char = u'\u21a7'
-        b_char = '\xe2\x86\xa7'
+        b_char = b'\xe2\x86\xa7'
         assert(b_char == u_char.encode('utf-8'))
         sexp = ri.SexpVector((u'\u21a7', ), ri.STRSXP)
         isCharacter = ri.globalenv.get("is.character")
