@@ -59,6 +59,6 @@ Prefer `python -m rpy2.tests` to run all tests.
 License
 =======
 
-RPy2 can be used under the terms of either the GNU
+RPy2 can be used under the terms of the GNU
 General Public License Version 2 or later (see the file
-gpl-2.0.txt).
+gpl-2.0.txt). This is the very same license R itself is released under.
