@@ -2,42 +2,124 @@
 Introduction to rpy2
 ********************
 
-
-This introduction aims at making a gentle start to rpy2,
-either when coming from R to Python/rpy2, from Python to rpy2/R,
-or from elsewhere to Python/rpy2/R.
+This introduction is intendedfor new users, or users who never consulted
+the documentation but encountered blockers after guessing successfully
+their first steps through the API.
 
 
 Getting started
 ===============
 
 It is assumed here that the rpy2 package has been properly installed.
-In python, making a package or module available is achieved by
-importing it. `rpy2` is just a python package. Most users will interact
-with R using the `robjects` layer, a high-level interface that tries
-to hide R behind a Python-like behavior.
+This will be the case if working out of one of the Docker containers available,
+of if the instructions were followed (see :ref:`install-installation`).
+
+`rpy2` is like any other python package binding to a C library. Its top
+level can be imported, and the version obtained. 
+
+.. code-block:: python
+
+   import rpy2
+   print(rpy2.__version__)
+
+.. note::
+
+   The rpy2 version is rather important when reporting an issue with rpy2,
+   or in your own code if trying to assess whether rpy2 is matching the
+   expected version.
+
+   The version of R against which rpy2 was build (compiled) is also available:
+   
+   .. code-block:: python
+
+      from rpy2.rinterface import R_VERSION_BUILD
+      print(R_VERSION_BUILD)
+
+
+:mod:`rpy2` is providing  2 levels of interface with R:
+- low-level (:mod:`rpy2.rinterface`)
+- high-level (:mode:`rpy2.robjects`)
+
+The high-level interface is trying to make the use of R as natural as
+possible for a Python user (something sometimes referred to as
+"pythonic"), and this introduction is only coverage that interface.
+
+Importing the top-level sub-package is also initializing and starting
+R embedded in the current Python process:
 
 .. code-block:: python
 
    import rpy2.robjects as robjects
 
+   
 R packages
 ==========
 
-R is  any data analysis toolbox because of the
-breadth and depth of the packages available.
+R is arguably one of the best data analysis toolboxes because of the
+breadth and depth of its packages.
 
-For this introduction, we recommend installing a couple of popular packages.
+Importing packages
+------------------
 
-Downloading and installing R packages is usually performed by fetching R packages
-from a package repository and installing them locally. We can get set with:
+Importing R packages is often the first step when running R code, and
+`rpy2` is providing a function :func:`rpy2.robjects.packages.importr`
+that makes that step very similar to importing Python packages.
+
+.. code-block:: python
+
+   from rpy2.robjects.pacakges import importr
+   # import R's "base" package
+   base = importr('base')
+
+   # import R's "utils" package
+   utils = import('utils')
+
+In essence, that step is importing the R package in the embedded R,
+and is exposing all R objects in that package as Python objects.
+
+.. note::
+
+   There is a twist though. R object names can contain a `"."` (dot)
+   while in Python the dot means "attribute in a namespace". Because
+   of this, `importr` is trying to translate `"."` into `"_"`. The details
+   will not be necessary in most of the cases, but when they do the
+   documentation for :ref:`robjects-packages` should be consulted.
+
+   
+Installing packages
+-------------------
+
+Knowing how to install R packages is an important skill to have,
+although not always a mandatory one if working out of an R installation
+designed to meet all reasonable needs for a task or a project.
+
+.. note::
+
+   Package installation is presented early in the introduction,
+   but this subsection
+   can be skipped if difficulties such as an absence of internet connection,
+   an uncooperative proxy (or proxy maintainer),
+   or insufficient write priviledges to install
+   the package are met.
+
+Downloading and installing R packages is usually performed by fetching
+R packages from a package repository and installing them locally.
+Capabilities to do this are provided by R libraries, and when in Python
+we can simply use them using rpy2. An interface to the R features is
+provided in :mod:`rpy2.robjects.packages` (where the function :func:`importr`
+introduced above is defined).
+
+Getting ready to install packages from the first mirror known to R is done
+with:
 
 .. code-block:: python
 
    # import rpy2's package module
    import rpy2.robjects.packages as rpackages
+   
    # import R's utility package
    utils = rpackages.importr('utils')
+   
    # select a mirror for R packages
    utils.chooseCRANmirror(ind=1) # select the first mirror in the list
 
@@ -50,35 +132,41 @@ We are now ready to install packages using R's own function `install.package`:
 
    # R vector of strings
    from rpy2.robjects.vectors import StrVector
-   # file
-   packnames_to_install = [x for packnames if not rpackages.isinstalled(x)]
-   if len(packnames_to_install) > 0:
-       utils.install_packages(StrVector(packnames_to_install))
+   
+   # Selectively install what needs to be install.
+   # We are fancy, just because we can.
+   names_to_install = [x for packnames if not rpackages.isinstalled(x)]
+   if len(names_to_install) > 0:
+       utils.install_packages(StrVector(names_to_install))
 
-The code above can be part of Python you distribute if you are relying on packages not distributed with
-R by default.
+The code above can be part of Python code you distribute if you are relying
+on CRAN packages not distributed with R by default.
 
-
-More documentation about the handling of R packages in `rpy2` can be found Section :ref:`robjects-packages`.
+More documentation about the handling of R packages in `rpy2` can be found
+Section :ref:`robjects-packages`.
 
 
 The `r` instance
 ================
 
-The object :data:`r` in :mod:`rpy2.robjects` represents the running embedded
-`R` process.
+We mentioned earlier that `rpy2` is running an embedded R. This is may be
+a little abstract, so there is an object :data:`rpy2.robjects.r` to make
+it tangible.
 
-If familiar with R and the R console, :data:`r` is a little like a
-communication channel from Python to R.
+This object can be used as rudimentary communication channel between
+Python and R,
+similar to the way one would interact with a subprocess yet more efficient,
+better integrated with Python, and easier to use.
 
 
 Getting R objects
 -----------------
 
-In Python the `[` operator is an alias for the  ethod :meth:`__getitem__`.
-
-The :meth:`__getitem__` method of :mod:`rpy2.robjects.r`,
-evaluates a variable from the R console.
+      
+The :meth:`__getitem__` method of :data:`rpy2.robjects.r`,
+gets the R object associated with a given symbol, just
+as typing that symbol name in the R console would do it
+(see the note below for details).
 
 Example in R:
 
@@ -113,11 +201,12 @@ With :mod:`rpy2`:
 Evaluating R code
 -----------------
 
-The :data:`r` object is also callable, and the string passed to it evaluated
-as `R` code.
+The object :data:`r` is also callable, and the string passed in
+a call is evaluated as `R` code.
 
-This can be used to `get` variables, and provide an alternative to
-the method presented above.
+The simplest such strings would be the name of an R object,
+and this provide an alternative to
+the method `__getitem__` described earlier.
 
 Example in R:
 
@@ -147,30 +236,36 @@ With :mod:`rpy2`:
    5.1415926535897931
 
 
-The evaluation is performed in what is known to R users as the 
-`Global Environment`, that is the place one starts at when starting
+More complex strings are R expressions of arbitrary complexity,
+or even sequences of expressions (snippets of R code).
+Their evaluation is performed in what is known to R users as the 
+`Global Environment`, that is the place one starts at when in
 the R console. Whenever the `R` code creates variables, those
 variables are "located" in that `Global Environment` by default.
 
-
-Example:
+For example, the string below returns the value 18.85. 
 
 .. code-block:: r
 
    robjects.r('''
+           # create a function `f`
 	   f <- function(r, verbose=FALSE) {
                if (verbose) {
                    cat("I am calling f().\n")
                }
                2 * pi * r 
            }
+	   # call the function `f` with argument value 3
            f(3)
 	   ''')
 
-The expression above returns the value 18.85, 
-but first creates an R function `f`. 
-That function `f` is present in the R `Global Environement`, and can
-be accessed with the `__getitem__` mechanism outlined above:
+That string is a snippet of R code (complete with comments) that
+first creates an R function, then binds it to the symbol `f` (in R),
+finally calls that function `f`. The results of the call (what the
+R function `f` is returns) is returned to Python.
+
+Since that function `f` is now present in the R `Global Environment`,
+it can be accessed with the `__getitem__` mechanism outlined above:
 
 >>> r_f = robjects.globalenv['f']
 >>> print(r_f.r_repr())
