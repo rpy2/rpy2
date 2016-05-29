@@ -39,6 +39,8 @@ This effort can be seen as a redesign and rewrite of the RPy package, and this
 unfortunately means there is not enough left in common to ensure compatibility.
 
 
+.. _install-installation:
+
 Installation
 ============
 
