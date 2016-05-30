@@ -38,7 +38,7 @@ level can be imported, and the version obtained.
 
 :mod:`rpy2` is providing  2 levels of interface with R:
 - low-level (:mod:`rpy2.rinterface`)
-- high-level (:mode:`rpy2.robjects`)
+- high-level (:mod:`rpy2.robjects`)
 
 The high-level interface is trying to make the use of R as natural as
 possible for a Python user (something sometimes referred to as
