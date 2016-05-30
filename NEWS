@@ -1,3 +1,13 @@
+Release 2.8.1
+=============
+
+Bugs Fixed
+----------
+
+- Trying to install rpy2 while R is not in the `PATH` resulted in an error
+  in `setup.py`.
+  
+
 Release 2.8.0
 =============
 
@@ -71,8 +81,8 @@ Changes
 - The default `repr()` for R objects is now printing the R classes
   (as suggested in issue #349).
 
-Bug Fixed
----------
+Bugs Fixed
+----------
 
 - Parameter names to R function that are in UTF-8 are no longer causing a
   segfault (issue #332)
