@@ -51,6 +51,7 @@ def _get_r_home(r_bin = "R"):
     except:
         msg = "Warning: Tried to guess R's HOME but no command (%s) in the PATH." % r_bin
         print(msg)
+        sys.exit(1)
         # try:
         #     r_src = _download_r()
         #     print(r_src)
