@@ -1,12 +1,17 @@
 Release 2.8.1
 =============
 
+New features
+------------
+
+- `Dockerfile` with automated build on dockerhub (https://hub.docker.com/r/rpy2/rpy2)
+
 Bugs Fixed
 ----------
 
 - Trying to install rpy2 while R is not in the `PATH` resulted in an error
   in `setup.py`.
-  
+
 
 Release 2.8.0
 =============
