@@ -15,7 +15,21 @@ Installation
     pip install rpy2
 
 The package is known to compile on Linux, MacOSX, and Windows
-(provided that developper tools installed are you are ready figure out how yourself).
+(provided that developper tools are installed, and you are ready
+figure out how by yourself).
+
+Alternatively, there is a Docker image available to try rpy2 out
+without concerns about the installation process.
+
+To run the ipython console:
+
+    docker run -it --rm -p 8888:8888 \
+           rpy2/rpy2:2.8.x ipython
+
+To run jupypter notebook on port 8888:
+
+    docker run --rm -p 8888:8888 \
+           rpy2/rpy2:2.8.x
 
 In case you find yourself with this source without any idea
 of what it takes to compile anything on your platform, try first
