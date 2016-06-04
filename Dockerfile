@@ -39,7 +39,7 @@ RUN \
 # Run dev version of rpy2
 RUN \
   pip3 --no-cache-dir install \
-       https://bitbucket.org/rpy2/rpy2/get/version_2.8.x.tar.gz && \
+       https://bitbucket.org/rpy2/rpy2/get/default.tar.gz && \
   rm -rf /root/.cache
 
 ENV SHELL /bin/bash
