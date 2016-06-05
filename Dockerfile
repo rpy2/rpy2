@@ -56,7 +56,12 @@ RUN mkdir /home/$NB_USER/work && \
     mkdir /home/$NB_USER/.jupyter && \
     mkdir /home/$NB_USER/.local && \
     echo "cacert=/etc/ssl/certs/ca-certificates.crt" > /home/$NB_USER/.curlrc && \
-    echo "c.NotebookApp.ip = '*'" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py
+    echo "c.NotebookApp.ip = '*'" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
+    python3 -m venv py35_env && \
+    echo "\n\
+source ~/py35_env/bin/activate\n\
+echo Python virtual environment activated. Write "deactivate" to exit it.\n" \
+        >> /home/$NB_USER/.bash_profile
 
 USER root
 
