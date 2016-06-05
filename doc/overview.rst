@@ -44,30 +44,48 @@ unfortunately means there is not enough left in common to ensure compatibility.
 Installation
 ============
 
-Upgrading from an older release of rpy2
----------------------------------------
 
-In order to upgrade one will have to first remove older
-installed rpy2 packages then and only then install
-a version of rpy2.
+Docker image
+------------
 
-To do so, or to check whether you have an earlier version
-of rpy2 installed, do the following in a Python console:
+There is a Docker image available to try rpy2 out
+without concerns about the installation process.
 
-.. code-block:: python
+ipython console
+^^^^^^^^^^^^^^^
 
-   import rpy2
-   rpy2.__path__
+.. code-block:: bash
+	  
+   docker run -it --rm -p 8888:8888 \
+          rpy2/rpy2:2.8.x ipython
 
-An error during execution means that you do not have any older
-version of rpy2 installed and you should proceed to the next section.
+jupyter notbook
+^^^^^^^^^^^^^^^
 
-If this returns a string containing a path, you should go to that path
-and remove all files and directories starting with *rpy2*. To make sure
-that the cleaning is complete, open a new Python session and check that
-the above code results in an error.
+To run the jupyter notebook on port 8888:
 
+.. code-block:: bash
 
+   docker run --rm -p 8888:8888 \
+          rpy2/rpy2:2.8.x
+
+Once started, point a web browser to `http://localhost:8888`.
+
+.. note::
+
+   If using `docker-machine` (which should be the case when on
+   a Mac or a Windows PC), this will not be `localhost`. The IP
+   address will be given by:
+
+   .. code-block:: bash
+
+      docker-machine ip [name-of-your-docker-machine-vm]
+
+   If usure about the name of your docker-machine VM, check the
+   output of the command `docker-machine ls`.
+
+   
+	   
 Requirements
 ------------
 
@@ -79,7 +97,7 @@ versions to run rpy2 with.
 Software Versions
 ======== ===================================================
  Python   3.5, with intended compatibility with 2.7 and >3.3
- R        3.2+ (down to 3.0 may be OK)
+ R        3.2+ (down to 3.0 might be OK)
 ======== ===================================================
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
@@ -103,6 +121,30 @@ CPython is the target implementation, and because of presence of C code
 in rpy2 is it currently not possible to run the package on Jython.
 For that same reason, running it with Pypy is expected to require
 some effort.
+
+Upgrading from an older release of rpy2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In order to upgrade one will have to first remove older
+installed rpy2 packages then and only then install
+a version of rpy2.
+
+To do so, or to check whether you have an earlier version
+of rpy2 installed, do the following in a Python console:
+
+.. code-block:: python
+
+   import rpy2
+   rpy2.__path__
+
+An error during execution means that you do not have any older
+version of rpy2 installed and you should proceed to the next section.
+
+If this returns a string containing a path, you should go to that path
+and remove all files and directories starting with *rpy2*. To make sure
+that the cleaning is complete, open a new Python session and check that
+the above code results in an error.
+
 
 Download
 --------
