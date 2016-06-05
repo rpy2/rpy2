@@ -2,7 +2,7 @@
 Introduction to rpy2
 ********************
 
-This introduction is intendedfor new users, or users who never consulted
+This introduction is intended for new users, or users who never consulted
 the documentation but encountered blockers after guessing successfully
 their first steps through the API.
 
