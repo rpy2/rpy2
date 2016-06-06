@@ -5,14 +5,19 @@ MAINTAINER Laurent Gautier <lgautier@gmail.com>
 RUN \
   apt-get update -qq && \
   apt-get install -y \
+                     lsb-release && \
+  echo "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) multiverse" \
+      >> /etc/apt/sources.list.d/added_repos.list && apt-get update && \
+  apt-get update -qq && \
+  apt-get install -y \
                      ed \
                      git \
 		     mercurial \
 		     libcairo-dev \
 		     libedit-dev \
-                     lsb-release \
 		     python3 \
 		     python3-pip \
+		     python3.5-venv \
 		     r-base \
 		     r-base-dev \
 		     wget &&\
@@ -57,8 +62,8 @@ RUN mkdir /home/$NB_USER/work && \
     mkdir /home/$NB_USER/.local && \
     echo "cacert=/etc/ssl/certs/ca-certificates.crt" > /home/$NB_USER/.curlrc && \
     echo "c.NotebookApp.ip = '*'" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
-    python3 -m venv py35_env && \
-    echo "source ~/py35_env/bin/activate" >> /home/$NB_USER/.bash_profile && \
+    python3 -m venv /home/$NB_USER/py35_env && \
+    echo "source /home/$NB_USER/py35_env/bin/activate" >> /home/$NB_USER/.bash_profile && \
     echo "echo Python virtual environment activated. Write \"deactivate\" to exit it." >> /home/$NB_USER/.bash_profile
         
 
