@@ -282,7 +282,7 @@ texinfo_documents = [
 epub_title = 'rpy2'
 epub_author = 'Laurent Gautier & Rpy2 contributors'
 epub_publisher = 'Laurent Gautier & Rpy2 contributors'
-epub_copyright = '2008-2015, Laurent Gautier & Rpy2 contributors'
+epub_copyright = '2008-2016, Laurent Gautier & Rpy2 contributors'
 
 # The basename for the epub file. It defaults to the project name.
 #epub_basename = 'rpy2'
