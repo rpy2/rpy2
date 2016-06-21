@@ -47,7 +47,7 @@ Documentation
 =============
 
 Documentation is available either in the source tree (to be built),
-or online (see the rpy home page on sourceforge).
+or online (on readthedocs).
 
 Testing
 =======
