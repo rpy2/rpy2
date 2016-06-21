@@ -67,12 +67,12 @@ that makes that step very similar to importing Python packages.
 
 .. code-block:: python
 
-   from rpy2.robjects.pacakges import importr
+   from rpy2.robjects.packages import importr
    # import R's "base" package
    base = importr('base')
 
    # import R's "utils" package
-   utils = import('utils')
+   utils = importr('utils')
 
 In essence, that step is importing the R package in the embedded R,
 and is exposing all R objects in that package as Python objects.
