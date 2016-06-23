@@ -359,7 +359,7 @@ if __name__ == '__main__':
         name = pack_name,
         version = pack_version,
         description = "Python interface to the R language (embedded R)",
-        url = "http://rpy.sourceforge.net",
+        url = "http://rpy2.bitbucket.org",
         license = "GPLv2+",
         author = "Laurent Gautier",
         author_email = "lgautier@gmail.com",
