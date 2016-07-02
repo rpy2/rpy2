@@ -1,10 +1,48 @@
 from collections import namedtuple
 from six import with_metaclass
-from rpy2.robjects.packages import importr, data
+from rpy2.robjects.packages import (importr, data,
+                                    Package, default_symbol_r2python,
+                                    default_symbol_check_after)
 import warnings
+
+class WeakPackage(Package):
+    """
+    'Weak' R package, with which looking for symbols results in
+    a warning (and a None returned) whenever the desired symbol is
+    not found (rather than a traditional `AttributeError`).
+    """
+    def __init__(self,
+                 env, name, translation = {}, 
+                 exported_names = None,
+                 on_conflict = 'fail',
+                 version = None,
+                 symbol_r2python = default_symbol_r2python,
+                 symbol_check_after = default_symbol_check_after):
+        super(WeakPackage, self).__init__(env, name,
+                                          translation=translation,
+                                          exported_names=exported_names,
+                                          on_conflict=on_conflict,
+                                          version=version,
+                                          symbol_r2python=symbol_r2python,
+                                          symbol_check_after=symbol_check_after)
+    
+    def __getattr__(self, name):
+        res =self.__dict__.get(name)
+        if res is None:
+            warnings.warn("The symbol '%s' is not in this R namespace/package.")
+        return res
+    
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     dplyr = importr('dplyr', on_conflict="warn")
+    dplyr = WeakPackage(dplyr._env,
+                        dplyr.__rname__,
+                        translation=dplyr._translation,
+                        exported_names=dplyr._exported_names,
+                        on_conflict="warn",
+                        version=dplyr.__version__,
+                        symbol_r2python=dplyr._symbol_r2python,
+                        symbol_check_after=dplyr._symbol_check_after)
     TARGET_VERSION = '0.4.3'
     if dplyr.__version__ != TARGET_VERSION:
         warnings.warn('This was designed againt dplyr version %s but you have %s' % (TARGET_VERSION, dplyr.__version__))
