@@ -29,7 +29,7 @@ class WeakPackage(Package):
     def __getattr__(self, name):
         res =self.__dict__.get(name)
         if res is None:
-            warnings.warn("The symbol '%s' is not in this R namespace/package.")
+            warnings.warn("The symbol '%s' is not in this R namespace/package." % name)
         return res
     
 with warnings.catch_warnings():
