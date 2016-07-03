@@ -1,3 +1,14 @@
+Release 2.8.2
+=============
+
+Bugs fixed
+----------
+
+- R's `dplyr::src_dt` was moved to `dtdplyr::src_dt` with `dplyr` release 0.5.0.
+  To address this, `src_dt` will become a `None` if the R package `dplyr` is
+  discovered to be of version >= 0.5.0 at runtime.
+  
+
 Release 2.8.1
 =============
 
