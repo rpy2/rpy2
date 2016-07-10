@@ -312,6 +312,9 @@ class SourceCode(str):
                                                    name)
 
 class R(object):
+    """
+    Singleton representing the embedded R running.
+    """
     _instance = None
 
     def __new__(cls):
