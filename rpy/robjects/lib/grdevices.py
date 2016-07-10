@@ -4,9 +4,18 @@ Mapping of the R library "grDevices" for graphical devices
 
 import io, tempfile, os
 from contextlib import contextmanager
-from rpy2.robjects.packages import importr
+from rpy2.robjects.packages import importr, WeakPackage
 
 grdevices = importr('grDevices')
+
+grdevices = WeakPackage(grdevices._env,
+                        grdevices.__rname__,
+                        translation=grdevices._translation,
+                        exported_names=grdevices._exported_names,
+                        on_conflict="warn",
+                        version=grdevices.__version__,
+                        symbol_r2python=grdevices._symbol_r2python,
+                        symbol_check_after=grdevices._symbol_check_after)
 
 # non-interactive file devices
 png = grdevices.png

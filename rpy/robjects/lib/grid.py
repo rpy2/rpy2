@@ -11,13 +11,22 @@ import rpy2.robjects.methods
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
 from rpy2.rlike.container import OrdDict
-from rpy2.robjects.packages import importr
+from rpy2.robjects.packages import importr, WeakPackage
 
 NULL = robjects.NULL
 
 #getmethod = robjects.baseenv.get("getMethod")
 
 grid = importr('grid')
+
+grid = WeakPackage(grid._env,
+                   grid.__rname__,
+                   translation=grid._translation,
+                   exported_names=grid._exported_names,
+                   on_conflict="warn",
+                   version=grid.__version__,
+                   symbol_r2python=grid._symbol_r2python,
+                   symbol_check_after=grid._symbol_check_after)
 
 grid_env = robjects.baseenv['as.environment']('package:grid')
 
