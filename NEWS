@@ -7,7 +7,11 @@ Changes
 - Starting several times the singleton :class:`EventProcessor` longer results
   in a :class:`RuntimeError`. This is now only a warning, addressing
   issue #182.
-  
+
+
+Release 2.8.3
+=============
+
 
 Release 2.8.2
 =============
