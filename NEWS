@@ -8,6 +8,9 @@ Bugs fixed
   To address this, `src_dt` will become a `None` if the R package `dplyr` is
   discovered to be of version >= 0.5.0 at runtime. (issue #357)
 
+- Conversion issue when R symbols were accessed as attribute of the singleton
+  :class:`rpy2.robjects.R`. (issue #334)
+
 Changes
 -------
 
