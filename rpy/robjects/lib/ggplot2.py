@@ -46,13 +46,21 @@ and provide a more dynamic mapping.
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
-from rpy2.robjects.packages import importr
+from rpy2.robjects.packages import importr, WeakPackage
 import copy
 import warnings
 
 NULL = robjects.NULL
 
-ggplot2 = importr('ggplot2')
+ggplot2 = importr('ggplot2', on_conflict="warn")
+ggplot2 = WeakPackage(ggplot2._env,
+                      ggplot2.__rname__,
+                      translation=ggplot2._translation,
+                      exported_names=ggplot2._exported_names,
+                      on_conflict="warn",
+                      version=ggplot2.__version__,
+                      symbol_r2python=ggplot2._symbol_r2python,
+                      symbol_check_after=ggplot2._symbol_check_after)
 
 TARGET_VERSION = '2.1.0'
 if ggplot2.__version__ != TARGET_VERSION:
