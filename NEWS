@@ -11,6 +11,9 @@ Bugs fixed
 - Conversion issue when R symbols were accessed as attribute of the singleton
   :class:`rpy2.robjects.R`. (issue #334)
 
+- The `rmagic` extension for `ipython` was no longer loading with the latest
+  ipython (version 5.0.0). (issue #359)
+  
 Changes
 -------
 
