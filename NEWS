@@ -17,8 +17,16 @@ Bugs fixed
 
 - R's `dplyr::src_dt` was moved to `dtdplyr::src_dt` with `dplyr` release 0.5.0.
   To address this, `src_dt` will become a `None` if the R package `dplyr` is
-  discovered to be of version >= 0.5.0 at runtime.
-  
+  discovered to be of version >= 0.5.0 at runtime. (issue #357)
+
+Changes
+-------
+
+- The fix to issue #357 (see bugs fixed above) was expanded to cover all
+  R packages wrapped in :mod:`rpy2.robjects.lib` and ensure that the respective
+  Python modules can loaded even if symbols are no longer defined in future
+  versions of the corresponding R packages.
+
 
 Release 2.8.1
 =============
