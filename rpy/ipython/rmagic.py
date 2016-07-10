@@ -785,5 +785,10 @@ def load_ipython_extension(ip):
     ip.register_magics(RMagics)
     # Initialising rpy2 interferes with readline. Since, at this point, we've
     # probably just loaded rpy2, we reset the delimiters. See issue gh-2759.
-    if ip.has_readline:
-        ip.readline.set_completer_delims(ip.readline_delims)
+    if hasattr(ip, 'has_readline'):
+        if ip.has_readline:
+            ip.readline.set_completer_delims(ip.readline_delims)
+    else:
+        # ipython >= 5.0.0
+        # not doing anything (for now)
+        pass
