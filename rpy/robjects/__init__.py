@@ -336,7 +336,7 @@ class R(object):
 
     def __getitem__(self, item):
         res = _globalenv.get(item)
-        res = conversion.ri2ro(res)
+        res = conversion.ri2py(res)
         if hasattr(res, '__rname__'):
             res.__rname__ = item
         return res
