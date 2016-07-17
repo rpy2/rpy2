@@ -64,6 +64,11 @@ for PYVERSION in $PYTHON_VERSIONS; do
   sudo apt-get -qq -y install python$PYVERSION python${PYVERSION}-dev
   echo -e "${GRAY}    Python $PYVERSION ${NC} (installed.)"
 
+  # use latest virtualenv
+  if [ '2.7' = $PYVERSION ]; then
+      pip install virtualenv >> ${LOGFILE}
+  fi;
+  
   # Create a new virtualenv
   echo -e "${GRAY}    Python $PYVERSION ${NC} (creating virtualenv...)"
   virtualenv --python=python$PYVERSION env-$PYVERSION/ #>> ${LOGFILE}
