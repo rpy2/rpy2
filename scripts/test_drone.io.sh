@@ -66,7 +66,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
 
   # Create a new virtualenv
   echo -e "${GRAY}    Python $PYVERSION ${NC} (creating virtualenv...)"
-  virtualenv --python=python$PYVERSION env-$PYVERSION/ >> ${LOGFILE}
+  virtualenv --python=python$PYVERSION env-$PYVERSION/ #>> ${LOGFILE}
   echo -e "${GRAY}    Python $PYVERSION ${NC} (virtualenv created.)"
   source env-$PYVERSION/bin/activate
   echo -e "${GRAY}    Python $PYVERSION ${NC} (virtualenv activated.)"
