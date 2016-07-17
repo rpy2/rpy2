@@ -2,9 +2,6 @@
 #
 # Test script for the Continuous Integration server drone.io
 
-# echo commands
-set -x
-
 LOGFILE=`pwd`/'ci.log'
 
 # Define the versions of Python that should be tested
