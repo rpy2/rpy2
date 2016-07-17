@@ -68,11 +68,11 @@ for PYVERSION in $PYTHON_VERSIONS; do
   echo -e "${GRAY}    Python $PYVERSION ${NC} (installed.)"
 
   # use latest pip:
-  sudo python${PYVERSION} get-pip.py
+  sudo -H python${PYVERSION} get-pip.py
 
   # fetch latest virtualenv
   if [ '2.7' = $PYVERSION ]; then
-      pip install virtualenv >> ${LOGFILE}
+      sudo -H pip install virtualenv >> ${LOGFILE}
   fi;
   
   # Create a new virtualenv
