@@ -32,7 +32,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 # Install R, ipython, and pandas
 # Ensure that we get recent versions
-echo -n "Installing packages with APT..."
+echo -e -n "${GRAY}Installing packages with APT..."
 sudo add-apt-repository ppa:marutter/rrutter >> ${LOGFILE}
 sudo add-apt-repository ppa:marutter/c2d4u >> ${LOGFILE}
 #sudo add-apt-repository ppa:jtaylor/ipython >> ${LOGFILE}
@@ -46,14 +46,14 @@ sudo apt-get -qq -y install r-base \
 		            gfortran &>> ${LOGFILE};
 
 #sudo apt-get -qq -y install pandas >> ${LOGFILE}
-echo "[done]"
+echo -e "${GRAY}[done]"
 
 # Install r-cran packages ggplot2 and Cairo
-echo -n "Installing R packages..."
+echo -e -n "${GRAY}Installing R packages..."
 export R_LIBS_USER="$HOME/rlibs/"
 mkdir -p $R_LIBS_USER
 R --slave -e 'install.packages(c("Cairo"), repos="http://cran.us.r-project.org")' &>> ${LOGFILE}
-echo "[done]"
+echo -e "${GRAY}[done]"
 
 STATUS=0
 summary=()
