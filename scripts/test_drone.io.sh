@@ -10,7 +10,7 @@ LOGFILE=`pwd`/'ci.log'
 PYTHON_VERSIONS="2.7 3.4 3.5"
 
 # Define the target Numpy versions
-NUMPY_VERSIONS="1.10.4"
+NUMPY_VERSIONS="1.11.1"
 
 # Settings to install python packages as wheels
 DEPS_DIR="deps/"
