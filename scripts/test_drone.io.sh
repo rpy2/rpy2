@@ -64,7 +64,10 @@ summary=()
 for PYVERSION in $PYTHON_VERSIONS; do
   echo -e "${GREEN}- Python $PYVERSION ${NC}"
   echo -e "    Python $PYVERSION ${NC} (installing...)"
-  sudo apt-get -qq -y install python${PYVERSION} python${PYVERSION}-dev
+  sudo apt-get -qq -y install \
+       python${PYVERSION} \
+       python${PYVERSION}-stdlib \
+       python${PYVERSION}-dev
   echo -e "${GRAY}    Python $PYVERSION ${NC} (installed.)"
 
   # use latest pip:
@@ -101,7 +104,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
 	echo "    singledispatch"
 	pip install singledispatch >> ${LOGFILE}
     fi;
-    echo -e '${GRAY}.'
+    echo -e "${GRAY}."
     #pip install --use-wheel --find-links https://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
 
     echo -e "${GRAY}Building rpy2"
