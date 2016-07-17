@@ -10,6 +10,7 @@ RUN \
       >> /etc/apt/sources.list.d/added_repos.list && apt-get update && \
   apt-get update -qq && \
   apt-get install -y \
+                     aptdaemon \
                      ed \
                      git \
 		     mercurial \
@@ -56,7 +57,7 @@ ENV NB_UID 1000
 RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER
 
 # Grant sudo rights to install packages
-RUN echo $NB_USER ALL='(root)NOPASSWD:/usr/bin/apt-get update,/usr/bin/apt-get upgrade,/usr/bin/apt-get install' >> /etc/sudoers
+RUN echo $NB_USER ALL='(root)NOPASSWD:/usr/bin/aptdcon' >> /etc/sudoers
 
 USER $NB_USER
 
