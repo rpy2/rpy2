@@ -24,7 +24,7 @@ RED='\e[0;31m'
 GRAY='\e[0;37m'
 NC='\e[0m'
 
-echo "CI on drone.io" > ${LOGFILE}
+echo -e "${GRAY}CI on drone.io" > ${LOGFILE}
 
 # make debconf silent
 export DEBIAN_FRONTEND=noninteractive
@@ -55,16 +55,22 @@ mkdir -p $R_LIBS_USER
 R --slave -e 'install.packages(c("Cairo"), repos="http://cran.us.r-project.org")' &>> ${LOGFILE}
 echo -e "${GRAY}[done]"
 
+# fetch bootstrap script for pip
+wget https://bootstrap.pypa.io/get-pip.py
+
 STATUS=0
 summary=()
 # Launch tests for each Python version
 for PYVERSION in $PYTHON_VERSIONS; do
   echo -e "${GREEN}- Python $PYVERSION ${NC}"
   echo -e "    Python $PYVERSION ${NC} (installing...)"
-  sudo apt-get -qq -y install python$PYVERSION python${PYVERSION}-dev
+  sudo apt-get -qq -y install python${PYVERSION} python${PYVERSION}-dev
   echo -e "${GRAY}    Python $PYVERSION ${NC} (installed.)"
 
-  # use latest virtualenv
+  # use latest pip:
+  sudo python${PYVERSION} get-pip.py
+
+  # fetch latest virtualenv
   if [ '2.7' = $PYVERSION ]; then
       pip install virtualenv >> ${LOGFILE}
   fi;
