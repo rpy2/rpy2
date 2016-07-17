@@ -66,6 +66,8 @@ for PYVERSION in $PYTHON_VERSIONS; do
   echo -e "    Python $PYVERSION ${NC} (installing...)"
   sudo apt-get -qq -y install \
        python${PYVERSION} \
+       libpython${PYVERSION} \
+       python${PYVERSION}-stdlib \
        python${PYVERSION}-stdlib \
        python${PYVERSION}-dev
   echo -e "${GRAY}    Python $PYVERSION ${NC} (installed.)"
