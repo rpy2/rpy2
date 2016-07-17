@@ -67,8 +67,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
   sudo apt-get -qq -y install \
        python${PYVERSION} \
        libpython${PYVERSION} \
-       python${PYVERSION}-stdlib \
-       python${PYVERSION}-stdlib \
+       libpython${PYVERSION}-stdlib \
        python${PYVERSION}-dev
   echo -e "${GRAY}    Python $PYVERSION ${NC} (installed.)"
 
