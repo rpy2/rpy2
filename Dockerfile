@@ -57,7 +57,7 @@ ENV NB_UID 1000
 RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER
 
 # Grant sudo rights to install packages
-RUN echo $NB_USER ALL='(root)NOPASSWD:/usr/bin/aptdcon' >> /etc/sudoers
+RUN echo $NB_USER ALL='(ALL)NOPASSWD:/usr/bin/aptdcon' >> /etc/sudoers
 
 USER $NB_USER
 
