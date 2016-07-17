@@ -20,6 +20,7 @@ RUN \
 		     python3.5-venv \
 		     r-base \
 		     r-base-dev \
+		     sudo \
 		     wget &&\
   rm -rf /var/lib/apt/lists/*
 
@@ -53,6 +54,9 @@ ENV NB_UID 1000
 
 # Create user
 RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER
+
+# Grant sudo rights to install packages
+RUN echo $NB_USER ALL='(root)NOPASSWD:/usr/bin/apt-get update,/usr/bin/apt-get upgrade,/usr/bin/apt-get install' >> /etc/sudoers
 
 USER $NB_USER
 
