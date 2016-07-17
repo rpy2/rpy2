@@ -2,6 +2,9 @@
 #
 # Test script for the Continuous Integration server drone.io
 
+# echo commands
+set -x
+
 LOGFILE=`pwd`/'ci.log'
 
 # Define the versions of Python that should be tested
@@ -33,17 +36,17 @@ export DEBIAN_FRONTEND=noninteractive
 # Install R, ipython, and pandas
 # Ensure that we get recent versions
 echo -e -n "${GRAY}Installing packages with APT..."
-sudo add-apt-repository ppa:marutter/rrutter >> ${LOGFILE}
-sudo add-apt-repository ppa:marutter/c2d4u >> ${LOGFILE}
+sudo add-apt-repository ppa:marutter/rrutter >> ${LOGFILE} 2>&1;
+sudo add-apt-repository ppa:marutter/c2d4u >> ${LOGFILE} 2>&1;
 #sudo add-apt-repository ppa:jtaylor/ipython >> ${LOGFILE}
 #sudo add-apt-repository ppa:pythonxy/pythonxy-devel > ${LOGFILE}
-sudo apt-get -y update &>> ${LOGFILE}
+sudo apt-get -y update >> ${LOGFILE} 2>&1;
 sudo apt-get -qq -y install r-base \
                             r-cran-ggplot2 \
 	                    libatlas-dev \
 	                    libatlas3gf-base \
 		            liblapack-dev \
-		            gfortran &>> ${LOGFILE};
+		            gfortran >> ${LOGFILE} 2>&1;
 
 #sudo apt-get -qq -y install pandas >> ${LOGFILE}
 echo -e "${GRAY}[done]"
@@ -52,11 +55,11 @@ echo -e "${GRAY}[done]"
 echo -e -n "${GRAY}Installing R packages..."
 export R_LIBS_USER="$HOME/rlibs/"
 mkdir -p $R_LIBS_USER
-R --slave -e 'install.packages(c("Cairo"), repos="http://cran.us.r-project.org")' &>> ${LOGFILE}
+R --slave -e 'install.packages(c("Cairo"), repos="http://cran.us.r-project.org")' >> ${LOGFILE} 2>&1;
 echo -e "${GRAY}[done]"
 
 # fetch bootstrap script for pip
-wget https://bootstrap.pypa.io/get-pip.py
+wget https://bootstrap.pypa.io/get-pip.py >> ${LOGFILE} 2>&1;
 
 STATUS=0
 summary=()
@@ -68,38 +71,39 @@ for PYVERSION in $PYTHON_VERSIONS; do
        python${PYVERSION} \
        libpython${PYVERSION} \
        libpython${PYVERSION}-stdlib \
-       python${PYVERSION}-dev
+       python${PYVERSION}-dev >> ${LOGFILE} 2>&1;
   echo -e "${GRAY}    Python $PYVERSION ${NC} (installed.)"
 
   # use latest pip:
-  sudo -H python${PYVERSION} get-pip.py
+  sudo -H python${PYVERSION} get-pip.py >> ${LOGFILE} 2>&1;
 
   # fetch latest virtualenv
   if [ '2.7' = $PYVERSION ]; then
-      sudo -H pip install virtualenv >> ${LOGFILE}
+      sudo -H pip install virtualenv >> ${LOGFILE} 2>&1;
   fi;
   
   # Create a new virtualenv
   echo -e "${GRAY}    Python $PYVERSION ${NC} (creating virtualenv...)"
-  virtualenv --python=python$PYVERSION env-$PYVERSION/ #>> ${LOGFILE}
+  virtualenv --python=python$PYVERSION env-$PYVERSION/ >> ${LOGFILE}
   echo -e "${GRAY}    Python $PYVERSION ${NC} (virtualenv created.)"
   source env-$PYVERSION/bin/activate
   echo -e "${GRAY}    Python $PYVERSION ${NC} (virtualenv activated.)"
   
   # Upgrade pip and install wheel
-  pip install setuptools --upgrade >> ${LOGFILE}
-  pip install -I pip >> ${LOGFILE}
-  pip install -I wheel >> ${LOGFILE}
+  echo -e "${GRAY}    Python $PYVERSION ${NC} (installing setuptools, pip, and wheel.)"
+  pip install setuptools --upgrade >> ${LOGFILE} 2>&1;
+  pip install -I pip >> ${LOGFILE} 2>&1;
+  pip install -I wheel >> ${LOGFILE} 2>&1;
 
   for NPVERSION in $NUMPY_VERSIONS; do
     echo -e "${GREEN}    Numpy version $NPVERSION ${NC}"
 
-    echo -e "${GRAY}Installing packages:"
+    echo -e "${GRAY}    Installing packages:"
     for package in numpy==$NPVERSION pandas jupyter; do
 	echo "    $package";
 	pip install --use-wheel \
 	    --find-links https://cache27diy-cpycloud.rhcloud.com/$PYVERSION \
-	    $package >> ${LOGFILE};
+	    $package >> ${LOGFILE} 2>&1;
     done
     if [ '2.7' = $PYVERSION ]; then
 	echo "    singledispatch"
