@@ -27,7 +27,7 @@ RED='\e[0;31m'
 GRAY='\e[0;37m'
 NC='\e[0m'
 
-echo -e "${GRAY}CI on drone.io" > ${LOGFILE}
+echo -e "${GRAY}CI on drone.io${NC}" > ${LOGFILE}
 
 # make debconf silent
 export DEBIAN_FRONTEND=noninteractive
@@ -35,7 +35,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 # Install R, ipython, and pandas
 # Ensure that we get recent versions
-echo -e -n "${GRAY}Installing packages with APT..."
+echo -e -n "${GRAY}Installing packages with APT...${NC}"
 sudo add-apt-repository ppa:marutter/rrutter >> ${LOGFILE} 2>&1;
 sudo add-apt-repository ppa:marutter/c2d4u >> ${LOGFILE} 2>&1;
 #sudo add-apt-repository ppa:jtaylor/ipython >> ${LOGFILE}
@@ -52,11 +52,11 @@ sudo apt-get -qq -y install r-base \
 echo -e "${GRAY}[done]"
 
 # Install r-cran packages ggplot2 and Cairo
-echo -e -n "${GRAY}Installing R packages..."
+echo -e -n "${GRAY}Installing R packages...${NC}"
 export R_LIBS_USER="$HOME/rlibs/"
 mkdir -p $R_LIBS_USER
 R --slave -e 'install.packages(c("Cairo"), repos="http://cran.us.r-project.org")' >> ${LOGFILE} 2>&1;
-echo -e "${GRAY}[done]"
+echo -e "${GRAY}[done]${NC}"
 
 # fetch bootstrap script for pip
 wget https://bootstrap.pypa.io/get-pip.py >> ${LOGFILE} 2>&1;
@@ -66,7 +66,7 @@ summary=()
 # Launch tests for each Python version
 for PYVERSION in $PYTHON_VERSIONS; do
   echo -e "${GREEN}- Python $PYVERSION ${NC}"
-  echo -e "    Python $PYVERSION ${NC} (installing...)"
+  echo -e "${GRAY}    Python $PYVERSION ${NC} (installing...)"
   sudo apt-get -qq -y install \
        python${PYVERSION} \
        libpython${PYVERSION} \
@@ -98,7 +98,7 @@ for PYVERSION in $PYTHON_VERSIONS; do
   for NPVERSION in $NUMPY_VERSIONS; do
     echo -e "${GREEN}    Numpy version $NPVERSION ${NC}"
 
-    echo -e "${GRAY}    Installing packages:"
+    echo -e "${GRAY}    Installing packages: ${NC}"
     for package in numpy==$NPVERSION pandas jupyter; do
 	echo "    $package";
 	pip install --use-wheel \
@@ -109,10 +109,10 @@ for PYVERSION in $PYTHON_VERSIONS; do
 	echo "    singledispatch"
 	pip install singledispatch >> ${LOGFILE}
     fi;
-    echo -e "${GRAY}."
+    echo -e "${GRAY}.${NC}"
     #pip install --use-wheel --find-links https://cache27diy-cpycloud.rhcloud.com/$PYVERSION cython
 
-    echo -e "${GRAY}Building rpy2"
+    echo -e "${GRAY}Building rpy2${NC}"
     # Build rpy2
     rpy2build=`python setup.py sdist | tail -n 1 | grep -Po "removing \\'\K[^\\']*"`
     # Install it (so we also test that the source package is correctly built)
