@@ -13,7 +13,7 @@ all-purpose scripting language, while `R`_ (an open source implementation
 of the S/Splus language)
 is a scripting language mostly popular for data analysis, statistics, and
 graphics. If you are reading this, there are good chances that you are
-at least familiar with one of both.
+at least familiar with one or both.
 
 .. _Python: http://www.python.org
 .. _R: http://www.r-project.org
