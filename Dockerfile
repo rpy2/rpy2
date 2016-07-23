@@ -35,12 +35,15 @@ RUN \
   R -e 'install.packages(sub("(.+)\\\\n","\\1", scan("rpacks.txt", "character")), repos="http://cran.cnr.Berkeley.edu")' && \
   rm rpacks.txt
 
+# note: installing ipywidgets requires a follow-up "jupyter nbextension enable" 
 RUN \
   pip3 --no-cache-dir install pip --upgrade && \
   pip3 --no-cache-dir install setuptools --upgrade && \
   pip3 --no-cache-dir install wheel --upgrade && \
   pip3 --no-cache-dir install numpy pandas sphinx jinja2 jupyter notebook && \
   pip3 --no-cache-dir install bokeh && \
+  pip3 --no-cache-dir install pip install ipywidgets && \
+  jupyter nbextension enable --py widgetsnbextension && \
   rm -rf /root/.cache
 
 # Run dev version of rpy2
