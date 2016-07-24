@@ -42,7 +42,7 @@ RUN \
   pip3 --no-cache-dir install wheel --upgrade && \
   pip3 --no-cache-dir install numpy pandas sphinx jinja2 jupyter notebook && \
   pip3 --no-cache-dir install bokeh && \
-  pip3 --no-cache-dir install pip install ipywidgets && \
+  pip3 --no-cache-dir install ipywidgets && \
   jupyter nbextension enable --py widgetsnbextension && \
   rm -rf /root/.cache
 
