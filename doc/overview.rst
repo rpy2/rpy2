@@ -49,24 +49,55 @@ Docker image
 ------------
 
 There is a Docker image available to try rpy2 out
-without concerns about the installation process.
+without even reading about requirements (e.g., R installed
+compiled with the shared library flag). The Docker image
+can also be an easy start for Windows users.
 
-ipython console
-^^^^^^^^^^^^^^^
+Its name is `rpy2/rpy2`, with currently two possible release tags
+(making the full image names either `rpy2/rpy2:2.8.x` or
+`rpy2/rpy2:devel`).
+
+The image was primarily designed to run a jupyter notebook or
+an ipython terminal, as shown in further details below, but
+it can also constitute a base image for custom needs.
+
+.. note::
+
+   If behind a proxy, one will need to pass the relevant
+   environment variables when running a container from the image.
+   Without this the container will not be able to communicate with
+   the internet and perform operations such as downloading and installing
+   additional R packages from CRAN or Python packages from pip.
+
+   .. code-block::bash
+
+      docker run \
+             --env http_proxy=<my http proxy> \
+	     --env https_proxy=<my https proxy> \
+	     --env HTTP_PROXY=<my http proxy> \
+	     --env HTTPS_PROXY=<my https proxy> \
+             <rest of the command line>
+
+
+ipython terminal
+^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 	  
-   docker run -it --rm -p 8888:8888 \
+   docker run \
+          -it --rm \
           rpy2/rpy2:2.8.x ipython
 
-jupyter notbook
-^^^^^^^^^^^^^^^
+
+jupyter notebook
+^^^^^^^^^^^^^^^^
 
 To run the jupyter notebook on port 8888:
 
 .. code-block:: bash
 
-   docker run --rm -p 8888:8888 \
+   docker run \
+          --rm -p 8888:8888 \
           rpy2/rpy2:2.8.x
 
 Once started, point a web browser to `http://localhost:8888`.
@@ -93,12 +124,12 @@ Currently the development is done on UNIX-like operating systems with the
 following software versions. Those are the recommended
 versions to run rpy2 with.
 
-======== ===================================================
+======== ==================================================================
 Software Versions
-======== ===================================================
- Python   3.5, with intended compatibility with 2.7 and >3.3
- R        3.2+ (down to 3.0 might be OK)
-======== ===================================================
+======== ==================================================================
+ Python   3.5 (compatible with 2.7 and >3.3, but features might be missing)
+ R        3.2+
+======== ==================================================================
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
 building rpy2 will require the corresponding development headers 
@@ -151,8 +182,9 @@ Download
 
 The following options are, or could be, available for download:
 
-  * Source packages. Released versions are available on Sourceforge as well as
-    on Pypi. Snapshots of the development version can be downloaded from
+  * Source packages. Released versions are available on Pypi
+    (Sourceforge is no longer used).
+    Snapshots of the development version can be downloaded from
     bitbucket
 
     .. note::
@@ -209,11 +241,14 @@ Microsoft's Windows precompiled binaries
 If available, the executable can be run; this will install the package
 in the default Python installation.
 
-For few releases in the 2.0.x series, Microsoft Windows binaries were contributed
-by Laurent Oget from Predictix.
+For few releases in the 2.0.x series,
+Microsoft Windows binaries were contributed by Laurent Oget from Predictix.
 
-There is currently no binaries or support for Microsoft Windows (more for lack of
-ressources than anything else).
+There is currently no binaries or support for Microsoft Windows
+(because of lack of ressources more than anything else), but
+the collection of Unofficial Windows Binaries for Python Extension Packages
+provided by Christoph Gohlke includes rpy2:
+http://www.lfd.uci.edu/~gohlke/pythonlibs/
 
 .. index::
   single: install;source
