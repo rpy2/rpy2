@@ -12,7 +12,7 @@ Documentation for rpy2
       may appear:
       please remember that this is software under development.
 
-      Use the released series (2.7.x) for production.
+      Use the released series (2.8.x) for production.
 
 
 .. only:: html
