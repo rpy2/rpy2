@@ -236,6 +236,7 @@ def _(obj):
 def _(obj):
     return rinterface.SexpVector([obj, ], rinterface.CPLXSXP)
 
+
 @default_converter.py2ro.register(object)
 def _(obj):
     robj = conversion.py2ri(obj)
