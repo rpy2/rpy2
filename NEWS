@@ -11,6 +11,12 @@ Changes
 - The target version for the R package `dplyr` mapped is now 0.5.0, and
   :func:`rpy2.robjects.lib.dplyr.src_dt` is no longer present (see issue #357)
 
+Bugs fixed
+----------
+
+- :func:`numpy.float128` is not available on all platforms. The unit test
+  for it is now skipped on systems where it is not present (issue #347)
+
 
 Release 2.8.3
 =============
