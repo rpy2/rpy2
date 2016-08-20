@@ -172,8 +172,10 @@ class Page(object):
     
     def arguments(self):
         """ Get the arguments and their description as a list of tuples. """
-        section = self._sections['arguments']
+        section = self._sections.get('arguments')
         res = list()
+        if section is None:
+            return res
         for item in section:
             if item.do_slot("Rd_tag")[0] == '\\item':
                 if len(item) != 2:
