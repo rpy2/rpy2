@@ -10,7 +10,7 @@ import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
 
 from rpy2.robjects.packages_utils import get_packagepath, _libpaths, _packages
-import rpy2.rlike.container as rlc
+from collections import OrderedDict
 
 if sys.version_info[0] == 2:
     range = xrange
@@ -146,7 +146,7 @@ class Page(object):
     """
 
     def __init__(self, struct_rdb, _type = ''):
-        sections = rlc.OrdDict()
+        sections = OrderedDict()
         for elt in struct_rdb:
             rd_tag = elt.do_slot("Rd_tag")[0][1:]
             if rd_tag == 'section':
