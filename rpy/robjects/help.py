@@ -18,10 +18,7 @@ if sys.version_info[0] == 2:
 tmp = rinterface.baseenv['R.Version']()
 tmp_major = int(tmp[tmp.do_slot('names').index('major')][0])
 tmp_minor = float(tmp[tmp.do_slot('names').index('minor')][0])
-if (tmp_major > 2) or (tmp_major == 2 and tmp_minor >= 13):
-    readRDS = rinterface.baseenv['readRDS']
-else:
-    readRDS = rinterface.baseenv['.readRDS']
+readRDS = rinterface.baseenv['readRDS']
 
 del(tmp)
 del(tmp_major)
