@@ -1,6 +1,13 @@
 Release 2.8.3
 =============
 
+Bugs fixed
+----------
+
+- Fixed the error when the transformation of R "man" pages into Python
+  docstrings was failing when the section "arguments" was missing
+  (issue #368)
+  
 
 Release 2.8.2
 =============
