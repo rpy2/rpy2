@@ -92,20 +92,3 @@ Documentation for rpy2
       appendix
 
 
-.. only:: latex
-
-   .. toctree::
-      :maxdepth: 2
-
-      getting-started
-      high-level
-      interactive
-      numpy
-      rinterface
-      rinterface-memorymanagement
-      rlike
-      miscellaneous
-
-      appendix
-
-
