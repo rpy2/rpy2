@@ -8,7 +8,10 @@ Bugs fixed
   docstrings was failing when the section "arguments" was missing
   (issue #368)
   
-
+- Failing to find R in the PATH during the installation of rpy2
+  is now printing an error message instead of a warning (issue #366)
+  
+  
 Release 2.8.2
 =============
 
