@@ -49,7 +49,7 @@ def _get_r_home(r_bin = "R"):
         r_home = subprocess.check_output((r_bin, "RHOME"),
                                          universal_newlines=True)
     except:
-        msg = "Warning: Tried to guess R's HOME but no command (%s) in the PATH." % r_bin
+        msg = "Error: Tried to guess R's HOME but no command '%s' in the PATH." % r_bin
         print(msg)
         sys.exit(1)
         # try:
