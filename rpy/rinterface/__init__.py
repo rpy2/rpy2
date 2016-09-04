@@ -1,50 +1,15 @@
 import os
 import sys
 import warnings
-import subprocess
-
-if ((sys.version_info[0] == 2 and sys.version_info[1] < 7) or
-        (sys.version_info[0] == 3 and sys.version_info[1] < 3)):
-    raise RuntimeError(
-        "Python (>=2.7 and < 3.0) or >=3.3 are required to run rpy2")
-
+from rpy2.situation import (r_home_from_subprocess,
+                            r_home_from_registry,
+                            get_r_home, 
+                            assert_python_version)
 
 class RRuntimeWarning(RuntimeWarning):
     pass
 
-
-def _r_home_from_subprocess():
-    """Return the R home directory from calling 'R RHOME'."""
-    try:
-        tmp = subprocess.check_output(("R", "RHOME"), universal_newlines=True)
-    except Exception as exc:  # FileNotFoundError, WindowsError, etc
-        return
-    r_home = tmp.split(os.linesep)
-    if r_home[0].startswith("WARNING"):
-        r_home = r_home[1]
-    else:
-        r_home = r_home[0].strip()
-    return r_home
-
-
-def _r_home_from_registry():
-    """Return the R home directory from the Windows Registry."""
-    try:
-        import winreg
-    except ImportError:
-        import _winreg as winreg
-    try:
-        hkey = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE,
-                                "Software\\R-core\\R",
-                                0, winreg.KEY_QUERY_VALUE)
-        r_home = winreg.QueryValueEx(hkey, "InstallPath")[0]
-        winreg.CloseKey(hkey)
-    except Exception as exc:  # FileNotFoundError, WindowsError, etc
-        return
-    if sys.version_info[0] == 2:
-        r_home = r_home.encode(sys.getfilesystemencoding())
-    return r_home
-
+assert_python_version()
 
 def _load_r_dll(r_home):
     """Load the R.DLL matching Python's bitness.
@@ -63,14 +28,7 @@ def _load_r_dll(r_home):
         os.environ['PATH'] = ';'.join((os.environ.get('PATH'), r_bin, r_mod))
     ctypes.CDLL(r_dll)
 
-
-R_HOME = os.environ.get("R_HOME")
-
-if not R_HOME:
-    R_HOME = _r_home_from_subprocess()
-
-if not R_HOME and sys.platform == 'win32':
-    R_HOME = _r_home_from_registry()
+R_HOME = get_r_home()
 
 if not R_HOME:
     raise RuntimeError("""The R home directory could not be determined.
