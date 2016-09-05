@@ -1,5 +1,6 @@
 import unittest
 import os
+import tempfile
 
 from rpy2.robjects.packages import importr, data
 datasets = importr('datasets')
@@ -26,6 +27,7 @@ class GrdevicesTestCase(unittest.TestCase):
         self.assertEqual(0, len(b.getvalue()))
 
     def testRenderToFile(self):
+        fn = tempfile.mktemp(suffix=".png")
         with grdevices.render_to_file(grdevices.png) as fn:
             r(''' plot(0) ''')
         self._todelete.append(fn)

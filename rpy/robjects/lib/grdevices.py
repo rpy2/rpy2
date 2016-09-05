@@ -56,8 +56,8 @@ def render_to_file(device, *device_args, **device_kwargs):
     fn = tempfile.mktemp()
     current = dev_cur()[0]
     try:
-        device(fn, *device_args, **device_kwargs)
-        yield fn
+        device(*device_args, **device_kwargs)
+        yield None
     finally:
         if current != dev_cur()[0]:
             dev_off()
