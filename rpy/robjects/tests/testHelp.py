@@ -20,7 +20,7 @@ class PageTestCase(unittest.TestCase):
     def testInit(self):
         base_help = rh.Package('base')
         p = base_help.fetch('print')
-        self.assertEqual('title', p.sections.keys()[0])
+        self.assertEqual('title', tuple(p.sections.keys())[0])
     
     def testToDocstring(self):
         base_help = rh.Package('base')
