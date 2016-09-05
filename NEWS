@@ -7,6 +7,8 @@ New features
 - New module :mod:`rpy2.situation` to extract and report informations
   about the environment, such as where is the R HOME, what is the
   version of R, what is the version of R rpy2 was built with, etc...
+  The module is also designed to be run directly and provide diagnostics:
+  `python -m rpy2.situation`.
 
 Changes
 -------
