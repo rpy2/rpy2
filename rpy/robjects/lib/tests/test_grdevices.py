@@ -28,7 +28,8 @@ class GrdevicesTestCase(unittest.TestCase):
 
     def testRenderToFile(self):
         fn = tempfile.mktemp(suffix=".png")
-        with grdevices.render_to_file(grdevices.png) as fn:
+        with grdevices.render_to_file(grdevices.png,
+                                      filename=fn) as d:
             r(''' plot(0) ''')
         self._todelete.append(fn)
         self.assertTrue(os.path.exists(fn))
