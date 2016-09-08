@@ -13,7 +13,7 @@ pack_version = __import__('rpy').__version__
 package_prefix='.'
 
 
-def _download_r(url="https://cran.cnr.berkeley.edu/src/base/R-3/R-3.2.4.tar.gz"):
+def _download_r(url="https://cran.cnr.berkeley.edu/src/base/R-3/R-3.3.1.tar.gz"):
     download_dir = tempfile.mkdtemp()
     r_src = os.path.join(download_dir, os.path.basename(url))
     cmd = ('wget', '-O', r_src, url)
