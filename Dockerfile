@@ -5,6 +5,14 @@ MAINTAINER Laurent Gautier <lgautier@gmail.com>
 RUN \
   apt-get update -qq && \
   apt-get install -y \
+                     lsb-release && \
+  echo "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) multiverse\n" \
+      >> /etc/apt/sources.list.d/added_repos.list && \
+  echo "deb http://cran.cnr.berkeley.edu/bin/linux/ubuntu $(lsb_release -sc)/" \
+      >> /etc/apt/sources.list.d/added_repos.list && \
+  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9 && \
+  apt-get update -qq && \
+  apt-get install -y \
                      ed \
                      git \
 		     mercurial \
