@@ -1,4 +1,6 @@
 name: rpy2-environment
+channels:
+  - r
 
 dependencies:
   - python=3.5
