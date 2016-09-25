@@ -1,0 +1,3 @@
+conda:
+    file: conda_environment.yml
+
