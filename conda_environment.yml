@@ -4,5 +4,5 @@ dependencies:
   - python=3.5
   - numpy
   - pandas
-  - rpy2
+  - r
 
