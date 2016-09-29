@@ -42,7 +42,7 @@ level can be imported, and the version obtained.
 
 The high-level interface is trying to make the use of R as natural as
 possible for a Python user (something sometimes referred to as
-"pythonic"), and this introduction is only coverage that interface.
+"pythonic"), and this introduction only covers that interface.
 
 Importing the top-level sub-package is also initializing and starting
 R embedded in the current Python process:
@@ -135,7 +135,7 @@ We are now ready to install packages using R's own function `install.package`:
    
    # Selectively install what needs to be install.
    # We are fancy, just because we can.
-   names_to_install = [x for packnames if not rpackages.isinstalled(x)]
+   names_to_install = [pkg for pkg in packnames if not rpackages.isinstalled(pkg)]
    if len(names_to_install) > 0:
        utils.install_packages(StrVector(names_to_install))
 
