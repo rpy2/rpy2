@@ -50,3 +50,9 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
             this R environment."""
         for k in self:
             yield (k, self[k])
+
+    def values(self):
+        """ Iterate through the objects in
+            this R environment."""
+        for k in self:
+            yield self[k]
