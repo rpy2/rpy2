@@ -56,3 +56,34 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
             this R environment."""
         for k in self:
             yield self[k]
+
+    def pop(self, *args):
+        """ E.pop(k[, d]) -> v, remove the specified key
+        and return the corresponding value. If the key is not found,
+        d is returned if given, otherwise KeyError is raised."""
+        l = len(args)
+        k = args[0]
+        if k in self:
+            v = self[k]
+            del(self[k])
+        elif l == 1:
+            raise KeyError(k)
+        else:
+            v = args[1]
+        return v
+
+    def popitem(self):
+        """ E.popitem() -> (k, v), remove and return some (key, value)
+        pair as a 2-tuple; but raise KeyError if E is empty. """
+        if len(self) == 0:
+            raise KeyError()
+        kv = next(self.items())
+        del(self[kv[0]])
+        return kv
+
+    def clear(self):
+        """ E.clear() -> None.  Remove all items from D. """
+        ## FIXME: is there a more efficient implementation (when large
+        ##        number of keys) ?
+        for k in self:
+            del(self[k])

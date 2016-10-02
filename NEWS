@@ -10,7 +10,11 @@ New features
   The module is also designed to be run directly and provide diagnostics:
   `python -m rpy2.situation`.
 
-- :meth:`Environment.values` to match :meth:`dict.values`.
+- :meth:`Environment.values`, :meth:`Environment.pop`,
+  :meth:`Environment.popitems`, :meth:`Environment.clear`
+  to match :meth:`dict.values`,
+  :meth:`dict.pop`, :meth:`dict.popitems`, :meth:`dict.clear`.
+
 
 Changes
 -------
