@@ -20,6 +20,9 @@ Changes
 - The target version for the R package `dplyr` mapped is now 0.5.0, and
   :func:`rpy2.robjects.lib.dplyr.src_dt` is no longer present (see issue #357)
 
+- :meth:`Environment.keys` is now a iterator to match :meth:`dict.keys`,
+  also an interator in Python 3.
+
 Bugs fixed
 ----------
 
