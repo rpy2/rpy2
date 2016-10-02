@@ -1,5 +1,5 @@
 """
-Utilities for manipulating or evaluating the R language
+Utilities for manipulating or evaluating the R language.
 """
 
 import rpy2.robjects.conversion as conversion

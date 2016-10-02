@@ -5,7 +5,7 @@ from rpy2.robjects import conversion
 _new_env = rinterface.baseenv["new.env"]
 
 class Environment(RObjectMixin, rinterface.SexpEnvironment):
-    """ An R environement. """
+    """ An R environement, implementing Python's mapping interface. """
     
     def __init__(self, o=None):
         if o is None:
