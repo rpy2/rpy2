@@ -394,18 +394,17 @@ the different layers constituting the packages can be tested independently.
 On Python 2.6, this should return that all tests were successful.
 
 
-Whenever more details are needed, one can consider running explicit tests.
+Whenever more details are needed, one can consider running tests
+for specific parts of the package. For example:
 
-.. code-block:: python
+.. code-block:: bash
 
-  import rpy2.tests
-  import unittest
+  python -m rpy2.rinterface.tests.__init__		
 
-  # the verbosity level can be increased if needed
-  tr = unittest.TextTestRunner(verbosity = 1)
-  suite = rpy2.tests.suite()
-  tr.run(suite)
-
+  # or
+  
+  python -m rpy2.robjects.tests.__init__
+    
 .. note:: 
 
    Running the tests in an interactive session appears to trigger spurious exceptions
