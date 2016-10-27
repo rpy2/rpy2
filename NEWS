@@ -50,6 +50,10 @@ Bugs fixed
 - The symbol `LISTSXP` (corresponding to R pairlist objects) was not
   imported from the C module in rpy2.
 
+- The functions `scale_linetype_discrete` and `scale_linetype_continuous`
+  in ggplot2 were not wrapped by :mod:`rpy2.robjects.lib.ggplot2`
+  (issue #381)
+
 
 Release 2.8.3
 =============
