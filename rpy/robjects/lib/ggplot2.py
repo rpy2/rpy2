@@ -682,6 +682,12 @@ scale_fill_identity = ScaleFillIdentity.new
 class ScaleFillManual(ScaleFill):
     _constructor = ggplot2_env['scale_fill_manual']
 scale_fill_manual = ScaleFillManual.new
+class ScaleLinetypeContinuous(ScaleLinetype):
+    _constructor = ggplot2_env['scale_linetype_continuous']
+scale_linetype_continuous = ScaleLinetypeContinuous.new
+class ScaleLinetypeDiscrete(ScaleLinetype):
+    _constructor = ggplot2_env['scale_linetype_discrete']
+scale_linetype_discrete = ScaleLinetypeDiscrete.new
 class ScaleLinetypeManual(ScaleLinetype):
     _constructor = ggplot2_env['scale_linetype_manual']
 scale_linetype_manual = ScaleLinetypeManual.new
