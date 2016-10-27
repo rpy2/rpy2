@@ -495,6 +495,16 @@ class SexpVectorTestCase(unittest.TestCase):
         self.assertEqual(1, vec[0][0])
         self.assertEqual('b', vec[1][0])
 
+    def testGetSlicePairllist(self):
+        # Checks that root of issue #380 is fixed
+        vec = ri.baseenv['.Options']
+        vec_slice = vec[0:2]
+        self.assertEqual(2, len(vec_slice))
+        self.assertEqual(ri.LISTSXP, vec_slice.typeof)
+        self.assertEqual(vec.do_slot("names")[0], vec_slice.do_slot("names")[0])
+        self.assertEqual(vec.do_slot("names")[1], vec_slice.do_slot("names")[1])
+
+
     def testAssignItemDifferentType(self):
         c_R = ri.globalenv.get("c")
         myVec = c_R(ri.SexpVector([0, 1, 2, 3, 4, 5], ri.INTSXP))

@@ -218,14 +218,13 @@ VectorSexp_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh)
   }
   embeddedR_setlock();
   SEXP *sexp = &(RPY_SEXP(object));
-  SEXP res_sexp, tmp, tmp2;
+  SEXP res_sexp, tmp, tmp2, resnames, xnames;
 
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
     embeddedR_freelock();
     return NULL;
   }
-
 
   len_R = GET_LENGTH(*sexp);
 
@@ -332,6 +331,20 @@ VectorSexp_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh)
       UNPROTECT(1);
       break;
     case LISTSXP:
+      /* Pairlist */
+      PROTECT(res_sexp = allocVector(LISTSXP, slice_len));
+      tmp = res_sexp;
+      for(tmp2=*sexp, slice_i=0;
+	  slice_i < ihigh;
+	  tmp2=CDR(tmp2), slice_i++) {
+	if (slice_i >= ilow) {
+	  SETCAR(tmp, CAR(tmp2));
+	  SET_TAG(tmp, TAG(tmp2));
+	  tmp = CDR(tmp);
+	}
+      }
+      UNPROTECT(1);
+      break;
     default:
       PyErr_Format(PyExc_ValueError, "Cannot handle R type %d", 
                    TYPEOF(*sexp));
