@@ -15,7 +15,6 @@ New features
   to match :meth:`dict.values`,
   :meth:`dict.pop`, :meth:`dict.popitems`, :meth:`dict.clear`.
 
-
 Changes
 -------
 
@@ -34,6 +33,8 @@ Bugs fixed
 
 - :func:`numpy.float128` is not available on all platforms. The unit test
   for it is now skipped on systems where it is not present (issue #347)
+
+- R pairlist objects can now be sliced (and issue #380 is resolved).
 
 
 Release 2.8.4
