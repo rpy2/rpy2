@@ -1,3 +1,4 @@
+# coding: utf-8
 import unittest
 import sys
 import rpy2.rinterface as rinterface
