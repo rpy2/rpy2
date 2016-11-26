@@ -27,7 +27,6 @@ class OrdDict(dict):
 
         super(OrdDict, self).__init__()
         self.__l = []
-        l = self.__l
 
         for k,v in c:
             self[k] = v
