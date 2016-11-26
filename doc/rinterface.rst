@@ -1001,7 +1001,7 @@ permits calling a function the same way it would in R. For example::
    args[None] = rinterface.IntSexpVector([4,5])
    args['y'] = rinterface.IntSexpVector([6, ])
    rlist = rinterface.baseenv['list']
-   rl = rlist.rcall(args.items(), rinterface.globalenv)
+   rl = rlist.rcall(tuple(args.items()), rinterface.globalenv)
 
 >>> [x for x in rl.do_slot("names")]
 ['x', '', 'y']
