@@ -1,3 +1,13 @@
+Release 2.8.5
+=============
+
+Bugs fixed
+----------
+
+- The defintion of the method :class:`rpy2.rlike.container.OrdDict.items`
+  was incorrect, and so was the documentation for `rcall` (issue #383)
+  
+
 Release 2.8.4
 =============
 
