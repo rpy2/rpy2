@@ -64,7 +64,12 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER
 
 # Grant sudo rights to install packages
 RUN echo ${NB_USER} 'ALL=(ALL) NOPASSWD: /usr/bin/apt-get' >> /etc/sudoers
- 
+
+# Add Tini
+ENV TINI_VERSION v0.13.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/local/bin/tini
+RUN chmod +x /usr/local/bin/tini
+
 USER $NB_USER
 
 # Setup  home directory and notebook config
@@ -85,4 +90,5 @@ EXPOSE 8888
 
 USER $NB_USER
 
+ENTRYPOINT ["/usr/local/bin/tini", "--"]
 CMD jupyter notebook --no-browser
