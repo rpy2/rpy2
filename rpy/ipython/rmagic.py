@@ -688,7 +688,8 @@ utils.install_packages('Cairo')
             print(e.stdout)
             if not e.stdout.endswith(e.err):
                 print(e.err)
-            if tmpd: rmtree(tmpd)
+            if tmpd:
+                rmtree(tmpd)
             return
         finally:
             if self.device in ['png', 'svg']:
