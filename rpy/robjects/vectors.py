@@ -150,6 +150,10 @@ class VectorOperationsDelegator(object):
         res = globalenv_ri.get("-")(self._parent, conversion.py2ri(x))
         return conversion.ri2ro(res)
 
+    def __matmul__(self, x):
+        res = globalenv_ri.get("%*%")(self._parent, conversion.py2ri(x))
+        return conversion.ri2ro(res)
+
     def __mul__(self, x):
         res = globalenv_ri.get("*")(self._parent, conversion.py2ri(x))
         return conversion.ri2ro(res)

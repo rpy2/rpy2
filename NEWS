@@ -15,6 +15,9 @@ New features
   to match :meth:`dict.values`,
   :meth:`dict.pop`, :meth:`dict.popitems`, :meth:`dict.clear`.
 
+- :class:`VectorOperationsDelegator` now has a method `__matmul__` to implement
+  Python's matrix multiplication operator (PEP-0645).
+
 Changes
 -------
 
