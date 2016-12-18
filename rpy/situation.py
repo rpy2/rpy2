@@ -67,6 +67,10 @@ def get_r_home():
     return r_home
 
 def iter_info():
+
+    yield sys.version
+    if not (sys.version_info[0] == 3 and sys.version_info[1] >= 5):
+        yield "*** rpy2 is primarily designed for Python >= 3.5" 
     
     yield "Looking for R's HOME:"
 
