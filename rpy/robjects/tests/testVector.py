@@ -404,6 +404,8 @@ class ConversionHelperTestCase(unittest.TestCase):
         res = robjects.sequence_to_vector((1,2,'a'))
         self.assertTrue(isinstance(res, robjects.StrVector))
 
+        self.assertRaises(ValueError, robjects.sequence_to_vector, list())
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(VectorTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(FactorVectorTestCase))

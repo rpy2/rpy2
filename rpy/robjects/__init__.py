@@ -131,6 +131,7 @@ TYPEORDER = {bool: (0, BoolVector),
              str: (4, StrVector)}
 def sequence_to_vector(lst):
     curr_typeorder = -1
+    i = None
     for i, elt in enumerate(lst):
         cls = type(elt)
         if cls in TYPEORDER:
@@ -138,6 +139,8 @@ def sequence_to_vector(lst):
                 curr_typeorder, curr_type = TYPEORDER[cls]
         else:
             raise ValueError('The element %i in the list has a type that cannot be handled.' % i)
+    if i is None:
+        raise ValueError('The parameter "lst" is an empty sequence. The type of the corresponding R vector cannot be determined.')
     res = curr_type(lst)
     return res
 
