@@ -41,10 +41,6 @@ Bugs fixed
 
 - R pairlist objects can now be sliced (and issue #380 is resolved).
 
-- Giving an empty sequence to :meth:`robjects.sequence_to_vector` is now
-  raising a :class:`ValueError` rather than fail with an
-  :class:`UnboundLocalError` (see issue #388).
-  
 
 Release 2.8.5
 =============
@@ -54,6 +50,10 @@ Bugs fixed
 
 - The defintion of the method :class:`rpy2.rlike.container.OrdDict.items`
   was incorrect, and so was the documentation for `rcall` (issue #383)
+  
+- Giving an empty sequence to :meth:`robjects.sequence_to_vector` is now
+  raising a :class:`ValueError` rather than fail with an
+  :class:`UnboundLocalError` (see issue #388).
   
 
 Release 2.8.4
