@@ -11,6 +11,8 @@ Bugs fixed
   raising a :class:`ValueError` rather than fail with an
   :class:`UnboundLocalError` (see issue #388).
 
+- :meth:`robjects.robject.RSlots.items` is now working (see pull request #57).
+
 
 Release 2.8.4
 =============
