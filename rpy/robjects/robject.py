@@ -40,12 +40,12 @@ class RSlots(object):
     
     def items(self):
         for k in self._robj.list_attrs():
-            v = self[key]
+            v = self[k]
             yield (k, v)
 
     def values(self):
         for k in self._robj.list_attrs():
-            v = self[key]
+            v = self[k]
             yield v
 
 
