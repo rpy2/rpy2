@@ -130,7 +130,7 @@ class NumpyConversionsTestCase(unittest.TestCase):
         i64_test = numpy.array(i64_r)[0]
         self.assertEqual(i64, i64_test)
 
-    @unittest.skipUnless(hasattr(numpy, 'float128'),
+    @unittest.skipUnless(has_numpy and hasattr(numpy, 'float128'),
                          "numpy.float128 not available on this system")
     def testScalar_f128(self):
         f128 = numpy.float128(100.000000003)
