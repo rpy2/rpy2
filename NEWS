@@ -54,7 +54,9 @@ Bugs fixed
 - Giving an empty sequence to :meth:`robjects.sequence_to_vector` is now
   raising a :class:`ValueError` rather than fail with an
   :class:`UnboundLocalError` (see issue #388).
-  
+
+- :meth:`robjects.robject.RSlots.items` is now working (see pull request #57).
+
 
 Release 2.8.4
 =============
