@@ -146,9 +146,23 @@ class MappingTestCase(unittest.TestCase):
 
         self.assertTrue(isinstance(d, Density))
 
+class RSlotsTestCase(unittest.TestCase):
+
+    def testItems():
+        v = robjects.IntVector((1,2,3))
+        rs = robjects.robject.RSlots(v)
+        self.assertEqual(0, len(tuple(rs.items())))
+
+        v.do_slot_assign("a", robject.IntVector((9,)))
+        for ((k_o,v_o), (k,v)) in zip((("a", robject.IntVector), ), rs.items()):
+            self.assertEqual(k_o, k)
+            self.assertEqual(v_o, type(v))
+            
+    
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(RInstanceTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(MappingTestCase))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(RSlotsTestCase))
     return suite
 
 if __name__ == '__main__':
