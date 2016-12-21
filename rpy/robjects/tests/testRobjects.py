@@ -148,7 +148,7 @@ class MappingTestCase(unittest.TestCase):
 
 class RSlotsTestCase(unittest.TestCase):
 
-    def testItems():
+    def testItems(self):
         v = robjects.IntVector((1,2,3))
         rs = robjects.robject.RSlots(v)
         self.assertEqual(0, len(tuple(rs.items())))
