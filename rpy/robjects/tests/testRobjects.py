@@ -154,7 +154,7 @@ class RSlotsTestCase(unittest.TestCase):
         self.assertEqual(0, len(tuple(rs.items())))
 
         v.do_slot_assign("a", robject.IntVector((9,)))
-        for ((k_o,v_o), (k,v)) in zip((("a", robject.IntVector), ), rs.items()):
+        for ((k_o,v_o), (k,v)) in zip((("a", robjects.IntVector), ), rs.items()):
             self.assertEqual(k_o, k)
             self.assertEqual(v_o, type(v))
             
