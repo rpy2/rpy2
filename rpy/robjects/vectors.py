@@ -923,12 +923,15 @@ class DataFrame(ListVector):
     _rbind     = rinterface.baseenv['rbind.data.frame']
     _is_list   = rinterface.baseenv['is.list']
     
-    def __init__(self, obj):
+    def __init__(self, obj, stringasfactor=False):
         """ Create a new data frame.
 
         :param obj: object inheriting from rpy2.rinterface.SexpVector,
                     or inheriting from TaggedList
                     or a mapping name -> value
+        :param stringasfactor: Boolean indicating whether vectors
+                    of strings should be turned to vectors. Note
+                    that factors will not be turned to string vectors.
         """
         if isinstance(obj, rinterface.SexpVector):
             if obj.typeof != rinterface.VECSXP:
@@ -946,6 +949,12 @@ class DataFrame(ListVector):
                 " the R class 'data.frame'")
         elif isinstance(obj, rlc.TaggedList):
             kv = [(k, conversion.py2ri(v)) for k,v in obj.items()]
+            if 'stringAsFactor' in (k for k,v in kv):
+                warnings.warn('The column name "stringAsFactor" is '
+                              'conflicting with named parameter '
+                              'in underlying R function "data.frame()".')
+            else:
+                kv.append(('stringAsFactor', stringasfactor))
             kv = tuple(kv)
             df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
             super(DataFrame, self).__init__(df)
