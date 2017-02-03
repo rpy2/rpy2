@@ -1,0 +1,15 @@
+# This is a sample build configuration for Python.
+# Check our guides at https://confluence.atlassian.com/x/VYk8Lw for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: python:3.5.1
+
+pipelines:
+  default:
+    - step:
+        script: # Modify the commands below to build your repository.
+          #- pip install -U tox
+          - pip --version
+          #- tox --version
+          python setup.py install
