@@ -7,6 +7,11 @@ from collections import namedtuple
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext as _build_ext
 
+
+if sys.version_info[0] < 3:
+    print("rpy2 is no longer supporting Python < 3. Consider using an older rpy2 release when using an older Python release.")
+    sys.exit(1)
+
 pack_name = 'rpy2'
 pack_version = __import__('rpy').__version__
 
