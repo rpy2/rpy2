@@ -3,13 +3,50 @@
 # Only use spaces to indent your .yml configuration.
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image: python:3.5.1
+image: ubuntu:16.04
 
 pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          #- pip install -U tox
-          - pip --version
-          #- tox --version
+	  - apt-get update -qq && apt-get install -y lsb-release
+          - echo "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) multiverse\n" \
+            >> /etc/apt/sources.list.d/added_repos.list
+          - echo "deb http://cran.cnr.berkeley.edu/bin/linux/ubuntu $(lsb_release -sc)/" \
+            >> /etc/apt/sources.list.d/added_repos.list
+          - apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
+	  - apt-get update -qq && \
+	    apt-get install -y \
+                     aptdaemon \
+                     ed \
+                     git \
+		     mercurial \
+		     libcairo-dev \
+		     libedit-dev \
+		     python3 \
+		     python3-pip \
+		     python3.5-venv \
+		     r-base \
+		     r-base-dev \
+		     sudo \
+		     wget && \
+	    rm -rf /var/lib/apt/lists/*
+	  - echo "broom\n\
+                  dplyr\n\
+                  hexbin\n\
+                  ggplot2\n\
+                  lme4\n\
+                  tidyr" > rpacks.txt && \
+            R -e 'install.packages(sub("(.+)\\\\n","\\1", scan("rpacks.txt", "character")), repos="http://cran.cnr.Berkeley.edu")' && \
+            rm rpacks.txt
+
+          - pip3 --no-cache-dir install pip --upgrade && \
+            pip3 --no-cache-dir install setuptools --upgrade && \
+            pip3 --no-cache-dir install wheel --upgrade && \
+            pip3 --no-cache-dir install numpy pandas sphinx jinja2 jupyter notebook && \
+            pip3 --no-cache-dir install bokeh && \
+            pip3 --no-cache-dir install ipywidgets && \
+            jupyter nbextension enable --py --sys-prefix widgetsnbextension && \
+            rm -rf /root/.cache
           - python setup.py install
+	  
