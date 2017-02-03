@@ -5,9 +5,7 @@
 LOGFILE=`pwd`/'ci.log'
 
 # Define the versions of Python that should be tested
-#PYTHON_VERSIONS="2.7 3.3 3.4"
-#PYTHON_VERSIONS="3.4"
-PYTHON_VERSIONS="2.7 3.4 3.5"
+PYTHON_VERSIONS="3.5 3.6"
 
 # Define the target Numpy versions
 NUMPY_VERSIONS="1.11.1"
