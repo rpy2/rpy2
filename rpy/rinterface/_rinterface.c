@@ -89,11 +89,7 @@
 
 #define _RPY_RINTERFACE_MODULE_
 
-#if (PY_VERSION_HEX < 0x03010000)
-staticforward PyObject* EmbeddedR_unserialize(PyObject* self, PyObject* args);
-#else
 static PyObject* EmbeddedR_unserialize(PyObject* self, PyObject* args);
-#endif
 
 #include "embeddedr.h"
 #include "na_values.h"
@@ -359,11 +355,7 @@ EmbeddedR_WriteConsoleEx(const char *buf, int len, int otype)
 
   PyOS_setsig(SIGINT, python_sighandler);
 
-#if (PY_VERSION_HEX < 0x03010000)
   arglist = Py_BuildValue("(s)", buf);
-#else
-  arglist = Py_BuildValue("(s)", buf);
-#endif
 
   if (! arglist) {    PyErr_NoMemory();
 /*     signal(SIGINT, old_int); */
@@ -546,9 +538,6 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
 
   const char *input_str = NULL;
 
-#if (PY_VERSION_HEX < 0x03010000)
-  input_str = PyString_AsString(result);
-#else
   int is_unicode = PyUnicode_Check(result);
   PyObject *pybytes = NULL;
   if (is_unicode) {
@@ -566,12 +555,9 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   }
 
   //const char *input_str = PyBytes_AsString(result);
-#endif
   if (! input_str) {
-#if (PY_VERSION_HEX >= 0x03010000)
     if (is_unicode)
       Py_XDECREF(pybytes);
-#endif
     PyErr_Print();
     PyErr_Clear();
     RPY_GIL_RELEASE(is_threaded, gstate);
@@ -584,10 +570,8 @@ EmbeddedR_ReadConsole(const char *prompt, unsigned char *buf,
   buf[(l>len-1)?len-1:l]=0;
   /* --- */
 
-#if (PY_VERSION_HEX >= 0x03010000)
   if (is_unicode)
     Py_XDECREF(pybytes);
-#endif
   
   Py_XDECREF(result);
 /*   signal(SIGINT, old_int); */
@@ -727,11 +711,7 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   PyGILState_STATE gstate;
   RPY_GIL_ENSURE(is_threaded, gstate);
 
-#if (PY_VERSION_HEX < 0x03010000)
-  arglist = Py_BuildValue("(s)", buf);
-#else
   arglist = Py_BuildValue("(y)", buf);
-#endif
   if (! arglist) {
     PyErr_NoMemory();
   }
@@ -763,18 +743,12 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
     RPY_GIL_RELEASE(is_threaded, gstate);
     return 0;
   }
-#if (PY_VERSION_HEX < 0x03010000)
-  char *path_str = PyString_AsString(result);
-#else
   PyObject *pybytes = PyUnicode_AsUTF8String(result);
   char *path_str = PyBytes_AsString(pybytes);
   //char *path_str = PyBytes_AsString(result);
-#endif
 
   if (! path_str) {
-#if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
-#endif
     Py_DECREF(result);
     PyErr_SetString(PyExc_TypeError, 
                     "Returned value should have a string representation");
@@ -790,10 +764,6 @@ EmbeddedR_ChooseFile(int new, char *buf, int len)
   strncpy((char *)buf, path_str, (l>len-1)?len-1:l);
   buf[(l>len-1)?len-1:l] = '\0';
   /* --- */
-
-#if (PY_VERSION_HEX >= 0x03010000)
-    Py_DECREF(pybytes);
-#endif
 
   Py_DECREF(arglist);  
   Py_DECREF(result);
@@ -847,37 +817,22 @@ EmbeddedR_ShowFiles(int nfile, const char **file, const char **headers,
 
   PyObject *py_del;
   RPY_PY_FROM_RBOOL(py_del, del);
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *py_wtitle = PyString_FromString(wtitle);
-  PyObject *py_pager = PyString_FromString(pager);
-#else
    PyObject *py_wtitle = PyUnicode_FromString(wtitle);
    PyObject *py_pager = PyUnicode_FromString(pager);
-#endif  
   PyObject *py_fileheaders_tuple = PyTuple_New(nfile);
   PyObject *py_fileheader;
   int f_i;
   for (f_i = 0; f_i < nfile; f_i++) {
     py_fileheader = PyTuple_New(2);
-#if (PY_VERSION_HEX < 0x03010000)
-    if (PyTuple_SetItem(py_fileheader, 0,
-                        PyString_FromString(headers[f_i])) != 0) {
-#else
     if (PyTuple_SetItem(py_fileheader, 0,
                         PyUnicode_FromString(headers[f_i])) != 0) {
-#endif
       Py_DECREF(py_fileheaders_tuple);
       /*FIXME: decref other PyObject arguments */
       RPY_GIL_RELEASE(is_threaded, gstate);
       return 0;
     }
-#if (PY_VERSION_HEX < 0x03010000)
-    if (PyTuple_SetItem(py_fileheader, 1,
-                        PyString_FromString(file[f_i])) != 0) {
-#else
     if (PyTuple_SetItem(py_fileheader, 1,
                         PyUnicode_FromString(file[f_i])) != 0) {
-#endif
       Py_DECREF(py_fileheaders_tuple);
       /*FIXME: decref other PyObject arguments */
       RPY_GIL_RELEASE(is_threaded, gstate);
@@ -1099,17 +1054,10 @@ static PyObject* EmbeddedR_setinitoptions(PyObject *self, PyObject *tuple)
    */
   Py_ssize_t ii;
   for (ii = 0; ii < PyTuple_GET_SIZE(tuple); ii++) {
-#if (PY_VERSION_HEX < 0x03010000)
-    if (! PyString_Check(PyTuple_GET_ITEM(tuple, ii))) {
-      PyErr_Format(PyExc_ValueError, "All options should be strings.");
-      return NULL;
-    }
-#else
     if (! PyBytes_Check(PyTuple_GET_ITEM(tuple, ii))) {
       PyErr_Format(PyExc_ValueError, "All options should be bytes.");
       return NULL;
     }
-#endif
   }
   
   
@@ -1202,11 +1150,7 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args, PyObject *kwds)
   static int status;
   
   if (rpy_has_status(RPY_R_INITIALIZED)) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return PyInt_FromLong(status);
-#else
     return PyLong_FromLong(status);
-#endif
 /*     PyErr_Format(PyExc_RuntimeError, "R can only be initialized once."); */
 /*     return NULL; */
   }
@@ -1227,11 +1171,7 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args, PyObject *kwds)
   Py_ssize_t ii;
   for (ii = 0; ii < n_args; ii++) {
     opt_string = PyTuple_GetItem(initOptions, ii);
-#if (PY_VERSION_HEX < 0x03010000)
-    options[ii] = PyString_AsString(opt_string);
-#else
     options[ii] = PyBytes_AsString(opt_string);
-#endif
   }
 
 
@@ -1366,11 +1306,7 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   errMessage_SEXP = findVar(install("geterrmessage"), 
                             R_BaseNamespace);
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *res = PyInt_FromLong(status);
-#else
   PyObject *res = PyLong_FromLong(status);
-#endif
 
   /* type tag for Python external methods */
   SEXP type_tag;
@@ -1538,33 +1474,18 @@ EmbeddedR_parse(PyObject *self, PyObject *pystring)
 
   PyObject *pybytes;
   char *string;
-#if (PY_VERSION_HEX < 0x03010000)
-  if (PyUnicode_Check(pystring)) {
-    pybytes = PyUnicode_AsUTF8String(pystring);
-    string = PyBytes_AsString(pybytes);
-  } else if (PyString_Check(pystring)) {
-    string = PyString_AsString(pystring);
-  } else {
-    PyErr_Format(PyExc_ValueError, "The object to parse must be a string.");
-    return NULL;
-  }
-
-#else
   if (! PyUnicode_Check(pystring)) {
     PyErr_Format(PyExc_ValueError, "The object to parse must be a unicode string");
     return NULL;
   }
   pybytes = PyUnicode_AsUTF8String(pystring);
   string = PyBytes_AsString(pybytes);
-#endif
 
   embeddedR_setlock();
 
   PROTECT(cmdSexp = allocVector(STRSXP, 1));
   SET_STRING_ELT(cmdSexp, 0, mkChar(string));
-#if (PY_VERSION_HEX >= 0x03010000)
   Py_DECREF(pybytes);
-#endif
   cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
   switch(status) {
   case PARSE_OK:
@@ -1712,10 +1633,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
 
   /* named args */
   PyObject *argValue, *argName;
-#if (PY_VERSION_HEX < 0x03010000)
-#else  
   PyObject *pybytes;
-#endif
   const char *argNameString;
   unsigned int addArgName;
   Py_ssize_t item_length;
@@ -1753,11 +1671,7 @@ Sexp_rcall(PyObject *self, PyObject *args)
     argName = PyTuple_GET_ITEM(tmp_obj, 0);
     if (argName == Py_None) {
       addArgName = 0;
-#if (PY_VERSION_HEX < 0x03010000)
-    } else if (PyString_Check(argName)) {
-#else
     } else if (PyUnicode_Check(argName)) {
-#endif
       addArgName = 1;
     } else {
       PyErr_SetString(PyExc_TypeError, "All keywords must be strings (or None).");
@@ -1799,18 +1713,11 @@ Sexp_rcall(PyObject *self, PyObject *args)
     */
     SETCAR(c_R, tmp_R);
     if (addArgName) {
-#if (PY_VERSION_HEX < 0x03010000)
-      argNameString = PyString_AsString(argName);
-      SET_TAG(c_R, install(argNameString));
-#else
       pybytes = PyUnicode_AsUTF8String(argName);
       argNameString = Rf_mkCharCE(PyBytes_AsString(pybytes), CE_UTF8);
       SET_TAG(c_R, installChar(argNameString));
-#endif
 
-#if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
-#endif
     }
     c_R = CDR(c_R);
     /* if on-the-fly conversion, UNPROTECT the newly created
@@ -2005,12 +1912,7 @@ ClosureSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 static PyTypeObject ClosureSexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.SexpClosure",       /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -2228,11 +2130,7 @@ EnvironmentSexp_keys(PyObject *sexpEnvironment)
   for (i=0; i<l; i++) {
     sexp_item = STRING_ELT(symbols, i);
     const char *val_char = CHAR(sexp_item);
-#if (PY_VERSION_HEX < 0x03010000)
-    val = PyString_FromString(val_char);
-#else
     val = PyUnicode_FromString(val_char);
-#endif
     PyTuple_SET_ITEM(keys, i, val);
   }
   UNPROTECT(1);
@@ -2262,41 +2160,26 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
   const char *name;
   SEXP res_R = NULL;
 
-#if (PY_VERSION_HEX < 0x03010000)
-  if (!PyString_Check(key)) {
-    PyErr_Format(PyExc_ValueError, "Keys must be string objects.");
-    return NULL;
-  }
-#else
   if (!PyUnicode_Check(key)) {
     PyErr_Format(PyExc_ValueError, "Keys must be unicode string objects.");
     return NULL;
   }
-#endif
 
-#if (PY_VERSION_HEX < 0x03010000)
-  name = PyString_AsString(key);
-#else
   PyObject *pybytes = PyUnicode_AsUTF8String(key);
   if (pybytes == NULL) {
     return NULL;
   }
   name = PyBytes_AsString(pybytes);
-#endif
 
   if (strlen(name) == 0) {
     PyErr_Format(PyExc_KeyError, "%s", name);
-#if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
-#endif
     return NULL;
   }
 
   if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
-#if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
-#endif
     return NULL;
   }
   embeddedR_setlock();
@@ -2305,9 +2188,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "C-NULL SEXP.");
     embeddedR_freelock();
-#if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
-#endif
     return NULL;
   }
 
@@ -2339,9 +2220,7 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
     if (! asLogical(res_R)) {
       /* Error because of a missing key */
       PyErr_Format(PyExc_KeyError, "'%s' not found", name);
-#if (PY_VERSION_HEX >= 0x03010000)
       Py_DECREF(pybytes);
-#endif
       embeddedR_freelock();
       return NULL;
     } else {
@@ -2349,17 +2228,13 @@ EnvironmentSexp_subscript(PyObject *self, PyObject *key)
          triggers an error in R. Don't ask. This is R. */
       res_R = R_NilValue;
       EmbeddedR_exception_from_errmessage(RPyExc_RuntimeError);
-#if (PY_VERSION_HEX >= 0x03010000)
       Py_DECREF(pybytes);
-#endif
       embeddedR_freelock();
       return NULL;
     }
   } else {
     /* No error */
-#if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
-#endif
     embeddedR_freelock();
     return newPySexpObject(res_R);
   }
@@ -2370,30 +2245,17 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 {
   const char *name;
 
-#if (PY_VERSION_HEX < 0x03010000)
-  if (!PyString_Check(key)) {
-    PyErr_Format(PyExc_ValueError, "Keys must be string objects.");
-    return -1;
-  }
-#else
   if (!PyUnicode_Check(key)) {
     PyErr_Format(PyExc_ValueError, "Keys must be unicode string objects.");
     return -1;
   }
-#endif
 
-#if (PY_VERSION_HEX < 0x03010000)
-  name = PyString_AsString(key);
-#else
   PyObject *pybytes = PyUnicode_AsUTF8String(key);
   name = PyBytes_AsString(pybytes);
-#endif
 
   if (rpy_has_status(RPY_R_BUSY)) {
     PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
-#if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
-#endif
     return -1;
   }
   embeddedR_setlock();
@@ -2403,9 +2265,7 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   if (! rho_R) {
     PyErr_Format(PyExc_ValueError, "The environment has NULL SEXP.");
     embeddedR_freelock();
-#if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
-#endif
     return -1;
   }
   
@@ -2417,33 +2277,25 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
     if (rho_R == R_BaseNamespace) {
       PyErr_Format(PyExc_ValueError, "Variables from the R base namespace cannot be removed.");
       embeddedR_freelock();
-#if (PY_VERSION_HEX >= 0x03010000)
       Py_DECREF(pybytes);
-#endif
       return -1;
     }
     if (rho_R == R_BaseEnv) {
       PyErr_Format(PyExc_ValueError, "Variables from the R base environment cannot be removed.");
       embeddedR_freelock();
-#if (PY_VERSION_HEX >= 0x03010000)
       Py_DECREF(pybytes);
-#endif
       return -1;
     }
     if (rho_R == R_EmptyEnv) {
       PyErr_Format(PyExc_ValueError, "Cannot remove variables from the empty environment.");
       embeddedR_freelock();
-#if (PY_VERSION_HEX >= 0x03010000)
       Py_DECREF(pybytes);
-#endif
       return -1;
     }
     if (R_EnvironmentIsLocked(rho_R)) {
       PyErr_Format(PyExc_ValueError, "Cannot remove bindings from a locked environment.");
       embeddedR_freelock();
-#if (PY_VERSION_HEX >= 0x03010000)
       Py_DECREF(pybytes);
-#endif
       return -1;
     }
     sym = Rf_install(name);
@@ -2452,9 +2304,7 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
     
     if (res_rm == R_UnboundValue) {
       PyErr_Format(PyExc_KeyError, "'%s' not found", name);
-#if (PY_VERSION_HEX >= 0x03010000)
       Py_DECREF(pybytes);
-#endif
       embeddedR_freelock();
       return -1;
     }
@@ -2464,25 +2314,19 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
 			 Rf_ScalarLogical(FALSE));
     if (! res_rm) {
       embeddedR_freelock();
-#if (PY_VERSION_HEX >= 0x03010000)
       Py_DECREF(pybytes);
-#endif
       PyErr_Format(PyExc_RuntimeError, "Could not remove variable from environment.");
       return -1;
     } else {
       embeddedR_freelock();
-#if (PY_VERSION_HEX >= 0x03010000)
       Py_DECREF(pybytes);
-#endif
       return 0;
     }
   }
 
   int is_PySexpObject = PyObject_TypeCheck(value, &Sexp_Type);
   if (! is_PySexpObject) {
-#if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
-#endif    
     embeddedR_freelock();
     PyErr_Format(PyExc_ValueError, 
                  "All parameters must be of type Sexp_Type.");
@@ -2495,14 +2339,10 @@ EnvironmentSexp_ass_subscript(PyObject *self, PyObject *key, PyObject *value)
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "The value has NULL SEXP.");
     embeddedR_freelock();
-#if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
-#endif
     return -1;
   }
-#if (PY_VERSION_HEX >= 0x03010000)
     Py_DECREF(pybytes);
-#endif
   sym = Rf_install(name);
   PROTECT(sexp_copy = Rf_duplicate(sexp));
   Rf_defineVar(sym, sexp_copy, rho_R);
@@ -2593,12 +2433,7 @@ EnvironmentSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 static PyTypeObject EnvironmentSexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.SexpEnvironment",   /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -2690,12 +2525,7 @@ Attributes can be accessed using the method 'do_slot'.\
 static PyTypeObject S4Sexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.SexpS4",    /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -2757,22 +2587,13 @@ SymbolSexp_tp_str(PySexpObject *self)
    *}
    */
   const char* string = CHAR(PRINTNAME(sexp));
-#if (PY_VERSION_HEX < 0x03010000)
-  return PyString_FromString(string);
-#else
   return PyUnicode_FromString(string);
-#endif
 }
 
 static PyTypeObject SymbolSexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.SexpSymbol",  /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -2849,25 +2670,6 @@ SymbolSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
       return -1;
     }
   }
-#if (PY_VERSION_HEX < 0x03010000)
-  else if (PyString_Check(pysymbol)) {
-    rres = Rf_install(PyString_AS_STRING(pysymbol));
-  } else if (PyUnicode_Check(pysymbol)) {
-    PyObject *utf8_str = PyUnicode_AsUTF8String(pysymbol);
-    if (utf8_str == NULL) {
-      //UNPROTECT(1);
-      PyErr_Format(PyExc_ValueError,
-		   "Error raised by codec for symbol.");
-      return -1;	
-    }
-    PyErr_Format(PyExc_ValueError,
-		 "R symbol from UTF-8 is not yet implemented.");
-    return -1;	
-    const char *string = PyString_AsString(utf8_str);
-    rres = install(string);
-    Py_XDECREF(utf8_str);
-  }
-#else
   /* Only difference with Python < 3.1 is that PyString case is dropped. 
      Technically a macro would avoid code duplication.
     */
@@ -2883,7 +2685,6 @@ SymbolSexp_init(PyObject *self, PyObject *args, PyObject *kwds)
       rres = install(string);
       Py_XDECREF(utf8_str);
   }
-#endif
   else {
     PyErr_Format(PyExc_ValueError, "Cannot instantiate from this type.");
     embeddedR_freelock();
@@ -2910,12 +2711,7 @@ PyDoc_STRVAR(LangSexp_Type_doc,
 static PyTypeObject LangSexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.SexpLang",  /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -3115,17 +2911,9 @@ newSEXP(PyObject *object, int rType)
     integer_ptr = INTEGER(sexp);
     for (i = 0; i < length; ++i) {
       item = PySequence_Fast_GET_ITEM(seq_object, i);
-#if (PY_VERSION_HEX < 0x03010000)
-      item_tmp = PyNumber_Int(item);
-#else
       item_tmp = PyNumber_Long(item);
-#endif
       if (item_tmp && (item != NAInteger_New(0))) {
-#if (PY_VERSION_HEX < 0x03010000)
-	  long l = PyInt_AS_LONG(item_tmp);
-#else
 	  long l = PyLong_AS_LONG(item_tmp);
-#endif
 	  integer_ptr[i] = RPY_RINT_FROM_LONG(l);
       } else {
         PyErr_Clear();
@@ -3162,11 +2950,7 @@ newSEXP(PyObject *object, int rType)
     int ok;
     for (i = 0; i < length; ++i) {
       item = PySequence_Fast_GET_ITEM(seq_object, i);
-#if (PY_VERSION_HEX < 0x03010000)
-      ok = PyString_AsStringAndSize(item, &buffer, &size_tmp);
-#else
       ok = PyBytes_AsStringAndSize(item, &buffer, &size_tmp);
-#endif
       if (ok == -1) {
 	PyErr_Clear();
 	printf("Error while converting to Bytes element %zd.\n", i);
@@ -3188,39 +2972,19 @@ newSEXP(PyObject *object, int rType)
       item = PySequence_Fast_GET_ITEM(seq_object, i);
       if (item == na) {
         str_R = NA_STRING;
-#if (PY_VERSION_HEX < 0x03010000)
-      } else if(PyString_Check(item)) {
-	/* PyObject_Str in Python >= 3 is a unicode string */
-        str_R = mkChar(PyString_AS_STRING(item));
-        if (!str_R) {
-	  PyErr_NoMemory();
-	  UNPROTECT(1);
-	  sexp = NULL;
-	  Py_DECREF(na);
-	  break;
-        }
-#endif
       } else if (PyUnicode_Check(item)) {
 	pybytes = PyUnicode_AsUTF8String(item);
 	if (pybytes == NULL) {
 	  sexp = NULL;
 	  break;
 	}
-#if (PY_VERSION_HEX < 0x03010000)
-	const char *string = PyString_AsString(pybytes);
-#else
 	const char *string = PyBytes_AsString(pybytes);
-#endif
 	if (string == NULL) {
 	  Py_DECREF(pybytes);
 	  sexp = NULL;
 	  break;
 	}
-#if (PY_VERSION_HEX < 0x03010000)
-	str_R = mkChar(string);
-#else
         str_R = mkCharCE(string, CE_UTF8);
-#endif	
 	Py_DECREF(pybytes);
         if (!str_R) {
           PyErr_NoMemory();
@@ -3250,17 +3014,9 @@ newSEXP(PyObject *object, int rType)
           tmp = allocVector(REALSXP, 1);
           REAL(tmp)[0] = PyFloat_AS_DOUBLE(item);
           SET_ELEMENT(sexp, i, tmp);
-#if (PY_VERSION_HEX < 0x03010000)
-        } else if (PyInt_Check(item)) {
-#else
 	} else if (PyLong_Check(item)) {
-#endif
           tmp = allocVector(INTSXP, 1);
-#if (PY_VERSION_HEX < 0x03010000)                         
-          INTEGER_POINTER(tmp)[0] = (int)PyInt_AS_LONG(item);
-#else
 	  INTEGER_POINTER(tmp)[0] = (int)PyLong_AS_LONG(item);
-#endif
           SET_ELEMENT(sexp, i, tmp);
         } else if (PyLong_Check(item)) {
           tmp = allocVector(INTSXP, 1);
@@ -3272,21 +3028,10 @@ newSEXP(PyObject *object, int rType)
           SET_ELEMENT(sexp, i, tmp);
         } else if (PyBool_Check(item)) {
           tmp = allocVector(LGLSXP, 1);
-#if (PY_VERSION_HEX < 0x03010000)
-          LOGICAL_POINTER(tmp)[0] = (int)PyInt_AS_LONG(item);
-#else
 	  LOGICAL_POINTER(tmp)[0] = (int)PyLong_AS_LONG(item);
-#endif
           SET_ELEMENT(sexp, i, tmp);
-#if (PY_VERSION_HEX < 0x03010000)
-        } else if (PyString_Check(item)) {
-#else
 	} else if (PyUnicode_Check(item)) {
-#endif
           PROTECT(tmp = NEW_CHARACTER(1));
-#if (PY_VERSION_HEX < 0x03010000)
-	  tmp2 = mkChar(PyString_AsString(item));
-#else
 	  pybytes = PyUnicode_AsUTF8String(item);
 	  if (pybytes == NULL) {
 	    sexp = NULL;
@@ -3294,7 +3039,6 @@ newSEXP(PyObject *object, int rType)
 	  }
 	  tmp2 = mkCharCE(PyUnicode_AsUTF8(pybytes), CE_UTF8);
 	  Py_DECREF(pybytes);
-#endif
           if (!tmp2) {
             PyErr_NoMemory();
             sexp = NULL;
@@ -3377,11 +3121,7 @@ EmbeddedR_sexpType(PyObject *self, PyObject *args)
     return NULL;
   }
   /* FIXME: store python strings when initializing validSexpType instead */
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *res = PyString_FromString(sexp_type);
-#else
   PyObject *res = PyUnicode_FromString(sexp_type);
-#endif
   return res;
 
 }
@@ -3537,13 +3277,9 @@ do_Python(SEXP args)
     PyErr_Fetch(&exctype, &excvalue, &exctraceback);
     excstr = PyObject_Str(excvalue);
     if (excstr) {
-#if (PY_VERSION_HEX < 0x03010000)
-      error(PyString_AS_STRING(excstr));
-#else
       PyObject *pybytes = PyUnicode_AsLatin1String(excstr);
       error(PyBytes_AsString(pybytes));
       Py_DECREF(pybytes);
-#endif
       Py_DECREF(excstr);
     } 
     else {
@@ -3595,8 +3331,6 @@ static char **validSexpType;
 #define PYASSERT_ZERO(code) \
   if ((code) != 0) {return ; } \
 
-#if (PY_VERSION_HEX < 0x03010000)
-#else
 static struct PyModuleDef rinterfacemodule = {
    PyModuleDef_HEAD_INIT,
    "_rinterface",           /* name of module */
@@ -3604,7 +3338,6 @@ static struct PyModuleDef rinterfacemodule = {
    -1,                     /* size of per-interpreter state */
    EmbeddedR_methods       /* method table */
  };
-#endif
 
 /* GS: Necessary? */
 /* LG: might be for win32/win64 (I can't remember)*/
@@ -3613,11 +3346,7 @@ static struct PyModuleDef rinterfacemodule = {
 #endif
 
 PyMODINIT_FUNC
-#if (PY_VERSION_HEX < 0x03010000)
-init_rinterface(void)
-#else
 PyInit__rinterface(void)
-#endif
 {
   /* PyMODINIT_FUNC */
   /* RPY_RINTERFACE_INIT(void) */
@@ -3627,126 +3356,58 @@ PyInit__rinterface(void)
          * object; doing it here is required for portability to Windows 
          * without requiring C++. */
   if (PyType_Ready(&Sexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&SymbolSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&ClosureSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&VectorSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&IntVectorSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&FloatVectorSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&StrVectorSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&BoolVectorSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&ByteVectorSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&ComplexVectorSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&ListVectorSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&EnvironmentSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&S4Sexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&LangSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   if (PyType_Ready(&ExtPtrSexp_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
 
   /* Required because NA types inherit from basic Python types */
   if (PyType_Ready(&PyBool_Type) < 0)  {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
 
   if (PyType_Ready(&PyLong_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
 
   /* NA types */
@@ -3754,83 +3415,49 @@ PyInit__rinterface(void)
   NAInteger_Type.tp_base=&PyLong_Type;
 #endif
   if (PyType_Ready(&NAInteger_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
 #if defined(Win32) || defined(Win64)
   NALogical_Type.tp_base=&PyLong_Type;
 #endif
   if (PyType_Ready(&NALogical_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
 #if defined(Win32) || defined(Win64)
   NAReal_Type.tp_base=&PyFloat_Type;
 #endif
   if (PyType_Ready(&NAReal_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
 #if defined(Win32) || defined(Win64)
   NAComplex_Type.tp_base=&PyComplex_Type;
 #endif
   if (PyType_Ready(&NAComplex_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   
-#if (defined(Win32) || defined(Win64)) & PY_VERSION_HEX < 0x03010000
-  NACharacter_Type.tp_base=&PyString_Type;
-#elif defined(Win32)
+#if defined(Win32)
   NACharacter_Type.tp_base=&PyUnicode_Type;
 #endif
 
   if (PyType_Ready(&NACharacter_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
 
   PyObject *m, *d;
   static void *PyRinterface_API[PyRinterface_API_pointers];
   PyObject *c_api_object;
 
-#if (PY_VERSION_HEX < 0x03010000)
-  m = Py_InitModule3("_rinterface", EmbeddedR_methods, module_doc);
-#else
   m = PyModule_Create(&rinterfacemodule);
-#endif
   if (m == NULL) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
 
   /* Create a Capsule containing the API pointer array's address */
   c_api_object = PyCapsule_New((void *)PyRinterface_API, 
 			       PyRinterface_API_NAME, NULL);
   if (c_api_object == NULL) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   } else {
     PyModule_AddObject(m, "SEXPOBJ_C_API", c_api_object);
   }
@@ -3840,11 +3467,7 @@ PyInit__rinterface(void)
   validSexpType = calloc(RPY_MAX_VALIDSEXTYPE, sizeof(char *));
   if (! validSexpType) {
     PyErr_NoMemory();
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
 
   ADD_SEXP_CONSTANT(m, NILSXP);
@@ -3884,20 +3507,6 @@ PyInit__rinterface(void)
 
 
   RPY_R_VERSION_BUILD = PyTuple_New(4);
-#if (PY_VERSION_HEX < 0x03010000)
-  PYASSERT_ZERO(
-		PyTuple_SetItem(RPY_R_VERSION_BUILD, 0, 
-				PyString_FromString(R_MAJOR))
-		);
-  PYASSERT_ZERO(
-		PyTuple_SetItem(RPY_R_VERSION_BUILD, 1, 
-				PyString_FromString(R_MINOR))
-		);
-  PYASSERT_ZERO(
-		PyTuple_SetItem(RPY_R_VERSION_BUILD, 2, 
-				PyString_FromString(R_STATUS))
-		);
-# else
   if (PyTuple_SetItem(RPY_R_VERSION_BUILD, 0, 
 		      PyUnicode_FromString(R_MAJOR)) < 0) 
     return NULL;
@@ -3907,19 +3516,8 @@ PyInit__rinterface(void)
   if (PyTuple_SetItem(RPY_R_VERSION_BUILD, 2, 
 		      PyUnicode_FromString(R_STATUS)) < 0) 
     return NULL;
-#endif
 
-#if (PY_VERSION_HEX < 0x03010000) && (R_VERSION < __RPY_RSVN_SWITCH_VERSION__)
-  PYASSERT_ZERO(
-		PyTuple_SetItem(RPY_R_VERSION_BUILD, 3, 
-				PyString_FromString(R_SVN_REVISION))
-		);  
-#elif (PY_VERSION_HEX < 0x03010000)
-  PYASSERT_ZERO(
-		PyTuple_SetItem(RPY_R_VERSION_BUILD, 3, 
-				PyLong_FromLong(R_SVN_REVISION))
-		);
-#elif (R_VERSION < __RPY_RSVN_SWITCH_VERSION__)
+#if (R_VERSION < __RPY_RSVN_SWITCH_VERSION__)
   if (PyTuple_SetItem(RPY_R_VERSION_BUILD, 3, 
 		      PyLong_FromLong(R_SVN_REVISION)) < 0) 
     return NULL;
@@ -3931,24 +3529,6 @@ PyInit__rinterface(void)
 
   initOptions = PyTuple_New(3);
 
-#if (PY_VERSION_HEX < 0x03010000)  
-  PYASSERT_ZERO(
-                PyTuple_SetItem(initOptions, 0, 
-                                PyString_FromString("rpy2"))
-                );
-  PYASSERT_ZERO(
-                PyTuple_SetItem(initOptions, 1, 
-                                PyString_FromString("--quiet"))
-                );
-  /* PYASSERT_ZERO( */
-  /*               PyTuple_SetItem(initOptions, 2, */
-  /*                               PyString_FromString("--vanilla")) */
-  /*               ); */
-  PYASSERT_ZERO(
-                PyTuple_SetItem(initOptions, 2, 
-                                PyString_FromString("--no-save"))
-                );
-#else
   if (PyTuple_SetItem(initOptions, 0, PyBytes_FromString("rpy2")) < 0) 
     return NULL;
   if (PyTuple_SetItem(initOptions, 1, PyBytes_FromString("--quiet")) < 0)
@@ -3957,7 +3537,6 @@ PyInit__rinterface(void)
   /*   return NULL; */
   if (PyTuple_SetItem(initOptions, 2, PyBytes_FromString("--no-save")) < 0)
     return NULL;
-#endif
 
   /* Add an extra ref. It should remain impossible to delete it */
   Py_INCREF(initOptions);
@@ -3999,33 +3578,21 @@ PyInit__rinterface(void)
 
   /* Missing */
   if (PyType_Ready(&MissingArg_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   PyModule_AddObject(m, "MissingArgType", (PyObject *)&MissingArg_Type);
   PyModule_AddObject(m, "MissingArg", MissingArg_Type_New(1));
 
   /* Unbound */
   if (PyType_Ready(&UnboundValue_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   PyModule_AddObject(m, "UnboundValueType", (PyObject *)&UnboundValue_Type);
   PyModule_AddObject(m, "UnboundValue", UnboundValue_Type_New(1));
 
   /* NULL */
   if (PyType_Ready(&RNULL_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   PyModule_AddObject(m, "RNULLType", (PyObject *)&RNULL_Type);
   /*FIXME: shouldn't RNULLArg disappear ? */
@@ -4037,11 +3604,7 @@ PyInit__rinterface(void)
     RPyExc_RuntimeError = PyErr_NewException("rpy2.rinterface.RRuntimeError", 
                                              NULL, NULL);
     if (RPyExc_RuntimeError == NULL) {
-#if (PY_VERSION_HEX < 0x03010000)
-      return;
-#else
       return NULL;
-#endif
     }
   }
 
@@ -4054,11 +3617,7 @@ PyInit__rinterface(void)
 				"Error when parsing a string as R code.",
 				NULL, NULL);
     if (RPyExc_ParsingError == NULL) {
-#if (PY_VERSION_HEX < 0x03010000)
-      return;
-#else
       return NULL;
-#endif
     }
   }
   Py_INCREF(RPyExc_ParsingError);
@@ -4071,11 +3630,7 @@ PyInit__rinterface(void)
 				"R code seems like an incomplete code block.",
 				RPyExc_ParsingError, NULL);
     if (RPyExc_ParsingIncompleteError == NULL) {
-#if (PY_VERSION_HEX < 0x03010000)
-      return;
-#else
       return NULL;
-#endif
     }
   }
   Py_INCREF(RPyExc_ParsingIncompleteError);
@@ -4091,11 +3646,7 @@ PyInit__rinterface(void)
                            (PyObject *)emptyEnv) < 0)
   {
     Py_DECREF(emptyEnv);
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   Py_DECREF(emptyEnv);
 
@@ -4108,11 +3659,7 @@ PyInit__rinterface(void)
   if (PyDict_SetItemString(d, "globalenv", (PyObject *)globalEnv) < 0)
   {
     Py_DECREF(globalEnv);
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   Py_DECREF(globalEnv);
 
@@ -4126,11 +3673,7 @@ PyInit__rinterface(void)
                            (PyObject *)baseNameSpaceEnv) < 0)
   {
     Py_DECREF(baseNameSpaceEnv);
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   Py_DECREF(baseNameSpaceEnv);
 
@@ -4139,11 +3682,7 @@ PyInit__rinterface(void)
   if (PyDict_SetItemString(d, "R_NilValue", (PyObject *)rpy_R_NilValue) < 0)
   {
     Py_DECREF(rpy_R_NilValue);
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   Py_DECREF(rpy_R_NilValue);
 
@@ -4153,17 +3692,10 @@ PyInit__rinterface(void)
                            (PyObject *)R_PyObject_type_tag) < 0)
   {
     Py_DECREF(R_PyObject_type_tag);
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   Py_DECREF(R_PyObject_type_tag);
 
   rinterface_unserialize = PyDict_GetItemString(d, "unserialize");
-#if (PY_VERSION_HEX < 0x03010000)
-#else
   return m;
-#endif
 }

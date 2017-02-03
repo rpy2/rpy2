@@ -35,11 +35,7 @@ PyDoc_STRVAR(RNULL_Type_doc,
 	     "R NULL (singleton)."
 	     );
 
-#if (PY_VERSION_HEX < 0x03010000)
-staticforward PyTypeObject RNULL_Type;
-#else
 static PyTypeObject RNULL_Type;
-#endif
 
 static PyObject*
 RNULLType_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -76,11 +72,7 @@ RNULLType_repr(PyObject *self)
 {
   static PyObject* repr = NULL;
   if (repr == NULL) {
-#if (PY_VERSION_HEX < 0x03010000)
-    repr = PyString_FromString("rpy2.rinterface.NULL");
-#else
     repr = PyUnicode_FromString("rpy2.rinterface.NULL");
-#endif
   }
   Py_XINCREF(repr);
   return repr;
@@ -91,11 +83,7 @@ RNULLType_str(PyObject *self)
 {
   static PyObject* repr = NULL;
   if (repr == NULL) {
-#if (PY_VERSION_HEX < 0x03010000)  
-    repr = PyString_FromString("NULL");
-#else
     repr = PyUnicode_FromString("NULL");
-#endif
   }
   Py_XINCREF(repr);
   return repr;
@@ -112,9 +100,6 @@ static PyNumberMethods RNULLType_as_number = {
   0,                       /* nb_add */
   0,                       /* nb_subtract */
   0,                       /* nb_multiply */
-#if (PY_VERSION_HEX < 0x03010000)
-  0,                       /* nb_divide */
-#endif
   0,                       /* nb_remainder */
   0,                    /* nb_divmod */
   0,                       /* nb_power */
@@ -128,27 +113,13 @@ static PyNumberMethods RNULLType_as_number = {
   0,                       /* nb_and */
   0,                       /* nb_xor */
   0,                        /* nb_or */
-#if (PY_VERSION_HEX < 0x03010000)
-  0,                    /* nb_coerce */
-#endif
   0,            /* nb_int */
-#if (PY_VERSION_HEX < 0x03010000)
-  0,           /* nb_long */
-#else
   NULL, /* reserved */
-#endif
   0,          /* nb_float */
-#if (PY_VERSION_HEX < 0x03010000)
-  0,            /* nb_oct */
-  0,            /* nb_hex */
-#endif
   /* added in release 2.0 */
   0,                      /* nb_inplace_add */
   0,                      /* nb_inplace_subtract */
   0,                      /* nb_inplace_multiply */
-#if (PY_VERSION_HEX < 0x03010000)
-  0,                      /* nb_inplace_divide */
-#endif
   0,                      /* nb_inplace_remainder */
   0,                      /* nb_inplace_power */
   0,                   /* nb_inplace_lshift */
@@ -162,21 +133,14 @@ static PyNumberMethods RNULLType_as_number = {
   0,                 /* nb_inplace_floor_divide */
   0,                  /* nb_inplace_true_divide */
   /* added in version 2.5 */
-#if (PY_VERSION_HEX >= 0x02050000)
   0,          /* nb_index */
-#endif
 };
 
 
 static PyTypeObject RNULL_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.RNULLType",       /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -196,11 +160,7 @@ static PyTypeObject RNULL_Type = {
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
         0,                      /*tp_as_buffer*/
-#if (PY_VERSION_HEX < 0x03010000)
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_CHECKTYPES, /*tp_flags*/
-#else
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE, /*tp_flags*/
-#endif
         RNULL_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
         0,                      /*tp_clear*/
@@ -239,11 +199,7 @@ PyDoc_STRVAR(UnboundValue_Type_doc,
 "Unbound marker (R_UnboundValue in R's C API)."
 );
 
-#if (PY_VERSION_HEX < 0x03010000)
-staticforward PyTypeObject UnboundValue_Type;
-#else
 static PyTypeObject UnboundValue_Type;
-#endif
 
 static PyObject*
 UnboundValueType_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -280,11 +236,7 @@ UnboundValueType_repr(PyObject *self)
 {
   static PyObject* repr = NULL;
   if (repr == NULL) {
-#if (PY_VERSION_HEX < 0x03010000)
-    repr = PyString_FromString("rpy2.rinterface.UnboundValue");
-#else
     repr = PyUnicode_FromString("rpy2.rinterface.UnboundValue");
-#endif
   }
   Py_XINCREF(repr);
   return repr;
@@ -295,11 +247,7 @@ UnboundValueType_str(PyObject *self)
 {
   static PyObject* repr = NULL;
   if (repr == NULL) {
-#if (PY_VERSION_HEX < 0x03010000)  
-    repr = PyString_FromString("UnboundValue");
-#else
     repr = PyUnicode_FromString("UnboundValue");
-#endif
   }
   Py_XINCREF(repr);
   return repr;

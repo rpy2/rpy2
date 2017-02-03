@@ -3,7 +3,7 @@
  * 
  * GPLv2+ (see LICENSE file)
  *
- * Copyright (C) 2008-2014 Laurent Gautier
+ * Copyright (C) 2008-2017 Laurent Gautier
  *
  * ***** END LICENSE BLOCK ***** */
 
@@ -66,12 +66,7 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
   
   if (i < 0) {
     /*FIXME: check that unit tests are covering this properly */
-    /*FIXME: is this valid for Python < 3 ? */
-#if (PY_VERSION_HEX < 0x03010000)
-    i = len_R - i;
-#else
     i += len_R;
-#endif
   }
 
   /* On 64bits platforms, Python is apparently able to use larger integer
@@ -117,11 +112,7 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
       if (vi == NA_INTEGER) {
         res = NAInteger_New(1);
       } else {
-#if (PY_VERSION_HEX < 0x03010000)
-        res = PyInt_FromLong((long)vi);
-#else
 	res = PyLong_FromLong((long)vi);
-#endif
       }
       break;
     case LGLSXP:
@@ -142,11 +133,7 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
       break;
     case RAWSXP:
       vr = ((char *)RAW_POINTER(*sexp)) + i_R;
-#if (PY_VERSION_HEX < 0x03010000)
-      res = PyString_FromStringAndSize(vr, 1);
-#else
       res = PyBytes_FromStringAndSize(vr, 1);
-#endif
       break;
     case STRSXP:
       sexp_item = STRING_ELT(*sexp, i_R);
@@ -161,11 +148,7 @@ VectorSexp_item(PySexpObject* object, Py_ssize_t i)
 	  break;
 	default:
 	  vs = CHAR(sexp_item);
-#if (PY_VERSION_HEX < 0x03010000)
-	  res = PyString_FromString(vs);
-#else
 	  res = PyUnicode_FromString(vs);
-#endif
 	  break;
 	}
       }
@@ -383,11 +366,7 @@ VectorSexp_ass_item(PySexpObject* object, Py_ssize_t i, PyObject* val)
   
   if (i < 0) {
     /* FIXME: Is this valid for Python < 3 ?*/
-#if (PY_VERSION_HEX < 0x03010000)
-    i = len_R - i;
-#else
     i = len_R + i;
-#endif
   }
 
   if (i >= len_R) {
@@ -488,16 +467,6 @@ VectorSexp_ass_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh, Py
 
   SEXP *sexp = &(RPY_SEXP(object));
   len_R = GET_LENGTH(*sexp);
-
-  /* FIXME: Is this valid for Python < 3 ? */
-#if (PY_VERSION_HEX < 0x03010000)  
-  if (ilow < 0) {
-    ilow = (R_len_t)(len_R - ilow) + 1;
-  }
-  if (ihigh < 0) {
-    ihigh = (R_len_t)(len_R - ihigh) + 1;
-  }
-#endif
 
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
@@ -606,24 +575,14 @@ static PySequenceMethods VectorSexp_sequenceMethods = {
   0,                              /* sq_concat */
   0,                              /* sq_repeat */
   (ssizeargfunc)VectorSexp_item,        /* sq_item */
-#if (PY_VERSION_HEX < 0x03010000)
-  (ssizessizeargfunc)VectorSexp_slice,  /* sq_slice */
-#else
   0,                                         /* sq_slice */
-#endif
   (ssizeobjargproc)VectorSexp_ass_item, /* sq_ass_item */
-#if (PY_VERSION_HEX < 0x03010000)
-  (ssizessizeobjargproc)VectorSexp_ass_slice, /* sq_ass_slice */
-#else
   0,
-#endif
   0,                              /* sq_contains */
   0,                              /* sq_inplace_concat */
   0                               /* sq_inplace_repeat */
 };
 
-#if (PY_VERSION_HEX < 0x03010000)
-#else
 /* generic a[i] for Python3 */
 static PyObject*
 VectorSexp_subscript(PySexpObject *object, PyObject* item)
@@ -646,19 +605,11 @@ VectorSexp_subscript(PySexpObject *object, PyObject* item)
     if (vec_len == -1)
       /* propagate the error */
       return NULL;
-#if (PY_VERSION_HEX >= 0x03020000)
     if (PySlice_GetIndicesEx((PyObject*)item,
 			     vec_len,
 			     &start, &stop, &step, &slicelength) < 0) {
       return NULL;
     }
-#else
-    if (PySlice_GetIndicesEx((PySliceObject*)item,
-			     vec_len,
-			     &start, &stop, &step, &slicelength) < 0) {
-      return NULL;
-    }    
-#endif
     if (slicelength <= 0) {
       PyErr_Format(PyExc_IndexError,
 		   "The slice's length can't be < 0.");
@@ -703,17 +654,10 @@ VectorSexp_ass_subscript(PySexpObject* self, PyObject* item, PyObject* value)
       if (vec_len == -1)
       /* propagate the error */
       return -1;
-#if (PY_VERSION_HEX >= 0x03020000)
       if (PySlice_GetIndicesEx((PyObject*)item, vec_len,
 			       &start, &stop, &step, &slicelength) < 0) {
 	return -1;
       }
-#else
-      if (PySlice_GetIndicesEx((PySliceObject*)item, vec_len,
-			       &start, &stop, &step, &slicelength) < 0) {
-	return -1;
-      }
-#endif
       if (step == 1) {
 	return VectorSexp_ass_slice(self, start, stop, value);
       } else {
@@ -735,7 +679,6 @@ static PyMappingMethods VectorSexp_as_mapping = {
   (binaryfunc)VectorSexp_subscript,
   (objobjargproc)VectorSexp_ass_subscript
 };
-#endif
 
 
 
@@ -773,11 +716,7 @@ VectorSexp_index(PySexpObject *self, PyObject *args)
     int cmp = PyObject_RichCompareBool(item, v, Py_EQ);
     Py_DECREF(item);
     if (cmp > 0)
-#if (PY_VERSION_HEX < 0x03010000)
-      return PyInt_FromSsize_t(i);
-#else
       return PyLong_FromSsize_t(i);
-#endif
     else if (cmp < 0)
       return NULL;
         }
@@ -820,12 +759,7 @@ VectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 static PyTypeObject VectorSexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.SexpVector",        /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -838,26 +772,14 @@ static PyTypeObject VectorSexp_Type = {
         0,                      /*tp_repr*/
         0,                      /*tp_as_number*/
         &VectorSexp_sequenceMethods,                    /*tp_as_sequence*/
-#if (PY_VERSION_HEX < 0x03010000)
-        0,                      /*tp_as_mapping*/
-#else
 	&VectorSexp_as_mapping,
-#endif
         0,                      /*tp_hash*/
         0,              /*tp_call*/
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
-#if PY_VERSION_HEX >= 0x02060000
         &VectorSexp_as_buffer,                      /*tp_as_buffer*/
-#else
-	0,                       /*tp_as_buffer*/
-#endif
-#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
-#else
         Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
-#endif
         VectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
         0,                      /*tp_clear*/
@@ -1084,12 +1006,7 @@ IntVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 static PyTypeObject IntVectorSexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.IntSexpVector",        /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -1102,22 +1019,14 @@ static PyTypeObject IntVectorSexp_Type = {
         0,                      /*tp_repr*/
         0,                      /*tp_as_number*/
         0,                    /*tp_as_sequence*/
-#if (PY_VERSION_HEX < 0x03010000)
-        0,                      /*tp_as_mapping*/
-#else
 	0,
-#endif
         0,                      /*tp_hash*/
         0,              /*tp_call*/
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
 	0,                      /*tp_as_buffer*/
-#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
-#else
 	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
-#endif
         IntVectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
         0,                      /*tp_clear*/
@@ -1177,19 +1086,11 @@ RPy_SeqToINTSXP(PyObject *object, SEXP *sexpp)
    */
   for (ii = 0; ii < length; ++ii) {
     item = PySequence_Fast_GET_ITEM(seq_object, ii);
-#if (PY_VERSION_HEX < 0x03010000)
-    item_tmp = PyNumber_Int(item);
-#else
     item_tmp = PyNumber_Long(item);
-#endif
     if (item == NAInteger_New(0)) {
       integer_ptr[ii] = NA_INTEGER;
     } else if (item_tmp) {
-#if (PY_VERSION_HEX < 0x03010000)
-      long l = PyInt_AS_LONG(item_tmp);
-#else
       long l = PyLong_AS_LONG(item_tmp);
-#endif
       if ((l > (long)INT_MAX) || (l < (long)INT_MIN)) {
 	UNPROTECT(1);
 	PyErr_Format(PyExc_OverflowError,
@@ -1248,19 +1149,11 @@ RPy_IterToINTSXP(PyObject *object, const Py_ssize_t length, SEXP *sexpp)
 		   ii);
       return -1;
     }
-#if (PY_VERSION_HEX < 0x03010000)
-    item_tmp = PyNumber_Int(item);
-#else
     item_tmp = PyNumber_Long(item);
-#endif
     if (item == NAInteger_New(0)) {
       integer_ptr[ii] = NA_INTEGER;
     } else if (item_tmp) {
-#if (PY_VERSION_HEX < 0x03010000)
-      long l = PyInt_AS_LONG(item_tmp);
-#else
       long l = PyLong_AS_LONG(item_tmp);
-#endif
       if ((l > (long)INT_MAX) || (l < (long)INT_MIN)) {
 	UNPROTECT(1);
 	PyErr_Format(PyExc_OverflowError,
@@ -1330,12 +1223,7 @@ FloatVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 static PyTypeObject FloatVectorSexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.FloatSexpVector",        /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -1348,22 +1236,14 @@ static PyTypeObject FloatVectorSexp_Type = {
         0,                      /*tp_repr*/
         0,                      /*tp_as_number*/
         0,                    /*tp_as_sequence*/
-#if (PY_VERSION_HEX < 0x03010000)
         0,                      /*tp_as_mapping*/
-#else
-	0,
-#endif
         0,                      /*tp_hash*/
         0,              /*tp_call*/
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
 	0,                      /*tp_as_buffer*/
-#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
-#else
 	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
-#endif
         FloatVectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
         0,                      /*tp_clear*/
@@ -1537,12 +1417,7 @@ StrVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 static PyTypeObject StrVectorSexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.StrSexpVector",        /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -1555,22 +1430,14 @@ static PyTypeObject StrVectorSexp_Type = {
         0,                      /*tp_repr*/
         0,                      /*tp_as_number*/
         0,                    /*tp_as_sequence*/
-#if (PY_VERSION_HEX < 0x03010000)
         0,                      /*tp_as_mapping*/
-#else
-	0,
-#endif
         0,                      /*tp_hash*/
         0,              /*tp_call*/
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
 	0,                       /*tp_as_buffer*/
-#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
-#else
 	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
-#endif
         StrVectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
         0,                      /*tp_clear*/
@@ -1632,26 +1499,6 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
       continue;
     }
     
-#if (PY_VERSION_HEX < 0x03010000)
-    if (PyString_Check(item)) {
-      /* INCREF since item_tmp is DECREFed later */
-      item_tmp = item;
-      Py_INCREF(item_tmp);
-      str_R = Rf_mkChar(PyString_AS_STRING(item_tmp));
-    } else if (PyUnicode_Check(item)) {
-      item_tmp = PyUnicode_AsUTF8String(item);
-      if (item_tmp == NULL) {
-	UNPROTECT(1);
-	PyErr_Format(PyExc_ValueError,
-		     "Error raised by codec for element %zd.",
-		     ii);
-	Py_XDECREF(seq_object);
-	return -1;	
-      }
-      const char *string = PyString_AsString(item_tmp);
-      str_R = Rf_mkCharCE(string, CE_UTF8);
-    }
-#else
     /* Only difference with Python < 3.1 is that PyString case is dropped. 
        Technically a macro would avoid code duplication.
     */
@@ -1668,7 +1515,6 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
       const char *string = PyBytes_AsString(item_tmp);
       str_R = Rf_mkCharCE(string, CE_UTF8);
     }
-#endif
     else {
       /* Last option: try to call str() on the object. */
       item_tmp = PyObject_Str(item);
@@ -1680,9 +1526,6 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
 	Py_XDECREF(seq_object);
 	return -1;	
       }
-#if (PY_VERSION_HEX < 0x03010000)
-      str_R = Rf_mkChar(PyString_AS_STRING(item_tmp));
-#else
       PyObject *item_tmp2 = PyUnicode_AsUTF8String(item_tmp);
       if (item_tmp2 == NULL) {
 	UNPROTECT(1);
@@ -1695,7 +1538,6 @@ RPy_SeqToSTRSXP(PyObject *object, SEXP *sexpp)
       const char *string = PyBytes_AsString(item_tmp2);
       str_R = Rf_mkCharCE(string, CE_UTF8);
       Py_DECREF(item_tmp2);
-#endif      
     }
     
     SET_STRING_ELT(new_sexp, ii, str_R);
@@ -1749,12 +1591,7 @@ BoolVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 static PyTypeObject BoolVectorSexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.BoolSexpVector",        /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -1767,22 +1604,14 @@ static PyTypeObject BoolVectorSexp_Type = {
         0,                      /*tp_repr*/
         0,                      /*tp_as_number*/
         0,                    /*tp_as_sequence*/
-#if (PY_VERSION_HEX < 0x03010000)
         0,                      /*tp_as_mapping*/
-#else
-	0,
-#endif
         0,                      /*tp_hash*/
         0,              /*tp_call*/
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
 	0,                      /*tp_as_buffer*/
-#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
-#else
 	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
-#endif
         BoolVectorSexp_Type_doc,/*tp_doc*/
         0,                      /*tp_traverse*/
         0,                      /*tp_clear*/
@@ -1915,12 +1744,7 @@ ByteVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 static PyTypeObject ByteVectorSexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.ByteSexpVector",        /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -1933,22 +1757,14 @@ static PyTypeObject ByteVectorSexp_Type = {
         0,                      /*tp_repr*/
         0,                      /*tp_as_number*/
         0,                    /*tp_as_sequence*/
-#if (PY_VERSION_HEX < 0x03010000)
         0,                      /*tp_as_mapping*/
-#else
-	0,
-#endif
         0,                      /*tp_hash*/
         0,              /*tp_call*/
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
 	0,                      /*tp_as_buffer*/
-#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
-#else
 	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
-#endif
         ByteVectorSexp_Type_doc,/*tp_doc*/
         0,                      /*tp_traverse*/
         0,                      /*tp_clear*/
@@ -2010,11 +1826,7 @@ RPy_SeqToRAWSXP(PyObject *object, SEXP *sexpp)
     Py_ssize_t size_tmp;
     char *buffer;
     int ok;
-#if (PY_VERSION_HEX < 0x03010000)
-    ok = PyString_AsStringAndSize(item, &buffer, &size_tmp);
-#else
     ok = PyBytes_AsStringAndSize(item, &buffer, &size_tmp);
-#endif
     if (ok == -1) {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
@@ -2063,12 +1875,7 @@ ComplexVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 static PyTypeObject ComplexVectorSexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.ComplexSexpVector",        /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -2081,22 +1888,14 @@ static PyTypeObject ComplexVectorSexp_Type = {
         0,                      /*tp_repr*/
         0,                      /*tp_as_number*/
         0,                    /*tp_as_sequence*/
-#if (PY_VERSION_HEX < 0x03010000)
         0,                      /*tp_as_mapping*/
-#else
-	0,
-#endif
         0,                      /*tp_hash*/
         0,              /*tp_call*/
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
 	0,                      /*tp_as_buffer*/
-#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
-#else
 	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
-#endif
         ComplexVectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
         0,                      /*tp_clear*/
@@ -2217,12 +2016,7 @@ ListVectorSexp_init(PyObject *self, PyObject *args, PyObject *kwds);
 static PyTypeObject ListVectorSexp_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.ListSexpVector",        /*tp_name*/
         sizeof(PySexpObject),   /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -2235,22 +2029,14 @@ static PyTypeObject ListVectorSexp_Type = {
         0,                      /*tp_repr*/
         0,                      /*tp_as_number*/
         0,                    /*tp_as_sequence*/
-#if (PY_VERSION_HEX < 0x03010000)
         0,                      /*tp_as_mapping*/
-#else
-	0,
-#endif
         0,                      /*tp_hash*/
         0,              /*tp_call*/
         0,              /*tp_str*/
         0,                      /*tp_getattro*/
         0,                      /*tp_setattro*/
 	0,                      /*tp_as_buffer*/
-#if PY_VERSION_HEX >= 0x02060000 & PY_VERSION_HEX < 0x03010000
-        Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_NEWBUFFER,  /*tp_flags*/
-#else
 	Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE,  /*tp_flags*/
-#endif
         ListVectorSexp_Type_doc,                      /*tp_doc*/
         0,                      /*tp_traverse*/
         0,                      /*tp_clear*/
@@ -2332,11 +2118,7 @@ RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
 	return -1;
       }
     } else if (PyLong_Check(item)
-#if (PY_VERSION_HEX < 0x03010000)
-	       || PyInt_Check(item)) {
-#else
         ) {
-#endif	       
       new_sexp_item = IntVectorSexp_AsSexp(item);
       if (new_sexp_item) {
 	SET_ELEMENT(new_sexp, ii, new_sexp_item);
@@ -2346,11 +2128,7 @@ RPy_SeqToVECSXP(PyObject *object, SEXP *sexpp)
 	return -1;
       }
     } else if (PyUnicode_Check(item)
-#if (PY_VERSION_HEX < 0x03010000)
-	       || PyString_Check(item)) {
-#else
         ) {
-#endif
       new_sexp_item = StrVectorSexp_AsSexp(item);
       if (new_sexp_item) {
 	SET_ELEMENT(new_sexp, ii, new_sexp_item);

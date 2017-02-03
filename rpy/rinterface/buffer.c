@@ -164,85 +164,9 @@ VectorSexp_getbuffer(PyObject *obj, Py_buffer *view, int flags)
 }
 #endif
 
-#if (PY_VERSION_HEX < 0x03010000)
-static Py_ssize_t
-VectorSexp_getsegcount(PySexpObject *self, Py_ssize_t *lenp)
-{
-
-  if (lenp == NULL) {
-    return 1;
-  } else {
-    printf("--->\n");
-    return 0;
-  }
-}
-
-static Py_ssize_t
-VectorSexp_getreadbuf(PySexpObject *self, Py_ssize_t segment, 
-		      const void **ptrptr)
-{
-  if (segment != 0) {
-    PyErr_SetString(PyExc_ValueError,
-		    "accessing non-existing data segment");
-    return -1;
-  }
-  SEXP sexp = RPY_SEXP(self);
-  Py_ssize_t len;
-
-  switch (TYPEOF(sexp)) {
-  case REALSXP:
-    *ptrptr = (void *)NUMERIC_POINTER(sexp);
-    len = GET_LENGTH(sexp) * sizeof(double);
-    break;
-  case INTSXP:
-    *ptrptr = (void *)INTEGER_POINTER(sexp);
-    len = GET_LENGTH(sexp) * sizeof(int);
-    break;
-  case LGLSXP:
-    *ptrptr = (void *)LOGICAL_POINTER(sexp);
-    len = GET_LENGTH(sexp) * sizeof(int);
-    break;
-  case CPLXSXP:
-    *ptrptr = (void *)COMPLEX_POINTER(sexp);
-    len = GET_LENGTH(sexp) * sizeof(Rcomplex);
-    break;
-  case RAWSXP:
-    *ptrptr = (void *)RAW_POINTER(sexp);
-    len = GET_LENGTH(sexp) * 1;
-    break;
-  default:
-    PyErr_Format(PyExc_ValueError, "Buffer for this type not yet supported.");
-    *ptrptr = NULL;
-    return -1;
-  }
-  return len;
-}
-
-static Py_ssize_t
-VectorSexp_getwritebuf(PySexpObject *self, Py_ssize_t segment, const void **ptrptr)
-{
-  printf("getwritebuf\n");
-  /*FIXME: introduce a "writeable" flag for SexpVector objects ? */
-  return VectorSexp_getreadbuf(self, segment, ptrptr);
-}
-
-static Py_ssize_t
-VectorSexp_getcharbuf(PySexpObject *self, Py_ssize_t segment, const char **ptrptr)
-{
-  /*FIXME: introduce a "writeable" flag for SexpVector objects ? */
-  return VectorSexp_getreadbuf(self, segment, (const void **)ptrptr);
-}
-#endif
 
 static PyBufferProcs VectorSexp_as_buffer = {
-#if (PY_VERSION_HEX < 0x03010000)
-        (readbufferproc)VectorSexp_getreadbuf,
-        (writebufferproc)VectorSexp_getwritebuf,
-        (segcountproc)VectorSexp_getsegcount,
-	(charbufferproc)VectorSexp_getcharbuf,
-#endif
-#if PY_VERSION_HEX >= 0x02060000
+
 	(getbufferproc)VectorSexp_getbuffer,
 	(releasebufferproc)0,
-#endif
 };

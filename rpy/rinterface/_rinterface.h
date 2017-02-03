@@ -72,19 +72,10 @@ typedef struct {
     PyGILState_Release(gstate);                 \
   }
 
-#if (PY_VERSION_HEX < 0x03010000)
-#define RPY_PYSCALAR_TESTINT PyInt_Check
-#else
 #define RPY_PYSCALAR_TESTINT PyLong_Check
-#endif
 
-#if (PY_VERSION_HEX < 0x03010000)
-#define RPY_PYSCALAR_SETINT(py_obj)\
-  ((int)(PyInt_AS_LONG(py_obj)));
-#else
 #define RPY_PYSCALAR_SETINT(py_obj)\
   RPY_RINT_FROM_LONG(PyLong_AsLong(py_obj));
-#endif
 
 #define RPY_PYSCALAR_RVECTOR(py_obj, sexp)                              \
   sexp = NULL;                                                          \
