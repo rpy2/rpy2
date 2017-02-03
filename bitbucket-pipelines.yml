@@ -10,4 +10,3 @@ pipelines:
     - step:
         script: # Modify the commands below to build your repository.
           - python setup.py install
-	  
