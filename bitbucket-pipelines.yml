@@ -12,4 +12,4 @@ pipelines:
           #- pip install -U tox
           - pip --version
           #- tox --version
-          python setup.py install
+          - python setup.py install
