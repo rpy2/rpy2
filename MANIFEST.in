@@ -3,7 +3,7 @@ global-exclude *patch* *diff* .hg
 
 include MANIFEST MANIFEST.in
 include NEWS README AUTHORS
-include MPL_LICENSE GPL_LICENSE LGPL_LICENSE
+include gpl-2.0.txt
 
 
 include rpy/rinterface/_rinterface.h
