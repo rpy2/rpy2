@@ -1671,10 +1671,10 @@ Sexp_rcall(PyObject *self, PyObject *args)
     argName = PyTuple_GET_ITEM(tmp_obj, 0);
     if (argName == Py_None) {
       addArgName = 0;
-    } else if (PyUnicode_Check(argName)) {
+    } else if (PyUnicode_Check(argName) && (PyUnicode_GET_LENGTH(argName) > 0)) {
       addArgName = 1;
     } else {
-      PyErr_SetString(PyExc_TypeError, "All keywords must be strings (or None).");
+      PyErr_SetString(PyExc_TypeError, "All keywords must be non-empty strings (or None).");
       Py_DECREF(tmp_obj);
       goto fail;
     }

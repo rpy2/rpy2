@@ -45,7 +45,11 @@ class SexpClosureTestCase(unittest.TestCase):
         d = dict([(u'哈哈', 1)])
         res = c(**d)
         self.assertEqual(u'哈哈', res.do_slot("names")[0])
-        
+
+    def testEmptystringparams(self):
+        d = dict([('', 1)])
+        self.assertRaises(TypeError, rinterface.baseenv['list'], **d)
+
     def testClosureenv(self):
         exp = rinterface.parse("function(x) { x[y] }")
         fun = rinterface.baseenv["eval"](exp)

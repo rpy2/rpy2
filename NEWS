@@ -41,6 +41,9 @@ Bugs fixed
 
 - R pairlist objects can now be sliced (and issue #380 is resolved).
 
+- Passing parameters names that are empty string to R function was
+  causing a segfault (issue #409).
+
 
 Release 2.8.5
 =============
