@@ -8,6 +8,9 @@ Bugs fixed
   but it not a sequence nor an iterator was causing a segfault (issue #407 -
   backport from rpy2-2.9.0).
 
+- Passing parameters names that are empty string to R function was
+  causing a segfault (issue #409).
+
 
 Release 2.8.5
 =============

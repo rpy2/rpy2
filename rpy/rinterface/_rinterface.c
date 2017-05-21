@@ -1753,14 +1753,15 @@ Sexp_rcall(PyObject *self, PyObject *args)
     argName = PyTuple_GET_ITEM(tmp_obj, 0);
     if (argName == Py_None) {
       addArgName = 0;
+
 #if (PY_VERSION_HEX < 0x03010000)
-    } else if (PyString_Check(argName)) {
+    } else if (PyString_Check(argName) && (PyString_GET_SIZE(argName) > 0)) {
 #else
-    } else if (PyUnicode_Check(argName)) {
+    } else if (PyUnicode_Check(argName) && (PyUnicode_GET_LENGTH(argName) > 0)) {
 #endif
       addArgName = 1;
     } else {
-      PyErr_SetString(PyExc_TypeError, "All keywords must be strings (or None).");
+      PyErr_SetString(PyExc_TypeError, "All keywords must be non-empty strings (or None).");
       Py_DECREF(tmp_obj);
       goto fail;
     }
