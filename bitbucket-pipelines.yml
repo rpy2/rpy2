@@ -10,4 +10,4 @@ pipelines:
     - step:
         script: # Modify the commands below to build your repository.
           - python setup.py install
-	  - python -m rpy2.tests
+          - python -m rpy2.tests
