@@ -86,7 +86,7 @@ result = rmagic_addone(12344)
         rinterface.set_writeconsole_regular(sio.write)
         try:
             r('print(df$b[1])')
-            self.assertIn('[1] bar', sio.getvalue())
+            self.assertIn('[1] "bar"', sio.getvalue())
         finally:
             rinterface.set_writeconsole_regular(None)
 

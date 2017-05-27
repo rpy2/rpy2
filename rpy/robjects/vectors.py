@@ -923,13 +923,13 @@ class DataFrame(ListVector):
     _rbind     = rinterface.baseenv['rbind.data.frame']
     _is_list   = rinterface.baseenv['is.list']
     
-    def __init__(self, obj, stringasfactor=False):
+    def __init__(self, obj, stringsasfactor=False):
         """ Create a new data frame.
 
         :param obj: object inheriting from rpy2.rinterface.SexpVector,
                     or inheriting from TaggedList
                     or a mapping name -> value
-        :param stringasfactor: Boolean indicating whether vectors
+        :param stringsasfactors: Boolean indicating whether vectors
                     of strings should be turned to vectors. Note
                     that factors will not be turned to string vectors.
         """
@@ -942,6 +942,7 @@ class DataFrame(ListVector):
                 #FIXME: is it really a good idea to pass R lists
                 # to the constructor ?
                 super(DataFrame, self).__init__(obj)
+                return
             else:
                 raise ValueError(
             "When passing R objects to build a DataFrame," +\
@@ -949,15 +950,6 @@ class DataFrame(ListVector):
                 " the R class 'data.frame'")
         elif isinstance(obj, rlc.TaggedList):
             kv = [(k, conversion.py2ri(v)) for k,v in obj.items()]
-            if 'stringAsFactor' in (k for k,v in kv):
-                warnings.warn('The column name "stringAsFactor" is '
-                              'conflicting with named parameter '
-                              'in underlying R function "data.frame()".')
-            else:
-                kv.append(('stringAsFactor', stringasfactor))
-            kv = tuple(kv)
-            df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
-            super(DataFrame, self).__init__(df)
         else:
             try:
                 kv = [(str(k), conversion.py2ri(obj[k])) for k in obj]
@@ -967,9 +959,19 @@ class DataFrame(ListVector):
                                  "(such a Python dict, rpy2.rlike.container OrdDict" +
                                  " or an instance of rpy2.rinterface.SexpVector" +
                                  " of type VECSXP")
-            
-            df = baseenv_ri.get("data.frame").rcall(tuple(kv), globalenv_ri)
-            super(DataFrame, self).__init__(df)
+
+        # Check if there is a conflicting column name
+        if 'stringsAsFactors' in (k for k,v in kv):
+            warnings.warn('The column name "stringsAsFactors" is '
+                          'conflicting with named parameter '
+                          'in underlying R function "data.frame()".')
+        else:
+            kv.append(('stringsAsFactors', stringsasfactor))
+
+        # Call R's data frame constructor
+        kv = tuple(kv)
+        df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
+        super(DataFrame, self).__init__(df)
     
     def _get_nrow(self):
         """ Number of rows. 

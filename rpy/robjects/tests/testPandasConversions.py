@@ -118,9 +118,9 @@ class PandasConversionsTestCase(unittest.TestCase):
         s = repr(rp_df) # used to fail with a TypeError
         s = s.split('\n')
         if sys.version_info[0] == 3:
-            repr_str = '[BoolVec..., IntVector, FloatVe..., Vector, FactorV...]'
+            repr_str = '[BoolVec..., IntVector, FloatVe..., Vector, StrVector]'
         else:
-            repr_str = '[BoolVec..., IntVector, FloatVe..., FactorV..., FactorV...]'
+            repr_str = '[BoolVec..., IntVector, FloatVe..., FactorV..., StrVector]'
         self.assertEqual(repr_str, s[2].strip())
 
     def testRi2pandas(self):

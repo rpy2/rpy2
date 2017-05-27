@@ -39,7 +39,14 @@ class DataFrameTestCase(unittest.TestCase):
         dataf = robjects.DataFrame(od)
         self.assertEqual(1, dataf.rx2('a')[0])
 
-        
+    def testNewStringsAsFactors(self):
+        od = {'a': robjects.IntVector((1,2)),
+              'b': robjects.StrVector(('c', 'd'))}
+        dataf = robjects.DataFrame(od, stringsasfactor=True)
+        self.assertTrue(isinstance(dataf.rx2('b'), robjects.FactorVector))
+        dataf = robjects.DataFrame(od, stringsasfactor=False)
+        self.assertTrue(isinstance(dataf.rx2('b'), robjects.StrVector))
+
     def testDim(self):
         letters = robjects.r.letters        
         numbers = robjects.r('1:26')
