@@ -44,6 +44,9 @@ Bugs fixed
 - Passing parameters names that are empty string to R function was
   causing a segfault (issue #409).
 
+- Trying to build an atomic R vector from a Python object that has a length,
+  but it not a sequence nor an iterator was causing a segfault (issue #407).
+
 
 Release 2.8.5
 =============
