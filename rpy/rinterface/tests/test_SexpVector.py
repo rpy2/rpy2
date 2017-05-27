@@ -283,6 +283,10 @@ class SexpVectorTestCase(unittest.TestCase):
         ok = isNA(sexp)[0]
         self.assertTrue(ok)
 
+    def testNewIntFromInvalid(self):
+        s = set((0,1))
+        self.assertRaises(ValueError, ri.SexpVector, s, ri.INTSXP)
+
     def testNewReal(self):
         sexp = ri.SexpVector([1.0, ], ri.REALSXP)
         isNumeric = ri.globalenv.get("is.numeric")
