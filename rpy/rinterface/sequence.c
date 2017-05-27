@@ -949,19 +949,21 @@ VectorSexp_init_private(PyObject *self, PyObject *args, PyObject *kwds,
 		     "The object does not have a length.");
 	embeddedR_freelock();	
 	return -1;
-      } else if (iter_to_R == NULL) {
-	/*FIXME: temporary, while the different implementations are written */
-      } else if (iter_to_R(object, length, &sexp) == -1) {
-	/* RPy_SeqTo*SXP returns already raises an exception in case of problem
-	 */
-	embeddedR_freelock();
-	return -1;
-      } else {
-	PyErr_Format(PyExc_ValueError,
-		     "Unexpected problem when building R vector from non-sequence.");
-	embeddedR_freelock();	
-	return -1;
       }
+      if (PyIter_Check(object)) {
+	if (iter_to_R == NULL) {
+	  /*FIXME: temporary, while the different implementations are written */
+	} else if (iter_to_R(object, length, &sexp) == -1) {
+	  /* RPy_SeqTo*SXP returns already raises an exception in case of problem
+	   */
+	  embeddedR_freelock();
+	  return -1;
+	}
+      }
+      PyErr_Format(PyExc_ValueError,
+		   "Unexpected problem when building R vector from non-sequence.");
+      embeddedR_freelock();	
+      return -1;
     } else {
 #ifdef RPY_VERBOSE
       printf("    object a sequence\n");
@@ -1130,7 +1132,7 @@ RPy_IterToINTSXP(PyObject *object, const Py_ssize_t length, SEXP *sexpp)
   PyObject *item, *item_tmp;
   SEXP new_sexp;
 
- 
+
   if (length > R_LEN_T_MAX) {
     PyErr_Format(PyExc_ValueError,
 		 "The length exceeds what the longuest possible R vector can be.");
@@ -1141,7 +1143,9 @@ RPy_IterToINTSXP(PyObject *object, const Py_ssize_t length, SEXP *sexpp)
 
   Py_ssize_t ii = 0;
   while (ii < length) {
+
     item = PyIter_Next(object);
+
     if (item == NULL) {
       UNPROTECT(1);
       PyErr_Format(PyExc_ValueError,
@@ -1149,6 +1153,8 @@ RPy_IterToINTSXP(PyObject *object, const Py_ssize_t length, SEXP *sexpp)
 		   ii);
       return -1;
     }
+
+    
     item_tmp = PyNumber_Long(item);
     if (item == NAInteger_New(0)) {
       integer_ptr[ii] = NA_INTEGER;
