@@ -9,5 +9,5 @@ pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          - python3 setup.py install
+          - python3 setup.py install --user
           - python3 -m rpy2.tests
