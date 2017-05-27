@@ -52,6 +52,17 @@ Bugs fixed
   but it not a sequence nor an iterator was causing a segfault (issue #407).
 
 
+Release 2.8.6
+=============
+
+Bugs fixed
+----------
+
+- Trying to build an atomic R vector from a Python object that has a length,
+  but it not a sequence nor an iterator was causing a segfault (issue #407 -
+  backport from rpy2-2.9.0).
+
+
 Release 2.8.5
 =============
 
