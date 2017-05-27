@@ -107,7 +107,6 @@ class DataFrameTestCase(unittest.TestCase):
         self.assertEqual(4, dataf.ncol)
         self.assertEqual(2, len([x for x in dataf.colnames if x == 'a']))
 
-    def testCbind(self):
         dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
         dataf = dataf.cbind(a = robjects.StrVector(("c", "d")))
         self.assertEqual(3, dataf.ncol)
