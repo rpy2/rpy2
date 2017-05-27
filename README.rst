@@ -1,8 +1,5 @@
 This is the source tree or distribution for the rpy2 package.
 
-.. image:: https://drone.io/bitbucket.org/rpy2/rpy2/status.png
-        :target: https://drone.io/bitbucket.org/rpy2/rpy2/latest
-
 .. image:: https://img.shields.io/pypi/v/rpy2.svg?style=flat-square
         :target: https://pypi.python.org/pypi/rpy2
 
