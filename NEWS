@@ -9,7 +9,7 @@ Bugs fixed
   backport from rpy2-2.9.0).
 
 - Passing parameters names that are empty string to R function was
-  causing a segfault (issue #409).
+  causing a segfault (issue #409 - backport from rpy2-2.9.0).
 
 
 Release 2.8.5
