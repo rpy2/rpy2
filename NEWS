@@ -389,7 +389,7 @@ New features
 - New module :mod:`rpy2.robjects.lib.dplyr` providing a custom
   wrapper for the R library `dplyr`
 
-- Method :method:`Environment.items()` to iterate through the symbols
+- Method :meth:`Environment.items()` to iterate through the symbols
   and associated objects in an R environment.
 
 - Exception :class:`rpy2.rinterface.ParsingIncompleError`, a child class of
