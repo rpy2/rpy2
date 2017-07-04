@@ -32,7 +32,7 @@ rest of this document.
 .. _Omegahat project: http://www.omegahat.org/RSPython
 
 The present documentation describes RPy2, an evolution of RPy-1.x.
-Naturally RPy2 is inspired by RPy, but also by A. Belopolskys's contributions
+Naturally RPy2 is inspired by RPy, but also by Alexander Belopolsky's contributions
 that were waiting to be included into RPy.
 
 This effort can be seen as a redesign and rewrite of the RPy package, and this
