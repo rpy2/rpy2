@@ -3,7 +3,7 @@
 # Only use spaces to indent your .yml configuration.
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image: rpy2/rpy2:devel
+image: rpy2/rpy2:latest
 
 pipelines:
   default:
