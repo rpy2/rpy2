@@ -4,10 +4,7 @@ MAINTAINER Laurent Gautier <lgautier@gmail.com>
 
 # note: installing ipywidgets requires a follow-up "jupyter nbextension enable" 
 RUN \
-  pip3 --no-cache-dir install pip --upgrade && \
-  pip3 --no-cache-dir install setuptools --upgrade && \
-  pip3 --no-cache-dir install wheel --upgrade && \
-  pip3 --no-cache-dir install numpy pandas sphinx jinja2 jupyter notebook && \
+  pip3 --no-cache-dir install jupyter notebook && \
   pip3 --no-cache-dir install bokeh && \
   pip3 --no-cache-dir install ipywidgets && \
   jupyter nbextension enable --py --sys-prefix widgetsnbextension && \

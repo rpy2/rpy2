@@ -38,6 +38,13 @@ RUN \
   R -e 'install.packages(sub("(.+)\\\\n","\\1", scan("rpacks.txt", "character")), repos="http://cran.cnr.Berkeley.edu")' && \
   rm rpacks.txt
 
+RUN \
+  pip3 --no-cache-dir install pip --upgrade && \
+  pip3 --no-cache-dir install setuptools --upgrade && \
+  pip3 --no-cache-dir install wheel --upgrade && \
+  pip3 --no-cache-dir install numpy pandas sphinx jinja2 && \
+  rm -rf /root/.cache
+  
 # Run dev version of rpy2
 RUN \
   pip3 --no-cache-dir install \
