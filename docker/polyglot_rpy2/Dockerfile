@@ -42,11 +42,15 @@ RUN \
   rm -rf /root/.cache
 
 RUN \
-  echo "glmnet\n\
+  echo "bigrquery\n\
+        dbplyr\n
+        DBI\n\
+        glmnet\n\
         gridExtra\n\
         maps\n\
         mapproj\n\
         plotly\n\
+        RPostgreSQL\n\
         RSQLite\n\
         party\n\
         partykit\n\
