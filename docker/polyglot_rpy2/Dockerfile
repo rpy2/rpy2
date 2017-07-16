@@ -1,4 +1,4 @@
-FROM rpy2/jupyter:devel
+FROM rpy2/jupyter:latest
 
 MAINTAINER Laurent Gautier <lgautier@gmail.com>
 
