@@ -25,8 +25,9 @@ Changes
   in a :class:`RuntimeError`. This is now only a warning, addressing
   issue #182.
 
-- The target version for the R package `dplyr` mapped is now 0.5.0, and
-  :func:`rpy2.robjects.lib.dplyr.src_dt` is no longer present (see issue #357)
+- The target version for the R package `dplyr` mapped is now 0.7.1, and
+  :func:`rpy2.robjects.lib.dplyr.src_dt` (issue #357) and
+  :func:`rpy2.robjects.lib.dplyr.src_desc` are no longer present.
 
 - :meth:`Environment.keys` is now a iterator to match :meth:`dict.keys`,
   also an interator in Python 3.

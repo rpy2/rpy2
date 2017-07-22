@@ -18,7 +18,7 @@ with warnings.catch_warnings():
                         version=dplyr.__version__,
                         symbol_r2python=dplyr._symbol_r2python,
                         symbol_check_after=dplyr._symbol_check_after)
-TARGET_VERSION = '0.5.0'
+TARGET_VERSION = '0.7.1'
 if dplyr.__version__ != TARGET_VERSION:
     warnings.warn('This was designed againt dplyr version %s but you have %s' % (TARGET_VERSION, dplyr.__version__))
 
@@ -86,7 +86,7 @@ def _make_pipe2(rfunc, cls, env=robjects.globalenv):
     return func
 
 class DataFrame(robjects.DataFrame):
-    """ DataFrame object extending the object of the same name in
+    """DataFrame object extending the object of the same name in
     `rpy2.robjects.vectors` with functionalities defined in the R
     package `dplyr`."""
     
@@ -113,9 +113,12 @@ class DataFrame(robjects.DataFrame):
         """Call the function `collect` in the R package `dplyr`."""
         cls = type(self)
         return cls(dplyr.collect(self, *args, **kwargs))
-        
+
+
 class GroupedDataFrame(DataFrame):
+    """DataFrame grouped by one of several factors."""
     pass
+
 
 DataFrame.arrange = _wrap(dplyr.arrange_, None)
 DataFrame.distinct = _wrap(dplyr.distinct_, None)
@@ -141,6 +144,19 @@ DataFrame.slice = _wrap(dplyr.slice_, None)
 
 DataFrame.count = _wrap(dplyr.count_, None)
 DataFrame.tally = _wrap(dplyr.tally, None)
+
+DataFrame.mutate_if = _wrap(dplyr.mutate_if, None)
+DataFrame.mutate_at = _wrap(dplyr.mutate_at, None)
+DataFrame.mutate_all = _wrap(dplyr.mutate_all, None)
+DataFrame.summarize_all = _wrap(dplyr.summarize_all, None)
+DataFrame.summarise_all = _wrap(dplyr.summarize_all, None)
+DataFrame.summarize_at = _wrap(dplyr.summarize_at, None)
+DataFrame.summarise_at = _wrap(dplyr.summarize_at, None)
+DataFrame.summarize_if = _wrap(dplyr.summarize_if, None)
+DataFrame.summarise_if = _wrap(dplyr.summarize_if, None)
+DataFrame.transmute_all = _wrap(dplyr.transmute_all, None)
+DataFrame.transmute_if = _wrap(dplyr.transmute_if, None)
+DataFrame.transmute_at = _wrap(dplyr.transmute_at, None)
 
 GroupedDataFrame.summarize = _wrap(dplyr.summarize_, DataFrame)
 GroupedDataFrame.summarise = GroupedDataFrame.summarize
@@ -171,29 +187,39 @@ sample_frac = _make_pipe(dplyr.sample_frac, DataFrame)
 slice = _make_pipe(dplyr.slice_, DataFrame)
 tally = _make_pipe(dplyr.tally, DataFrame)
 
-# family of functions 'src'
+mutate_if = _make_pipe(dplyr.mutate_if, DataFrame)
+mutate_at = _make_pipe(dplyr.mutate_at, DataFrame)
+mutate_all = _make_pipe(dplyr.mutate_all, DataFrame)
+summarize_all = _make_pipe(dplyr.summarize_all, DataFrame)
+summarise_all = _make_pipe(dplyr.summarise_all, DataFrame)
+summarize_at = _make_pipe(dplyr.summarize_at, DataFrame)
+summarise_at = _make_pipe(dplyr.summarize_at, DataFrame)
+summarize_if = _make_pipe(dplyr.summarize_if, DataFrame)
+summarise_if = _make_pipe(dplyr.summarize_if, DataFrame)
+transmute_all = _make_pipe(dplyr.transmute_all, DataFrame)
+transmute_if = _make_pipe(dplyr.transmute_if, DataFrame)
+transmute_at = _make_pipe(dplyr.transmute_at, DataFrame)
+
+# Functions for databases
+
 class DataSource(robjects.ListVector):
-    """ Source of data tables (e.g., a schema in a relational database). """
+    """ Source of data tables (e.g., in a schema in a relational database). """
     
     @property
     def tablenames(self):
         """ Call the R function dplyr::src_tbls() and return a vector
         of table names."""
         return tuple(dplyr.src_tbls(self))
+    
     def get_table(self, name):
         """ "Get" table from a source (R dplyr's function `tbl`). """
         return DataFrame(tbl(self, name))
     
 src = dplyr.src
-src_desc = dplyr.src_desc
 src_tbls = dplyr.src_tbls
 
 src_local = dplyr.src_local
 src_df = dplyr.src_df
-
-def src_sql(*args, **kwargs):
-    res = dplyr.src_sql(*args, **kwargs)
-    return DataSource(res)
 
 def src_mysql(*args, **kwargs):
     res = dplyr.src_mysql(*args, **kwargs)
@@ -207,6 +233,10 @@ def src_sqlite(*args, **kwargs):
     res = dplyr.src_sqlite(*args, **kwargs)
     return DataSource(res)
 
-# family of functions 'tbl'
+# Generic to create a data table
 
 tbl = dplyr.tbl
+
+# TODO: wrapper classes for the output of the following two function.
+explain = dplyr.explain
+show_query = dplyr.show_query
