@@ -15,7 +15,6 @@ RUN \
                      git \
 		     libcairo-dev \
 		     libedit-dev \
-                     lsb-release \
 		     scala \
 		     wget && \
   rm -rf /var/lib/apt/lists/*
