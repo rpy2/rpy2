@@ -32,7 +32,7 @@ Changes
 - :meth:`Environment.keys` is now a iterator to match :meth:`dict.keys`,
   also an interator in Python 3.
 
-- Target version of `ggplot2` library is 2.2.0.
+- Target version of `ggplot2` library is 2.2.1.
 
 - Option `stringsasfactors` in the constructor for the class `DataFrame` (if `False`, the
   strings are no longer converted to factors, and when converting from pandas data frames
