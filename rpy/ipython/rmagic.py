@@ -36,6 +36,7 @@ To enable the magics below, execute ``%load_ext rpy2.ipython``.
 
 #-----------------------------------------------------------------------------
 #  Copyright (C) 2012 The IPython Development Team
+#  Copyright (C) 2013-2017 rpy2 authors
 #
 #  Distributed under the terms of the BSD License.  The full license is in
 #  the file COPYING, distributed as part of this software.
@@ -55,6 +56,9 @@ import rpy2.robjects.packages as rpacks
 Converter = ro.conversion.Converter
 import warnings
 template_converter = ro.conversion.converter
+
+# Try loading pandas and numpy, emitting a warning if either cannot be
+# loaded.
 try:
     from rpy2.robjects import pandas2ri as baseconversion
     template_converter = template_converter + baseconversion.converter
@@ -78,23 +82,21 @@ except ImportError:
 
 # IPython imports
 
+import IPython
 from IPython.core.displaypub import publish_display_data
 from IPython.core.magic import (Magics, magics_class, line_magic,
                                 line_cell_magic, needs_local_scope)
 from IPython.core.magic_arguments import (
     argument, magic_arguments, parse_argstring, argument_group
 )
-from IPython.utils.py3compat import str_to_unicode, unicode_to_str, PY3
 
+# TODO: drop support for ipython < 5.0
 try:
     from IPython.external.simplegeneric import generic
 except ImportError:
     # IPython 4.0
     from simplegeneric import generic
 
-
-if sys.version_info[0] == 3:
-    unicode = str
 
 class RInterpreterError(ri.RRuntimeError):
     """An error when running R code in a %%R magic cell."""
@@ -103,18 +105,13 @@ class RInterpreterError(ri.RRuntimeError):
         self.err = err.rstrip()
         self.stdout = stdout.rstrip()
 
-    def __unicode__(self):
+    def __str__(self):
         s = 'Failed to parse and evaluate line %r.\nR error message: %r' % \
                 (self.line, self.err)
         if self.stdout and (self.stdout != self.err):
             s += '\nR stdout:\n' + self.stdout
         return s
 
-    if PY3:
-        __str__ = __unicode__
-    else:
-        def __str__(self):
-            return unicode_to_str(unicode(self), 'utf-8')
 
 @generic
 def pyconverter(pyobj):
@@ -242,7 +239,7 @@ utils.install_packages('Cairo')
             value, visible = ro.r("withVisible({%s\n})" % code)
         except (ri.RRuntimeError, ValueError) as exception:
             warning_or_other_msg = self.flush() # otherwise next return seems to have copy of error
-            raise RInterpreterError(code, str_to_unicode(str(exception)), warning_or_other_msg)
+            raise RInterpreterError(code, str(exception), warning_or_other_msg)
         text_output = self.flush()
         ri.set_writeconsole_regular(old_writeconsole_regular)
         return text_output, value, visible[0]
@@ -257,7 +254,7 @@ utils.install_packages('Cairo')
         '''
         Flush R's stdout cache to a string, returning the string.
         '''
-        value = ''.join([str_to_unicode(s, 'utf-8') for s in self.Rstdout_cache])
+        value = ''.join(self.Rstdout_cache)
         self.Rstdout_cache = []
         return value
 
@@ -519,7 +516,7 @@ utils.install_packages('Cairo')
         )
     @argument_group("PNG", "PNG specific arguments")
     @argument(
-        '-u', '--units', type=unicode, choices=["px", "in", "cm", "mm"],
+        '-u', '--units', type=str, choices=["px", "in", "cm", "mm"],
         help='Units of png plotting device sent as an argument to *png* in R. One of ["px", "in", "cm", "mm"].'
         )
     @argument(
@@ -684,7 +681,7 @@ utils.install_packages('Cairo')
                     ri.set_writeconsole_regular(old_writeconsole_regular)
 
         except RInterpreterError as e:
-            # XXX - Maybe we should make this red or something?
+            # TODO: Maybe we should make this red or something?
             print(e.stdout)
             if not e.stdout.endswith(e.err):
                 print(e.err)
@@ -742,6 +739,8 @@ __doc__ = __doc__.format(
 )
 
 
+# TODO: are the switch(on|off)_conversion_daframes functions below uses anywhere ?
+#       Use local rpy2 converters if temporary conversion rules needed.
 _switch_conversion_dataframe_doc = """
     Switch the conversion of R data.frame / rpy2's DataFrame objects on or off.
 
@@ -784,6 +783,8 @@ def load_ipython_extension(ip):
         baseconversion.activate()
 
     ip.register_magics(RMagics)
+
+    # TODO: drop support for ipython < 5.0
     # Initialising rpy2 interferes with readline. Since, at this point, we've
     # probably just loaded rpy2, we reset the delimiters. See issue gh-2759.
     if hasattr(ip, 'has_readline'):
@@ -793,3 +794,4 @@ def load_ipython_extension(ip):
         # ipython >= 5.0.0
         # not doing anything (for now)
         pass
+
