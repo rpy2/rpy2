@@ -1,3 +1,6 @@
+import os
+import pytz
+from datetime import datetime
 import rpy2.robjects as ro
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
@@ -18,6 +21,7 @@ from collections import OrderedDict
 from rpy2.robjects.vectors import (DataFrame,
                                    Vector,
                                    FactorVector,
+                                   FloatSexpVector,
                                    ListVector,
                                    StrVector,
                                    IntVector,
@@ -132,6 +136,45 @@ def ri2py_intvector(obj):
         res = pandas.Categorical.from_codes(numpy.asarray(obj) - 1,
                                             categories = obj.do_slot('levels'),
                                             ordered = 'ordered' in obj.rclass)
+    else:
+        res = numpy2ri.ri2py(obj)
+    return res
+
+
+def get_timezone():
+    """ Return the system's timezone settings. """
+    etc_timezone = '/etc/timezone'
+    timezone = None
+    if os.path.exists(etc_timezone):
+        try:
+            with open(etc_timezone) as fh:
+                tz = fh.read().strip()
+            try :
+                timezone = pytz.timezone(tz)
+            except pytz.UnknownTimeZoneError:
+                warnings.warn('Unknown time zone in %s, using UTC.' % etc_timezone)
+                timezone = 'UTC'
+        except IOError:
+            warnings.warn('Unable to read date in %s, using UTC.' % etc_timezone)
+            timezone = 'UTC'
+    else:
+        warnings.warn('No file %s' % etc_timezone)
+    return timezone
+
+
+@ri2py.register(FloatSexpVector)
+def ri2py_floatvector(obj):
+    # special case for POSIXct date objects
+    if 'POSIXct' in obj.rclass:
+        tzone_name = obj.do_slot('tzone')[0]
+        if tzone_name == '':
+            # R is implicitly using the local timezone, while Python time libraries
+            # will assume UTC.
+            tzone = get_timezone()
+        else:
+            tzone = pytz.timezone(tzone_name)
+        foo = (tzone.localize(datetime.fromtimestamp(x)) for x in obj)
+        res = pandas.to_datetime(tuple(foo))
     else:
         res = numpy2ri.ri2py(obj)
     return res

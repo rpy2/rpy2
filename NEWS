@@ -18,6 +18,9 @@ New features
 - :class:`VectorOperationsDelegator` now has a method `__matmul__` to implement
   Python's matrix multiplication operator (PEP-0645).
 
+- A rule to convert R POSIXct vectors to pandas Timestamp vectors was added (issue #418).
+
+
 Changes
 -------
 

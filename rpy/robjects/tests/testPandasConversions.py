@@ -1,4 +1,5 @@
 import unittest
+import pytz
 import sys
 import rpy2.robjects as robjects
 from rpy2.robjects import conversion
@@ -49,6 +50,7 @@ class PandasConversionsTestCase(unittest.TestCase):
         self.assertEqual(k, set(conversion.py2ri.registry.keys()))
 
     def testDataFrame(self):
+        # Content for test data frame
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),
              ('i', numpy.array([1, 2, 3], dtype="i")),
              ('f', numpy.array([1, 2, 3], dtype="f")),
@@ -58,7 +60,9 @@ class PandasConversionsTestCase(unittest.TestCase):
                         datetime(2012, 6, 3), 
                         datetime(2012, 7, 1)]))
         od = OrderedDict(l)
+        # Pandas data frame
         pd_df = pandas.core.frame.DataFrame(od)
+        # Convert to R
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_df = robjects.conversion.py2ri(pd_df)
         self.assertEqual(pd_df.shape[0], rp_df.nrow)
@@ -103,7 +107,28 @@ class PandasConversionsTestCase(unittest.TestCase):
             
             #rp_c = robjects.conversion.py2ri(category)
             #self.assertEqual(rinterface.IntSexpVector, type(rp_c))
-            
+
+    def testTimeR2Pandas(self):
+        tzone = rpyp.get_timezone()
+        dt = [datetime(1960, 5, 2),
+              datetime(1970, 6, 3), 
+              datetime(2012, 7, 1)]
+        dt = [x.replace(tzinfo=tzone) for x in dt]
+        # fix the time
+        ts = [x.timestamp() for x in dt]
+        # Create an R POSIXct vector.
+        r_time = robjects.baseenv['as.POSIXct'](rinterface.FloatSexpVector(ts),
+                                                origin=rinterface.StrSexpVector(('1970-01-01',)))
+
+        # Convert R POSIXct vector to pandas-compatible vector
+        with localconverter(default_converter + rpyp.converter) as cv:
+            py_time = robjects.conversion.ri2py(r_time)
+
+        # Check that the round trip did not introduce changes
+        for expected, obtained in zip(dt, py_time):
+            self.assertEqual(expected, obtained.to_pydatetime())
+        
+        
     def testRepr(self):
         # this should go to testVector, with other tests for repr()
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),
