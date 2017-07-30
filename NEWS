@@ -39,7 +39,11 @@ Changes
 
 - Option `stringsasfactors` in the constructor for the class `DataFrame` (if `False`, the
   strings are no longer converted to factors, and when converting from pandas data frames
-  the default is to no longer convert columns of strings to factors. 
+  the default is to no longer convert columns of strings to factors.
+
+- The R "magic" for jupyter is now more consistently using the conversion system, and the
+  use of custom converters through the magic argument `-c` will work as expected.
+
 
 Bugs fixed
 ----------

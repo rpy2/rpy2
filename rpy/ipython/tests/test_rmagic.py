@@ -133,6 +133,7 @@ result = rmagic_addone(12344)
             #np.testing.assert_array_equal(dataf_np[col_i],
             #                              fromr_dataf_np.ix[col_i].values)
             if has_pandas:
+                self.assertTrue(isinstance(fromr_dataf_np, pd.DataFrame))
                 self.assertSequenceEqual(tuple(dataf_np[col_i]),
                                          tuple(fromr_dataf_np.ix[col_i+1].values))
             else:

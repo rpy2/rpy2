@@ -53,31 +53,32 @@ from shutil import rmtree
 import rpy2.rinterface as ri
 import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
-Converter = ro.conversion.Converter
+from rpy2.robjects.conversion import (Converter,
+                                      localconverter)
 import warnings
-template_converter = ro.conversion.converter
+from rpy2.robjects.conversion import converter as template_converter
 
 # Try loading pandas and numpy, emitting a warning if either cannot be
 # loaded.
 try:
-    from rpy2.robjects import pandas2ri as baseconversion
-    template_converter = template_converter + baseconversion.converter
-except ImportError:
+    from rpy2.robjects import numpy2ri
+    template_converter += numpy2ri.converter
     try:
-        from rpy2.robjects import numpy2ri as baseconversion
-        template_converter = template_converter + baseconversion.converter
+        from rpy2.robjects import pandas2ri
+        template_converter += pandas2ri.converter
+    except ImportError:
         warnings.warn(' '.join(("The Python package 'pandas' is strongly"
                                 "recommended when using `rpy2.ipython`.",
                                 "Unfortunately it could not be loaded,",
                                 "but at least we found 'numpy'.")))
-    except ImportError:
-        # Give up on numerics
-        baseconversion = None
-        warnings.warn(' '.join(("The Python package 'pandas' is strongly",
-                                "recommended when using `rpy2.ipython`.",
-                                "Unfortunately it could not be loaded,",
-                                "and we did not manage to load 'numpy'",
-                                "either.")))
+except ImportError:
+    # Give up on numerics
+    warnings.warn(' '.join(("The Python package 'pandas' is strongly",
+                            "recommended when using `rpy2.ipython`.",
+                            "Unfortunately it could not be loaded,",
+                            "as we did not manage to load 'numpy'",
+                            "first.")))
+        
         
 
 # IPython imports
@@ -119,15 +120,6 @@ class RInterpreterError(ri.RRuntimeError):
         return s
 
 
-@generic
-def pyconverter(pyobj):
-    """Convert Python objects to R objects. Add types using the decorator:
-
-    @pyconverter.when_type
-    """
-    return pyobj
-
-
 converter = Converter('ipython conversion',
                       template=template_converter)
 
@@ -137,10 +129,22 @@ converter = Converter('ipython conversion',
 # python lists are automatically converted by numpy functions), so for
 # interactive use in the rmagic, we call unlist, which converts lists to vectors
 # **if the list was of uniform (atomic) type**.
-@pyconverter.when_type(list)
-def pyconverter_list(pyobj):
+@converter.ri2py.register(list)
+def ri2py_list(obj):
     # simplify2array is a utility function, but nice for us
-    return ro.r.simplify2array(pyobj)
+    # TODO: use an early binding of the R function
+    return ro.r.simplify2array(obj)
+
+
+# The R magic is opiniated about what the R vectors should become.
+@converter.ri2ro.register(ri.SexpVector)
+def _(obj):
+    if 'data.frame' in obj.rclass:
+        # request to turn it to a pandas DataFrame
+        res = converter.ri2py(obj)
+    else:
+        res = ro.sexpvector_to_ro(obj)
+    return res        
 
 
 @magics_class
@@ -148,7 +152,7 @@ class RMagics(Magics):
     """A set of magics useful for interactive work with R via rpy2.
     """
 
-    def __init__(self, shell, pyconverter=pyconverter,
+    def __init__(self, shell, converter=converter,
                  cache_display_data=False, device='png'):
         """
         Parameters
@@ -156,9 +160,8 @@ class RMagics(Magics):
 
         shell : IPython shell
 
-        pyconverter : callable
-            To be called on values in ipython namespace before 
-            assigning to variables in rpy2.
+        converter : rpy2 Converter instance to use. If None,
+                    the magic's current converter is used.
 
         cache_display_data : bool
             If True, the published results of the final call to R are 
@@ -175,8 +178,9 @@ class RMagics(Magics):
         self.cache_display_data = cache_display_data
 
         self.Rstdout_cache = []
-        self.pyconverter = pyconverter
 
+        self.converter = converter
+        
         self.set_R_plotting_device(device)
 
     def set_R_plotting_device(self, device):
@@ -303,8 +307,8 @@ utils.install_packages('Cairo')
                     # variable
                     raise NameError("name '%s' is not defined" % input)
 
-            robj = self.pyconverter(val)
-            ro.r.assign(input, robj)
+            with localconverter(self.converter) as cv:
+                ro.r.assign(input, val)
 
     # @skip_doctest
     @magic_arguments()
@@ -347,9 +351,10 @@ utils.install_packages('Cairo')
         """
         args = parse_argstring(self.Rpull, line)
         outputs = args.outputs
-        for output in outputs:
-            robj = ri.globalenv.get(output)
-            self.shell.push({output: converter.ri2py(robj) })
+        with localconverter(self.converter) as cv:
+            for output in outputs:
+                robj = ri.globalenv.get(output)
+                self.shell.push({output: robj})
 
     # @skip_doctest
     @magic_arguments()
@@ -382,8 +387,9 @@ utils.install_packages('Cairo')
         output = args.output
         # get the R object with the given name, starting from globalenv
         # in the search path
-        res = ri.globalenv.get(output[0])
-        return converter.ri2py(res)
+        with localconverter(self.converter) as cv:
+            res = ro.globalenv.get(output[0])
+        return res
 
 
     def setup_graphics(self, args):
@@ -485,7 +491,7 @@ utils.install_packages('Cairo')
     @argument(
         '-i', '--input', action='append',
         help=('Names of input variable from shell.user_ns to be assigned to R variables'
-              ' of the same names after calling self.pyconverter. Multiple names can be'
+              ' of the same names after using the Converter self.converter. Multiple names can be'
               ' passed separated only by commas with no whitespace.')
     )
     @argument(
@@ -653,17 +659,18 @@ utils.install_packages('Cairo')
             local_ns = {}
 
         if args.converter is None:
-            pass
+            converter = self.converter
         else:
             try:
-                localconverter = local_ns[args.converter]
+                converter = local_ns[args.converter]
             except KeyError:
                 try:
-                    localconverter = self.shell.user_ns[args.converter]
+                    converter = self.shell.user_ns[args.converter]
                 except KeyError:
                     raise NameError("name '%s' is not defined" % args.converter)
-            if not isinstance(localconverter, Converter):
-                raise ValueError("'%s' must be a Converter object.")
+            if not isinstance(converter, Converter):
+                raise ValueError("'%s' must be a %s object (but it is a %s)."
+                                 % (args.converter, Converter, type(localconverter)))
             
         if args.input:
             for input in ','.join(args.input).split(','):
@@ -674,10 +681,8 @@ utils.install_packages('Cairo')
                         val = self.shell.user_ns[input]
                     except KeyError:
                         raise NameError("name '%s' is not defined" % input)
-                if args.converter is None:
-                    ro.r.assign(input, self.pyconverter(val))
-                else:
-                    ro.r.assign(input, localconverter.py2ri(val))
+                with localconverter(converter) as cv:
+                    ro.r.assign(input, val)
 
         tmpd = self.setup_graphics(args)
 
@@ -727,13 +732,10 @@ utils.install_packages('Cairo')
             rmtree(tmpd)
 
         if args.output:
-            for output in ','.join(args.output).split(','):
-                if args.converter is None:
-                    output_ipy = converter.ri2py(ri.globalenv.get(output))
-                else:
-                    output_ipy = localconverter.ri2py(ri.globalenv.get(output))
-                self.shell.push({output: output_ipy })
-
+            with localconverter(converter) as cv:
+                for output in ','.join(args.output).split(','):
+                    output_ipy = ro.globalenv.get(output)
+                    self.shell.push({output: output_ipy })
 
         # this will keep a reference to the display_data
         # which might be useful to other objects who happen to use
@@ -746,10 +748,9 @@ utils.install_packages('Cairo')
         # so return the converted result
         if return_output and not args.noreturn:
             if result is not ri.NULL:
-                if args.converter is None:
-                    return converter.ri2py(result)
-                else:
-                    return localconverter.ri2py(result)
+                with localconverter(converter) as cv:
+                    res = cv.ri2py(result)
+                return res
 
 
 __doc__ = __doc__.format(
@@ -762,11 +763,6 @@ __doc__ = __doc__.format(
 
 def load_ipython_extension(ip):
     """Load the extension in IPython."""
-
-    if hasattr(baseconversion, 'activate'):
-        # This is pandas2ri if pandas is installed,
-        # or numpy2ri otherwise
-        baseconversion.activate()
 
     ip.register_magics(RMagics)
 
