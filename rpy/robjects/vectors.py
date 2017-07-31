@@ -6,6 +6,7 @@ from . import conversion
 import rpy2.rlike.container as rlc
 
 import sys, copy, os, itertools, math
+import jinja2
 import time
 from datetime import datetime
 from time import struct_time, mktime, tzname
@@ -240,6 +241,21 @@ class Vector(RObjectMixin, SexpVector):
 """
     _sample = rinterface.baseenv['sample']
 
+    _html_template = jinja2.Template(
+    """
+    <table>
+      <tbody>
+      <tr>
+      {% for elt in elements %}
+      <td>
+        {{ elt }}
+      </td>
+      {% endfor %}
+      </tr>
+      </tbody>
+    </table>
+    """)
+
     def __init__(self, o):
         if not isinstance(o, SexpVector):
             o = conversion.py2ri(o)
@@ -308,44 +324,53 @@ class Vector(RObjectMixin, SexpVector):
         res = conversion.ri2ro(res)
         return res
 
-    def __repr_content__(self):
-        def p_str(x, max_width = 8):
-            max_width = int(max_width)
-            if x is NA_Real or x is NA_Integer or x is NA_Character or x is NA_Logical:
-                res = repr(x)
-            elif isinstance(x, long) or isinstance(x, int):
-                res = '%8i' %x
-            elif isinstance(x, float):
-                res = '%8f' %x
-            else:
-                if isinstance(x, py3str):
-                    x = x.__repr__()
-                else:
-                    x = type(x).__name__    
-                if len(x) < max_width:
-                    res = x
-                else:
-                    res = "%s..." % (str(x[ : (max_width - 3)]))
-            return res
-
-        l = len(self)
-        if l == 0:
-            s = '[]'
-        elif l < 7:
-            s = '[' + \
-                ', '.join((p_str(elt, max_width = math.floor(52 / l)) for elt in self[ : 8])) +\
-                ']'
+    def repr_format_elt(self, elt, max_width = 8):        
+        max_width = int(max_width)
+        if elt is NA_Real or elt is NA_Integer or elt is NA_Character or elt is NA_Logical:
+            res = repr(elt)
+        elif isinstance(elt, long) or isinstance(elt, int):
+            res = '%8i' %elt
+        elif isinstance(elt, float):
+            res = '%8f' %elt
         else:
-            s = '[' + \
-                ', '.join((p_str(elt) for elt in self[ : 3])) + ', ..., ' + \
-                ', '.join((p_str(elt) for elt in self[-3 : ])) + \
-                ']'
-        return s
+            if isinstance(elt, py3str):
+                elt = elt.__repr__()
+            else:
+                elt = type(elt).__name__    
+            if len(elt) < max_width:
+                res = elt
+            else:
+                res = "%s..." % (str(elt[ : (max_width - 3)]))
+        return res
 
+    def _iter_formatted(self, max_items=9):        
+        format_elt = self.repr_format_elt
+        l = len(self)
+        half_items = max_items // 2
+        if l == 0:
+            return
+        elif l < max_items:
+            for elt in self:
+                yield format_elt(elt, max_width = math.floor(52 / l))
+        else:
+            for elt in self[ : half_items]:
+                yield format_elt(elt)
+            yield '...'
+            for elt in self[-half_items : ]:
+                yield format_elt(elt)
+
+    def __repr_content__(self):
+        return ''.join(('[', ', '.join(self._iter_formatted()), ']'))
+    
     def __repr__(self):        
         return super(Vector, self).__repr__() + os.linesep + \
             self.__repr_content__()
-                          
+
+    def _repr_html_(self):
+        d = {'elements': self._iter_formatted()}
+        html = self._html_template.render(d)
+        return html
+
 
 class StrVector(Vector, StrSexpVector):
     """      Vector of string elements
@@ -379,6 +404,7 @@ class StrVector(Vector, StrSexpVector):
         res = self._factorconstructor(self)
         return conversion.ri2ro(res)
 
+
 class IntVector(Vector, IntSexpVector):
     """ Vector of integer elements 
     IntVector(seq) -> IntVector.
@@ -397,6 +423,9 @@ class IntVector(Vector, IntSexpVector):
         obj = IntSexpVector(obj)
         super(IntVector, self).__init__(obj)
 
+    def repr_format_elt(self, elt, max_width = 8):
+        return '{:,}'.format(elt)
+        
     def tabulate(self, nbins = None):
         """ Like the R function tabulate,
         count the number of times integer values are found """
@@ -510,9 +539,21 @@ class FactorVector(IntVector):
         self.rx = ExtractDelegator(self)
         self.rx2 = DoubleExtractDelegator(self)
 
+    def repr_format_elt(self, elt, max_width = 8):
+        max_width = int(max_width)
+        levels = self._levels(self)
+        if elt is NA_Integer:
+            res = repr(elt)
+        else:
+            res = levels[elt-1]
+            if len(res) >= max_width:
+                res = "%s..." % (res[ : (max_width - 3)])
+        return res
+
     def __levels_get(self):
         res = self._levels(self)
         return conversion.ri2ro(res)
+    
     def __levels_set(self, value):
         res = self._levels_set(self, conversion.py2ro(value))
         self.__sexp__ = res.__sexp__
@@ -553,6 +594,25 @@ The parameter 'itemable' can be:
     """
     _vector = rinterface.baseenv['vector']
 
+    _html_template = jinja2.Template(
+    """
+    <table>
+      <tbody>
+      {% for name, elt in names_elements %}
+      <tr>
+      <th>
+        {{ name }}
+      </th>
+      <td>
+        {{ elt }}
+      </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    """)
+
+    
     def __init__(self, tlist):
         if isinstance(tlist, rinterface.SexpVector):
             if tlist.typeof != rinterface.VECSXP:
@@ -577,51 +637,72 @@ The parameter 'itemable' can be:
                              " or an instance of rpy2.rinterface.SexpVector" +
                              " of type VECSXP, or a Python dict.")
 
-    def __repr__(self):        
-        res = []
-        if len(self) < 7:
-            for i, x in enumerate(self):
-                if isinstance(x, ListVector):
-                    res.append(super(ListVector, self).__repr__())
-                else:
-                    try:
-                        name = self.names[i]
-                    except TypeError as te:
-                        name = '<no name>'
-                    res.append("  %s: %s%s  %s" %(name,
-                                                  type(x),
-                                                  os.linesep,
-                                                  x.__repr__()))
+    def _iter_repr(self, max_items=9):
+        if len(self) <= max_items:
+            for elt in self:
+                yield elt
         else:
-            for i, x in enumerate(self[:3]):
-                if isinstance(x, ListVector):
-                    res.append(super(ListVector, self).__repr__())
-                else:
-                    try:
-                        name = self.names[i]
-                    except TypeError as te:
-                        name = '<no name>'
-                    res.append("  %s: %s%s  %s" %(name,
-                                                  type(x),
-                                                  os.linesep,
-                                                  x.__repr__()))
-            res.append('  ...')
-            for i, x in enumerate(self[-3:]):
-                if isinstance(x, ListVector):
-                    res.append(super(ListVector, self).__repr__())
-                else:
-                    try:
-                        name = self.names[i]
-                    except TypeError as te:
-                        name = '<no name>'
-                    res.append("  %s: %s%s  %s" %(name,
-                                                  type(x),
-                                                  os.linesep,
-                                                  x.__repr__()))
+            half_items = max_items // 2
+            for i in range(0, half_items):
+              yield self[i]
+            yield '...'
+            for i in range(-half_items, 0):
+              yield self[i]
+            
+    def __repr__(self):
+        res = []
+        for i, elt in enumerate(self._iter_repr()):
+            if isinstance(elt, ListVector):
+                res.append(super(ListVector, self).__repr__())
+            elif elt == '...':
+                res.append(elt)
+            else:
+                try:
+                    name = self.names[i]
+                except TypeError as te:
+                    name = '<no name>'
+                res.append("  %s: %s%s  %s" %(name,
+                                              type(elt),
+                                              os.linesep,
+                                              elt.__repr__()))
+
         res = super(ListVector, self).__repr__() + os.linesep + \
             os.linesep.join(res)
         return res
 
+    def _repr_html_(self, max_items=7):
+        elements = list()
+        for e in self._iter_repr(max_items=max_items):
+            if hasattr(e, '_repr_html_'):
+                elements.append(e._repr_html_())
+            else:
+                elements.append(e)
+
+
+        names = list()
+        if len(self) <= max_items:
+            names.extend(self.names)
+        else:
+            half_items = max_items // 2
+            for i in range(0, half_items):
+                try:
+                    name = self.names[i]
+                except TypeError:
+                    name = '[no name]'
+                names.append(name)
+            names.append('...')
+            for i in range(-half_items, 0):
+                try:
+                    name = self.names[i]
+                except TypeError:
+                    name = '[no name]'
+                names.append(name)
+        
+        d = {'names_elements': zip(names, elements)}
+        html = self._html_template.render(d)
+        return html
+
+    
     @staticmethod
     def from_length(length):
         """ Create a list of given length """
@@ -922,7 +1003,31 @@ class DataFrame(ListVector):
     _cbind     = rinterface.baseenv['cbind.data.frame']
     _rbind     = rinterface.baseenv['rbind.data.frame']
     _is_list   = rinterface.baseenv['is.list']
-    
+
+    _html_template = jinja2.Template(
+    """
+    <table>
+      <thead>
+        <tr>
+        {% for name in column_names %}
+          <th>{{ name }}</th>
+        {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+      {% for row_i in rows %}
+      <tr>
+      {% for col_i in columns %}
+      <td>
+        {{ elements[col_i][row_i] }}
+      </td>
+      {% endfor %}
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    """)
+
     def __init__(self, obj, stringsasfactor=False):
         """ Create a new data frame.
 
@@ -972,7 +1077,41 @@ class DataFrame(ListVector):
         kv = tuple(kv)
         df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
         super(DataFrame, self).__init__(df)
-    
+
+    def _repr_html_(self, max_items=7):
+        names = list()
+        if len(self) <= max_items:
+            names.extend(self.names)
+        else:
+            half_items = max_items // 2
+            for i in range(0, half_items):
+                try:
+                    name = self.names[i]
+                except TypeError:
+                    name = '[no name]'
+                names.append(name)
+            names.append('...')
+            for i in range(-half_items, 0):
+                try:
+                    name = self.names[i]
+                except TypeError:
+                    name = '[no name]'
+                names.append(name)
+
+        elements = list()
+        for e in self._iter_repr(max_items=max_items):
+            if hasattr(e, '_repr_html_'):
+                elements.append(tuple(e._iter_formatted()))
+            else:
+                elements.append(['...',] * len(elements[-1]))
+       
+        d = {'column_names': names,
+             'rows': tuple(range(len(elements))),
+             'columns': tuple(range(len(names))),
+             'elements': elements}
+        html = self._html_template.render(d)
+        return html
+
     def _get_nrow(self):
         """ Number of rows. 
         :rtype: integer """

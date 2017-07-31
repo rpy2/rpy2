@@ -20,6 +20,8 @@ New features
 
 - A rule to convert R POSIXct vectors to pandas Timestamp vectors was added (issue #418).
 
+- method :meth:`_repr_html_` for R vectors to display HTML in jupyter.
+
 
 Changes
 -------
