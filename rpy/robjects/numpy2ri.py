@@ -110,12 +110,18 @@ def npfloat_py2ri(obj):
 
 @py2ri.register(object)
 def nonnumpy2ri(obj):
-    # allow array-likes to also function with this module.
+    # allow array-like objects to also function with this module.
     if not isinstance(obj, numpy.ndarray) and hasattr(obj, '__array__'):
         obj = obj.__array__()
         return ro.default_converter.py2ri(obj)
+    elif original_converter is None:
+        # This means that the conversion module was not "activated".
+        # For now, go with the default_converter.
+        # TODO: the conversion system needs an overhaul badly.
+        return ro.default_converter.py2ri(obj)
     else:
-        raise original_converter.py2ri(obj)
+        # The conversion module was "activated"
+        return original_converter.py2ri(obj)
 
 @py2ro.register(numpy.ndarray)
 def numpy2ro(obj):
