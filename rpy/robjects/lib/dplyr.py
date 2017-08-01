@@ -10,6 +10,7 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     dplyr = importr('dplyr', on_conflict="warn")
     lazyeval = importr('lazyeval', on_conflict="warn")
+    rlang = importr('rlang', on_conflict="warn", signature_translation=False)
     dplyr = WeakPackage(dplyr._env,
                         dplyr.__rname__,
                         translation=dplyr._translation,
@@ -28,6 +29,8 @@ from rpy2 import robjects
 StringInEnv = namedtuple('StringInEnv', 'string env')
 
 def _fix_args_inenv(args, env):
+    """Use R's lazyeval::as_lazy to evaluate each argument in a sequence as
+    code in an environment."""
     args_inenv = list()
     for v in args:
         if isinstance(v, StringInEnv):
@@ -37,6 +40,8 @@ def _fix_args_inenv(args, env):
     return args_inenv
 
 def _fix_kwargs_inenv(kwargs, env):
+    """Use R's lazyeval::as_lazy to evaluate each value in a dict as
+    code in an environment."""
     kwargs_inenv = dict()
     for k,v in kwargs.items():
         if isinstance(v, StringInEnv):
@@ -68,22 +73,28 @@ def _wrap2(rfunc, cls, env=robjects.globalenv):
     return func
 
 def _make_pipe(rfunc, cls, env=robjects.globalenv):
-    def func(*args, **kwargs):
-        def func2(obj):
-            args_inenv = _fix_args_inenv(args, env)
-            kwargs_inenv = _fix_kwargs_inenv(kwargs, env)
-            return cls(rfunc(obj, *args_inenv, **kwargs_inenv))
-        return func2
-    return func
+    """
+    :param rfunc: An R function.
+    :param cls: The class to use wrap the result of `rfunc`.
+    :param env: A R environment.
+    :rtype: A function."""
+    def inner(obj, *args, **kwargs):
+        args_inenv = _fix_args_inenv(args, env)
+        kwargs_inenv = _fix_kwargs_inenv(kwargs, env)
+        res = rfunc(obj, *args_inenv, **kwargs_inenv)
+        return cls(res)
+    return inner
 
 def _make_pipe2(rfunc, cls, env=robjects.globalenv):
-    def func(*args, **kwargs):
-        def func2(obj_a, obj_b):
-            args_inenv = _fix_args_inenv(args, env)
-            kwargs_inenv = _fix_kwargs_inenv(kwargs, env)
-            return cls(rfunc(obj_a, obj_b, *args_inenv, **kwargs_inenv))
-        return func2
-    return func
+    """
+    :param rfunc: An R function.
+    :param cls: The class to use wrap the result of `rfunc`.
+    :param env: A R environment.
+    :rtype: A function."""
+    def inner(obj_a, obj_b, *args, **kwargs):
+        res = rfunc(obj_a, obj_b, *args, **kwargs)
+        return cls(res)
+    return inner
 
 class DataFrame(robjects.DataFrame):
     """DataFrame object extending the object of the same name in
