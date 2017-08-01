@@ -50,6 +50,8 @@ def _fix_kwargs_inenv(kwargs, env):
             kwargs_inenv[k] = lazyeval.as_lazy(v, env=env)
     return kwargs_inenv
 
+# TODO: _wrap and _pipe have become quite similar (identical ?). Have only one of the two ?
+
 def _wrap(rfunc, cls, env=robjects.globalenv):
     def func(dataf, *args, **kwargs):
         args_inenv = _fix_args_inenv(args, env)
@@ -63,14 +65,12 @@ def _wrap(rfunc, cls, env=robjects.globalenv):
 
 def _wrap2(rfunc, cls, env=robjects.globalenv):
     def func(dataf_a, dataf_b, *args, **kwargs):
-        args_inenv = _fix_args_inenv(args, env)
-        kwargs_inenv = _fix_kwargs_inenv(kwargs, env)
-        if cls is     None:
-            return type(dataf_a)(rfunc(dataf_a, dataf_b,
-                                       *args_inenv, **kwargs_inenv))
+        res = rfunc(dataf_a, dataf_b,
+                    *args, **kwargs)
+        if cls is None:
+            return type(dataf_a)(res)
         else:
-            return cls(rfunc(dataf_a, dataf_b,
-                             *args_inenv, **kwargs_inenv))
+            return cls(res)
     return func
 
 def _make_pipe(rfunc, cls, env=robjects.globalenv):
