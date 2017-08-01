@@ -10,10 +10,10 @@ class DplyrTestCase(unittest.TestCase):
         dataf_ab = dplyr.inner_join(dataf_a, dataf_b, by="x")
         self.assertEqual(2, dataf_ab.nrow)
 
-    # def testFilter(self):
-    #     dataf_a = DataFrame({'x': IntVector((1,2,3))}),
-    #     dataf_af = dplyr.filter(dataf_a, 'x < 2')
-    #     self.assertEqual(2, dataf_af.row)
+    def testFilter(self):
+        dataf_a = DataFrame({'x': IntVector((1,2,3))})
+        dataf_af = dplyr.filter(dataf_a, 'x < 2')
+        self.assertEqual(1, dataf_af.nrow)
 
     def testMutate(self):
         dataf_a = DataFrame({'x': IntVector((1,2))})

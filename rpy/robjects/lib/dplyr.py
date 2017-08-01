@@ -54,17 +54,18 @@ def _wrap(rfunc, cls, env=robjects.globalenv):
     def func(dataf, *args, **kwargs):
         args_inenv = _fix_args_inenv(args, env)
         kwargs_inenv = _fix_kwargs_inenv(kwargs, env)
+        res = rfunc(dataf, *args_inenv, **kwargs_inenv)
         if cls is None:
-            return type(dataf)(rfunc(dataf, *args_inenv, **kwargs_inenv))
+            return type(dataf)(res)
         else:
-            return cls(rfunc(dataf, *args_inenv, **kwargs_inenv))
+            return cls(res)
     return func
 
 def _wrap2(rfunc, cls, env=robjects.globalenv):
     def func(dataf_a, dataf_b, *args, **kwargs):
         args_inenv = _fix_args_inenv(args, env)
         kwargs_inenv = _fix_kwargs_inenv(kwargs, env)
-        if cls is None:
+        if cls is     None:
             return type(dataf_a)(rfunc(dataf_a, dataf_b,
                                        *args_inenv, **kwargs_inenv))
         else:
