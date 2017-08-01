@@ -324,7 +324,7 @@ class Vector(RObjectMixin, SexpVector):
         res = conversion.ri2ro(res)
         return res
 
-    def repr_format_elt(self, elt, max_width = 8):        
+    def repr_format_elt(self, elt, max_width = 12):        
         max_width = int(max_width)
         if elt is NA_Real or elt is NA_Integer or elt is NA_Character or elt is NA_Logical:
             res = repr(elt)
