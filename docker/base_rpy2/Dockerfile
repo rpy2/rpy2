@@ -30,6 +30,8 @@ RUN \
 
 RUN \
   echo "broom\n\
+        DBI\n\
+        dbplyr\n\
         dplyr\n\
         hexbin\n\
         ggplot2\n\

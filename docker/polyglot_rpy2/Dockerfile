@@ -42,8 +42,6 @@ RUN \
 
 RUN \
   echo "bigrquery\n\
-        dbplyr\n\
-        DBI\n\
         glmnet\n\
         gridExtra\n\
         maps\n\

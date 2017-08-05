@@ -245,6 +245,10 @@ def src_sqlite(*args, **kwargs):
     res = dplyr.src_sqlite(*args, **kwargs)
     return DataSource(res)
 
+def copy_to(*args, **kwargs):
+    res = dplyr.copy_to(*args, **kwargs)
+    return DataFrame(res)
+    
 # Generic to create a data table
 
 tbl = dplyr.tbl
