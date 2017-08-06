@@ -9,74 +9,61 @@ try:
 except ImportError:
     has_numpy = False
 
-def only_numpy(function):
-    def res(self):
-        if has_numpy:
-            return function(self)
-        else:
-            return None
-
 rinterface.initr()
 
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon
 
-def testArrayStructInt(self, numericModule):
-    px = [1, -2, 3]
-    x = rinterface.SexpVector(px, rinterface.INTSXP)
-    nx = numericModule.asarray(x)
-    self.assertEqual(nx.dtype.kind, 'i')
-    for orig, new in zip(px, nx):
-        self.assertEqual(orig, new)
-
-    # change value in the Python array... makes it change in the R vector
-    nx[1] = 12
-    self.assertEqual(x[1], 12)
-
-def testArrayStructDouble(self, numericModule):
-    px = [1.0, -2.0, 3.0]
-    x = rinterface.SexpVector(px, rinterface.REALSXP)
-    nx = numericModule.asarray(x)
-    self.assertEqual(nx.dtype.kind, 'f')
-    for orig, new in itertools.izip(px, nx):
-        self.assertEqual(orig, new)
-    
-    # change value in the Python array... makes it change in the R vector
-    nx[1] = 333.2
-    self.assertEqual(x[1], 333.2)
-
-def testArrayStructComplex(self, numericModule):
-    px = [1+2j, 2+5j, -1+0j]
-    x = rinterface.SexpVector(px, rinterface.CPLXSXP)
-    nx = numericModule.asarray(x)
-    self.assertEqual(nx.dtype.kind, 'c')
-    for orig, new in itertools.izip(px, nx):
-        self.assertEqual(orig, new)
-    
-def testArrayStructBoolean(self, numericModule):
-    px = [True, False, True]
-    x = rinterface.SexpVector(px, rinterface.LGLSXP)
-    nx = numericModule.asarray(x)
-    self.assertEqual('i', nx.dtype.kind) # not 'b', see comments in array.c
-    for orig, new in itertools.izip(px, nx):
-        self.assertEqual(orig, new)
-
 
 class SexpVectorNumericTestCase(unittest.TestCase):
 
-    @only_numpy
-    def testArrayStructNumpyInt(self):
-        testArrayStructInt(self, numpy)
-    @only_numpy
-    def testArrayStructNumpyDouble(self):
-        testArrayStructDouble(self, numpy)
-    @only_numpy
-    def testArrayStructNumpyComplex(self):
-        testArrayStructComplex(self, numpy)
-    @only_numpy
-    def testArrayStructNumpyBoolean(self):
-        testArrayStructBoolean(self, numpy)
-    @only_numpy
+    numericmodule = numpy
+    
+    @unittest.skipUnless(has_numpy, 'Package numpy is not installed.')
+    def testArrayStructInt(self):
+        px = [1, -2, 3]
+        x = rinterface.SexpVector(px, rinterface.INTSXP)
+        nx = self.numericmodule.asarray(x)
+        self.assertEqual(nx.dtype.kind, 'i')
+        for orig, new in zip(px, nx):
+            self.assertEqual(orig, new)
+
+        # change value in the Python array... makes it change in the R vector
+        nx[1] = 12
+        self.assertEqual(x[1], 12)
+        
+    @unittest.skipUnless(has_numpy, 'Package numpy is not installed.')
+    def testArrayStructDouble(self):
+        px = [1.0, -2.0, 3.0]
+        x = rinterface.SexpVector(px, rinterface.REALSXP)
+        nx = self.numericmodule.asarray(x)
+        self.assertEqual(nx.dtype.kind, 'f')
+        for orig, new in zip(px, nx):
+            self.assertEqual(orig, new)
+
+        # change value in the Python array... makes it change in the R vector
+        nx[1] = 333.2
+        self.assertEqual(x[1], 333.2)
+        
+    @unittest.skipUnless(has_numpy, 'Package numpy is not installed.')
+    def testArrayStructComplex(self):
+        px = [1+2j, 2+5j, -1+0j]
+        x = rinterface.SexpVector(px, rinterface.CPLXSXP)
+        nx = self.numericmodule.asarray(x)
+        self.assertEqual(nx.dtype.kind, 'c')
+        for orig, new in zip(px, nx):
+            self.assertEqual(orig, new)
+
+    @unittest.skipUnless(has_numpy, 'Package numpy is not installed.')
+    def testArrayStructBoolean(self):
+        px = [True, False, True]
+        x = rinterface.SexpVector(px, rinterface.LGLSXP)
+        nx = self.numericmodule.asarray(x)
+        self.assertEqual('i', nx.dtype.kind) # not 'b', see comments in array.c
+        for orig, new in zip(px, nx):
+            self.assertEqual(orig, new)
+
+    @unittest.skipUnless(has_numpy, 'Package numpy is not installed.')
     def testArrayShapeLen3(self):
         extract = rinterface.baseenv['[']
         rarray = rinterface.baseenv['array'](rinterface.IntSexpVector(range(30)),
