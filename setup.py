@@ -18,7 +18,12 @@ pack_version = __import__('rpy').__version__
 package_prefix='.'
 
 
-def _download_r(url="https://cran.cnr.berkeley.edu/src/base/R-3/R-3.3.1.tar.gz"):
+def _download_r(url="https://cran.cnr.berkeley.edu/src/base/R-3/R-3.4.1.tar.gz"):
+    """
+    Highly experimental.
+
+    Download the R source.
+    """
     download_dir = tempfile.mkdtemp()
     r_src = os.path.join(download_dir, os.path.basename(url))
     cmd = ('wget', '-O', r_src, url)
@@ -26,6 +31,12 @@ def _download_r(url="https://cran.cnr.berkeley.edu/src/base/R-3/R-3.3.1.tar.gz")
     return r_src
 
 def _build_r(r_src):
+    """
+    Highly experimental.
+
+    Build R from source.
+    """
+        
     assert r_src.endswith('tar.gz')
     cmd = ('tar', '-xzf', os.path.basename(r_src))
     r_src_dir = r_src[:-7]
@@ -41,9 +52,16 @@ def _build_r(r_src):
     output = subprocess.check_output(cmd, cwd=r_src_dir)
     return r_src_dir
 
-def _install_r(r_src_dir):
-    cmd = ('make', 'DESTDIR=/sdfsd/', 'install')
+
+def _install_r(r_src_dir, r_dest_dir):
+    """
+    Highly experimental.
+    
+    Run make install.
+    """
+    cmd = ('make', 'DESTDIR={:s}'.format(r_dest_dir), 'install')
     output = subprocess.check_output(cmd, cwd=r_src_dir)
+
     
 def _get_r_home(r_bin = "R"):
     
@@ -117,11 +135,12 @@ class build_ext(_build_ext):
         rexec = RExec(r_home)
         if rexec.version[0] == 'development':
             warnings.warn("Development version of R. Version compatibility check skipped.")
-        elif cmp_version(rexec.version[:2], [2, 8]) == -1:
+        elif cmp_version(rexec.version[:2], [3, 3]) == -1:
             if self.ignore_check_rversion:
                 warnings.warn("R did not seem to have the minimum required version number")
             else:
-                raise SystemExit("Error: R >= 2.8 required (and R told '%s')." %'.'.join(rexec.version))    
+                raise SystemExit("Error: R >= 3.3 required"
+                                 " (and the we found R told '%s')." %'.'.join(rexec.version))
 
         try:
             super(build_ext, self).finalize_options() 
