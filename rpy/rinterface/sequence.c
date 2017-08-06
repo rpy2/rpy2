@@ -201,7 +201,7 @@ VectorSexp_slice(PySexpObject* object, Py_ssize_t ilow, Py_ssize_t ihigh)
   }
   embeddedR_setlock();
   SEXP *sexp = &(RPY_SEXP(object));
-  SEXP res_sexp, tmp, tmp2, resnames, xnames;
+  SEXP res_sexp, tmp, tmp2;
 
   if (! sexp) {
     PyErr_Format(PyExc_ValueError, "NULL SEXP.");
