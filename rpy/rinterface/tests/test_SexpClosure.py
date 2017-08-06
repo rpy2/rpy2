@@ -6,11 +6,6 @@ import rpy2.rlike.container as rlc
 
 rinterface.initr()
 
-if sys.version_info[0] == 3:
-    long = int
-    is_py3 = True
-else:
-    is_py3 = False
 
 class SexpClosureTestCase(unittest.TestCase):
 
@@ -33,13 +28,10 @@ class SexpClosureTestCase(unittest.TestCase):
         self.assertEqual(sexp.typeof, rinterface.CLOSXP)
 
     def testRError(self):
-        sum = rinterface.baseenv["sum"]
+        r_sum = rinterface.baseenv["sum"]
         letters = rinterface.baseenv["letters"]
-        
-        self.assertRaises(rinterface.RRuntimeError, sum, letters)
+        self.assertRaises(rinterface.RRuntimeError, r_sum, letters)
 
-    @unittest.skipUnless(is_py3,
-                         "Unicode-named arguments for R functions are only available with Python 3")
     def testUTF8params(self):
         c = rinterface.globalenv.get('c')
         d = dict([(u'哈哈', 1)])
@@ -124,11 +116,7 @@ class SexpClosureTestCase(unittest.TestCase):
 
     def testScalarConvertInteger(self):
         self.assertEqual('integer',
-                          rinterface.baseenv["typeof"](1)[0])
-
-    def testScalarConvertLong(self):
-        self.assertEqual('integer',
-                          rinterface.baseenv["typeof"](long(1))[0])
+                          rinterface.baseenv["typeof"](int(1))[0])
 
     def testScalarConvertDouble(self):
         self.assertEqual('double', 
