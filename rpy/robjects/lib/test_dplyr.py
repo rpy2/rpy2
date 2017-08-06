@@ -1,11 +1,14 @@
 import unittest
 import uuid
+
+from rpy2.robjects.lib import dplyr
 from rpy2.robjects.packages import importr
 from rpy2.robjects.vectors import IntVector
-from rpy2.robjects.lib import dplyr
+from rpy2 import robjects
 
-base = importr('base')
-missing_rpacks = tuple(rpack for rpack in ('RSQLite', 'dbplyr') if not base.require(rpack)[0])
+_quiet_require = robjects.r('function(x) suppressMessages(substitute(require(x)))')
+    
+missing_rpacks = tuple(rpack for rpack in ('RSQLite', 'dbplyr') if not _quiet_require(rpack)[0])
 
 class DataFrameTestCase(unittest.TestCase):
 
