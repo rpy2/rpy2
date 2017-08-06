@@ -243,6 +243,7 @@ class Vector(RObjectMixin, SexpVector):
 
     _html_template = jinja2.Template(
     """
+    <span>{{ classname }} with {{ nelements }} elements.</span>
     <table>
       <tbody>
       <tr>
@@ -367,7 +368,9 @@ class Vector(RObjectMixin, SexpVector):
             self.__repr_content__()
 
     def _repr_html_(self):
-        d = {'elements': self._iter_formatted()}
+        d = {'elements': self._iter_formatted(),
+             'classname': type(self).__name__,
+             'nelements': len(self)}
         html = self._html_template.render(d)
         return html
 
@@ -578,6 +581,7 @@ class FactorVector(IntVector):
         for x in self:
             yield levels[x-1]
 
+
 class ListVector(Vector, ListSexpVector):
     """ R list (vector of arbitray elements)
 
@@ -596,6 +600,7 @@ The parameter 'itemable' can be:
 
     _html_template = jinja2.Template(
     """
+    <span>{{ classname }} with {{ nelements }} elements.</span>
     <table>
       <tbody>
       {% for name, elt in names_elements %}
@@ -698,7 +703,9 @@ The parameter 'itemable' can be:
                     name = '[no name]'
                 names.append(name)
         
-        d = {'names_elements': zip(names, elements)}
+        d = {'names_elements': zip(names, elements),
+             'nelements': len(self),
+             'classname': type(self).__name__}
         html = self._html_template.render(d)
         return html
 
@@ -1006,6 +1013,7 @@ class DataFrame(ListVector):
 
     _html_template = jinja2.Template(
     """
+    <span>R/rpy2 DataFrame ({{ nrows }} x {{ ncolumns }})</span>
     <table>
       <thead>
         <tr>
@@ -1108,6 +1116,8 @@ class DataFrame(ListVector):
         d = {'column_names': names,
              'rows': tuple(range(len(elements))),
              'columns': tuple(range(len(names))),
+             'nrows': self.nrow,
+             'ncolumns': self.ncol,
              'elements': elements}
         html = self._html_template.render(d)
         return html

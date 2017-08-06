@@ -1,39 +1,6 @@
 import jinja2
 from IPython.display import HTML
 
-css = """
-<style>
-.rpy2_table {
-  border: none;
-  border-right: solid 1px rgb(180, 180, 180);
-  border-bottom: solid 1px rgb(180, 180, 180);
-  border-radius: 4px;
-  -moz-border-radius: 4px;
-}
-.rpy2_names {
-  background-color: rgb(215, 215, 215);
-  font-weight: bold;
-}
-.rpy2_table th:first-child {
-  background-color: rgb(215, 215, 215);
-  border-top: none;
-}
-
-.rpy2_table tbody tr td {
-  text-align: right;
-  font-family: monospace;
-}
-
-.rpy_table tbody tr td:first_child {
-  border-left: solid 1px rgb(180, 180, 180);
-}
-
-.rpy2_table tbody tr td.rpy2_rowname {
-  border-left: none;
-  color: rgb(180, 180, 180);
-}
-</style>
-"""
 
 template_list = jinja2.Template("""
 <p><emph>{{ clsname }}</emph> with {{ rlist | length }} elements:</p>
@@ -381,6 +348,4 @@ def init_printing():
     html_f.for_type(RS4, html_rs4)
     html_f.for_type(SignatureTranslatedFunction, html_ridentifiedobject)
     html_f.for_type(SourceCode, html_sourcecode)
-    from IPython.display import HTML
-    HTML(css)
 
