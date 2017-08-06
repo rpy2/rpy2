@@ -20,6 +20,7 @@
  * 
  * ***** END LICENSE BLOCK ***** */
 
+#include <stdlib.h>
 #include <Rdefines.h>
 #include <R_ext/Rallocators.h>
 #include "r_utils.h"

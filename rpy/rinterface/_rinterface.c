@@ -332,7 +332,7 @@ static void
 EmbeddedR_WriteConsoleEx(const char *buf, int len, int otype)
 {
   /* otype can be 0: regular output or 1: error or warning */
-  void *consolecallback;
+  void *consolecallback = NULL;
   switch(otype) {
   case 0:
     consolecallback = writeConsoleRegularCallback;
