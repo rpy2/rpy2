@@ -5,15 +5,6 @@ import rpy2
 import rpy2.rinterface as rinterface
 import sys, os, subprocess, time, tempfile, io, signal, gc
 
-
-
-if sys.version_info[0] == 3:
-    IS_PYTHON3 = True
-else:
-    from itertools import izip as zip
-    range = xrange
-    IS_PYTHON3 = False
-
 rinterface.initr()
 
 
@@ -184,10 +175,6 @@ class EmbeddedRTestCase(unittest.TestCase):
         with tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
                                          delete = False) as rpy_code:
             rpy2_path = os.path.dirname(rpy2.__path__[0])
-            if IS_PYTHON3:
-                pyexception_as = ' as'
-            else:
-                pyexception_as = ','
 
             rpy_code_str = """
 import sys
@@ -206,9 +193,9 @@ while(TRUE) {
 }\"\"\"
 try:
   ri.baseenv['eval'](ri.parse(rcode))
-except Exception%s e:
+except Exception as e:
   sys.exit(0)
-      """ %(rpy2_path, pyexception_as)
+      """ %(rpy2_path)
 
             rpy_code.write(rpy_code_str)
         cmd = (sys.executable, rpy_code.name)
