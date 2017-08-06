@@ -54,16 +54,6 @@ from rpy2.rinterface import (NA_Real,
                              NA_Complex, 
                              NULL)
 
-if sys.version_info[0] == 2:
-    py3str = unicode
-    py3bytes = str
-    import itertools
-    zip = itertools.izip
-else:
-    long = int
-    py3str = str
-    py3bytes = bytes
-
 _rparse = rinterface.baseenv['parse']
 _reval = rinterface.baseenv['eval']
 
@@ -211,17 +201,16 @@ def int2ri(obj):
     return res
 
 default_converter.py2ri.register(int, int2ri)
-default_converter.py2ri.register(long, int2ri)
 
 @default_converter.py2ri.register(float)
 def _(obj):
     return rinterface.SexpVector([obj, ], rinterface.REALSXP)
 
-@default_converter.py2ri.register(py3bytes)
+@default_converter.py2ri.register(bytes)
 def _(obj):
     return rinterface.SexpVector([obj, ], rinterface.STRSXP)
 
-@default_converter.py2ri.register(py3str)
+@default_converter.py2ri.register(str)
 def _(obj):
     return rinterface.SexpVector([obj, ], rinterface.STRSXP)
 
