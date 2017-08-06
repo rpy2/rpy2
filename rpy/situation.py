@@ -1,16 +1,15 @@
 """
-
+This module is currently primarily intended to be used as a script.
+It will print information about the rpy2's environment (Python version,
+R version, rpy2 version, etc...).
 """
-
-from __future__ import print_function
 
 import sys, os, subprocess
 
 def assert_python_version():
-    if ((sys.version_info[0] == 2 and sys.version_info[1] < 7) or
-        (sys.version_info[0] == 3 and sys.version_info[1] < 3)):
+    if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 3):
         raise RuntimeError(
-            "Python (>=2.7 and < 3.0) or >=3.3 are required to run rpy2")
+            "Python >=3.3 is required to run rpy2")
 
 def r_version_from_subprocess():
     try:
@@ -66,13 +65,17 @@ def get_r_home():
         r_home = r_home_from_registry()
     return r_home
 
+def _make_bold(text):
+    return '%s%s%s' % ('\033[1m', text, '\033[0m')
+         
 def iter_info():
 
+    yield _make_bold('Python version:')
     yield sys.version
     if not (sys.version_info[0] == 3 and sys.version_info[1] >= 5):
         yield "*** rpy2 is primarily designed for Python >= 3.5" 
     
-    yield "Looking for R's HOME:"
+    yield _make_bold("Looking for R's HOME:")
 
     r_home = os.environ.get("R_HOME")
     yield "    Environment variable R_HOME: %s" % r_home
@@ -93,9 +96,13 @@ def iter_info():
     except Exception:
         r_version_build = '*** Error while importing rpy2.rinterface ***'
 
-    yield "R version:"
+    yield _make_bold("R version:")
     yield "    In the PATH: %s" % r_version_from_subprocess()
     yield "    Used to build rpy2: %s" % r_version_build
+
+    r_libs = os.environ.get("R_LIBS")
+    yield _make_bold("Additional directories to load R packages from:")
+    yield r_libs
 
 if __name__ == '__main__':
 
