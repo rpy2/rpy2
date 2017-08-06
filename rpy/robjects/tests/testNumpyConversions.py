@@ -86,14 +86,6 @@ class NumpyConversionsTestCase(unittest.TestCase):
             self.assertTrue(abs(orig.real-conv.real) < 0.000001)
             self.assertTrue(abs(orig.imag-conv.imag) < 0.000001)
 
-    @unittest.skipUnless(sys.version_info[0] < 3,
-                         "Test only relevant if Python < 3.")
-    def testVectorCharacter(self):
-        l = ["a", "b", "c"]
-        s = numpy.array(l, dtype="S")
-        s_r = self.checkHomogeneous(s, "character", "character")
-        self.assertTupleEqual(tuple(l), tuple(s_r))
-
     def testVectorUnicodeCharacter(self):
         l = [u"a", u"b", u"c"]
         u = numpy.array(l, dtype="U")

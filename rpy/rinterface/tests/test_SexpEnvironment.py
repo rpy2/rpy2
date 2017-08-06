@@ -3,11 +3,6 @@ import unittest
 import sys
 import rpy2.rinterface as rinterface
 
-if sys.version_info[0] == 3:
-    is_py3 = True
-else:
-    is_py3 = False
-
 rinterface.initr()
 
 class SexpEnvironmentTestCase(unittest.TestCase):
@@ -88,8 +83,6 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         ok = ge.get("identical")(obj, a)
         self.assertTrue(ok[0])
 
-    @unittest.skipUnless(is_py3,
-                         "unicode keys are only implemented in Python 3.")
     def testSubscript_utf8(self):
         env = rinterface.baseenv['new.env']()
         env[u'呵呵'] = rinterface.IntSexpVector((1,))
@@ -97,17 +90,13 @@ class SexpEnvironmentTestCase(unittest.TestCase):
         self.assertEqual(1, len(env[u'呵呵']))
         self.assertEqual(1, env[u'呵呵'][0])
 
-    @unittest.skipUnless(is_py3,
-                         "unicode keys are only implemented in Python 3.")
     def testSubscript_missing_utf8(self):
         env = rinterface.baseenv['new.env']()
         self.assertRaises(KeyError, env.__getitem__, u'呵呵')
         
-    @unittest.skipIf(is_py3,
-                     "Invalid unicode keys is a rpy2 limitation with Python 2.")
     def testSubscript_no_utf8(self):
         env = rinterface.baseenv['new.env']()
-        self.assertRaises(ValueError, env.__getitem__, u'x')
+        self.assertRaises(KeyError, env.__getitem__, u'x')
         
     def testSubscript_emptyString(self):
         ge = rinterface.globalenv

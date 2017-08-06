@@ -48,12 +48,14 @@ class SexpClosureTestCase(unittest.TestCase):
         vec = rinterface.baseenv["letters"]
         self.assertRaises(rinterface.RRuntimeError, fun, vec)
 
-        fun.closureenv["y"] = rinterface.SexpVector([1, ], 
-                                                    rinterface.INTSXP)
+        fun.closureenv["y"] = (rinterface
+                               .SexpVector([1, ], 
+                                           rinterface.INTSXP))
         self.assertEqual('a', fun(vec)[0])
         
-        fun.closureenv["y"] = rinterface.SexpVector([2, ], 
-                                                    rinterface.INTSXP)
+        fun.closureenv["y"] = (rinterface
+                               .SexpVector([2, ], 
+                                           rinterface.INTSXP))
         self.assertEqual('b', fun(vec)[0])
 
     def testCallS4SetClass(self):
