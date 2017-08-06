@@ -451,7 +451,9 @@ class ObjectDispatchTestCase(unittest.TestCase):
         #rawvec = raw(rinterface.IntSexpVector((10, )))
         #self.assertEqual(rinterface.RAWSXP, rawvec.typeof)
 
+
 class SerializeTestCase(unittest.TestCase):
+    
     def testUnserialize(self):
         x = rinterface.IntSexpVector([1,2,3])
         x_serialized = x.__getstate__()
@@ -469,11 +471,13 @@ class SerializeTestCase(unittest.TestCase):
             x_again = pickle.load(f)
         identical = rinterface.baseenv["identical"]
         self.assertTrue(identical(x, x_again)[0])
-                     
+
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(EmbeddedRTestCase)
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(CallbacksTestCase))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ObjectDispatchTestCase))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(SerializeTestCase))
     return suite
 
 if __name__ == '__main__':
