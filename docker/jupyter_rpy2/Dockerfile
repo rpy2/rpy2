@@ -22,13 +22,13 @@ RUN echo ${NB_USER} 'ALL=(ALL) NOPASSWD: /usr/bin/apt-get' >> /etc/sudoers
 
 # Add Tini
 ARG TINI_VERSION v0.15.0
-RUN wget --quiet https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini &&
+RUN wget --quiet https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini && \
     mv tini /usr/local/bin/tini && \
     chmod +x /usr/local/bin/tini
 
 
 # Add Jupyter script(s) emerging as ad hoc interface
-RUN wget https://raw.githubusercontent.com/jupyter/docker-stacks/eb70bcf1a2927f259472dca911a4b12e0529ac46/base-notebook/start-singleuser.sh && \
+RUN wget --quiet https://raw.githubusercontent.com/jupyter/docker-stacks/eb70bcf1a2927f259472dca911a4b12e0529ac46/base-notebook/start-singleuser.sh && \
     mv start-singleuser.sh /usr/local/bin/
 
 
