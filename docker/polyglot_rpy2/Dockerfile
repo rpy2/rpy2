@@ -48,7 +48,6 @@ RUN \
         mapproj\n\
         plotly\n\
         RPostgreSQL\n\
-        RSQLite\n\
         party\n\
         partykit\n\
         svglite" > rpacks.txt && \
