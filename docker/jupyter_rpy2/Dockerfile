@@ -21,7 +21,7 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER
 RUN echo ${NB_USER} 'ALL=(ALL) NOPASSWD: /usr/bin/apt-get' >> /etc/sudoers
 
 # Add Tini
-ARG TINI_VERSION v0.15.0
+ARG TINI_VERSION=v0.15.0
 RUN wget --quiet https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini && \
     mv tini /usr/local/bin/tini && \
     chmod +x /usr/local/bin/tini
