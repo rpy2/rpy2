@@ -21,9 +21,16 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER
 RUN echo ${NB_USER} 'ALL=(ALL) NOPASSWD: /usr/bin/apt-get' >> /etc/sudoers
 
 # Add Tini
-ENV TINI_VERSION v0.13.2
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/local/bin/tini
-RUN chmod +x /usr/local/bin/tini
+ARG TINI_VERSION v0.15.0
+RUN wget --quiet https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini &&
+    mv tini /usr/local/bin/tini && \
+    chmod +x /usr/local/bin/tini
+
+
+# Add Jupyter script(s) emerging as ad hoc interface
+RUN wget https://raw.githubusercontent.com/jupyter/docker-stacks/eb70bcf1a2927f259472dca911a4b12e0529ac46/base-notebook/start-singleuser.sh && \
+    mv start-singleuser.sh /usr/local/bin/
+
 
 USER $NB_USER
 
@@ -39,11 +46,13 @@ RUN mkdir /home/$NB_USER/work && \
 
 USER root
 
-WORKDIR /home/$NB_USER/work
+WORKDIR /home/$NB_USER
 
 EXPOSE 8888
 
 USER $NB_USER
+    
+    
 
 ENTRYPOINT ["/usr/local/bin/tini", "--"]
 CMD jupyter notebook --no-browser
