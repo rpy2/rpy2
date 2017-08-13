@@ -3,6 +3,7 @@ FROM ubuntu:16.04
 MAINTAINER Laurent Gautier <lgautier@gmail.com>
 
 ARG DEBIAN_FRONTEND=noninteractive
+ARG CRAN_MIRROR=https://cran.revolutionanalytics.com/
 
 RUN \
   apt-get update -qq && \
@@ -11,7 +12,7 @@ RUN \
                      apt-transport-https \
                      gnupg \
                      lsb-release && \
-  echo "deb https://cran.cnr.berkeley.edu/bin/linux/ubuntu $(lsb_release -c -s)/" \
+  echo "deb ${CRAN_MIRROR}/bin/linux/ubuntu $(lsb_release -c -s)/" \
         >> /etc/apt/sources.list.d/added_repos.list && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9 && \
   apt-get update -qq && \
@@ -41,7 +42,7 @@ RUN \
         lme4\n\
         RSQLite\n\
         tidyr" > rpacks.txt && \
-  R -e 'install.packages(sub("(.+)\\\\n","\\1", scan("rpacks.txt", "character")), repos="http://cran.cnr.Berkeley.edu")' && \
+  R -e 'install.packages(sub("(.+)\\\\n","\\1", scan("rpacks.txt", "character")), repos="'"${CRAN_MIRROR}"'")' && \
   rm rpacks.txt
 
 RUN \
