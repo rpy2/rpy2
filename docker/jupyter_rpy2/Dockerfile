@@ -8,6 +8,7 @@ RUN \
   pip3 --no-cache-dir install bokeh && \
   pip3 --no-cache-dir install ipywidgets && \
   jupyter nbextension enable --py --sys-prefix widgetsnbextension && \
+  pip3 --no-cache-dir install jupyterhub && \
   rm -rf /root/.cache
 
 ENV SHELL /bin/bash
@@ -25,12 +26,6 @@ ARG TINI_VERSION=v0.15.0
 RUN wget --quiet https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini && \
     mv tini /usr/local/bin/tini && \
     chmod +x /usr/local/bin/tini
-
-
-# Add Jupyter script(s) emerging as ad hoc interface
-RUN wget --quiet https://raw.githubusercontent.com/jupyter/docker-stacks/eb70bcf1a2927f259472dca911a4b12e0529ac46/base-notebook/start-singleuser.sh && \
-    mv start-singleuser.sh /usr/local/bin/
-
 
 USER $NB_USER
 
@@ -50,9 +45,20 @@ WORKDIR /home/$NB_USER
 
 EXPOSE 8888
 
-USER $NB_USER
-    
-    
-
 ENTRYPOINT ["/usr/local/bin/tini", "--"]
-CMD jupyter notebook --no-browser
+CMD ["start-notebook.sh"]
+
+# Add Jupyter script(s) emerging as ad hoc interface
+RUN \
+  git clone --depth=1 https://github.com/jupyter/docker-stacks.git && \
+  cd docker-stacks/base-notebook && \
+  cp start.sh /usr/local/bin/ && \
+  cp start-notebook.sh /usr/local/bin/ && \
+  cp start-singleuser.sh /usr/local/bin/ && \
+  mkdir -p /etc/jupyter/ && \
+  cp jupyter_notebook_config.py /etc/jupyter/ && \
+  chown -R "${NB_USER}":users /etc/jupyter/ && \
+  cd ../../ && \
+  rm -rf docker-stacks
+
+USER $NB_USER
