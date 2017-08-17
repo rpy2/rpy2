@@ -2,6 +2,8 @@ FROM rpy2/jupyter:latest
 
 MAINTAINER Laurent Gautier <lgautier@gmail.com>
 
+ARG CRAN_MIRROR=https://cran.revolutionanalytics.com/
+
 USER root
 
 RUN \
@@ -51,7 +53,7 @@ RUN \
         party\n\
         partykit\n\
         svglite" > rpacks.txt && \
-  R -e 'install.packages(sub("(.+)\\\\n","\\1", scan("rpacks.txt", "character")), repos="http://cran.cnr.Berkeley.edu")' && \
+  R -e 'install.packages(sub("(.+)\\\\n","\\1", scan("rpacks.txt", "character")), repos="'"${CRAN_MIRROR}"'")' && \
   rm rpacks.txt
 
 ENV NB_USER jupyteruser
