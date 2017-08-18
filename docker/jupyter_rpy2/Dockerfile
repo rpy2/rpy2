@@ -15,6 +15,7 @@ USER ${NB_USER}
 
 # note: installing ipywidgets requires a follow-up "jupyter nbextension enable" 
 RUN \
+  npm install -g configurable-http-proxy && \
   pip3 --no-cache-dir install jupyter notebook && \
   pip3 --no-cache-dir install bokeh && \
   pip3 --no-cache-dir install ipywidgets && \
