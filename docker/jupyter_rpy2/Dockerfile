@@ -13,7 +13,11 @@ RUN \
 
 ENV SHELL /bin/bash
 ENV NB_USER jupyteruser
+ENV HOME /home/${NB_USER}
 ENV NB_UID 1000
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
 
 # Create user
 RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER
@@ -41,7 +45,7 @@ RUN mkdir /home/$NB_USER/work && \
 
 USER root
 
-WORKDIR /home/$NB_USER
+WORKDIR ${HOME}
 
 EXPOSE 8888
 
