@@ -39,12 +39,14 @@ Changes
 
 - Target version of `ggplot2` library is 2.2.1.
 
-- Option `stringsasfactors` in the constructor for the class `DataFrame` (if `False`, the
-  strings are no longer converted to factors, and when converting from pandas data frames
+- Option `stringsasfactors` in the constructor for the class `DataFrame`. If `False`, the
+  strings are no longer converted to factors. When converting from pandas data frames
   the default is to no longer convert columns of strings to factors.
 
 - The R "magic" for jupyter is now more consistently using the conversion system, and the
   use of custom converters through the magic argument `-c` will work as expected.
+
+- Docker-related files moved to directory docker/ (where variants image for rpy2 are available)
 
 
 Bugs fixed
