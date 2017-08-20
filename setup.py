@@ -17,6 +17,11 @@ pack_version = __import__('rpy').__version__
 
 package_prefix='.'
 
+R_MIN_VERSION = (3, 3)
+
+def _format_version(x):
+    return '.'.join(map(str, x))
+
 
 def _download_r(url="https://cran.cnr.berkeley.edu/src/base/R-3/R-3.4.1.tar.gz"):
     """
@@ -135,12 +140,14 @@ class build_ext(_build_ext):
         rexec = RExec(r_home)
         if rexec.version[0] == 'development':
             warnings.warn("Development version of R. Version compatibility check skipped.")
-        elif cmp_version(rexec.version[:2], [3, 3]) == -1:
+        elif cmp_version(rexec.version[:2], R_MIN_VERSION) == -1:
             if self.ignore_check_rversion:
                 warnings.warn("R did not seem to have the minimum required version number")
             else:
-                raise SystemExit("Error: R >= 3.3 required"
-                                 " (and the we found R told '%s')." %'.'.join(rexec.version))
+                raise SystemExit("Error: R >= %s required"
+                                 " (and the R we found is '%s')."
+                                 % (_format_version(R_MIN_VERSION),
+                                    _format_version(rexec.version)))
 
         try:
             super(build_ext, self).finalize_options() 
