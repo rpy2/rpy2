@@ -1,3 +1,9 @@
+Release 3.0.0
+=============
+
+TBD
+
+
 Release 2.9.1
 =============
 
@@ -5,6 +11,9 @@ Bugs fixed
 ----------
 
 - An error when installing with an unsupported R version was fixed (issue #420).
+
+- The docstring for `rinterface.endr()` was improperly stating that the function was not taking
+  any argument (issue #423).
 
 
 
