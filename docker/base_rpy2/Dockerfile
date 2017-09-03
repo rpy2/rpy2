@@ -49,7 +49,7 @@ RUN \
   pip3 --no-cache-dir install pip --upgrade && \
   pip3 --no-cache-dir install setuptools --upgrade && \
   pip3 --no-cache-dir install wheel --upgrade && \
-  pip3 --no-cache-dir install numpy pandas sphinx jinja2 && \
+  pip3 --no-cache-dir install  jinja2 numpy pandas pytest sphinx && \
   rm -rf /root/.cache
   
 # Run dev version of rpy2

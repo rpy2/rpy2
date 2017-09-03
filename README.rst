@@ -54,19 +54,14 @@ The testing machinery uses the new unittest functionality, requiring python 2.7+
 (or potentially the backported unittest2 library for older python, but this is
 not supported). The test suite can be run (once rpy2 is installed) as follows:
 
-    python -m rpy2.tests
-
-By providing an argument, like "-v", you'll get verbose output.
+    pytest --pyargs rpy2
 
 Individual tests can be run as follows:
 
-    python -m unittest rpy2.robjects.tests.testVector
+    pytest --pyargs rpy2.robjects.tests.testVector
 
-Test discovery can be attempted as follows (not that it may not work):
+The former recommended way to run tests (`python -m rpy2.tests`) may still work.
 
-    python -m unittest discover rpy2.robjects
-
-Prefer `python -m rpy2.tests` to run all tests.
 
 License
 =======
