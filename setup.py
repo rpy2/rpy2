@@ -9,7 +9,8 @@ from setuptools.command.build_ext import build_ext as _build_ext
 
 
 if sys.version_info[0] < 3:
-    print("rpy2 is no longer supporting Python < 3. Consider using an older rpy2 release when using an older Python release.")
+    print('rpy2 is no longer supporting Python < 3.'
+          'Consider using an older rpy2 release when using an older Python release.')
     sys.exit(1)
 
 pack_name = 'rpy2'
@@ -23,7 +24,7 @@ def _format_version(x):
     return '.'.join(map(str, x))
 
 
-def _download_r(url="https://cran.cnr.berkeley.edu/src/base/R-3/R-3.4.1.tar.gz"):
+def _download_r(url='https://cran.cnr.berkeley.edu/src/base/R-3/R-3.4.1.tar.gz'):
     """
     Highly experimental.
 
@@ -68,10 +69,12 @@ def _install_r(r_src_dir, r_dest_dir):
     output = subprocess.check_output(cmd, cwd=r_src_dir)
 
     
-def _get_r_home(r_bin = "R"):
+def _get_r_home(r_bin = 'R'):
     
     if (os.getenv('R_ENVIRON') is not None) or (os.getenv('R_ENVIRON_USER') is not None):
-        warnings.warn("The environment variable R_ENVIRON or R_ENVIRON_USER is set. Differences between their settings during build time and run time may lead to issues when using rpy2.")
+        warnings.warn('The environment variable R_ENVIRON or R_ENVIRON_USER is set.'
+                      ' Differences between their settings during build time and run'
+                      ' time may lead to issues when using rpy2.')
 
     try:
         r_home = subprocess.check_output((r_bin, "RHOME"),
@@ -139,10 +142,10 @@ class build_ext(_build_ext):
         r_home = _get_r_home()
         rexec = RExec(r_home)
         if rexec.version[0] == 'development':
-            warnings.warn("Development version of R. Version compatibility check skipped.")
+            warnings.warn('Development version of R. Version compatibility check skipped.')
         elif cmp_version(rexec.version[:2], R_MIN_VERSION) == -1:
             if self.ignore_check_rversion:
-                warnings.warn("R did not seem to have the minimum required version number")
+                warnings.warn('R did not seem to have the minimum required version number')
             else:
                 raise SystemExit("Error: R >= %s required"
                                  " (and the R we found is '%s')."
@@ -176,7 +179,7 @@ class RExec(object):
     """ Compilation-related configuration parameters used by R. """
 
     def __init__(self, r_home):
-        if sys.platform == "win32" and "64 bit" in sys.version:
+        if sys.platform == 'win32' and '64 bit' in sys.version:
             r_exec = os.path.join(r_home, 'bin', 'x64', 'R')
         else:
             r_exec = os.path.join(r_home, 'bin', 'R')
@@ -197,8 +200,8 @@ class RExec(object):
         output = iter(output.split('\n'))
         rversion = next(output)
         #Twist if 'R --version' spits out a warning
-        if rversion.startswith("WARNING"):
-            warnings.warn("R emitting a warning: %s" % rversion)
+        if rversion.startswith('WARNING'):
+            warnings.warn('R emitting a warning: %s' % rversion)
             rversion = next(output)
         print(rversion)
         m = re.match('^R ([^ ]+) ([^ ]+) .+$', rversion)
@@ -223,7 +226,7 @@ class RExec(object):
         output = output.split(os.linesep)
         #Twist if 'R RHOME' spits out a warning
         if output[0].startswith("WARNING"):
-            warnings.warn("R emitting a warning: %s" % output[0])
+            warnings.warn('R emitting a warning: %s' % output[0])
             output = output[1:]
         return output
 
@@ -264,7 +267,7 @@ def getRinterface_ext():
     rexec = RExec(r_home)
     if rexec.version[0] == 'development' or \
        cmp_version(rexec.version[:2], [3, 2]) == -1:
-        warnings.warn("R did not seem to have the minimum required version number")
+        warnings.warn('R did not seem to have the minimum required version number')
 
     ldf = shlex.split(' '.join(rexec.cmd_config('--ldflags')))
     cppf = shlex.split(' '.join(rexec.cmd_config('--cppflags')))
@@ -369,7 +372,7 @@ if __name__ == '__main__':
     #    scheme['data'] = scheme['purelib']
 
     if sys.version_info[0] == 2 and sys.version_info[1] < 7:
-        print("rpy2 requires at least Python Version 2.7 (with Python 3.5 or later recommended).")
+        print('rpy2 requires at least Python Version 2.7 (with Python 3.5 or later recommended).')
         sys.exit(1)
         
     requires=['six', ]
@@ -389,11 +392,11 @@ if __name__ == '__main__':
         cmdclass = {'build_ext': build_ext},
         name = pack_name,
         version = pack_version,
-        description = "Python interface to the R language (embedded R)",
-        url = "http://rpy2.bitbucket.io",
-        license = "GPLv2+",
-        author = "Laurent Gautier",
-        author_email = "lgautier@gmail.com",
+        description = 'Python interface to the R language (embedded R)',
+        url = 'http://rpy2.bitbucket.io',
+        license = 'GPLv2+',
+        author = 'Laurent Gautier',
+        author_email = 'lgautier@gmail.com',
         requires = requires,
         install_requires = requires,
         ext_modules = rinterface_exts,
