@@ -1401,9 +1401,11 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   Py_RETURN_NONE;
 }
 PyDoc_STRVAR(EmbeddedR_end_doc,
-             "endEmbeddedR()\n\
-             \n\
-             Terminate an embedded R.");
+             "endr(int) -> None\n"
+             "\n"
+             "Terminate an embedded R by calling the function Rf_endEmbeddedR(int fatal) in the R's C-API."
+	     " 0 (zero) seems to be be a commonly used integer when calling Rf_endEmbeddedR."
+             " Note that a terminated R cannot be restarted from the same process.");
 
 
 
