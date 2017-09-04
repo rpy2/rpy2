@@ -179,12 +179,12 @@ Extracting, R-style
 ^^^^^^^^^^^^^^^^^^^
 
 Access to R-style extracting/subsetting is granted though the two
-delegators *rx* and *rx2*, representing the R functions *[* and *[[*
-respectively.
+delegators *rx* and *rx2*, representing the R functions `[` and `[[`
+respectively (See the note below about `[[`, and `$`).
 
 In short, R-style extracting has the following characteristics:
 
-* indexing starts at one
+* indexing starts at one (while Python indexing starts at zero).
 
 * the argument to subset on can be a vector of 
 
@@ -193,7 +193,6 @@ In short, R-style extracting has the following characteristics:
   - booleans
 
   - strings (whenever the vector has *names* for its elements)
-
 
 >>> print(x.rx(1))
 [1] 1
@@ -264,6 +263,32 @@ of length 0:
 >>> print(x.rx(0))
 integer(0)
 
+.. note::
+
+   What about the R operator `$` ? In R, elements of a list can be
+   extracted with `[`, or if only one element is wanted `[[` or `$`
+   (with `[[` able to extract on index, that is position in the list,
+   or on name while `$` can only extract on name).
+
+   In R, the 3 ways to extract one element out of a list are:
+   
+   .. code-block:: r
+
+      > l <- list(a = 1:3, b = 4:6)
+      > l[[1]]
+      [1] 1 2 3
+      > l[["a"]]
+      [1] 1 2 3
+      > l$a
+      [1] 1 2 3
+      
+   With rpy2, it is looking like:
+
+   .. code-block:: python
+
+      >>> elt = l.rx2(1) # This is the R `[[`, so one-offset indexing
+      >>> elt = l.rx2('a')
+    
 
 Assigning items
 ---------------
@@ -305,7 +330,7 @@ Should other Python-based systems for the representation of (mostly numerical)
 data structure, such a :mod:`numpy` be preferred, one will be encouraged to expose
 our rpy2 R objects through those structures.
 
-The attributes *rx* and *rx2* used previously can again be used:
+The attributes `rx` and `rx2` used previously can again be used:
 
 >>> x = robjects.IntVector(range(1, 4))
 >>> print(x)
