@@ -230,6 +230,39 @@ class RExec(object):
             output = output[1:]
         return output
 
+
+def get_rpy_device_ext(package_prefix, pack_name,
+                       include_dirs,
+                       libraries, library_dirs,
+                       define_macros,
+                       extra_compile_args,
+                       extra_link_args):
+    
+    rpy_device_depends = map(lambda x: os.path.join(package_prefix,
+                                                    'rpy',
+                                                    'rinterface',
+                                                    x),
+                             ('embeddedr.h',
+                              '_rinterface.h'))
+    rpy_device_depends = list(rpy_device_depends)
+    
+    rpy_device_ext = Extension(
+        name = pack_name + '.rinterface._rpy_device',
+        sources = [os.path.join(package_prefix,
+                                'rpy', 'rinterface', '_rpy_device.c')],
+        depends = rpy_device_depends,
+        include_dirs = include_dirs + [os.path.join('rpy', 'rinterface'), ],
+        libraries = libraries,
+        library_dirs = library_dirs,
+        define_macros = define_macros,
+        runtime_library_dirs = library_dirs,
+        extra_compile_args=extra_compile_args,
+        extra_link_args = extra_link_args
+        )
+
+    return rpy_device_ext
+
+    
 def getRinterface_ext():
     extra_link_args = []
     extra_compile_args = []
@@ -311,27 +344,17 @@ def getRinterface_ext():
            str(library_dirs), 
            str(libraries), 
            str(extra_link_args)))
-    
+
+    depends = list(map(lambda x: os.path.join(package_prefix,
+                                              'rpy', 'rinterface', x),
+                       ('embeddedr.h', 'r_utils.h', 'buffer.h', 'sequence.h', 'sexp.h',
+                        '_rinterface.h', 'rpy_device.h')))
     rinterface_ext = Extension(
             name = pack_name + '.rinterface._rinterface',
             sources = [os.path.join(package_prefix,
                                     'rpy', 'rinterface', '_rinterface.c')
                        ],
-            depends = [os.path.join(package_prefix,
-                                    'rpy', 'rinterface', 'embeddedr.h'), 
-                       os.path.join(package_prefix,
-                                    'rpy', 'rinterface', 'r_utils.h'),
-                       os.path.join(package_prefix,
-                                    'rpy', 'rinterface', 'buffer.h'),
-                       os.path.join(package_prefix,
-                                    'rpy', 'rinterface', 'sequence.h'),
-                       os.path.join(package_prefix,
-                                    'rpy', 'rinterface', 'sexp.h'),
-                       os.path.join(package_prefix,
-                                    'rpy', 'rinterface', '_rinterface.h'),
-                       os.path.join(package_prefix,
-                                    'rpy', 'rinterface', 'rpy_device.h')
-                       ],
+            depends = depends,
             include_dirs = [os.path.join(package_prefix,
                                          'rpy', 'rinterface'),] + include_dirs,
             libraries = libraries,
@@ -342,21 +365,12 @@ def getRinterface_ext():
             extra_link_args = extra_link_args
             )
 
-    rpy_device_ext = Extension(
-        pack_name + '.rinterface._rpy_device',
-        [
-            os.path.join(package_prefix,
-                         'rpy', 'rinterface', '_rpy_device.c'),
-            ],
-        include_dirs = include_dirs + 
-        [os.path.join('rpy', 'rinterface'), ],
-        libraries = libraries,
-        library_dirs = library_dirs,
-        define_macros = define_macros,
-        runtime_library_dirs = library_dirs,
-        extra_compile_args=extra_compile_args,
-        extra_link_args = extra_link_args
-        )
+    rpy_device_ext = get_rpy_device_ext(package_prefix, pack_name,
+                                        include_dirs,
+                                        libraries, library_dirs,
+                                        define_macros,
+                                        extra_compile_args,
+                                        extra_link_args)
 
     return [rinterface_ext, rpy_device_ext]
 
