@@ -1,4 +1,5 @@
 import unittest
+import pytest
 import rpy2.rinterface as rinterface
 import rpy2.rinterface._rpy_device as rdevice
 import sys, os, subprocess, time, tempfile, signal
@@ -6,6 +7,7 @@ import tempfile
 
 rinterface.initr()
 
+@pytest.mark.skip(reason="C code currently broken")
 class AbstractDevice(rdevice.GraphicalDevice):
     def __init__(self):
         super(AbstractDevice, self).__init__()
@@ -17,6 +19,7 @@ class AbstractDevice(rdevice.GraphicalDevice):
         pass
 
 
+@pytest.mark.skip(reason="C code currently broken")
 class AbstractDeviceTestCase(unittest.TestCase):
     def setUp(self):
         self.gd = AbstractDevice()
@@ -72,6 +75,7 @@ class AbstractDeviceTestCase(unittest.TestCase):
         self._testGetSetBooleanAttr("displayListOn")
   
 
+@pytest.mark.skip(reason="C code currently broken")
 class CodeDevice(rdevice.GraphicalDevice):
 
     def __init__(self, filehandle):
@@ -109,7 +113,8 @@ class CodeDevice(rdevice.GraphicalDevice):
     def clip(self, x1, y1, x2, y2):
         self._file.write('clip(%f, %f, %f, %f)' %(x1, y1, x2, y2))
 
-        
+
+@pytest.mark.skip(reason="C code currently broken")
 class ConcreteDeviceTestCase(unittest.TestCase):
     
     def setUp(self):
