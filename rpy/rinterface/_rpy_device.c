@@ -36,6 +36,7 @@
 #include <R_ext/GraphicsDevice.h>
 
 #include "_rinterface.h"
+#include "embeddedr.h"
 #include "r_utils.h"
 #include "rpy_device.h"
 
@@ -377,11 +378,7 @@ static double rpy_StrWidth(const char *str, const pGEcontext gc, pDevDesc dd)
 
   /* FIXME give the callback access to gc */
   PyObject *self = (PyObject *)dd->deviceSpecific;
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *py_str = PyString_FromString(str);
-#else
   PyObject *py_str = PyUnicode_FromString(str);
-#endif
   result = PyObject_CallMethodObjArgs(self, GrDev_strwidth_name, py_str, NULL);
 
   rpy_printandclear_error();
@@ -425,11 +422,7 @@ static void rpy_Text(double x, double y, const char *str,
   /* FIXME optimize ? */
   PyObject *py_x = PyFloat_FromDouble(x);
   PyObject *py_y = PyFloat_FromDouble(y);
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *py_str = PyString_FromString(str);
-#else
   PyObject *py_str = PyUnicode_FromString(str);
-#endif
   PyObject *py_rot = PyFloat_FromDouble(rot);
   PyObject *py_hadj = PyFloat_FromDouble(hadj);
   /* FIXME pass gc ? */
@@ -731,11 +724,7 @@ static void rpy_Mode(int mode, pDevDesc dd)
   /* PyOS_setsig(SIGINT, python_sighandler); */
 
   PyObject *self = (PyObject *)dd->deviceSpecific;
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *py_mode = PyInt_FromLong((long)mode);
-#else
   PyObject *py_mode = PyLong_FromLong((long)mode);
-#endif
   result = PyObject_CallMethodObjArgs(self, GrDev_mode_name, 
                                       py_mode,
                                       NULL);
@@ -769,11 +758,7 @@ static void rpy_MetricInfo(int c, const pGEcontext gc,
 #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: MetricInfo.\n");
 #endif
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *py_c = PyInt_FromLong((long)c);
-#else
   PyObject *py_c = PyLong_FromLong((long)c);
-#endif
   //PyObject *py_ascent = PyFloat_FromDouble(*ascent);
   //PyObject *py_descent = PyFloat_FromDouble(*descent);
   //PyObject *py_width = PyFloat_FromDouble(*width);
@@ -830,11 +815,7 @@ static SEXP rpy_GetEvent(SEXP rho, const char *prompt)
 #ifdef RPY_DEBUG_GRDEV
   printf("FIXME: MetricInfo.\n");
 #endif
-#if (PY_VERSION_HEX < 0x03010000)
-  PyObject *py_prompt = PyString_FromString(prompt);
-#else
   PyObject *py_prompt = PyUnicode_FromString(prompt);
-#endif
   /* FIXME pass gc ? */
   result = PyObject_CallMethodObjArgs(self, GrDev_getevent_name,
                                       py_prompt,
@@ -957,11 +938,7 @@ GrDev_dealloc(PyGrDevObject *self)
 #endif
   printf("--> skipping PyMem_Free(((PyGrDevObject *)self)->grdev) \n");
   //PyMem_Free(((PyGrDevObject *)self)->grdev);
-#if (PY_VERSION_HEX < 0x03010000)
-  self->ob_type->tp_free((PyObject*)self);
-#else
   Py_TYPE(self)->tp_free((PyObject*)self);
-#endif
 #ifdef RPY_DEBUG_GRDEV
   printf("  done.\n");
 #endif
@@ -971,17 +948,10 @@ static PyObject*
 GrDev_repr(PyObject *self)
 {
   pDevDesc devdesc = ((PyGrDevObject *)self)->grdev;
-#if (PY_VERSION_HEX < 0x03010000)
-  return PyString_FromFormat("<%s - Python:\%p / R graphical device:\%p>",
-                             self->ob_type->tp_name,
-                             self,
-                             devdesc);
-#else
   return PyUnicode_FromFormat("<%s - Python:\%p / R graphical device:\%p>",
 			      Py_TYPE(self)->tp_name,
 			      self,
 			      devdesc);
-#endif
 }
 
 static PyMethodDef GrDev_methods[] = {
@@ -1114,11 +1084,7 @@ static PyObject* GrDev_devnum_get(PyObject* self)
     Py_INCREF(Py_None);
     res = Py_None;
   } else {
-#if (PY_VERSION_HEX < 0x03010000)
-    res = PyInt_FromLong((long)RPY_DEV_NUM(self));
-#else
     res = PyLong_FromLong((long)RPY_DEV_NUM(self));
-#endif
   }
   return res;
 
@@ -1197,7 +1163,7 @@ GrDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 #endif
 
   assert(type != NULL && type->tp_alloc != NULL);
-  if (!rpy2_isinitialized()) {
+  if (! PyRinterface_IsInitialized()) {
     PyErr_Format(PyExc_RuntimeError, 
                  "R must be initialized before instances of GraphicalDevice can be created.");
     return NULL;
@@ -1227,7 +1193,7 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
   printf("FIXME: Initializing GrDev\n");
 #endif
 
-  if (!rpy2_isinitialized()) {
+  if (! PyRinterface_IsInitialized()) {
     PyErr_Format(PyExc_RuntimeError, 
                  "R must be initialized before instances of GraphicalDevice can be created.");
     return -1;
@@ -1243,11 +1209,7 @@ GrDev_init(PyObject *self, PyObject *args, PyObject *kwds)
 
   configureDevice(dev, self);
   pGEDevDesc gdd = GEcreateDevDesc(dev);
-#if (PY_VERSION_HEX < 0x03010000)
-  GEaddDevice2(gdd, self->ob_type->tp_name);
-#else
   GEaddDevice2(gdd, Py_TYPE(self)->tp_name);
-#endif
   GEinitDisplayList(gdd);
   /* FIXME: protect device number ? */
   /* allocate memory for the pDevDesc structure ? */
@@ -1270,12 +1232,7 @@ PyDoc_STRVAR(GrDev_doc,
 static PyTypeObject GrDev_Type = {
         /* The ob_type field must be initialized in the module init function
          * to be portable to Windows without using C++. */
-#if (PY_VERSION_HEX < 0x03010000)
-        PyObject_HEAD_INIT(NULL)
-        0,                      /*ob_size*/
-#else
 	PyVarObject_HEAD_INIT(NULL, 0)
-#endif
         "rpy2.rinterface.GraphicalDevice",   /*tp_name*/
         sizeof(PyGrDevObject),  /*tp_basicsize*/
         0,                      /*tp_itemsize*/
@@ -1284,11 +1241,7 @@ static PyTypeObject GrDev_Type = {
         0,                      /*tp_print*/
         0,                      /*tp_getattr*/
         0,                      /*tp_setattr*/
-#if (PY_VERSION_HEX < 0x03010000)
-        0,                      /*tp_compare*/
-#else
         0,                      /*tp_reserved*/
-#endif
         GrDev_repr,             /*tp_repr*/
         0,                      /*tp_as_number*/
         0,                      /*tp_as_sequence*/
@@ -1320,14 +1273,11 @@ static PyTypeObject GrDev_Type = {
         GrDev_new,               /*tp_new*/
         0,                      /*tp_free*/
         0,                      /*tp_is_gc*/
-#if (PY_VERSION_HEX < 0x03010000)
-#else
 	0,                      /*tp_bases*/
 	0,                      /*tp_mro*/
 	0,                      /*tp_cache*/
 	0,                      /*tp_subclasses*/
 	0                       /*tp_weaklist*/
-#endif
 };
 
 /* Additional methods for RpyDevice */
@@ -1341,8 +1291,6 @@ static PyMethodDef rpydevice_methods[] = {
 #define PyMODINIT_FUNC void
 #endif
 
-#if (PY_VERSION_HEX < 0x03010000)
-#else
 static struct PyModuleDef rpydevicemodule = {
    PyModuleDef_HEAD_INIT,
    "_rpy_device",           /* name of module */
@@ -1350,34 +1298,10 @@ static struct PyModuleDef rpydevicemodule = {
    -1,                     /* size of per-interpreter state of the module */
    NULL, NULL, NULL, NULL, NULL
  };
-#endif
 
 PyMODINIT_FUNC
-#if (PY_VERSION_HEX < 0x03010000)
-init_rpy_device(void)
-#else
 PyInit__rpy_device(void)
-#endif
 {
-#if (PY_VERSION_HEX < 0x03010000)
-  GrDev_close_name = PyString_FromString("close");
-  GrDev_activate_name = PyString_FromString("activate");
-  GrDev_deactivate_name = PyString_FromString("deactivate");
-  GrDev_size_name = PyString_FromString("size");
-  GrDev_newpage_name = PyString_FromString("newpage");
-  GrDev_clip_name = PyString_FromString("clip");
-  GrDev_strwidth_name = PyString_FromString("strwidth");
-  GrDev_text_name = PyString_FromString("text");
-  GrDev_rect_name = PyString_FromString("rect");
-  GrDev_circle_name = PyString_FromString("circle");
-  GrDev_line_name = PyString_FromString("line");
-  GrDev_polyline_name = PyString_FromString("polyline");
-  GrDev_polygon_name = PyString_FromString("polygon");
-  GrDev_locator_name = PyString_FromString("locator");
-  GrDev_mode_name = PyString_FromString("mode");
-  GrDev_metricinfo_name = PyString_FromString("metricinfo");
-  GrDev_getevent_name = PyString_FromString("getevent");
-#else
   GrDev_close_name = PyUnicode_FromString("close");
   GrDev_activate_name = PyUnicode_FromString("activate");
   GrDev_deactivate_name = PyUnicode_FromString("deactivate");
@@ -1395,40 +1319,22 @@ PyInit__rpy_device(void)
   GrDev_mode_name = PyUnicode_FromString("mode");
   GrDev_metricinfo_name = PyUnicode_FromString("metricinfo");
   GrDev_getevent_name = PyUnicode_FromString("getevent");
-#endif
+
   if (PyType_Ready(&GrDev_Type) < 0) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
   
   PyObject *m, *d;
-#if (PY_VERSION_HEX < 0x03010000)
-  m = Py_InitModule3("_rpy_device", rpydevice_methods, module_doc);
-#else
   m = PyModule_Create(&rpydevicemodule);
-#endif
+
   if (m == NULL) {
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
   }
 
   if (import_rinterface() < 0)
-#if (PY_VERSION_HEX < 0x03010000)
-    return;
-#else
     return NULL;
-#endif
 
   d = PyModule_GetDict(m);
   PyModule_AddObject(m, "GraphicalDevice", (PyObject *)&GrDev_Type);  
-#if (PY_VERSION_HEX < 0x03010000)
-#else
   return m;
-#endif
 }
