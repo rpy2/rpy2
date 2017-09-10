@@ -38,22 +38,24 @@ dataf = (DataFrame(mtcars).
 dataf
 ```
 
-or piping (magrittr style).
+or with pipes (magrittr style).
 
 
 ```python
+# currently no longer working
 from rpy2.robjects.lib.dplyr import (filter,
                                      mutate,
                                      group_by,
                                      summarize)
 
-dataf = (DataFrame(mtcars) >>
-         filter('gear>3') >>
-         mutate(powertoweight='hp*36/wt') >>
-         group_by('gear') >>
-         summarize(mean_ptw='mean(powertoweight)'))
+if False:
+    dataf = (DataFrame(mtcars) >>
+             filter('gear>3') >>
+             mutate(powertoweight='hp*36/wt') >>
+             group_by('gear') >>
+             summarize(mean_ptw='mean(powertoweight)'))
 
-dataf
+    dataf
 ```
 
 The strings passed to the dplyr function are evaluated as expression,
@@ -80,10 +82,10 @@ globalenv['mean_np'] = mean_np
 
 # Write a dplyr chain of operations,
 # using our Python function `mean_np`
-dataf = (DataFrame(mtcars) >>
-         filter('gear>3') >>
-         mutate(powertoweight='hp*36/wt') >>
-         group_by('gear') >>
+dataf = (DataFrame(mtcars).
+         filter('gear>3').
+         mutate(powertoweight='hp*36/wt').
+         group_by('gear').
          summarize(mean_ptw='mean(powertoweight)',
                    mean_np_ptw='mean_np(powertoweight)'))
 
@@ -103,10 +105,10 @@ from rpy2.robjects import Environment
 my_env = Environment()
 my_env['mean_np'] = mean_np
 
-dataf = (DataFrame(mtcars) >>
-         filter('gear>3') >>
-         mutate(powertoweight='hp*36/wt') >>
-         group_by('gear') >>
+dataf = (DataFrame(mtcars).
+         filter('gear>3').
+         mutate(powertoweight='hp*36/wt').
+         group_by('gear').
          summarize(mean_ptw='mean(powertoweight)',
                    mean_np_ptw=StringInEnv('mean_np(powertoweight)',
                                            my_env)))
@@ -131,10 +133,10 @@ with tempfile.NamedTemporaryFile() as db_fh:
     db = dplyr.src_sqlite(db_fh.name)
     # copy the table to that database
     dataf_db = DataFrame(mtcars).copy_to(db, name="mtcars")
-    res = (dataf_db >>
-           filter('gear>3') >>
-           mutate(powertoweight='hp*36/wt') >>
-           group_by('gear') >>
+    res = (dataf_db.
+           filter('gear>3').
+           mutate(powertoweight='hp*36/wt').
+           group_by('gear').
            summarize(mean_ptw='mean(powertoweight)'))
     print(res)
 # 
@@ -144,7 +146,7 @@ Since we are manipulating R objects, anything available to R is also available
 to us. If we want to see the SQL code generated that's:
 
 ```python
-print(res.rx2("query")["sql"])
+print(dplyr.show_query(res))
 ```
 
 The conversion rules in rpy2 make the above easily applicable to pandas data frames,
