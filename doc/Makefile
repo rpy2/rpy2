@@ -77,19 +77,18 @@ notebooks/%.rst : notebooks/%.ipynb
 
 # rule to build HTML render of an ipython notebook
 _static/notebooks/%.html : notebooks/%.ipynb
-	ipython nbconvert --to html $< --output $@
+	ipython nbconvert --to html $< --output ../$@
 
 MD_NOTEBOOKS := $(basename $(notdir $(wildcard notebooks/*.md)))
+
+_ensure_notebooks_dir:
+	mkdir -p _static/notebooks
 
 _notebooks: $(MD_NOTEBOOKS:%=notebooks/%.rst)
 
 _notebooks_html: $(MD_NOTEBOOKS:%=_static/notebooks/%.html)
 
-notebooks:
-	@echo "Building IPython notebooks from markdown..."
-	mkdir -p _static/notebooks
-	_notebooks
-	_notebooks_html
+notebooks: _ensure_notebooks_dir _notebooks _notebooks_html
         
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
