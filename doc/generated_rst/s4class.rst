@@ -1,5 +1,5 @@
 
-.. code:: python
+.. code:: 
 
     from functools import partial
     from rpy2.ipython import html
@@ -12,9 +12,9 @@ The S4 system is one the OOP systems in R. Its largest use might in the
 Bioconductor collection of packages for bioinformatics and computational
 biology.
 
-We use the bioconductor \`Biobase:
+We use the bioconductor ``Biobase``:
 
-.. code:: python
+.. code:: 
 
     from rpy2.robjects.packages import importr
     biobase = importr('Biobase')
@@ -22,13 +22,13 @@ We use the bioconductor \`Biobase:
 The R package contains constructors for the S4 classes defined. They are
 simply functions, and can be used as such through ``rpy2``:
 
-.. code:: python
+.. code:: 
 
     eset = biobase.ExpressionSet() 
 
 The object ``eset`` is an R object of type ``S4``:
 
-.. code:: python
+.. code:: 
 
     type(eset)
 
@@ -43,7 +43,7 @@ The object ``eset`` is an R object of type ``S4``:
 
 It has a class as well:
 
-.. code:: python
+.. code:: 
 
     tuple(eset.rclass)
 
@@ -59,7 +59,7 @@ It has a class as well:
 In R, objects attributes are also known as slots. The attribute names
 can be listed with:
 
-.. code:: python
+.. code:: 
 
     tuple(eset.slotnames())
 
@@ -82,7 +82,7 @@ The attributes can also be accessed through the ``rpy2`` property
 ``slots``. ``slots`` is a mapping between attributes names (keys) and
 their associated R object (values). It can be used as Python ``dict``:
 
-.. code:: python
+.. code:: 
 
     # print keys
     print(tuple(eset.slots.keys()))
@@ -105,7 +105,7 @@ Mapping S4 classes to Python classes
 Writing one's own Python class extending rpy2's ``RS4`` is
 straightforward. That class can be used wrap our ``eset`` object
 
-.. code:: python
+.. code:: 
 
     
     from rpy2.robjects.methods import RS4   
@@ -123,7 +123,7 @@ customizing the handling of S4 objects.
 A simple implementation is a factory function that will conditionally
 wrap the object in our Python class ``ExpressionSet``:
 
-.. code:: python
+.. code:: 
 
     def ri2ro_s4(obj):
         if 'ExpressionSet' in obj.rclass:
@@ -140,13 +140,14 @@ wrap the object in our Python class ``ExpressionSet``:
 
 .. parsed-literal::
 
-    <ExpressionSet - Python:0x7f730ee4d088 / R:0x29831c0>
+    R object with classes: ('ExpressionSet',) mapped to:
+    <ExpressionSet - Python:0x7fbe1253c708 / R:0x5634a32d64d0>
 
 
 
 That function can be be register to a ``Converter``:
 
-.. code:: python
+.. code:: 
 
     from rpy2.robjects import default_converter
     from rpy2.robjects.conversion import Converter, localconverter
@@ -170,7 +171,7 @@ That function can be be register to a ``Converter``:
 When using that converter, the matching R objects are returned as
 instances of our Python class ``ExpressionSet``:
 
-.. code:: python
+.. code:: 
 
     
     with localconverter(my_converter) as cv:
@@ -189,7 +190,7 @@ Class attributes
 The R attribute ``assayData`` can be accessed through the accessor
 method ``exprs()`` in R. We can make it a property in our Python class:
 
-.. code:: python
+.. code:: 
 
     class ExpressionSet(RS4):
         def _exprs_get(self):
@@ -209,7 +210,8 @@ method ``exprs()`` in R. We can make it a property in our Python class:
 
 .. parsed-literal::
 
-    <Environment - Python:0x7f730ee59d08 / R:0x4ca6b48>
+    R object with classes: ('environment',) mapped to:
+    <Environment - Python:0x7fbe1255ca08 / R:0x5634a0c3f210>
 
 
 
@@ -222,7 +224,7 @@ system.
 A natural way to expose the S4 method to Python is to use the
 ``multipledispatch`` package:
 
-.. code:: python
+.. code:: 
 
     from multipledispatch import dispatch
     from functools import partial
@@ -242,7 +244,7 @@ A natural way to expose the S4 method to Python is to use the
 The R method ``rowMedians`` is also defined for matrices, which we can
 expose on the Python end as well:
 
-.. code:: python
+.. code:: 
 
     from rpy2.robjects.vectors import Matrix
     @dispatch(Matrix)
@@ -260,7 +262,7 @@ If this is ever becoming a performance issue, the specific R function
 dispatched can be prefetched and explicitly called in the Python
 function. For example:
 
-.. code:: python
+.. code:: 
 
     from rpy2.robjects.methods import getmethod
     from rpy2.robjects.vectors import StrVector

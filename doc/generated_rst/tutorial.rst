@@ -1,5 +1,5 @@
 
-.. code:: python
+.. code:: 
 
     from functools import partial
     from rpy2.ipython import html
