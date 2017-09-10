@@ -18,6 +18,8 @@ Bugs fixed
 - The docstring for `rinterface.endr()` was improperly stating that the function was not taking
   any argument (issue #423).
 
+- Target version of dplyr and tidyr are now 0.7.2 and 0.7.1 respectively. 
+
 
 
 Release 2.9.0
