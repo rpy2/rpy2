@@ -11,5 +11,5 @@ pipelines:
         script: # Modify the commands below to build your repository.
           - python3 setup.py install
           - pytest --pyargs rpy2.rinterface rpy2.robjects rpy2.rlike
-	  - pip install ipython
-	  - pytest --pyargs rpy2.ipython
+          - pip install ipython
+          - pytest --pyargs rpy2.ipython
