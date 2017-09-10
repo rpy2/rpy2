@@ -27,15 +27,26 @@ class DplyrTestCase(unittest.TestCase):
         # FIXME: no testing much at the moment...
         self.assertTrue(isinstance(dataf, dplyr.DataFrame))
 
-    def testFilter_NoFilter(self):
+    def testFilter_NoFilter_Method(self):
         dataf = dplyr.DataFrame(mtcars)
         dataf_filter = dataf.filter()
         self.assertEqual(dataf.nrow, dataf_filter.nrow)
 
-    def testFilter_OneFilter(self):
+    def testFilter_NoFilter_Function(self):
+        dataf = dplyr.DataFrame(mtcars)
+        dataf_filter = dplyr.filter(dataf)
+        self.assertEqual(dataf.nrow, dataf_filter.nrow)
+        
+    def testFilter_OneFilter_Method(self):
         dataf = dplyr.DataFrame(mtcars)
         ngear_gt_3 = len(tuple(x for x in dataf.rx2('gear') if x > 3))
         dataf_filter = dataf.filter('gear > 3')        
+        self.assertEqual(ngear_gt_3, dataf_filter.nrow)
+
+    def testFilter_OneFilter_Function(self):
+        dataf = dplyr.DataFrame(mtcars)
+        ngear_gt_3 = len(tuple(x for x in dataf.rx2('gear') if x > 3))
+        dataf_filter = dplyr.filter(dataf, 'gear > 3')        
         self.assertEqual(ngear_gt_3, dataf_filter.nrow)
 
     def testSplitMergeFunction(self):
