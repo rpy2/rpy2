@@ -146,7 +146,7 @@ Since we are manipulating R objects, anything available to R is also available
 to us. If we want to see the SQL code generated that's:
 
 ```python
-print(dplyr.show_query(res))
+silent = dplyr.show_query(res)
 ```
 
 The conversion rules in rpy2 make the above easily applicable to pandas data frames,
