@@ -73,11 +73,11 @@ notebooks/%.ipynb : notebooks/%.md
 
 # rule to build sphinx-friendly ReST from ipython notebooks
 notebooks/%.rst : notebooks/%.ipynb
-	@cd generated_rst && ipython nbconvert --to rst ../$<
+	@cd generated_rst && jupyter nbconvert --to rst ../$< --output-dir=.
 
 # rule to build HTML render of an ipython notebook
 _static/notebooks/%.html : notebooks/%.ipynb
-	ipython nbconvert --to html $< --output ../$@
+	jupyter nbconvert --to html $< --output ../$@
 
 MD_NOTEBOOKS := $(basename $(notdir $(wildcard notebooks/*.md)))
 
@@ -88,7 +88,9 @@ _notebooks: $(MD_NOTEBOOKS:%=notebooks/%.rst)
 
 _notebooks_html: $(MD_NOTEBOOKS:%=_static/notebooks/%.html)
 
-notebooks: _ensure_notebooks_dir _notebooks _notebooks_html
+_notebooks_rst: $(MD_NOTEBOOKS:%=notebooks/%.rst)
+
+notebooks: _ensure_notebooks_dir _notebooks _notebooks_html _notebooks_rst
         
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
