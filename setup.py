@@ -374,6 +374,18 @@ def getRinterface_ext():
 
     return [rinterface_ext, rpy_device_ext]
 
+LONG_DESCRIPTION = """
+Python interface to the R language.
+
+`rpy2` is running an embedded R, providing access to it from Python using R's own C-API through
+either:
+- a high-level interface making R functions an objects just like Python functions and providing
+  a seamless conversion to numpy and pandas data strucutures
+- a low-level interface closer to the C-API
+
+It is also providing features for when working with jupyter notebooks or ipython.
+"""
+
 if __name__ == '__main__':
     rinterface_exts = []
     ri_ext = getRinterface_ext()
@@ -407,6 +419,7 @@ if __name__ == '__main__':
         name = pack_name,
         version = pack_version,
         description = 'Python interface to the R language (embedded R)',
+        long_description = LONG_DESCRIPTION,
         url = 'https://rpy2.bitbucket.io',
         license = 'GPLv2+',
         author = 'Laurent Gautier',
