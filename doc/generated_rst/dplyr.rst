@@ -260,7 +260,7 @@ implementation of ``dplyr``, it *just works*.
 .. parsed-literal::
 
     # Source:   lazy query [?? x 2]
-    # Database: sqlite 3.19.3 [/tmp/tmp36fggsqc]
+    # Database: sqlite 3.19.3 [/tmp/tmpym7gq50c]
        gear mean_ptw
       <dbl>    <dbl>
     1     4 1237.127
