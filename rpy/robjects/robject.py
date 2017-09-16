@@ -161,7 +161,7 @@ Note that when setting the class R may make a copy of
 the whole object (R is mostly a functional language).
 If this must be avoided, and if the number of parent
 classes before and after the change are compatible,
-the class name can be changed in-place by replacing "
+the class name can be changed in-place by replacing
 vector elements.""")
 
 
