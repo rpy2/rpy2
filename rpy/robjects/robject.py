@@ -165,34 +165,18 @@ the class name can be changed in-place by replacing
 vector elements.""")
 
 
-    # Python 3-only
-    if sys.version_info[0] == 2:
-        def __reduce__(self):
-            """
-            robjects-level `__reduce__()`, calling the parent class'
-            `__reduce__()` before substituting the current high-level
-            class as a constructor.
-            """
-            t = super(RObjectMixin, self).__reduce__()
-            # fix the constructor and parameters
-            l = list(t)
-            l[1] = (l[1][0], l[1][1], l[0], type(self))
-            l[0] = _reduce_robjectmixin
-            return tuple(l)
-
-    elif sys.version_info[0] == 3:
-        def __reduce__(self):
-            """
-            robjects-level `__reduce__()`, calling the parent class'
-            `__reduce__()` before substituting the current high-level
-            class as a constructor.
-            """
-            t = super().__reduce__()
-            # fix the constructor and parameters
-            l = list(t)
-            l[1] = (l[1][0], l[1][1], l[0], type(self))
-            l[0] = _reduce_robjectmixin
-            return tuple(l)
+    def __reduce__(self):
+        """
+        robjects-level `__reduce__()`, calling the parent class'
+        `__reduce__()` before substituting the current high-level
+        class as a constructor.
+        """
+        t = super().__reduce__()
+        # fix the constructor and parameters
+        l = list(t)
+        l[1] = (l[1][0], l[1][1], l[0], type(self))
+        l[0] = _reduce_robjectmixin
+        return tuple(l)
 
     
 def repr_robject(o, linesep=os.linesep):
