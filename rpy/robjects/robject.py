@@ -153,6 +153,7 @@ class RObjectMixin(object):
 R class for the object, stored as an R string vector.
 
 When setting the rclass, the new value will be:
+
 - wrapped in a Python tuple if a string (the R class
   is a vector of strings, and this is made for convenience)
 - wrapped in a StrSexpVector
