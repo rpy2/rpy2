@@ -56,7 +56,8 @@ def _reduce_robjectmixin(rdumps, rtypeof,
     return rpy2type(rinterface_level)
         
 class RObjectMixin(object):
-    """ Class to provide methods common to all RObject instances """
+    """ Class to provide methods common to all RObject instances. """
+    
     __rname__ = None
 
     __tempfile = rpy2.rinterface.baseenv.get("tempfile")
@@ -155,13 +156,13 @@ When setting the rclass, the new value will be:
 - wrapped in a Python tuple if a string (the R class
   is a vector of strings, and this is made for convenience)
 - wrapped in a StrSexpVector
+
 Note that when setting the class R may make a copy of
 the whole object (R is mostly a functional language).
 If this must be avoided, and if the number of parent
 classes before and after the change are compatible,
 the class name can be changed in-place by replacing "
-vector elements.
-                      """)
+vector elements.""")
 
 
     # Python 3-only
