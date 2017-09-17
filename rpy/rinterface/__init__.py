@@ -103,7 +103,6 @@ from rpy2.rinterface._rinterface import (baseenv,
                                          NARealType,
                                          NA_Character,
                                          NA_Complex,
-                                         NA_Integer,
                                          NA_Logical,
                                          NA_Real,
                                          NULL,
@@ -128,6 +127,14 @@ from rpy2.rinterface._rinterface import (baseenv,
                                          TRUE,
                                          VECSXP)
 
+_initr = initr
+def initr():
+    _initr()
+    # TODO: the use of global does seem to be a too good pattern.
+    global NA_Integer
+    NA_Integer = NAIntegerType()
+
+    
 # wrapper in case someone changes sys.stdout:
 if sys.version_info.major == 3:
     # Print became a regular function in Python 3, making

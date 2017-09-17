@@ -187,38 +187,33 @@ NAInteger_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
   static PyLongObject *self = NULL;
   static char *kwlist[] = {0};
-  PyObject *py_value;
   Py_ssize_t i, n;
 
+  if (! rpy_has_status(RPY_R_INITIALIZED)) {
+    PyErr_Format(PyExc_RuntimeError, 
+                 "R's NA_INTEGER is only known once R has been initialized.");
+    return NULL;
+  }
+  
   assert(PyType_IsSubtype(type, &PyLong_Type));
 
   if (! PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) {
     return NULL;
   }
-  
-  if (self == NULL) {
-    py_value = PyLong_FromLong((long)(NA_INTEGER));
-    if (py_value == NULL) {
-      return NULL;
-    }
 
-    assert(PyLong_CheckExact(py_value));
-    n = Py_SIZE(py_value);
-    if (n < 0)
-      n = -n;
-    self = (PyLongObject *)(PyLong_Type.tp_alloc(type, n));
+  /* Implementation of a singleton pattern. The static variable "self"
+     is a reference to a PyLongObject. */
+  if (self == NULL) {
+    /* This is returning a new reference to a PyLongObject */
+    self = PyLong_FromLong((long)(NA_INTEGER));
     if (self == NULL) {
-      Py_DECREF(py_value);
+      PyErr_SetString(PyExc_ValueError,
+		      "Couldn't make a Python Long from NA_INTEGER in R's C-API.");
       return NULL;
     }
-    assert(PyLong_Check(self));
-    Py_SIZE(self) = Py_SIZE(py_value);
-    for (i = 0; i < n; i++) {
-      self->ob_digit[i] = ((PyLongObject *)py_value)->ob_digit[i];
-    }
-    Py_DECREF(py_value);
+  } else {
+    Py_XINCREF(self);
   }
-  Py_XINCREF(self);
   return (PyObject *)self;
 }
 

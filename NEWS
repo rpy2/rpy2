@@ -6,6 +6,16 @@ New features
 
 - Unit tests are now relying on the Python module `pytest`.
 
+- :attr:`rpy2.rinterface.NA_Integer` is now only defined when the embedded R
+  is initialized.
+
+
+Changes
+-------
+
+- The singleton pattern for :class:`rpy2.rinterface.NAInteger_Type` is no now
+  letting `__int__` return an :class:`int` (see issue #428).
+
 
 Release 2.9.1
 =============

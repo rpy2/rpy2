@@ -2914,7 +2914,7 @@ newSEXP(PyObject *object, int rType)
     for (i = 0; i < length; ++i) {
       item = PySequence_Fast_GET_ITEM(seq_object, i);
       item_tmp = PyNumber_Long(item);
-      if (item_tmp && (item != NAInteger_New(0))) {
+      if (item_tmp && (item != NA_INTEGER)) {
 	  long l = PyLong_AS_LONG(item_tmp);
 	  integer_ptr[i] = RPY_RINT_FROM_LONG(l);
       } else {
@@ -3568,7 +3568,6 @@ PyInit__rinterface(void)
 
   /* NA types */
   PyModule_AddObject(m, "NAIntegerType", (PyObject *)&NAInteger_Type);
-  PyModule_AddObject(m, "NA_Integer", NAInteger_New(1));
   PyModule_AddObject(m, "NALogicalType", (PyObject *)&NALogical_Type);
   PyModule_AddObject(m, "NA_Logical", NALogical_New(1));
   PyModule_AddObject(m, "NARealType", (PyObject *)&NAReal_Type);
