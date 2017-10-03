@@ -245,7 +245,7 @@ very common tasks in data analysis such as reordering and random sampling.
 >>> x_resampled = x.rx(o_i)
 
 
-R operators are vector operations, with the operator applyied
+R operators are vector operations, with the operator applied
 to each element in the vector. This can be used to build extraction
 indexes.
 
