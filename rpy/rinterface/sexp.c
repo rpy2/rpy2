@@ -460,8 +460,7 @@ Sexp___getstate__(PyObject *self)
   /* PyByteArray is only available with Python >= 2.6 */
           /* res = PyByteArray_FromStringAndSize(sexp_ser, len); */
 
-  /*FIXME: is this working on 64bit archs ? */
-  res_string = PyBytes_FromStringAndSize((void *)RAW_POINTER(sexp_ser), 
+  res_string = PyBytes_FromStringAndSize((char *)RAW_POINTER(sexp_ser), 
 					 (Py_ssize_t)LENGTH(sexp_ser));
   UNPROTECT(1);
   return res_string;
