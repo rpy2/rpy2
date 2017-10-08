@@ -118,7 +118,7 @@ SEXP rpy2_unserialize(SEXP connection, SEXP rho)
   c_R = CDR(c_R);
   
   PROTECT(res = eval(call_R, rho));
-  UNPROTECT(2);
+  UNPROTECT(3);
   return res;
 }
 
