@@ -527,7 +527,7 @@ EmbeddedR_unserialize(PyObject* self, PyObject* args)
   PROTECT(sexp_ser = rpy2_unserialize(raw_sexp, R_GlobalEnv));
 
   if (TYPEOF(sexp_ser) != rtype) {
-    UNPROTECT(3);
+    UNPROTECT(2);
     PyErr_Format(PyExc_ValueError, 
                  "Mismatch between the serialized object"
                  " and the expected R type"
@@ -536,7 +536,7 @@ EmbeddedR_unserialize(PyObject* self, PyObject* args)
   }
   res = (PyObject*)newPySexpObject(sexp_ser);
   
-  UNPROTECT(3);
+  UNPROTECT(2);
   embeddedR_freelock();
   return res;
 }
