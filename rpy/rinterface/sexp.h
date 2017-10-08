@@ -12,6 +12,7 @@
 
 
 static PyObject* EmbeddedR_unserialize(PyObject* self, PyObject* args);
+static SEXP _rpy2_unserialize_from_char_and_size(char *raw, Py_ssize_t size);
 
 static PyObject *rinterface_unserialize;
 
