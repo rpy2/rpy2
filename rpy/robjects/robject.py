@@ -48,12 +48,6 @@ class RSlots(object):
             v = self[k]
             yield v
 
-
-def _reduce_robjectmixin(rdumps, rtypeof,
-                         rinterface_factory,
-                         rpy2type):
-    rinterface_level=rinterface_factory(rdumps, rtypeof)
-    return rpy2type(rinterface_level)
         
 class RObjectMixin(object):
     """ Class to provide methods common to all RObject instances. """
@@ -164,19 +158,6 @@ classes before and after the change are compatible,
 the class name can be changed in-place by replacing
 vector elements.""")
 
-
-    def __reduce__(self):
-        """
-        robjects-level `__reduce__()`, calling the parent class'
-        `__reduce__()` before substituting the current high-level
-        class as a constructor.
-        """
-        t = super().__reduce__()
-        # fix the constructor and parameters
-        l = list(t)
-        l[1] = (l[1][0], l[1][1], l[0], type(self))
-        l[0] = _reduce_robjectmixin
-        return tuple(l)
 
     
 def repr_robject(o, linesep=os.linesep):
