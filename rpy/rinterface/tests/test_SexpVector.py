@@ -1,4 +1,5 @@
 import unittest
+import pytest
 import sys, struct
 import rpy2.rinterface as ri
 
@@ -68,6 +69,7 @@ class NAValuesTestCase(unittest.TestCase):
         na_int = ri.NAIntegerType()
         self.assertEqual(True, ri.baseenv["is.na"](na_int)[0])
 
+    @pytest.mark.skip(reason="Python changed the behavior or int-inheriting objects.")
     def testNAIntegerBinaryfunc(self):
         na_int = ri.NAIntegerType()
         self.assertTrue((na_int + 2) is na_int)
