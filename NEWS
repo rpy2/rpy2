@@ -1,6 +1,12 @@
 Release 2.9.1
 =============
 
+Changes
+-------
+
+- Fixing issue #432 (see Section Bugs fixed below) involved removed the method
+  `__reduce__` previously provided for all rpy2 objects representing R objects.
+
 Bugs fixed
 ----------
 
@@ -11,6 +17,8 @@ Bugs fixed
 
 - Target version of dplyr and tidyr are now 0.7.2 and 0.7.1 respectively. 
 
+- Fixed memory leak when pickling objects (issue #432). Fixing the leak caused a
+  slight change in the API (see Section Changes above).
 
 
 Release 2.9.0
