@@ -458,12 +458,23 @@ Sexp___getstate__(PyObject *self)
     return NULL;
   }
   /* PyByteArray is only available with Python >= 2.6 */
-          /* res = PyByteArray_FromStringAndSize(sexp_ser, len); */
+  /* res = PyByteArray_FromStringAndSize(sexp_ser, len); */
 
   res_string = PyBytes_FromStringAndSize((char *)RAW_POINTER(sexp_ser), 
 					 (Py_ssize_t)LENGTH(sexp_ser));
+  if (res_string == NULL) {
+    UNPROTECT(1);
+    PyErr_Format(PyExc_RuntimeError, 
+                 "Error while trying to build Python bytes"
+		 " from serialized R object.");
+    return NULL;
+  }
+
   UNPROTECT(1);
   return res_string;
+  /* Py_DECREF(res_string); */
+  /* Py_INCREF(Py_None); */
+  /* return Py_None; */
 }
 
 PyDoc_STRVAR(Sexp___getstate___doc,
@@ -474,13 +485,58 @@ static PyObject*
 Sexp___setstate__(PyObject *self, PyObject *state)
 {
 
+  char *raw;
+  Py_ssize_t raw_size;
+  int status;
+  
+  status = PyBytes_AsStringAndSize(state, &raw, &raw_size);
+  if (status == -1) {
+    return NULL;
+  }
+  
+  SEXP sexp;
+  PROTECT(sexp = _rpy2_unserialize_from_char_and_size(raw, raw_size));  
+  status = Rpy_ReplaceSexp((PySexpObject *)self,
+			   sexp);
+  UNPROTECT(1);
+  if (status == -1) {
+    /* TODO: raise an exception */
+    return NULL;
+  }
   Py_INCREF(Py_None);
   return Py_None;
 
 }
 
 PyDoc_STRVAR(Sexp___setstate___doc,
-             "set the state of an instance (dummy).");
+             "set the state of an rpy2 object.");
+
+static SEXP
+_rpy2_unserialize_from_char_and_size(char *raw, Py_ssize_t size)
+{
+
+  /* TODO: handle the case where "size" is larger than the possible
+   *   R vector size.
+  */
+  
+  /* Not the most memory-efficient; an other option would
+  * be to create a dummy RAW and rebind "raw" as its content
+  * (wich seems clearly off the charts).
+  */
+  SEXP raw_sexp, sexp_ser;
+  PROTECT(raw_sexp = NEW_RAW((int)size));
+
+  /*FIXME: use of the memcpy seems to point in the direction of
+  * using the option mentioned above anyway. */
+  Py_ssize_t raw_i;
+  for (raw_i = 0; raw_i < size; raw_i++) {
+    RAW_POINTER(raw_sexp)[raw_i] = raw[raw_i];
+  }
+  PROTECT(sexp_ser = rpy2_unserialize(raw_sexp, R_GlobalEnv));
+  /* TODO: handle error */
+  UNPROTECT(2);
+  return sexp_ser;
+}
 
 
 static PyObject*
@@ -509,80 +565,25 @@ EmbeddedR_unserialize(PyObject* self, PyObject* args)
     return NULL;
   }
   embeddedR_setlock();
-
-  /* Not the most memory-efficient; an other option would
-  * be to create a dummy RAW and rebind "raw" as its content
-  * (wich seems clearly off the charts).
-  */
-  SEXP raw_sexp, sexp_ser;
-  PROTECT(raw_sexp = NEW_RAW((int)raw_size));
-
-  /*FIXME: use of the memcpy seems to point in the direction of
-  * using the option mentioned above anyway. */
-  Py_ssize_t raw_i;
-  for (raw_i = 0; raw_i < raw_size; raw_i++) {
-    RAW_POINTER(raw_sexp)[raw_i] = raw[raw_i];
-  }
-  PROTECT(sexp_ser = rpy2_unserialize(raw_sexp, R_GlobalEnv));
+  SEXP sexp_ser;
+  PROTECT(sexp_ser = _rpy2_unserialize_from_char_and_size(raw, raw_size));
 
   if (TYPEOF(sexp_ser) != rtype) {
-    UNPROTECT(2);
+    UNPROTECT(1);
     PyErr_Format(PyExc_ValueError, 
                  "Mismatch between the serialized object"
                  " and the expected R type"
-                 " (expected %i but got %i)", rtype, TYPEOF(raw_sexp));
+                 " (expected %i but got %i)",
+		 rtype, TYPEOF(sexp_ser));
     return NULL;
   }
   res = (PyObject*)newPySexpObject(sexp_ser);
   
-  UNPROTECT(2);
+  UNPROTECT(1);
   embeddedR_freelock();
   return res;
 }
 
-static PyObject*
-Sexp___reduce__(PyObject* self)
-{
-  PyObject *dict, *result;
-
-  if (! (rpy_has_status(RPY_R_INITIALIZED))) {
-    PyErr_Format(PyExc_RuntimeError, 
-                 "R cannot evaluate code before being initialized.");
-    return NULL;
-  }
-  
-  dict = PyObject_GetAttrString((PyObject *)self,
-                                "__dict__");
-  if (dict == NULL) {
-    PyErr_Clear();
-    dict = Py_None;
-    Py_INCREF(dict);
-  }
-
-  if (rpy_has_status(RPY_R_BUSY)) {
-    PyErr_Format(PyExc_RuntimeError, "Concurrent access to R is not allowed.");
-    return NULL;
-  }
-  embeddedR_setlock();
-
-  result = Py_BuildValue("O(Oi)O",
-                         rinterface_unserialize, /* constructor */
-                         Sexp___getstate__(self),
-                         TYPEOF(RPY_SEXP((PySexpObject *)self)),
-                         dict);
-
-  embeddedR_freelock();
-
-  Py_DECREF(dict);
-  return result;
-
-}
-
-PyDoc_STRVAR(Sexp___reduce___doc,
-             "Prepare an instance for serialization, returning a tuple "
-	     "with the following elements (in that order): "
-	     "the constructor (a function), the serialized string, "
-	     "the R `typeof` (an integer), and a dictionary.");
 
 
 static PyMethodDef Sexp_methods[] = {
@@ -600,8 +601,6 @@ static PyMethodDef Sexp_methods[] = {
    Sexp___getstate___doc},
   {"__setstate__", (PyCFunction)Sexp___setstate__, METH_O,
    Sexp___setstate___doc},
-  {"__reduce__", (PyCFunction)Sexp___reduce__, METH_NOARGS,
-   Sexp___reduce___doc},
   {NULL, NULL}          /* sentinel */
 };
 
@@ -666,6 +665,7 @@ Sexp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
 }
 
+
 static int
 Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -701,26 +701,22 @@ Sexp_init(PyObject *self, PyObject *args, PyObject *kwds)
   /* Since sourceObject is a Sexp_Type, the R object is
    already tracked. */
 
-  /* int swap = Rpy_ReplaceSexp(((PySexpObject *)self)->sObj, */
-  /* 			     ((PySexpObject *)sourceObject)->sObj->sexp); */
-  /* if (swap == -1) { */
-  /*   return -1; */
-  /* } */
-  
-  SexpObject *oldSexpObject = ((PySexpObject *)self)->sObj;
-  SexpObject *newSexpObject = Rpy_PreserveObject(((PySexpObject *)sourceObject)->sObj->sexp);
-  if (newSexpObject == NULL) {
+  int status = Rpy_ReplaceSexp(((PySexpObject *)self),
+			       ((PySexpObject *)sourceObject)->sObj->sexp);
+  /* int returnvalu = _replace_Sexp((PySexpObject *)sourceObject, */
+  /* 				 (PySexpObject *)self)); */
+
+  if (status == -1) {
     return -1;
   }
-  ((PySexpObject *)self)->sObj = newSexpObject;
-  if (Rpy_ReleaseObject(oldSexpObject->sexp) == -1) {
-    return -1;
-  }
+
   
   //RPY_INCREF((PySexpObject *)self);
 #ifdef RPY_VERBOSE
   printf("Python: %p / R: %p - sexp count is now %i.\n", 
-	 (PySexpObject *)self, RPY_SEXP((PySexpObject *)self), RPY_COUNT((PySexpObject *)self));
+	 (PySexpObject *)self,
+	 RPY_SEXP((PySexpObject *)self),
+	 RPY_COUNT((PySexpObject *)self));
 #endif 
 
 
