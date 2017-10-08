@@ -68,6 +68,7 @@ class NAValuesTestCase(unittest.TestCase):
         na_int = ri.NAIntegerType()
         self.assertEqual(True, ri.baseenv["is.na"](na_int)[0])
 
+    @unittest.skip
     def testNAIntegerBinaryfunc(self):
         na_int = ri.NAIntegerType()
         self.assertTrue((na_int + 2) is na_int)
