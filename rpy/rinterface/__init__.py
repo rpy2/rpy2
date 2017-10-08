@@ -44,8 +44,6 @@ if not os.environ.get("R_HOME"):
 if sys.platform == 'win32':
     _load_r_dll(R_HOME)
 
-# cleanup the namespace
-del(os)
 
 from rpy2.rinterface._rinterface import (baseenv,
                                          emptyenv,
@@ -126,9 +124,35 @@ from rpy2.rinterface._rinterface import (baseenv,
                                          SYMSXP,
                                          TRUE,
                                          VECSXP)
+from rpy2.rinterface import _rinterface
 
+def get_r_session_status(r_session_init = None):
+    """Return information about the R session, if available.
+
+    Information about the R session being already initialized can be communicated by a parent environment.
+    See discussion at: https://github.com/rstudio/reticulate/issues/98
+    """
+    d = {'current_pid': os.getpid()}
+    
+    if r_session_init is None:
+        r_session_init = os.environ.get('R_SESSION_INITIALIZED')
+    if r_session_init:
+        for item in r_session_init.split(':'):
+            try:
+                key, value = item.lsplit('=', 1)
+            except ValueError:
+                warnings.warn('The item %s in R_SESSION_INITIALIZED should be of the form key=value.' % item)
+            d[key] = value
+    return d
+    
 _initr = initr
 def initr():
+    r_session_status = get_r_session_status()
+    # Force the internal initialization flag if there is an environment variable that indicates that R was
+    # alreay initialized in the current process.
+    if r_session_status['current_pid'] == r_session_status.get('PID'):
+        _rinterface._force_initialized()
+        
     _initr()
     # TODO: the use of global does seem to be a too good pattern.
     global NA_Integer

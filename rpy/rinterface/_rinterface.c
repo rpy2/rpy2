@@ -1136,6 +1136,17 @@ end_r(void)
 
 }
 
+PyDoc_STRVAR(EmbeddedR_force_initialized_doc,
+             "Force the initialization flag for the embeddedR.\n"
+	     "_force_initialized()\n"
+	     "\n"
+	     "This should not be used by anyone. It only exists to overcome a missing"
+	     " feature in R's C-API.");
+
+static PyObject*
+EmbeddedR_force_initialized(PyObject *self) {
+  embeddedR_status = RPY_R_INITIALIZED;
+}
 
 PyDoc_STRVAR(EmbeddedR_init_doc,
              "Initialize an embedded R.\n"
@@ -3138,6 +3149,8 @@ static PyMethodDef EmbeddedR_methods[] = {
   {"set_initoptions",     (PyCFunction)EmbeddedR_setinitoptions,   
    METH_O,
    EmbeddedR_set_initoptions_doc},
+  {"_force_initialized", (PyCFunction)EmbeddedR_force_initialized, METH_NOARGS,
+   EmbeddedR_force_initialized_doc},
   {"initr",     (PyCFunction)EmbeddedR_init, METH_VARARGS | METH_KEYWORDS,
    EmbeddedR_init_doc},
   {"is_initialized", (PyCFunction)EmbeddedR_isInitialized, METH_NOARGS,
