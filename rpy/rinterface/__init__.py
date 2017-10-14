@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import os
 import sys
 import warnings
@@ -144,16 +145,36 @@ def get_r_session_status(r_session_init = None):
                 warnings.warn('The item %s in R_SESSION_INITIALIZED should be of the form key=value.' % item)
             d[key] = value
     return d
-    
+
+
+def set_python_session_status():
+    """Set information about the Python process in an environment variable.
+
+    Current the information See discussion at: https://github.com/rstudio/reticulate/issues/98
+    """
+    d = OrderedDict((('current_pid', os.getpid()),
+                     ('sys.executable', sys.executable)))
+    info_string = ':'.join('%s=%s' % x for x in d.items())
+    os.environ['PYTHON_SESSION_INITIALIZED'] = info_string
+
+
+## rename function imported from C-extension to wrap it.
 _initr = initr
+
+
 def initr():
     r_session_status = get_r_session_status()
     # Force the internal initialization flag if there is an environment variable that indicates that R was
     # alreay initialized in the current process.
     if r_session_status['current_pid'] == r_session_status.get('PID'):
         _rinterface._force_initialized()
-        
+
+    # As soon as R is initialized, set the environment variable
+    # PYTHON_SESSION_INFO
     _initr()
+    set_python_session_status()
+
+    
     # TODO: the use of global does seem to be a too good pattern.
     global NA_Integer
     NA_Integer = NAIntegerType()
