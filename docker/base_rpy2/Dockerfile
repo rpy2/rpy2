@@ -12,6 +12,7 @@ RUN \
                      apt-transport-https \
                      gnupg \
 		     libcurl4-openssl-dev \
+		     libnlopt-dev \
                      lsb-release && \
   echo "deb ${CRAN_MIRROR}/bin/linux/ubuntu $(lsb_release -c -s)/" \
         >> /etc/apt/sources.list.d/added_repos.list && \
