@@ -83,9 +83,9 @@ def py2ri_categoryseries(obj):
     res = IntSexpVector(list(x+1 for x in obj.cat.codes))
     res.do_slot_assign('levels', StrSexpVector(obj.cat.categories))
     if obj.cat.ordered:
-        res.rclass = StrSexpVector('ordered', 'factor')
+        res.rclass = StrSexpVector(('ordered', 'factor'))
     else:
-        res.rclass = StrSexpVector('factor')
+        res.rclass = StrSexpVector(('factor',))
     return res
 
 @py2ri.register(PandasSeries)

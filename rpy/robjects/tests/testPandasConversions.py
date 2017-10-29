@@ -99,14 +99,25 @@ class PandasConversionsTestCase(unittest.TestCase):
             rp_c = robjects.conversion.ri2py(factor)
         self.assertEqual(pandas.Categorical, type(rp_c))
 
+    def testOrderedFactor2Category(self):
+        factor = robjects.vectors.FactorVector(('a', 'b', 'a'), ordered=True)
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_c = robjects.conversion.ri2py(factor)
+        self.assertEqual(pandas.Categorical, type(rp_c))
+
     def testCategory2Factor(self):
         category = pandas.Series(["a","b","c","a"], dtype="category")
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.py2ro(category)
             self.assertEqual(robjects.vectors.FactorVector, type(rp_c))
             
-            #rp_c = robjects.conversion.py2ri(category)
-            #self.assertEqual(rinterface.IntSexpVector, type(rp_c))
+    def testOrderedCategory2Factor(self):
+        category = pandas.Series(pandas.Categorical(['a','b','c','a'],
+                                                    categories=['a','b','c'],
+                                                    ordered=True))
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_c = robjects.conversion.py2ro(category)
+            self.assertEqual(robjects.vectors.FactorVector, type(rp_c))
 
     def testTimeR2Pandas(self):
         tzone = rpyp.get_timezone()
