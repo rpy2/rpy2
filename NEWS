@@ -39,6 +39,8 @@ Bugs fixed
 - Fixed memory leak when pickling objects (issue #432). Fixing the leak caused a
   slight change in the API (see Section Changes above).
 
+- Conversion to :mod:`pandas` now handling R ordered factor (issue #398).
+
 
 Release 2.9.0
 =============
