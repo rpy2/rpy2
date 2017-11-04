@@ -41,6 +41,8 @@ Bugs fixed
 
 - Conversion to :mod:`pandas` now handling R ordered factor (issue #398).
 
+- :mod:`jinja2` was not listed as a dependency (issue #437).
+
 
 Release 2.9.0
 =============
