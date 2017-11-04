@@ -15,7 +15,7 @@ Bugs fixed
 - The docstring for `rinterface.endr()` was improperly stating that the function was not taking
   any argument (issue #423).
 
-- Target version of dplyr and tidyr are now 0.7.2 and 0.7.1 respectively. 
+- Target version of dplyr and tidyr are now 0.7.4 and 0.7.2 respectively. 
 
 - Fixed memory leak when pickling objects (issue #432). Fixing the leak caused a
   slight change in the API (see Section Changes above).
