@@ -34,6 +34,13 @@ frames).
 
     from rpy2.robjects.lib.dplyr import DataFrame
 
+
+.. parsed-literal::
+
+    /home/laurent/Desktop/software/python/py35_env/lib/python3.5/site-packages/rpy2-3.0.0.dev0-py3.5-linux-x86_64.egg/rpy2/robjects/lib/dplyr.py:24: UserWarning: This was designed againt dplyr version 0.7.4 but you have 0.7.3
+      warnings.warn('This was designed againt dplyr version %s but you have %s' % (TARGET_VERSION, dplyr.__version__))
+
+
 With this we have the choice of chaining (D3-style)
 
 .. code:: 
@@ -146,8 +153,8 @@ Python back from R. To achieve this we simply use the decorator
           <th></th>
           <th></th>
           <th>gear</th>
-          <th>mean_ptw</th>
           <th>mean_np_ptw</th>
+          <th>mean_ptw</th>
         </tr>
       </thead>
       <tbody>
@@ -155,15 +162,15 @@ Python back from R. To achieve this we simply use the decorator
           <td class="rpy2_rowname">0</td>
             <td class="rpy2_names">1</td>
           <td>4.0</td>
-          <td>1237.1266499803169</td>
           <td>1237.126649980317</td>
+          <td>1237.1266499803169</td>
         </tr>
         <tr>
           <td class="rpy2_rowname">1</td>
             <td class="rpy2_names">2</td>
           <td>5.0</td>
-          <td>2574.0331639315027</td>
           <td>2574.0331639315023</td>
+          <td>2574.0331639315027</td>
         </tr>
       </tbody>
     </table>
@@ -207,8 +214,8 @@ function in R's global environment.
           <th></th>
           <th></th>
           <th>gear</th>
-          <th>mean_ptw</th>
           <th>mean_np_ptw</th>
+          <th>mean_ptw</th>
         </tr>
       </thead>
       <tbody>
@@ -216,15 +223,15 @@ function in R's global environment.
           <td class="rpy2_rowname">0</td>
             <td class="rpy2_names">1</td>
           <td>4.0</td>
-          <td>1237.1266499803169</td>
           <td>1237.126649980317</td>
+          <td>1237.1266499803169</td>
         </tr>
         <tr>
           <td class="rpy2_rowname">1</td>
             <td class="rpy2_names">2</td>
           <td>5.0</td>
-          <td>2574.0331639315027</td>
           <td>2574.0331639315023</td>
+          <td>2574.0331639315027</td>
         </tr>
       </tbody>
     </table>
@@ -260,7 +267,7 @@ implementation of ``dplyr``, it *just works*.
 .. parsed-literal::
 
     # Source:   lazy query [?? x 2]
-    # Database: sqlite 3.19.3 [/tmp/tmpx1djj_y1]
+    # Database: sqlite 3.19.3 [/tmp/tmpk84iwhxe]
        gear mean_ptw
       <dbl>    <dbl>
     1     4 1237.127
@@ -278,7 +285,7 @@ available to us. If we want to see the SQL code generated that's:
 
 .. parsed-literal::
 
-    /home/laurent/Desktop/software/python/py35_env/lib/python3.5/site-packages/rpy2-3.0.0.dev0-py3.5-linux-x86_64.egg/rpy2/rinterface/__init__.py:145: RRuntimeWarning: <SQL>
+    /home/laurent/Desktop/software/python/py35_env/lib/python3.5/site-packages/rpy2-3.0.0.dev0-py3.5-linux-x86_64.egg/rpy2/rinterface/__init__.py:197: RRuntimeWarning: <SQL>
     SELECT `gear`, AVG(`powertoweight`) AS `mean_ptw`
     FROM (SELECT `mpg`, `cyl`, `disp`, `hp`, `drat`, `wt`, `qsec`, `vs`, `am`, `gear`, `carb`, `hp` * 36.0 / `wt` AS `powertoweight`
     FROM (SELECT *
