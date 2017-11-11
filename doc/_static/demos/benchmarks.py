@@ -222,7 +222,7 @@ p = ggplot2.ggplot(dataf) + \
                                           y="time",
                                           colour="code")) + \
     ggplot2.facet_wrap(Formula('~sequence')) + \
-    ggplot2.scale_y_continuous('running time') + \
+    ggplot2.scale_y_sqrt('running time') + \
     ggplot2.scale_x_continuous('repeated n times', ) + \
     ggplot2.xlim(0, max(n_loops)) + \
     ggplot2.labs(title = "Benchmark (running time)")
