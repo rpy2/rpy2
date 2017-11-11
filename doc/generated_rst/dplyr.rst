@@ -34,6 +34,13 @@ frames).
 
     from rpy2.robjects.lib.dplyr import DataFrame
 
+
+.. parsed-literal::
+
+    /home/laurent/Desktop/software/python/py35_env/lib/python3.5/site-packages/rpy2-2.9.1-py3.5-linux-x86_64.egg/rpy2/robjects/lib/dplyr.py:24: UserWarning: This was designed againt dplyr version 0.7.4 but you have 0.7.3
+      warnings.warn('This was designed againt dplyr version %s but you have %s' % (TARGET_VERSION, dplyr.__version__))
+
+
 With this we have the choice of chaining (D3-style)
 
 .. code:: 
@@ -260,7 +267,7 @@ implementation of ``dplyr``, it *just works*.
 .. parsed-literal::
 
     # Source:   lazy query [?? x 2]
-    # Database: sqlite 3.19.3 [/tmp/tmpym7gq50c]
+    # Database: sqlite 3.19.3 [/tmp/tmp6frafvmy]
        gear mean_ptw
       <dbl>    <dbl>
     1     4 1237.127
