@@ -649,7 +649,8 @@ from rpy2.robjects.lib import grid
 grid.newpage()
 grid.viewport(layout=grid.layout(2, 3)).push()
 
-diamonds = ggplot2.ggplot2.__rdata__.fetch('diamonds')['diamonds']
+ggplot2_rpack = importr('ggplot2')
+diamonds = ggplot2_rpack.__rdata__.fetch('diamonds')['diamonds']
 gp = ggplot2.ggplot(diamonds)
 
 for col_i, trans in enumerate(("identity", "log2", "sqrt")):
