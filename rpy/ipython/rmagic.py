@@ -508,11 +508,11 @@ utils.install_packages('Cairo')
         )
     @argument_group("Plot", "Arguments to plotting device")
     @argument(
-        '-w', '--width', type=int,
+        '-w', '--width', type=float,
         help='Width of plotting device in R.'
         )
     @argument(
-        '-h', '--height', type=int,
+        '-h', '--height', type=float,
         help='Height of plotting device in R.'
         )
     @argument(
