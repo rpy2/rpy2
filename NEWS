@@ -17,6 +17,15 @@ Changes
   letting `__int__` return an :class:`int` (see issue #428).
 
 
+Release 2.9.2
+=============
+
+Bugs fixed
+----------
+
+- Allow floats in figure sizes for R magic (Pull request #63)
+
+
 Release 2.9.1
 =============
 
