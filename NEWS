@@ -1,6 +1,16 @@
 Release 2.9.2
 =============
 
+Changes
+-------
+
+- The singleton pattern for :class:`rpy2.rinterface.NAInteger_Type` is no now
+  letting `__int__` return an :class:`int` (see issue #428).
+
+- The pandas converter is converting :class:`pandas.Series` of `dtype` `"O"`
+  to :class:`rpy2.robjects.vectors.StrVector` objects, issueing a warning
+  about it (See issue #421).
+
 Bugs fixed
 ----------
 
