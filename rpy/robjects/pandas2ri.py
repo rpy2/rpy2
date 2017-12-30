@@ -90,7 +90,10 @@ def py2ri_categoryseries(obj):
 
 @py2ri.register(PandasSeries)
 def py2ri_pandasseries(obj):
-    if obj.dtype.name == 'category':
+    if numpy.dtype.name == 'O':
+        warnings.warn('Element "%s" is of dtype "O" and converted to R vector of strings.' % obj.name)
+        res = StrVector(obj)
+    elif obj.dtype.name == 'category':
         res = py2ri_categoryseries(obj)
         res = FactorVector(res)
     elif obj.dtype == dt_datetime64ns_type:
