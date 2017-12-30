@@ -22,10 +22,10 @@ RUN \
   rm -rf /var/lib/apt/lists/*
 
 RUN \
-  wget --progress=bar http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.1.1/spark-2.1.1-bin-hadoop2.7.tgz && \
-  tar -xzf spark-2.1.1-bin-hadoop2.7.tgz && \
-  mv spark-2.1.1-bin-hadoop2.7 /opt/ && \
-  rm spark-2.1.1-bin-hadoop2.7.tgz
+  wget --progress=bar http://mirrors.ocf.berkeley.edu/apache/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz && \
+  tar -xzf spark-2.2.1-bin-hadoop2.7.tgz && \
+  mv spark-2.2.1-bin-hadoop2.7 /opt/ && \
+  rm spark-2.2.1-bin-hadoop2.7.tgz
     
 RUN \
   pip3 --no-cache-dir install wheel --upgrade && \
@@ -57,7 +57,7 @@ RUN \
   rm rpacks.txt
 
 ENV NB_USER jupyteruser
-ENV SPARK_HOME /opt/spark-2.1.1-bin-hadoop2.7 
+ENV SPARK_HOME /opt/spark-2.2.1-bin-hadoop2.7 
 
 USER $NB_USER
 RUN mkdir -p /home/$NB_USER/work
