@@ -336,14 +336,18 @@ def getRinterface_ext():
     
     print("""
     Compilation parameters for rpy2's C components:
-        include_dirs    = %s
-        library_dirs    = %s
-        libraries       = %s
-        extra_link_args = %s
+        include_dirs       = %s
+        library_dirs       = %s
+        libraries          = %s
+        extra_compile_args = %s
+        extra_link_args    = %s
+        define_macros      = %s
     """ % (str(include_dirs),
            str(library_dirs), 
-           str(libraries), 
-           str(extra_link_args)))
+           str(libraries),
+           str(extra_compile_args),
+           str(extra_link_args),
+           str(define_macros)))
 
     depends = list(map(lambda x: os.path.join(package_prefix,
                                               'rpy', 'rinterface', x),
