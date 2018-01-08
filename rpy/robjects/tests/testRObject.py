@@ -5,6 +5,7 @@ import array
 import tempfile
 
 class RObjectTestCase(unittest.TestCase):
+    
     def testNew(self):
 
         identical = rinterface.baseenv["identical"]
@@ -73,6 +74,7 @@ class RObjectTestCase(unittest.TestCase):
 import pickle
 
 class RObjectPicklingTestCase(unittest.TestCase):
+    
     def testPickle(self):
         tmp_file = tempfile.NamedTemporaryFile()
         robj = robjects.baseenv["pi"]
@@ -80,9 +82,17 @@ class RObjectPicklingTestCase(unittest.TestCase):
         tmp_file.flush()
         tmp_file.seek(0)
         robj_again = pickle.load(tmp_file)
+        tmp_file.close()
+
+        self.assertTrue(isinstance(robj, robjects.FloatVector))
+
+        # Check that underlying R objects are identical.
         self.assertTrue(robjects.baseenv["identical"](robj,
                                                       robj_again)[0])
-        tmp_file.close()
+        # Check the instance dict is also identical
+        self.assertSetEqual(set(robj.__dict__.keys()),
+                            set(robj_again.__dict__.keys())) 
+
 
 import rpy2.robjects.methods
 

@@ -118,6 +118,14 @@ class RObjectMixin(object):
             s = str.join('', s)
         return s
 
+    def __getstate__(self, ):
+        return (super().__getstate__(), self.__dict__.copy())
+
+    def __setstate__(self, state):
+        rds, __dict__ = state
+        super().__setstate__(rds)
+        self.__dict__.update(__dict__)
+
     def r_repr(self):
         """ String representation for an object that can be
         directly evaluated as R code.
@@ -168,7 +176,7 @@ def repr_robject(o, linesep=os.linesep):
 
     
 class RObject(RObjectMixin, rpy2.rinterface.Sexp):
-    """ Base class for all R objects. """
+    """ Base class for all non-vector R objects. """
     
     def __setattr__(self, name, value):
         if name == '_sexp':
@@ -177,4 +185,3 @@ class RObject(RObjectMixin, rpy2.rinterface.Sexp):
                                      "that inherits from rpy2.rinterface.Sexp" +\
                                      "(not from %s)" %type(value))
         super(RObject, self).__setattr__(name, value)
-
