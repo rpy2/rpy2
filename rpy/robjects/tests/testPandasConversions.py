@@ -96,7 +96,7 @@ class PandasConversionsTestCase(unittest.TestCase):
     def testObject2String(self):
         series = pandas.Series(["a","b","c","a"], dtype="O")
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.py2ro(category)
+            rp_c = robjects.conversion.py2ro(series)
             self.assertEqual(robjects.vectors.StrVector, type(rp_c))
 
     def testFactor2Category(self):
