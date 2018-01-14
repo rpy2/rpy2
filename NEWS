@@ -8,6 +8,10 @@ Changes
   to :class:`rpy2.robjects.vectors.StrVector` objects, issueing a warning
   about it (See issue #421).
 
+- The conversion of pandas data frame is now working with columns rather
+  than rows (introduce in bug fix for issue #442 below) and this is expected
+  to result in more efficient conversions.
+
 Bugs fixed
 ----------
 
@@ -16,7 +20,10 @@ Bugs fixed
 - Fixed pickling unpickling of robjects-level instances,
   regression introduced in fix for issue #432 with release 2.9.1 (issue #443).
 
-- Fixed broken unit test for columns of `dtype` `"O"` in `pandas` data frames. 
+- Fixed broken unit test for columns of `dtype` `"O"` in `pandas` data frames.
+
+- Fixed incorrect conversion of R factors in data frames to columns of
+  integers in pandas data frame (issue #442).
 
 
 Release 2.9.1
