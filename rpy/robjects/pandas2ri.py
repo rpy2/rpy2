@@ -192,14 +192,8 @@ def ri2py_listvector(obj):
 
 @ri2py.register(DataFrame)
 def ri2py_dataframe(obj):
-    # use the numpy converter
-    recarray = numpy2ri.ri2py(obj)
-    try:
-        idx = numpy2ri.ri2py(obj.do_slot('row.names'))
-    except LookupError as le:
-        idx = None
-    res = PandasDataFrame.from_records(recarray,
-                                       index=idx)
+    items = tuple((k, ri2py(v)) for k, v in obj.items())
+    res = PandasDataFrame.from_items(items)
     return res
 
 def activate():
