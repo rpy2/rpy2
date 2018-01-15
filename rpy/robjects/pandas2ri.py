@@ -185,7 +185,7 @@ def ri2py_floatvector(obj):
 @ri2py.register(ListSexpVector)
 def ri2py_listvector(obj):        
     if 'data.frame' in obj.rclass:
-        res = ri2py.registry[DataFrame](obj)
+        res = ri2py(DataFrame(obj))
     else:
         res = numpy2ri.ri2py(obj)
     return res
