@@ -130,12 +130,10 @@ result = rmagic_addone(12344)
         # as the original recarray
         self.assertEqual(len(dataf_np), len(fromr_dataf_np))
         for col_i, col_n in enumerate(('x', 'y')):
-            #np.testing.assert_array_equal(dataf_np[col_i],
-            #                              fromr_dataf_np.ix[col_i].values)
             if has_pandas:
                 self.assertTrue(isinstance(fromr_dataf_np, pd.DataFrame))
                 self.assertSequenceEqual(tuple(dataf_np[col_i]),
-                                         tuple(fromr_dataf_np.ix[col_i+1].values))
+                                         tuple(fromr_dataf_np.iloc[col_i].values))
             else:
                 # has_numpy then
                 self.assertSequenceEqual(tuple(dataf_np[col_i]),
