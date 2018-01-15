@@ -176,7 +176,8 @@ class PandasConversionsTestCase(unittest.TestCase):
         self.assertEquals(('a', 'b', 'c'), tuple(pandas_df.keys()))
         self.assertEquals(pandas_df['a'].dtype, numpy.dtype('int32'))
         self.assertEquals(pandas_df['b'].dtype, numpy.dtype('O'))
-        self.assertTrue(isinstance(pandas_df['c'].dtype, pandas.types.dtypes.CategoricalDtype))
+        self.assertTrue(isinstance(pandas_df['c'].dtype,
+                                   pandas.api.types.CategoricalDtype))
     
     def testRi2pandas_issue207(self):
         d = robjects.DataFrame({'x': 1})
