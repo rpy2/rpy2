@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:17.10
 
 MAINTAINER Laurent Gautier <lgautier@gmail.com>
 
@@ -27,7 +27,7 @@ RUN \
 		     libedit-dev \
 		     python3 \
 		     python3-pip \
-		     python3.5-venv \
+		     python3.6-venv \
 		     r-base \
 		     r-base-dev \
 		     sudo \
@@ -48,15 +48,15 @@ RUN \
   rm rpacks.txt
 
 RUN \
-  pip3 --no-cache-dir install pip --upgrade && \
-  pip3 --no-cache-dir install setuptools --upgrade && \
-  pip3 --no-cache-dir install wheel --upgrade && \
-  pip3 --no-cache-dir install  jinja2 numpy pandas pytest sphinx && \
+  python3 -m pip --no-cache-dir install pip --upgrade && \
+  python3 -m pip --no-cache-dir install setuptools --upgrade && \
+  python3 -m pip --no-cache-dir install wheel --upgrade && \
+  python3 -m pip --no-cache-dir install jinja2 numpy pandas pytest sphinx && \
   rm -rf /root/.cache
   
 # Run dev version of rpy2
 RUN \
-  pip3 --no-cache-dir install \
+  python3 -m pip --no-cache-dir install \
        https://bitbucket.org/rpy2/rpy2/get/default.tar.gz && \
   rm -rf /root/.cache
 
