@@ -54,7 +54,7 @@ compiled with the shared library flag). The Docker image
 can also be an easy start for Windows users.
 
 Its name is `rpy2/rpy2`, with currently two possible release tags
-(making the full image names either `rpy2/rpy2:2.8.x` or
+(making the full image names either `rpy2/rpy2:2.9.x` or
 `rpy2/rpy2:devel`).
 
 The image was primarily designed to run a jupyter notebook or
@@ -86,7 +86,7 @@ ipython terminal
 	  
    docker run \
           -it --rm \
-          rpy2/rpy2:2.8.x ipython
+          rpy2/rpy2:2.9.x ipython
 
 
 jupyter notebook
@@ -98,7 +98,7 @@ To run the jupyter notebook on port 8888:
 
    docker run \
           --rm -p 8888:8888 \
-          rpy2/rpy2:2.8.x
+          rpy2/rpy2:2.9.x
 
 Once started, point a web browser to `http://localhost:8888`.
 
