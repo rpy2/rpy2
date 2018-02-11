@@ -1,5 +1,5 @@
 import os
-import pytz
+import dateutil.tz
 from datetime import datetime
 import rpy2.robjects as ro
 import rpy2.robjects.conversion as conversion
@@ -15,6 +15,7 @@ from pandas.core.index import Index as PandasIndex
 import pandas
 from numpy import recarray
 import numpy
+import pytz
 import warnings
 
 from collections import OrderedDict
@@ -146,11 +147,11 @@ def ri2py_intvector(obj):
 
 def get_timezone():
     """ Return the system's timezone settings. """
-    etc_timezone = '/etc/timezone'
+    filename_timezone = dateutil.tz.gettz()._filename
     timezone = None
-    if os.path.exists(etc_timezone):
+    if os.path.exists(filename_timezone):
         try:
-            with open(etc_timezone) as fh:
+            with open(filename_timezone) as fh:
                 tz = fh.read().strip()
             try :
                 timezone = pytz.timezone(tz)
@@ -161,7 +162,7 @@ def get_timezone():
             warnings.warn('Unable to read date in %s, using UTC.' % etc_timezone)
             timezone = 'UTC'
     else:
-        warnings.warn('No file %s' % etc_timezone)
+        warnings.warn('No file %s' % filename_timezone)
     return timezone
 
 
