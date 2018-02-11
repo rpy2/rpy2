@@ -159,11 +159,8 @@ class build_ext(_build_ext):
             _build_ext.finalize_options(self)
 
     def run(self):
-        try:
-            super(build_ext, self).run()
-        except TypeError:
-            # distutils parent class an old style Python class
-            _build_ext.run(self)
+        super(build_ext, self).run()
+
 
 def cmp_version(x, y):
     if (x[0] < y[0]):
