@@ -10,6 +10,16 @@ New features
   is initialized.
 
 
+Release 2.9.3
+=============
+
+Bugs fixed
+----------
+
+- Delegate finding where is local time zone file to :mod:`dateutil.tz`
+  (issue #448).
+
+
 Release 2.9.2
 =============
 
