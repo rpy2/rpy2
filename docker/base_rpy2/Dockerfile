@@ -10,6 +10,7 @@ RUN \
   apt-get install -y \
                      apt-utils \
                      apt-transport-https \
+		     dirmngr \
                      gnupg \
 		     libcurl4-openssl-dev \
 		     libnlopt-dev \
