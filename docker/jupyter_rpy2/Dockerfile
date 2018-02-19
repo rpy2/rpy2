@@ -52,7 +52,7 @@ RUN mkdir /home/$NB_USER/work && \
     echo "cacert=/etc/ssl/certs/ca-certificates.crt" > /home/$NB_USER/.curlrc && \
     echo "c.NotebookApp.ip = '0.0.0.0'" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py && \
     python3.6 -m venv /home/$NB_USER/py36_env && \
-    echo "source /home/$NB_USER/py35_env/bin/activate" >> /home/$NB_USER/.bashrc && \
+    echo "source /home/$NB_USER/py36_env/bin/activate" >> /home/$NB_USER/.bashrc && \
     echo "echo Python virtual environment activated. Write \"deactivate\" to exit it." >> /home/$NB_USER/.bash
 
 USER root
