@@ -135,7 +135,7 @@ We are now ready to install packages using R's own function `install.package`:
    
    # Selectively install what needs to be install.
    # We are fancy, just because we can.
-   names_to_install = [x for packnames if not rpackages.isinstalled(x)]
+   names_to_install = [x for x in packnames if not rpackages.isinstalled(x)]
    if len(names_to_install) > 0:
        utils.install_packages(StrVector(names_to_install))
 
