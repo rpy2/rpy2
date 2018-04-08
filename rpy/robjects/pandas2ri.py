@@ -16,6 +16,7 @@ import pandas
 from numpy import recarray
 import numpy
 import pytz
+import tzlocal
 import warnings
 
 from collections import OrderedDict
@@ -35,7 +36,6 @@ original_converter = None
 # activate in the function activate() below
 import rpy2.robjects.numpy2ri as numpy2ri
 
-
 ISOdatetime = rinterface.baseenv['ISOdatetime']
 as_vector = rinterface.baseenv['as.vector']
 
@@ -48,6 +48,8 @@ ri2ro = converter.ri2ro
 # numpy types for Pandas columns that require (even more) special handling
 dt_datetime64ns_type = numpy.dtype('datetime64[ns]')
 dt_O_type = numpy.dtype('O')
+
+default_timezone = None
 
 @py2ri.register(PandasDataFrame)
 def py2ri_pandasdataframe(obj):
@@ -147,22 +149,10 @@ def ri2py_intvector(obj):
 
 def get_timezone():
     """ Return the system's timezone settings. """
-    filename_timezone = dateutil.tz.gettz()._filename
-    timezone = None
-    if os.path.exists(filename_timezone):
-        try:
-            with open(filename_timezone) as fh:
-                tz = fh.read().strip()
-            try :
-                timezone = pytz.timezone(tz)
-            except pytz.UnknownTimeZoneError:
-                warnings.warn('Unknown time zone in %s, using UTC.' % etc_timezone)
-                timezone = 'UTC'
-        except IOError:
-            warnings.warn('Unable to read date in %s, using UTC.' % etc_timezone)
-            timezone = 'UTC'
-    else:
-        warnings.warn('No file %s' % filename_timezone)
+    if default_timezone:
+        timezone = default_timezone
+    else
+        timezone = tzlocal.get_localzone()
     return timezone
 
 
