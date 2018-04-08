@@ -164,8 +164,11 @@ _initr = initr
 
 def initr():
     r_session_status = get_r_session_status()
-    # Force the internal initialization flag if there is an environment variable that indicates that R was
-    # alreay initialized in the current process.
+
+    # Force the internal initialization flag if there is an environment
+    # variable that indicates that R was alreay initialized in the current
+    # process.
+
     if r_session_status['current_pid'] == r_session_status.get('PID'):
         _rinterface._force_initialized()
 
