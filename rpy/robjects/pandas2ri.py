@@ -151,7 +151,7 @@ def get_timezone():
     """ Return the system's timezone settings. """
     if default_timezone:
         timezone = default_timezone
-    else
+    else:
         timezone = tzlocal.get_localzone()
     return timezone
 
