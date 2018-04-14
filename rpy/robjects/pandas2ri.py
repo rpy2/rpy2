@@ -1,3 +1,6 @@
+"""This module handles the conversion of data structures
+between R objects handled by rpy2 and pandas objects."""
+
 import os
 import dateutil.tz
 from datetime import datetime
