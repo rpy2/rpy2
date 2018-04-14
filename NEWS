@@ -16,7 +16,8 @@ Release 2.9.3
 Bugs fixed
 ----------
 
-- Delegate finding where is local time zone file to third-party
+- Delegate finding where is local time zone file to either a user-specified
+  module-level variable `default_timezone` or to the third-party
   module :mod:`tzlocal` (issue #448).
 
 
