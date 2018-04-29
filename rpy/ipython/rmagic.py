@@ -345,8 +345,8 @@ utils.install_packages('Cairo')
         Notes
         -----
 
-        Beware that R names can have '.' so this is not fool proof.
-        To avoid this, don't name your R objects with '.'s...
+        Beware that R names can have dots ('.') so this is not fool proof.
+        To avoid this, don't name your R objects with dots...
 
         """
         args = parse_argstring(self.Rpull, line)
