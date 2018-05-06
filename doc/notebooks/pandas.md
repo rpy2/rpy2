@@ -1,0 +1,74 @@
+# `R` and `pandas` data frames
+
+R `data.frame` and :class:`pandas.DataFrame` objects share a lot of
+conceptual similarities, and :mod:`pandas` chose to use the class name
+`DataFrame` after R objects.
+
+In a nutshell, both are sequences of vectors (or arrays) of consistent
+length or size for the first dimension (the "number of rows").
+if coming from the database world, an other way to look at them is
+column-oriented data tables, or data table API.
+
+rpy2 is providing an interface between Python and R, and a convenience
+conversion layer between :class:`rpy2.robjects.vectors.DataFrame` and
+:class:`pandas.DataFrame` objects, implemented in
+:mod:`rpy2.robjects.pandas2ri`.
+
+```python
+import pandas as pd
+import rpy2.robjects as ro
+from rpy2.robjects.packages import importr 
+from rpy2.robjects import pandas2ri
+
+from rpy2.robjects.conversion import localconverter
+```
+
+## From `pandas` to `R`
+
+```python
+pd_df = pd.DataFrame({'int_values': [1,2,3],
+                      'str_values': ['abc', 'def', 'ghi']})
+
+print('pandas:')
+print(pd_df)
+
+with localconverter(ro.default_converter + pandas2ri.converter):
+  r_from_pd_df = ro.conversion.py2ro(pd_df)
+
+print('R from pandas:')
+print(r_from_pd_df)
+```
+
+```python
+base = importr('base')
+
+try:
+  df_summary = base.summary(pd_df)
+except NotImplementedError as nie:
+  print('NotImplementedError:')
+  print(nie)
+```
+
+
+```python
+with localconverter(ro.default_converter + pandas2ri.converter):
+  df_summary = base.summary(pd_df)
+print(df_summary)
+```
+
+## From `R` to `pandas`
+
+```python
+r_df = ro.DataFrame({'int_values': ro.IntVector([1,2,3]),
+                     'str_values': ro.StrVector(['abc', 'def', 'ghi'])})
+
+print('r:')
+print(r_df)
+
+with localconverter(ro.default_converter + pandas2ri.converter):
+  pd_from_r_df = ro.conversion.ri2py(r_df)
+
+print('pandas from R:')
+print(pd_from_r_df)
+```
+
