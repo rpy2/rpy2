@@ -51,7 +51,7 @@ base = importr('base')
 
 with localconverter(ro.default_converter + pandas2ri.converter):
   df_summary = base.summary(pd_df)
-df_summary
+print(df_summary)
 ```
 
 Note that a `ContextManager` is used to limit the scope of the
