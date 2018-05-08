@@ -25,23 +25,40 @@ from rpy2.robjects.conversion import localconverter
 
 ## From `pandas` to `R`
 
+Pandas data frame:
+
 ```python
 pd_df = pd.DataFrame({'int_values': [1,2,3],
                       'str_values': ['abc', 'def', 'ghi']})
 
-print('pandas:')
-print(pd_df)
+pd_df
+```
 
+R data frame converted from a `pandas` data frame:
+
+```python
 with localconverter(ro.default_converter + pandas2ri.converter):
   r_from_pd_df = ro.conversion.py2ro(pd_df)
 
-print('R from pandas:')
-print(r_from_pd_df)
+r_from_pd_df
 ```
+
+The conversion is automatically happening when calling R functions.
+For example, when calling the R function `base::summary`:
 
 ```python
 base = importr('base')
 
+with localconverter(ro.default_converter + pandas2ri.converter):
+  df_summary = base.summary(pd_df)
+df_summary
+```
+
+Note that a `ContextManager` is used to limit the scope of the
+conversion. Without it, rpy2 will not know how to convert a pandas
+data frame:
+
+```python
 try:
   df_summary = base.summary(pd_df)
 except NotImplementedError as nie:
@@ -49,26 +66,23 @@ except NotImplementedError as nie:
   print(nie)
 ```
 
-
-```python
-with localconverter(ro.default_converter + pandas2ri.converter):
-  df_summary = base.summary(pd_df)
-print(df_summary)
-```
-
 ## From `R` to `pandas`
+
+Starting from an R data frame this time:
 
 ```python
 r_df = ro.DataFrame({'int_values': ro.IntVector([1,2,3]),
                      'str_values': ro.StrVector(['abc', 'def', 'ghi'])})
 
-print('r:')
-print(r_df)
+r_df
+```
 
+It can be converted to a pandas data frame using the same converter:
+
+```python
 with localconverter(ro.default_converter + pandas2ri.converter):
   pd_from_r_df = ro.conversion.ri2py(r_df)
 
-print('pandas from R:')
-print(pd_from_r_df)
+pd_from_r_df
 ```
 
