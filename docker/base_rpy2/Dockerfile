@@ -1,15 +1,16 @@
-FROM ubuntu:16.04
+FROM ubuntu:17.10
 
 MAINTAINER Laurent Gautier <lgautier@gmail.com>
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG CRAN_MIRROR=https://cran.revolutionanalytics.com/
+ARG CRAN_MIRROR=https://cloud.r-project.org
 
 RUN \
   apt-get update -qq && \
   apt-get install -y \
                      apt-utils \
                      apt-transport-https \
+		     dirmngr \
                      gnupg \
 		     libcurl4-openssl-dev \
 		     libnlopt-dev \
@@ -27,7 +28,7 @@ RUN \
 		     libedit-dev \
 		     python3 \
 		     python3-pip \
-		     python3.5-venv \
+		     python3.6-venv \
 		     r-base \
 		     r-base-dev \
 		     sudo \
