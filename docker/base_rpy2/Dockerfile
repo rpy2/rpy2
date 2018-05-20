@@ -49,15 +49,14 @@ RUN \
   rm rpacks.txt
 
 RUN \
-  pip3 --no-cache-dir install pip --upgrade && \
-  pip3 --no-cache-dir install setuptools --upgrade && \
-  pip3 --no-cache-dir install wheel --upgrade && \
-  pip3 --no-cache-dir install numpy pandas sphinx jinja2 tzlocal && \
+  python3 -m pip install --no-cache-dir --upgrade pip && \
+  python3 -m pip install --no-cache-dir --upgrade setuptools && \
+  python3 -m pip install --no-cache-dir --upgrade wheel && \
+  python3 -m pip install --no-cache-dir --upgrade numpy pandas sphinx jinja2 tzlocal && \
   rm -rf /root/.cache
   
-# Run dev version of rpy2
 RUN \
-  pip3 --no-cache-dir install \
+  python3 -m pip install --no-cache-dir \
        https://bitbucket.org/rpy2/rpy2/get/version_2.9.x.tar.gz && \
   rm -rf /root/.cache
 
