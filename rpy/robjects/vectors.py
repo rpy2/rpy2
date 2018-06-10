@@ -1,6 +1,5 @@
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.rinterface as rinterface
-#import rpy2.robjects.conversion as conversion
 from . import conversion
 
 import rpy2.rlike.container as rlc
@@ -29,6 +28,7 @@ else:
 
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
+r_concat = baseenv_ri['c']
 as_character = baseenv_ri['as.character']
 utils_ri = baseenv_ri['as.environment'](rinterface.StrSexpVector(("package:utils", )))
 
@@ -728,20 +728,23 @@ class POSIXt(object):
         format_elt = self.repr_format_elt
         l = len(self)
         half_items = max_items // 2
+        max_width = math.floor(52 / l)
+        # format_elt(str_vec, max_width = max_width)
         if l == 0:
             return
         elif l < max_items:
-            str_vec = as_character(self)
-            for elt in str_vec:
-                yield format_elt(str_vec, max_width = math.floor(52 / l))
+            str_vec = StrVector(as_character(self))
         else:
-            str_vec = as_character(self[ : half_items])
-            for elt in str_vec:
-                yield format_elt(str_vec, max_width = math.floor(52 / l))
-            yield '...'
-            str_vec = as_character(self[-half_items : ])
-            for elt in str_vec:
-                yield format_elt(str_vec, max_width = math.floor(52 / l))
+            str_vec = r_concat(
+                as_character(
+                  self.rx(IntSexpVector(tuple(range(1, (half_items-1)))))
+                ),
+                StrSexpVector(['...']),
+                as_character(
+                  self.rx(IntSexpVector(tuple(range((l-half_items), l))))
+                ))
+        for elt in StrVector(str_vec)._iter_formatted(max_items=max_items):
+            yield elt
 
 
 class POSIXlt(POSIXt, Vector):
