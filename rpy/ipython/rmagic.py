@@ -61,25 +61,31 @@ from rpy2.robjects.conversion import converter as template_converter
 # Try loading pandas and numpy, emitting a warning if either cannot be
 # loaded.
 try:
-    from rpy2.robjects import numpy2ri
-    template_converter += numpy2ri.converter
+    import numpy
     try:
-        from rpy2.robjects import pandas2ri
-        template_converter += pandas2ri.converter
+        import pandas
     except ImportError:
+        pandas = None
         warnings.warn(' '.join(("The Python package 'pandas' is strongly"
                                 "recommended when using `rpy2.ipython`.",
                                 "Unfortunately it could not be loaded,",
                                 "but at least we found 'numpy'.")))
 except ImportError:
     # Give up on numerics
+    numpy = None
     warnings.warn(' '.join(("The Python package 'pandas' is strongly",
                             "recommended when using `rpy2.ipython`.",
                             "Unfortunately it could not be loaded,",
                             "as we did not manage to load 'numpy'",
                             "first.")))
-        
-        
+
+if pandas:
+  from rpy2.robjects import pandas2ri
+  template_converter += pandas2ri.converter
+elif numpy:
+  from rpy2.robjects import numpy2ri
+  template_converter += numpy2ri.converter
+
 
 # IPython imports
 
