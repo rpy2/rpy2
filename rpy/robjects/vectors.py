@@ -29,7 +29,8 @@ else:
 
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
-utils_ri = rinterface.baseenv['as.environment'](rinterface.StrSexpVector(("package:utils", )))
+as_character = baseenv_ri['as.character']
+utils_ri = baseenv_ri['as.environment'](rinterface.StrSexpVector(("package:utils", )))
 
 class ExtractDelegator(object):
     """ Delegate the R 'extraction' ("[") and 'replacement' ("[<-")
@@ -723,7 +724,25 @@ class DateVector(FloatVector):
 
 class POSIXt(object):
     """ POSIX time vector. This is an abstract class. """
-    pass
+    def _iter_formatted(self, max_items=9):
+        format_elt = self.repr_format_elt
+        l = len(self)
+        half_items = max_items // 2
+        if l == 0:
+            return
+        elif l < max_items:
+            str_vec = as_character(self)
+            for elt in str_vec:
+                yield format_elt(str_vec, max_width = math.floor(52 / l))
+        else:
+            str_vec = as_character(self[ : half_items])
+            for elt in str_vec:
+                yield format_elt(str_vec, max_width = math.floor(52 / l))
+            yield '...'
+            str_vec = as_character(self[-half_items : ])
+            for elt in str_vec:
+                yield format_elt(str_vec, max_width = math.floor(52 / l))
+
 
 class POSIXlt(POSIXt, Vector):
     """ Representation of dates with a 9-component structure
@@ -757,6 +776,7 @@ class POSIXlt(POSIXt, Vector):
         # (and yes, this is confusing)
         tmp = self.rx2(i-1)
         return struct_time(*tuple(tmp))
+
         
 class POSIXct(POSIXt, FloatVector):
     """ Representation of dates as seconds since Epoch.
