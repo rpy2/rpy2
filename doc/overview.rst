@@ -128,7 +128,7 @@ versions to run rpy2 with.
 Software Versions
 ======== ===================================================================
  Python   3.5+ (compatible with 2.7 and >3.3, but features might be missing)
- R        3.2+
+ R        3.4+
 ======== ===================================================================
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
@@ -229,7 +229,14 @@ Known distributions are: Debian and related (such as Ubuntu - often
 the most recent thanks to Dirk Eddelbuettel), Suse, RedHat, Mandrake,
 Gentoo.
 
-On, OS X rpy2 is in Macports and Fink.
+OS X (MacOS) precompiled binaries
+---------------------------------
+
+A binary *wheel* for OS X is available on pypi since rpy2-2.9.3 (see `issue #403`_).
+
+.. _issue #403: `https://bitbucket.org/rpy2/rpy2/issues/403`
+
+On, OS X rpy2 is in Macports, Homebrew, and Fink.
 
 
 .. index::

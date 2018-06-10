@@ -102,7 +102,9 @@ def _get_r_home(r_bin = 'R'):
         r_home = r_home[0].rstrip()
 
     if os.path.exists(os.path.join(r_home, 'Renviron.site')):
-        warnings.warn("The optional file '%s' is defined. Modifying it between build time and run time may lead to issues when using rpy2." % os.path.join(r_home, 'Renviron.site'))
+        warnings.warn("The optional file '%s' is defined. Modifying it between "
+                      "build time and run time may lead to issues when using rpy2." %
+                      os.path.join(r_home, 'Renviron.site'))
 
     return r_home
 
