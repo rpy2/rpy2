@@ -19,6 +19,10 @@ Bugs fixed
 - Fallback for failure to import numpy or pandas is now dissociated from
   failure to import :mod:`numpy2ri` or :mod:`pandas2ri` (issue #463).
 
+- :func:`repr` for R POSIX date/time vectors is now showing a string
+  representation of the date/time rather than the timestamp as a float
+  (issue #467).
+
 
 Release 2.9.3
 =============
