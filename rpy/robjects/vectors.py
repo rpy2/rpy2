@@ -724,12 +724,22 @@ class DateVector(FloatVector):
 
 class POSIXt(object):
     """ POSIX time vector. This is an abstract class. """
+
+    def repr_format_elt(self, elt, max_width = 12):        
+        max_width = int(max_width)
+        str_elt = str(elt)
+        if len(str_elt) < max_width:
+            res = elt
+        else:
+            res = "%s..." % str_elt[ : (max_width - 3)]
+        return res
+
+    
     def _iter_formatted(self, max_items=9):
         format_elt = self.repr_format_elt
         l = len(self)
         half_items = max_items // 2
         max_width = math.floor(52 / l)
-        # format_elt(str_vec, max_width = max_width)
         if l == 0:
             return
         elif l < max_items:
@@ -743,8 +753,8 @@ class POSIXt(object):
                 as_character(
                   self.rx(IntSexpVector(tuple(range((l-half_items), l))))
                 ))
-        for elt in StrVector(str_vec)._iter_formatted(max_items=max_items):
-            yield elt
+        for str_elt in str_vec:
+            yield self.repr_format_elt(str_elt)
 
 
 class POSIXlt(POSIXt, Vector):
