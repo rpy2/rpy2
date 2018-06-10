@@ -86,3 +86,33 @@ with localconverter(ro.default_converter + pandas2ri.converter):
 pd_from_r_df
 ```
 
+## Date and time objects
+
+```python
+pd_df = pd.DataFrame({
+    'Timestamp': pd.date_range('2017-01-01 00:00:00', periods=20, freq='s')
+    })
+    
+pd_df
+```
+
+```python
+with localconverter(ro.default_converter + pandas2ri.converter):
+  r_from_pd_df = ro.conversion.py2ro(pd_df)
+
+r_from_pd_df
+```
+
+The timezone used for conversion is the system's default timezone unless `pandas2ri.default_timezone`
+is specified... or unless the time zone is specified in original the time object:
+
+```python
+pd_tz_df = pd.DataFrame({
+    'Timestamp': pd.date_range('2017-01-01 00:00:00', periods=20, freq='s', tz='UTC')
+    })
+    
+with localconverter(ro.default_converter + pandas2ri.converter):
+  r_from_pd_tz_df = ro.conversion.py2ro(pd_tz_df)
+
+r_from_pd_tz_df
+```
