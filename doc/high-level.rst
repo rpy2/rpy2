@@ -8,5 +8,6 @@ High-level interface
    vector
    rhelp
    robjects_convert
+   pandas
    graphics
    lib_dplyr
