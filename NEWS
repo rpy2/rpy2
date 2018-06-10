@@ -23,6 +23,10 @@ Bugs fixed
   representation of the date/time rather than the timestamp as a float
   (issue #467).
 
+- The HTML representation of R data frame (the default representation in the
+  Jupyter notebook) was displaying an inconsistent number of rows
+  (found while workin on issue #466).
+
 
 Release 2.9.3
 =============
