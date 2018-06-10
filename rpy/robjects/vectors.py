@@ -1145,9 +1145,9 @@ class DataFrame(ListVector):
                 elements.append(tuple(e._iter_formatted()))
             else:
                 elements.append(['...',] * len(elements[-1]))
-       
+        
         d = {'column_names': names,
-             'rows': tuple(range(len(elements))),
+             'rows': range(len(elements[0]) if len(elements) else 0),
              'columns': tuple(range(len(names))),
              'nrows': self.nrow,
              'ncolumns': self.ncol,
