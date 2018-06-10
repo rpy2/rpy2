@@ -90,7 +90,7 @@ pd_from_r_df
 
 ```python
 pd_df = pd.DataFrame({
-    'Timestamp': pd.date_range('2017-01-01 00:00:00', periods=20, freq='s')
+    'Timestamp': pd.date_range('2017-01-01 00:00:00', periods=10, freq='s')
     })
     
 pd_df
@@ -104,11 +104,12 @@ r_from_pd_df
 ```
 
 The timezone used for conversion is the system's default timezone unless `pandas2ri.default_timezone`
-is specified... or unless the time zone is specified in original the time object:
+is specified... or unless the time zone is specified in the original time object:
 
 ```python
 pd_tz_df = pd.DataFrame({
-    'Timestamp': pd.date_range('2017-01-01 00:00:00', periods=20, freq='s', tz='UTC')
+    'Timestamp': pd.date_range('2017-01-01 00:00:00', periods=10, freq='s',
+                               tz='UTC')
     })
     
 with localconverter(ro.default_converter + pandas2ri.converter):
