@@ -15,6 +15,7 @@ from rpy2.rinterface import (SexpVector,
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pandas.core.series import Series as PandasSeries
 from pandas.core.index import Index as PandasIndex
+from pandas.core.dtypes.api import is_datetime64_any_dtype
 import pandas
 from numpy import recarray
 import numpy
@@ -49,7 +50,6 @@ ri2py = converter.ri2py
 ri2ro = converter.ri2ro
 
 # numpy types for Pandas columns that require (even more) special handling
-dt_datetime64ns_type = numpy.dtype('datetime64[ns]')
 dt_O_type = numpy.dtype('O')
 
 default_timezone = None
@@ -102,15 +102,16 @@ def py2ri_pandasseries(obj):
     elif obj.dtype.name == 'category':
         res = py2ri_categoryseries(obj)
         res = FactorVector(res)
-    elif obj.dtype == dt_datetime64ns_type:
+    elif is_datetime64_any_dtype(obj.dtype):
         # time series
+        tzname = obj.dt.tz.zone if obj.dt.tz else ''
         d = [IntVector([x.year for x in obj]),
              IntVector([x.month for x in obj]),
              IntVector([x.day for x in obj]),
              IntVector([x.hour for x in obj]),
              IntVector([x.minute for x in obj]),
              IntVector([x.second for x in obj])]
-        res = ISOdatetime(*d)
+        res = ISOdatetime(*d, tz=StrSexpVector([tzname]))
         #FIXME: can the POSIXct be created from the POSIXct constructor ?
         # (is '<M8[ns]' mapping to Python datetime.datetime ?)
         res = POSIXct(res)
