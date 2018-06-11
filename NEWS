@@ -15,6 +15,9 @@ Bugs fixed
   Jupyter notebook) was displaying an inconsistent number of rows
   (found while workin on issue #466).
 
+- Handle time zones in timezones in Pandas when converting to R data frames
+  (issue #454).
+
 
 Release 2.9.3
 =============
