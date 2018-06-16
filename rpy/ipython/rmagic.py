@@ -78,13 +78,12 @@ except ImportError:
                             "Unfortunately it could not be loaded,",
                             "as we did not manage to load 'numpy'",
                             "first.")))
-
-if pandas:
-  from rpy2.robjects import pandas2ri
-  template_converter += pandas2ri.converter
-elif numpy:
+if numpy:
   from rpy2.robjects import numpy2ri
   template_converter += numpy2ri.converter
+  if pandas:
+    from rpy2.robjects import pandas2ri
+    template_converter += pandas2ri.converter
 
 
 # IPython imports

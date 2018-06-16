@@ -30,6 +30,7 @@ from rpy2.robjects import r, vectors, globalenv
 import rpy2.robjects.packages as rpacks
 
 class TestRmagic(unittest.TestCase):
+    
     @classmethod
     def setUpClass(cls):
         '''Set up an IPython session just once.
@@ -44,6 +45,7 @@ class TestRmagic(unittest.TestCase):
     def setUp(self):
         if hasattr(rmagic.template_converter, 'activate'):
             rmagic.template_converter.activate()
+    
     def tearDown(self):
         # This seems like the safest thing to return to a safe state
         self.ip.run_line_magic('Rdevice', 'png')
