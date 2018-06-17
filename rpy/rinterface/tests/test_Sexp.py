@@ -183,7 +183,7 @@ class SexpTestCase(unittest.TestCase):
         sexp = rinterface.IntSexpVector([1,2,3])
         self.assertEqual(0, sexp.named)
         rinterface.baseenv.get("identity")(sexp)
-        self.assertEqual(2, sexp.named)
+        self.assertGreaterEqual(sexp.named, 2)
         sexp2 = sexp.__deepcopy__()
         self.assertEqual(sexp.typeof, sexp2.typeof)
         self.assertEqual(list(sexp), list(sexp2))
