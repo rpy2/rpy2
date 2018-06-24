@@ -61,12 +61,8 @@ class DplyrTestCase(unittest.TestCase):
         dataf_c = dataf_a.inner_join(dataf_b)
         all_names = list(dataf_a.colnames)
         all_names.append('foo')
-        try:
-            # Python 3
-            self.assertCountEqual(all_names, dataf_c.colnames)
-        except AttributeError as ae:
-            # Python 2.7
-            self.assertItemsEqual(all_names, dataf_c.colnames)
+        self.assertCountEqual(all_names, dataf_c.colnames)
+        self.assertItemsEqual(all_names, dataf_c.colnames)
 
     def testCollect(self):
         dataf = dplyr.DataFrame(mtcars)
@@ -75,12 +71,11 @@ class DplyrTestCase(unittest.TestCase):
         #        without error
         self.assertEquals(dplyr.DataFrame, type(dataf_collected))
         
-    def testCollect(self):
+    def testArrange(self):
         dataf = dplyr.DataFrame(mtcars)
-        dataf_collected = dataf.collect()
-        # FIXME: no real test here. Just ensuring that it is returning
-        #        without error
-        self.assertEquals(dplyr.DataFrame, type(dataf_collected))
+        dataf_arrange = dataf.arrange('mpg')
+        self.assertSequenceEqual(sorted(dataf.collect().rx2('mpg')),
+                                 dataf_arrange.collect().rx2('mpg'))
 
         
 def suite():
