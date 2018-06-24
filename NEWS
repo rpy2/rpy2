@@ -34,6 +34,9 @@ Bugs fixed
   to happen before Python's exit. This is preventing possible segfaults
   the process is terminating (issue #471).
 
+- dplyr method `ungroup()` was missing from
+  :class:`rpy2.robjects.lib.dplyr.DataFrame` (issue #473).
+
 
 Release 2.9.3
 =============
