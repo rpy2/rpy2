@@ -1,3 +1,4 @@
+import atexit
 import os
 import sys
 import warnings
@@ -200,6 +201,12 @@ def rternalize(function):
     template[0][2][1][2] = rpy_fun
     return baseenv['eval'](template)
 
+_initr = initr
+def initr(r_preservehash=False):
+  """"Wrapper around rpy2.rinterface._rinterface.initr()."""
+  atexit.register(endr, 0)
+  _initr(r_preservehash=r_preservehash)
+  
 # def cleanUp(saveact, status, runlast):
 #     return True
 
