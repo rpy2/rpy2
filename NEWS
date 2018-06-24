@@ -30,6 +30,10 @@ Bugs fixed
 - Handle time zones in timezones in Pandas when converting to R data frames
   (issue #454).
 
+- When exiting the Python process, the R cleanup is now explicitly request
+  to happen before Python's exit. This is preventing possible segfaults
+  the process is terminating (issue #471).
+
 
 Release 2.9.3
 =============
