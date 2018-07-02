@@ -26,6 +26,7 @@ RUN \
 		     mercurial \
 		     libcairo-dev \
 		     libedit-dev \
+		     libxml2-dev \
 		     python3 \
 		     python3-pip \
 		     python3.6-venv \
