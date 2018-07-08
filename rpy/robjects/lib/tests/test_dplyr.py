@@ -62,7 +62,7 @@ class DplyrTestCase(unittest.TestCase):
         all_names = list(dataf_a.colnames)
         all_names.append('foo')
         self.assertCountEqual(all_names, dataf_c.colnames)
-        self.assertItemsEqual(all_names, dataf_c.colnames)
+        self.assertSequenceEqual(all_names, dataf_c.colnames)
 
     def testCollect(self):
         dataf = dplyr.DataFrame(mtcars)
