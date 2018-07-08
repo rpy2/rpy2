@@ -42,7 +42,9 @@ class EmbeddedRTestCase(unittest.TestCase):
     def testCallErrorWhenEndedR(self):
         def foo(queue):
             import rpy2.rinterface as rinterface
+            rinterface.initr()
             rdate = rinterface.baseenv['date']
+            rinterface.endr(0)
             try:
                 tmp = rdate()
                 res = (False, None)
