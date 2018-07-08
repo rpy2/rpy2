@@ -43,7 +43,6 @@ class EmbeddedRTestCase(unittest.TestCase):
         def foo(queue):
             import rpy2.rinterface as rinterface
             rdate = rinterface.baseenv['date']
-            rinterface.endr(1)
             try:
                 tmp = rdate()
                 res = (False, None)
@@ -53,7 +52,7 @@ class EmbeddedRTestCase(unittest.TestCase):
                 res = (False, e)
             queue.put(res)
         q = multiprocessing.Queue()
-        p = multiprocessing.Process(target = foo, args = (q,))
+        p = multiprocessing.Process(target=foo, args=(q,))
         p.start()
         res = q.get()
         p.join()
@@ -66,7 +65,8 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEqual('REALSXP', rinterface.str_typeint(t.typeof))
 
     def testStr_typeint_invalid(self):
-        self.assertRaises(LookupError, rinterface.str_typeint, 99)
+        with self.assertRaises(LookupError):
+            rinterface.str_typeint(99)
 
     def testGet_initoptions(self):
         options = rinterface.get_initoptions()
@@ -76,8 +76,8 @@ class EmbeddedRTestCase(unittest.TestCase):
             self.assertEqual(o1, o2)
         
     def testSet_initoptions(self):
-        self.assertRaises(RuntimeError, rinterface.set_initoptions, 
-                          ('aa', '--verbose', '--no-save'))
+        with self.assertRaises(RuntimeError):
+            rinterface.set_initoptions(('aa', '--verbose', '--no-save'))
 
     def testInitr(self):
         def init_r(preserve_hash):
@@ -101,12 +101,12 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEqual(1, len(xp[0]))
 
     def testParseIncompleteError(self):
-        self.assertRaises(rinterface.RParsingIncompleteError,
-                          rinterface.parse, "2 + 3 /")
+        with self.assertRaises(rinterface.RParsingIncompleteError):
+            rinterface.parse("2 + 3 /")
 
     def testParseError(self):
-        self.assertRaises(rinterface.RParsingError,
-                          rinterface.parse, "2 + 3 , 1")
+        with self.assertRaises(rinterface.RParsingError):
+            rinterface.parse("2 + 3 , 1")
 
     def testRternalize(self):
         def f(x, y):
@@ -142,10 +142,9 @@ class EmbeddedRTestCase(unittest.TestCase):
         xp_name = rinterface.StrSexpVector(('expression',))
         xp = rinterface.baseenv['vector'](xp_name, 3)
         
-        
-
     def testParseInvalidString(self):
-        self.assertRaises(ValueError, rinterface.parse, 3)
+        with self.assertRaises(ValueError):
+            rinterface.parse(3)
 
     def testInterruptR(self):
         with tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
