@@ -257,9 +257,9 @@ def rternalize(function):
 
 _initr = initr
 def initr(r_preservehash=False):
-  """"Wrapper around rpy2.rinterface._rinterface.initr()."""
-  atexit.register(endr, 0)
-  _initr(r_preservehash=r_preservehash)
+    """"Wrapper around rpy2.rinterface._rinterface.initr()."""
+    atexit.register(endr, 0)
+    _initr(r_preservehash=r_preservehash)
   
 # def cleanUp(saveact, status, runlast):
 #     return True
