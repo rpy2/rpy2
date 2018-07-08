@@ -1,4 +1,5 @@
 import atexit
+import collections
 import os
 import sys
 import warnings
@@ -127,12 +128,16 @@ from rpy2.rinterface._rinterface import (baseenv,
                                          VECSXP)
 from rpy2.rinterface import _rinterface
 
+
+_REFERENCE_TO_R_SESSIONS = 'https://github.com/rstudio/reticulate/issues/98'
+
 def get_r_session_status(r_session_init = None):
     """Return information about the R session, if available.
 
     Information about the R session being already initialized can be communicated by a parent environment.
-    See discussion at: https://github.com/rstudio/reticulate/issues/98
-    """
+    See discussion at: %s
+    """ % _REFERENCE_TO_R_SESSIONS
+    
     d = {'current_pid': os.getpid()}
     
     if r_session_init is None:
@@ -147,34 +152,51 @@ def get_r_session_status(r_session_init = None):
     return d
 
 
+def is_r_externally_initialized():
+    r_session_status = get_r_session_status()
+
+    return r_session_status['current_pid'] == r_session_status.get('PID')
+
+
 def set_python_session_status():
     """Set information about the Python process in an environment variable.
 
-    Current the information See discussion at: https://github.com/rstudio/reticulate/issues/98
-    """
-    d = OrderedDict((('current_pid', os.getpid()),
-                     ('sys.executable', sys.executable)))
+    Current the information See discussion at: %s
+    """ % _REFERENCE_TO_R_SESSIONS
+    
+    d = collections.OrderedDict((('current_pid', os.getpid()),
+                                ('sys.executable', sys.executable)))
     info_string = ':'.join('%s=%s' % x for x in d.items())
     os.environ['PYTHON_SESSION_INITIALIZED'] = info_string
 
 
 ## rename function imported from C-extension to wrap it.
 _initr = initr
+def initr(r_preservehash=False):
+    """"Wrapper around `rpy2.rinterface._rinterface.initr()`.
 
+    This wrapper is adding the following:
 
-def initr():
-    r_session_status = get_r_session_status()
+    - R is only initialized if `is_r_externally_initialized()` is not
+    true when this function is called.
+
+    - After R is initialized, :func:`rpy2.rinterface.endr` is registered
+    to be called when Python exits.
+    
+    - The environment variable "PYTHON_SESSION_INFO" is set (See %s).
+    """ % _REFERENCE_TO_R_SESSIONS
 
     # Force the internal initialization flag if there is an environment
     # variable that indicates that R was alreay initialized in the current
     # process.
 
-    if r_session_status['current_pid'] == r_session_status.get('PID'):
+    if is_r_externally_initialized():
         _rinterface._force_initialized()
 
     # As soon as R is initialized, set the environment variable
     # PYTHON_SESSION_INFO
-    _initr()
+    _initr(r_preservehash=r_preservehash)
+    atexit.register(endr, 0)
     set_python_session_status()
 
     
@@ -254,12 +276,6 @@ def rternalize(function):
     template = parse('function(...) { .External(".Python", foo, ...) }')
     template[0][2][1][2] = rpy_fun
     return baseenv['eval'](template)
-
-_initr = initr
-def initr(r_preservehash=False):
-    """"Wrapper around rpy2.rinterface._rinterface.initr()."""
-    atexit.register(endr, 0)
-    _initr(r_preservehash=r_preservehash)
   
 # def cleanUp(saveact, status, runlast):
 #     return True
