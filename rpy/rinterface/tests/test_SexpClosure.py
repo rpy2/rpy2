@@ -21,7 +21,8 @@ class SexpClosureTestCase(unittest.TestCase):
 
     def testNew(self):
         x = "a"
-        self.assertRaises(ValueError, rinterface.SexpClosure, x)
+        with self.assertRaises(ValueError):
+            rinterface.SexpClosure(x)
         
     def testTypeof(self):
         sexp = rinterface.globalenv.get("plot")
@@ -30,7 +31,8 @@ class SexpClosureTestCase(unittest.TestCase):
     def testRError(self):
         r_sum = rinterface.baseenv["sum"]
         letters = rinterface.baseenv["letters"]
-        self.assertRaises(rinterface.RRuntimeError, r_sum, letters)
+        with self.assertRaises(rinterface.RRuntimeError):
+            r_sum(letters)
 
     def testUTF8params(self):
         c = rinterface.globalenv.get('c')
@@ -40,13 +42,16 @@ class SexpClosureTestCase(unittest.TestCase):
 
     def testEmptystringparams(self):
         d = dict([('', 1)])
-        self.assertRaises(TypeError, rinterface.baseenv['list'], **d)
+        with self.assertRaises(TypeError):
+            rinterface.baseenv['list'](**d)
 
     def testClosureenv(self):
         exp = rinterface.parse("function(x) { x[y] }")
         fun = rinterface.baseenv["eval"](exp)
         vec = rinterface.baseenv["letters"]
-        self.assertRaises(rinterface.RRuntimeError, fun, vec)
+
+        with self.assertRaises(rinterface.RRuntimeError):
+            fun(vec)
 
         fun.closureenv["y"] = (rinterface
                                .SexpVector([1, ], 
@@ -106,7 +111,8 @@ class SexpClosureTestCase(unittest.TestCase):
     def testErrorInCall(self):
         mylist = rinterface.baseenv['list']
         
-        self.assertRaises(ValueError, mylist, 'foo')
+        with self.assertRaises(ValueError):
+            mylist('foo')
 
     def testMissingArg(self):
         exp = rinterface.parse("function(x) { missing(x) }")
