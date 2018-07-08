@@ -8,7 +8,6 @@ import warnings
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     dbplyr = importr('dbplyr', on_conflict="warn")
-    lazyeval = importr('lazyeval', on_conflict="warn")
     dbplyr = WeakPackage(dbplyr._env,
                          dbplyr.__rname__,
                          translation=dbplyr._translation,
