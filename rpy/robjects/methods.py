@@ -1,5 +1,4 @@
 import sys
-import six
 from types import SimpleNamespace
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface

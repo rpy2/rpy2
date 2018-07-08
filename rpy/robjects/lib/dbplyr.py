@@ -1,5 +1,4 @@
 from collections import namedtuple
-from six import with_metaclass
 from rpy2.robjects.packages import (importr, data,
                                     Package, default_symbol_r2python,
                                     default_symbol_check_after,
