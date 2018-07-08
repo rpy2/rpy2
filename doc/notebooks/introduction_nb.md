@@ -89,6 +89,10 @@ evaluates a variable from the R console.
 
 Example in R:
 
+```python
+%load_ext rpy2.ipython
+```
+
 ```r
 pi
 ```
