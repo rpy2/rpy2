@@ -9,6 +9,7 @@ raising a NotImplementedError exception.
 import sys
 from collections import namedtuple
 
+# TODO: ensure that installs only with Python _>= 3.5 and then remove this.
 if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 4):
     from singledispatch import singledispatch
 else:

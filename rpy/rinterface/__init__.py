@@ -206,39 +206,29 @@ def initr(r_preservehash=False):
 
     
 # wrapper in case someone changes sys.stdout:
-if sys.version_info.major == 3:
-    # Print became a regular function in Python 3, making
-    # the workaround (mostly) unnecessary (python2to3 still needs it
-    # wrapped in a function
-    def consolePrint(x):
-        print(x)
-else:
-    def consolePrint(x):
-        sys.stdout.write(x)
+def consolePrint(x):
+    print(x)
+    
 
 set_writeconsole_regular(consolePrint)
+
 
 def consoleWarn(x):
     warnings.warn(x, RRuntimeWarning)
 set_writeconsole_warnerror(consoleWarn)
+
 
 def consoleFlush():
     sys.stdout.flush()
 
 set_flushconsole(consoleFlush)
 
-# wrapper in case someone changes sys.stdout:
-if sys.version_info.major == 3:
-    # 'raw_input()' became 'input()' in Python 3
-    def consoleRead(prompt):
-        text = input(prompt)
-        text += "\n"
-        return text
-else:
-    def consoleRead(prompt):
-        text = raw_input(prompt)
-        text += "\n"
-        return text
+
+def consoleRead(prompt):
+    text = input(prompt)
+    text += "\n"
+    return text
+
 
 set_readconsole(consoleRead)
 

@@ -90,11 +90,7 @@ class ImportrTestCase(unittest.TestCase):
         path = 'coin"coin'
 
         with self.assertRaises(RRuntimeError):
-            if sys.version_info[0] == 3:
-                Tmp_File = io.StringIO
-            else:
-                # no need to test which Python 2, only 2.7 supported
-                Tmp_File = tempfile.NamedTemporaryFile
+            Tmp_File = io.StringIO
             tmp_file = Tmp_File()
             try:
                 stdout = sys.stdout

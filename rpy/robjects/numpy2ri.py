@@ -48,22 +48,14 @@ ri2ro = converter.ri2ro
 
 import sys
 
-if sys.version_info[0] == 3:
-    def numpy_O_py2ri(o):
-        if all(isinstance(x, str) for x in o):
-            res = StrSexpVector(o)
-        elif all(isinstance(x, bytes) for x in o):
-            res = ByteSexpVector(o)
-        else:
-            res = conversion.py2ri(list(o))
-        return res
-else:
-    def numpy_O_py2ri(o):
-        if all((isinstance(x, str) or isinstance(x, bytes) or isinstance(x, unicode)) for x in o):
-            res = StrSexpVector(o)
-        else:
-            res = conversion.py2ri(list(o))
-        return res
+def numpy_O_py2ri(o):
+    if all(isinstance(x, str) for x in o):
+        res = StrSexpVector(o)
+    elif all(isinstance(x, bytes) for x in o):
+        res = ByteSexpVector(o)
+    else:
+        res = conversion.py2ri(list(o))
+    return res
     
 @py2ri.register(numpy.ndarray)
 def numpy2ri(o):

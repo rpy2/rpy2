@@ -26,42 +26,20 @@ class CustomException(Exception):
 
 class EmbeddedRTestCase(unittest.TestCase):
 
-
     def testConsolePrint(self):
-        if sys.version_info[0] == 3:
-            tmp_file = io.StringIO()
-            stdout = sys.stdout
-            sys.stdout = tmp_file
-            try:
-                rinterface.consolePrint('haha')
-            except Exception as e:
-                sys.stdout = stdout
-                raise e
+        tmp_file = io.StringIO()
+        stdout = sys.stdout
+        sys.stdout = tmp_file
+        try:
+            rinterface.consolePrint('haha')
+        finally:
             sys.stdout = stdout
-            tmp_file.flush()
-            tmp_file.seek(0)
-            self.assertEqual('haha', ''.join(s for s in tmp_file).rstrip())
-            tmp_file.close()
-        else:
-            # no need to test which Python 2, only 2.7 supported
-            with tempfile.NamedTemporaryFile() as tmp_file:
-                stdout = sys.stdout
-                sys.stdout = tmp_file
-                try:
-                    rinterface.consolePrint('haha')
-                except Exception as e:
-                    sys.stdout = stdout
-                    raise e
-                sys.stdout = stdout
-                tmp_file.flush()
-                tmp_file.seek(0)
-                self.assertEqual('haha', ''.join(s.decode() for s in tmp_file))
+        tmp_file.flush()
+        tmp_file.seek(0)
+        self.assertEqual('haha', ''.join(s for s in tmp_file).rstrip())
+        tmp_file.close()
 
     def testCallErrorWhenEndedR(self):
-        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
-            self.assertTrue(False) # cannot be tested with Python < 2.6
-            return None
-        import multiprocessing
         def foo(queue):
             import rpy2.rinterface as rinterface
             rdate = rinterface.baseenv['date']
@@ -170,8 +148,6 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertRaises(ValueError, rinterface.parse, 3)
 
     def testInterruptR(self):
-        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
-            self.assertTrue(False) # Test unit currently requires Python >= 2.6
         with tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
                                          delete = False) as rpy_code:
             rpy2_path = os.path.dirname(rpy2.__path__[0])

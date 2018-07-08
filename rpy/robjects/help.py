@@ -12,9 +12,6 @@ from rpy2.rinterface import StrSexpVector
 from rpy2.robjects.packages_utils import get_packagepath, _libpaths, _packages
 from collections import OrderedDict
 
-if sys.version_info[0] == 2:
-    range = xrange
-
 tmp = rinterface.baseenv['R.Version']()
 tmp_major = int(tmp[tmp.do_slot('names').index('major')][0])
 tmp_minor = float(tmp[tmp.do_slot('names').index('minor')][0])

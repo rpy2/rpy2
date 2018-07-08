@@ -23,18 +23,7 @@ class MethodsTestCase(unittest.TestCase):
 
     def testRS4_TypeNoAccessors(self):
         robjects.r['setClass']("Foo", robjects.r('list(foo="numeric")'))
-        if sys.version_info[0] == 2:
-            classdef = """
-from rpy2 import robjects
-from rpy2.robjects import methods
-class Foo(methods.RS4):
-    __metaclass__ = methods.RS4_Type
-    def __init__(self):
-        obj = robjects.r['new']('R_A')
-        self.__sexp__ = obj.__sexp__
-"""
-        else:
-            classdef = """
+        classdef = """
 from rpy2 import robjects
 from rpy2.robjects import methods
 class Foo(methods.RS4, metaclass = methods.RS4_Type):
@@ -61,22 +50,7 @@ class Foo(methods.RS4, metaclass = methods.RS4_Type):
         robjects.r['setMethod']("length", signature="R_A",
                                 definition = robjects.r("function(x) 123"))
 
-        if sys.version_info[0] == 2:
-            classdef = """
-from rpy2 import robjects
-from rpy2.robjects import methods
-class R_A(methods.RS4):
-    __metaclass__ = methods.RS4_Type
-    __accessors__ = (('length', None,
-                      'get_length', False, 'get the length'),
-                     ('length', None,
-                      None, True, 'length'))
-    def __init__(self):
-        obj = robjects.r['new']('R_A')
-        self.__sexp__ = obj.__sexp__
-"""
-        else:
-            classdef = """
+        classdef = """
 from rpy2 import robjects
 from rpy2.robjects import methods
 class R_A(methods.RS4, metaclass=methods.RS4_Type):

@@ -1,4 +1,5 @@
 import unittest
+import multiprocessing
 import pytest
 import sys, struct
 import rpy2.rinterface as ri
@@ -12,11 +13,6 @@ def evalr(string):
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon
 
-if sys.version_info[0] == 2:
-    range = xrange
-    IS_PYTHON3 = False
-else:
-    IS_PYTHON3 = True
 
 class WrapperSexpVectorTestCase(unittest.TestCase):
     def testInt(self):
@@ -50,10 +46,7 @@ class WrapperSexpVectorTestCase(unittest.TestCase):
         self.assertTrue(ok)
 
     def testByte(self):
-        if IS_PYTHON3:
-            seq = (b'a', b'b')
-        else:
-            seq = ('a', 'b')
+        seq = (b'a', b'b')
         sexp = ri.ByteSexpVector(seq)
         is_raw = ri.globalenv.get("is.raw")
         ok = is_raw(sexp)[0]
@@ -201,30 +194,21 @@ class FloatSexpVectorTestCase(unittest.TestCase):
 class ByteSexpVectorTestCase(unittest.TestCase):
 
     def testInitFromBytes(self):
-        if IS_PYTHON3:
-            seq = (b'a', b'b', b'c')
-        else:
-            seq = 'abc'
+        seq = (b'a', b'b', b'c')
         v = ri.ByteSexpVector(seq)
         self.assertEqual(3, len(v))
         for x,y in zip(seq, v):
             self.assertEqual(x, y)
 
     def testInitFromSeqOfBytes(self):
-        if IS_PYTHON3:
-            seq = (b'a', b'b', b'c')
-        else:
-            seq = ('a', 'b', 'c')
+        seq = (b'a', b'b', b'c')
         v = ri.ByteSexpVector(seq)
         self.assertEqual(3, len(v))
         for x,y in zip(seq, v):
             self.assertEqual(x, y)
 
     def testInitFromSeqInvalidByte(self):
-        if IS_PYTHON3:
-            seq = (b'a', 2, b'c')
-        else:
-            seq = ('a', 2, 'c')
+        seq = (b'a', 2, b'c')
         self.assertRaises(ValueError, ri.ByteSexpVector, seq)
 
 
@@ -240,10 +224,6 @@ class SexpVectorTestCase(unittest.TestCase):
 
 #FIXME: end and initializing again causes currently a lot a trouble...
     def testNewWithoutInit(self):
-        if sys.version_info[0] == 2 and sys.version_info[1] < 6:
-            self.assertTrue(False) # cannot be tested with Python < 2.6
-            return None
-        import multiprocessing
         def foo(queue):
             import rpy2.rinterface as rinterface
             rinterface.endr(1)
@@ -430,10 +410,7 @@ class SexpVectorTestCase(unittest.TestCase):
         #FIXME: R has introduced the use of larger integers
         #       for vector sizes (and indexing). Is this relevant
         #       any longer ?
-        if IS_PYTHON3:
-            haslargeint = (sys.maxsize > ri.R_LEN_T_MAX)
-        else:
-            haslargeint = (sys.maxint > ri.R_LEN_T_MAX)
+        haslargeint = (sys.maxsize > ri.R_LEN_T_MAX)
         if haslargeint:
             self.assertRaises(IndexError, myVec.__getitem__, 
                               ri.R_LEN_T_MAX+1)

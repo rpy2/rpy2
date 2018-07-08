@@ -1,7 +1,3 @@
-import sys
-if sys.version_info[0] == 2:
-    range = xrange
-    from itertools import izip as zip
 import rpy2.rlike.indexing as rli
 
 class OrdDict(dict):

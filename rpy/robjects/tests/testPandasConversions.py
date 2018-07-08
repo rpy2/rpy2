@@ -67,14 +67,7 @@ class PandasConversionsTestCase(unittest.TestCase):
             rp_df = robjects.conversion.py2ri(pd_df)
         self.assertEqual(pd_df.shape[0], rp_df.nrow)
         self.assertEqual(pd_df.shape[1], rp_df.ncol)
-        if sys.version_info[0] == 3:
-            self.assertSequenceEqual(rp_df.rx2('s'), [b"b", b"c", b"d"])
-        else:
-            # if Python it will be a string, that will turn into a factor
-            col_s = rp_df.rx2('s')
-            self.assertEqual(robjects.vectors.FactorVector,
-                             type(col_s))
-            self.assertSequenceEqual(col_s.levels, [b"b", b"c", b"d"])
+        self.assertSequenceEqual(rp_df.rx2('s'), [b"b", b"c", b"d"])
             
     def testSeries(self):
         Series = pandas.core.series.Series
@@ -159,10 +152,7 @@ class PandasConversionsTestCase(unittest.TestCase):
             rp_df = robjects.conversion.py2ri(pd_df)
         s = repr(rp_df) # used to fail with a TypeError
         s = s.split('\n')
-        if sys.version_info[0] == 3:
-            repr_str = '[BoolVec..., IntVector, FloatVe..., Vector, StrVector]'
-        else:
-            repr_str = '[BoolVec..., IntVector, FloatVe..., FactorV..., StrVector]'
+        repr_str = '[BoolVec..., IntVector, FloatVe..., Vector, StrVector]'
         self.assertEqual(repr_str, s[2].strip())
 
     def testRi2pandas(self):

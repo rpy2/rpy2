@@ -7,10 +7,6 @@ import datetime
 import rpy2.rlike.container as rlc
 from collections import OrderedDict
 
-if sys.version_info[0] == 2:
-    range = xrange
-
-
 rlist = robjects.baseenv["list"]
 
 class VectorTestCase(unittest.TestCase):
@@ -286,10 +282,7 @@ class ExtractDelegatorTestCase(unittest.TestCase):
         
     def testFloorDivision(self):
         v = robjects.vectors.IntVector((2,3,4))
-        if sys.version_info[0] == 2:
-            res = v.ro / 2
-        else:
-            res = v.ro // 2
+        res = v.ro // 2
         self.assertEqual((1,1,2), tuple(int(x) for x in res))
             
     def testExtractByIndex(self):

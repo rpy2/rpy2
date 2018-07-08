@@ -16,15 +16,6 @@ from rpy2.rinterface import (Sexp, SexpVector, ListSexpVector, StrSexpVector,
                              FloatSexpVector, R_NilValue, NA_Real, NA_Integer,
                              NA_Character, NA_Logical, NULL, MissingArg)
 
-if sys.version_info[0] == 2:
-    py3str = unicode
-    py3bytes = str
-    range = xrange
-else:
-    long = int
-    py3str = str
-    py3bytes = bytes
-
 
 globalenv_ri = rinterface.globalenv
 baseenv_ri = rinterface.baseenv
@@ -164,17 +155,13 @@ class VectorOperationsDelegator(object):
         res = globalenv_ri.get("^")(self._parent, conversion.py2ri(x))
         return conversion.ri2ro(res)
 
-    if sys.version_info[0] == 2:
-        def __div__(self, x):
-            res = globalenv_ri.get("/")(self._parent, conversion.py2ri(x))
-            return conversion.ri2ro(res)
-    else:
-        def __floordiv__(self, x):
-            res = globalenv_ri.get("%/%")(self._parent, conversion.py2ri(x))
-            return conversion.ri2ro(res)
-        def __truediv__(self, x):
-            res = globalenv_ri.get("/")(self._parent, conversion.py2ri(x))
-            return conversion.ri2ro(res)        
+    def __floordiv__(self, x):
+        res = globalenv_ri.get("%/%")(self._parent, conversion.py2ri(x))
+        return conversion.ri2ro(res)
+    
+    def __truediv__(self, x):
+        res = globalenv_ri.get("/")(self._parent, conversion.py2ri(x))
+        return conversion.ri2ro(res)        
         
     def __divmod__(self, x):
         res = globalenv_ri.get("%%")(self._parent, conversion.py2ri(x))
@@ -330,12 +317,12 @@ class Vector(RObjectMixin, SexpVector):
         max_width = int(max_width)
         if elt is NA_Real or elt is NA_Integer or elt is NA_Character or elt is NA_Logical:
             res = repr(elt)
-        elif isinstance(elt, long) or isinstance(elt, int):
+        elif isinstance(elt, int):
             res = '%8i' %elt
         elif isinstance(elt, float):
             res = '%8f' %elt
         else:
-            if isinstance(elt, py3str):
+            if isinstance(elt, str):
                 elt = elt.__repr__()
             else:
                 elt = type(elt).__name__    

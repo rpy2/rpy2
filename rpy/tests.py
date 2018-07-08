@@ -7,7 +7,8 @@ problems sould be dealt with using decorators.'''
 from __future__ import print_function
 
 # if `singledispatch` is absent, the unit tests are failing with a rather
-# obscure / misleading error message. Test it now and report the problem. 
+# obscure / misleading error message. Test it now and report the problem.
+# TODO: ensure that installs require Python >= 3.5 and remove this.
 import sys
 if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 4):
     try:
