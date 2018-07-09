@@ -51,6 +51,7 @@ from rpy2.rinterface._rinterface import (baseenv,
                                          emptyenv,
                                          endr,
                                          initr,
+                                         is_initialized,
                                          get_choosefile,
                                          get_cleanup,
                                          get_flushconsole,
@@ -171,6 +172,7 @@ def set_python_session_status():
 
 
 ## rename function imported from C-extension to wrap it.
+
 _initr = initr
 def initr(r_preservehash=False):
     """"Wrapper around `rpy2.rinterface._rinterface.initr()`.
