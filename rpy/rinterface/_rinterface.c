@@ -1145,7 +1145,7 @@ PyDoc_STRVAR(EmbeddedR_force_initialized_doc,
 
 static PyObject*
 EmbeddedR_force_initialized(PyObject *self) {
-  embeddedR_status = RPY_R_INITIALIZED;
+  embeddedR_status = embeddedR_status | RPY_R_INITIALIZED;
 }
 
 PyDoc_STRVAR(EmbeddedR_init_doc,
