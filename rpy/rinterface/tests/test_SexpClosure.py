@@ -46,6 +46,8 @@ class SexpClosureTestCase(unittest.TestCase):
             rinterface.baseenv['list'](**d)
 
     def testClosureenv(self):
+        if 'y' in rinterface.globalenv:
+            del(rinterface.globalenv['y'])
         exp = rinterface.parse("function(x) { x[y] }")
         fun = rinterface.baseenv["eval"](exp)
         vec = rinterface.baseenv["letters"]
