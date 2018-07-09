@@ -1,6 +1,5 @@
 import unittest
 import sys
-import six
 import rpy2.robjects as robjects
 import rpy2.robjects.methods as methods
 rinterface = robjects.rinterface
@@ -85,15 +84,17 @@ class R_A(methods.RS4, metaclass=methods.RS4_Type):
 
     def testRS4Auto_Type(self):
         robjects.r('library(stats4)')
-        class MLE(six.with_metaclass(robjects.methods.RS4Auto_Type,
-                                     robjects.methods.RS4)):
+        class MLE(object,
+                  metaclass=(robjects.methods.RS4Auto_Type,
+                             robjects.methods.RS4)):
             __rname__ = 'mle'
             __rpackagename__ = 'stats4'
         
     def testRS4Auto_Type_nopackname(self):
         robjects.r('library(stats4)')
-        class MLE(six.with_metaclass(robjects.methods.RS4Auto_Type,
-                                     robjects.methods.RS4)):
+        class MLE(object,
+                  metaclass=(robjects.methods.RS4Auto_Type,
+                             robjects.methods.RS4)):
             __rname__ = 'mle'
 
 
