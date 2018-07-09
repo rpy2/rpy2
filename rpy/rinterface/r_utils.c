@@ -26,6 +26,7 @@
 #include "r_utils.h"
 
 static int embeddedR_isinitialized;
+static int embeddedR_isended;
 
 /* Return whether R has been initialized */
 int

@@ -4,6 +4,8 @@
  */
 const unsigned int const RPY_R_INITIALIZED = 0x01;
 const unsigned int const RPY_R_BUSY = 0x02;
+const unsigned int const RPY_R_ENDED = 0x04;
+
 /* Initial status is 0 */
 static unsigned int embeddedR_status = 0;
 

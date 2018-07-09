@@ -9,6 +9,13 @@ New features
 - :attr:`rpy2.rinterface.NA_Integer` is now only defined when the embedded R
   is initialized.
 
+Changes
+-------
+
+- calling :func:`rpy2.rinterface.endr` multiple times is now only ending R
+  the first time it is called (note: an ended R cannot successfully be
+  re-initialized).
+
 
 Release 2.9.4
 =============

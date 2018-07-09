@@ -3,8 +3,9 @@
 
 #include  <Rdefines.h>
 
-extern const unsigned int const RPY_R_INITIALIZED;
-extern const unsigned int const RPY_R_BUSY;
+extern const unsigned int RPY_R_INITIALIZED;
+extern const unsigned int RPY_R_BUSY;
+extern const unsigned int RPY_R_ENDED;
 
 /* Representation of R objects (instances) as instances in Python.
  */

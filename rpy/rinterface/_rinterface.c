@@ -199,6 +199,7 @@ static PySexpObject *rpy_R_NilValue;
 static int preserved_robjects = 0;
 #endif
 
+static void rpy2_end_r_zero(void);
 
 /* NAs */
 static PyObject* NAInteger_New(int new);
@@ -1115,26 +1116,6 @@ void Re_Busy(int which)
 }
 #endif
 
-static void
-end_r(void)
-{
-  /* taken from the tests/Embedded/shutdown.c in the R source tree */
-
-  R_dot_Last();           
-  R_RunExitFinalizers();  
-  /* CleanEd(); */
-  Rf_KillAllDevices();
-  
-  R_CleanTempDir();
-  /* PrintWarnings(); */
-  R_gc();
-  /* */
-
-  /*NOTE: This is only part of the procedure to terminate
-   R - more in EmbeddedR_end()*/
-
-
-}
 
 PyDoc_STRVAR(EmbeddedR_force_initialized_doc,
              "Force the initialization flag for the embeddedR.\n"
@@ -1349,7 +1330,7 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args, PyObject *kwds)
   printf("R initialized - status: %i\n", status);
 #endif
 
-  int register_endr = Py_AtExit( end_r );
+  int register_endr = Py_AtExit( rpy2_end_r_zero );
   if (register_endr != 0) {
     register_endr = PyErr_WarnEx(PyExc_RuntimeWarning, 
 				 "'rpy2.rinterface.endr' could not be "
@@ -1375,7 +1356,28 @@ static PyObject* EmbeddedR_init(PyObject *self, PyObject *args, PyObject *kwds)
   return res;
 }
 
-static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
+
+static void
+_r_shutdown(void)
+{
+  /* taken from the tests/Embedded/shutdown.c in the R source tree */
+
+  R_dot_Last();           
+  R_RunExitFinalizers();  
+  /* CleanEd(); */
+  Rf_KillAllDevices();
+  
+  R_CleanTempDir();
+  /* PrintWarnings(); */
+  R_gc();
+  /* */
+
+  /*NOTE: This is only part of the procedure to terminate
+   R - more in EmbeddedR_end()*/
+
+}
+
+static void rpy2_end_r(int fatal)
 {
   /* FIXME: Have a reference count for R objects known to Python.
    * ending R will not be possible until all such objects are already
@@ -1383,11 +1385,15 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
    *other possibility would be to have a fallback for "unreachable" objects ? 
    */
 
-  end_r();
+  if (rpy_has_status(RPY_R_ENDED)) {
+    return;
+  }
+  
+  _r_shutdown();
 
   Rf_endEmbeddedR((int)fatal);
 
-  embeddedR_status = embeddedR_status & (! RPY_R_INITIALIZED);
+  embeddedR_status = embeddedR_status | RPY_R_ENDED;
 
   SexpObject *sexpobj_ptr = Rpy_PreserveObject(R_EmptyEnv);
   Rpy_ReleaseObject(globalEnv->sObj->sexp);
@@ -1402,15 +1408,18 @@ static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal)
   emptyEnv->sObj = sexpobj_ptr;
 
   errMessage_SEXP = R_NilValue; 
+}
 
-  /* FIXME: Is it possible to reinitialize R later ?
-   * Py_XDECREF(embeddedR_isInitialized);
-   * embeddedR_isInitialized = Py_False;
-   *Py_INCREF(embeddedR_isInitialized); 
-   */
+static void rpy2_end_r_zero(void) {
+  rpy2_end_r(0);
+}
 
+
+static PyObject* EmbeddedR_end(PyObject *self, Py_ssize_t fatal) {
+  rpy2_end_r((int)fatal);
   Py_RETURN_NONE;
 }
+
 PyDoc_STRVAR(EmbeddedR_end_doc,
              "endr(int) -> None\n"
              "\n"
