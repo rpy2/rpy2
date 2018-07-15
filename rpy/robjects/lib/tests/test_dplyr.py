@@ -58,7 +58,7 @@ class DplyrTestCase(unittest.TestCase):
     def testJoin(self):
         dataf_a = dplyr.DataFrame(mtcars)
         dataf_b = dataf_a.mutate(foo=1)
-        dataf_c = dataf_a.inner_join(dataf_b)
+        dataf_c = dataf_a.inner_join(dataf_b, by=dataf_a.colnames)
         all_names = list(dataf_a.colnames)
         all_names.append('foo')
         self.assertCountEqual(all_names, dataf_c.colnames)
