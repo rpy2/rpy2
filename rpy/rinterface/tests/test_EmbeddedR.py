@@ -1,6 +1,7 @@
 import unittest
 import pickle
 import multiprocessing
+import pytest
 import rpy2
 import rpy2.rinterface as rinterface
 import sys, os, subprocess, time, tempfile, io, signal, gc
@@ -24,7 +25,24 @@ def onlyAQUAorWindows(function):
 class CustomException(Exception):
     pass
 
+
+def _call_with_ended_r(queue):
+    import rpy2.rinterface as rinterface
+    rinterface.initr()
+    rdate = rinterface.baseenv['date']
+    rinterface.endr(0)
+    try:
+        tmp = rdate()
+        res = (False, None)
+    except RuntimeError as re:
+        res = (True, re)
+    except Exception as e:
+        res = (False, e)
+    queue.put(res)
+
+
 class EmbeddedRTestCase(unittest.TestCase):
+
 
     def testConsolePrint(self):
         tmp_file = io.StringIO()
@@ -39,22 +57,11 @@ class EmbeddedRTestCase(unittest.TestCase):
         self.assertEqual('haha', ''.join(s for s in tmp_file).rstrip())
         tmp_file.close()
 
+    @pytest.mark.skip(reason='Spawned process seems to share initialization state with parent.')
     def testCallErrorWhenEndedR(self):
-        def foo(queue):
-            import rpy2.rinterface as rinterface
-            rinterface.initr()
-            rdate = rinterface.baseenv['date']
-            rinterface.endr(0)
-            try:
-                tmp = rdate()
-                res = (False, None)
-            except RuntimeError as re:
-                res = (True, re)
-            except Exception as e:
-                res = (False, e)
-            queue.put(res)
         q = multiprocessing.Queue()
-        p = multiprocessing.Process(target=foo, args=(q,))
+        ctx = multiprocessing.get_context('spawn')
+        p = ctx.Process(target=_call_with_ended_r, args=(q,))
         p.start()
         res = q.get()
         p.join()
@@ -196,6 +203,7 @@ except Exception as e:
         del(x)
         gc.collect(); gc.collect()
         self.assertFalse(x_rid in set(z[0] for z in rinterface.protected_rids()))
+
 
 class CallbacksTestCase(unittest.TestCase):
     def tearDown(self):

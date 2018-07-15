@@ -221,12 +221,10 @@ class SexpVectorTestCase(unittest.TestCase):
         v = ri.IntSexpVector(range(10))
         self.assertRaises(TypeError, v.__delitem__, 3)
 
-
-#FIXME: end and initializing again causes currently a lot a trouble...
+    @pytest.mark.skip(reason='Spawned process seems to share initialization state with parent.')
     def testNewWithoutInit(self):
         def foo(queue):
             import rpy2.rinterface as rinterface
-            rinterface.endr(1)
             try:
                 tmp = ri.SexpVector([1,2], ri.INTSXP)
                 res = (False, None)
@@ -236,7 +234,8 @@ class SexpVectorTestCase(unittest.TestCase):
                 res = (False, e)
             queue.put(res)
         q = multiprocessing.Queue()
-        p = multiprocessing.Process(target = foo, args = (q,))
+        ctx = multiprocessing.get_context('spawn')
+        p = ctx.Process(target = foo, args = (q,))
         p.start()
         res = q.get()
         p.join()
