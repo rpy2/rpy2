@@ -16,14 +16,12 @@ def floatEqual(x, y, epsilon = 0.00000001):
 
 
 class SexpVectorNumericTestCase(unittest.TestCase):
-
-    numericmodule = numpy
     
     @unittest.skipUnless(has_numpy, 'Package numpy is not installed.')
     def testArrayStructInt(self):
         px = [1, -2, 3]
         x = rinterface.SexpVector(px, rinterface.INTSXP)
-        nx = self.numericmodule.asarray(x)
+        nx = numpy.asarray(x)
         self.assertEqual(nx.dtype.kind, 'i')
         for orig, new in zip(px, nx):
             self.assertEqual(orig, new)
@@ -36,7 +34,7 @@ class SexpVectorNumericTestCase(unittest.TestCase):
     def testArrayStructDouble(self):
         px = [1.0, -2.0, 3.0]
         x = rinterface.SexpVector(px, rinterface.REALSXP)
-        nx = self.numericmodule.asarray(x)
+        nx = numpy.asarray(x)
         self.assertEqual(nx.dtype.kind, 'f')
         for orig, new in zip(px, nx):
             self.assertEqual(orig, new)
@@ -49,7 +47,7 @@ class SexpVectorNumericTestCase(unittest.TestCase):
     def testArrayStructComplex(self):
         px = [1+2j, 2+5j, -1+0j]
         x = rinterface.SexpVector(px, rinterface.CPLXSXP)
-        nx = self.numericmodule.asarray(x)
+        nx = numpy.asarray(x)
         self.assertEqual(nx.dtype.kind, 'c')
         for orig, new in zip(px, nx):
             self.assertEqual(orig, new)
@@ -58,7 +56,7 @@ class SexpVectorNumericTestCase(unittest.TestCase):
     def testArrayStructBoolean(self):
         px = [True, False, True]
         x = rinterface.SexpVector(px, rinterface.LGLSXP)
-        nx = self.numericmodule.asarray(x)
+        nx = numpy.asarray(x)
         self.assertEqual('i', nx.dtype.kind) # not 'b', see comments in array.c
         for orig, new in zip(px, nx):
             self.assertEqual(orig, new)
