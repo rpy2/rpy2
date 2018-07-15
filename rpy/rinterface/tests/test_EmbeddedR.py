@@ -252,10 +252,9 @@ class CallbacksTestCase(unittest.TestCase):
 
         rinterface.set_resetconsole(f)
         self.assertEqual(rinterface.get_resetconsole(), f)
-        try:
-            rinterface.baseenv['eval'](rinterface.parse('1+"a"'))
-        except rinterface.RRuntimeError:
-            pass
+        with self.assertRaises(rinterface.RRuntimeError):
+            with pytest.warns(rinterface.RRuntimeWarning):
+                rinterface.baseenv['eval'](rinterface.parse('1+"a"'))
         self.assertEqual(1, reset[0])
 
     @onlyAQUAorWindows
@@ -351,8 +350,9 @@ class CallbacksTestCase(unittest.TestCase):
         def f(prompt):
             raise Exception("Doesn't work.")
         rinterface.set_choosefile(f)
-        self.assertRaises(rinterface.RRuntimeError,
-                          rinterface.baseenv["file.choose"])
+        with self.assertRaises(rinterface.RRuntimeError):
+            with pytest.warns(rinterface.RRuntimeWarning):
+                rinterface.baseenv["file.choose"]()
         self.assertEqual("Doesn't work.", str(sys.last_value))
 
     def testSetShowFiles(self):

@@ -1,4 +1,5 @@
 # coding: utf-8
+import pytest
 import unittest
 import sys
 import rpy2.rinterface as rinterface
@@ -92,11 +93,14 @@ class SexpEnvironmentTestCase(unittest.TestCase):
 
     def testSubscript_missing_utf8(self):
         env = rinterface.baseenv['new.env']()
-        self.assertRaises(KeyError, env.__getitem__, u'呵呵')
+        with self.assertRaises(KeyError):
+            with pytest.warns(rinterface.RRuntimeWarning):
+                env.__getitem__(u'呵呵')
         
     def testSubscript_no_utf8(self):
         env = rinterface.baseenv['new.env']()
-        self.assertRaises(KeyError, env.__getitem__, u'x')
+        with pytest.warns(rinterface.RRuntimeWarning):
+            self.assertRaises(KeyError, env.__getitem__, u'x')
         
     def testSubscript_emptyString(self):
         ge = rinterface.globalenv

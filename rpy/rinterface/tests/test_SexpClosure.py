@@ -1,4 +1,5 @@
 # coding: utf-8
+import pytest
 import unittest
 import sys
 import rpy2.rinterface as rinterface
@@ -25,20 +26,21 @@ class SexpClosureTestCase(unittest.TestCase):
             rinterface.SexpClosure(x)
         
     def testTypeof(self):
-        sexp = rinterface.globalenv.get("plot")
+        sexp = rinterface.globalenv.get('plot')
         self.assertEqual(sexp.typeof, rinterface.CLOSXP)
 
     def testRError(self):
-        r_sum = rinterface.baseenv["sum"]
-        letters = rinterface.baseenv["letters"]
+        r_sum = rinterface.baseenv['sum']
+        letters = rinterface.baseenv['letters']
         with self.assertRaises(rinterface.RRuntimeError):
-            r_sum(letters)
+            with pytest.warns(rinterface.RRuntimeWarning):
+                r_sum(letters)
 
     def testUTF8params(self):
         c = rinterface.globalenv.get('c')
         d = dict([(u'哈哈', 1)])
         res = c(**d)
-        self.assertEqual(u'哈哈', res.do_slot("names")[0])
+        self.assertEqual(u'哈哈', res.do_slot('names')[0])
 
     def testEmptystringparams(self):
         d = dict([('', 1)])
@@ -48,19 +50,20 @@ class SexpClosureTestCase(unittest.TestCase):
     def testClosureenv(self):
         if 'y' in rinterface.globalenv:
             del(rinterface.globalenv['y'])
-        exp = rinterface.parse("function(x) { x[y] }")
-        fun = rinterface.baseenv["eval"](exp)
-        vec = rinterface.baseenv["letters"]
+        exp = rinterface.parse('function(x) { x[y] }')
+        fun = rinterface.baseenv['eval'](exp)
+        vec = rinterface.baseenv['letters']
 
         with self.assertRaises(rinterface.RRuntimeError):
-            fun(vec)
+            with pytest.warns(rinterface.RRuntimeWarning):
+                fun(vec)
 
-        fun.closureenv["y"] = (rinterface
+        fun.closureenv['y'] = (rinterface
                                .SexpVector([1, ], 
                                            rinterface.INTSXP))
         self.assertEqual('a', fun(vec)[0])
         
-        fun.closureenv["y"] = (rinterface
+        fun.closureenv['y'] = (rinterface
                                .SexpVector([2, ], 
                                            rinterface.INTSXP))
         self.assertEqual('b', fun(vec)[0])
@@ -69,7 +72,7 @@ class SexpClosureTestCase(unittest.TestCase):
         # R's package "methods" can perform uncommon operations
         r_setClass = rinterface.globalenv.get('setClass')
         r_representation = rinterface.globalenv.get('representation')
-        attrnumeric = rinterface.SexpVector(["numeric", ],
+        attrnumeric = rinterface.SexpVector(['numeric', ],
                                             rinterface.STRSXP)
         classname = rinterface.SexpVector(['Track', ], rinterface.STRSXP)
         classrepr = r_representation(x = attrnumeric,
@@ -117,8 +120,8 @@ class SexpClosureTestCase(unittest.TestCase):
             mylist('foo')
 
     def testMissingArg(self):
-        exp = rinterface.parse("function(x) { missing(x) }")
-        fun = rinterface.baseenv["eval"](exp)
+        exp = rinterface.parse('function(x) { missing(x) }')
+        fun = rinterface.baseenv['eval'](exp)
         nonmissing = rinterface.SexpVector([0, ], rinterface.INTSXP)
         missing = rinterface.MissingArg
         self.assertEqual(False, fun(nonmissing)[0])
@@ -134,7 +137,7 @@ class SexpClosureTestCase(unittest.TestCase):
 
     def testScalarConvertBoolean(self):
         self.assertEqual('logical', 
-                          rinterface.baseenv["typeof"](True)[0])
+                          rinterface.baseenv['typeof'](True)[0])
         
 
 def suite():
