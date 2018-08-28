@@ -42,6 +42,7 @@ class RTYPES(enum.IntEnum):
 def _cdata_to_rinterface(function):
     def _(*args, **kwargs):
         cdata = function(*args, **kwargs)
+        # TODO: test cdata is of of the expected type
         if _rinterface._TYPEOF(cdata) == RTYPES.NILSXP:
             res = NULL
         else:
@@ -161,32 +162,83 @@ class Sexp(object):
         return self.__sexp__._cdata == sexp.__sexp__._cdata
 
 
+class SexpSymbol(Sexp):
+    
+    def __init__(self, obj):
+        if isinstance(obj, Sexp) or isinstance(obj, _rinterface.SexpCapsule):
+            super().__init__(obj)
+        elif isinstance(obj, str):
+            name_cdata = _rinterface.ffi.new('char []', obj.encode('ASCII'))
+            sexp = _rinterface.SexpCapsule(_rinterface.rlib.Rf_install(name_cdata))
+            super().__init__(sexp)
+        else:
+            raise ValueError('The constructor must be called '
+                             'with that is an instance of rpy2.rinterface.Sexp '
+                             'or an instance of rpy2.rinterface._rinterface.SexpCapsule')
+
+    def __str__(self):
+        return _rinterface.ffi.string(
+            _rinterface._STRING_VALUE(
+                self._sexpobject._cdata
+            )
+        ).decode('ASCII')
+
+
 class SexpEnvironment(Sexp):
 
     @_cdata_to_rinterface
     @_evaluated_promise
-    def get(self, name):
-        return _rinterface._findvar(name, self.__sexp__._cdata)
+    def get(self, key, wantfun=False):
+        # TODO: move check of R_UnboundValue to _rinterface ?
+        if not (isinstance(key, str) and len(key)):
+            raise ValueError('The key must be a non-empty string.')
+        if wantfun:
+            res = _rinterface._findfun(key, self.__sexp__._cdata)
+        else:
+            res = _rinterface._findvar(key, self.__sexp__._cdata)
+        if res == _rinterface.rlib.R_UnboundValue:
+            raise KeyError("'%s' not found" % key)
+        return res
 
     @_cdata_to_rinterface
     @_evaluated_promise
     def __getitem__(self, key):
         # TODO: move check of R_UnboundValue to _rinterface
-        res = _rinterface._findVarInFrame(key, self.__sexp__._cdata)
+        if not (isinstance(key, str) and len(key)):
+            raise ValueError('The key must be a non-empty string.')
+        res = _rinterface._findvar(key, self.__sexp__._cdata)
         if res == _rinterface.rlib.R_UnboundValue:
             raise KeyError("'%s' not found" % key)
         return res
 
     def __setitem__(self, key, value):
         # TODO: move body to _rinterface-level function
+        if not (isinstance(key, str) and len(key)):
+            raise ValueError('The key must be a non-empty string.')
         if (self.__sexp__._cdata == _rinterface.rlib.R_BaseEnv) or \
-           (self.__sexp__._cdata == rinterface.rlib.R_EmptyEnv):
+           (self.__sexp__._cdata == _rinterface.rlib.R_EmptyEnv):
             raise ValueError('Cannot remove variables from the base or empty environments.')
         # TODO: call to Rf_duplicate needed ?
-        cdata_copy = _rinterface.rlib.Rf_duplicate(value.__sexp__._cdata)
-        res = _rinterface.rlib.Rf_defineVar(_rinterface.rlib.Rf_install(key),
+        sym = _rinterface.rlib.Rf_protect(_rinterface.rlib.Rf_install(key.encode('ASCII')))
+        cdata_copy = _rinterface.rlib.Rf_protect(
+            _rinterface.rlib.Rf_duplicate(value.__sexp__._cdata)
+        )
+        res = _rinterface.rlib.Rf_defineVar(sym,
                                             cdata_copy,
                                             self.__sexp__._cdata)
+        _rinterface.rlib.Rf_unprotect(2)
+
+    def __len__(self):
+        symbols = _rinterface.rlib.Rf_protect(
+            _rinterface.rlib.R_lsInternal(self.__sexp__._cdata,
+                                          _rinterface.rlib.TRUE)
+            )
+        n = _rinterface.rlib.Rf_xlength(symbols)
+        _rinterface.rlib.Rf_unprotect(1)
+        return n
+
+    def __delitem__(self, obj):
+        raise NotImplementedError()
 
     @_cdata_to_rinterface
     def frame(self):
@@ -199,9 +251,22 @@ class SexpEnvironment(Sexp):
         return self.__sexp__._cdata.u.envsxp.enclos
         
     def keys(self):
-        NotImplementedError()
+        symbols = _rinterface.rlib.Rf_protect(
+            _rinterface.rlib.R_lsInternal(self.__sexp__._cdata,
+                                          _rinterface.rlib.TRUE)
+    )
+        n = _rinterface.rlib.Rf_xlength(symbols)
+        res = []
+        for i in range(n):
+            res.append(_rinterface._string_getitem(symbols, i))
+        _rinterface.rlib.Rf_unprotect(1)
+        for e in res:
+            yield e
 
-        
+    def __iter__(self):
+        return self.keys()
+
+    
 class SexpPromise(Sexp):
 
     @_cdata_to_rinterface

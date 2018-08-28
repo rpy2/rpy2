@@ -278,6 +278,18 @@ R_xlen_t Rf_xlength(SEXP);
 """)
 
 ffibuilder.cdef("""
+SEXP R_lsInternal(SEXP, Rboolean);
+""")
+
+ffibuilder.cdef("""
+SEXP Rf_duplicate(SEXP s);
+""")
+
+ffibuilder.cdef("""
+SEXP Rf_defineVar(SEXP sym, SEXP s, SEXP env);
+""")
+
+ffibuilder.cdef("""
 SEXP Rf_protect(SEXP s);
 void Rf_unprotect(int n);
 """)

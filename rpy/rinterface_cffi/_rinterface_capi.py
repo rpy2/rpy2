@@ -65,25 +65,29 @@ class UnmanagedSexpCapsule(object):
 def _findvar(name, r_environment):
     # TODO: use isStrinb and installTrChar
     name_b = name.encode('ASCII')
-    res = rlib.Rf_findVar(rlib.Rf_install(ffi.new('char[]', name_b)),
-                          r_environment)
+    sym = rlib.Rf_protect(rlib.Rf_install(ffi.new('char[]', name_b)))
+    res = rlib.Rf_protect(rlib.Rf_findVar(sym,
+                                          r_environment))
+    rlib.Rf_unprotect(2)
     return res
 
 
 def _findfun(name, r_environment):
     # TODO: use isStrinb and installTrChar
     name_b = name.encode('ASCII')
-    res = rlib.Rf_findFun(rlib.Rf_install(ffi.new('char[]', name_b)),
-                          r_environment)
+    sym = rlib.Rf_protect(rlib.Rf_install(ffi.new('char[]', name_b)))
+    res = rlib.Rf_protect(rlib.Rf_findFun(sym,
+                                          r_environment))
+    rlib.Rf_unprotect(2)
     return res
 
 
 def _findVarInFrame(name, r_environment):
     # TODO: use isStrinb and installTrChar
     name_b = name.encode('ASCII')
-    res = rlib.Rf_findVarInFrame(r_environment,
-                                 rlib.Rf_install(ffi.new('char[]', name_b)))
-                                 
+    sym = rlib.Rf_protect(rlib.Rf_install(ffi.new('char[]', name_b)))
+    res = rlib.Rf_protect(rlib.Rf_findVarInFrame(r_environment, sym))
+    rlib.Rf_unprotect(2)
     return res
 
 
@@ -166,7 +170,9 @@ def _STRING_VALUE(robj):
 
 
 def _string_getitem(cdata, i):
-    return ffi.string(_STRING_VALUE(rlib.STRING_ELT(cdata, i)))
+    return ffi.string(
+        _STRING_VALUE(rlib.STRING_ELT(cdata, i))
+    ).decode('ASCII')
 
 
 def _string_setitem(cdata, i, value_b):
@@ -191,8 +197,8 @@ def _build_rcall(rfunction, *args, **kwargs):
             rlib.SETCAR(item, val.__sexp__._cdata)
             item = rlib.CDR(item)
         for key, val in kwargs.items():
-            rlib.SETTAG(item,
-                        rlib.Rf_install(ffi.new('char[]', name_b)))
+            rlib.SET_TAG(item,
+                         rlib.Rf_install(ffi.new('char[]', name_b)))
             rlib.SETCAR(item, val.__sexp__._cdata)
             item = rlib.CDR(item)        
     finally:
