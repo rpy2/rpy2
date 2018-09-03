@@ -6,6 +6,16 @@ import rpy2.rinterface_cffi as rinterface
 
 rinterface.initr()
 
+def is_AQUA_or_Windows():
+    platform = rinterface.baseenv.get('.Platform')
+    _ = platform.do_slot('names')
+    platform_gui = _[_.index('GUI')]
+    platform_ostype = _[_.index('OS.type')]
+    if (platform_gui == 'AQUA') or (platform_ostype == 'windows'):
+        return True
+    else:
+        return False
+
 
 @contextmanager
 def obj_in_module(module, name, func):
@@ -29,23 +39,18 @@ def test_set_consolewrite_print():
 
 
 def test_consolewrite_print_error():
+
+    exceptions = []
     def f(x):
-        raise CustomException("Doesn't work.")
+        try:
+            raise Exception("Doesn't work.")
+        except Exception as e:
+            exceptions.append(str(e))
 
     with obj_in_module(rinterface.callbacks, 'consolewrite_print', f):
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            stderr = sys.stderr
-            sys.stderr = tmp_file
-            try:
-                code = rinterface.StrSexpVector(["3", ])
-                rinterface.baseenv["print"](code)
-            except Exception as e:
-                sys.stderr = stderr
-                raise e
-            sys.stderr = stderr
-            tmp_file.flush()
-            tmp_file.seek(0)
-            assert "Doesn't work." == str(sys.last_value)
+        code = rinterface.StrSexpVector(["3", ])
+        rinterface.baseenv["print"](code)
+        assert "Doesn't work." == exceptions[0]
 
 
 def testSetResetConsole():
@@ -60,36 +65,39 @@ def testSetResetConsole():
         assert reset[0] == 1
 
     
-    @onlyAQUAorWindows
-    def testSetFlushConsole(self):
-        flush = {'count': 0}
-        def f():
-            flush['count'] = flush['count'] + 1
+@pytest.mark.skip(is_AQUA_or_Windows(),
+                  reason='Can only be tested on Aqua or Windows')
+def test_set_flushconsole():
+    flush = {'count': 0}
+    def f():
+        flush['count'] = flush['count'] + 1
 
-        with obj_in_module(rinterface.callbacks, 'consoleflush', f):
-            self.assertEqual(rinterface.get_flushconsole(), f)
-            rinterface.baseenv.get("flush.console")()
-            self.assertEqual(1, flush['count'])
-            rinterface.set_writeconsole_regular(rinterface.consoleFlush)
+    with obj_in_module(rinterface.callbacks, 'consoleflush', f):
+        assert rinterface.get_flushconsole() == f
+        rinterface.baseenv.get('flush.console')()
+        assert flush['count'] == 1
+        rinterface.set_writeconsole_regular(rinterface.consoleFlush)
 
-    @onlyAQUAorWindows
-    def testFlushConsoleWithError(self):
-        def f(prompt):
-            raise Exception("Doesn't work.")
 
-        with obj_in_module(rinterface.callbacks, 'consoleflush', f):
-            with tempfile.NamedTemporaryFile() as tmp_file:
-                stderr = sys.stderr
-                sys.stderr = tmp_file
-                try:
-                    res = rinterface.baseenv.get('flush.console')()
-                except Exception as e:
-                    sys.stderr = stderr
-                    raise e
+@pytest.mark.skip(is_AQUA_or_Windows(),
+                  reason='Can only be tested on Aqua or Windows')
+def test_flushconsole_with_error():
+    def f(prompt):
+        raise Exception("Doesn't work.")
+
+    with obj_in_module(rinterface.callbacks, 'consoleflush', f):
+        with tempfile.NamedTemporaryFile() as tmp_file:
+            stderr = sys.stderr
+            sys.stderr = tmp_file
+            try:
+                res = rinterface.baseenv.get('flush.console')()
+            except Exception as e:
                 sys.stderr = stderr
-                tmp_file.flush()
-                tmp_file.seek(0)
-                self.assertEqual("Doesn't work.", str(sys.last_value))
+                raise e
+            sys.stderr = stderr
+            tmp_file.flush()
+            tmp_file.seek(0)
+            assert str(sys.last_value) == "Doesn't work."
 
 
 def test_consoleread():
@@ -136,10 +144,10 @@ def test_show_message_with_error():
         pass
     # TODO: incomplete test
 
-    
+
 def test_choosefile():
     me = "me"
-    def chooseMe(prompt):
+    def chooseMe(new):
         return me
     with obj_in_module(rinterface.callbacks, 'choosefile', chooseMe):
         res = rinterface.baseenv['file.choose']()

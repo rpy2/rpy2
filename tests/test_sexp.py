@@ -125,7 +125,6 @@ def test___sexp__():
     assert d.get(sexp2_rid) is None
 
 
-@pytest.mark.skip
 def test_rclass_get():
     sexp = rinterface.baseenv.get("letters")
     assert len(sexp.rclass) == 1
@@ -135,7 +134,6 @@ def test_rclass_get():
     assert sexp.rclass[0] == 'matrix'
 
 
-@pytest.mark.skip
 def test_rclass_set():
     sexp = rinterface.IntSexpVector([1,2,3])
     sexp.rclass = rinterface.StrSexpVector(['foo'])
@@ -143,7 +141,6 @@ def test_rclass_set():
     assert sexp.rclass[0] == 'foo'
 
 
-@pytest.mark.skip
 def test__sexp__wrongtypeof():
     sexp = rinterface.IntSexpVector([1,2,3])
     cobj = sexp.__sexp__

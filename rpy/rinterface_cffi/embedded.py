@@ -60,6 +60,10 @@ def _initr(interactive=True):
     rlib.ptr_R_CleanUp = callbacks._cleanup
     
     rpy2_embeddedR_isinitialized = RPY_R_Status.INITIALIZED
+
+    # TODO: still needed ?
+    _rinterface.rlib.R_CStackLimit = ffi.cast('uintptr_t', -1)
+    
     _rinterface.rlib.setup_Rmainloop()
     return status
 
@@ -70,11 +74,13 @@ class RParsingError(Exception):
 
 def _parse(cdata, num):
     status = _rinterface.ffi.new('ParseStatus[1]', None)
-    res = _rinterface.rlib.R_ParseVector(
-        cdata, # text
-        num,
-        status,
-        _rinterface.rlib.R_NilValue)
+    res = _rinterface.rlib.Rf_protect(
+        _rinterface.rlib.R_ParseVector(
+            cdata, # text
+            num,
+            status,
+            _rinterface.rlib.R_NilValue)
+    )
     # TODO: design better handling of possible status:
     # PARSE_NULL,
     # PARSE_OK,
@@ -82,5 +88,7 @@ def _parse(cdata, num):
     # PARSE_ERROR,
     # PARSE_EOF
     if status[0] != _rinterface.rlib.PARSE_OK:
+        _rinterface.rlib.Rf_unprotect(1)
         raise RParsingError(status)
+    _rinterface.rlib.Rf_unprotect(1)
     return res 

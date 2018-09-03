@@ -36,9 +36,9 @@ def test_typeof():
 def test_r_error():
     r_sum = rinterface.baseenv['sum']
     letters = rinterface.baseenv['letters']
-    with pytest.raises(rinterface.RRuntimeError):
-        with pytest.warns(rinterface.RRuntimeWarning):
-            r_sum(letters)
+    with pytest.raises(rinterface._rinterface.RRuntimeError), \
+         pytest.warns(rinterface.RRuntimeWarning):
+        r_sum(letters)
 
 
 def test_utf8_params():
@@ -50,7 +50,7 @@ def test_utf8_params():
     
 def test_emptystringparams():
     d = dict([('', 1)])
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         rinterface.baseenv['list'](**d)
 
 
@@ -61,7 +61,7 @@ def test_closureenv():
     fun = rinterface.baseenv['eval'](exp)
     vec = rinterface.baseenv['letters']
 
-    with pytest.raises(rinterface.RRuntimeError):
+    with pytest.raises(rinterface._rinterface.RRuntimeError):
         with pytest.warns(rinterface.RRuntimeWarning):
             fun(vec)
 
@@ -93,7 +93,7 @@ def test_call_OrdDict():
                       (None, rinterface.IntSexpVector([5, ])),
                       ('c', rinterface.IntSexpVector([0, ]))))
 
-    mylist = rinterface.baseenv['list'].rcall(tuple(ad.items()), 
+    mylist = rinterface.baseenv['list'].rcall(ad, 
                                               rinterface.globalenv)
 
     names = [x for x in mylist.do_slot('names')]
@@ -106,20 +106,18 @@ def test_call_OrdDictEnv():
     ad = rlc.OrdDict( ((None, rinterface.parse('sum(x)')),) )
     env_a = rinterface.baseenv['new.env']()
     env_a['x'] = rinterface.IntSexpVector([1,2,3])
-    sum_a = rinterface.baseenv['eval'].rcall(tuple(ad.items()), 
-                                             env_a)
+    sum_a = rinterface.baseenv['eval'].rcall(ad, env_a)
     assert 6 == sum_a[0]
     env_b = rinterface.baseenv['new.env']()
     env_b['x'] = rinterface.IntSexpVector([4,5,6])
-    sum_b = rinterface.baseenv['eval'].rcall(tuple(ad.items()), 
-                                             env_b)
+    sum_b = rinterface.baseenv['eval'].rcall(ad, env_b)
     assert 15 == sum_b[0]
 
 
 def test_error_in_call():
     mylist = rinterface.baseenv['list']
 
-    with pytest.raises(ValueError):
+    with pytest.raises(rinterface._rinterface.RRuntimeError):
         mylist('foo')
 
         
@@ -127,7 +125,7 @@ def test_missing_arg():
     exp = rinterface.parse('function(x) { missing(x) }')
     fun = rinterface.baseenv['eval'](exp)
     nonmissing = rinterface.IntSexpVector([0, ])
-    missing = rinterface.MissingArg
+    missing = rinterface.MISSING_ARG
     assert not fun(nonmissing)[0]
     assert fun(missing)[0]
 

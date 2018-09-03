@@ -197,14 +197,17 @@ SEXP SET_TAG(SEXP x, SEXP y);
 ffibuilder.cdef("""
 SEXP (CDR)(SEXP e);
 SEXP SETCDR(SEXP x, SEXP y);
+SEXP Rf_nthcdr(SEXP, int);
 """)
 
 ffibuilder.cdef("""
+SEXP (CAR)(SEXP e);
 SEXP SETCAR(SEXP x, SEXP y);
 """)
 
 ffibuilder.cdef("""
 SEXP Rf_getAttrib(SEXP sexp, SEXP what);
+SEXP Rf_setAttrib(SEXP x, SEXP what, SEXP n);
 """)
 
 ffibuilder.cdef("""
@@ -249,12 +252,23 @@ SEXP Rf_ScalarString(SEXP s);
 ffibuilder.cdef("""
 void *(STDVEC_DATAPTR)(SEXP x);
 int (INTEGER_ELT)(SEXP x, R_xlen_t i);
+void SET_INTEGER_ELT(SEXP x, R_xlen_t i, int v);
 double (REAL_ELT)(SEXP x, R_xlen_t i);
+void SET_REAL_ELT(SEXP x, R_xlen_t i, double v);
 int (LOGICAL_ELT)(SEXP x, R_xlen_t i);
+void SET_LOGICAL_ELT(SEXP x, R_xlen_t i, int v);
 Rcomplex (COMPLEX_ELT)(SEXP x, R_xlen_t i);
+
+Rbyte *(RAW)(SEXP x);
 Rbyte (RAW_ELT)(SEXP x, R_xlen_t i);
 SEXP (STRING_ELT)(SEXP x, R_xlen_t i);
 void SET_STRING_ELT(SEXP x, R_xlen_t i, SEXP v);
+SEXP (VECTOR_ELT)(SEXP x, R_xlen_t i);
+SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
+""")
+
+ffibuilder.cdef("""
+SEXP (CLOENV)(SEXP x);
 """)
 
 ffibuilder.cdef("""
@@ -314,9 +328,7 @@ SEXP R_EmptyEnv;
 """)
 
 ffibuilder.cdef("""
-SEXP R_BaseEnv;
-SEXP R_BaseNamespace;
-SEXP R_BaseNamespaceRegistry;
+Rboolean R_EnvironmentIsLocked(SEXP env);
 """)
 
 ffibuilder.cdef("""
@@ -326,7 +338,9 @@ SEXP R_BaseNamespaceRegistry;
 """)
 
 ffibuilder.cdef("""
-SEXP R_GlobalEnv;
+SEXP R_BaseEnv;
+SEXP R_BaseNamespace;
+SEXP R_BaseNamespaceRegistry;
 """)
 
 ffibuilder.cdef("""
@@ -339,6 +353,32 @@ ffibuilder.cdef("""
 SEXP Rf_install(const char *);
 SEXP Rf_installChar(SEXP x);
 SEXP Rf_mkChar(const char *);
+SEXP Rf_mkString(const char *);
+
+typedef enum {
+  CE_NATIVE = 0, 
+  CE_UTF8   = 1, 
+  CE_LATIN1 = 2,
+  CE_BYTES  = 3, 
+  CE_SYMBOL = 5, 
+  CE_ANY    = 99
+} cetype_t;
+
+cetype_t Rf_getCharCE(SEXP);
+SEXP Rf_mkCharCE(const char *, cetype_t);
+SEXP Rf_mkCharLenCE(const char *, int n, cetype_t encoding);
+""")
+
+ffibuilder.cdef("""
+typedef enum {
+  Bytes = 0,
+  Chars = 1, 
+  Width = 2
+} nchar_type;
+
+int R_nchar(SEXP string, nchar_type type_,
+            Rboolean allowNA, Rboolean keepNA, 
+            const char* msg_name);
 """)
 
 ffibuilder.cdef("""
@@ -369,6 +409,7 @@ SEXP R_ParseVector(SEXP text, int num, ParseStatus *status, SEXP srcfile);
 ffibuilder.cdef("""
 extern Rboolean R_Interactive ;
 extern int R_SignalHandlers;
+extern uintptr_t R_CStackLimit;
 """)
 
 

@@ -103,7 +103,7 @@ def test_subscript():
     obj = ge.get('letters')
     ge['a'] = obj
     a = ge['a']
-    assert ge.get("identical")(obj, a)
+    assert ge.get('identical')(obj, a)
 
 
 def test_subscript_utf8():
