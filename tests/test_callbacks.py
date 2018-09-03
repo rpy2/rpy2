@@ -2,7 +2,7 @@ from contextlib import contextmanager
 import pytest
 import sys
 import tempfile
-import rpy2.rinterface_cffi as rinterface
+import rpy2.rinterface as rinterface
 
 rinterface.initr()
 
@@ -59,7 +59,7 @@ def testSetResetConsole():
         reset[0] += 1
 
     with obj_in_module(rinterface.callbacks, 'consolereset', f):
-        with pytest.raises(rinterface.RRuntimeError), \
+        with pytest.raises(rinterface._rinterface.RRuntimeError), \
              pytest.warns(rinterface.RRuntimeWarning):
                 rinterface.baseenv['eval'](rinterface.parse('1+"a"'))
         assert reset[0] == 1
@@ -161,7 +161,7 @@ def test_choosefile_error():
         def f(prompt):
             raise Exception("Doesn't work.")
         with obj_in_module(rinterface.callbacks, 'choosefile', f):
-            with pytest.raises(rinterface.RRuntimeError):
+            with pytest.raises(rinterface._rinterface.RRuntimeError):
                 with pytest.warns(rinterface.RRuntimeWarning):
                     rinterface.baseenv["file.choose"]()
             assert "Doesn't work." == str(sys.last_value)
@@ -201,7 +201,7 @@ def test_showfiles_error():
             sys.stderr = tmp_file
             try:
                 res = rinterface.baseenv['file.show'](filename)
-            except rinterface.RRuntimeError:
+            except rinterface._rinterface.RRuntimeError:
                 pass
             except Exception as e:
                 sys.stderr = stderr
@@ -218,5 +218,5 @@ def test_cleanup():
         return None
     with obj_in_module(rinterface.callbacks, 'cleanup', f):
         r_quit = rinterface.baseenv['q']
-        with pytest.raises(rinterface.RRuntimeError):
+        with pytest.raises(rinterface._rinterface.RRuntimeError):
             r_quit()

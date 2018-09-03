@@ -1,6 +1,6 @@
 # coding: utf-8
 import pytest
-import rpy2.rinterface_cffi as rinterface
+import rpy2.rinterface as rinterface
 
 rinterface.initr()
 

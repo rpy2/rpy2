@@ -1,7 +1,7 @@
 # coding: utf-8
 import pytest
 import sys
-import rpy2.rinterface_cffi as rinterface
+import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
 rinterface.initr()
