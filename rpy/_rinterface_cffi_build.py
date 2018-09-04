@@ -231,6 +231,16 @@ SEXP Rf_elt(SEXP, int);
 """)
 
 ffibuilder.cdef("""
+typedef void (*R_CFinalizer_t)(SEXP);
+void R_RegisterCFinalizer(SEXP s, R_CFinalizer_t fun);
+""")
+
+ffibuilder.cdef("""
+typedef void* (*DL_FUNC)();
+SEXP R_MakeExternalPtr(DL_FUNC p, SEXP tag, SEXP prot);
+""")
+
+ffibuilder.cdef("""
 SEXP Rf_lang1(SEXP);
 SEXP Rf_lang2(SEXP, SEXP);
 SEXP Rf_lang3(SEXP, SEXP, SEXP);

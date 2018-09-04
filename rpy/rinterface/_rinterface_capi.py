@@ -48,6 +48,13 @@ def _release(cdata):
         _R_PRESERVED[addr] = count
 
 
+@ffi.callback('void (SEXP)')
+def _capsule_finalizer(cdata):
+    obj = ffi.from_handle(rlib.R_ExternalPtrAddr(cdata))
+    obj._passenger = None
+    rlib.R_ClearExternalPtr(cdata)
+
+
 class SexpCapsule(object):
 
     __slots__ = ('_cdata', )
@@ -69,6 +76,16 @@ class SexpCapsule(object):
         return get_rid(self._cdata)
 
 
+class SexpCapsuleWithPassenger(SexpCapsule):
+    __slots__ = ('_cdata', '_passenger')
+    
+    def __init__(self, cdata, passenger):
+        assert is_cdata_sexp(cdata)
+        _preserve(cdata)
+        self._cdata = cdata
+        self._passenger = passenger
+    
+
 class UnmanagedSexpCapsule(object):
 
     __slots__ = ('_cdata', )
@@ -78,13 +95,13 @@ class UnmanagedSexpCapsule(object):
         self._cdata = cdata
 
 
-def _str_to_cchar(s, encoding='ASCII'):
+def _str_to_cchar(s, encoding='utf-8'):
     # TODO: use isStrinb and installTrChar
     b = s.encode(encoding)
     return ffi.new('char[]', b)
 
 
-def _cchar_to_str(c, encoding='ASCII'):
+def _cchar_to_str(c, encoding='utf-8'):
     # TODO: use isStrinb and installTrChar
     s = ffi.string(c).decode(encoding)
     return s
@@ -92,7 +109,7 @@ def _cchar_to_str(c, encoding='ASCII'):
 
 def _cchar_to_str_with_maxlen(c, maxlen):
     # TODO: use isStrinb and installTrChar
-    s = ffi.string(c, maxlen).decode('ASCII')
+    s = ffi.string(c, maxlen).decode('utf-8')
     return s
 
 
@@ -205,7 +222,7 @@ def _string_getitem(cdata, i):
 
 def _string_setitem(cdata, i, value_b):
     rlib.SET_STRING_ELT(
-        cdata, i, rlib.Rf_mkChar(value_b)
+        cdata, i, rlib.Rf_mkCharCE(value_b, _CE_UTF8)
     )
 
 
@@ -242,13 +259,14 @@ def _float_to_sexp(val):
 #     'latin-1': rlib.cetype_t.CE_LATIN1,
 #     'utf-8': rlib.cetype_t.CE_UTF8,
 # }
+_CE_UTF8 = 2
 
 def _str_to_charsxp(val):
     if val is None:
         s = rlib.R_NaString
     else:
         cchar = _str_to_cchar(val)
-        s = rlib.Rf_mkCharLenCE(cchar, len(cchar))
+        s = rlib.Rf_mkCharCE(cchar, _CE_UTF8)
     return s
 
 
@@ -428,3 +446,4 @@ def unserialize(cdata, cdata_env):
     rlib.Rf_unprotect(2)
     return res
     
+

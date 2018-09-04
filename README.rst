@@ -55,12 +55,13 @@ The testing machinery uses the new unittest functionality, requiring python 2.7+
 not supported). The test suite can be run (once rpy2 is installed) as follows:
 
     pytest --pyargs rpy2
+    pytest --cov=rpy2.rinterface --cov=_rinterface_cffi tests/
 
 Individual tests can be run as follows:
 
     pytest --pyargs rpy2.robjects.tests.testVector
 
-The former recommended way to run tests (`python -m rpy2.tests`) may still work.
+
 
 
 License

@@ -118,7 +118,8 @@ def test_parse_invalid_string():
     with pytest.raises(ValueError):
         rinterface.parse(3)
 
-        
+
+@pytest.mark.skip(reason='WIP')
 def test_rternalize():
     def f(x, y):
         return x[0]+y[0]
@@ -126,7 +127,8 @@ def test_rternalize():
     res = rfun(1, 2)
     self.assertEqual(3, res[0])
 
-    
+
+@pytest.mark.skip(reason='WIP')
 def test_rternalize_namedargs():
     def f(x, y, z=None):
         if z is None:

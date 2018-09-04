@@ -218,13 +218,15 @@ class SexpSymbol(Sexp):
         if isinstance(obj, Sexp) or isinstance(obj, _rinterface.SexpCapsule):
             super().__init__(obj)
         elif isinstance(obj, str):
-            name_cdata = _rinterface.ffi.new('char []', obj.encode('ASCII'))
-            sexp = _rinterface.SexpCapsule(_rinterface.rlib.Rf_install(name_cdata))
+            name_cdata = _rinterface.ffi.new('char []', obj.encode('utf-8'))
+            sexp = _rinterface.SexpCapsule(
+                _rinterface.rlib.Rf_install(name_cdata))
             super().__init__(sexp)
         else:
-            raise ValueError('The constructor must be called '
-                             'with that is an instance of rpy2.rinterface.Sexp '
-                             'or an instance of rpy2.rinterface._rinterface.SexpCapsule')
+            raise ValueError(
+                'The constructor must be called '
+                'with that is an instance of rpy2.rinterface.Sexp '
+                'or an instance of rpy2.rinterface._rinterface.SexpCapsule')
 
     def __str__(self):
         return _rinterface._cchar_to_str(
@@ -487,12 +489,11 @@ class CharSexp(Sexp):
         raise NotImplementedError()
 
 
-# TODO: code duplication around string encoding and use of Rf_mkChar()
 class StrSexpVector(SexpVector):
 
     _R_TYPE = _rinterface.rlib.STRSXP
     _R_GET_PTR = _rinterface._STRING_PTR
-    _CAST_IN = lambda x: _rinterface.rlib.Rf_mkChar(str(x).encode('ASCII'))
+    _CAST_IN = _rinterface._str_to_charsxp
 
     def __getitem__(self, i):
         i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
@@ -501,10 +502,9 @@ class StrSexpVector(SexpVector):
 
     def __setitem__(self, i, value):
         i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
-        value_b = str(value).encode('ASCII')
         _rinterface._string_setitem(
             self.__sexp__._cdata, i_c,
-            _rinterface.rlib.Rf_mkChar(value_b)
+            _rinterface._str_to_charsxp(value)
         )
 
     def get_charsxp(self, i):
@@ -538,7 +538,7 @@ class LangSexpVector(SexpVector):
         i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
         _rinterface.rlib.SETCAR(
             _rinterface.rlib.Rf_nthcdr(self.__sexp__._cdata, i_c),
-            value
+            value.__sexp__._cdata
         )
 
             
@@ -566,11 +566,15 @@ class SexpClosure(Sexp):
     def __call__(self, *args, **kwargs):
         error_occured = _rinterface.ffi.new('int *', 0)
         call_r = _rinterface.build_rcall(self.__sexp__._cdata, args, kwargs)
-        res = _rinterface.rlib.R_tryEval(call_r,
-                                         globalenv.__sexp__._cdata,
-                                         error_occured)
-        if error_occured[0]:
-            raise _rinterface.RRuntimeError(_geterrmessage())
+        res = _rinterface.rlib.Rf_protect(
+            _rinterface.rlib.R_tryEval(call_r,
+                                       globalenv.__sexp__._cdata,
+                                       error_occured))
+        try:
+            if error_occured[0]:
+                raise _rinterface.RRuntimeError(_geterrmessage())
+        finally:
+            _rinterface.rlib.Rf_unprotect(1)
         return res
 
     @_cdata_to_rinterface
@@ -590,6 +594,33 @@ class SexpClosure(Sexp):
     @_cdata_to_rinterface
     def closureenv(self):
         return _rinterface.rlib.CLOENV(self.__sexp__._cdata)
+
+
+def make_extptr(obj, tag, protected):
+    ptr = _rinterface.ffi.new_handle(obj)
+    cdata = _rinterface.rlib.Rf_protect(
+        _rinterface.rlib.R_MakeExternalPtr(
+            ptr,
+            tag,
+            protected))
+    _rinterface.rlib.R_RegisterCFinalizer(
+        cdata,
+        _rinterface._capsule_finalizer)
+    res = _rinterface.SexpCapsuleWithPassenger(cdata, (obj, ptr))
+    _rinterface.rlib.Rf_unprotect(1)
+    return res
+
+
+class SexpExtPtr(Sexp):
+
+    TYPE_TAG = 'Python'
+
+    def __init__(self, callable, tag=TYPE_TAG,
+                 protected=_rinterface.rlib.R_NilValue):
+        scaps = make_extptr(callable,
+                            _rinterface._str_to_cchar(self.TYPE_TAG),
+                            protected)
+        super().__init__(scaps)
 
 
 # TODO: Only use rinterface-level ?
@@ -653,3 +684,16 @@ def unserialize(state):
     res = _rinterface.SexpCapsule(ser)
     _rinterface.rlib.Rf_unprotect(2)
     return res
+
+
+def rternalize(function):
+    """ Takes an arbitrary Python function and wrap it
+    in such a way that it can be called from the R side. """
+    assert callable(function) 
+    rpy_fun = SexpExtPtr(function)
+    #FIXME: this is a hack. Find a better way.
+    template = parse('function(...) { .External(".Python", foo, ...) }')
+    template[0][2][1][2] = rpy_fun
+    return baseenv['eval'](template)
+
+    
