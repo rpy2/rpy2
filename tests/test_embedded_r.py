@@ -119,7 +119,7 @@ def test_parse_invalid_string():
         rinterface.parse(3)
 
 
-@pytest.mark.skip(reason='WIP')
+@pytest.mark.skip(reason='WIP (segfault)')
 def test_rternalize():
     def f(x, y):
         return x[0]+y[0]
@@ -128,7 +128,7 @@ def test_rternalize():
     self.assertEqual(3, res[0])
 
 
-@pytest.mark.skip(reason='WIP')
+@pytest.mark.skip(reason='WIP (segfault)')
 def test_rternalize_namedargs():
     def f(x, y, z=None):
         if z is None:

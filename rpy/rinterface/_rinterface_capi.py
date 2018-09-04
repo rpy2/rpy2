@@ -445,5 +445,25 @@ def unserialize(cdata, cdata_env):
 
     rlib.Rf_unprotect(2)
     return res
-    
+
+
+@ffi.callback('SEXP (SEXP args)')
+def _evaluate_in_r(args):
+    pass
+
+
+def _register_external_symbols():
+    externalmethods = ffi.new('R_ExternalMethodDef[]',
+            [[ffi.new('char []', b'.Python'),
+              ffi.cast('DL_FUNC', _evaluate_in_r),
+              -1],
+             [ffi.NULL, ffi.NULL, 0]])
+    rlib.R_registerRoutines(
+        rlib.R_getEmbeddingDllInfo(),
+        ffi.NULL,
+        ffi.NULL,
+        ffi.NULL,
+        externalmethods
+    )
+
 

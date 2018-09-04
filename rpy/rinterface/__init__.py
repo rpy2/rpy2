@@ -649,6 +649,7 @@ MISSING_ARG = None
 
 def initr():
     status = embedded._initr()
+    _rinterface._register_external_symbols()
     _post_initr_setup()
     return status
 

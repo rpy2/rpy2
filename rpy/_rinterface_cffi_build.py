@@ -518,5 +518,38 @@ extern void (*ptr_R_ProcessEvents)();
 """)
 
 
+ffibuilder.cdef("""
+typedef unsigned int R_NativePrimitiveArgType;
+
+typedef struct {
+    const char *name;
+    DL_FUNC     fun;
+    int         numArgs;
+    R_NativePrimitiveArgType *types;
+} R_CMethodDef;
+
+typedef R_CMethodDef R_FortranMethodDef;
+
+
+typedef struct {
+    const char *name;
+    DL_FUNC     fun;
+    int         numArgs;
+} R_CallMethodDef;
+
+typedef R_CallMethodDef R_ExternalMethodDef;
+
+typedef struct _DllInfo DllInfo;
+
+int R_registerRoutines(DllInfo *info, 
+                       const R_CMethodDef * const croutines,
+                       const R_CallMethodDef * const callRoutines,
+                       const R_FortranMethodDef * const fortranRoutines,
+                       const R_ExternalMethodDef * const externalRoutines);
+
+DllInfo *R_getEmbeddingDllInfo(void);
+""")
+
+
 if __name__ == '__main__':
     ffibuilder.compile(verbose=True)
