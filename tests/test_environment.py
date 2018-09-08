@@ -64,15 +64,16 @@ def test_getenvironment():
     assert isinstance(ge_R, rinterface.SexpEnvironment)
 
 
+@pytest.mark.skip(reason='segfault')
 def test_getonlyfromloadedlibrary():
     with pytest.raises(KeyError):
         rinterface.globalenv.get('survfit')
     try:
-        rinterface.globalenv.get('library')(rinterface.StrSexpVector(['survival']))
+        rinterface.parse('library("survival")')
         sfit_R = rinterface.globalenv.get('survfit')
         assert isinstance(sfit_R, rinterface.SexpClosure)
     finally:
-        rinterface.globalenv.get('detach')(rinterface.StrSexpVector(['package:survival']))
+        rinterface.parse('detach("package:survival")')
 
 
 @pytest.mark.skip(reason='segfault')

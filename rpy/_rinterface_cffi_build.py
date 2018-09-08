@@ -357,6 +357,8 @@ ffibuilder.cdef("""
 SEXP R_NilValue;
 SEXP R_UnboundValue;
 SEXP R_MissingArg;
+
+Rboolean (Rf_isNull)(SEXP s);
 """)
 
 ffibuilder.cdef("""
@@ -548,6 +550,8 @@ int R_registerRoutines(DllInfo *info,
                        const R_ExternalMethodDef * const externalRoutines);
 
 DllInfo *R_getEmbeddingDllInfo(void);
+
+void *R_ExternalPtrAddr(SEXP s);
 """)
 
 

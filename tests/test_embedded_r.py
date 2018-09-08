@@ -11,17 +11,16 @@ import sys, os, subprocess, time, tempfile, io, signal
 
 
 
-def onlyAQUAorWindows(function):
-    def res(self):
-        platform = rinterface.baseenv.get('.Platform')
-        names = platform.do_slot('names')
-        platform_gui = names[names.index('GUI')]
-        platform_ostype = names[names.index('OS.type')]
-        if (platform_gui != 'AQUA') and (platform_ostype != 'windows'):
-            self.assertTrue(False) # cannot be tested outside GUI==AQUA or OS.type==windows
-            return None
-        else:
-            return function(self)
+def is_AQUA_or_Windows(function):
+    platform = rinterface.baseenv.get('.Platform')
+    names = platform.do_slot('names')
+    platform_gui = names[names.index('GUI')]
+    platform_ostype = names[names.index('OS.type')]
+    if (platform_gui != 'AQUA') and (platform_ostype != 'windows'):
+        return False
+    else:
+        return True
+
 
 class CustomException(Exception):
     pass
@@ -119,39 +118,37 @@ def test_parse_invalid_string():
         rinterface.parse(3)
 
 
-@pytest.mark.skip(reason='WIP (segfault)')
 def test_rternalize():
     def f(x, y):
         return x[0]+y[0]
     rfun = rinterface.rternalize(f)
     res = rfun(1, 2)
-    self.assertEqual(3, res[0])
+    assert res[0] == 3
 
 
-@pytest.mark.skip(reason='WIP (segfault)')
 def test_rternalize_namedargs():
     def f(x, y, z=None):
         if z is None:
             return x[0]+y[0]
         else:
-            return z
+            return z[0]
     rfun = rinterface.rternalize(f)
     res = rfun(1, 2)
-    self.assertEqual(3, res[0])
+    assert res[0] == 3
     res = rfun(1, 2, z=8)
-    self.assertEqual(8, res[0])
+    assert res[0] == 8
 
     
 def test_external_python():
     def f(x):
         return 3
 
-    rpy_fun = rinterface.ExtptrSxp(f, tag = rinterface.python_type_tag)
+    rpy_fun = rinterface.SexpExtPtr.from_callable(f)
     _python = rinterface.StrSexpVector(('.Python', ))
     res = rinterface.baseenv['.External'](_python,
                                           rpy_fun, 1)
-    self.assertEqual(3, res[0])
-    self.assertEqual(1, len(res))
+    assert len(res) == 1
+    assert res[0] == 3
 
 
 # TODO: what is this ?

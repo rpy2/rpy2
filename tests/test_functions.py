@@ -47,20 +47,29 @@ def test_utf8_params():
     res = c(**d)
     assert u'哈哈' == res.do_slot('names')[0]
 
-    
+
 def test_emptystringparams():
     d = dict([('', 1)])
     with pytest.raises(ValueError):
         rinterface.baseenv['list'](**d)
 
 
+def test_closureenv_isenv():
+    exp = rinterface.parse('function() { }')
+    fun = rinterface.baseenv['eval'](exp)
+    assert isinstance(fun.closureenv, rinterface.SexpEnvironment)
+
+
 def test_closureenv():
-    if 'y' in rinterface.globalenv:
-        del(rinterface.globalenv['y'])
+    
+    assert 'y' not in rinterface.globalenv
+    
     exp = rinterface.parse('function(x) { x[y] }')
     fun = rinterface.baseenv['eval'](exp)
     vec = rinterface.baseenv['letters']
 
+    assert isinstance(fun.closureenv, rinterface.SexpEnvironment)
+    
     with pytest.raises(rinterface._rinterface.RRuntimeError):
         with pytest.warns(rinterface.RRuntimeWarning):
             fun(vec)
@@ -117,7 +126,8 @@ def test_call_OrdDictEnv():
 def test_error_in_call():
     mylist = rinterface.baseenv['list']
 
-    with pytest.raises(rinterface._rinterface.RRuntimeError):
+    with pytest.raises(rinterface._rinterface.RRuntimeError), \
+         pytest.warns(UserWarning):
         mylist('foo')
 
         

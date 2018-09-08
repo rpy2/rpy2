@@ -14,7 +14,7 @@ SHOWFILE_SIGNATURE = ('int(int, const char **, const char **, '
                       '    const char *, Rboolean, const char *)')
 
 
-def logged_exceptions(func):
+def logged_exceptions(func, logger=logger):
     def _(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -55,11 +55,13 @@ def _consoleread(prompt, buf, n, addtohistory):
 
 @logged_exceptions
 def consolewrite_print(s):
-    print(s)
+    # TODO: is the callback for flush working with Linux ?
+    print(s, end='', flush=True)
 
 
 @logged_exceptions
 def consolewrite_warnerror(s):
+    # TODO: use an rpy2/R-specific warning instead of UserWarning.
     warnings.warn(s)
 
 

@@ -1,15 +1,20 @@
 # TODO: make it cffi-buildable with conditional function definition
 # (Python if ABI, C if API)
+import logging
 import os
 from _rinterface_cffi import ffi
 import _cffi_backend
 import rpy2.situation
+from . import conversion
+
+logger = logging.getLogger(__name__)
 
 R_HOME = rpy2.situation.get_r_home()
 lib_path = os.path.join(R_HOME, "lib", "libR.so")
 rlib = ffi.dlopen(lib_path)
 
 _R_PRESERVED = dict()
+_PY_PASSENGER = dict()
 
 
 def get_rid(cdata):
@@ -36,6 +41,7 @@ def _preserve(cdata):
     if count == 0:
         rlib.R_PreserveObject(cdata)
     _R_PRESERVED[addr] = count + 1
+    return addr
 
 
 def _release(cdata):
@@ -79,12 +85,19 @@ class SexpCapsule(object):
 class SexpCapsuleWithPassenger(SexpCapsule):
     __slots__ = ('_cdata', '_passenger')
     
-    def __init__(self, cdata, passenger):
+    def __init__(self, cdata, passenger, ptr):
         assert is_cdata_sexp(cdata)
-        _preserve(cdata)
+        addr = _preserve(cdata)
+        _PY_PASSENGER[addr] = passenger
         self._cdata = cdata
-        self._passenger = passenger
-    
+        self._passenger = ptr
+
+    def __del__(self):
+        addr = get_rid(self._cdata)
+        _release(self._cdata)
+        if addr not in _PY_PASSENGER:
+            del(_PY_PASSENGER[addr])
+
 
 class UnmanagedSexpCapsule(object):
 
@@ -235,7 +248,7 @@ def _has_slot(cdata, name_b):
 def _int_to_sexp(val):
     # TODO: test value is not too large for R's ints
     s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.INTSXP, 1))
-    rlib.SET_INTEGER_ELT(s, 1, val)
+    rlib.SET_INTEGER_ELT(s, 0, val)
     rlib.Rf_unprotect(1)
     return s
 
@@ -243,14 +256,14 @@ def _int_to_sexp(val):
 def _bool_to_sexp(val):
     # TODO: test value is not too large for R's ints
     s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.LGLSXP, 1))
-    rlib.SET_LOGICAL_ELT(s, 1, int(val))
+    rlib.SET_LOGICAL_ELT(s, 0, int(val))
     rlib.Rf_unprotect(1)
     return s
 
 
 def _float_to_sexp(val):
     s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.REALSXP, 1))
-    rlib.SET_REAL_ELT(s, 1, val)
+    rlib.SET_REAL_ELT(s, 0, val)
     rlib.Rf_unprotect(1)
     return s
 
@@ -448,8 +461,52 @@ def unserialize(cdata, cdata_env):
 
 
 @ffi.callback('SEXP (SEXP args)')
-def _evaluate_in_r(args):
-    pass
+def _evaluate_in_r(rargs):
+    # An uncaught exception in the boby of this function would
+    # result in a segfault. we wrap it in a try-except an report
+    # exceptions as logs.
+    try:
+        rargs = rlib.CDR(rargs)
+        cdata = rlib.CAR(rargs)
+        if (_TYPEOF(cdata) != rlib.EXTPTRSXP):
+            # TODO: also check tag
+            #    (rlib.R_ExternalPtrTag(sexp) == '.Python')
+            logger.error('The fist item is not an R external pointer.')
+            return rlib.R_NilValue
+        handle = rlib.R_ExternalPtrAddr(cdata)
+        func = ffi.from_handle(handle)
+
+        pyargs = []
+        pykwargs = {}
+        rargs = rlib.CDR(rargs)
+        while rargs != rlib.R_NilValue:
+            cdata = rlib.CAR(rargs)
+            if rlib.Rf_isNull(rlib.TAG(rargs)):
+                # Unnamed argument
+                pyargs.append(conversion._cdata_to_rinterface(cdata))
+            else:
+                # Named arguments
+                name = _cchar_to_str(
+                    rlib.R_CHAR(rlib.PRINTNAME(rlib.TAG(rargs)))
+                )
+                pykwargs[name] = conversion._cdata_to_rinterface(cdata)            
+            rargs = rlib.CDR(rargs)
+
+        res = func(*pyargs, **pykwargs)
+        # The object is whatever the "rternalized" function `func`
+        # is returning and we need to cast that result into a SEXP
+        # that R's C API can handle. At the same time we need to ensure
+        # that the R is:
+        # - protected from garbage collection long enough to let the R
+        #   code that called the rternalized function complete.
+        # - eventually its memory is freed to prevent a leak.
+        # To that end, we create a SEXP object to be returned that is
+        # not managed by rpy2, leaving the object's lifespan under R's
+        # sole control.
+        return conversion._python_to_cdata(res)
+    except Exception as e:
+        logger.error('%s: %s - %s- %s' % (type(e), e))
+        return rlib.R_NilValue
 
 
 def _register_external_symbols():

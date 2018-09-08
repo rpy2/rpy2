@@ -5,7 +5,9 @@ import sys
 import warnings
 from . import _rinterface_capi as _rinterface
 from . import embedded
+from . import conversion
 
+_cdata_res_to_rinterface = conversion._cdata_res_to_rinterface
 
 class RTYPES(enum.IntEnum):
     NILSXP     = _rinterface.rlib.NILSXP
@@ -39,25 +41,16 @@ class RTYPES(enum.IntEnum):
     FUNSXP     = _rinterface.rlib.FUNSXP
 
 
-def _cdata_to_rinterface(function):
-    def _(*args, **kwargs):
-        cdata = function(*args, **kwargs)
-        # TODO: test cdata is of of the expected type
-        if _rinterface._TYPEOF(cdata) == RTYPES.NILSXP:
-            res = NULL
-        else:
-            scaps = _rinterface.SexpCapsule(cdata)
-            res = _R_RPY2_MAP.get(cdata.sxpinfo.type,
-                                  Sexp)(scaps)
-        return res
-    return _
-
-
 _evaluated_promise = _rinterface._evaluated_promise
 
 
-@_cdata_to_rinterface
+@_cdata_res_to_rinterface
 def parse(text, num=-1):
+    """
+    :param:`text` A string with R code to parse.
+    :param:`num` The maximum number of lines to parse. If -1, no
+      limit is applied.
+    """
     if not isinstance(text, str):
         raise ValueError('text must be a string.')
     robj = StrSexpVector([text])
@@ -159,7 +152,7 @@ class Sexp(object):
         self._sexpobject = unserialize(state)
 
     @property
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     def rclass(self):
         return _rinterface._GET_CLASS(self.__sexp__._cdata)
 
@@ -183,11 +176,11 @@ class Sexp(object):
     def named(self):
         return _rinterface._NAMED(self.__sexp__._cdata)
 
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     def list_attrs(self):
         return _rinterface._list_attrs(self.__sexp__._cdata)
 
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     def do_slot(self, name):
         _rinterface._assert_valid_slotname(name)
         cchar = _rinterface._str_to_cchar(name)
@@ -238,7 +231,7 @@ class SexpSymbol(Sexp):
 
 class SexpEnvironment(Sexp):
 
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     @_evaluated_promise
     def get(self, key, wantfun=False):
         # TODO: move check of R_UnboundValue to _rinterface ?
@@ -256,7 +249,7 @@ class SexpEnvironment(Sexp):
             raise KeyError("'%s' not found" % key)
         return res
 
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     @_evaluated_promise
     def __getitem__(self, key):
         # TODO: move check of R_UnboundValue to _rinterface
@@ -325,12 +318,12 @@ class SexpEnvironment(Sexp):
         finally:
             _rinterface.rlib.Rf_unprotect(1)
 
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     def frame(self):
         # TODO: move body to _rinterface-level function
         return self.__sexp__._cdata.u.envsxp.frame
 
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     def enclos(self):
         # TODO: move body to _rinterface-level function
         return self.__sexp__._cdata.u.envsxp.enclos
@@ -358,7 +351,7 @@ class SexpEnvironment(Sexp):
     
 class SexpPromise(Sexp):
 
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     def eval(self, env=None):
         if not env:
             env = globalenv
@@ -386,7 +379,7 @@ class SexpVector(Sexp):
                              'or an instance of rpy2.rinterface._rinterface.SexpCapsule')
         
     @classmethod
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     def from_iterable(cls, iterable):
         n = len(iterable)
         r_vector = _rinterface.rlib.Rf_allocVector(
@@ -397,7 +390,7 @@ class SexpVector(Sexp):
                            cls._CAST_IN)        
         return r_vector
 
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     def __getitem__(self, i):
         i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
         return _rinterface.rlib.VECTOR_ELT(self.__sexp__._cdata, i_c)
@@ -517,7 +510,7 @@ class StrSexpVector(SexpVector):
 
 
 class ExprSexpVector(SexpVector):
-    _R_TYPE = _rinterface.rlib.LANGSXP
+    _R_TYPE = _rinterface.rlib.EXPRSXP
     _R_GET_PTR = None
     _CAST_IN = None
 
@@ -527,7 +520,7 @@ class LangSexpVector(SexpVector):
     _R_GET_PTR = None
     _CAST_IN = None
 
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     def __getitem__(self, i):
         i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
         return _rinterface.rlib.CAR(
@@ -562,7 +555,7 @@ def _geterrmessage():
 
 class SexpClosure(Sexp):
     
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     def __call__(self, *args, **kwargs):
         error_occured = _rinterface.ffi.new('int *', 0)
         call_r = _rinterface.build_rcall(self.__sexp__._cdata, args, kwargs)
@@ -577,7 +570,7 @@ class SexpClosure(Sexp):
             _rinterface.rlib.Rf_unprotect(1)
         return res
 
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     def rcall(self, mapping, environment):
         # TODO: check mapping has a method "items"
         assert isinstance(environment, SexpEnvironment)
@@ -591,11 +584,12 @@ class SexpClosure(Sexp):
         return res
 
     @property
-    @_cdata_to_rinterface
+    @_cdata_res_to_rinterface
     def closureenv(self):
         return _rinterface.rlib.CLOENV(self.__sexp__._cdata)
 
 
+# TODO: clean up
 def make_extptr(obj, tag, protected):
     ptr = _rinterface.ffi.new_handle(obj)
     cdata = _rinterface.rlib.Rf_protect(
@@ -606,7 +600,7 @@ def make_extptr(obj, tag, protected):
     _rinterface.rlib.R_RegisterCFinalizer(
         cdata,
         _rinterface._capsule_finalizer)
-    res = _rinterface.SexpCapsuleWithPassenger(cdata, (obj, ptr))
+    res = _rinterface.SexpCapsuleWithPassenger(cdata, obj, ptr)
     _rinterface.rlib.Rf_unprotect(1)
     return res
 
@@ -615,16 +609,17 @@ class SexpExtPtr(Sexp):
 
     TYPE_TAG = 'Python'
 
-    def __init__(self, callable, tag=TYPE_TAG,
-                 protected=_rinterface.rlib.R_NilValue):
-        scaps = make_extptr(callable,
-                            _rinterface._str_to_cchar(self.TYPE_TAG),
+    @classmethod
+    def from_callable(cls, func, tag=TYPE_TAG,
+                      protected=_rinterface.rlib.R_NilValue):
+        scaps = make_extptr(func,
+                            _rinterface._str_to_charsxp(cls.TYPE_TAG),
                             protected)
-        super().__init__(scaps)
+        return cls(scaps)
 
 
 # TODO: Only use rinterface-level ?
-_R_RPY2_MAP = {
+conversion._R_RPY2_MAP.update({
     _rinterface.rlib.EXPRSXP: ExprSexpVector,
     _rinterface.rlib.LANGSXP: LangSexpVector,
     _rinterface.rlib.ENVSXP: SexpEnvironment,
@@ -633,10 +628,18 @@ _R_RPY2_MAP = {
     _rinterface.rlib.REALSXP: FloatSexpVector,
     _rinterface.rlib.STRSXP: StrSexpVector,
     _rinterface.rlib.CLOSXP: SexpClosure,
-    _rinterface.rlib.BUILTINSXP: SexpClosure
-    }
+    _rinterface.rlib.BUILTINSXP: SexpClosure,
+    _rinterface.rlib.EXTPTRSXP: SexpExtPtr,
+    _rinterface.rlib.SYMSXP: SexpSymbol
+    })
+conversion._R_RPY2_DEFAULT_MAP = Sexp
 
+conversion._PY_RPY2_MAP.update({
+    int: _rinterface._int_to_sexp,
+    float: _rinterface._float_to_sexp
+    })
 
+                               
 class RRuntimeWarning(RuntimeWarning):
     pass
 
@@ -691,10 +694,18 @@ def rternalize(function):
     """ Takes an arbitrary Python function and wrap it
     in such a way that it can be called from the R side. """
     assert callable(function) 
-    rpy_fun = SexpExtPtr(function)
-    #FIXME: this is a hack. Find a better way.
-    template = parse('function(...) { .External(".Python", foo, ...) }')
+    rpy_fun = SexpExtPtr.from_callable(function)
+    # TODO: this is a hack. Find a better way.
+    template = parse("""
+      function(...) { .External(".Python", foo, ...);
+    }
+    """)
     template[0][2][1][2] = rpy_fun
-    return baseenv['eval'](template)
+    # TODO: use lower-level eval ?
+    res = baseenv['eval'](template)
+    # TODO: hack to prevent the nested function from having its
+    #   refcount down to zero when returning
+    res.__nested_sexp__ = rpy_fun.__sexp__
+    return res
 
     
