@@ -824,6 +824,7 @@ conversion._R_RPY2_MAP.update({
     _rinterface.rlib.VECSXP: ListSexpVector,
     _rinterface.rlib.CLOSXP: SexpClosure,
     _rinterface.rlib.BUILTINSXP: SexpClosure,
+    _rinterface.rlib.SPECIALSXP: SexpClosure,
     _rinterface.rlib.EXTPTRSXP: SexpExtPtr,
     _rinterface.rlib.SYMSXP: SexpSymbol,
     _rinterface.rlib.S4SXP: SexpS4

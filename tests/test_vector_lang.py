@@ -38,3 +38,12 @@ def test_setitem():
     assert str(f[1]) == 'x'
     assert str(f[2]) == 'y'
 
+
+# put ExprSexp test here
+def test_expression():
+    expression = ri.baseenv.get('expression')
+    e = expression(ri.StrSexpVector(['a', ]),
+                   ri.StrSexpVector(['b', ]))
+    assert e.typeof == ri.RTYPES.EXPRSXP
+    y = e[0]
+    assert y.typeof == ri.RTYPES.STRSXP

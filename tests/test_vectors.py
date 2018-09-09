@@ -62,7 +62,7 @@ def test_missing_type():
 
 def test_del():
     v = ri.IntSexpVector(range(10))
-    with pytest.raises(TypeError):
+    with pytest.raises(AttributeError):
         v.__delitem__(3)
 
 
@@ -91,42 +91,43 @@ def test_from_int():
 def test_from_int_invalid():
     s = set((0,1))
     with pytest.raises(ValueError):
-        ri.SexpVector(s, ri.RTYPES.INTSXP)
+        ri.vector(s, ri.RTYPES.INTSXP)
 
 
 def test_from_float():
-    sexp = ri.SexpVector([1.0, ], ri.REALSXP)
+    sexp = ri.SexpVector([1.0, ], ri.RTYPES.REALSXP)
     isNumeric = ri.globalenv.get("is.numeric")
     assert isNumeric(sexp)[0]
 
-    sexp = ri.SexpVector(["a", ], ri.REALSXP)
+    sexp = ri.SexpVector(["a", ], ri.RTYPES.REALSXP)
     isNA = ri.globalenv.get("is.na")
     assert isNA(sexp)[0]
 
 
 def test_from_complex():
-    sexp = ri.vector([1.0 + 1.0j, ], ri.CPLXSXP)
+    sexp = ri.vector([1.0 + 1.0j, ], ri.RTYPES.CPLXSXP)
     isComplex = ri.globalenv.get('is.complex')
     assert isComplex(sexp)[0]
 
 
 def test_from_string():
-    sexp = ri.vector(['abc', ], ri.STRSXP)
+    sexp = ri.vector(['abc', ], ri.RTYPES.STRSXP)
     isCharacter = ri.globalenv.get('is.character')
     assert isCharacter(sexp)[0]
 
-    sexp = ri.vector([1, ], ri.STRSXP)
+    sexp = ri.vector([1, ], ri.RTYPES.STRSXP)
     isCharacter = ri.globalenv.get('is.character')
     assert isCharacter(sexp)[0]
 
 
 def test_from_list():
-    sexp = ri.SexpVector([sexp_char, sexp_int], 
-                                 ri.VECSXP)
+    seq = (ri.FloatSexpVector([1.0]),
+           ri.IntSexpVector([2, 3]),
+           ri.StrSexpVector(['foo', 'bar']))
+    sexp = ri.ListSexpVector(seq)
     isList = ri.globalenv.get('is.list')
     assert isList(sexp)[0]
-
-    assert len(sexp) == 2
+    assert len(sexp) == 3
 
     
 def test_missing_R_Preserve_object_bug():
@@ -144,7 +145,18 @@ def test_setitem_different_type():
                         ri.StrSexpVector(['abc', ]))
 
 
+def test_invalid_rtype():
+    with pytest.raises(ValueError):
+        ri.vector([1, ], -1)
+    with pytest.raises(ValueError):
+        ri.vector([1, ], 250)
     
+
+def test_invalid_not_vector_rtype():
+    with pytest.raises(ValueError):
+        ri.vector([1, ], ri.RTYPES.ENVSXP)
+
+
 class SexpVectorTestCase(unittest.TestCase):
 
     @pytest.mark.skip(reason='Spawned process seems to share initialization state with parent.')
@@ -166,49 +178,7 @@ class SexpVectorTestCase(unittest.TestCase):
         res = q.get()
         p.join()
         self.assertTrue(res[0])
-
-
-    def testNewUnicode():
-        sexp = ri.SexpVector([u'abc', ], ri.STRSXP)
-        isCharacter = ri.globalenv.get("is.character")
-        ok = isCharacter(sexp)[0]
-        self.assertTrue(ok)
-        self.assertEqual('abc', sexp[0])
-
-    def testNewUnicodeSymbol():
-        u_char = u'\u21a7'
-        b_char = b'\xe2\x86\xa7'
-        assert(b_char == u_char.encode('utf-8'))
-        sexp = ri.SexpVector((u'\u21a7', ), ri.STRSXP)
-        isCharacter = ri.globalenv.get("is.character")
-        ok = isCharacter(sexp)[0]
-        self.assertTrue(ok)
-        char = sexp[0]
-        self.assertTrue(isinstance(char, str))
-        #FIXME: the following line is failing on drone, but not locally
-        #  self.assertEqual(u'\u21a7'.encode('utf-8'), char.encode('utf-8'))
-        #       because of this, the following line is used to pass the test
-        #       until I have more reports from users or manage to reproduce
-        #       myself what is happening on drone.io.
-        self.assertTrue(u'\u21a7' in (u_char, b_char))
         
-    def testNew_InvalidType_NotAType():
-        self.assertRaises(ValueError, ri.SexpVector, [1, ], -1)
-        self.assertRaises(ValueError, ri.SexpVector, [1, ], 250)
-
-    def testNew_InvalidType_NotAVectorType():
-        self.assertRaises(ValueError, ri.SexpVector, [1, ], ri.ENVSXP)
-
-    def testNew_InvalidType_NotASequence():
-        self.assertRaises(ValueError, ri.SexpVector, 1, ri.INTSXP)
-
-    def testGetItemExpression():
-        expression = ri.baseenv.get('expression')
-        e = expression(ri.StrSexpVector(['a', ]),
-                       ri.StrSexpVector(['b', ]))
-        y = e[0]
-        self.assertEqual(ri.STRSXP, y.typeof)
-
     def testGetItemPairList():
         pairlist = ri.baseenv.get('pairlist')
         pl = pairlist(a = ri.StrSexpVector(['1', ]))
