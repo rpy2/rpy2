@@ -6,7 +6,9 @@ from rpy2.rinterface import StrSexpVector
 from rpy2.robjects import help as rhelp
 from rpy2.robjects import conversion
 
-getmethod = rinterface.baseenv.get("getMethod")
+_get_exported_value = rinterface.baseenv['::']
+getmethod = _get_exported_value('methods', 'getMethod')
+
 
 require = rinterface.baseenv.get('require')
 require(StrSexpVector(('methods', )),

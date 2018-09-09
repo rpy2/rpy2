@@ -71,39 +71,39 @@ class MappingTestCase(unittest.TestCase):
         py = 1
         rob = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEqual(rinterface.INTSXP, rob.typeof)
+        self.assertEqual(rinterface.RTYPES.INTSXP, rob.typeof)
 
     def testMapperPy2R_boolean(self):        
         py = True
         rob = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEqual(rinterface.LGLSXP, rob.typeof)
+        self.assertEqual(rinterface.RTYPES.LGLSXP, rob.typeof)
 
     def testMapperPy2R_bytes(self):        
         py = b'houba'
         rob = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEqual(rinterface.STRSXP, rob.typeof)
+        self.assertEqual(rinterface.RTYPES.STRSXP, rob.typeof)
 
     def testMapperPy2R_str(self):        
         py = u'houba'
         self.assertTrue(isinstance(py, str))
         rob = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEqual(rinterface.STRSXP, rob.typeof)
+        self.assertEqual(rinterface.RTYPES.STRSXP, rob.typeof)
         #FIXME: more tests
 
     def testMapperPy2R_float(self):
         py = 1.0
         rob = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEqual(rinterface.REALSXP, rob.typeof)
+        self.assertEqual(rinterface.RTYPES.REALSXP, rob.typeof)
 
     def testMapperPy2R_complex(self):
         py = 1.0 + 2j
         rob = robjects.default_converter.py2ro(py)
         self.assertTrue(isinstance(rob, robjects.Vector))
-        self.assertEqual(rinterface.CPLXSXP, rob.typeof)
+        self.assertEqual(rinterface.RTYPES.CPLXSXP, rob.typeof)
 
     def testMapperPy2R_taggedlist(self):
         py = robjects.rlc.TaggedList(('a', 'b'),
@@ -118,7 +118,7 @@ class MappingTestCase(unittest.TestCase):
         func = lambda x: x
         rob = robjects.default_converter.py2ro(func)
         self.assertTrue(isinstance(rob, robjects.SignatureTranslatedFunction))
-        self.assertEqual(rinterface.CLOSXP, rob.typeof)
+        self.assertEqual(rinterface.RTYPES.CLOSXP, rob.typeof)
 
 
     def testOverride_ri2ro(self):
@@ -130,7 +130,7 @@ class MappingTestCase(unittest.TestCase):
             pyobj = robjects.default_converter.ri2ro(obj)
             inherits = rinterface.baseenv["inherits"]
             classname = rinterface.SexpVector(["density", ], 
-                                              rinterface.STRSXP)
+                                              rinterface.RTYPES.STRSXP)
             if inherits(pyobj, classname)[0]:
                 pyobj = Density(pyobj)
             return pyobj

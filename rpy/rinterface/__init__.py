@@ -1,5 +1,6 @@
 import collections
 import enum
+import math
 import os
 import sys
 import warnings
@@ -82,7 +83,7 @@ class _NULL(object):
         return RTYPES(_rinterface._TYPEOF(self.__sexp__._cdata))
 
 
-class _MissingArg(object):
+class _MissingArgType(object):
 
     __slots__ = ('_sexpobject', )
 
@@ -648,7 +649,7 @@ class StrSexpVector(SexpVector):
 
     _R_TYPE = _rinterface.rlib.STRSXP
     _R_SET_ELT = _rinterface.rlib.SET_STRING_ELT
-    _CAST_IN = _rinterface._str_to_charsxp
+    _CAST_IN = lambda x: x.__sexp__._cdata if isinstance(x, CharSexp) else _rinterface._str_to_charsxp(x)
 
     def __getitem__(self, i):
         cdata = self.__sexp__._cdata
@@ -777,6 +778,9 @@ class SexpClosure(Sexp):
         return _rinterface.rlib.CLOENV(self.__sexp__._cdata)
 
 
+class SexpS4(Sexp):
+    pass
+
 # TODO: clean up
 def make_extptr(obj, tag, protected):
     ptr = _rinterface.ffi.new_handle(obj)
@@ -821,7 +825,8 @@ conversion._R_RPY2_MAP.update({
     _rinterface.rlib.CLOSXP: SexpClosure,
     _rinterface.rlib.BUILTINSXP: SexpClosure,
     _rinterface.rlib.EXTPTRSXP: SexpExtPtr,
-    _rinterface.rlib.SYMSXP: SexpSymbol
+    _rinterface.rlib.SYMSXP: SexpSymbol,
+    _rinterface.rlib.S4SXP: SexpS4
     })
 conversion._R_RPY2_DEFAULT_MAP = Sexp
 
@@ -842,10 +847,16 @@ class RRuntimeWarning(RuntimeWarning):
 
 baseenv = None
 globalenv = None
+emptyenv = None
 NULL = None
-MISSING_ARG = None
-
-
+MissingArg = None
+NA_Character = None
+NA_Integer = _rinterface.rlib.R_NaInt
+NA_Logical = _rinterface.rlib.R_NaInt
+NA_Real = _rinterface.rlib.R_NaReal
+NA_Complex = _rinterface.ffi.new('Rcomplex *',
+                                 [NA_Real, NA_Real])
+                                              
 def initr():
     status = embedded._initr()
     _rinterface._register_external_symbols()
@@ -854,7 +865,12 @@ def initr():
 
 
 def _post_initr_setup():
-    
+
+    global emptyenv
+    emptyenv = SexpEnvironment(
+        _rinterface.SexpCapsule(_rinterface.rlib.R_EmptyEnv)
+    )
+
     global baseenv
     baseenv = SexpEnvironment(
         _rinterface.SexpCapsule(_rinterface.rlib.R_BaseEnv)
@@ -868,8 +884,13 @@ def _post_initr_setup():
     global NULL    
     NULL = _NULL()
 
-    global MISSING_ARG
-    MISSING_ARG = _MissingArg()
+    global MissingArg
+    MissingArg = _MissingArgType()
+
+    global NA_Character
+    NA_Character = CharSexp(
+        _rinterface.SexpCapsule(_rinterface.rlib.R_NaString)
+    )
 
 
 def unserialize(state):

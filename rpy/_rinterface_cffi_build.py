@@ -1,5 +1,6 @@
-import os
 import cffi
+import os
+import sys
 
 ffibuilder = cffi.FFI()
 ffibuilder.set_source('_rinterface_cffi', None)
@@ -65,6 +66,13 @@ else:
 typedef int R_xlen_t;
     """)
 
+ffibuilder.cdef("""
+double R_NaN;		/* IEEE NaN */
+double R_NaReal;	/* NA_REAL: IEEE */
+int    R_NaInt;
+""")
+
+    
 ffibuilder.cdef("""
 typedef unsigned char Rbyte;
 """)
@@ -323,7 +331,7 @@ void R_ReleaseObject(SEXP s);
 """)
 
 ffibuilder.cdef("""
-SEXP R_NaString;
+SEXP R_NaString; /* a CHARSXP */
 SEXP R_BlankString;
 SEXP R_BlankScalarString;
 """)

@@ -90,23 +90,23 @@ def sexpvector_to_ro(obj):
         else:
             res = vectors.Array(obj)
     except LookupError as le:
-        if obj.typeof == rinterface.INTSXP:
+        if obj.typeof == rinterface.RTYPES.INTSXP:
             if 'factor' in rcls:
                 res = vectors.FactorVector(obj)
             else:
                 res = vectors.IntVector(obj)
-        elif obj.typeof == rinterface.REALSXP:
+        elif obj.typeof == rinterface.RTYPES.REALSXP:
             if obj.rclass[0] == 'POSIXct':
                 res = vectors.POSIXct(obj)
             else:
                 res = vectors.FloatVector(obj)
-        elif obj.typeof == rinterface.LGLSXP:
+        elif obj.typeof == rinterface.RTYPES.LGLSXP:
             res = vectors.BoolVector(obj)
-        elif obj.typeof == rinterface.STRSXP:
+        elif obj.typeof == rinterface.RTYPES.STRSXP:
             res = vectors.StrVector(obj)
-        elif obj.typeof == rinterface.VECSXP:
+        elif obj.typeof == rinterface.RTYPES.VECSXP:
             res = vectors.ListVector(obj)
-        elif obj.typeof == rinterface.LANGSXP and 'formula' in rcls:
+        elif obj.typeof == rinterface.RTYPES.LANGSXP and 'formula' in rcls:
             res = Formula(obj)
         else:
             res = vectors.Vector(obj)
@@ -181,38 +181,38 @@ def _(obj):
 @default_converter.py2ri.register(array.array)
 def _(obj):
     if obj.typecode in ('h', 'H', 'i', 'I'):
-        res = rinterface.SexpVector(obj, rinterface.INTSXP)
+        res = rinterface.SexpVector(obj, rinterface.RTYPES.INTSXP)
     elif obj.typecode in ('f', 'd'):
-        res = rinterface.SexpVector(obj, rinterface.REALSXP)
+        res = rinterface.SexpVector(obj, rinterface.RTYPES.REALSXP)
     else:
         raise(ValueError("Nothing can be done for this array type at the moment."))
     return res
 
 @default_converter.py2ri.register(bool)
 def _(obj):
-    return rinterface.SexpVector([obj, ], rinterface.LGLSXP)
+    return rinterface.SexpVector([obj, ], rinterface.RTYPES.LGLSXP)
 
 def int2ri(obj):
     # special case for NA_Logical
     if obj is rinterface.NA_Logical:
-        res = rinterface.SexpVector([obj, ], rinterface.LGLSXP)
+        res = rinterface.SexpVector([obj, ], rinterface.RTYPES.LGLSXP)
     else:
-        res = rinterface.SexpVector([obj, ], rinterface.INTSXP)
+        res = rinterface.SexpVector([obj, ], rinterface.RTYPES.INTSXP)
     return res
 
 default_converter.py2ri.register(int, int2ri)
 
 @default_converter.py2ri.register(float)
 def _(obj):
-    return rinterface.SexpVector([obj, ], rinterface.REALSXP)
+    return rinterface.SexpVector([obj, ], rinterface.RTYPES.REALSXP)
 
 @default_converter.py2ri.register(bytes)
 def _(obj):
-    return rinterface.SexpVector([obj, ], rinterface.STRSXP)
+    return rinterface.SexpVector([obj, ], rinterface.RTYPES.STRSXP)
 
 @default_converter.py2ri.register(str)
 def _(obj):
-    return rinterface.SexpVector([obj, ], rinterface.STRSXP)
+    return rinterface.SexpVector([obj, ], rinterface.RTYPES.STRSXP)
 
 @default_converter.py2ri.register(list)
 def _(obj):
@@ -226,7 +226,7 @@ def _(obj):
 
 @default_converter.py2ri.register(complex)
 def _(obj):
-    return rinterface.SexpVector([obj, ], rinterface.CPLXSXP)
+    return rinterface.SexpVector([obj, ], rinterface.RTYPES.CPLXSXP)
 
 
 @default_converter.py2ro.register(object)

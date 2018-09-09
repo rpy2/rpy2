@@ -608,9 +608,9 @@ The parameter 'itemable' can be:
     
     def __init__(self, tlist):
         if isinstance(tlist, rinterface.SexpVector):
-            if tlist.typeof != rinterface.VECSXP:
+            if tlist.typeof != rinterface.RTYPES.VECSXP:
                 raise ValueError("tlist should have "
-                                 "tlist.typeof == rinterface.VECSXP")
+                                 "tlist.typeof == rinterface.RTYPES.VECSXP")
             super(ListVector, self).__init__(tlist)
         elif hasattr(tlist, 'items') and callable(tlist.items):
             kv = [(k, conversion.py2ri(v)) for k,v in tlist.items()]
@@ -1067,8 +1067,8 @@ class DataFrame(ListVector):
                     that factors will not be turned to string vectors.
         """
         if isinstance(obj, rinterface.SexpVector):
-            if obj.typeof != rinterface.VECSXP:
-                raise ValueError("obj should of typeof VECSXP"+\
+            if obj.typeof != rinterface.RTYPES.VECSXP:
+                raise ValueError("obj should of typeof RTYPES.VECSXP"+\
                                      " (and we get %s)" % rinterface.str_typeint(obj.typeof))
             if self._is_list(obj)[0] or \
                     globalenv_ri.get('inherits')(obj, self._dataframe_name)[0]:
@@ -1186,7 +1186,7 @@ class DataFrame(ListVector):
         # (they are lists)
         tmp = rinterface.ListSexpVector.__getitem__(self, i)
 
-        if tmp.typeof == rinterface.VECSXP:
+        if tmp.typeof == rinterface.RTYPES.VECSXP:
             return DataFrame(tmp)
         else:
             return conversion.ri2ro(tmp)
@@ -1299,11 +1299,11 @@ class DataFrame(ListVector):
 # end of definition for DataFrame
 
 rtypeof2rotype = {
-    rinterface.INTSXP: IntVector,
-    rinterface.REALSXP: FloatVector,
-    rinterface.STRSXP: StrVector,
-    rinterface.CPLXSXP: ComplexVector,
-    rinterface.LGLSXP: BoolVector
+    rinterface.RTYPES.INTSXP: IntVector,
+    rinterface.RTYPES.REALSXP: FloatVector,
+    rinterface.RTYPES.STRSXP: StrVector,
+    rinterface.RTYPES.CPLXSXP: ComplexVector,
+    rinterface.RTYPES.LGLSXP: BoolVector
 }
 
 
