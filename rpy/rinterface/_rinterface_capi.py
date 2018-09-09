@@ -56,8 +56,6 @@ def _release(cdata):
 
 @ffi.callback('void (SEXP)')
 def _capsule_finalizer(cdata):
-    obj = ffi.from_handle(rlib.R_ExternalPtrAddr(cdata))
-    obj._passenger = None
     rlib.R_ClearExternalPtr(cdata)
 
 
@@ -211,6 +209,11 @@ def _REAL(robj):
     return ffi.cast('double *', rlib.DATAPTR(robj))
 
 
+def _COMPLEX(robj):
+    return ffi.cast('Rcomplex *', rlib.DATAPTR(robj))
+
+
+# TODO: still useful or is it in the C API ?
 def _VECTOR_ELT(robj, i):
     return ffi.cast('SEXP *', rlib.DATAPTR(robj))[i]
 
@@ -370,7 +373,10 @@ def _python_index_to_c(cdata, i):
     Raises an IndexError exception if out of bounds."""
     size = rlib.Rf_xlength(cdata)
     if i < 0:
-        i = size - i
+        # x = [0,1,2,3]
+        # x[-3] = x[size + (-3)] = x[4 - 3] = x[1] = 1
+        # x[-2] = x[size + (-2)] = x[4 - 2] = x[2] = 2
+        i = size + i
     if i >= size or i < 0:
         raise IndexError('index out of range')
     return i

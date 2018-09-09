@@ -56,8 +56,7 @@ typedef int R_len_t;
 if ffibuilder.sizeof('size_t') > 4:
     LONG_VECTOR_SUPPORT = True
     R_XLEN_T_MAX = 4503599627370496
-    R_SHORT_LEN_MAX = 2147483647
-    
+    R_SHORT_LEN_MAX = 2147483647    
     ffibuilder.cdef("""
 typedef ptrdiff_t R_xlen_t;
     """)

@@ -1,19 +1,8 @@
 import pytest
+from . import utils
 import rpy2.rinterface as rinterface
 
 rinterface.initr()
-
-
-# TODO: this is duplicated in test_callbacks
-from contextlib import contextmanager
-@contextmanager
-def obj_in_module(module, name, func):
-    backup_func = getattr(module, name)
-    setattr(module, name, func)
-    try:
-        yield
-    finally:
-        setattr(module, name, backup_func)
 
 
 def _just_pass(x):
@@ -22,11 +11,11 @@ def _just_pass(x):
 
 @pytest.fixture(scope='module')
 def silent_console_print():
-    with obj_in_module(rinterface.callbacks, 'consolewrite_print', _just_pass):
+    with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', _just_pass):
         yield
 
 
-def test_new_default():
+def test_init_default():
     pyobject = 'ahaha'
     sexp_new = rinterface.SexpExtPtr(pyobject)
     # R External pointers are never copied.

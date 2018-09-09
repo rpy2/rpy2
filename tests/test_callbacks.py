@@ -1,4 +1,4 @@
-from contextlib import contextmanager
+from . import utils
 import pytest
 import sys
 import tempfile
@@ -17,22 +17,12 @@ def is_AQUA_or_Windows():
         return False
 
 
-@contextmanager
-def obj_in_module(module, name, func):
-    backup_func = getattr(module, name)
-    setattr(module, name, func)
-    try:
-        yield
-    finally:
-        setattr(module, name, backup_func)
-
-
 def test_set_consolewrite_print():
     buf = []
     def f(x):
         buf.append(x)
 
-    with obj_in_module(rinterface.callbacks, 'consolewrite_print', f):
+    with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', f):
         code = rinterface.StrSexpVector(["3", ])
         rinterface.baseenv["print"](code)
         assert '[1] "3"\n' == str.join('', buf)
@@ -47,7 +37,7 @@ def test_consolewrite_print_error():
         except Exception as e:
             exceptions.append(str(e))
 
-    with obj_in_module(rinterface.callbacks, 'consolewrite_print', f):
+    with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', f):
         code = rinterface.StrSexpVector(["3", ])
         rinterface.baseenv["print"](code)
         assert "Doesn't work." == exceptions[0]
@@ -58,7 +48,7 @@ def testSetResetConsole():
     def f():
         reset[0] += 1
 
-    with obj_in_module(rinterface.callbacks, 'consolereset', f):
+    with utils.obj_in_module(rinterface.callbacks, 'consolereset', f):
         with pytest.raises(rinterface._rinterface.RRuntimeError), \
              pytest.warns(rinterface.RRuntimeWarning):
                 rinterface.baseenv['eval'](rinterface.parse('1+"a"'))
@@ -72,7 +62,7 @@ def test_set_flushconsole():
     def f():
         flush['count'] = flush['count'] + 1
 
-    with obj_in_module(rinterface.callbacks, 'consoleflush', f):
+    with utils.obj_in_module(rinterface.callbacks, 'consoleflush', f):
         assert rinterface.get_flushconsole() == f
         rinterface.baseenv.get('flush.console')()
         assert flush['count'] == 1
@@ -85,7 +75,7 @@ def test_flushconsole_with_error():
     def f(prompt):
         raise Exception("Doesn't work.")
 
-    with obj_in_module(rinterface.callbacks, 'consoleflush', f):
+    with utils.obj_in_module(rinterface.callbacks, 'consoleflush', f):
         with tempfile.NamedTemporaryFile() as tmp_file:
             stderr = sys.stderr
             sys.stderr = tmp_file
@@ -104,7 +94,7 @@ def test_consoleread():
     yes = 'yes\n'
     def sayyes(prompt):
         return yes
-    with obj_in_module(rinterface.callbacks, 'consoleread', sayyes):
+    with utils.obj_in_module(rinterface.callbacks, 'consoleread', sayyes):
         res = rinterface.baseenv['readline']()
         assert yes.strip() == res[0]
 
@@ -112,7 +102,7 @@ def test_consoleread():
 def test_console_read_with_error():
     def f(prompt):
         raise Exception("Doesn't work.")
-    with obj_in_module(rinterface.callbacks, 'consoleread', f):
+    with utils.obj_in_module(rinterface.callbacks, 'consoleread', f):
 
         with tempfile.NamedTemporaryFile() as tmp_file:
 
@@ -132,7 +122,7 @@ def test_console_read_with_error():
 def test_show_message():
     def f(message):
         return 'foo'
-    with obj_in_module(rinterface.callbacks, 'showmessage', f):
+    with utils.obj_in_module(rinterface.callbacks, 'showmessage', f):
         pass
     # TODO: incomplete test
 
@@ -140,7 +130,7 @@ def test_show_message():
 def test_show_message_with_error():
     def f(prompt):
         raise Exception("Doesn't work.")
-    with obj_in_module(rinterface.callbacks, 'showmessage', f):
+    with utils.obj_in_module(rinterface.callbacks, 'showmessage', f):
         pass
     # TODO: incomplete test
 
@@ -149,7 +139,7 @@ def test_choosefile():
     me = "me"
     def chooseMe(new):
         return me
-    with obj_in_module(rinterface.callbacks, 'choosefile', chooseMe):
+    with utils.obj_in_module(rinterface.callbacks, 'choosefile', chooseMe):
         res = rinterface.baseenv['file.choose']()
         assert me == res[0]
 
@@ -157,10 +147,10 @@ def test_choosefile():
 def test_choosefile_error():
     def noconsole(x):
         pass
-    with obj_in_module(rinterface.callbacks, 'consolewrite_print', noconsole):
+    with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', noconsole):
         def f(prompt):
             raise Exception("Doesn't work.")
-        with obj_in_module(rinterface.callbacks, 'choosefile', f):
+        with utils.obj_in_module(rinterface.callbacks, 'choosefile', f):
             with pytest.raises(rinterface._rinterface.RRuntimeError):
                 with pytest.warns(rinterface.RRuntimeWarning):
                     rinterface.baseenv["file.choose"]()
@@ -175,7 +165,7 @@ def test_showfiles():
         for tf in fileheaders:
             sf.append(tf)
 
-    with obj_in_module(rinterface.callbacks, 'showfiles', f):
+    with utils.obj_in_module(rinterface.callbacks, 'showfiles', f):
         file_path = rinterface.baseenv['file.path']
         r_home = rinterface.baseenv['R.home']
         filename = file_path(r_home(rinterface.StrSexpVector(('doc', ))), 
@@ -190,7 +180,7 @@ def test_showfiles_error():
     def f(fileheaders, wtitle, fdel, pager):
         raise Exception("Doesn't work.")
 
-    with obj_in_module(rinterface.callbacks, 'showfiles', f):
+    with utils.obj_in_module(rinterface.callbacks, 'showfiles', f):
         file_path = rinterface.baseenv['file.path']
         r_home = rinterface.baseenv['R.home']
         filename = file_path(r_home(rinterface.StrSexpVector(('doc', ))), 
@@ -216,7 +206,7 @@ def test_showfiles_error():
 def test_cleanup():
     def f(saveact, status, runlast):
         return None
-    with obj_in_module(rinterface.callbacks, 'cleanup', f):
+    with utils.obj_in_module(rinterface.callbacks, 'cleanup', f):
         r_quit = rinterface.baseenv['q']
         with pytest.raises(rinterface._rinterface.RRuntimeError):
             r_quit()

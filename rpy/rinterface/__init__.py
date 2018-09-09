@@ -10,6 +10,7 @@ from . import conversion
 _cdata_res_to_rinterface = conversion._cdata_res_to_rinterface
 
 class RTYPES(enum.IntEnum):
+    """Native R types, as defined in R's C API."""
     NILSXP     = _rinterface.rlib.NILSXP
     SYMSXP     = _rinterface.rlib.SYMSXP
     LISTSXP    = _rinterface.rlib.LISTSXP
@@ -360,10 +361,9 @@ class SexpPromise(Sexp):
 
 # TODO: move to _rinterface-level function (as ABI / API compatibility
 # will have API-defined code compile for efficiency).
-def _populate_r_vector(iterable, r_vector, get_ptr, cast_value):
-    c_array = get_ptr(r_vector)
+def _populate_r_vector(iterable, r_vector, set_elt, cast_value):
     for i, v in enumerate(iterable):
-        c_array[i] = cast_value(v)
+        set_elt(r_vector, i, cast_value(v))
 
 
 class SexpVector(Sexp):
@@ -380,25 +380,52 @@ class SexpVector(Sexp):
         
     @classmethod
     @_cdata_res_to_rinterface
-    def from_iterable(cls, iterable):
+    def from_iterable(cls, iterable, cast_in=None):
+        if cast_in is None:
+            cast_in = cls._CAST_IN
         n = len(iterable)
-        r_vector = _rinterface.rlib.Rf_allocVector(
-            cls._R_TYPE, n)
-        _populate_r_vector(iterable,
-                           r_vector,
-                           cls._R_GET_PTR,
-                           cls._CAST_IN)        
+        r_vector = _rinterface.rlib.Rf_protect(
+            _rinterface.rlib.Rf_allocVector(
+                cls._R_TYPE, n)
+        )
+        try:
+            _populate_r_vector(iterable,
+                               r_vector,
+                               cls._R_SET_ELT,
+                               cast_in)
+        finally:
+            _rinterface.rlib.Rf_unprotect(1)
         return r_vector
 
-    @_cdata_res_to_rinterface
     def __getitem__(self, i):
-        i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
-        return _rinterface.rlib.VECTOR_ELT(self.__sexp__._cdata, i_c)
-
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            res = conversion._cdata_to_rinterface(
+                _rinterface.rlib.VECTOR_ELT(cdata, i_c))
+        elif isinstance(i, slice):
+            res = type(self).from_iterable(
+                [_rinterface.rlib.VECTOR_ELT(cdata, i_c) for i_c in range(*i.indices(len(self)))],
+                cast_in = lambda x: x
+            )
+        else:
+            raise TypeError(
+                'Indices must be integers or slices, not %s' % type(i))
+        return res
+    
     def __setitem__(self, i, value):
-        i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
-        _rinterface.rlib.SET_VECTOR_ELT(self.__sexp__._cdata, i_c,
-                                        value)
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            _rinterface.rlib.SET_VECTOR_ELT(cdata, i_c,
+                                            value.__sexp__._cdata)
+        elif isinstance(i, slice):
+            for i_c, v in zip(range(*i.indices(len(self))), value):
+                _rinterface.rlib.SET_VECTOR_ELT(cdata, i_c,
+                                                v.__sexp__._cdata)
+        else:
+            raise TypeError(
+                'Indices must be integers or slices, not %s' % type(i))
 
     def __len__(self):
         return _rinterface.rlib.Rf_xlength(self.__sexp__._cdata)
@@ -410,54 +437,188 @@ class SexpVector(Sexp):
         raise ValueError("'%s' is not in R vector" % item)
 
 
+def _cast_in_byte(x):
+    if not isinstance(x, int) or x > 255:
+        raise ValueError('byte must be in range(0, 256)')
+    return x
+
+
+class ByteSexpVector(SexpVector):
+
+    _R_TYPE = _rinterface.rlib.RAWSXP
+    _R_SET_ELT = lambda x, i, v: _rinterface._RAW(x, i, v)
+    _CAST_IN = _cast_in_byte
+    
+    def __getitem__(self, i):
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            res = _rinterface.rlib.RAW_ELT(cdata, i_c)
+        elif isinstance(i, slice):
+            res = type(self).from_iterable(
+                [_rinterface.rlib.RAW_ELT(cdata, i_c) for i_c in range(*i.indices(len(self)))]
+            )
+        else:
+            raise TypeError(
+                'Indices must be integers or slices, not %s' % type(i))
+        return res
+
+    def __setitem__(self, i, value):
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            _rinterface.rlib.RAW(cdata)[i_c] = _cast_in_byte(value)
+        elif isinstance(i, slice):
+            for i_c, v in zip(range(*i.indices(len(self))), value):
+                if v > 255:
+                    raise ValueError('byte must be in range(0, 256)')
+                _rinterface.rlib.RAW(cdata)[i_c] = _cast_in_byte(v)
+        else:
+            raise TypeError(
+                'Indices must be integers or slices, not %s' % type(i))
+
+
 class BoolSexpVector(SexpVector):
     
     _R_TYPE = _rinterface.rlib.LGLSXP
+    _R_SET_ELT = _rinterface.rlib.SET_LOGICAL_ELT
     _R_GET_PTR = _rinterface._LOGICAL
     _CAST_IN = bool
 
     def __getitem__(self, i):
-        i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
-        return bool(_rinterface.rlib.LOGICAL_ELT(self.__sexp__._cdata, i_c))
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            res = bool(_rinterface.rlib.LOGICAL_ELT(cdata, i_c))
+        elif isinstance(i, slice):
+            res = type(self).from_iterable(
+                [_rinterface.rlib.LOGICAL_ELT(cdata, i_c) for i_c in range(*i.indices(len(self)))]
+            )
+        else:
+            raise TypeError(
+                'Indices must be integers or slices, not %s' % type(i))
+        return res
 
     def __setitem__(self, i, value):
-        i_c = _rinterface._python_index_to_c(self.__sexp__._cdata ,i)
-        _rinterface.rlib.SET_LOGICAL_ELT(self.__sexp__._cdata, i_c,
-                                         bool)
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            _rinterface.rlib.SET_LOGICAL_ELT(cdata, i_c,
+                                             int(value))
+        elif isinstance(i, slice):
+            for i_c, v in zip(range(*i.indices(len(self))), value):
+                _rinterface.rlib.SET_LOGICAL_ELT(cdata, i_c,
+                                                 int(v))
+        else:
+            raise TypeError(
+                'Indices must be integers or slices, not %s' % type(i))
 
 
 class IntSexpVector(SexpVector):
 
     _R_TYPE = _rinterface.rlib.INTSXP
-    _R_GET_PTR = _rinterface._INTEGER
+    _R_SET_ELT = _rinterface.rlib.SET_INTEGER_ELT
     _CAST_IN = int
     
     def __getitem__(self, i):
-        i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
-        return _rinterface.rlib.INTEGER_ELT(self.__sexp__._cdata, i_c)
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            res = _rinterface.rlib.INTEGER_ELT(cdata, i_c)
+        elif isinstance(i, slice):
+            res = type(self).from_iterable(
+                [_rinterface.rlib.INTEGER_ELT(cdata, i_c) for i_c in range(*i.indices(len(self)))]
+            )
+        else:
+            raise TypeError(
+                'Indices must be integers or slices, not %s' % type(i))
+        return res
 
     def __setitem__(self, i, value):
-        i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
-        _rinterface.rlib.SET_INTEGER_ELT(self.__sexp__._cdata, i_c,
-                                         int(value))
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            _rinterface.rlib.SET_INTEGER_ELT(cdata, i_c,
+                                             int(value))
+        elif isinstance(i, slice):
+            for i_c, v in zip(range(*i.indices(len(self))), value):
+                _rinterface.rlib.SET_INTEGER_ELT(cdata, i_c,
+                                                 int(v))
+        else:
+            raise TypeError(
+                'Indices must be integers or slices, not %s' % type(i))
         
 
 class FloatSexpVector(SexpVector):
 
     _R_TYPE = _rinterface.rlib.REALSXP
-    _R_GET_PTR = _rinterface._REAL
+    _R_SET_ELT = _rinterface.rlib.SET_REAL_ELT
     _CAST_IN = float
 
     def __getitem__(self, i):
-        i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
-        return _rinterface.rlib.REAL_ELT(self.__sexp__._cdata, i_c)
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            res = _rinterface.rlib.REAL_ELT(cdata, i_c)
+        elif isinstance(i, slice):
+            res = type(self).from_iterable(
+                [_rinterface.rlib.REAL_ELT(cdata, i_c) for i_c in range(*i.indices(len(self)))]
+            )
+        else:
+            raise TypeError('Indices must be integers or slices, not %s' % type(i))
+        return res
 
     def __setitem__(self, i, value):
-        i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
-        _rinterface.rlib.SET_REAL_ELT(self.__sexp__._cdata, i_c,
-                                      float(value))
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            _rinterface.rlib.SET_REAL_ELT(cdata, i_c,
+                                          float(value))
+        elif isinstance(i, slice):
+            for i_c, v in zip(range(*i.indices(len(self))), value):
+                _rinterface.rlib.SET_REAL_ELT(cdata, i_c,
+                                              float(v))
+        else:
+            raise TypeError(
+                'Indices must be integers or slices, not %s' % type(i))
 
 
+class ComplexSexpVector(SexpVector):
+
+    _R_TYPE = _rinterface.rlib.CPLXSXP
+    _R_SET_ELT = lambda x, i, v: _rinterface._COMPLEX(x).__setitem__(i, v)
+    _CAST_IN = lambda x: (x.real, x.imag) if isinstance(x, complex) else x
+
+    def __getitem__(self, i):
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            _ = _rinterface.rlib.COMPLEX_ELT(cdata, i_c)
+            res = complex(_.r, _.i)
+        elif isinstance(i, slice):
+            res = type(self).from_iterable(
+                [_rinterface.rlib.COMPLEX_ELT(cdata, i_c) for i_c in range(*i.indices(len(self)))]
+            )
+        else:
+            raise TypeError(
+                'Indices must be integers or slices, not %s' % type(i))
+        return res
+
+    def __setitem__(self, i, value):
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            _ = complex(value)
+            _rinterface._COMPLEX(cdata)[i_c] = (_.real, _.imag)
+        elif isinstance(i, slice):
+            for i_c, v in zip(range(*i.indices(len(self))), value):
+                _ = complex(v)
+                _rinterface._COMPLEX(cdata)[i_c] = (_.real, _.imag)
+        else:
+            raise TypeError(
+                'Indices must be integers or slices, not %s' % type(i))
+
+                
 class CETYPE(enum.Enum):
     CE_NATIVE = 0
     CE_UTF8   = 1
@@ -485,20 +646,38 @@ class CharSexp(Sexp):
 class StrSexpVector(SexpVector):
 
     _R_TYPE = _rinterface.rlib.STRSXP
-    _R_GET_PTR = _rinterface._STRING_PTR
+    _R_SET_ELT = _rinterface.rlib.SET_STRING_ELT
     _CAST_IN = _rinterface._str_to_charsxp
 
     def __getitem__(self, i):
-        i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
-        res = _rinterface._string_getitem(self.__sexp__._cdata, i_c)
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            res = _rinterface._string_getitem(cdata, i_c)
+        elif isinstance(i, slice):
+            res = type(self).from_iterable(
+                [_rinterface._string_getitem(cdata, i_c) for i_c in range(*i.indices(len(self)))]
+            )
+        else:
+            raise TypeError('Indices must be integers or slices, not %s' % type(i))
         return res
 
     def __setitem__(self, i, value):
-        i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
-        _rinterface._string_setitem(
-            self.__sexp__._cdata, i_c,
-            _rinterface._str_to_charsxp(value)
-        )
+        cdata = self.__sexp__._cdata
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            _rinterface._string_setitem(
+                cdata, i_c,
+                _rinterface._str_to_charsxp(value)
+            )
+        elif isinstance(i, slice):
+            for i_c, v in zip(range(*i.indices(len(self))), value):
+                _rinterface._string_setitem(
+                    cdata, i_c,
+                    _rinterface._str_to_charsxp(v)
+                )
+        else:
+            raise TypeError('Indices must be integers or slices, not %s' % type(i))
 
     def get_charsxp(self, i):
         i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
@@ -507,6 +686,12 @@ class StrSexpVector(SexpVector):
                 _rinterface.rlib.STRING_ELT(self.__sexp__._cdata, i_c)
             )
         )
+
+
+class ListSexpVector(SexpVector):
+    _R_TYPE = _rinterface.rlib.VECSXP
+    _R_SET_ELT = _rinterface.rlib.SET_VECTOR_ELT
+    _CAST_IN = lambda x: x.__sexp__._cdata
 
 
 class ExprSexpVector(SexpVector):
@@ -522,15 +707,17 @@ class LangSexpVector(SexpVector):
 
     @_cdata_res_to_rinterface
     def __getitem__(self, i):
-        i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
+        cdata = self.__sexp__._cdata
+        i_c = _rinterface._python_index_to_c(cdata, i)
         return _rinterface.rlib.CAR(
-            _rinterface.rlib.Rf_nthcdr(self.__sexp__._cdata, i_c)
+            _rinterface.rlib.Rf_nthcdr(cdata, i_c)
         )
 
     def __setitem__(self, i, value):
-        i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
+        cdata = self.__sexp__._cdata
+        i_c = _rinterface._python_index_to_c(cdata, i)
         _rinterface.rlib.SETCAR(
-            _rinterface.rlib.Rf_nthcdr(self.__sexp__._cdata, i_c),
+            _rinterface.rlib.Rf_nthcdr(cdata, i_c),
             value.__sexp__._cdata
         )
 
@@ -623,10 +810,13 @@ conversion._R_RPY2_MAP.update({
     _rinterface.rlib.EXPRSXP: ExprSexpVector,
     _rinterface.rlib.LANGSXP: LangSexpVector,
     _rinterface.rlib.ENVSXP: SexpEnvironment,
+    _rinterface.rlib.RAWSXP: ByteSexpVector,
     _rinterface.rlib.LGLSXP: BoolSexpVector,
     _rinterface.rlib.INTSXP: IntSexpVector,
     _rinterface.rlib.REALSXP: FloatSexpVector,
+    _rinterface.rlib.CPLXSXP: ComplexSexpVector,
     _rinterface.rlib.STRSXP: StrSexpVector,
+    _rinterface.rlib.VECSXP: ListSexpVector,
     _rinterface.rlib.CLOSXP: SexpClosure,
     _rinterface.rlib.BUILTINSXP: SexpClosure,
     _rinterface.rlib.EXTPTRSXP: SexpExtPtr,
@@ -639,7 +829,12 @@ conversion._PY_RPY2_MAP.update({
     float: _rinterface._float_to_sexp
     })
 
-                               
+
+def vector(iterable, rtype):
+    cls = conversion._R_RPY2_DEFAULT_MAP[rtype]
+    return cls.from_iterable(iterable)
+
+
 class RRuntimeWarning(RuntimeWarning):
     pass
 
