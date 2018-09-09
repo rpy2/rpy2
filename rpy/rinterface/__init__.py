@@ -7,7 +7,6 @@ from . import _rinterface_capi as _rinterface
 from . import embedded
 from . import conversion
 
-_cdata_res_to_rinterface = conversion._cdata_res_to_rinterface
 
 class RTYPES(enum.IntEnum):
     """Native R types, as defined in R's C API."""
@@ -42,7 +41,9 @@ class RTYPES(enum.IntEnum):
     FUNSXP     = _rinterface.rlib.FUNSXP
 
 
+_cdata_res_to_rinterface = conversion._cdata_res_to_rinterface
 _evaluated_promise = _rinterface._evaluated_promise
+R_NilValue = _rinterface.rlib.R_NilValue
 
 
 @_cdata_res_to_rinterface
@@ -666,13 +667,13 @@ class StrSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _rinterface._string_setitem(
+            self._R_SET_ELT(
                 cdata, i_c,
                 _rinterface._str_to_charsxp(value)
             )
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
-                _rinterface._string_setitem(
+                self._R_SET_ELT(
                     cdata, i_c,
                     _rinterface._str_to_charsxp(v)
                 )

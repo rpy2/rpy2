@@ -15,7 +15,7 @@ def test_init_from_seqr():
 
 def test_init_from_seq_invalid_item():
     seq = ['foo', 0, 'baz']
-    with pytest.raises(ValueError):
+    with pytest.raises(Exception):
         ri.StrSexpVector(seq)
 
 
@@ -47,7 +47,7 @@ def test_getslice_negative():
 
 def test_setslice():
     vec = ri.StrSexpVector(['foo', 'bar', 'baz'])
-    vec[0:2] = ri.StrSexpVector(['boo', 'noo'])
+    vec[0:2] = ['boo', 'noo']
     assert len(vec) == 3
     assert vec[0] == 'boo'
     assert vec[1] == 'noo'

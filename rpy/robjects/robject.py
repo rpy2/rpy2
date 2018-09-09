@@ -48,6 +48,8 @@ class RSlots(object):
             v = self[k]
             yield v
 
+
+_get_exported_value = rpy2.rinterface.baseenv['::']
         
 class RObjectMixin(object):
     """ Class to provide methods common to all RObject instances. """
@@ -63,7 +65,7 @@ class RObjectMixin(object):
     __unlink = rpy2.rinterface.baseenv.get("unlink")
     __rclass = rpy2.rinterface.baseenv.get("class")
     __rclass_set = rpy2.rinterface.baseenv.get("class<-")
-    __show = rpy2.rinterface.baseenv.get("show")
+    __show = _get_exported_value('methods', 'show')
 
     __slots = None
     

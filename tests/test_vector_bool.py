@@ -39,15 +39,15 @@ def test_getslice():
     
 def test_getslice_negative():
     vec = ri.BoolSexpVector([True, False, True])
-    vec = vec[-2:-1]
-    assert len(vec) == 1
-    assert vec[0] == True
+    vec_s = vec[-2:-1]
+    assert len(vec_s) == 1
+    assert vec_s[0] == False
 
 
 def test_setslice():
     vec = ri.BoolSexpVector([True, False, False])
-    vec[0:2] = ri.BoolSexpVector([True, True])
-    assert len(vec) == 2
+    vec[0:2] = [True, True]
+    assert len(vec) == 3
     assert vec[0] == True
     assert vec[1] == True
 
