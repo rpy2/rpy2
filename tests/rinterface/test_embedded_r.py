@@ -143,7 +143,7 @@ def test_external_python():
     def f(x):
         return 3
 
-    rpy_fun = rinterface.SexpExtPtr.from_callable(f)
+    rpy_fun = rinterface.SexpExtPtr.from_pyobject(f)
     _python = rinterface.StrSexpVector(('.Python', ))
     res = rinterface.baseenv['.External'](_python,
                                           rpy_fun, 1)

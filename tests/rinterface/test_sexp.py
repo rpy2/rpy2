@@ -27,8 +27,8 @@ def test_get():
     sexp = rinterface.baseenv.get('pi')
     assert sexp.typeof == rinterface.RTYPES.REALSXP
 
-    sexp = rinterface.baseenv.get('plot')
-    assert sexp.typeof == rinterface.RTYPES.SYMSXP
+    sexp = rinterface.baseenv.get('options')
+    assert sexp.typeof == rinterface.RTYPES.CLOSXP
 
 
 def test_list_attrs():
