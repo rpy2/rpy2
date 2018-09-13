@@ -15,7 +15,7 @@ def test_init_from_seqr():
 
 def test_init_from_seq_invalid_item():
     seq = [1+2j, 'a', 0+1j]
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         ri.ComplexSexpVector(seq)
 
 

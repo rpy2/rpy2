@@ -12,12 +12,6 @@ def test_init_from_seqr():
         assert x == y
 
 
-def test_init_from_seq_invalid_item():
-    seq = (True, 'b', False)
-    with pytest.raises(ValueError):
-        ri.BoolSexpVector(seq)
-
-
 def test_getitem():
     vec = ri.BoolSexpVector([True, False, False])
     assert vec[1] == False

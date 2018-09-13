@@ -13,6 +13,9 @@ R_HOME = rpy2.situation.get_r_home()
 lib_path = os.path.join(R_HOME, "lib", "libR.so")
 rlib = ffi.dlopen(lib_path)
 
+# TODO: How can I reliably get MAX_INT from limits.h ?
+_MAX_INT = 2**32-1
+
 _R_PRESERVED = dict()
 _PY_PASSENGER = dict()
 

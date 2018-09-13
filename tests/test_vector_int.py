@@ -23,12 +23,13 @@ def test_init_from_seq_invalid_item():
 @pytest.mark.skipif(struct.calcsize('P') < 8,
                     reason='Only relevant on 64 architectures.')
 def test_init_from_seq_invalid_overflow():
-    v = ri.IntSexpVector((sys.maxsize-1, sys.maxsize))
-    assert v[0] == sys.maxsize-1
-    assert v[1] == sys.maxsize
+    MAX_INT = ri._rinterface._MAX_INT
+    v = ri.IntSexpVector((MAX_INT - 1, MAX_INT))
+    assert v[0] == MAX_INT - 1
+    assert v[1] == MAX_INT
     # check 64-bit architecture
     with pytest.raises(OverflowError): 
-        ri.IntSexpVector((sys.maxsize + 1, ))
+        ri.IntSexpVector((MAX_INT + 1, ))
 
 
 def test_getitem():

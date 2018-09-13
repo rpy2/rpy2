@@ -207,6 +207,13 @@ class Sexp(object):
             raise ValueError('Not an R object.')
         return self.__sexp__._cdata == sexp.__sexp__._cdata
 
+    @property
+    @_cdata_res_to_rinterface
+    def names(self):
+        return _rinterface.rlib.Rf_getAttrib(
+            self.__sexp__._cdata,
+            _rinterface.rlib.R_NameSymbol)
+
 
 class SexpSymbol(Sexp):
     
@@ -351,7 +358,7 @@ class SexpEnvironment(Sexp):
         return _rinterface.rlib.R_EnvironmentIsLocked(
             self.__sexp__._cdata)
 
-    
+
 class SexpPromise(Sexp):
 
     @_cdata_res_to_rinterface
@@ -440,15 +447,22 @@ class SexpVector(Sexp):
 
 
 def _cast_in_byte(x):
-    if not isinstance(x, int) or x > 255:
-        raise ValueError('byte must be in range(0, 256)')
+    if isinstance(x, int):
+        if x > 255:
+            raise ValueError('byte must be in range(0, 256)')
+    elif isinstance(x, (bytes, bytearray)):
+        if len(x) != 1:
+            raise ValueError('byte must be a single character')
+        x = ord(x)
+    else:
+        raise ValueError('byte must be an integer [0, 255] or a single byte character')
     return x
 
 
 class ByteSexpVector(SexpVector):
 
     _R_TYPE = _rinterface.rlib.RAWSXP
-    _R_SET_ELT = lambda x, i, v: _rinterface._RAW(x, i, v)
+    _R_SET_ELT = lambda x, i, v: _rinterface._RAW(x).__setitem__(i, v)
     _CAST_IN = _cast_in_byte
     
     def __getitem__(self, i):
@@ -696,6 +710,73 @@ class ListSexpVector(SexpVector):
     _CAST_IN = lambda x: x.__sexp__._cdata
 
 
+class PairlistSexpVector(SexpVector):
+    _R_TYPE = _rinterface.rlib.LISTSXP
+    _R_SET_ELT = _rinterface.rlib.SET_VECTOR_ELT
+    _CAST_IN = lambda x: x.__sexp__._cdata
+
+    def __getitem__(self, i):
+        cdata = self.__sexp__._cdata
+        rlib = _rinterface.rlib
+        if isinstance(i, int):
+            i_c = _rinterface._python_index_to_c(cdata, i)
+            item_cdata = rlib.Rf_nthcdr(cdata, i_c)
+            protect_count = 0
+            try:
+                res_cdata = rlib.Rf_protect(rlib.Rf_allocVector(RTYPES.VECSXP, 1))
+                protect_count += 1
+                rlib.SET_VECTOR_ELT(
+                    res_cdata,
+                    0,
+                    rlib.CAR(
+                        item_cdata
+                    ))
+                res_name = rlib.Rf_protect(rlib.Rf_allocVector(RTYPES.STRSXP, 1))
+                protect_count += 1
+                rlib.SET_STRING_ELT(
+                    res_name,
+                    0,
+                    rlib.PRINTNAME(rlib.TAG(item_cdata)))
+                rlib.Rf_setAttrib(res_cdata, rlib.R_NameSymbol, res_name)
+                res = conversion._cdata_to_rinterface(res_cdata)
+            finally:
+                rlib.Rf_unprotect(protect_count)            
+        elif isinstance(i, slice):
+            iter_indices = range(*i.indices(len(self)))
+            n = len(iter_indices)
+            res_cdata = rlib.Rf_protect(
+                rlib.Rf_allocVector(
+                    self._R_TYPE, n)
+            )
+            iter_res_cdata = res_cdata
+            try:
+                set_elt = self._R_SET_ELT
+                i_self = 0
+                lst_cdata = self.__sexp__._cdata
+                for i in iter_indices :
+                    while i_self < i:
+                        if i_self > len(self):
+                            raise IndexError('index out of range')
+                        lst_cdata = rlib.CDR(lst_cdata)
+                        i_self += 1
+                    rlib.SETCAR(iter_res_cdata,
+                                rlib.CAR(lst_cdata))
+                    rlib.SET_TAG(iter_res_cdata,
+                                 rlib.TAG(lst_cdata))
+                    res_cdata = rlib.CDR(iter_res_cdata)
+                res = conversion._cdata_to_rinterface(iter_res_cdata)
+            finally:
+                rlib.Rf_unprotect(1)
+        else:
+            raise TypeError(
+                'Indices must be integers or slices, not %s' % type(i))
+        return res
+
+    @classmethod
+    @_cdata_res_to_rinterface
+    def from_iterable(cls, iterable, cast_in=None):
+        raise NotImplementedError()
+
 class ExprSexpVector(SexpVector):
     _R_TYPE = _rinterface.rlib.EXPRSXP
     _R_GET_PTR = None
@@ -783,12 +864,20 @@ class SexpS4(Sexp):
 
 # TODO: clean up
 def make_extptr(obj, tag, protected):
+    if protected is None:
+        cdata_protected = _rinterface.rlib.R_NilValue
+    else:
+        try:
+            cdata_protected = protected.__sexp__._cdata
+        except AttributeError:
+            raise TypeError('Argument protected must inherit from Sexp')
+            
     ptr = _rinterface.ffi.new_handle(obj)
     cdata = _rinterface.rlib.Rf_protect(
         _rinterface.rlib.R_MakeExternalPtr(
             ptr,
             tag,
-            protected))
+            cdata_protected))
     _rinterface.rlib.R_RegisterCFinalizer(
         cdata,
         _rinterface._capsule_finalizer)
@@ -802,12 +891,15 @@ class SexpExtPtr(Sexp):
     TYPE_TAG = 'Python'
 
     @classmethod
-    def from_callable(cls, func, tag=TYPE_TAG,
-                      protected=_rinterface.rlib.R_NilValue):
+    def from_pyobject(cls, func, tag=TYPE_TAG,
+                      protected=None):
         scaps = make_extptr(func,
                             _rinterface._str_to_charsxp(cls.TYPE_TAG),
                             protected)
-        return cls(scaps)
+        res = cls(scaps)
+        if tag != cls.TYPE_TAG:
+            res.TYPE_TAG = tag
+        return res
 
 
 # TODO: Only use rinterface-level ?
@@ -822,6 +914,7 @@ conversion._R_RPY2_MAP.update({
     _rinterface.rlib.CPLXSXP: ComplexSexpVector,
     _rinterface.rlib.STRSXP: StrSexpVector,
     _rinterface.rlib.VECSXP: ListSexpVector,
+    _rinterface.rlib.LISTSXP: PairlistSexpVector,
     _rinterface.rlib.CLOSXP: SexpClosure,
     _rinterface.rlib.BUILTINSXP: SexpClosure,
     _rinterface.rlib.SPECIALSXP: SexpClosure,
@@ -838,7 +931,16 @@ conversion._PY_RPY2_MAP.update({
 
 
 def vector(iterable, rtype):
-    cls = conversion._R_RPY2_DEFAULT_MAP[rtype]
+    error = False
+    try:
+        cls = conversion._R_RPY2_MAP[rtype]
+    except KeyError:
+        error = True
+    if not error and not issubclass(cls, SexpVector):
+        error = True
+    if error:
+        raise ValueError(
+            'Unable to build a vector from type "%s"' % RTYPES(rtype))
     return cls.from_iterable(iterable)
 
 
@@ -912,7 +1014,7 @@ def rternalize(function):
     """ Takes an arbitrary Python function and wrap it
     in such a way that it can be called from the R side. """
     assert callable(function) 
-    rpy_fun = SexpExtPtr.from_callable(function)
+    rpy_fun = SexpExtPtr.from_pyobject(function)
     # TODO: this is a hack. Find a better way.
     template = parse("""
       function(...) { .External(".Python", foo, ...);

@@ -408,6 +408,7 @@ SEXP (PRINTNAME)(SEXP x);
 
 ffibuilder.cdef("""
 SEXP R_ClassSymbol;
+SEXP R_NameSymbol;
 """)
 
 # include/R_ext/Parse.h

@@ -55,11 +55,6 @@ def test_byte():
     assert is_raw(sexp)[0]
 
 
-def test_missing_type():
-    with pytest.raises(ValueError):
-        ri.vector([2, ])
-
-
 def test_del():
     v = ri.IntSexpVector(range(10))
     with pytest.raises(AttributeError):
@@ -83,25 +78,25 @@ def test_from_int():
     isInteger = ri.globalenv.get('is.integer')
     assert isInteger(sexp)[0]
     
-    sexp = ri.SexpVector(['a', ], ri.RTYPES.INTSXP)
-    isNA = ri.globalenv.get('is.na')
-    assert isNA(sexp)[0]
-
-
-def test_from_int_invalid():
-    s = set((0,1))
     with pytest.raises(ValueError):
+        ri.vector(['a', ], ri.RTYPES.INTSXP)
+
+
+def test_from_invalid_no_length():
+    s = (x for x in range(30))
+    with pytest.raises(TypeError):
         ri.vector(s, ri.RTYPES.INTSXP)
 
 
 def test_from_float():
-    sexp = ri.SexpVector([1.0, ], ri.RTYPES.REALSXP)
+    sexp = ri.vector([1.0, ], ri.RTYPES.REALSXP)
     isNumeric = ri.globalenv.get("is.numeric")
     assert isNumeric(sexp)[0]
 
-    sexp = ri.SexpVector(["a", ], ri.RTYPES.REALSXP)
-    isNA = ri.globalenv.get("is.na")
-    assert isNA(sexp)[0]
+    
+def test_from_float_nan():
+    with pytest.raises(ValueError):
+        ri.vector(["a", ], ri.RTYPES.REALSXP)
 
 
 def test_from_complex():
@@ -112,10 +107,6 @@ def test_from_complex():
 
 def test_from_string():
     sexp = ri.vector(['abc', ], ri.RTYPES.STRSXP)
-    isCharacter = ri.globalenv.get('is.character')
-    assert isCharacter(sexp)[0]
-
-    sexp = ri.vector([1, ], ri.RTYPES.STRSXP)
     isCharacter = ri.globalenv.get('is.character')
     assert isCharacter(sexp)[0]
 
@@ -138,13 +129,6 @@ def test_missing_R_Preserve_object_bug():
     assert x[0] == 0
 
 
-def test_setitem_different_type():
-    vec = ri.IntSexpVector([0, 1, 2, 3, 4, 5])
-    with pytest.raises(ValueError):
-        vec.__setitem__(0,
-                        ri.StrSexpVector(['abc', ]))
-
-
 def test_invalid_rtype():
     with pytest.raises(ValueError):
         ri.vector([1, ], -1)
@@ -157,43 +141,42 @@ def test_invalid_not_vector_rtype():
         ri.vector([1, ], ri.RTYPES.ENVSXP)
 
 
-class SexpVectorTestCase(unittest.TestCase):
+@pytest.mark.skip(reason='Spawned process seems to share initialization state with parent.')
+def test_instantiate_without_initr():
+    def foo(queue):
+        import rpy2.rinterface as rinterface
+        try:
+            tmp = ri.vector([1,2], ri.INTSXP)
+            res = (False, None)
+        except RuntimeError as re:
+            res = (True, re)
+        except Exception as e:
+            res = (False, e)
+        queue.put(res)
+    q = multiprocessing.Queue()
+    ctx = multiprocessing.get_context('spawn')
+    p = ctx.Process(target = foo, args = (q,))
+    p.start()
+    res = q.get()
+    p.join()
+    assert res[0] is True
 
-    @pytest.mark.skip(reason='Spawned process seems to share initialization state with parent.')
-    def testNewWithoutInit():
-        def foo(queue):
-            import rpy2.rinterface as rinterface
-            try:
-                tmp = ri.SexpVector([1,2], ri.INTSXP)
-                res = (False, None)
-            except RuntimeError as re:
-                res = (True, re)
-            except Exception as e:
-                res = (False, e)
-            queue.put(res)
-        q = multiprocessing.Queue()
-        ctx = multiprocessing.get_context('spawn')
-        p = ctx.Process(target = foo, args = (q,))
-        p.start()
-        res = q.get()
-        p.join()
-        self.assertTrue(res[0])
-        
-    def testGetItemPairList():
-        pairlist = ri.baseenv.get('pairlist')
-        pl = pairlist(a = ri.StrSexpVector(['1', ]))
-        # R's behaviour is that subsetting returns an R list
-        y = pl[0]
-        self.assertEqual(ri.VECSXP, y.typeof)
-        self.assertEqual('a', y.do_slot('names')[0])
-        self.assertEqual('1', y[0][0])
 
-    def testGetSlicePairllist():
-        # Checks that root of issue #380 is fixed
-        vec = ri.baseenv['.Options']
-        vec_slice = vec[0:2]
-        self.assertEqual(2, len(vec_slice))
-        self.assertEqual(ri.LISTSXP, vec_slice.typeof)
-        self.assertEqual(vec.do_slot("names")[0], vec_slice.do_slot("names")[0])
-        self.assertEqual(vec.do_slot("names")[1], vec_slice.do_slot("names")[1])
+def test_getitem_pairlist():
+    pairlist = ri.baseenv.get('pairlist')
+    pl = pairlist(a = ri.StrSexpVector(['1', ]))
+    # R's behaviour is that subsetting returns an R list
+    y = pl[0]
+    assert y.typeof == ri.RTYPES.VECSXP
+    assert y.names[0] == 'a'
+    assert y[0][0] == '1'
 
+
+def test_getslice_pairlist():
+    # Checks that root of issue #380 is fixed
+    vec = ri.baseenv['.Options']
+    vec_slice = vec[0:2]
+    assert len(vec_slice) == 2
+    assert vec_slice.typeof == ri.RTYPES.LISTSXP
+    assert vec.names[0] == vec_slice.names[0]
+    assert vec.names[1] == vec_slice.names[1]
