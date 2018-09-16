@@ -76,18 +76,8 @@ def test_flushconsole_with_error():
         raise Exception("Doesn't work.")
 
     with utils.obj_in_module(rinterface.callbacks, 'consoleflush', f):
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            stderr = sys.stderr
-            sys.stderr = tmp_file
-            try:
-                res = rinterface.baseenv.get('flush.console')()
-            except Exception as e:
-                sys.stderr = stderr
-                raise e
-            sys.stderr = stderr
-            tmp_file.flush()
-            tmp_file.seek(0)
-            assert str(sys.last_value) == "Doesn't work."
+        with pytest.raises(Exception):
+            res = rinterface.baseenv.get('flush.console')()
 
 
 def test_consoleread():
@@ -103,22 +93,10 @@ def test_console_read_with_error():
     def f(prompt):
         raise Exception("Doesn't work.")
     with utils.obj_in_module(rinterface.callbacks, 'consoleread', f):
+        with pytest.raises(Exception):
+            res = rinterface.baseenv['readline']()
 
-        with tempfile.NamedTemporaryFile() as tmp_file:
 
-            stderr = sys.stderr
-            sys.stderr = tmp_file
-            try:
-                res = rinterface.baseenv['readline']()
-            except Exception as e:
-                sys.stderr = stderr
-                raise e
-            sys.stderr = stderr
-            tmp_file.flush()
-            tmp_file.seek(0)
-            assert "Doesn't work." == str(sys.last_value)
-
-        
 def test_show_message():
     def f(message):
         return 'foo'
@@ -145,16 +123,16 @@ def test_choosefile():
 
 
 def test_choosefile_error():
-    def noconsole(x):
-        pass
-    with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', noconsole):
-        def f(prompt):
-            raise Exception("Doesn't work.")
+    def f(prompt):
+        raise Exception("Doesn't work.")
+
+    with utils.obj_in_module(rinterface.callbacks,
+                             'consolewrite_print',
+                             utils.noconsole):
         with utils.obj_in_module(rinterface.callbacks, 'choosefile', f):
             with pytest.raises(rinterface._rinterface.RRuntimeError):
                 with pytest.warns(rinterface.RRuntimeWarning):
                     rinterface.baseenv["file.choose"]()
-            assert "Doesn't work." == str(sys.last_value)
 
 
 @pytest.mark.skip(reason='WIP')    
@@ -185,21 +163,8 @@ def test_showfiles_error():
         r_home = rinterface.baseenv['R.home']
         filename = file_path(r_home(rinterface.StrSexpVector(('doc', ))), 
                              rinterface.StrSexpVector(('COPYRIGHTS', )))
-
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            stderr = sys.stderr
-            sys.stderr = tmp_file
-            try:
-                res = rinterface.baseenv['file.show'](filename)
-            except rinterface._rinterface.RRuntimeError:
-                pass
-            except Exception as e:
-                sys.stderr = stderr
-                raise e
-            sys.stderr = stderr
-            tmp_file.flush()
-            tmp_file.seek(0)
-            assert "Doesn't work." == str(sys.last_value)
+        with pytest.raises(Exception):
+            rinterface.baseenv['file.show'](filename)
 
 
 @pytest.mark.skip(reason='WIP')

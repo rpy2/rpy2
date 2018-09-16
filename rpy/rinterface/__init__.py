@@ -1,3 +1,4 @@
+import atexit
 import collections
 import enum
 import math
@@ -46,6 +47,7 @@ _cdata_res_to_rinterface = conversion._cdata_res_to_rinterface
 _evaluated_promise = _rinterface._evaluated_promise
 R_NilValue = _rinterface.rlib.R_NilValue
 
+endr = embedded.endr
 
 @_cdata_res_to_rinterface
 def parse(text, num=-1):
@@ -201,18 +203,29 @@ class Sexp(object):
                                           name_r,
                                           value.__sexp__._cdata)
 
-    # TODO: deprecate this ?
+    # TODO: deprecate this (and implement __eq__) ?
     def rsame(self, sexp):
         if not isinstance(sexp, Sexp):
             raise ValueError('Not an R object.')
         return self.__sexp__._cdata == sexp.__sexp__._cdata
 
     @property
-    @_cdata_res_to_rinterface
     def names(self):
+        # TODO: force finding function
+        return globalenv.get('names')(self)
+
+    @property
+    @_cdata_res_to_rinterface
+    def names_from_c_attribute(self):
         return _rinterface.rlib.Rf_getAttrib(
             self.__sexp__._cdata,
             _rinterface.rlib.R_NameSymbol)
+
+    
+    @names.setter
+    def names_set(self, value):
+        _rinterface.rlib.Rf_namesgets(
+            self.__sexp__._cdata, value)
 
 
 class SexpSymbol(Sexp):
@@ -529,6 +542,12 @@ class BoolSexpVector(SexpVector):
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
 
+    def memoryview(self):
+        b = _rinterface.ffi.buffer(
+            _rinterface._LOGICAL(self.__sexp__._cdata),
+            _rinterface.ffi.sizeof('int') * len(self))
+        return memoryview(b).cast('i')
+
 
 class IntSexpVector(SexpVector):
 
@@ -563,7 +582,13 @@ class IntSexpVector(SexpVector):
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
-        
+
+    def memoryview(self):
+        b = _rinterface.ffi.buffer(
+            _rinterface._INTEGER(self.__sexp__._cdata),
+            _rinterface.ffi.sizeof('int') * len(self))
+        return memoryview(b).cast('i')
+
 
 class FloatSexpVector(SexpVector):
 
@@ -597,6 +622,12 @@ class FloatSexpVector(SexpVector):
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
+
+    def memoryview(self):
+        b = _rinterface.ffi.buffer(
+            _rinterface._REAL(self.__sexp__._cdata),
+            _rinterface.ffi.sizeof('double') * len(self))
+        return memoryview(b).cast('d')
 
 
 class ComplexSexpVector(SexpVector):
@@ -633,7 +664,7 @@ class ComplexSexpVector(SexpVector):
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
-
+        
                 
 class CETYPE(enum.Enum):
     CE_NATIVE = 0
@@ -719,11 +750,13 @@ class PairlistSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         rlib = _rinterface.rlib
         if isinstance(i, int):
+            # R-exts says that it is converted to a VECSXP when subsetted.
             i_c = _rinterface._python_index_to_c(cdata, i)
             item_cdata = rlib.Rf_nthcdr(cdata, i_c)
             protect_count = 0
             try:
-                res_cdata = rlib.Rf_protect(rlib.Rf_allocVector(RTYPES.VECSXP, 1))
+                res_cdata = rlib.Rf_protect(
+                    rlib.Rf_allocVector(RTYPES.VECSXP, 1))
                 protect_count += 1
                 rlib.SET_VECTOR_ELT(
                     res_cdata,
@@ -731,13 +764,14 @@ class PairlistSexpVector(SexpVector):
                     rlib.CAR(
                         item_cdata
                     ))
-                res_name = rlib.Rf_protect(rlib.Rf_allocVector(RTYPES.STRSXP, 1))
+                res_name = rlib.Rf_protect(
+                    rlib.Rf_allocVector(RTYPES.STRSXP, 1))
                 protect_count += 1
                 rlib.SET_STRING_ELT(
                     res_name,
                     0,
                     rlib.PRINTNAME(rlib.TAG(item_cdata)))
-                rlib.Rf_setAttrib(res_cdata, rlib.R_NameSymbol, res_name)
+                rlib.Rf_namesgets(res_cdata, res_name)
                 res = conversion._cdata_to_rinterface(res_cdata)
             finally:
                 rlib.Rf_unprotect(protect_count)            
@@ -751,20 +785,19 @@ class PairlistSexpVector(SexpVector):
             iter_res_cdata = res_cdata
             try:
                 set_elt = self._R_SET_ELT
-                i_self = 0
+                prev_i = 0
                 lst_cdata = self.__sexp__._cdata
                 for i in iter_indices :
-                    while i_self < i:
-                        if i_self > len(self):
-                            raise IndexError('index out of range')
-                        lst_cdata = rlib.CDR(lst_cdata)
-                        i_self += 1
+                    if i >= len(self):
+                        raise IndexError('index out of range')
+                    lst_cdata = rlib.Rf_nthcdr(lst_cdata, i - prev_i)
+                    prev_i = i
                     rlib.SETCAR(iter_res_cdata,
                                 rlib.CAR(lst_cdata))
                     rlib.SET_TAG(iter_res_cdata,
                                  rlib.TAG(lst_cdata))
-                    res_cdata = rlib.CDR(iter_res_cdata)
-                res = conversion._cdata_to_rinterface(iter_res_cdata)
+                    iter_res_cdata = rlib.CDR(iter_res_cdata)
+                res = conversion._cdata_to_rinterface(res_cdata)
             finally:
                 rlib.Rf_unprotect(1)
         else:
@@ -776,6 +809,7 @@ class PairlistSexpVector(SexpVector):
     @_cdata_res_to_rinterface
     def from_iterable(cls, iterable, cast_in=None):
         raise NotImplementedError()
+
 
 class ExprSexpVector(SexpVector):
     _R_TYPE = _rinterface.rlib.EXPRSXP
@@ -962,6 +996,7 @@ NA_Complex = _rinterface.ffi.new('Rcomplex *',
                                               
 def initr():
     status = embedded._initr()
+    atexit.register(endr, 0)
     _rinterface._register_external_symbols()
     _post_initr_setup()
     return status

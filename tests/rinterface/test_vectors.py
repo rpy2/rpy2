@@ -160,23 +160,3 @@ def test_instantiate_without_initr():
     res = q.get()
     p.join()
     assert res[0] is True
-
-
-def test_getitem_pairlist():
-    pairlist = ri.baseenv.get('pairlist')
-    pl = pairlist(a = ri.StrSexpVector(['1', ]))
-    # R's behaviour is that subsetting returns an R list
-    y = pl[0]
-    assert y.typeof == ri.RTYPES.VECSXP
-    assert y.names[0] == 'a'
-    assert y[0][0] == '1'
-
-
-def test_getslice_pairlist():
-    # Checks that root of issue #380 is fixed
-    vec = ri.baseenv['.Options']
-    vec_slice = vec[0:2]
-    assert len(vec_slice) == 2
-    assert vec_slice.typeof == ri.RTYPES.LISTSXP
-    assert vec.names[0] == vec_slice.names[0]
-    assert vec.names[1] == vec_slice.names[1]

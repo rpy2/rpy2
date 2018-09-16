@@ -5,6 +5,7 @@ from . import _rinterface_capi as _rinterface
 logger = logging.getLogger(__name__)
 
 READCONSOLE_SIGNATURE = 'int(char *, unsigned char *, int, int)'
+RESETCONSOLE_SIGNATURE = 'void(void)'
 WRITECONSOLE_SIGNATURE = 'void(char *, int)'
 WRITECONSOLE_EX_SIGNATURE = 'void(char *, int, int)'
 SHOWMESSAGE_SIGNATURE = 'void(char *)'
@@ -51,6 +52,19 @@ def _consoleread(prompt, buf, n, addtohistory):
         success = 0
         print(e)
     return success
+
+
+@logged_exceptions
+def consolereset():
+    pass
+
+
+@_rinterface.ffi.callback(READCONSOLE_SIGNATURE)
+def _consolereset():
+    try:
+        consolereset()
+    except Exception as e:
+        print(e)
 
 
 @logged_exceptions

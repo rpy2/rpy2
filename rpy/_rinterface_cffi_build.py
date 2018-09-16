@@ -188,6 +188,21 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 # include/Rembedded.h
 ffibuilder.cdef("""
 int Rf_initialize_R(int ac, char **av);
+void R_RunExitFinalizers(void);
+void Rf_KillAllDevices(void);
+void R_CleanTempDir(void);
+
+void Rf_endEmbeddedR(int fatal);
+""")
+
+# include/R_ext/Memory.h
+ffibuilder.cdef("""
+void	R_gc(void);
+""")
+
+# include/Rinternals.h
+ffibuilder.cdef("""
+void R_dot_Last(void);
 """)
 
 # src/include/Rinlinedfunc.h
@@ -215,6 +230,10 @@ SEXP SETCAR(SEXP x, SEXP y);
 ffibuilder.cdef("""
 SEXP Rf_getAttrib(SEXP sexp, SEXP what);
 SEXP Rf_setAttrib(SEXP x, SEXP what, SEXP n);
+""")
+
+ffibuilder.cdef("""
+SEXP Rf_namesgets(SEXP, SEXP);
 """)
 
 ffibuilder.cdef("""
@@ -409,6 +428,7 @@ SEXP (PRINTNAME)(SEXP x);
 ffibuilder.cdef("""
 SEXP R_ClassSymbol;
 SEXP R_NameSymbol;
+SEXP R_DimSymbol;
 """)
 
 # include/R_ext/Parse.h

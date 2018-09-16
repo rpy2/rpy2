@@ -112,14 +112,6 @@ def test_subscript_missing_utf8():
             env['呵呵']
 
 
-# TODO: isn't this already tested elsewhere ?
-def test_subscript_no_utf8():
-    env = rinterface.baseenv['new.env']()
-    with pytest.warns(rinterface.RRuntimeWarning), \
-         pytest.raises(KeyError):
-        env['x']
-
-
 def test_length():
     new_env = rinterface.globalenv.get('new.env')
     env = new_env()

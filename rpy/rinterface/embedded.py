@@ -68,6 +68,16 @@ def _initr(interactive=True):
     return status
 
 
+def endr(fatal):
+    rlib = _rinterface.rlib
+    rlib.R_dot_Last()
+    rlib.R_RunExitFinalizers()
+    rlib.Rf_KillAllDevices()
+    rlib.R_CleanTempDir()
+    rlib.R_gc()    
+    rlib.Rf_endEmbeddedR(fatal)
+
+
 class RParsingError(Exception):
     pass
 

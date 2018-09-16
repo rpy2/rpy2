@@ -181,38 +181,38 @@ def _(obj):
 @default_converter.py2ri.register(array.array)
 def _(obj):
     if obj.typecode in ('h', 'H', 'i', 'I'):
-        res = rinterface.SexpVector(obj, rinterface.RTYPES.INTSXP)
+        res = rinterface.vector(obj, rinterface.RTYPES.INTSXP)
     elif obj.typecode in ('f', 'd'):
-        res = rinterface.SexpVector(obj, rinterface.RTYPES.REALSXP)
+        res = rinterface.vector(obj, rinterface.RTYPES.REALSXP)
     else:
         raise(ValueError("Nothing can be done for this array type at the moment."))
     return res
 
 @default_converter.py2ri.register(bool)
 def _(obj):
-    return rinterface.SexpVector([obj, ], rinterface.RTYPES.LGLSXP)
+    return rinterface.vector([obj, ], rinterface.RTYPES.LGLSXP)
 
 def int2ri(obj):
     # special case for NA_Logical
     if obj is rinterface.NA_Logical:
-        res = rinterface.SexpVector([obj, ], rinterface.RTYPES.LGLSXP)
+        res = rinterface.vector([obj, ], rinterface.RTYPES.LGLSXP)
     else:
-        res = rinterface.SexpVector([obj, ], rinterface.RTYPES.INTSXP)
+        res = rinterface.vector([obj, ], rinterface.RTYPES.INTSXP)
     return res
 
 default_converter.py2ri.register(int, int2ri)
 
 @default_converter.py2ri.register(float)
 def _(obj):
-    return rinterface.SexpVector([obj, ], rinterface.RTYPES.REALSXP)
+    return rinterface.vector([obj, ], rinterface.RTYPES.REALSXP)
 
 @default_converter.py2ri.register(bytes)
 def _(obj):
-    return rinterface.SexpVector([obj, ], rinterface.RTYPES.STRSXP)
+    return rinterface.vector([obj, ], rinterface.RTYPES.STRSXP)
 
 @default_converter.py2ri.register(str)
 def _(obj):
-    return rinterface.SexpVector([obj, ], rinterface.RTYPES.STRSXP)
+    return rinterface.vector([obj, ], rinterface.RTYPES.STRSXP)
 
 @default_converter.py2ri.register(list)
 def _(obj):
@@ -226,7 +226,7 @@ def _(obj):
 
 @default_converter.py2ri.register(complex)
 def _(obj):
-    return rinterface.SexpVector([obj, ], rinterface.RTYPES.CPLXSXP)
+    return rinterface.vector([obj, ], rinterface.RTYPES.CPLXSXP)
 
 
 @default_converter.py2ro.register(object)
@@ -254,7 +254,7 @@ class Formula(RObjectMixin, rinterface.Sexp):
             inpackage = rinterface.baseenv["::"]
             asformula = inpackage(rinterface.StrSexpVector(['stats', ]),
                                   rinterface.StrSexpVector(['as.formula', ]))
-            formula = rinterface.SexpVector(rinterface.StrSexpVector([formula, ]))
+            formula = rinterface.vector(rinterface.StrSexpVector([formula, ]))
             robj = asformula(formula,
                              env = environment)
         else:
