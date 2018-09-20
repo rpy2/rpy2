@@ -1,24 +1,22 @@
-import unittest
-import sys, io, tempfile
+import io
+import pytest
+import sys
 import rpy2.robjects as robjects
 import rpy2.robjects.packages as packages
 from rpy2.rinterface import RRuntimeError
+
 rinterface = robjects.rinterface
 
 
-
-
-class PackagesTestCase(unittest.TestCase):
-
-    def testNew(self):
-        env = robjects.Environment()
-        env['a'] = robjects.StrVector('abcd')
-        env['b'] = robjects.IntVector((1,2,3))
-        env['c'] = robjects.r(''' function(x) x^2''')
-        pck = robjects.packages.Package(env, "dummy_package")
-        self.assertTrue(isinstance(pck.a, robjects.Vector))
-        self.assertTrue(isinstance(pck.b, robjects.Vector))
-        self.assertTrue(isinstance(pck.c, robjects.Function))
+def tests_package_from_env():
+    env = robjects.Environment()
+    env['a'] = robjects.StrVector('abcd')
+    env['b'] = robjects.IntVector((1,2,3))
+    env['c'] = robjects.r(''' function(x) x^2''')
+    pck = robjects.packages.Package(env, "dummy_package")
+    self.assertTrue(isinstance(pck.a, robjects.Vector))
+    self.assertTrue(isinstance(pck.b, robjects.Vector))
+    self.assertTrue(isinstance(pck.c, robjects.Function))
 
 
     def testNewWithDot(self):

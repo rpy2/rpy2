@@ -269,23 +269,17 @@ class Vector(RObjectMixin, SexpVector):
         value = conversion.py2ri(value)
         res = super(Vector, self).__setitem__(i, value)
 
-    def __getslice__(self, i, j):
-        res = super(Vector, self).__getslice__(i, j)
-        if isinstance(res, Sexp):
-            res = conversion.ri2ro(res)
-        return res
-
-    def _names_get(self):
-        res = baseenv_ri.get('names')(self)
+    @property
+    def names(self):
+        """Names for the items in the vector."""
+        res = super().names
         res = conversion.ri2ro(res)
         return res
 
-    def _names_set(self, value):
+    @names.setter
+    def names_set(self, value):
         res = globalenv_ri.get("names<-")(self, conversion.py2ro(value))
         self.__sexp__ = res.__sexp__
-
-    names = property(_names_get, _names_set, 
-                     "Names for the items in the vector.")
 
     def items(self):
         """ iterator on names and values """
@@ -875,8 +869,7 @@ class Array(Vector):
     _isarray = baseenv_ri['is.array']
 
     def __init__(self, obj):
-        super(Array, self).__init__(obj)
-        #import pdb; pdb.set_trace()
+        super().__init__(obj)
         if not self._isarray(self)[0]:
             raise(TypeError("The object must be representing an R array"))
 

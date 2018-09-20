@@ -1,6 +1,7 @@
 import multiprocessing
 import pytest
-import sys, struct
+import struct
+import sys
 import unittest
 import rpy2.rinterface as ri
 

@@ -8,6 +8,7 @@ import warnings
 from . import _rinterface_capi as _rinterface
 from . import embedded
 from . import conversion
+from . import memorymanagement
 
 
 class RTYPES(enum.IntEnum):
@@ -157,18 +158,22 @@ class Sexp(object):
         self._sexpobject = unserialize(state)
 
     @property
-    @_cdata_res_to_rinterface
     def rclass(self):
-        return _rinterface._GET_CLASS(self.__sexp__._cdata)
+        return _rclass_get(self.__sexp__)
 
     @rclass.setter
     def rclass(self, value):
-        cdata = _rinterface._get_cdata(value)
+        if isinstance(value, StrSexpVector):
+            value_r = value
+        elif isisntance(value, str):
+            value_r = _rinterface.StrSexpVector.from_iterable(
+                [_rinterface._str_to_charsxp(value)])
         self.__sexp__ = _rinterface.SexpCapsule(
-            _rinterface._SET_CLASS(self.__sexp__._cdata, cdata)
-            )
+            _rinterface.rlib.Rf_setAttrib(self.__sexp__._cdata,
+                                          _rinterface.rlib.R_ClassSymbol,
+                                          value_r.__sexp__._cdata)
+        )
         
-
     @property
     def rid(self):
         return _rinterface.get_rid(self.__sexp__._cdata)
@@ -205,9 +210,12 @@ class Sexp(object):
 
     # TODO: deprecate this (and implement __eq__) ?
     def rsame(self, sexp):
-        if not isinstance(sexp, Sexp):
+        if isinstance(sexp, Sexp):
+            return self.__sexp__._cdata == sexp.__sexp__._cdata
+        elif isinstance(sexp, _rinterface.SexpCapsule):
+            return sexp._cdata == sexp._cdata
+        else:
             raise ValueError('Not an R object.')
-        return self.__sexp__._cdata == sexp.__sexp__._cdata
 
     @property
     def names(self):
@@ -296,16 +304,16 @@ class SexpEnvironment(Sexp):
             raise ValueError('Cannot remove variables from the base or '
                              'empty environments.')
         # TODO: call to Rf_duplicate needed ?
-        symbol = _rinterface.rlib.Rf_protect(
-            _rinterface.rlib.Rf_install(_rinterface._str_to_cchar(key))
-        )
-        cdata_copy = _rinterface.rlib.Rf_protect(
-            _rinterface.rlib.Rf_duplicate(value.__sexp__._cdata)
-        )
-        res = _rinterface.rlib.Rf_defineVar(symbol,
-                                            cdata_copy,
-                                            self.__sexp__._cdata)
-        _rinterface.rlib.Rf_unprotect(2)
+        with memorymanagement.rmemory() as rmemory:
+            symbol = rmemory.protect(
+                _rinterface.rlib.Rf_install(_rinterface._str_to_cchar(key))
+            )
+            cdata_copy = rmemory.protect(
+                _rinterface.rlib.Rf_duplicate(value.__sexp__._cdata)
+            )
+            res = _rinterface.rlib.Rf_defineVar(symbol,
+                                                cdata_copy,
+                                                self.__sexp__._cdata)
 
     def __len__(self):
         symbols = _rinterface.rlib.Rf_protect(
@@ -356,11 +364,13 @@ class SexpEnvironment(Sexp):
             _rinterface.rlib.R_lsInternal(self.__sexp__._cdata,
                                           _rinterface.rlib.TRUE)
         )
-        n = _rinterface.rlib.Rf_xlength(symbols)
-        res = []
-        for i in range(n):
-            res.append(_rinterface._string_getitem(symbols, i))
-        _rinterface.rlib.Rf_unprotect(1)
+        try:
+            n = _rinterface.rlib.Rf_xlength(symbols)
+            res = []
+            for i in range(n):
+                res.append(_rinterface._string_getitem(symbols, i))
+        finally:
+            _rinterface.rlib.Rf_unprotect(1)
         for e in res:
             yield e
 
@@ -512,13 +522,14 @@ class BoolSexpVector(SexpVector):
     _R_TYPE = _rinterface.rlib.LGLSXP
     _R_SET_ELT = _rinterface.rlib.SET_LOGICAL_ELT
     _R_GET_PTR = _rinterface._LOGICAL
-    _CAST_IN = bool
+    _CAST_IN = lambda x: NA_Logical if x is None else bool(x)
 
     def __getitem__(self, i):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            res = bool(_rinterface.rlib.LOGICAL_ELT(cdata, i_c))
+            _ = _rinterface.rlib.LOGICAL_ELT(cdata, i_c)
+            res = None if _==NA_Logical else bool(_)
         elif isinstance(i, slice):
             res = type(self).from_iterable(
                 [_rinterface.rlib.LOGICAL_ELT(cdata, i_c) for i_c in range(*i.indices(len(self)))]
@@ -685,9 +696,14 @@ class CharSexp(Sexp):
             _rinterface.rlib.Rf_getCharCE(self.__sexp__._cdata)
         )
 
-    def nchar(self):
-        # nchar_type is not parse properly by cffi ?
-        raise NotImplementedError()
+    def nchar(self, what=None):  # _rinterface.rlib.nchar_type.Bytes):
+        # TODO: nchar_type is not parsed properly by cffi ?
+        return _rinterface.rlib.R_nchar(self.__sexp__._cdata,
+                                        what,
+                                        _rinterface.rlib.FALSE,
+                                        _rinterface.rlib.FALSE,
+                                        'rpy2.rinterface.CharSexp.nchar')
+
 
 
 class StrSexpVector(SexpVector):
@@ -862,29 +878,43 @@ class SexpClosure(Sexp):
     @_cdata_res_to_rinterface
     def __call__(self, *args, **kwargs):
         error_occured = _rinterface.ffi.new('int *', 0)
-        call_r = _rinterface.build_rcall(self.__sexp__._cdata, args, kwargs)
-        res = _rinterface.rlib.Rf_protect(
-            _rinterface.rlib.R_tryEval(call_r,
-                                       globalenv.__sexp__._cdata,
-                                       error_occured))
+        protect_count = 0
         try:
+            call_r = _rinterface.rlib.Rf_protect(
+                _rinterface.build_rcall(self.__sexp__._cdata, args,
+                                        kwargs.items()))
+            protect_count += 1
+            res = _rinterface.rlib.Rf_protect(
+                _rinterface.rlib.R_tryEval(call_r,
+                                           globalenv.__sexp__._cdata,
+                                           error_occured))
+            protect_count += 1
             if error_occured[0]:
                 raise _rinterface.RRuntimeError(_geterrmessage())
         finally:
-            _rinterface.rlib.Rf_unprotect(1)
+            _rinterface.rlib.Rf_unprotect(protect_count)
         return res
 
     @_cdata_res_to_rinterface
-    def rcall(self, mapping, environment):
-        # TODO: check mapping has a method "items"
+    def rcall(self, keyvals, environment):
+        # TODO: check keyvals are pairs ?
         assert isinstance(environment, SexpEnvironment)
         error_occured = _rinterface.ffi.new('int *', 0)
-        call_r = _rinterface.build_rcall(self.__sexp__._cdata, [], mapping)
-        res = _rinterface.rlib.R_tryEval(call_r,
-                                         environment.__sexp__._cdata,
-                                         error_occured)
-        if error_occured[0]:
-            raise _rinterface.RRuntimeError(_geterrmessage())
+        protect_count = 0
+        try:
+            call_r = _rinterface.rlib.Rf_protect(
+                _rinterface.build_rcall(self.__sexp__._cdata, [],
+                                        keyvals))
+            protect_count += 1
+            res = _rinterface.rlib.Rf_protect(
+                _rinterface.rlib.R_tryEval(call_r,
+                                           environment.__sexp__._cdata,
+                                           error_occured))
+            protect_count += 1
+            if error_occured[0]:
+                raise _rinterface.RRuntimeError(_geterrmessage())
+        finally:
+            _rinterface.rlib.Rf_unprotect(protect_count)
         return res
 
     @property
@@ -978,6 +1008,41 @@ def vector(iterable, rtype):
     return cls.from_iterable(iterable)
 
 
+_DEFAULT_RCLASS_NAMES = {
+    RTYPES.ENVSXP: 'environment',
+    RTYPES.CLOSXP: 'function',
+    RTYPES.SPECIALSXP: 'function',
+    RTYPES.BUILTINSXP: 'function',
+    RTYPES.REALSXP: 'numeric',
+    RTYPES.STRSXP: 'character',
+    RTYPES.SYMSXP: 'name',
+    RTYPES.LANGSXP: 'language'}
+
+
+def _rclass_get(scaps):
+    rlib = _rinterface.rlib
+    classes = rlib.Rf_getAttrib(scaps._cdata,
+                                rlib.R_ClassSymbol)
+    if rlib.Rf_length(classes) == 0:
+        dim = rlib.Rf_getAttrib(scaps._cdata,
+                                rlib.R_DimSymbol)
+        ndim = rlib.Rf_length(dim)
+        if ndim > 0:
+            if ndim == 2:
+                classname  = 'matrix'
+            else:
+                classname = 'array'
+        else:
+            typeof = RTYPES(_rinterface._TYPEOF(scaps._cdata))
+            classname = _DEFAULT_RCLASS_NAMES.get(
+                typeof, str(typeof))
+        classes = StrSexpVector.from_iterable(
+            [classname])
+    else:
+        classes = conversion._cdata_to_rinterface(classes)
+    return classes
+
+
 class RRuntimeWarning(RuntimeWarning):
     pass
 
@@ -988,11 +1053,10 @@ emptyenv = None
 NULL = None
 MissingArg = None
 NA_Character = None
-NA_Integer = _rinterface.rlib.R_NaInt
-NA_Logical = _rinterface.rlib.R_NaInt
-NA_Real = _rinterface.rlib.R_NaReal
-NA_Complex = _rinterface.ffi.new('Rcomplex *',
-                                 [NA_Real, NA_Real])
+NA_Integer = None
+NA_Logical = None
+NA_Real = None
+NA_Complex = None
                                               
 def initr():
     status = embedded._initr()
@@ -1030,7 +1094,20 @@ def _post_initr_setup():
         _rinterface.SexpCapsule(_rinterface.rlib.R_NaString)
     )
 
+    global NA_Integer
+    NA_Integer = _rinterface.rlib.R_NaInt
 
+    global NA_Logical
+    NA_Logical = _rinterface.rlib.R_NaInt
+
+    global NA_Real
+    NA_Real = _rinterface.rlib.R_NaReal
+
+    global NA_Complex
+    NA_Complex = _rinterface.ffi.new('Rcomplex *',
+                                     [NA_Real, NA_Real])
+
+    
 def unserialize(state):
     n = len(state)
     cdata = _rinterface.rlib.Rf_protect(

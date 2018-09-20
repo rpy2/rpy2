@@ -72,7 +72,16 @@ class SexpCapsule(object):
         self._cdata = cdata
 
     def __del__(self):
-        _release(self._cdata)
+        try:
+            _release(self._cdata)
+        except Exception as e:
+            # _release can be None while capsules when Python is terminating
+            # and R is being shutdown, resulting in a race condition when
+            # freeing python objects.
+            if _release is None:
+                pass
+            else:
+                raise e
 
     @property
     def typeof(self):
@@ -147,16 +156,7 @@ def _findVarInFrame(symbol, r_environment):
     return res
 
 
-def _GET_CLASS(robj):
-    res = rlib.Rf_getAttrib(robj,
-                            rlib.R_ClassSymbol)
-    return res
-
-
 def _SET_CLASS(robj, value):
-    res = rlib.Rf_setAttrib(robj,
-                            rlib.R_ClassSymbol,
-                            value)
     return res
 
 
@@ -294,7 +294,7 @@ def _str_to_sexp(val):
     s = rlib.Rf_install(cchar)
     return s
 
-
+    
 PY_R_MAP = {
     int: _int_to_sexp,
     float: _float_to_sexp,
@@ -317,12 +317,12 @@ def _get_cdata(obj):
     return cdata
 
 
-def build_rcall(rfunction, args=[], kwargs={}):
+def build_rcall(rfunction, args=[], kwargs=[]):
     rcall = rlib.Rf_protect(
         rlib.Rf_allocList(len(args)+len(kwargs)+1)
     )
-    _SET_TYPEOF(rcall, rlib.LANGSXP)
     try:
+        _SET_TYPEOF(rcall, rlib.LANGSXP)
         rlib.SETCAR(rcall, rfunction)
         item = rlib.CDR(rcall)
         for val in args:
@@ -339,7 +339,7 @@ def build_rcall(rfunction, args=[], kwargs={}):
                 rlib.SETCAR(item, cdata)
                 rlib.Rf_unprotect(1)
             item = rlib.CDR(item)
-        for key, val in kwargs.items():
+        for key, val in kwargs:
             if key is not None:
                 _assert_valid_slotname(key)
                 rlib.SET_TAG(item,

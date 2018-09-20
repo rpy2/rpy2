@@ -63,8 +63,6 @@ class RObjectMixin(object):
     __close = rpy2.rinterface.baseenv.get("close")
     __readlines = rpy2.rinterface.baseenv.get("readLines")
     __unlink = rpy2.rinterface.baseenv.get("unlink")
-    __rclass = rpy2.rinterface.baseenv.get("class")
-    __rclass_set = rpy2.rinterface.baseenv.get("class<-")
     __show = _get_exported_value('methods', 'show')
 
     __slots = None
@@ -86,22 +84,22 @@ class RObjectMixin(object):
         except:
             rclasses = 'Unable to fetch R classes.' + os.linesep
         res = os.linesep.join((rclasses,
-                               super(RObjectMixin, self).__repr__()))
-        return res
+                               repr(super())))
+        return rclasses
     
     def __str__(self):
         if sys.platform == 'win32':
             tmpf = tempfile.NamedTemporaryFile(mode="w+", delete=False)
             tfname = tmpf.name
             tmp = self.__file(rpy2.rinterface.StrSexpVector([tfname,]),
-                              open=rpy2.rinterface.StrSexpVector(["r+", ]))
+                              open=rpy2.rinterface.StrSexpVector(['r+', ]))
             self.__sink(tmp)
         else:
-            writeconsole = rpy2.rinterface.get_writeconsole_regular()
+            writeconsole = rpy2.rinterface.callbacks.consolewrite_print()
             s = []
             def f(x):
                 s.append(x)
-            rpy2.rinterface.set_writeconsole_regular(f)
+            rpy2.rinterface.callbacks.consolewrite_print = f
         self.__show(self)
         if sys.platform == 'win32':
             self.__sink()
@@ -116,7 +114,7 @@ class RObjectMixin(object):
                     print('Unable to unlink tempfile %s' % tfname)
             s = str.join(os.linesep, s)
         else:
-            rpy2.rinterface.set_writeconsole_regular(writeconsole)
+            rpy2.rinterface.callbacks.consolewrite_print = writeconsole
             s = str.join('', s)
         return s
 
@@ -134,44 +132,44 @@ class RObjectMixin(object):
         """
         return repr_robject(self, linesep='\n')
 
-    def _rclass_get(self):
+    @property
+    def rclass(self):
+        """
+        R class for the object, stored as an R string vector.
+        
+        When setting the rclass, the new value will be:
+        
+        - wrapped in a Python tuple if a string (the R class
+        is a vector of strings, and this is made for convenience)
+        
+        - wrapped in a StrSexpVector
+        
+        Note that when setting the class R may make a copy of
+        the whole object (R is mostly a functional language).
+        If this must be avoided, and if the number of parent
+        classes before and after the change are compatible,
+        the class name can be changed in-place by replacing
+        vector elements."""
+
         try:
-            res = self.__rclass(self)
+            res = rpy2.rinterface._rclass_get(
+                self.__sexp__)
             #res = conversion.ri2py(res)
             return res
-        except rpy2.rinterface.RRuntimeError as rre:
-            if self.typeof == rpy2.rinterface.SYMSXP:
+        except rpy2.rinterface._rinterface.RRuntimeError as rre:
+            if self.typeof == rpy2.rinterface.RTYPES.SYMSXP:
                 #unevaluated expression: has no class
                 return (None, )
             else:
                 raise rre
     
-    def _rclass_set(self, value):
+    @rclass.setter
+    def rclass_set(self, value):
         if isinstance(value, str):
             value = (value, )
         new_cls = rpy2.rinterface.StrSexpVector(value)
         res = self.__rclass_set(self, new_cls)
         self.__sexp__ = res.__sexp__
-            
-    rclass = property(_rclass_get, _rclass_set, None,
-                      """
-R class for the object, stored as an R string vector.
-
-When setting the rclass, the new value will be:
-
-- wrapped in a Python tuple if a string (the R class
-  is a vector of strings, and this is made for convenience)
-
-- wrapped in a StrSexpVector
-
-Note that when setting the class R may make a copy of
-the whole object (R is mostly a functional language).
-If this must be avoided, and if the number of parent
-classes before and after the change are compatible,
-the class name can be changed in-place by replacing
-vector elements.
-""")
-
 
     
 def repr_robject(o, linesep=os.linesep):

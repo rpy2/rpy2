@@ -1,4 +1,5 @@
 import pytest
+import math
 import rpy2.rinterface as ri
 
 ri.initr()
@@ -67,9 +68,8 @@ def test_NAInteger_repr():
 
     
 def test_R_to_NAReal():
-    na_real = ri.NA_Real
     r_na_real = evalr('NA_real_')[0]
-    assert r_na_real == na_real
+    assert math.isnan(r_na_real)
 
     
 def test_NAReal_to_r():
@@ -79,7 +79,7 @@ def test_NAReal_to_r():
     
 def test_NAReal_binaryfunc():
     na_real = ri.NA_Real
-    assert (na_real + 2.0) == na_real
+    assert math.isnan(na_real + 2.0)
 
     
 def test_NAReal_in_vector():
@@ -92,13 +92,15 @@ def test_NAReal_in_vector():
 
 def test_NAReal_repr():
     na_float = ri.NA_Real
-    assert repr(na_float) == 'NA_real_'
+    assert repr(na_float) == 'nan'
 
 
 def test_r_to_NACharacter():
     na_character = ri.NA_Character
     r_na_character = evalr("NA_character_")
-    assert r_na_character == na_character
+    assert r_na_character.typeof == ri.RTYPES.STRSXP
+    assert len(r_na_character) == 1
+    assert r_na_character.get_charsxp(0) == na_character
 
 
 def test_NACharacter_to_r():
@@ -109,7 +111,7 @@ def test_NACharacter_to_r():
 def test_NACharacter_in_vector():
     na_str = ri.NA_Character
     x = ri.StrSexpVector(("ab", na_str, "cd"))
-    assert x[1] == na_str
+    assert x.get_charsxp(0) == na_str
     assert x[0] == 'ab'
     assert x[2] == 'cd'
 

@@ -23,6 +23,7 @@ def _cdata_res_to_rinterface(function):
         return _cdata_to_rinterface(cdata)
     return _
 
+
 def _python_to_cdata(obj):
     t = type(obj)
     if t in _PY_RPY2_MAP:

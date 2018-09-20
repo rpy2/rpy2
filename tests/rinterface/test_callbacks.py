@@ -1,4 +1,4 @@
-from . import utils
+from .. import utils
 import pytest
 import sys
 import tempfile
@@ -18,10 +18,14 @@ def is_AQUA_or_Windows():
 
 
 def test_set_consolewrite_print():
-    buf = []
-    def f(x):
-        buf.append(x)
 
+    def make_callback():
+        buf = []
+        def f(x):
+            nonlocal buf
+            buf.append(x)
+        return f
+    f = make_callback()
     with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', f):
         code = rinterface.StrSexpVector(["3", ])
         rinterface.baseenv["print"](code)
@@ -30,37 +34,42 @@ def test_set_consolewrite_print():
 
 def test_consolewrite_print_error():
 
-    exceptions = []
     def f(x):
-        try:
-            raise Exception("Doesn't work.")
-        except Exception as e:
-            exceptions.append(str(e))
+        raise Exception("Doesn't work.")
 
     with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', f):
         code = rinterface.StrSexpVector(["3", ])
         rinterface.baseenv["print"](code)
-        assert "Doesn't work." == exceptions[0]
+        assert "Doesn't work." == captured_logs[0]
 
 
 def testSetResetConsole():
-    reset = [0]
-    def f():
-        reset[0] += 1
 
+    def make_callback():
+        reset = 0
+        def f():
+            nonlocal reset
+            reset += 1
+        return f
+    f = make_callback()
+    
     with utils.obj_in_module(rinterface.callbacks, 'consolereset', f):
         with pytest.raises(rinterface._rinterface.RRuntimeError), \
              pytest.warns(rinterface.RRuntimeWarning):
                 rinterface.baseenv['eval'](rinterface.parse('1+"a"'))
-        assert reset[0] == 1
+        assert f.__closure__[0].cell_contents == 1
 
     
 @pytest.mark.skip(is_AQUA_or_Windows(),
                   reason='Can only be tested on Aqua or Windows')
 def test_set_flushconsole():
-    flush = {'count': 0}
-    def f():
-        flush['count'] = flush['count'] + 1
+
+    def make_callback():
+        count = 0
+        def f():
+            nonlocal count
+            count += 1
+    f = make_callback()
 
     with utils.obj_in_module(rinterface.callbacks, 'consoleflush', f):
         assert rinterface.get_flushconsole() == f
@@ -83,7 +92,7 @@ def test_flushconsole_with_error():
 def test_consoleread():
     yes = 'yes\n'
     def sayyes(prompt):
-        return yes
+        return 'yes\n'
     with utils.obj_in_module(rinterface.callbacks, 'consoleread', sayyes):
         res = rinterface.baseenv['readline']()
         assert yes.strip() == res[0]

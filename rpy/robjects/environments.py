@@ -9,8 +9,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
     
     def __init__(self, o=None):
         if o is None:
-            o = _new_env(hash=rinterface.SexpVector([True, ], 
-                                                    rinterface.LGLSXP))
+            o = _new_env(hash=rinterface.BoolSexpVector([True, ]))
         super(Environment, self).__init__(o)
 
     def __getitem__(self, item):
@@ -43,7 +42,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
 
     def keys(self):
         """ Return a tuple listing the keys in the object """
-        return (x for x in self)
+        return super().keys()
 
     def items(self):
         """ Iterate through the symbols and associated objects in
