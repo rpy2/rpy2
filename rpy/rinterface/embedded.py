@@ -78,8 +78,19 @@ def endr(fatal):
     rlib.Rf_endEmbeddedR(fatal)
 
 
+class PARSING_STATUS(enum.Enum):
+    PARSE_NULL = _rinterface.rlib.PARSE_NULL
+    PARSE_OK = _rinterface.rlib.PARSE_OK
+    PARSE_INCOMPLETE = _rinterface.rlib.PARSE_INCOMPLETE
+    PARSE_ERROR = _rinterface.rlib.PARSE_ERROR
+    PARSE_EOF = _rinterface.rlib.PARSE_EOF
+
+
 class RParsingError(Exception):
-    pass
+
+    def __init__(self, msg, status):
+        super().__init__(msg)
+        self.status = status
 
 
 def _parse(cdata, num):
@@ -99,6 +110,6 @@ def _parse(cdata, num):
     # PARSE_EOF
     if status[0] != _rinterface.rlib.PARSE_OK:
         _rinterface.rlib.Rf_unprotect(1)
-        raise RParsingError(status)
+        raise RParsingError('R parsing', PARSING_STATUS(status[0]))
     _rinterface.rlib.Rf_unprotect(1)
     return res 

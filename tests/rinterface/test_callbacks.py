@@ -1,4 +1,5 @@
 from .. import utils
+import logging
 import pytest
 import sys
 import tempfile
@@ -29,18 +30,22 @@ def test_set_consolewrite_print():
     with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', f):
         code = rinterface.StrSexpVector(["3", ])
         rinterface.baseenv["print"](code)
-        assert '[1] "3"\n' == str.join('', buf)
+        buf = f.__closure__[0].cell_contents
+        assert '[1] "3"\n' == ''.join(buf)
 
 
-def test_consolewrite_print_error():
+def test_consolewrite_print_error(caplog):
 
     def f(x):
         raise Exception("Doesn't work.")
 
     with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', f):
         code = rinterface.StrSexpVector(["3", ])
+        caplog.clear()
         rinterface.baseenv["print"](code)
-        assert "Doesn't work." == captured_logs[0]
+        assert caplog.record_tuples == [
+        ('root', logging.ERROR, "Doesn't work."),
+        ]
 
 
 def testSetResetConsole():
@@ -98,12 +103,14 @@ def test_consoleread():
         assert yes.strip() == res[0]
 
 
-def test_console_read_with_error():
+def test_console_read_with_error(caplog):
     def f(prompt):
         raise Exception("Doesn't work.")
     with utils.obj_in_module(rinterface.callbacks, 'consoleread', f):
-        with pytest.raises(Exception):
-            res = rinterface.baseenv['readline']()
+        res = rinterface.baseenv['readline']()
+        assert caplog.record_tuples == [
+            ('root', logging.ERROR, "Doesn't work."),
+        ]
 
 
 def test_show_message():

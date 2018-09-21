@@ -8,46 +8,48 @@ from rpy2.rinterface import RRuntimeError
 rinterface = robjects.rinterface
 
 
-def tests_package_from_env():
-    env = robjects.Environment()
-    env['a'] = robjects.StrVector('abcd')
-    env['b'] = robjects.IntVector((1,2,3))
-    env['c'] = robjects.r(''' function(x) x^2''')
-    pck = robjects.packages.Package(env, "dummy_package")
-    self.assertTrue(isinstance(pck.a, robjects.Vector))
-    self.assertTrue(isinstance(pck.b, robjects.Vector))
-    self.assertTrue(isinstance(pck.c, robjects.Function))
+class TestPackage(object):
+    
+    def tests_package_from_env(self):
+        env = robjects.Environment()
+        env['a'] = robjects.StrVector('abcd')
+        env['b'] = robjects.IntVector((1,2,3))
+        env['c'] = robjects.r(''' function(x) x^2''')
+        pck = robjects.packages.Package(env, "dummy_package")
+        assert isinstance(pck.a, robjects.Vector)
+        assert isinstance(pck.b, robjects.Vector)
+        assert isinstance(pck.c, robjects.Function)
 
 
-    def testNewWithDot(self):
+    def test_new_with_dot(self):
         env = robjects.Environment()
         env['a.a'] = robjects.StrVector('abcd')
         env['b'] = robjects.IntVector((1,2,3))
         env['c'] = robjects.r(''' function(x) x^2''')
         pck = robjects.packages.Package(env, "dummy_package")
-        self.assertTrue(isinstance(pck.a_a, robjects.Vector))
-        self.assertTrue(isinstance(pck.b, robjects.Vector))
-        self.assertTrue(isinstance(pck.c, robjects.Function))
+        assert isinstance(pck.a_a, robjects.Vector)
+        assert isinstance(pck.b, robjects.Vector)
+        assert isinstance(pck.c, robjects.Function)
 
-    def testNewWithDotConflict(self):
+
+    def test_new_with_dot_conflict(self):
         env = robjects.Environment()
         env['a.a_a'] = robjects.StrVector('abcd')
         env['a_a.a'] = robjects.IntVector((1,2,3))
         env['c'] = robjects.r(''' function(x) x^2''')
-        self.assertRaises(packages.LibraryError,
-                          robjects.packages.Package,
-                          env, "dummy_package")
+        with pytest.raises(packages.LibraryError):
+            robjects.packages.Package(env, "dummy_package")
 
 
-    def testNewWithDotConflict2(self):
+    def test_new_with_dot_conflict2(self):
         env = robjects.Environment()
         name_in_use = dir(packages.Package(env, "foo"))[0]
         env[name_in_use] = robjects.StrVector('abcd')
-        self.assertRaises(packages.LibraryError,
-                          robjects.packages.Package,
-                          env, "dummy_package")
+        with pytest.raises(packages.LibraryError):
+            robjects.packages.Package(env, "dummy_package")
 
-class SignatureTranslatedAnonymousPackagesTestCase(unittest.TestCase):
+
+class TestSignatureTranslatedAnonymousPackages(object):
     string = """
    square <- function(x) {
     return(x^2)
@@ -58,36 +60,37 @@ class SignatureTranslatedAnonymousPackagesTestCase(unittest.TestCase):
    }
    """
 
-    def testNew(self):
+    def test_init(self):
         powerpack = packages.STAP(self.string, "powerpack")
-        self.assertTrue(hasattr(powerpack, 'square'))
-        self.assertTrue(hasattr(powerpack, 'cube'))
+        assert hasattr(powerpack, 'square')
+        assert hasattr(powerpack, 'cube')
 
 
-class ImportrTestCase(unittest.TestCase):
-    def testImportStats(self):
+class TestImportr(object):
+    
+    def test_importr_stats(self):
         stats = robjects.packages.importr('stats',
                                           on_conflict='warn')
-        self.assertTrue(isinstance(stats, robjects.packages.Package))
+        assert isinstance(stats, robjects.packages.Package)
 
-    def testImportStatsWithLibLoc(self):
+    def test_import_stats_with_libloc(self):
         path = robjects.packages.get_packagepath('stats')
         stats = robjects.packages.importr('stats', 
                                           on_conflict='warn',
                                           lib_loc = path)
-        self.assertTrue(isinstance(stats, robjects.packages.Package))
+        assert isinstance(stats, robjects.packages.Package)
 
-    def testImportStatsWithLibLocAndSuppressMessages(self):
+    def test_import_stats_with_libloc_and_suppressmessages(self):
         path = robjects.packages.get_packagepath('stats')
         stats = robjects.packages.importr('stats', lib_loc=path,
                                           on_conflict='warn',
                                           suppress_messages=False)
-        self.assertTrue(isinstance(stats, robjects.packages.Package))
+        assert isinstance(stats, robjects.packages.Package)
 
-    def testImportStatsWithLibLocWithQuote(self):
+    def test_import_stats_with_libloc_with_quote(self):
         path = 'coin"coin'
 
-        with self.assertRaises(RRuntimeError):
+        with pytest.raises(RRuntimeError):
             Tmp_File = io.StringIO
             tmp_file = Tmp_File()
             try:
@@ -97,42 +100,31 @@ class ImportrTestCase(unittest.TestCase):
             finally:
                 sys.stdout = stdout
                 tmp_file.close()
-
         
-    def testImportDatasets(self):
+    def test_import_datasets(self):
         datasets = robjects.packages.importr('datasets')
-        self.assertTrue(isinstance(datasets, robjects.packages.Package))
-        self.assertTrue(isinstance(datasets.__rdata__, 
-                                   robjects.packages.PackageData))
-        self.assertTrue(isinstance(robjects.packages.data(datasets), 
-                                   robjects.packages.PackageData))
-        
-
+        assert isinstance(datasets, robjects.packages.Package)
+        assert isinstance(datasets.__rdata__, 
+                          robjects.packages.PackageData)
+        assert isinstance(robjects.packages.data(datasets), 
+                          robjects.packages.PackageData)
 
         
-class WherefromTestCase(unittest.TestCase):
-    def testWherefrom(self):
+class TestWherefrom(object):
+    
+    def test_wherefrom(self):
         stats = robjects.packages.importr('stats', on_conflict='warn')
         rnorm_pack = robjects.packages.wherefrom('rnorm')
-        self.assertEqual('package:stats',
-                          rnorm_pack.do_slot('name')[0])
+        assert rnorm_pack.do_slot('name')[0] == 'package:stats'
 
-class InstalledPackagesTestCase(unittest.TestCase):
-    def testNew(self):
+
+class TestInstalledPackages(object):
+    
+    def test_init(self):
         instapacks = robjects.packages.InstalledPackages()
         res = instapacks.isinstalled('foo')
-        self.assertTrue(isinstance(res, bool))
+        assert isinstance(res, bool)
         ncols = len(instapacks.colnames)
         for row in instapacks:
-            self.assertEqual(ncols, len(row))
+            assert ncols == len(row)
         
-def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(PackagesTestCase)
-    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(ImportrTestCase))
-    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(WherefromTestCase))
-    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(InstalledPackagesTestCase))
-    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(SignatureTranslatedAnonymousPackagesTestCase))
-    return suite
-
-if __name__ == '__main__':
-     unittest.main()

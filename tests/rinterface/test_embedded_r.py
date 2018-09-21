@@ -1,14 +1,20 @@
 import copy
 import gc
-import pytest
-import rpy2.rinterface as rinterface
-
-rinterface.initr()
-
-import pickle
+import io
 import multiprocessing
-import sys, os, subprocess, time, tempfile, io, signal
+import os
+import pickle
+import pytest
+import rpy2.rinterface
+import signal
+import sys
+import subprocess
+import tempfile
+import time
 
+
+rinterface = rpy2.rinterface
+rinterface.initr()
 
 
 def is_AQUA_or_Windows(function):
@@ -104,8 +110,11 @@ def test_parse_unicode():
 
 
 def test_parse_incomplete_error():
-    with pytest.raises(rinterface.embedded.RParsingIncompleteError):
+    with pytest.raises(rinterface.embedded.RParsingError) as rpe:
         rinterface.parse("2 + 3 /")
+    assert rpe.value.status == (rinterface
+                                .embedded
+                                .PARSING_STATUS.PARSE_INCOMPLETE)
 
 
 def test_parse_error():

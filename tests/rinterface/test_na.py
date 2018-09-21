@@ -100,7 +100,7 @@ def test_r_to_NACharacter():
     r_na_character = evalr("NA_character_")
     assert r_na_character.typeof == ri.RTYPES.STRSXP
     assert len(r_na_character) == 1
-    assert r_na_character.get_charsxp(0) == na_character
+    assert r_na_character.get_charsxp(0).rid == na_character.rid
 
 
 def test_NACharacter_to_r():

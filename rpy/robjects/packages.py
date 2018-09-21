@@ -273,9 +273,11 @@ class SignatureTranslatedPackage(Package):
     'translated' (that this the named parameters were made to 
     to conform Python's rules for vaiable names)."""
     def __fill_rpy2r__(self, on_conflict = 'fail'):
-        super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
+        (super(SignatureTranslatedPackage, self)
+         .__fill_rpy2r__(on_conflict = on_conflict))
         for name, robj in self.__dict__.items():
-            if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
+            if isinstance(robj, rinterface.Sexp) and \
+               robj.typeof == rinterface.RTYPES.CLOSXP:
                 self.__dict__[name] = STF(self.__dict__[name],
                                           on_conflict = on_conflict,
                                           symbol_r2python = self._symbol_r2python,
@@ -310,9 +312,11 @@ class InstalledSTPackage(SignatureTranslatedPackage):
         return os.linesep.join(doc)
 
     def __fill_rpy2r__(self, on_conflict = 'fail'):
-        super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
+        (super(SignatureTranslatedPackage, self)
+         .__fill_rpy2r__(on_conflict = on_conflict))
         for name, robj in self.__dict__.items():
-            if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
+            if isinstance(robj, rinterface.Sexp) and \
+               robj.typeof == rinterface.RTYPES.CLOSXP:
                 self.__dict__[name] = DocumentedSTFunction(self.__dict__[name],
                                                            packagename = self.__rname__)
 

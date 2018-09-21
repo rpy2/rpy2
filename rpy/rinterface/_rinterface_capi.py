@@ -300,7 +300,8 @@ PY_R_MAP = {
     float: _float_to_sexp,
     bool: _bool_to_sexp,
     str: _str_to_sexp,
-    complex: None
+    complex: None,
+    type(None): lambda x: rlib.R_NilValue
     }
 
 

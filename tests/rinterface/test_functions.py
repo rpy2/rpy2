@@ -102,7 +102,7 @@ def test_call_OrdDict():
                       (None, rinterface.IntSexpVector([5, ])),
                       ('c', rinterface.IntSexpVector([0, ]))))
 
-    mylist = rinterface.baseenv['list'].rcall(ad, 
+    mylist = rinterface.baseenv['list'].rcall(ad.items(), 
                                               rinterface.globalenv)
 
     names = [x for x in mylist.do_slot('names')]

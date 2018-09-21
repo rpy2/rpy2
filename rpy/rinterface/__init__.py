@@ -47,6 +47,7 @@ class RTYPES(enum.IntEnum):
 _cdata_res_to_rinterface = conversion._cdata_res_to_rinterface
 _evaluated_promise = _rinterface._evaluated_promise
 R_NilValue = _rinterface.rlib.R_NilValue
+RRuntimeError = _rinterface.RRuntimeError
 
 endr = embedded.endr
 
@@ -557,7 +558,8 @@ class BoolSexpVector(SexpVector):
         b = _rinterface.ffi.buffer(
             _rinterface._LOGICAL(self.__sexp__._cdata),
             _rinterface.ffi.sizeof('int') * len(self))
-        return memoryview(b).cast('i')
+        mv = memoryview(b).cast('i')
+        return mv
 
 
 class IntSexpVector(SexpVector):
