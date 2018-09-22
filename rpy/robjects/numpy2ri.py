@@ -5,8 +5,7 @@ from rpy2.rinterface import (Sexp,
                              SexpVector,
                              ListSexpVector,
                              StrSexpVector, ByteSexpVector,
-                             LGLSXP, INTSXP, REALSXP, CPLXSXP,
-                             STRSXP, VECSXP, NULL)
+                             RTYPES)
 import numpy
 
 #from rpy2.robjects.vectors import DataFrame, Vector, ListVector
@@ -17,14 +16,14 @@ original_converter = None
 #   http://numpy.scipy.org/array_interface.shtml
 _kinds = {
     # "t" -> not really supported by numpy
-    "b": rinterface.LGLSXP,
-    "i": rinterface.INTSXP,
+    "b": RTYPES.LGLSXP,
+    "i": RTYPES.INTSXP,
     # "u" -> special-cased below
-    "f": rinterface.REALSXP,
-    "c": rinterface.CPLXSXP,
+    "f": RTYPES.REALSXP,
+    "c": RTYPES.CPLXSXP,
     # "O" -> special-cased below
-    "S": rinterface.STRSXP,
-    "U": rinterface.STRSXP,
+    "S": RTYPES.STRSXP,
+    "U": RTYPES.STRSXP,
     # "V" -> special-cased below
     #FIXME: datetime64 ?
     #"datetime64":
@@ -32,13 +31,13 @@ _kinds = {
 
 #FIXME: the following would need further thinking & testing on
 #       32bits architectures
-_kinds['float64'] = rinterface.REALSXP
+_kinds['float64'] = RTYPES.REALSXP
 
-_vectortypes = (rinterface.LGLSXP,
-                rinterface.INTSXP,
-                rinterface.REALSXP,
-                rinterface.CPLXSXP,
-                rinterface.STRSXP)
+_vectortypes = (RTYPES.LGLSXP,
+                RTYPES.INTSXP,
+                RTYPES.REALSXP,
+                RTYPES.CPLXSXP,
+                RTYPES.STRSXP)
 
 converter = conversion.Converter('original numpy conversion')
 py2ri = converter.py2ri
@@ -68,7 +67,7 @@ def numpy2ri(o):
     if o.dtype.kind in _kinds:
         # "F" means "use column-major order"
         vec = SexpVector(o.ravel("F"), _kinds[o.dtype.kind])
-        dim = SexpVector(o.shape, INTSXP)
+        dim = SexpVector(o.shape, RTYPES.INTSXP)
         #FIXME: no dimnames ?
         #FIXME: optimize what is below needed/possible ? (other ways to create R arrays ?)
         res = rinterface.baseenv['array'](vec, dim=dim)
@@ -98,7 +97,7 @@ def npint_py2ri(obj):
 
 @py2ri.register(numpy.floating)
 def npfloat_py2ri(obj):
-    return rinterface.SexpVector([obj, ], rinterface.REALSXP)
+    return rinterface.SexpVector([obj, ], RTYPES.REALSXP)
 
 @py2ri.register(object)
 def nonnumpy2ri(obj):
@@ -147,7 +146,7 @@ def ri2py_list(obj):
 
 @ri2py.register(Sexp)
 def ri2py_sexp(obj):
-    if (obj.typeof in _vectortypes) and (obj.typeof != VECSXP):
+    if (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
         res = numpy.asarray(obj)
     else:
         res = ro.default_converter.ri2py(obj)

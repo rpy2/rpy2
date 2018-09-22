@@ -9,6 +9,7 @@ from . import _rinterface_capi as _rinterface
 from . import embedded
 from . import conversion
 from . import memorymanagement
+from . import bufferprotocol
 
 
 class RTYPES(enum.IntEnum):
@@ -558,7 +559,8 @@ class BoolSexpVector(SexpVector):
         b = _rinterface.ffi.buffer(
             _rinterface._LOGICAL(self.__sexp__._cdata),
             _rinterface.ffi.sizeof('int') * len(self))
-        mv = memoryview(b).cast('i')
+        shape = bufferprotocol.getshape(self.__sexp__._cdata)
+        mv = memoryview(b).cast('i', shape)
         return mv
 
 
@@ -600,7 +602,9 @@ class IntSexpVector(SexpVector):
         b = _rinterface.ffi.buffer(
             _rinterface._INTEGER(self.__sexp__._cdata),
             _rinterface.ffi.sizeof('int') * len(self))
-        return memoryview(b).cast('i')
+        shape = bufferprotocol.getshape(self.__sexp__._cdata)
+        mv = memoryview(b).cast('i', shape)
+        return mv
 
 
 class FloatSexpVector(SexpVector):
@@ -640,7 +644,9 @@ class FloatSexpVector(SexpVector):
         b = _rinterface.ffi.buffer(
             _rinterface._REAL(self.__sexp__._cdata),
             _rinterface.ffi.sizeof('double') * len(self))
-        return memoryview(b).cast('d')
+        shape = bufferprotocol.getshape(self.__sexp__._cdata)
+        mv = memoryview(b).cast('d', shape)
+        return mv
 
 
 class ComplexSexpVector(SexpVector):

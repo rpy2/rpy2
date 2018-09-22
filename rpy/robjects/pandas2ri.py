@@ -9,8 +9,7 @@ import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import (SexpVector,
                              StrSexpVector,
-                             IntSexpVector,
-                             INTSXP)
+                             IntSexpVector)
 
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pandas.core.series import Series as PandasSeries

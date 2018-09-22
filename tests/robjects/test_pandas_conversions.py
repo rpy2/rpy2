@@ -1,4 +1,4 @@
-import unittest
+import pytest
 import pytz
 import sys
 import rpy2.robjects as robjects
@@ -22,8 +22,8 @@ if has_pandas:
 from rpy2.robjects import default_converter
 from rpy2.robjects.conversion import Converter, localconverter
     
-@unittest.skipUnless(has_pandas, "The Python package 'pandas' is not installed: functionalities associated with it cannot be tested.")
-class PandasConversionsTestCase(unittest.TestCase):
+@pytest.mark.skipif(not has_pandas, reason='Package pandas is not installed.')
+class TestPandasConversions(object):
 
     def testActivate(self):
         #FIXME: is the following still making sense ?
@@ -49,7 +49,7 @@ class PandasConversionsTestCase(unittest.TestCase):
         self.assertEqual(l, len(conversion.py2ri.registry))
         self.assertEqual(k, set(conversion.py2ri.registry.keys()))
 
-    def testDataFrame(self):
+    def test_dataframe(self):
         # Content for test data frame
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),
              ('i', numpy.array([1, 2, 3], dtype="i")),
@@ -65,18 +65,18 @@ class PandasConversionsTestCase(unittest.TestCase):
         # Convert to R
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_df = robjects.conversion.py2ri(pd_df)
-        self.assertEqual(pd_df.shape[0], rp_df.nrow)
-        self.assertEqual(pd_df.shape[1], rp_df.ncol)
-        self.assertSequenceEqual(rp_df.rx2('s'), [b"b", b"c", b"d"])
+        assert pd_df.shape[0] == rp_df.nrow
+        assert pd_df.shape[1] == rp_df.ncol
+        assert tuple(rp_df.rx2('s')) == (b"b", b"c", b"d")
             
-    def testSeries(self):
+    def test_series(self):
         Series = pandas.core.series.Series
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.py2ri(s)
-        self.assertEqual(rinterface.FloatSexpVector, type(rp_s))
+        assert rinterface.FloatSexpVector == type(rp_s)
 
-    def testSeries_issue264(self):
+    def test_series_issue264(self):
         Series = pandas.core.series.Series
         s = Series(('a', 'b', 'c', 'd', 'e'),
                    index=pandas.Int64Index([0,1,2,3,4]))
@@ -84,41 +84,41 @@ class PandasConversionsTestCase(unittest.TestCase):
             rp_s = robjects.conversion.py2ri(s)
         # segfault before the fix
         str(rp_s)
-        self.assertEqual(rinterface.StrSexpVector, type(rp_s))
+        assert rinterface.StrSexpVector == type(rp_s)
 
-    def testObject2String(self):
+    def test_object2String(self):
         series = pandas.Series(["a","b","c","a"], dtype="O")
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.py2ro(series)
-            self.assertEqual(robjects.vectors.StrVector, type(rp_c))
+            assert robjects.vectors.StrVector == type(rp_c)
 
-    def testFactor2Category(self):
+    def test_factor2Category(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a'))
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.ri2py(factor)
-        self.assertEqual(pandas.Categorical, type(rp_c))
+        assert pandas.Categorical == type(rp_c)
 
-    def testOrderedFactor2Category(self):
+    def test_orderedFactor2Category(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a'), ordered=True)
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.ri2py(factor)
-        self.assertEqual(pandas.Categorical, type(rp_c))
+        assert pandas.Categorical == type(rp_c)
 
-    def testCategory2Factor(self):
+    def test_category2Factor(self):
         category = pandas.Series(["a","b","c","a"], dtype="category")
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.py2ro(category)
-            self.assertEqual(robjects.vectors.FactorVector, type(rp_c))
+            assert robjects.vectors.FactorVector == type(rp_c)
             
-    def testOrderedCategory2Factor(self):
+    def test_orderedCategory2Factor(self):
         category = pandas.Series(pandas.Categorical(['a','b','c','a'],
                                                     categories=['a','b','c'],
                                                     ordered=True))
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.py2ro(category)
-            self.assertEqual(robjects.vectors.FactorVector, type(rp_c))
+            assert robjects.vectors.FactorVector == type(rp_c)
 
-    def testTimeR2Pandas(self):
+    def test_timeR2Pandas(self):
         tzone = rpyp.get_timezone()
         dt = [datetime(1960, 5, 2),
               datetime(1970, 6, 3), 
@@ -136,10 +136,9 @@ class PandasConversionsTestCase(unittest.TestCase):
 
         # Check that the round trip did not introduce changes
         for expected, obtained in zip(dt, py_time):
-            self.assertEqual(expected, obtained.to_pydatetime())
+            assert expected == obtained.to_pydatetime()
         
-        
-    def testRepr(self):
+    def test_repr(self):
         # this should go to testVector, with other tests for repr()
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),
              ('i', numpy.array([1, 2, 3], dtype="i")),
@@ -153,23 +152,23 @@ class PandasConversionsTestCase(unittest.TestCase):
         s = repr(rp_df) # used to fail with a TypeError
         s = s.split('\n')
         repr_str = '[BoolVec..., IntVector, FloatVe..., Vector, StrVector]'
-        self.assertEqual(repr_str, s[2].strip())
+        assert repr_str == s[2].strip()
 
-    def testRi2pandas(self):
+    def test_ri2pandas(self):
         rdataf = robjects.r('data.frame(a=1:2, '
                             '           b=I(c("a", "b")), '
                             '           c=c("a", "b"))')
         with localconverter(default_converter + rpyp.converter) as cv:
             pandas_df = robjects.conversion.ri2py(rdataf)
 
-        self.assertIsInstance(pandas_df, pandas.DataFrame)
-        self.assertEquals(('a', 'b', 'c'), tuple(pandas_df.keys()))
-        self.assertEquals(pandas_df['a'].dtype, numpy.dtype('int32'))
-        self.assertEquals(pandas_df['b'].dtype, numpy.dtype('O'))
-        self.assertTrue(isinstance(pandas_df['c'].dtype,
-                                   pandas.api.types.CategoricalDtype))
+        assert isinstance(pandas_df, pandas.DataFrame)
+        assert ('a', 'b', 'c') == tuple(pandas_df.keys())
+        assert pandas_df['a'].dtype == numpy.dtype('int32')
+        assert pandas_df['b'].dtype == numpy.dtype('O')
+        assert isinstance(pandas_df['c'].dtype,
+                          pandas.api.types.CategoricalDtype)
     
-    def testRi2pandas_issue207(self):
+    def test_ri2pandas_issue207(self):
         d = robjects.DataFrame({'x': 1})
         with localconverter(default_converter + rpyp.converter) as cv:
             try:
@@ -180,14 +179,4 @@ class PandasConversionsTestCase(unittest.TestCase):
             finally:
                 if 'd' in robjects.globalenv:
                     del(robjects.globalenv['d'])
-        self.assertTrue(ok)
-
-def suite():
-    if has_pandas:
-        return unittest.TestLoader().loadTestsFromTestCase(PandasConversionsTestCase)
-    else:
-        return unittest.TestLoader().loadTestsFromTestCase(MissingPandasDummyTestCase)
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='suite')
-
+        assert ok

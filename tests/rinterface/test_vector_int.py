@@ -117,7 +117,19 @@ def test_getslice_missingboundary():
     assert vec_slice[1] == 10
 
     
-def testAssignItemOutOfBound():
+def test_setitem_outffbound():
     vec = ri.IntSexpVector(range(5))
     with pytest.raises(IndexError):
         vec.__setitem__(10, 6)
+
+
+def test_memoryview():
+    shape = (5,2,3)
+    values = tuple(range(30))
+    rarray = ri.baseenv['array'](
+        ri.IntSexpVector(values),
+        dim = ri.IntSexpVector(shape))
+    mv = rarray.memoryview()
+    assert mv.shape == shape
+    assert mv.values == values
+    
