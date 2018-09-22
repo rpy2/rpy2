@@ -1,4 +1,4 @@
-import unittest
+import pytest
 
 # Try to load R dplyr package, and see if it works
 has_tidyr = None
@@ -14,35 +14,25 @@ from rpy2.robjects.packages import (importr,
 datasets = importr('datasets')
 mtcars = data(datasets).fetch('mtcars')['mtcars']
 
-@unittest.skipUnless(has_tidyr, 'tidyr package not available in R')
-class TidyrTestCase(unittest.TestCase):
+@pytest.mark.skipif(not has_tidyr, 'tidyr package not available in R')
+class TestTidyr(object):
 
-
-    def testDataFrame(self):
+    def test_dataframe(self):
         dataf =tidyr.DataFrame(
             {'x': vectors.IntVector((1,2,3,4,5)),
              'labels': vectors.StrVector(('a','b','b','b','a'))})
-        self.assertIsInstance(dataf, tidyr.DataFrame)
-        self.assertCountEqual(('x', 'labels'), dataf.colnames)
+        assert isinstance(dataf, tidyr.DataFrame)
+        assert ['x', 'labels'].sorted() == list(dataf.colnames).sorted()
         
-    def testSpread(self):
+    def test_spread(self):
         labels = ('a','b','c','d','e')
         dataf =tidyr.DataFrame(
             {'x': vectors.IntVector((1,2,3,4,5)),
              'labels': vectors.StrVector(labels)})
         dataf_spread = dataf.spread('labels', 'x')
-        self.assertCountEqual(labels, dataf_spread.colnames)
+        assert list(labels).sorted() == list(dataf_spread.colnames).sorted()
 
-    @unittest.expectedFailure
-    def testGather(self):
+    def test_gather(self):
         dataf =tidyr.DataFrame({'a': 1.0, 'b': 2.0})
         dataf_gathered = dataf.gather('label', 'x')
-        self.assertCountEqual(('label', 'x'), dataf_gathered.colnames)
-
-        
-def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(TidyrTestCase)
-    return suite
-
-if __name__ == '__main__':
-     unittest.main()
+        assert ['label', 'x'].sorted() == list(dataf_gathered.colnames).sorted()
