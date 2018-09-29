@@ -224,18 +224,17 @@ class Sexp(object):
         # TODO: force finding function
         return globalenv.get('names')(self)
 
+    @names.setter
+    def names(self, value):
+        _rinterface.rlib.Rf_namesgets(
+            self.__sexp__._cdata, value)
+
     @property
     @_cdata_res_to_rinterface
     def names_from_c_attribute(self):
         return _rinterface.rlib.Rf_getAttrib(
             self.__sexp__._cdata,
             _rinterface.rlib.R_NameSymbol)
-
-    
-    @names.setter
-    def names_set(self, value):
-        _rinterface.rlib.Rf_namesgets(
-            self.__sexp__._cdata, value)
 
 
 class SexpSymbol(Sexp):

@@ -15,13 +15,14 @@ SHOWFILE_SIGNATURE = ('int(int, const char **, const char **, '
                       '    const char *, Rboolean, const char *)')
 
 
+# TODO: remove the decorator
 def logged_exceptions(func, logger=logger):
-    def _(*args, **kwargs):
+    def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception as e:
             logger.error(str(e))
-    return _
+    return wrapper
 
 
 @logged_exceptions
@@ -29,10 +30,23 @@ def consoleread(prompt):
     return input(prompt)
 
 
+_READCONSOLE_EXCEPTION_LOG = 'Callback to read into the R console: %s'
+_READCONSOLE_INTERNAL_EXCEPTION_LOG = 'Internal rpy2 error with callback: %s'
+
+
 @_rinterface.ffi.callback(READCONSOLE_SIGNATURE)
 def _consoleread(prompt, buf, n, addtohistory):
+    success = None
+    import pdb; pdb.set_trace()
     try:
         reply = consoleread(_rinterface._cchar_to_str(prompt))
+    except Exception as e:
+        success = 0
+        logger.error(_READCONSOLE_EXCEPTION_LOG, str(e))
+    if success == 0:
+        return success
+    
+    try:
         # TODO: handle non-ASCII encodings
         reply_b = reply.encode('ASCII')
         reply_n = min(n, len(reply_b))
@@ -48,9 +62,8 @@ def _consoleread(prompt, buf, n, addtohistory):
         else:
             success = 1
     except Exception as e:
-        # TODO: fix error handling
         success = 0
-        print(e)
+        logger.error(_READCONSOLE_INTERNAL_EXCEPTION_LOG, str(e))
     return success
 
 
@@ -59,12 +72,15 @@ def consolereset():
     pass
 
 
-@_rinterface.ffi.callback(READCONSOLE_SIGNATURE)
+_RESETCONSOLE_EXCEPTION_LOG = 'Callback to reset the R console: %s'
+
+
+@_rinterface.ffi.callback(RESETCONSOLE_SIGNATURE)
 def _consolereset():
     try:
         consolereset()
     except Exception as e:
-        print(e)
+        logger.error(_RESETCONSOLE_EXCEPTION_LOG, str(e))
 
 
 @logged_exceptions
@@ -79,6 +95,9 @@ def consolewrite_warnerror(s):
     warnings.warn(s)
 
 
+_WRITECONSOLE_EXCEPTION_LOG = 'Callback to write to the R console: %s'
+
+
 @_rinterface.ffi.callback(WRITECONSOLE_EX_SIGNATURE)
 def _consolewrite_ex(buf, n, otype):
     s = _rinterface._cchar_to_str_with_maxlen(buf, maxlen=n)
@@ -88,7 +107,7 @@ def _consolewrite_ex(buf, n, otype):
         else:
             consolewrite_warnerror(s)
     except Exception as e:
-        print(e)
+        logger.error(_WRITECONSOLE_EXCEPTION_LOG, str(e))
 
 
 @logged_exceptions
@@ -97,47 +116,98 @@ def showmessage(s):
     print(s)
 
 
+_SHOWMESSAGE_EXCEPTION_LOG = 'Callback to show R message: %s'
+
+
 @_rinterface.ffi.callback(SHOWMESSAGE_SIGNATURE)
 def _showmessage(buf):
     s = _rinterface._cchar_to_str(buf)
-    showmessage(s)
+    try:
+        showmessage(s)
+    except Exception as e:
+        logger.error(_SHOWMESSAGE_EXCEPTION_LOG, str(e))
 
 
 @logged_exceptions
 def choosefile(new):
     return input('Enter file name:')
-    
+
+
+_CHOOSEFILE_EXCEPTION_LOG = 'Callback to choose file from R: %s'
+
 
 @_rinterface.ffi.callback(CHOOSEFILE_SIGNATURE)
 def _choosefile(new, buf, n):
-    res = choosefile(new)
+    try:
+        res = choosefile(new)
+    except Exception as e:
+        logger.error(_CHOOSEFILE_EXCEPTION_LOG, str(e))
+        res = None
+
     if res is None:
         return 0
+
     res_cdata = _rinterface._str_to_cchar(res)
     _rinterface.ffi.memmove(buf, res_cdata, len(res_cdata))
     return len(res_cdata)
 
 
-def showfile(s):
-    print(s)
-
-
-@_rinterface.ffi.callback(SHOWFILE_SIGNATURE)
-def _showfile(nfiles, files, headers, wtitle, delete, pager):
-    for i in range(nfiles):
-        fn = files[i]
-        print('File: %s' % _rinterface.ffi.string(fn))
+def showfiles(filenames, headers, wtitle, pager):
+    for fn in filenames:
+        print('File: %s' % fn)
         with open(fn) as fh:
             for row in fh:
                 print(row)
-        print('---')
+            print('---')
 
 
+
+_SHOWFILE_EXCEPTION_LOG = 'Callback to shows file for R: %s'
+_SHOWFILE_INTERNAL_EXCEPTION_LOG = 'Internal rpy2 error while showing files for R: %s'
+
+
+@_rinterface.ffi.callback(SHOWFILE_SIGNATURE)
+def _showfiles(nfiles, files, headers, wtitle, delete, pager):
+    filenames = []
+    headers_str = []
+    wtitle_str = None
+    pager_str = None
+    try:
+        wtitle_str = _rinterface._cchar_to_str(wtitle)
+        pager_str = _rinterface._cchar_to_str(pager)
+        for i in range(nfiles):
+            filenames.append(_rinterface._cchar_to_str(files[i]))
+            headers_str.append(_rinterface._cchar_to_str(headers[i]))
+    except Exception as e:
+        logger.error(_SHOWFILE_INTERNAL_EXCEPTION_LOG, str(e))
+
+    if len(filenames):
+        res = 0
+    else:
+        res = 1
+    try:
+        showfiles(tuple(filenames),
+                  tuple(headers_str),
+                  wtitle_str,
+                  pager_str)
+    except Exception as e:
+        res = 1
+        logger.error(_SHOWFILE_EXCEPTION_LOG, str(e))
+
+    return res
+
+            
 @logged_exceptions
 def cleanup(saveact, status, runlast):
     pass
 
 
+_CLEANUP_EXCEPTION_LOG = 'Callback to clean up R: %s'
+
+
 @_rinterface.ffi.callback(CLEANUP_SIGNATURE)
 def _cleanup(saveact, status, runlast):
-     cleanup(saveact, status, runlast)
+    try:
+        cleanup(saveact, status, runlast)
+    except Exception as e:
+        logger.error(_CLEANUP_EXCEPTION_LOG, str(e))

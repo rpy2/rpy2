@@ -36,16 +36,22 @@ def test_set_consolewrite_print():
 
 def test_consolewrite_print_error(caplog):
 
+    msg = "Doesn't work."
+    
     def f(x):
-        raise Exception("Doesn't work.")
+        raise Exception(msg)
 
-    with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', f):
+    with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', f), \
+         caplog.at_level(logging.ERROR, logger='callbacks.logger'):
         code = rinterface.StrSexpVector(["3", ])
         caplog.clear()
         rinterface.baseenv["print"](code)
-        assert caplog.record_tuples == [
-        ('root', logging.ERROR, "Doesn't work."),
-        ]
+        assert len(caplog.record_tuples) > 0
+        for x in caplog.record_tuples:
+            assert x == ('rpy2.rinterface.callbacks',
+                         logging.ERROR,
+                         (rinterface.callbacks
+                          ._WRITECONSOLE_EXCEPTION_LOG % msg)) 
 
 
 def testSetResetConsole():
@@ -104,13 +110,21 @@ def test_consoleread():
 
 
 def test_console_read_with_error(caplog):
+    
+    msg = "Doesn't work."
+    
     def f(prompt):
-        raise Exception("Doesn't work.")
-    with utils.obj_in_module(rinterface.callbacks, 'consoleread', f):
+        raise Exception(msg)
+    
+    with utils.obj_in_module(rinterface.callbacks, 'consoleread', f), \
+         caplog.at_level(logging.ERROR, logger='callbacks.logger'):
         res = rinterface.baseenv['readline']()
-        assert caplog.record_tuples == [
-            ('root', logging.ERROR, "Doesn't work."),
-        ]
+        assert len(caplog.record_tuples) > 0
+        for x in caplog.record_tuples:
+            assert x == ('rpy2.rinterface.callbacks',
+                         logging.ERROR,
+                         (rinterface.callbacks
+                          ._READCONSOLE_EXCEPTION_LOG % msg)) 
 
 
 def test_show_message():
@@ -151,12 +165,11 @@ def test_choosefile_error():
                     rinterface.baseenv["file.choose"]()
 
 
-@pytest.mark.skip(reason='WIP')    
 def test_showfiles():
     sf = []
-    def f(fileheaders, wtitle, fdel, pager):
+    def f(filenames, headers, wtitle, pager):
         sf.append(wtitle)
-        for tf in fileheaders:
+        for tf in filenames:
             sf.append(tf)
 
     with utils.obj_in_module(rinterface.callbacks, 'showfiles', f):
@@ -165,25 +178,38 @@ def test_showfiles():
         filename = file_path(r_home(rinterface.StrSexpVector(('doc', ))), 
                              rinterface.StrSexpVector(('COPYRIGHTS', )))
         res = rinterface.baseenv['file.show'](filename)
-        assert filename[0] == sf[1][1]
+        assert filename[0] == sf[1]
         assert 'R Information' == sf[0]
 
 
-@pytest.mark.skip(reason='WIP')    
-def test_showfiles_error():
-    def f(fileheaders, wtitle, fdel, pager):
-        raise Exception("Doesn't work.")
+def test_showfiles_error(caplog):
 
-    with utils.obj_in_module(rinterface.callbacks, 'showfiles', f):
+    msg = "Doesn't work."
+    
+    def f(filenames, headers, wtitle, pager):
+        raise Exception(msg)
+
+    with utils.obj_in_module(rinterface.callbacks, 'showfiles', f), \
+         caplog.at_level(logging.ERROR, logger='callbacks.logger'):
+        
         file_path = rinterface.baseenv['file.path']
         r_home = rinterface.baseenv['R.home']
         filename = file_path(r_home(rinterface.StrSexpVector(('doc', ))), 
                              rinterface.StrSexpVector(('COPYRIGHTS', )))
-        with pytest.raises(Exception):
-            rinterface.baseenv['file.show'](filename)
+
+        caplog.clear()
+        rinterface.baseenv['file.show'](filename)
+
+        assert len(caplog.record_tuples) > 0
+        for x in caplog.record_tuples:
+            assert x == ('rpy2.rinterface.callbacks',
+                         logging.ERROR,
+                         (rinterface.callbacks
+                          ._SHOWFILE_EXCEPTION_LOG % msg)) 
 
 
-@pytest.mark.skip(reason='WIP')
+
+@pytest.mark.skip(reason='WIP (should be run from worker process).')
 def test_cleanup():
     def f(saveact, status, runlast):
         return None

@@ -10,6 +10,10 @@ from . import conversion
 logger = logging.getLogger(__name__)
 
 R_HOME = rpy2.situation.get_r_home()
+if R_HOME is None:
+    raise ImportError('R_HOME cannot be determined. '
+                      'Try python -m rpy2.situation')
+
 lib_path = os.path.join(R_HOME, "lib", "libR.so")
 rlib = ffi.dlopen(lib_path)
 

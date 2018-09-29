@@ -55,8 +55,8 @@ class TestDplyr(object):
         dataf_c = dataf_a.inner_join(dataf_b, by=dataf_a.colnames)
         all_names = list(dataf_a.colnames)
         all_names.append('foo')
-        self.assertCountEqual(all_names, dataf_c.colnames)
-        self.assertSequenceEqual(all_names, dataf_c.colnames)
+        assert sorted(list(all_names)) == sorted(list(dataf_c.colnames))
+        assert tuple(all_names) == tuple(dataf_c.colnames)
 
     def test_collect(self):
         dataf = dplyr.DataFrame(mtcars)
@@ -68,6 +68,6 @@ class TestDplyr(object):
     def test_arrange(self):
         dataf = dplyr.DataFrame(mtcars)
         dataf_arrange = dataf.arrange('mpg')
-        self.assertSequenceEqual(sorted(dataf.collect().rx2('mpg')),
-                                 dataf_arrange.collect().rx2('mpg'))
+        assert tuple(sorted(dataf.collect().rx2('mpg'))) == \
+            tuple(dataf_arrange.collect().rx2('mpg'))
 

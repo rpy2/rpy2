@@ -57,6 +57,9 @@ def _initr(interactive=True):
     rlib.ptr_R_ReadConsole = callbacks._consoleread
 
     rlib.ptr_R_ChooseFile = callbacks._choosefile
+
+    rlib.ptr_R_ShowFiles = callbacks._showfiles
+    
     rlib.ptr_R_CleanUp = callbacks._cleanup
     
     rpy2_embeddedR_isinitialized = RPY_R_Status.INITIALIZED

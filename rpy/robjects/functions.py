@@ -144,7 +144,7 @@ class SignatureTranslatedFunction(Function):
             prm_translate = init_prm_translate
 
         formals = self.formals()
-        if formals is not rinterface.NULL:
+        if formals.__sexp__._cdata != rinterface.NULL.__sexp__._cdata:
             (symbol_mapping, 
              conflicts, 
              resolutions) = _map_symbols(formals.names,

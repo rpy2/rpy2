@@ -22,7 +22,7 @@ class TestTidyr(object):
             {'x': vectors.IntVector((1,2,3,4,5)),
              'labels': vectors.StrVector(('a','b','b','b','a'))})
         assert isinstance(dataf, tidyr.DataFrame)
-        assert ['x', 'labels'].sorted() == list(dataf.colnames).sorted()
+        assert sorted(['x', 'labels']) == sorted(list(dataf.colnames))
         
     def test_spread(self):
         labels = ('a','b','c','d','e')
@@ -30,9 +30,9 @@ class TestTidyr(object):
             {'x': vectors.IntVector((1,2,3,4,5)),
              'labels': vectors.StrVector(labels)})
         dataf_spread = dataf.spread('labels', 'x')
-        assert list(labels).sorted() == list(dataf_spread.colnames).sorted()
+        assert sorted(list(labels)) == sorted(list(dataf_spread.colnames))
 
     def test_gather(self):
         dataf =tidyr.DataFrame({'a': 1.0, 'b': 2.0})
         dataf_gathered = dataf.gather('label', 'x')
-        assert ['label', 'x'].sorted() == list(dataf_gathered.colnames).sorted()
+        assert sorted(['label', 'x']) == sorted(list(dataf_gathered.colnames))
