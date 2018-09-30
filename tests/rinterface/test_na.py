@@ -38,15 +38,9 @@ def test_NAInteger_in_vector():
     assert x[2] == 2
 
     
-def test_NAInteger_repr():
-    na_int = ri.NA_Integer
-    assert repr(na_int) == 'NA_integer_'
-
-    
 def test_R_to_NALogical():
-    na_lgl = ri.NA_Logical
     r_na_lgl = evalr('NA')[0]
-    assert r_na_lgl == na_lgl
+    assert r_na_lgl is None
 
     
 def test_NALogical_to_r():
@@ -57,14 +51,9 @@ def test_NALogical_to_r():
 def test_NALogical_in_vector():
     na_bool = ri.NA_Logical
     x = ri.BoolSexpVector((True, na_bool, False))
-    assert x[1] == na_bool
     assert x[0] == True
+    assert x[1] is None
     assert x[2] == False
-
-    
-def test_NAInteger_repr():
-    na_bool = ri.NA_Logical
-    assert repr(na_bool) == 'NA'
 
     
 def test_R_to_NAReal():
@@ -111,12 +100,7 @@ def test_NACharacter_to_r():
 def test_NACharacter_in_vector():
     na_str = ri.NA_Character
     x = ri.StrSexpVector(("ab", na_str, "cd"))
-    assert x.get_charsxp(0) == na_str
     assert x[0] == 'ab'
+    assert x.get_charsxp(1).rid == na_str.rid
     assert x[2] == 'cd'
-
-    
-def test_NACharacter_repr():
-    na_str = ri.NA_Character
-    assert repr(na_str) == 'NA_character_'
 

@@ -2,6 +2,7 @@
 # (Python if ABI, C if API)
 import logging
 import os
+import warnings
 from _rinterface_cffi import ffi
 import _cffi_backend
 import rpy2.situation
@@ -63,7 +64,10 @@ def _release(cdata):
 
 @ffi.callback('void (SEXP)')
 def _capsule_finalizer(cdata):
-    rlib.R_ClearExternalPtr(cdata)
+    try:
+        rlib.R_ClearExternalPtr(cdata)
+    except Exception as e:
+        warnings.warn(str(e))
 
 
 class SexpCapsule(object):

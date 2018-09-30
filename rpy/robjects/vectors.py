@@ -277,7 +277,7 @@ class Vector(RObjectMixin, SexpVector):
         return res
 
     @names.setter
-    def names_set(self, value):
+    def names(self, value):
         res = globalenv_ri.get("names<-")(self, conversion.py2ro(value))
         self.__sexp__ = res.__sexp__
 

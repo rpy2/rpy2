@@ -126,12 +126,21 @@ def test___sexp__():
 
 
 def test_rclass_get():
-    sexp = rinterface.baseenv.get("letters")
+    sexp = rinterface.baseenv.get('character')(1)
     assert len(sexp.rclass) == 1
     assert sexp.rclass[0] == 'character'
-    sexp = rinterface.baseenv.get("matrix")(0)
+    
+    sexp = rinterface.baseenv.get('matrix')(0)
     assert len(sexp.rclass) == 1
     assert sexp.rclass[0] == 'matrix'
+
+    sexp = rinterface.baseenv.get('array')(0)
+    assert len(sexp.rclass) == 1
+    assert sexp.rclass[0] == 'array'
+
+    sexp = rinterface.baseenv.get('new.env')()
+    assert len(sexp.rclass) == 1
+    assert sexp.rclass[0] == 'environment'
 
 
 def test_rclass_set():

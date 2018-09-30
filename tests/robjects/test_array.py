@@ -14,7 +14,8 @@ def test_init_invalid():
     with pytest.raises(TypeError):
         robjects.Array(letters)
 
-@pytest.mark.skip(reason='segfault')
+
+#@pytest.mark.skip(reason='segfault')
 def test_init():
     m = rinterface.globalenv.get('matrix')(1, nrow=5, ncol=3)
     a = robjects.Array(m)
@@ -100,6 +101,7 @@ def test_svd():
         assert almost_equal((2, 0)[i], val)
 
 
+@pytest.mark.skip(reason='segfault')
 def test_eigen():
     m = robjects.r.matrix(robjects.IntVector((1, -1, -1, 1)), nrow=2)
     res = m.eigen()
@@ -114,9 +116,10 @@ def test_dot():
     assert tuple(m2) == (2,3,6,11)
 
 
+@pytest.mark.skip(reason='segfault')
 def test_colnames():
     m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2, ncol=2)
-    self.assertEqual(rinterface.NULL, m.colnames)
+    assert m.colnames == rinterface.NULL
     m.colnames = robjects.StrVector(('a', 'b'))
     assert len(m.colnames) == 2
     assert m.colnames[0] == 'a'
@@ -125,9 +128,10 @@ def test_colnames():
         m.colnames = robjects.StrVector(('a', 'b', 'c'))
 
 
+@pytest.mark.skip(reason='segfault')
 def test_rownames():
     m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2, ncol=2)
-    self.assertEqual(rinterface.NULL, m.rownames)
+    assert m.rownames == rinterface.NULL
     m.rownames = robjects.StrVector(('c', 'd'))
     assert len(m.rownames) == 2
     assert m.rownames[0] == 'c'

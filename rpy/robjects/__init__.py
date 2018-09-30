@@ -134,6 +134,26 @@ def sequence_to_vector(lst):
     res = curr_type(lst)
     return res
 
+@default_converter.ri2ro.register(bool)
+def _(obj):
+    return obj
+
+@default_converter.ri2ro.register(int)
+def _(obj):
+    return obj
+
+@default_converter.ri2ro.register(float)
+def _(obj):
+    return obj
+
+@default_converter.ri2ro.register(bytes)
+def _(obj):
+    return obj
+
+@default_converter.ri2ro.register(str)
+def _(obj):
+    return obj
+
 
 @default_converter.ri2ro.register(SexpClosure)
 def _(obj):
@@ -190,29 +210,21 @@ def _(obj):
 
 @default_converter.py2ri.register(bool)
 def _(obj):
-    return rinterface.vector([obj, ], rinterface.RTYPES.LGLSXP)
+    return obj
 
-def int2ri(obj):
-    # special case for NA_Logical
-    if obj is rinterface.NA_Logical:
-        res = rinterface.vector([obj, ], rinterface.RTYPES.LGLSXP)
-    else:
-        res = rinterface.vector([obj, ], rinterface.RTYPES.INTSXP)
-    return res
-
-default_converter.py2ri.register(int, int2ri)
+default_converter.py2ri.register(int, lambda x: x)
 
 @default_converter.py2ri.register(float)
 def _(obj):
-    return rinterface.vector([obj, ], rinterface.RTYPES.REALSXP)
+    return obj
 
 @default_converter.py2ri.register(bytes)
 def _(obj):
-    return rinterface.vector([obj, ], rinterface.RTYPES.STRSXP)
+    return obj
 
 @default_converter.py2ri.register(str)
 def _(obj):
-    return rinterface.vector([obj, ], rinterface.RTYPES.STRSXP)
+    return obj
 
 @default_converter.py2ri.register(list)
 def _(obj):
@@ -226,7 +238,7 @@ def _(obj):
 
 @default_converter.py2ri.register(complex)
 def _(obj):
-    return rinterface.vector([obj, ], rinterface.RTYPES.CPLXSXP)
+    return obj
 
 
 @default_converter.py2ro.register(object)

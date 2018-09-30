@@ -36,52 +36,21 @@ def test_mapperR2Python_s4():
     assert isinstance(robjects.default_converter.ri2ro(sexp), 
                       robjects.RS4)
 
+@pytest.mark.parametrize('value,cls', [
+    (1, int),
+    (True, bool),
+    (b'houba', bytes),
+    (1.0, float),
+    (1.0 + 2j, complex)
+])
+def test_py2ro_mappedtype(value, cls):
+    pyobj = value
+    assert isinstance(pyobj, cls)
+    rob = robjects.default_converter.py2ro(pyobj)
+    assert isinstance(rob, cls)
+                    
 
-def test_mapperPy2R_integer():
-    py = 1
-    rob = robjects.default_converter.py2ro(py)
-    assert isinstance(rob, robjects.Vector)
-    assert rob.typeof == rinterface.RTYPES.INTSXP
-
-
-def test_mapperPy2R_boolean():
-    py = True
-    rob = robjects.default_converter.py2ro(py)
-    assert isinstance(rob, robjects.Vector)
-    assert rob.typeof == rinterface.RTYPES.LGLSXP
-
-
-def test_mapperPy2R_bytes():        
-    py = b'houba'
-    rob = robjects.default_converter.py2ro(py)
-    assert isinstance(rob, robjects.Vector)
-    assert rob.typeof == rinterface.RTYPES.STRSXP
-
-    
-def test_mapperPy2R_str():
-    py = u'houba'
-    assert isinstance(py, str)
-    rob = robjects.default_converter.py2ro(py)
-    assert isinstance(rob, robjects.Vector)
-    assert rob.typeof == rinterface.RTYPES.STRSXP
-    #FIXME: more tests
-
-
-def test_mapperPy2R_float():
-    py = 1.0
-    rob = robjects.default_converter.py2ro(py)
-    assert isinstance(rob, robjects.Vector)
-    assert rob.typeof == rinterface.RTYPES.REALSXP
-
-
-def test_mapperPy2R_complex():
-    py = 1.0 + 2j
-    rob = robjects.default_converter.py2ro(py)
-    assert isinstance(rob, robjects.Vector)
-    assert rob.typeof == rinterface.RTYPES.CPLXSXP
-
-
-def test_mapperPy2R_taggedlist(self):
+def test_mapperPy2R_taggedlist():
     py = robjects.rlc.TaggedList(('a', 'b'),
                                  tags=('foo', 'bar'))
     robj = robjects.default_converter.py2ro(py)
@@ -90,7 +59,7 @@ def test_mapperPy2R_taggedlist(self):
     assert tuple(robj.names) == ('foo', 'bar')
 
 
-def test_mapperPy2R_function(self):
+def test_mapperPy2R_function():
     func = lambda x: x
     rob = robjects.default_converter.py2ro(func)
     assert isinstance(rob, robjects.SignatureTranslatedFunction)

@@ -170,11 +170,9 @@ class Sexp(object):
         elif isisntance(value, str):
             value_r = _rinterface.StrSexpVector.from_iterable(
                 [_rinterface._str_to_charsxp(value)])
-        self.__sexp__ = _rinterface.SexpCapsule(
-            _rinterface.rlib.Rf_setAttrib(self.__sexp__._cdata,
-                                          _rinterface.rlib.R_ClassSymbol,
-                                          value_r.__sexp__._cdata)
-        )
+        _rinterface.rlib.Rf_setAttrib(self.__sexp__._cdata,
+                                      _rinterface.rlib.R_ClassSymbol,
+                                      value_r.__sexp__._cdata)
         
     @property
     def rid(self):
@@ -523,17 +521,18 @@ class BoolSexpVector(SexpVector):
     _R_TYPE = _rinterface.rlib.LGLSXP
     _R_SET_ELT = _rinterface.rlib.SET_LOGICAL_ELT
     _R_GET_PTR = _rinterface._LOGICAL
-    _CAST_IN = lambda x: NA_Logical if x is None else bool(x)
+    _CAST_IN = lambda x: NA_Logical if x is None or x == _rinterface.rlib.R_NaInt else bool(x)
 
     def __getitem__(self, i):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _ = _rinterface.rlib.LOGICAL_ELT(cdata, i_c)
-            res = None if _==NA_Logical else bool(_)
+            elt = _rinterface.rlib.LOGICAL_ELT(cdata, i_c)
+            res = None if elt == NA_Logical else bool(elt)
         elif isinstance(i, slice):
             res = type(self).from_iterable(
-                [_rinterface.rlib.LOGICAL_ELT(cdata, i_c) for i_c in range(*i.indices(len(self)))]
+                [_rinterface.rlib.LOGICAL_ELT(cdata, i_c)
+                 for i_c in range(*i.indices(len(self)))]
             )
         else:
             raise TypeError(
@@ -1026,7 +1025,7 @@ _DEFAULT_RCLASS_NAMES = {
     RTYPES.LANGSXP: 'language'}
 
 
-def _rclass_get(scaps):
+def _rclass_get(scaps: _rinterface.SexpCapsule):
     rlib = _rinterface.rlib
     classes = rlib.Rf_getAttrib(scaps._cdata,
                                 rlib.R_ClassSymbol)
@@ -1040,7 +1039,7 @@ def _rclass_get(scaps):
             else:
                 classname = 'array'
         else:
-            typeof = RTYPES(_rinterface._TYPEOF(scaps._cdata))
+            typeof = RTYPES(scaps.typeof)
             classname = _DEFAULT_RCLASS_NAMES.get(
                 typeof, str(typeof))
         classes = StrSexpVector.from_iterable(
