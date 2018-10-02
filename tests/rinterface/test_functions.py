@@ -41,7 +41,13 @@ def test_r_error():
         r_sum(letters)
 
 
-def test_utf8_params():
+def test_string_argument():
+    r_nchar = rinterface.baseenv['::']('base', 'nchar')
+    res = r_nchar('foo')
+    assert res[0] == 3
+
+
+def test_utf8_argument_name():
     c = rinterface.globalenv.get('c')
     d = dict([(u'哈哈', 1)])
     res = c(**d)
@@ -124,11 +130,11 @@ def test_call_OrdDictEnv():
 
 
 def test_error_in_call():
-    mylist = rinterface.baseenv['list']
+    r_sum = rinterface.baseenv['sum']
 
     with pytest.raises(rinterface._rinterface.RRuntimeError), \
-         pytest.warns(UserWarning):
-        mylist('foo')
+         pytest.warns(rinterface.RRuntimeWarning):
+        r_sum(2, 'a')
 
         
 def test_missing_arg():

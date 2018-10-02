@@ -14,7 +14,8 @@ from rpy2.robjects.packages import (importr,
 datasets = importr('datasets')
 mtcars = data(datasets).fetch('mtcars')['mtcars']
 
-@pytest.mark.skipif(not has_tidyr, 'tidyr package not available in R')
+@pytest.mark.skipif(not has_tidyr,
+                    reason='tidyr package not available in R')
 class TestTidyr(object):
 
     def test_dataframe(self):

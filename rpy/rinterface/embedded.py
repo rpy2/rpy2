@@ -1,5 +1,6 @@
 import enum
 import os
+import typing
 import warnings
 from . import _rinterface_capi as _rinterface
 from . import callbacks
@@ -15,7 +16,7 @@ class RPY_R_Status(enum.Enum):
     ENDED = 0x04;
 
 
-def set_initoptions(options):
+def set_initoptions(options: typing.Tuple[str]) -> None:
     if rpy2_embeddedR_isinitialized:
         raise RuntimeError('Options can no longer be set once R is initialized.')
     global _options
@@ -24,16 +25,34 @@ def set_initoptions(options):
     _options = tuple(options)
 
 
-def get_initoptions():
+def get_initoptions() -> typing.Tuple[str]:
     return _options
 
-    
+
+def isinitialized() -> bool:
+    """Is the embedded R initialized."""
+    return bool(rpy2_embeddedR_isinitialized & RPY_R_Status.INITIALIZED.value)
+
+
+def isready() -> bool:
+    """Is the embedded R ready for use."""
+    INITIALIZED = RPY_R_Status.INITIALIZED
+    return bool(
+        rpy2_embeddedR_isinitialized == INITIALIZED.value
+    )
+
+
+class RNotReadyError(Exception):
+    """Embedded R is not ready to use."""
+    pass
+
+
 # TODO: can init_once() be used here ?
-def _initr(interactive=True):
+def _initr(interactive: bool = True) -> int:
     global rpy2_embeddedR_isinitialized
     ffi = _rinterface.ffi
     rlib = _rinterface.rlib
-    if rpy2_embeddedR_isinitialized:
+    if isinitialized():
         return
     os.environ['R_HOME'] = _rinterface.R_HOME
     options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
@@ -62,7 +81,7 @@ def _initr(interactive=True):
     
     rlib.ptr_R_CleanUp = callbacks._cleanup
     
-    rpy2_embeddedR_isinitialized = RPY_R_Status.INITIALIZED
+    rpy2_embeddedR_isinitialized = RPY_R_Status.INITIALIZED.value
 
     # TODO: still needed ?
     _rinterface.rlib.R_CStackLimit = ffi.cast('uintptr_t', -1)
@@ -71,7 +90,10 @@ def _initr(interactive=True):
     return status
 
 
-def endr(fatal):
+def endr(fatal: int) -> None:
+    global rpy2_embeddedR_isinitialized
+    if rpy2_embeddedR_isinitialized & RPY_R_Status.ENDED.value:
+        return
     rlib = _rinterface.rlib
     rlib.R_dot_Last()
     rlib.R_RunExitFinalizers()
@@ -79,6 +101,7 @@ def endr(fatal):
     rlib.R_CleanTempDir()
     rlib.R_gc()    
     rlib.Rf_endEmbeddedR(fatal)
+    rpy2_embeddedR_isinitialized ^= RPY_R_Status.ENDED.value
 
 
 class PARSING_STATUS(enum.Enum):
@@ -91,7 +114,7 @@ class PARSING_STATUS(enum.Enum):
 
 class RParsingError(Exception):
 
-    def __init__(self, msg, status):
+    def __init__(self, msg: str, status: int):
         super().__init__(msg)
         self.status = status
 

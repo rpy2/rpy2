@@ -1,4 +1,5 @@
 import logging
+import typing
 import warnings
 from . import _rinterface_capi as _rinterface
 
@@ -25,8 +26,7 @@ def logged_exceptions(func, logger=logger):
     return wrapper
 
 
-@logged_exceptions
-def consoleread(prompt):
+def consoleread(prompt: str) -> str:
     return input(prompt)
 
 
@@ -37,9 +37,9 @@ _READCONSOLE_INTERNAL_EXCEPTION_LOG = 'Internal rpy2 error with callback: %s'
 @_rinterface.ffi.callback(READCONSOLE_SIGNATURE)
 def _consoleread(prompt, buf, n, addtohistory):
     success = None
-    import pdb; pdb.set_trace()
     try:
-        reply = consoleread(_rinterface._cchar_to_str(prompt))
+        s = _rinterface._cchar_to_str(prompt)
+        reply = consoleread(s)
     except Exception as e:
         success = 0
         logger.error(_READCONSOLE_EXCEPTION_LOG, str(e))
@@ -68,7 +68,7 @@ def _consoleread(prompt, buf, n, addtohistory):
 
 
 @logged_exceptions
-def consolereset():
+def consolereset() -> None:
     pass
 
 
@@ -84,13 +84,13 @@ def _consolereset():
 
 
 @logged_exceptions
-def consolewrite_print(s):
+def consolewrite_print(s: str) -> None:
     # TODO: is the callback for flush working with Linux ?
     print(s, end='', flush=True)
 
 
 @logged_exceptions
-def consolewrite_warnerror(s):
+def consolewrite_warnerror(s: str) -> None:
     # TODO: use an rpy2/R-specific warning instead of UserWarning.
     warnings.warn(s)
 
@@ -111,7 +111,7 @@ def _consolewrite_ex(buf, n, otype):
 
 
 @logged_exceptions
-def showmessage(s):
+def showmessage(s: str) -> None:
     print('R wants to show a message')
     print(s)
 
@@ -152,7 +152,9 @@ def _choosefile(new, buf, n):
     return len(res_cdata)
 
 
-def showfiles(filenames, headers, wtitle, pager):
+def showfiles(filenames: typing.Tuple[str],
+              headers: typing.Tuple[str],
+              wtitle: str, pager: str) -> None:
     for fn in filenames:
         print('File: %s' % fn)
         with open(fn) as fh:

@@ -69,7 +69,7 @@ def reval(string, envir = _globalenv):
 
 default_converter = conversion.Converter('base empty converter')
 
-@default_converter.ri2ro.register(RObject)
+@default_converter.rpy2py.register(RObject)
 def _(obj):
     return obj
 
@@ -106,13 +106,15 @@ def sexpvector_to_ro(obj):
             res = vectors.StrVector(obj)
         elif obj.typeof == rinterface.RTYPES.VECSXP:
             res = vectors.ListVector(obj)
+        elif obj.typeof == rinterface.RTYPES.LISTSXP:
+            res = rinterface.PairlistSexpVector(obj)
         elif obj.typeof == rinterface.RTYPES.LANGSXP and 'formula' in rcls:
             res = Formula(obj)
         else:
             res = vectors.Vector(obj)
     return res
 
-default_converter.ri2ro.register(SexpVector, sexpvector_to_ro)
+default_converter.rpy2py.register(SexpVector, sexpvector_to_ro)
 
 TYPEORDER = {bool: (0, BoolVector),
              int: (1, IntVector),
@@ -134,52 +136,57 @@ def sequence_to_vector(lst):
     res = curr_type(lst)
     return res
 
-@default_converter.ri2ro.register(bool)
+@default_converter.py2rpy.register(rinterface._MissingArgType)
 def _(obj):
     return obj
 
-@default_converter.ri2ro.register(int)
+@default_converter.py2rpy.register(bool)
 def _(obj):
     return obj
 
-@default_converter.ri2ro.register(float)
+@default_converter.py2rpy.register(int)
 def _(obj):
     return obj
 
-@default_converter.ri2ro.register(bytes)
+@default_converter.py2rpy.register(float)
 def _(obj):
     return obj
 
-@default_converter.ri2ro.register(str)
+@default_converter.py2rpy.register(bytes)
+def _(obj):
+    return obj
+
+@default_converter.py2rpy.register(str)
 def _(obj):
     return obj
 
 
-@default_converter.ri2ro.register(SexpClosure)
+@default_converter.rpy2py.register(SexpClosure)
 def _(obj):
     return SignatureTranslatedFunction(obj)
 
-@default_converter.ri2ro.register(SexpEnvironment)
+@default_converter.rpy2py.register(SexpEnvironment)
 def _(obj):
     return Environment(obj)
 
-@default_converter.ri2ro.register(SexpS4)
+@default_converter.rpy2py.register(SexpS4)
 def _(obj):
     return RS4(obj)
 
-@default_converter.ri2ro.register(SexpExtPtr)
+@default_converter.rpy2py.register(SexpExtPtr)
 def _(obj):
     return obj
 
-@default_converter.ri2ro.register(object)
+@default_converter.rpy2py.register(object)
 def _(obj):
     return RObject(obj)
 
-@default_converter.ri2ro.register(type(NULL))
+@default_converter.rpy2py.register(type(NULL))
 def _(obj):
     return obj
 
 
+# TODO: delete ?
 def default_py2ri(o):
     """ Convert an arbitrary Python object to a
     :class:`rpy2.rinterface.Sexp` object.
@@ -190,15 +197,15 @@ def default_py2ri(o):
     """
     pass
 
-@default_converter.py2ri.register(RObject)
+@default_converter.py2rpy.register(RObject)
 def _(obj):
     return rinterface.Sexp(obj)
 
-@default_converter.py2ri.register(Sexp)
+@default_converter.py2rpy.register(Sexp)
 def _(obj):
     return obj
 
-@default_converter.py2ri.register(array.array)
+@default_converter.py2rpy.register(array.array)
 def _(obj):
     if obj.typecode in ('h', 'H', 'i', 'I'):
         res = rinterface.vector(obj, rinterface.RTYPES.INTSXP)
@@ -208,56 +215,58 @@ def _(obj):
         raise(ValueError("Nothing can be done for this array type at the moment."))
     return res
 
-@default_converter.py2ri.register(bool)
+@default_converter.py2rpy.register(bool)
 def _(obj):
     return obj
 
-default_converter.py2ri.register(int, lambda x: x)
+default_converter.py2rpy.register(int,
+                                  lambda x: x)
 
-@default_converter.py2ri.register(float)
+@default_converter.py2rpy.register(float)
 def _(obj):
     return obj
 
-@default_converter.py2ri.register(bytes)
+@default_converter.py2rpy.register(bytes)
 def _(obj):
     return obj
 
-@default_converter.py2ri.register(str)
+@default_converter.py2rpy.register(str)
 def _(obj):
     return obj
 
-@default_converter.py2ri.register(list)
+@default_converter.py2rpy.register(list)
 def _(obj):
-    return rinterface.ListSexpVector([conversion.py2ri(x) for x in obj])
+    return vectors.ListVector(
+        rinterface.ListSexpVector([conversion.py2rpy(x) for x in obj])
+    )
 
-@default_converter.py2ri.register(rlc.TaggedList)
+@default_converter.py2rpy.register(rlc.TaggedList)
 def _(obj):
-    res = rinterface.ListSexpVector([conversion.py2ri(x) for x in obj])
+    res = vectors.ListVector(
+        rinterface.ListSexpVector([conversion.py2rpy(x) for x in obj])
+    )
     res.do_slot_assign('names', rinterface.StrSexpVector(obj.tags))
     return res
 
-@default_converter.py2ri.register(complex)
+@default_converter.py2rpy.register(complex)
 def _(obj):
     return obj
 
 
-@default_converter.py2ro.register(object)
-def _(obj):
-    robj = conversion.py2ri(obj)
-    return conversion.ri2ro(robj)
-
-@default_converter.py2ri.register(types.FunctionType)
-def _function_to_ri(func):
+@default_converter.py2rpy.register(types.FunctionType)
+def _function_to_rpy(func):
     def wrap(*args):
         res = func(*args)
         res = conversion.py2ro(res)
         return res
     rfunc = rinterface.rternalize(wrap)
-    return rfunc
+    return conversion.rpy2py(rfunc)
 
-@default_converter.ri2py.register(object)
+
+@default_converter.rpy2py.register(object)
 def _(obj):
-    return conversion.ri2ro(obj)
+    return obj
+
 
 class Formula(RObjectMixin, rinterface.Sexp):
 
@@ -276,7 +285,7 @@ class Formula(RObjectMixin, rinterface.Sexp):
     def getenvironment(self):
         """ Get the environment in which the formula is finding its symbols."""
         res = self.do_slot(".Environment")
-        res = conversion.ri2ro(res)
+        res = conversion.rpy2py(res)
         return res
 
     def setenvironment(self, val):
@@ -341,7 +350,7 @@ class R(object):
 
     def __getitem__(self, item):
         res = _globalenv.get(item)
-        res = conversion.ri2py(res)
+        res = conversion.rpy2py(res)
         if hasattr(res, '__rname__'):
             res.__rname__ = item
         return res
@@ -362,13 +371,13 @@ class R(object):
     def __call__(self, string):
         p = _rparse(text=StrSexpVector((string,)))
         res = self.eval(p)
-        return conversion.ri2py(res)
+        return conversion.rpy2py(res)
 
 r = R()
 
 conversion.set_conversion(default_converter)
 
-globalenv = conversion.converter.ri2ro(_globalenv)
-baseenv = conversion.converter.ri2ro(rinterface.baseenv)
-emptyenv = conversion.converter.ri2ro(rinterface.emptyenv)
+globalenv = conversion.converter.rpy2py(_globalenv)
+baseenv = conversion.converter.rpy2py(rinterface.baseenv)
+emptyenv = conversion.converter.rpy2py(rinterface.emptyenv)
 

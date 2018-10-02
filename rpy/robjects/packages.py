@@ -255,7 +255,7 @@ class Package(ModuleType):
                 riobj = self._env[rname]
             except rinterface.RRuntimeError as rre:
                 warn(str(rre))
-            rpyobj = conversion.ri2ro(riobj)
+            rpyobj = conversion.rpy2py(riobj)
             if hasattr(rpyobj, '__rname__'):
                 rpyobj.__rname__ = rname
             #FIXME: shouldn't the original R name be also in the __dict__ ?
@@ -488,22 +488,20 @@ def data(package):
     """ Return the PackageData for the given package."""
     return package.__rdata__
 
-def wherefrom(symbol, startenv = rinterface.globalenv):
+def wherefrom(symbol: str, startenv = rinterface.globalenv):
     """ For a given symbol, return the environment
     this symbol is first found in, starting from 'startenv'.
     """
     env = startenv
     obj = None
-    tryagain = True
-    while tryagain:
+    found = False
+    while not found:
         try:
             obj = env[symbol]
-            tryagain = False
+            found = True
         except LookupError as knf:
-            env = env.enclos()
+            env = env.enclos
             if env.rsame(rinterface.emptyenv):
-                tryagain = False
-            else:
-                tryagain = True
-    return conversion.ri2ro(env)
+                break
+    return conversion.rpy2py(env)
 

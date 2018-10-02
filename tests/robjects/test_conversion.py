@@ -5,25 +5,25 @@ from rpy2 import robjects
 
 def test_mapperR2Python_string():
     sexp = rinterface.globalenv.get('letters')
-    ob = robjects.default_converter.ri2ro(sexp)
+    ob = robjects.default_converter.rpy2py(sexp)
     assert isinstance(ob, robjects.Vector)
 
 
 def test_mapperR2Python_boolean():
     sexp = rinterface.globalenv.get('T')
-    ob = robjects.default_converter.ri2ro(sexp)
+    ob = robjects.default_converter.rpy2py(sexp)
     assert isinstance(ob, robjects.Vector)
 
 
 def test_mapperR2Python_function():
     sexp = rinterface.globalenv.get('plot')
-    ob = robjects.default_converter.ri2ro(sexp)
+    ob = robjects.default_converter.rpy2py(sexp)
     assert isinstance(ob, robjects.Function)
 
     
 def test_mapperR2Python_environment():
     sexp = rinterface.globalenv.get('.GlobalEnv')
-    assert isinstance(robjects.default_converter.ri2ro(sexp), 
+    assert isinstance(robjects.default_converter.rpy2py(sexp), 
                       robjects.Environment)
 
 
@@ -33,7 +33,7 @@ def test_mapperR2Python_s4():
     one = rinterface.IntSexpVector([1, ])
     sexp = rinterface.globalenv.get('new')(classname, 
                                            x=one)
-    assert isinstance(robjects.default_converter.ri2ro(sexp), 
+    assert isinstance(robjects.default_converter.rpy2py(sexp), 
                       robjects.RS4)
 
 @pytest.mark.parametrize('value,cls', [
@@ -46,14 +46,14 @@ def test_mapperR2Python_s4():
 def test_py2ro_mappedtype(value, cls):
     pyobj = value
     assert isinstance(pyobj, cls)
-    rob = robjects.default_converter.py2ro(pyobj)
+    rob = robjects.default_converter.py2rpy(pyobj)
     assert isinstance(rob, cls)
                     
 
 def test_mapperPy2R_taggedlist():
     py = robjects.rlc.TaggedList(('a', 'b'),
                                  tags=('foo', 'bar'))
-    robj = robjects.default_converter.py2ro(py)
+    robj = robjects.default_converter.py2rpy(py)
     assert isinstance(robj, robjects.Vector)
     assert len(robj) == 2
     assert tuple(robj.names) == ('foo', 'bar')
@@ -61,6 +61,6 @@ def test_mapperPy2R_taggedlist():
 
 def test_mapperPy2R_function():
     func = lambda x: x
-    rob = robjects.default_converter.py2ro(func)
+    rob = robjects.default_converter.py2rpy(func)
     assert isinstance(rob, robjects.SignatureTranslatedFunction)
     assert rob.typeof == rinterface.RTYPES.CLOSXP

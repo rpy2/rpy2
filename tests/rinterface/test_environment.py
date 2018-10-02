@@ -39,6 +39,12 @@ def test_globalenv():
     assert isinstance(rinterface.globalenv, rinterface.SexpEnvironment) 
 
 
+def test_getitem():
+    with pytest.raises(KeyError):
+        rinterface.globalenv['help']
+    assert isinstance(rinterface.get('help'), rinterface.Sexp)
+
+
 def test_getclosure():
     help_R = rinterface.globalenv.get('help')
     assert isinstance(help_R, rinterface.SexpClosure)

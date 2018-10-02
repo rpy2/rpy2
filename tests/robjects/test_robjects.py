@@ -1,3 +1,4 @@
+import array
 import pytest
 import rpy2.robjects as robjects
 rinterface = robjects.rinterface
@@ -7,7 +8,7 @@ rinterface = robjects.rinterface
 #     robjects.r._dotter = False
         
 def test_getitem():
-    letters = robjects.r['letters']
+    letters_R = robjects.r['letters']
     assert isinstance(letters_R, robjects.Vector)
     letters = (('a', 0), ('b', 1), ('c', 2), ('x', 23), ('y', 24), ('z', 25))
     for l, i in letters:
@@ -31,20 +32,20 @@ def test_eval():
     assert res[0] == 625
 
 
-def test_override_ri2ro():
+def test_override_rpy2py():
     class Density(object):
         def __init__(self, x):
             self._x = x
 
     def f(obj):
-        pyobj = robjects.default_converter.ri2ro(obj)
+        pyobj = robjects.default_converter.rpy2py(obj)
         inherits = rinterface.baseenv['inherits']
         classname = rinterface.StrSexpVector(['density', ])
                                           
         if inherits(pyobj, classname)[0]:
             pyobj = Density(pyobj)
         return pyobj
-    robjects.conversion.ri2ro = f
+    robjects.conversion.rpy2py = f
     x = robjects.r.rnorm(100)
     d = robjects.r.density(x)
 
@@ -70,7 +71,7 @@ def test_init():
     with pytest.raises(ValueError):
         robjects.RObject(py_a)
 
-    ri_v = rinterface.SexpVector(py_a, rinterface.INTSXP)
+    ri_v = rinterface.IntSexpVector(py_a)
     ro_v = robjects.RObject(ri_v)
 
     assert identical(ro_v, ri_v)[0] is True

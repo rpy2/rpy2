@@ -142,21 +142,22 @@ def test_invalid_not_vector_rtype():
         ri.vector([1, ], ri.RTYPES.ENVSXP)
 
 
-@pytest.mark.skip(reason='Spawned process seems to share initialization state with parent.')
+def _run_without_initr(queue):
+    import rpy2.rinterface as rinterface
+    try:
+        tmp = ri.vector([1,2], ri.RTYPES.INTSXP)
+        res = (False, None)
+    except RuntimeError as re:
+        res = (True, str(re))
+    except Exception as e:
+        res = (False, str(e))
+    queue.put(res)
+
+        
 def test_instantiate_without_initr():
-    def foo(queue):
-        import rpy2.rinterface as rinterface
-        try:
-            tmp = ri.vector([1,2], ri.INTSXP)
-            res = (False, None)
-        except RuntimeError as re:
-            res = (True, re)
-        except Exception as e:
-            res = (False, e)
-        queue.put(res)
     q = multiprocessing.Queue()
-    ctx = multiprocessing.get_context('spawn')
-    p = ctx.Process(target = foo, args = (q,))
+    ctx = multiprocessing.get_context() # 'spawn')
+    p = ctx.Process(target = _run_without_initr, args = (q,))
     p.start()
     res = q.get()
     p.join()

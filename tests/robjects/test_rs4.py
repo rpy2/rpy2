@@ -9,18 +9,18 @@ def set_class_A():
     robjects.r('setClass("A")')
 
     
-def test_slotnames():
+def test_slotnames(set_class_A):
     ainstance = robjects.r('new("A", a=1, b="c")')
     assert tuple(ainstance.slotnames()) == ('a', 'b')
 
 
-def test_isclass(self):
+def test_isclass(set_class_A):
     ainstance = robjects.r('new("A", a=1, b="c")')
     assert not ainstance.isclass("B")
     assert ainstance.isclass("A")
 
 
-def test_validobject(self):
+def test_validobject(set_class_A):
     ainstance = robjects.r('new("A", a=1, b="c")')
     assert ainstance.validobject()
     #FIXME: test invalid objects ?

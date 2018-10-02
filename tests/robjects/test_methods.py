@@ -1,5 +1,6 @@
 import pytest
 import sys
+import textwrap
 import rpy2.robjects as robjects
 import rpy2.robjects.methods as methods
 rinterface = robjects.rinterface
@@ -12,7 +13,7 @@ def test_set_accessors():
     class A(methods.RS4):
         def __init__(self):
             obj = robjects.r['new']('A')
-            self.__sexp__ = obj.__sexp__
+            super().__init__(obj)
 
     acs = (('length', None, True, None), )
     methods.set_accessors(A, "A", None, acs)
@@ -25,12 +26,13 @@ def test_RS4Type_noaccessors():
     classdef = """
     from rpy2 import robjects
     from rpy2.robjects import methods
-    class Foo(methods.RS4, metaclass = methods.RS4_Type):
+    class Foo(methods.RS4, metaclass=methods.RS4_Type):
         def __init__(self):
-            obj = robjects.r['new']('R_A')
-            self.__sexp__ = obj.__sexp__
+            obj = robjects.r['new']('Foo')
+            super().__init__(obj)
     """
-    code = compile(classdef, '<string>', 'exec')
+    code = compile(textwrap.dedent(classdef),
+                   '<string>', 'exec')
     ns = dict()
     exec(code, ns)
     f = ns['Foo']()
@@ -55,15 +57,17 @@ def test_RS4Type_accessors():
     from rpy2 import robjects
     from rpy2.robjects import methods
     class R_A(methods.RS4, metaclass=methods.RS4_Type):
-        __accessors__ = (('length', None,
-        'get_length', False, 'get the length'),
-        ('length', None,
-        None, True, 'length'))
-    def __init__(self):
-        obj = robjects.r['new']('R_A')
-        self.__sexp__ = obj.__sexp__            
+        __accessors__ = (
+            ('length', None,
+             'get_length', False, 'get the length'),
+            ('length', None,
+             None, True, 'length'))
+        def __init__(self):
+            obj = robjects.r['new']('R_A')
+            super().__init__(obj)            
     """
-    code = compile(classdef, '<string>', 'exec')
+    code = compile(textwrap.dedent(classdef),
+                   '<string>', 'exec')
     ns = dict()
     exec(code, ns)
     R_A = ns['R_A']

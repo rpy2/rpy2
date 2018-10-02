@@ -87,7 +87,7 @@ class GGPlot(robjects.RObject):
     @classmethod
     def new(cls, data):
         """ Constructor for the class GGplot. """
-        data = conversion.py2ri(data)
+        data = conversion.py2rpy(data)
         res = cls(cls._constructor(data))
         return res
     
@@ -861,10 +861,10 @@ theme = ggplot2_env['theme']
 
 ggtitle = ggplot2.ggtitle
 
-original_ri2ro = conversion.ri2ro
+original_rpy2py = conversion.rpy2py
 def ggplot2_conversion(robj):
 
-    pyobj = original_ri2ro(robj)
+    pyobj = original_rpy2py(robj)
 
     try:
        rcls = pyobj.rclass
@@ -878,5 +878,5 @@ def ggplot2_conversion(robj):
 
     return pyobj
 
-conversion.ri2ro = ggplot2_conversion
+conversion.rpy2py = ggplot2_conversion
 

@@ -15,7 +15,7 @@ def test_init_invalid():
         robjects.Array(letters)
 
 
-#@pytest.mark.skip(reason='segfault')
+@pytest.mark.skip(reason='segfault')
 def test_init():
     m = rinterface.globalenv.get('matrix')(1, nrow=5, ncol=3)
     a = robjects.Array(m)

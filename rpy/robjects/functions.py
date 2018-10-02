@@ -5,7 +5,6 @@ import rpy2.rinterface as rinterface
 from rpy2.robjects import help
 #import rpy2.robjects.conversion conversion
 from . import conversion
-# XXX: I need to import default_ri2ro
 
 from rpy2.robjects.packages_utils import (default_symbol_r2python,
                                           default_symbol_check_after,
@@ -99,12 +98,12 @@ class Function(RObjectMixin, rinterface.SexpClosure):
 
 
     def __call__(self, *args, **kwargs):
-        new_args = [conversion.py2ri(a) for a in args]
+        new_args = [conversion.py2rpy(a) for a in args]
         new_kwargs = {}
         for k, v in kwargs.items():
-            new_kwargs[k] = conversion.py2ri(v)
+            new_kwargs[k] = conversion.py2rpy(v)
         res = super(Function, self).__call__(*new_args, **new_kwargs)
-        res = conversion.ri2ro(res)
+        res = conversion.rpy2py(res)
         return res
 
     def formals(self):
@@ -112,16 +111,12 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         (as the R function 'formals()' would).
         """
         res = _formals_fixed(self)
-        res = conversion.ri2ro(res)
+        res = conversion.rpy2py(res)
         return res
 
     def rcall(self, *args):
         """ Wrapper around the parent method rpy2.rinterface.SexpClosure.rcall(). """
         res = super(Function, self).rcall(*args)
-        # XXX: Now that ri2ro converts to python objects, we restrict to the
-        # default now for a raw R call. I'm not sure there should be *any*
-        # conversion. However, we need to get this out of __init__.py first!
-        # res = ro.default_ri2ro(res)
         return res
 
 class SignatureTranslatedFunction(Function):

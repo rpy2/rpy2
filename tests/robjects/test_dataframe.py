@@ -74,9 +74,9 @@ def test_from_csvfile():
     csv_w.writerows(data)
     fh.close()
     dataf = robjects.DataFrame.from_csvfile(fh.name)
-    self.assertEqual(column_names, tuple(dataf.names))
-    self.assertEqual(3, dataf.nrow)
-    self.assertEqual(2, dataf.ncol)
+    assert column_names == tuple(dataf.names)
+    assert dataf.nrow == 3
+    assert dataf.ncol == 2
 
 
 def test_to_csvfile():
@@ -94,8 +94,8 @@ def test_to_csvfile():
 def test_iter_col():
     dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
     col_types = [x.typeof for x in dataf.iter_column()]
-    assert rinterface.INTSXP == col_types[0]
-    assert rinterface.STRSXP == col_types[1]
+    assert rinterface.RTYPES.INTSXP == col_types[0]
+    assert rinterface.RTYPES.STRSXP == col_types[1]
 
 
 def test_iter_row():
@@ -114,7 +114,7 @@ def test_colnames():
 def test_colnames_set():
     dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
     dataf.colnames = robjects.StrVector('de')
-    assert tuple(dataf.colnames[0]) == ('d', 'e')
+    assert tuple(dataf.colnames) == ('d', 'e')
 
 
 def test_rownames():

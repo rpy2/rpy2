@@ -35,4 +35,3 @@ def getstrides(cdata, shape, itemsize):
 
 def getbuffer(cdata):
     raise NotImplementedError()
-    

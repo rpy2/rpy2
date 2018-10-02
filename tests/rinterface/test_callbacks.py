@@ -65,9 +65,11 @@ def testSetResetConsole():
     f = make_callback()
     
     with utils.obj_in_module(rinterface.callbacks, 'consolereset', f):
-        with pytest.raises(rinterface._rinterface.RRuntimeError), \
-             pytest.warns(rinterface.RRuntimeWarning):
-                rinterface.baseenv['eval'](rinterface.parse('1+"a"'))
+        # TODO: what happens with "cat" on Windows ?
+        editor = 'cat'
+        rinterface.globalenv.get('edit')(
+            rinterface.parse('letters'),
+            editor=editor)
         assert f.__closure__[0].cell_contents == 1
 
     
@@ -101,12 +103,13 @@ def test_flushconsole_with_error():
 
 
 def test_consoleread():
-    yes = 'yes\n'
+    msg = 'yes\n'
     def sayyes(prompt):
-        return 'yes\n'
+        return msg
     with utils.obj_in_module(rinterface.callbacks, 'consoleread', sayyes):
-        res = rinterface.baseenv['readline']()
-        assert yes.strip() == res[0]
+        r_readline = rinterface.baseenv['readline']
+        res = r_readline()
+    assert msg.strip() == res[0]
 
 
 def test_console_read_with_error(caplog):

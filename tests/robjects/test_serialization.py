@@ -1,5 +1,6 @@
 import pytest
 import pickle
+import tempfile
 
 from rpy2 import robjects
 
