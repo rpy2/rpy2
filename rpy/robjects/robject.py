@@ -152,7 +152,7 @@ class RObjectMixin(object):
         vector elements."""
 
         try:
-            res = rpy2.rinterface._rclass_get(
+            res = rpy2.rinterface.sexp.rclass_get(
                 self.__sexp__)
             #res = conversion.ri2py(res)
             return res

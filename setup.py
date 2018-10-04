@@ -166,7 +166,7 @@ if __name__ == '__main__':
         packages = [pack_name,
                     pack_name + '.rlike',
                     pack_name + '.rlike.tests',
-                    pack_name + '.rinterface',
+                    pack_name + '.rinterface_lib',
                     pack_name + '.robjects',
                     pack_name + '.robjects.tests',
                     pack_name + '.robjects.lib',

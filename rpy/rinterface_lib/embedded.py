@@ -139,3 +139,10 @@ def _parse(cdata, num):
         raise RParsingError('R parsing', PARSING_STATUS(status[0]))
     _rinterface.rlib.Rf_unprotect(1)
     return res 
+
+
+# R environments, initialized with rpy2.rinterface.SexpEnvironment
+# objects when R is initialized.
+emptyenv = None
+baseenv = None
+globalenv = None

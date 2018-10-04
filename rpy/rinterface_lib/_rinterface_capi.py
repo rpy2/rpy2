@@ -516,7 +516,7 @@ def _evaluate_in_r(rargs):
                 name = _cchar_to_str(
                     rlib.R_CHAR(rlib.PRINTNAME(rlib.TAG(rargs)))
                 )
-                pykwargs[name] = conversion._cdata_to_rinterface(cdata)            
+                pykwargs[name] = conversion._cdata_to_rinterface(cdata)
             rargs = rlib.CDR(rargs)
 
         res = func(*pyargs, **pykwargs)
@@ -537,11 +537,12 @@ def _evaluate_in_r(rargs):
 
 
 def _register_external_symbols() -> None:
-    externalmethods = ffi.new('R_ExternalMethodDef[]',
-            [[ffi.new('char []', b'.Python'),
-              ffi.cast('DL_FUNC', _evaluate_in_r),
-              -1],
-             [ffi.NULL, ffi.NULL, 0]])
+    externalmethods = ffi.new(
+        'R_ExternalMethodDef[]',
+        [[ffi.new('char []', b'.Python'),
+          ffi.cast('DL_FUNC', _evaluate_in_r),
+          -1],
+         [ffi.NULL, ffi.NULL, 0]])
     rlib.R_registerRoutines(
         rlib.R_getEmbeddingDllInfo(),
         ffi.NULL,
@@ -549,5 +550,4 @@ def _register_external_symbols() -> None:
         ffi.NULL,
         externalmethods
     )
-
 

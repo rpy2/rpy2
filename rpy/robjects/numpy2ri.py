@@ -59,26 +59,30 @@ def numpy2rpy(o):
     """ Augmented conversion function, converting numpy arrays into
     rpy2.rinterface-level R structures. """
     if not o.dtype.isnative:
-        raise(ValueError("Cannot pass numpy arrays with non-native byte orders at the moment."))
+        raise(ValueError('Cannot pass numpy arrays with non-native '
+                         'byte orders at the moment.'))
 
     # Most types map onto R arrays:
     if o.dtype.kind in _kinds:
         # "F" means "use column-major order"
         vec = _kinds[o.dtype.kind](o.ravel("F"))
         dim = ro.vectors.IntVector(o.shape)
-        #FIXME: no dimnames ?
-        #FIXME: optimize what is below needed/possible ? (other ways to create R arrays ?)
+        #TODO: no dimnames ?
+        #TODO: optimize what is below needed/possible ?
+        #  (other ways to create R arrays ?)
         res = rinterface.baseenv['array'](vec, dim=dim)
     # R does not support unsigned types:
-    elif o.dtype.kind == "u":
-        raise(ValueError("Cannot convert numpy array of unsigned values -- R does not have unsigned integers."))
+    elif o.dtype.kind == 'u':
+        raise(ValueError('Cannot convert numpy array of unsigned values '
+                         '-- R does not have unsigned integers.'))
     # Array-of-PyObject is treated like a Python list:
-    elif o.dtype.kind == "O":
+    elif o.dtype.kind == 'O':
         res = numpy_O_py2rpy(o)
     # Record arrays map onto R data frames:
-    elif o.dtype.kind == "V":
+    elif o.dtype.kind == 'V':
         if o.dtype.names is None:
-            raise(ValueError("Nothing can be done for this numpy array type %s at the moment." % (o.dtype,)))
+            raise(ValueError('Nothing can be done for this numpy array '
+                             'type "%s" at the moment.' % (o.dtype,)))
         df_args = []
         for field_name in o.dtype.names:
             df_args.append((field_name,
@@ -86,18 +90,18 @@ def numpy2rpy(o):
         res = ro.baseenv["data.frame"].rcall(tuple(df_args), ro.globalenv)
     # It should be impossible to get here:
     else:
-        raise(ValueError("Unknown numpy array type '%s'." % str(o.dtype)))
+        raise(ValueError('Unknown numpy array type "%s".' % str(o.dtype)))
     return res
 
 
 @py2rpy.register(numpy.integer)
 def npint_py2rpy(obj):
-    return ro.int2rpy(obj)
+    return rinterface.IntSexpVector([obj, ])
 
 
 @py2rpy.register(numpy.floating)
 def npfloat_py2rpy(obj):
-    return rinterface.SexpVector([obj, ], RTYPES.REALSXP)
+    return rinterface.FloatSexpVector([obj, ])
 
 
 @py2rpy.register(object)
@@ -139,7 +143,7 @@ def rpy2py_list(obj):
                 column = tuple(levels[x-1] for x in column)
             o2.append(column)
         names = obj.do_slot('names')
-        if names is NULL:
+        if names == rinterface.NULL:
             res = numpy.rec.fromarrays(o2)
         else:
             res = numpy.rec.fromarrays(o2, names=tuple(names))

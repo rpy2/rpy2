@@ -36,6 +36,7 @@ def test_mapperR2Python_s4():
     assert isinstance(robjects.default_converter.rpy2py(sexp), 
                       robjects.RS4)
 
+
 @pytest.mark.parametrize('value,cls', [
     (1, int),
     (True, bool),

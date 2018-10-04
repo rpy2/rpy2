@@ -10,9 +10,9 @@ class ProtectionTracker(object):
     @property
     def count(self):
         return self._counter
-    
+
     def protect(self, cdata):
-        """Short-term protection of the R object pointer 
+        """Short-term protection of the R object pointer
         from R's garbage collection."""
         cdata = _rinterface.rlib.Rf_protect(cdata)
         self._counter += 1
