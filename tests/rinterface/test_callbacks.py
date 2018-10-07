@@ -48,7 +48,7 @@ def test_consolewrite_print_error(caplog):
         rinterface.baseenv["print"](code)
         assert len(caplog.record_tuples) > 0
         for x in caplog.record_tuples:
-            assert x == ('rpy2.rinterface.callbacks',
+            assert x == ('rpy2.rinterface_lib.callbacks',
                          logging.ERROR,
                          (rinterface.callbacks
                           ._WRITECONSOLE_EXCEPTION_LOG % msg)) 
@@ -124,7 +124,7 @@ def test_console_read_with_error(caplog):
         res = rinterface.baseenv['readline']()
         assert len(caplog.record_tuples) > 0
         for x in caplog.record_tuples:
-            assert x == ('rpy2.rinterface.callbacks',
+            assert x == ('rpy2.rinterface_lib.callbacks',
                          logging.ERROR,
                          (rinterface.callbacks
                           ._READCONSOLE_EXCEPTION_LOG % msg)) 
@@ -205,7 +205,7 @@ def test_showfiles_error(caplog):
 
         assert len(caplog.record_tuples) > 0
         for x in caplog.record_tuples:
-            assert x == ('rpy2.rinterface.callbacks',
+            assert x == ('rpy2.rinterface_lib.callbacks',
                          logging.ERROR,
                          (rinterface.callbacks
                           ._SHOWFILE_EXCEPTION_LOG % msg)) 

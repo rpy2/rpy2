@@ -1,4 +1,6 @@
-import os, re
+import os
+import re
+import warnings
 from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.rinterface as rinterface
@@ -19,11 +21,24 @@ _reval = rinterface.baseenv['eval']
 
 __formals = baseenv_ri.get('formals')
 __args = baseenv_ri.get('args')
-#_genericsargsenv = baseenv_ri['.GenericArgsEnv']
-#_argsenv = baseenv_ri['.ArgsEnv']
+__is_null = baseenv_ri.get('is.null')
+
+
+def _do_nothing(*args, **kwargs):
+    pass
+
+
 def _formals_fixed(func):
-    tmp = __args(func)
-    return __formals(tmp)
+    with rinterface.callbacks.obj_in_module(
+            rinterface.callbacks,
+            'consolewrite_warnerror',
+            _do_nothing):
+        tmp = __args(func)
+        if __is_null(tmp)[0]:
+            return rinterface.NULL
+        else:
+            return __formals(tmp)
+
 
 ## docstring_property and DocstringProperty
 ## from Bradley Froehle
@@ -32,7 +47,8 @@ def docstring_property(class_doc):
     def wrapper(fget):
         return DocstringProperty(class_doc, fget)
     return wrapper
- 
+
+
 class DocstringProperty(object):
     def __init__(self, class_doc, fget):
         self.fget = fget
@@ -142,10 +158,11 @@ class SignatureTranslatedFunction(Function):
         if formals.__sexp__._cdata != rinterface.NULL.__sexp__._cdata:
             (symbol_mapping, 
              conflicts, 
-             resolutions) = _map_symbols(formals.names,
-                                         translation = prm_translate,
-                                         symbol_r2python = symbol_r2python,
-                                         symbol_check_after = symbol_check_after)
+             resolutions) = _map_symbols(
+                 formals.names,
+                 translation=prm_translate,
+                 symbol_r2python=symbol_r2python,
+                 symbol_check_after=symbol_check_after)
 
             msg_prefix = 'Conflict when converting R symbols'+\
                 ' in the function\'s signature:\n- '
@@ -170,7 +187,9 @@ class SignatureTranslatedFunction(Function):
             if r_k is not None:
                 v = kwargs.pop(k)
                 kwargs[r_k] = v
-        return super(SignatureTranslatedFunction, self).__call__(*args, **kwargs)
+        return (super(SignatureTranslatedFunction, self)
+                .__call__(*args, **kwargs))
+
 
 pattern_link = re.compile(r'\\link\{(.+?)\}')
 pattern_code = re.compile(r'\\code\{(.+?)\}')

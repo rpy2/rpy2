@@ -41,3 +41,7 @@ def test_formals():
     assert n[1] == 'y'
 
     
+def test_signaturestranslatedfunction():
+    ri_f = robjects.r('function(x, y) TRUE')
+    stf = robjects.SignatureTranslatedFunction(ri_f)
+    

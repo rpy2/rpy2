@@ -49,14 +49,13 @@ class TestPandasConversions(object):
         assert len(conversion.py2rpy.registry) == l
         assert set(conversion.py2rpy.registry.keys()) == k
 
-    @pytest.mark.skip(reason='segfault')
     def test_dataframe(self):
         # Content for test data frame
         l = (('b', numpy.array([True, False, True], dtype=numpy.bool_)),
-             ('i', numpy.array([1, 2, 3], dtype="i")),
-             ('f', numpy.array([1, 2, 3], dtype="f")),
-             ('s', numpy.array(["b", "c", "d"], dtype="S")),
-             ('u', numpy.array([u"a", u"b", u"c"], dtype="U")),
+             ('i', numpy.array([1, 2, 3], dtype='i')),
+             ('f', numpy.array([1, 2, 3], dtype='f')),
+             ('s', numpy.array(['b', 'c', 'd'], dtype='S')),
+             ('u', numpy.array([u'a', u'b', u'c'], dtype='U')),
              ('dates', [datetime(2012, 5, 2), 
                         datetime(2012, 6, 3), 
                         datetime(2012, 7, 1)]))
@@ -68,7 +67,7 @@ class TestPandasConversions(object):
             rp_df = robjects.conversion.py2rpy(pd_df)
         assert pd_df.shape[0] == rp_df.nrow
         assert pd_df.shape[1] == rp_df.ncol
-        assert tuple(rp_df.rx2('s')) == (b"b", b"c", b"d")
+        assert tuple(rp_df.rx2('s')) == (b'b', b'c', b'd')
             
     def test_series(self):
         Series = pandas.core.series.Series

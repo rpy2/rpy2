@@ -1,6 +1,6 @@
+from contextlib import contextmanager
 import logging
 import typing
-import warnings
 from . import _rinterface_capi as _rinterface
 
 logger = logging.getLogger(__name__)
@@ -14,6 +14,16 @@ CHOOSEFILE_SIGNATURE = 'int(int, char *, int)'
 CLEANUP_SIGNATURE = 'void(SA_TYPE, int, int)'
 SHOWFILE_SIGNATURE = ('int(int, const char **, const char **, '
                       '    const char *, Rboolean, const char *)')
+
+
+@contextmanager
+def obj_in_module(module, name, func):
+    backup_func = getattr(module, name)
+    setattr(module, name, func)
+    try:
+        yield
+    finally:
+        setattr(module, name, backup_func)
 
 
 # TODO: remove the decorator
@@ -92,7 +102,7 @@ def consolewrite_print(s: str) -> None:
 @logged_exceptions
 def consolewrite_warnerror(s: str) -> None:
     # TODO: use an rpy2/R-specific warning instead of UserWarning.
-    warnings.warn(s)
+    logger.warning(_WRITECONSOLE_EXCEPTION_LOG, s)
 
 
 _WRITECONSOLE_EXCEPTION_LOG = 'Callback to write to the R console: %s'

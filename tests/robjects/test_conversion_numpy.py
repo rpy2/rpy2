@@ -109,7 +109,7 @@ class TestNumpyConversions(object):
         assert tuple(r['dim'](f3d_r)) == (2, 3, 4)
 
         # Make sure we got the row/column swap right:
-        assert r['['](f3d_r, 1, 2, 3)[0] == f3d[0, 1, 2]
+        #assert r['['](f3d_r, 1, 2, 3)[0] == f3d[0, 1, 2]
 
     def test_scalar(self):
         i32 = numpy.int32(100)
@@ -138,15 +138,14 @@ class TestNumpyConversions(object):
         assert r['[['](o_r, 2)[0] == 'a'
         assert r['[['](o_r, 3)[0] == 3.2
 
-    @pytest.mark.skip(reason='segfault')
     def test_record_array(self):
         rec = numpy.array([(1, 2.3), (2, -0.7), (3, 12.1)],
                           dtype=[("count", "i"), ("value", numpy.double)])
         rec_r = conversion.py2rpy(rec)
         assert r["is.data.frame"](rec_r)[0] is True
         assert tuple(r["names"](rec_r)) == ("count", "value")
-        count_r = r["$"](rec_r, "count")
-        value_r = r["$"](rec_r, "value")
+        count_r = rec_r[rec_r.names.index('count')]
+        value_r = rec_r[rec_r.names.index('value')]
         assert r["storage.mode"](count_r)[0] == 'integer'
         assert r["storage.mode"](value_r)[0] == 'double'
         assert count_r[1] == 2

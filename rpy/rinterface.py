@@ -6,6 +6,7 @@ import rpy2.rinterface_lib.callbacks as callbacks
 import rpy2.rinterface_lib.embedded as embedded
 import rpy2.rinterface_lib.conversion as conversion
 import rpy2.rinterface_lib.memorymanagement as memorymanagement
+import rpy2.rinterface_lib.na_values as na_values
 import rpy2.rinterface_lib.bufferprotocol as bufferprotocol
 import rpy2.rinterface_lib.sexp as sexp
 
@@ -733,22 +734,28 @@ def _post_initr_setup():
     MissingArg = _MissingArgType()
 
     global NA_Character
-    NA_Character = CharSexp(
+    na_values.NA_Character = CharSexp(
         _rinterface.SexpCapsule(_rinterface.rlib.R_NaString)
     )
+    NA_Character = na_values.NA_Character
 
     global NA_Integer
-    NA_Integer = _rinterface.rlib.R_NaInt
+    na_values.NA_Integer = _rinterface.rlib.R_NaInt
+    NA_Integer = na_values.NA_Integer
 
     global NA_Logical
-    NA_Logical = _rinterface.rlib.R_NaInt
+    na_values.NA_Logical = _rinterface.rlib.R_NaInt
+    NA_Logical = na_values.NA_Logical
 
     global NA_Real
-    NA_Real = _rinterface.rlib.R_NaReal
+    na_values.NA_Real = _rinterface.rlib.R_NaReal
+    NA_Real = na_values.NA_Real
 
     global NA_Complex
-    NA_Complex = _rinterface.ffi.new('Rcomplex *',
-                                     [NA_Real, NA_Real])
+    na_values.NA_Complex = _rinterface.ffi.new(
+        'Rcomplex *',
+        [NA_Real, NA_Real])
+    NA_Complex = na_values.NA_Complex
 
 
 def rternalize(function: typing.Callable):
