@@ -1,3 +1,8 @@
+"""Conversion between Python objects, C objects, and R objects."""
+
+# TODO: rename the module with a prefix _ to indicate that this should
+#   not be used outside of rpy2's own code
+
 from . import _rinterface_capi as _rinterface
 
 _R_RPY2_MAP = {}
@@ -19,7 +24,7 @@ def _cdata_to_rinterface(cdata):
 def _cdata_res_to_rinterface(function):
     def _(*args, **kwargs):
         cdata = function(*args, **kwargs)
-        # TODO: test cdata is of of the expected CType
+        # TODO: test cdata is of the expected CType
         return _cdata_to_rinterface(cdata)
     return _
 

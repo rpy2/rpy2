@@ -164,6 +164,65 @@ def _findVarInFrame(symbol, r_environment):
     return res
 
 
+# R macros and functions
+
+def _get_symbol_or_fallback(symbol: str, fallback):
+    """Get a cffi object from rlib, or the fallback if missing."""
+    try:
+        res = getattr(rlib, symbol)
+    except ffi.error:
+        res = fallback
+    return res
+
+
+def _get_integer_elt_fallback(vec, i: int):
+    return _INTEGER(vec)[i]
+
+
+INTEGER_ELT = _get_symbol_or_fallback('INTEGER_ELT',
+                                      _get_integer_elt_fallback)
+
+
+def _set_integer_elt_fallback(vec, i: int, value):
+    _INTEGER(vec)[i] = value
+
+
+SET_INTEGER_ELT = _get_symbol_or_fallback('SET_INTEGER_ELT',
+                                          _set_integer_elt_fallback)
+
+
+def _get_logical_elt_fallback(vec, i: int):
+    return _LOGICAL(vec)[i]
+
+
+LOGICAL_ELT = _get_symbol_or_fallback('LOGICAL_ELT',
+                                      _get_logical_elt_fallback)
+
+
+def _set_logical_elt_fallback(vec, i: int, value):
+    _LOGICAL(vec)[i] = value
+
+
+SET_LOGICAL_ELT = _get_symbol_or_fallback('SET_LOGICAL_ELT',
+                                          _set_logical_elt_fallback)
+
+
+def _get_real_elt_fallback(vec, i: int):
+    return _REAL(vec)[i]
+
+
+REAL_ELT = _get_symbol_or_fallback('REAL_ELT',
+                                   _get_real_elt_fallback)
+
+
+def _set_real_elt_fallback(vec, i: int, value):
+    _REAL(vec)[i] = value
+
+
+SET_REAL_ELT = _get_symbol_or_fallback('SET_REAL_ELT',
+                                       _set_real_elt_fallback)
+
+
 def _GET_DIM(robj):
     res = rlib.Rf_getAttrib(robj,
                             rlib.R_DimSymbol)
@@ -259,7 +318,7 @@ def _has_slot(cdata, name_b):
 def _int_to_sexp(val: int):
     # TODO: test value is not too large for R's ints
     s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.INTSXP, 1))
-    rlib.SET_INTEGER_ELT(s, 0, val)
+    SET_INTEGER_ELT(s, 0, val)
     rlib.Rf_unprotect(1)
     return s
 
@@ -267,14 +326,14 @@ def _int_to_sexp(val: int):
 def _bool_to_sexp(val: bool):
     # TODO: test value is not too large for R's ints
     s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.LGLSXP, 1))
-    rlib.SET_LOGICAL_ELT(s, 0, int(val))
+    SET_LOGICAL_ELT(s, 0, int(val))
     rlib.Rf_unprotect(1)
     return s
 
 
 def _float_to_sexp(val: float):
     s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.REALSXP, 1))
-    rlib.SET_REAL_ELT(s, 0, val)
+    SET_REAL_ELT(s, 0, val)
     rlib.Rf_unprotect(1)
     return s
 
@@ -370,9 +429,17 @@ def _evaluated_promise(function):
     return _
 
 
-def _python_index_to_c(cdata, i):
-    """Compulte the C value for a Python-style index.
-    Raises an IndexError exception if out of bounds."""
+def _python_index_to_c(cdata, i: int) -> int:
+    """Compute the C value for a Python-style index.
+
+    The function will translate a Python-style index that
+    can be either positive or negative, if the later to
+    indicate that indexing is relative to the end of the
+    sequence, into a strictly positive or null index as
+    use in C.
+    
+    Raises an exception IndexError if out of bounds."""
+    
     size = rlib.Rf_xlength(cdata)
     if i < 0:
         # x = [0,1,2,3]
@@ -427,7 +494,7 @@ class RRuntimeError(Exception):
 
 
 def _geterrmessage():
-    # TODO: use isStrinb and installTrChar
+    # TODO: use isString and installTrChar
     with memorymanagement.rmemory() as rmemory:
         symbol = rmemory.protect(
             rlib.Rf_install(
@@ -445,46 +512,51 @@ def _geterrmessage():
 
 
 def serialize(cdata, cdata_env):
-    sym_serialize = rlib.Rf_protect(
-        rlib.Rf_install(_str_to_cchar('serialize'))
-    )
-    func_serialize = rlib.Rf_protect(_findfun(sym_serialize, rlib.R_BaseEnv))
-    rlib.Rf_unprotect(1)
-    r_call = rlib.Rf_protect(
-        rlib.Rf_lang3(func_serialize, cdata, rlib.R_NilValue)
-    )
-    error_occured = ffi.new('int *', 0)
-    res = rlib.R_tryEval(r_call,
-                         cdata_env,
-                         error_occured)
-    if error_occured[0]:
-        rlib.Rf_unprotect(2)
-        raise RRuntimeError(_geterrmessage())
+    """Serialize an R object to an R string.
 
-    rlib.Rf_unprotect(2)
-    return res
+    Note that the R string returned is *not* protected from
+    the R garbage collection."""
+
+    with memorymanagement.rmemory() as rmemory:
+        sym_serialize = rmemory.protect(
+            rlib.Rf_install(_str_to_cchar('serialize'))
+        )
+        func_serialize = rmemory.protect(_findfun(sym_serialize, rlib.R_BaseEnv))
+        r_call = rmemory.protect(
+            rlib.Rf_lang3(func_serialize, cdata, rlib.R_NilValue)
+        )
+        error_occured = ffi.new('int *', 0)
+        res = rlib.R_tryEval(r_call,
+                             cdata_env,
+                             error_occured)
+        if error_occured[0]:
+            raise RRuntimeError(_geterrmessage())
+        return res
 
 
 def unserialize(cdata, cdata_env):
-    sym_unserialize = rlib.Rf_protect(
-        rlib.Rf_install(_str_to_cchar('unserialize'))
-    )
-    func_unserialize = rlib.Rf_protect(_findfun(sym_unserialize,
-                                                rlib.R_BaseEnv))
-    rlib.Rf_unprotect(1)
-    r_call = rlib.Rf_protect(
-        rlib.Rf_lang2(func_unserialize, cdata)
-    )
-    error_occured = ffi.new('int *', 0)
-    res = rlib.R_tryEval(r_call,
-                         cdata_env,
-                         error_occured)
-    if error_occured[0]:
-        rlib.Rf_unprotect(2)
-        raise RRuntimeError(_geterrmessage())
+    """Unserialize an R string to an R object.
 
-    rlib.Rf_unprotect(2)
-    return res
+    Note that the R object returned is *not* protected from
+    the R garbage collection."""
+
+    with memorymanagement.rmemory() as rmemory:
+        sym_unserialize = rmemory.protect(
+            rlib.Rf_install(_str_to_cchar('unserialize'))
+        )
+        func_unserialize = rmemory.protect(_findfun(sym_unserialize,
+                                                    rlib.R_BaseEnv))
+        r_call = rmemory.protect(
+            rlib.Rf_lang2(func_unserialize, cdata)
+        )
+        error_occured = ffi.new('int *', 0)
+        res = rlib.R_tryEval(r_call,
+                             cdata_env,
+                             error_occured)
+        if error_occured[0]:
+            raise RRuntimeError(_geterrmessage())
+
+        return res
 
 
 @ffi.callback('SEXP (SEXP args)')

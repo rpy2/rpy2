@@ -295,7 +295,7 @@ class ByteSexpVector(SexpVector):
 class BoolSexpVector(SexpVector):
     
     _R_TYPE = _rinterface.rlib.LGLSXP
-    _R_SET_ELT = _rinterface.rlib.SET_LOGICAL_ELT
+    _R_SET_ELT = _rinterface.SET_LOGICAL_ELT
     _R_GET_PTR = _rinterface._LOGICAL
     _CAST_IN = lambda x: NA_Logical if x is None or x == _rinterface.rlib.R_NaInt else bool(x)
 
@@ -320,12 +320,12 @@ class BoolSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _rinterface.rlib.SET_LOGICAL_ELT(cdata, i_c,
+            _rinterface.rlib.LOGICAL_ELT(cdata, i_c,
                                              int(value))
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
-                _rinterface.rlib.SET_LOGICAL_ELT(cdata, i_c,
-                                                 int(v))
+                _rinterface.SET_LOGICAL_ELT(cdata, i_c,
+                                            int(v))
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
@@ -342,7 +342,7 @@ class BoolSexpVector(SexpVector):
 class IntSexpVector(SexpVector):
 
     _R_TYPE = _rinterface.rlib.INTSXP
-    _R_SET_ELT = _rinterface.rlib.SET_INTEGER_ELT
+    _R_SET_ELT = _rinterface.SET_INTEGER_ELT
     _CAST_IN = int
     
     def __getitem__(self, i: int) -> typing.Union[int, 'IntSexpVector']:
@@ -363,12 +363,12 @@ class IntSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _rinterface.rlib.SET_INTEGER_ELT(cdata, i_c,
-                                             int(value))
+            _rinterface.SET_INTEGER_ELT(cdata, i_c,
+                                        int(value))
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
-                _rinterface.rlib.SET_INTEGER_ELT(cdata, i_c,
-                                                 int(v))
+                _rinterface.SET_INTEGER_ELT(cdata, i_c,
+                                            int(v))
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
@@ -385,7 +385,7 @@ class IntSexpVector(SexpVector):
 class FloatSexpVector(SexpVector):
 
     _R_TYPE = _rinterface.rlib.REALSXP
-    _R_SET_ELT = _rinterface.rlib.SET_REAL_ELT
+    _R_SET_ELT = _rinterface.SET_REAL_ELT
     _CAST_IN = float
 
     def __getitem__(self, i: int) -> typing.Union[float, 'FloatSexpVector']:
@@ -405,12 +405,12 @@ class FloatSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _rinterface.rlib.SET_REAL_ELT(cdata, i_c,
-                                          float(value))
+            _rinterface.SET_REAL_ELT(cdata, i_c,
+                                     float(value))
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
-                _rinterface.rlib.SET_REAL_ELT(cdata, i_c,
-                                              float(v))
+                _rinterface.SET_REAL_ELT(cdata, i_c,
+                                         float(v))
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))

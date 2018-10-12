@@ -1,3 +1,5 @@
+"""Base definitions for R objects."""
+
 import collections
 import enum
 import typing
@@ -9,8 +11,9 @@ from . import _rinterface_capi as _rinterface
 
 _cdata_res_to_rinterface = conversion._cdata_res_to_rinterface
 
+
 class RTYPES(enum.IntEnum):
-    """Native R types, as defined in R's C API."""
+    """Native R types as defined in R's C API."""
     NILSXP     = _rinterface.rlib.NILSXP
     SYMSXP     = _rinterface.rlib.SYMSXP
     LISTSXP    = _rinterface.rlib.LISTSXP
@@ -43,10 +46,14 @@ class RTYPES(enum.IntEnum):
 
 
 class Sexp(object):
+    """Base class for R objects.
+
+    The name of a class corresponds to the name SEXP
+    used in R's C API."""
     
     __slots__ = ('_sexpobject', )
 
-    def __init__(self, sexp):
+    def __init__(self, sexp: typing.Union[Sexp, _rinterface.SexpCapsule]):
         if not embedded.isready():
             raise embedded.RNotReadyError('Embedded R is not ready to use.')
         
@@ -59,15 +66,20 @@ class Sexp(object):
                              'with an instance of rpy2.rinterface.Sexp '
                              'or an instance of rpy2.rinterface._rinterface.SexpCapsule')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return super().__repr__() + (' [%s]' % self.typeof)
 
     @property
-    def __sexp__(self):
+    def __sexp__(self) -> _rinterface.SexpCapsule:
+        """Access to the underlying C pointer to the R object.
+
+        When assigning a new SexpCapsule to this attribute, the
+        R C-level type of the new capsule must be equal to the
+        type of the old capsule. A ValueError is raised otherwise."""
         return self._sexpobject
 
     @__sexp__.setter
-    def __sexp__(self, value):
+    def __sexp__(self, value: _rinterface.SexpCapsule) -> None:
         assert isinstance(value, _rinterface.SexpCapsule)
         if _rinterface._TYPEOF(value._cdata) != _rinterface._TYPEOF(self.__sexp__._cdata):
             raise ValueError('New capsule type mismatch: %s' %
@@ -76,11 +88,12 @@ class Sexp(object):
 
     @property
     def __sexp_refcount__(self):
+        """Count the number of independent Python references to the underlyinh R object."""
         return _rinterface._R_PRESERVED[
             _rinterface.get_rid(self.__sexp__._cdata)
         ]
 
-    def __getstate__(self):
+    def __getstate__(self) -> bytes:
         with memorymanagement.rmemory() as rmemory:
             ser = rmemory.protect(
                 _rinterface.serialize(self.__sexp__._cdata,
@@ -90,7 +103,7 @@ class Sexp(object):
             res = bytes(_rinterface.ffi.buffer(_rinterface.rlib.RAW(ser), n))
         return res
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: bytes) -> none:
         self._sexpobject = unserialize(state)
 
     @property
@@ -109,15 +122,16 @@ class Sexp(object):
                                       value_r.__sexp__._cdata)
         
     @property
-    def rid(self):
+    def rid(self) -> int:
+        """ID of the underlying R object (memory address)."""
         return _rinterface.get_rid(self.__sexp__._cdata)
 
     @property
-    def typeof(self):
+    def typeof(self) -> RTYPES:
         return RTYPES(_rinterface._TYPEOF(self.__sexp__._cdata))
     
     @property
-    def named(self):
+    def named(self) -> int:
         return _rinterface._NAMED(self.__sexp__._cdata)
 
     @_cdata_res_to_rinterface
@@ -125,22 +139,24 @@ class Sexp(object):
         return _rinterface._list_attrs(self.__sexp__._cdata)
 
     @_cdata_res_to_rinterface
-    def do_slot(self, name: str):
+    def do_slot(self, name: str) -> None:
         _rinterface._assert_valid_slotname(name)
         cchar = _rinterface._str_to_cchar(name)
         # TODO: protect ?
-        name_r = _rinterface.rlib.Rf_install(cchar)
-        if not _rinterface._has_slot(self.__sexp__._cdata, name_r):
-            raise LookupError(name)
-        return _rinterface.rlib.R_do_slot(self.__sexp__._cdata, name_r)
+        with memorymanagement.rmemory() as rmemory:
+            name_r = rmemory.protect(_rinterface.rlib.Rf_install(cchar))
+            if not _rinterface._has_slot(self.__sexp__._cdata, name_r):
+                raise LookupError(name)
+            return _rinterface.rlib.R_do_slot(self.__sexp__._cdata, name_r)
 
-    def do_slot_assign(self, name: str, value):
+    def do_slot_assign(self, name: str, value) -> None:
         _rinterface._assert_valid_slotname(name)
         cchar = _rinterface._str_to_cchar(name)
-        name_r = _rinterface.rlib.Rf_install(cchar)
-        _rinterface.rlib.R_do_slot_assign(self.__sexp__._cdata,
-                                          name_r,
-                                          value.__sexp__._cdata)
+        with memorymanagement.rmemory() as rmemory:
+            name_r = rmemory.protect(_rinterface.rlib.Rf_install(cchar))
+            _rinterface.rlib.R_do_slot_assign(self.__sexp__._cdata,
+                                              name_r,
+                                              value.__sexp__._cdata)
 
     @_cdata_res_to_rinterface
     def get_attrib(self, name: str):
@@ -164,7 +180,7 @@ class Sexp(object):
         return embedded.globalenv.get('names')(self)
 
     @names.setter
-    def names(self, value):
+    def names(self, value) -> None:
         _rinterface.rlib.Rf_namesgets(
             self.__sexp__._cdata, value)
 
@@ -177,6 +193,7 @@ class Sexp(object):
 
 
 class CETYPE(enum.Enum):
+    """Character encodings."""
     CE_NATIVE = 0
     CE_UTF8   = 1
     CE_LATIN1 = 2
@@ -186,16 +203,16 @@ class CETYPE(enum.Enum):
 
 
 class CharSexp(Sexp):
-
+    """R's internal (C API-level) scalar string."""
     _R_TYPE = _rinterface.rlib.CHARSXP
 
     @property
-    def encoding(self):
+    def encoding(self) -> CETYPE:
         return CETYPE(
             _rinterface.rlib.Rf_getCharCE(self.__sexp__._cdata)
         )
 
-    def nchar(self, what=None):  # _rinterface.rlib.nchar_type.Bytes):
+    def nchar(self, what=None) -> int:  # _rinterface.rlib.nchar_type.Bytes):
         # TODO: nchar_type is not parsed properly by cffi ?
         return _rinterface.rlib.R_nchar(self.__sexp__._cdata,
                                         what,
@@ -211,9 +228,15 @@ def _populate_r_vector(iterable, r_vector, set_elt, cast_value):
         set_elt(r_vector, i, cast_value(v))
 
 
-class SexpVector(Sexp):
+VT = typing.Typevar('VT', bound='SexpVector')
 
-    def __init__(self, obj):
+class SexpVector(Sexp):
+    """Base class for R vector objects.
+
+    R vector objects are, the C level, essentially C arrays wrapped in
+    the general structure for R objects."""
+
+    def __init__(self, obj: typing.Union[_rinterface.SexpCapsule, collections.Sized]):
         if isinstance(obj, Sexp) or isinstance(obj, _rinterface.SexpCapsule):
             super().__init__(obj)
         elif isinstance(obj, collections.Sized):
@@ -227,7 +250,7 @@ class SexpVector(Sexp):
     @classmethod
     @_cdata_res_to_rinterface
     def from_iterable(cls, iterable,
-                      cast_in: bool = None):
+                      cast_in: bool = None) -> VT:
         if not embedded.isready():
             raise embedded.RNotReadyError('Embedded R is not ready to use.')
         if cast_in is None:
@@ -244,7 +267,7 @@ class SexpVector(Sexp):
                                cast_in)
         return r_vector
 
-    def __getitem__(self, i: int) -> typing.Any:
+    def __getitem__(self, i: typing.Union[int, slice]) -> typing.Union[Sexp, VT]:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -260,7 +283,7 @@ class SexpVector(Sexp):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
     
-    def __setitem__(self, i: int, value):
+    def __setitem__(self, i: typing.Union[int, slice], value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -284,7 +307,7 @@ class SexpVector(Sexp):
         raise ValueError("'%s' is not in R vector" % item)
 
 
-def _as_charsxp_cdata(x):
+def _as_charsxp_cdata(x: typing.Union[CharSexp, str]):
     if isinstance(x, CharSexp):
         return x.__sexp__._cdata
     else:
@@ -292,12 +315,13 @@ def _as_charsxp_cdata(x):
 
 
 class StrSexpVector(SexpVector):
+    """R vector of strings."""
 
     _R_TYPE = _rinterface.rlib.STRSXP
     _R_SET_ELT = _rinterface.rlib.SET_STRING_ELT
     _CAST_IN = _as_charsxp_cdata
 
-    def __getitem__(self, i: int):
+    def __getitem__(self, i: typing.Union[int, slice]) -> typing.Union[str, StrSexpVector]:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -312,7 +336,9 @@ class StrSexpVector(SexpVector):
                             ' not %s' % type(i))
         return res
 
-    def __setitem__(self, i: int, value):
+    def __setitem__(self,
+                    i: typing.Union[int, slice],
+                    value: typing.Union[str, typing.Sequence[str]]) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -330,7 +356,8 @@ class StrSexpVector(SexpVector):
             raise TypeError('Indices must be integers or slices, '
                             'not %s' % type(i))
 
-    def get_charsxp(self, i: int) -> CharSexp:
+    def get_charsxp(self, i: typing.Union[int, slice]) -> CharSexp:
+        """Get the R CharSexp objects for the index i."""
         i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
         return CharSexp(
             _rinterface.SexpCapsule(
@@ -350,27 +377,30 @@ _DEFAULT_RCLASS_NAMES = {
     RTYPES.LANGSXP: 'language'}
 
 
-def rclass_get(scaps: _rinterface.SexpCapsule):
+def rclass_get(scaps: _rinterface.SexpCapsule) -> StrSexpVector:
     rlib = _rinterface.rlib
-    classes = rlib.Rf_getAttrib(scaps._cdata,
-                                rlib.R_ClassSymbol)
-    if rlib.Rf_length(classes) == 0:
-        dim = rlib.Rf_getAttrib(scaps._cdata,
-                                rlib.R_DimSymbol)
-        ndim = rlib.Rf_length(dim)
-        if ndim > 0:
-            if ndim == 2:
-                classname  = 'matrix'
+    with memorymanagement.rmemory() as rmemory:
+        classes = rmemory.protect(
+            rlib.Rf_getAttrib(scaps._cdata,
+                              rlib.R_ClassSymbol))
+        if rlib.Rf_length(classes) == 0:
+            dim = rmemory.protect(
+                rlib.Rf_getAttrib(scaps._cdata,
+                                  rlib.R_DimSymbol))
+            ndim = rlib.Rf_length(dim)
+            if ndim > 0:
+                if ndim == 2:
+                    classname  = 'matrix'
+                else:
+                    classname = 'array'
             else:
-                classname = 'array'
+                typeof = RTYPES(scaps.typeof)
+                classname = _DEFAULT_RCLASS_NAMES.get(
+                    typeof, str(typeof))
+            classes = StrSexpVector.from_iterable(
+                [classname])
         else:
-            typeof = RTYPES(scaps.typeof)
-            classname = _DEFAULT_RCLASS_NAMES.get(
-                typeof, str(typeof))
-        classes = StrSexpVector.from_iterable(
-            [classname])
-    else:
-        classes = conversion._cdata_to_rinterface(classes)
+            classes = conversion._cdata_to_rinterface(classes)
     return classes
 
 

@@ -1,3 +1,5 @@
+"""NA (Non-Available) values in R."""
+
 from . import _rinterface_capi as _rinterface
 from . import embedded
 from . import sexp
@@ -57,25 +59,25 @@ class NALogicalType(int):
             raise RNotReadyError("The embedded R is not ready to use.")
         super().__init__(_rinterface.rlib.R_NaInt)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'NA'
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         raise ValueError('R value for missing boolean value')
 
 
 @singleton
 class NARealType(int):
 
-    def __init__(self, x):
+    def __init__(self, x: float):
         if not embedded.isready():
             raise RNotReadyError("The embedded R is not ready to use.")
         super().__init__(_rinterface.rlib.R_NaReal)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'NA_real_'
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         raise ValueError('R value for missing float value')
 
 

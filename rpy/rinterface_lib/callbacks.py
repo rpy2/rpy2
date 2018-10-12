@@ -1,3 +1,9 @@
+"""Callbacks available from R's C-API.
+
+The callbacks make available in R's C-API can be specified as
+Python functions, with the module providing the adapter code
+that makes it possible."""
+
 from contextlib import contextmanager
 import logging
 import typing
@@ -16,14 +22,15 @@ SHOWFILE_SIGNATURE = ('int(int, const char **, const char **, '
                       '    const char *, Rboolean, const char *)')
 
 
+# TODO: rename to "replace_in_module"
 @contextmanager
-def obj_in_module(module, name, func):
-    backup_func = getattr(module, name)
-    setattr(module, name, func)
+def obj_in_module(module, name: str, obj):
+    obj_orig = getattr(module, name)
+    setattr(module, name, obj)
     try:
         yield
     finally:
-        setattr(module, name, backup_func)
+        setattr(module, name, obj_orig)
 
 
 # TODO: remove the decorator
@@ -45,7 +52,7 @@ _READCONSOLE_INTERNAL_EXCEPTION_LOG = 'Internal rpy2 error with callback: %s'
 
 
 @_rinterface.ffi.callback(READCONSOLE_SIGNATURE)
-def _consoleread(prompt, buf, n, addtohistory):
+def _consoleread(prompt, buf, n: int, addtohistory) -> int:
     success = None
     try:
         s = _rinterface._cchar_to_str(prompt)
@@ -86,7 +93,7 @@ _RESETCONSOLE_EXCEPTION_LOG = 'Callback to reset the R console: %s'
 
 
 @_rinterface.ffi.callback(RESETCONSOLE_SIGNATURE)
-def _consolereset():
+def _consolereset() -> None:
     try:
         consolereset()
     except Exception as e:
@@ -109,7 +116,7 @@ _WRITECONSOLE_EXCEPTION_LOG = 'Callback to write to the R console: %s'
 
 
 @_rinterface.ffi.callback(WRITECONSOLE_EX_SIGNATURE)
-def _consolewrite_ex(buf, n, otype):
+def _consolewrite_ex(buf, n: int, otype) -> None:
     s = _rinterface._cchar_to_str_with_maxlen(buf, maxlen=n)
     try:
         if otype == 0:
@@ -147,7 +154,7 @@ _CHOOSEFILE_EXCEPTION_LOG = 'Callback to choose file from R: %s'
 
 
 @_rinterface.ffi.callback(CHOOSEFILE_SIGNATURE)
-def _choosefile(new, buf, n):
+def _choosefile(new, buf, n: int) -> int:
     try:
         res = choosefile(new)
     except Exception as e:
@@ -179,7 +186,7 @@ _SHOWFILE_INTERNAL_EXCEPTION_LOG = 'Internal rpy2 error while showing files for 
 
 
 @_rinterface.ffi.callback(SHOWFILE_SIGNATURE)
-def _showfiles(nfiles, files, headers, wtitle, delete, pager):
+def _showfiles(nfiles: int, files, headers, wtitle, delete, pager) -> int:
     filenames = []
     headers_str = []
     wtitle_str = None
