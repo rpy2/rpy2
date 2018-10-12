@@ -24,20 +24,12 @@ __args = baseenv_ri.get('args')
 __is_null = baseenv_ri.get('is.null')
 
 
-def _do_nothing(*args, **kwargs):
-    pass
-
-
 def _formals_fixed(func):
-    with rinterface.callbacks.obj_in_module(
-            rinterface.callbacks,
-            'consolewrite_warnerror',
-            _do_nothing):
-        tmp = __args(func)
-        if __is_null(tmp)[0]:
-            return rinterface.NULL
-        else:
-            return __formals(tmp)
+    tmp = __args(func)
+    if __is_null(tmp)[0]:
+        return rinterface.NULL
+    else:
+        return __formals(tmp)
 
 
 ## docstring_property and DocstringProperty

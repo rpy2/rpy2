@@ -5,9 +5,9 @@ from . import embedded
 from . import sexp
 
 
-def singleton(cls, *args, **kwargs):
+def singleton(cls):
     instances = {}
-    def _singleton():
+    def _singleton(*args, **kwargs):
         if cls not in instances:
             instances[cls] = cls(*args, **kwargs)
         return instances[cls]
@@ -22,12 +22,12 @@ NA_Complex = None
 
 
 @singleton
-class NAINtegerType(int):
+class NAIntegerType(int):
 
-    def __init__(self, x):
+    def __new__(cls, *args, **kwargs):
         if not embedded.isready():
             raise RNotReadyError("The embedded R is not ready to use.")
-        super().__init__(_rinterface.rlib.R_NaInt)
+        super().__new__(cls, _rinterface.rlib.R_NaInt)
 
     def __repr__(self):
         return 'NA_integer_'
@@ -54,10 +54,10 @@ class NACharacterType(sexp.CharSexp):
 @singleton
 class NALogicalType(int):
 
-    def __init__(self, x):
+    def __new__(cls, *args, **kwargs):
         if not embedded.isready():
             raise RNotReadyError("The embedded R is not ready to use.")
-        super().__init__(_rinterface.rlib.R_NaInt)
+        super().__new__(cls, _rinterface.rlib.R_NaInt)
 
     def __repr__(self) -> str:
         return 'NA'
@@ -67,12 +67,12 @@ class NALogicalType(int):
 
 
 @singleton
-class NARealType(int):
+class NARealType(float):
 
-    def __init__(self, x: float):
+    def __new__(cls, *args, **kwargs):
         if not embedded.isready():
             raise RNotReadyError("The embedded R is not ready to use.")
-        super().__init__(_rinterface.rlib.R_NaReal)
+        super().__new__(cls, _rinterface.rlib.R_NaReal)
 
     def __repr__(self) -> str:
         return 'NA_real_'
@@ -85,12 +85,15 @@ class NARealType(int):
 @singleton
 class NAComplexType(complex):
 
-    def __init__(self, x):
+    def __new__(cls, *args, **kwargs):
         if not embedded.isready():
             raise RNotReadyError("The embedded R is not ready to use.")
         na_complex = _rinterface.ffi.new('Rcomplex *',
-                                         [NA_Real, NA_Real])
-        super().__init__(NA_Real, NA_Real)
+                                         [_rinterface.rlib.R_NaReal,
+                                          _rinterface.rlib.R_NaReal])
+        super().__new__(cls,
+                        _rinterface.rlib.R_NaReal,
+                        _rinterface.rlib.R_NaReal)
 
     def __repr__(self):
         return 'NA_complex_'

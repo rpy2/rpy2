@@ -46,6 +46,13 @@ def test_do_slot():
     assert 'OS.type' in names
 
 
+def test_names():
+    sexp = rinterface.baseenv.get('.Platform')
+    names = sexp.names
+    assert len(names) > 1
+    assert 'OS.type' in names
+
+
 def test_do_slot_missing():
     sexp = rinterface.baseenv.get('pi')
     with pytest.raises(LookupError):
@@ -148,6 +155,10 @@ def test_rclass_set():
     sexp.rclass = rinterface.StrSexpVector(['foo'])
     assert len(sexp.rclass) == 1
     assert sexp.rclass[0] == 'foo'
+
+    sexp.rclass = 'bar'
+    assert len(sexp.rclass) == 1
+    assert sexp.rclass[0] == 'bar'
 
 
 def test__sexp__wrongtypeof():

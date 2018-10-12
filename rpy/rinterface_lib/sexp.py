@@ -114,7 +114,7 @@ class Sexp(object):
     def rclass(self, value):
         if isinstance(value, StrSexpVector):
             value_r = value
-        elif isisntance(value, str):
+        elif isinstance(value, str):
             value_r = StrSexpVector.from_iterable(
                 [_rinterface._str_to_charsxp(value)])
         _rinterface.rlib.Rf_setAttrib(self.__sexp__._cdata,
@@ -142,21 +142,22 @@ class Sexp(object):
     def do_slot(self, name: str) -> None:
         _rinterface._assert_valid_slotname(name)
         cchar = _rinterface._str_to_cchar(name)
-        # TODO: protect ?
         with memorymanagement.rmemory() as rmemory:
             name_r = rmemory.protect(_rinterface.rlib.Rf_install(cchar))
             if not _rinterface._has_slot(self.__sexp__._cdata, name_r):
                 raise LookupError(name)
-            return _rinterface.rlib.R_do_slot(self.__sexp__._cdata, name_r)
+            res = _rinterface.rlib.R_do_slot(self.__sexp__._cdata, name_r)
+        return res
 
     def do_slot_assign(self, name: str, value) -> None:
         _rinterface._assert_valid_slotname(name)
         cchar = _rinterface._str_to_cchar(name)
         with memorymanagement.rmemory() as rmemory:
             name_r = rmemory.protect(_rinterface.rlib.Rf_install(cchar))
+            cdata = rmemory.protect(_rinterface._get_cdata(value))
             _rinterface.rlib.R_do_slot_assign(self.__sexp__._cdata,
                                               name_r,
-                                              value.__sexp__._cdata)
+                                              cdata)
 
     @_cdata_res_to_rinterface
     def get_attrib(self, name: str):

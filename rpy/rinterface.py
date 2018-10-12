@@ -740,21 +740,21 @@ def _post_initr_setup():
     NA_Character = na_values.NA_Character
 
     global NA_Integer
-    na_values.NA_Integer = _rinterface.rlib.R_NaInt
+    na_values.NA_Integer = na_values.NAIntegerType(_rinterface.rlib.R_NaInt)
     NA_Integer = na_values.NA_Integer
 
     global NA_Logical
-    na_values.NA_Logical = _rinterface.rlib.R_NaInt
+    na_values.NA_Logical = na_values.NALogicalType(_rinterface.rlib.R_NaInt)
     NA_Logical = na_values.NA_Logical
 
     global NA_Real
-    na_values.NA_Real = _rinterface.rlib.R_NaReal
+    na_values.NA_Real = na_values.NARealType(_rinterface.rlib.R_NaReal)
     NA_Real = na_values.NA_Real
 
     global NA_Complex
     na_values.NA_Complex = _rinterface.ffi.new(
         'Rcomplex *',
-        [NA_Real, NA_Real])
+        [_rinterface.rlib.R_NaReal, _rinterface.rlib.R_NaReal])
     NA_Complex = na_values.NA_Complex
 
 
