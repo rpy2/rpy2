@@ -15,11 +15,10 @@ def test_init_invalid():
         robjects.Array(letters)
 
 
-@pytest.mark.skip(reason='segfault')
 def test_init():
     m = rinterface.globalenv.get('matrix')(1, nrow=5, ncol=3)
     a = robjects.Array(m)
-    assert a.rclass == 'matrix'
+    assert tuple(a.rclass) == ('matrix', )
 
 
 def test_dim():
@@ -67,9 +66,9 @@ def test_ncol_get():
     assert m.ncol == 2
 
 
-@pytest.mark.skip(reason='segfault')
 def test_transpose():
-    m = robjects.r.matrix(robjects.IntVector(range(6)), nrow=3, ncol=2)
+    m = robjects.r.matrix(robjects.IntVector(range(6)),
+                          nrow=3, ncol=2)
     mt = m.transpose()
     for i,val in enumerate((0,1,2,3,4,5,)):
         assert m[i] == val

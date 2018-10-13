@@ -36,7 +36,7 @@ def test_typeof():
 def test_r_error():
     r_sum = rinterface.baseenv['sum']
     letters = rinterface.baseenv['letters']
-    with pytest.raises(rinterface._rinterface.RRuntimeError), \
+    with pytest.raises(rinterface.embedded.RRuntimeError), \
          pytest.warns(rinterface.RRuntimeWarning):
         r_sum(letters)
 
@@ -76,7 +76,7 @@ def test_closureenv():
 
     assert isinstance(fun.closureenv, rinterface.SexpEnvironment)
     
-    with pytest.raises(rinterface._rinterface.RRuntimeError):
+    with pytest.raises(rinterface.embedded.RRuntimeError):
         with pytest.warns(rinterface.RRuntimeWarning):
             fun(vec)
 
@@ -132,7 +132,7 @@ def test_call_OrdDictEnv():
 def test_error_in_call():
     r_sum = rinterface.baseenv['sum']
 
-    with pytest.raises(rinterface._rinterface.RRuntimeError), \
+    with pytest.raises(rinterface.embedded.RRuntimeError), \
          pytest.warns(rinterface.RRuntimeWarning):
         r_sum(2, 'a')
 

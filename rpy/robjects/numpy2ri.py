@@ -22,7 +22,7 @@ _kinds = {
     "f": ro.vectors.FloatVector,
     "c": ro.vectors.ComplexVector,
     # "O" -> special-cased below
-    "S": ro.vectors.StrVector,
+    "S1": ro.vectors.ByteVector,
     "U": ro.vectors.StrVector,
     # "V" -> special-cased below
     #FIXME: datetime64 ?

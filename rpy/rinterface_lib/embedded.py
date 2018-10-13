@@ -1,8 +1,8 @@
 import enum
 import os
 import typing
-import warnings
-from . import _rinterface_capi as _rinterface
+from _rinterface_cffi import ffi
+from . import openrlib
 from . import callbacks
 
 _options = ('rpy2', '--quiet', '--vanilla', '--no-save')
@@ -11,14 +11,15 @@ rpy2_embeddedR_isinitialized = 0x00
 
 # TODO: move initialization-related code to _rinterface ?
 class RPY_R_Status(enum.Enum):
-    INITIALIZED = 0x01;
-    BUSY = 0x02;
-    ENDED = 0x04;
+    INITIALIZED = 0x01
+    BUSY = 0x02
+    ENDED = 0x04
 
 
 def set_initoptions(options: typing.Tuple[str]) -> None:
     if rpy2_embeddedR_isinitialized:
-        raise RuntimeError('Options can no longer be set once R is initialized.')
+        raise RuntimeError('Options can no longer be set once '
+                           'R is initialized.')
     global _options
     for x in options:
         assert isinstance(x, str)
@@ -47,30 +48,34 @@ class RNotReadyError(Exception):
     pass
 
 
+class RRuntimeError(Exception):
+    pass
+
+
 # TODO: can init_once() be used here ?
 def _initr(interactive: bool = True) -> int:
     global rpy2_embeddedR_isinitialized
-    ffi = _rinterface.ffi
-    rlib = _rinterface.rlib
+
+    rlib = openrlib.rlib
     if isinitialized():
         return
-    os.environ['R_HOME'] = _rinterface.R_HOME
+    os.environ['R_HOME'] = openrlib.R_HOME
     options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
     n_options = len(options_c)
     status = rlib.Rf_initialize_R(ffi.cast('int', n_options),
                                   options_c)
 
     rstart = ffi.new('Rstart')
-    rstart.R_Interactive = interactive;
+    rstart.R_Interactive = interactive
 
     # TODO: Conditional definition in C code (Aqua, TERM, and TERM not "dumb")
-    rlib.R_Outputfile = ffi.NULL;
-    rlib.R_Consolefile = ffi.NULL;
+    rlib.R_Outputfile = ffi.NULL
+    rlib.R_Consolefile = ffi.NULL
     rlib.ptr_R_WriteConsoleEx = callbacks._consolewrite_ex
     rlib.ptr_R_WriteConsole = ffi.NULL
-    
+
     # TODO: Conditional in C code
-    _rinterface.rlib.R_SignalHandlers = 0;
+    rlib.R_SignalHandlers = 0
 
     rlib.ptr_R_ShowMessage = callbacks._showmessage
     rlib.ptr_R_ReadConsole = callbacks._consoleread
@@ -78,67 +83,30 @@ def _initr(interactive: bool = True) -> int:
     rlib.ptr_R_ChooseFile = callbacks._choosefile
 
     rlib.ptr_R_ShowFiles = callbacks._showfiles
-    
+
     rlib.ptr_R_CleanUp = callbacks._cleanup
-    
+
     rpy2_embeddedR_isinitialized = RPY_R_Status.INITIALIZED.value
 
     # TODO: still needed ?
-    _rinterface.rlib.R_CStackLimit = ffi.cast('uintptr_t', -1)
-    
-    _rinterface.rlib.setup_Rmainloop()
+    rlib.R_CStackLimit = ffi.cast('uintptr_t', -1)
+
+    rlib.setup_Rmainloop()
     return status
 
 
 def endr(fatal: int) -> None:
     global rpy2_embeddedR_isinitialized
+    rlib = openrlib.rlib
     if rpy2_embeddedR_isinitialized & RPY_R_Status.ENDED.value:
         return
-    rlib = _rinterface.rlib
     rlib.R_dot_Last()
     rlib.R_RunExitFinalizers()
     rlib.Rf_KillAllDevices()
     rlib.R_CleanTempDir()
-    rlib.R_gc()    
+    rlib.R_gc()
     rlib.Rf_endEmbeddedR(fatal)
     rpy2_embeddedR_isinitialized ^= RPY_R_Status.ENDED.value
-
-
-class PARSING_STATUS(enum.Enum):
-    PARSE_NULL = _rinterface.rlib.PARSE_NULL
-    PARSE_OK = _rinterface.rlib.PARSE_OK
-    PARSE_INCOMPLETE = _rinterface.rlib.PARSE_INCOMPLETE
-    PARSE_ERROR = _rinterface.rlib.PARSE_ERROR
-    PARSE_EOF = _rinterface.rlib.PARSE_EOF
-
-
-class RParsingError(Exception):
-
-    def __init__(self, msg: str, status: int):
-        super().__init__(msg)
-        self.status = status
-
-
-def _parse(cdata, num):
-    status = _rinterface.ffi.new('ParseStatus[1]', None)
-    res = _rinterface.rlib.Rf_protect(
-        _rinterface.rlib.R_ParseVector(
-            cdata, # text
-            num,
-            status,
-            _rinterface.rlib.R_NilValue)
-    )
-    # TODO: design better handling of possible status:
-    # PARSE_NULL,
-    # PARSE_OK,
-    # PARSE_INCOMPLETE,
-    # PARSE_ERROR,
-    # PARSE_EOF
-    if status[0] != _rinterface.rlib.PARSE_OK:
-        _rinterface.rlib.Rf_unprotect(1)
-        raise RParsingError('R parsing', PARSING_STATUS(status[0]))
-    _rinterface.rlib.Rf_unprotect(1)
-    return res 
 
 
 # R environments, initialized with rpy2.rinterface.SexpEnvironment

@@ -15,7 +15,7 @@ def evalr(string):
 def test_r_to_NAInteger():
     na_int = ri.NA_Integer
     r_na_int = evalr("NA_integer_")[0]
-    assert r_na_int == na_int
+    assert r_na_int is na_int
 
     
 def test_NAInteger_to_r():
@@ -27,20 +27,20 @@ def test_NAInteger_to_r():
     reason="Python changed the behavior for int-inheriting objects.")
 def test_NAInteger_binaryfunc():
     na_int = ri.NAInteger
-    assert (na_int + 2) == na_int
+    assert (na_int + 2) is na_int
 
     
 def test_NAInteger_in_vector():
     na_int = ri.NA_Integer
     x = ri.IntSexpVector((1, na_int, 2))
-    assert x[1] == na_int
+    assert x[1] is na_int
     assert x[0] == 1
     assert x[2] == 2
 
     
 def test_R_to_NALogical():
     r_na_lgl = evalr('NA')[0]
-    assert r_na_lgl is None
+    assert r_na_lgl is ri.NA
 
     
 def test_NALogical_to_r():
@@ -52,7 +52,7 @@ def test_NALogical_in_vector():
     na_bool = ri.NA_Logical
     x = ri.BoolSexpVector((True, na_bool, False))
     assert x[0] == True
-    assert x[1] is None
+    assert x[1] is ri.NA_Logical
     assert x[2] == False
 
     
@@ -81,7 +81,7 @@ def test_NAReal_in_vector():
 
 def test_NAReal_repr():
     na_float = ri.NA_Real
-    assert repr(na_float) == 'nan'
+    assert repr(na_float) == 'NA_real_'
 
 
 def test_r_to_NACharacter():

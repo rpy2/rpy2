@@ -3,7 +3,7 @@ import pytest
 import sys
 import rpy2.robjects as robjects
 import rpy2.robjects.packages as packages
-from rpy2.rinterface import RRuntimeError
+from rpy2.rinterface_lib.embedded import RRuntimeError
 
 rinterface = robjects.rinterface
 

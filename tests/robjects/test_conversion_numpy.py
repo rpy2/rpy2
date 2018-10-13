@@ -86,10 +86,15 @@ class TestNumpyConversions(object):
             assert abs(orig.imag-conv.imag) < 0.000001
 
     def test_vector_unicode_character(self):
-        # TODO: still relevant in Python 3 ?
         l = [u"a", u"b", u"c"]
         u = numpy.array(l, dtype="U")
         u_r = self.check_homogeneous(u, "character", "character")
+        assert tuple(l) == tuple(u_r)
+
+    def test_vector_bytes(self):
+        l = [b'a', b'b', b'c']
+        s = numpy.array(l, dtype="|S1")
+        u_r = self.check_homogeneous(s, "byte", "byte")
         assert tuple(l) == tuple(u_r)
 
     def test_array(self):

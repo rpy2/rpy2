@@ -7,7 +7,8 @@ that makes it possible."""
 from contextlib import contextmanager
 import logging
 import typing
-from . import _rinterface_capi as _rinterface
+from _rinterface_cffi import ffi
+from . import conversion
 
 logger = logging.getLogger(__name__)
 
@@ -51,36 +52,37 @@ _READCONSOLE_EXCEPTION_LOG = 'Callback to read into the R console: %s'
 _READCONSOLE_INTERNAL_EXCEPTION_LOG = 'Internal rpy2 error with callback: %s'
 
 
-@_rinterface.ffi.callback(READCONSOLE_SIGNATURE)
+@ffi.callback(READCONSOLE_SIGNATURE)
 def _consoleread(prompt, buf, n: int, addtohistory) -> int:
     success = None
     try:
-        s = _rinterface._cchar_to_str(prompt)
+        s = conversion._cchar_to_str(prompt)
         reply = consoleread(s)
     except Exception as e:
         success = 0
         logger.error(_READCONSOLE_EXCEPTION_LOG, str(e))
     if success == 0:
         return success
-    
+
     try:
         # TODO: handle non-ASCII encodings
         reply_b = reply.encode('ASCII')
         reply_n = min(n, len(reply_b))
-        _rinterface.ffi.memmove(buf,
-                                reply_b,
-                                reply_n)
+        ffi.memmove(buf,
+                    reply_b,
+                    reply_n)
         if reply_n < n:
             buf[reply_n] = ord(b'\n')
         for i in range(reply_n+1, n):
-            buf[i] = 0        
+            buf[i] = 0
         if reply_n == 0:
             success = 0
         else:
             success = 1
     except Exception as e:
         success = 0
-        logger.error(_READCONSOLE_INTERNAL_EXCEPTION_LOG, str(e))
+        logger.error(_READCONSOLE_INTERNAL_EXCEPTION_LOG,
+                     str(e))
     return success
 
 
@@ -92,7 +94,7 @@ def consolereset() -> None:
 _RESETCONSOLE_EXCEPTION_LOG = 'Callback to reset the R console: %s'
 
 
-@_rinterface.ffi.callback(RESETCONSOLE_SIGNATURE)
+@ffi.callback(RESETCONSOLE_SIGNATURE)
 def _consolereset() -> None:
     try:
         consolereset()
@@ -115,9 +117,9 @@ def consolewrite_warnerror(s: str) -> None:
 _WRITECONSOLE_EXCEPTION_LOG = 'Callback to write to the R console: %s'
 
 
-@_rinterface.ffi.callback(WRITECONSOLE_EX_SIGNATURE)
+@ffi.callback(WRITECONSOLE_EX_SIGNATURE)
 def _consolewrite_ex(buf, n: int, otype) -> None:
-    s = _rinterface._cchar_to_str_with_maxlen(buf, maxlen=n)
+    s = conversion._cchar_to_str_with_maxlen(buf, maxlen=n)
     try:
         if otype == 0:
             consolewrite_print(s)
@@ -136,9 +138,9 @@ def showmessage(s: str) -> None:
 _SHOWMESSAGE_EXCEPTION_LOG = 'Callback to show R message: %s'
 
 
-@_rinterface.ffi.callback(SHOWMESSAGE_SIGNATURE)
+@ffi.callback(SHOWMESSAGE_SIGNATURE)
 def _showmessage(buf):
-    s = _rinterface._cchar_to_str(buf)
+    s = conversion._cchar_to_str(buf)
     try:
         showmessage(s)
     except Exception as e:
@@ -153,7 +155,7 @@ def choosefile(new):
 _CHOOSEFILE_EXCEPTION_LOG = 'Callback to choose file from R: %s'
 
 
-@_rinterface.ffi.callback(CHOOSEFILE_SIGNATURE)
+@ffi.callback(CHOOSEFILE_SIGNATURE)
 def _choosefile(new, buf, n: int) -> int:
     try:
         res = choosefile(new)
@@ -164,8 +166,8 @@ def _choosefile(new, buf, n: int) -> int:
     if res is None:
         return 0
 
-    res_cdata = _rinterface._str_to_cchar(res)
-    _rinterface.ffi.memmove(buf, res_cdata, len(res_cdata))
+    res_cdata = conversion._str_to_cchar(res)
+    ffi.memmove(buf, res_cdata, len(res_cdata))
     return len(res_cdata)
 
 
@@ -180,23 +182,23 @@ def showfiles(filenames: typing.Tuple[str],
             print('---')
 
 
-
 _SHOWFILE_EXCEPTION_LOG = 'Callback to shows file for R: %s'
-_SHOWFILE_INTERNAL_EXCEPTION_LOG = 'Internal rpy2 error while showing files for R: %s'
+_SHOWFILE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error while '
+                                    'showing files for R: %s')
 
 
-@_rinterface.ffi.callback(SHOWFILE_SIGNATURE)
+@ffi.callback(SHOWFILE_SIGNATURE)
 def _showfiles(nfiles: int, files, headers, wtitle, delete, pager) -> int:
     filenames = []
     headers_str = []
     wtitle_str = None
     pager_str = None
     try:
-        wtitle_str = _rinterface._cchar_to_str(wtitle)
-        pager_str = _rinterface._cchar_to_str(pager)
+        wtitle_str = conversion._cchar_to_str(wtitle)
+        pager_str = conversion._cchar_to_str(pager)
         for i in range(nfiles):
-            filenames.append(_rinterface._cchar_to_str(files[i]))
-            headers_str.append(_rinterface._cchar_to_str(headers[i]))
+            filenames.append(conversion._cchar_to_str(files[i]))
+            headers_str.append(conversion._cchar_to_str(headers[i]))
     except Exception as e:
         logger.error(_SHOWFILE_INTERNAL_EXCEPTION_LOG, str(e))
 
@@ -215,7 +217,7 @@ def _showfiles(nfiles: int, files, headers, wtitle, delete, pager) -> int:
 
     return res
 
-            
+
 @logged_exceptions
 def cleanup(saveact, status, runlast):
     pass
@@ -224,7 +226,7 @@ def cleanup(saveact, status, runlast):
 _CLEANUP_EXCEPTION_LOG = 'Callback to clean up R: %s'
 
 
-@_rinterface.ffi.callback(CLEANUP_SIGNATURE)
+@ffi.callback(CLEANUP_SIGNATURE)
 def _cleanup(saveact, status, runlast):
     try:
         cleanup(saveact, status, runlast)

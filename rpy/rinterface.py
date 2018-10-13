@@ -1,8 +1,7 @@
 import atexit
-import enum
 import typing
+from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
-import rpy2.rinterface_lib.callbacks as callbacks
 import rpy2.rinterface_lib.embedded as embedded
 import rpy2.rinterface_lib.conversion as conversion
 import rpy2.rinterface_lib.memorymanagement as memorymanagement
@@ -21,10 +20,10 @@ unserialize = sexp.unserialize
 
 _cdata_res_to_rinterface = conversion._cdata_res_to_rinterface
 _evaluated_promise = _rinterface._evaluated_promise
-R_NilValue = _rinterface.rlib.R_NilValue
-RRuntimeError = _rinterface.RRuntimeError
+R_NilValue = openrlib.rlib.R_NilValue
 
 endr = embedded.endr
+
 
 @_cdata_res_to_rinterface
 def parse(text: str, num: int = -1):
@@ -36,7 +35,7 @@ def parse(text: str, num: int = -1):
     if not isinstance(text, str):
         raise ValueError('text must be a string.')
     robj = StrSexpVector([text])
-    return embedded._parse(robj.__sexp__._cdata, num)
+    return _rinterface._parse(robj.__sexp__._cdata, num)
 
 
 class _NULL(object):
@@ -45,14 +44,14 @@ class _NULL(object):
 
     def __init__(self):
         self._sexpobject = _rinterface.UnmanagedSexpCapsule(
-            _rinterface.rlib.R_NilValue)
+            openrlib.rlib.R_NilValue)
 
     def __repr__(self):
         return super().__repr__() + (' [%s]' % self.typeof)
 
     def __bool__(self):
         return False
-    
+
     @property
     def __sexp__(self):
         return self._sexpobject
@@ -68,14 +67,14 @@ class _MissingArgType(object):
 
     def __init__(self):
         self._sexpobject = _rinterface.UnmanagedSexpCapsule(
-            _rinterface.rlib.R_MissingArg)
+            openrlib.rlib.R_MissingArg)
 
     def __repr__(self):
         return super().__repr__() + (' [%s]' % self.typeof)
 
     def __bool__(self):
         return False
-    
+
     @property
     def __sexp__(self):
         return self._sexpobject
@@ -86,14 +85,14 @@ class _MissingArgType(object):
 
 
 class SexpSymbol(Sexp):
-    
+
     def __init__(self, obj):
         if isinstance(obj, Sexp) or isinstance(obj, _rinterface.SexpCapsule):
             super().__init__(obj)
         elif isinstance(obj, str):
             name_cdata = _rinterface.ffi.new('char []', obj.encode('utf-8'))
             sexp = _rinterface.SexpCapsule(
-                _rinterface.rlib.Rf_install(name_cdata))
+                openrlib.rlib.Rf_install(name_cdata))
             super().__init__(sexp)
         else:
             raise ValueError(
@@ -102,7 +101,7 @@ class SexpSymbol(Sexp):
                 'or an instance of rpy2.rinterface._rinterface.SexpCapsule')
 
     def __str__(self):
-        return _rinterface._cchar_to_str(
+        return conversion._cchar_to_str(
             _rinterface._STRING_VALUE(
                 self._sexpobject._cdata
             )
@@ -121,13 +120,13 @@ class SexpEnvironment(Sexp):
             raise ValueError('The key must be a non-empty string.')
         with memorymanagement.rmemory() as rmemory:
             symbol = rmemory.protect(
-                _rinterface.rlib.Rf_install(_rinterface._str_to_cchar(key))
+                openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
             )
             if wantfun:
                 res = _rinterface._findfun(symbol, self.__sexp__._cdata)
             else:
                 res = _rinterface._findvar(symbol, self.__sexp__._cdata)
-        if res == _rinterface.rlib.R_UnboundValue:
+        if res == openrlib.rlib.R_UnboundValue:
             raise KeyError("'%s' not found" % key)
         return res
 
@@ -139,10 +138,10 @@ class SexpEnvironment(Sexp):
             raise ValueError('The key must be a non-empty string.')
         with memorymanagement.rmemory() as rmemory:
             symbol = rmemory.protect(
-                _rinterface.rlib.Rf_install(_rinterface._str_to_cchar(key))
+                openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
             )
             res = _rinterface._findVarInFrame(symbol, self.__sexp__._cdata)
-        if res == _rinterface.rlib.R_UnboundValue:
+        if res == openrlib.rlib.R_UnboundValue:
             raise KeyError("'%s' not found" % key)
         return res
 
@@ -150,38 +149,38 @@ class SexpEnvironment(Sexp):
         # TODO: move body to _rinterface-level function
         if not (isinstance(key, str) and len(key)):
             raise ValueError('The key must be a non-empty string.')
-        if (self.__sexp__._cdata == _rinterface.rlib.R_BaseEnv) or \
-           (self.__sexp__._cdata == _rinterface.rlib.R_EmptyEnv):
+        if (self.__sexp__._cdata == openrlib.rlib.R_BaseEnv) or \
+           (self.__sexp__._cdata == openrlib.rlib.R_EmptyEnv):
             raise ValueError('Cannot remove variables from the base or '
                              'empty environments.')
         # TODO: call to Rf_duplicate needed ?
         with memorymanagement.rmemory() as rmemory:
             symbol = rmemory.protect(
-                _rinterface.rlib.Rf_install(_rinterface._str_to_cchar(key))
+                openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
             )
-            cdata = rmemory.protect(_rinterface._get_cdata(value))
+            cdata = rmemory.protect(conversion._get_cdata(value))
             cdata_copy = rmemory.protect(
-                _rinterface.rlib.Rf_duplicate(cdata)
+                openrlib.rlib.Rf_duplicate(cdata)
             )
-            res = _rinterface.rlib.Rf_defineVar(symbol,
-                                                cdata_copy,
-                                                self.__sexp__._cdata)
+            openrlib.rlib.Rf_defineVar(symbol,
+                                       cdata_copy,
+                                       self.__sexp__._cdata)
 
     def __len__(self) -> int:
         with memorymanagement.rmemory() as rmemory:
             symbols = rmemory.protect(
-                _rinterface.rlib.R_lsInternal(self.__sexp__._cdata,
-                                              _rinterface.rlib.TRUE)
+                openrlib.rlib.R_lsInternal(self.__sexp__._cdata,
+                                           openrlib.rlib.TRUE)
             )
-            n = _rinterface.rlib.Rf_xlength(symbols)
+            n = openrlib.rlib.Rf_xlength(symbols)
         return n
 
     def __delitem__(self, key: str):
         # Testing that key is a non-empty string is implicitly
-        # performed when checking that the key is in the environment. 
+        # performed when checking that the key is in the environment.
         if key not in self:
             raise KeyError("'%s' not found" % key)
-        
+
         if self.__sexp__ == baseenv.__sexp__:
             raise ValueError('Values from the R base environment '
                              'cannot be removed.')
@@ -192,35 +191,35 @@ class SexpEnvironment(Sexp):
 
         with memorymanagement.rmemory() as rmemory:
             key_cdata = rmemory.protect(
-                _rinterface.rlib.Rf_mkString(_rinterface._str_to_cchar(key))
+                openrlib.rlib.Rf_mkString(conversion._str_to_cchar(key))
             )
-            res_rm = _rinterface._remove(key_cdata, 
-			                 self.__sexp__._cdata, 
-			                 _rinterface.rlib.Rf_ScalarLogical(
-                                            _rinterface.rlib.FALSE))
+            _rinterface._remove(key_cdata,
+                                self.__sexp__._cdata,
+                                openrlib.rlib.Rf_ScalarLogical(
+                                    openrlib.rlib.FALSE))
 
     @_cdata_res_to_rinterface
     def frame(self):
-        return _rinterface.rlib.FRAME(self.__sexp__._cdata)
+        return openrlib.rlib.FRAME(self.__sexp__._cdata)
 
     @property
     @_cdata_res_to_rinterface
     def enclos(self):
-        return _rinterface.rlib.ENCLOS(self.__sexp__._cdata)
+        return openrlib.rlib.ENCLOS(self.__sexp__._cdata)
 
     @enclos.setter
     def enclos(self, value: 'SexpEnvironment'):
         assert isinstance(value, SexpEnvironment)
-        _rinterface.rlib.SET_ENCLOS(self.__sexp__._cdata,
-                                    value.__sexp__.cdata)
-    
+        openrlib.rlib.SET_ENCLOS(self.__sexp__._cdata,
+                                 value.__sexp__.cdata)
+
     def keys(self):
         with memorymanagement.rmemory() as rmemory:
             symbols = rmemory.protect(
-                _rinterface.rlib.R_lsInternal(self.__sexp__._cdata,
-                                              _rinterface.rlib.TRUE)
+                openrlib.rlib.R_lsInternal(self.__sexp__._cdata,
+                                           openrlib.rlib.TRUE)
             )
-            n = _rinterface.rlib.Rf_xlength(symbols)
+            n = openrlib.rlib.Rf_xlength(symbols)
             res = []
             for i in range(n):
                 res.append(_rinterface._string_getitem(symbols, i))
@@ -231,7 +230,7 @@ class SexpEnvironment(Sexp):
         return self.keys()
 
     def is_locked(self):
-        return _rinterface.rlib.R_EnvironmentIsLocked(
+        return openrlib.rlib.R_EnvironmentIsLocked(
             self.__sexp__._cdata)
 
 
@@ -241,7 +240,7 @@ class SexpPromise(Sexp):
     def eval(self, env=None):
         if not env:
             env = embedded.globalenv
-        return _rinterface.rlib.Rf_eval(self.__sexp__._cdata, env)
+        return openrlib.rlib.Rf_eval(self.__sexp__._cdata, env)
 
 
 def _cast_in_byte(x):
@@ -253,24 +252,32 @@ def _cast_in_byte(x):
             raise ValueError('byte must be a single character')
         x = ord(x)
     else:
-        raise ValueError('byte must be an integer [0, 255] or a single byte character')
+        raise ValueError('byte must be an integer [0, 255] or a '
+                         'single byte character')
     return x
+
+
+def _set_raw_elt(x, i, val):
+    openrlib._RAW(x)[i] = val
 
 
 class ByteSexpVector(SexpVector):
 
-    _R_TYPE = _rinterface.rlib.RAWSXP
-    _R_SET_ELT = lambda x, i, v: _rinterface._RAW(x).__setitem__(i, v)
+    _R_TYPE = openrlib.rlib.RAWSXP
+    _R_SET_ELT = _set_raw_elt
     _CAST_IN = _cast_in_byte
-    
+
     def __getitem__(self, i: int) -> typing.Union[int, 'ByteSexpVector']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            res = _rinterface.rlib.RAW_ELT(cdata, i_c)
+            res = openrlib.rlib.RAW_ELT(cdata, i_c)
         elif isinstance(i, slice):
             res = type(self).from_iterable(
-                [_rinterface.rlib.RAW_ELT(cdata, i_c) for i_c in range(*i.indices(len(self)))]
+                [openrlib.rlib.RAW_ELT(
+                    cdata, i_c
+                ) for i_c in range(*i.indices(len(self)))
+                ]
             )
         else:
             raise TypeError(
@@ -281,34 +288,34 @@ class ByteSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _rinterface.rlib.RAW(cdata)[i_c] = _cast_in_byte(value)
+            openrlib.rlib.RAW(cdata)[i_c] = _cast_in_byte(value)
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
                 if v > 255:
                     raise ValueError('byte must be in range(0, 256)')
-                _rinterface.rlib.RAW(cdata)[i_c] = _cast_in_byte(v)
+                openrlib.rlib.RAW(cdata)[i_c] = _cast_in_byte(v)
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
 
 
 class BoolSexpVector(SexpVector):
-    
-    _R_TYPE = _rinterface.rlib.LGLSXP
-    _R_SET_ELT = _rinterface.SET_LOGICAL_ELT
-    _R_GET_PTR = _rinterface._LOGICAL
-    _CAST_IN = lambda x: NA_Logical if x is None or x == _rinterface.rlib.R_NaInt else bool(x)
+
+    _R_TYPE = openrlib.rlib.LGLSXP
+    _R_SET_ELT = openrlib.SET_LOGICAL_ELT
+    _R_GET_PTR = openrlib._LOGICAL
+    _CAST_IN = lambda x: NA_Logical if x is None or x == openrlib.rlib.R_NaInt else bool(x)
 
     def __getitem__(self, i: int) -> typing.Union[typing.Optional[bool],
                                                   'BoolSexpVector']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            elt = _rinterface.rlib.LOGICAL_ELT(cdata, i_c)
-            res = None if elt == NA_Logical else bool(elt)
+            elt = openrlib.rlib.LOGICAL_ELT(cdata, i_c)
+            res = na_values.NA_Logical if elt == NA_Logical else bool(elt)
         elif isinstance(i, slice):
             res = type(self).from_iterable(
-                [_rinterface.rlib.LOGICAL_ELT(cdata, i_c)
+                [openrlib.rlib.LOGICAL_ELT(cdata, i_c)
                  for i_c in range(*i.indices(len(self)))]
             )
         else:
@@ -320,20 +327,20 @@ class BoolSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _rinterface.rlib.LOGICAL_ELT(cdata, i_c,
-                                             int(value))
+            openrlib.rlib.SET_LOGICAL_ELT(cdata, i_c,
+                                          int(value))
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
-                _rinterface.SET_LOGICAL_ELT(cdata, i_c,
-                                            int(v))
+                openrlib.SET_LOGICAL_ELT(cdata, i_c,
+                                         int(v))
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
 
     def memoryview(self):
         b = _rinterface.ffi.buffer(
-            _rinterface._LOGICAL(self.__sexp__._cdata),
-            _rinterface.ffi.sizeof('int') * len(self))
+            openrlib._LOGICAL(self.__sexp__._cdata),
+            openrlib.ffi.sizeof('int') * len(self))
         shape = bufferprotocol.getshape(self.__sexp__._cdata)
         mv = memoryview(b).cast('i', shape)
         return mv
@@ -341,18 +348,22 @@ class BoolSexpVector(SexpVector):
 
 class IntSexpVector(SexpVector):
 
-    _R_TYPE = _rinterface.rlib.INTSXP
-    _R_SET_ELT = _rinterface.SET_INTEGER_ELT
+    _R_TYPE = openrlib.rlib.INTSXP
+    _R_SET_ELT = openrlib.SET_INTEGER_ELT
     _CAST_IN = int
-    
+
     def __getitem__(self, i: int) -> typing.Union[int, 'IntSexpVector']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            res = _rinterface.rlib.INTEGER_ELT(cdata, i_c)
+            res = openrlib.rlib.INTEGER_ELT(cdata, i_c)
+            if res == na_values.NA_Integer:
+                res = na_values.NA_Integer
         elif isinstance(i, slice):
             res = type(self).from_iterable(
-                [_rinterface.rlib.INTEGER_ELT(cdata, i_c) for i_c in range(*i.indices(len(self)))]
+                [openrlib.rlib.INTEGER_ELT(
+                    cdata, i_c
+                ) for i_c in range(*i.indices(len(self)))]
             )
         else:
             raise TypeError(
@@ -363,20 +374,20 @@ class IntSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _rinterface.SET_INTEGER_ELT(cdata, i_c,
-                                        int(value))
+            openrlib.SET_INTEGER_ELT(cdata, i_c,
+                                     int(value))
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
-                _rinterface.SET_INTEGER_ELT(cdata, i_c,
-                                            int(v))
+                openrlib.SET_INTEGER_ELT(cdata, i_c,
+                                         int(v))
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
 
     def memoryview(self) -> memoryview:
         b = _rinterface.ffi.buffer(
-            _rinterface._INTEGER(self.__sexp__._cdata),
-            _rinterface.ffi.sizeof('int') * len(self))
+            openrlib._INTEGER(self.__sexp__._cdata),
+            openrlib.ffi.sizeof('int') * len(self))
         shape = bufferprotocol.getshape(self.__sexp__._cdata)
         mv = memoryview(b).cast('i', shape)
         return mv
@@ -384,41 +395,43 @@ class IntSexpVector(SexpVector):
 
 class FloatSexpVector(SexpVector):
 
-    _R_TYPE = _rinterface.rlib.REALSXP
-    _R_SET_ELT = _rinterface.SET_REAL_ELT
+    _R_TYPE = openrlib.rlib.REALSXP
+    _R_SET_ELT = openrlib.SET_REAL_ELT
     _CAST_IN = float
 
     def __getitem__(self, i: int) -> typing.Union[float, 'FloatSexpVector']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            res = _rinterface.rlib.REAL_ELT(cdata, i_c)
+            res = openrlib.rlib.REAL_ELT(cdata, i_c)
         elif isinstance(i, slice):
             res = type(self).from_iterable(
-                [_rinterface.rlib.REAL_ELT(cdata, i_c) for i_c in range(*i.indices(len(self)))]
+                [openrlib.rlib.REAL_ELT(
+                    cdata, i_c) for i_c in range(*i.indices(len(self)))]
             )
         else:
-            raise TypeError('Indices must be integers or slices, not %s' % type(i))
+            raise TypeError('Indices must be integers or slices, not %s' %
+                            type(i))
         return res
 
     def __setitem__(self, i: int, value):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _rinterface.SET_REAL_ELT(cdata, i_c,
-                                     float(value))
+            openrlib.SET_REAL_ELT(cdata, i_c,
+                                  float(value))
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
-                _rinterface.SET_REAL_ELT(cdata, i_c,
-                                         float(v))
+                openrlib.SET_REAL_ELT(cdata, i_c,
+                                      float(v))
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
 
     def memoryview(self):
         b = _rinterface.ffi.buffer(
-            _rinterface._REAL(self.__sexp__._cdata),
-            _rinterface.ffi.sizeof('double') * len(self))
+            openrlib._REAL(self.__sexp__._cdata),
+            openrlib.ffi.sizeof('double') * len(self))
         shape = bufferprotocol.getshape(self.__sexp__._cdata)
         mv = memoryview(b).cast('d', shape)
         return mv
@@ -426,19 +439,21 @@ class FloatSexpVector(SexpVector):
 
 class ComplexSexpVector(SexpVector):
 
-    _R_TYPE = _rinterface.rlib.CPLXSXP
-    _R_SET_ELT = lambda x, i, v: _rinterface._COMPLEX(x).__setitem__(i, v)
+    _R_TYPE = openrlib.rlib.CPLXSXP
+    _R_SET_ELT = lambda x, i, v: openrlib._COMPLEX(x).__setitem__(i, v)
     _CAST_IN = lambda x: (x.real, x.imag) if isinstance(x, complex) else x
 
-    def __getitem__(self, i: int) -> typing.Union[complex, 'ComplexSexpVector']:
+    def __getitem__(self,
+                    i: int) -> typing.Union[complex, 'ComplexSexpVector']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _ = _rinterface.rlib.COMPLEX_ELT(cdata, i_c)
+            _ = openrlib.rlib.COMPLEX_ELT(cdata, i_c)
             res = complex(_.r, _.i)
         elif isinstance(i, slice):
             res = type(self).from_iterable(
-                [_rinterface.rlib.COMPLEX_ELT(cdata, i_c) for i_c in range(*i.indices(len(self)))]
+                [openrlib.rlib.COMPLEX_ELT(
+                    cdata, i_c) for i_c in range(*i.indices(len(self)))]
             )
         else:
             raise TypeError(
@@ -450,30 +465,30 @@ class ComplexSexpVector(SexpVector):
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
             _ = complex(value)
-            _rinterface._COMPLEX(cdata)[i_c] = (_.real, _.imag)
+            openrlib._COMPLEX(cdata)[i_c] = (_.real, _.imag)
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
                 _ = complex(v)
-                _rinterface._COMPLEX(cdata)[i_c] = (_.real, _.imag)
+                openrlib._COMPLEX(cdata)[i_c] = (_.real, _.imag)
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
-        
+
 
 class ListSexpVector(SexpVector):
-    _R_TYPE = _rinterface.rlib.VECSXP
-    _R_SET_ELT = _rinterface.rlib.SET_VECTOR_ELT
-    _CAST_IN = _rinterface._get_cdata
+    _R_TYPE = openrlib.rlib.VECSXP
+    _R_SET_ELT = openrlib.rlib.SET_VECTOR_ELT
+    _CAST_IN = conversion._get_cdata
 
 
 class PairlistSexpVector(SexpVector):
-    _R_TYPE = _rinterface.rlib.LISTSXP
-    _R_SET_ELT = _rinterface.rlib.SET_VECTOR_ELT
-    _CAST_IN = _rinterface._get_cdata
+    _R_TYPE = openrlib.rlib.LISTSXP
+    _R_SET_ELT = openrlib.rlib.SET_VECTOR_ELT
+    _CAST_IN = conversion._get_cdata
 
     def __getitem__(self, i: int):
         cdata = self.__sexp__._cdata
-        rlib = _rinterface.rlib
+        rlib = openrlib.rlib
         if isinstance(i, int):
             # R-exts says that it is converted to a VECSXP when subsetted.
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -504,10 +519,9 @@ class PairlistSexpVector(SexpVector):
                         self._R_TYPE, n)
                 )
                 iter_res_cdata = res_cdata
-                set_elt = self._R_SET_ELT
                 prev_i = 0
                 lst_cdata = self.__sexp__._cdata
-                for i in iter_indices :
+                for i in iter_indices:
                     if i >= len(self):
                         raise IndexError('index out of range')
                     lst_cdata = rlib.Rf_nthcdr(lst_cdata, i - prev_i)
@@ -530,13 +544,13 @@ class PairlistSexpVector(SexpVector):
 
 
 class ExprSexpVector(SexpVector):
-    _R_TYPE = _rinterface.rlib.EXPRSXP
+    _R_TYPE = openrlib.rlib.EXPRSXP
     _R_GET_PTR = None
     _CAST_IN = None
 
 
 class LangSexpVector(SexpVector):
-    _R_TYPE = _rinterface.rlib.LANGSXP
+    _R_TYPE = openrlib.rlib.LANGSXP
     _R_GET_PTR = None
     _CAST_IN = None
 
@@ -544,21 +558,21 @@ class LangSexpVector(SexpVector):
     def __getitem__(self, i: int):
         cdata = self.__sexp__._cdata
         i_c = _rinterface._python_index_to_c(cdata, i)
-        return _rinterface.rlib.CAR(
-            _rinterface.rlib.Rf_nthcdr(cdata, i_c)
+        return openrlib.rlib.CAR(
+            openrlib.rlib.Rf_nthcdr(cdata, i_c)
         )
 
     def __setitem__(self, i: int, value):
         cdata = self.__sexp__._cdata
         i_c = _rinterface._python_index_to_c(cdata, i)
-        _rinterface.rlib.SETCAR(
-            _rinterface.rlib.Rf_nthcdr(cdata, i_c),
+        openrlib.rlib.SETCAR(
+            openrlib.rlib.Rf_nthcdr(cdata, i_c),
             value.__sexp__._cdata
         )
-    
+
 
 class SexpClosure(Sexp):
-    
+
     @_cdata_res_to_rinterface
     def __call__(self, *args, **kwargs):
         error_occured = _rinterface.ffi.new('int *', 0)
@@ -567,12 +581,12 @@ class SexpClosure(Sexp):
                 _rinterface.build_rcall(self.__sexp__._cdata, args,
                                         kwargs.items()))
             res = rmemory.protect(
-                _rinterface.rlib.R_tryEval(
+                openrlib.rlib.R_tryEval(
                     call_r,
                     embedded.globalenv.__sexp__._cdata,
                     error_occured))
             if error_occured[0]:
-                raise _rinterface.RRuntimeError(_rinterface._geterrmessage())
+                raise embedded.RRuntimeError(_rinterface._geterrmessage())
         return res
 
     @_cdata_res_to_rinterface
@@ -585,40 +599,42 @@ class SexpClosure(Sexp):
                 _rinterface.build_rcall(self.__sexp__._cdata, [],
                                         keyvals))
             res = rmemory.protect(
-                _rinterface.rlib.R_tryEval(call_r,
-                                           environment.__sexp__._cdata,
-                                           error_occured))
+                openrlib.rlib.R_tryEval(call_r,
+                                        environment.__sexp__._cdata,
+                                        error_occured))
             if error_occured[0]:
-                raise _rinterface.RRuntimeError(_rinterface._geterrmessage())
+                raise embedded.RRuntimeError(_rinterface._geterrmessage())
         return res
 
     @property
     @_cdata_res_to_rinterface
     def closureenv(self):
-        return _rinterface.rlib.CLOENV(self.__sexp__._cdata)
+        return openrlib.rlib.CLOENV(self.__sexp__._cdata)
 
 
 class SexpS4(Sexp):
     pass
 
+
 # TODO: clean up
 def make_extptr(obj, tag, protected):
     if protected is None:
-        cdata_protected = _rinterface.rlib.R_NilValue
+        cdata_protected = openrlib.rlib.R_NilValue
     else:
         try:
             cdata_protected = protected.__sexp__._cdata
         except AttributeError:
-            raise TypeError('Argument protected must inherit from %s' % type(Sexp))
-            
+            raise TypeError('Argument protected must inherit from %s' %
+                            type(Sexp))
+
     ptr = _rinterface.ffi.new_handle(obj)
     with memorymanagement.rmemory() as rmemory:
         cdata = rmemory.protect(
-            _rinterface.rlib.R_MakeExternalPtr(
+            openrlib.rlib.R_MakeExternalPtr(
                 ptr,
                 tag,
                 cdata_protected))
-        _rinterface.rlib.R_RegisterCFinalizer(
+        openrlib.rlib.R_RegisterCFinalizer(
             cdata,
             _rinterface._capsule_finalizer)
         res = _rinterface.SexpCapsuleWithPassenger(cdata, obj, ptr)
@@ -633,7 +649,7 @@ class SexpExtPtr(Sexp):
     def from_pyobject(cls, func, tag=TYPE_TAG,
                       protected=None):
         scaps = make_extptr(func,
-                            _rinterface._str_to_charsxp(cls.TYPE_TAG),
+                            conversion._str_to_charsxp(cls.TYPE_TAG),
                             protected)
         res = cls(scaps)
         if tag != cls.TYPE_TAG:
@@ -643,30 +659,50 @@ class SexpExtPtr(Sexp):
 
 # TODO: Only use rinterface-level ?
 conversion._R_RPY2_MAP.update({
-    _rinterface.rlib.EXPRSXP: ExprSexpVector,
-    _rinterface.rlib.LANGSXP: LangSexpVector,
-    _rinterface.rlib.ENVSXP: SexpEnvironment,
-    _rinterface.rlib.RAWSXP: ByteSexpVector,
-    _rinterface.rlib.LGLSXP: BoolSexpVector,
-    _rinterface.rlib.INTSXP: IntSexpVector,
-    _rinterface.rlib.REALSXP: FloatSexpVector,
-    _rinterface.rlib.CPLXSXP: ComplexSexpVector,
-    _rinterface.rlib.STRSXP: StrSexpVector,
-    _rinterface.rlib.VECSXP: ListSexpVector,
-    _rinterface.rlib.LISTSXP: PairlistSexpVector,
-    _rinterface.rlib.CLOSXP: SexpClosure,
-    _rinterface.rlib.BUILTINSXP: SexpClosure,
-    _rinterface.rlib.SPECIALSXP: SexpClosure,
-    _rinterface.rlib.EXTPTRSXP: SexpExtPtr,
-    _rinterface.rlib.SYMSXP: SexpSymbol,
-    _rinterface.rlib.S4SXP: SexpS4
+    openrlib.rlib.EXPRSXP: ExprSexpVector,
+    openrlib.rlib.LANGSXP: LangSexpVector,
+    openrlib.rlib.ENVSXP: SexpEnvironment,
+    openrlib.rlib.RAWSXP: ByteSexpVector,
+    openrlib.rlib.LGLSXP: BoolSexpVector,
+    openrlib.rlib.INTSXP: IntSexpVector,
+    openrlib.rlib.REALSXP: FloatSexpVector,
+    openrlib.rlib.CPLXSXP: ComplexSexpVector,
+    openrlib.rlib.STRSXP: StrSexpVector,
+    openrlib.rlib.VECSXP: ListSexpVector,
+    openrlib.rlib.LISTSXP: PairlistSexpVector,
+    openrlib.rlib.CLOSXP: SexpClosure,
+    openrlib.rlib.BUILTINSXP: SexpClosure,
+    openrlib.rlib.SPECIALSXP: SexpClosure,
+    openrlib.rlib.EXTPTRSXP: SexpExtPtr,
+    openrlib.rlib.SYMSXP: SexpSymbol,
+    openrlib.rlib.S4SXP: SexpS4
     })
 conversion._R_RPY2_DEFAULT_MAP = Sexp
 
 conversion._PY_RPY2_MAP.update({
-    int: _rinterface._int_to_sexp,
-    float: _rinterface._float_to_sexp
+    int: conversion._int_to_sexp,
+    float: conversion._float_to_sexp
     })
+
+conversion._PY_R_MAP.update({
+    _rinterface.ffi.CData: False,
+    # integer
+    int: conversion._int_to_sexp,
+    na_values.NAIntegerType: conversion._int_to_sexp,
+    # float
+    float: conversion._float_to_sexp,
+    na_values.NARealType: conversion._float_to_sexp,
+    # boolean
+    bool: conversion._bool_to_sexp,
+    na_values.NALogicalType: conversion._bool_to_sexp,
+    # string
+    str: conversion._str_to_sexp,
+    sexp.CharSexp: None,
+    na_values.NACharacterType: None,
+    # complex
+    complex: None,
+    # None
+    type(None): lambda x: openrlib.rlib.R_NilValue})
 
 
 def vector(iterable, rtype: RTYPES):
@@ -686,6 +722,7 @@ def vector(iterable, rtype: RTYPES):
 class RRuntimeWarning(RuntimeWarning):
     pass
 
+
 emptyenv = None
 baseenv = None
 globalenv = None
@@ -694,9 +731,11 @@ MissingArg = None
 NA_Character = None
 NA_Integer = None
 NA_Logical = None
+NA = None
 NA_Real = None
 NA_Complex = None
-                                              
+
+
 def initr() -> None:
     status = embedded._initr()
     atexit.register(endr, 0)
@@ -708,26 +747,24 @@ def initr() -> None:
 def _post_initr_setup():
 
     embedded.emptyenv = SexpEnvironment(
-        _rinterface.SexpCapsule(_rinterface.rlib.R_EmptyEnv)
+        _rinterface.SexpCapsule(openrlib.rlib.R_EmptyEnv)
     )
     global emptyenv
     emptyenv = embedded.emptyenv
 
     embedded.baseenv = SexpEnvironment(
-        _rinterface.SexpCapsule(_rinterface.rlib.R_BaseEnv)
+        _rinterface.SexpCapsule(openrlib.rlib.R_BaseEnv)
     )
     global baseenv
     baseenv = embedded.baseenv
 
-
     embedded.globalenv = SexpEnvironment(
-        _rinterface.SexpCapsule(_rinterface.rlib.R_GlobalEnv)
+        _rinterface.SexpCapsule(openrlib.rlib.R_GlobalEnv)
     )
     global globalenv
     globalenv = embedded.globalenv
 
-
-    global NULL    
+    global NULL
     NULL = _NULL()
 
     global MissingArg
@@ -735,33 +772,34 @@ def _post_initr_setup():
 
     global NA_Character
     na_values.NA_Character = CharSexp(
-        _rinterface.SexpCapsule(_rinterface.rlib.R_NaString)
+        _rinterface.SexpCapsule(openrlib.rlib.R_NaString)
     )
     NA_Character = na_values.NA_Character
 
     global NA_Integer
-    na_values.NA_Integer = na_values.NAIntegerType(_rinterface.rlib.R_NaInt)
+    na_values.NA_Integer = na_values.NAIntegerType(openrlib.rlib.R_NaInt)
     NA_Integer = na_values.NA_Integer
 
-    global NA_Logical
-    na_values.NA_Logical = na_values.NALogicalType(_rinterface.rlib.R_NaInt)
+    global NA_Logical, NA
+    na_values.NA_Logical = na_values.NALogicalType(openrlib.rlib.R_NaInt)
     NA_Logical = na_values.NA_Logical
+    NA = NA_Logical
 
     global NA_Real
-    na_values.NA_Real = na_values.NARealType(_rinterface.rlib.R_NaReal)
+    na_values.NA_Real = na_values.NARealType(openrlib.rlib.R_NaReal)
     NA_Real = na_values.NA_Real
 
     global NA_Complex
     na_values.NA_Complex = _rinterface.ffi.new(
         'Rcomplex *',
-        [_rinterface.rlib.R_NaReal, _rinterface.rlib.R_NaReal])
+        [openrlib.rlib.R_NaReal, openrlib.rlib.R_NaReal])
     NA_Complex = na_values.NA_Complex
 
 
 def rternalize(function: typing.Callable):
     """ Takes an arbitrary Python function and wrap it
     in such a way that it can be called from the R side. """
-    assert callable(function) 
+    assert callable(function)
     rpy_fun = SexpExtPtr.from_pyobject(function)
     # TODO: this is a hack. Find a better way.
     template = parse("""
@@ -775,5 +813,3 @@ def rternalize(function: typing.Callable):
     #   refcount down to zero when returning
     res.__nested_sexp__ = rpy_fun.__sexp__
     return res
-
-    

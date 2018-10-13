@@ -1,17 +1,19 @@
 """NA (Non-Available) values in R."""
 
-from . import _rinterface_capi as _rinterface
 from . import embedded
+from . import openrlib
 from . import sexp
 
 
-def singleton(cls):
-    instances = {}
-    def _singleton(*args, **kwargs):
+class Singleton(type):
+
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        instances = cls._instances
         if cls not in instances:
-            instances[cls] = cls(*args, **kwargs)
+            instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return instances[cls]
-    return _singleton
 
 
 NA_Character = None
@@ -21,81 +23,92 @@ NA_Real = None
 NA_Complex = None
 
 
-@singleton
-class NAIntegerType(int):
+class NAIntegerType(int, metaclass=Singleton):
 
     def __new__(cls, *args, **kwargs):
         if not embedded.isready():
-            raise RNotReadyError("The embedded R is not ready to use.")
-        super().__new__(cls, _rinterface.rlib.R_NaInt)
+            raise embedded.RNotReadyError(
+                'The embedded R is not ready to use.')
+        return super().__new__(cls, openrlib.rlib.R_NaInt)
 
     def __repr__(self):
+        return 'NA_integer_'
+
+    def __str__(self):
         return 'NA_integer_'
 
     def __bool__(self):
         raise ValueError('R value for missing integer value')
 
 
-@singleton
-class NACharacterType(sexp.CharSexp):
+class NACharacterType(sexp.CharSexp, metaclass=Singleton):
 
     def __init__(self, x):
         if not embedded.isready():
-            raise RNotReadyError("The embedded R is not ready to use.")
-        super().__init__(_rinterface.rlib.R_NaString)
-    
+            raise embedded.RNotReadyError(
+                'The embedded R is not ready to use.')
+        return super().__init__(openrlib.rlib.R_NaString)
+
     def __repr__(self):
+        return 'NA_character_'
+
+    def __str__(self):
         return 'NA_character_'
 
     def __bool__(self):
         raise ValueError('R value for missing character value')
 
-        
-@singleton
-class NALogicalType(int):
+
+class NALogicalType(int, metaclass=Singleton):
 
     def __new__(cls, *args, **kwargs):
         if not embedded.isready():
-            raise RNotReadyError("The embedded R is not ready to use.")
-        super().__new__(cls, _rinterface.rlib.R_NaInt)
+            raise embedded.RNotReadyError(
+                'The embedded R is not ready to use.')
+        return super().__new__(cls, openrlib.rlib.R_NaInt)
 
     def __repr__(self) -> str:
+        return 'NA'
+
+    def __str__(self):
         return 'NA'
 
     def __bool__(self) -> bool:
         raise ValueError('R value for missing boolean value')
 
 
-@singleton
-class NARealType(float):
+class NARealType(float, metaclass=Singleton):
 
     def __new__(cls, *args, **kwargs):
         if not embedded.isready():
-            raise RNotReadyError("The embedded R is not ready to use.")
-        super().__new__(cls, _rinterface.rlib.R_NaReal)
+            raise embedded.RNotReadyError(
+                'The embedded R is not ready to use.')
+        return super().__new__(cls, openrlib.rlib.R_NaReal)
 
     def __repr__(self) -> str:
+        return 'NA_real_'
+
+    def __str__(self):
         return 'NA_real_'
 
     def __bool__(self) -> bool:
         raise ValueError('R value for missing float value')
 
 
-
-@singleton
-class NAComplexType(complex):
+class NAComplexType(complex, metaclass=Singleton):
 
     def __new__(cls, *args, **kwargs):
         if not embedded.isready():
-            raise RNotReadyError("The embedded R is not ready to use.")
-        na_complex = _rinterface.ffi.new('Rcomplex *',
-                                         [_rinterface.rlib.R_NaReal,
-                                          _rinterface.rlib.R_NaReal])
-        super().__new__(cls,
-                        _rinterface.rlib.R_NaReal,
-                        _rinterface.rlib.R_NaReal)
+            raise embedded.RNotReadyError(
+                'The embedded R is not ready to use.')
+        return super().__new__(cls,
+                               openrlib.rlib.R_NaReal,
+                               openrlib.rlib.R_NaReal)
 
     def __repr__(self):
+        return 'NA_complex_'
+
+    def __str__(self):
         return 'NA_complex_'
 
     def __bool__(self):

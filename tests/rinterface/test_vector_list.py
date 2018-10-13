@@ -21,12 +21,15 @@ def test_init_From_seq_invalid_elt():
     with pytest.raises(Exception):
         ri.ListSexpVector(seq)
 
+
 def test_getitem():
     seq = (ri.FloatSexpVector([1.0]),
            ri.IntSexpVector([2, 3]),
            ri.StrSexpVector(['foo', 'bar']))
     vec = ri.ListSexpVector(seq)
     utils.assert_equal_sequence(vec[1], ri.IntSexpVector([2, 3]))
+    with pytest.raises(TypeError):
+        vec[(2,3)]
 
     
 def test_setitem():
@@ -37,6 +40,9 @@ def test_setitem():
     vec[1] = ri.BoolSexpVector([True, True, False])
     utils.assert_equal_sequence(vec[1],
                                 ri.BoolSexpVector([True, True, False]))
+    with pytest.raises(TypeError):
+        vec[(2,3)] = 123
+
 
 
 def test_getslice():

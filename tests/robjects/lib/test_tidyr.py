@@ -1,4 +1,5 @@
 import pytest
+from rpy2.rinterface_lib.embedded import RRuntimeError
 
 # Try to load R dplyr package, and see if it works
 has_tidyr = None

@@ -5,7 +5,9 @@ import multiprocessing
 import os
 import pickle
 import pytest
-import rpy2.rinterface
+from rpy2 import rinterface
+import rpy2
+import rpy2.rinterface_lib._rinterface_capi as _rinterface
 import signal
 import sys
 import subprocess
@@ -13,7 +15,6 @@ import tempfile
 import time
 
 
-rinterface = rpy2.rinterface
 rinterface.initr()
 
 
@@ -45,20 +46,6 @@ def _call_with_ended_r(queue):
     except Exception as e:
         res = (False, e)
     queue.put(res)
-
-
-def test_consolewrite_print():
-    tmp_file = io.StringIO()
-    stdout = sys.stdout
-    sys.stdout = tmp_file
-    try:
-        rinterface.callbacks.consolewrite_print('haha')
-    finally:
-        sys.stdout = stdout
-    tmp_file.flush()
-    tmp_file.seek(0)
-    assert 'haha' == ''.join(s for s in tmp_file).rstrip()
-    tmp_file.close()
 
 
 @pytest.mark.skip(reason='Spawned process seems to share initialization state with parent.')
@@ -110,15 +97,14 @@ def test_parse_unicode():
 
 
 def test_parse_incomplete_error():
-    with pytest.raises(rinterface.embedded.RParsingError) as rpe:
+    with pytest.raises(_rinterface.RParsingError) as rpe:
         rinterface.parse("2 + 3 /")
-    assert rpe.value.status == (rinterface
-                                .embedded
+    assert rpe.value.status == (_rinterface
                                 .PARSING_STATUS.PARSE_INCOMPLETE)
 
 
 def test_parse_error():
-    with pytest.raises(rinterface.embedded.RParsingError):
+    with pytest.raises(_rinterface.RParsingError):
         rinterface.parse("2 + 3 , 1")
 
         

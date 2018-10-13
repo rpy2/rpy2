@@ -1,11 +1,11 @@
 """Interface to and utilities for R's memory management."""
 
 import contextlib
-from . import _rinterface_capi as _rinterface
+from . import openrlib
+
 
 # TODO: make it extend ContextManager and delete the function
 #   rmemory ?
-
 class ProtectionTracker(object):
     """Convenience class to keep track of R's C-level protection stack.
 
@@ -24,7 +24,7 @@ class ProtectionTracker(object):
     def protect(self, cdata):
         """Pass-through function that adds the R object to the short-term
         stack of objects protected from garbase collection."""
-        cdata = _rinterface.rlib.Rf_protect(cdata)
+        cdata = openrlib.rlib.Rf_protect(cdata)
         self._counter += 1
         return cdata
 
@@ -35,12 +35,12 @@ class ProtectionTracker(object):
         if n > self._counter:
             raise ValueError('n > count')
         self._counter -= n
-        _rinterface.rlib.Rf_unprotect(n)
+        openrlib.rlib.Rf_unprotect(n)
 
     def unprotect_all(self) -> None:
         """Release the total count of objects this instance knows to be
         protected from the protection stack."""
-        _rinterface.rlib.Rf_unprotect(self._counter)
+        openrlib.rlib.Rf_unprotect(self._counter)
         self._counter = 0
 
 

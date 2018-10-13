@@ -22,12 +22,16 @@ def test_init_from_seq_invalid_item():
 def test_getitem():
     vec = ri.StrSexpVector(['foo', 'bar', 'baz'])
     assert vec[1] == 'bar'
+    with pytest.raises(TypeError):
+        vec[(2,3)]
 
     
 def test_setitem():
     vec = ri.StrSexpVector(['foo', 'bar', 'baz'])
     vec[1] = 'boo'
     assert vec[1] == 'boo'
+    with pytest.raises(TypeError):
+        vec[(2,3)] = 'boo'
 
 
 def test_getslice():

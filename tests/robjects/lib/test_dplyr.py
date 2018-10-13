@@ -1,7 +1,7 @@
 import pytest
 
 # Try to load R dplyr package, and see if it works
-from rpy2.rinterface import RRuntimeError
+from rpy2.rinterface_lib.embedded import RRuntimeError
 has_dplyr = None
 try:
     from rpy2.robjects.lib import dplyr

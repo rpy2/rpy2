@@ -1,22 +1,15 @@
 # TODO: make it cffi-buildable with conditional function definition
 # (Python if ABI, C if API)
+import enum
 import logging
-import os
 import warnings
+from . import openrlib
 from _rinterface_cffi import ffi
-import rpy2.situation
 from . import conversion
+from . import embedded
 from . import memorymanagement
 
 logger = logging.getLogger(__name__)
-
-R_HOME = rpy2.situation.get_r_home()
-if R_HOME is None:
-    raise ImportError('R_HOME cannot be determined. '
-                      'Try python -m rpy2.situation')
-
-lib_path = os.path.join(R_HOME, "lib", "libR.so")
-rlib = ffi.dlopen(lib_path)
 
 # TODO: How can I reliably get MAX_INT from limits.h ?
 _MAX_INT = 2**32-1
@@ -47,7 +40,7 @@ def _preserve(cdata):
     addr = int(ffi.cast('uintptr_t', cdata))
     count = _R_PRESERVED.get(addr, 0)
     if count == 0:
-        rlib.R_PreserveObject(cdata)
+        openrlib.rlib.R_PreserveObject(cdata)
     _R_PRESERVED[addr] = count + 1
     return addr
 
@@ -57,7 +50,7 @@ def _release(cdata):
     count = _R_PRESERVED[addr] - 1
     if count == 0:
         del(_R_PRESERVED[addr])
-        rlib.R_ReleaseObject(cdata)
+        openrlib.rlib.R_ReleaseObject(cdata)
     else:
         _R_PRESERVED[addr] = count
 
@@ -65,9 +58,9 @@ def _release(cdata):
 @ffi.callback('void (SEXP)')
 def _capsule_finalizer(cdata):
     try:
-        rlib.R_ClearExternalPtr(cdata)
+        openrlib.rlib.R_ClearExternalPtr(cdata)
     except Exception as e:
-        warnings.warn(str(e))
+        warnings.warn('Exception downgraded to warning: %s' % str(e))
 
 
 class SexpCapsule(object):
@@ -126,25 +119,8 @@ class UnmanagedSexpCapsule(object):
         self._cdata = cdata
 
 
-def _str_to_cchar(s, encoding: str = 'utf-8'):
-    # TODO: use isStrinb and installTrChar
-    b = s.encode(encoding)
-    return ffi.new('char[]', b)
-
-
-def _cchar_to_str(c, encoding: str = 'utf-8'):
-    # TODO: use isStrinb and installTrChar
-    s = ffi.string(c).decode(encoding)
-    return s
-
-
-def _cchar_to_str_with_maxlen(c, maxlen: int):
-    # TODO: use isStrinb and installTrChar
-    s = ffi.string(c, maxlen).decode('utf-8')
-    return s
-
-
 def _findvar(symbol, r_environment):
+    rlib = openrlib.rlib
     res = rlib.Rf_protect(rlib.Rf_findVar(symbol,
                                           r_environment))
     rlib.Rf_unprotect(1)
@@ -152,6 +128,7 @@ def _findvar(symbol, r_environment):
 
 
 def _findfun(symbol, r_environment):
+    rlib = openrlib.rlib
     res = rlib.Rf_protect(rlib.Rf_findFun(symbol,
                                           r_environment))
     rlib.Rf_unprotect(1)
@@ -159,91 +136,33 @@ def _findfun(symbol, r_environment):
 
 
 def _findVarInFrame(symbol, r_environment):
-    res = rlib.Rf_protect(rlib.Rf_findVarInFrame(r_environment, symbol))
-    rlib.Rf_unprotect(1)
+    res = openrlib.rlib.Rf_protect(
+        openrlib.rlib.Rf_findVarInFrame(r_environment, symbol))
+    openrlib.rlib.Rf_unprotect(1)
     return res
-
-
-# R macros and functions
-
-def _get_symbol_or_fallback(symbol: str, fallback):
-    """Get a cffi object from rlib, or the fallback if missing."""
-    try:
-        res = getattr(rlib, symbol)
-    except ffi.error:
-        res = fallback
-    return res
-
-
-def _get_integer_elt_fallback(vec, i: int):
-    return _INTEGER(vec)[i]
-
-
-INTEGER_ELT = _get_symbol_or_fallback('INTEGER_ELT',
-                                      _get_integer_elt_fallback)
-
-
-def _set_integer_elt_fallback(vec, i: int, value):
-    _INTEGER(vec)[i] = value
-
-
-SET_INTEGER_ELT = _get_symbol_or_fallback('SET_INTEGER_ELT',
-                                          _set_integer_elt_fallback)
-
-
-def _get_logical_elt_fallback(vec, i: int):
-    return _LOGICAL(vec)[i]
-
-
-LOGICAL_ELT = _get_symbol_or_fallback('LOGICAL_ELT',
-                                      _get_logical_elt_fallback)
-
-
-def _set_logical_elt_fallback(vec, i: int, value):
-    _LOGICAL(vec)[i] = value
-
-
-SET_LOGICAL_ELT = _get_symbol_or_fallback('SET_LOGICAL_ELT',
-                                          _set_logical_elt_fallback)
-
-
-def _get_real_elt_fallback(vec, i: int):
-    return _REAL(vec)[i]
-
-
-REAL_ELT = _get_symbol_or_fallback('REAL_ELT',
-                                   _get_real_elt_fallback)
-
-
-def _set_real_elt_fallback(vec, i: int, value):
-    _REAL(vec)[i] = value
-
-
-SET_REAL_ELT = _get_symbol_or_fallback('SET_REAL_ELT',
-                                       _set_real_elt_fallback)
 
 
 def _GET_DIM(robj):
-    res = rlib.Rf_getAttrib(robj,
-                            rlib.R_DimSymbol)
+    res = openrlib.rlib.Rf_getAttrib(robj,
+                                     openrlib.rlib.R_DimSymbol)
     return res
 
 
 def _GET_DIMNAMES(robj):
-    res = rlib.Rf_getAttrib(robj,
-                            rlib.R_DimNames)
+    res = openrlib.rlib.Rf_getAttrib(robj,
+                                     openrlib.rlib.R_DimNames)
     return res
 
 
 def _GET_LEVELS(robj):
-    res = rlib.Rf_getAttrib(robj,
-                            rlib.R_LevelsSymbol)
+    res = openrlib.rlib.Rf_getAttrib(robj,
+                                     openrlib.rlib.R_LevelsSymbol)
     return res
 
 
 def _GET_NAMES(robj):
-    res = rlib.Rf_getAttrib(robj,
-                            rlib.R_NamesSymbol)
+    res = openrlib.rlib.Rf_getAttrib(robj,
+                                     openrlib.rlib.R_NamesSymbol)
     return res
 
 
@@ -259,145 +178,48 @@ def _NAMED(robj):
     return robj.sxpinfo.named
 
 
-def _LOGICAL(x):
-    return ffi.cast('int *', rlib.DATAPTR(x))
-
-
-def _INTEGER(x):
-    return ffi.cast('int *', rlib.DATAPTR(x))
-
-
-def _RAW(x):
-    return ffi.cast('Rbyte *', rlib.DATAPTR(x))
-
-
-def _REAL(robj):
-    return ffi.cast('double *', rlib.DATAPTR(robj))
-
-
-def _COMPLEX(robj):
-    return ffi.cast('Rcomplex *', rlib.DATAPTR(robj))
-
-
 # TODO: still useful or is it in the C API ?
 def _VECTOR_ELT(robj, i):
-    return ffi.cast('SEXP *', rlib.DATAPTR(robj))[i]
+    return ffi.cast('SEXP *', openrlib.rlib.DATAPTR(robj))[i]
 
 
 def _STRING_PTR(robj):
-    return ffi.cast('SEXP *', rlib.DATAPTR(robj))
+    return ffi.cast('SEXP *', openrlib.rlib.DATAPTR(robj))
 
 
 def _VECTOR_PTR(robj):
-    return ffi.cast('SEXP *', rlib.DATAPTR(robj))
+    return ffi.cast('SEXP *', openrlib.rlib.DATAPTR(robj))
 
 
 def _STRING_VALUE(robj):
+    rlib = openrlib.rlib
     return rlib.R_CHAR(rlib.Rf_asChar(robj))
 
 
 def _string_getitem(cdata, i):
-    return _cchar_to_str(
+    rlib = openrlib.rlib
+    return conversion._cchar_to_str(
         rlib.R_CHAR(rlib.STRING_ELT(cdata, i))
     )
 
 
 # TODO: still used ?
 def _string_setitem(cdata, i, value_b):
+    rlib = openrlib.rlib
     rlib.SET_STRING_ELT(
-        cdata, i, rlib.Rf_mkCharCE(value_b, _CE_UTF8)
+        cdata, i, rlib.Rf_mkCharCE(value_b, conversion._CE_UTF8)
     )
 
 
 def _has_slot(cdata, name_b):
-    res = rlib.R_has_slot(cdata, name_b)
+    res = openrlib.rlib.R_has_slot(cdata, name_b)
     return bool(res)
-
-
-# TODO: can scalars in R's C API be used ?
-def _int_to_sexp(val: int):
-    # TODO: test value is not too large for R's ints
-    s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.INTSXP, 1))
-    SET_INTEGER_ELT(s, 0, val)
-    rlib.Rf_unprotect(1)
-    return s
-
-
-def _bool_to_sexp(val: bool):
-    # TODO: test value is not too large for R's ints
-    s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.LGLSXP, 1))
-    SET_LOGICAL_ELT(s, 0, int(val))
-    rlib.Rf_unprotect(1)
-    return s
-
-
-def _float_to_sexp(val: float):
-    s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.REALSXP, 1))
-    SET_REAL_ELT(s, 0, val)
-    rlib.Rf_unprotect(1)
-    return s
-
-
-# {
-#     'ASCII'
-#     'latin-1': rlib.cetype_t.CE_LATIN1,
-#     'utf-8': rlib.cetype_t.CE_UTF8,
-# }
-_CE_UTF8 = 2
-
-
-def _str_to_charsxp(val: str):
-    if val is None:
-        s = rlib.R_NaString
-    else:
-        cchar = _str_to_cchar(val)
-        s = rlib.Rf_mkCharCE(cchar, _CE_UTF8)
-    return s
-
-
-def _str_to_sexp(val: str):
-    s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.STRSXP, 1))
-    charval = _str_to_charsxp(val)
-    rlib.SET_STRING_ELT(s, 0, charval)
-    rlib.Rf_unprotect(1)
-    return s
-
-
-def _str_to_symsxp(val: str):
-    cchar = _str_to_cchar(val)
-    s = rlib.Rf_install(cchar)
-    return s
-
-
-PY_R_MAP = {
-    ffi.CData: False,
-    int: _int_to_sexp,
-    float: _float_to_sexp,
-    bool: _bool_to_sexp,
-    str: _str_to_sexp,
-    complex: None,
-    type(None): lambda x: rlib.R_NilValue
-    }
-
-
-def _get_cdata(obj):
-    cast = PY_R_MAP.get(type(obj))
-    if cast is False:
-        cdata = obj
-    elif cast is None:
-        try:
-            cdata = obj.__sexp__._cdata
-        except AttributeError as ae:
-            raise ValueError('Not an rpy2 R object and unable '
-                             'to cast it into one: %s' % repr(obj))
-    else:
-        cdata = cast(obj)
-    return cdata
 
 
 def build_rcall(rfunction,
                 args=[],
                 kwargs=[]):
+    rlib = openrlib.rlib
     rcall = rlib.Rf_protect(
         rlib.Rf_allocList(len(args)+len(kwargs)+1)
     )
@@ -406,15 +228,16 @@ def build_rcall(rfunction,
         rlib.SETCAR(rcall, rfunction)
         item = rlib.CDR(rcall)
         for val in args:
-            cdata = rmemory.protect(_get_cdata(val))
+            cdata = rmemory.protect(conversion._get_cdata(val))
             rlib.SETCAR(item, cdata)
             item = rlib.CDR(item)
         for key, val in kwargs:
             if key is not None:
                 _assert_valid_slotname(key)
-                rlib.SET_TAG(item,
-                             rlib.Rf_install(_str_to_cchar(key)))
-            cdata = rmemory.protect(_get_cdata(val))
+                rlib.SET_TAG(
+                    item,
+                    rlib.Rf_install(conversion._str_to_cchar(key)))
+            cdata = rmemory.protect(conversion._get_cdata(val))
             rlib.SETCAR(item, cdata)
             item = rlib.CDR(item)
     return rcall
@@ -423,8 +246,10 @@ def build_rcall(rfunction,
 def _evaluated_promise(function):
     def _(*args, **kwargs):
         robj = function(*args, **kwargs)
-        if _TYPEOF(robj) == rlib.PROMSXP:
-            robj = rlib.Rf_eval(robj, rlib.R_GlobalEnv)
+        if _TYPEOF(robj) == openrlib.rlib.PROMSXP:
+            robj = openrlib.rlib.Rf_eval(
+                robj,
+                openrlib.rlib.R_GlobalEnv)
         return robj
     return _
 
@@ -437,10 +262,10 @@ def _python_index_to_c(cdata, i: int) -> int:
     indicate that indexing is relative to the end of the
     sequence, into a strictly positive or null index as
     use in C.
-    
+
     Raises an exception IndexError if out of bounds."""
-    
-    size = rlib.Rf_xlength(cdata)
+
+    size = openrlib.rlib.Rf_xlength(cdata)
     if i < 0:
         # x = [0,1,2,3]
         # x[-3] = x[size + (-3)] = x[4 - 3] = x[1] = 1
@@ -460,6 +285,7 @@ def _assert_valid_slotname(name: str):
 
 
 def _list_attrs(cdata):
+    rlib = openrlib.rlib
     attrs = rlib.ATTRIB(cdata)
     nvalues = rlib.Rf_length(attrs)
     res = rlib.Rf_allocVector(rlib.STRSXP, nvalues)
@@ -468,7 +294,8 @@ def _list_attrs(cdata):
     attr_i = 0
     while attrs != rlib.R_NilValue:
         if rlib.TAG(attrs) == rlib.R_NilValue:
-            rlib.SET_STRING_ELT(res, attr_i, rlib.R_BlankString)
+            rlib.SET_STRING_ELT(res, attr_i,
+                                rlib.R_BlankString)
         else:
             rlib.SET_STRING_ELT(res, attr_i, rlib.PRINTNAME(rlib.TAG(attrs)))
         attrs = rlib.CDR(attrs)
@@ -478,8 +305,11 @@ def _list_attrs(cdata):
 
 
 def _remove(name, env, inherits):
-    internal = rlib.Rf_protect(rlib.Rf_install(_str_to_cchar('.Internal')))
-    remove = rlib.Rf_protect(rlib.Rf_install(_str_to_cchar('remove')))
+    rlib = openrlib.rlib
+    internal = rlib.Rf_protect(
+        rlib.Rf_install(conversion._str_to_cchar('.Internal')))
+    remove = rlib.Rf_protect(
+        rlib.Rf_install(conversion._str_to_cchar('remove')))
     args = rlib.Rf_protect(rlib.Rf_lang4(remove, name,
                                          env, inherits))
     call = rlib.Rf_protect(rlib.Rf_lang2(internal, args))
@@ -489,16 +319,13 @@ def _remove(name, env, inherits):
     return res
 
 
-class RRuntimeError(Exception):
-    pass
-
-
 def _geterrmessage():
+    rlib = openrlib.rlib
     # TODO: use isString and installTrChar
     with memorymanagement.rmemory() as rmemory:
         symbol = rmemory.protect(
             rlib.Rf_install(
-                _str_to_cchar('geterrmessage'))
+                conversion._str_to_cchar('geterrmessage'))
         )
         geterrmessage = _findvar(
             symbol,
@@ -517,11 +344,14 @@ def serialize(cdata, cdata_env):
     Note that the R string returned is *not* protected from
     the R garbage collection."""
 
+    rlib = openrlib.rlib
+
     with memorymanagement.rmemory() as rmemory:
         sym_serialize = rmemory.protect(
-            rlib.Rf_install(_str_to_cchar('serialize'))
+            rlib.Rf_install(conversion._str_to_cchar('serialize'))
         )
-        func_serialize = rmemory.protect(_findfun(sym_serialize, rlib.R_BaseEnv))
+        func_serialize = rmemory.protect(
+            _findfun(sym_serialize, rlib.R_BaseEnv))
         r_call = rmemory.protect(
             rlib.Rf_lang3(func_serialize, cdata, rlib.R_NilValue)
         )
@@ -530,7 +360,7 @@ def serialize(cdata, cdata_env):
                              cdata_env,
                              error_occured)
         if error_occured[0]:
-            raise RRuntimeError(_geterrmessage())
+            raise embedded.RRuntimeError(_geterrmessage())
         return res
 
 
@@ -540,9 +370,12 @@ def unserialize(cdata, cdata_env):
     Note that the R object returned is *not* protected from
     the R garbage collection."""
 
+    rlib = openrlib.rlib
+
     with memorymanagement.rmemory() as rmemory:
         sym_unserialize = rmemory.protect(
-            rlib.Rf_install(_str_to_cchar('unserialize'))
+            rlib.Rf_install(
+                conversion._str_to_cchar('unserialize'))
         )
         func_unserialize = rmemory.protect(_findfun(sym_unserialize,
                                                     rlib.R_BaseEnv))
@@ -554,7 +387,7 @@ def unserialize(cdata, cdata_env):
                              cdata_env,
                              error_occured)
         if error_occured[0]:
-            raise RRuntimeError(_geterrmessage())
+            raise embedded.RRuntimeError(_geterrmessage())
 
         return res
 
@@ -564,6 +397,9 @@ def _evaluate_in_r(rargs):
     # An uncaught exception in the boby of this function would
     # result in a segfault. we wrap it in a try-except an report
     # exceptions as logs.
+
+    rlib = openrlib.rlib
+
     try:
         rargs = rlib.CDR(rargs)
         cdata = rlib.CAR(rargs)
@@ -585,7 +421,7 @@ def _evaluate_in_r(rargs):
                 pyargs.append(conversion._cdata_to_rinterface(cdata))
             else:
                 # Named arguments
-                name = _cchar_to_str(
+                name = conversion._cchar_to_str(
                     rlib.R_CHAR(rlib.PRINTNAME(rlib.TAG(rargs)))
                 )
                 pykwargs[name] = conversion._cdata_to_rinterface(cdata)
@@ -604,22 +440,60 @@ def _evaluate_in_r(rargs):
         # sole control.
         return conversion._python_to_cdata(res)
     except Exception as e:
-        logger.error('%s: %s - %s- %s' % (type(e), e))
+        logger.error('%s: %s' % (type(e), e))
         return rlib.R_NilValue
 
 
 def _register_external_symbols() -> None:
+    python_cchar = ffi.new('char []', b'.Python')
     externalmethods = ffi.new(
         'R_ExternalMethodDef[]',
-        [[ffi.new('char []', b'.Python'),
+        [[python_cchar,
           ffi.cast('DL_FUNC', _evaluate_in_r),
           -1],
          [ffi.NULL, ffi.NULL, 0]])
-    rlib.R_registerRoutines(
-        rlib.R_getEmbeddingDllInfo(),
+    openrlib.rlib.R_registerRoutines(
+        openrlib.rlib.R_getEmbeddingDllInfo(),
         ffi.NULL,
         ffi.NULL,
         ffi.NULL,
         externalmethods
     )
 
+
+class PARSING_STATUS(enum.Enum):
+    PARSE_NULL = openrlib.rlib.PARSE_NULL
+    PARSE_OK = openrlib.rlib.PARSE_OK
+    PARSE_INCOMPLETE = openrlib.rlib.PARSE_INCOMPLETE
+    PARSE_ERROR = openrlib.rlib.PARSE_ERROR
+    PARSE_EOF = openrlib.rlib.PARSE_EOF
+
+
+class RParsingError(Exception):
+
+    def __init__(self, msg: str, status: int):
+        super().__init__(msg)
+        self.status = status
+
+
+def _parse(cdata, num):
+    rlib = openrlib.rlib
+    status = ffi.new('ParseStatus[1]', None)
+    res = rlib.Rf_protect(
+        rlib.R_ParseVector(
+            cdata,  # text
+            num,
+            status,
+            rlib.R_NilValue)
+    )
+    # TODO: design better handling of possible status:
+    # PARSE_NULL,
+    # PARSE_OK,
+    # PARSE_INCOMPLETE,
+    # PARSE_ERROR,
+    # PARSE_EOF
+    if status[0] != rlib.PARSE_OK:
+        rlib.Rf_unprotect(1)
+        raise RParsingError('R parsing', PARSING_STATUS(status[0]))
+    rlib.Rf_unprotect(1)
+    return res

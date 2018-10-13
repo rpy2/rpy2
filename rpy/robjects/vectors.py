@@ -12,7 +12,8 @@ from time import struct_time, mktime, tzname
 from operator import attrgetter
 
 from rpy2.rinterface import (Sexp, SexpVector, ListSexpVector, StrSexpVector,
-                             IntSexpVector, BoolSexpVector, ComplexSexpVector,
+                             IntSexpVector, ByteSexpVector, BoolSexpVector,
+                             ComplexSexpVector,
                              FloatSexpVector, R_NilValue, NA_Real, NA_Integer,
                              NA_Character, NA_Logical, NULL, MissingArg)
 
@@ -306,14 +307,14 @@ class Vector(RObjectMixin, SexpVector):
         res = conversion.rpy2py(res)
         return res
 
-    def repr_format_elt(self, elt, max_width = 12):        
+    def repr_format_elt(self, elt, max_width = 12):
         max_width = int(max_width)
-        if elt is NA_Real or elt is NA_Integer or elt is NA_Character or elt is NA_Logical:
+        if elt in (NA_Real, NA_Integer, NA_Character, NA_Logical):
             res = repr(elt)
         elif isinstance(elt, int):
-            res = '%8i' %elt
+            res = '%8i' % elt
         elif isinstance(elt, float):
-            res = '%8f' %elt
+            res = '%8f' % elt
         else:
             if isinstance(elt, str):
                 elt = elt.__repr__()
@@ -325,7 +326,7 @@ class Vector(RObjectMixin, SexpVector):
                 res = "%s..." % (str(elt[ : (max_width - 3)]))
         return res
 
-    def _iter_formatted(self, max_items=9):        
+    def _iter_formatted(self, max_items=9):
         format_elt = self.repr_format_elt
         l = len(self)
         half_items = max_items // 2
@@ -344,7 +345,7 @@ class Vector(RObjectMixin, SexpVector):
     def __repr_content__(self):
         return ''.join(('[', ', '.join(self._iter_formatted()), ']'))
     
-    def __repr__(self):        
+    def __repr__(self):
         return super(Vector, self).__repr__() + os.linesep + \
             self.__repr_content__()
 
@@ -434,6 +435,22 @@ class BoolVector(Vector, BoolSexpVector):
     def __init__(self, obj):
         obj = BoolSexpVector(obj)
         super(BoolVector, self).__init__(obj)
+
+
+class ByteVector(Vector, ByteSexpVector):
+    """ Vector of byte elements 
+    ByteVector(seq) -> ByteVector.
+
+    The parameter 'seq' can be an instance inheriting from
+    rinterface.SexpVector, or an arbitrary Python sequence.
+    In the later case, all elements in the sequence should be either
+    be bytes (integers >= 0 and <= 255).
+    """
+
+    def __init__(self, obj):
+        obj = ByteSexpVector(obj)
+        super().__init__(obj)
+
 
 class ComplexVector(Vector, ComplexSexpVector):
     """ Vector of complex elements 
@@ -950,8 +967,6 @@ class Matrix(Array):
         else:
             raise ValueError('The rownames attribute can only be an R string vector.')
     rownames = property(__rownames_get, __rownames_set, None, "Row names")
-
-            
 
     def __colnames_get(self):
         """ Column names

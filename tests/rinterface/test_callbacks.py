@@ -1,9 +1,11 @@
 from .. import utils
+import io
 import logging
 import pytest
 import sys
 import tempfile
 import rpy2.rinterface as rinterface
+from rpy2.rinterface_lib import callbacks
 
 rinterface.initr()
 
@@ -18,6 +20,20 @@ def is_AQUA_or_Windows():
         return False
 
 
+def test_consolewrite_print():
+    tmp_file = io.StringIO()
+    stdout = sys.stdout
+    sys.stdout = tmp_file
+    try:
+        callbacks.consolewrite_print('haha')
+    finally:
+        sys.stdout = stdout
+    tmp_file.flush()
+    tmp_file.seek(0)
+    assert 'haha' == ''.join(s for s in tmp_file).rstrip()
+    tmp_file.close()
+
+
 def test_set_consolewrite_print():
 
     def make_callback():
@@ -27,7 +43,7 @@ def test_set_consolewrite_print():
             buf.append(x)
         return f
     f = make_callback()
-    with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', f):
+    with utils.obj_in_module(callbacks, 'consolewrite_print', f):
         code = rinterface.StrSexpVector(["3", ])
         rinterface.baseenv["print"](code)
         buf = f.__closure__[0].cell_contents
@@ -41,7 +57,7 @@ def test_consolewrite_print_error(caplog):
     def f(x):
         raise Exception(msg)
 
-    with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', f), \
+    with utils.obj_in_module(callbacks, 'consolewrite_print', f), \
          caplog.at_level(logging.ERROR, logger='callbacks.logger'):
         code = rinterface.StrSexpVector(["3", ])
         caplog.clear()
@@ -50,7 +66,7 @@ def test_consolewrite_print_error(caplog):
         for x in caplog.record_tuples:
             assert x == ('rpy2.rinterface_lib.callbacks',
                          logging.ERROR,
-                         (rinterface.callbacks
+                         (callbacks
                           ._WRITECONSOLE_EXCEPTION_LOG % msg)) 
 
 
@@ -64,7 +80,7 @@ def testSetResetConsole():
         return f
     f = make_callback()
     
-    with utils.obj_in_module(rinterface.callbacks, 'consolereset', f):
+    with utils.obj_in_module(callbacks, 'consolereset', f):
         # TODO: what happens with "cat" on Windows ?
         editor = 'cat'
         rinterface.globalenv.get('edit')(
@@ -84,7 +100,7 @@ def test_set_flushconsole():
             count += 1
     f = make_callback()
 
-    with utils.obj_in_module(rinterface.callbacks, 'consoleflush', f):
+    with utils.obj_in_module(callbacks, 'consoleflush', f):
         assert rinterface.get_flushconsole() == f
         rinterface.baseenv.get('flush.console')()
         assert flush['count'] == 1
@@ -97,7 +113,7 @@ def test_flushconsole_with_error():
     def f(prompt):
         raise Exception("Doesn't work.")
 
-    with utils.obj_in_module(rinterface.callbacks, 'consoleflush', f):
+    with utils.obj_in_module(callbacks, 'consoleflush', f):
         with pytest.raises(Exception):
             res = rinterface.baseenv.get('flush.console')()
 
@@ -106,7 +122,7 @@ def test_consoleread():
     msg = 'yes\n'
     def sayyes(prompt):
         return msg
-    with utils.obj_in_module(rinterface.callbacks, 'consoleread', sayyes):
+    with utils.obj_in_module(callbacks, 'consoleread', sayyes):
         r_readline = rinterface.baseenv['readline']
         res = r_readline()
     assert msg.strip() == res[0]
@@ -119,21 +135,21 @@ def test_console_read_with_error(caplog):
     def f(prompt):
         raise Exception(msg)
     
-    with utils.obj_in_module(rinterface.callbacks, 'consoleread', f), \
+    with utils.obj_in_module(callbacks, 'consoleread', f), \
          caplog.at_level(logging.ERROR, logger='callbacks.logger'):
         res = rinterface.baseenv['readline']()
         assert len(caplog.record_tuples) > 0
         for x in caplog.record_tuples:
             assert x == ('rpy2.rinterface_lib.callbacks',
                          logging.ERROR,
-                         (rinterface.callbacks
+                         (callbacks
                           ._READCONSOLE_EXCEPTION_LOG % msg)) 
 
 
 def test_show_message():
     def f(message):
         return 'foo'
-    with utils.obj_in_module(rinterface.callbacks, 'showmessage', f):
+    with utils.obj_in_module(callbacks, 'showmessage', f):
         pass
     # TODO: incomplete test
 
@@ -141,7 +157,7 @@ def test_show_message():
 def test_show_message_with_error():
     def f(prompt):
         raise Exception("Doesn't work.")
-    with utils.obj_in_module(rinterface.callbacks, 'showmessage', f):
+    with utils.obj_in_module(callbacks, 'showmessage', f):
         pass
     # TODO: incomplete test
 
@@ -150,7 +166,7 @@ def test_choosefile():
     me = "me"
     def chooseMe(new):
         return me
-    with utils.obj_in_module(rinterface.callbacks, 'choosefile', chooseMe):
+    with utils.obj_in_module(callbacks, 'choosefile', chooseMe):
         res = rinterface.baseenv['file.choose']()
         assert me == res[0]
 
@@ -159,11 +175,11 @@ def test_choosefile_error():
     def f(prompt):
         raise Exception("Doesn't work.")
 
-    with utils.obj_in_module(rinterface.callbacks,
+    with utils.obj_in_module(callbacks,
                              'consolewrite_print',
                              utils.noconsole):
-        with utils.obj_in_module(rinterface.callbacks, 'choosefile', f):
-            with pytest.raises(rinterface._rinterface.RRuntimeError):
+        with utils.obj_in_module(callbacks, 'choosefile', f):
+            with pytest.raises(rinterface.embedded.RRuntimeError):
                 with pytest.warns(rinterface.RRuntimeWarning):
                     rinterface.baseenv["file.choose"]()
 
@@ -175,7 +191,7 @@ def test_showfiles():
         for tf in filenames:
             sf.append(tf)
 
-    with utils.obj_in_module(rinterface.callbacks, 'showfiles', f):
+    with utils.obj_in_module(callbacks, 'showfiles', f):
         file_path = rinterface.baseenv['file.path']
         r_home = rinterface.baseenv['R.home']
         filename = file_path(r_home(rinterface.StrSexpVector(('doc', ))), 
@@ -192,7 +208,7 @@ def test_showfiles_error(caplog):
     def f(filenames, headers, wtitle, pager):
         raise Exception(msg)
 
-    with utils.obj_in_module(rinterface.callbacks, 'showfiles', f), \
+    with utils.obj_in_module(callbacks, 'showfiles', f), \
          caplog.at_level(logging.ERROR, logger='callbacks.logger'):
         
         file_path = rinterface.baseenv['file.path']
@@ -207,7 +223,7 @@ def test_showfiles_error(caplog):
         for x in caplog.record_tuples:
             assert x == ('rpy2.rinterface_lib.callbacks',
                          logging.ERROR,
-                         (rinterface.callbacks
+                         (callbacks
                           ._SHOWFILE_EXCEPTION_LOG % msg)) 
 
 
@@ -216,7 +232,7 @@ def test_showfiles_error(caplog):
 def test_cleanup():
     def f(saveact, status, runlast):
         return None
-    with utils.obj_in_module(rinterface.callbacks, 'cleanup', f):
+    with utils.obj_in_module(callbacks, 'cleanup', f):
         r_quit = rinterface.baseenv['q']
-        with pytest.raises(rinterface._rinterface.RRuntimeError):
+        with pytest.raises(rinterface.embedded.RRuntimeError):
             r_quit()
