@@ -22,3 +22,11 @@ def test_rmemory_manager_unprotect():
         rmemory.unprotect(1)
         assert rmemory.count == 0
     assert rmemory.count == 0
+
+
+def test_rmemory_manager_unprotect_invalid():
+    with memorymanagement.rmemory() as rmemory:
+        assert rmemory.count == 0
+        with pytest.raises(ValueError):
+            rmemory.unprotect(2)
+    assert rmemory.count == 0

@@ -57,6 +57,10 @@ class _NULL(object):
         return self._sexpobject
 
     @property
+    def rid(self):
+        return self._sexpobject.rid
+
+    @property
     def typeof(self):
         return RTYPES(_rinterface._TYPEOF(self.__sexp__._cdata))
 
@@ -102,7 +106,7 @@ class SexpSymbol(Sexp):
 
     def __str__(self):
         return conversion._cchar_to_str(
-            _rinterface._STRING_VALUE(
+            openrlib._STRING_VALUE(
                 self._sexpobject._cdata
             )
         )
@@ -116,7 +120,9 @@ class SexpEnvironment(Sexp):
             key: str,
             wantfun: int = False):
         # TODO: move check of R_UnboundValue to _rinterface ?
-        if not (isinstance(key, str) and len(key)):
+        if not isinstance(key, str):
+            raise TypeError('The key must be a non-empty string.')
+        elif not len(key):
             raise ValueError('The key must be a non-empty string.')
         with memorymanagement.rmemory() as rmemory:
             symbol = rmemory.protect(
@@ -264,7 +270,9 @@ def _set_raw_elt(x, i, val):
 class ByteSexpVector(SexpVector):
 
     _R_TYPE = openrlib.rlib.RAWSXP
-    _R_SET_ELT = _set_raw_elt
+    _R_GET_PTR = openrlib._RAW
+    _R_VECTOR_ELT = lambda x, i: openrlib._RAW(x)[i]
+    _R_SET_VECTOR_ELT = _set_raw_elt
     _CAST_IN = _cast_in_byte
 
     def __getitem__(self, i: int) -> typing.Union[int, 'ByteSexpVector']:
@@ -302,7 +310,8 @@ class ByteSexpVector(SexpVector):
 class BoolSexpVector(SexpVector):
 
     _R_TYPE = openrlib.rlib.LGLSXP
-    _R_SET_ELT = openrlib.SET_LOGICAL_ELT
+    _R_VECTOR_ELT = openrlib.LOGICAL_ELT
+    _R_SET_VECTOR_ELT = openrlib.SET_LOGICAL_ELT
     _R_GET_PTR = openrlib._LOGICAL
     _CAST_IN = lambda x: NA_Logical if x is None or x == openrlib.rlib.R_NaInt else bool(x)
 
@@ -349,7 +358,9 @@ class BoolSexpVector(SexpVector):
 class IntSexpVector(SexpVector):
 
     _R_TYPE = openrlib.rlib.INTSXP
-    _R_SET_ELT = openrlib.SET_INTEGER_ELT
+    _R_SET_VECTOR_ELT = openrlib.SET_INTEGER_ELT
+    _R_VECTOR_ELT = openrlib.INTEGER_ELT
+    _R_GET_PTR = openrlib._INTEGER
     _CAST_IN = int
 
     def __getitem__(self, i: int) -> typing.Union[int, 'IntSexpVector']:
@@ -396,7 +407,9 @@ class IntSexpVector(SexpVector):
 class FloatSexpVector(SexpVector):
 
     _R_TYPE = openrlib.rlib.REALSXP
-    _R_SET_ELT = openrlib.SET_REAL_ELT
+    _R_GET_PTR = openrlib._REAL
+    _R_VECTOR_ELT = openrlib.REAL_ELT
+    _R_SET_VECTOR_ELT = openrlib.SET_REAL_ELT
     _CAST_IN = float
 
     def __getitem__(self, i: int) -> typing.Union[float, 'FloatSexpVector']:
@@ -440,7 +453,9 @@ class FloatSexpVector(SexpVector):
 class ComplexSexpVector(SexpVector):
 
     _R_TYPE = openrlib.rlib.CPLXSXP
-    _R_SET_ELT = lambda x, i, v: openrlib._COMPLEX(x).__setitem__(i, v)
+    _R_GET_PTR = openrlib._COMPLEX
+    _R_VECTOR_ELT = lambda x, i: openrlib._COMPLEX(x)[i]
+    _R_SET_VECTOR_ELT = lambda x, i, v: openrlib._COMPLEX(x).__setitem__(i, v)
     _CAST_IN = lambda x: (x.real, x.imag) if isinstance(x, complex) else x
 
     def __getitem__(self,
@@ -477,13 +492,17 @@ class ComplexSexpVector(SexpVector):
 
 class ListSexpVector(SexpVector):
     _R_TYPE = openrlib.rlib.VECSXP
-    _R_SET_ELT = openrlib.rlib.SET_VECTOR_ELT
+    _R_GET_PTR = openrlib._VECTOR_PTR
+    _R_VECTOR_ELT = openrlib.rlib.VECTOR_ELT
+    _R_SET_VECTOR_ELT = openrlib.rlib.SET_VECTOR_ELT
     _CAST_IN = conversion._get_cdata
 
 
 class PairlistSexpVector(SexpVector):
     _R_TYPE = openrlib.rlib.LISTSXP
-    _R_SET_ELT = openrlib.rlib.SET_VECTOR_ELT
+    _R_GET_PTR = None
+    _R_VECTOR_ELT = None
+    _R_SET_VECTOR_ELT = None
     _CAST_IN = conversion._get_cdata
 
     def __getitem__(self, i: int):
@@ -547,12 +566,16 @@ class ExprSexpVector(SexpVector):
     _R_TYPE = openrlib.rlib.EXPRSXP
     _R_GET_PTR = None
     _CAST_IN = None
+    _R_VECTOR_ELT = openrlib.rlib.VECTOR_ELT
+    _R_SET_VECTOR_ELT = None
 
 
 class LangSexpVector(SexpVector):
     _R_TYPE = openrlib.rlib.LANGSXP
     _R_GET_PTR = None
     _CAST_IN = None
+    _R_VECTOR_ELT = None
+    _R_SET_VECTOR_ELT = None
 
     @_cdata_res_to_rinterface
     def __getitem__(self, i: int):
@@ -648,6 +671,8 @@ class SexpExtPtr(Sexp):
     @classmethod
     def from_pyobject(cls, func, tag=TYPE_TAG,
                       protected=None):
+        if not isinstance(tag, str):
+            raise TypeError('The tag must be a string.')
         scaps = make_extptr(func,
                             conversion._str_to_charsxp(cls.TYPE_TAG),
                             protected)
@@ -771,9 +796,7 @@ def _post_initr_setup():
     MissingArg = _MissingArgType()
 
     global NA_Character
-    na_values.NA_Character = CharSexp(
-        _rinterface.SexpCapsule(openrlib.rlib.R_NaString)
-    )
+    na_values.NA_Character = na_values.NACharacterType()
     NA_Character = na_values.NA_Character
 
     global NA_Integer

@@ -19,3 +19,11 @@ def test_getshape():
 
     m = rinterface.baseenv.get('matrix')(nrow=2, ncol=3)
     assert bufferprotocol.getshape(m.__sexp__._cdata, 2) == [2, 3]
+
+
+def test_getstrides():
+    v = rinterface.IntSexpVector([1,2,3])
+    assert bufferprotocol.getstrides(v.__sexp__._cdata, [3], 8) == [8]
+
+    m = rinterface.baseenv.get('matrix')(nrow=2, ncol=3)
+    assert bufferprotocol.getstrides(m.__sexp__._cdata, [2,3], 8) == [3*8, 8]

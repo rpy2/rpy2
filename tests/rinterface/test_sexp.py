@@ -53,6 +53,21 @@ def test_names():
     assert 'OS.type' in names
 
 
+def test_names_set():
+    sexp = rinterface.IntSexpVector([1, 2, 3])
+    assert sexp.names.rid == rinterface.NULL.rid
+    sexp.names = rinterface.StrSexpVector(['a', 'b', 'c'])
+    assert len(sexp.names) > 1
+    assert tuple(sexp.names) == ('a', 'b', 'c')
+
+
+def test_names_set_invalid():
+    sexp = rinterface.IntSexpVector([1, 2, 3])
+    assert sexp.names.rid == rinterface.NULL.rid
+    with pytest.raises(ValueError):
+        sexp.names = ('a', 'b', 'c')
+
+
 def test_do_slot_missing():
     sexp = rinterface.baseenv.get('pi')
     with pytest.raises(LookupError):
@@ -221,3 +236,18 @@ def test_rid():
 
 def test_NULL_nonzero():
     assert not rinterface.NULL
+
+
+def test_charsxp_encoding():
+    encoding = rinterface.NA_Character.encoding
+    assert encoding == rinterface.sexp.CETYPE.CE_NATIVE
+
+
+def test_charsxp_nchar():
+    v = rinterface.StrSexpVector(['abc', 'de', ''])
+    cs = v.get_charsxp(0)
+    assert cs.nchar() == 3
+    cs = v.get_charsxp(1)
+    assert cs.nchar() == 2
+    cs = v.get_charsxp(2)
+    assert cs.nchar() == 0

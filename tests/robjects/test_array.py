@@ -76,7 +76,6 @@ def test_transpose():
         assert mt[i] == val
 
 
-@pytest.mark.skip(reason='segfault')
 def test_crossprod():
     m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2)
     mcp = m.crossprod(m)
@@ -84,7 +83,6 @@ def test_crossprod():
         assert mcp[i] == val
 
 
-@pytest.mark.skip(reason='segfault')
 def test_tcrossprod():
     m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2)
     mtcp = m.tcrossprod(m)
@@ -92,7 +90,6 @@ def test_tcrossprod():
         assert mtcp[i] == val
 
 
-@pytest.mark.skip(reason='segfault')
 def test_svd():
     m = robjects.r.matrix(robjects.IntVector((1, -1, -1, 1)), nrow=2)
     res = m.svd()
@@ -100,7 +97,6 @@ def test_svd():
         assert almost_equal((2, 0)[i], val)
 
 
-@pytest.mark.skip(reason='segfault')
 def test_eigen():
     m = robjects.r.matrix(robjects.IntVector((1, -1, -1, 1)), nrow=2)
     res = m.eigen()
@@ -108,14 +104,12 @@ def test_eigen():
         assert (2, 0)[i] == val
 
 
-@pytest.mark.skip(reason='segfault')
 def test_dot():
     m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2, ncol=2)
     m2 = m.dot(m)
     assert tuple(m2) == (2,3,6,11)
 
 
-@pytest.mark.skip(reason='segfault')
 def test_colnames():
     m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2, ncol=2)
     assert m.colnames == rinterface.NULL
@@ -127,7 +121,6 @@ def test_colnames():
         m.colnames = robjects.StrVector(('a', 'b', 'c'))
 
 
-@pytest.mark.skip(reason='segfault')
 def test_rownames():
     m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2, ncol=2)
     assert m.rownames == rinterface.NULL

@@ -45,6 +45,21 @@ def test_getitem():
     assert isinstance(rinterface.globalenv.get('help'), rinterface.Sexp)
 
 
+def test_get_invalid_notstring():
+    with pytest.raises(TypeError):
+        rinterface.globalenv.get(None)
+
+
+def test_get_invalid_empty():
+    with pytest.raises(ValueError):
+        rinterface.globalenv.get('')
+
+
+def test_get_invalid_notfound():
+    with pytest.raises(KeyError):
+        rinterface.globalenv.get('asdf')
+
+
 def test_getclosure():
     help_R = rinterface.globalenv.get('help')
     assert isinstance(help_R, rinterface.SexpClosure)

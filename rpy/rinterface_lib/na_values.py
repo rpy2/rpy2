@@ -3,6 +3,7 @@
 from . import embedded
 from . import openrlib
 from . import sexp
+from . import _rinterface_capi as _rinterface
 
 
 class Singleton(type):
@@ -26,9 +27,7 @@ NA_Complex = None
 class NAIntegerType(int, metaclass=Singleton):
 
     def __new__(cls, *args, **kwargs):
-        if not embedded.isready():
-            raise embedded.RNotReadyError(
-                'The embedded R is not ready to use.')
+        embedded.assert_isready()
         return super().__new__(cls, openrlib.rlib.R_NaInt)
 
     def __repr__(self):
@@ -43,11 +42,13 @@ class NAIntegerType(int, metaclass=Singleton):
 
 class NACharacterType(sexp.CharSexp, metaclass=Singleton):
 
-    def __init__(self, x):
-        if not embedded.isready():
-            raise embedded.RNotReadyError(
-                'The embedded R is not ready to use.')
-        return super().__init__(openrlib.rlib.R_NaString)
+    def __init__(self):
+        embedded.assert_isready()
+        return super().__init__(
+            sexp.CharSexp(
+                _rinterface.SexpCapsule(openrlib.rlib.R_NaString)
+            )
+        )
 
     def __repr__(self):
         return 'NA_character_'
@@ -62,9 +63,7 @@ class NACharacterType(sexp.CharSexp, metaclass=Singleton):
 class NALogicalType(int, metaclass=Singleton):
 
     def __new__(cls, *args, **kwargs):
-        if not embedded.isready():
-            raise embedded.RNotReadyError(
-                'The embedded R is not ready to use.')
+        embedded.assert_isready()
         return super().__new__(cls, openrlib.rlib.R_NaInt)
 
     def __repr__(self) -> str:
@@ -80,9 +79,7 @@ class NALogicalType(int, metaclass=Singleton):
 class NARealType(float, metaclass=Singleton):
 
     def __new__(cls, *args, **kwargs):
-        if not embedded.isready():
-            raise embedded.RNotReadyError(
-                'The embedded R is not ready to use.')
+        embedded.assert_isready()
         return super().__new__(cls, openrlib.rlib.R_NaReal)
 
     def __repr__(self) -> str:
@@ -98,9 +95,7 @@ class NARealType(float, metaclass=Singleton):
 class NAComplexType(complex, metaclass=Singleton):
 
     def __new__(cls, *args, **kwargs):
-        if not embedded.isready():
-            raise embedded.RNotReadyError(
-                'The embedded R is not ready to use.')
+        embedded.assert_isready()
         return super().__new__(cls,
                                openrlib.rlib.R_NaReal,
                                openrlib.rlib.R_NaReal)

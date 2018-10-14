@@ -8,8 +8,8 @@ R_HOME = rpy2.situation.get_r_home()
 
 def _dlopen_rlib(r_home):
     if r_home is None:
-        raise ImportError('R_HOME cannot be determined. '
-                          'Try python -m rpy2.situation')
+        raise ValueError('r_home is None. '
+                         'Try python -m rpy2.situation')
 
     lib_path = os.path.join(R_HOME, "lib", "libR.so")
     rlib = ffi.dlopen(lib_path)
@@ -95,3 +95,20 @@ def _set_real_elt_fallback(vec, i: int, value):
 
 SET_REAL_ELT = _get_symbol_or_fallback('SET_REAL_ELT',
                                        _set_real_elt_fallback)
+
+
+# TODO: still useful or is it in the C API ?
+def _VECTOR_ELT(robj, i):
+    return ffi.cast('SEXP *', rlib.DATAPTR(robj))[i]
+
+
+def _STRING_PTR(robj):
+    return ffi.cast('SEXP *', rlib.DATAPTR(robj))
+
+
+def _VECTOR_PTR(robj):
+    return ffi.cast('SEXP *', rlib.DATAPTR(robj))
+
+
+def _STRING_VALUE(robj):
+    return rlib.R_CHAR(rlib.Rf_asChar(robj))

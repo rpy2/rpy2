@@ -1,5 +1,6 @@
 """Base definitions for R objects."""
 
+import abc
 import collections
 import enum
 import typing
@@ -118,7 +119,7 @@ class Sexp(object):
             value_r = value
         elif isinstance(value, str):
             value_r = StrSexpVector.from_iterable(
-                [conversion._str_to_charsxp(value)])
+                [value])
         openrlib.rlib.Rf_setAttrib(self.__sexp__._cdata,
                                    openrlib.rlib.R_ClassSymbol,
                                    value_r.__sexp__._cdata)
@@ -183,8 +184,10 @@ class Sexp(object):
 
     @names.setter
     def names(self, value) -> None:
+        if not isinstance(value, StrSexpVector):
+            raise ValueError('The new names should be a StrSexpVector.')
         openrlib.rlib.Rf_namesgets(
-            self.__sexp__._cdata, value)
+            self.__sexp__._cdata, value.__sexp__._cdata)
 
     @property
     @conversion._cdata_res_to_rinterface
@@ -204,9 +207,16 @@ class CETYPE(enum.Enum):
     CE_ANY = 99
 
 
+class NCHAR_TYPE(enum.Enum):
+  Bytes = 0
+  Chars = 1 
+  Width = 2
+
+
 class CharSexp(Sexp):
     """R's internal (C API-level) scalar string."""
     _R_TYPE = openrlib.rlib.CHARSXP
+    _NCHAR_MSG = openrlib.ffi.new('char []', b'rpy2.rinterface.CharSexp.nchar')
 
     @property
     def encoding(self) -> CETYPE:
@@ -214,13 +224,13 @@ class CharSexp(Sexp):
             openrlib.rlib.Rf_getCharCE(self.__sexp__._cdata)
         )
 
-    def nchar(self, what=None) -> int:  # openrlib.rlib.nchar_type.Bytes):
+    def nchar(self, what: NCHAR_TYPE = NCHAR_TYPE.Bytes) -> int:
         # TODO: nchar_type is not parsed properly by cffi ?
         return openrlib.rlib.R_nchar(self.__sexp__._cdata,
-                                     what,
+                                     what.value,
                                      openrlib.rlib.FALSE,
                                      openrlib.rlib.FALSE,
-                                     'rpy2.rinterface.CharSexp.nchar')
+                                     self._NCHAR_MSG)
 
 
 # TODO: move to _rinterface-level function (as ABI / API compatibility
@@ -233,11 +243,36 @@ def _populate_r_vector(iterable, r_vector, set_elt, cast_value):
 VT = typing.TypeVar('VT', bound='SexpVector')
 
 
-class SexpVector(Sexp):
+class SexpVector(Sexp, metaclass=abc.ABCMeta):
     """Base class for R vector objects.
 
-    R vector objects are, the C level, essentially C arrays wrapped in
+    R vector objects are, at the C level, essentially C arrays wrapped in
     the general structure for R objects."""
+
+    @property
+    @abc.abstractmethod
+    def _R_TYPE(self):
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def _CAST_IN(self):
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def _R_SET_VECTOR_ELT(self):
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def _R_VECTOR_ELT(self):
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def _R_GET_PTR(self):
+        pass
 
     def __init__(self,
                  obj: typing.Union[_rinterface.SexpCapsule,
@@ -270,7 +305,7 @@ class SexpVector(Sexp):
             )
             _populate_r_vector(iterable,
                                r_vector,
-                               cls._R_SET_ELT,
+                               cls._R_SET_VECTOR_ELT,
                                cast_in)
         return r_vector
 
@@ -281,11 +316,11 @@ class SexpVector(Sexp):
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
             res = conversion._cdata_to_rinterface(
-                openrlib.rlib.VECTOR_ELT(cdata, i_c))
+                self._R_VECTOR_ELT(cdata, i_c))
         elif isinstance(i, slice):
             res = type(self).from_iterable(
                 [
-                    openrlib.rlib.VECTOR_ELT(
+                    self._R_VECTOR_ELT(
                         cdata, i_c
                     ) for i_c in range(*i.indices(len(self)))
                 ],
@@ -300,12 +335,12 @@ class SexpVector(Sexp):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            openrlib.rlib.SET_VECTOR_ELT(cdata, i_c,
-                                         value.__sexp__._cdata)
+            self._R_SET_VECTOR_ELT(cdata, i_c,
+                                   value.__sexp__._cdata)
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
-                openrlib.rlib.SET_VECTOR_ELT(cdata, i_c,
-                                             v.__sexp__._cdata)
+                self._R_SET_VECTOR_ELT(cdata, i_c,
+                                       v.__sexp__._cdata)
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
@@ -331,7 +366,9 @@ class StrSexpVector(SexpVector):
     """R vector of strings."""
 
     _R_TYPE = openrlib.rlib.STRSXP
-    _R_SET_ELT = openrlib.rlib.SET_STRING_ELT
+    _R_GET_PTR = openrlib._STRING_PTR
+    _R_VECTOR_ELT = openrlib.rlib.STRING_ELT
+    _R_SET_VECTOR_ELT = openrlib.rlib.SET_STRING_ELT
     _CAST_IN = _as_charsxp_cdata
 
     def __getitem__(
@@ -357,13 +394,13 @@ class StrSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            self._R_SET_ELT(
+            self._R_SET_VECTOR_ELT(
                 cdata, i_c,
                 conversion._str_to_charsxp(value)
             )
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
-                self._R_SET_ELT(
+                self._R_SET_VECTOR_ELT(
                     cdata, i_c,
                     conversion._str_to_charsxp(v)
                 )

@@ -30,8 +30,6 @@ class ProtectionTracker(object):
 
     def unprotect(self, n: int) -> None:
         """Release the n objects last added to the protection stack."""
-        if self._counter == 0:
-            raise Exception('Protect count already == 0')
         if n > self._counter:
             raise ValueError('n > count')
         self._counter -= n

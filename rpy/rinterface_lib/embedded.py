@@ -43,6 +43,12 @@ def isready() -> bool:
     )
 
 
+def assert_isready():
+    if not isready(): 
+        raise embedded.RNotReadyError(
+            'The embedded R is not ready to use.')
+
+
 class RNotReadyError(Exception):
     """Embedded R is not ready to use."""
     pass
@@ -79,6 +85,7 @@ def _initr(interactive: bool = True) -> int:
 
     rlib.ptr_R_ShowMessage = callbacks._showmessage
     rlib.ptr_R_ReadConsole = callbacks._consoleread
+    rlib.ptr_R_FlushConsole = callbacks._consoleflush
 
     rlib.ptr_R_ChooseFile = callbacks._choosefile
 

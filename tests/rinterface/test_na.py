@@ -17,12 +17,27 @@ def test_r_to_NAInteger():
     r_na_int = evalr("NA_integer_")[0]
     assert r_na_int is na_int
 
+
+def test_NAInteger_repr():
+    na = ri.NA_Integer
+    assert repr(na) == 'NA_integer_'
+
+
+def test_NAInteger_str():
+    na = ri.NA_Integer
+    assert str(na) == 'NA_integer_'
+
     
 def test_NAInteger_to_r():
     na_int = ri.NA_Integer
     assert ri.baseenv["is.na"](na_int)[0]
 
-    
+
+def test_bool_NAInteger():
+    with pytest.raises(ValueError):
+        bool(ri.NA_Integer)
+
+
 @pytest.mark.skip(
     reason="Python changed the behavior for int-inheriting objects.")
 def test_NAInteger_binaryfunc():
@@ -41,6 +56,21 @@ def test_NAInteger_in_vector():
 def test_R_to_NALogical():
     r_na_lgl = evalr('NA')[0]
     assert r_na_lgl is ri.NA
+
+
+def test_NALogical_repr():
+    na = ri.NA_Logical
+    assert repr(na) == 'NA'
+
+
+def test_NALogical_str():
+    na = ri.NA_Logical
+    assert str(na) == 'NA'
+
+
+def test_bool_NALogical():
+    with pytest.raises(ValueError):
+        bool(ri.NA)
 
     
 def test_NALogical_to_r():
@@ -65,7 +95,12 @@ def test_NAReal_to_r():
     na_real = ri.NA_Real
     assert ri.baseenv["is.na"](na_real)[0]
 
-    
+
+def test_bool_NAReal():
+    with pytest.raises(ValueError):
+        bool(ri.NA_Real)
+
+
 def test_NAReal_binaryfunc():
     na_real = ri.NA_Real
     assert math.isnan(na_real + 2.0)
@@ -84,12 +119,27 @@ def test_NAReal_repr():
     assert repr(na_float) == 'NA_real_'
 
 
+def test_NAReal_str():
+    na_float = ri.NA_Real
+    assert str(na_float) == 'NA_real_'
+
+
 def test_r_to_NACharacter():
     na_character = ri.NA_Character
     r_na_character = evalr("NA_character_")
     assert r_na_character.typeof == ri.RTYPES.STRSXP
     assert len(r_na_character) == 1
     assert r_na_character.get_charsxp(0).rid == na_character.rid
+
+
+def test_NACharacter_repr():
+    na = ri.NA_Character
+    assert repr(na) == 'NA_character_'
+
+
+def test_NACharacter_str():
+    na = ri.NA_Character
+    assert str(na) == 'NA_character_'
 
 
 def test_NACharacter_to_r():

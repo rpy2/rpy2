@@ -118,6 +118,11 @@ class UnmanagedSexpCapsule(object):
         assert is_cdata_sexp(cdata)
         self._cdata = cdata
 
+    @property
+    def rid(self):
+        return get_rid(self._cdata)
+
+
 
 def _findvar(symbol, r_environment):
     rlib = openrlib.rlib
@@ -176,24 +181,6 @@ def _SET_TYPEOF(robj, v):
 
 def _NAMED(robj):
     return robj.sxpinfo.named
-
-
-# TODO: still useful or is it in the C API ?
-def _VECTOR_ELT(robj, i):
-    return ffi.cast('SEXP *', openrlib.rlib.DATAPTR(robj))[i]
-
-
-def _STRING_PTR(robj):
-    return ffi.cast('SEXP *', openrlib.rlib.DATAPTR(robj))
-
-
-def _VECTOR_PTR(robj):
-    return ffi.cast('SEXP *', openrlib.rlib.DATAPTR(robj))
-
-
-def _STRING_VALUE(robj):
-    rlib = openrlib.rlib
-    return rlib.R_CHAR(rlib.Rf_asChar(robj))
 
 
 def _string_getitem(cdata, i):

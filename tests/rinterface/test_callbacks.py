@@ -89,33 +89,39 @@ def testSetResetConsole():
         assert f.__closure__[0].cell_contents == 1
 
     
-@pytest.mark.skip(is_AQUA_or_Windows(),
-                  reason='Can only be tested on Aqua or Windows')
-def test_set_flushconsole():
+def test_flushconsole():
 
     def make_callback():
         count = 0
         def f():
             nonlocal count
             count += 1
+        return f
     f = make_callback()
 
     with utils.obj_in_module(callbacks, 'consoleflush', f):
-        assert rinterface.get_flushconsole() == f
-        rinterface.baseenv.get('flush.console')()
-        assert flush['count'] == 1
-        rinterface.set_writeconsole_regular(rinterface.consoleFlush)
+        assert f.__closure__[0].cell_contents == 0
+        rinterface.globalenv.get('flush.console')()
+        assert f.__closure__[0].cell_contents == 1
 
 
-@pytest.mark.skip(is_AQUA_or_Windows(),
-                  reason='Can only be tested on Aqua or Windows')
-def test_flushconsole_with_error():
-    def f(prompt):
-        raise Exception("Doesn't work.")
+def test_flushconsole_with_error(caplog):
+    msg = "Doesn't work."
+    def f():
+        raise Exception(msg)
 
-    with utils.obj_in_module(callbacks, 'consoleflush', f):
-        with pytest.raises(Exception):
-            res = rinterface.baseenv.get('flush.console')()
+    with utils.obj_in_module(callbacks, 'consoleflush', f), \
+         caplog.at_level(logging.ERROR, logger='callbacks.logger'):
+        caplog.clear()
+        res = rinterface.globalenv.get('flush.console')()
+        assert len(caplog.record_tuples) > 0
+        for x in caplog.record_tuples:
+            assert x == ('rpy2.rinterface_lib.callbacks',
+                         logging.ERROR,
+                         (callbacks
+                          ._FLUSHCONSOLE_EXCEPTION_LOG % msg)) 
+
+        res = rinterface.globalenv.get('flush.console')()
 
 
 def test_consoleread():
@@ -146,14 +152,21 @@ def test_console_read_with_error(caplog):
                           ._READCONSOLE_EXCEPTION_LOG % msg)) 
 
 
+# TODO: showmessage seems to only be called at R startup time.
 def test_show_message():
-    def f(message):
-        return 'foo'
+    def make_callback():
+        count = 0
+        def f(message):
+            nonlocal count
+            count += 1
+        return f
+    f = make_callback()
+
     with utils.obj_in_module(callbacks, 'showmessage', f):
         pass
-    # TODO: incomplete test
 
 
+# TODO: showmessage seems to only be called at R startup time.
 def test_show_message_with_error():
     def f(prompt):
         raise Exception("Doesn't work.")

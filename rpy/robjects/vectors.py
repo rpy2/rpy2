@@ -227,6 +227,13 @@ class Vector(RObjectMixin, SexpVector):
     - the delegators rx or rx2 
 
 """
+
+    _R_TYPE = None
+    _CAST_IN = None
+    _R_GET_PTR = None
+    _R_VECTOR_ELT = None
+    _R_SET_VECTOR_ELT = None
+    
     _sample = rinterface.baseenv['sample']
 
     _html_template = jinja2.Template(

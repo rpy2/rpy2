@@ -34,14 +34,19 @@ def obj_in_module(module, name: str, obj):
         setattr(module, name, obj_orig)
 
 
-# TODO: remove the decorator
-def logged_exceptions(func, logger=logger):
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            logger.error(str(e))
-    return wrapper
+def consoleflush():
+    pass
+
+
+_FLUSHCONSOLE_EXCEPTION_LOG = 'Callback to flush the R console: %s'
+
+
+@ffi.callback('void (void)')
+def _consoleflush():
+    try:
+        consoleflush()
+    except Exception as e:
+        logger.error(_FLUSHCONSOLE_EXCEPTION_LOG, str(e))
 
 
 def consoleread(prompt: str) -> str:
@@ -86,7 +91,6 @@ def _consoleread(prompt, buf, n: int, addtohistory) -> int:
     return success
 
 
-@logged_exceptions
 def consolereset() -> None:
     pass
 
@@ -102,13 +106,11 @@ def _consolereset() -> None:
         logger.error(_RESETCONSOLE_EXCEPTION_LOG, str(e))
 
 
-@logged_exceptions
 def consolewrite_print(s: str) -> None:
     # TODO: is the callback for flush working with Linux ?
     print(s, end='', flush=True)
 
 
-@logged_exceptions
 def consolewrite_warnerror(s: str) -> None:
     # TODO: use an rpy2/R-specific warning instead of UserWarning.
     logger.warning(_WRITECONSOLE_EXCEPTION_LOG, s)
@@ -129,7 +131,6 @@ def _consolewrite_ex(buf, n: int, otype) -> None:
         logger.error(_WRITECONSOLE_EXCEPTION_LOG, str(e))
 
 
-@logged_exceptions
 def showmessage(s: str) -> None:
     print('R wants to show a message')
     print(s)
@@ -147,7 +148,6 @@ def _showmessage(buf):
         logger.error(_SHOWMESSAGE_EXCEPTION_LOG, str(e))
 
 
-@logged_exceptions
 def choosefile(new):
     return input('Enter file name:')
 
@@ -218,7 +218,6 @@ def _showfiles(nfiles: int, files, headers, wtitle, delete, pager) -> int:
     return res
 
 
-@logged_exceptions
 def cleanup(saveact, status, runlast):
     pass
 

@@ -147,7 +147,6 @@ def test_external_python():
 
 
 # TODO: what is this ?
-@pytest.mark.skip(reason='segfault')
 def testExternalPythonFromExpression():
     xp_name = rinterface.StrSexpVector(('expression',))
     xp = rinterface.baseenv['vector'](xp_name, 3)
