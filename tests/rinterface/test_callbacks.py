@@ -1,11 +1,13 @@
 from .. import utils
 import io
 import logging
+import os
 import pytest
 import sys
 import tempfile
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import callbacks
+from rpy2.rinterface_lib import openrlib
 
 rinterface.initr()
 
@@ -88,7 +90,24 @@ def testSetResetConsole():
             editor=editor)
         assert f.__closure__[0].cell_contents == 1
 
+
+def test_resetconsole_error(caplog):
+    error_msg = "Doesn't work."
+    def f():
+        raise Exception(error_msg)
     
+    with utils.obj_in_module(callbacks, 'consolereset', f), \
+         caplog.at_level(logging.ERROR, logger='callbacks.logger'):
+        caplog.clear()
+        callbacks._consolereset()
+        assert len(caplog.record_tuples) > 0
+        for x in caplog.record_tuples:
+            assert x == ('rpy2.rinterface_lib.callbacks',
+                         logging.ERROR,
+                         (callbacks
+                          ._RESETCONSOLE_EXCEPTION_LOG % error_msg)) 
+
+
 def test_flushconsole():
 
     def make_callback():
@@ -125,13 +144,15 @@ def test_flushconsole_with_error(caplog):
 
 
 def test_consoleread():
-    msg = 'yes\n'
+    msg = 'yes'
     def sayyes(prompt):
         return msg
     with utils.obj_in_module(callbacks, 'consoleread', sayyes):
-        r_readline = rinterface.baseenv['readline']
-        res = r_readline()
-    assert msg.strip() == res[0]
+        prompt = openrlib.ffi.new('char []', b'foo')
+        n = 1000
+        buf = openrlib.ffi.new('char [%i]' % n)
+        res = callbacks._consoleread(prompt, buf, n, 0)
+    assert (msg + os.linesep) == openrlib.ffi.string(buf).decode('ascii')
 
 
 def test_console_read_with_error(caplog):
@@ -143,7 +164,11 @@ def test_console_read_with_error(caplog):
     
     with utils.obj_in_module(callbacks, 'consoleread', f), \
          caplog.at_level(logging.ERROR, logger='callbacks.logger'):
-        res = rinterface.baseenv['readline']()
+        caplog.clear()
+        prompt = openrlib.ffi.new('char []', b'foo')
+        n = 1000
+        buf = openrlib.ffi.new('char [%i]' % n)
+        res = callbacks._consoleread(prompt, buf, n, 0)
         assert len(caplog.record_tuples) > 0
         for x in caplog.record_tuples:
             assert x == ('rpy2.rinterface_lib.callbacks',
@@ -152,7 +177,6 @@ def test_console_read_with_error(caplog):
                           ._READCONSOLE_EXCEPTION_LOG % msg)) 
 
 
-# TODO: showmessage seems to only be called at R startup time.
 def test_show_message():
     def make_callback():
         count = 0
@@ -163,16 +187,27 @@ def test_show_message():
     f = make_callback()
 
     with utils.obj_in_module(callbacks, 'showmessage', f):
-        pass
+        assert f.__closure__[0].cell_contents == 0
+        msg = openrlib.ffi.new('char []', b'foo')
+        callbacks._showmessage(msg)
+        assert f.__closure__[0].cell_contents == 1
 
 
-# TODO: showmessage seems to only be called at R startup time.
-def test_show_message_with_error():
-    def f(prompt):
-        raise Exception("Doesn't work.")
-    with utils.obj_in_module(callbacks, 'showmessage', f):
-        pass
-    # TODO: incomplete test
+def test_show_message_with_error(caplog):
+    error_msg = "Doesn't work."
+    def f(message):
+        raise Exception(error_msg)
+    with utils.obj_in_module(callbacks, 'showmessage', f), \
+         caplog.at_level(logging.ERROR, logger='callbacks.logger'):
+        caplog.clear()
+        msg = openrlib.ffi.new('char []', b'foo')
+        callbacks._showmessage(msg)
+        assert len(caplog.record_tuples) > 0
+        for x in caplog.record_tuples:
+            assert x == ('rpy2.rinterface_lib.callbacks',
+                         logging.ERROR,
+                         (callbacks
+                          ._SHOWMESSAGE_EXCEPTION_LOG % error_msg)) 
 
 
 def test_choosefile():
@@ -238,7 +273,6 @@ def test_showfiles_error(caplog):
                          logging.ERROR,
                          (callbacks
                           ._SHOWFILE_EXCEPTION_LOG % msg)) 
-
 
 
 @pytest.mark.skip(reason='WIP (should be run from worker process).')
