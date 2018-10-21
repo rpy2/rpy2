@@ -136,84 +136,84 @@ class VectorOperationsDelegator(object):
         self._parent = parent
 
     def __add__(self, x):
-        res = globalenv_ri.get("+")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("+")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def __sub__(self, x):
-        res = globalenv_ri.get("-")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("-")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def __matmul__(self, x):
-        res = globalenv_ri.get("%*%")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("%*%")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def __mul__(self, x):
-        res = globalenv_ri.get("*")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("*")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def __pow__(self, x):
-        res = globalenv_ri.get("^")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("^")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def __floordiv__(self, x):
-        res = globalenv_ri.get("%/%")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("%/%")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
     
     def __truediv__(self, x):
-        res = globalenv_ri.get("/")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("/")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)        
         
     def __divmod__(self, x):
-        res = globalenv_ri.get("%%")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("%%")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def __or__(self, x):
-        res = globalenv_ri.get("|")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("|")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def __and__(self, x):
-        res = globalenv_ri.get("&")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("&")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     # Comparisons
 
     def __lt__(self, x):
-        res = globalenv_ri.get("<")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("<")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def __le__(self, x):
-        res = globalenv_ri.get("<=")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("<=")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def __eq__(self, x):
-        res = globalenv_ri.get("==")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("==")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def __ne__(self, x):
-        res = globalenv_ri.get("!=")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find("!=")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def __gt__(self, x):
-        res = globalenv_ri.get(">")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find(">")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def __ge__(self, x):
-        res = globalenv_ri.get(">=")(self._parent, conversion.py2rpy(x))
+        res = globalenv_ri.find(">=")(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
     
     # 
     def __neg__(self):
-        res = globalenv_ri.get("-")(self._parent)
+        res = globalenv_ri.find("-")(self._parent)
         return res
 
     def __contains__(self, what):
-        res = globalenv_ri.get("%in%")(self._parent, what)
+        res = globalenv_ri.find("%in%")(self._parent, what)
         return res
 
 
 
-class Vector(RObjectMixin, SexpVector):
-    """ Vector(seq) -> Vector.
+class Vector(RObjectMixin):
+    """Vector(seq) -> Vector.
 
     The parameter 'seq' can be an instance inheriting from
     rinterface.SexpVector, or an arbitrary Python object.
@@ -228,12 +228,6 @@ class Vector(RObjectMixin, SexpVector):
 
 """
 
-    _R_TYPE = None
-    _CAST_IN = None
-    _R_GET_PTR = None
-    _R_VECTOR_ELT = None
-    _R_SET_VECTOR_ELT = None
-    
     _sample = rinterface.baseenv['sample']
 
     _html_template = jinja2.Template(
@@ -252,21 +246,18 @@ class Vector(RObjectMixin, SexpVector):
     </table>
     """)
 
-    def __init__(self, o):
-        if not isinstance(o, SexpVector):
-            o = conversion.py2rpy(o)
-        super(Vector, self).__init__(o)
+    def _add_rops(self):
         self.ro = VectorOperationsDelegator(self)
         self.rx = ExtractDelegator(self)
         self.rx2 = DoubleExtractDelegator(self)
 
     def __add__(self, x):
-        res = baseenv_ri.get("c")(self, conversion.py2rpy(x))
+        res = baseenv_ri.find("c")(self, conversion.py2rpy(x))
         res = conversion.rpy2py(res)
         return res
 
     def __getitem__(self, i):
-        res = super(Vector, self).__getitem__(i)
+        res = super().__getitem__(i)
         
         if isinstance(res, Sexp):
             res = conversion.rpy2py(res)
@@ -274,7 +265,7 @@ class Vector(RObjectMixin, SexpVector):
 
     def __setitem__(self, i, value):
         value = conversion.py2rpy(value)
-        res = super(Vector, self).__setitem__(i, value)
+        res = super().__setitem__(i, value)
 
     @property
     def names(self):
@@ -285,7 +276,7 @@ class Vector(RObjectMixin, SexpVector):
 
     @names.setter
     def names(self, value):
-        res = globalenv_ri.get("names<-")(self, conversion.py2rpy(value))
+        res = globalenv_ri.find("names<-")(self, conversion.py2rpy(value))
         self.__sexp__ = res.__sexp__
 
     def items(self):
@@ -324,7 +315,7 @@ class Vector(RObjectMixin, SexpVector):
             res = '%8f' % elt
         else:
             if isinstance(elt, str):
-                elt = elt.__repr__()
+                elt = repr(elt)
             else:
                 elt = type(elt).__name__    
             if len(elt) < max_width:
@@ -353,7 +344,7 @@ class Vector(RObjectMixin, SexpVector):
         return ''.join(('[', ', '.join(self._iter_formatted()), ']'))
     
     def __repr__(self):
-        return super(Vector, self).__repr__() + os.linesep + \
+        return super().__repr__() + os.linesep + \
             self.__repr_content__()
 
     def _repr_html_(self):
@@ -365,7 +356,7 @@ class Vector(RObjectMixin, SexpVector):
 
 
 class StrVector(Vector, StrSexpVector):
-    """      Vector of string elements
+    """Vector of string elements
 
     StrVector(seq) -> StrVector.
 
@@ -382,8 +373,8 @@ class StrVector(Vector, StrSexpVector):
         return rinterface.NA_Character
 
     def __init__(self, obj):
-        obj = StrSexpVector(obj)
-        super(StrVector, self).__init__(obj)
+        super().__init__(obj)
+        self._add_rops()
 
     def factor(self):
         """
@@ -412,8 +403,8 @@ class IntVector(Vector, IntSexpVector):
         return rinterface.NA_Integer
 
     def __init__(self, obj):
-        obj = IntSexpVector(obj)
-        super(IntVector, self).__init__(obj)
+        super().__init__(obj)
+        self._add_rops()
 
     def repr_format_elt(self, elt, max_width = 8):
         return '{:,}'.format(elt)
@@ -440,8 +431,8 @@ class BoolVector(Vector, BoolSexpVector):
         return rinterface.NA_Logical
 
     def __init__(self, obj):
-        obj = BoolSexpVector(obj)
-        super(BoolVector, self).__init__(obj)
+        super().__init__(obj)
+        self._add_rops()
 
 
 class ByteVector(Vector, ByteSexpVector):
@@ -455,8 +446,8 @@ class ByteVector(Vector, ByteSexpVector):
     """
 
     def __init__(self, obj):
-        obj = ByteSexpVector(obj)
         super().__init__(obj)
+        self._add_rops()
 
 
 class ComplexVector(Vector, ComplexSexpVector):
@@ -475,8 +466,9 @@ class ComplexVector(Vector, ComplexSexpVector):
         return rinterface.NA_Complex
 
     def __init__(self, obj):
-        obj = ComplexSexpVector(obj)
-        super(ComplexVector, self).__init__(obj)
+        super().__init__(obj)
+        self._add_rops()
+
 
 class FloatVector(Vector, FloatSexpVector):
     """ Vector of float (double) elements 
@@ -494,8 +486,9 @@ class FloatVector(Vector, FloatSexpVector):
         return rinterface.NA_Real
 
     def __init__(self, obj):
-        obj = FloatSexpVector(obj)
-        super(FloatVector, self).__init__(obj)
+        super().__init__(obj)
+        self._add_rops()
+
 
 class FactorVector(IntVector):
     """ Vector of 'factors' 
@@ -628,24 +621,25 @@ The parameter 'itemable' can be:
             if tlist.typeof != rinterface.RTYPES.VECSXP:
                 raise ValueError("tlist should have "
                                  "tlist.typeof == rinterface.RTYPES.VECSXP")
-            super(ListVector, self).__init__(tlist)
+            super().__init__(tlist)
         elif hasattr(tlist, 'items') and callable(tlist.items):
             kv = [(k, conversion.py2rpy(v)) for k,v in tlist.items()]
             kv = tuple(kv)
-            df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
-            super(ListVector, self).__init__(df)
+            df = baseenv_ri.find("list").rcall(kv, globalenv_ri)
+            super().__init__(df)
         elif hasattr(tlist, "__iter__"):
             if not callable(tlist.__iter__):
                 raise ValueError("tlist should have a /method/ __iter__ (not an attribute)")
             kv = [(str(k), conversion.py2rpy(v)) for k,v in tlist]
             kv = tuple(kv)
-            df = baseenv_ri.get("list").rcall(kv, globalenv_ri)
-            super(ListVector, self).__init__(df)
+            df = baseenv_ri.find("list").rcall(kv, globalenv_ri)
+            super().__init__(df)
         else:
             raise ValueError("tlist can be either "+
                              "an iter-able " +
                              " or an instance of rpy2.rinterface.SexpVector" +
                              " of type VECSXP, or a Python dict.")
+        self._add_rops()
 
     def _iter_repr(self, max_items=9):
         if len(self) <= max_items:
@@ -663,7 +657,7 @@ The parameter 'itemable' can be:
         res = []
         for i, elt in enumerate(self._iter_repr()):
             if isinstance(elt, ListVector):
-                res.append(super(ListVector, self).__repr__())
+                res.append(super().__repr__())
             elif elt == '...':
                 res.append(elt)
             else:
@@ -676,7 +670,7 @@ The parameter 'itemable' can be:
                                               os.linesep,
                                               elt.__repr__()))
 
-        res = super(ListVector, self).__repr__() + os.linesep + \
+        res = super().__repr__() + os.linesep + \
             os.linesep.join(res)
         return res
 
@@ -722,6 +716,7 @@ The parameter 'itemable' can be:
         res = conversion.ri2py(res)
         return res
 
+
 class DateVector(FloatVector):
     """ Vector of dates """
     pass
@@ -761,7 +756,7 @@ class POSIXt(object):
             yield self.repr_format_elt(str_elt)
 
 
-class POSIXlt(POSIXt, Vector):
+class POSIXlt(POSIXt, ListVector):
     """ Representation of dates with a 9-component structure
     (similar to Python's time.struct_time).
 
@@ -890,11 +885,6 @@ class Array(Vector):
     _dim_set = baseenv_ri['dim<-']
     _isarray = baseenv_ri['is.array']
 
-    def __init__(self, obj):
-        super().__init__(obj)
-        if not self._isarray(self)[0]:
-            raise(TypeError("The object must be representing an R array"))
-
     def __dim_get(self):
         res = self._dim_get(self)
         res = conversion.rpy2py(res)
@@ -928,6 +918,26 @@ class Array(Vector):
     names = property(__dimnames_get, __dimnames_set, None, 
                      "names associated with the dimension.")
     dimnames = names
+
+
+class IntArray(Array, IntVector):
+    pass
+
+
+class FloatArray(Array, FloatVector):
+    pass
+
+
+class BoolArray(Array, BoolVector):
+    pass
+
+
+class ComplexArray(Array, ComplexVector):
+    pass
+
+
+class StrArray(Array, StrVector):
+    pass
 
 
 class Matrix(Array):
@@ -1034,6 +1044,7 @@ class Matrix(Array):
         res = self._eigen(self)
         return conversion.rpy2py(res)
 
+
 class DataFrame(ListVector):
     """ R 'data.frame'.
     """
@@ -1084,10 +1095,10 @@ class DataFrame(ListVector):
                 raise ValueError("obj should of typeof RTYPES.VECSXP"+\
                                      " (and we get %s)" % rinterface.RTYPES(obj.typeof))
             if self._is_list(obj)[0] or \
-                    globalenv_ri.get('inherits')(obj, self._dataframe_name)[0]:
+                    globalenv_ri.find('inherits')(obj, self._dataframe_name)[0]:
                 #FIXME: is it really a good idea to pass R lists
                 # to the constructor ?
-                super(DataFrame, self).__init__(obj)
+                super().__init__(obj)
                 return
             else:
                 raise ValueError(
@@ -1116,8 +1127,8 @@ class DataFrame(ListVector):
 
         # Call R's data frame constructor
         kv = tuple(kv)
-        df = baseenv_ri.get("data.frame").rcall(kv, globalenv_ri)
-        super(DataFrame, self).__init__(df)
+        df = baseenv_ri.find("data.frame").rcall(kv, globalenv_ri)
+        super().__init__(df)
 
     def _repr_html_(self, max_items=7):
         names = list()
@@ -1307,6 +1318,26 @@ class DataFrame(ListVector):
         """ iterator across columns """
         for i in range(self.ncol):
             yield self.rx(rinterface.MissingArg, i+1)
+
+
+class IntMatrix(Matrix, IntVector):
+    pass
+
+
+class FloatMatrix(Matrix, FloatVector):
+    pass
+
+
+class BoolMatrix(Matrix, BoolVector):
+    pass
+
+
+class ComplexMatrix(Matrix, ComplexVector):
+    pass
+
+
+class StrMatrix(Matrix, StrVector):
+    pass
 
 
 # end of definition for DataFrame

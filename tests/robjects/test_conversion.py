@@ -4,25 +4,25 @@ from rpy2 import robjects
 
 
 def test_mapperR2Python_string():
-    sexp = rinterface.globalenv.get('letters')
+    sexp = rinterface.globalenv.find('letters')
     ob = robjects.default_converter.rpy2py(sexp)
     assert isinstance(ob, robjects.Vector)
 
 
 def test_mapperR2Python_boolean():
-    sexp = rinterface.globalenv.get('T')
+    sexp = rinterface.globalenv.find('T')
     ob = robjects.default_converter.rpy2py(sexp)
     assert isinstance(ob, robjects.Vector)
 
 
 def test_mapperR2Python_function():
-    sexp = rinterface.globalenv.get('plot')
+    sexp = rinterface.globalenv.find('plot')
     ob = robjects.default_converter.rpy2py(sexp)
     assert isinstance(ob, robjects.Function)
 
     
 def test_mapperR2Python_environment():
-    sexp = rinterface.globalenv.get('.GlobalEnv')
+    sexp = rinterface.globalenv.find('.GlobalEnv')
     assert isinstance(robjects.default_converter.rpy2py(sexp), 
                       robjects.Environment)
 
@@ -31,7 +31,7 @@ def test_mapperR2Python_s4():
     robjects.r('setClass("A", representation(x="integer"))')
     classname = rinterface.StrSexpVector(['A', ])
     one = rinterface.IntSexpVector([1, ])
-    sexp = rinterface.globalenv.get('new')(classname, 
+    sexp = rinterface.globalenv.find('new')(classname, 
                                            x=one)
     assert isinstance(robjects.default_converter.rpy2py(sexp), 
                       robjects.RS4)

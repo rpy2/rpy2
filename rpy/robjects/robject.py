@@ -57,13 +57,13 @@ class RObjectMixin(object):
     
     __rname__ = None
 
-    __tempfile = rpy2.rinterface.baseenv.get("tempfile")
-    __file = rpy2.rinterface.baseenv.get("file")
-    __fifo = rpy2.rinterface.baseenv.get("fifo")
-    __sink = rpy2.rinterface.baseenv.get("sink")
-    __close = rpy2.rinterface.baseenv.get("close")
-    __readlines = rpy2.rinterface.baseenv.get("readLines")
-    __unlink = rpy2.rinterface.baseenv.get("unlink")
+    __tempfile = rpy2.rinterface.baseenv.find("tempfile")
+    __file = rpy2.rinterface.baseenv.find("file")
+    __fifo = rpy2.rinterface.baseenv.find("fifo")
+    __sink = rpy2.rinterface.baseenv.find("sink")
+    __close = rpy2.rinterface.baseenv.find("close")
+    __readlines = rpy2.rinterface.baseenv.find("readLines")
+    __unlink = rpy2.rinterface.baseenv.find("unlink")
     __show = _get_exported_value('methods', 'show')
 
     __slots = None
@@ -174,7 +174,7 @@ class RObjectMixin(object):
 
     
 def repr_robject(o, linesep=os.linesep):
-    s = rpy2.rinterface.baseenv.get("deparse")(o)
+    s = rpy2.rinterface.baseenv.find("deparse")(o)
     s = str.join(linesep, s)
     return s
 

@@ -30,6 +30,18 @@ Changes
   to convert any rpy2 object into a either a non-rpy2 Python object or
   a mod:`rpy2.robjects` level object.
 
+- The method `get` for R environments is now called `find()` to avoid
+  confusion with the method of the same name in Python (:meth:`dict.get`).
+
+- :class:`rpy2.robjects.vectors.Vector`, :class:`rpy2.robjects.vectors.Matrix`,
+  and :class:`rpy2.robjects.vectors.Array` can no longer be used to create
+  R arrays of unspecified type. New type-specific classes (for example for
+  vectors :class:`rpy2.robjects.vectors.IntVector`,
+  :class:`rpy2.robjects.vectors.BoolVector`,
+  :class:`rpy2.robjects.vectors.FloatVector`,
+  :class:`rpy2.robjects.vectors.ComplexVector`, or
+  :class:`rpy2.robjects.vectors.StrVector`) should be used instead.
+
 
 Release 2.9.4
 =============

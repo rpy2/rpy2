@@ -19,7 +19,7 @@ rinterface.initr()
 
 
 def is_AQUA_or_Windows(function):
-    platform = rinterface.baseenv.get('.Platform')
+    platform = rinterface.baseenv.find('.Platform')
     names = platform.do_slot('names')
     platform_gui = names[names.index('GUI')]
     platform_ostype = names[names.index('OS.type')]
@@ -205,24 +205,24 @@ def test_rpy_memory():
 
 
 def test_object_dispatch_lang():
-    formula = rinterface.globalenv.get('formula')
+    formula = rinterface.globalenv.find('formula')
     obj = formula(rinterface.StrSexpVector(['y ~ x', ]))
     assert isinstance(obj, rinterface.SexpVector)
     assert obj.typeof == rinterface.RTYPES.LANGSXP
 
     
 def test_object_dispatch_vector():
-    robj = rinterface.globalenv.get('letters')
+    robj = rinterface.globalenv.find('letters')
     assert isinstance(robj, rinterface.SexpVector)
 
     
 def test_object_dispatch_closure():
-    robj = rinterface.globalenv.get('sum')
+    robj = rinterface.globalenv.find('sum')
     assert isinstance(robj, rinterface.SexpClosure)
 
     
 def test_object_dispatch_rawvector():
-    rawfunc = rinterface.baseenv.get('raw')
+    rawfunc = rinterface.baseenv.find('raw')
     rawvec = rawfunc(rinterface.IntSexpVector((10, )))
     assert rinterface.RTYPES.RAWSXP == rawvec.typeof
 

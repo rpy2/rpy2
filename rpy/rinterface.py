@@ -38,6 +38,12 @@ def parse(text: str, num: int = -1):
     return _rinterface._parse(robj.__sexp__._cdata, num)
 
 
+def evalr(source: str) -> sexp.Sexp:
+    res = parse(source)
+    res = baseenv['eval'](res)
+    return res
+
+
 class _NULL(object):
 
     __slots__ = ('_sexpobject', )
@@ -116,7 +122,7 @@ class SexpEnvironment(Sexp):
 
     @_cdata_res_to_rinterface
     @_evaluated_promise
-    def get(self,
+    def find(self,
             key: str,
             wantfun: int = False):
         # TODO: move check of R_UnboundValue to _rinterface ?
@@ -129,7 +135,19 @@ class SexpEnvironment(Sexp):
                 openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
             )
             if wantfun:
-                res = _rinterface._findfun(symbol, self.__sexp__._cdata)
+                # One would expect this to be like
+                #   res = _rinterface._findfun(symbol, self.__sexp__._cdata)
+                # but R's findfun will segfault if the symbol is not in
+                # the environment. :/
+                rho = self
+                while rho.rid != emptyenv.rid:
+                    res = _rinterface._findVarInFrame(symbol,
+                                                      rho.__sexp__._cdata)
+                    if _rinterface._TYPEOF(res) in (openrlib.rlib.CLOSXP,
+                                                    openrlib.rlib.BUILTINSXP):
+                        break
+                    res = openrlib.rlib.R_UnboundValue
+                    rho = rho.enclos
             else:
                 res = _rinterface._findvar(symbol, self.__sexp__._cdata)
         if res == openrlib.rlib.R_UnboundValue:

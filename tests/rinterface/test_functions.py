@@ -29,7 +29,7 @@ def test_new():
 
         
 def test_typeof():
-    sexp = rinterface.globalenv.get('plot')
+    sexp = rinterface.globalenv.find('plot')
     assert sexp.typeof == rinterface.RTYPES.CLOSXP
 
 
@@ -48,7 +48,7 @@ def test_string_argument():
 
 
 def test_utf8_argument_name():
-    c = rinterface.globalenv.get('c')
+    c = rinterface.globalenv.find('c')
     d = dict([(u'哈哈', 1)])
     res = c(**d)
     assert u'哈哈' == res.do_slot('names')[0]
@@ -91,8 +91,8 @@ def test_closureenv():
 
 def test_call_s4_setClass():
     # R's package "methods" can perform uncommon operations
-    r_setClass = rinterface.globalenv.get('setClass')
-    r_representation = rinterface.globalenv.get('representation')
+    r_setClass = rinterface.globalenv.find('setClass')
+    r_representation = rinterface.globalenv.find('representation')
     attrnumeric = rinterface.StrSexpVector(['numeric', ])
     classname = rinterface.StrSexpVector(['Track', ])
     classrepr = r_representation(x = attrnumeric,

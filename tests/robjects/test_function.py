@@ -13,7 +13,7 @@ def test_init_invalid():
 
 
 def test_init_from_existing():
-    ri_f = rinterface.baseenv.get('sum')
+    ri_f = rinterface.baseenv.find('sum')
 
     ro_f = Function(ri_f)
 
@@ -21,7 +21,7 @@ def test_init_from_existing():
 
 
 def test_call_with_sexp():
-    ri_f = rinterface.baseenv.get('sum')
+    ri_f = rinterface.baseenv.find('sum')
     ro_f = Function(ri_f)
 
     ro_v = robjects.Vector(array.array('i', [1,2,3]))

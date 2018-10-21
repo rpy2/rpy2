@@ -10,7 +10,7 @@ _get_exported_value = rinterface.baseenv['::']
 getmethod = _get_exported_value('methods', 'getMethod')
 
 
-require = rinterface.baseenv.get('require')
+require = rinterface.baseenv.find('require')
 require(StrSexpVector(('methods', )),
         quiet = rinterface.BoolSexpVector((True, )))
 
@@ -286,6 +286,6 @@ def rs4instance_factory(robj):
     if clslist is None:
         return robj
 
-methods_env = rinterface.baseenv.get('as.environment')(StrSexpVector(('package:methods', )))
+methods_env = rinterface.baseenv.find('as.environment')(StrSexpVector(('package:methods', )))
 
 

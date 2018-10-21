@@ -91,9 +91,11 @@ def test_getclassdef():
 
 def test_RS4Auto_Type():
     robjects.r('library(stats4)')
+    class AutoCombined(robjects.methods.RS4Auto_Type,
+                       robjects.methods.RS4):
+        pass
     class MLE(object,
-              metaclass=(robjects.methods.RS4Auto_Type,
-                         robjects.methods.RS4)):
+              metaclass=AutoCombined):
         __rname__ = 'mle'
         __rpackagename__ = 'stats4'
     # TODO: test ?
@@ -102,7 +104,6 @@ def test_RS4Auto_Type():
 def test_RS4Auto_Type_nopackname():
     robjects.r('library(stats4)')
     class MLE(object,
-              metaclass=(robjects.methods.RS4Auto_Type,
-                         robjects.methods.RS4)):
+              metaclass=AutoCombined):
         __rname__ = 'mle'
     # TODO: test ?

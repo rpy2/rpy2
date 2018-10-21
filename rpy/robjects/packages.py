@@ -215,7 +215,6 @@ class Package(ModuleType):
 
         - on_conflict: 'fail' or 'warn' (default: 'fail')
         """
-
         assert(on_conflict in ('fail', 'warn'))
 
         name = self.__rname__

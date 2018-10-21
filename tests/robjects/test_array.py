@@ -10,13 +10,13 @@ def almost_equal(x, y, epsilon = 0.00001):
 
 
 def test_init_invalid():
-    letters = rinterface.globalenv.get('letters')
+    letters = rinterface.globalenv.find('letters')
     with pytest.raises(TypeError):
         robjects.Array(letters)
 
 
 def test_init():
-    m = rinterface.globalenv.get('matrix')(1, nrow=5, ncol=3)
+    m = rinterface.globalenv.find('matrix')(1, nrow=5, ncol=3)
     a = robjects.Array(m)
     assert tuple(a.rclass) == ('matrix', )
 

@@ -74,6 +74,18 @@ def _(obj):
     return obj
 
 
+def _vector_matrix_array(obj, vector_cls, matrix_cls, array_cls):
+    # Should it be promoted to array or matrix ?
+    try:
+        dim = obj.do_slot("dim")
+        if len(dim) == 2:
+            return matrix_cls
+        else:
+            return array_cls
+    except:
+        return vector_cls
+
+
 def sexpvector_to_ro(obj):
     try:
         rcls = obj.do_slot("class")
@@ -81,38 +93,34 @@ def sexpvector_to_ro(obj):
         rcls = [None]
 
     if 'data.frame' in rcls:
-        res = vectors.DataFrame(obj)
-        return res
-    try:
-        dim = obj.do_slot("dim")
-        if len(dim) == 2:
-            res = vectors.Matrix(obj)
+        cls = vectors.DataFrame
+    
+    if obj.typeof == rinterface.RTYPES.INTSXP:
+        if 'factor' in rcls:
+            cls = vectors.FactorVector
         else:
-            res = vectors.Array(obj)
-    except LookupError as le:
-        if obj.typeof == rinterface.RTYPES.INTSXP:
-            if 'factor' in rcls:
-                res = vectors.FactorVector(obj)
-            else:
-                res = vectors.IntVector(obj)
-        elif obj.typeof == rinterface.RTYPES.REALSXP:
-            if obj.rclass[0] == 'POSIXct':
-                res = vectors.POSIXct(obj)
-            else:
-                res = vectors.FloatVector(obj)
-        elif obj.typeof == rinterface.RTYPES.LGLSXP:
-            res = vectors.BoolVector(obj)
-        elif obj.typeof == rinterface.RTYPES.STRSXP:
-            res = vectors.StrVector(obj)
-        elif obj.typeof == rinterface.RTYPES.VECSXP:
-            res = vectors.ListVector(obj)
-        elif obj.typeof == rinterface.RTYPES.LISTSXP:
-            res = rinterface.PairlistSexpVector(obj)
-        elif obj.typeof == rinterface.RTYPES.LANGSXP and 'formula' in rcls:
-            res = Formula(obj)
+            cls = _vector_matrix_array(obj, vectors.IntVector, vectors.IntMatrix, vectors.IntArray)
+    elif obj.typeof == rinterface.RTYPES.REALSXP:
+        if obj.rclass[0] == 'POSIXct':
+            cls = vectors.POSIXct
         else:
-            res = vectors.Vector(obj)
-    return res
+            cls = _vector_matrix_array(obj, vectors.FloatVector, vectors.FloatMatrix, vectors.FloatArray)
+    elif obj.typeof == rinterface.RTYPES.LGLSXP:
+        cls = _vector_matrix_array(obj, vectors.BoolVector, vectors.BoolMatrix, vectors.BoolArray)
+    elif obj.typeof == rinterface.RTYPES.STRSXP:
+        cls = _vector_matrix_array(obj, vectors.StrVector, vectors.StrMatrix, vectors.StrArray)
+    elif obj.typeof == rinterface.RTYPES.VECSXP:
+        cls = vectors.ListVector
+    elif obj.typeof == rinterface.RTYPES.LISTSXP:
+        cls = rinterface.PairlistSexpVector
+    elif obj.typeof == rinterface.RTYPES.LANGSXP and 'formula' in rcls:
+        cls = Formula
+    elif obj.typeof == rinterface.RTYPES.CPLXSXP:
+        cls = _vector_matrix_array(obj, vectors.ComplexVector, vectors.ComplexMatrix, vectors.ComplexArray)
+    else:
+        raise ValueError('%s is not an R vector.' % obj)
+
+    return cls(obj)
 
 default_converter.rpy2py.register(SexpVector, sexpvector_to_ro)
 
@@ -121,6 +129,8 @@ TYPEORDER = {bool: (0, BoolVector),
              float: (2, FloatVector),
              complex: (3, ComplexVector),
              str: (4, StrVector)}
+
+
 def sequence_to_vector(lst):
     curr_typeorder = -1
     i = None
@@ -349,7 +359,7 @@ class R(object):
             raise AttributeError(orig_ae)
 
     def __getitem__(self, item):
-        res = _globalenv.get(item)
+        res = _globalenv.find(item)
         res = conversion.rpy2py(res)
         if hasattr(res, '__rname__'):
             res.__rname__ = item

@@ -44,7 +44,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         :param item: string (name/symbol)
         :rtype: object (as returned by :func:`conversion.converter.rpy2py`)
         """
-        res = super(Environment, self).get(item, wantfun = wantfun)
+        res = super(Environment, self).find(item, wantfun = wantfun)
         res = conversion.converter.rpy2py(res)
         res.__rname__ = item
         return res

@@ -5,16 +5,9 @@ import rpy2.rinterface as ri
 ri.initr()
 
 
-# TODO: make this an rinterface function
-def evalr(string):
-    res = ri.parse(string)
-    res = ri.baseenv["eval"](res)
-    return res
-
-
 def test_r_to_NAInteger():
     na_int = ri.NA_Integer
-    r_na_int = evalr("NA_integer_")[0]
+    r_na_int = ri.evalr("NA_integer_")[0]
     assert r_na_int is na_int
 
 
@@ -54,7 +47,7 @@ def test_NAInteger_in_vector():
 
     
 def test_R_to_NALogical():
-    r_na_lgl = evalr('NA')[0]
+    r_na_lgl = ri.evalr('NA')[0]
     assert r_na_lgl is ri.NA
 
 
@@ -87,7 +80,7 @@ def test_NALogical_in_vector():
 
     
 def test_R_to_NAReal():
-    r_na_real = evalr('NA_real_')[0]
+    r_na_real = ri.evalr('NA_real_')[0]
     assert math.isnan(r_na_real)
 
     
@@ -126,7 +119,7 @@ def test_NAReal_str():
 
 def test_r_to_NACharacter():
     na_character = ri.NA_Character
-    r_na_character = evalr("NA_character_")
+    r_na_character = ri.evalr("NA_character_")
     assert r_na_character.typeof == ri.RTYPES.STRSXP
     assert len(r_na_character) == 1
     assert r_na_character.get_charsxp(0).rid == na_character.rid

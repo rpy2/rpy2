@@ -11,7 +11,7 @@ def test_invalid_init():
 
 
 def test_init_from_existing():
-    sexp = rinterface.baseenv.get('letters')
+    sexp = rinterface.baseenv.find('letters')
     sexp_new = rinterface.Sexp(sexp)
     assert sexp_new._sexpobject is sexp._sexpobject
 
@@ -21,13 +21,13 @@ def test_typeof():
 
     
 def test_get():
-    sexp = rinterface.baseenv.get('letters')
+    sexp = rinterface.baseenv.find('letters')
     assert sexp.typeof == rinterface.RTYPES.STRSXP
 
-    sexp = rinterface.baseenv.get('pi')
+    sexp = rinterface.baseenv.find('pi')
     assert sexp.typeof == rinterface.RTYPES.REALSXP
 
-    sexp = rinterface.baseenv.get('options')
+    sexp = rinterface.baseenv.find('options')
     assert sexp.typeof == rinterface.RTYPES.CLOSXP
 
 
@@ -40,14 +40,14 @@ def test_list_attrs():
 
 
 def test_do_slot():
-    sexp = rinterface.baseenv.get('.Platform')
+    sexp = rinterface.baseenv.find('.Platform')
     names = sexp.do_slot('names')
     assert len(names) > 1
     assert 'OS.type' in names
 
 
 def test_names():
-    sexp = rinterface.baseenv.get('.Platform')
+    sexp = rinterface.baseenv.find('.Platform')
     names = sexp.names
     assert len(names) > 1
     assert 'OS.type' in names
@@ -69,19 +69,19 @@ def test_names_set_invalid():
 
 
 def test_do_slot_missing():
-    sexp = rinterface.baseenv.get('pi')
+    sexp = rinterface.baseenv.find('pi')
     with pytest.raises(LookupError):
         sexp.do_slot('foo')
 
 
 def test_do_slot_not_string():
-    sexp = rinterface.baseenv.get('pi')
+    sexp = rinterface.baseenv.find('pi')
     with pytest.raises(ValueError):
         sexp.do_slot(None)
 
 
 def test_do_slot_empty_string():
-    sexp = rinterface.baseenv.get('pi')
+    sexp = rinterface.baseenv.find('pi')
     with pytest.raises(ValueError):
         sexp.do_slot('')
 
@@ -114,19 +114,19 @@ def test_do_slot_assign_empty_string():
 
 
 def test_sexp_rsame_true():
-    sexp_a = rinterface.baseenv.get("letters")
-    sexp_b = rinterface.baseenv.get("letters")
+    sexp_a = rinterface.baseenv.find("letters")
+    sexp_b = rinterface.baseenv.find("letters")
     assert sexp_a.rsame(sexp_b)
 
 
 def test_sexp_rsame_false():
-    sexp_a = rinterface.baseenv.get("letters")
-    sexp_b = rinterface.baseenv.get("pi")
+    sexp_a = rinterface.baseenv.find("letters")
+    sexp_b = rinterface.baseenv.find("pi")
     assert not sexp_a.rsame(sexp_b)
 
 
 def test_sexp_rsame_invalid():
-    sexp_a = rinterface.baseenv.get("letters")
+    sexp_a = rinterface.baseenv.find("letters")
     with pytest.raises(ValueError):
         sexp_a.rsame('foo')
 
@@ -148,19 +148,19 @@ def test___sexp__():
 
 
 def test_rclass_get():
-    sexp = rinterface.baseenv.get('character')(1)
+    sexp = rinterface.baseenv.find('character')(1)
     assert len(sexp.rclass) == 1
     assert sexp.rclass[0] == 'character'
     
-    sexp = rinterface.baseenv.get('matrix')(0)
+    sexp = rinterface.baseenv.find('matrix')(0)
     assert len(sexp.rclass) == 1
     assert sexp.rclass[0] == 'matrix'
 
-    sexp = rinterface.baseenv.get('array')(0)
+    sexp = rinterface.baseenv.find('array')(0)
     assert len(sexp.rclass) == 1
     assert sexp.rclass[0] == 'array'
 
-    sexp = rinterface.baseenv.get('new.env')()
+    sexp = rinterface.baseenv.find('new.env')()
     assert len(sexp.rclass) == 1
     assert sexp.rclass[0] == 'environment'
 
@@ -214,7 +214,7 @@ def test__sexp__set():
 def test_deepcopy():
     sexp = rinterface.IntSexpVector([1,2,3])
     assert sexp.named == 0
-    rinterface.baseenv.get("identity")(sexp)
+    rinterface.baseenv.find("identity")(sexp)
     assert sexp.named >= 2
     sexp2 = sexp.__deepcopy__()
     assert sexp.typeof == sexp2.typeof
@@ -230,7 +230,7 @@ def test_deepcopy():
 
 
 def test_rid():
-    globalenv_id = rinterface.baseenv.get('.GlobalEnv').rid
+    globalenv_id = rinterface.baseenv.find('.GlobalEnv').rid
     assert globalenv_id == rinterface.globalenv.rid
         
 

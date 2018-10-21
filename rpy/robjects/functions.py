@@ -19,9 +19,9 @@ baseenv_ri = rinterface.baseenv
 #needed to avoid circular imports
 _reval = rinterface.baseenv['eval']
 
-__formals = baseenv_ri.get('formals')
-__args = baseenv_ri.get('args')
-__is_null = baseenv_ri.get('is.null')
+__formals = baseenv_ri.find('formals')
+__args = baseenv_ri.find('args')
+__is_null = baseenv_ri.find('is.null')
 
 
 def _formals_fixed(func):
@@ -80,10 +80,10 @@ def _repr_argval(obj):
 class Function(RObjectMixin, rinterface.SexpClosure):
     """ Python representation of an R function.
     """
-    __local = baseenv_ri.get('local')
-    __call = baseenv_ri.get('call')
-    __assymbol = baseenv_ri.get('as.symbol')
-    __newenv = baseenv_ri.get('new.env')
+    __local = baseenv_ri.find('local')
+    __call = baseenv_ri.find('call')
+    __assymbol = baseenv_ri.find('as.symbol')
+    __newenv = baseenv_ri.find('new.env')
 
     _local_env = None
         

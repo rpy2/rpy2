@@ -6,21 +6,21 @@ ri.initr()
 
 
 def test_init_from_r():
-    pairlist = ri.baseenv.get('pairlist')
+    pairlist = ri.baseenv.find('pairlist')
     pl = pairlist(a = ri.StrSexpVector(['1', ]),
                   b = ri.StrSexpVector(['3', ]))
     assert pl.typeof == ri.RTYPES.LISTSXP
 
 
 def test_names():
-    pairlist = ri.baseenv.get('pairlist')
+    pairlist = ri.baseenv.find('pairlist')
     pl = pairlist(a = ri.StrSexpVector(['1', ]),
                   b = ri.StrSexpVector(['3', ]))
     assert tuple(pl.names) == ('a', 'b')
 
 
 def test_getitem_pairlist():
-    pairlist = ri.baseenv.get('pairlist')
+    pairlist = ri.baseenv.find('pairlist')
     pl = pairlist(a = ri.StrSexpVector(['1', ]),
                   b = ri.StrSexpVector(['3', ]))
     # R's behaviour is that subsetting returns an R list
@@ -32,7 +32,7 @@ def test_getitem_pairlist():
 
 
 def test_getslice_pairlist():
-    pairlist = ri.baseenv.get('pairlist')
+    pairlist = ri.baseenv.find('pairlist')
     vec = pairlist(a = ri.StrSexpVector(['1', ]),
                    b = ri.StrSexpVector(['3', ]),
                    c = ri.StrSexpVector(['6', ]))

@@ -180,7 +180,7 @@ class Sexp(object):
     @property
     def names(self):
         # TODO: force finding function
-        return embedded.globalenv.get('names')(self)
+        return embedded.globalenv.find('names')(self)
 
     @names.setter
     def names(self, value) -> None:

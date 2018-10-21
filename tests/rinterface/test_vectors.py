@@ -8,51 +8,44 @@ import rpy2.rinterface as ri
 ri.initr()
 
 
-# TODO: make this an rinterface function
-def evalr(string):
-    res = ri.parse(string)
-    res = ri.baseenv["eval"](res)
-    return res
-
-
 def floatEqual(x, y, epsilon = 0.00000001):
     return abs(x - y) < epsilon
 
 
 def test_int():
     sexp = ri.IntSexpVector([1, ])
-    isInteger = ri.globalenv.get("is.integer")
+    isInteger = ri.globalenv.find("is.integer")
     assert isInteger(sexp)[0]
 
     
 def test_float():
     sexp = ri.IntSexpVector([1.0, ])
-    isNumeric = ri.globalenv.get("is.numeric")
+    isNumeric = ri.globalenv.find("is.numeric")
     assert isNumeric(sexp)[0]
 
 
 def test_str():
     sexp = ri.StrSexpVector(["a", ])
-    isStr = ri.globalenv.get("is.character")
+    isStr = ri.globalenv.find("is.character")
     assert isStr(sexp)[0]
 
 
 def test_bool():
     sexp = ri.BoolSexpVector([True, ])
-    isBool = ri.globalenv.get("is.logical")
+    isBool = ri.globalenv.find("is.logical")
     assert isBool(sexp)[0]
 
 
 def test_complex():
     sexp = ri.ComplexSexpVector([1+2j, ])
-    is_complex = ri.globalenv.get("is.complex")
+    is_complex = ri.globalenv.find("is.complex")
     assert is_complex(sexp)[0]
 
 
 def test_byte():
     seq = (b'a', b'b')
     sexp = ri.ByteSexpVector(seq)
-    is_raw = ri.globalenv.get("is.raw")
+    is_raw = ri.globalenv.find("is.raw")
     assert is_raw(sexp)[0]
 
 
@@ -64,19 +57,19 @@ def test_del():
 
 def test_from_bool():
     sexp = ri.vector([True, ], ri.RTYPES.LGLSXP)
-    isLogical = ri.globalenv.get('is.logical')
+    isLogical = ri.globalenv.find('is.logical')
     assert isLogical(sexp)[0]
     assert sexp[0] == True
 
     sexp = ri.vector(['a', ], ri.RTYPES.LGLSXP)
-    isLogical = ri.globalenv.get('is.logical')
+    isLogical = ri.globalenv.find('is.logical')
     assert isLogical(sexp)[0]
     assert sexp[0]
 
 
 def test_from_int():
     sexp = ri.vector([1, ], ri.RTYPES.INTSXP)
-    isInteger = ri.globalenv.get('is.integer')
+    isInteger = ri.globalenv.find('is.integer')
     assert isInteger(sexp)[0]
     
     with pytest.raises(ValueError):
@@ -91,7 +84,7 @@ def test_from_invalid_no_length():
 
 def test_from_float():
     sexp = ri.vector([1.0, ], ri.RTYPES.REALSXP)
-    isNumeric = ri.globalenv.get("is.numeric")
+    isNumeric = ri.globalenv.find("is.numeric")
     assert isNumeric(sexp)[0]
 
     
@@ -102,13 +95,13 @@ def test_from_float_nan():
 
 def test_from_complex():
     sexp = ri.vector([1.0 + 1.0j, ], ri.RTYPES.CPLXSXP)
-    isComplex = ri.globalenv.get('is.complex')
+    isComplex = ri.globalenv.find('is.complex')
     assert isComplex(sexp)[0]
 
 
 def test_from_string():
     sexp = ri.vector(['abc', ], ri.RTYPES.STRSXP)
-    isCharacter = ri.globalenv.get('is.character')
+    isCharacter = ri.globalenv.find('is.character')
     assert isCharacter(sexp)[0]
 
 
@@ -117,7 +110,7 @@ def test_from_list():
            ri.IntSexpVector([2, 3]),
            ri.StrSexpVector(['foo', 'bar']))
     sexp = ri.ListSexpVector(seq)
-    isList = ri.globalenv.get('is.list')
+    isList = ri.globalenv.find('is.list')
     assert isList(sexp)[0]
     assert len(sexp) == 3
 
@@ -145,20 +138,20 @@ def test_invalid_not_vector_rtype():
 def _run_without_initr(queue):
     import rpy2.rinterface as rinterface
     try:
-        tmp = ri.vector([1,2], ri.RTYPES.INTSXP)
+        tmp = rinterface.vector([1,2], rinterface.RTYPES.INTSXP)
+        res = (True, None)
+    except rinterface.embedded.RNotReadyError as re:
         res = (False, None)
-    except RuntimeError as re:
-        res = (True, str(re))
     except Exception as e:
         res = (False, str(e))
     queue.put(res)
 
         
 def test_instantiate_without_initr():
-    q = multiprocessing.Queue()
-    ctx = multiprocessing.get_context() # 'spawn')
+    ctx = multiprocessing.get_context('spawn')
+    q = ctx.Queue()
     p = ctx.Process(target = _run_without_initr, args = (q,))
     p.start()
     res = q.get()
     p.join()
-    assert res[0] is True
+    assert res == (False, None)

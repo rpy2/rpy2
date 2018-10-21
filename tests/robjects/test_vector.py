@@ -13,11 +13,11 @@ rlist = robjects.baseenv["list"]
 def test_init():
     identical = ri.baseenv["identical"]
     py_a = array.array('i', [1,2,3])
-    ro_v = robjects.Vector(py_a)
+    ro_v = robjects.IntVector(py_a)
     assert ro_v.typeof == ri.RTYPES.INTSXP
 
     ri_v = ri.IntSexpVector(py_a)
-    ro_v = robjects.Vector(ri_v)
+    ro_v = robjects.IntVector(ri_v)
 
     assert identical(ro_v, ri_v)[0]
 
@@ -139,7 +139,7 @@ def get_item_list():
 
 
 def test_getnames():
-    vec = robjects.Vector(array.array('i', [1,2,3]))
+    vec = robjects.vectors.IntVector(array.array('i', [1,2,3]))
     v_names = [robjects.baseenv["letters"][x] for x in (0,1,2)]
     #FIXME: simplify this
     r_names = robjects.baseenv["c"](*v_names)
@@ -150,7 +150,7 @@ def test_getnames():
 
 
 def test_setnames():
-    vec = robjects.Vector(array.array('i', [1,2,3]))
+    vec = robjects.vectors.IntVector(array.array('i', [1,2,3]))
     names = ['x', 'y', 'z']
     vec.names = names
     for i in range(len(vec)):

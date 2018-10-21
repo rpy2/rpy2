@@ -5,7 +5,7 @@ ri.initr()
 
 
 def test_init():
-    rgetattr = ri.baseenv.get('::')
+    rgetattr = ri.baseenv.find('::')
     formula = rgetattr('stats', 'formula')
     f = formula(ri.StrSexpVector(['y ~ x', ]))
     assert f.typeof == ri.RTYPES.LANGSXP
@@ -18,7 +18,7 @@ def test_init_invalid():
 
 
 def test_getitem():
-    rgetattr = ri.baseenv.get('::')
+    rgetattr = ri.baseenv.find('::')
     formula = rgetattr('stats', 'formula')
     f = formula(ri.StrSexpVector(['y ~ x', ]))
     y = f[0]
@@ -28,7 +28,7 @@ def test_getitem():
     assert str(f[2]) == 'x'
     
 def test_setitem():
-    rgetattr = ri.baseenv.get('::')
+    rgetattr = ri.baseenv.find('::')
     formula = rgetattr('stats', 'formula')
     f = formula(ri.StrSexpVector(['y ~ x', ]))
     response = f[1]
@@ -41,7 +41,7 @@ def test_setitem():
 
 # put ExprSexp test here
 def test_expression():
-    expression = ri.baseenv.get('expression')
+    expression = ri.baseenv.find('expression')
     e = expression(ri.StrSexpVector(['a', ]),
                    ri.StrSexpVector(['b', ]))
     assert e.typeof == ri.RTYPES.EXPRSXP

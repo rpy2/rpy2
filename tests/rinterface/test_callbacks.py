@@ -11,16 +11,6 @@ from rpy2.rinterface_lib import openrlib
 
 rinterface.initr()
 
-def is_AQUA_or_Windows():
-    platform = rinterface.baseenv.get('.Platform')
-    _ = platform.do_slot('names')
-    platform_gui = _[_.index('GUI')]
-    platform_ostype = _[_.index('OS.type')]
-    if (platform_gui == 'AQUA') or (platform_ostype == 'windows'):
-        return True
-    else:
-        return False
-
 
 def test_consolewrite_print():
     tmp_file = io.StringIO()
@@ -83,11 +73,7 @@ def testSetResetConsole():
     f = make_callback()
     
     with utils.obj_in_module(callbacks, 'consolereset', f):
-        # TODO: what happens with "cat" on Windows ?
-        editor = 'cat'
-        rinterface.globalenv.get('edit')(
-            rinterface.parse('letters'),
-            editor=editor)
+        callbacks._consolereset()
         assert f.__closure__[0].cell_contents == 1
 
 
@@ -120,7 +106,7 @@ def test_flushconsole():
 
     with utils.obj_in_module(callbacks, 'consoleflush', f):
         assert f.__closure__[0].cell_contents == 0
-        rinterface.globalenv.get('flush.console')()
+        rinterface.globalenv.find('flush.console')()
         assert f.__closure__[0].cell_contents == 1
 
 
@@ -132,7 +118,7 @@ def test_flushconsole_with_error(caplog):
     with utils.obj_in_module(callbacks, 'consoleflush', f), \
          caplog.at_level(logging.ERROR, logger='callbacks.logger'):
         caplog.clear()
-        res = rinterface.globalenv.get('flush.console')()
+        res = rinterface.globalenv.find('flush.console')()
         assert len(caplog.record_tuples) > 0
         for x in caplog.record_tuples:
             assert x == ('rpy2.rinterface_lib.callbacks',
@@ -140,7 +126,7 @@ def test_flushconsole_with_error(caplog):
                          (callbacks
                           ._FLUSHCONSOLE_EXCEPTION_LOG % msg)) 
 
-        res = rinterface.globalenv.get('flush.console')()
+        res = rinterface.globalenv.find('flush.console')()
 
 
 def test_consoleread():
@@ -152,7 +138,20 @@ def test_consoleread():
         n = 1000
         buf = openrlib.ffi.new('char [%i]' % n)
         res = callbacks._consoleread(prompt, buf, n, 0)
+    assert res == 1
     assert (msg + os.linesep) == openrlib.ffi.string(buf).decode('ascii')
+
+
+def test_consoleread_empty():
+    def sayyes(prompt):
+        return ''
+    with utils.obj_in_module(callbacks, 'consoleread', sayyes):
+        prompt = openrlib.ffi.new('char []', b'foo')
+        n = 1000
+        buf = openrlib.ffi.new('char [%i]' % n)
+        res = callbacks._consoleread(prompt, buf, n, 0)
+    assert res == 0
+    assert os.linesep == openrlib.ffi.string(buf).decode('ascii')
 
 
 def test_console_read_with_error(caplog):
@@ -169,6 +168,7 @@ def test_console_read_with_error(caplog):
         n = 1000
         buf = openrlib.ffi.new('char [%i]' % n)
         res = callbacks._consoleread(prompt, buf, n, 0)
+        assert res == 0
         assert len(caplog.record_tuples) > 0
         for x in caplog.record_tuples:
             assert x == ('rpy2.rinterface_lib.callbacks',

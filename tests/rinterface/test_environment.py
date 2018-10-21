@@ -12,7 +12,8 @@ def _just_pass(x):
 
 @pytest.fixture(scope='module')
 def silent_console_print():
-    with utils.obj_in_module(rinterface.callbacks, 'consolewrite_print', _just_pass):
+    with utils.obj_in_module(rinterface.callbacks,
+                             'consolewrite_print', _just_pass):
         yield
 
         
@@ -42,65 +43,63 @@ def test_globalenv():
 def test_getitem():
     with pytest.raises(KeyError):
         rinterface.globalenv['help']
-    assert isinstance(rinterface.globalenv.get('help'), rinterface.Sexp)
+    assert isinstance(rinterface.globalenv.find('help'), rinterface.Sexp)
 
 
-def test_get_invalid_notstring():
+def test_find_invalid_notstring():
     with pytest.raises(TypeError):
-        rinterface.globalenv.get(None)
+        rinterface.globalenv.find(None)
 
 
-def test_get_invalid_empty():
+def test_find_invalid_empty():
     with pytest.raises(ValueError):
-        rinterface.globalenv.get('')
+        rinterface.globalenv.find('')
 
 
-def test_get_invalid_notfound():
+def test_find_invalid_notfound():
     with pytest.raises(KeyError):
-        rinterface.globalenv.get('asdf')
+        rinterface.globalenv.find('asdf')
 
 
-def test_getclosure():
-    help_R = rinterface.globalenv.get('help')
+def test_find_closure():
+    help_R = rinterface.globalenv.find('help')
     assert isinstance(help_R, rinterface.SexpClosure)
 
 
-def test_getvector():
-    pi_R = rinterface.globalenv.get('pi')
+def test_find_vector():
+    pi_R = rinterface.globalenv.find('pi')
     assert isinstance(pi_R, rinterface.SexpVector)
 
 
-def test_getenvironment():
-    ge_R = rinterface.globalenv.get(".GlobalEnv")
+def test_find_environment():
+    ge_R = rinterface.globalenv.find(".GlobalEnv")
     assert isinstance(ge_R, rinterface.SexpEnvironment)
 
 
-@pytest.mark.skip(reason='segfault')
-def test_getonlyfromloadedlibrary():
+def test_find_onlyfromloadedlibrary():
     with pytest.raises(KeyError):
-        rinterface.globalenv.get('survfit')
+        rinterface.globalenv.find('survfit')
     try:
-        rinterface.parse('library("survival")')
-        sfit_R = rinterface.globalenv.get('survfit')
+        rinterface.evalr('library("survival")')
+        sfit_R = rinterface.globalenv.find('survfit')
         assert isinstance(sfit_R, rinterface.SexpClosure)
     finally:
-        rinterface.parse('detach("package:survival")')
+        rinterface.evalr('detach("package:survival")')
 
 
-@pytest.mark.skip(reason='segfault')
-def test_get_functiononly_keyerror():
+def test_find_functiononly_keyerror():
     # now with the function-only option
     with pytest.raises(KeyError):
-        res = rinterface.globalenv.get('pi', wantfun=True)
+        res = rinterface.globalenv.find('pi', wantfun=True)
 
 
-def test_get_functiononly():
-    hist = rinterface.globalenv.get('hist', wantfun=False)
+def test_find_functiononly():
+    hist = rinterface.globalenv.find('hist', wantfun=False)
     assert rinterface.RTYPES.CLOSXP == hist.typeof
     rinterface.globalenv['hist'] = rinterface.StrSexpVector(['foo', ])
 
-    hist = rinterface.globalenv.get('hist', wantfun=True)
-    assert rinterface.RTYPES.CLOSXP == hist.typeof
+    with pytest.raises(KeyError):
+        rinterface.globalenv.find('hist', wantfun=True)
 
 
 # TODO: isn't this already tested elsewhere ?
@@ -112,10 +111,10 @@ def test_subscript_emptystring():
 
 def test_subscript():
     ge = rinterface.globalenv
-    obj = ge.get('letters')
+    obj = ge.find('letters')
     ge['a'] = obj
     a = ge['a']
-    assert ge.get('identical')(obj, a)
+    assert ge.find('identical')(obj, a)
 
 
 def test_subscript_utf8():
@@ -134,7 +133,7 @@ def test_subscript_missing_utf8():
 
 
 def test_length():
-    new_env = rinterface.globalenv.get('new.env')
+    new_env = rinterface.globalenv.find('new.env')
     env = new_env()
     assert len(env) == 0
     env['a'] = rinterface.IntSexpVector([123, ])
@@ -144,7 +143,7 @@ def test_length():
 
 
 def test_iter():
-    new_env = rinterface.globalenv.get('new.env')
+    new_env = rinterface.globalenv.find('new.env')
     env = new_env()
     env['a'] = rinterface.IntSexpVector([123, ])
     env['b'] = rinterface.IntSexpVector([456, ])
@@ -155,7 +154,7 @@ def test_iter():
 
 
 def test_keys():
-    new_env = rinterface.globalenv.get('new.env')
+    new_env = rinterface.globalenv.find('new.env')
     env = new_env()
     env['a'] = rinterface.IntSexpVector([123, ])
     env['b'] = rinterface.IntSexpVector([456, ])
@@ -166,7 +165,7 @@ def test_keys():
 
 
 def test_del():
-    env = rinterface.globalenv.get("new.env")()
+    env = rinterface.globalenv.find("new.env")()
     env['a'] = rinterface.IntSexpVector([123, ])
     env['b'] = rinterface.IntSexpVector([456, ])
     assert len(env) == 2
