@@ -282,7 +282,7 @@ class Vector(RObjectMixin):
     def items(self):
         """ iterator on names and values """
         #FIXME: should be a view ?
-        if self.names.rsame(R_NilValue):
+        if self.names.rsame(rinterface.NULL):
             it_names = itertools.cycle((None, ))
         else:
             it_names = iter(self.names)

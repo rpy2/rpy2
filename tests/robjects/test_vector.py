@@ -189,16 +189,17 @@ def test_nacharacter():
 
 def test_repr():
     vec = robjects.IntVector((1,2,3))
-    s = repr(vec).split('\n')
-    assert s[2] == '[1, 2, 3]'
+    s = repr(vec)
+    assert s.endswith('[1, 2, 3]')
 
 
 def test_repr_nonvectorinlist():
     vec = robjects.ListVector(OrderedDict((('a', 1), 
                                            ('b', robjects.Formula('y ~ x')),
                                            )))
-    s = repr(vec).split('\n')
-    assert s[2].strip() == '[IntVector, Formula]'
+    s = repr(vec)
+    assert s.startswith("R object with classes: (\'RTYPES.VECSXP',) "
+                        "mapped to:\n[IntVector, Formula]")
 
 
 def test_items():

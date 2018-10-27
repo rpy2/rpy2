@@ -12,18 +12,18 @@ def almost_equal(x, y, epsilon = 0.00001):
 def test_init_invalid():
     letters = rinterface.globalenv.find('letters')
     with pytest.raises(TypeError):
-        robjects.Array(letters)
+        robjects.vectors.IntArray(letters)
 
 
 def test_init():
     m = rinterface.globalenv.find('matrix')(1, nrow=5, ncol=3)
-    a = robjects.Array(m)
+    a = robjects.vectors.FloatArray(m)
     assert tuple(a.rclass) == ('matrix', )
 
 
 def test_dim():
     m = robjects.r.matrix(1, nrow=5, ncol=3)
-    a = robjects.Array(m)
+    a = robjects.vectors.FloatArray(m)
     d = a.dim
     assert len(d) == 2
     assert d[0] == 5
@@ -35,7 +35,7 @@ def test_names_get():
                                robjects.StrVector(['d', 'e']))
     m = robjects.r.matrix(1, nrow=3, ncol=2,
                           dimnames = dimnames)
-    a = robjects.Array(m)
+    a = robjects.vectors.FloatArray(m)
     res = a.names
     r_identical = robjects.r.identical
     assert r_identical(dimnames[0], res[0])[0]
@@ -46,7 +46,7 @@ def test_names_set():
     dimnames = robjects.r.list(robjects.StrVector(['a', 'b', 'c']),
                                robjects.StrVector(['d', 'e']))
     m = robjects.r.matrix(1, nrow=3, ncol=2)
-    a = robjects.Array(m)
+    a = robjects.vectors.FloatArray(m)
     a.names = dimnames
     res = a.names
     r_identical = robjects.r.identical

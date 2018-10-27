@@ -186,7 +186,7 @@ result = rmagic_addone(12344)
             return res
         from rpy2.robjects.conversion import Converter
         my_converter = Converter('my converter')
-        my_converter.py2ri.register(tuple, tuple_str)
+        my_converter.py2rpy.register(tuple, tuple_str)
         from rpy2.robjects import default_converter
 
         foo = default_converter + my_converter
