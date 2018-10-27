@@ -123,7 +123,6 @@ class UnmanagedSexpCapsule(object):
         return get_rid(self._cdata)
 
 
-
 def _findvar(symbol, r_environment):
     rlib = openrlib.rlib
     res = rlib.Rf_protect(rlib.Rf_findVar(symbol,

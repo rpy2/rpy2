@@ -16,22 +16,19 @@ original_converter = None
 #   http://numpy.scipy.org/array_interface.shtml
 _kinds = {
     # "t" -> not really supported by numpy
-    "b": ro.vectors.BoolVector,
-    "i": ro.vectors.IntVector,
+    'b': ro.vectors.BoolVector,
+    'i': ro.vectors.IntVector,
     # "u" -> special-cased below
-    "f": ro.vectors.FloatVector,
-    "c": ro.vectors.ComplexVector,
+    'f': ro.vectors.FloatVector,
+    'c': ro.vectors.ComplexVector,
     # "O" -> special-cased below
-    "S1": ro.vectors.ByteVector,
-    "U": ro.vectors.StrVector,
+    'S': ro.vectors.ByteVector,
+    'U': ro.vectors.StrVector,
     # "V" -> special-cased below
     #FIXME: datetime64 ?
     #"datetime64":
     }
 
-#FIXME: the following would need further thinking & testing on
-#       32bits architectures
-_kinds['float64'] = ro.vectors.FloatVector
 
 _vectortypes = (RTYPES.LGLSXP,
                 RTYPES.INTSXP,
@@ -65,7 +62,7 @@ def numpy2rpy(o):
     # Most types map onto R arrays:
     if o.dtype.kind in _kinds:
         # "F" means "use column-major order"
-        vec = _kinds[o.dtype.kind](o.ravel("F"))
+        vec = _kinds[o.dtype.kind](o.ravel('F'))
         dim = ro.vectors.IntVector(o.shape)
         #TODO: no dimnames ?
         #TODO: optimize what is below needed/possible ?

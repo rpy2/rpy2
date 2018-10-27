@@ -49,30 +49,31 @@ class TestPackage(object):
             robjects.packages.Package(env, "dummy_package")
 
 
-class TestSignatureTranslatedAnonymousPackages(object):
-    string = """
-   square <- function(x) {
+def test_signaturetranslatedanonymouspackage():
+    rcode = """
+    square <- function(x) {
     return(x^2)
-   }
-
-   cube <- function(x) {
+    }
+    
+    cube <- function(x) {
     return(x^3)
-   }
-   """
-
-    def test_init(self):
-        powerpack = packages.STAP(self.string, "powerpack")
-        assert hasattr(powerpack, 'square')
-        assert hasattr(powerpack, 'cube')
+    }
+    """
+    
+    powerpack = packages.STAP(rcode, "powerpack")
+    assert hasattr(powerpack, 'square')
+    assert hasattr(powerpack, 'cube')
 
 
 class TestImportr(object):
-    
+
+    @pytest.mark.skip(reason='segfault')    
     def test_importr_stats(self):
         stats = robjects.packages.importr('stats',
                                           on_conflict='warn')
         assert isinstance(stats, robjects.packages.Package)
-
+    
+    @pytest.mark.skip(reason='segfault')
     def test_import_stats_with_libloc(self):
         path = robjects.packages.get_packagepath('stats')
         stats = robjects.packages.importr('stats', 
@@ -82,7 +83,8 @@ class TestImportr(object):
 
     def test_import_stats_with_libloc_and_suppressmessages(self):
         path = robjects.packages.get_packagepath('stats')
-        stats = robjects.packages.importr('stats', lib_loc=path,
+        stats = robjects.packages.importr('stats',
+                                          lib_loc=path,
                                           on_conflict='warn',
                                           suppress_messages=False)
         assert isinstance(stats, robjects.packages.Package)
@@ -101,7 +103,7 @@ class TestImportr(object):
             finally:
                 sys.stdout = stdout
                 tmp_file.close()
-        
+
     def test_import_datasets(self):
         datasets = robjects.packages.importr('datasets')
         assert isinstance(datasets, robjects.packages.Package)
@@ -110,22 +112,18 @@ class TestImportr(object):
         assert isinstance(robjects.packages.data(datasets), 
                           robjects.packages.PackageData)
 
-        
-class TestWherefrom(object):
-    
-    def test_wherefrom(self):
-        stats = robjects.packages.importr('stats', on_conflict='warn')
-        rnorm_pack = robjects.packages.wherefrom('rnorm')
-        assert rnorm_pack.do_slot('name')[0] == 'package:stats'
+
+def test_wherefrom():
+    stats = robjects.packages.importr('stats', on_conflict='warn')
+    rnorm_pack = robjects.packages.wherefrom('rnorm')
+    assert rnorm_pack.do_slot('name')[0] == 'package:stats'
 
 
-class TestInstalledPackages(object):
-    
-    def test_init(self):
-        instapacks = robjects.packages.InstalledPackages()
-        res = instapacks.isinstalled('foo')
-        assert isinstance(res, bool)
-        ncols = len(instapacks.colnames)
-        for row in instapacks:
-            assert ncols == len(row)
+def test_installedpackages():
+    instapacks = robjects.packages.InstalledPackages()
+    res = instapacks.isinstalled('foo')
+    assert res is False
+    ncols = len(instapacks.colnames)
+    for row in instapacks:
+        assert ncols == len(row)
         

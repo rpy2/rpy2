@@ -44,8 +44,8 @@ def isready() -> bool:
 
 
 def assert_isready():
-    if not isready(): 
-        raise embedded.RNotReadyError(
+    if not isready():
+        raise RNotReadyError(
             'The embedded R is not ready to use.')
 
 

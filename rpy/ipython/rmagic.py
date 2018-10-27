@@ -109,7 +109,7 @@ except ImportError:
     from simplegeneric import generic
 
 
-class RInterpreterError(ri.RRuntimeError):
+class RInterpreterError(ri.embedded.RRuntimeError):
     """An error when running R code in a %%R magic cell."""
     
     def __init__(self, line, err, stdout):
@@ -211,7 +211,7 @@ class RMagics(Magics):
         if device == 'svg':
             try:
                 self.cairo = rpacks.importr('Cairo')
-            except ri.RRuntimeError as rre:
+            except ri.embedded.RRuntimeError as rre:
                 if rpacks.isinstalled('Cairo'):
                     msg = "An error occurred when trying to load the R package Cairo'\n%s" % str(rre)
                 else:
@@ -252,7 +252,7 @@ utils.install_packages('Cairo')
         try:
             # Need the newline in case the last line in code is a comment
             value, visible = ro.r("withVisible({%s\n})" % code)
-        except (ri.RRuntimeError, ValueError) as exception:
+        except (ri.embedded.RRuntimeError, ValueError) as exception:
             warning_or_other_msg = self.flush() # otherwise next return seems to have copy of error
             raise RInterpreterError(code, str(exception), warning_or_other_msg)
         text_output = self.flush()

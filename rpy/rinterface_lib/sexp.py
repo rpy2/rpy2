@@ -208,9 +208,9 @@ class CETYPE(enum.Enum):
 
 
 class NCHAR_TYPE(enum.Enum):
-  Bytes = 0
-  Chars = 1 
-  Width = 2
+    Bytes = 0
+    Chars = 1
+    Width = 2
 
 
 class CharSexp(Sexp):

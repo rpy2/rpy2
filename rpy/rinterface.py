@@ -123,8 +123,8 @@ class SexpEnvironment(Sexp):
     @_cdata_res_to_rinterface
     @_evaluated_promise
     def find(self,
-            key: str,
-            wantfun: int = False):
+             key: str,
+             wantfun: int = False):
         # TODO: move check of R_UnboundValue to _rinterface ?
         if not isinstance(key, str):
             raise TypeError('The key must be a non-empty string.')
@@ -281,7 +281,11 @@ def _cast_in_byte(x):
     return x
 
 
-def _set_raw_elt(x, i, val):
+def _get_raw_elt(x, i: int):
+    return openrlib._RAW(x)[i]
+
+
+def _set_raw_elt(x, i: int, val):
     openrlib._RAW(x)[i] = val
 
 
@@ -289,7 +293,7 @@ class ByteSexpVector(SexpVector):
 
     _R_TYPE = openrlib.rlib.RAWSXP
     _R_GET_PTR = openrlib._RAW
-    _R_VECTOR_ELT = lambda x, i: openrlib._RAW(x)[i]
+    _R_VECTOR_ELT = _get_raw_elt
     _R_SET_VECTOR_ELT = _set_raw_elt
     _CAST_IN = _cast_in_byte
 
@@ -325,13 +329,20 @@ class ByteSexpVector(SexpVector):
                 'Indices must be integers or slices, not %s' % type(i))
 
 
+def _cast_in_bool(x):
+    if x is None or x == openrlib.rlib.R_NaInt:
+        return NA_Logical
+    else:
+        return bool(x)
+
+
 class BoolSexpVector(SexpVector):
 
     _R_TYPE = openrlib.rlib.LGLSXP
     _R_VECTOR_ELT = openrlib.LOGICAL_ELT
     _R_SET_VECTOR_ELT = openrlib.SET_LOGICAL_ELT
     _R_GET_PTR = openrlib._LOGICAL
-    _CAST_IN = lambda x: NA_Logical if x is None or x == openrlib.rlib.R_NaInt else bool(x)
+    _CAST_IN = _cast_in_bool
 
     def __getitem__(self, i: int) -> typing.Union[typing.Optional[bool],
                                                   'BoolSexpVector']:

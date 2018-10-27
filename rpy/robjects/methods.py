@@ -38,6 +38,7 @@ class RS4(RObjectMixin, rinterface.SexpS4):
         return methods_env['validObject'](self, test = test,
                                           complete = complete)[0]
 
+
 class ClassRepresentation(RS4):
     """ Definition of an R S4 class """
     slots = property(lambda x: [y[0] for y in x.do_slot('slots')],
@@ -71,7 +72,9 @@ def getclassdef(cls_name, cls_packagename):
     cls_def.__rname__ = cls_name
     return cls_def
 
+
 class RS4_Type(type):
+    
     def __new__(mcs, name, bases, cls_dict):
 
         try:

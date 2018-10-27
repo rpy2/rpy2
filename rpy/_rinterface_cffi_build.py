@@ -1,6 +1,5 @@
 import cffi
 import os
-import sys
 
 ffibuilder = cffi.FFI()
 ffibuilder.set_source('_rinterface_cffi', None)
@@ -57,7 +56,7 @@ typedef int R_len_t;
 if ffibuilder.sizeof('size_t') > 4:
     LONG_VECTOR_SUPPORT = True
     R_XLEN_T_MAX = 4503599627370496
-    R_SHORT_LEN_MAX = 2147483647    
+    R_SHORT_LEN_MAX = 2147483647
     ffibuilder.cdef("""
 typedef ptrdiff_t R_xlen_t;
     """)
@@ -72,11 +71,10 @@ double R_NaReal;	/* NA_REAL: IEEE */
 int    R_NaInt;
 """)
 
-    
 ffibuilder.cdef("""
 typedef unsigned char Rbyte;
 """)
-    
+
 ffibuilder.cdef("""
 struct symsxp_struct {
     struct SEXPREC *pname;
@@ -170,7 +168,7 @@ typedef struct {
 )
 
 ffibuilder.cdef("""
-typedef union { 
+typedef union {
     VECTOR_SEXPREC s;
     double align;
 } SEXPREC_ALIGN;
@@ -394,11 +392,11 @@ SEXP Rf_mkChar(const char *);
 SEXP Rf_mkString(const char *);
 
 typedef enum {
-  CE_NATIVE = 0, 
-  CE_UTF8   = 1, 
+  CE_NATIVE = 0,
+  CE_UTF8   = 1,
   CE_LATIN1 = 2,
-  CE_BYTES  = 3, 
-  CE_SYMBOL = 5, 
+  CE_BYTES  = 3,
+  CE_SYMBOL = 5,
   CE_ANY    = 99
 } cetype_t;
 
@@ -410,12 +408,12 @@ SEXP Rf_mkCharLenCE(const char *, int n, cetype_t encoding);
 ffibuilder.cdef("""
 typedef enum {
   Bytes = 0,
-  Chars = 1, 
+  Chars = 1,
   Width = 2
 } nchar_type;
 
 int R_nchar(SEXP string, nchar_type type_,
-            Rboolean allowNA, Rboolean keepNA, 
+            Rboolean allowNA, Rboolean keepNA,
             const char* msg_name);
 """)
 
@@ -554,7 +552,8 @@ extern void (*ptr_R_savehistory)(SEXP, SEXP, SEXP, SEXP);
 extern void (*ptr_R_addhistory)(SEXP, SEXP, SEXP, SEXP);
 
 // added in 3.0.0
-extern int  (*ptr_R_EditFiles)(int, const char **, const char **, const char *);
+extern int  (*ptr_R_EditFiles)(int, const char **,
+                               const char **, const char *);
 // naming follows earlier versions in R.app
 extern SEXP (*ptr_do_selectlist)(SEXP, SEXP, SEXP, SEXP);
 extern SEXP (*ptr_do_dataentry)(SEXP, SEXP, SEXP, SEXP);
@@ -586,7 +585,7 @@ typedef R_CallMethodDef R_ExternalMethodDef;
 
 typedef struct _DllInfo DllInfo;
 
-int R_registerRoutines(DllInfo *info, 
+int R_registerRoutines(DllInfo *info,
                        const R_CMethodDef * const croutines,
                        const R_CallMethodDef * const callRoutines,
                        const R_FortranMethodDef * const fortranRoutines,
