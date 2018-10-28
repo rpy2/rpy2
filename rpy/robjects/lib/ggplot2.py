@@ -125,7 +125,7 @@ class Aes(robjects.Vector):
         return res
 aes = Aes.new
 
-class AesString(robjects.Vector):
+class AesString(robjects.ListVector):
     """ Aesthetics mapping, using strings rather than expressions (the later
     being most common form when using the package in R - see class Aes
     in this Python module).

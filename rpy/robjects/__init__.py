@@ -87,15 +87,11 @@ def _vector_matrix_array(obj, vector_cls, matrix_cls, array_cls):
 
 
 def sexpvector_to_ro(obj):
-    try:
-        rcls = obj.do_slot("class")
-    except LookupError as le:
-        rcls = [None]
+    rcls = obj.rclass
 
     if 'data.frame' in rcls:
         cls = vectors.DataFrame
-    
-    if obj.typeof == rinterface.RTYPES.INTSXP:
+    elif obj.typeof == rinterface.RTYPES.INTSXP:
         if 'factor' in rcls:
             cls = vectors.FactorVector
         else:

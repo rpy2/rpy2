@@ -10,9 +10,8 @@ def almost_equal(x, y, epsilon = 0.00001):
 
 
 def test_init_invalid():
-    letters = rinterface.globalenv.find('letters')
-    with pytest.raises(TypeError):
-        robjects.vectors.IntArray(letters)
+    with pytest.raises(ValueError):
+        robjects.vectors.IntArray(3)
 
 
 def test_init():

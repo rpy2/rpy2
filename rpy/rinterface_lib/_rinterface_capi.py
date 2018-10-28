@@ -19,16 +19,22 @@ _PY_PASSENGER = dict()
 
 
 def get_rid(cdata) -> int:
+    """Get the identifier for the R object.
+
+    This is intended to be like Python's `id()`, but
+    for R objects mapped by rpy2."""
     return int(ffi.cast('uintptr_t', cdata))
 
 
 def protected_rids():
+    """Sequence of R IDs protected from collection by rpy2."""
     return tuple(
         (get_rid(k), v) for k, v in _R_PRESERVED.items()
         )
 
 
 def is_cdata_sexp(obj) -> bool:
+    """Is the object a cffi `CData` object pointing to an R object ?"""
     if (isinstance(obj, ffi.CData) and
             ffi.typeof(obj).cname == 'struct SEXPREC *'):
         return True
@@ -63,7 +69,22 @@ def _capsule_finalizer(cdata):
         warnings.warn('Exception downgraded to warning: %s' % str(e))
 
 
-class SexpCapsule(object):
+class UnmanagedSexpCapsule(object):
+
+    def __init__(self, cdata):
+        assert is_cdata_sexp(cdata)
+        self._cdata = cdata
+
+    @property
+    def typeof(self):
+        return _TYPEOF(self._cdata)
+
+    @property
+    def rid(self) -> int:
+        return get_rid(self._cdata)
+
+
+class SexpCapsule(UnmanagedSexpCapsule):
 
     __slots__ = ('_cdata', )
 
@@ -84,14 +105,6 @@ class SexpCapsule(object):
             else:
                 raise e
 
-    @property
-    def typeof(self):
-        return _TYPEOF(self._cdata)
-
-    @property
-    def rid(self):
-        return get_rid(self._cdata)
-
 
 class SexpCapsuleWithPassenger(SexpCapsule):
     __slots__ = ('_cdata', '_passenger')
@@ -108,19 +121,6 @@ class SexpCapsuleWithPassenger(SexpCapsule):
         _release(self._cdata)
         if addr not in _PY_PASSENGER:
             del(_PY_PASSENGER[addr])
-
-
-class UnmanagedSexpCapsule(object):
-
-    __slots__ = ('_cdata', )
-
-    def __init__(self, cdata):
-        assert is_cdata_sexp(cdata)
-        self._cdata = cdata
-
-    @property
-    def rid(self):
-        return get_rid(self._cdata)
 
 
 def _findvar(symbol, r_environment):

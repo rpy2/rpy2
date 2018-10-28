@@ -44,13 +44,17 @@ def evalr(source: str) -> sexp.Sexp:
     return res
 
 
-class _NULL(object):
-
-    __slots__ = ('_sexpobject', )
+class NULLType(sexp.Sexp, metaclass=na_values.Singleton):
 
     def __init__(self):
-        self._sexpobject = _rinterface.UnmanagedSexpCapsule(
-            openrlib.rlib.R_NilValue)
+        embedded.assert_isready()
+        super().__init__(
+            sexp.Sexp(
+                _rinterface.UnmanagedSexpCapsule(
+                    openrlib.rlib.R_NilValue
+                )
+            )
+        )
 
     def __repr__(self):
         return super().__repr__() + (' [%s]' % self.typeof)
@@ -713,6 +717,7 @@ class SexpExtPtr(Sexp):
 
 # TODO: Only use rinterface-level ?
 conversion._R_RPY2_MAP.update({
+    openrlib.rlib.NILSXP: NULLType,
     openrlib.rlib.EXPRSXP: ExprSexpVector,
     openrlib.rlib.LANGSXP: LangSexpVector,
     openrlib.rlib.ENVSXP: SexpEnvironment,
@@ -819,7 +824,7 @@ def _post_initr_setup():
     globalenv = embedded.globalenv
 
     global NULL
-    NULL = _NULL()
+    NULL = NULLType()
 
     global MissingArg
     MissingArg = _MissingArgType()

@@ -24,7 +24,7 @@ def test_call_with_sexp():
     ri_f = rinterface.baseenv.find('sum')
     ro_f = Function(ri_f)
 
-    ro_v = robjects.Vector(array.array('i', [1,2,3]))
+    ro_v = robjects.IntVector(array.array('i', [1,2,3]))
 
     s = ro_f(ro_v)
     assert s[0] == 6

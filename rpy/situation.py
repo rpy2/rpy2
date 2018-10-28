@@ -104,15 +104,14 @@ def iter_info():
     yield "    InstallPath in the registry: %s" % r_home
 
     try:
-        import rpy2.rinterface._rinterface
-        r_version_build = rpy2.rinterface._rinterface.R_VERSION_BUILD
-        r_version_build = '-'.join(str(x) for x in r_version_build)
-    except Exception:
-        r_version_build = '*** Error while importing rpy2.rinterface ***'
+        import rpy2.rinterface_lib.openrlib
+        rlib_status = 'OK'
+    except ImportError as ie:
+        rlib_status = '*** Error while loading: %s ***' % str(ie)
 
     yield _make_bold("R version:")
     yield "    In the PATH: %s" % r_version_from_subprocess()
-    yield "    Used to build rpy2: %s" % r_version_build
+    yield "    Loading R library from rpy2: %s" % rlib_status
 
     r_libs = os.environ.get("R_LIBS")
     yield _make_bold("Additional directories to load R packages from:")

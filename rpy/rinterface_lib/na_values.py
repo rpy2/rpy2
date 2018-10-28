@@ -44,7 +44,7 @@ class NACharacterType(sexp.CharSexp, metaclass=Singleton):
 
     def __init__(self):
         embedded.assert_isready()
-        return super().__init__(
+        super().__init__(
             sexp.CharSexp(
                 _rinterface.SexpCapsule(openrlib.rlib.R_NaString)
             )

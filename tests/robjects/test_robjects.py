@@ -95,7 +95,7 @@ def test_str():
 def test_rclass():
     assert robjects.baseenv['letters'].rclass[0] == 'character'
     assert robjects.baseenv['pi'].rclass[0] == 'numeric'
-    assert robjects.globalenv.get('help').rclass[0] == 'function'
+    assert robjects.globalenv.find('help').rclass[0] == 'function'
                       
 
 def test_rclass_set():
@@ -114,7 +114,7 @@ def test_rclass_set_usingstring():
 
 
 def test_do_slot():    
-    assert robjects.globalenv.get('BOD').do_slot('reference')[0] == 'A1.4, p. 270'
+    assert robjects.globalenv.find('BOD').do_slot('reference')[0] == 'A1.4, p. 270'
 
 
 def test_slots():

@@ -713,7 +713,7 @@ The parameter 'itemable' can be:
     def from_length(length):
         """ Create a list of given length """
         res = ListVector._vector(StrSexpVector(("list", )), length)
-        res = conversion.ri2py(res)
+        res = conversion.rpy2py(res)
         return res
 
 

@@ -58,7 +58,8 @@ class Sexp(object):
 
         if isinstance(sexp, Sexp):
             self._sexpobject = sexp.__sexp__
-        elif isinstance(sexp, _rinterface.SexpCapsule):
+        elif isinstance(sexp, _rinterface.SexpCapsule) or \
+             isinstance(sexp, _rinterface.UnmanagedSexpCapsule):
             self._sexpobject = sexp
         else:
             raise ValueError(
@@ -396,13 +397,13 @@ class StrSexpVector(SexpVector):
             i_c = _rinterface._python_index_to_c(cdata, i)
             self._R_SET_VECTOR_ELT(
                 cdata, i_c,
-                conversion._str_to_charsxp(value)
+                _as_charsxp_cdata(value)
             )
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
                 self._R_SET_VECTOR_ELT(
                     cdata, i_c,
-                    conversion._str_to_charsxp(v)
+                    _as_charsxp_cdata(v)
                 )
         else:
             raise TypeError('Indices must be integers or slices, '

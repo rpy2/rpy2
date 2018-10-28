@@ -74,6 +74,7 @@ def test_from_csvfile():
     csv_w.writerows(data)
     fh.close()
     dataf = robjects.DataFrame.from_csvfile(fh.name)
+    assert isinstance(dataf, robjects.DataFrame)
     assert column_names == tuple(dataf.names)
     assert dataf.nrow == 3
     assert dataf.ncol == 2
