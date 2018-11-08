@@ -125,7 +125,7 @@ wrap the object in our Python class ``ExpressionSet``:
 
 .. code:: 
 
-    def ri2ro_s4(obj):
+    def rpy2py_s4(obj):
         if 'ExpressionSet' in obj.rclass:
             res = ExpressionSet(obj)
         else:
@@ -133,7 +133,7 @@ wrap the object in our Python class ``ExpressionSet``:
         return res
     
     # try it
-    ri2ro_s4(eset)
+    rpy2py_s4(eset)
 
 
 
@@ -141,7 +141,6 @@ wrap the object in our Python class ``ExpressionSet``:
 .. parsed-literal::
 
     R object with classes: ('ExpressionSet',) mapped to:
-    <ExpressionSet - Python:0x7f2d5b297488 / R:0x68ebe28>
 
 
 
@@ -156,7 +155,7 @@ That function can be be register to a ``Converter``:
                              template=default_converter)
     
     from rpy2.rinterface import SexpS4
-    my_converter.ri2ro.register(SexpS4, ri2ro_s4)
+    my_converter.rpy2py.register(SexpS4, rpy2py_s4)
 
 
 
@@ -164,7 +163,7 @@ That function can be be register to a ``Converter``:
 
 .. parsed-literal::
 
-    <function __main__.ri2ro_s4(obj)>
+    <function __main__.rpy2py_s4(obj)>
 
 
 
@@ -211,7 +210,6 @@ method ``exprs()`` in R. We can make it a property in our Python class:
 .. parsed-literal::
 
     R object with classes: ('environment',) mapped to:
-    <Environment - Python:0x7f2d5b011108 / R:0x5326880>
 
 
 

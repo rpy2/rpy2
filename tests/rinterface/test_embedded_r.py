@@ -48,7 +48,8 @@ def _call_with_ended_r(queue):
     queue.put(res)
 
 
-@pytest.mark.skip(reason='Spawned process seems to share initialization state with parent.')
+@pytest.mark.skip(reason='Spawned process seems to share '
+                  'initialization state with parent.')
 def test_call_error_when_ended_r():
     q = multiprocessing.Queue()
     ctx = multiprocessing.get_context('spawn')
@@ -69,7 +70,8 @@ def test_get_initoptions():
 
 def test_set_initoptions_after_init():
     with pytest.raises(RuntimeError):
-        rinterface.embedded.set_initoptions(('aa', '--verbose', '--no-save'))
+        rinterface.embedded.set_initoptions(('aa', '--verbose',
+                                             '--no-save'))
 
 
 def test_initr():

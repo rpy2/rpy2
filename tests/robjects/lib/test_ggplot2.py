@@ -21,8 +21,7 @@ class TestGGplot(object):
 
     def test_add(self):
         gp = ggplot2.ggplot(mtcars)
-        pp = gp + \
-            ggplot2.aes_string(x='wt', y='mpg') + \
-            ggplot2.geom_point()
-        assert isinstance(pp, ggplot2.GGPlot)
+        gp += ggplot2.aes_string(x='wt', y='mpg')
+        gp += ggplot2.geom_point()
+        assert isinstance(gp, ggplot2.GGPlot)
 

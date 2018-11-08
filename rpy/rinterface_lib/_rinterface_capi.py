@@ -125,25 +125,18 @@ class SexpCapsuleWithPassenger(SexpCapsule):
 
 def _findvar(symbol, r_environment):
     rlib = openrlib.rlib
-    res = rlib.Rf_protect(rlib.Rf_findVar(symbol,
-                                          r_environment))
-    rlib.Rf_unprotect(1)
-    return res
+    return rlib.Rf_findVar(symbol,
+                           r_environment)
 
 
 def _findfun(symbol, r_environment):
     rlib = openrlib.rlib
-    res = rlib.Rf_protect(rlib.Rf_findFun(symbol,
-                                          r_environment))
-    rlib.Rf_unprotect(1)
-    return res
+    return rlib.Rf_findFun(symbol,
+                           r_environment)
 
 
 def _findVarInFrame(symbol, r_environment):
-    res = openrlib.rlib.Rf_protect(
-        openrlib.rlib.Rf_findVarInFrame(r_environment, symbol))
-    openrlib.rlib.Rf_unprotect(1)
-    return res
+    return openrlib.rlib.Rf_findVarInFrame(r_environment, symbol)
 
 
 def _GET_DIM(robj):
@@ -206,10 +199,10 @@ def build_rcall(rfunction,
                 args=[],
                 kwargs=[]):
     rlib = openrlib.rlib
-    rcall = rlib.Rf_protect(
-        rlib.Rf_allocList(len(args)+len(kwargs)+1)
-    )
     with memorymanagement.rmemory() as rmemory:
+        rcall = rmemory.protect(
+            rlib.Rf_allocList(len(args)+len(kwargs)+1)
+        )
         _SET_TYPEOF(rcall, rlib.LANGSXP)
         rlib.SETCAR(rcall, rfunction)
         item = rlib.CDR(rcall)
@@ -274,34 +267,33 @@ def _list_attrs(cdata):
     rlib = openrlib.rlib
     attrs = rlib.ATTRIB(cdata)
     nvalues = rlib.Rf_length(attrs)
-    res = rlib.Rf_allocVector(rlib.STRSXP, nvalues)
-    rlib.Rf_protect(res)
-
-    attr_i = 0
-    while attrs != rlib.R_NilValue:
-        if rlib.TAG(attrs) == rlib.R_NilValue:
-            rlib.SET_STRING_ELT(res, attr_i,
-                                rlib.R_BlankString)
-        else:
-            rlib.SET_STRING_ELT(res, attr_i, rlib.PRINTNAME(rlib.TAG(attrs)))
-        attrs = rlib.CDR(attrs)
-        attr_i += 1
-    rlib.Rf_unprotect(1)
+    with memorymanagement.rmemory() as rmemory:
+        res = rmemory.protect(
+            rlib.Rf_allocVector(rlib.STRSXP, nvalues))
+        attr_i = 0
+        while attrs != rlib.R_NilValue:
+            if rlib.TAG(attrs) == rlib.R_NilValue:
+                rlib.SET_STRING_ELT(res, attr_i,
+                                    rlib.R_BlankString)
+            else:
+                rlib.SET_STRING_ELT(res, attr_i, rlib.PRINTNAME(rlib.TAG(attrs)))
+            attrs = rlib.CDR(attrs)
+            attr_i += 1
     return res
 
 
 def _remove(name, env, inherits):
     rlib = openrlib.rlib
-    internal = rlib.Rf_protect(
-        rlib.Rf_install(conversion._str_to_cchar('.Internal')))
-    remove = rlib.Rf_protect(
-        rlib.Rf_install(conversion._str_to_cchar('remove')))
-    args = rlib.Rf_protect(rlib.Rf_lang4(remove, name,
-                                         env, inherits))
-    call = rlib.Rf_protect(rlib.Rf_lang2(internal, args))
-    # TODO: use tryEval instead and catch errors.
-    res = rlib.Rf_eval(call, rlib.R_GlobalEnv)
-    rlib.Rf_unprotect(4)
+    with memorymanagement.rmemory() as rmemory:
+        internal = rmemory.protect(
+            rlib.Rf_install(conversion._str_to_cchar('.Internal')))
+        remove = rmemory.protect(
+            rlib.Rf_install(conversion._str_to_cchar('remove')))
+        args = rmemory.protect(rlib.Rf_lang4(remove, name,
+                                             env, inherits))
+        call = rmemory.protect(rlib.Rf_lang2(internal, args))
+        # TODO: use tryEval instead and catch errors.
+        res = rlib.Rf_eval(call, rlib.R_GlobalEnv)
     return res
 
 

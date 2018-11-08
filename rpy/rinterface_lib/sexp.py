@@ -13,6 +13,7 @@ from . import conversion
 
 class RTYPES(enum.IntEnum):
     """Native R types as defined in R's C API."""
+    
     NILSXP = openrlib.rlib.NILSXP
     SYMSXP = openrlib.rlib.SYMSXP
     LISTSXP = openrlib.rlib.LISTSXP
@@ -111,16 +112,21 @@ class Sexp(object):
         self._sexpobject = unserialize(state)
 
     @property
-    def rclass(self):
+    def rclass(self) -> 'rpy2.rinterface.StrSexpVector':
+        """Get or set the R "class" attribute for the object."""
         return rclass_get(self.__sexp__)
 
     @rclass.setter
-    def rclass(self, value):
+    def rclass(self,
+               value: 'typing.Union[rpy2.rinterface.StrSexpVector, str)'):
         if isinstance(value, StrSexpVector):
             value_r = value
         elif isinstance(value, str):
             value_r = StrSexpVector.from_iterable(
                 [value])
+        else:
+            raise TypeError('Value should a str or '
+                            'a rpy2.rinterface.StrSexpVector.')
         openrlib.rlib.Rf_setAttrib(self.__sexp__._cdata,
                                    openrlib.rlib.R_ClassSymbol,
                                    value_r.__sexp__._cdata)
@@ -215,7 +221,8 @@ class NCHAR_TYPE(enum.Enum):
 
 
 class CharSexp(Sexp):
-    """R's internal (C API-level) scalar string."""
+    """R's internal (C API-level) scalar for strings."""
+    
     _R_TYPE = openrlib.rlib.CHARSXP
     _NCHAR_MSG = openrlib.ffi.new('char []', b'rpy2.rinterface.CharSexp.nchar')
 
@@ -245,7 +252,7 @@ VT = typing.TypeVar('VT', bound='SexpVector')
 
 
 class SexpVector(Sexp, metaclass=abc.ABCMeta):
-    """Base class for R vector objects.
+    """Base abstract class for R vector objects.
 
     R vector objects are, at the C level, essentially C arrays wrapped in
     the general structure for R objects."""
@@ -419,6 +426,7 @@ class StrSexpVector(SexpVector):
         )
 
 
+# TODO: complete class names.
 _DEFAULT_RCLASS_NAMES = {
     RTYPES.ENVSXP: 'environment',
     RTYPES.CLOSXP: 'function',
@@ -427,6 +435,7 @@ _DEFAULT_RCLASS_NAMES = {
     RTYPES.REALSXP: 'numeric',
     RTYPES.STRSXP: 'character',
     RTYPES.SYMSXP: 'name',
+    RTYPES.VECSXP: 'list',
     RTYPES.LANGSXP: 'language'}
 
 

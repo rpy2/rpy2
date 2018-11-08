@@ -1,6 +1,8 @@
 import pytest
 import textwrap
 from itertools import product
+import rpy2.rinterface_lib.callbacks
+from . import utils
 
 # Currently numpy is a testing requirement, but rpy2 should work without numpy
 try:
@@ -90,12 +92,10 @@ def test_push_dataframe(ipython_with_magic):
     # This is converted to factors, which are currently converted back to Python
     # as integers, so for now we test its representation in R.
     sio = StringIO()
-    rinterface.set_writeconsole_regular(sio.write)
-    try:
+    with utils.obj_in_module(rpy2.rinterface_lib.callbacks,
+                             'consolewrite_print', sio.write):
         r('print(df$b[1])')
         assert '[1] "bar"' in sio.getvalue()
-    finally:
-        rinterface.set_writeconsole_regular(None)
 
     # Values come packaged in arrays, so we unbox them to test.
     assert r('df$a[2]')[0] == 5

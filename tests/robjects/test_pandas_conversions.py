@@ -169,7 +169,8 @@ class TestPandasConversions(object):
 
         assert isinstance(pandas_df, pandas.DataFrame)
         assert ('a', 'b', 'c') == tuple(pandas_df.keys())
-        assert pandas_df['a'].dtype == numpy.dtype('int32')
+        assert pandas_df['a'].dtype in (numpy.dtype('int32'),
+                                        numpy.dtype('int64'))
         assert pandas_df['b'].dtype == numpy.dtype('O')
         assert isinstance(pandas_df['c'].dtype,
                           pandas.api.types.CategoricalDtype)

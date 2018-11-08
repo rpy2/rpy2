@@ -20,24 +20,24 @@ def set_filenames_to_delete():
             os.unlink(fn)
 
 
-def testRenderToBytesNoPlot(self):
+def test_rendertobytes_noplot():
     with grdevices.render_to_bytesio(grdevices.png) as b:
         pass
-    self.assertEqual(0, len(b.getvalue()))
+    assert len(b.getvalue()) == 0
 
 
-def testRenderToFile(self):
+def test_rendertofile():
     fn = tempfile.mktemp(suffix=".png")
     with set_filenames_to_delete() as todelete:
-        todelete.append(fn)
+        todelete.add(fn)
         
         with grdevices.render_to_file(grdevices.png,
                                       filename=fn) as d:
             r(''' plot(0) ''')
-        self.assertTrue(os.path.exists(fn))
+        assert os.path.exists(fn)
 
 
-def testRenderToBytesPlot(self):
+def test_rendertobytes_plot():
     with grdevices.render_to_bytesio(grdevices.png) as b:
         r(''' plot(0) ''')
-    self.assertTrue(len(b.getvalue()) > 0)
+    assert len(b.getvalue()) > 0

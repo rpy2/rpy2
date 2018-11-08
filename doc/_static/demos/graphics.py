@@ -5,7 +5,7 @@ from rpy2.robjects import Formula, Environment
 from rpy2.robjects.vectors import IntVector, FloatVector
 from rpy2.robjects.lib import grid
 from rpy2.robjects.packages import importr, data
-from rpy2.rinterface import RRuntimeError
+from rpy2.rinterface_lib.embedded import RRuntimeError
 import warnings
 
 # The R 'print' function
@@ -134,7 +134,6 @@ pp = gp + \
 pp.plot()
 #-- ggplot2mtcars-end
 grdevices.dev_off()
-
 grdevices.png('../../_static/graphics_ggplot2geombin2d.png',
               width = 1000, height = 350, antialias=ANTIALIAS, type="cairo")
 grid.newpage()
@@ -197,7 +196,7 @@ gp = ggplot2.ggplot(mtcars)
 
 pp = gp + \
      ggplot2.aes_string(x='wt') + \
-     ggplot2.geom_histogram()
+     ggplot2.geom_histogram(bins = 30)
 
 #pp.plot()
 #-- ggplot2geomhistogram-end
@@ -216,7 +215,8 @@ for col_i in range(3):
    outline_color, fill_color= params[col_i]
    pp = gp + \
         ggplot2.aes_string(x='wt') + \
-        ggplot2.geom_histogram(col=outline_color, fill=fill_color) + \
+        ggplot2.geom_histogram(col=outline_color, fill=fill_color,
+                               bins=30) + \
         ggplot2.ggtitle('col=%s - fill=%s' %params[col_i])
    pp.plot(vp = vp)
 grdevices.dev_off()
@@ -229,7 +229,7 @@ gp = ggplot2.ggplot(mtcars)
 
 pp = gp + \
      ggplot2.aes_string(x='wt', fill='factor(cyl)') + \
-     ggplot2.geom_histogram()
+     ggplot2.geom_histogram(bins=30)
 
 pp.plot()
 #-- ggplot2geomhistogramfillcyl-end
@@ -630,12 +630,13 @@ map = importr('maps')
 fr = ggplot2.map_data('france')
 
 # add a column indicating which region names have an "o".
-fr = fr.cbind(fr, has_o = base.grepl('o', fr.rx2("region"),
-                                     ignore_case = True))
+fr = fr.cbind(has_o = base.grepl('o', fr.rx2("region"),
+                                 ignore_case = True))
 p = ggplot2.ggplot(fr) + \
-    ggplot2.geom_polygon(ggplot2.aes_string(x = 'long', y = 'lat',
-                                            group = 'group', fill = 'has_o'),
-                         col="black")
+    ggplot2.geom_polygon(
+       ggplot2.aes_string(x = 'long', y = 'lat',
+                          group = 'group', fill = 'has_o'),
+       col="black")
 p.plot()
 #-- ggplot2mappolygon-end
 grdevices.dev_off()
@@ -676,12 +677,13 @@ for col_i, trans in enumerate(("identity", "log2", "sqrt")):
 
 #-- ggplot2mtcarscoordtransannot-begin
 vp = grid.viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
-grid.rect(x = grid.unit(0.7, "npc"),
-          y = grid.unit(0.2, "npc"),
-          width = grid.unit(0.1, "npc"),
-          height = grid.unit(0.1, "npc"),
-          gp = grid.gpar(fill = "red"),
-          vp = vp).draw()
+g = grid.rect(x = grid.unit(0.7, "npc"),
+              y = grid.unit(0.2, "npc"),
+              width = grid.unit(0.1, "npc"),
+              height = grid.unit(0.1, "npc"),
+              gp = grid.gpar(fill = "red"),
+              vp = vp)
+g.draw()
 #-- ggplot2mtcarscoordtransannot-end
 
 grdevices.dev_off()
@@ -729,8 +731,8 @@ tmpenv = data(datasets).fetch("rock")
 rock = tmpenv["rock"]
 
 p = ggplot2.ggplot(rock) + \
-    ggplot2.geom_point(ggplot2.aes_string(x = 'area', y = 'peri')) + \
-    ggplot2.theme_bw()
+    ggplot2.geom_point(ggplot2.aes_string(x = 'area', y = 'peri'))
+p += ggplot2.theme_bw()
 p.plot(vp = vp)
 
 vp = grid.viewport(width = 0.6, height = 0.6, x = 0.37, y=0.69)

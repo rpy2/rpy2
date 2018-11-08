@@ -11858,25 +11858,6 @@ R data frames).</p>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stderr output_text">
-<pre>/home/laurent/Desktop/software/python/py35_env/lib/python3.5/site-packages/rpy2-3.0.0.dev0-py3.5-linux-x86_64.egg/rpy2/robjects/lib/dplyr.py:24: UserWarning: This was designed againt dplyr version 0.7.4 but you have 0.7.3
-  warnings.warn(&#39;This was designed againt dplyr version %s but you have %s&#39; % (TARGET_VERSION, dplyr.__version__))
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
@@ -12009,8 +11990,8 @@ use the decorator <code>rternalize</code>.</p>
 <span class="kn">from</span> <span class="nn">rpy2.rinterface</span> <span class="k">import</span> <span class="n">rternalize</span>
 <span class="nd">@rternalize</span>
 <span class="k">def</span> <span class="nf">mean_np</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="kn">import</span> <span class="nn">numpy</span>
-    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="kn">import</span> <span class="nn">statistics</span>
+    <span class="k">return</span> <span class="n">statistics</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <span class="c1"># Bind that function to a symbol in R&#39;s</span>
 <span class="c1"># global environment</span>
@@ -12052,8 +12033,8 @@ use the decorator <code>rternalize</code>.</p>
       <th></th>
       <th></th>
       <th>gear</th>
-      <th>mean_np_ptw</th>
       <th>mean_ptw</th>
+      <th>mean_np_ptw</th>
     </tr>
   </thead>
   <tbody>
@@ -12061,14 +12042,14 @@ use the decorator <code>rternalize</code>.</p>
       <td class="rpy2_rowname">0</td>
         <td class="rpy2_names">1</td>
       <td>4.0</td>
-      <td>1237.126649980317</td>
+      <td>1237.1266499803169</td>
       <td>1237.1266499803169</td>
     </tr>
     <tr>
       <td class="rpy2_rowname">1</td>
         <td class="rpy2_names">2</td>
       <td>5.0</td>
-      <td>2574.0331639315023</td>
+      <td>2574.0331639315027</td>
       <td>2574.0331639315027</td>
     </tr>
   </tbody>
@@ -12148,8 +12129,8 @@ place the custom function in R's global environment.</p>
       <th></th>
       <th></th>
       <th>gear</th>
-      <th>mean_np_ptw</th>
       <th>mean_ptw</th>
+      <th>mean_np_ptw</th>
     </tr>
   </thead>
   <tbody>
@@ -12157,14 +12138,14 @@ place the custom function in R's global environment.</p>
       <td class="rpy2_rowname">0</td>
         <td class="rpy2_names">1</td>
       <td>4.0</td>
-      <td>1237.126649980317</td>
+      <td>1237.1266499803169</td>
       <td>1237.1266499803169</td>
     </tr>
     <tr>
       <td class="rpy2_rowname">1</td>
         <td class="rpy2_names">2</td>
       <td>5.0</td>
-      <td>2574.0331639315023</td>
+      <td>2574.0331639315027</td>
       <td>2574.0331639315027</td>
     </tr>
   </tbody>
@@ -12226,12 +12207,12 @@ the original implementation of <code>dplyr</code>, it <em>just works</em>.</p>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre># Source:   lazy query [?? x 2]
-# Database: sqlite 3.19.3 [/tmp/tmpk84iwhxe]
+<pre><span class="ansi-black-intense-fg"># Source:   lazy query [?? x 2]</span>
+<span class="ansi-black-intense-fg"># Database: sqlite 3.22.0 [/tmp/tmpnd75g166]</span>
    gear mean_ptw
-  &lt;dbl&gt;    &lt;dbl&gt;
-1     4 1237.127
-2     5 2574.033
+  <span class="ansi-black-intense-fg">&lt;dbl&gt;</span>    <span class="ansi-black-intense-fg">&lt;dbl&gt;</span>
+<span class="ansi-black-intense-fg">1</span>     4    1237.
+<span class="ansi-black-intense-fg">2</span>     5    2574.
 
 </pre>
 </div>
@@ -12273,7 +12254,7 @@ to us. If we want to see the SQL code generated that's:</p>
 
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>/home/laurent/Desktop/software/python/py35_env/lib/python3.5/site-packages/rpy2-3.0.0.dev0-py3.5-linux-x86_64.egg/rpy2/rinterface/__init__.py:197: RRuntimeWarning: &lt;SQL&gt;
+<pre>Callback to write to the R console: &lt;SQL&gt;
 SELECT `gear`, AVG(`powertoweight`) AS `mean_ptw`
 FROM (SELECT `mpg`, `cyl`, `disp`, `hp`, `drat`, `wt`, `qsec`, `vs`, `am`, `gear`, `carb`, `hp` * 36.0 / `wt` AS `powertoweight`
 FROM (SELECT *
@@ -12281,7 +12262,6 @@ FROM `mtcars`
 WHERE (`gear` &gt; 3.0)))
 GROUP BY `gear`
 
-  warnings.warn(x, RRuntimeWarning)
 </pre>
 </div>
 </div>
@@ -12313,8 +12293,7 @@ completing the "lexical loan" of the dplyr vocabulary from R.</p>
 <span class="c1"># added to the default conversion rules, the rpy2 object</span>
 <span class="c1"># `mtcars` (an R data frame) is converted to a pandas data frame.</span>
 <span class="k">with</span> <span class="n">localconverter</span><span class="p">(</span><span class="n">default_converter</span> <span class="o">+</span> <span class="n">pandas2ri</span><span class="o">.</span><span class="n">converter</span><span class="p">)</span> <span class="k">as</span> <span class="n">cv</span><span class="p">:</span>
-    <span class="n">mtcars</span> <span class="o">=</span> <span class="n">mtcars_env</span><span class="p">[</span><span class="s1">&#39;mtcars&#39;</span><span class="p">]</span>
-    <span class="n">pd_mtcars</span> <span class="o">=</span> <span class="n">pandas2ri</span><span class="o">.</span><span class="n">ri2py</span><span class="p">(</span><span class="n">mtcars</span><span class="p">)</span>
+    <span class="n">pd_mtcars</span> <span class="o">=</span> <span class="n">mtcars_env</span><span class="p">[</span><span class="s1">&#39;mtcars&#39;</span><span class="p">]</span>
 <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">pd_mtcars</span><span class="p">))</span>
 </pre></div>
 
@@ -12333,6 +12312,18 @@ completing the "lexical loan" of the dplyr vocabulary from R.</p>
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>/home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.0.0.dev0-py3.6.egg/rpy2/robjects/pandas2ri.py:196: FutureWarning: from_items is deprecated. Please use DataFrame.from_dict(dict(items), ...) instead. DataFrame.from_dict(OrderedDict(items)) may be used to preserve the key order.
+  res = PandasDataFrame.from_items(items)
 </pre>
 </div>
 </div>
@@ -12383,34 +12374,20 @@ on it.</p>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
-<emph>DataFrame</emph> with 3 rows and 2 columns:
+<emph>DataFrame</emph> with 1 rows and 1 columns:
 <table class="docutils">
   <thead>
     <tr class="rpy2_names">
       <th></th>
       <th></th>
-      <th>gear</th>
       <th>mean_ptw</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td class="rpy2_rowname">0</td>
-        <td class="rpy2_names">1</td>
-      <td>3.0</td>
-      <td>1633.989574118287</td>
-    </tr>
-    <tr>
-      <td class="rpy2_rowname">1</td>
-        <td class="rpy2_names">2</td>
-      <td>4.0</td>
-      <td>1237.1266499803169</td>
-    </tr>
-    <tr>
-      <td class="rpy2_rowname">2</td>
-        <td class="rpy2_names">3</td>
-      <td>5.0</td>
-      <td>2574.0331639315027</td>
+        <td class="rpy2_names">0</td>
+      <td>1632.0477884748632</td>
     </tr>
   </tbody>
 </table>

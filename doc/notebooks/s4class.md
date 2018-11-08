@@ -75,7 +75,7 @@ A simple implementation is a factory function that will conditionally wrap
 the object in our Python class `ExpressionSet`:
 
 ```python
-def ri2ro_s4(obj):
+def rpy2py_s4(obj):
     if 'ExpressionSet' in obj.rclass:
         res = ExpressionSet(obj)
     else:
@@ -83,7 +83,7 @@ def ri2ro_s4(obj):
     return res
 
 # try it
-ri2ro_s4(eset)
+rpy2py_s4(eset)
 ```
 
 That function can be be register to a `Converter`:
@@ -96,7 +96,7 @@ my_converter = Converter('ExpressionSet-aware converter',
                          template=default_converter)
 
 from rpy2.rinterface import SexpS4
-my_converter.ri2ro.register(SexpS4, ri2ro_s4)
+my_converter.rpy2py.register(SexpS4, rpy2py_s4)
 
 ```
 

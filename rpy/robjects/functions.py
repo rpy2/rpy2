@@ -109,7 +109,11 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         new_args = [conversion.py2rpy(a) for a in args]
         new_kwargs = {}
         for k, v in kwargs.items():
-            new_kwargs[k] = conversion.py2rpy(v)
+            # TODO: shouldn't this be handled by the conversion itself ?
+            if isinstance(v, rinterface.Sexp):
+                new_kwargs[k] = v
+            else:
+                new_kwargs[k] = conversion.py2rpy(v)
         res = super(Function, self).__call__(*new_args, **new_kwargs)
         res = conversion.rpy2py(res)
         return res

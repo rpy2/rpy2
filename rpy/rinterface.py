@@ -1,3 +1,4 @@
+import abc
 import atexit
 import typing
 from rpy2.rinterface_lib import openrlib
@@ -114,7 +115,7 @@ class SexpSymbol(Sexp):
                 'with that is an instance of rpy2.rinterface.sexp.Sexp '
                 'or an instance of rpy2.rinterface._rinterface.SexpCapsule')
 
-    def __str__(self):
+    def __str__(self) -> str:
         return conversion._cchar_to_str(
             openrlib._STRING_VALUE(
                 self._sexpobject._cdata
@@ -123,13 +124,23 @@ class SexpSymbol(Sexp):
 
 
 class SexpEnvironment(Sexp):
+    """Proxy for an R "environment" object.
+
+    An R "environment" object can be thought of as a mix of a
+    mapping (like a `dict`) and a scope. To make it more "Pythonic",
+    both aspects are kept separate and the method `__getitem__` will
+    get an item as it would for a Python `dict` while the method `find`
+    will get an item as if it was a scope."""
 
     @_cdata_res_to_rinterface
     @_evaluated_promise
     def find(self,
              key: str,
-             wantfun: int = False):
-        # TODO: move check of R_UnboundValue to _rinterface ?
+             wantfun: int = False) -> Sexp:
+        """Find an item, starting with this R environment.
+
+        Raises a `KeyError` is the key cannot be found."""
+        
         if not isinstance(key, str):
             raise TypeError('The key must be a non-empty string.')
         elif not len(key):
@@ -150,10 +161,12 @@ class SexpEnvironment(Sexp):
                     if _rinterface._TYPEOF(res) in (openrlib.rlib.CLOSXP,
                                                     openrlib.rlib.BUILTINSXP):
                         break
+                    # TODO: move check of R_UnboundValue to _rinterface ?
                     res = openrlib.rlib.R_UnboundValue
                     rho = rho.enclos
             else:
                 res = _rinterface._findvar(symbol, self.__sexp__._cdata)
+        # TODO: move check of R_UnboundValue to _rinterface ?
         if res == openrlib.rlib.R_UnboundValue:
             raise KeyError("'%s' not found" % key)
         return res
@@ -161,7 +174,6 @@ class SexpEnvironment(Sexp):
     @_cdata_res_to_rinterface
     @_evaluated_promise
     def __getitem__(self, key: str) -> typing.Any:
-        # TODO: move check of R_UnboundValue to _rinterface
         if not (isinstance(key, str) and len(key)):
             raise ValueError('The key must be a non-empty string.')
         with memorymanagement.rmemory() as rmemory:
@@ -169,6 +181,7 @@ class SexpEnvironment(Sexp):
                 openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
             )
             res = _rinterface._findVarInFrame(symbol, self.__sexp__._cdata)
+        # TODO: move check of R_UnboundValue to _rinterface
         if res == openrlib.rlib.R_UnboundValue:
             raise KeyError("'%s' not found" % key)
         return res
@@ -228,20 +241,23 @@ class SexpEnvironment(Sexp):
 
     @_cdata_res_to_rinterface
     def frame(self):
+        """Get the parent frame of the environment."""
         return openrlib.rlib.FRAME(self.__sexp__._cdata)
 
     @property
     @_cdata_res_to_rinterface
-    def enclos(self):
+    def enclos(self) -> 'SexpEnvironment':
+        """Get or set the enclosing environment."""
         return openrlib.rlib.ENCLOS(self.__sexp__._cdata)
 
     @enclos.setter
-    def enclos(self, value: 'SexpEnvironment'):
+    def enclos(self, value: 'SexpEnvironment') -> None:
         assert isinstance(value, SexpEnvironment)
         openrlib.rlib.SET_ENCLOS(self.__sexp__._cdata,
                                  value.__sexp__.cdata)
 
-    def keys(self):
+    def keys(self) -> typing.Generator[str, None, None]:
+        """Generator over the keys (symbols) in the environment."""
         with memorymanagement.rmemory() as rmemory:
             symbols = rmemory.protect(
                 openrlib.rlib.R_lsInternal(self.__sexp__._cdata,
@@ -254,7 +270,8 @@ class SexpEnvironment(Sexp):
         for e in res:
             yield e
 
-    def __iter__(self):
+    def __iter__(self) -> typing.Generator[str, None, None]:
+        """See method `keys()`."""
         return self.keys()
 
     def is_locked(self):
@@ -269,6 +286,27 @@ class SexpPromise(Sexp):
         if not env:
             env = embedded.globalenv
         return openrlib.rlib.Rf_eval(self.__sexp__._cdata, env)
+
+
+class NumpyArrayInterface(abc.ABC):
+    """Numpy-specific API for accessing the content of a numpy array.
+
+    The interface is only available / possible for some of the R vectors."""
+    
+    @property
+    def __array_interface__(self):
+        """Return an `__array_interface__` version 3.
+
+        Note that the pointer returned in the items 'data' corresponds to
+        a memory area under R's memory management and that it will become
+        invalid once the area once R frees the object. It is safer to keep
+        the rpy2 object proxying the R object alive for the duration the
+        pointer is used in Python / numpy."""
+        return {'shape': bufferprotocol.getshape(self.__sexp__._cdata),
+                'typestr': self._NP_TYPESTR,
+                'strides': bufferprotocol.getstrides(self.__sexp__._cdata),
+                'data': self._R_GET_PTR(self.__sexp__._cdata),
+                'version': 3}
 
 
 def _cast_in_byte(x):
@@ -293,13 +331,14 @@ def _set_raw_elt(x, i: int, val):
     openrlib._RAW(x)[i] = val
 
 
-class ByteSexpVector(SexpVector):
+class ByteSexpVector(SexpVector, NumpyArrayInterface):
 
     _R_TYPE = openrlib.rlib.RAWSXP
     _R_GET_PTR = openrlib._RAW
     _R_VECTOR_ELT = _get_raw_elt
     _R_SET_VECTOR_ELT = _set_raw_elt
     _CAST_IN = _cast_in_byte
+    _NP_TYPESTR = '|u1'
 
     def __getitem__(self, i: int) -> typing.Union[int, 'ByteSexpVector']:
         cdata = self.__sexp__._cdata
@@ -340,13 +379,14 @@ def _cast_in_bool(x):
         return bool(x)
 
 
-class BoolSexpVector(SexpVector):
+class BoolSexpVector(SexpVector, NumpyArrayInterface):
 
     _R_TYPE = openrlib.rlib.LGLSXP
     _R_VECTOR_ELT = openrlib.LOGICAL_ELT
     _R_SET_VECTOR_ELT = openrlib.SET_LOGICAL_ELT
     _R_GET_PTR = openrlib._LOGICAL
     _CAST_IN = _cast_in_bool
+    _NP_TYPESTR = '|i'
 
     def __getitem__(self, i: int) -> typing.Union[typing.Optional[bool],
                                                   'BoolSexpVector']:
@@ -365,7 +405,7 @@ class BoolSexpVector(SexpVector):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: int, value):
+    def __setitem__(self, i: int, value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -388,13 +428,14 @@ class BoolSexpVector(SexpVector):
         return mv
 
 
-class IntSexpVector(SexpVector):
+class IntSexpVector(SexpVector, NumpyArrayInterface):
 
     _R_TYPE = openrlib.rlib.INTSXP
     _R_SET_VECTOR_ELT = openrlib.SET_INTEGER_ELT
     _R_VECTOR_ELT = openrlib.INTEGER_ELT
     _R_GET_PTR = openrlib._INTEGER
     _CAST_IN = int
+    _NP_TYPESTR = '|i'
 
     def __getitem__(self, i: int) -> typing.Union[int, 'IntSexpVector']:
         cdata = self.__sexp__._cdata
@@ -414,7 +455,7 @@ class IntSexpVector(SexpVector):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: int, value):
+    def __setitem__(self, i: int, value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -437,13 +478,14 @@ class IntSexpVector(SexpVector):
         return mv
 
 
-class FloatSexpVector(SexpVector):
+class FloatSexpVector(SexpVector, NumpyArrayInterface):
 
     _R_TYPE = openrlib.rlib.REALSXP
     _R_GET_PTR = openrlib._REAL
     _R_VECTOR_ELT = openrlib.REAL_ELT
     _R_SET_VECTOR_ELT = openrlib.SET_REAL_ELT
     _CAST_IN = float
+    _NP_TYPESTR = '|f'
 
     def __getitem__(self, i: int) -> typing.Union[float, 'FloatSexpVector']:
         cdata = self.__sexp__._cdata
@@ -460,7 +502,7 @@ class FloatSexpVector(SexpVector):
                             type(i))
         return res
 
-    def __setitem__(self, i: int, value):
+    def __setitem__(self, i: int, value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -474,7 +516,7 @@ class FloatSexpVector(SexpVector):
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
 
-    def memoryview(self):
+    def memoryview(self) -> memoryview:
         b = _rinterface.ffi.buffer(
             openrlib._REAL(self.__sexp__._cdata),
             openrlib.ffi.sizeof('double') * len(self))
@@ -508,7 +550,7 @@ class ComplexSexpVector(SexpVector):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: int, value):
+    def __setitem__(self, i: int, value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -538,7 +580,7 @@ class PairlistSexpVector(SexpVector):
     _R_SET_VECTOR_ELT = None
     _CAST_IN = conversion._get_cdata
 
-    def __getitem__(self, i: int):
+    def __getitem__(self, i: int) -> Sexp:
         cdata = self.__sexp__._cdata
         rlib = openrlib.rlib
         if isinstance(i, int):
@@ -618,7 +660,7 @@ class LangSexpVector(SexpVector):
             openrlib.rlib.Rf_nthcdr(cdata, i_c)
         )
 
-    def __setitem__(self, i: int, value):
+    def __setitem__(self, i: int, value) -> None:
         cdata = self.__sexp__._cdata
         i_c = _rinterface._python_index_to_c(cdata, i)
         openrlib.rlib.SETCAR(
@@ -630,7 +672,7 @@ class LangSexpVector(SexpVector):
 class SexpClosure(Sexp):
 
     @_cdata_res_to_rinterface
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> Sexp:
         error_occured = _rinterface.ffi.new('int *', 0)
         with memorymanagement.rmemory() as rmemory:
             call_r = rmemory.protect(
@@ -646,7 +688,7 @@ class SexpClosure(Sexp):
         return res
 
     @_cdata_res_to_rinterface
-    def rcall(self, keyvals, environment):
+    def rcall(self, keyvals, environment: SexpEnvironment):
         # TODO: check keyvals are pairs ?
         assert isinstance(environment, SexpEnvironment)
         error_occured = _rinterface.ffi.new('int *', 0)
@@ -664,11 +706,13 @@ class SexpClosure(Sexp):
 
     @property
     @_cdata_res_to_rinterface
-    def closureenv(self):
+    def closureenv(self) -> SexpEnvironment:
+        """Closure of the R function."""
         return openrlib.rlib.CLOENV(self.__sexp__._cdata)
 
 
 class SexpS4(Sexp):
+    """R "S4" object."""
     pass
 
 
@@ -702,7 +746,7 @@ class SexpExtPtr(Sexp):
     TYPE_TAG = 'Python'
 
     @classmethod
-    def from_pyobject(cls, func, tag=TYPE_TAG,
+    def from_pyobject(cls, func, tag: str = TYPE_TAG,
                       protected=None):
         if not isinstance(tag, str):
             raise TypeError('The tag must be a string.')
@@ -765,6 +809,12 @@ conversion._PY_R_MAP.update({
 
 
 def vector(iterable, rtype: RTYPES):
+    """Create an R vector.
+
+    While the different types of R vectors all have their own class,
+    the creation of array in Python is often available through factory
+    function that accept the type of the array as a parameters. This
+    function is providing a similar functionality for R vectors."""
     error = False
     try:
         cls = conversion._R_RPY2_MAP[rtype]
@@ -796,6 +846,7 @@ NA_Complex = None
 
 
 def initr() -> None:
+    """Initialize R's embedded C library."""
     status = embedded._initr()
     atexit.register(endr, 0)
     _rinterface._register_external_symbols()
@@ -853,7 +904,7 @@ def _post_initr_setup():
     NA_Complex = na_values.NA_Complex
 
 
-def rternalize(function: typing.Callable):
+def rternalize(function: typing.Callable) -> SexpClosure:
     """ Takes an arbitrary Python function and wrap it
     in such a way that it can be called from the R side. """
     assert callable(function)

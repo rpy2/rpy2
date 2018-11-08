@@ -7,9 +7,11 @@ from datetime import datetime
 import rpy2.robjects as ro
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
-from rpy2.rinterface import (SexpVector,
-                             StrSexpVector,
-                             IntSexpVector)
+from rpy2.rinterface import (IntSexpVector,
+                             ListSexpVector,
+                             Sexp,
+                             SexpVector,
+                             StrSexpVector)
 
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pandas.core.series import Series as PandasSeries
@@ -31,8 +33,7 @@ from rpy2.robjects.vectors import (DataFrame,
                                    StrVector,
                                    IntVector,
                                    POSIXct)
-from rpy2.rinterface import (IntSexpVector,
-                             ListSexpVector)
+                             
 original_converter = None 
 
 # pandas is requiring numpy. We add the numpy conversion will be
@@ -191,7 +192,7 @@ def rpy2py_listvector(obj):
 
 @rpy2py.register(DataFrame)
 def rpy2py_dataframe(obj):
-    items = tuple((k, rpy2py(v)) for k, v in obj.items())
+    items = tuple((k, rpy2py(v) if isinstance(v, Sexp) else v) for k, v in obj.items())
     res = PandasDataFrame.from_items(items)
     return res
 

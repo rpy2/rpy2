@@ -38,7 +38,7 @@ R data frame converted from a `pandas` data frame:
 
 ```python
 with localconverter(ro.default_converter + pandas2ri.converter):
-  r_from_pd_df = ro.conversion.py2ro(pd_df)
+  r_from_pd_df = ro.conversion.py2rpy(pd_df)
 
 r_from_pd_df
 ```
@@ -81,7 +81,7 @@ It can be converted to a pandas data frame using the same converter:
 
 ```python
 with localconverter(ro.default_converter + pandas2ri.converter):
-  pd_from_r_df = ro.conversion.ri2py(r_df)
+  pd_from_r_df = ro.conversion.rpy2py(r_df)
 
 pd_from_r_df
 ```
@@ -98,7 +98,7 @@ pd_df
 
 ```python
 with localconverter(ro.default_converter + pandas2ri.converter):
-  r_from_pd_df = ro.conversion.py2ro(pd_df)
+  r_from_pd_df = ro.conversion.py2rpy(pd_df)
 
 r_from_pd_df
 ```
@@ -113,7 +113,7 @@ pd_tz_df = pd.DataFrame({
     })
     
 with localconverter(ro.default_converter + pandas2ri.converter):
-  r_from_pd_tz_df = ro.conversion.py2ro(pd_tz_df)
+  r_from_pd_tz_df = ro.conversion.py2rpy(pd_tz_df)
 
 r_from_pd_tz_df
 ```

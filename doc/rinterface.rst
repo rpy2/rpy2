@@ -50,6 +50,7 @@ Default parameters for the initialization are otherwise
 in the module variable `initoptions`.
 
 .. warning::
+   
    Currently the set of default initialization option contains `--vanilla`,
    which implies that :envvar:`R_LIBS`, whenever set, is ignored.
    The initialization options will have to be set _before_ the :program:`R`
@@ -155,6 +156,7 @@ The library is said to be attached to the current search path.
 The base package has a namespace, that can be accessed as an environment.
 
 .. note::
+   
    Depending on what is in `globalenv` and on the attached packages, base
    objects can be masked when starting the search from `globalenv`. 
    Use `baseenv`
@@ -441,8 +443,8 @@ The class :class:`Sexp` is the base class for all R objects.
       :param name: string
       :rtype: instance of :class:`Sexp`
 
-      >>> matrix = rinterface.globalenv.get("matrix")
-      >>> letters = rinterface.globalenv.get("letters")
+      >>> matrix = rinterface.globalenv.find("matrix")
+      >>> letters = rinterface.globalenv.find("letters")
       >>> m = matrix(letters, ncol = 2)
       >>> [x for x in m.do_slot("dim")]
       [13, 2]
@@ -487,10 +489,6 @@ R objects between rpy2 objects.
    vector1.__sexp__ = vector2.__sexp_
 
 
-
-
-
-
 .. index::
    single: SexpVector
    single: rinterface; SexpVector
@@ -508,7 +506,7 @@ length 1.
 
 To use again the constant *pi*:
 
->>> pi = rinterface.globalenv.get("pi")
+>>> pi = rinterface.globalenv.find('pi')
 >>> len(pi)
 1
 >>> pi
@@ -519,10 +517,10 @@ To use again the constant *pi*:
 
 The letters of the (western) alphabet are:
 
->>> letters = rinterface.globalenv.get("letters") 
+>>> letters = rinterface.globalenv.find('letters') 
 >>> len(letters)
 26
->>> LETTERS = rinterface.globalenv.get("LETTERS") 
+>>> LETTERS = rinterface.globalenv.find('LETTERS') 
 
 
 R types
@@ -552,6 +550,7 @@ The indexing starts at 0 (zero), which differs from :program:`R`,
 where indexing start at 1 (one).
 
 .. note::
+   
    The *__getitem__* operator *[*
    is returning a Python scalar. Casting
    an *SexpVector* into a list is only a matter 
@@ -573,11 +572,12 @@ can be given a name (that is be associated a string).
 The names are added to the other as an attribute (conveniently
 called `names`), and can be accessed as such:
 
->>> options = rinterface.globalenv.get("options")()
+>>> options = rinterface.globalenv.find("options")()
 >>> option_names = options.do_slot("names")
 >>> [x for x in options_names]
 
 .. note::
+   
    Elements in a name vector do not have to be unique. A Python
    counterpart is provided as :class:`rpy2.rlike.container.TaggedList`.
 
@@ -601,7 +601,7 @@ through the slot named `dimnames`.
 .. _missing_values:
 
 .. note::
-
+   
    R also has the notion of missing parameters in function calls.
    This is a separate concept, and more information about are given in 
    Section :ref:`rinterface-functions`.
@@ -618,17 +618,17 @@ The type of NA is logical (boolean), and one can specify a different
 type with the symbols
 *NA_character_*, *NA_integer_*, *NA_real_*, and *NA_complex_*.
 
-In :mod:`rpy2.rinterface`, the symbols can be accessed by through 
-:data:`NA_Character`, 
-:data:`NA_Integer`, 
-:data:`NA_Real`.
+In :mod:`rpy2.rinterface_lib.na_values`, the symbols can be accessed by through 
+:data:`NACharacter`, 
+:data:`NAInteger`, 
+:data:`NAReal`.
 
 Those are singleton instance from respective *NA<something>Type* classes.
 
->>> my_naint = rinterface.NAIntegerType()
->>> my_naint is rinterface.NA_Integer
+>>> my_naint = rinterface_lib.na_values.NAIntegerType()
+>>> my_naint is rinterface_lib.na_values.NA_Integer
 True
->>> my_naint == rinterface.NA_Integer
+>>> my_naint == rinterface_lib.na_values.NA_Integer
 True
 
 *NA* values can be present in vectors returned by R functions.
@@ -645,7 +645,7 @@ NA_integer_
 NA_integer_
 
 .. warning::
-
+   
    Python functions relying on C-level implementations might not be following
    the same rule for *NAs*.
    
@@ -659,29 +659,29 @@ NA_integer_
 
 
 This should be preferred way to use R's NA as those symbol are little
-peculiar and cannot be retrieved with :meth:`SexpEnvironment.get`.
+peculiar and cannot be retrieved with :meth:`SexpEnvironment.find`.
 
 Those missing values can also be used with the :mod:`rpy2.robjects` layer
 and more documentation about their usage can be found there
 (see :ref:`robjects-missingvalues`).
 
-.. autoclass:: rpy2.rinterface.NAIntegerType()
+.. autoclass:: rpy2.rinterface_lib.na_values.NAIntegerType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface.NARealType()
+.. autoclass:: rpy2.rinterface_lib.na_values.NARealType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface.NALogicalType()
+.. autoclass:: rpy2.rinterface_lib.na_values.NALogicalType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface.NACharacterType()
+.. autoclass:: rpy2.rinterface_lib.na_values.NACharacterType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface.NAComplexType()
+.. autoclass:: rpy2.rinterface_lib.na_values.NAComplexType()
    :show-inheritance:
    :members:
 
@@ -708,6 +708,14 @@ Convenience classes are provided to create vectors of a given type:
    :members:
 
 .. autoclass:: rpy2.rinterface.BoolSexpVector
+   :show-inheritance:
+   :members:
+
+.. autoclass:: rpy2.rinterface.ListSexpVector
+   :show-inheritance:
+   :members:
+
+.. autoclass:: rpy2.rinterface.ComplexSexpVector
    :show-inheritance:
    :members:
 
@@ -752,11 +760,13 @@ Removing an element can be done like one would do it for a Python :class:`dict`:
 0
 
 .. note::
+   
    Not all R environment are hash tables, and this may
-   influence performances when doing repeated lookups
+   influence performances when doing repeated lookups.
 
 .. note::
-  a copy of the R object is made in the R space.
+   
+   A copy of the R object is made in the R space.
 
 :meth:`__iter__`
 ^^^^^^^^^^^^^^^^
@@ -771,7 +781,7 @@ that contains R's base objects:
 
 
 .. warning::
-
+   
    In the current implementation the content of the environment
    is evaluated only once, when the iterator is created. Adding 
    or removing elements to the environment will not update the iterator
@@ -788,7 +798,7 @@ matching is returned.
 
 Let's start with an example:
 
->>> rinterface.globalenv.get("pi")[0]
+>>> rinterface.globalenv.find("pi")[0]
 3.1415926535897931
 
 The constant `pi` is defined in the package `base`, that
@@ -801,9 +811,9 @@ sequence of environments to explore is exhausted.
 We know that `pi` is in the base namespace and we could have gotten
 here directly from there:
 
->>> ri.baseenv.get("pi")[0]
+>>> ri.baseenv.find('pi')[0]
 3.1415926535897931
->>> ri.baseenv["pi"][0]
+>>> ri.baseenv['pi'][0]
 3.1415926535897931
 >>> ri.globalenv["pi"][0]
 Traceback (most recent call last):
@@ -831,12 +841,12 @@ The same behavior can be obtained from :mod:`rpy2`
 with the optional parameter `wantfun` (specify that :meth:`get`
 should return an R function).
 
->>> ri.globalenv["date"] = ri.StrSexpVector(["hohoho", ])
->>> ri.globalenv.get("date")[0]
+>>> ri.globalenv['date'] = ri.StrSexpVector(['hohoho', ])
+>>> ri.globalenv.find('date')[0]
 'hohoho'
->>> ri.globalenv.get("date", wantfun=True)
+>>> ri.globalenv.find('date', wantfun=True)
 <rinterface.SexpClosure - Python:0x7f142aa96198 / R:0x16e9500>
->>> date = ri.globalenv.get("date", wantfun=True)
+>>> date = ri.globalenv.find('date', wantfun=True)
 >>> date()[0]
 'Sat Aug  9 15:48:42 2008'
 
@@ -925,7 +935,9 @@ from.
 'package:utils'
 
 .. note::
-   Unfortunately this does not generalize to all cases: the base package does not have a name.
+   
+   Unfortunately this does not generalize to all cases: the base
+   package does not have a name.
 
    >>> wherefrom('get').do_slot('name')[0]
    Traceback (most recent call last):
@@ -952,12 +964,12 @@ environment). That enclosing environment can be thought of as
 a context to the function.
 
 .. note::
-
+   
    Technically, the class :class:`SexpClosure` corresponds to the R
    types CLOSXP, BUILTINSXP, and SPECIALSXP, with only the first one
    (CLOSXP) being a closure.
 
->>> sum = rinterface.globalenv.get("sum")
+>>> sum = rinterface.globalenv.find('sum')
 >>> x = rinterface.IntSexpVector([1,2,3])
 >>> s = sum(x)
 >>> s[0]
@@ -968,7 +980,7 @@ a context to the function.
 Named arguments to an R function can be specified just the way
 they would be with any other regular Python function.
 
->>> rnorm = rinterface.globalenv.get("rnorm")
+>>> rnorm = rinterface.globalenv.find('rnorm')
 >>> rnorm(rinterface.IntSexpVector([1, ]), 
           mean = rinterface.IntSexpVector([2, ]))[0]
 0.32796768001636134
@@ -1015,8 +1027,8 @@ In the example below, we inspect the environment for the
 function *plot*, that is the namespace for the
 package *graphics*.
 
->>> plot = rinterface.globalenv.get("plot")
->>> ls = rinterface.globalenv.get("ls")
+>>> plot = rinterface.globalenv.find('plot')
+>>> ls = rinterface.globalenv.find('ls')
 >>> envplot_list = ls(plot.closureEnv())
 >>> [x for x in envplot_ls]
 >>>
@@ -1140,7 +1152,7 @@ and methods to R.
 Class diagram
 =============
 
-.. inheritance-diagram:: rpy2.rinterface
+.. inheritance-diagram:: rpy2.rinterface rpy2.rinterface_lib.sexp rpy2.rinterface_lib.na_values
    :parts: 1
 
 

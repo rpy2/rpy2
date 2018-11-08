@@ -1,3 +1,4 @@
+import abc
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.rinterface as rinterface
 from . import conversion
@@ -282,7 +283,7 @@ class Vector(RObjectMixin):
     def items(self):
         """ iterator on names and values """
         #FIXME: should be a view ?
-        if self.names.rsame(rinterface.NULL):
+        if super().names.rsame(rinterface.NULL):
             it_names = itertools.cycle((None, ))
         else:
             it_names = iter(self.names)
@@ -481,6 +482,7 @@ class FloatVector(Vector, FloatSexpVector):
     float, or have a float() representation.
 
     """
+    
     @property
     def NAvalue(self):
         return rinterface.NA_Real
@@ -536,9 +538,6 @@ class FactorVector(IntVector):
                                exclude = exclude,
                                ordered = ordered)
         super(FactorVector, self).__init__(res)
-        self.ro = VectorOperationsDelegator(self)
-        self.rx = ExtractDelegator(self)
-        self.rx2 = DoubleExtractDelegator(self)
 
     def repr_format_elt(self, elt, max_width = 8):
         max_width = int(max_width)
@@ -617,7 +616,7 @@ The parameter 'itemable' can be:
 
     
     def __init__(self, tlist):
-        if isinstance(tlist, rinterface.SexpVector):
+        if isinstance(tlist, rinterface.ListSexpVector):
             if tlist.typeof != rinterface.RTYPES.VECSXP:
                 raise ValueError("tlist should have "
                                  "tlist.typeof == rinterface.RTYPES.VECSXP")
@@ -629,16 +628,16 @@ The parameter 'itemable' can be:
             super().__init__(df)
         elif hasattr(tlist, "__iter__"):
             if not callable(tlist.__iter__):
-                raise ValueError("tlist should have a /method/ __iter__ (not an attribute)")
+                raise ValueError('tlist should have a /method/ __iter__ '
+                                 '(not an attribute)')
             kv = [(str(k), conversion.py2rpy(v)) for k,v in tlist]
             kv = tuple(kv)
             df = baseenv_ri.find("list").rcall(kv, globalenv_ri)
             super().__init__(df)
         else:
-            raise ValueError("tlist can be either "+
-                             "an iter-able " +
-                             " or an instance of rpy2.rinterface.SexpVector" +
-                             " of type VECSXP, or a Python dict.")
+            raise ValueError('tlist can only be either an iter-able or an '
+                             'instance of rpy2.rinterface.ListSexpVector, '
+                             'of R type VECSXP, or a Python dict.')
         self._add_rops()
 
     def _iter_repr(self, max_items=9):
@@ -721,7 +720,7 @@ class DateVector(FloatVector):
     """ Vector of dates """
     pass
 
-class POSIXt(object):
+class POSIXt(abc.ABC):
     """ POSIX time vector. This is an abstract class. """
 
     def repr_format_elt(self, elt, max_width = 12):        
@@ -771,7 +770,7 @@ class POSIXlt(POSIXt, ListVector):
         """ 
         """
         if isinstance(seq, Sexp):
-            super(self, Vector)(seq)
+            super()(seq)
         else:
             for elt in seq:
                 if not isinstance(elt, struct_time):
@@ -817,7 +816,7 @@ class POSIXct(POSIXt, FloatVector):
             init_param = POSIXct.sexp_from_datetime(seq)
         else:
             raise ValueError('All elements must inherit from time.struct_time or datetime.datetime.')
-        super(FloatVector, self).__init__(init_param)
+        super().__init__(init_param)
 
     @staticmethod
     def _sexp_from_seq(seq, tz_info_getter, isodatetime_columns):
@@ -1090,7 +1089,7 @@ class DataFrame(ListVector):
                     of strings should be turned to vectors. Note
                     that factors will not be turned to string vectors.
         """
-        if isinstance(obj, rinterface.SexpVector):
+        if isinstance(obj, rinterface.ListSexpVector):
             if obj.typeof != rinterface.RTYPES.VECSXP:
                 raise ValueError("obj should of typeof RTYPES.VECSXP"+\
                                      " (and we get %s)" % rinterface.RTYPES(obj.typeof))

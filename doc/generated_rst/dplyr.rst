@@ -34,13 +34,6 @@ frames).
 
     from rpy2.robjects.lib.dplyr import DataFrame
 
-
-.. parsed-literal::
-
-    /home/laurent/Desktop/software/python/py35_env/lib/python3.5/site-packages/rpy2-3.0.0.dev0-py3.5-linux-x86_64.egg/rpy2/robjects/lib/dplyr.py:24: UserWarning: This was designed againt dplyr version 0.7.4 but you have 0.7.3
-      warnings.warn('This was designed againt dplyr version %s but you have %s' % (TARGET_VERSION, dplyr.__version__))
-
-
 With this we have the choice of chaining (D3-style)
 
 .. code:: 
@@ -121,8 +114,8 @@ Python back from R. To achieve this we simply use the decorator
     from rpy2.rinterface import rternalize
     @rternalize
     def mean_np(x):
-        import numpy
-        return numpy.mean(x)
+        import statistics
+        return statistics.mean(x)
     
     # Bind that function to a symbol in R's
     # global environment
@@ -153,8 +146,8 @@ Python back from R. To achieve this we simply use the decorator
           <th></th>
           <th></th>
           <th>gear</th>
-          <th>mean_np_ptw</th>
           <th>mean_ptw</th>
+          <th>mean_np_ptw</th>
         </tr>
       </thead>
       <tbody>
@@ -162,14 +155,14 @@ Python back from R. To achieve this we simply use the decorator
           <td class="rpy2_rowname">0</td>
             <td class="rpy2_names">1</td>
           <td>4.0</td>
-          <td>1237.126649980317</td>
+          <td>1237.1266499803169</td>
           <td>1237.1266499803169</td>
         </tr>
         <tr>
           <td class="rpy2_rowname">1</td>
             <td class="rpy2_names">2</td>
           <td>5.0</td>
-          <td>2574.0331639315023</td>
+          <td>2574.0331639315027</td>
           <td>2574.0331639315027</td>
         </tr>
       </tbody>
@@ -214,8 +207,8 @@ function in R's global environment.
           <th></th>
           <th></th>
           <th>gear</th>
-          <th>mean_np_ptw</th>
           <th>mean_ptw</th>
+          <th>mean_np_ptw</th>
         </tr>
       </thead>
       <tbody>
@@ -223,14 +216,14 @@ function in R's global environment.
           <td class="rpy2_rowname">0</td>
             <td class="rpy2_names">1</td>
           <td>4.0</td>
-          <td>1237.126649980317</td>
+          <td>1237.1266499803169</td>
           <td>1237.1266499803169</td>
         </tr>
         <tr>
           <td class="rpy2_rowname">1</td>
             <td class="rpy2_names">2</td>
           <td>5.0</td>
-          <td>2574.0331639315023</td>
+          <td>2574.0331639315027</td>
           <td>2574.0331639315027</td>
         </tr>
       </tbody>
@@ -266,12 +259,12 @@ implementation of ``dplyr``, it *just works*.
 
 .. parsed-literal::
 
-    # Source:   lazy query [?? x 2]
-    # Database: sqlite 3.19.3 [/tmp/tmpk84iwhxe]
+    [90m# Source:   lazy query [?? x 2][39m
+    [90m# Database: sqlite 3.22.0 [/tmp/tmpnd75g166][39m
        gear mean_ptw
-      <dbl>    <dbl>
-    1     4 1237.127
-    2     5 2574.033
+      [3m[90m<dbl>[39m[23m    [3m[90m<dbl>[39m[23m
+    [90m1[39m     4    [4m1[24m237.
+    [90m2[39m     5    [4m2[24m574.
     
 
 
@@ -285,7 +278,7 @@ available to us. If we want to see the SQL code generated that's:
 
 .. parsed-literal::
 
-    /home/laurent/Desktop/software/python/py35_env/lib/python3.5/site-packages/rpy2-3.0.0.dev0-py3.5-linux-x86_64.egg/rpy2/rinterface/__init__.py:197: RRuntimeWarning: <SQL>
+    Callback to write to the R console: <SQL>
     SELECT `gear`, AVG(`powertoweight`) AS `mean_ptw`
     FROM (SELECT `mpg`, `cyl`, `disp`, `hp`, `drat`, `wt`, `qsec`, `vs`, `am`, `gear`, `carb`, `hp` * 36.0 / `wt` AS `powertoweight`
     FROM (SELECT *
@@ -293,7 +286,6 @@ available to us. If we want to see the SQL code generated that's:
     WHERE (`gear` > 3.0)))
     GROUP BY `gear`
     
-      warnings.warn(x, RRuntimeWarning)
 
 
 The conversion rules in rpy2 make the above easily applicable to pandas
@@ -310,14 +302,19 @@ R.
     # added to the default conversion rules, the rpy2 object
     # `mtcars` (an R data frame) is converted to a pandas data frame.
     with localconverter(default_converter + pandas2ri.converter) as cv:
-        mtcars = mtcars_env['mtcars']
-        pd_mtcars = pandas2ri.ri2py(mtcars)
+        pd_mtcars = mtcars_env['mtcars']
     print(type(pd_mtcars))
 
 
 .. parsed-literal::
 
     <class 'pandas.core.frame.DataFrame'>
+
+
+.. parsed-literal::
+
+    /home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.0.0.dev0-py3.6.egg/rpy2/robjects/pandas2ri.py:196: FutureWarning: from_items is deprecated. Please use DataFrame.from_dict(dict(items), ...) instead. DataFrame.from_dict(OrderedDict(items)) may be used to preserve the key order.
+      res = PandasDataFrame.from_items(items)
 
 
 Using a local converter lets us also go from the pandas data frame to
@@ -341,34 +338,20 @@ it.
 .. raw:: html
 
     
-    <emph>DataFrame</emph> with 3 rows and 2 columns:
+    <emph>DataFrame</emph> with 1 rows and 1 columns:
     <table class="docutils">
       <thead>
         <tr class="rpy2_names">
           <th></th>
           <th></th>
-          <th>gear</th>
           <th>mean_ptw</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td class="rpy2_rowname">0</td>
-            <td class="rpy2_names">1</td>
-          <td>3.0</td>
-          <td>1633.989574118287</td>
-        </tr>
-        <tr>
-          <td class="rpy2_rowname">1</td>
-            <td class="rpy2_names">2</td>
-          <td>4.0</td>
-          <td>1237.1266499803169</td>
-        </tr>
-        <tr>
-          <td class="rpy2_rowname">2</td>
-            <td class="rpy2_names">3</td>
-          <td>5.0</td>
-          <td>2574.0331639315027</td>
+            <td class="rpy2_names">0</td>
+          <td>1632.0477884748632</td>
         </tr>
       </tbody>
     </table>

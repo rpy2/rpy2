@@ -38,7 +38,7 @@ def consoleflush():
     pass
 
 
-_FLUSHCONSOLE_EXCEPTION_LOG = 'Callback to flush the R console: %s'
+_FLUSHCONSOLE_EXCEPTION_LOG = 'R[flush console]: %s'
 
 
 @ffi.callback('void (void)')
@@ -53,7 +53,7 @@ def consoleread(prompt: str) -> str:
     return input(prompt)
 
 
-_READCONSOLE_EXCEPTION_LOG = 'Callback to read into the R console: %s'
+_READCONSOLE_EXCEPTION_LOG = 'R[read into console]: %s'
 _READCONSOLE_INTERNAL_EXCEPTION_LOG = 'Internal rpy2 error with callback: %s'
 
 
@@ -95,7 +95,7 @@ def consolereset() -> None:
     pass
 
 
-_RESETCONSOLE_EXCEPTION_LOG = 'Callback to reset the R console: %s'
+_RESETCONSOLE_EXCEPTION_LOG = 'R[reset console]: %s'
 
 
 @ffi.callback(RESETCONSOLE_SIGNATURE)
@@ -116,7 +116,7 @@ def consolewrite_warnerror(s: str) -> None:
     logger.warning(_WRITECONSOLE_EXCEPTION_LOG, s)
 
 
-_WRITECONSOLE_EXCEPTION_LOG = 'Callback to write to the R console: %s'
+_WRITECONSOLE_EXCEPTION_LOG = 'R[write to console]: %s'
 
 
 @ffi.callback(WRITECONSOLE_EX_SIGNATURE)
@@ -136,7 +136,7 @@ def showmessage(s: str) -> None:
     print(s)
 
 
-_SHOWMESSAGE_EXCEPTION_LOG = 'Callback to show R message: %s'
+_SHOWMESSAGE_EXCEPTION_LOG = 'R[show message]: %s'
 
 
 @ffi.callback(SHOWMESSAGE_SIGNATURE)
@@ -152,7 +152,7 @@ def choosefile(new):
     return input('Enter file name:')
 
 
-_CHOOSEFILE_EXCEPTION_LOG = 'Callback to choose file from R: %s'
+_CHOOSEFILE_EXCEPTION_LOG = 'R[choose file]: %s'
 
 
 @ffi.callback(CHOOSEFILE_SIGNATURE)
@@ -182,7 +182,7 @@ def showfiles(filenames: typing.Tuple[str],
             print('---')
 
 
-_SHOWFILE_EXCEPTION_LOG = 'Callback to shows file for R: %s'
+_SHOWFILE_EXCEPTION_LOG = 'R[show file]: %s'
 _SHOWFILE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error while '
                                     'showing files for R: %s')
 
@@ -222,7 +222,7 @@ def cleanup(saveact, status, runlast):
     pass
 
 
-_CLEANUP_EXCEPTION_LOG = 'Callback to clean up R: %s'
+_CLEANUP_EXCEPTION_LOG = 'R[cleanup]: %s'
 
 
 @ffi.callback(CLEANUP_SIGNATURE)
