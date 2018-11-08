@@ -19,7 +19,7 @@ def eval(x, envir = ri.globalenv):
     else:
         p = x
     res = _reval(p, envir = envir)
-    res = conversion.ri2ro(res)
+    res = conversion.rpy2py(res)
     return res
 
 del(ri)

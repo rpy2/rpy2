@@ -72,8 +72,8 @@ use the decorator `rternalize`.
 from rpy2.rinterface import rternalize
 @rternalize
 def mean_np(x):
-    import numpy
-    return numpy.mean(x)
+    import statistics
+    return statistics.mean(x)
 
 # Bind that function to a symbol in R's
 # global environment
@@ -162,8 +162,7 @@ from rpy2.robjects.conversion import localconverter
 # added to the default conversion rules, the rpy2 object
 # `mtcars` (an R data frame) is converted to a pandas data frame.
 with localconverter(default_converter + pandas2ri.converter) as cv:
-    mtcars = mtcars_env['mtcars']
-    pd_mtcars = pandas2ri.ri2py(mtcars)
+    pd_mtcars = mtcars_env['mtcars']
 print(type(pd_mtcars))
 ```
 

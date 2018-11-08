@@ -6,10 +6,12 @@ R version, rpy2 version, etc...).
 
 import sys, os, subprocess
 
+
 def assert_python_version():
     if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 3):
         raise RuntimeError(
             "Python >=3.3 is required to run rpy2")
+
 
 def r_version_from_subprocess():
     try:
@@ -56,7 +58,17 @@ def r_home_from_registry():
         r_home = r_home.encode(sys.getfilesystemencoding())
     return r_home
 
+
 def get_r_home():
+    """Get R's home directory (aka R_HOME).
+
+    If an environment variable R_HOME is found it is returned,
+    and if none is found it is trying to get it from an R executable
+    in the PATH. On Windows, a third last attempt is made by trying
+    to obtain R_HOME from the registry. If all attempt are unfruitful,
+    None is returned.
+    """
+    
     r_home = os.environ.get("R_HOME")
 
     if not r_home:
@@ -65,9 +77,11 @@ def get_r_home():
         r_home = r_home_from_registry()
     return r_home
 
+
 def _make_bold(text):
     return '%s%s%s' % ('\033[1m', text, '\033[0m')
-         
+
+
 def iter_info():
 
     yield _make_bold('Python version:')
@@ -90,19 +104,19 @@ def iter_info():
     yield "    InstallPath in the registry: %s" % r_home
 
     try:
-        import rpy2.rinterface._rinterface
-        r_version_build = rpy2.rinterface._rinterface.R_VERSION_BUILD
-        r_version_build = '-'.join(str(x) for x in r_version_build)
-    except Exception:
-        r_version_build = '*** Error while importing rpy2.rinterface ***'
+        import rpy2.rinterface_lib.openrlib
+        rlib_status = 'OK'
+    except ImportError as ie:
+        rlib_status = '*** Error while loading: %s ***' % str(ie)
 
     yield _make_bold("R version:")
     yield "    In the PATH: %s" % r_version_from_subprocess()
-    yield "    Used to build rpy2: %s" % r_version_build
+    yield "    Loading R library from rpy2: %s" % rlib_status
 
     r_libs = os.environ.get("R_LIBS")
     yield _make_bold("Additional directories to load R packages from:")
     yield r_libs
+
 
 if __name__ == '__main__':
 

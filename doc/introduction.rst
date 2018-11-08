@@ -28,16 +28,24 @@ level can be imported, and the version obtained.
    or in your own code if trying to assess whether rpy2 is matching the
    expected version.
 
-   The version of R against which rpy2 was build (compiled) is also available:
+   A utility module is included to report what rpy2's environment.
+   
+   .. code-block:: bash
+
+      python -m rpy2.situation
+
+   If unable to run python from the command line, or unsure about about to do
+   it, the same information can be obtained from a Python terminal (or notebook).
    
    .. code-block:: python
 
-      from rpy2.rinterface import R_VERSION_BUILD
-      print(R_VERSION_BUILD)
+      import rpy2.situation
+      for row in rpy2.situation.iter_info():
+          print(row)
 
 
 :mod:`rpy2` is providing  2 levels of interface with R:
-- low-level (:mod:`rpy2.rinterface`)
+- low-level (:mod:`rpy2.rinterface`, and :mod:`rpy2:rinterface_lib`)
 - high-level (:mod:`rpy2.robjects`)
 
 The high-level interface is trying to make the use of R as natural as
@@ -389,7 +397,7 @@ c(3L, 2L, 1L)
 
 
 .. note::
-
+   
    By default, calling R functions return R objects.
 
 
@@ -419,7 +427,7 @@ on the topic:
 [...long output...]
 
 .. warning::
-
+   
    The help message so produced is not a string returned to the console
    but is directly printed by R to the standard output. The call to
    :func:`str` only returns an empty string, and the reason for this is

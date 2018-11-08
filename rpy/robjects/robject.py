@@ -2,6 +2,7 @@ import os, sys
 import tempfile
 import weakref
 import rpy2.rinterface
+import rpy2.rinterface_lib.callbacks
 
 rpy2.rinterface.initr()
 
@@ -23,10 +24,10 @@ class RSlots(object):
         
     def __getitem__(self, key):
         value = self._robj.do_slot(key)
-        return conversion.ri2ro(value)
+        return conversion.rpy2py(value)
 
     def __setitem__(self, key, value):
-        rpy2_value = conversion.py2ri(value)
+        rpy2_value = conversion.py2rpy(value)
         self._robj.do_slot_assign(key, rpy2_value)
 
     def __len__(self):
@@ -48,22 +49,22 @@ class RSlots(object):
             v = self[k]
             yield v
 
+
+_get_exported_value = rpy2.rinterface.baseenv['::']
         
 class RObjectMixin(object):
     """ Class to provide methods common to all RObject instances. """
     
     __rname__ = None
 
-    __tempfile = rpy2.rinterface.baseenv.get("tempfile")
-    __file = rpy2.rinterface.baseenv.get("file")
-    __fifo = rpy2.rinterface.baseenv.get("fifo")
-    __sink = rpy2.rinterface.baseenv.get("sink")
-    __close = rpy2.rinterface.baseenv.get("close")
-    __readlines = rpy2.rinterface.baseenv.get("readLines")
-    __unlink = rpy2.rinterface.baseenv.get("unlink")
-    __rclass = rpy2.rinterface.baseenv.get("class")
-    __rclass_set = rpy2.rinterface.baseenv.get("class<-")
-    __show = rpy2.rinterface.baseenv.get("show")
+    __tempfile = rpy2.rinterface.baseenv.find("tempfile")
+    __file = rpy2.rinterface.baseenv.find("file")
+    __fifo = rpy2.rinterface.baseenv.find("fifo")
+    __sink = rpy2.rinterface.baseenv.find("sink")
+    __close = rpy2.rinterface.baseenv.find("close")
+    __readlines = rpy2.rinterface.baseenv.find("readLines")
+    __unlink = rpy2.rinterface.baseenv.find("unlink")
+    __show = _get_exported_value('methods', 'show')
 
     __slots = None
     
@@ -84,24 +85,18 @@ class RObjectMixin(object):
         except:
             rclasses = 'Unable to fetch R classes.' + os.linesep
         res = os.linesep.join((rclasses,
-                               super(RObjectMixin, self).__repr__()))
-        return res
+                               repr(super())))
+        return rclasses
     
     def __str__(self):
+        # TODO: Clean the win32 madness.
         if sys.platform == 'win32':
             tmpf = tempfile.NamedTemporaryFile(mode="w+", delete=False)
             tfname = tmpf.name
             tmp = self.__file(rpy2.rinterface.StrSexpVector([tfname,]),
-                              open=rpy2.rinterface.StrSexpVector(["r+", ]))
+                              open=rpy2.rinterface.StrSexpVector(['r+', ]))
             self.__sink(tmp)
-        else:
-            writeconsole = rpy2.rinterface.get_writeconsole_regular()
-            s = []
-            def f(x):
-                s.append(x)
-            rpy2.rinterface.set_writeconsole_regular(f)
-        self.__show(self)
-        if sys.platform == 'win32':
+            self.__show(self)
             self.__sink()
             s = tmpf.readlines()
             tmpf.close()
@@ -114,7 +109,13 @@ class RObjectMixin(object):
                     print('Unable to unlink tempfile %s' % tfname)
             s = str.join(os.linesep, s)
         else:
-            rpy2.rinterface.set_writeconsole_regular(writeconsole)
+            s = []
+            def f(x):
+                s.append(x)
+            with (rpy2.rinterface_lib
+                  .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
+                                           'consolewrite_print', f)):
+                self.__show(self)
             s = str.join('', s)
         return s
 
@@ -132,48 +133,48 @@ class RObjectMixin(object):
         """
         return repr_robject(self, linesep='\n')
 
-    def _rclass_get(self):
+    @property
+    def rclass(self):
+        """
+        R class for the object, stored as an R string vector.
+        
+        When setting the rclass, the new value will be:
+        
+        - wrapped in a Python tuple if a string (the R class
+        is a vector of strings, and this is made for convenience)
+        
+        - wrapped in a StrSexpVector
+        
+        Note that when setting the class R may make a copy of
+        the whole object (R is mostly a functional language).
+        If this must be avoided, and if the number of parent
+        classes before and after the change are compatible,
+        the class name can be changed in-place by replacing
+        vector elements."""
+
         try:
-            res = self.__rclass(self)
+            res = rpy2.rinterface.sexp.rclass_get(
+                self.__sexp__)
             #res = conversion.ri2py(res)
             return res
-        except rpy2.rinterface.RRuntimeError as rre:
-            if self.typeof == rpy2.rinterface.SYMSXP:
+        except rpy2.rinterface._rinterface.RRuntimeError as rre:
+            if self.typeof == rpy2.rinterface.RTYPES.SYMSXP:
                 #unevaluated expression: has no class
                 return (None, )
             else:
                 raise rre
     
-    def _rclass_set(self, value):
+    @rclass.setter
+    def rclass_set(self, value):
         if isinstance(value, str):
             value = (value, )
         new_cls = rpy2.rinterface.StrSexpVector(value)
         res = self.__rclass_set(self, new_cls)
         self.__sexp__ = res.__sexp__
-            
-    rclass = property(_rclass_get, _rclass_set, None,
-                      """
-R class for the object, stored as an R string vector.
-
-When setting the rclass, the new value will be:
-
-- wrapped in a Python tuple if a string (the R class
-  is a vector of strings, and this is made for convenience)
-
-- wrapped in a StrSexpVector
-
-Note that when setting the class R may make a copy of
-the whole object (R is mostly a functional language).
-If this must be avoided, and if the number of parent
-classes before and after the change are compatible,
-the class name can be changed in-place by replacing
-vector elements.
-""")
-
 
     
 def repr_robject(o, linesep=os.linesep):
-    s = rpy2.rinterface.baseenv.get("deparse")(o)
+    s = rpy2.rinterface.baseenv.find("deparse")(o)
     s = str.join(linesep, s)
     return s
 

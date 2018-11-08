@@ -4,72 +4,56 @@
 Callbacks
 *********
 
-Although R has been tightly bound to its console, the R-core development team has
-great progress in letting front-end developpers customize R's interactive behavior
-to their needs.
-
-:mod:`rpy2` is offering to customize R's interactive behavior through callback functions.
+The R C-API allows front-end developpers to customize R's interactive behavior
+to their needs using callbacks, and :mod:`rpy2` is making those callbacks
+accessible with the ability to implement them in pure Python. In other words,
+:mod:`rpy2` makes it possible to implement a completely an R front-end such
+as RStudio.
 
 .. _rinterface-callbacks_consoleio:
 
 Console I/O
 ===========
 
-During an interactive session, much of the communication between R and the user happen
-happen through the console. How the console reads input and writes output, can be
-defined through callback functions.
+During an interactive session, much of the communication between R and the
+user happen through the console. How the console reads input and writes output,
+can be defined through callback functions.
 
 Read console
 ------------
 
-The 'read console' function is called whenever console input is expected.
+The function "read console" is called whenever console input is expected.
 
 
-The default callback for inputing data is :func:`rinterface.consoleRead`
+The default callback for inputing data is
+:func:`rpy2.rinterface_lib.callbacks.consoleread`
 
-.. autofunction:: rpy2.rinterface.consoleRead(prompt)
+.. autofunction:: rpy2.rinterface_lib.callbacks.consoleread(prompt)
 
-   :param prompt: :class:`str`
-   :rtype: :class:`str`
+Any Python function with the same signature can be used instead. For example:
 
+.. code-block:: python
 
-A suitable callback function will be such as it accepts one parameter of class :class:`str`,
-that is the prompt, and returns the user input as a :class:`str`.
-
-The pair of functions 
-:func:`rpy2.rinterface.set_readconsole` and :func:`rpy2.rinterface.get_readconsole`
-can be used to set and retrieve the callback function respectively.
-
-.. autofunction:: rpy2.rinterface.set_readconsole(f)
-
-.. autofunction:: rpy2.rinterface.get_readconsole()
-
-   :rtype: a callable
-
+   def  my_consoleread(prompt: str) -> str:
+       custom_prompt = '???' + prompt
+       return input(custom_prompt)
+ 
+   rpy2.rinterface_lib.callbacks.consoleread = my_consoleread
+   
 
 Write console
 -------------
 
-The 'write console' function is called whenever output is sent to the R console.
+The function "write console" is called whenever output is sent to the R console.
+In R's C API, there are two functions behind the hood, one for regular
+printing, and one for warnings and errors.
 
-A suitable callback function will be such as it accepts one parameter of class :class:`str`
-and only has side-effects (does not return anything).
+.. autofunction:: rpy2.rinterface_lib.callbacks.consolewrite_print(x)
+.. autofunction:: rpy2.rinterface_lib.callbacks.consolewrite_warnerror(x)
 
-The pairs of functions (:func:`rpy2.rinterface.set_writeconsole_regular`,
-:func:`rpy2.rinterface.get_writeconsole_regular`) and
-(:func:`rpy2.rinterface.set_writeconsole_warnerror`,
-:func:`rpy2.rinterface.get_writeconsole_warnerror`)
-can be used to set and retrieve the callback functions.
+An example should make it obvious:
 
-The default callback function, called :func:`rinterface.consolePrint`
-is a simple write to :data:`sys.stdout`
-
-.. autofunction:: rpy2.rinterface.consolePrint(x)
-
-   :param x: :class:`str`
-   :rtype: None
-
-An example should make it obvious::
+.. code-block:: python
 
    buf = []
    def f(x):
@@ -77,7 +61,8 @@ An example should make it obvious::
        buf.append(x)
 
    # output from the R console will now be appended to the list 'buf'
-   rinterface.set_writeconsole(f)
+   consolewrite_print_backup = rpy2.rinterface_lib.callbacks.consolewrite_print
+   rpy2.rinterface_lib.callbacks.consolewrite_print = f
 
    date = rinterface.baseenv['date']
    rprint = rinterface.baseenv['print']
@@ -86,36 +71,17 @@ An example should make it obvious::
    # the output is in our list (as defined in the function f above)
    print(buf)
 
-
    # restore default function
-   rinterface.set_writeconsole(rinterface.consolePrint)
+   rpy2.rinterface_lib.callbacks.consolewrite_print = consolewrite_print_backup
 
-
-.. autofunction:: rpy2.rinterface.set_writeconsole_regular(f)
-
-.. autofunction:: rpy2.rinterface.set_writeconsole_warnerror(f)
-
-.. autofunction:: rpy2.rinterface.get_writeconsole_regular()
-
-   :rtype: a callable
-
-.. autofunction:: rpy2.rinterface.get_writeconsole_warnerror()
-
-   :rtype: a callable
-
-
+.. autofunction:: rpy2.rinterface_lib.callbacks.consolewrite_print(x)
 
 Flush console
 -------------
 
-The 'write console' function is called whenever output is sent to the R console.
+The function "flush console" is called whenever output is sent to the R console.
 
-A suitable callback function will be such as it accepts no parameter
-and only has side-effects (does not return anything).
-
-The pair of functions 
-:func:`rpy2.rinterface.set_flushconsole` and :func:`rpy2.rinterface.get_flushconsole`
-can be used to set and retrieve the callback function respectively.
+.. autofunction:: rpy2.rinterface_lib.callbacks.consoleflush()
 
 
 Files
@@ -165,17 +131,16 @@ an :class:`RRuntimeError`).
 
   rquit = rpy2.rinterface.baseenv['q']
 
-  def cleanup(saveact, status, runlast):
+  def my_cleanup(saveact, status, runlast):
       # cancel all attempts to quit R programmatically
       print("One can't escape...")
       return None
 
 
->>>  orig_cleanup = rpy2.rinterface.get_cleanup()
->>>  rpy2.rinterface.set_cleanup(cleanup)
+>>> orig_cleanup = rpy2.rinterface_lib.callbacks.cleanup
+>>> rpy2.rinterface_lib.callbacks.cleanup = my_cleanup
 >>> rquit()
-
 
 Restore the original cleanup:
 
->>> rpy2.rinterface.set_cleanup(orig_cleanup)
+>>> rpy2.rinterface_lib.callbacks.cleanup = orig_cleanup

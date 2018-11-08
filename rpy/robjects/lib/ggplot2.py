@@ -62,9 +62,10 @@ ggplot2 = WeakPackage(ggplot2._env,
                       symbol_r2python=ggplot2._symbol_r2python,
                       symbol_check_after=ggplot2._symbol_check_after)
 
-TARGET_VERSION = '3.0.0'
+TARGET_VERSION = '3.1.0'
 if ggplot2.__version__ != TARGET_VERSION:
-   warnings.warn('This was designed againt ggplot2 version %s but you have %s' % (TARGET_VERSION, ggplot2.__version__))
+    warnings.warn('This was designed againt ggplot2 version %s but you '
+                  'have %s' % (TARGET_VERSION, ggplot2.__version__))
 ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
 
 StrVector = robjects.StrVector
@@ -73,7 +74,7 @@ def as_symbol(x):
     res = rinterface.parse(x)
     return res
 
-class GGPlot(robjects.RObject):
+class GGPlot(robjects.vectors.ListVector):
     """ A Grammar of Graphics Plot.
     
     GGPlot instances can be added to one an other in order to construct
@@ -87,27 +88,29 @@ class GGPlot(robjects.RObject):
     @classmethod
     def new(cls, data):
         """ Constructor for the class GGplot. """
-        data = conversion.py2ri(data)
+        data = conversion.py2rpy(data)
         res = cls(cls._constructor(data))
         return res
     
     def plot(self, vp = robjects.constants.NULL):
-        self._rprint(self, vp = vp)
+         self._rprint(self, vp = vp)
 
     def __add__(self, obj):
         res = self._add(self, obj)
-        if res.rclass[0] != 'gg':
-            raise ValueError("Added object did not give a ggplot result (get class '%s')." % res.rclass[0])
+        if 'gg' not in res.rclass:
+           raise ValueError("Added object did not give a ggplot result "
+                           "(get class '%s')." % res.rclass[0])
         return self.__class__(res)
 
     def save(self, filename, **kwargs):
         """ Save the plot ( calls R's `ggplot2::ggsave()` ) """
         ggplot2.ggsave(filename=filename, plot=self, **kwargs)
 
+
 ggplot = GGPlot.new
 
 
-class Aes(robjects.Vector):
+class Aes(robjects.ListVector):
     """ Aesthetics mapping, using expressions rather than string
     (this is the most common form when using the package in R - it might
     be easier to use AesString when working in Python using rpy2 -
@@ -123,9 +126,12 @@ class Aes(robjects.Vector):
             new_kwargs[k] = as_symbol(v)
         res = cls(cls._constructor(**new_kwargs))
         return res
+
+
 aes = Aes.new
 
-class AesString(robjects.Vector):
+
+class AesString(robjects.ListVector):
     """ Aesthetics mapping, using strings rather than expressions (the later
     being most common form when using the package in R - see class Aes
     in this Python module).
@@ -146,17 +152,19 @@ class AesString(robjects.Vector):
        """Constructor for the class AesString."""
        res = cls(cls._constructor(**kwargs))
        return res
+
+
 aes_string = AesString.new
 
 
 class Layer(robjects.RObject):
-     """ At this level, aesthetics mapping can (should ?) be specified
+    """ At this level, aesthetics mapping can (should ?) be specified
      (see Aes and AesString). """
-     _constructor = ggplot2_env['layer']
+    _constructor = ggplot2_env['layer']
     #_dollar = proto_env["$.proto"]
 
-     @classmethod
-     def new(cls,
+    @classmethod
+    def new(cls,
             *args, **kwargs):
         """ Constructor for the class Layer. """
         for i, elt in enumerate(args):
@@ -168,15 +176,17 @@ class Layer(robjects.RObject):
         res = cls(cls.contructor)(*args, **kwargs)
         return res
 
+
 layer = Layer.new        
 
-class GBaseObject(robjects.RObject):
+
+class GBaseObject(robjects.Environment):
     @classmethod
-    def new(*args, **kwargs):
+    def new(cls, *args, **kwargs):
         args_list = list(args)
-        cls = args_list.pop(0)
         res = cls(cls._constructor(*args_list, **kwargs))
         return res
+
 
 class Stat(GBaseObject):
     """ A "statistical" processing of the data in order
@@ -187,10 +197,14 @@ class Stat(GBaseObject):
     pass
 
 
+
 class StatBin(Stat):
     """ Bin data. """
     _constructor = ggplot2_env['stat_bin']
+
+
 stat_bin = StatBin.new
+
 
 class StatBin2D(Stat):
     """ 2D binning of data into squares/rectangles. """
@@ -199,8 +213,11 @@ class StatBin2D(Stat):
     except:
        # fallback for versions of ggplot2 < 2.0
        _constructor = ggplot2_env['stat_bin2d']
+
+
 stat_bin2d = StatBin2D.new
 stat_bin_2d=StatBin2D.new
+
 
 class StatBinhex(Stat):
     """ 2D binning of data into hexagons. """
@@ -209,23 +226,35 @@ class StatBinhex(Stat):
     except:
        # fallback for versions of ggplot2 < 2.0
        _constructor = ggplot2_env['stat_binhex']
+
+
 stat_binhex = StatBinhex.new
 stat_bin_hex=StatBinhex.new
+
 
 class StatBoxplot(Stat):
     """ Components of box and whisker plot. """
     _constructor = ggplot2_env['stat_boxplot']
+
+
 stat_boxplot = StatBoxplot.new
+
 
 class StatContour(Stat):
     """ Contours of 3D data. """
     _constructor = ggplot2_env['stat_contour']
+
+
 stat_contour = StatContour.new
+
 
 class StatDensity(Stat):
     """ 1D density estimate """
     _constructor = ggplot2_env['stat_density']
+
+
 stat_density = StatDensity.new
+
 
 class StatDensity2D(Stat):
     """ 2D density estimate """
@@ -233,28 +262,43 @@ class StatDensity2D(Stat):
        _constructor = ggplot2_env['stat_density_2d']
     except:
        _constructor = ggplot2_env['stat_density2d']
+
+
 stat_density2d = StatDensity2D.new
 stat_density_2d=StatDensity2D.new
+
 
 class StatFunction(Stat):
     """ Superimpose a function """
     _constructor = ggplot2_env['stat_function']
+
+
 stat_function = StatFunction.new
+
 
 class StatIdentity(Stat):
     """ Identity function """
     _constructor = ggplot2_env['stat_identity']
+
+
 stat_identity = StatIdentity.new
+
 
 class StatQQ(Stat):
     """ Calculation for quantile-quantile plot. """
     _constructor = ggplot2_env['stat_qq']
+
+
 stat_qq = StatQQ.new
+
 
 class StatQuantile(Stat):
     """ Continuous quantiles """
     _constructor = ggplot2_env['stat_quantile']
+
+
 stat_quantile = StatQuantile.new
+
 
 class StatSmooth(Stat):
     """ Smoothing function """
@@ -264,18 +308,27 @@ stat_smooth = StatSmooth.new
 class StatSpoke(Stat):
     """ Convert angle and radius to xend and yend """
     _constructor = ggplot2_env['stat_spoke']
+
+
 stat_spoke = StatSpoke.new
+
 
 class StatSum(Stat):
     """ Sum unique values.
     Useful when overplotting. """
     _constructor = ggplot2_env['stat_sum']
+
+
 stat_sum = StatSum.new
+
 
 class StatSummary(Stat):
     """ Summarize values for y at every unique value for x"""
     _constructor = ggplot2_env['stat_summary']
+
+
 stat_summary = StatSummary.new
+
 
 class StatSummary2D(Stat):
     """ Summarize values for y at every unique value for x"""
@@ -283,29 +336,42 @@ class StatSummary2D(Stat):
        _constructor = ggplot2_env['stat_summary_2d']
     except:
        _constructor = ggplot2_env['stat_summary2d']
+
+
 stat_summary2d = StatSummary2D.new
 stat_summary_2d = StatSummary2D.new
+
 
 class StatUnique(Stat):
     """ Remove duplicates. """
     _constructor = ggplot2_env['stat_unique']
+
+
 stat_unique = StatUnique.new
+
 
 class Coord(GBaseObject):
     """ Coordinates """
     pass
+
 
 class CoordFixed(Coord):
     """ Cartesian coordinates with fixed relationship
     (that is fixed ratio between units in axes).
     CoordEquel seems to be identical to this class."""
     _constructor = ggplot2_env['coord_fixed']
+
+
 coord_fixed = CoordFixed.new
+
 
 class CoordCartesian(Coord):
     """ Cartesian coordinates. """
     _constructor = ggplot2_env['coord_cartesian']
+
+
 coord_cartesian = CoordCartesian.new
+
 
 class CoordEqual(Coord):
     """ This class seems to be identical to CoordFixed. """
@@ -438,9 +504,13 @@ class GeomPath(Geom):
     _constructor = ggplot2_env['geom_path']
 geom_path = GeomPath.new
 
+
 class GeomPoint(Geom):
     _constructor = ggplot2_env['geom_point']
+
+
 geom_point = GeomPoint.new
+
 
 class GeomPointRange(Geom):
     _constructor = ggplot2_env['geom_pointrange']
@@ -696,15 +766,13 @@ class ScaleShapeManual(ScaleShape):
 scale_shape_manual = ScaleShapeManual.new
 
 
-
 guides = ggplot2.guides
 guide_colorbar = ggplot2.guide_colorbar
 guide_colourbar = ggplot2.guide_colourbar
 guide_legend = ggplot2.guide_legend
 
-class Options(robjects.Vector):
-   def __init__(self, obj):
-      self.__sexp__ = obj.__sexp__
+
+class Options(robjects.ListVector):
 
    def __repr__(self):
       s = '<instance of %s : %i>' %(type(self), id(self)) 
@@ -714,8 +782,11 @@ class Options(robjects.Vector):
 class Element(Options):
    pass
 
+
 class ElementText(Element):
+
     _constructor = ggplot2.element_text
+    
     @classmethod
     def new(cls, family = "", face = "plain", colour = "black", size = 10,
             hjust = 0.5, vjust = 0.5, angle = 0, lineheight = 1.1, 
@@ -725,10 +796,15 @@ class ElementText(Element):
                                   hjust = hjust, vjust = vjust, 
                                   angle = angle, lineheight = lineheight))
        return res
+
+
 element_text = ElementText.new
 
+
 class ElementRect(Element):
+
     _constructor = ggplot2.element_rect
+    
     @classmethod
     def new(cls, fill = NULL, colour = NULL, size = NULL,
             linetype = NULL, color = NULL):
@@ -736,7 +812,10 @@ class ElementRect(Element):
                                   size = size, linetype = linetype,
                                   color = color))
        return res
+
+
 element_rect = ElementRect.new
+
 
 class Labs(Options):
    _constructor = ggplot2.labs
@@ -745,10 +824,13 @@ class Labs(Options):
       res = cls(cls._constructor(**kwargs))
       return res
 
+
 labs = Labs.new
+
 
 class Theme(Options):
    pass
+
 
 class ElementBlank(Theme):
     _constructor = ggplot2.element_blank
@@ -757,9 +839,12 @@ class ElementBlank(Theme):
         res = cls(cls._constructor())
         return res
 
+
 element_blank = ElementBlank.new
 
+
 theme_get = ggplot2.theme_get
+
 
 class ThemeGrey(Theme):
     _constructor = ggplot2.theme_grey
@@ -768,7 +853,9 @@ class ThemeGrey(Theme):
        res = cls(cls._constructor(base_size = base_size))
        return res
 
+
 theme_grey = ThemeGrey.new
+
 
 class ThemeClassic(Theme):
     _constructor = ggplot2.theme_classic
@@ -778,7 +865,9 @@ class ThemeClassic(Theme):
                                   base_family = base_family))
        return res
 
+
 theme_classic = ThemeClassic.new
+
 
 class ThemeDark(Theme):
     _constructor = ggplot2.theme_dark
@@ -788,7 +877,9 @@ class ThemeDark(Theme):
                                   base_family = base_family))
        return res
 
+
 theme_dark = ThemeDark.new
+
 
 class ThemeLight(Theme):
     _constructor = ggplot2.theme_light
@@ -798,7 +889,9 @@ class ThemeLight(Theme):
                                   base_family = base_family))
        return res
 
+
 theme_light = ThemeLight.new
+
 
 class ThemeBW(Theme):
     _constructor = ggplot2.theme_bw
@@ -815,8 +908,11 @@ class ThemeGray(Theme):
     def new(cls, base_size = 12):
        res = cls(cls._constructor(base_size = base_size))
        return res
+
+
 theme_gray = ThemeGray.new
 theme_grey = theme_gray
+
 
 class ThemeMinimal(Theme):
     _constructor = ggplot2.theme_minimal
@@ -835,7 +931,10 @@ class ThemeLinedraw(Theme):
        res = cls(cls._constructor(base_size=base_size,
                                   base_family=base_family))
        return res
+
+
 theme_linedraw = ThemeLinedraw.new
+
 
 class ThemeVoid(Theme):
     _constructor = ggplot2.theme_void
@@ -844,6 +943,7 @@ class ThemeVoid(Theme):
        res = cls(cls._constructor(base_size = base_size,
                                   base_family = base_family))
        return res
+
 
 theme_void = ThemeVoid.new
 
@@ -861,10 +961,12 @@ theme = ggplot2_env['theme']
 
 ggtitle = ggplot2.ggtitle
 
-original_ri2ro = conversion.ri2ro
+original_rpy2py = conversion.rpy2py
+
+
 def ggplot2_conversion(robj):
 
-    pyobj = original_ri2ro(robj)
+    pyobj = original_rpy2py(robj)
 
     try:
        rcls = pyobj.rclass
@@ -873,10 +975,11 @@ def ggplot2_conversion(robj):
        # longer an R object
        return pyobj
 
-    if (rcls is not None) and ('gg' in rcls):
+    if (rcls is not None) and (rcls[0] == 'gg'):
        pyobj = GGPlot(pyobj)
 
     return pyobj
 
-conversion.ri2ro = ggplot2_conversion
+
+conversion.rpy2py = ggplot2_conversion
 

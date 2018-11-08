@@ -6,9 +6,11 @@ from rpy2.rinterface import StrSexpVector
 from rpy2.robjects import help as rhelp
 from rpy2.robjects import conversion
 
-getmethod = rinterface.baseenv.get("getMethod")
+_get_exported_value = rinterface.baseenv['::']
+getmethod = _get_exported_value('methods', 'getMethod')
 
-require = rinterface.baseenv.get('require')
+
+require = rinterface.baseenv.find('require')
 require(StrSexpVector(('methods', )),
         quiet = rinterface.BoolSexpVector((True, )))
 
@@ -21,20 +23,21 @@ class RS4(RObjectMixin, rinterface.SexpS4):
         return methods_env['slotNames'](self)
     
     def do_slot(self, name):
-        return conversion.ri2ro(super(RS4, self).do_slot(name))
+        return conversion.rpy2py(super(RS4, self).do_slot(name))
 
     @staticmethod
     def isclass(name):
         """ Return whether the given name is a defined class. """
-        name = conversion.py2ri(name)
+        name = conversion.py2rpy(name)
         return methods_env['isClass'](name)[0]
 
     def validobject(self, test = False, complete = False):
         """ Return whether the instance is 'valid' for its class. """
-        test = conversion.py2ri(test)
-        complete = conversion.py2ri(complete)
+        test = conversion.py2rpy(test)
+        complete = conversion.py2rpy(complete)
         return methods_env['validObject'](self, test = test,
                                           complete = complete)[0]
+
 
 class ClassRepresentation(RS4):
     """ Definition of an R S4 class """
@@ -69,7 +72,9 @@ def getclassdef(cls_name, cls_packagename):
     cls_def.__rname__ = cls_name
     return cls_def
 
+
 class RS4_Type(type):
+    
     def __new__(mcs, name, bases, cls_dict):
 
         try:
@@ -99,7 +104,7 @@ class RS4_Type(type):
             r_meth = getmethod(StrSexpVector((rname, )), 
                                signature = signature,
                                where = where)
-            r_meth = conversion.ri2ro(r_meth)
+            r_meth = conversion.rpy2py(r_meth)
             if as_property:
                 cls_dict[python_name] = property(r_meth, None, None,
                                                  doc = docstring)
@@ -241,7 +246,7 @@ def set_accessors(cls, cls_name, where, acs):
         r_meth = getmethod(StrSexpVector((r_name, )), 
                            signature = StrSexpVector((cls_name, )),
                            where = where)
-        r_meth = conversion.ri2ro(r_meth)
+        r_meth = conversion.rpy2py(r_meth)
         if as_property:
             setattr(cls, python_name, property(r_meth, None, None))
         else:
@@ -284,6 +289,6 @@ def rs4instance_factory(robj):
     if clslist is None:
         return robj
 
-methods_env = rinterface.baseenv.get('as.environment')(StrSexpVector(('package:methods', )))
+methods_env = rinterface.baseenv.find('as.environment')(StrSexpVector(('package:methods', )))
 
 

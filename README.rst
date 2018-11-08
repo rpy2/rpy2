@@ -50,17 +50,22 @@ or online (on readthedocs).
 Testing
 =======
 
-The testing machinery uses the new unittest functionality, requiring python 2.7+
-(or potentially the backported unittest2 library for older python, but this is
-not supported). The test suite can be run (once rpy2 is installed) as follows:
+`rpy2` is now relying on `pytest`, with the plugin `pytest-cov` for code coverage. To
+test the package from the source tree, either to check and installation on your system
+or before submitting a pull request, do:
 
-    pytest --pyargs rpy2
+    pytest tests/
 
-Individual tests can be run as follows:
+For code coverage, do:
 
-    pytest --pyargs rpy2.robjects.tests.testVector
+    pytest --cov=rpy2.rinterface_lib \
+           --cov=rpy2.rinterface \
+	   --cov=rpy2.ipython \
+	   --cov=rpy2.robject \
+	   tests
 
-The former recommended way to run tests (`python -m rpy2.tests`) may still work.
+For more options, such as how to run specify tests, please refer to the `pytest`
+documentation.
 
 
 License

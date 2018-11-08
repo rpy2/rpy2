@@ -1,11 +1,12 @@
-import os, re
+import os
+import re
+import warnings
 from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.rinterface as rinterface
 from rpy2.robjects import help
 #import rpy2.robjects.conversion conversion
 from . import conversion
-# XXX: I need to import default_ri2ro
 
 from rpy2.robjects.packages_utils import (default_symbol_r2python,
                                           default_symbol_check_after,
@@ -18,13 +19,18 @@ baseenv_ri = rinterface.baseenv
 #needed to avoid circular imports
 _reval = rinterface.baseenv['eval']
 
-__formals = baseenv_ri.get('formals')
-__args = baseenv_ri.get('args')
-#_genericsargsenv = baseenv_ri['.GenericArgsEnv']
-#_argsenv = baseenv_ri['.ArgsEnv']
+__formals = baseenv_ri.find('formals')
+__args = baseenv_ri.find('args')
+__is_null = baseenv_ri.find('is.null')
+
+
 def _formals_fixed(func):
     tmp = __args(func)
-    return __formals(tmp)
+    if __is_null(tmp)[0]:
+        return rinterface.NULL
+    else:
+        return __formals(tmp)
+
 
 ## docstring_property and DocstringProperty
 ## from Bradley Froehle
@@ -33,7 +39,8 @@ def docstring_property(class_doc):
     def wrapper(fget):
         return DocstringProperty(class_doc, fget)
     return wrapper
- 
+
+
 class DocstringProperty(object):
     def __init__(self, class_doc, fget):
         self.fget = fget
@@ -73,10 +80,10 @@ def _repr_argval(obj):
 class Function(RObjectMixin, rinterface.SexpClosure):
     """ Python representation of an R function.
     """
-    __local = baseenv_ri.get('local')
-    __call = baseenv_ri.get('call')
-    __assymbol = baseenv_ri.get('as.symbol')
-    __newenv = baseenv_ri.get('new.env')
+    __local = baseenv_ri.find('local')
+    __call = baseenv_ri.find('call')
+    __assymbol = baseenv_ri.find('as.symbol')
+    __newenv = baseenv_ri.find('new.env')
 
     _local_env = None
         
@@ -99,12 +106,16 @@ class Function(RObjectMixin, rinterface.SexpClosure):
 
 
     def __call__(self, *args, **kwargs):
-        new_args = [conversion.py2ri(a) for a in args]
+        new_args = [conversion.py2rpy(a) for a in args]
         new_kwargs = {}
         for k, v in kwargs.items():
-            new_kwargs[k] = conversion.py2ri(v)
+            # TODO: shouldn't this be handled by the conversion itself ?
+            if isinstance(v, rinterface.Sexp):
+                new_kwargs[k] = v
+            else:
+                new_kwargs[k] = conversion.py2rpy(v)
         res = super(Function, self).__call__(*new_args, **new_kwargs)
-        res = conversion.ri2ro(res)
+        res = conversion.rpy2py(res)
         return res
 
     def formals(self):
@@ -112,16 +123,12 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         (as the R function 'formals()' would).
         """
         res = _formals_fixed(self)
-        res = conversion.ri2ro(res)
+        res = conversion.rpy2py(res)
         return res
 
     def rcall(self, *args):
         """ Wrapper around the parent method rpy2.rinterface.SexpClosure.rcall(). """
         res = super(Function, self).rcall(*args)
-        # XXX: Now that ri2ro converts to python objects, we restrict to the
-        # default now for a raw R call. I'm not sure there should be *any*
-        # conversion. However, we need to get this out of __init__.py first!
-        # res = ro.default_ri2ro(res)
         return res
 
 class SignatureTranslatedFunction(Function):
@@ -144,13 +151,14 @@ class SignatureTranslatedFunction(Function):
             prm_translate = init_prm_translate
 
         formals = self.formals()
-        if formals is not rinterface.NULL:
+        if formals.__sexp__._cdata != rinterface.NULL.__sexp__._cdata:
             (symbol_mapping, 
              conflicts, 
-             resolutions) = _map_symbols(formals.names,
-                                         translation = prm_translate,
-                                         symbol_r2python = symbol_r2python,
-                                         symbol_check_after = symbol_check_after)
+             resolutions) = _map_symbols(
+                 formals.names,
+                 translation=prm_translate,
+                 symbol_r2python=symbol_r2python,
+                 symbol_check_after=symbol_check_after)
 
             msg_prefix = 'Conflict when converting R symbols'+\
                 ' in the function\'s signature:\n- '
@@ -175,7 +183,9 @@ class SignatureTranslatedFunction(Function):
             if r_k is not None:
                 v = kwargs.pop(k)
                 kwargs[r_k] = v
-        return super(SignatureTranslatedFunction, self).__call__(*args, **kwargs)
+        return (super(SignatureTranslatedFunction, self)
+                .__call__(*args, **kwargs))
+
 
 pattern_link = re.compile(r'\\link\{(.+?)\}')
 pattern_code = re.compile(r'\\code\{(.+?)\}')

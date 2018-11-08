@@ -23,57 +23,33 @@ def overlay_converter(src, target):
                    be added to this object.
     :type target: :class:`Converter`
     """
-    for k,v in src.ri2ro.registry.items():
+    for k,v in src.py2rpy.registry.items():
         # skip the root dispatch
-        if k is object and v is _ri2ro:
+        if k is object and v is _py2rpy:
             continue
-        target._ri2ro.register(k, v)
-    for k,v in src.py2ri.registry.items():
+        target._py2rpy.register(k, v)
+    for k,v in src.rpy2py.registry.items():
         # skip the root dispatch
-        if k is object and v is _py2ri:
+        if k is object and v is _rpy2py:
             continue
-        target._py2ri.register(k, v)
-    for k,v in src.py2ro.registry.items():
-        # skip the root dispatch
-        if k is object and v is _py2ro:
-            continue
-        target._py2ro.register(k, v)
-    for k,v in src.ri2py.registry.items():
-        # skip the root dispatch
-        if k is object and v is _ri2py:
-            continue
-        target._ri2py.register(k, v)
+        target._rpy2py.register(k, v)
 
-def _ri2ro(obj):
-    """ Dummy function for ri2ro.
 
-    This function will convert rpy2.rinterface (ri) low-level objects
-    into rpy2.robjects (ro) higher-level objects.
-    """
-    raise NotImplementedError("Conversion 'ri2ro' not defined for objects of type '%s'" % str(type(obj)))
-
-def _py2ri(obj):
-    """ Dummy function for py2ri.
+def _py2rpy(obj):
+    """ Dummy function for py2rpy.
     
     This function will convert Python objects into rpy2.rinterface
-    (ri) objects.
+    objects.
     """
-    raise NotImplementedError("Conversion 'py2ri' not defined for objects of type '%s'" % str(type(obj)))
+    raise NotImplementedError("Conversion 'py2rpy' not defined for objects of type '%s'" % str(type(obj)))
 
-def _py2ro(obj):
-    """ Dummy function for py2ro.
 
-    This function will convert Python objects into rpy2.robjects
-    (ro) objects.
-    """
-    raise NotImplementedError("Conversion 'py2ro' not defined for objects of type '%s'" % str(type(obj)))
-
-def _ri2py(obj):
-    """ Dummy function for ri2py.
+def _rpy2py(obj):
+    """ Dummy function for rpy2py.
 
     This function will convert Python objects into Python (presumably non-rpy2) objects.
     """
-    raise NotImplementedError("Conversion 'ri2py' not defined for objects of type '%s'" % str(type(obj)))
+    raise NotImplementedError("Conversion 'rpy2py' not defined for objects of type '%s'" % str(type(obj)))
 
 
 class Converter(object):
@@ -86,20 +62,16 @@ class Converter(object):
     different converters.
     """
     name = property(lambda self: self._name)
-    ri2ro = property(lambda self: self._ri2ro)
-    py2ri = property(lambda self: self._py2ri)
-    py2ro = property(lambda self: self._py2ro)
-    ri2py = property(lambda self: self._ri2py)
+    py2rpy = property(lambda self: self._py2rpy)
+    rpy2py = property(lambda self: self._rpy2py)
     lineage = property(lambda self: self._lineage)
     
     def __init__(self, name,
                  template=None):
-        (ri2ro, py2ri, py2ro, ri2py) = Converter.make_dispatch_functions()
+        (py2rpy, rpy2py) = Converter.make_dispatch_functions()
         self._name = name
-        self._ri2ro = ri2ro
-        self._py2ri = py2ri
-        self._py2ro = py2ro
-        self._ri2py = ri2py
+        self._py2rpy = py2rpy
+        self._rpy2py = rpy2py
 
         if template is None:
             lineage = tuple()
@@ -120,12 +92,9 @@ class Converter(object):
     
     @staticmethod
     def make_dispatch_functions():
-        ri2ro = singledispatch(_ri2ro)
-        py2ri = singledispatch(_py2ri)
-        py2ro = singledispatch(_py2ro)
-        ri2py = singledispatch(_ri2py)
-
-        return (ri2ro, py2ri, py2ro, ri2py)
+        py2rpy = singledispatch(_py2rpy)
+        rpy2py = singledispatch(_rpy2py)
+        return (py2rpy, rpy2py)
 
 
 class ConversionContext(object):
@@ -149,10 +118,8 @@ class ConversionContext(object):
 localconverter = ConversionContext
     
 converter = None
-py2ri = None
-py2ro = None
-ri2ro = None
-ri2py = None
+py2rpy = None
+rpy2py = None
 
 def set_conversion(this_converter):
     """
@@ -160,11 +127,9 @@ def set_conversion(this_converter):
     :param this_converter: The conversion rules
     :type this_converter: :class:`Converter`
     """
-    global converter, py2ri, py2ro, ri2ro, ri2py
+    global converter, py2rpy, rpy2py
     converter = this_converter
-    py2ri = converter.py2ri
-    py2ro = converter.py2ro
-    ri2ro = converter.ri2ro
-    ri2py = converter.ri2py
+    py2rpy = converter.py2rpy
+    rpy2py = converter.rpy2py
 
 set_conversion(Converter('base converter'))

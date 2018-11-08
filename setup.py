@@ -4,9 +4,7 @@ import tempfile
 import argparse, shlex, subprocess
 from collections import namedtuple
 
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext as _build_ext
-
+from setuptools import setup
 
 if sys.version_info[0] < 3:
     print('rpy2 is no longer supporting Python < 3.'
@@ -23,51 +21,6 @@ R_MIN_VERSION = (3, 3)
 def _format_version(x):
     return '.'.join(map(str, x))
 
-
-def _download_r(url='https://cran.cnr.berkeley.edu/src/base/R-3/R-3.4.1.tar.gz'):
-    """
-    Highly experimental.
-
-    Download the R source.
-    """
-    download_dir = tempfile.mkdtemp()
-    r_src = os.path.join(download_dir, os.path.basename(url))
-    cmd = ('wget', '-O', r_src, url)
-    output = subprocess.check_output(cmd)
-    return r_src
-
-def _build_r(r_src):
-    """
-    Highly experimental.
-
-    Build R from source.
-    """
-        
-    assert r_src.endswith('tar.gz')
-    cmd = ('tar', '-xzf', os.path.basename(r_src))
-    r_src_dir = r_src[:-7]
-    output = subprocess.check_output(cmd, cwd=os.path.dirname(r_src))
-
-    cmd = ('./configure', '--enable-R-shlib')
-    output = subprocess.check_output(cmd, cwd=r_src_dir)
-    
-    cmd = ('make',)
-    output = subprocess.check_output(cmd, cwd=r_src_dir)
-    
-    cmd = ('make', 'check')
-    output = subprocess.check_output(cmd, cwd=r_src_dir)
-    return r_src_dir
-
-
-def _install_r(r_src_dir, r_dest_dir):
-    """
-    Highly experimental.
-    
-    Run make install.
-    """
-    cmd = ('make', 'DESTDIR={:s}'.format(r_dest_dir), 'install')
-    output = subprocess.check_output(cmd, cwd=r_src_dir)
-
     
 def _get_r_home(r_bin = 'R'):
     
@@ -83,14 +36,6 @@ def _get_r_home(r_bin = 'R'):
         msg = "Error: Tried to guess R's HOME but no command '%s' in the PATH." % r_bin
         print(msg)
         sys.exit(1)
-        # try:
-        #     r_src = _download_r()
-        #     print(r_src)
-        #     r_src_dir = _build_r(r_src)
-        #     #_install_r(r_src_dir)
-        # except:
-        #     print("Unable to download R source.")
-        #     sys.exit(1)
 
     r_home = r_home.split(os.linesep)
 
@@ -107,61 +52,6 @@ def _get_r_home(r_bin = 'R'):
                       os.path.join(r_home, 'Renviron.site'))
 
     return r_home
-
-
-class build_ext(_build_ext):
-    """
-    -DRPY_STRNDUP          : definition of strndup()
-    -DRPY_VERBOSE
-    -DRPY_DEBUG_PRESERV
-    -DRPY_DEBUG_PROMISE    : evaluation of promises
-    -DRPY_DEBUG_OBJECTINIT : initialization of PySexpObject
-    -DRPY_DEBUG_CONSOLE    : console I/O
-    -DRPY_DEBUG_COBJECT    : SexpObject passed as a CObject
-    -DRPY_DEBUG_GRDEV
-    """
-    user_options = _build_ext.user_options + \
-        [
-            ('ignore-check-rversion', None, 'ignore checks for supported R versions')]
-
-    boolean_options = _build_ext.boolean_options + \
-        ['ignore-check-rversion', ] #+ \
-        #['r-autoconfig', ]
-
-    def initialize_options(self):
-        try:
-            super(build_ext, self).initialize_options()
-        except TypeError:
-            # distutils parent class an old style Python class
-            _build_ext.initialize_options(self)
-        self.r_autoconfig = None
-        self.r_home = None
-        self.r_home_lib = None
-        self.ignore_check_rversion = False
-
-    def finalize_options(self):
-        self.set_undefined_options('build')
-        r_home = _get_r_home()
-        rexec = RExec(r_home)
-        if rexec.version[0] == 'development':
-            warnings.warn('Development version of R. Version compatibility check skipped.')
-        elif cmp_version(rexec.version[:2], R_MIN_VERSION) == -1:
-            if self.ignore_check_rversion:
-                warnings.warn('R did not seem to have the minimum required version number')
-            else:
-                raise SystemExit("Error: R >= %s required"
-                                 " (and the R we found is '%s')."
-                                 % (_format_version(R_MIN_VERSION),
-                                    _format_version(rexec.version)))
-
-        try:
-            super(build_ext, self).finalize_options() 
-        except TypeError:
-            # distutils parent class an old style Python class
-            _build_ext.finalize_options(self)
-
-    def run(self):
-        super(build_ext, self).run()
 
 
 def cmp_version(x, y):
@@ -230,196 +120,36 @@ class RExec(object):
         return output
 
 
-def get_rpy_device_ext(package_prefix, pack_name,
-                       include_dirs,
-                       libraries, library_dirs,
-                       define_macros,
-                       extra_compile_args,
-                       extra_link_args):
-    
-    rpy_device_depends = map(lambda x: os.path.join(package_prefix,
-                                                    'rpy',
-                                                    'rinterface',
-                                                    x),
-                             ('embeddedr.h',
-                              '_rinterface.h'))
-    rpy_device_depends = list(rpy_device_depends)
-    
-    rpy_device_ext = Extension(
-        name = pack_name + '.rinterface._rpy_device',
-        sources = [os.path.join(package_prefix,
-                                'rpy', 'rinterface', '_rpy_device.c')],
-        depends = rpy_device_depends,
-        include_dirs = include_dirs + [os.path.join('rpy', 'rinterface'), ],
-        libraries = libraries,
-        library_dirs = library_dirs,
-        define_macros = define_macros,
-        runtime_library_dirs = library_dirs,
-        extra_compile_args=extra_compile_args,
-        extra_link_args = extra_link_args
-        )
-
-    return rpy_device_ext
-
-    
-def getRinterface_ext():
-    extra_link_args = []
-    extra_compile_args = []
-    include_dirs = []
-    libraries = []
-    library_dirs = []
-
-    #FIXME: crude way (will break in many cases)
-    #check how to get how to have a configure step
-    define_macros = []
-
-    if sys.platform == 'win32':
-        define_macros.append(('Win32', 1))
-        if "64 bit" in sys.version:
-            define_macros.append(('Win64', 1))
-            extra_link_args.append('-m64')
-            extra_compile_args.append('-m64')
-            # MS_WIN64 only defined by pyconfig.h for MSVC. 
-            # See http://bugs.python.org/issue4709
-            define_macros.append(('MS_WIN64', 1))
-    else:
-        define_macros.append(('R_INTERFACE_PTRS', 1))
-        define_macros.append(('HAVE_POSIX_SIGJMP', 1))
-        define_macros.append(('RIF_HAS_RSIGHAND', 1))
-        define_macros.append(('CSTACK_DEFNS', 1))
-        define_macros.append(('HAS_READLINE', 1))
-
-
-    if sys.byteorder == 'big':
-        define_macros.append(('RPY_BIGENDIAN', 1))
-    else:
-        pass
-
-    r_home = _get_r_home()
-    rexec = RExec(r_home)
-    if rexec.version[0] == 'development' or \
-       cmp_version(rexec.version[:2], [3, 2]) == -1:
-        warnings.warn('R did not seem to have the minimum required version number')
-
-    ldf = shlex.split(' '.join(rexec.cmd_config('--ldflags')))
-    cppf = shlex.split(' '.join(rexec.cmd_config('--cppflags')))
-    #lapacklibs = rexec.cmd_config('LAPACK_LIBS', True)
-    #blaslibs = rexec.cmd_config('BLAS_LIBS', True)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-I', action='append')
-    parser.add_argument('-L', action='append')
-    parser.add_argument('-l', action='append')
-
-    # compile
-    args, unknown = parser.parse_known_args(cppf)
-    if args.I is None:
-        warnings.warn('No include specified')
-    else:
-        include_dirs.extend(args.I)
-    extra_compile_args.extend(unknown)
-    # link
-    args, unknown = parser.parse_known_args(ldf)
-    # OS X's frameworks need special attention
-    if args.L is None:
-        # presumably OS X and framework:
-        if args.l is None:
-            # hmmm... no libraries at all
-            warnings.warn('No libraries as -l arguments to the compiler.')
-        else:
-            libraries.extend([x for x in args.l if x != 'R'])
-    else:
-        library_dirs.extend(args.L)
-        libraries.extend(args.l)
-    extra_link_args.extend(unknown)
-    
-    print("""
-    Compilation parameters for rpy2's C components:
-        include_dirs       = %s
-        library_dirs       = %s
-        libraries          = %s
-        extra_compile_args = %s
-        extra_link_args    = %s
-        define_macros      = %s
-    """ % (str(include_dirs),
-           str(library_dirs), 
-           str(libraries),
-           str(extra_compile_args),
-           str(extra_link_args),
-           str(define_macros)))
-
-    depends = list(map(lambda x: os.path.join(package_prefix,
-                                              'rpy', 'rinterface', x),
-                       ('embeddedr.h', 'r_utils.h', 'buffer.h', 'sequence.h', 'sexp.h',
-                        '_rinterface.h', 'rpy_device.h')))
-    rinterface_ext = Extension(
-            name = pack_name + '.rinterface._rinterface',
-            sources = [os.path.join(package_prefix,
-                                    'rpy', 'rinterface', '_rinterface.c')
-                       ],
-            depends = depends,
-            include_dirs = [os.path.join(package_prefix,
-                                         'rpy', 'rinterface'),] + include_dirs,
-            libraries = libraries,
-            library_dirs = library_dirs,
-            define_macros = define_macros,
-            runtime_library_dirs = library_dirs,
-            extra_compile_args=extra_compile_args,
-            extra_link_args = extra_link_args
-            )
-
-    rpy_device_ext = get_rpy_device_ext(package_prefix, pack_name,
-                                        include_dirs,
-                                        libraries, library_dirs,
-                                        define_macros,
-                                        extra_compile_args,
-                                        extra_link_args)
-
-    return [rinterface_ext, rpy_device_ext]
-
 LONG_DESCRIPTION = """
 Python interface to the R language.
 
-`rpy2` is running an embedded R, providing access to it from Python using R's own C-API through
-either:
-- a high-level interface making R functions an objects just like Python functions and providing
-  a seamless conversion to numpy and pandas data strucutures
+`rpy2` is running an embedded R, providing access to it from Python 
+using R's own C-API through either:
+
+- a high-level interface making R functions an objects just like Python
+functions and providing a seamless conversion to numpy and pandas data 
+strucutures
+
 - a low-level interface closer to the C-API
 
-It is also providing features for when working with jupyter notebooks or ipython.
+It is also providing features for when working with jupyter notebooks or
+ipython.
 """
 
 if __name__ == '__main__':
-    rinterface_exts = []
-    ri_ext = getRinterface_ext()
-    rinterface_exts.extend(ri_ext)
-
     pack_dir = {pack_name: os.path.join(package_prefix, 'rpy')}
 
-    #import setuptools.command.install
-    #for scheme in setuptools.command.install.INSTALL_SCHEMES.values():
-    #    scheme['data'] = scheme['purelib']
-
     if sys.version_info[0] == 2 and sys.version_info[1] < 7:
-        print('rpy2 requires at least Python Version 2.7 (with Python 3.5 or later recommended).')
+        print('rpy2 requires at least Python Version 2.7 '
+              '(with Python 3.5 or later recommended).')
         sys.exit(1)
         
-    requires=['six', 'pytest', 'jinja2']
+    requires = ['pytest', 'jinja2']
 
     if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 4):
         requires.append('singledispatch')
-
-    # additional C library included in rpy2
-    libraries = list()
-    libraries.append(('r_utils',
-                      dict(sources = [os.path.join(package_prefix,
-                                                   'rpy', 'rinterface',
-                                                   'r_utils.c')],
-                           include_dirs = ri_ext[0].include_dirs,
-                           language = 'c')))
     
     setup(
-        cmdclass = {'build_ext': build_ext},
         name = pack_name,
         version = pack_version,
         description = 'Python interface to the R language (embedded R)',
@@ -429,15 +159,14 @@ if __name__ == '__main__':
         author = 'Laurent Gautier',
         author_email = 'lgautier@gmail.com',
         requires = requires,
-        install_requires = requires,
-        ext_modules = rinterface_exts,
-        libraries = libraries,
+        install_requires = requires + ['cffi>=1.0.0'],
+        setup_requires = ['cffi>=1.0.0'],
+        cffi_modules = ['rpy/_rinterface_cffi_build.py:ffibuilder'],
         package_dir = pack_dir,
         packages = [pack_name,
                     pack_name + '.rlike',
                     pack_name + '.rlike.tests',
-                    pack_name + '.rinterface',
-                    pack_name + '.rinterface.tests',
+                    pack_name + '.rinterface_lib',
                     pack_name + '.robjects',
                     pack_name + '.robjects.tests',
                     pack_name + '.robjects.lib',

@@ -11922,7 +11922,7 @@ conversion layer between :class:<code>rpy2.robjects.vectors.DataFrame</code> and
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">localconverter</span><span class="p">(</span><span class="n">ro</span><span class="o">.</span><span class="n">default_converter</span> <span class="o">+</span> <span class="n">pandas2ri</span><span class="o">.</span><span class="n">converter</span><span class="p">):</span>
-  <span class="n">r_from_pd_df</span> <span class="o">=</span> <span class="n">ro</span><span class="o">.</span><span class="n">conversion</span><span class="o">.</span><span class="n">py2ro</span><span class="p">(</span><span class="n">pd_df</span><span class="p">)</span>
+  <span class="n">r_from_pd_df</span> <span class="o">=</span> <span class="n">ro</span><span class="o">.</span><span class="n">conversion</span><span class="o">.</span><span class="n">py2rpy</span><span class="p">(</span><span class="n">pd_df</span><span class="p">)</span>
 
 <span class="n">r_from_pd_df</span>
 </pre></div>
@@ -12039,14 +12039,9 @@ For example, when calling the R function <code>base::summary</code>:</p>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>   int_values   str_values       
- Min.   :1.0   Length:3          
- 1st Qu.:1.5   Class :character  
- Median :2.0   Mode  :character  
- Mean   :2.0                     
- 3rd Qu.:2.5                     
- Max.   :3.0                     
-
+<pre>[&#39;Min.   :1.0  &#39; &#39;1st Qu.:1.5  &#39; &#39;Median :2.0  &#39; &#39;Mean   :2.0  &#39;
+ &#39;3rd Qu.:2.5  &#39; &#39;Max.   :3.0  &#39; &#39;Length:3          &#39; &#39;Class :character  &#39;
+ &#39;Mode  :character  &#39; &#39;NA&#39; &#39;NA&#39; &#39;NA&#39;]
 </pre>
 </div>
 </div>
@@ -12093,7 +12088,7 @@ data frame:</p>
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>NotImplementedError:
-Conversion &#39;py2ri&#39; not defined for objects of type &#39;&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;&#39;
+Conversion &#39;py2rpy&#39; not defined for objects of type &#39;&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;&#39;
 </pre>
 </div>
 </div>
@@ -12213,7 +12208,7 @@ Conversion &#39;py2ri&#39; not defined for objects of type &#39;&lt;class &#39;p
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">localconverter</span><span class="p">(</span><span class="n">ro</span><span class="o">.</span><span class="n">default_converter</span> <span class="o">+</span> <span class="n">pandas2ri</span><span class="o">.</span><span class="n">converter</span><span class="p">):</span>
-  <span class="n">pd_from_r_df</span> <span class="o">=</span> <span class="n">ro</span><span class="o">.</span><span class="n">conversion</span><span class="o">.</span><span class="n">ri2py</span><span class="p">(</span><span class="n">r_df</span><span class="p">)</span>
+  <span class="n">pd_from_r_df</span> <span class="o">=</span> <span class="n">ro</span><span class="o">.</span><span class="n">conversion</span><span class="o">.</span><span class="n">rpy2py</span><span class="p">(</span><span class="n">r_df</span><span class="p">)</span>
 
 <span class="n">pd_from_r_df</span>
 </pre></div>
@@ -12225,6 +12220,18 @@ Conversion &#39;py2ri&#39; not defined for objects of type &#39;&lt;class &#39;p
 <div class="output_wrapper">
 <div class="output">
 
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>/home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.0.0.dev0-py3.6.egg/rpy2/robjects/pandas2ri.py:196: FutureWarning: from_items is deprecated. Please use DataFrame.from_dict(dict(items), ...) instead. DataFrame.from_dict(OrderedDict(items)) may be used to preserve the key order.
+  res = PandasDataFrame.from_items(items)
+</pre>
+</div>
+</div>
 
 <div class="output_area">
 
@@ -12396,7 +12403,7 @@ Conversion &#39;py2ri&#39; not defined for objects of type &#39;&lt;class &#39;p
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">localconverter</span><span class="p">(</span><span class="n">ro</span><span class="o">.</span><span class="n">default_converter</span> <span class="o">+</span> <span class="n">pandas2ri</span><span class="o">.</span><span class="n">converter</span><span class="p">):</span>
-  <span class="n">r_from_pd_df</span> <span class="o">=</span> <span class="n">ro</span><span class="o">.</span><span class="n">conversion</span><span class="o">.</span><span class="n">py2ro</span><span class="p">(</span><span class="n">pd_df</span><span class="p">)</span>
+  <span class="n">r_from_pd_df</span> <span class="o">=</span> <span class="n">ro</span><span class="o">.</span><span class="n">conversion</span><span class="o">.</span><span class="n">py2rpy</span><span class="p">(</span><span class="n">pd_df</span><span class="p">)</span>
 
 <span class="n">r_from_pd_df</span>
 </pre></div>
@@ -12516,7 +12523,7 @@ is specified... or unless the time zone is specified in the original time object
     <span class="p">})</span>
     
 <span class="k">with</span> <span class="n">localconverter</span><span class="p">(</span><span class="n">ro</span><span class="o">.</span><span class="n">default_converter</span> <span class="o">+</span> <span class="n">pandas2ri</span><span class="o">.</span><span class="n">converter</span><span class="p">):</span>
-  <span class="n">r_from_pd_tz_df</span> <span class="o">=</span> <span class="n">ro</span><span class="o">.</span><span class="n">conversion</span><span class="o">.</span><span class="n">py2ro</span><span class="p">(</span><span class="n">pd_tz_df</span><span class="p">)</span>
+  <span class="n">r_from_pd_tz_df</span> <span class="o">=</span> <span class="n">ro</span><span class="o">.</span><span class="n">conversion</span><span class="o">.</span><span class="n">py2rpy</span><span class="p">(</span><span class="n">pd_tz_df</span><span class="p">)</span>
 
 <span class="n">r_from_pd_tz_df</span>
 </pre></div>

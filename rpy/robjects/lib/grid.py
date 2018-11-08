@@ -49,9 +49,9 @@ class Unit(robjects.RObject):
     def __init__(self, *args, **kwargs):
         od = OrdDict()
         for item in args:
-            od[None] = conversion.py2ro(item)
+            od[None] = conversion.py2rpy(item)
         for k, v in kwargs.items():
-            od[k] = conversion.py2ro(v)
+            od[k] = conversion.py2rpy(v)
         res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
         self.__sexp__ = res.__sexp__
 
@@ -61,7 +61,9 @@ class Unit(robjects.RObject):
         res = cls._unit(*args, **kwargs)
         return res
 
+
 unit = Unit.unit
+
 
 class Gpar(robjects.RObject):
     """ Graphical parameters """
@@ -71,9 +73,9 @@ class Gpar(robjects.RObject):
     def __init__(self, *args, **kwargs):
         od = OrdDict()
         for item in args:
-            od[None] = conversion.py2ro(item)
+            od[None] = conversion.py2rpy(item)
         for k, v in kwargs.items():
-            od[k] = conversion.py2ro(v)
+            od[k] = conversion.py2rpy(v)
         res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
         self.__sexp__ = res.__sexp__
 
@@ -86,7 +88,9 @@ class Gpar(robjects.RObject):
     def get(self, names = None):
         return self._get_gpar(names)
 
+
 gpar = Gpar.gpar
+
 
 class Grob(robjects.RObject):
     """ Graphical object """
@@ -96,11 +100,11 @@ class Grob(robjects.RObject):
     def __init__(self, *args, **kwargs):
         od = OrdDict()
         for item in args:
-            od[None] = conversion.py2ro(item)
+            od[None] = conversion.py2rpy(item)
         for k, v in kwargs.items():
-            od[k] = conversion.py2ro(v)
+            od[k] = conversion.py2rpy(v)
         res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
-        self.__sexp__ = res.__sexp__
+        super().__init__(res.__sexp__)
 
     @classmethod
     def grob(cls, **kwargs):
@@ -112,26 +116,42 @@ class Grob(robjects.RObject):
         """ Draw a graphical object (calling the R function grid::grid.raw())"""
         self._draw(self, recording = recording)
 
+
 grob = Grob.grob
+
 
 class Rect(Grob):
     _constructor = grid_env['rectGrob']
+
+
 rect = Rect
+
 
 class Lines(Grob):
     _constructor = grid_env['linesGrob']
+
+
 lines = Lines
+
 
 class Circle(Grob):
     _constructor = grid_env['circleGrob']
+
+
 circle = Circle
+
 
 class Points(Grob):
     _constructor = grid_env['pointsGrob']
+
+
 points = Points
+
 
 class Text(Grob):
     _constructor = grid_env['textGrob']
+
+
 text = Text
 
 
@@ -250,13 +270,13 @@ _grid_dict = {
     'viewport': Viewport
 }
 
-original_py2ri = None
-original_ri2ro = None
-original_py2ro = None
+original_py2rpy = None
+original_rpy2py = None
 
-def grid_ri2ro(robj):
 
-    pyobj = original_ri2ro(robj)
+def grid_rpy2py(robj):
+
+    pyobj = original_rpy2py(robj)
 
     if not isinstance(pyobj, robjects.RS4):
         rcls = pyobj.rclass
@@ -270,30 +290,28 @@ def grid_ri2ro(robj):
 
     return pyobj
 
+
 def activate():
-    global original_py2ri, original_ri2ro, original_py2ro
+    global original_py2rpy, original_rpy2py
 
     # If module is already activated, there is nothing to do
-    if original_py2ri: 
+    if original_py2rpy: 
         return
 
-    original_py2ri = conversion.py2ri
-    original_ri2ro = conversion.ri2ro
-    original_py2ro = conversion.py2ro
+    original_py2rpy = conversion.py2rpy
+    original_rpy2py = conversion.rpy2py
 
-    #conversion.py2ri = numpy2ri
-    conversion.ri2ro = grid_ri2ro
-    #conversion.py2ro = numpy2ro
+    conversion.rpy2py = grid_rpy2py
+
 
 def deactivate():
-    global original_py2ri, original_ri2ro, original_py2ro
+    global original_py2rpy, original_rpy2py
 
     # If module has never been activated or already deactivated,
     # there is nothing to do
-    if not original_py2ri:
+    if not original_py2rpy:
         return
 
-    conversion.py2ri = original_py2ri
-    conversion.ri2ro = original_ri2ro
-    conversion.py2ro = original_py2ro
-    original_py2ri = original_ri2ro = original_py2ro = None
+    conversion.py2rpy = original_py2rpy
+    conversion.rpy2py = original_rpy2py
+    original_py2rpy = original_rpy2py = None

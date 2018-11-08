@@ -51,6 +51,7 @@ from shutil import rmtree
 # numpy and rpy2 imports
 
 import rpy2.rinterface as ri
+import rpy2.rinterface_lib.callbacks
 import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
 from rpy2.robjects.conversion import (Converter,
@@ -109,7 +110,7 @@ except ImportError:
     from simplegeneric import generic
 
 
-class RInterpreterError(ri.RRuntimeError):
+class RInterpreterError(ri.embedded.RRuntimeError):
     """An error when running R code in a %%R magic cell."""
     
     def __init__(self, line, err, stdout):
@@ -134,22 +135,23 @@ converter = Converter('ipython conversion',
 # python lists are automatically converted by numpy functions), so for
 # interactive use in the rmagic, we call unlist, which converts lists to vectors
 # **if the list was of uniform (atomic) type**.
-@converter.ri2py.register(list)
-def ri2py_list(obj):
+@converter.rpy2py.register(list)
+def rpy2py_list(obj):
     # simplify2array is a utility function, but nice for us
     # TODO: use an early binding of the R function
     return ro.r.simplify2array(obj)
 
 
-# The R magic is opiniated about what the R vectors should become.
-@converter.ri2ro.register(ri.SexpVector)
-def _(obj):
-    if 'data.frame' in obj.rclass:
-        # request to turn it to a pandas DataFrame
-        res = converter.ri2py(obj)
-    else:
-        res = ro.sexpvector_to_ro(obj)
-    return res        
+# TODO: remove ?
+# # The R magic is opiniated about what the R vectors should become.
+# @converter.ri2ro.register(ri.SexpVector)
+# def _(obj):
+#     if 'data.frame' in obj.rclass:
+#         # request to turn it to a pandas DataFrame
+#         res = converter.rpy2py(obj)
+#     else:
+#         res = ro.sexpvector_to_ro(obj)
+#     return res        
 
 
 @magics_class
@@ -211,7 +213,7 @@ class RMagics(Magics):
         if device == 'svg':
             try:
                 self.cairo = rpacks.importr('Cairo')
-            except ri.RRuntimeError as rre:
+            except ri.embedded.RRuntimeError as rre:
                 if rpacks.isinstalled('Cairo'):
                     msg = "An error occurred when trying to load the R package Cairo'\n%s" % str(rre)
                 else:
@@ -247,17 +249,20 @@ utils.install_packages('Cairo')
         withVisible is a LISPy R function).
 
         """
-        old_writeconsole_regular = ri.get_writeconsole_regular()
-        ri.set_writeconsole_regular(self.write_console_regular)
-        try:
-            # Need the newline in case the last line in code is a comment
-            value, visible = ro.r("withVisible({%s\n})" % code)
-        except (ri.RRuntimeError, ValueError) as exception:
-            warning_or_other_msg = self.flush() # otherwise next return seems to have copy of error
-            raise RInterpreterError(code, str(exception), warning_or_other_msg)
-        text_output = self.flush()
-        ri.set_writeconsole_regular(old_writeconsole_regular)
-        return text_output, value, visible[0]
+        with (rpy2.rinterface_lib
+              .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
+                                       'consolewrite_print',
+                                       self.write_console_regular)):
+            try:
+                # Need the newline in case the last line in code is a comment.
+                value, visible = ro.r("withVisible({%s\n})" % code)
+            except (ri.embedded.RRuntimeError, ValueError) as exception:
+                # Otherwise next return seems to have copy of error.
+                warning_or_other_msg = self.flush()
+                raise RInterpreterError(code, str(exception),
+                                        warning_or_other_msg)
+            text_output = self.flush()
+            return text_output, value, visible[0]
 
     def write_console_regular(self, output):
         """
@@ -358,7 +363,7 @@ utils.install_packages('Cairo')
         outputs = args.outputs
         with localconverter(self.converter) as cv:
             for output in outputs:
-                robj = ri.globalenv.get(output)
+                robj = ri.globalenv.find(output)
                 self.shell.push({output: robj})
 
     # @skip_doctest
@@ -393,7 +398,7 @@ utils.install_packages('Cairo')
         # get the R object with the given name, starting from globalenv
         # in the search path
         with localconverter(self.converter) as cv:
-            res = ro.globalenv.get(output[0])
+            res = ro.globalenv.find(output[0])
         return res
 
 
@@ -704,11 +709,14 @@ utils.install_packages('Cairo')
                 text_result, result, visible = self.eval(code)
                 text_output += text_result
                 if visible:
-                    old_writeconsole_regular = ri.get_writeconsole_regular()
-                    ri.set_writeconsole_regular(self.write_console_regular)
-                    ro.r.show(result)
-                    text_output += self.flush()
-                    ri.set_writeconsole_regular(old_writeconsole_regular)
+                    with (rpy2.rinterface_lib
+                          .callbacks
+                          .obj_in_module(rpy2.rinterface_lib
+                                         .callbacks,
+                                         'consolewrite_print',
+                                         self.write_console_regular)):
+                        ro.r.show(result)
+                        text_output += self.flush()
 
         except RInterpreterError as e:
             # TODO: Maybe we should make this red or something?
@@ -739,7 +747,7 @@ utils.install_packages('Cairo')
         if args.output:
             with localconverter(converter) as cv:
                 for output in ','.join(args.output).split(','):
-                    output_ipy = ro.globalenv.get(output)
+                    output_ipy = ro.globalenv.find(output)
                     self.shell.push({output: output_ipy })
 
         # this will keep a reference to the display_data
@@ -754,7 +762,7 @@ utils.install_packages('Cairo')
         if return_output and not args.noreturn:
             if result is not ri.NULL:
                 with localconverter(converter) as cv:
-                    res = cv.ri2py(result)
+                    res = cv.rpy2py(result)
                 return res
 
 

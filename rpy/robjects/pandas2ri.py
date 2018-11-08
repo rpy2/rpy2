@@ -7,10 +7,11 @@ from datetime import datetime
 import rpy2.robjects as ro
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
-from rpy2.rinterface import (SexpVector,
-                             StrSexpVector,
-                             IntSexpVector,
-                             INTSXP)
+from rpy2.rinterface import (IntSexpVector,
+                             ListSexpVector,
+                             Sexp,
+                             SexpVector,
+                             StrSexpVector)
 
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pandas.core.series import Series as PandasSeries
@@ -32,8 +33,7 @@ from rpy2.robjects.vectors import (DataFrame,
                                    StrVector,
                                    IntVector,
                                    POSIXct)
-from rpy2.rinterface import (IntSexpVector,
-                             ListSexpVector)
+                             
 original_converter = None 
 
 # pandas is requiring numpy. We add the numpy conversion will be
@@ -44,22 +44,22 @@ ISOdatetime = rinterface.baseenv['ISOdatetime']
 as_vector = rinterface.baseenv['as.vector']
 
 converter = conversion.Converter('original pandas conversion')
-py2ri = converter.py2ri
-py2ro = converter.py2ro
-ri2py = converter.ri2py
-ri2ro = converter.ri2ro
+py2rpy = converter.py2rpy
+rpy2py = converter.rpy2py
+
 
 # numpy types for Pandas columns that require (even more) special handling
 dt_O_type = numpy.dtype('O')
 
 default_timezone = None
 
-@py2ri.register(PandasDataFrame)
-def py2ri_pandasdataframe(obj):
+
+@py2rpy.register(PandasDataFrame)
+def py2rpy_pandasdataframe(obj):
     od = OrderedDict()
     for name, values in obj.iteritems():
         try:
-            od[name] = conversion.py2ri(values)
+            od[name] = conversion.py2rpy(values)
         except Exception as e:
             warnings.warn('Error while trying to convert '
                           'the column "%s". Fall back to string conversion. '
@@ -69,8 +69,9 @@ def py2ri_pandasdataframe(obj):
         
     return DataFrame(od)
 
-@py2ri.register(PandasIndex)
-def py2ri_pandasindex(obj):
+
+@py2rpy.register(PandasIndex)
+def py2rpy_pandasindex(obj):
     if obj.dtype.kind == 'O':
         return StrVector(obj)
     else:
@@ -79,10 +80,10 @@ def py2ri_pandasindex(obj):
         # Answer: the thing is that pandas2ri builds on the conversion
         # rules defined by numpy2ri - deferring to numpy2ri is allowing
         # us to reuse that code.
-        return numpy2ri.numpy2ri(obj)
+        return numpy2ri.numpy2rpy(obj)
 
 
-def py2ri_categoryseries(obj):
+def py2rpy_categoryseries(obj):
     for c in obj.cat.categories:
         if not isinstance(c, str):
             raise ValueError('Converting pandas "Category" series to R factor is only possible when categories are strings.')
@@ -94,13 +95,14 @@ def py2ri_categoryseries(obj):
         res.rclass = StrSexpVector(('factor',))
     return res
 
-@py2ri.register(PandasSeries)
-def py2ri_pandasseries(obj):
+
+@py2rpy.register(PandasSeries)
+def py2rpy_pandasseries(obj):
     if numpy.dtype.name == 'O':
         warnings.warn('Element "%s" is of dtype "O" and converted to R vector of strings.' % obj.name)
         res = StrVector(obj)
     elif obj.dtype.name == 'category':
-        res = py2ri_categoryseries(obj)
+        res = py2rpy_categoryseries(obj)
         res = FactorVector(res)
     elif is_datetime64_any_dtype(obj.dtype):
         # time series
@@ -117,7 +119,7 @@ def py2ri_pandasseries(obj):
         res = POSIXct(res)
     else:
         # converted as a numpy array
-        func = numpy2ri.converter.py2ri.registry[numpy.ndarray]
+        func = numpy2ri.converter.py2rpy.registry[numpy.ndarray]
         # current conversion as performed by numpy
         res = func(obj)
         if len(obj.shape) == 1:
@@ -131,23 +133,24 @@ def py2ri_pandasseries(obj):
                            StrVector(tuple(str(x) for x in obj.index)))
     else:
         res.do_slot_assign('dimnames',
-                           SexpVector(conversion.py2ri(obj.index)))
+                           SexpVector(conversion.py2rpy(obj.index)))
     return res
 
-@ri2py.register(SexpVector)
+
+@rpy2py.register(SexpVector)
 def ri2py_vector(obj):
-    res = numpy2ri.ri2py(obj)
+    res = numpy2ri.rpy2py(obj)
     return res
     
-@ri2py.register(IntSexpVector)
-def ri2py_intvector(obj):
+@rpy2py.register(IntSexpVector)
+def rpy2py_intvector(obj):
     # special case for factors
     if 'factor' in obj.rclass:
         res = pandas.Categorical.from_codes(numpy.asarray(obj) - 1,
                                             categories = obj.do_slot('levels'),
                                             ordered = 'ordered' in obj.rclass)
     else:
-        res = numpy2ri.ri2py(obj)
+        res = numpy2ri.rpy2py(obj)
     return res
 
 
@@ -160,8 +163,8 @@ def get_timezone():
     return timezone
 
 
-@ri2py.register(FloatSexpVector)
-def ri2py_floatvector(obj):
+@rpy2py.register(FloatSexpVector)
+def rpy2py_floatvector(obj):
     # special case for POSIXct date objects
     if 'POSIXct' in obj.rclass:
         tzone_name = obj.do_slot('tzone')[0]
@@ -174,22 +177,25 @@ def ri2py_floatvector(obj):
         foo = (tzone.localize(datetime.fromtimestamp(x)) for x in obj)
         res = pandas.to_datetime(tuple(foo))
     else:
-        res = numpy2ri.ri2py(obj)
+        res = numpy2ri.rpy2py(obj)
     return res
 
-@ri2py.register(ListSexpVector)
-def ri2py_listvector(obj):        
+
+@rpy2py.register(ListSexpVector)
+def rpy2py_listvector(obj):        
     if 'data.frame' in obj.rclass:
-        res = ri2py(DataFrame(obj))
+        res = rpy2py(DataFrame(obj))
     else:
-        res = numpy2ri.ri2py(obj)
+        res = numpy2ri.rpy2py(obj)
     return res
 
-@ri2py.register(DataFrame)
-def ri2py_dataframe(obj):
-    items = tuple((k, ri2py(v)) for k, v in obj.items())
+
+@rpy2py.register(DataFrame)
+def rpy2py_dataframe(obj):
+    items = tuple((k, rpy2py(v) if isinstance(v, Sexp) else v) for k, v in obj.items())
     res = PandasDataFrame.from_items(items)
     return res
+
 
 def activate():
     global original_converter
@@ -197,34 +203,26 @@ def activate():
     if original_converter is not None: 
         return
 
-    original_converter = conversion.Converter('snapshot before pandas conversion',
-                                              template=conversion.converter)
+    original_converter = conversion.Converter(
+        'snapshot before pandas conversion',
+        template=conversion.converter)
     numpy2ri.activate()
     new_converter = conversion.Converter('snapshot before pandas conversion',
                                          template=conversion.converter)
     numpy2ri.deactivate()
 
-    for k,v in py2ri.registry.items():
+    for k,v in py2rpy.registry.items():
         if k is object:
             continue
-        new_converter.py2ri.register(k, v)
+        new_converter.py2rpy.register(k, v)
 
-    for k,v in ri2ro.registry.items():
+    for k,v in rpy2py.registry.items():
         if k is object:
             continue
-        new_converter.ri2ro.register(k, v)
-    
-    for k,v in py2ro.registry.items():
-        if k is object:
-            continue
-        new_converter.py2ro.register(k, v)
-
-    for k,v in ri2py.registry.items():
-        if k is object:
-            continue
-        new_converter.ri2py.register(k, v)
+        new_converter.rpy2py.register(k, v)
 
     conversion.set_conversion(new_converter)
+
 
 def deactivate():
     global original_converter
@@ -236,4 +234,3 @@ def deactivate():
 
     conversion.set_conversion(original_converter)
     original_converter = None
-

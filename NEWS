@@ -4,6 +4,8 @@ Release 3.0.0
 New features
 ------------
 
+- rpy2 can be installed without a development environment.
+
 - Unit tests are now relying on the Python module `pytest`.
 
 - :attr:`rpy2.rinterface.NA_Integer` is now only defined when the embedded R
@@ -12,9 +14,33 @@ New features
 Changes
 -------
 
+- complete rewrite of :mod:`rpy2.rinterface`.
+  :mod:`cffi` is now used to interface with the R compiled shared library.
+  This allows ABI calls and removes the need to compile binaries. However, if
+  compilation is available (when installing or preparing pre-compiled binaries)
+  faster implementations of performance bottlenecks will be available.
+  
 - calling :func:`rpy2.rinterface.endr` multiple times is now only ending R
   the first time it is called (note: an ended R cannot successfully be
   re-initialized).
+
+- The conversion system in the mod:`rpy2.robjects.conversion` now has only
+  two conversions `py2rpy` and rpy2py`. `py2rpy` tries to convert any
+  Python object into an object rpy2 can use with R and `rpy2py` tries
+  to convert any rpy2 object into a either a non-rpy2 Python object or
+  a mod:`rpy2.robjects` level object.
+
+- The method `get` for R environments is now called `find()` to avoid
+  confusion with the method of the same name in Python (:meth:`dict.get`).
+
+- :class:`rpy2.robjects.vectors.Vector`, :class:`rpy2.robjects.vectors.Matrix`,
+  and :class:`rpy2.robjects.vectors.Array` can no longer be used to create
+  R arrays of unspecified type. New type-specific classes (for example for
+  vectors :class:`rpy2.robjects.vectors.IntVector`,
+  :class:`rpy2.robjects.vectors.BoolVector`,
+  :class:`rpy2.robjects.vectors.FloatVector`,
+  :class:`rpy2.robjects.vectors.ComplexVector`, or
+  :class:`rpy2.robjects.vectors.StrVector`) should be used instead.
 
 
 Release 2.9.4

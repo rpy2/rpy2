@@ -215,7 +215,6 @@ class Package(ModuleType):
 
         - on_conflict: 'fail' or 'warn' (default: 'fail')
         """
-
         assert(on_conflict in ('fail', 'warn'))
 
         name = self.__rname__
@@ -255,7 +254,7 @@ class Package(ModuleType):
                 riobj = self._env[rname]
             except rinterface.RRuntimeError as rre:
                 warn(str(rre))
-            rpyobj = conversion.ri2ro(riobj)
+            rpyobj = conversion.rpy2py(riobj)
             if hasattr(rpyobj, '__rname__'):
                 rpyobj.__rname__ = rname
             #FIXME: shouldn't the original R name be also in the __dict__ ?
@@ -273,9 +272,11 @@ class SignatureTranslatedPackage(Package):
     'translated' (that this the named parameters were made to 
     to conform Python's rules for vaiable names)."""
     def __fill_rpy2r__(self, on_conflict = 'fail'):
-        super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
+        (super(SignatureTranslatedPackage, self)
+         .__fill_rpy2r__(on_conflict = on_conflict))
         for name, robj in self.__dict__.items():
-            if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
+            if isinstance(robj, rinterface.Sexp) and \
+               robj.typeof == rinterface.RTYPES.CLOSXP:
                 self.__dict__[name] = STF(self.__dict__[name],
                                           on_conflict = on_conflict,
                                           symbol_r2python = self._symbol_r2python,
@@ -310,9 +311,11 @@ class InstalledSTPackage(SignatureTranslatedPackage):
         return os.linesep.join(doc)
 
     def __fill_rpy2r__(self, on_conflict = 'fail'):
-        super(SignatureTranslatedPackage, self).__fill_rpy2r__(on_conflict = on_conflict)
+        (super(SignatureTranslatedPackage, self)
+         .__fill_rpy2r__(on_conflict = on_conflict))
         for name, robj in self.__dict__.items():
-            if isinstance(robj, rinterface.Sexp) and robj.typeof == rinterface.CLOSXP:
+            if isinstance(robj, rinterface.Sexp) and \
+               robj.typeof == rinterface.RTYPES.CLOSXP:
                 self.__dict__[name] = DocumentedSTFunction(self.__dict__[name],
                                                            packagename = self.__rname__)
 
@@ -484,22 +487,20 @@ def data(package):
     """ Return the PackageData for the given package."""
     return package.__rdata__
 
-def wherefrom(symbol, startenv = rinterface.globalenv):
+def wherefrom(symbol: str, startenv = rinterface.globalenv):
     """ For a given symbol, return the environment
     this symbol is first found in, starting from 'startenv'.
     """
     env = startenv
     obj = None
-    tryagain = True
-    while tryagain:
+    found = False
+    while not found:
         try:
             obj = env[symbol]
-            tryagain = False
+            found = True
         except LookupError as knf:
-            env = env.enclos()
+            env = env.enclos
             if env.rsame(rinterface.emptyenv):
-                tryagain = False
-            else:
-                tryagain = True
-    return conversion.ri2ro(env)
+                break
+    return conversion.rpy2py(env)
 
