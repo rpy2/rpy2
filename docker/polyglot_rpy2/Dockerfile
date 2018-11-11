@@ -3,16 +3,19 @@ FROM rpy2/jupyter:latest
 MAINTAINER Laurent Gautier <lgautier@gmail.com>
 
 ARG CRAN_MIRROR=https://cran.revolutionanalytics.com/
+ARG CRAN_MIRROR_TAG=-cran35
 
 USER root
 
+ARG LLVM_VERSION=6.0
+
 RUN \
-  echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main' >> /etc/apt/sources.list && \
+  echo 'deb http://apt.llvm.org/'"$(lsb_release -c -s)"'/ llvm-toolchain-'"$(lsb_release -c -s)"'-6.0 main' >> /etc/apt/sources.list && \
   wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add - && \
   apt-get update -qq && \
   apt-get install -y \
-                     clang-5.0 \
-		     lldb-5.0 \
+                     clang-"${LLVM_VERSION}" \
+		     lldb-"${LLVM_VERSION}" \
                      ed \
                      git \
 		     libcairo-dev \
@@ -21,14 +24,14 @@ RUN \
 		     wget && \
   rm -rf /var/lib/apt/lists/*
 
-ARG SPARK_VERSION=2.2.1
+ARG SPARK_VERSION=2.4.0
 RUN \
   wget --progress=bar http://mirrors.ocf.berkeley.edu/apache/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
   tar -xzf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
   mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/ && \
   rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
 
-ARG LLVMLITE_VERSION=0.21.0
+ARG LLVMLITE_VERSION=0.24.0
 RUN \
   pip3 --no-cache-dir install wheel --upgrade && \
   pip3 --no-cache-dir install sqlalchemy && \
@@ -36,7 +39,7 @@ RUN \
   wget https://github.com/numba/llvmlite/archive/v${LLVMLITE_VERSION}.zip && \
   unzip v${LLVMLITE_VERSION}.zip && \
   cd llvmlite-${LLVMLITE_VERSION} && \
-  LLVM_CONFIG=`which llvm-config-5.0` python3 setup.py install && \
+  LLVM_CONFIG=`which llvm-config-"${LLVM_VERSION}"` python3 setup.py install && \
   cd .. && rm -rf llvmlite-${LLVMLITE_VERSION} && rm v${LLVMLITE_VERSION}.zip && \
   pip3 --no-cache install numba && \
   pip3 --no-cache install findspark && \
