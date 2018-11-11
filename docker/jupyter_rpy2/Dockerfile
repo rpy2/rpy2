@@ -6,9 +6,16 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 USER root
 
+# Installing nodejs and npm is somewhat convoluted.
 RUN \
   apt-get update -qq && \
-  apt-get install -y npm nodejs && \
+  apt-get install -y curl && \
+  apt-get remove -y --purge nodejs npm && \
+  curl -sL https://deb.nodesource.com/setup_11.x | bash - && \
+  apt-get install -y nodejs && \
+  curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+  apt-get update -qq && \
+  sudo apt-get install -y yarn && \
   rm -rf /var/lib/apt/lists/*
 
 USER ${NB_USER}
