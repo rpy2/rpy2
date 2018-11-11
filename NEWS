@@ -42,6 +42,9 @@ Changes
   :class:`rpy2.robjects.vectors.ComplexVector`, or
   :class:`rpy2.robjects.vectors.StrVector`) should be used instead.
 
+- mod:`rpy2.rpy_classic`, an implementation of the `rpy` interface using
+  :mod:`rpy2.rinterface` is no longer available.
+
 
 Release 2.9.4
 =============
