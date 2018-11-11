@@ -1,4 +1,5 @@
 import pytest
+import math
 import pytz
 import sys
 import rpy2.robjects as robjects
@@ -102,14 +103,20 @@ class TestPandasConversions(object):
             rp_c = robjects.conversion.rpy2py(factor)
         assert pandas.Categorical == type(rp_c)
 
-    @pytest.mark.skip(reason='segfault')
+    def test_factorwithNA2Category(self):
+        factor = robjects.vectors.FactorVector(('a', 'b', 'a', None))
+        assert factor[3] == rinterface.na_values.NA_Integer
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_c = robjects.conversion.rpy2py(factor)
+        assert isinstance(rp_c, pandas.Categorical)
+        assert math.isnan(rp_c[3])
+
     def test_orderedFactor2Category(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a'), ordered=True)
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.rpy2py(factor)
         assert pandas.Categorical == type(rp_c)
 
-    @pytest.mark.skip(reason='segfault')
     def test_category2Factor(self):
         category = pandas.Series(["a","b","c","a"], dtype="category")
         with localconverter(default_converter + rpyp.converter) as cv:
@@ -133,8 +140,10 @@ class TestPandasConversions(object):
         # fix the time
         ts = [x.timestamp() for x in dt]
         # Create an R POSIXct vector.
-        r_time = robjects.baseenv['as.POSIXct'](rinterface.FloatSexpVector(ts),
-                                                origin=rinterface.StrSexpVector(('1970-01-01',)))
+        r_time = robjects.baseenv['as.POSIXct'](
+            rinterface.FloatSexpVector(ts),
+            origin=rinterface.StrSexpVector(('1970-01-01',))
+        )
 
         # Convert R POSIXct vector to pandas-compatible vector
         with localconverter(default_converter + rpyp.converter) as cv:
