@@ -11,6 +11,6 @@ pipelines:
         script: # Modify the commands below to build your repository.
           - python3 -m pip install numpy pandas
           - python3 setup.py install
-          - pytest --pyargs rpy2.rinterface rpy2.robjects rpy2.rlike
+          - pytest tests/rinterface tests/robjects
           - pip install ipython
-          - pytest --pyargs rpy2.ipython
+          - pytest tests/test_rmagic.py
