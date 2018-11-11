@@ -5,7 +5,6 @@ include MANIFEST MANIFEST.in
 include NEWS README AUTHORS
 include gpl-2.0.txt
 
-include _rinterface_cffi
 include _rinterface_cffi_build
 
 include rpy/__init__.py
