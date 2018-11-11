@@ -1,9 +1,10 @@
-FROM ubuntu:17.10
+FROM ubuntu:18.04
 
 MAINTAINER Laurent Gautier <lgautier@gmail.com>
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG CRAN_MIRROR=https://cran.revolutionanalytics.com/
+ARG CRAN_MIRROR_TAG=-cran35
 
 RUN \
   apt-get update -qq && \
@@ -15,7 +16,7 @@ RUN \
 		     libcurl4-openssl-dev \
 		     libnlopt-dev \
                      lsb-release && \
-  echo "deb ${CRAN_MIRROR}/bin/linux/ubuntu $(lsb_release -c -s)/" \
+  echo "deb ${CRAN_MIRROR}/bin/linux/ubuntu $(lsb_release -c -s)${CRAN_MIRROR_TAG}/" \
         >> /etc/apt/sources.list.d/added_repos.list && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9 && \
   apt-get update -qq && \
