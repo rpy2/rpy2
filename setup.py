@@ -172,7 +172,6 @@ if __name__ == '__main__':
                     pack_name + '.interactive',
                     pack_name + '.interactive.tests',
                     pack_name + '.ipython',
-                    pack_name + '.ipython.tests'
                     ],
         classifiers = ['Programming Language :: Python',
                        'Programming Language :: Python :: 3',
