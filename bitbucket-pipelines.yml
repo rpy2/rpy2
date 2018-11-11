@@ -11,4 +11,4 @@ pipelines:
         script: # Modify the commands below to build your repository.
           - python3 -m pip install numpy pandas ipython
           - python3 setup.py install
-          - pytest --junitxml=./test-reports/coverage.xml tests/rinterface tests/robjects tests/test_rmagic.py
+          - pytest --junitxml=./test-reports/junit.xml tests/rinterface tests/robjects tests/test_rmagic.py
