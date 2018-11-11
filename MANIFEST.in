@@ -9,7 +9,6 @@ include _rinterface_cffi
 include _rinterface_cffi_build
 
 include rpy/__init__.py
-include rpy/tests.py
 include rpy/situation.py
 
 recursive-include rpy/robjects *.py
