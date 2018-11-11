@@ -19,6 +19,8 @@ RUN \
                      ed \
                      git \
 		     libcairo-dev \
+		     libcurl4-openssl-dev \
+		     libssl-dev \
 		     libedit-dev \
 		     scala \
 		     wget && \
