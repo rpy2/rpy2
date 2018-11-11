@@ -13,7 +13,7 @@ RUN \
   apt-get remove -y --purge nodejs npm && \
   curl -sL https://deb.nodesource.com/setup_11.x | bash - && \
   apt-get install -y nodejs && \
-  curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+  wget -O - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
   apt-get update -qq && \
   sudo apt-get install -y yarn && \
   rm -rf /var/lib/apt/lists/*
