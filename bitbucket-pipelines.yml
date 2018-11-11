@@ -12,6 +12,6 @@ pipelines:
           - python3 -m pip install numpy pandas ipython
           - python3 setup.py install
           - >
-	    pytest --cov=rpy2.rinterface_lib --cov=rpy2.rinterface --cov=rpy2.ipython --cov=rpy2.robjects
-	           --junitxml=./test-reports/junit.xml tests/rinterface tests/robjects tests/test_rmagic.py
+            pytest --cov=rpy2.rinterface_lib --cov=rpy2.rinterface --cov=rpy2.ipython --cov=rpy2.robjects
+                   --junitxml=./test-reports/junit.xml tests/rinterface tests/robjects tests/test_rmagic.py
 	  
