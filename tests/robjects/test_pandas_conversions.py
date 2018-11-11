@@ -79,7 +79,7 @@ class TestPandasConversions(object):
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.py2rpy(s)
-        assert rinterface.FloatSexpVector == type(rp_s)
+        assert isinstance(rp_s, rinterface.FloatSexpVector)
 
     def test_series_issue264(self):
         Series = pandas.core.series.Series
@@ -89,19 +89,19 @@ class TestPandasConversions(object):
             rp_s = robjects.conversion.py2rpy(s)
         # segfault before the fix
         str(rp_s)
-        assert rinterface.StrSexpVector == type(rp_s)
+        assert isinstance(rp_s, rinterface.StrSexpVector)
 
     def test_object2String(self):
         series = pandas.Series(["a","b","c","a"], dtype="O")
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.py2rpy(series)
-            assert robjects.vectors.StrVector == type(rp_c)
+            assert isinstance(rp_c, rinterface.StrSexpVector)
 
     def test_factor2Category(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a'))
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.rpy2py(factor)
-        assert pandas.Categorical == type(rp_c)
+        assert isinstance(rp_c, pandas.Categorical)
 
     def test_factorwithNA2Category(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a', None))
@@ -115,13 +115,13 @@ class TestPandasConversions(object):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a'), ordered=True)
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.rpy2py(factor)
-        assert pandas.Categorical == type(rp_c)
+        assert isinstance(rp_c, pandas.Categorical)
 
     def test_category2Factor(self):
         category = pandas.Series(["a","b","c","a"], dtype="category")
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.py2rpy(category)
-            assert robjects.vectors.FactorVector == type(rp_c)
+            assert isinstance(rp_c, robjects.vectors.FactorVector)
 
     def test_orderedCategory2Factor(self):
         category = pandas.Series(pandas.Categorical(['a','b','c','a'],
@@ -129,7 +129,7 @@ class TestPandasConversions(object):
                                                     ordered=True))
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.py2rpy(category)
-            assert robjects.vectors.FactorVector == type(rp_c)
+            assert isinstance(rp_c, robjects.vectors.FactorVector)
 
     def test_timeR2Pandas(self):
         tzone = rpyp.get_timezone()
