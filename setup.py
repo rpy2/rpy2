@@ -168,7 +168,6 @@ if __name__ == '__main__':
                     pack_name + '.rlike.tests',
                     pack_name + '.rinterface_lib',
                     pack_name + '.robjects',
-                    pack_name + '.robjects.tests',
                     pack_name + '.robjects.lib',
                     pack_name + '.robjects.lib.tests',
                     pack_name + '.interactive',
