@@ -18,8 +18,9 @@ def test_init_from_taggedlist():
 
 def test_init_from_RObject():
     numbers = robjects.r('1:5')
-    with pytest.raises(ValueError):
-        robjects.DataFrame(numbers)
+    dataf = robjects.DataFrame(numbers)
+    assert len(dataf) == 5
+    assert all(len(x) == 1 for x in dataf)
 
     rfunc = robjects.r('sum')
     with pytest.raises(ValueError):

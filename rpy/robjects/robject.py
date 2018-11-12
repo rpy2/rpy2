@@ -153,11 +153,11 @@ class RObjectMixin(object):
         vector elements."""
 
         try:
-            res = rpy2.rinterface.sexp.rclass_get(
-                self.__sexp__)
+            res = super(RObjectMixin, self).rclass
+            res = rpy2.rinterface.sexp.rclass_get(self.__sexp__)
             #res = conversion.ri2py(res)
             return res
-        except rpy2.rinterface._rinterface.RRuntimeError as rre:
+        except rpy2.rinterface._rinterface.embedded.RRuntimeError as rre:
             if self.typeof == rpy2.rinterface.RTYPES.SYMSXP:
                 #unevaluated expression: has no class
                 return (None, )
@@ -165,12 +165,11 @@ class RObjectMixin(object):
                 raise rre
     
     @rclass.setter
-    def rclass_set(self, value):
+    def rclass(self, value):
         if isinstance(value, str):
             value = (value, )
         new_cls = rpy2.rinterface.StrSexpVector(value)
-        res = self.__rclass_set(self, new_cls)
-        self.__sexp__ = res.__sexp__
+        rpy2.rinterface.sexp.rclass_set(self.__sexp__, new_cls)
 
     
 def repr_robject(o, linesep=os.linesep):
