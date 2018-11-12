@@ -91,20 +91,26 @@ def sexpvector_to_ro(obj):
 
     if 'data.frame' in rcls:
         cls = vectors.DataFrame
+    # TODO: There no case/switch statement in Python, but may be there is a more
+    #   elegant way to implement this.
     elif obj.typeof == rinterface.RTYPES.INTSXP:
         if 'factor' in rcls:
             cls = vectors.FactorVector
         else:
-            cls = _vector_matrix_array(obj, vectors.IntVector, vectors.IntMatrix, vectors.IntArray)
+            cls = _vector_matrix_array(obj, vectors.IntVector,
+                                       vectors.IntMatrix, vectors.IntArray)
     elif obj.typeof == rinterface.RTYPES.REALSXP:
         if obj.rclass[0] == 'POSIXct':
             cls = vectors.POSIXct
         else:
-            cls = _vector_matrix_array(obj, vectors.FloatVector, vectors.FloatMatrix, vectors.FloatArray)
+            cls = _vector_matrix_array(obj, vectors.FloatVector,
+                                       vectors.FloatMatrix, vectors.FloatArray)
     elif obj.typeof == rinterface.RTYPES.LGLSXP:
-        cls = _vector_matrix_array(obj, vectors.BoolVector, vectors.BoolMatrix, vectors.BoolArray)
+        cls = _vector_matrix_array(obj, vectors.BoolVector,
+                                   vectors.BoolMatrix, vectors.BoolArray)
     elif obj.typeof == rinterface.RTYPES.STRSXP:
-        cls = _vector_matrix_array(obj, vectors.StrVector, vectors.StrMatrix, vectors.StrArray)
+        cls = _vector_matrix_array(obj, vectors.StrVector,
+                                   vectors.StrMatrix, vectors.StrArray)
     elif obj.typeof == rinterface.RTYPES.VECSXP:
         cls = vectors.ListVector
     elif obj.typeof == rinterface.RTYPES.LISTSXP:
@@ -112,7 +118,11 @@ def sexpvector_to_ro(obj):
     elif obj.typeof == rinterface.RTYPES.LANGSXP and 'formula' in rcls:
         cls = Formula
     elif obj.typeof == rinterface.RTYPES.CPLXSXP:
-        cls = _vector_matrix_array(obj, vectors.ComplexVector, vectors.ComplexMatrix, vectors.ComplexArray)
+        cls = _vector_matrix_array(obj, vectors.ComplexVector,
+                                   vectors.ComplexMatrix, vectors.ComplexArray)
+    elif obj.typeof == rinterface.RTYPES.RAWSXP:
+        cls = _vector_matrix_array(obj, vectors.ByteVector,
+                                   vectors.ByteMatrix, vectors.ByteArray)
     else:
         raise ValueError('%s is not an R vector.' % obj)
 

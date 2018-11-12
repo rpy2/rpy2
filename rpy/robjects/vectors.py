@@ -923,6 +923,10 @@ class IntArray(Array, IntVector):
     pass
 
 
+class ByteArray(Array, ByteVector):
+    pass
+
+
 class FloatArray(Array, FloatVector):
     pass
 
@@ -1108,13 +1112,14 @@ class DataFrame(ListVector):
             kv = [(k, conversion.py2rpy(v)) for k,v in obj.items()]
         else:
             try:
-                kv = [(str(k), conversion.py2rpy(obj[k])) for k in obj]
-            except TypeError:
-                raise ValueError("obj can be either "+
-                                 "an instance of an iter-able class" +
-                                 "(such a Python dict, rpy2.rlike.container OrdDict" +
-                                 " or an instance of rpy2.rinterface.SexpVector" +
-                                 " of type VECSXP")
+                kv = [(str(k), conversion.py2rpy(v)) for k, v in obj.items()]
+            except AttributeError:
+                raise ValueError(
+                    'obj can only be'
+                    'an instance of rpy2.rinterface.ListSexpVector, '
+                    'an instance of TaggedList, '
+                    'or an objects with a methods items() that returns (key, value) pairs '
+                    '(such a Python dict, rpy2.rlike.container OrdDict).')
 
         # Check if there is a conflicting column name
         if 'stringsAsFactors' in (k for k,v in kv):
@@ -1320,6 +1325,10 @@ class DataFrame(ListVector):
 
 
 class IntMatrix(Matrix, IntVector):
+    pass
+
+
+class ByteMatrix(Matrix, ByteVector):
     pass
 
 
