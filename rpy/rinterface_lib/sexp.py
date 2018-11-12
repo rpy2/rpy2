@@ -118,18 +118,8 @@ class Sexp(object):
 
     @rclass.setter
     def rclass(self,
-               value: 'typing.Union[rpy2.rinterface.StrSexpVector, str)'):
-        if isinstance(value, StrSexpVector):
-            value_r = value
-        elif isinstance(value, str):
-            value_r = StrSexpVector.from_iterable(
-                [value])
-        else:
-            raise TypeError('Value should a str or '
-                            'a rpy2.rinterface.StrSexpVector.')
-        openrlib.rlib.Rf_setAttrib(self.__sexp__._cdata,
-                                   openrlib.rlib.R_ClassSymbol,
-                                   value_r.__sexp__._cdata)
+               value: 'typing.Union[rpy2.rinterface.StrSexpVector, str]'):
+        rclass_set(self.__sexp__, value)
 
     @property
     def rid(self) -> int:
@@ -464,6 +454,20 @@ def rclass_get(scaps: _rinterface.SexpCapsule) -> StrSexpVector:
         else:
             classes = conversion._cdata_to_rinterface(classes)
     return classes
+
+
+def rclass_set(scaps, value: 'typing.Union[rpy2.rinterface.StrSexpVector, str]') -> None:
+    if isinstance(value, StrSexpVector):
+        value_r = value
+    elif isinstance(value, str):
+        value_r = StrSexpVector.from_iterable(
+            [value])
+    else:
+        raise TypeError('Value should a str or '
+                        'a rpy2.rinterface.StrSexpVector.')
+    openrlib.rlib.Rf_setAttrib(scaps._cdata,
+                               openrlib.rlib.R_ClassSymbol,
+                               value_r.__sexp__._cdata)
 
 
 def unserialize(state):
