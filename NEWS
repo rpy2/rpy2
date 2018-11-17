@@ -46,6 +46,16 @@ Changes
   :mod:`rpy2.rinterface` is no longer available.
 
 
+Release 2.9.5
+=============
+
+Bugs fixed
+----------
+
+- Missing values in pandas :class:`Category` series were creating
+  invalid R factors when converted (issue #493).
+
+
 Release 2.9.4
 =============
 
