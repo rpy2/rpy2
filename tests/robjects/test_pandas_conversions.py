@@ -123,6 +123,13 @@ class TestPandasConversions(object):
             rp_c = robjects.conversion.py2rpy(category)
             assert isinstance(rp_c, robjects.vectors.FactorVector)
 
+    def test_categorywithNA2Factor(self):
+        category = pandas.Series(['a', 'b', 'c', numpy.nan], dtype='category')
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_c = robjects.conversion.py2rpy(category)
+            assert isinstance(rp_c, robjects.vectors.FactorVector)
+        assert rp_c[3] == rinterface.NA_Integer
+
     def test_orderedCategory2Factor(self):
         category = pandas.Series(pandas.Categorical(['a','b','c','a'],
                                                     categories=['a','b','c'],
