@@ -86,7 +86,7 @@ def py2ri_categoryseries(obj):
     for c in obj.cat.categories:
         if not isinstance(c, str):
             raise ValueError('Converting pandas "Category" series to R factor is only possible when categories are strings.')
-    res = IntSexpVector(list(x+1 for x in obj.cat.codes))
+    res = IntSexpVector(list(rinterface.NA_Integer if x == -1 else x+1 for x in obj.cat.codes))
     res.do_slot_assign('levels', StrSexpVector(obj.cat.categories))
     if obj.cat.ordered:
         res.rclass = StrSexpVector(('ordered', 'factor'))
