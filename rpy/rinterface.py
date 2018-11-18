@@ -36,7 +36,7 @@ def parse(text: str, num: int = -1):
     """
 
     if not isinstance(text, str):
-        raise ValueError('text must be a string.')
+        raise TypeError('text must be a string.')
     robj = StrSexpVector([text])
     return _rinterface._parse(robj.__sexp__._cdata, num)
 
@@ -125,7 +125,7 @@ class SexpSymbol(sexp.Sexp):
                 openrlib.rlib.Rf_install(name_cdata))
             super().__init__(sexp)
         else:
-            raise ValueError(
+            raise TypeError(
                 'The constructor must be called '
                 'with that is an instance of rpy2.rinterface.sexp.Sexp '
                 'or an instance of rpy2.rinterface._rinterface.SexpCapsule')

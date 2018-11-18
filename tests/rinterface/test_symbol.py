@@ -6,7 +6,7 @@ rinterface.initr()
 
 def test_new_invalid():
     x = 1
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         rinterface.SexpSymbol(x)
 
 

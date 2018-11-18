@@ -111,7 +111,7 @@ def test_parse_error():
 
         
 def test_parse_invalid_string():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         rinterface.parse(3)
 
 
