@@ -281,11 +281,11 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
         elif isinstance(obj, collections.Sized):
             super().__init__(type(self).from_iterable(obj).__sexp__)
         else:
-            raise ValueError('The constructor must be called '
-                             'with that is an instance of '
-                             'rpy2.rinterface.Sexp '
-                             'or an instance of '
-                             'rpy2.rinterface._rinterface.SexpCapsule')
+            raise TypeError('The constructor must be called '
+                            'with that is an instance of '
+                            'rpy2.rinterface.Sexp '
+                            'or an instance of '
+                            'rpy2.rinterface._rinterface.SexpCapsule')
 
     @classmethod
     @conversion._cdata_res_to_rinterface
@@ -371,7 +371,7 @@ class StrSexpVector(SexpVector):
 
     def __getitem__(
             self,
-            i: typing.Union[int, slice]) -> typing.Union[str, 'StrSexpVector']:
+            i: typing.Union[int, slice]) -> 'typing.Union[str, StrSexpVector]':
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)

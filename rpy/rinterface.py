@@ -28,24 +28,36 @@ endr = embedded.endr
 
 @_cdata_res_to_rinterface
 def parse(text: str, num: int = -1):
-    """
+    """Parse a string as R code.
+
     :param:`text` A string with R code to parse.
     :param:`num` The maximum number of lines to parse. If -1, no
       limit is applied.
     """
+
     if not isinstance(text, str):
         raise ValueError('text must be a string.')
     robj = StrSexpVector([text])
     return _rinterface._parse(robj.__sexp__._cdata, num)
 
 
-def evalr(source: str) -> sexp.Sexp:
-    res = parse(source)
+def evalr(source: str, maxlines: int = -1) -> sexp.Sexp:
+    """Evaluate a string as R code.
+
+    Evaluate a string as R just as it would happen when writing
+    code in an R terminal.
+
+    :param:`text` A string to be evaluated as R code.
+    :param:`maxlines` The maximum number of lines to parse. If -1, no
+      limit is applied."""
+
+    res = parse(source, num=maxlines)
     res = baseenv['eval'](res)
     return res
 
 
 class NULLType(sexp.Sexp, metaclass=na_values.Singleton):
+    """A singleton class for R's NULL."""
 
     def __init__(self):
         embedded.assert_isready()
@@ -57,14 +69,15 @@ class NULLType(sexp.Sexp, metaclass=na_values.Singleton):
             )
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return super().__repr__() + (' [%s]' % self.typeof)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
+        """This is always False."""
         return False
 
     @property
-    def __sexp__(self):
+    def __sexp__(self) ->  _rinterface.SexpCapsule:
         return self._sexpobject
 
     @property
@@ -72,7 +85,7 @@ class NULLType(sexp.Sexp, metaclass=na_values.Singleton):
         return self._sexpobject.rid
 
     @property
-    def typeof(self):
+    def typeof(self) -> RTYPES:
         return RTYPES(_rinterface._TYPEOF(self.__sexp__._cdata))
 
 
@@ -84,22 +97,24 @@ class _MissingArgType(object):
         self._sexpobject = _rinterface.UnmanagedSexpCapsule(
             openrlib.rlib.R_MissingArg)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return super().__repr__() + (' [%s]' % self.typeof)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
+        """This is always False."""
         return False
 
     @property
-    def __sexp__(self):
+    def __sexp__(self) ->  _rinterface.SexpCapsule:
         return self._sexpobject
 
     @property
-    def typeof(self):
+    def typeof(self) -> RTYPES:
         return RTYPES(_rinterface._TYPEOF(self.__sexp__._cdata))
 
 
-class SexpSymbol(Sexp):
+class SexpSymbol(sexp.Sexp):
+    """An unevaluated R symbol."""
 
     def __init__(self, obj):
         if isinstance(obj, Sexp) or isinstance(obj, _rinterface.SexpCapsule):
@@ -123,23 +138,35 @@ class SexpSymbol(Sexp):
         )
 
 
-class SexpEnvironment(Sexp):
+class SexpEnvironment(sexp.Sexp):
     """Proxy for an R "environment" object.
 
     An R "environment" object can be thought of as a mix of a
     mapping (like a `dict`) and a scope. To make it more "Pythonic",
     both aspects are kept separate and the method `__getitem__` will
     get an item as it would for a Python `dict` while the method `find`
-    will get an item as if it was a scope."""
+    will get an item as if it was a scope.
+
+    As soon as R is initialized the following main environments become
+    available to the user:
+    - `globalenv`: The "workspace" for the current R process. This can
+      be thought of as when `__name__ == '__main__'` in Python.
+    - `baseenv`: The namespace of R's "base" package. 
+    """
 
     @_cdata_res_to_rinterface
     @_evaluated_promise
     def find(self,
              key: str,
-             wantfun: int = False) -> Sexp:
+             wantfun: int = False) -> sexp.Sexp:
         """Find an item, starting with this R environment.
 
-        Raises a `KeyError` is the key cannot be found."""
+        Raises a `KeyError` if the key cannot be found.
+
+        This method is called `find` because it is somewhat different
+        from the method :meth:`get` in Python mappings such :class:`dict`.
+        This is looking for a key across enclosing environments, returning
+        the first key found."""
 
         if not isinstance(key, str):
             raise TypeError('The key must be a non-empty string.')
@@ -216,7 +243,7 @@ class SexpEnvironment(Sexp):
             n = openrlib.rlib.Rf_xlength(symbols)
         return n
 
-    def __delitem__(self, key: str):
+    def __delitem__(self, key: str) -> None:
         # Testing that key is a non-empty string is implicitly
         # performed when checking that the key is in the environment.
         if key not in self:
@@ -240,13 +267,13 @@ class SexpEnvironment(Sexp):
                                     openrlib.rlib.FALSE))
 
     @_cdata_res_to_rinterface
-    def frame(self):
+    def frame(self) -> 'typing.Union[NULLType, SexpEnvironment]':
         """Get the parent frame of the environment."""
         return openrlib.rlib.FRAME(self.__sexp__._cdata)
 
     @property
     @_cdata_res_to_rinterface
-    def enclos(self) -> 'SexpEnvironment':
+    def enclos(self) -> 'typing.Union[NULLType, SexpEnvironment]':
         """Get or set the enclosing environment."""
         return openrlib.rlib.ENCLOS(self.__sexp__._cdata)
 
@@ -282,7 +309,12 @@ class SexpEnvironment(Sexp):
 class SexpPromise(Sexp):
 
     @_cdata_res_to_rinterface
-    def eval(self, env=None):
+    def eval(self, env=None) -> sexp.Sexp:
+        """"Evalute the R "promise".
+
+        :param:`env` The environment in which to evaluate the
+          promise.
+        """
         if not env:
             env = embedded.globalenv
         return openrlib.rlib.Rf_eval(self.__sexp__._cdata, env)
@@ -294,7 +326,7 @@ class NumpyArrayInterface(abc.ABC):
     The interface is only available / possible for some of the R vectors."""
 
     @property
-    def __array_interface__(self):
+    def __array_interface__(self) -> dict:
         """Return an `__array_interface__` version 3.
 
         Note that the pointer returned in the items 'data' corresponds to
@@ -323,22 +355,25 @@ def _cast_in_byte(x):
     return x
 
 
-def _get_raw_elt(x, i: int):
-    return openrlib._RAW(x)[i]
-
-
-def _set_raw_elt(x, i: int, val):
-    openrlib._RAW(x)[i] = val
-
-
 class ByteSexpVector(SexpVector, NumpyArrayInterface):
+    """Array of bytes.
+
+    This is the R equivalent to a Python :class:`bytesarray`.
+    """
 
     _R_TYPE = openrlib.rlib.RAWSXP
-    _R_GET_PTR = openrlib._RAW
-    _R_VECTOR_ELT = _get_raw_elt
-    _R_SET_VECTOR_ELT = _set_raw_elt
-    _CAST_IN = _cast_in_byte
     _NP_TYPESTR = '|u1'
+    
+    _R_GET_PTR = openrlib._RAW
+    _CAST_IN = _cast_in_byte
+
+    @staticmethod
+    def _R_VECTOR_ELT(x, i: int):
+        return openrlib._RAW(x)[i]
+
+    @staticmethod
+    def _R_SET_VECTOR_ELT(x, i: int, val):
+        openrlib._RAW(x)[i] = val
 
     def __getitem__(self, i: int) -> typing.Union[int, 'ByteSexpVector']:
         cdata = self.__sexp__._cdata
@@ -372,21 +407,24 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
 
 
-def _cast_in_bool(x):
-    if x is None or x == openrlib.rlib.R_NaInt:
-        return NA_Logical
-    else:
-        return bool(x)
-
-
 class BoolSexpVector(SexpVector, NumpyArrayInterface):
+    """Array of booleans.
+
+    Note that R in internally storing booleans as integers to
+    allow an additional "NA" value to represent missingness."""
 
     _R_TYPE = openrlib.rlib.LGLSXP
+    _NP_TYPESTR = '|i'
     _R_VECTOR_ELT = openrlib.LOGICAL_ELT
     _R_SET_VECTOR_ELT = openrlib.SET_LOGICAL_ELT
     _R_GET_PTR = openrlib._LOGICAL
-    _CAST_IN = _cast_in_bool
-    _NP_TYPESTR = '|i'
+
+    @staticmethod
+    def _CAST_IN(x):
+        if x is None or x == openrlib.rlib.R_NaInt:
+            return NA_Logical
+        else:
+            return bool(x)
 
     def __getitem__(self, i: int) -> typing.Union[typing.Optional[bool],
                                                   'BoolSexpVector']:

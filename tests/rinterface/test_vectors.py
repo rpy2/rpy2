@@ -1,7 +1,8 @@
-import multiprocessing
+import subprocess
 import pytest
 import struct
 import sys
+import textwrap
 import unittest
 import rpy2.rinterface as ri
 
@@ -135,23 +136,21 @@ def test_invalid_not_vector_rtype():
         ri.vector([1, ], ri.RTYPES.ENVSXP)
 
 
-def _run_without_initr(queue):
+_instantiate_without_initr = textwrap.dedent(
+    """
     import rpy2.rinterface as rinterface
     try:
         tmp = rinterface.vector([1,2], rinterface.RTYPES.INTSXP)
-        res = (True, None)
+        res = 'OK'
     except rinterface.embedded.RNotReadyError as re:
-        res = (False, None)
+        res = 'Error: R not ready.'
     except Exception as e:
-        res = (False, str(e))
-    queue.put(res)
-
+        res = 'Exception: %s' % str(e)
+    print(res)
+    """)
         
 def test_instantiate_without_initr():
-    ctx = multiprocessing.get_context('spawn')
-    q = ctx.Queue()
-    p = ctx.Process(target = _run_without_initr, args = (q,))
-    p.start()
-    res = q.get()
-    p.join()
-    assert res == (False, None)
+    output = subprocess.check_output(
+        (sys.executable, '-c',
+         _instantiate_without_initr.encode('ASCII')))
+    assert output.rstrip() == b'Error: R not ready.'.rstrip()

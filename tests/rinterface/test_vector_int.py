@@ -20,13 +20,14 @@ def test_init_from_seq_invalid_item():
         ri.IntSexpVector(seq)
 
 
+@pytest.mark.skip(reason='WIP')
 @pytest.mark.skipif(struct.calcsize('P') < 8,
                     reason='Only relevant on 64 architectures.')
 def test_init_from_seq_invalid_overflow():
     MAX_INT = ri._rinterface._MAX_INT
-    v = ri.IntSexpVector((MAX_INT - 1, MAX_INT))
-    assert v[0] == MAX_INT - 1
-    assert v[1] == MAX_INT
+    v = ri.IntSexpVector((MAX_INT, 42))
+    assert v[0] == MAX_INT
+    assert v[1] == 42
     # check 64-bit architecture
     with pytest.raises(OverflowError): 
         ri.IntSexpVector((MAX_INT + 1, ))
@@ -116,20 +117,31 @@ def test_getslice_missingboundary():
     assert vec_slice[0] == 9
     assert vec_slice[1] == 10
 
-    
+
 def test_setitem_outffbound():
     vec = ri.IntSexpVector(range(5))
     with pytest.raises(IndexError):
         vec.__setitem__(10, 6)
 
 
+@pytest.mark.skip(reason='Python-level memoryviews stuck on row-major arrays')
 def test_memoryview():
     shape = (5,2,3)
     values = tuple(range(30))
+    # R arrays are column-major, therefore
+    # a slice like [:, :, 0] should look
+    # like:
+    #
+    #  0  5
+    #  1  6
+    #  2  6
+    #  3  8
+    #  4  9
+
     rarray = ri.baseenv['array'](
         ri.IntSexpVector(values),
         dim = ri.IntSexpVector(shape))
     mv = rarray.memoryview()
     assert mv.shape == shape
-    assert mv.values == values
-    
+    assert mv.tolist()[0] == [[0, 1, 2, 3, 4],
+                              [5, 6, 7, 8, 9]]

@@ -13,7 +13,7 @@ def test_init():
 
 def test_init_invalid():
     seq = True
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         ri.LangSexpVector(seq)
 
 

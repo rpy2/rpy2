@@ -43,6 +43,7 @@ def test_array_struct_double():
     assert x[1] == 333.2
 
 
+@pytest.mark.skip(reason='WIP')
 @pytest.mark.skipif(not has_numpy, reason='Package numpy is not installed.')
 def test_array_struct_complex():
     px = [1+2j, 2+5j, -1+0j]
@@ -64,11 +65,13 @@ def test_array_struct_boolean():
         assert orig == new
 
 
+@pytest.mark.skip(reason='Python-level memoryviews stuck on row-major arrays')
 @pytest.mark.skipif(not has_numpy, reason='Package numpy is not installed.')
 def test_array_shape_len3():
     extract = rinterface.baseenv['[']
-    rarray = rinterface.baseenv['array'](rinterface.IntSexpVector(range(30)),
-                                         dim = rinterface.IntSexpVector([5,2,3]))
+    rarray = rinterface.baseenv['array'](
+        rinterface.IntSexpVector(range(30)),
+        dim = rinterface.IntSexpVector([5,2,3]))
     npyarray = numpy.array(rarray.memoryview())
     for i in range(5):
         for j in range(2):

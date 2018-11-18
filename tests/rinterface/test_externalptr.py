@@ -36,7 +36,8 @@ def test_from_pyobject_invalid_tag():
     with pytest.raises(TypeError):
         rinterface.SexpExtPtr.from_pyobject(pyobject, tag = True)
 
-    
+
+@pytest.mark.skip(reason='WIP')
 def test_from_pyobject_protected():
     pyobject = 'ahaha'
     sexp_new = (rinterface.SexpExtPtr
@@ -45,7 +46,8 @@ def test_from_pyobject_protected():
     assert sexp_new.typeof == rinterface.RTYPES.EXTPTRSXP
     assert sexp_new.__protected__[0] == 'c'
 
-    
+
+@pytest.mark.skip(reason='WIP')
 def test_from_pyobject_invalid_protected():
     pyobject = 'ahaha'
     with pytest.raises(TypeError):
