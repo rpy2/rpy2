@@ -140,7 +140,7 @@ class SexpEnvironment(Sexp):
         """Find an item, starting with this R environment.
 
         Raises a `KeyError` is the key cannot be found."""
-        
+
         if not isinstance(key, str):
             raise TypeError('The key must be a non-empty string.')
         elif not len(key):
@@ -292,7 +292,7 @@ class NumpyArrayInterface(abc.ABC):
     """Numpy-specific API for accessing the content of a numpy array.
 
     The interface is only available / possible for some of the R vectors."""
-    
+
     @property
     def __array_interface__(self):
         """Return an `__array_interface__` version 3.
@@ -529,9 +529,18 @@ class ComplexSexpVector(SexpVector):
 
     _R_TYPE = openrlib.rlib.CPLXSXP
     _R_GET_PTR = openrlib._COMPLEX
-    _R_VECTOR_ELT = lambda x, i: openrlib._COMPLEX(x)[i]
-    _R_SET_VECTOR_ELT = lambda x, i, v: openrlib._COMPLEX(x).__setitem__(i, v)
-    _CAST_IN = lambda x: (x.real, x.imag) if isinstance(x, complex) else x
+
+    @staticmethod
+    def _R_VECTOR_ELT(x, i):
+        return openrlib._COMPLEX(x)[i]
+
+    @staticmethod
+    def _R_SET_VECTOR_ELT(x, i, v):
+        openrlib._COMPLEX(x).__setitem__(i, v)
+
+    @staticmethod
+    def _CAST_IN(x):
+        return (x.real, x.imag) if isinstance(x, complex) else x
 
     def __getitem__(self,
                     i: int) -> typing.Union[complex, 'ComplexSexpVector']:

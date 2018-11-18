@@ -276,7 +276,11 @@ def _list_attrs(cdata):
                 rlib.SET_STRING_ELT(res, attr_i,
                                     rlib.R_BlankString)
             else:
-                rlib.SET_STRING_ELT(res, attr_i, rlib.PRINTNAME(rlib.TAG(attrs)))
+                rlib.SET_STRING_ELT(
+                    res,
+                    attr_i,
+                    rlib.PRINTNAME(rlib.TAG(attrs))
+                )
             attrs = rlib.CDR(attrs)
             attr_i += 1
     return res

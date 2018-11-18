@@ -13,7 +13,7 @@ from . import conversion
 
 class RTYPES(enum.IntEnum):
     """Native R types as defined in R's C API."""
-    
+
     NILSXP = openrlib.rlib.NILSXP
     SYMSXP = openrlib.rlib.SYMSXP
     LISTSXP = openrlib.rlib.LISTSXP
@@ -59,8 +59,8 @@ class Sexp(object):
 
         if isinstance(sexp, Sexp):
             self._sexpobject = sexp.__sexp__
-        elif isinstance(sexp, _rinterface.SexpCapsule) or \
-             isinstance(sexp, _rinterface.UnmanagedSexpCapsule):
+        elif (isinstance(sexp, _rinterface.SexpCapsule) or
+              isinstance(sexp, _rinterface.UnmanagedSexpCapsule)):
             self._sexpobject = sexp
         else:
             raise ValueError(
@@ -212,7 +212,7 @@ class NCHAR_TYPE(enum.Enum):
 
 class CharSexp(Sexp):
     """R's internal (C API-level) scalar for strings."""
-    
+
     _R_TYPE = openrlib.rlib.CHARSXP
     _NCHAR_MSG = openrlib.ffi.new('char []', b'rpy2.rinterface.CharSexp.nchar')
 
@@ -456,7 +456,10 @@ def rclass_get(scaps: _rinterface.SexpCapsule) -> StrSexpVector:
     return classes
 
 
-def rclass_set(scaps, value: 'typing.Union[rpy2.rinterface.StrSexpVector, str]') -> None:
+def rclass_set(
+        scaps,
+        value: 'typing.Union[rpy2.rinterface.StrSexpVector, str]'
+) -> None:
     if isinstance(value, StrSexpVector):
         value_r = value
     elif isinstance(value, str):
