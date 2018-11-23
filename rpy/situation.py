@@ -66,7 +66,7 @@ def get_rlib_path(r_home: str, system: str) -> str:
     if system == 'Linux':
         lib_path = os.path.join(r_home, 'lib', 'libR.so')
     elif system == 'Darwin':
-        lib_path = os.path.join(r_home, 'lib', 'libR.dynlib')
+        lib_path = os.path.join(r_home, 'lib', 'libR.dylib')
     else:
         raise ValueError('The system "%s" is not supported.')
     return lib_path
