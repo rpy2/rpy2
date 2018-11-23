@@ -1,4 +1,5 @@
 import os
+import platform
 import rpy2.situation
 from _rinterface_cffi import ffi
 
@@ -10,8 +11,7 @@ def _dlopen_rlib(r_home):
     if r_home is None:
         raise ValueError('r_home is None. '
                          'Try python -m rpy2.situation')
-
-    lib_path = os.path.join(R_HOME, "lib", "libR.so")
+    lib_path = rpy2.situation.get_rlib_path(r_home, platform.system())
     rlib = ffi.dlopen(lib_path)
     return rlib
 

@@ -4,7 +4,9 @@ It will print information about the rpy2's environment (Python version,
 R version, rpy2 version, etc...).
 """
 
-import sys, os, subprocess
+import os
+import subprocess
+import sys
 
 
 def assert_python_version():
@@ -57,6 +59,17 @@ def r_home_from_registry():
     if sys.version_info[0] == 2:
         r_home = r_home.encode(sys.getfilesystemencoding())
     return r_home
+
+
+def get_rlib_path(r_home: str, system: str) -> str:
+    """Get the path for the R shared library."""
+    if system == 'Linux':
+        lib_path = os.path.join(r_home, 'lib', 'libR.so')
+    elif system == 'Darwin':
+        lib_path = os.path.join(r_home, 'lib', 'libR.dynlib')
+    else:
+        raise ValueError('The system "%s" is not supported.')
+    return lib_path
 
 
 def get_r_home():
