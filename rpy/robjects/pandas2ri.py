@@ -18,7 +18,6 @@ from pandas.core.series import Series as PandasSeries
 from pandas.core.index import Index as PandasIndex
 from pandas.core.dtypes.api import is_datetime64_any_dtype
 import pandas
-from numpy import recarray
 import numpy
 import pytz
 import tzlocal
@@ -182,7 +181,7 @@ def rpy2py_floatvector(obj):
 
 
 @rpy2py.register(ListSexpVector)
-def rpy2py_listvector(obj):        
+def rpy2py_listvector(obj):
     if 'data.frame' in obj.rclass:
         res = rpy2py(DataFrame(obj))
     else:

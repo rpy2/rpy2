@@ -376,7 +376,8 @@ utils.install_packages('Cairo')
     @line_magic
     def Rget(self, line):
         """
-        Return an object from rpy2, possibly as a structured array (if possible).
+        Return an object from rpy2, possibly as a structured array (if
+        possible).
         Similar to Rpull except only one argument is accepted and the value is 
         returned rather than pushed to self.shell.user_ns::
 

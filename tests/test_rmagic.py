@@ -58,8 +58,10 @@ def set_conversion(ipython_with_magic):
 def test_push(ipython_with_magic):
     ipython_with_magic.push({'X':np.arange(5), 'Y':np.array([3,5,4,6,7])})
     ipython_with_magic.run_line_magic('Rpush', 'X Y')
-    np.testing.assert_almost_equal(np.asarray(r('X')), ipython_with_magic.user_ns['X'])
-    np.testing.assert_almost_equal(np.asarray(r('Y')), ipython_with_magic.user_ns['Y'])
+    np.testing.assert_almost_equal(np.asarray(r('X')),
+                                   ipython_with_magic.user_ns['X'])
+    np.testing.assert_almost_equal(np.asarray(r('Y')),
+                                   ipython_with_magic.user_ns['Y'])
 
 
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
@@ -107,8 +109,10 @@ def test_push_dataframe(ipython_with_magic):
 def test_pull(ipython_with_magic):
     r('Z=c(11:20)')
     ipython_with_magic.run_line_magic('Rpull', 'Z')
-    np.testing.assert_almost_equal(np.asarray(r('Z')), ipython_with_magic.user_ns['Z'])
-    np.testing.assert_almost_equal(ipython_with_magic.user_ns['Z'], np.arange(11,21))
+    np.testing.assert_almost_equal(np.asarray(r('Z')),
+                                   ipython_with_magic.user_ns['Z'])
+    np.testing.assert_almost_equal(ipython_with_magic.user_ns['Z'],
+                                   np.arange(11,21))
 
 
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
@@ -119,7 +123,9 @@ def test_Rconverter(ipython_with_magic):
 
     # numpy recarray (numpy's version of a data frame)
     dataf_np= np.array([(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c')],
-                       dtype=[('x', '<i4'), ('y', '<f8'), ('z', '|%s1' % np_string_type)])
+                       dtype=[('x', '<i4'),
+                              ('y', '<f8'),
+                              ('z', '|%s1' % np_string_type)])
     # store it in the notebook's user namespace
     ipython_with_magic.user_ns['dataf_np'] = dataf_np
     # equivalent to:

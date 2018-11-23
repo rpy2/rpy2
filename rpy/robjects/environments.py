@@ -39,14 +39,28 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         return conversion.converter.rpy2py(super().frame)
 
         
-    def get(self, item, wantfun = False):
-        """ Get a object from its R name/symol
+    def find(self, item, wantfun = False):
+        """Find an item, starting with this R environment.
+
+        Raises a `KeyError` if the key cannot be found.
+
+        This method is called `find` because it is somewhat different
+        from the method :meth:`get` in Python mappings such :class:`dict`.
+        This is looking for a key across enclosing environments, returning
+        the first key found.
+
         :param item: string (name/symbol)
         :rtype: object (as returned by :func:`conversion.converter.rpy2py`)
         """
         res = super(Environment, self).find(item, wantfun = wantfun)
         res = conversion.converter.rpy2py(res)
-        res.__rname__ = item
+        # TODO: There is a design issue here. The attribute __rname__ is
+        # intended to store the symbol name of the R object but this is
+        # meaningless for non-rpy2 objects.
+        try:
+            res.__rname__ = item
+        except AttributeError as ae:
+            pass
         return res
 
     def keys(self):
