@@ -34,19 +34,20 @@ To enable the magics below, execute ``%load_ext rpy2.ipython``.
 
 """
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (C) 2012 The IPython Development Team
 #  Copyright (C) 2013-2017 rpy2 authors
 #
 #  Distributed under the terms of the BSD License.  The full license is in
 #  the file COPYING, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 import sys
 import tempfile
 from glob import glob
 from os import stat
 from shutil import rmtree
+import textwrap
 
 # numpy and rpy2 imports
 
@@ -80,19 +81,17 @@ except ImportError:
                             "as we did not manage to load 'numpy'",
                             "first.")))
 if numpy:
-  from rpy2.robjects import numpy2ri
-  template_converter += numpy2ri.converter
-  if pandas:
-    from rpy2.robjects import pandas2ri
-    template_converter += pandas2ri.converter
+    from rpy2.robjects import numpy2ri
+    template_converter += numpy2ri.converter
+    if pandas:
+        from rpy2.robjects import pandas2ri
+        template_converter += pandas2ri.converter
 
-
-# IPython imports
+# IPython imports.
 
 import IPython
-from IPython.core.displaypub import publish_display_data
-from IPython.core.magic import (cell_magic,
-                                Magics,
+from IPython.core import displaypub
+from IPython.core.magic import (Magics,
                                 magics_class,
                                 line_cell_magic,
                                 line_magic,
@@ -102,17 +101,10 @@ from IPython.core.magic_arguments import (argument,
                                           magic_arguments,
                                           parse_argstring)
 
-# TODO: drop support for ipython < 5.0
-try:
-    from IPython.external.simplegeneric import generic
-except ImportError:
-    # IPython 4.0
-    from simplegeneric import generic
-
 
 class RInterpreterError(ri.embedded.RRuntimeError):
     """An error when running R code in a %%R magic cell."""
-    
+
     def __init__(self, line, err, stdout):
         self.line = line
         self.err = err.rstrip()
@@ -130,11 +122,11 @@ converter = Converter('ipython conversion',
                       template=template_converter)
 
 
-# The default conversion for lists is currently to make them an R list. That has
-# some advantages, but can be inconvenient (and, it's inconsistent with the way
-# python lists are automatically converted by numpy functions), so for
-# interactive use in the rmagic, we call unlist, which converts lists to vectors
-# **if the list was of uniform (atomic) type**.
+# The default conversion for lists is currently to make them an R list. That
+# has some advantages, but can be inconvenient (and, it's inconsistent with
+# the way python lists are automatically converted by numpy functions), so
+# for interactive use in the rmagic, we call unlist, which converts lists to
+# vectors **if the list was of uniform (atomic) type**.
 @converter.rpy2py.register(list)
 def rpy2py_list(obj):
     # simplify2array is a utility function, but nice for us
@@ -151,7 +143,7 @@ def rpy2py_list(obj):
 #         res = converter.rpy2py(obj)
 #     else:
 #         res = ro.sexpvector_to_ro(obj)
-#     return res        
+#     return res
 
 
 @magics_class
@@ -171,11 +163,11 @@ class RMagics(Magics):
                     the magic's current converter is used.
 
         cache_display_data : bool
-            If True, the published results of the final call to R are 
+            If True, the published results of the final call to R are
             cached in the variable 'display_cache'.
 
         device : ['png', 'X11', 'svg']
-            Device to be used for plotting. 
+            Device to be used for plotting.
             Currently only 'png', 'X11' and 'svg' are supported,
             with 'png' and 'svg' being most useful in the notebook,
             and 'X11' allowing interactive plots in the terminal.
@@ -187,13 +179,13 @@ class RMagics(Magics):
         self.Rstdout_cache = []
 
         self.converter = converter
-        
+
         self.set_R_plotting_device(device)
 
     def set_R_plotting_device(self, device):
         """
         Set which device R should use to produce plots.
-        If device == 'svg' then the package 'Cairo' 
+        If device == 'svg' then the package 'Cairo'
         must be installed. Because Cairo forces "onefile=TRUE",
         it is not posible to include multiple plots per cell.
 
@@ -201,7 +193,7 @@ class RMagics(Magics):
         ----------
 
         device : ['png', 'X11', 'svg']
-            Device to be used for plotting. 
+            Device to be used for plotting.
             Currently only "png" and "X11" are supported,
             with 'png' and 'svg' being most useful in the notebook,
             and 'X11' allowing interactive plots in the terminal.
@@ -209,22 +201,25 @@ class RMagics(Magics):
         """
         device = device.strip()
         if device not in ['png', 'X11', 'svg']:
-            raise ValueError("device must be one of ['png', 'X11' 'svg'], got '%s'", device)
+            raise ValueError(
+                "device must be one of ['png', 'X11' 'svg'], got '%s'", device)
         if device == 'svg':
             try:
                 self.cairo = rpacks.importr('Cairo')
             except ri.embedded.RRuntimeError as rre:
                 if rpacks.isinstalled('Cairo'):
-                    msg = "An error occurred when trying to load the R package Cairo'\n%s" % str(rre)
+                    msg = ('An error occurred when trying to load the ' +
+                           'R package Cairo\'\n%s' % str(rre))
                 else:
-                    msg = """
-The R package 'Cairo' is required but it does not appear to be installed/available. Try:
+                    msg = textwrap.dedent("""
+                    The R package 'Cairo' is required but it does not appear
+                    to be installed/available. Try:
 
-import rpy2.robjects.packages as rpacks
-utils = rpacks.importr('utils')
-utils.chooseCRANmirror(ind=1)
-utils.install_packages('Cairo')
-"""
+                    import rpy2.robjects.packages as rpacks
+                    utils = rpacks.importr('utils')
+                    utils.chooseCRANmirror(ind=1)
+                    utils.install_packages('Cairo')
+                    """)
                 raise RInterpreterError(msg)
         self.device = device
 
@@ -243,11 +238,10 @@ utils.install_packages('Cairo')
         boolean indicating whether the return value would be
         visible if the line of code were evaluated in an R REPL.
 
-        R Code evaluation and visibility determination are done via an R call of
-        the form withVisible(code_string), and this entire expression needs to
-        be evaluated in R (we can't use rpy2 function proxies here, as
+        R Code evaluation and visibility determination are done via an R call
+        of the form withVisible(code_string), and this entire expression needs
+        to be evaluated in R (we can't use rpy2 function proxies here, as
         withVisible is a LISPy R function).
-
         """
         with (rpy2.rinterface_lib
               .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
@@ -317,7 +311,7 @@ utils.install_packages('Cairo')
                     # variable
                     raise NameError("name '%s' is not defined" % input)
 
-            with localconverter(self.converter) as cv:
+            with localconverter(self.converter):
                 ro.r.assign(input, val)
 
     # @skip_doctest
@@ -349,7 +343,7 @@ utils.install_packages('Cairo')
 
 
         This is useful when a structured array is desired as output, or
-        when the object in R has mixed data types. 
+        when the object in R has mixed data types.
         See the %%R docstring for more examples.
 
         Notes
@@ -361,7 +355,7 @@ utils.install_packages('Cairo')
         """
         args = parse_argstring(self.Rpull, line)
         outputs = args.outputs
-        with localconverter(self.converter) as cv:
+        with localconverter(self.converter):
             for output in outputs:
                 robj = ri.globalenv.find(output)
                 self.shell.push({output: robj})
@@ -378,7 +372,7 @@ utils.install_packages('Cairo')
         """
         Return an object from rpy2, possibly as a structured array (if
         possible).
-        Similar to Rpull except only one argument is accepted and the value is 
+        Similar to Rpull except only one argument is accepted and the value is
         returned rather than pushed to self.shell.user_ns::
 
             In [3]: dtype=[('x', '<i4'), ('y', '<f8'), ('z', '|S1')]
@@ -398,16 +392,15 @@ utils.install_packages('Cairo')
         output = args.output
         # get the R object with the given name, starting from globalenv
         # in the search path
-        with localconverter(self.converter) as cv:
+        with localconverter(self.converter):
             res = ro.globalenv.find(output[0])
         return res
-
 
     def setup_graphics(self, args):
         """Setup graphics in preparation for evaluating R code.
 
         args : argparse bunch (should be whatever the R magic got)."""
-        
+
         if getattr(args, 'units') is not None:
             if args.units != "px" and getattr(args, 'res') is None:
                 args.res = 72
@@ -425,22 +418,22 @@ utils.install_packages('Cairo')
         tmpd = None
         if self.device in ['png', 'svg']:
             # Create a temporary directory for R graphics output
-            # TODO: Do we want to capture file output for other device types other
-            # than svg & png?
+            # TODO: Do we want to capture file output for other device types
+            # other than svg & png?
             tmpd = tempfile.mkdtemp()
             tmpd_fix_slashes = tmpd.replace('\\', '/')
 
             if self.device == 'png':
                 # Note: that %% is to pass into R for interpolation there
                 ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
-                        **argdict)
+                         **argdict)
             elif self.device == 'svg':
                 self.cairo.CairoSVG("%s/Rplot.svg" % tmpd_fix_slashes,
                                     **argdict)
 
         elif self.device == 'X11':
-            # Open a new X11 device, except if the current one is already an X11
-            # device
+            # Open a new X11 device, except if the current one is already an
+            # X11 device.
             ro.r("""
             if (substr(names(dev.cur()), 1, 3) != "X11") {
                 X11()
@@ -448,7 +441,8 @@ utils.install_packages('Cairo')
 
         else:
             # TODO: This isn't actually an R interpreter error...
-            raise RInterpreterError("device must be one of ['png', 'X11' 'svg']")
+            raise RInterpreterError(
+                'device must be one of ("png", "X11", "svg")')
 
         return tmpd
 
@@ -459,16 +453,16 @@ utils.install_packages('Cairo')
             Probably provided by some tmpdir call
         isolate_svgs : bool
             Enable SVG namespace isolation in metadata"""
-        
+
         # read in all the saved image files
         images = []
         display_data = []
 
-        # Default empty metadata dictionary
+        # Default empty metadata dictionary.
         md = {}
 
         if self.device == 'png':
-            for imgfile in sorted( glob("%s/Rplots*png" % graph_dir) ):
+            for imgfile in sorted(glob('%s/Rplots*png' % graph_dir)):
                 if stat(imgfile).st_size >= 1000:
                     with open(imgfile, 'rb') as fh_img:
                         images.append(fh_img.read())
@@ -481,35 +475,41 @@ utils.install_packages('Cairo')
                 with open(imgfile, 'rb') as fh_img:
                     images.append(fh_img.read())
 
-        mimetypes = { 'png' : 'image/png', 'svg' : 'image/svg+xml' }
+        mimetypes = {'png': 'image/png', 'svg': 'image/svg+xml'}
         mime = mimetypes[self.device]
 
-        # By default, isolate SVG images in the Notebook to avoid garbling
+        # By default, isolate SVG images in the Notebook to avoid garbling.
         if images and self.device == "svg" and isolate_svgs:
             md = {'image/svg+xml': dict(isolated=True)}
 
-        # flush text streams before sending figures, helps a little with output
+        # Flush text streams before sending figures, helps a little with
+        # output.
         for image in images:
-            # synchronization in the console (though it's a bandaid, not a real sln)
-            sys.stdout.flush(); sys.stderr.flush()
+            # Synchronization in the console (though it's a bandaid, not a
+            # real solution).
+            sys.stdout.flush()
+            sys.stderr.flush()
             display_data.append(('RMagic.R', {mime: image}))
 
         return display_data, md
-
 
     # @skip_doctest
     @magic_arguments()
     @argument(
         '-i', '--input', action='append',
-        help=('Names of input variable from shell.user_ns to be assigned to R variables'
-              ' of the same names after using the Converter self.converter. Multiple names can be'
-              ' passed separated only by commas with no whitespace.')
+        help=textwrap.dedent("""
+        Names of input variable from `shell.user_ns` to be assigned to R
+        variables of the same names after using the Converter self.converter.
+        Multiple names can be passed separated only by commas with no
+        whitespace.""")
     )
     @argument(
         '-o', '--output', action='append',
-        help=("Names of variables to be pushed from rpy2 to shell.user_ns after executing"
-              " cell body (rpy2's internal facilities will apply ri2ro as appropriate)."
-              " Multiple names can be passed separated only by commas with no whitespace.")
+        help=textwrap.dedent("""
+        Names of variables to be pushed from rpy2 to `shell.user_ns` after
+        executing cell body (rpy2's internal facilities will apply ri2ro as
+        appropriate). Multiple names can be passed separated only by commas
+        with no whitespace.""")
     )
     @argument(
         '-n', '--noreturn',
@@ -537,10 +537,11 @@ utils.install_packages('Cairo')
     @argument_group("SVG", "SVG specific arguments")
     @argument(
         '--noisolation',
-        help=('Disable SVG isolation in the Notebook. By default, SVGs are isolated to'
-              ' avoid namespace collisions between figures.'
-              ' Disabling SVG isolation allows to reference previous figures or share'
-              ' CSS rules across a set of SVGs.'),
+        help=textwrap.dedent("""
+        Disable SVG isolation in the Notebook. By default, SVGs are isolated to
+        avoid namespace collisions between figures. Disabling SVG isolation
+        allows to reference previous figures or share CSS rules across a set
+        of SVGs."""),
         action='store_false',
         default=True,
         dest='isolate_svgs'
@@ -548,23 +549,24 @@ utils.install_packages('Cairo')
     @argument_group("PNG", "PNG specific arguments")
     @argument(
         '-u', '--units', type=str, choices=["px", "in", "cm", "mm"],
-        help=('Units of png plotting device sent as an argument to *png* in R. One of'
-              ' ["px", "in", "cm", "mm"].')
-        )
+        help=textwrap.dedent("""
+        Units of png plotting device sent as an argument to *png* in R. One of
+        ["px", "in", "cm", "mm"]."""))
     @argument(
         '-r', '--res', type=int,
-        help=('Resolution of png plotting device sent as an argument to *png* in R.'
-              ' Defaults to 72 if *units* is one of ["in", "cm", "mm"].')
+        help=textwrap.dedent("""
+        Resolution of png plotting device sent as an argument to *png* in R.
+        Defaults to 72 if *units* is one of ["in", "cm", "mm"].""")
         )
     @argument(
         '-c', '--converter',
         default=None,
-        help=('Name of local converter to use. A converter contains the rules to convert objects'
-              ' back and forth between Python and R. If not specified/None, the defaut converter'
-              ' for the magic\'s module is used'
-              ' (that is rpy2\'s default converter + numpy converter + pandas converter'
-              ' if all three are available).')
-        )
+        help=textwrap.dedent("""
+        Name of local converter to use. A converter contains the rules to
+        convert objects back and forth between Python and R. If not
+        specified/None, the defaut converter for the magic\'s module is used
+        (that is rpy2\'s default converter + numpy converter + pandas converter
+        if all three are available)."""))
     @argument(
         'code',
         nargs='*',
@@ -579,7 +581,8 @@ utils.install_packages('Cairo')
         value to a Python object.  The return value is determined by rpy2's
         behaviour of returning the result of evaluating the final expression.
 
-        Multiple R expressions can be executed by joining them with semicolons::
+        Multiple R expressions can be executed by joining them with
+        semicolons::
 
             In [9]: %R X=c(1,4,5,7); sd(X); mean(X)
             Out[9]: array([ 4.25])
@@ -619,7 +622,8 @@ utils.install_packages('Cairo')
         If cell is not None and line has some R code, it is prepended to
         the R code in cell.
 
-        Objects can be passed back and forth between rpy2 and python via the -i -o flags in line::
+        Objects can be passed back and forth between rpy2 and python via the
+        -i -o flags in line::
 
             In [14]: Z = np.array([1,4,5,10])
 
@@ -678,11 +682,14 @@ utils.install_packages('Cairo')
                 try:
                     converter = self.shell.user_ns[args.converter]
                 except KeyError:
-                    raise NameError("name '%s' is not defined" % args.converter)
+                    raise NameError(
+                        "name '%s' is not defined" % args.converter
+                    )
             if not isinstance(converter, Converter):
                 raise ValueError("'%s' must be a %s object (but it is a %s)."
-                                 % (args.converter, Converter, type(localconverter)))
-            
+                                 % (args.converter, Converter,
+                                    type(localconverter)))
+
         if args.input:
             for input in ','.join(args.input).split(','):
                 try:
@@ -704,7 +711,8 @@ utils.install_packages('Cairo')
                     text_result, result, visible = self.eval(line)
                     text_output += text_result
                 if text_result:
-                    # the last line printed something to the console so we won't return it
+                    # The last line printed something to the console so
+                    # we won't return it.
                     return_output = False
             else:
                 text_result, result, visible = self.eval(code)
@@ -733,13 +741,15 @@ utils.install_packages('Cairo')
 
         if text_output:
             # display_data.append(('RMagic.R', {'text/plain':text_output}))
-            publish_display_data(data={'text/plain':text_output}, source='RMagic.R')
+            displaypub.publish_display_data(
+                data={'text/plain': text_output}, source='RMagic.R')
         # publish the R images
         if self.device in ['png', 'svg']:
             display_data, md = self.publish_graphics(tmpd, args.isolate_svgs)
 
             for tag, disp_d in display_data:
-                publish_display_data(data=disp_d, source=tag, metadata=md)
+                displaypub.publish_display_data(data=disp_d, source=tag,
+                                                metadata=md)
 
             # kill the temporary directory - currently created only for "svg"
             # and "png" (else it's None)
@@ -749,7 +759,7 @@ utils.install_packages('Cairo')
             with localconverter(converter) as cv:
                 for output in ','.join(args.output).split(','):
                     output_ipy = ro.globalenv.find(output)
-                    self.shell.push({output: output_ipy })
+                    self.shell.push({output: output_ipy})
 
         # this will keep a reference to the display_data
         # which might be useful to other objects who happen to use
@@ -758,7 +768,7 @@ utils.install_packages('Cairo')
         if self.cache_display_data:
             self.display_cache = display_data
 
-        # We're in line mode and return_output is still True, 
+        # We're in line mode and return_output is still True,
         # so return the converted result
         if return_output and not args.noreturn:
             if result is not ri.NULL:
@@ -768,10 +778,10 @@ utils.install_packages('Cairo')
 
 
 __doc__ = __doc__.format(
-                R_DOC = ' '*8 + RMagics.R.__doc__,
-                RPUSH_DOC = ' '*8 + RMagics.Rpush.__doc__,
-                RPULL_DOC = ' '*8 + RMagics.Rpull.__doc__,
-                RGET_DOC = ' '*8 + RMagics.Rget.__doc__
+                R_DOC=' '*8 + RMagics.R.__doc__,
+                RPUSH_DOC=' '*8 + RMagics.Rpush.__doc__,
+                RPULL_DOC=' '*8 + RMagics.Rpull.__doc__,
+                RGET_DOC=' '*8 + RMagics.Rget.__doc__
 )
 
 
@@ -790,4 +800,3 @@ def load_ipython_extension(ip):
         # ipython >= 5.0.0
         # not doing anything (for now)
         pass
-
