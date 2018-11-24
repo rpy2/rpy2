@@ -1,7 +1,5 @@
 import pytest
-import itertools
 import rpy2.rinterface as rinterface
-
 
 try:
     import numpy
@@ -11,7 +9,8 @@ except ImportError:
 
 rinterface.initr()
 
-def floatEqual(x, y, epsilon = 0.00000001):
+
+def floatEqual(x, y, epsilon=0.00000001):
     return abs(x - y) < epsilon
 
 
@@ -60,7 +59,7 @@ def test_array_struct_boolean():
     x = rinterface.BoolSexpVector(px)
     nx = numpy.asarray(x.memoryview())
     # not 'b' as R boolean vectors are array of ints.
-    assert nx.dtype.kind == 'i'  
+    assert nx.dtype.kind == 'i'
     for orig, new in zip(px, nx):
         assert orig == new
 
@@ -71,7 +70,7 @@ def test_array_shape_len3():
     extract = rinterface.baseenv['[']
     rarray = rinterface.baseenv['array'](
         rinterface.IntSexpVector(range(30)),
-        dim = rinterface.IntSexpVector([5,2,3]))
+        dim=rinterface.IntSexpVector([5, 2, 3]))
     npyarray = numpy.array(rarray.memoryview())
     for i in range(5):
         for j in range(2):

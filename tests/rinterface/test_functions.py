@@ -1,6 +1,5 @@
 # coding: utf-8
 import pytest
-import sys
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
@@ -9,6 +8,7 @@ rinterface.initr()
 
 def _noconsole(x):
     pass
+
 
 @pytest.fixture(scope='module')
 def silent_consolewrite():
@@ -27,7 +27,7 @@ def test_new():
     with pytest.raises(ValueError):
         rinterface.SexpClosure(x)
 
-        
+
 def test_typeof():
     sexp = rinterface.globalenv.find('plot')
     assert sexp.typeof == rinterface.RTYPES.CLOSXP
@@ -36,8 +36,8 @@ def test_typeof():
 def test_r_error():
     r_sum = rinterface.baseenv['sum']
     letters = rinterface.baseenv['letters']
-    with pytest.raises(rinterface.embedded.RRuntimeError), \
-         pytest.warns(rinterface.RRuntimeWarning):
+    with pytest.raises(rinterface.embedded.RRuntimeError),\
+            pytest.warns(rinterface.RRuntimeWarning):
         r_sum(letters)
 
 
@@ -67,15 +67,15 @@ def test_closureenv_isenv():
 
 
 def test_closureenv():
-    
+
     assert 'y' not in rinterface.globalenv
-    
+
     exp = rinterface.parse('function(x) { x[y] }')
     fun = rinterface.baseenv['eval'](exp)
     vec = rinterface.baseenv['letters']
 
     assert isinstance(fun.closureenv, rinterface.SexpEnvironment)
-    
+
     with pytest.raises(rinterface.embedded.RRuntimeError):
         with pytest.warns(rinterface.RRuntimeWarning):
             fun(vec)
@@ -95,8 +95,8 @@ def test_call_s4_setClass():
     r_representation = rinterface.globalenv.find('representation')
     attrnumeric = rinterface.StrSexpVector(['numeric', ])
     classname = rinterface.StrSexpVector(['Track', ])
-    classrepr = r_representation(x = attrnumeric,
-                                 y = attrnumeric)
+    classrepr = r_representation(x=attrnumeric,
+                                 y=attrnumeric)
     r_setClass(classname,
                classrepr)
     # TODO: where is the test ?
@@ -108,7 +108,7 @@ def test_call_OrdDict():
                       (None, rinterface.IntSexpVector([5, ])),
                       ('c', rinterface.IntSexpVector([0, ]))))
 
-    mylist = rinterface.baseenv['list'].rcall(tuple(ad.items()), 
+    mylist = rinterface.baseenv['list'].rcall(tuple(ad.items()),
                                               rinterface.globalenv)
 
     names = [x for x in mylist.do_slot('names')]
@@ -118,13 +118,13 @@ def test_call_OrdDict():
 
 
 def test_call_OrdDictEnv():
-    ad = rlc.OrdDict( ((None, rinterface.parse('sum(x)')),) )
+    ad = rlc.OrdDict(((None, rinterface.parse('sum(x)')), ))
     env_a = rinterface.baseenv['new.env']()
-    env_a['x'] = rinterface.IntSexpVector([1,2,3])
+    env_a['x'] = rinterface.IntSexpVector([1, 2, 3])
     sum_a = rinterface.baseenv['eval'].rcall(tuple(ad.items()), env_a)
     assert 6 == sum_a[0]
     env_b = rinterface.baseenv['new.env']()
-    env_b['x'] = rinterface.IntSexpVector([4,5,6])
+    env_b['x'] = rinterface.IntSexpVector([4, 5, 6])
     sum_b = rinterface.baseenv['eval'].rcall(tuple(ad.items()), env_b)
     assert 15 == sum_b[0]
 
@@ -132,11 +132,11 @@ def test_call_OrdDictEnv():
 def test_error_in_call():
     r_sum = rinterface.baseenv['sum']
 
-    with pytest.raises(rinterface.embedded.RRuntimeError), \
-         pytest.warns(rinterface.RRuntimeWarning):
+    with pytest.raises(rinterface.embedded.RRuntimeError),\
+            pytest.warns(rinterface.RRuntimeWarning):
         r_sum(2, 'a')
 
-        
+
 def test_missing_arg():
     exp = rinterface.parse('function(x) { missing(x) }')
     fun = rinterface.baseenv['eval'](exp)
@@ -149,10 +149,10 @@ def test_missing_arg():
 def test_scalar_convert_integer():
     assert 'integer' == rinterface.baseenv['typeof'](int(1))[0]
 
-    
+
 def test_scalar_convert_double():
     assert 'double' == rinterface.baseenv['typeof'](1.0)[0]
 
-    
+
 def test_scalar_convert_boolean():
     assert 'logical' == rinterface.baseenv['typeof'](True)[0]

@@ -1,4 +1,3 @@
-import os
 import platform
 import rpy2.situation
 from _rinterface_cffi import ffi

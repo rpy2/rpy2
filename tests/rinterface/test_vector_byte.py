@@ -4,7 +4,7 @@ import rpy2.rinterface as ri
 ri.initr()
 
 
-def test_init_from_bytes():
+def test_init_from_bytes_in_seq():
     seq = (b'a', b'b', b'c')
     v = ri.ByteSexpVector(seq)
     assert len(v) == 3
@@ -43,7 +43,7 @@ def test_getitem_slice():
     vec = ri.ByteSexpVector((b'a', b'b', b'c'))
     assert tuple(vec[:2]) == (ord(b'a'), ord(b'b'))
 
-    
+
 def test_setitem():
     vec = ri.ByteSexpVector((b'a', b'b', b'c'))
     vec[1] = b'z'

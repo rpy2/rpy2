@@ -16,7 +16,7 @@ def silent_console_print():
                              'consolewrite_print', _just_pass):
         yield
 
-        
+
 def test_new():
     sexp = rinterface.globalenv
     sexp_new = rinterface.SexpEnvironment(sexp)
@@ -25,19 +25,19 @@ def test_new():
 
     sexp_new2 = rinterface.Sexp(sexp)
     assert sexp.rsame(sexp_new2)
-    
+
     del(sexp)
-    
+
     assert sexp_new.rsame(sexp_new2)
 
     with pytest.raises(ValueError):
         rinterface.SexpEnvironment('2')
 
 
-#TODO: the next few tests should be moved to testing the
+# TODO: the next few tests should be moved to testing the
 # cdata -> rinterface-object mapper
 def test_globalenv():
-    assert isinstance(rinterface.globalenv, rinterface.SexpEnvironment) 
+    assert isinstance(rinterface.globalenv, rinterface.SexpEnvironment)
 
 
 def test_getitem():
@@ -90,7 +90,7 @@ def test_find_onlyfromloadedlibrary():
 def test_find_functiononly_keyerror():
     # now with the function-only option
     with pytest.raises(KeyError):
-        res = rinterface.globalenv.find('pi', wantfun=True)
+        rinterface.globalenv.find('pi', wantfun=True)
 
 
 def test_find_functiononly():
@@ -106,7 +106,7 @@ def test_find_functiononly():
 def test_subscript_emptystring():
     ge = rinterface.globalenv
     with pytest.raises(ValueError):
-        res = ge['']
+        ge['']
 
 
 def test_subscript():
@@ -127,9 +127,9 @@ def test_subscript_utf8():
 
 def test_subscript_missing_utf8():
     env = rinterface.baseenv['new.env']()
-    with pytest.raises(KeyError), \
-         pytest.warns(rinterface.RRuntimeWarning):
-            env['呵呵']
+    with pytest.raises(KeyError),\
+            pytest.warns(rinterface.RRuntimeWarning):
+        env['呵呵']
 
 
 def test_length():

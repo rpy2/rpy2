@@ -5,6 +5,7 @@ import rpy2.rinterface as rinterface
 
 rinterface.initr()
 
+
 def test_invalid_init():
     with pytest.raises(ValueError):
         rinterface.Sexp('a')
@@ -19,7 +20,7 @@ def test_init_from_existing():
 def test_typeof():
     assert isinstance(rinterface.baseenv.typeof, int)
 
-    
+
 def test_get():
     sexp = rinterface.baseenv.find('letters')
     assert sexp.typeof == rinterface.RTYPES.STRSXP
@@ -32,9 +33,9 @@ def test_get():
 
 
 def test_list_attrs():
-    x = rinterface.IntSexpVector((1,2,3))
+    x = rinterface.IntSexpVector((1, 2, 3))
     assert len(x.list_attrs()) == 0
-    x.do_slot_assign('a', rinterface.IntSexpVector((33,)))
+    x.do_slot_assign('a', rinterface.IntSexpVector((33, )))
     assert len(x.list_attrs()) == 1
     assert 'a' in x.list_attrs()
 
@@ -85,7 +86,7 @@ def test_do_slot_empty_string():
     with pytest.raises(ValueError):
         sexp.do_slot('')
 
-        
+
 def test_do_slot_assign_create():
     sexp = rinterface.IntSexpVector([])
     slot_value = rinterface.IntSexpVector([3, ])
@@ -94,7 +95,7 @@ def test_do_slot_assign_create():
     assert len(slot_value_back) == len(slot_value)
     assert all(x == y for x, y in zip(slot_value, slot_value_back))
 
-    
+
 def test_do_slot_reassign():
     sexp = rinterface.IntSexpVector([])
     slot_value_a = rinterface.IntSexpVector([3, ])
@@ -132,13 +133,13 @@ def test_sexp_rsame_invalid():
 
 
 def test___sexp__():
-    sexp = rinterface.IntSexpVector([1,2,3])
+    sexp = rinterface.IntSexpVector([1, 2, 3])
     sexp_count = sexp.__sexp_refcount__
     sexp_cobj = sexp.__sexp__
     d = dict(rinterface._rinterface.protected_rids())
     assert sexp_count == d[sexp.rid]
     assert sexp_count == sexp.__sexp_refcount__
-    sexp2 = rinterface.IntSexpVector([4,5,6,7])
+    sexp2 = rinterface.IntSexpVector([4, 5, 6, 7])
     sexp2_rid = sexp2.rid
     sexp2.__sexp__ = sexp_cobj
     del(sexp)
@@ -151,7 +152,7 @@ def test_rclass_get():
     sexp = rinterface.baseenv.find('character')(1)
     assert len(sexp.rclass) == 1
     assert sexp.rclass[0] == 'character'
-    
+
     sexp = rinterface.baseenv.find('matrix')(0)
     assert len(sexp.rclass) == 1
     assert sexp.rclass[0] == 'matrix'
@@ -166,7 +167,7 @@ def test_rclass_get():
 
 
 def test_rclass_set():
-    sexp = rinterface.IntSexpVector([1,2,3])
+    sexp = rinterface.IntSexpVector([1, 2, 3])
     sexp.rclass = rinterface.StrSexpVector(['foo'])
     assert len(sexp.rclass) == 1
     assert sexp.rclass[0] == 'foo'
@@ -177,13 +178,13 @@ def test_rclass_set():
 
 
 def test_rclass_set_invalid():
-    sexp = rinterface.IntSexpVector([1,2,3])
+    sexp = rinterface.IntSexpVector([1, 2, 3])
     with pytest.raises(TypeError):
         sexp.rclass = rinterface.StrSexpVector(123)
 
 
 def test__sexp__wrongtypeof():
-    sexp = rinterface.IntSexpVector([1,2,3])
+    sexp = rinterface.IntSexpVector([1, 2, 3])
     cobj = sexp.__sexp__
     sexp = rinterface.StrSexpVector(['a', 'b'])
     assert len(sexp) == 2
@@ -192,33 +193,34 @@ def test__sexp__wrongtypeof():
 
 
 def test__sexp__set():
-    x = rinterface.IntSexpVector([1,2,3])
+    x = rinterface.IntSexpVector([1, 2, 3])
     x_s = x.__sexp__
     x_rid = x.rid
     # The Python reference count of the capsule is incremented,
     # not the rpy2 reference count
     assert x.__sexp_refcount__ == 1
-    
-    y = rinterface.IntSexpVector([4,5,6])
+
+    y = rinterface.IntSexpVector([4, 5, 6])
     y_count = y.__sexp_refcount__
     y_rid = y.rid
     assert y_count == 1
-    
+
     assert x_rid in [elt[0] for elt in rinterface._rinterface.protected_rids()]
     x.__sexp__ = y.__sexp__
     # x_s is still holding a refcount to the capsule
     assert x_rid in [elt[0] for elt in rinterface._rinterface.protected_rids()]
     # when gone, the capsule will be collected and the id no longer preserved
     del(x_s)
-    assert x_rid not in [elt[0] for elt in rinterface._rinterface.protected_rids()]
+    assert x_rid not in [elt[0] for elt in
+                         rinterface._rinterface.protected_rids()]
 
     assert x.rid == y.rid
     assert y_rid == y.rid
-    
+
 
 @pytest.mark.xfail(reason='WIP')
 def test_deepcopy():
-    sexp = rinterface.IntSexpVector([1,2,3])
+    sexp = rinterface.IntSexpVector([1, 2, 3])
     assert sexp.named == 0
     rinterface.baseenv.find("identity")(sexp)
     assert sexp.named >= 2
@@ -238,7 +240,7 @@ def test_deepcopy():
 def test_rid():
     globalenv_id = rinterface.baseenv.find('.GlobalEnv').rid
     assert globalenv_id == rinterface.globalenv.rid
-        
+
 
 def test_NULL_nonzero():
     assert not rinterface.NULL

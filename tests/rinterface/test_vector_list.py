@@ -11,8 +11,9 @@ def test_init_from_seq():
            ri.StrSexpVector(['foo', 'bar']))
     v = ri.ListSexpVector(seq)
     assert len(v) == 3
-    for x,y in zip(seq, v):
+    for x, y in zip(seq, v):
         utils.assert_equal_sequence(x, y)
+
 
 def test_init_From_seq_invalid_elt():
     seq = (ri.FloatSexpVector([1.0]),
@@ -29,9 +30,9 @@ def test_getitem():
     vec = ri.ListSexpVector(seq)
     utils.assert_equal_sequence(vec[1], ri.IntSexpVector([2, 3]))
     with pytest.raises(TypeError):
-        vec[(2,3)]
+        vec[(2, 3)]
 
-    
+
 def test_setitem():
     seq = (ri.FloatSexpVector([1.0]),
            ri.IntSexpVector([2, 3]),
@@ -41,8 +42,7 @@ def test_setitem():
     utils.assert_equal_sequence(vec[1],
                                 ri.BoolSexpVector([True, True, False]))
     with pytest.raises(TypeError):
-        vec[(2,3)] = 123
-
+        vec[(2, 3)] = 123
 
 
 def test_getslice():

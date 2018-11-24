@@ -3,11 +3,12 @@ import rpy2.rinterface as ri
 
 ri.initr()
 
+
 def test_init_from_seq():
     seq = (1.0, 2.0, 3.0)
     v = ri.FloatSexpVector(seq)
     assert len(v) == 3
-    for x,y in zip(seq, v):
+    for x, y in zip(seq, v):
         assert x == y
 
 
@@ -24,11 +25,12 @@ def test_init_From_seq_invalid_float():
     with pytest.raises(ValueError):
         ri.FloatSexpVector(seq)
 
+
 def test_getitem():
     vec = ri.FloatSexpVector([1.0, 2.0, 3.0])
     assert vec[1] == 2.0
 
-    
+
 def test_setitem():
     vec = ri.FloatSexpVector([1.0, 2.0, 3.0])
     vec[1] = 100.0
@@ -44,7 +46,7 @@ def test_getslice():
 
 
 def test_setslice():
-    vec = ri.FloatSexpVector([1.0,2.0,3.0])
+    vec = ri.FloatSexpVector([1.0, 2.0, 3.0])
     vec[0:2] = ri.FloatSexpVector([11.0, 12.0])
     assert len(vec) == 3
     assert vec[0] == 11.0

@@ -1,5 +1,4 @@
 import pytest
-import struct
 import rpy2.rinterface as ri
 
 ri.initr()
@@ -9,7 +8,7 @@ def test_init_from_seqr():
     seq = [1+2j, 5+7j, 0+1j]
     v = ri.ComplexSexpVector(seq)
     assert len(v) == 3
-    for x,y in zip(seq, v):
+    for x, y in zip(seq, v):
         assert x == y
 
 
@@ -23,7 +22,7 @@ def test_getitem():
     vec = ri.ComplexSexpVector([1+2j, 5+7j, 0+1j])
     assert vec[1] == 5+7j
 
-    
+
 def test_setitem():
     vec = ri.ComplexSexpVector([1+2j, 5+7j, 0+1j])
     vec[1] = 100+3j
@@ -37,7 +36,7 @@ def test_getslice():
     assert vec_s[0] == 1+2j
     assert vec_s[1] == 5+7j
 
-    
+
 def test_getslice_negative():
     vec = ri.ComplexSexpVector([1+2j, 5+7j, 0+1j])
     vec_s = vec[-2:-1]
@@ -55,7 +54,7 @@ def test_setslice():
 
 def test_setslice_negative():
     vec = ri.ComplexSexpVector([1+2j, 5+7j, 0+1j])
-    vec[-2:-1] = ri.ComplexSexpVector([100+3j,])
+    vec[-2:-1] = ri.ComplexSexpVector([100+3j, ])
     assert len(vec) == 3
     assert vec[1] == 100+3j
 

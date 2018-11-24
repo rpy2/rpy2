@@ -77,7 +77,7 @@ class NULLType(sexp.Sexp, metaclass=na_values.Singleton):
         return False
 
     @property
-    def __sexp__(self) ->  _rinterface.SexpCapsule:
+    def __sexp__(self) -> _rinterface.SexpCapsule:
         return self._sexpobject
 
     @property
@@ -105,7 +105,7 @@ class _MissingArgType(object):
         return False
 
     @property
-    def __sexp__(self) ->  _rinterface.SexpCapsule:
+    def __sexp__(self) -> _rinterface.SexpCapsule:
         return self._sexpobject
 
     @property
@@ -151,7 +151,7 @@ class SexpEnvironment(sexp.Sexp):
     available to the user:
     - `globalenv`: The "workspace" for the current R process. This can
       be thought of as when `__name__ == '__main__'` in Python.
-    - `baseenv`: The namespace of R's "base" package. 
+    - `baseenv`: The namespace of R's "base" package.
     """
 
     @_cdata_res_to_rinterface
@@ -363,7 +363,7 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
 
     _R_TYPE = openrlib.rlib.RAWSXP
     _NP_TYPESTR = '|u1'
-    
+
     _R_GET_PTR = openrlib._RAW
     _CAST_IN = _cast_in_byte
 

@@ -10,7 +10,7 @@ def test_init_from_iter():
     seq = range(3)
     v = ri.IntSexpVector(seq)
     assert len(v) == 3
-    for x,y in zip(seq, v):
+    for x, y in zip(seq, v):
         assert x == y
 
 
@@ -29,7 +29,7 @@ def test_init_from_seq_invalid_overflow():
     assert v[0] == MAX_INT
     assert v[1] == 42
     # check 64-bit architecture
-    with pytest.raises(OverflowError): 
+    with pytest.raises(OverflowError):
         ri.IntSexpVector((MAX_INT + 1, ))
 
 
@@ -37,7 +37,7 @@ def test_getitem():
     vec = ri.IntSexpVector(range(1, 10))
     assert vec[1] == 2
 
-    
+
 def test_setitem():
     vec = ri.IntSexpVector(range(1, 10))
     vec[1] = 100
@@ -45,37 +45,37 @@ def test_setitem():
 
 
 def test_getslice():
-    vec = ri.IntSexpVector([1,2,3])
+    vec = ri.IntSexpVector([1, 2, 3])
     vec = vec[0:2]
     assert len(vec) == 2
     assert vec[0] == 1
     assert vec[1] == 2
 
-    
+
 def test_getslice_negative():
-    vec = ri.IntSexpVector([1,2,3])
+    vec = ri.IntSexpVector([1, 2, 3])
     vec_s = vec[-2:-1]
     assert len(vec_s) == 1
     assert vec_s[0] == 2
 
 
 def test_setslice():
-    vec = ri.IntSexpVector([1,2,3])
-    vec[0:2] = ri.IntSexpVector([11,12])
+    vec = ri.IntSexpVector([1, 2, 3])
+    vec[0:2] = ri.IntSexpVector([11, 12])
     assert len(vec) == 3
     assert vec[0] == 11
     assert vec[1] == 12
 
 
 def test_setslice_negative():
-    vec = ri.IntSexpVector([1,2,3])
-    vec[-2:-1] = ri.IntSexpVector([33,])
+    vec = ri.IntSexpVector([1, 2, 3])
+    vec[-2:-1] = ri.IntSexpVector([33, ])
     assert len(vec) == 3
     assert vec[1] == 33
 
 
 def test_index():
-    x = ri.IntSexpVector((1,2,3))
+    x = ri.IntSexpVector((1, 2, 3))
     assert x.index(1) == 0
     assert x.index(3) == 2
     with pytest.raises(ValueError):
@@ -85,19 +85,19 @@ def test_index():
 
 
 def test_getitem_negative_outffbound():
-    x = ri.IntSexpVector((1,2,3))
+    x = ri.IntSexpVector((1, 2, 3))
     with pytest.raises(IndexError):
         x.__getitem__(-100)
 
 
 def test_getitem_outofbound():
-    x = ri.IntSexpVector((1,2,3))
+    x = ri.IntSexpVector((1, 2, 3))
     with pytest.raises(IndexError):
         x.__getitem__(10)
 
-        
-def test_getitem_outofbound():
-    x = ri.IntSexpVector((1,2,3))
+
+def test_getitem_outofbound_overmaxsize():
+    x = ri.IntSexpVector((1, 2, 3))
     with pytest.raises(IndexError):
         x.__getitem__(sys.maxsize + 1)
 
@@ -126,7 +126,7 @@ def test_setitem_outffbound():
 
 @pytest.mark.skip(reason='Python-level memoryviews stuck on row-major arrays')
 def test_memoryview():
-    shape = (5,2,3)
+    shape = (5, 2, 3)
     values = tuple(range(30))
     # R arrays are column-major, therefore
     # a slice like [:, :, 0] should look
@@ -140,7 +140,7 @@ def test_memoryview():
 
     rarray = ri.baseenv['array'](
         ri.IntSexpVector(values),
-        dim = ri.IntSexpVector(shape))
+        dim=ri.IntSexpVector(shape))
     mv = rarray.memoryview()
     assert mv.shape == shape
     assert mv.tolist()[0] == [[0, 1, 2, 3, 4],

@@ -10,6 +10,7 @@ def test_rmemory_manager():
         assert rmemory.count == 0
         foo = rmemory.protect(rinterface.conversion._str_to_charsxp('foo'))
         assert rmemory.count == 1
+        del(foo)
     assert rmemory.count == 0
 
 
@@ -21,6 +22,7 @@ def test_rmemory_manager_unprotect():
             rmemory.unprotect(2)
         rmemory.unprotect(1)
         assert rmemory.count == 0
+        del(foo)
     assert rmemory.count == 0
 
 

@@ -5,7 +5,8 @@ ffibuilder = cffi.FFI()
 ffibuilder.set_source('_rinterface_cffi', None)
 
 
-ffibuilder.cdef("""
+ffibuilder.cdef(
+    """
 typedef unsigned int SEXPTYPE;
 
 const unsigned int NILSXP     =  0;
@@ -37,8 +38,7 @@ const unsigned int NEWSXP     = 30;
 const unsigned int FREESXP    = 31;
 
 const unsigned int FUNSXP     = 99;
-"""
-)
+    """)
 
 # include/R_exts/Complex.h
 ffibuilder.cdef("""
@@ -75,7 +75,8 @@ ffibuilder.cdef("""
 typedef unsigned char Rbyte;
 """)
 
-ffibuilder.cdef("""
+ffibuilder.cdef(
+    """
 struct symsxp_struct {
     struct SEXPREC *pname;
     struct SEXPREC *value;
@@ -127,16 +128,15 @@ struct sxpinfo_struct {
 struct primsxp_struct {
 int offset;
 };
-"""
-)
+    """)
 
-ffibuilder.cdef("""
+ffibuilder.cdef(
+    """
 struct vecsxp_struct {
     R_xlen_t length;
     R_xlen_t truelength;
 };
-"""
-)
+    """)
 
 SEXPREC_HEADER = """
     struct sxpinfo_struct sxpinfo;

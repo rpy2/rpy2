@@ -8,49 +8,49 @@ def test_init_from_seqr():
     seq = [True, False, False]
     v = ri.BoolSexpVector(seq)
     assert len(v) == 3
-    for x,y in zip(seq, v):
+    for x, y in zip(seq, v):
         assert x == y
 
 
 def test_getitem():
     vec = ri.BoolSexpVector([True, False, False])
-    assert vec[1] == False
+    assert vec[1] is False
 
-    
+
 def test_setitem():
     vec = ri.BoolSexpVector([True, False, False])
     vec[1] = True
-    assert vec[1] == True
+    assert vec[1] is True
 
 
 def test_getslice():
     vec = ri.BoolSexpVector([True, False, False])
     vec = vec[0:2]
     assert len(vec) == 2
-    assert vec[0] == True
-    assert vec[1] == False
+    assert vec[0] is True
+    assert vec[1] is False
 
-    
+
 def test_getslice_negative():
     vec = ri.BoolSexpVector([True, False, True])
     vec_s = vec[-2:-1]
     assert len(vec_s) == 1
-    assert vec_s[0] == False
+    assert vec_s[0] is False
 
 
 def test_setslice():
     vec = ri.BoolSexpVector([True, False, False])
     vec[0:2] = [True, True]
     assert len(vec) == 3
-    assert vec[0] == True
-    assert vec[1] == True
+    assert vec[0] is True
+    assert vec[1] is True
 
 
 def test_setslice_negative():
     vec = ri.BoolSexpVector([True, False, False])
-    vec[-2:-1] = ri.BoolSexpVector([True,])
+    vec[-2:-1] = ri.BoolSexpVector([True, ])
     assert len(vec) == 3
-    assert vec[1] == True
+    assert vec[1] is True
 
 
 def test_index():

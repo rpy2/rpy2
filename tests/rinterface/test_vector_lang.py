@@ -26,7 +26,8 @@ def test_getitem():
     assert str(f[0]) == '~'
     assert str(f[1]) == 'y'
     assert str(f[2]) == 'x'
-    
+
+
 def test_setitem():
     rgetattr = ri.baseenv.find('::')
     formula = rgetattr('stats', 'formula')

@@ -1,5 +1,4 @@
 import pytest
-import struct
 import rpy2.rinterface as ri
 
 ri.initr()
@@ -9,7 +8,7 @@ def test_init_from_seqr():
     seq = ['foo', 'bar', 'baz']
     v = ri.StrSexpVector(seq)
     assert len(v) == 3
-    for x,y in zip(seq, v):
+    for x, y in zip(seq, v):
         assert x == y
 
 
@@ -23,15 +22,15 @@ def test_getitem():
     vec = ri.StrSexpVector(['foo', 'bar', 'baz'])
     assert vec[1] == 'bar'
     with pytest.raises(TypeError):
-        vec[(2,3)]
+        vec[(2, 3)]
 
-    
+
 def test_setitem():
     vec = ri.StrSexpVector(['foo', 'bar', 'baz'])
     vec[1] = 'boo'
     assert vec[1] == 'boo'
     with pytest.raises(TypeError):
-        vec[(2,3)] = 'boo'
+        vec[(2, 3)] = 'boo'
 
 
 def test_getslice():
@@ -41,7 +40,7 @@ def test_getslice():
     assert vec_s[0] == 'foo'
     assert vec_s[1] == 'bar'
 
-    
+
 def test_getslice_negative():
     vec = ri.StrSexpVector(['foo', 'bar', 'baz'])
     vec_s = vec[-2:-1]
@@ -59,7 +58,7 @@ def test_setslice():
 
 def test_setslice_negative():
     vec = ri.StrSexpVector(['foo', 'bar', 'baz'])
-    vec[-2:-1] = ri.StrSexpVector(['boo',])
+    vec[-2:-1] = ri.StrSexpVector(['boo', ])
     assert len(vec) == 3
     assert vec[1] == 'boo'
 
@@ -81,8 +80,8 @@ def test_non_asciil():
     sexp = ri.StrSexpVector((u'\u21a7', ))
     char = sexp[0]
     assert isinstance(char, str)
-    #FIXME: the following line is failing on drone, but not locally
-    #  assert u'\u21a7'.encode('utf-8') == char.encode('utf-8')
-    #       because of this, the following line is used to pass the test
-    #       until I have more reports from users or manage to reproduce
-    #       myself what is happening on drone.io.
+    # FIXME: the following line is failing on drone, but not locally
+    #   assert u'\u21a7'.encode('utf-8') == char.encode('utf-8')
+    # because of this, the following line is used to pass the test
+    # until I have more reports from users or manage to reproduce
+    # myself what is happening on drone.io.

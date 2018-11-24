@@ -20,7 +20,7 @@ def test_NAInteger_str():
     na = ri.NA_Integer
     assert str(na) == 'NA_integer_'
 
-    
+
 def test_NAInteger_to_r():
     na_int = ri.NA_Integer
     assert ri.baseenv["is.na"](na_int)[0]
@@ -37,7 +37,7 @@ def test_NAInteger_binaryfunc():
     na_int = ri.NAInteger
     assert (na_int + 2) is na_int
 
-    
+
 def test_NAInteger_in_vector():
     na_int = ri.NA_Integer
     x = ri.IntSexpVector((1, na_int, 2))
@@ -45,7 +45,7 @@ def test_NAInteger_in_vector():
     assert x[0] == 1
     assert x[2] == 2
 
-    
+
 def test_R_to_NALogical():
     r_na_lgl = ri.evalr('NA')[0]
     assert r_na_lgl is ri.NA
@@ -65,25 +65,25 @@ def test_bool_NALogical():
     with pytest.raises(ValueError):
         bool(ri.NA)
 
-    
+
 def test_NALogical_to_r():
     na_lgl = ri.NA_Logical
-    assert ri.baseenv["is.na"](na_lgl)[0] == True
+    assert ri.baseenv["is.na"](na_lgl)[0] is True
 
-    
+
 def test_NALogical_in_vector():
     na_bool = ri.NA_Logical
     x = ri.BoolSexpVector((True, na_bool, False))
-    assert x[0] == True
+    assert x[0] is True
     assert x[1] is ri.NA_Logical
-    assert x[2] == False
+    assert x[2] is False
 
-    
+
 def test_R_to_NAReal():
     r_na_real = ri.evalr('NA_real_')[0]
     assert math.isnan(r_na_real)
 
-    
+
 def test_NAReal_to_r():
     na_real = ri.NA_Real
     assert ri.baseenv["is.na"](na_real)[0]
@@ -98,7 +98,7 @@ def test_NAReal_binaryfunc():
     na_real = ri.NA_Real
     assert math.isnan(na_real + 2.0)
 
-    
+
 def test_NAReal_in_vector():
     na_float = ri.NA_Real
     x = ri.FloatSexpVector((1.1, na_float, 2.2))
@@ -146,4 +146,3 @@ def test_NACharacter_in_vector():
     assert x[0] == 'ab'
     assert x.get_charsxp(1).rid == na_str.rid
     assert x[2] == 'cd'
-

@@ -1,6 +1,4 @@
-import copy
 import gc
-import io
 import multiprocessing
 import os
 import pickle
@@ -39,7 +37,7 @@ def _call_with_ended_r(queue):
     rdate = rinterface.baseenv['date']
     rinterface.endr(0)
     try:
-        tmp = rdate()
+        rdate()
         res = (False, None)
     except RuntimeError as re:
         res = (True, re)
@@ -109,7 +107,7 @@ def test_parse_error():
     with pytest.raises(_rinterface.RParsingError):
         rinterface.parse("2 + 3 , 1")
 
-        
+
 def test_parse_invalid_string():
     with pytest.raises(TypeError):
         rinterface.parse(3)
@@ -135,7 +133,7 @@ def test_rternalize_namedargs():
     res = rfun(1, 2, z=8)
     assert res[0] == 8
 
-    
+
 def test_external_python():
     def f(x):
         return 3
@@ -155,15 +153,15 @@ def testExternalPythonFromExpression():
 
 
 def testInterruptR():
-    with tempfile.NamedTemporaryFile(mode = 'w', suffix = '.py',
-                                     delete = False) as rpy_code:
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.py',
+                                     delete=False) as rpy_code:
         rpy2_path = os.path.dirname(rpy2.__path__[0])
 
         rpy_code_str = """
         import sys
         sys.path.insert(0, '%s')
         import rpy2.rinterface as ri
-        
+
         ri.initr()
         def f(x):
             pass
@@ -178,7 +176,7 @@ def testInterruptR():
             ri.baseenv['eval'](ri.parse(rcode))
         except Exception as e:
             sys.exit(0)
-      """ %(rpy2_path)
+      """ % rpy2_path
 
         rpy_code.write(rpy_code_str)
     cmd = (sys.executable, rpy_code.name)
@@ -192,18 +190,20 @@ def testInterruptR():
         child_proc.send_signal(signal.SIGINT)
         time.sleep(1)  # required for the SIGINT to function
         ret_code = child_proc.poll()
-    assert ret_code is not None # Interruption failed
+    assert ret_code is not None  # Interruption failed
 
 
 # TODO: still needed ?
 def test_rpy_memory():
     x = rinterface.IntSexpVector(range(10))
-    y = rinterface.IntSexpVector(range(10))
     x_rid = x.rid
     assert x_rid in set(z[0] for z in rinterface._rinterface.protected_rids())
     del(x)
-    gc.collect(); gc.collect()
-    assert x_rid not in set(z[0] for z in rinterface._rinterface.protected_rids())
+    # TODO: Why calling collect() twice ?
+    gc.collect()
+    gc.collect()
+    s = set(z[0] for z in rinterface._rinterface.protected_rids())
+    assert x_rid not in s
 
 
 def test_object_dispatch_lang():
@@ -212,25 +212,25 @@ def test_object_dispatch_lang():
     assert isinstance(obj, rinterface.SexpVector)
     assert obj.typeof == rinterface.RTYPES.LANGSXP
 
-    
+
 def test_object_dispatch_vector():
     robj = rinterface.globalenv.find('letters')
     assert isinstance(robj, rinterface.SexpVector)
 
-    
+
 def test_object_dispatch_closure():
     robj = rinterface.globalenv.find('sum')
     assert isinstance(robj, rinterface.SexpClosure)
 
-    
+
 def test_object_dispatch_rawvector():
     rawfunc = rinterface.baseenv.find('raw')
     rawvec = rawfunc(rinterface.IntSexpVector((10, )))
     assert rinterface.RTYPES.RAWSXP == rawvec.typeof
 
-    
+
 def test_unserialize():
-    x = rinterface.IntSexpVector([1,2,3])
+    x = rinterface.IntSexpVector([1, 2, 3])
     x_serialized = x.__getstate__()
     x_again = rinterface.Sexp(
         rinterface.unserialize(x_serialized))
@@ -238,9 +238,9 @@ def test_unserialize():
     assert not x.rsame(x_again)
     assert identical(x, x_again)[0]
 
-    
+
 def test_pickle():
-    x = rinterface.IntSexpVector([1,2,3])
+    x = rinterface.IntSexpVector([1, 2, 3])
     with tempfile.NamedTemporaryFile() as f:
         pickle.dump(x, f)
         f.flush()
@@ -248,4 +248,3 @@ def test_pickle():
         x_again = pickle.load(f)
     identical = rinterface.baseenv['identical']
     assert identical(x, x_again)[0]
-
