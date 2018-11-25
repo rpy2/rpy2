@@ -6,7 +6,6 @@ Miscellaneous topics
 
    callbacks
    server
-   rpy_classic
    related_projects
    performances
    graphicaldevices

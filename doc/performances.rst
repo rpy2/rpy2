@@ -45,18 +45,40 @@ the fastest, most memory efficient, and most versatile Python-to-R bridge.
 Low-level interface
 -------------------
 
-The high-level layer :mod:`rpy2.robjects` brings a lot of convenience, such a class mappings and interfaces, but obviously
-with a cost in term of performances. This cost is neglibible for common usage, but compute-intensive programms traversing the
-Python-to-R bridge way and back a very large number of time will notice it.
+The high-level layer :mod:`rpy2.robjects` brings a lot of convenience, such a class
+mappings and interfaces, but obviously with a cost in term of performances. This cost is
+believe to be neglibible for common use cases (calling calling complex R code in libraries
+with no Python alternative or with comparable level of maturity), but compute-intensive
+programms traversing the Python-to-R bridge way and back a very large number of time will
+notice it.
 
-For those cases, the :mod:`rpy2.rinterface` low-level layer gets the programmer closer to R's C-level interface, bring rpy2
-faster than R code itself, as shown below.
+The :mod:`rpy2.rinterface` low-level layer gets the programmer closer to R's C-level
+interface, but when interfacing with R using :mod:`cffi`'s ABI mode this does not translate
+into immediate noticeable speed gains. However, having code for the :mod:`rpy2.rinterface`
+interface means that translation to C is relatively easy to achieve, and :mod:`cffi`'s API
+mode can be then used.
 
 
-A simple benchmark
-==================
+.. note::
 
-As a simple benchmark, we took a function that would sum
+   General speed improvement strategies for Python will apply. For example :mod:`cython`
+   can compile to C Python-like code with type declarations or pypy can be used as
+   an alternative implemenation of Python.
+   
+   When the compute-intensive shuttling across Python and R is mainly about Python accessing
+   data in R data structures, a memoryview (available as
+   :meth:`rpy2.rinterface.BoolSexpVector.memoryview`,
+   :meth:`rpy2.rinterface.FloatSexpVector.memoryview`, or
+   :meth:`rpy2.rinterface.IntSexpVector.memoryview`) will provide access to the memory
+   region in the embedded R where data for an array is stored. The numpy array interface
+   as :attr:`rpy2.rinterface.NumpyArrayInterface.__array_interface__` for the same
+   vector objects.
+  
+
+A naive benchmark
+=================
+
+As a naive benchmark, we took a function that would sum
 up all elements in a numerical vector.
 
 In pure R, the code is like:
@@ -72,7 +94,8 @@ while in pure Python this is like:
    :start-after: #-- purepython_sum-begin
    :end-before: #-- purepython_sum-end
 
-R has obviously a vectorized function `sum()` calling underlying C code, but the purpose of the benchmark
+R has obviously a vectorized function `sum()` calling underlying C code, but the purpose of
+the benchmark
 is to measure the running time of pure R code.
 
 We ran this function over different types of sequences (of the same length)
@@ -97,24 +120,27 @@ code runs.
 =============== ============================================= ==========
 Function        Sequence                                      Speedup   
 =============== ============================================= ==========
-builtin python  array.array                                   2.17      
-builtin python  FloatVector                                   0.04      
-builtin python  list                                          2.90      
+builtin python  array.array                                   5.01      
+builtin python  FloatSexpVector                               0.03      
+builtin python  FloatSexpVector-memoryview-array              5.01      
+builtin python  FloatVector                                   0.02      
+builtin python  list                                          7.71      
 builtin python  numpy.array                                   0.23      
-builtin python  SexpVector                                    1.26      
-pure python     array.array                                   0.74      
-pure python     FloatVector                                   0.04      
-pure python     list                                          0.81      
-pure python     numpy.array                                   0.20      
-pure python     SexpVector                                    0.44      
-R builtin       R builtin                                     9.38      
-R compiled      R compiled                                    0.88      
+pure python     array.array                                   1.23      
+pure python     FloatSexpVector                               0.03      
+pure python     FloatSexpVector-memoryview-array              0.93      
+pure python     FloatVector                                   0.02      
+pure python     list                                          1.36      
+pure python     numpy.array                                   0.21      
+R builtin       R builtin                                     20.98     
+R compiled      R compiled                                    0.85      
 R               R                                             1.00      
-reduce python   array.array                                   0.30      
-reduce python   FloatVector                                   0.04      
-reduce python   list                                          0.31      
-reduce python   numpy.array                                   0.18      
-reduce python   SexpVector                                    0.29      
+reduce python   array.array                                   0.46      
+reduce python   FloatSexpVector                               0.03      
+reduce python   FloatSexpVector-memoryview-array              0.46      
+reduce python   FloatVector                                   0.02      
+reduce python   list                                          0.47      
+reduce python   numpy.array                                   0.21      
 =============== ============================================= ==========
 
 The object one iterates through matters much for the speed, and

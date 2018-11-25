@@ -260,7 +260,7 @@ implementation of ``dplyr``, it *just works*.
 .. parsed-literal::
 
     [90m# Source:   lazy query [?? x 2][39m
-    [90m# Database: sqlite 3.22.0 [/tmp/tmpnd75g166][39m
+    [90m# Database: sqlite 3.22.0 [/tmp/tmp9lh5xvkc][39m
        gear mean_ptw
       [3m[90m<dbl>[39m[23m    [3m[90m<dbl>[39m[23m
     [90m1[39m     4    [4m1[24m237.
@@ -278,7 +278,7 @@ available to us. If we want to see the SQL code generated that's:
 
 .. parsed-literal::
 
-    Callback to write to the R console: <SQL>
+    R[write to console]: <SQL>
     SELECT `gear`, AVG(`powertoweight`) AS `mean_ptw`
     FROM (SELECT `mpg`, `cyl`, `disp`, `hp`, `drat`, `wt`, `qsec`, `vs`, `am`, `gear`, `carb`, `hp` * 36.0 / `wt` AS `powertoweight`
     FROM (SELECT *
@@ -313,7 +313,7 @@ R.
 
 .. parsed-literal::
 
-    /home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.0.0.dev0-py3.6.egg/rpy2/robjects/pandas2ri.py:196: FutureWarning: from_items is deprecated. Please use DataFrame.from_dict(dict(items), ...) instead. DataFrame.from_dict(OrderedDict(items)) may be used to preserve the key order.
+    /home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.0.0.dev0-py3.6.egg/rpy2/robjects/pandas2ri.py:195: FutureWarning: from_items is deprecated. Please use DataFrame.from_dict(dict(items), ...) instead. DataFrame.from_dict(OrderedDict(items)) may be used to preserve the key order.
       res = PandasDataFrame.from_items(items)
 
 

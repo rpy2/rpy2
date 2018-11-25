@@ -6,6 +6,7 @@ import multiprocessing
 import array, numpy, rpy2.robjects as ro
 import rpy2.robjects.packages
 from rpy2.robjects import Formula
+from functools import reduce
 
 n_loops = (1, 10, 20, 30, 40)
 
@@ -23,15 +24,21 @@ def setup_func(kind):
     elif kind == "FloatVector":
         import rpy2.robjects as module
         res = module.FloatVector(x_list)
-    elif kind == "SexpVector":
+    elif kind == "FloatSexpVector":
         import rpy2.rinterface as module
         module.initr()
-        res = module.IntSexpVector(x_list)
+        res = module.FloatSexpVector(x_list)
+    elif kind == "FloatSexpVector-memoryview-array":
+        import rpy2.rinterface as module
+        module.initr()
+        tmp = module.FloatSexpVector(x_list)
+        mv = tmp.memoryview()
+        res = array.array(mv.format, mv)
     elif kind == "list":
         res = x_list
     elif kind == "R":
         import rpy2.robjects as module
-        res = module.rinterface.IntSexpVector(x_list)
+        res = module.rinterface.FloatSexpVector(x_list)
         module.globalenv['x'] = res
         res = None
 #-- setup_sum-end
@@ -39,7 +46,7 @@ def setup_func(kind):
         raise ValueError("Unknown kind '%s'" %kind)
     return (res, module)
 
-from functools import reduce
+
 def python_reduce(x):
     total = reduce(lambda x, y: x+y, x)
     return total
@@ -52,6 +59,7 @@ def python_sum(x):
         total += elt
     return total
 #-- purepython_sum-end
+
 
 def test_sumr(queue, func, n, setup_func):
     array, module = setup_func("R")
@@ -79,6 +87,7 @@ for (i in 1:%i) {
     module.r(rcode)
     time_end = time.time()
     queue.put(time_end - time_beg)
+
 
 def test_sumr_compile(queue, func, n, setup_func):
     array, module = setup_func("R")
@@ -142,7 +151,8 @@ combos = [(label_func, func, label_sequence, n_loop) \
           for label_func, func in (("pure python", python_sum), \
                                    ("reduce python", python_reduce), \
                                    ("builtin python", sum))
-          for label_sequence in ("SexpVector",
+          for label_sequence in ("FloatSexpVector",
+                                 "FloatSexpVector-memoryview-array",
                                  "FloatVector",
                                  "list",
                                  "array.array",

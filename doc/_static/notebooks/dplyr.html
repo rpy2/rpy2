@@ -12208,7 +12208,7 @@ the original implementation of <code>dplyr</code>, it <em>just works</em>.</p>
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre><span class="ansi-black-intense-fg"># Source:   lazy query [?? x 2]</span>
-<span class="ansi-black-intense-fg"># Database: sqlite 3.22.0 [/tmp/tmpnd75g166]</span>
+<span class="ansi-black-intense-fg"># Database: sqlite 3.22.0 [/tmp/tmp9lh5xvkc]</span>
    gear mean_ptw
   <span class="ansi-black-intense-fg">&lt;dbl&gt;</span>    <span class="ansi-black-intense-fg">&lt;dbl&gt;</span>
 <span class="ansi-black-intense-fg">1</span>     4    1237.
@@ -12254,7 +12254,7 @@ to us. If we want to see the SQL code generated that's:</p>
 
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>Callback to write to the R console: &lt;SQL&gt;
+<pre>R[write to console]: &lt;SQL&gt;
 SELECT `gear`, AVG(`powertoweight`) AS `mean_ptw`
 FROM (SELECT `mpg`, `cyl`, `disp`, `hp`, `drat`, `wt`, `qsec`, `vs`, `am`, `gear`, `carb`, `hp` * 36.0 / `wt` AS `powertoweight`
 FROM (SELECT *
@@ -12322,7 +12322,7 @@ completing the "lexical loan" of the dplyr vocabulary from R.</p>
 
 
 <div class="output_subarea output_stream output_stderr output_text">
-<pre>/home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.0.0.dev0-py3.6.egg/rpy2/robjects/pandas2ri.py:196: FutureWarning: from_items is deprecated. Please use DataFrame.from_dict(dict(items), ...) instead. DataFrame.from_dict(OrderedDict(items)) may be used to preserve the key order.
+<pre>/home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.0.0.dev0-py3.6.egg/rpy2/robjects/pandas2ri.py:195: FutureWarning: from_items is deprecated. Please use DataFrame.from_dict(dict(items), ...) instead. DataFrame.from_dict(OrderedDict(items)) may be used to preserve the key order.
   res = PandasDataFrame.from_items(items)
 </pre>
 </div>

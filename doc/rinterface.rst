@@ -494,14 +494,14 @@ R objects between rpy2 objects.
    single: rinterface; SexpVector
 
 
-:class:`SexpVector`
--------------------
+R arrays (vectors) inherit from :class:`SexpVector`
+---------------------------------------------------
 
 Overview
 ^^^^^^^^
 
-In R all scalars are in fact vectors.
-Anything like a one-value variable is a vector of
+In R there are no scalars, only arrays (called "vectors" when unidimensional).
+Anything like a one-value variable is in fact a vector of
 length 1.
 
 To use again the constant *pi*:
@@ -510,7 +510,7 @@ To use again the constant *pi*:
 >>> len(pi)
 1
 >>> pi
-<rinterface.SexpVector - Python:0x2b20325d2660 / R:0x16d5248>
+<rinterface.FloatSexpVector - Python:0x2b20325d2660 / R:0x16d5248>
 >>> pi[0]
 3.1415926535897931
 >>>
@@ -526,18 +526,15 @@ The letters of the (western) alphabet are:
 R types
 ^^^^^^^
 
-R vectors all have a `type`, sometimes referred to in R as a `mode`.
-This information is encoded as an integer by R, but it can sometimes be
-better for human reader to be able to provide a string.
+R vectors all have a `type`, sometimes referred to in R as a `mode`. Rpy2 has chosen
+to map R types to child classes of :class:`rpy2.rinterface_lib.sexp.SexpVector`, as shown
+in the inheritance diagram below, with the :mod:`numpy` array interface implemented for
+some of them.
 
-.. function:: str_typeint(typeint)
-
-   Return a string corresponding to a integer-encoded R type.
-
-   :param typeint: integer (as returned by :attr:`Sexp.typeof`)
-   :rtype: string
-
-
+.. inheritance-diagram:: rpy2.rinterface.SexpVector rpy2.rinterface.IntSexpVector rpy2.rinterface.FloatSexpVector rpy2.rinterface.ByteSexpVector rpy2.rinterface.ComplexSexpVector rpy2.rinterface.StrSexpVector rpy2.rinterface.ListSexpVector rpy2.rinterface.PairlistSexpVector rpy2.rinterface.ExprSexpVector rpy2.rinterface.LangSexpVector rpy2.rinterface.BoolSexpVector
+   :parts: 1
+   :caption: C-level R array objects
+	   
 .. index::
    pair: rinterface;indexing
 
@@ -703,6 +700,10 @@ Convenience classes are provided to create vectors of a given type:
    :show-inheritance:
    :members:
 
+.. autoclass:: rpy2.rinterface.ByteSexpVector
+   :show-inheritance:
+   :members:
+
 .. autoclass:: rpy2.rinterface.FloatSexpVector
    :show-inheritance:
    :members:
@@ -715,7 +716,15 @@ Convenience classes are provided to create vectors of a given type:
    :show-inheritance:
    :members:
 
+.. autoclass:: rpy2.rinterface.PairlistSexpVector
+   :show-inheritance:
+   :members:
+
 .. autoclass:: rpy2.rinterface.ComplexSexpVector
+   :show-inheritance:
+   :members:
+
+.. autoclass:: rpy2.rinterface.LangSexpVector
    :show-inheritance:
    :members:
 
@@ -788,8 +797,8 @@ that contains R's base objects:
    (this is a problem, that will be solved in the near future).
 
 
-:meth:`get`
-^^^^^^^^^^^
+:meth:`find`
+^^^^^^^^^^^^
 
 Whenever a search for a symbol is performed, the whole
 search path is considered: the environments in the list
@@ -863,8 +872,8 @@ robust way: the dot character `.`
 can be used for symbol names in R (like pretty much any character), and
 this can make an exact correspondance between :program:`R` and `Python` names 
 rather difficult.
-:mod:`rpy` uses transformation functions that translates '.' to '_' and back,
-but this can lead to complications since '_' can also be used for R symbols 
+:mod:`rpy` uses transformation functions that translates `'.'` to `'_'` and back,
+but this can lead to complications since `'_'` can also be used for R symbols 
 (although this is the approach taken for the high-level interface, see
 Section :ref:`robjects-packages`).
 

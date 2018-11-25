@@ -41,22 +41,6 @@ This approach has limitation as:
 * '.' (dot) is syntactically valid in names for R objects, but not for
     python objects.
 
-That last limitation can partly be removed by using :mod:`rpy2.rpy_classic` if
-this feature matters most to you.
-
->>> robjects.r.as_null
-# AttributeError raised
->>> import rpy2.rpy_classic as rpy
->>> rpy.set_default_mode(rpy.NO_CONVERSION)
->>> rpy.r.as_null
-# R function as.null() returned
-
-.. note::
-
-   The section :ref:`rpy_classic-mix` outlines how to integrate
-   :mod:`rpy2.rpy_classic` code.
-
-
 Behind the scene, the steps for getting an attribute of `r` are
 rather straightforward:
  
