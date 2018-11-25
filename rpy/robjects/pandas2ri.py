@@ -191,8 +191,8 @@ def rpy2py_listvector(obj):
 
 @rpy2py.register(DataFrame)
 def rpy2py_dataframe(obj):
-    items = tuple((k, rpy2py(v) if isinstance(v, Sexp) else v) for k, v in obj.items())
-    res = PandasDataFrame.from_items(items)
+    items = OrderedDict((k, rpy2py(v) if isinstance(v, Sexp) else v) for k, v in obj.items())
+    res = PandasDataFrame.from_dict(items)
     return res
 
 
