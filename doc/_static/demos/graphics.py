@@ -9,7 +9,7 @@ from rpy2.rinterface_lib.embedded import RRuntimeError
 import warnings
 
 # The R 'print' function
-rprint = robjects.globalenv.get("print")
+rprint = robjects.globalenv.find("print")
 stats = importr('stats')
 grdevices = importr('grDevices')
 base = importr('base')
