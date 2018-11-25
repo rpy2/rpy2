@@ -14,21 +14,21 @@ the line and cell magics, respectively.
 Usage
 =====
 
-To enable the magics below, execute ``%load_ext rpy2.ipython``.
+To enable the magics below, execute `%load_ext rpy2.ipython`.
 
-``%R``
+`%R`
 
 {R_DOC}
 
-``%Rpush``
+`%Rpush`
 
 {RPUSH_DOC}
 
-``%Rpull``
+`%Rpull`
 
 {RPULL_DOC}
 
-``%Rget``
+`%Rget`
 
 {RGET_DOC}
 

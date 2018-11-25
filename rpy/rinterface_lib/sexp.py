@@ -91,9 +91,9 @@ class Sexp(object):
         self._sexpobject = value
 
     @property
-    def __sexp_refcount__(self):
+    def __sexp_refcount__(self) -> int:
         """Count the number of independent Python references to
-        the underlyinh R object."""
+        the underlying R object."""
         return _rinterface._R_PRESERVED[
             _rinterface.get_rid(self.__sexp__._cdata)
         ]
@@ -135,7 +135,7 @@ class Sexp(object):
         return _rinterface._NAMED(self.__sexp__._cdata)
 
     @conversion._cdata_res_to_rinterface
-    def list_attrs(self):
+    def list_attrs(self) -> 'typing.Union[rpy2.rinterface.StrSexpVector, str]':
         return _rinterface._list_attrs(self.__sexp__._cdata)
 
     @conversion._cdata_res_to_rinterface
@@ -160,7 +160,7 @@ class Sexp(object):
                                            cdata)
 
     @conversion._cdata_res_to_rinterface
-    def get_attrib(self, name: str):
+    def get_attrib(self, name: str) -> 'Sexp':
         res = openrlib.rlib.Rf_getAttrib(self.__sexp__._cdata,
                                          conversion._str_to_charsxp(name))
         return res
@@ -175,7 +175,7 @@ class Sexp(object):
             raise ValueError('Not an R object.')
 
     @property
-    def names(self):
+    def names(self) -> 'Sexp':
         # TODO: force finding function
         return embedded.globalenv.find('names')(self)
 
@@ -188,14 +188,14 @@ class Sexp(object):
 
     @property
     @conversion._cdata_res_to_rinterface
-    def names_from_c_attribute(self):
+    def names_from_c_attribute(self) -> 'Sexp':
         return openrlib.rlib.Rf_getAttrib(
             self.__sexp__._cdata,
             openrlib.rlib.R_NameSymbol)
 
 
 class CETYPE(enum.Enum):
-    """Character encodings."""
+    """Character encodings for R string."""
     CE_NATIVE = 0
     CE_UTF8 = 1
     CE_LATIN1 = 2
@@ -205,6 +205,7 @@ class CETYPE(enum.Enum):
 
 
 class NCHAR_TYPE(enum.Enum):
+    """Type of string scalar in R."""
     Bytes = 0
     Chars = 1
     Width = 2
@@ -343,10 +344,10 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
 
-    def __len__(self):
+    def __len__(self) -> int:
         return openrlib.rlib.Rf_xlength(self.__sexp__._cdata)
 
-    def index(self, item):
+    def index(self, item) -> int:
         for i, e in enumerate(self):
             if e == item:
                 return i

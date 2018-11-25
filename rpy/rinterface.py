@@ -323,7 +323,8 @@ class SexpPromise(Sexp):
 class NumpyArrayInterface(abc.ABC):
     """Numpy-specific API for accessing the content of a numpy array.
 
-    The interface is only available / possible for some of the R vectors."""
+    This interface implements version 3 of Numpy's `__array_interface__` and is only
+    available / possible for some of the R vectors."""
 
     @property
     def __array_interface__(self) -> dict:

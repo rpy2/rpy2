@@ -3,10 +3,13 @@ import rpy2.situation
 from _rinterface_cffi import ffi
 
 
+# TODO: Separate the functions in the module from the side-effect of
+# finding R_HOME and opening the shared library.
 R_HOME = rpy2.situation.get_r_home()
 
 
-def _dlopen_rlib(r_home):
+def _dlopen_rlib(r_home: str):
+    """Open R's shared C library."""
     if r_home is None:
         raise ValueError('r_home is None. '
                          'Try python -m rpy2.situation')
