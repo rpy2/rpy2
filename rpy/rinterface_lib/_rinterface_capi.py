@@ -29,7 +29,7 @@ def get_rid(cdata) -> int:
 def protected_rids():
     """Sequence of R IDs protected from collection by rpy2."""
     return tuple(
-        (get_rid(k), v) for k, v in _R_PRESERVED.items()
+        (get_rid(k), v) for k, v in tuple(_R_PRESERVED.items())
         )
 
 
