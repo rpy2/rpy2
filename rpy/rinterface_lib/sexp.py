@@ -283,7 +283,7 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
             super().__init__(type(self).from_iterable(obj).__sexp__)
         else:
             raise TypeError('The constructor must be called '
-                            'with that is an instance of '
+                            'with an instance of '
                             'rpy2.rinterface.Sexp '
                             'or an instance of '
                             'rpy2.rinterface._rinterface.SexpCapsule')

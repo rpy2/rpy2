@@ -28,9 +28,13 @@ def get_rid(cdata) -> int:
 
 def protected_rids():
     """Sequence of R IDs protected from collection by rpy2."""
-    return tuple(
-        (get_rid(k), v) for k, v in tuple(_R_PRESERVED.items())
-        )
+    keys = tuple(_R_PRESERVED.keys())
+    res = []
+    for k in keys:
+        v = _R_PRESERVED.get(k)
+        if v:
+            res.append((get_rid(k), v))
+    return tuple(res)
 
 
 def is_cdata_sexp(obj) -> bool:
