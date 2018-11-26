@@ -111,19 +111,9 @@ This can be changed by using our converter as an addition to the default convers
    with localconverter(default_converter + my_converter) as cv:
        res = base.paste(x, collapse="-")
 
-   
-  
-:func:`ri2ro`
-^^^^^^^^^^^^^
-
-At this level the conversion is between lower-level (:mod:`rpy2.rinterface`)
-objects and higher-level (:mod:`rpy2.robjects`) objects.
-This method is a generic as implemented in :meth:`functools.singledispatch`
-(with Python 2, :meth:`singledispatch.singledispatch`).
-
 
 :func:`rpy2py`
-^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 The conversion is trying to turn an rpy2 object (either :mod:`rpy2.rinterface` or
 :mod:`rpy2.robjects` level, low or high level interface respectively)
