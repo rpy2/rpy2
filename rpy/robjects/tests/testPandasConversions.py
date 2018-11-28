@@ -120,7 +120,7 @@ class PandasConversionsTestCase(unittest.TestCase):
     def test_categorywithNA2Factor(self):
         category = pandas.Series(['a', 'b', 'c', numpy.nan], dtype='category')
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.py2rpy(category)
+            rp_c = robjects.conversion.py2ro(category)
             assert isinstance(rp_c, robjects.vectors.FactorVector)
         assert rp_c[3] == rinterface.NA_Integer
             
