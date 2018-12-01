@@ -200,6 +200,7 @@ void	R_gc(void);
 
 # include/Rinternals.h
 ffibuilder.cdef("""
+void R_ClearExternalPtr(SEXP s);
 void R_dot_Last(void);
 """)
 
