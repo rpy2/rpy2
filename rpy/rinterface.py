@@ -577,7 +577,13 @@ class ComplexSexpVector(SexpVector):
 
     @staticmethod
     def _CAST_IN(x):
-        return (x.real, x.imag) if isinstance(x, complex) else x
+        if isinstance(x, complex):
+            res = (x.real, x.imag)
+        elif x == NA_Complex:
+            res = (x._r, x._i)
+        else:
+            raise ValueError('Unable to turn value into an R complex number.')
+        return res
 
     def __getitem__(self,
                     i: int) -> typing.Union[complex, 'ComplexSexpVector']:
@@ -600,11 +606,11 @@ class ComplexSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _ = complex(value)
+            _ = self._CAST_IN(value)
             openrlib._COMPLEX(cdata)[i_c] = (_.real, _.imag)
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
-                _ = complex(v)
+                _ = self._CAST_IN(v)
                 openrlib._COMPLEX(cdata)[i_c] = (_.real, _.imag)
         else:
             raise TypeError(
