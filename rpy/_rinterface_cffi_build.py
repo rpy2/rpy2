@@ -384,6 +384,7 @@ SEXP R_UnboundValue;
 SEXP R_MissingArg;
 
 Rboolean (Rf_isNull)(SEXP s);
+Rboolean (Rf_isList)(SEXP s);
 """)
 
 ffibuilder.cdef("""
