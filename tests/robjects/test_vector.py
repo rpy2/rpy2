@@ -198,7 +198,7 @@ def test_repr_nonvectorinlist():
                                            ('b', robjects.Formula('y ~ x')),
                                            )))
     s = repr(vec)
-    assert s.startswith("R object with classes: (\'RTYPES.VECSXP',) "
+    assert s.startswith("R object with classes: ('list',) "
                         "mapped to:\n[IntVector, Formula]")
 
 
@@ -226,7 +226,7 @@ def test_sequence_to_vector():
     res = robjects.sequence_to_vector((1,2,3.0))
     assert isinstance(res, robjects.FloatVector)
 
-    res = robjects.sequence_to_vector((1,2,'a'))
+    res = robjects.sequence_to_vector(('ab', 'cd', 'ef'))
     assert isinstance(res, robjects.StrVector)
 
     with pytest.raises(ValueError):

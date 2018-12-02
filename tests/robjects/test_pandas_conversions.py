@@ -173,8 +173,8 @@ class TestPandasConversions(object):
             rp_df = robjects.conversion.py2rpy(pd_df)
         s = repr(rp_df) # used to fail with a TypeError
         s = s.split('\n')
-        repr_str = '[BoolVec..., IntVector, FloatVe..., Vector, StrVector]'
-        assert repr_str == s[2].strip()
+        repr_str = '[BoolVec..., IntVector, FloatVe..., ByteVec..., StrVector]'
+        assert repr_str == s[1].strip()
 
     def test_ri2pandas(self):
         rdataf = robjects.r('data.frame(a=1:2, '

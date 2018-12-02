@@ -10,7 +10,7 @@ def almost_equal(x, y, epsilon = 0.00001):
 
 
 def test_init_invalid():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         robjects.vectors.IntArray(3)
 
 
