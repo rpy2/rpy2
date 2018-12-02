@@ -481,8 +481,6 @@ class IntSexpVector(SexpVector, NumpyArrayInterface):
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
             res = openrlib.rlib.INTEGER_ELT(cdata, i_c)
-            if res == na_values.NA_Integer:
-                res = na_values.NA_Integer
         elif isinstance(i, slice):
             res = type(self).from_iterable(
                 [openrlib.rlib.INTEGER_ELT(
