@@ -89,13 +89,17 @@ class NULLType(sexp.Sexp, metaclass=na_values.Singleton):
         return RTYPES(_rinterface._TYPEOF(self.__sexp__._cdata))
 
 
-class _MissingArgType(object):
-
-    __slots__ = ('_sexpobject', )
+class _MissingArgType(sexp.Sexp, metaclass=na_values.Singleton):
 
     def __init__(self):
-        self._sexpobject = _rinterface.UnmanagedSexpCapsule(
-            openrlib.rlib.R_MissingArg)
+        embedded.assert_isready()
+        super().__init__(
+            sexp.Sexp(
+                _rinterface.UnmanagedSexpCapsule(
+                    openrlib.rlib.R_MissingArg
+                )
+            )
+        )
 
     def __repr__(self) -> str:
         return super().__repr__() + (' [%s]' % self.typeof)
