@@ -584,7 +584,7 @@ class ComplexSexpVector(SexpVector):
         if isinstance(x, complex):
             res = (x.real, x.imag)
         elif x == NA_Complex:
-            res = (x._r, x._i)
+            res = (x.r, x.i)
         else:
             raise ValueError('Unable to turn value into an R complex number.')
         return res
@@ -610,12 +610,10 @@ class ComplexSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _ = self._CAST_IN(value)
-            openrlib._COMPLEX(cdata)[i_c] = (_.real, _.imag)
+            openrlib._COMPLEX(cdata)[i_c] = self._CAST_IN(value)
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
-                _ = self._CAST_IN(v)
-                openrlib._COMPLEX(cdata)[i_c] = (_.real, _.imag)
+                openrlib._COMPLEX(cdata)[i_c] = self._CAST_IN(v)
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
