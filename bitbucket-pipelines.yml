@@ -15,5 +15,5 @@ pipelines:
             pytest --junitxml=./test-reports/junit.xml
             tests/rinterface tests/test_rmagic.py
             tests/robjects/test*.py tests/robjects/lib/test_dplyr.py
-            tests/robjects/lib/test_ggplot2.py tests/lib/test_grdevices.py
+            tests/robjects/lib/test_ggplot2.py tests/robjects/lib/test_grdevices.py
 # tests/robjects/lib
