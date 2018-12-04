@@ -34,6 +34,13 @@ import rpy2.robjects.packages as rpacks
 
 
 @pytest.fixture(scope='module')
+def clean_globalenv():
+    yield
+    for name in rinterface.globalenv.keys():
+        del rinterface.globalenv[name]
+
+
+@pytest.fixture(scope='module')
 def ipython_with_magic():
     ip = get_ipython()
     # This is just to get a minimally modified version of the changes
@@ -55,7 +62,7 @@ def set_conversion(ipython_with_magic):
 
 
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
-def test_push(ipython_with_magic):
+def test_push(ipython_with_magic, clean_globalenv):
     ipython_with_magic.push({'X':np.arange(5), 'Y':np.array([3,5,4,6,7])})
     ipython_with_magic.run_line_magic('Rpush', 'X Y')
     np.testing.assert_almost_equal(np.asarray(r('X')),
@@ -65,7 +72,7 @@ def test_push(ipython_with_magic):
 
 
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
-def test_push_localscope(ipython_with_magic):
+def test_push_localscope(ipython_with_magic, clean_globalenv):
     """Test that Rpush looks for variables in the local scope first."""
 
     ipython_with_magic.run_cell(
@@ -86,7 +93,7 @@ def test_push_localscope(ipython_with_magic):
 
 @pytest.mark.skipif(not has_pandas, reason='pandas is not available in python')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
-def test_push_dataframe(ipython_with_magic):
+def test_push_dataframe(ipython_with_magic, clean_globalenv):
     df = pd.DataFrame([{'a': 1, 'b': 'bar'}, {'a': 5, 'b': 'foo', 'c': 20}])
     ipython_with_magic.push({'df':df})
     ipython_with_magic.run_line_magic('Rpush', 'df')
@@ -106,7 +113,7 @@ def test_push_dataframe(ipython_with_magic):
 
 
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
-def test_pull(ipython_with_magic):
+def test_pull(ipython_with_magic, clean_globalenv):
     r('Z=c(11:20)')
     ipython_with_magic.run_line_magic('Rpull', 'Z')
     np.testing.assert_almost_equal(np.asarray(r('Z')),
@@ -116,7 +123,7 @@ def test_pull(ipython_with_magic):
 
 
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
-def test_Rconverter(ipython_with_magic):
+def test_Rconverter(ipython_with_magic, clean_globalenv):
     # If we get to dropping numpy requirement, we might use something
     # like the following:
     # assert tuple(buffer(a).buffer_info()) == tuple(buffer(b).buffer_info())
@@ -169,7 +176,7 @@ def test_Rconverter(ipython_with_magic):
 
 
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
-def test_cell_magic(ipython_with_magic):
+def test_cell_magic(ipython_with_magic, clean_globalenv):
     ipython_with_magic.push({'x': np.arange(5), 'y': np.array([3,5,4,6,7])})
     # For now, print statements are commented out because they print
     # erroneous ERRORs when running via rpy2.tests
@@ -187,7 +194,7 @@ def test_cell_magic(ipython_with_magic):
     np.testing.assert_almost_equal(ipython_with_magic.user_ns['r'], np.array([-0.2,  0.9, -1. ,  0.1,  0.2]))
 
 
-def test_cell_magic_localconverter(ipython_with_magic):
+def test_cell_magic_localconverter(ipython_with_magic, clean_globalenv):
     x = (1,2,3)
     from rpy2.rinterface import IntSexpVector
     def tuple_str(tpl):
@@ -215,7 +222,7 @@ def test_cell_magic_localconverter(ipython_with_magic):
     assert isinstance(globalenv['x'], vectors.IntVector)
 
 
-def test_rmagic_localscope(ipython_with_magic):
+def test_rmagic_localscope(ipython_with_magic, clean_globalenv):
     ipython_with_magic.push({'x':0})
     ipython_with_magic.run_line_magic('R', '-i x -o result result <-x+1')
     result = ipython_with_magic.user_ns['result']
@@ -240,7 +247,7 @@ def test_rmagic_localscope(ipython_with_magic):
 
 # TODO: There is no test here...
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
-def test_png_plotting_args(ipython_with_magic):
+def test_png_plotting_args(ipython_with_magic, clean_globalenv):
     '''Exercise the PNG plotting machinery'''
 
     ipython_with_magic.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
@@ -260,8 +267,9 @@ def test_png_plotting_args(ipython_with_magic):
 
 
 # TODO: There is no test here...
-@pytest.mark.skipif(not rpacks.isinstalled('Cairo'), reason='R package "Cairo" not installed')
-def test_svg_plotting_args(ipython_with_magic):
+@pytest.mark.skipif(not rpacks.isinstalled('Cairo'),
+                    reason='R package "Cairo" not installed')
+def test_svg_plotting_args(ipython_with_magic, clean_globalenv):
     '''Exercise the plotting machinery
 
     To pass SVG tests, we need Cairo installed in R.'''
@@ -286,7 +294,7 @@ def test_svg_plotting_args(ipython_with_magic):
 
 
 @pytest.mark.skip(reason='Test for X11 skipped.')
-def test_plotting_X11(ipython_with_magic):
+def test_plotting_X11(ipython_with_magic, clean_globalenv):
     ipython_with_magic.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
 
     cell = textwrap.dedent("""
