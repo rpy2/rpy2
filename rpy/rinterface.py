@@ -327,8 +327,8 @@ class SexpPromise(Sexp):
 class NumpyArrayInterface(abc.ABC):
     """Numpy-specific API for accessing the content of a numpy array.
 
-    This interface implements version 3 of Numpy's `__array_interface__` and is only
-    available / possible for some of the R vectors."""
+    This interface implements version 3 of Numpy's `__array_interface__`
+    and is only available / possible for some of the R vectors."""
 
     @property
     def __array_interface__(self) -> dict:
@@ -583,10 +583,13 @@ class ComplexSexpVector(SexpVector):
     def _CAST_IN(x):
         if isinstance(x, complex):
             res = (x.real, x.imag)
-        elif x == NA_Complex:
-            res = (x.r, x.i)
         else:
-            raise ValueError('Unable to turn value into an R complex number.')
+            try:
+                res = (x.r, x.i)
+            except AttributeError:
+                raise TypeError(
+                    'Unable to turn value into an R complex number.'
+                )
         return res
 
     def __getitem__(self,
