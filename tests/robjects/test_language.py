@@ -6,11 +6,12 @@ rinterface = robjects.rinterface
 
 @pytest.fixture(scope='module')
 def clean_globalenv():
-    for name in ('x', 'y'):
+    yield
+    for name in robjects.globalenv.keys():
         del robjects.globalenv[name]
 
 
-def test_eval():
+def test_eval(clean_globalenv):
     code = """
     x <- 1+2
     y <- (x+1) / 2
@@ -22,7 +23,7 @@ def test_eval():
     assert robjects.globalenv['y'][0] == 2
 
     
-def testeval_in_environment():
+def testeval_in_environment(clean_globalenv):
     code = """
     x <- 1+2
     y <- (x+1) / 2
