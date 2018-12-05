@@ -3,7 +3,7 @@
 Memory management and garbage collection
 ----------------------------------------
 
-The tracking tracking of R object (:c:type:`SEXP` in R's C-API) 
+The tracking of an R object (:c:type:`SEXP` in R's C-API) 
 differs from Python as it does not involve reference counting.
 It is using at attribute NAMED (more on this below),
 and only considers for collection objects that are not preserved by
