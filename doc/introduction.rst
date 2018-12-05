@@ -50,7 +50,7 @@ level can be imported, and the version obtained.
 
 The high-level interface is trying to make the use of R as natural as
 possible for a Python user (something sometimes referred to as
-"pythonic"), and this introduction is only coverage that interface.
+"pythonic"), and this introduction only covers that interface.
 
 Importing the top-level sub-package is also initializing and starting
 R embedded in the current Python process:
