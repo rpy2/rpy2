@@ -79,18 +79,19 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         for k in self:
             yield self[k]
 
-    def pop(self, *args):
+    def pop(self, k, *args):
         """ E.pop(k[, d]) -> v, remove the specified key
         and return the corresponding value. If the key is not found,
         d is returned if given, otherwise KeyError is raised."""
-        k = args[0]
         if k in self:
             v = self[k]
             del(self[k])
-        elif len(args) == 1:
-            raise KeyError(k)
+        elif args:
+            if len(args) > 1:
+                raise ValueError('Invalid number of optional parameters.')
+            v = args[0]
         else:
-            v = args[1]
+            raise KeyError(k)
         return v
 
     def popitem(self):

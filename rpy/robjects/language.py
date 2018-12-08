@@ -14,7 +14,7 @@ def eval(x, envir = ri.globalenv):
 
     By default the evaluation is performed in R's global environment
     but a specific environment can be specified."""
-    if isinstance(x, str) or isinstance(x, unicode):
+    if isinstance(x, str):
         p = _parse(x)
     else:
         p = x
