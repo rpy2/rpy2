@@ -504,3 +504,18 @@ def wherefrom(symbol: str, startenv = rinterface.globalenv):
                 break
     return conversion.rpy2py(env)
 
+
+class SourceCode(str):
+
+    def parse(self, keep_source=True):
+        res = _rparse(text=rinterface.StrSexpVector((self,)))
+        if keep_source:
+            res = ParsedCode(res, source=self)
+        else:
+            res = ParsedCode(res, source=None)
+        return res
+
+    def as_namespace(self, name):
+        """ Name for the namespace """
+        return SignatureTranslatedAnonymousPackage(self,
+                                                   name)

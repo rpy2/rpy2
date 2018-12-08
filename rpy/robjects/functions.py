@@ -1,11 +1,9 @@
 import os
 import re
-import warnings
 from collections import OrderedDict
-from rpy2.robjects.robject import RObjectMixin, RObject
+from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.robjects import help
-#import rpy2.robjects.conversion conversion
 from . import conversion
 
 from rpy2.robjects.packages_utils import (default_symbol_r2python,
@@ -16,7 +14,7 @@ from rpy2.robjects.packages_utils import (default_symbol_r2python,
 
 baseenv_ri = rinterface.baseenv
 
-#needed to avoid circular imports
+# Needed to avoid circular imports.
 _reval = rinterface.baseenv['eval']
 
 __formals = baseenv_ri.find('formals')
@@ -32,9 +30,9 @@ def _formals_fixed(func):
         return __formals(tmp)
 
 
-## docstring_property and DocstringProperty
-## from Bradley Froehle
-## https://gist.github.com/bfroehle/4041015
+# docstring_property and DocstringProperty
+# from Bradley Froehle
+# https://gist.github.com/bfroehle/4041015
 def docstring_property(class_doc):
     def wrapper(fget):
         return DocstringProperty(class_doc, fget)
@@ -45,23 +43,27 @@ class DocstringProperty(object):
     def __init__(self, class_doc, fget):
         self.fget = fget
         self.class_doc = class_doc
+
     def __get__(self, obj, objtype=None):
         if obj is None:
             return self.class_doc
         else:
             return self.fget(obj)
+
     def __set__(self, obj, value):
         raise AttributeError("Cannot set the attribute")
+
     def __delete__(self, obj):
         raise AttributeError("Cannot delete the attribute")
+
 
 def _repr_argval(obj):
     """ Helper functions to display an R object in the docstring.
     This a hack and will be hopefully replaced the extraction of
     information from the R help system."""
     try:
-        l = len(obj)
-        if l == 1:
+        size = len(obj)
+        if size == 1:
             if obj[0].rid == rinterface.MissingArg.rid:
                 # no default value
                 s = None
@@ -69,13 +71,14 @@ def _repr_argval(obj):
                 s = 'rinterface.NULL'
             else:
                 s = str(obj[0][0])
-        elif l > 1:
+        elif size > 1:
             s = '(%s, ...)' % str(obj[0][0])
         else:
             s = str(obj)
-    except:
+    except Exception:
         s = str(obj)
     return s
+
 
 class Function(RObjectMixin, rinterface.SexpClosure):
     """ Python representation of an R function.
@@ -86,10 +89,12 @@ class Function(RObjectMixin, rinterface.SexpClosure):
     __newenv = baseenv_ri.find('new.env')
 
     _local_env = None
-        
+
     def __init__(self, *args, **kwargs):
         super(Function, self).__init__(*args, **kwargs)
-        self._local_env = self.__newenv(hash=rinterface.BoolSexpVector((True, )))
+        self._local_env = self.__newenv(
+            hash=rinterface.BoolSexpVector((True, ))
+        )
 
     @docstring_property(__doc__)
     def __doc__(self):
@@ -103,7 +108,6 @@ class Function(RObjectMixin, rinterface.SexpClosure):
                 val = 'R ellipsis (any number of parameters)'
             doc.append('%s: %s' % (key, _repr_argval(val)))
         return os.linesep.join(doc)
-
 
     def __call__(self, *args, **kwargs):
         new_args = [conversion.py2rpy(a) for a in args]
@@ -119,7 +123,7 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         return res
 
     def formals(self):
-        """ Return the signature of the underlying R function 
+        """ Return the signature of the underlying R function
         (as the R function 'formals()' would).
         """
         res = _formals_fixed(self)
@@ -127,9 +131,11 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         return res
 
     def rcall(self, *args):
-        """ Wrapper around the parent method rpy2.rinterface.SexpClosure.rcall(). """
+        """ Wrapper around the parent method
+        rpy2.rinterface.SexpClosure.rcall(). """
         res = super(Function, self).rcall(*args)
         return res
+
 
 class SignatureTranslatedFunction(Function):
     """ Python representation of an R function, where
@@ -137,12 +143,11 @@ class SignatureTranslatedFunction(Function):
     argument names in Python. """
     _prm_translate = None
 
-
     def __init__(self, sexp,
-                 init_prm_translate = None,
-                 on_conflict = 'warn',
-                 symbol_r2python = default_symbol_r2python,
-                 symbol_check_after = default_symbol_check_after):
+                 init_prm_translate=None,
+                 on_conflict='warn',
+                 symbol_r2python=default_symbol_r2python,
+                 symbol_check_after=default_symbol_check_after):
         super(SignatureTranslatedFunction, self).__init__(sexp)
         if init_prm_translate is None:
             prm_translate = OrderedDict()
@@ -152,16 +157,16 @@ class SignatureTranslatedFunction(Function):
 
         formals = self.formals()
         if formals.__sexp__._cdata != rinterface.NULL.__sexp__._cdata:
-            (symbol_mapping, 
-             conflicts, 
+            (symbol_mapping,
+             conflicts,
              resolutions) = _map_symbols(
                  formals.names,
                  translation=prm_translate,
                  symbol_r2python=symbol_r2python,
                  symbol_check_after=symbol_check_after)
 
-            msg_prefix = 'Conflict when converting R symbols'+\
-                ' in the function\'s signature:\n- '
+            msg_prefix = ('Conflict when converting R symbols'
+                          ' in the function\'s signature:\n- ')
             exception = ValueError
             _fix_map_symbols(symbol_mapping,
                              conflicts,
@@ -170,7 +175,7 @@ class SignatureTranslatedFunction(Function):
                              exception)
             symbol_mapping.update(resolutions)
             reserved_pynames = set(dir(self))
-            
+
             prm_translate.update((k, v[0]) for k, v in symbol_mapping.items())
         self._prm_translate = prm_translate
         if hasattr(sexp, '__rname__'):
@@ -190,13 +195,15 @@ class SignatureTranslatedFunction(Function):
 pattern_link = re.compile(r'\\link\{(.+?)\}')
 pattern_code = re.compile(r'\\code\{(.+?)\}')
 pattern_samp = re.compile(r'\\samp\{(.+?)\}')
+
+
 class DocumentedSTFunction(SignatureTranslatedFunction):
 
-    def __init__(self, sexp, init_prm_translate = None,
-                 packagename = None):
-        super(DocumentedSTFunction, 
-              self).__init__(sexp, 
-                             init_prm_translate = init_prm_translate)
+    def __init__(self, sexp, init_prm_translate=None,
+                 packagename=None):
+        super(DocumentedSTFunction,
+              self).__init__(sexp,
+                             init_prm_translate=init_prm_translate)
         self.__rpackagename__ = packagename
 
     @docstring_property(__doc__)
@@ -212,11 +219,12 @@ class DocumentedSTFunction(SignatureTranslatedFunction):
         doc.append(self.__rname__+'(')
         for key, val in self._prm_translate.items():
             if key == '___':
-                description = '(was "..."). R ellipsis (any number of parameters)'
+                description = ('(was "..."). R ellipsis '
+                               '(any number of parameters)')
             else:
                 description = _repr_argval(fm[names.index(val)])
             if description is None:
-                doc.append('    %s,' % key)                
+                doc.append('    %s,' % key)
             else:
                 doc.append('    %s = %s,' % (key, description))
         doc.extend((')', ''))
