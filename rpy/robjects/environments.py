@@ -1,12 +1,13 @@
 import rpy2.rinterface as rinterface
-from rpy2.robjects.robject import RObjectMixin, RObject
+from rpy2.robjects.robject import RObjectMixin
 from rpy2.robjects import conversion
 
 _new_env = rinterface.baseenv["new.env"]
 
+
 class Environment(RObjectMixin, rinterface.SexpEnvironment):
     """ An R environement, implementing Python's mapping interface. """
-    
+
     def __init__(self, o=None):
         if o is None:
             o = _new_env(hash=rinterface.BoolSexpVector([True, ]))
@@ -38,8 +39,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
     def frame(self):
         return conversion.converter.rpy2py(super().frame)
 
-        
-    def find(self, item, wantfun = False):
+    def find(self, item, wantfun=False):
         """Find an item, starting with this R environment.
 
         Raises a `KeyError` if the key cannot be found.
@@ -52,7 +52,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         :param item: string (name/symbol)
         :rtype: object (as returned by :func:`conversion.converter.rpy2py`)
         """
-        res = super(Environment, self).find(item, wantfun = wantfun)
+        res = super(Environment, self).find(item, wantfun=wantfun)
         res = conversion.converter.rpy2py(res)
         # TODO: There is a design issue here. The attribute __rname__ is
         # intended to store the symbol name of the R object but this is
@@ -83,12 +83,11 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         """ E.pop(k[, d]) -> v, remove the specified key
         and return the corresponding value. If the key is not found,
         d is returned if given, otherwise KeyError is raised."""
-        l = len(args)
         k = args[0]
         if k in self:
             v = self[k]
             del(self[k])
-        elif l == 1:
+        elif len(args) == 1:
             raise KeyError(k)
         else:
             v = args[1]
@@ -105,7 +104,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
 
     def clear(self):
         """ E.clear() -> None.  Remove all items from D. """
-        ## FIXME: is there a more efficient implementation (when large
-        ##        number of keys) ?
+        # FIXME: is there a more efficient implementation (when large
+        #        number of keys) ?
         for k in self:
             del(self[k])

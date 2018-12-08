@@ -6,14 +6,8 @@ These functions are initially empty place-holders,
 raising a NotImplementedError exception.
 """
 
-import sys
-from collections import namedtuple
+from functools import singledispatch
 
-# TODO: ensure that installs only with Python _>= 3.5 and then remove this.
-if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 4):
-    from singledispatch import singledispatch
-else:
-    from functools import singledispatch
 
 def overlay_converter(src, target):
     """
@@ -23,12 +17,12 @@ def overlay_converter(src, target):
                    be added to this object.
     :type target: :class:`Converter`
     """
-    for k,v in src.py2rpy.registry.items():
+    for k, v in src.py2rpy.registry.items():
         # skip the root dispatch
         if k is object and v is _py2rpy:
             continue
         target._py2rpy.register(k, v)
-    for k,v in src.rpy2py.registry.items():
+    for k, v in src.rpy2py.registry.items():
         # skip the root dispatch
         if k is object and v is _rpy2py:
             continue
@@ -37,19 +31,26 @@ def overlay_converter(src, target):
 
 def _py2rpy(obj):
     """ Dummy function for py2rpy.
-    
+
     This function will convert Python objects into rpy2.rinterface
     objects.
     """
-    raise NotImplementedError("Conversion 'py2rpy' not defined for objects of type '%s'" % str(type(obj)))
+    raise NotImplementedError(
+        "Conversion 'py2rpy' not defined for objects of type '%s'" %
+        str(type(obj))
+    )
 
 
 def _rpy2py(obj):
     """ Dummy function for rpy2py.
 
-    This function will convert Python objects into Python (presumably non-rpy2) objects.
+    This function will convert Python objects into Python (presumably
+    non-rpy2) objects.
     """
-    raise NotImplementedError("Conversion 'rpy2py' not defined for objects of type '%s'" % str(type(obj)))
+    raise NotImplementedError(
+        "Conversion 'rpy2py' not defined for objects of type '%s'" %
+        str(type(obj))
+    )
 
 
 class Converter(object):
@@ -65,7 +66,7 @@ class Converter(object):
     py2rpy = property(lambda self: self._py2rpy)
     rpy2py = property(lambda self: self._rpy2py)
     lineage = property(lambda self: self._lineage)
-    
+
     def __init__(self, name,
                  template=None):
         (py2rpy, rpy2py) = Converter.make_dispatch_functions()
@@ -89,7 +90,7 @@ class Converter(object):
         result_converter = Converter(new_name, template=self)
         overlay_converter(converter, result_converter)
         return result_converter
-    
+
     @staticmethod
     def make_dispatch_functions():
         py2rpy = singledispatch(_py2rpy)
@@ -115,11 +116,13 @@ class ConversionContext(object):
         set_conversion(self._original_converter)
         return False
 
+
 localconverter = ConversionContext
-    
+
 converter = None
 py2rpy = None
 rpy2py = None
+
 
 def set_conversion(this_converter):
     """
@@ -131,5 +134,6 @@ def set_conversion(this_converter):
     converter = this_converter
     py2rpy = converter.py2rpy
     rpy2py = converter.rpy2py
+
 
 set_conversion(Converter('base converter'))
