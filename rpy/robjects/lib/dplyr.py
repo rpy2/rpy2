@@ -21,7 +21,8 @@ with warnings.catch_warnings():
 
 TARGET_VERSION = '0.7.7'
 if dplyr.__version__ != TARGET_VERSION:
-    warnings.warn('This was designed againt dplyr version %s but you have %s' % (TARGET_VERSION, dplyr.__version__))
+    warnings.warn('This was designed againt dplyr version %s but you have %s' %
+                  (TARGET_VERSION, dplyr.__version__))
 
     
 from rpy2 import robjects
@@ -51,7 +52,8 @@ def _fix_kwargs_inenv(kwargs, env):
             kwargs_inenv[k] = lazyeval.as_lazy(v, env=env)
     return kwargs_inenv
 
-# TODO: _wrap and _pipe have become quite similar (identical ?). Have only one of the two ?
+# TODO: _wrap and _pipe have become quite similar (identical ?).
+#       Have only one of the two ?
 
 def _wrap(rfunc, cls, env=robjects.globalenv):
     def func(dataf, *args, **kwargs):

@@ -32,8 +32,8 @@ def _wrap(rfunc):
 
 
 class DataFrame(dplyr.DataFrame):
-    gather = _wrap(tidyr.gather_)
-    spread = _wrap(tidyr.spread_)
+    gather = _wrap(tidyr.gather)
+    spread = _wrap(tidyr.spread)
 
 
 DataFrame.summarize = dplyr._wrap(dplyr.summarize, None)
