@@ -2,12 +2,10 @@ import rpy2.robjects as ro
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import (Sexp,
-                             SexpVector,
                              ListSexpVector,
                              StrSexpVector, ByteSexpVector,
                              RTYPES)
 import numpy
-import sys
 
 
 original_converter = None
@@ -25,8 +23,8 @@ _kinds = {
     'S': ro.vectors.ByteVector,
     'U': ro.vectors.StrVector,
     # "V" -> special-cased below
-    #FIXME: datetime64 ?
-    #"datetime64":
+    # TODO: datetime64 ?
+    # "datetime64":
     }
 
 
@@ -64,8 +62,8 @@ def numpy2rpy(o):
         # "F" means "use column-major order"
         vec = _kinds[o.dtype.kind](o.ravel('F'))
         dim = ro.vectors.IntVector(o.shape)
-        #TODO: no dimnames ?
-        #TODO: optimize what is below needed/possible ?
+        # TODO: no dimnames ?
+        # TODO: optimize what is below needed/possible ?
         #  (other ways to create R arrays ?)
         res = rinterface.baseenv['array'](vec, dim=dim)
     # R does not support unsigned types:
@@ -170,12 +168,12 @@ def activate():
     new_converter = conversion.Converter('numpy conversion',
                                          template=original_converter)
 
-    for k,v in py2rpy.registry.items():
+    for k, v in py2rpy.registry.items():
         if k is object:
             continue
         new_converter.py2rpy.register(k, v)
 
-    for k,v in rpy2py.registry.items():
+    for k, v in rpy2py.registry.items():
         if k is object:
             continue
         new_converter.rpy2py.register(k, v)

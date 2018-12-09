@@ -1,23 +1,19 @@
 import os
 import warnings
 from types import ModuleType
-from collections import defaultdict
 from warnings import warn
 import rpy2.rinterface as rinterface
-import rpy2.robjects.lib
 from . import conversion
-from rpy2.robjects.functions import (SignatureTranslatedFunction, 
-                                     docstring_property, 
+from rpy2.robjects.functions import (SignatureTranslatedFunction,
+                                     docstring_property,
                                      DocumentedSTFunction)
-from rpy2.robjects.constants import NULL
 from rpy2.robjects import Environment
-from rpy2.robjects.packages_utils import (_libpaths, 
-                                          get_packagepath, 
-                                          _packages,
+from rpy2.robjects.packages_utils import (
                                           default_symbol_r2python,
                                           default_symbol_check_after,
                                           _map_symbols,
-                                          _fix_map_symbols)
+                                          _fix_map_symbols
+)
 import rpy2.robjects.help as rhelp
 
 _require = rinterface.baseenv['require']
@@ -47,43 +43,48 @@ def no_warnings(func):
     def run_withoutwarnings(*args, **kwargs):
         warn_i = _options().do_slot('names').index('warn')
         oldwarn = _options()[warn_i][0]
-        _options(warn = -1)
+        _options(warn=-1)
         try:
             res = func(*args, **kwargs)
         except Exception as e:
             # restore the old warn setting before propagating
             # the exception up
-            _options(warn = oldwarn)
+            _options(warn=oldwarn)
             raise e
-        _options(warn = oldwarn)
+        _options(warn=oldwarn)
         return res
     return run_withoutwarnings
+
 
 @no_warnings
 def _eval_quiet(expr):
     return _reval(expr)
 
+
 # FIXME: should this be part of the API for rinterface ?
 #        (may be it is already the case and there is code
 #        duplicaton ?)
-def reval(string, envir = _globalenv):
+def reval(string, envir=_globalenv):
     """ Evaluate a string as R code
     :param string: R code
     :type string: a :class:`str`
-    :param envir: an environment in which the environment should take place (default: R's global environment)
+    :param envir: an environment in which the environment should take
+      place (default: R's global environment)
     """
     p = rinterface.parse(string)
-    res = _reval(p, envir = envir)
+    res = _reval(p, envir=envir)
     return res
 
-def quiet_require(name, lib_loc = None):
+
+def quiet_require(name, lib_loc=None):
     """ Load an R package /quietly/ (suppressing messages to the console). """
-    if lib_loc == None:
+    if lib_loc is None:
         lib_loc = "NULL"
     else:
         lib_loc = "\"%s\"" % (lib_loc.replace('"', '\\"'))
-    expr_txt = "suppressPackageStartupMessages(base::require(%s, lib.loc=%s))" \
-        %(name, lib_loc)
+    expr_txt = ("suppressPackageStartupMessages("
+                "base::require(%s, lib.loc=%s))"
+                % (name, lib_loc))
     expr = rinterface.parse(expr_txt)
     ok = _eval_quiet(expr)
     return ok
@@ -108,14 +109,15 @@ class PackageData(object):
     _packagename = None
     _lib_loc = None
     _datasets = None
-    def __init__(self, packagename, lib_loc = rinterface.NULL):
+
+    def __init__(self, packagename, lib_loc=rinterface.NULL):
         self._packagename = packagename
         self._lib_loc
 
     def _init_setlist(self):
         _datasets = dict()
         # 2D array of information about datatsets
-        tmp_m = _data(**{'package':StrSexpVector((self._packagename, )),
+        tmp_m = _data(**{'package': StrSexpVector((self._packagename, )),
                          'lib.loc': self._lib_loc})[2]
         nrows, ncols = tmp_m.do_slot('dim')
         c_i = 2
@@ -129,7 +131,7 @@ class PackageData(object):
         if self._datasets is None:
             self._init_setlist()
         return self._datasets.keys()
-    
+
     def fetch(self, name):
         """ Fetch the dataset (loads it or evaluates the R associated
         with it.
@@ -137,7 +139,6 @@ class PackageData(object):
         In R, datasets are loaded into the global environment by default
         but this function returns an environment that contains the dataset(s).
         """
-        #tmp_env = rinterface.SexpEnvironment()
         if self._datasets is None:
             self._init_setlist()
 
@@ -150,12 +151,13 @@ class PackageData(object):
                  'envir': env})
         return Environment(env)
 
+
 class Package(ModuleType):
     """ Models an R package
     (and can do so from an arbitrary environment - with the caution
     that locked environments should mostly be considered).
      """
-    
+
     _env = None
     __rname__ = None
     _translation = None
@@ -167,13 +169,13 @@ class Package(ModuleType):
     __version__ = None
     __rdata__ = None
 
-    def __init__(self, env, name, translation = {}, 
-                 exported_names = None, on_conflict = 'fail',
-                 version = None,
-                 symbol_r2python = default_symbol_r2python,
-                 symbol_check_after = default_symbol_check_after):
+    def __init__(self, env, name, translation={},
+                 exported_names=None, on_conflict='fail',
+                 version=None,
+                 symbol_r2python=default_symbol_r2python,
+                 symbol_check_after=default_symbol_check_after):
         """ Create a Python module-like object from an R environment,
-        using the specified translation if defined. 
+        using the specified translation if defined.
 
         - env: R environment
         - name: package name
@@ -199,18 +201,18 @@ class Package(ModuleType):
         self._exported_names = exported_names
         self._symbol_r2python = symbol_r2python
         self._symbol_check_after = symbol_check_after
-        self.__fill_rpy2r__(on_conflict = on_conflict)
+        self.__fill_rpy2r__(on_conflict=on_conflict)
         self._exported_names = self._exported_names.difference(mynames)
         self.__version__ = version
-                
-    def __update_dict__(self, on_conflict = 'fail'):
+
+    def __update_dict__(self, on_conflict='fail'):
         """ Update the __dict__ according to what is in the R environment """
         for elt in self._rpy2r:
             del(self.__dict__[elt])
         self._rpy2r.clear()
-        self.__fill_rpy2r__(on_conflict = on_conflict)
+        self.__fill_rpy2r__(on_conflict=on_conflict)
 
-    def __fill_rpy2r__(self, on_conflict = 'fail'):
+    def __fill_rpy2r__(self, on_conflict='fail'):
         """ Fill the attribute _rpy2r.
 
         - on_conflict: 'fail' or 'warn' (default: 'fail')
@@ -219,15 +221,17 @@ class Package(ModuleType):
 
         name = self.__rname__
 
-        (symbol_mapping, 
-         conflicts, 
-         resolutions) = _map_symbols(self._env,
-                                     translation = self._translation,
-                                     symbol_r2python = self._symbol_r2python,
-                                     symbol_check_after = self._symbol_check_after)
-        msg_prefix = 'Conflict when converting R symbols'+\
-                     ' in the package "%s"' % self.__rname__ +\
-                     ' to Python symbols: \n-'
+        (symbol_mapping,
+         conflicts,
+         resolutions) = _map_symbols(
+             self._env,
+             translation=self._translation,
+             symbol_r2python=self._symbol_r2python,
+             symbol_check_after=self._symbol_check_after
+         )
+        msg_prefix = ('Conflict when converting R symbols'
+                      ' in the package "%s"'
+                      ' to Python symbols: \n-' % self.__rname__)
         exception = LibraryError
         _fix_map_symbols(symbol_mapping,
                          conflicts,
@@ -239,12 +243,15 @@ class Package(ModuleType):
         for rpyname, rnames in symbol_mapping.items():
             # last paranoid check
             if len(rnames) > 1:
-                raise ValueError('Only one R name should be associated with %s (and we have %s)' % (rpyname, str(rnames)))
+                raise ValueError(
+                    'Only one R name should be associated with %s '
+                    '(and we have %s)' % (rpyname, str(rnames))
+                )
             rname = rnames[0]
             if rpyname in reserved_pynames:
-                raise LibraryError('The symbol ' + rname +\
-                                   ' in the package "' + name + '"' +\
-                                   ' is conflicting with' +\
+                raise LibraryError('The symbol ' + rname +
+                                   ' in the package "' + name + '"' +
+                                   ' is conflicting with' +
                                    ' a Python object attribute')
             self._rpy2r[rpyname] = rname
             if (rpyname != rname) and (rname in self._exported_names):
@@ -257,33 +264,39 @@ class Package(ModuleType):
             rpyobj = conversion.rpy2py(riobj)
             if hasattr(rpyobj, '__rname__'):
                 rpyobj.__rname__ = rname
-            #FIXME: shouldn't the original R name be also in the __dict__ ?
+            # TODO: shouldn't the original R name be also in the __dict__ ?
             self.__dict__[rpyname] = rpyobj
 
     def __repr__(self):
         s = super(Package, self).__repr__()
         return 'rpy2.robjects.packages.Package as a ' + s
 
+
 # alias
 STF = SignatureTranslatedFunction
 
+
 class SignatureTranslatedPackage(Package):
-    """ R package in which the R functions had their signatures 
-    'translated' (that this the named parameters were made to 
+    """ R package in which the R functions had their signatures
+    'translated' (that this the named parameters were made to
     to conform Python's rules for vaiable names)."""
-    def __fill_rpy2r__(self, on_conflict = 'fail'):
+    def __fill_rpy2r__(self, on_conflict='fail'):
         (super(SignatureTranslatedPackage, self)
-         .__fill_rpy2r__(on_conflict = on_conflict))
+         .__fill_rpy2r__(on_conflict=on_conflict))
         for name, robj in self.__dict__.items():
             if isinstance(robj, rinterface.Sexp) and \
                robj.typeof == rinterface.RTYPES.CLOSXP:
-                self.__dict__[name] = STF(self.__dict__[name],
-                                          on_conflict = on_conflict,
-                                          symbol_r2python = self._symbol_r2python,
-                                          symbol_check_after = self._symbol_check_after)
+                self.__dict__[name] = STF(
+                    self.__dict__[name],
+                    on_conflict=on_conflict,
+                    symbol_r2python=self._symbol_r2python,
+                    symbol_check_after=self._symbol_check_after
+                )
+
 
 # alias
 STP = SignatureTranslatedPackage
+
 
 class SignatureTranslatedAnonymousPackage(SignatureTranslatedPackage):
     def __init__(self, string, name):
@@ -292,8 +305,10 @@ class SignatureTranslatedAnonymousPackage(SignatureTranslatedPackage):
         super(SignatureTranslatedAnonymousPackage, self).__init__(env,
                                                                   name)
 
+
 # alias
 STAP = SignatureTranslatedAnonymousPackage
+
 
 class InstalledSTPackage(SignatureTranslatedPackage):
     @docstring_property(__doc__)
@@ -310,14 +325,16 @@ class InstalledSTPackage(SignatureTranslatedPackage):
                 doc.append('[R help was not found]')
         return os.linesep.join(doc)
 
-    def __fill_rpy2r__(self, on_conflict = 'fail'):
+    def __fill_rpy2r__(self, on_conflict='fail'):
         (super(SignatureTranslatedPackage, self)
-         .__fill_rpy2r__(on_conflict = on_conflict))
+         .__fill_rpy2r__(on_conflict=on_conflict))
         for name, robj in self.__dict__.items():
             if isinstance(robj, rinterface.Sexp) and \
                robj.typeof == rinterface.RTYPES.CLOSXP:
-                self.__dict__[name] = DocumentedSTFunction(self.__dict__[name],
-                                                           packagename = self.__rname__)
+                self.__dict__[name] = DocumentedSTFunction(
+                    self.__dict__[name],
+                    packagename=self.__rname__
+                )
 
 
 class InstalledPackage(Package):
@@ -343,13 +360,16 @@ class WeakPackage(Package):
     a warning (and a None returned) whenever the desired symbol is
     not found (rather than a traditional `AttributeError`).
     """
-    
+
     def __getattr__(self, name):
-        res =self.__dict__.get(name)
+        res = self.__dict__.get(name)
         if res is None:
-            warnings.warn("The symbol '%s' is not in this R namespace/package." % name)
+            warnings.warn(
+                "The symbol '%s' is not in this R namespace/package." % name
+            )
         return res
-    
+
+
 class LibraryError(ImportError):
     """ Error occuring when importing an R library """
     pass
@@ -358,11 +378,11 @@ class LibraryError(ImportError):
 class InstalledPackages(object):
     """ R packages installed. """
     def __init__(self, lib_loc=None):
-        libraryiqr =  _library(**{'lib.loc': lib_loc})
+        libraryiqr = _library(**{'lib.loc': lib_loc})
         lib_results_i = libraryiqr.do_slot('names').index('results')
         self.lib_results = libraryiqr[lib_results_i]
         self.nrows, self.ncols = self.lib_results.do_slot('dim')
-        self.colnames = self.lib_results.do_slot('dimnames')[1] # column names
+        self.colnames = self.lib_results.do_slot('dimnames')[1]  # column names
         self.lib_packname_i = self.colnames.index('Package')
 
     def isinstalled(self, packagename):
@@ -374,8 +394,8 @@ class InstalledPackages(object):
             rname = packagename
         nrows, ncols = self.nrows, self.ncols
         lib_results, lib_packname_i = self.lib_results, self.lib_packname_i
-        for i in range(0+lib_packname_i*nrows, 
-                       nrows*(lib_packname_i+1), 
+        for i in range(0+lib_packname_i*nrows,
+                       nrows*(lib_packname_i+1),
                        1):
             if lib_results[i] == packagename:
                 return True
@@ -389,28 +409,30 @@ class InstalledPackages(object):
         for row_i in range(nrows):
             yield tuple(lib_results[x*nrows+row_i] for x in colrg)
 
+
 def isinstalled(name,
-                lib_loc = None):
+                lib_loc=None):
     """
-    Find whether an R package is installed 
+    Find whether an R package is installed
     :param name: name of an R package
     :param lib_loc: specific location for the R library (default: None)
 
     :rtype: a :class:`bool`
     """
-    
+
     instapack = InstalledPackages(lib_loc)
     return instapack.isinstalled(name)
 
-def importr(name, 
-            lib_loc = None,
-            robject_translations = {}, 
-            signature_translation = True,
-            suppress_messages = True,
-            on_conflict = 'fail',
-            symbol_r2python = default_symbol_r2python,
-            symbol_check_after = default_symbol_check_after,
-            data = True):
+
+def importr(name,
+            lib_loc=None,
+            robject_translations={},
+            signature_translation=True,
+            suppress_messages=True,
+            on_conflict='fail',
+            symbol_r2python=default_symbol_r2python,
+            symbol_check_after=default_symbol_check_after,
+            data=True):
     """ Import an R package.
 
     Arguments:
@@ -433,26 +455,26 @@ def importr(name,
     - symbol_check_after: function to check the Python symbol obtained
                           from `symbol_r2python`.
 
-    - data: embed a PackageData objects under the attribute 
+    - data: embed a PackageData objects under the attribute
       name __rdata__ (default: True)
 
     Return:
 
-    - an instance of class SignatureTranslatedPackage, or of class Package 
+    - an instance of class SignatureTranslatedPackage, or of class Package
 
     """
 
     rname = rinterface.StrSexpVector((name, ))
 
     if suppress_messages:
-        ok = quiet_require(name, lib_loc = lib_loc)
+        ok = quiet_require(name, lib_loc=lib_loc)
     else:
-        ok = _require(rinterface.StrSexpVector(rname), 
+        ok = _require(rinterface.StrSexpVector(rname),
                       **{'lib.loc': rinterface.StrSexpVector((lib_loc, ))})[0]
     if not ok:
-        raise LibraryError("The R package %s could not be imported" %name)
-    if _package_has_namespace(rname, 
-                              _system_file(package = rname)):
+        raise LibraryError("The R package %s could not be imported" % name)
+    if _package_has_namespace(rname,
+                              _system_file(package=rname)):
         env = _get_namespace(rname)
         version = _get_namespace_version(rname)[0]
         exported_names = set(_get_namespace_exports(rname))
@@ -462,32 +484,36 @@ def importr(name,
         version = None
 
     if signature_translation:
-        pack = InstalledSTPackage(env, name, 
-                                  translation = robject_translations,
-                                  exported_names = exported_names,
-                                  on_conflict = on_conflict,
-                                  version = version,
-                                  symbol_r2python = symbol_r2python,
-                                  symbol_check_after = symbol_check_after)
+        pack = InstalledSTPackage(env, name,
+                                  translation=robject_translations,
+                                  exported_names=exported_names,
+                                  on_conflict=on_conflict,
+                                  version=version,
+                                  symbol_r2python=symbol_r2python,
+                                  symbol_check_after=symbol_check_after)
     else:
-        pack = InstalledPackage(env, name, translation = robject_translations,
-                                exported_names = exported_names,
-                                on_conflict = on_conflict,
-                                version = version,
-                                symbol_r2python = symbol_r2python,
-                                symbol_check_after = symbol_check_after)
+        pack = InstalledPackage(env, name, translation=robject_translations,
+                                exported_names=exported_names,
+                                on_conflict=on_conflict,
+                                version=version,
+                                symbol_r2python=symbol_r2python,
+                                symbol_check_after=symbol_check_after)
     if data:
         if pack.__rdata__ is not None:
-            warn('While importing the R package "%s", the rpy2 Package object is masking a translated R symbol "__rdata__" already present' % name)
-        pack.__rdata__ = PackageData(name, lib_loc = lib_loc)
+            warn('While importing the R package "%s", the rpy2 Package object '
+                 'is masking a translated R symbol "__rdata__" already present'
+                 % name)
+        pack.__rdata__ = PackageData(name, lib_loc=lib_loc)
 
     return pack
+
 
 def data(package):
     """ Return the PackageData for the given package."""
     return package.__rdata__
 
-def wherefrom(symbol: str, startenv = rinterface.globalenv):
+
+def wherefrom(symbol: str, startenv=rinterface.globalenv):
     """ For a given symbol, return the environment
     this symbol is first found in, starting from 'startenv'.
     """
@@ -503,19 +529,3 @@ def wherefrom(symbol: str, startenv = rinterface.globalenv):
             if env.rsame(rinterface.emptyenv):
                 break
     return conversion.rpy2py(env)
-
-
-class SourceCode(str):
-
-    def parse(self, keep_source=True):
-        res = _rparse(text=rinterface.StrSexpVector((self,)))
-        if keep_source:
-            res = ParsedCode(res, source=self)
-        else:
-            res = ParsedCode(res, source=None)
-        return res
-
-    def as_namespace(self, name):
-        """ Name for the namespace """
-        return SignatureTranslatedAnonymousPackage(self,
-                                                   name)

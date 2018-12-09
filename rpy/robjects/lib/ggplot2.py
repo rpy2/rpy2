@@ -44,6 +44,7 @@ and provide a more dynamic mapping.
 
 
 import rpy2.robjects as robjects
+import rpy2.robjects.constants
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.robjects.packages import importr, WeakPackage
