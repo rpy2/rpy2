@@ -30,7 +30,7 @@ RUN \
 		     libxml2-dev \
 		     python3 \
 		     python3-pip \
-		     python3.6-venv \
+		     python3-venv \
 		     r-base \
 		     r-base-dev \
 		     sudo \
