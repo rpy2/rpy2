@@ -40,7 +40,7 @@ pipelines:
             rm -rf /var/lib/apt/lists/*
           - python3 -m venv py3_env && source py3_env/bin/activate
           - python3 -m pip install --upgrade pip
-          - python3 -m pip install numpy pandas ipython
+          - python3 -m pip install numpy pandas ipython tzlocal
           - python3 setup.py install
           - >
             pytest --junitxml=./test-reports/junit.xml tests/
