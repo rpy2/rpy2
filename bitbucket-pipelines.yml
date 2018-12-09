@@ -10,7 +10,7 @@ pipelines:
     - step:
         script:
           - >
-........    apt-get update -qq &&
+            apt-get update -qq &&
             apt-get install -y
             apt-utils
             apt-transport-https
@@ -23,7 +23,7 @@ pipelines:
             "$(lsb_release -c -s)${CRAN_MIRROR_TAG}/" >>
             /etc/apt/sources.list.d/added_repos.list &&
             apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
-.......   - >
+          - >
             apt-get update -qq &&
             apt-get install -y
             aptdaemon
