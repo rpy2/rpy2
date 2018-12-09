@@ -18,9 +18,9 @@ pipelines:
             gnupg
             libcurl4-openssl-dev
             libnlopt-dev
-            lsb-release &&
-            echo "deb ${CRAN_MIRROR}/bin/linux/ubuntu "
-            "$(lsb_release -c -s)${CRAN_MIRROR_TAG}/" >>
+            lsb-release
+          - >
+            echo "deb ${CRAN_MIRROR}/bin/linux/ubuntu $(lsb_release -c -s)${CRAN_MIRROR_TAG}/" >>
             /etc/apt/sources.list.d/added_repos.list &&
             apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
           - >
@@ -38,6 +38,8 @@ pipelines:
             r-base-dev
             wget &&
             rm -rf /var/lib/apt/lists/*
+          - python3 -m venv py3_env && source py3_venv/bin/activate
+          - python3 -m pip install --upgrade pip
           - python3 -m pip install numpy pandas ipython
           - python3 setup.py install
           - >
