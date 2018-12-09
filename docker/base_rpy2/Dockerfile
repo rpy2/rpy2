@@ -18,7 +18,7 @@ RUN \
                      lsb-release && \
   echo "deb ${CRAN_MIRROR}/bin/linux/ubuntu $(lsb_release -c -s)${CRAN_MIRROR_TAG}/" \
         >> /etc/apt/sources.list.d/added_repos.list && \
-  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9 && \
+  apt-key adv --no-tty --keyserver keyserver.ubuntu.com --recv-keys E084DAB9 && \
   apt-get update -qq && \
   apt-get install -y \
                      aptdaemon \
