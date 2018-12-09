@@ -38,7 +38,7 @@ pipelines:
             r-base-dev
             wget &&
             rm -rf /var/lib/apt/lists/*
-          - python3 -m venv py3_env && source py3_venv/bin/activate
+          - python3 -m venv py3_env && source py3_env/bin/activate
           - python3 -m pip install --upgrade pip
           - python3 -m pip install numpy pandas ipython
           - python3 setup.py install
