@@ -12,6 +12,7 @@ from rpy2.robjects.packages import importr
 datasets = importr('datasets')
 mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
 
+@pytest.mark.skipif(not has_ggplot, reason='R package ggplot is not installed.')
 @pytest.mark.lib_ggplot2
 class TestGGplot(object):
     
