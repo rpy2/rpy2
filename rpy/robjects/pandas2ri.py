@@ -1,10 +1,7 @@
 """This module handles the conversion of data structures
 between R objects handled by rpy2 and pandas objects."""
 
-import os
-import dateutil.tz
 from datetime import datetime
-import rpy2.robjects as ro
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import (IntSexpVector,
@@ -25,19 +22,18 @@ import warnings
 
 from collections import OrderedDict
 from rpy2.robjects.vectors import (DataFrame,
-                                   Vector,
                                    FactorVector,
                                    FloatSexpVector,
                                    ListVector,
                                    StrVector,
                                    IntVector,
                                    POSIXct)
-                             
-original_converter = None 
 
 # pandas is requiring numpy. We add the numpy conversion will be
-# activate in the function activate() below
+# activate in the function activate() below.
 import rpy2.robjects.numpy2ri as numpy2ri
+
+original_converter = None
 
 ISOdatetime = rinterface.baseenv['ISOdatetime']
 as_vector = rinterface.baseenv['as.vector']
@@ -62,10 +58,10 @@ def py2rpy_pandasdataframe(obj):
         except Exception as e:
             warnings.warn('Error while trying to convert '
                           'the column "%s". Fall back to string conversion. '
-                          'The error is: %s' %\
-                          (name, str(e)))
+                          'The error is: %s'
+                          % (name, str(e)))
             od[name] = StrVector(values)
-        
+
     return DataFrame(od)
 
 
@@ -85,8 +81,11 @@ def py2rpy_pandasindex(obj):
 def py2rpy_categoryseries(obj):
     for c in obj.cat.categories:
         if not isinstance(c, str):
-            raise ValueError('Converting pandas "Category" series to R factor is only possible when categories are strings.')
-    res = IntSexpVector(list(rinterface.NA_Integer if x == -1 else x+1 for x in obj.cat.codes))
+            raise ValueError('Converting pandas "Category" series to '
+                             'R factor is only possible when categories '
+                             'are strings.')
+    res = IntSexpVector(list(rinterface.NA_Integer if x == -1 else x+1
+                             for x in obj.cat.codes))
     res.do_slot_assign('levels', StrSexpVector(obj.cat.categories))
     if obj.cat.ordered:
         res.rclass = StrSexpVector(('ordered', 'factor'))
@@ -98,7 +97,8 @@ def py2rpy_categoryseries(obj):
 @py2rpy.register(PandasSeries)
 def py2rpy_pandasseries(obj):
     if numpy.dtype.name == 'O':
-        warnings.warn('Element "%s" is of dtype "O" and converted to R vector of strings.' % obj.name)
+        warnings.warn('Element "%s" is of dtype "O" and converted '
+                      'to R vector of strings.' % obj.name)
         res = StrVector(obj)
     elif obj.dtype.name == 'category':
         res = py2rpy_categoryseries(obj)
@@ -113,7 +113,7 @@ def py2rpy_pandasseries(obj):
              IntVector([x.minute for x in obj]),
              IntVector([x.second for x in obj])]
         res = ISOdatetime(*d, tz=StrSexpVector([tzname]))
-        #FIXME: can the POSIXct be created from the POSIXct constructor ?
+        # FIXME: can the POSIXct be created from the POSIXct constructor ?
         # (is '<M8[ns]' mapping to Python datetime.datetime ?)
         res = POSIXct(res)
     else:
@@ -124,7 +124,7 @@ def py2rpy_pandasseries(obj):
         if len(obj.shape) == 1:
             if (obj.dtype != dt_O_type):
                 # force into an R vector
-                res=as_vector(res)
+                res = as_vector(res)
 
     # "index" is equivalent to "names" in R
     if obj.ndim == 1:
@@ -140,14 +140,17 @@ def py2rpy_pandasseries(obj):
 def ri2py_vector(obj):
     res = numpy2ri.rpy2py(obj)
     return res
-    
+
+
 @rpy2py.register(IntSexpVector)
 def rpy2py_intvector(obj):
     # special case for factors
     if 'factor' in obj.rclass:
-        res = pandas.Categorical.from_codes(numpy.asarray(obj) - 1,
-                                            categories = obj.do_slot('levels'),
-                                            ordered = 'ordered' in obj.rclass)
+        res = pandas.Categorical.from_codes(
+            numpy.asarray(obj) - 1,
+            categories=obj.do_slot('levels'),
+            ordered='ordered' in obj.rclass
+        )
     else:
         res = numpy2ri.rpy2py(obj)
     return res
@@ -168,8 +171,8 @@ def rpy2py_floatvector(obj):
     if 'POSIXct' in obj.rclass:
         tzone_name = obj.do_slot('tzone')[0]
         if tzone_name == '':
-            # R is implicitly using the local timezone, while Python time libraries
-            # will assume UTC.
+            # R is implicitly using the local timezone, while Python
+            # time libraries will assume UTC.
             tzone = get_timezone()
         else:
             tzone = pytz.timezone(tzone_name)
@@ -191,15 +194,16 @@ def rpy2py_listvector(obj):
 
 @rpy2py.register(DataFrame)
 def rpy2py_dataframe(obj):
-    items = OrderedDict((k, rpy2py(v) if isinstance(v, Sexp) else v) for k, v in obj.items())
+    items = OrderedDict((k, rpy2py(v) if isinstance(v, Sexp) else v)
+                        for k, v in obj.items())
     res = PandasDataFrame.from_dict(items)
     return res
 
 
 def activate():
     global original_converter
-    # If module is already activated, there is nothing to do
-    if original_converter is not None: 
+    # If module is already activated, there is nothing to do.
+    if original_converter is not None:
         return
 
     original_converter = conversion.Converter(
@@ -210,12 +214,12 @@ def activate():
                                          template=conversion.converter)
     numpy2ri.deactivate()
 
-    for k,v in py2rpy.registry.items():
+    for k, v in py2rpy.registry.items():
         if k is object:
             continue
         new_converter.py2rpy.register(k, v)
 
-    for k,v in rpy2py.registry.items():
+    for k, v in rpy2py.registry.items():
         if k is object:
             continue
         new_converter.rpy2py.register(k, v)

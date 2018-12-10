@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 import tempfile
 import weakref
 import rpy2.rinterface
@@ -8,6 +9,7 @@ rpy2.rinterface.initr()
 
 from . import conversion
 
+
 class RSlots(object):
     """ Attributes of an R object as a Python mapping.
 
@@ -16,12 +18,12 @@ class RSlots(object):
     from garbage collection unless bound to a Python symbol or
     in an other container.
     """
-    
+
     __slots__ = ['_robj', ]
-    
+
     def __init__(self, robj):
         self._robj = weakref.proxy(robj)
-        
+
     def __getitem__(self, key):
         value = self._robj.do_slot(key)
         return conversion.rpy2py(value)
@@ -32,13 +34,13 @@ class RSlots(object):
 
     def __len__(self):
         return len(self._robj.list_attrs())
-    
+
     def keys(self):
         for k in self._robj.list_attrs():
             yield k
 
-    __iter__=keys
-    
+    __iter__ = keys
+
     def items(self):
         for k in self._robj.list_attrs():
             v = self[k]
@@ -51,10 +53,11 @@ class RSlots(object):
 
 
 _get_exported_value = rpy2.rinterface.baseenv['::']
-        
+
+
 class RObjectMixin(object):
     """ Class to provide methods common to all RObject instances. """
-    
+
     __rname__ = None
 
     __tempfile = rpy2.rinterface.baseenv.find("tempfile")
@@ -67,7 +70,7 @@ class RObjectMixin(object):
     __show = _get_exported_value('methods', 'show')
 
     __slots = None
-    
+
     @property
     def slots(self):
         """ Attributes of the underlying R object as a Python mapping.
@@ -82,18 +85,18 @@ class RObjectMixin(object):
         try:
             rclasses = ('R object with classes: {} mapped to:'
                         .format(tuple(self.rclass)))
-        except:
+        except Exception:
             rclasses = 'Unable to fetch R classes.' + os.linesep
-        res = os.linesep.join((rclasses,
-                               repr(super())))
+        os.linesep.join((rclasses,
+                         repr(super())))
         return rclasses
-    
+
     def __str__(self):
         # TODO: Clean the win32 madness.
         if sys.platform == 'win32':
             tmpf = tempfile.NamedTemporaryFile(mode="w+", delete=False)
             tfname = tmpf.name
-            tmp = self.__file(rpy2.rinterface.StrSexpVector([tfname,]),
+            tmp = self.__file(rpy2.rinterface.StrSexpVector([tfname, ]),
                               open=rpy2.rinterface.StrSexpVector(['r+', ]))
             self.__sink(tmp)
             self.__show(self)
@@ -110,8 +113,10 @@ class RObjectMixin(object):
             s = str.join(os.linesep, s)
         else:
             s = []
+
             def f(x):
                 s.append(x)
+
             with (rpy2.rinterface_lib
                   .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
                                            'consolewrite_print', f)):
@@ -137,14 +142,14 @@ class RObjectMixin(object):
     def rclass(self):
         """
         R class for the object, stored as an R string vector.
-        
+
         When setting the rclass, the new value will be:
-        
+
         - wrapped in a Python tuple if a string (the R class
         is a vector of strings, and this is made for convenience)
-        
+
         - wrapped in a StrSexpVector
-        
+
         Note that when setting the class R may make a copy of
         the whole object (R is mostly a functional language).
         If this must be avoided, and if the number of parent
@@ -155,15 +160,14 @@ class RObjectMixin(object):
         try:
             res = super(RObjectMixin, self).rclass
             res = rpy2.rinterface.sexp.rclass_get(self.__sexp__)
-            #res = conversion.ri2py(res)
             return res
         except rpy2.rinterface._rinterface.embedded.RRuntimeError as rre:
             if self.typeof == rpy2.rinterface.RTYPES.SYMSXP:
-                #unevaluated expression: has no class
+                # Unevaluated expression: has no class.
                 return (None, )
             else:
                 raise rre
-    
+
     @rclass.setter
     def rclass(self, value):
         if isinstance(value, str):
@@ -171,20 +175,22 @@ class RObjectMixin(object):
         new_cls = rpy2.rinterface.StrSexpVector(value)
         rpy2.rinterface.sexp.rclass_set(self.__sexp__, new_cls)
 
-    
+
 def repr_robject(o, linesep=os.linesep):
     s = rpy2.rinterface.baseenv.find("deparse")(o)
     s = str.join(linesep, s)
     return s
 
-    
+
 class RObject(RObjectMixin, rpy2.rinterface.Sexp):
     """ Base class for all non-vector R objects. """
-    
+
     def __setattr__(self, name, value):
         if name == '_sexp':
             if not isinstance(value, rpy2.rinterface.Sexp):
-                raise ValueError("_attr must contain an object " +\
-                                     "that inherits from rpy2.rinterface.Sexp" +\
-                                     "(not from %s)" %type(value))
+                raise ValueError(
+                    '_attr must contain an object '
+                    'that inherits from rpy2.rinterface.Sexp '
+                    '(not from %s)' % type(value)
+                )
         super(RObject, self).__setattr__(name, value)
