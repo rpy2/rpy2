@@ -2,7 +2,9 @@
 Mapping of the R library "grDevices" for graphical devices
 """
 
-import io, tempfile, os
+import io
+import os
+import tempfile
 from contextlib import contextmanager
 from rpy2.robjects.packages import importr, WeakPackage
 
@@ -62,6 +64,7 @@ def render_to_file(device, *device_args, **device_kwargs):
         if current != dev_cur()[0]:
             dev_off()
 
+
 @contextmanager
 def render_to_bytesio(device, *device_args, **device_kwargs):
     """
@@ -85,5 +88,3 @@ def render_to_bytesio(device, *device_args, **device_kwargs):
             with open(fn, 'rb') as fh:
                 b.write(fh.read())
             os.unlink(fn)
-            
-

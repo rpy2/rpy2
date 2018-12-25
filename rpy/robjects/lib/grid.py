@@ -7,15 +7,12 @@ system and graphic primitives to built visualizations.
 
 """
 
-import rpy2.robjects.methods
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
 from rpy2.rlike.container import OrdDict
 from rpy2.robjects.packages import importr, WeakPackage
 
 NULL = robjects.NULL
-
-#getmethod = robjects.baseenv.get("getMethod")
 
 grid = importr('grid')
 
@@ -31,15 +28,15 @@ grid = WeakPackage(grid._env,
 grid_env = robjects.baseenv['as.environment']('package:grid')
 
 
-layout  = grid.grid_layout
+layout = grid.grid_layout
 newpage = grid.grid_newpage
-grill   = grid.grid_grill
-edit    = grid.grid_edit
-get     = grid.grid_get
-remove  = grid.grid_remove
-add     = grid.grid_add
-xaxis   = grid.grid_xaxis
-yaxis   = grid.grid_yaxis
+grill = grid.grid_grill
+edit = grid.grid_edit
+get = grid.grid_get
+remove = grid.grid_remove
+add = grid.grid_add
+xaxis = grid.grid_xaxis
+yaxis = grid.grid_yaxis
 
 
 class Unit(robjects.RObject):
@@ -85,7 +82,7 @@ class Gpar(robjects.RObject):
         res = cls._gpar(*args, **kwargs)
         return res
 
-    def get(self, names = None):
+    def get(self, names=None):
         return self._get_gpar(names)
 
 
@@ -112,9 +109,10 @@ class Grob(robjects.RObject):
         res = cls._grob(**kwargs)
         return res
 
-    def draw(self, recording = True):
-        """ Draw a graphical object (calling the R function grid::grid.raw())"""
-        self._draw(self, recording = recording)
+    def draw(self, recording=True):
+        """ Draw a graphical object (calling the R function
+        grid::grid.raw())"""
+        self._draw(self, recording=recording)
 
 
 grob = Grob.grob
@@ -172,8 +170,10 @@ class GTree(Grob):
         res = cls._grobtree(**kwargs)
         return res
 
+
 class Axis(GTree):
     pass
+
 
 class XAxis(Axis):
     _xaxis = xaxis
@@ -191,6 +191,7 @@ class XAxis(Axis):
         res = cls._xaxisgrob(**kwargs)
         return res
 
+
 class YAxis(Axis):
     _yaxis = yaxis
     _yaxisgrob = grid.yaxisGrob
@@ -207,7 +208,7 @@ class YAxis(Axis):
         res = cls._yaxisgrob(**kwargs)
         return res
 
-        
+
 class Viewport(robjects.RObject):
     """ Drawing context.
     Viewports can be thought of as nodes in a scene graph. """
@@ -221,8 +222,8 @@ class Viewport(robjects.RObject):
     _upviewport = grid_env['upViewport']
     _viewport = grid_env['viewport']
 
-    def push(self, recording = True):
-        self._pushviewport(self, recording = recording)
+    def push(self, recording=True):
+        self._pushviewport(self, recording=recording)
 
     @classmethod
     def pop(cls, n):
@@ -239,19 +240,19 @@ class Viewport(robjects.RObject):
         cls._plotviewport(**kwargs)
 
     @classmethod
-    def down(cls, name, strict = False, recording = True):
+    def down(cls, name, strict=False, recording=True):
         """ Return the number of Viewports it went down """
-        cls._downviewport(name, strict = strict, recording = recording)
+        cls._downviewport(name, strict=strict, recording=recording)
 
     @classmethod
-    def seek(cls, name, recording = True):
+    def seek(cls, name, recording=True):
         """ Seek and return a Viewport given its name """
-        cls._seek(name, recording = recording)
+        cls._seek(name, recording=recording)
 
     @classmethod
-    def up(cls, n, recording = True):
+    def up(cls, n, recording=True):
         """ Go up n viewports """
-        cls._downviewport(n, recording = recording)
+        cls._downviewport(n, recording=recording)
 
     @classmethod
     def viewport(cls, **kwargs):
@@ -259,6 +260,7 @@ class Viewport(robjects.RObject):
         res = cls._viewport(**kwargs)
         res = cls(res)
         return res
+
 
 viewport = Viewport.viewport
 
@@ -295,7 +297,7 @@ def activate():
     global original_py2rpy, original_rpy2py
 
     # If module is already activated, there is nothing to do
-    if original_py2rpy: 
+    if original_py2rpy:
         return
 
     original_py2rpy = conversion.py2rpy

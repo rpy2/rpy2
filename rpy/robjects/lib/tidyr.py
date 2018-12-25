@@ -1,17 +1,16 @@
-from collections import namedtuple
 from rpy2.robjects.packages import (importr,
-                                    data,
                                     WeakPackage)
 from rpy2.robjects.lib import dplyr
 import warnings
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     tidyr = importr('tidyr', on_conflict="warn")
-    
+
 TARGET_VERSION = '0.8.2'
 
 if tidyr.__version__ != TARGET_VERSION:
-    warnings.warn('This was designed againt tidyr version %s but you have %s' % (TARGET_VERSION, tidyr.__version__))
+    warnings.warn('This was designed againt tidyr version %s '
+                  'but you have %s' % (TARGET_VERSION, tidyr.__version__))
 
 tidyr = WeakPackage(tidyr._env,
                     tidyr.__rname__,

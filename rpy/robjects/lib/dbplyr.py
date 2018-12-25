@@ -1,10 +1,7 @@
-from collections import namedtuple
-from rpy2.robjects.packages import (importr, data,
-                                    Package, default_symbol_r2python,
-                                    default_symbol_check_after,
+from rpy2.robjects.packages import (importr,
                                     WeakPackage)
 import warnings
-    
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     dbplyr = importr('dbplyr', on_conflict="warn")
@@ -18,11 +15,8 @@ with warnings.catch_warnings():
                          symbol_check_after=dbplyr._symbol_check_after)
 TARGET_VERSION = '1.2.1'
 if dbplyr.__version__ != TARGET_VERSION:
-    warnings.warn('This was designed againt dbplyr version %s but you have %s' % (TARGET_VERSION, dbplyr.__version__))
-
-    
-from rpy2 import robjects
-from rpy2.robjects.lib import dplyr
-
+    warnings.warn(
+        'This was designed againt dbplyr version %s '
+        'but you have %s' % (TARGET_VERSION, dbplyr.__version__))
 
 sql = dbplyr.sql
