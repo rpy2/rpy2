@@ -7,9 +7,10 @@ import rpy2.rinterface as ri
 _reval = ri.baseenv['eval']
 _parse = ri.parse
 
-def eval(x, envir = ri.globalenv):
+
+def eval(x, envir=ri.globalenv):
     """ Evaluate R code. If the input object is an R expression it
-    evaluates it directly, if it is a string it parses it before 
+    evaluates it directly, if it is a string it parses it before
     evaluating it.
 
     By default the evaluation is performed in R's global environment
@@ -18,8 +19,6 @@ def eval(x, envir = ri.globalenv):
         p = _parse(x)
     else:
         p = x
-    res = _reval(p, envir = envir)
+    res = _reval(p, envir=envir)
     res = conversion.rpy2py(res)
     return res
-
-del(ri)

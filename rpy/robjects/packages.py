@@ -391,7 +391,6 @@ class InstalledPackages(object):
         else:
             if len(packagename) > 1:
                 raise ValueError("Only specify one package name at a time.")
-            rname = packagename
         nrows, ncols = self.nrows, self.ncols
         lib_results, lib_packname_i = self.lib_results, self.lib_packname_i
         for i in range(0+lib_packname_i*nrows,

@@ -24,7 +24,6 @@ from collections import OrderedDict
 from rpy2.robjects.vectors import (DataFrame,
                                    FactorVector,
                                    FloatSexpVector,
-                                   ListVector,
                                    StrVector,
                                    IntVector,
                                    POSIXct)

@@ -10,6 +10,7 @@ _packages = rinterface.baseenv['.packages']
 _libpaths = rinterface.baseenv['.libPaths']
 _find_package = rinterface.baseenv['find.package']
 
+
 def get_packagepath(package):
     """ return the path to an R package installed """
     res = _find_package(rinterface.StrSexpVector((package, )))
@@ -22,6 +23,7 @@ def get_packagepath(package):
 # It not necessarily the absolute best place to have the functions though.
 def default_symbol_r2python(rname):
     return rname.replace('.', '_')
+
 
 def default_symbol_check_after(symbol_mapping):
     # dict to store the Python symbol -> R symbols mapping causing problems.
@@ -36,28 +38,28 @@ def default_symbol_check_after(symbol_mapping):
             try:
                 idx = r_symbols.index(py_symbol)
                 # there is an R symbol identical to the proposed Python symbol;
-                # we keep that pair mapped, and change the Python symbol for the
-                # other R symbol(s) according to PEP 0008
+                # we keep that pair mapped, and change the Python symbol for
+                # the other R symbol(s) according to PEP 0008
                 for i, s in enumerate(r_symbols):
                     if i == idx:
-                        resolutions[py_symbol] = [s,]
+                        resolutions[py_symbol] = [s, ]
                     else:
                         new_py_symbol = py_symbol + '_'
-                        resolutions[new_py_symbol] = [s,]
+                        resolutions[new_py_symbol] = [s, ]
             except ValueError:
                 # I am unsure about what to do at this point:
                 # add it as a conflict
-                conflicts[py_symbol] = r_symbols 
+                conflicts[py_symbol] = r_symbols
         else:
             # no automatic resolution if more than 2
-            conflicts[py_symbol] = r_symbols 
+            conflicts[py_symbol] = r_symbols
     return conflicts, resolutions
 
 
 def _map_symbols(rnames,
-                 translation = dict(), 
-                 symbol_r2python = default_symbol_r2python, 
-                 symbol_check_after = default_symbol_check_after):
+                 translation=dict(),
+                 symbol_r2python=default_symbol_r2python,
+                 symbol_check_after=default_symbol_check_after):
     """
     :param names: an iterable of rnames
     :param translation: a mapping for R name->python name
@@ -92,19 +94,20 @@ def _fix_map_symbols(symbol_mapping,
     """
     if len(conflicts) > 0:
         msg = msg_prefix
-        msg += '\n- '.join(('%s -> %s' %(k, ', '.join(v)) for k,v in conflicts.items()))
+        msg += '\n- '.join(('%s -> %s' %
+                            (k, ', '.join(v))
+                            for k, v in conflicts.items()))
         if on_conflict == 'fail':
-            msg += '\nTo turn this exception into a simple' +\
-                   ' warning use the parameter' +\
-                   ' `on_conflict="warn"\`'
+            msg += ('\nTo turn this exception into a simple '
+                    'warning use the parameter '
+                    '`on_conflict="warn"`')
             raise exception(msg)
         elif on_conflict == 'warn':
             for k, v in conflicts.items():
                 if k in v:
-                    symbol_mapping[k] = [k,]
+                    symbol_mapping[k] = [k, ]
                 else:
                     del(symbol_mapping[k])
             warn(msg)
         else:
             raise ValueError('Invalid value for parameter "on_conflict"')
-    
