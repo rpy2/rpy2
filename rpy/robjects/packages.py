@@ -512,13 +512,14 @@ def data(package):
     return package.__rdata__
 
 
-def wherefrom(symbol: str, startenv=rinterface.globalenv):
+def wherefrom(symbol: str,
+              startenv: rinterface.SexpEnvironment=rinterface.globalenv):
     """ For a given symbol, return the environment
     this symbol is first found in, starting from 'startenv'.
     """
     env = startenv
     while True:
-        if symbol in env[symbol]:
+        if symbol in env:
             break
         env = env.enclos
         if env.rsame(rinterface.emptyenv):
