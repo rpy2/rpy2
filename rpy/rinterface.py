@@ -346,20 +346,6 @@ class NumpyArrayInterface(abc.ABC):
                 'version': 3}
 
 
-def _cast_in_byte(x):
-    if isinstance(x, int):
-        if x > 255:
-            raise ValueError('byte must be in range(0, 256)')
-    elif isinstance(x, (bytes, bytearray)):
-        if len(x) != 1:
-            raise ValueError('byte must be a single character')
-        x = ord(x)
-    else:
-        raise ValueError('byte must be an integer [0, 255] or a '
-                         'single byte character')
-    return x
-
-
 class ByteSexpVector(SexpVector, NumpyArrayInterface):
     """Array of bytes.
 
@@ -370,14 +356,27 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
     _NP_TYPESTR = '|u1'
 
     _R_GET_PTR = openrlib._RAW
-    _CAST_IN = _cast_in_byte
 
     @staticmethod
-    def _R_VECTOR_ELT(x, i: int):
+    def _CAST_IN(x):
+        if isinstance(x, int):
+            if x > 255:
+                raise ValueError('byte must be in range(0, 256)')
+        elif isinstance(x, (bytes, bytearray)):
+            if len(x) != 1:
+                raise ValueError('byte must be a single character')
+            x = ord(x)
+        else:
+            raise ValueError('byte must be an integer [0, 255] or a '
+                             'single byte character')
+        return x
+
+    @staticmethod
+    def _R_VECTOR_ELT(x, i: int) -> None:
         return openrlib._RAW(x)[i]
 
     @staticmethod
-    def _R_SET_VECTOR_ELT(x, i: int, val):
+    def _R_SET_VECTOR_ELT(x, i: int, val) -> None:
         openrlib._RAW(x)[i] = val
 
     def __getitem__(self, i: int) -> typing.Union[int, 'ByteSexpVector']:
@@ -397,16 +396,16 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: int, value):
+    def __setitem__(self, i: int, value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            openrlib.rlib.RAW(cdata)[i_c] = _cast_in_byte(value)
+            openrlib.rlib.RAW(cdata)[i_c] = self._CAST_IN(value)
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
                 if v > 255:
                     raise ValueError('byte must be in range(0, 256)')
-                openrlib.rlib.RAW(cdata)[i_c] = _cast_in_byte(v)
+                openrlib.rlib.RAW(cdata)[i_c] = self._CAST_IN(v)
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
@@ -629,7 +628,7 @@ class ListSexpVector(SexpVector):
     _R_GET_PTR = openrlib._VECTOR_PTR
     _R_VECTOR_ELT = openrlib.rlib.VECTOR_ELT
     _R_SET_VECTOR_ELT = openrlib.rlib.SET_VECTOR_ELT
-    _CAST_IN = conversion._get_cdata
+    _CAST_IN = staticmethod(conversion._get_cdata)
 
 
 class PairlistSexpVector(SexpVector):
@@ -637,7 +636,7 @@ class PairlistSexpVector(SexpVector):
     _R_GET_PTR = None
     _R_VECTOR_ELT = None
     _R_SET_VECTOR_ELT = None
-    _CAST_IN = conversion._get_cdata
+    _CAST_IN = staticmethod(conversion._get_cdata)
 
     def __getitem__(self, i: int) -> Sexp:
         cdata = self.__sexp__._cdata
