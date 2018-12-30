@@ -458,7 +458,7 @@ def rclass_get(scaps: _rinterface.SexpCapsule) -> StrSexpVector:
 
 
 def rclass_set(
-        scaps,
+        scaps: _rinterface.SexpCapsule,
         value: 'typing.Union[rpy2.rinterface.StrSexpVector, str]'
 ) -> None:
     if isinstance(value, StrSexpVector):

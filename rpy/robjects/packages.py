@@ -387,11 +387,11 @@ class InstalledPackages(object):
 
     def isinstalled(self, packagename):
         if not isinstance(packagename, rinterface.StrSexpVector):
-            rname = rinterface.StrSexpVector((packagename, ))
+            rinterface.StrSexpVector((packagename, ))
         else:
             if len(packagename) > 1:
                 raise ValueError("Only specify one package name at a time.")
-        nrows, ncols = self.nrows, self.ncols
+        nrows = self.nrows
         lib_results, lib_packname_i = self.lib_results, self.lib_packname_i
         for i in range(0+lib_packname_i*nrows,
                        nrows*(lib_packname_i+1),
@@ -517,14 +517,10 @@ def wherefrom(symbol: str, startenv=rinterface.globalenv):
     this symbol is first found in, starting from 'startenv'.
     """
     env = startenv
-    obj = None
-    found = False
-    while not found:
-        try:
-            obj = env[symbol]
-            found = True
-        except LookupError as knf:
-            env = env.enclos
-            if env.rsame(rinterface.emptyenv):
-                break
+    while True:
+        if symbol in env[symbol]:
+            break
+        env = env.enclos
+        if env.rsame(rinterface.emptyenv):
+            break
     return conversion.rpy2py(env)

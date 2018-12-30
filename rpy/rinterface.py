@@ -415,7 +415,7 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
 class BoolSexpVector(SexpVector, NumpyArrayInterface):
     """Array of booleans.
 
-    Note that R in internally storing booleans as integers to
+    Note that R is internally storing booleans as integers to
     allow an additional "NA" value to represent missingness."""
 
     _R_TYPE = openrlib.rlib.LGLSXP

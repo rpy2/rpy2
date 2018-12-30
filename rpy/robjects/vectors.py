@@ -737,10 +737,8 @@ class POSIXt(abc.ABC):
         return res
 
     def _iter_formatted(self, max_items=9):
-        format_elt = self.repr_format_elt
         ln = len(self)
         half_items = max_items // 2
-        max_width = math.floor(52 / ln)
         if ln == 0:
             return
         elif ln < max_items:
@@ -900,7 +898,7 @@ class Array(Vector):
 
     def __dim_set(self, value):
         value = conversion.py2rpy(value)
-        res = self._dim_set(self, value)
+        self._dim_set(self, value)
         # TODO: not properly done
         raise(Exception("Not yet implemented"))
 
