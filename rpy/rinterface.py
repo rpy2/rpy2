@@ -626,6 +626,12 @@ class ComplexSexpVector(SexpVector):
 
 
 class ListSexpVector(SexpVector):
+    """R list.
+
+    An R list an R vector (array) that is similar to a Python list in
+    the sense that items in the list can be of any type, whereas most
+    other R vectors are homogeneous (all items are of the same type).
+    """
     _R_TYPE = openrlib.rlib.VECSXP
     _R_GET_PTR = staticmethod(openrlib._VECTOR_PTR)
     _R_VECTOR_ELT = openrlib.rlib.VECTOR_ELT
@@ -634,6 +640,11 @@ class ListSexpVector(SexpVector):
 
 
 class PairlistSexpVector(SexpVector):
+    """R pairlist.
+
+    A R pairlist is rarely used outside of R's internal libraries and a relatively
+    small number of use cases. It is essentially a LISP-like of(name, value) pairs.
+    """
     _R_TYPE = openrlib.rlib.LISTSXP
     _R_GET_PTR = None
     _R_VECTOR_ELT = None
@@ -749,6 +760,16 @@ class SexpClosure(Sexp):
 
     @_cdata_res_to_rinterface
     def rcall(self, keyvals, environment: SexpEnvironment):
+        """Call/evaluate an R function.
+
+        Args:
+        - keyvals: a sequence of key/value (name/parameter) pairs. A
+            name/parameter that is None will indicated an unnamed parameter.
+            Like in R, keys/names do not have to be unique, partial matching
+            can be used, and named/unnamed parameters can occur at any position
+            in the sequence.
+        - environment: a R environment in which to evaluate the function.
+        """
         # TODO: check keyvals are pairs ?
         assert isinstance(environment, SexpEnvironment)
         error_occured = _rinterface.ffi.new('int *', 0)
