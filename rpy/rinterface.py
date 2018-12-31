@@ -305,7 +305,7 @@ class SexpEnvironment(sexp.Sexp):
         """See method `keys()`."""
         return self.keys()
 
-    def is_locked(self):
+    def is_locked(self) -> bool:
         return openrlib.rlib.R_EnvironmentIsLocked(
             self.__sexp__._cdata)
 
@@ -346,6 +346,21 @@ class NumpyArrayInterface(abc.ABC):
                 'version': 3}
 
 
+def _memoryview(obj, sizeof_str: str, cast_str: str) -> memoryview:
+    """
+    - sizeof_str: type in a string to use with ffi.sizeof() (for
+        example "int")
+    - cast_str: type in a string to use with memoryview.cast() (for
+        example "i")
+    """
+    b = _rinterface.ffi.buffer(
+        obj._R_GET_PTR(obj.__sexp__._cdata),
+        openrlib.ffi.sizeof(sizeof_str) * len(obj))
+    shape = bufferprotocol.getshape(obj.__sexp__._cdata)
+    mv = memoryview(b).cast(cast_str, shape)
+    return mv
+
+
 class ByteSexpVector(SexpVector, NumpyArrayInterface):
     """Array of bytes.
 
@@ -355,7 +370,7 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
     _R_TYPE = openrlib.rlib.RAWSXP
     _NP_TYPESTR = '|u1'
 
-    _R_GET_PTR = openrlib._RAW
+    _R_GET_PTR = staticmethod(openrlib._RAW)
 
     @staticmethod
     def _CAST_IN(x):
@@ -421,7 +436,7 @@ class BoolSexpVector(SexpVector, NumpyArrayInterface):
     _NP_TYPESTR = '|i'
     _R_VECTOR_ELT = openrlib.LOGICAL_ELT
     _R_SET_VECTOR_ELT = openrlib.SET_LOGICAL_ELT
-    _R_GET_PTR = openrlib._LOGICAL
+    _R_GET_PTR = staticmethod(openrlib._LOGICAL)
 
     @staticmethod
     def _CAST_IN(x):
@@ -461,13 +476,8 @@ class BoolSexpVector(SexpVector, NumpyArrayInterface):
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
 
-    def memoryview(self):
-        b = _rinterface.ffi.buffer(
-            openrlib._LOGICAL(self.__sexp__._cdata),
-            openrlib.ffi.sizeof('int') * len(self))
-        shape = bufferprotocol.getshape(self.__sexp__._cdata)
-        mv = memoryview(b).cast('i', shape)
-        return mv
+    def memoryview(self) -> memoryview:
+        return _memoryview(self, 'int', 'i')
 
 
 class IntSexpVector(SexpVector, NumpyArrayInterface):
@@ -475,9 +485,10 @@ class IntSexpVector(SexpVector, NumpyArrayInterface):
     _R_TYPE = openrlib.rlib.INTSXP
     _R_SET_VECTOR_ELT = openrlib.SET_INTEGER_ELT
     _R_VECTOR_ELT = openrlib.INTEGER_ELT
-    _R_GET_PTR = openrlib._INTEGER
-    _CAST_IN = int
     _NP_TYPESTR = '|i'
+
+    _R_GET_PTR = staticmethod(openrlib._INTEGER)
+    _CAST_IN = staticmethod(int)
 
     def __getitem__(self, i: int) -> typing.Union[int, 'IntSexpVector']:
         cdata = self.__sexp__._cdata
@@ -512,22 +523,18 @@ class IntSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
 
     def memoryview(self) -> memoryview:
-        b = _rinterface.ffi.buffer(
-            openrlib._INTEGER(self.__sexp__._cdata),
-            openrlib.ffi.sizeof('int') * len(self))
-        shape = bufferprotocol.getshape(self.__sexp__._cdata)
-        mv = memoryview(b).cast('i', shape)
-        return mv
+        return _memoryview(self, 'int', 'i')
 
 
 class FloatSexpVector(SexpVector, NumpyArrayInterface):
 
     _R_TYPE = openrlib.rlib.REALSXP
-    _R_GET_PTR = openrlib._REAL
     _R_VECTOR_ELT = openrlib.REAL_ELT
     _R_SET_VECTOR_ELT = openrlib.SET_REAL_ELT
-    _CAST_IN = float
     _NP_TYPESTR = '|f'
+
+    _CAST_IN = staticmethod(float)
+    _R_GET_PTR = staticmethod(openrlib._REAL)
 
     def __getitem__(self, i: int) -> typing.Union[float, 'FloatSexpVector']:
         cdata = self.__sexp__._cdata
@@ -559,18 +566,13 @@ class FloatSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
 
     def memoryview(self) -> memoryview:
-        b = _rinterface.ffi.buffer(
-            openrlib._REAL(self.__sexp__._cdata),
-            openrlib.ffi.sizeof('double') * len(self))
-        shape = bufferprotocol.getshape(self.__sexp__._cdata)
-        mv = memoryview(b).cast('d', shape)
-        return mv
+        return _memoryview(self, 'double', 'd')
 
 
 class ComplexSexpVector(SexpVector):
 
     _R_TYPE = openrlib.rlib.CPLXSXP
-    _R_GET_PTR = openrlib._COMPLEX
+    _R_GET_PTR = staticmethod(openrlib._COMPLEX)
 
     @staticmethod
     def _R_VECTOR_ELT(x, i):
@@ -625,7 +627,7 @@ class ComplexSexpVector(SexpVector):
 
 class ListSexpVector(SexpVector):
     _R_TYPE = openrlib.rlib.VECSXP
-    _R_GET_PTR = openrlib._VECTOR_PTR
+    _R_GET_PTR = staticmethod(openrlib._VECTOR_PTR)
     _R_VECTOR_ELT = openrlib.rlib.VECTOR_ELT
     _R_SET_VECTOR_ELT = openrlib.rlib.SET_VECTOR_ELT
     _CAST_IN = staticmethod(conversion._get_cdata)
