@@ -23,7 +23,6 @@ def test_floor_division():
     assert tuple(int(x) for x in res) == (1,1,2)
 
 
-@pytest.mark.skip(reason='segfault')
 def test_extract_by_index():
     seq_R = robjects.baseenv["seq"]
     mySeq = seq_R(0, 10)
