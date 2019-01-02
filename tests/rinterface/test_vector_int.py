@@ -124,17 +124,16 @@ def test_setitem_outffbound():
         vec.__setitem__(10, 6)
 
 
-@pytest.mark.skip(reason='Python-level memoryviews stuck on row-major arrays')
-def test_memoryview():
-    shape = (5, 2, 3)
-    values = tuple(range(30))
+def test_memoryview_2d():
+    shape = (5, 2)
+    values = tuple(range(10))
     # R arrays are column-major, therefore
-    # a slice like [:, :, 0] should look
+    # a slice like [:, :] should look
     # like:
     #
     #  0  5
     #  1  6
-    #  2  6
+    #  2  7
     #  3  8
     #  4  9
 
@@ -142,6 +141,38 @@ def test_memoryview():
         ri.IntSexpVector(values),
         dim=ri.IntSexpVector(shape))
     mv = rarray.memoryview()
+    assert mv.f_contiguous is True
     assert mv.shape == shape
-    assert mv.tolist()[0] == [[0, 1, 2, 3, 4],
-                              [5, 6, 7, 8, 9]]
+    assert mv.tolist() == [[0, 5],
+                           [1, 6],
+                           [2, 7],
+                           [3, 8],
+                           [4, 9]]
+    rarray[0] = 10
+    assert mv.tolist() == [[10, 5],
+                           [1, 6],
+                           [2, 7],
+                           [3, 8],
+                           [4, 9]]
+
+
+def test_memoryview_3d():
+    shape = (5, 2, 3)
+    values = tuple(range(30))
+    # R arrays are column-major, therefore
+    # a slice through the first index in the third dimension should look
+    # like:
+    #
+    #  0  5
+    #  1  6
+    #  2  7
+    #  3  8
+    #  4  9
+
+    rarray = ri.baseenv['array'](
+        ri.IntSexpVector(values),
+        dim=ri.IntSexpVector(shape))
+    mv = rarray.memoryview()
+    assert mv.f_contiguous is True
+    assert mv.shape == shape
+    assert tuple(x[0][0] for x in mv.tolist()) == (0, 1, 2, 3, 4)

@@ -1,5 +1,8 @@
 import abc
 import atexit
+# TODO: numpy needed for memoryview
+#   (as long as https://bugs.python.org/issue34778 not resolved)
+import numpy
 import typing
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
@@ -346,21 +349,6 @@ class NumpyArrayInterface(abc.ABC):
                 'version': 3}
 
 
-def _memoryview(obj, sizeof_str: str, cast_str: str) -> memoryview:
-    """
-    - sizeof_str: type in a string to use with ffi.sizeof() (for
-        example "int")
-    - cast_str: type in a string to use with memoryview.cast() (for
-        example "i")
-    """
-    b = _rinterface.ffi.buffer(
-        obj._R_GET_PTR(obj.__sexp__._cdata),
-        openrlib.ffi.sizeof(sizeof_str) * len(obj))
-    shape = bufferprotocol.getshape(obj.__sexp__._cdata)
-    mv = memoryview(b).cast(cast_str, shape)
-    return mv
-
-
 class ByteSexpVector(SexpVector, NumpyArrayInterface):
     """Array of bytes.
 
@@ -477,7 +465,7 @@ class BoolSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
 
     def memoryview(self) -> memoryview:
-        return _memoryview(self, 'int', 'i')
+        return bufferprotocol.memoryview(self, 'int', 'i')
 
 
 class IntSexpVector(SexpVector, NumpyArrayInterface):
@@ -523,7 +511,7 @@ class IntSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
 
     def memoryview(self) -> memoryview:
-        return _memoryview(self, 'int', 'i')
+        return bufferprotocol.memoryview(self, 'int', 'i')
 
 
 class FloatSexpVector(SexpVector, NumpyArrayInterface):
@@ -566,7 +554,7 @@ class FloatSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
 
     def memoryview(self) -> memoryview:
-        return _memoryview(self, 'double', 'd')
+        return bufferprotocol.memoryview(self, 'double', 'd')
 
 
 class ComplexSexpVector(SexpVector):
@@ -889,7 +877,7 @@ conversion._PY_R_MAP.update({
     type(None): lambda x: openrlib.rlib.R_NilValue})
 
 
-def vector(iterable, rtype: RTYPES):
+def vector(iterable, rtype: RTYPES) -> SexpVector:
     """Create an R vector.
 
     While the different types of R vectors all have their own class,

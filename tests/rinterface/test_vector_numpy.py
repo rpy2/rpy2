@@ -64,7 +64,6 @@ def test_array_struct_boolean():
         assert orig == new
 
 
-@pytest.mark.skip(reason='Python-level memoryviews stuck on row-major arrays')
 @pytest.mark.skipif(not has_numpy, reason='Package numpy is not installed.')
 def test_array_shape_len3():
     extract = rinterface.baseenv['[']
