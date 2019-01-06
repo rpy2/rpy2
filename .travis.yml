@@ -47,6 +47,7 @@ matrix:
 
 before_install:
   - sudo apt-get install -y r-base
+  - pip install flake8
   - pip install pandas numpy tzlocal
 
 addons:
