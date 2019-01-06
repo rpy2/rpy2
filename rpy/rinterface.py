@@ -57,7 +57,7 @@ def evalr(source: str, maxlines: int = -1) -> sexp.Sexp:
 
 
 def vector_memoryview(obj: sexp.SexpVector,
-               sizeof_str: str, cast_str: str) -> memoryview:
+                      sizeof_str: str, cast_str: str) -> memoryview:
     """
     - sizeof_str: type in a string to use with ffi.sizeof()
         (for example "int")
@@ -80,7 +80,7 @@ def vector_memoryview(obj: sexp.SexpVector,
     #   (as long as https://bugs.python.org/issue34778 not resolved)
     import numpy
     a = numpy.frombuffer(b, dtype=cast_str).reshape(shape, order='F')
-    mv = builtins.memoryview(a)
+    mv = memoryview(a)
     return mv
 
 
