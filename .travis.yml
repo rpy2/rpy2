@@ -43,7 +43,7 @@ before_install:
   - sudo apt-get install -y lsb-release
   - |
     sudo add-apt-repository
-    'deb https://cran.revolutionanalytics.com/bin/linux/ubuntu '$(lsb_release -c -s)'-cran35/'
+    "deb https://cran.revolutionanalytics.com/bin/linux/ubuntu $(lsb_release -c -s)-cran35/"
   - cat /etc/apt/sources.list
   - sudo apt-key adv --no-tty --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
   - sudo apt-get update -qq
