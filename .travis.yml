@@ -64,5 +64,3 @@ script:
     --cov=rpy2.ipython
     --cov=rpy2.robject
     tests
-
-  
