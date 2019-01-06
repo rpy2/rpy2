@@ -1,8 +1,5 @@
 import abc
 import atexit
-# TODO: numpy needed for memoryview
-#   (as long as https://bugs.python.org/issue34778 not resolved)
-import numpy
 import typing
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
@@ -630,8 +627,9 @@ class ListSexpVector(SexpVector):
 class PairlistSexpVector(SexpVector):
     """R pairlist.
 
-    A R pairlist is rarely used outside of R's internal libraries and a relatively
-    small number of use cases. It is essentially a LISP-like of(name, value) pairs.
+    A R pairlist is rarely used outside of R's internal libraries and
+    a relatively small number of use cases. It is essentially a LISP-like
+    list of (name, value) pairs.
     """
     _R_TYPE = openrlib.rlib.LISTSXP
     _R_GET_PTR = None

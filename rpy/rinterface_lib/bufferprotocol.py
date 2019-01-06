@@ -58,6 +58,8 @@ def memoryview(obj: 'rpy2.rinterface.sexp.SexpVector',
     # but Python does not handle FORTRAN-ordered arrays without having
     # to write C extensions. We have to use numpy.
     # TODO: Having numpy a requirement just for this is a problem.
+    # TODO: numpy needed for memoryview
+    #   (as long as https://bugs.python.org/issue34778 not resolved)
     import numpy
     a = numpy.frombuffer(b, dtype=cast_str).reshape(shape, order='F')
     mv = builtins.memoryview(a)
