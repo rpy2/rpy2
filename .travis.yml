@@ -54,7 +54,7 @@ addons:
 
 install:
   - python setup.py install
-    
+
 # command to run tests
 script:
   - flake8 rpy/rinterface.py rpy/rinterface_lib/
