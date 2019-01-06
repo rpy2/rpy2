@@ -1,5 +1,7 @@
 language: python
 
+dist: xenial
+
 matrix:
   allow_failures:
     - os: osx
