@@ -40,6 +40,7 @@ matrix:
       compiler: gcc
 
 before_install:
+  - sudo apt-get install -y lsb-release
   - |
     echo "deb https://cran.revolutionanalytics.com/bin/linux/ubuntu $(lsb_release -c -s)-cran35" |
     sudo tee -a /etc/apt/sources.list.d/added_repos.list
