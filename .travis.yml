@@ -42,9 +42,13 @@ matrix:
 before_install:
   - sudo apt-get install -y lsb-release
   - |
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+    sudo apt-key adv \
+    --keyserver keyserver.ubuntu.com \
+    --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
   - |
-    sudo add-apt-repository --yes "deb https://cloud.r-project.org/bin/linux/ubuntu/ $(lsb_release -c -s)-cran35/"
+    sudo add-apt-repository \
+    --yes \
+    "deb https://cloud.r-project.org/bin/linux/ubuntu/ $(lsb_release -c -s)-cran35/"
   - cat /etc/apt/sources.list
   - sudo apt-get update -qq
   - sudo apt-get install -y r-base
@@ -62,9 +66,9 @@ install:
 script:
   - flake8 rpy/rinterface.py rpy/rinterface_lib/
   - |
-    pytest
-    --cov=rpy2.rinterface_lib
-    --cov=rpy2.rinterface
-    --cov=rpy2.ipython
-    --cov=rpy2.robject
+    pytest \
+    --cov=rpy2.rinterface_lib \
+    --cov=rpy2.rinterface \
+    --cov=rpy2.ipython \
+    --cov=rpy2.robject \
     tests
