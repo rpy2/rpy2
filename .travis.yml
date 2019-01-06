@@ -6,12 +6,12 @@ matrix:
   allow_failures:
     - os: osx
   include:
-    - os: linux
-      python: 3.5
-      compiler: clang
-    - os: linux
-      python: 3.5
-      compiler: gcc
+    #- os: linux
+    #  python: 3.5
+    #  compiler: clang
+    #- os: linux
+    #  python: 3.5
+    #  compiler: gcc
     - os: linux
       python: 3.6
       compiler: clang
