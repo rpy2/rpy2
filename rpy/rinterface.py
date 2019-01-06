@@ -67,7 +67,7 @@ def vector_memoryview(obj: sexp.SexpVector,
     b = openrlib.ffi.buffer(
         obj._R_GET_PTR(obj.__sexp__._cdata),
         openrlib.ffi.sizeof(sizeof_str) * len(obj))
-    shape = getshape(obj.__sexp__._cdata)
+    shape = bufferprotocol.getshape(obj.__sexp__._cdata)
     # One could have expected to only need builtin Python
     # and do something like
     # ```
