@@ -133,7 +133,7 @@ def _get_cdata(obj):
     elif cast is None:
         try:
             cdata = obj.__sexp__._cdata
-        except AttributeError as ae:
+        except AttributeError:
             raise ValueError('Not an rpy2 R object and unable '
                              'to cast it into one: %s' % repr(obj))
     else:

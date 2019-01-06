@@ -112,13 +112,13 @@ class Sexp(object):
         self._sexpobject = unserialize(state)
 
     @property
-    def rclass(self) -> 'rpy2.rinterface.StrSexpVector':
+    def rclass(self) -> 'StrSexpVector':
         """Get or set the R "class" attribute for the object."""
         return rclass_get(self.__sexp__)
 
     @rclass.setter
     def rclass(self,
-               value: 'typing.Union[rpy2.rinterface.StrSexpVector, str]'):
+               value: 'typing.Union[StrSexpVector, str]'):
         rclass_set(self.__sexp__, value)
 
     @property
@@ -135,7 +135,7 @@ class Sexp(object):
         return _rinterface._NAMED(self.__sexp__._cdata)
 
     @conversion._cdata_res_to_rinterface
-    def list_attrs(self) -> 'typing.Union[rpy2.rinterface.StrSexpVector, str]':
+    def list_attrs(self) -> 'typing.Union[StrSexpVector, str]':
         return _rinterface._list_attrs(self.__sexp__._cdata)
 
     @conversion._cdata_res_to_rinterface
@@ -459,7 +459,7 @@ def rclass_get(scaps: _rinterface.SexpCapsule) -> StrSexpVector:
 
 def rclass_set(
         scaps: _rinterface.SexpCapsule,
-        value: 'typing.Union[rpy2.rinterface.StrSexpVector, str]'
+        value: 'typing.Union[StrSexpVector, str]'
 ) -> None:
     if isinstance(value, StrSexpVector):
         value_r = value
@@ -468,7 +468,7 @@ def rclass_set(
             [value])
     else:
         raise TypeError('Value should a str or '
-                        'a rpy2.rinterface.StrSexpVector.')
+                        'a rpy2.rinterface.sexp.StrSexpVector.')
     openrlib.rlib.Rf_setAttrib(scaps._cdata,
                                openrlib.rlib.R_ClassSymbol,
                                value_r.__sexp__._cdata)

@@ -56,6 +56,34 @@ def evalr(source: str, maxlines: int = -1) -> sexp.Sexp:
     return res
 
 
+def vector_memoryview(obj: sexp.SexpVector,
+               sizeof_str: str, cast_str: str) -> memoryview:
+    """
+    - sizeof_str: type in a string to use with ffi.sizeof()
+        (for example "int")
+    - cast_str: type in a string to use with memoryview.cast()
+        (for example "i")
+    """
+    b = openrlib.ffi.buffer(
+        obj._R_GET_PTR(obj.__sexp__._cdata),
+        openrlib.ffi.sizeof(sizeof_str) * len(obj))
+    shape = getshape(obj.__sexp__._cdata)
+    # One could have expected to only need builtin Python
+    # and do something like
+    # ```
+    # mv = memoryview(b).cast(cast_str, shape, order='F')
+    # ```
+    # but Python does not handle FORTRAN-ordered arrays without having
+    # to write C extensions. We have to use numpy.
+    # TODO: Having numpy a requirement just for this is a problem.
+    # TODO: numpy needed for memoryview
+    #   (as long as https://bugs.python.org/issue34778 not resolved)
+    import numpy
+    a = numpy.frombuffer(b, dtype=cast_str).reshape(shape, order='F')
+    mv = builtins.memoryview(a)
+    return mv
+
+
 class NULLType(sexp.Sexp, metaclass=na_values.Singleton):
     """A singleton class for R's NULL."""
 
@@ -462,7 +490,7 @@ class BoolSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
 
     def memoryview(self) -> memoryview:
-        return bufferprotocol.memoryview(self, 'int', 'i')
+        return vector_memoryview(self, 'int', 'i')
 
 
 class IntSexpVector(SexpVector, NumpyArrayInterface):
@@ -508,7 +536,7 @@ class IntSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
 
     def memoryview(self) -> memoryview:
-        return bufferprotocol.memoryview(self, 'int', 'i')
+        return vector_memoryview(self, 'int', 'i')
 
 
 class FloatSexpVector(SexpVector, NumpyArrayInterface):
@@ -551,7 +579,7 @@ class FloatSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
 
     def memoryview(self) -> memoryview:
-        return bufferprotocol.memoryview(self, 'double', 'd')
+        return vector_memoryview(self, 'double', 'd')
 
 
 class ComplexSexpVector(SexpVector):
