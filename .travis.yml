@@ -41,8 +41,8 @@ matrix:
 
 before_install:
   - |
-  echo "deb https://cran.revolutionanalytics.com/bin/linux/ubuntu $(lsb_release -c -s)-cran35" |
-  sudo tee -a /etc/apt/sources.list.d/added_repos.list
+    echo "deb https://cran.revolutionanalytics.com/bin/linux/ubuntu $(lsb_release -c -s)-cran35" |
+    sudo tee -a /etc/apt/sources.list.d/added_repos.list
   - sudo apt-key adv --no-tty --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
   - sudo apt-get install -y r-base
   - pip install flake8 pytest
