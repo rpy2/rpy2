@@ -1,0 +1,70 @@
+language: python
+
+matrix:
+  allow_failures:
+    - os: osx
+  include:
+    - os: linux
+      python: 3.5
+      compiler: clang
+    - os: linux
+      python: 3.5
+      compiler: gcc
+    - os: linux
+      python: 3.6
+      compiler: clang
+    - os: linux
+      python: 3.6
+      compiler: gcc
+    - os: linux
+      python: 3.7
+      dist: xenial
+      sudo: true
+      compiler: clang
+    - os: linux
+      python: 3.7
+      compiler: gcc
+      dist: xenial
+      sudo: true
+    - os: osx
+      python: 3.5
+      compiler: clang
+    - os: osx
+      python: 3.5
+      compiler: gcc
+    - os: osx
+      python: 3.6
+      compiler: clang
+    - os: osx
+      python: 3.6
+      compiler: gcc
+    - os: osx
+      python: 3.7
+      compiler: clang
+    - os: osx
+      python: 3.7
+      compiler: gcc
+
+before_install:
+  - sudo apt-get install -y r-base
+  - pip install pandas numpy tzlocal
+
+addons:
+  apt:
+    update: true
+
+install:
+  - python setup.py install
+    
+# command to run tests
+script:
+  - flake8 rpy/rinterface.py rpy/rinterface_lib/
+  - |
+    pytest
+    --cov=rpy2.rinterface_lib
+    --cov=rpy2.rinterface
+    --cov=rpy2.ipython
+    --cov=rpy2.robject
+    tests
+
+  
