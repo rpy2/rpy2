@@ -6,56 +6,14 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG CRAN_MIRROR=https://cran.revolutionanalytics.com/
 ARG CRAN_MIRROR_TAG=-cran35
 
-RUN \
-  apt-get update -qq && \
-  apt-get install -y \
-                     apt-utils \
-                     apt-transport-https \
-		     dirmngr \
-                     gnupg \
-		     libcurl4-openssl-dev \
-		     libnlopt-dev \
-                     lsb-release && \
-  echo "deb ${CRAN_MIRROR}/bin/linux/ubuntu $(lsb_release -c -s)${CRAN_MIRROR_TAG}/" \
-        >> /etc/apt/sources.list.d/added_repos.list && \
-  apt-key adv --no-tty --keyserver keyserver.ubuntu.com --recv-keys E084DAB9 && \
-  apt-get update -qq && \
-  apt-get install -y \
-                     aptdaemon \
-                     ed \
-                     git \
-		     mercurial \
-		     libcairo-dev \
-		     libedit-dev \
-		     libxml2-dev \
-		     python3 \
-		     python3-pip \
-		     python3-venv \
-		     r-base \
-		     r-base-dev \
-		     sudo \
-		     wget &&\
-  rm -rf /var/lib/apt/lists/*
+COPY install_apt.sh /opt/
+COPY install_rpacks.sh /opt/
+COPY install_pip.sh /opt/
 
 RUN \
-  echo "broom\n\
-        DBI\n\
-        dbplyr\n\
-        dplyr\n\
-        hexbin\n\
-        ggplot2\n\
-        lme4\n\
-        RSQLite\n\
-        tidyr" > rpacks.txt && \
-  R -e 'install.packages(sub("(.+)\\\\n","\\1", scan("rpacks.txt", "character")), repos="'"${CRAN_MIRROR}"'")' && \
-  rm rpacks.txt
-
-RUN \
-  python3 -m pip --no-cache-dir install pip --upgrade && \
-  python3 -m pip --no-cache-dir install setuptools --upgrade && \
-  python3 -m pip --no-cache-dir install wheel --upgrade && \
-  python3 -m pip --no-cache-dir install jinja2 numpy pandas pytest sphinx tzlocal && \
-  rm -rf /root/.cache
+  sh /opt/install_apt.sh && \
+  sh /opt/install_rpacks.sh && \
+  sh /opt/install_pip.sh
   
 # Run dev version of rpy2
 RUN \
