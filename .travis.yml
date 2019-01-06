@@ -52,7 +52,7 @@ before_install:
   - cat /etc/apt/sources.list
   - sudo apt-get update -qq
   - sudo apt-get install -y r-base
-  - pip install flake8 pytest
+  - pip install flake8 pytest pytest-cov
   - pip install ipython pandas numpy tzlocal
 
 addons:
