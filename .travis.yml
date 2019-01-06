@@ -27,12 +27,6 @@ matrix:
       dist: xenial
       sudo: true
     - os: osx
-      python: 3.5
-      compiler: clang
-    - os: osx
-      python: 3.5
-      compiler: gcc
-    - os: osx
       python: 3.6
       compiler: clang
     - os: osx
