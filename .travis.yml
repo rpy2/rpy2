@@ -70,7 +70,7 @@ script:
     --cov=rpy2.rinterface_lib \
     --cov=rpy2.rinterface \
     --cov=rpy2.ipython \
-    --cov=rpy2.robject \
+    --cov=rpy2.robjects \
     tests
 
 after_success:
