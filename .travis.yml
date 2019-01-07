@@ -1,39 +1,24 @@
 language: python
 
+compiler:
+  gcc
+  clang
+
 matrix:
   allow_failures:
     - os: osx
   include:
     #- os: linux
+    #  dist: xenial
     #  python: 3.5
-    #  compiler: clang
-    #- os: linux
-    #  python: 3.5
-    #  compiler: gcc
     - os: linux
       dist: xenial
       python: 3.6
-      compiler: clang
-    - os: linux
-      dist: xenial
-      python: 3.6
-      compiler: gcc
     - os: linux
       dist: xenial
       python: 3.7
-      sudo: true
-      compiler: clang
-    - os: linux
-      dist: xenial
-      python: 3.7
-      compiler: gcc
-      sudo: true
     - os: osx
       python: 3.7
-      compiler: clang
-    - os: osx
-      python: 3.7
-      compiler: gcc
 
 before_install:
   - sudo apt-get install -y lsb-release
