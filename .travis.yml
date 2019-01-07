@@ -23,8 +23,9 @@ matrix:
 before_install:
   - |
     if [[ $TRAVIS_OS_NAME == 'osx' ]]; then \
-      brew list python3 > /dev/null 
-      brew install python3; \
+      brew list python3 > /dev/null
+      brew install python3 r littler; \
+      install.r dplyr ggplot2; \
       virtualenv venv -p python3; \
       source venv/bin/activate; \
     fi
@@ -36,10 +37,12 @@ before_install:
   - |
     sudo add-apt-repository \
     --yes \
-    "deb https://cloud.r-project.org/bin/linux/ubuntu/ $(lsb_release -c -s)-cran35/"
+    "deb https://cloud.r-project.org/bin/linux/ubuntu/ "\
+    $(lsb_release -c -s)"-cran35/"all
   - cat /etc/apt/sources.list
   - sudo apt-get update -qq
   - sudo apt-get install -y r-base
+  - sudo install.r dplyr ggplot2
   - pip install flake8 pytest pytest-cov
   - pip install ipython pandas numpy tzlocal
 
