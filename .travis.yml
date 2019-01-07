@@ -23,7 +23,7 @@ matrix:
 before_install:
   - |
     if [[ $TRAVIS_OS_NAME == 'osx' ]]; then \
-      brew install python3 r homebrew/science/littler; \
+      brew install python3 r homebrew/core/littler; \
       ./install_r_packages.r dplyr ggplot2; \
       virtualenv venv -p python3; \
       source venv/bin/activate; \
