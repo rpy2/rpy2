@@ -18,9 +18,15 @@ matrix:
       dist: xenial
       python: 3.7
     - os: osx
-      python: 3.7
+      env: TRAVIS_PYTHON_VERSION=3.7
 
 before_install:
+  - |
+    if [[ $TRAVIS_OS_NAME == 'osx' ]]; then \
+      brew install python${TRAVIS_PYTHON_VERSION}; \
+      virtualenv venv -p python3; \
+      source venv/bin/activate; \
+    fi
   - sudo apt-get install -y lsb-release
   - |
     sudo apt-key adv \
