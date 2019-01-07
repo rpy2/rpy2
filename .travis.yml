@@ -1,8 +1,8 @@
 language: python
 
 compiler:
-  gcc
-  clang
+  - gcc
+  - clang
 
 matrix:
   allow_failures:
