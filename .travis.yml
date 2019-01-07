@@ -37,8 +37,7 @@ before_install:
   - |
     sudo add-apt-repository \
     --yes \
-    "deb https://cloud.r-project.org/bin/linux/ubuntu/ "\
-    $(lsb_release -c -s)"-cran35/"
+    "deb https://cloud.r-project.org/bin/linux/ubuntu/ $(lsb_release -c -s)-cran35/"
   - cat /etc/apt/sources.list
   - sudo apt-get update -qq
   - sudo apt-get install -y r-base
