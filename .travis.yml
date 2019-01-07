@@ -25,7 +25,7 @@ before_install:
     if [[ $TRAVIS_OS_NAME == 'osx' ]]; then \
       brew list python3 > /dev/null ;\
       brew install python3 r littler; \
-      ./install.r dplyr ggplot2; \
+      ./install_r_packages.r dplyr ggplot2; \
       virtualenv venv -p python3; \
       source venv/bin/activate; \
     fi
@@ -41,7 +41,7 @@ before_install:
   - cat /etc/apt/sources.list
   - sudo apt-get update -qq
   - sudo apt-get install -y r-base
-  - sudo ./install.r dplyr ggplot2
+  - sudo ./install_r_packages.r dplyr ggplot2
   - pip install flake8 pytest pytest-cov
   - pip install ipython pandas numpy tzlocal
 
