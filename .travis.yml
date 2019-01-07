@@ -18,6 +18,7 @@ matrix:
       dist: xenial
       python: 3.7
     - os: osx
+      language: generic
       env: TRAVIS_PYTHON_VERSION=3.7
 
 before_install:
