@@ -40,7 +40,7 @@ before_install:
     "deb https://cloud.r-project.org/bin/linux/ubuntu/ $(lsb_release -c -s)-cran35/"
   - cat /etc/apt/sources.list
   - sudo apt-get update -qq
-  - sudo apt-get install -y r-base
+  - sudo apt-get install -y r-base littler
   - sudo ./install_r_packages.r dplyr ggplot2
   - pip install flake8 pytest pytest-cov
   - pip install ipython pandas numpy tzlocal
