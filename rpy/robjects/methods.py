@@ -78,12 +78,12 @@ class RS4_Type(type):
 
         try:
             cls_rname = cls_dict['__rname__']
-        except KeyError as ke:
+        except KeyError:
             cls_rname = name
 
         try:
             accessors = cls_dict['__accessors__']
-        except KeyError as ke:
+        except KeyError:
             accessors = []
 
         for rname, where, \
@@ -126,21 +126,21 @@ class RS4Auto_Type(type):
     def __new__(mcs, name, bases, cls_dict):
         try:
             cls_rname = cls_dict['__rname__']
-        except KeyError as ke:
+        except KeyError:
             cls_rname = name
 
         try:
             cls_rpackagename = cls_dict['__rpackagename__']
-        except KeyError as ke:
+        except KeyError:
             cls_rpackagename = None
 
         try:
             cls_attr_translation = cls_dict['__attr_translation__']
-        except KeyError as ke:
+        except KeyError:
             cls_attr_translation = {}
         try:
             cls_meth_translation = cls_dict['__meth_translation__']
-        except KeyError as ke:
+        except KeyError:
             cls_meth_translation = {}
 
         cls_def = getclassdef(cls_rname, cls_rpackagename)
@@ -154,12 +154,12 @@ class RS4Auto_Type(type):
             try:
                 # R's classes are sometimes documented with a prefix 'class.'
                 page_help = pack_help.fetch(cls_def.__rname__ + "-class")
-            except rhelp.HelpNotFoundError as hnf:
+            except rhelp.HelpNotFoundError:
                 pass
             if page_help is None:
                 try:
                     page_help = pack_help.fetch(cls_def.__rname__)
-                except rhelp.HelpNotFoundError as hnf:
+                except rhelp.HelpNotFoundError:
                     pass
             if page_help is None:
                 cls_dict['__doc__'] = ('Unable to fetch R documentation '
@@ -171,7 +171,7 @@ class RS4Auto_Type(type):
             # TODO: sanity check on the slot name
             try:
                 slt_name = cls_attr_translation[slt_name]
-            except KeyError as ke:
+            except KeyError:
                 # no translation: abort
                 pass
 
@@ -220,7 +220,7 @@ class RS4Auto_Type(type):
             # TODO: sanity check on the function name
                 try:
                     meth_name = cls_meth_translation[meth_name]
-                except KeyError as ke:
+                except KeyError:
                     # no translation: abort
                     pass
 

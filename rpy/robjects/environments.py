@@ -59,7 +59,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         # meaningless for non-rpy2 objects.
         try:
             res.__rname__ = item
-        except AttributeError as ae:
+        except AttributeError:
             pass
         return res
 

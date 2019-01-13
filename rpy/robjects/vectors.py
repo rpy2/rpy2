@@ -666,7 +666,7 @@ class ListVector(Vector, ListSexpVector):
             else:
                 try:
                     name = self.names[i]
-                except TypeError as te:
+                except TypeError:
                     name = '<no name>'
                 res.append("  %s: %s%s  %s"
                            % (name,

@@ -287,7 +287,7 @@ def grid_rpy2py(robj):
         try:
             cls = _grid_dict[rcls[0]]
             pyobj = cls(pyobj)
-        except KeyError as ke:
+        except KeyError:
             pass
 
     return pyobj

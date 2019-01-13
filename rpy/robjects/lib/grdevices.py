@@ -55,7 +55,7 @@ def render_to_file(device, *device_args, **device_kwargs):
                    to take a filename as its first argument.
 
     """
-    fn = tempfile.mktemp()
+    # TODO: better function signature to check that a file name is passed.
     current = dev_cur()[0]
     try:
         device(*device_args, **device_kwargs)

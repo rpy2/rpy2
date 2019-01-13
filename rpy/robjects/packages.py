@@ -321,7 +321,7 @@ class InstalledSTPackage(SignatureTranslatedPackage):
                 doc.append(rhelp.docstring(self.__rname__,
                                            self.__rname__ + '-package',
                                            sections=['description']))
-            except rhelp.HelpNotFoundError as hnf:
+            except rhelp.HelpNotFoundError:
                 doc.append('[R help was not found]')
         return os.linesep.join(doc)
 
@@ -349,7 +349,7 @@ class InstalledPackage(Package):
                 doc.append(rhelp.docstring(self.__rname__,
                                            self.__rname__ + '-package',
                                            sections=['description']))
-            except rhelp.HelpNotFoundError as hnf:
+            except rhelp.HelpNotFoundError:
                 doc.append('[R help was not found]')
         return os.linesep.join(doc)
 
@@ -513,7 +513,7 @@ def data(package):
 
 
 def wherefrom(symbol: str,
-              startenv: rinterface.SexpEnvironment=rinterface.globalenv):
+              startenv: rinterface.SexpEnvironment = rinterface.globalenv):
     """ For a given symbol, return the environment
     this symbol is first found in, starting from 'startenv'.
     """

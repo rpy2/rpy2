@@ -59,7 +59,20 @@ install:
 
 # command to run tests
 script:
-  - flake8 rpy/rinterface.py rpy/rinterface_lib/
+  - |
+    flake8 \
+    rpy/rinterface.py \
+    rpy/rinterface_lib/ \
+    rpy/robjects/c*.py \
+    rpy/robjects/environment.py \
+    rpy/robjects/language.py \
+    rpy/robjects/lib \
+    rpy/robjects/methods.py \
+    rpy/robjects/numpy2ri.py
+    rpy/robjects/packages.py \
+    rpy/robjects/packages_utils.py \
+    rpy/robjects/pandas2ri.py \
+    rpy/robjects/vectors.py
   - |
     pytest \
     --cov=rpy2.rinterface_lib \
