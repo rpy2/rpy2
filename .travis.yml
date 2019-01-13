@@ -68,7 +68,7 @@ script:
     rpy/robjects/language.py \
     rpy/robjects/lib \
     rpy/robjects/methods.py \
-    rpy/robjects/numpy2ri.py
+    rpy/robjects/numpy2ri.py \
     rpy/robjects/packages.py \
     rpy/robjects/packages_utils.py \
     rpy/robjects/pandas2ri.py \
