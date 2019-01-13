@@ -28,6 +28,7 @@ before_install:
       echo "Installing OS X binary package for R"
       sudo installer -pkg "/tmp/R-latest.pkg" -target /
       rm "/tmp/R-latest.pkg"
+      brew update
       brew install python3
       virtualenv venv -p python3
       source venv/bin/activate
