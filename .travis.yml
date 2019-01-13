@@ -26,7 +26,7 @@ before_install:
       # Install from latest CRAN binary build for OS X
       wget https://cloud.r-project.org/bin/macosx/R-latest.pkg -O /tmp/R-latest.pkg
       echo "Installing OS X binary package for R"
-      sudo installer -pkg "/tmp/R-latest.pkg" -target
+      sudo installer -pkg "/tmp/R-latest.pkg" -target /
       rm "/tmp/R-latest.pkg"
       brew install python3
       virtualenv venv -p python3
