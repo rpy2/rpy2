@@ -33,8 +33,9 @@ def _get_symbol_or_fallback(symbol: str, fallback):
 
 def _get_dataptr_fallback(vec):
     # '(((SEXPREC_ALIGN *) (x)) + 1)'
-    return ffi.cast('void *',
-                    ffi.cast('SEXPREC_ALIGN *', vec) + 1)
+    ptr = ffi.cast('SEXPREC_ALIGN *', vec)
+    ptr += 1
+    return ffi.cast('void *', ptr)
 
 
 DATAPTR = _get_symbol_or_fallback('DATAPTR',
