@@ -31,24 +31,33 @@ def _get_symbol_or_fallback(symbol: str, fallback):
     return res
 
 
+def _get_dataptr_fallback(vec):
+    # '(((SEXPREC_ALIGN *) (x)) + 1)'
+    return ffi.cast('SEXPREC_ALIGN *', vec) + 1
+
+
+DATAPTR = _get_symbol_or_fallback('DATAPTR',
+                                  _get_dataptr_fallback)
+
+
 def _LOGICAL(x):
-    return ffi.cast('int *', rlib.DATAPTR(x))
+    return ffi.cast('int *', DATAPTR(x))
 
 
 def _INTEGER(x):
-    return ffi.cast('int *', rlib.DATAPTR(x))
+    return ffi.cast('int *', DATAPTR(x))
 
 
 def _RAW(x):
-    return ffi.cast('Rbyte *', rlib.DATAPTR(x))
+    return ffi.cast('Rbyte *', DATAPTR(x))
 
 
 def _REAL(robj):
-    return ffi.cast('double *', rlib.DATAPTR(robj))
+    return ffi.cast('double *', DATAPTR(robj))
 
 
 def _COMPLEX(robj):
-    return ffi.cast('Rcomplex *', rlib.DATAPTR(robj))
+    return ffi.cast('Rcomplex *', DATAPTR(robj))
 
 
 def _get_integer_elt_fallback(vec, i: int):
@@ -101,15 +110,15 @@ SET_REAL_ELT = _get_symbol_or_fallback('SET_REAL_ELT',
 
 # TODO: still useful or is it in the C API ?
 def _VECTOR_ELT(robj, i):
-    return ffi.cast('SEXP *', rlib.DATAPTR(robj))[i]
+    return ffi.cast('SEXP *', DATAPTR(robj))[i]
 
 
 def _STRING_PTR(robj):
-    return ffi.cast('SEXP *', rlib.DATAPTR(robj))
+    return ffi.cast('SEXP *', DATAPTR(robj))
 
 
 def _VECTOR_PTR(robj):
-    return ffi.cast('SEXP *', rlib.DATAPTR(robj))
+    return ffi.cast('SEXP *', DATAPTR(robj))
 
 
 def _STRING_VALUE(robj):
