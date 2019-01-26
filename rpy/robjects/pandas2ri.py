@@ -147,7 +147,7 @@ def rpy2py_intvector(obj):
     if 'factor' in obj.rclass:
         res = pandas.Categorical.from_codes(
             numpy.asarray(obj) - 1,
-            categories=obj.do_slot('levels'),
+            categories=list(obj.do_slot('levels')),
             ordered='ordered' in obj.rclass
         )
     else:
