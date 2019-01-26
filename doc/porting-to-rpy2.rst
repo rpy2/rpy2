@@ -106,7 +106,7 @@ Alternatively, the ggplot2 package can be used to make the plots:
        ggplot2.geom_density(ggplot2.aes_string(y = '..count..'), colour = "orange") + \
        ggplot2.geom_rug() + \
        ggplot2.scale_x_continuous("Eruption duration (seconds)") + \
-       ggplot2.opts(title = "Old Faithful eruptions")
+       ggplot2.labs(title = "Old Faithful eruptions")
 
    p.plot()
 
