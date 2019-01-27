@@ -20,7 +20,7 @@ def getshape(cdata, rk=None):
         shape[0] = openrlib.rlib.Rf_length(cdata)
     else:
         for i in range(rk):
-            shape[i] = openrlib.rlib.INTEGER_ELT(dim_cdata, i)
+            shape[i] = openrlib.INTEGER_ELT(dim_cdata, i)
     return shape
 
 

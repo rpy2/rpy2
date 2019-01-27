@@ -32,10 +32,11 @@ def _get_symbol_or_fallback(symbol: str, fallback):
 
 
 def _get_dataptr_fallback(vec):
-    # '(((SEXPREC_ALIGN *) (x)) + 1)'
-    ptr = ffi.cast('SEXPREC_ALIGN *', vec)
-    ptr += 1
-    return ffi.cast('void *', ptr)
+    # DATAPTR seems to be the following macro in R < 3.5
+    # but I cannot get it to work (seems to be pointing
+    # to incorrect memory region).
+    # (((SEXPREC_ALIGN *)(x)) + 1)
+    raise NotImplementedError()
 
 
 DATAPTR = _get_symbol_or_fallback('DATAPTR',
@@ -45,25 +46,46 @@ DATAPTR = _get_symbol_or_fallback('DATAPTR',
 def _LOGICAL(x):
     return ffi.cast('int *', DATAPTR(x))
 
+LOGICAL = rlib.LOGICAL
+
 
 def _INTEGER(x):
     return ffi.cast('int *', DATAPTR(x))
+
+
+INTEGER = rlib.INTEGER
 
 
 def _RAW(x):
     return ffi.cast('Rbyte *', DATAPTR(x))
 
 
+RAW = rlib.RAW
+
 def _REAL(robj):
     return ffi.cast('double *', DATAPTR(robj))
+
+
+REAL = rlib.REAL
 
 
 def _COMPLEX(robj):
     return ffi.cast('Rcomplex *', DATAPTR(robj))
 
 
+COMPLEX = rlib.COMPLEX
+
+
+def _get_raw_elt_fallback(vec, i: int):
+    return RAW(vec)[i]
+
+
+RAW_ELT = _get_symbol_or_fallback('RAW_ELT',
+                                  _get_raw_elt_fallback)
+
+
 def _get_integer_elt_fallback(vec, i: int):
-    return _INTEGER(vec)[i]
+    return INTEGER(vec)[i]
 
 
 INTEGER_ELT = _get_symbol_or_fallback('INTEGER_ELT',
@@ -71,7 +93,7 @@ INTEGER_ELT = _get_symbol_or_fallback('INTEGER_ELT',
 
 
 def _set_integer_elt_fallback(vec, i: int, value):
-    _INTEGER(vec)[i] = value
+    INTEGER(vec)[i] = value
 
 
 SET_INTEGER_ELT = _get_symbol_or_fallback('SET_INTEGER_ELT',
@@ -79,7 +101,7 @@ SET_INTEGER_ELT = _get_symbol_or_fallback('SET_INTEGER_ELT',
 
 
 def _get_logical_elt_fallback(vec, i: int):
-    return _LOGICAL(vec)[i]
+    return LOGICAL(vec)[i]
 
 
 LOGICAL_ELT = _get_symbol_or_fallback('LOGICAL_ELT',
@@ -87,7 +109,7 @@ LOGICAL_ELT = _get_symbol_or_fallback('LOGICAL_ELT',
 
 
 def _set_logical_elt_fallback(vec, i: int, value):
-    _LOGICAL(vec)[i] = value
+    LOGICAL(vec)[i] = value
 
 
 SET_LOGICAL_ELT = _get_symbol_or_fallback('SET_LOGICAL_ELT',
@@ -95,7 +117,7 @@ SET_LOGICAL_ELT = _get_symbol_or_fallback('SET_LOGICAL_ELT',
 
 
 def _get_real_elt_fallback(vec, i: int):
-    return _REAL(vec)[i]
+    return REAL(vec)[i]
 
 
 REAL_ELT = _get_symbol_or_fallback('REAL_ELT',
@@ -103,11 +125,19 @@ REAL_ELT = _get_symbol_or_fallback('REAL_ELT',
 
 
 def _set_real_elt_fallback(vec, i: int, value):
-    _REAL(vec)[i] = value
+    REAL(vec)[i] = value
 
 
 SET_REAL_ELT = _get_symbol_or_fallback('SET_REAL_ELT',
                                        _set_real_elt_fallback)
+
+
+def _get_complex_elt_fallback(vec, i: int):
+    return COMPLEX(vec)[i]
+
+
+COMPLEX_ELT = _get_symbol_or_fallback('COMPLEX_ELT',
+                                      _get_complex_elt_fallback)
 
 
 # TODO: still useful or is it in the C API ?

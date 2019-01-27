@@ -383,7 +383,7 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
     _R_TYPE = openrlib.rlib.RAWSXP
     _NP_TYPESTR = '|u1'
 
-    _R_GET_PTR = staticmethod(openrlib._RAW)
+    _R_GET_PTR = staticmethod(openrlib.RAW)
 
     @staticmethod
     def _CAST_IN(x):
@@ -401,20 +401,20 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
 
     @staticmethod
     def _R_VECTOR_ELT(x, i: int) -> None:
-        return openrlib._RAW(x)[i]
+        return openrlib.RAW(x)[i]
 
     @staticmethod
     def _R_SET_VECTOR_ELT(x, i: int, val) -> None:
-        openrlib._RAW(x)[i] = val
+        openrlib.RAW(x)[i] = val
 
     def __getitem__(self, i: int) -> typing.Union[int, 'ByteSexpVector']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            res = openrlib.rlib.RAW_ELT(cdata, i_c)
+            res = openrlib.RAW_ELT(cdata, i_c)
         elif isinstance(i, slice):
             res = type(self).from_iterable(
-                [openrlib.rlib.RAW_ELT(
+                [openrlib.RAW_ELT(
                     cdata, i_c
                 ) for i_c in range(*i.indices(len(self)))
                 ]
@@ -428,12 +428,12 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            openrlib.rlib.RAW(cdata)[i_c] = self._CAST_IN(value)
+            openrlib.RAW(cdata)[i_c] = self._CAST_IN(value)
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
                 if v > 255:
                     raise ValueError('byte must be in range(0, 256)')
-                openrlib.rlib.RAW(cdata)[i_c] = self._CAST_IN(v)
+                openrlib.RAW(cdata)[i_c] = self._CAST_IN(v)
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
@@ -449,7 +449,7 @@ class BoolSexpVector(SexpVector, NumpyArrayInterface):
     _NP_TYPESTR = '|i'
     _R_VECTOR_ELT = openrlib.LOGICAL_ELT
     _R_SET_VECTOR_ELT = openrlib.SET_LOGICAL_ELT
-    _R_GET_PTR = staticmethod(openrlib._LOGICAL)
+    _R_GET_PTR = staticmethod(openrlib.LOGICAL)
 
     @staticmethod
     def _CAST_IN(x):
@@ -463,11 +463,11 @@ class BoolSexpVector(SexpVector, NumpyArrayInterface):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            elt = openrlib.rlib.LOGICAL_ELT(cdata, i_c)
+            elt = openrlib.LOGICAL_ELT(cdata, i_c)
             res = na_values.NA_Logical if elt == NA_Logical else bool(elt)
         elif isinstance(i, slice):
             res = type(self).from_iterable(
-                [openrlib.rlib.LOGICAL_ELT(cdata, i_c)
+                [openrlib.LOGICAL_ELT(cdata, i_c)
                  for i_c in range(*i.indices(len(self)))]
             )
         else:
@@ -479,8 +479,8 @@ class BoolSexpVector(SexpVector, NumpyArrayInterface):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            openrlib.rlib.SET_LOGICAL_ELT(cdata, i_c,
-                                          int(value))
+            openrlib.SET_LOGICAL_ELT(cdata, i_c,
+                                     int(value))
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
                 openrlib.SET_LOGICAL_ELT(cdata, i_c,
@@ -500,19 +500,19 @@ class IntSexpVector(SexpVector, NumpyArrayInterface):
     _R_VECTOR_ELT = openrlib.INTEGER_ELT
     _NP_TYPESTR = '|i'
 
-    _R_GET_PTR = staticmethod(openrlib._INTEGER)
+    _R_GET_PTR = staticmethod(openrlib.INTEGER)
     _CAST_IN = staticmethod(int)
 
     def __getitem__(self, i: int) -> typing.Union[int, 'IntSexpVector']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            res = openrlib.rlib.INTEGER_ELT(cdata, i_c)
+            res = openrlib.INTEGER_ELT(cdata, i_c)
             if res == NA_Integer:
                 res = NA_Integer
         elif isinstance(i, slice):
             res = type(self).from_iterable(
-                [openrlib.rlib.INTEGER_ELT(
+                [openrlib.INTEGER_ELT(
                     cdata, i_c
                 ) for i_c in range(*i.indices(len(self)))]
             )
@@ -547,16 +547,16 @@ class FloatSexpVector(SexpVector, NumpyArrayInterface):
     _NP_TYPESTR = '|f'
 
     _CAST_IN = staticmethod(float)
-    _R_GET_PTR = staticmethod(openrlib._REAL)
+    _R_GET_PTR = staticmethod(openrlib.REAL)
 
     def __getitem__(self, i: int) -> typing.Union[float, 'FloatSexpVector']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            res = openrlib.rlib.REAL_ELT(cdata, i_c)
+            res = openrlib.REAL_ELT(cdata, i_c)
         elif isinstance(i, slice):
             res = type(self).from_iterable(
-                [openrlib.rlib.REAL_ELT(
+                [openrlib.REAL_ELT(
                     cdata, i_c) for i_c in range(*i.indices(len(self)))]
             )
         else:
@@ -585,15 +585,15 @@ class FloatSexpVector(SexpVector, NumpyArrayInterface):
 class ComplexSexpVector(SexpVector):
 
     _R_TYPE = openrlib.rlib.CPLXSXP
-    _R_GET_PTR = staticmethod(openrlib._COMPLEX)
+    _R_GET_PTR = staticmethod(openrlib.COMPLEX)
 
     @staticmethod
     def _R_VECTOR_ELT(x, i):
-        return openrlib._COMPLEX(x)[i]
+        return openrlib.COMPLEX(x)[i]
 
     @staticmethod
     def _R_SET_VECTOR_ELT(x, i, v):
-        openrlib._COMPLEX(x).__setitem__(i, v)
+        openrlib.COMPLEX(x).__setitem__(i, v)
 
     @staticmethod
     def _CAST_IN(x):
@@ -613,11 +613,11 @@ class ComplexSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _ = openrlib.rlib.COMPLEX_ELT(cdata, i_c)
+            _ = openrlib.COMPLEX_ELT(cdata, i_c)
             res = complex(_.r, _.i)
         elif isinstance(i, slice):
             res = type(self).from_iterable(
-                [openrlib.rlib.COMPLEX_ELT(
+                [openrlib.COMPLEX_ELT(
                     cdata, i_c) for i_c in range(*i.indices(len(self)))]
             )
         else:
@@ -629,10 +629,10 @@ class ComplexSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            openrlib._COMPLEX(cdata)[i_c] = self._CAST_IN(value)
+            openrlib.COMPLEX(cdata)[i_c] = self._CAST_IN(value)
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
-                openrlib._COMPLEX(cdata)[i_c] = self._CAST_IN(v)
+                openrlib.COMPLEX(cdata)[i_c] = self._CAST_IN(v)
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))

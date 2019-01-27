@@ -286,18 +286,33 @@ SEXP Rf_ScalarString(SEXP s);
 
 ffibuilder.cdef("""
 void *(STDVEC_DATAPTR)(SEXP x);
+
+/* Integer.*/
 int (INTEGER_ELT)(SEXP x, R_xlen_t i);
 void SET_INTEGER_ELT(SEXP x, R_xlen_t i, int v);
+int *(INTEGER)(SEXP x);
+
+/* Double / real. */
 double (REAL_ELT)(SEXP x, R_xlen_t i);
 void SET_REAL_ELT(SEXP x, R_xlen_t i, double v);
+double *(REAL)(SEXP x);
+
+/* Boolean / logical. */
 int (LOGICAL_ELT)(SEXP x, R_xlen_t i);
 void SET_LOGICAL_ELT(SEXP x, R_xlen_t i, int v);
-Rcomplex (COMPLEX_ELT)(SEXP x, R_xlen_t i);
+int *(LOGICAL)(SEXP x);
 
+/* Complex. */
+Rcomplex (COMPLEX_ELT)(SEXP x, R_xlen_t i);
+Rcomplex *(COMPLEX)(SEXP x);
+
+/* Bytes / raw. */
 Rbyte *(RAW)(SEXP x);
 Rbyte (RAW_ELT)(SEXP x, R_xlen_t i);
+
 SEXP (STRING_ELT)(SEXP x, R_xlen_t i);
 void SET_STRING_ELT(SEXP x, R_xlen_t i, SEXP v);
+
 SEXP (VECTOR_ELT)(SEXP x, R_xlen_t i);
 SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
 """)
