@@ -182,7 +182,6 @@ if __name__ == '__main__':
                        ],
         package_data = {
             'rpy2': ['images/*.png', ],
-            'rpy2': ['doc/source/rpy2_logo.png', ]},
-        zip_safe=False
+            'rpy2': ['doc/source/rpy2_logo.png', ]}
         )
 
