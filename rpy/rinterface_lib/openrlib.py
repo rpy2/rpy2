@@ -46,6 +46,7 @@ DATAPTR = _get_symbol_or_fallback('DATAPTR',
 def _LOGICAL(x):
     return ffi.cast('int *', DATAPTR(x))
 
+
 LOGICAL = rlib.LOGICAL
 
 
@@ -61,6 +62,7 @@ def _RAW(x):
 
 
 RAW = rlib.RAW
+
 
 def _REAL(robj):
     return ffi.cast('double *', DATAPTR(robj))
