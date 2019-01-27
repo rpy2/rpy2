@@ -110,7 +110,7 @@ def py2rpy_pandasseries(obj):
              IntVector([x.day for x in obj]),
              IntVector([x.hour for x in obj]),
              IntVector([x.minute for x in obj]),
-             IntVector([x.second for x in obj])]
+             FloatSexpVector([x.second + x.microsecond * 1e-6 for x in obj])]
         res = ISOdatetime(*d, tz=StrSexpVector([tzname]))
         # FIXME: can the POSIXct be created from the POSIXct constructor ?
         # (is '<M8[ns]' mapping to Python datetime.datetime ?)
