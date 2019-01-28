@@ -878,7 +878,7 @@ class POSIXct(POSIXt, FloatVector):
                     IntVector([x.day for x in seq]),
                     IntVector([x.hour for x in seq]),
                     IntVector([x.minute for x in seq]),
-                    FloatSexpVector([x.second + x.microsecond * 1e-6 for x in seq])]
+                    IntVector([x.second for x in seq])]
 
         return POSIXct._sexp_from_seq(seq, attrgetter('tzinfo'), f)
 
