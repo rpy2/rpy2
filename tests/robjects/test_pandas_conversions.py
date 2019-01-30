@@ -138,6 +138,18 @@ class TestPandasConversions(object):
             rp_c = robjects.conversion.py2rpy(category)
             assert isinstance(rp_c, robjects.vectors.FactorVector)
 
+    def test_datetime2posixct(self):
+        datetime = pandas.Series(
+            pandas.date_range('2017-01-01 00:00:00.234',
+                              periods=20, freq='ms', tz='UTC')
+        )
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_c = robjects.conversion.py2rpy(datetime)
+            assert isinstance(rp_c, robjects.vectors.POSIXct)
+            assert int(rp_c[0]) == 1483228800
+            assert int(rp_c[1]) == 1483228800
+            assert rp_c[0] != rp_c[1]
+
     def test_timeR2Pandas(self):
         tzone = rpyp.get_timezone()
         dt = [datetime(1960, 5, 2),
