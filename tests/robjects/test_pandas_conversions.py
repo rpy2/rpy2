@@ -183,9 +183,16 @@ class TestPandasConversions(object):
         pd_df = pandas.core.frame.DataFrame(od)
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_df = robjects.conversion.py2rpy(pd_df)
-        s = repr(rp_df) # used to fail with a TypeError
+        s = repr(rp_df)  # used to fail with a TypeError.
         s = s.split('\n')
-        repr_str = '[BoolVec..., IntVector, FloatVe..., ByteVec..., StrVector]'
+        repr_str = '[BoolSex..., IntSexp..., FloatSe..., ByteSex..., StrSexp...]
+        assert repr_str == s[1].strip()
+
+        # Try again with the conversion still active.
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_df = robjects.conversion.py2rpy(pd_df)
+            s = repr(rp_df)  # used to fail with a TypeError.
+        s = s.split('\n')
         assert repr_str == s[1].strip()
 
     def test_ri2pandas(self):

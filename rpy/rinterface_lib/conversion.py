@@ -31,6 +31,12 @@ def _cdata_res_to_rinterface(function):
     return _
 
 
+def _sexpcapsule_to_rinterface(scaps: '_rinterface.SexpCapsule'):
+    cls = _R_RPY2_MAP.get(scaps.typeof, _R_RPY2_DEFAULT_MAP)
+    return cls(scaps)
+
+
+# TODO: The name of the function is misleading, I think. Consider changing it.
 def _python_to_cdata(obj):
     t = type(obj)
     if t in _PY_RPY2_MAP:

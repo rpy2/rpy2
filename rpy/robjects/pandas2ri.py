@@ -95,7 +95,7 @@ def py2rpy_categoryseries(obj):
 
 @py2rpy.register(PandasSeries)
 def py2rpy_pandasseries(obj):
-    if numpy.dtype.name == 'O':
+    if obj.dtype.name == 'O':
         warnings.warn('Element "%s" is of dtype "O" and converted '
                       'to R vector of strings.' % obj.name)
         res = StrVector(obj)

@@ -336,13 +336,13 @@ class Vector(RObjectMixin):
         if ln == 0:
             return
         elif ln < max_items:
-            for elt in self:
+            for elt in conversion.noconversion(self):
                 yield format_elt(elt, max_width=math.floor(52 / ln))
         else:
-            for elt in self[:half_items]:
+            for elt in conversion.noconversion(self)[:half_items]:
                 yield format_elt(elt)
             yield '...'
-            for elt in self[-half_items:]:
+            for elt in conversion.noconversion(self)[-half_items:]:
                 yield format_elt(elt)
 
     def __repr_content__(self):
@@ -581,7 +581,7 @@ class FactorVector(IntVector):
         """ Iterate the over the labels, that is iterate over
         the items returning associated label for each item """
         levels = self.levels
-        for x in self:
+        for x in conversion.noconversion(self):
             yield levels[x-1]
 
 
@@ -646,7 +646,7 @@ class ListVector(Vector, ListSexpVector):
 
     def _iter_repr(self, max_items=9):
         if len(self) <= max_items:
-            for elt in self:
+            for elt in conversion.noconversion(self):
                 yield elt
         else:
             half_items = max_items // 2
@@ -661,7 +661,7 @@ class ListVector(Vector, ListSexpVector):
         for i, elt in enumerate(self._iter_repr()):
             if isinstance(elt, ListVector):
                 res.append(super().__repr__())
-            elif elt == '...':
+            elif isinstance(elt, str) and elt == '...':
                 res.append(elt)
             else:
                 try:
@@ -773,7 +773,7 @@ class POSIXlt(POSIXt, ListVector):
         if isinstance(seq, Sexp):
             super()(seq)
         else:
-            for elt in seq:
+            for elt in conversion.noconversion(seq):
                 if not isinstance(elt, struct_time):
                     raise ValueError(
                         'All elements must inherit from time.struct_time'
@@ -829,7 +829,7 @@ class POSIXct(POSIXt, FloatVector):
         elements. """
         tz_count = 0
         tz_info = None
-        for elt in seq:
+        for elt in conversion.noconversion(seq):
             tmp = tz_info_getter(elt)
             if tz_info is None:
                 tz_info = tmp

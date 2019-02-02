@@ -4,7 +4,9 @@ rinterface = robjects.rinterface
 import rpy2.rlike.container as rlc
 
 import array
-import csv, tempfile
+import csv
+import os
+import tempfile
 
 
 def test_init_from_taggedlist():
@@ -140,3 +142,9 @@ def test_cbind():
     dataf = dataf.cbind(a = robjects.StrVector(("c", "d")))
     assert dataf.ncol == 3
     assert len([x for x in dataf.colnames if x == 'a']) == 2
+
+
+def test_repr():
+    dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
+    s = repr(dataf)
+    assert 'data.frame' in s.split(os.linesep)[0]
