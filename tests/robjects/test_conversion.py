@@ -1,4 +1,5 @@
 import pytest
+import rpy2.rinterface_lib.sexp
 from rpy2 import rinterface
 from rpy2 import robjects
 
@@ -65,3 +66,10 @@ def test_mapperPy2R_function():
     rob = robjects.default_converter.py2rpy(func)
     assert isinstance(rob, robjects.SignatureTranslatedFunction)
     assert rob.typeof == rinterface.RTYPES.CLOSXP
+
+
+def noconversion():
+    robj_res = robjects.baseenv['pi']
+    assert isinstance(robj_res, robjects.RObject)
+    rint_res = robject.conversion.noconversion(robj_res)
+    assert isinstance(rint_res, rpy2.rinterface_lib.sexp.Sexp)

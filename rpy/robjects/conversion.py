@@ -7,6 +7,26 @@ raising a NotImplementedError exception.
 """
 
 from functools import singledispatch
+import rpy2.rinterface_lib.sexp
+import rpy2.rinterface_lib.conversion
+
+
+def noconversion(obj):
+    """
+    Bypass robject-level conversion.
+
+    Bypass robject-level conversion, casting the object down to
+    rinterface-level rpy2 objects.
+
+    :param obj: Any object
+    :return: Either an rinterface-leve object or a Python object.
+    """
+    if isinstance(obj, rpy2.rinterface_lib.sexp.Sexp):
+        res = (rpy2.rinterface_lib.conversion
+               ._sexpcapsule_to_rinterface(obj.__sexp__))
+    else:
+        res = obj
+    return res
 
 
 def overlay_converter(src, target):
