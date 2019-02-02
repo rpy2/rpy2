@@ -204,7 +204,7 @@ def test_repr_nonvectorinlist():
                                            )))
     s = repr(vec)
     assert s.startswith("R object with classes: ('list',) "
-                        "mapped to:\n[IntVector, Formula]")
+                        "mapped to:\n[IntSexpVector, LangSexpVector]")
 
 
 def test_items():
