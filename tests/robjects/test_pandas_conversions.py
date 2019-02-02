@@ -210,6 +210,13 @@ class TestPandasConversions(object):
         assert isinstance(pandas_df['c'].dtype,
                           pandas.api.types.CategoricalDtype)
 
+    def test_ri2pandas(self):
+        rdataf = robjects.r('data.frame(a=1:2, '
+                            '           row.names=c("a", "b"))')
+        with localconverter(default_converter + rpyp.converter) as cv:
+            pandas_df = cv.rpy2py(rdataf)
+        assert all(x == y for x, y in zip(rdataf.rownames, pandas_df.index))
+
     def test_ri2pandas_issue207(self):
         d = robjects.DataFrame({'x': 1})
         with localconverter(default_converter + rpyp.converter) as cv:

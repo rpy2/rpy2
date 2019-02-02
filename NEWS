@@ -46,6 +46,13 @@ Changes
   :mod:`rpy2.rinterface` is no longer available.
 
 
+Bugs fixed
+----------
+
+- Row names in R data frames were lost when converting to pandas data frames
+  (issue #484).
+
+
 Release 2.9.5
 =============
 

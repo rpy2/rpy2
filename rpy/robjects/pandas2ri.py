@@ -197,6 +197,7 @@ def rpy2py_dataframe(obj):
     items = OrderedDict((k, rpy2py(v) if isinstance(v, Sexp) else v)
                         for k, v in obj.items())
     res = PandasDataFrame.from_dict(items)
+    res.index = obj.rownames
     return res
 
 
