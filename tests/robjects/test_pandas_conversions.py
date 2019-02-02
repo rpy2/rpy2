@@ -185,7 +185,7 @@ class TestPandasConversions(object):
             rp_df = robjects.conversion.py2rpy(pd_df)
         s = repr(rp_df)  # used to fail with a TypeError.
         s = s.split('\n')
-        repr_str = '[BoolSex..., IntSexp..., FloatSe..., ByteSex..., StrSexp...]
+        repr_str = '[BoolSex..., IntSexp..., FloatSe..., ByteSex..., StrSexp...]'
         assert repr_str == s[1].strip()
 
         # Try again with the conversion still active.
