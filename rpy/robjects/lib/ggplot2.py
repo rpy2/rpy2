@@ -765,11 +765,25 @@ class ScaleShape(Scale):
 scale_shape = ScaleShape.new
 
 
+class ScaleRadius(Scale):
+    _constructor = ggplot2_env['scale_radius']
+
+
+scale_radius = ScaleRadius.new
+
+
 class ScaleSize(Scale):
     _constructor = ggplot2_env['scale_size']
 
 
 scale_size = ScaleSize.new
+
+
+class ScaleSizeArea(Scale):
+    _constructor = ggplot2_env['scale_size_area']
+
+
+scale_size_area = ScaleSizeArea.new
 
 
 class ScaleShapeDiscrete(Scale):
