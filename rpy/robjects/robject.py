@@ -5,9 +5,9 @@ import weakref
 import rpy2.rinterface
 import rpy2.rinterface_lib.callbacks
 
-rpy2.rinterface.initr()
-
 from . import conversion
+
+rpy2.rinterface.initr()
 
 
 class RSlots(object):

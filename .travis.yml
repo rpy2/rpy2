@@ -63,6 +63,8 @@ script:
     flake8 \
     rpy/rinterface.py \
     rpy/rinterface_lib/ \
+    rpy/rlike/functional.py \
+    rpy/rlike/indexing.py \
     rpy/robjects/c*.py \
     rpy/robjects/environment.py \
     rpy/robjects/language.py \

@@ -1,12 +1,9 @@
-import itertools
-
-
 def tapply(seq, tag, fun):
-    """ Apply the function `fun` to the items in `seq`, 
-    grouped by the tags defined in `tag`. 
+    """ Apply the function `fun` to the items in `seq`,
+    grouped by the tags defined in `tag`.
 
     :param seq: sequence
-    :param tag: any sequence of tags 
+    :param tag: any sequence of tags
     :param fun: function
     :rtype: list
     """
@@ -18,7 +15,7 @@ def tapply(seq, tag, fun):
     for i, t in enumerate(tag):
         try:
             tag_grp[t].append(i)
-        except LookupError as le:
+        except LookupError:
             tag_grp[t] = [i, ]
 
     res = [(tag, fun([seq[i] for i in ti])) for tag, ti in tag_grp.items()]
@@ -33,6 +30,7 @@ def listify(fun):
         return res
     return f
 
+
 def iterify(fun):
     """ Decorator to make a function apply
     to each item in a sequence, and return an iterator. """
@@ -40,5 +38,3 @@ def iterify(fun):
         for x in seq:
             yield fun(x)
     return f
-
-
