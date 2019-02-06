@@ -94,6 +94,10 @@ def _vector_matrix_array(obj, vector_cls, matrix_cls, array_cls):
 
 
 def sexpvector_to_ro(obj):
+
+    if not isinstance(obj, rinterface.SexpVector):
+        raise ValueError('%s is not an R vector.' % obj)
+
     rcls = obj.rclass
 
     if 'data.frame' in rcls:
@@ -131,9 +135,12 @@ def sexpvector_to_ro(obj):
         cls = _vector_matrix_array(obj, vectors.ByteVector,
                                    vectors.ByteMatrix, vectors.ByteArray)
     else:
-        raise ValueError('%s is not an R vector.' % obj)
+        cls = None
 
-    return cls(obj)
+    if cls is not None:
+        return cls(obj)
+    else:
+        return obj
 
 
 default_converter.rpy2py.register(SexpVector, sexpvector_to_ro)
