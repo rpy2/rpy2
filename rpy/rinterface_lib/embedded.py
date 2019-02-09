@@ -142,7 +142,7 @@ def get_r_session_status(r_session_init=None) -> dict:
     if r_session_init:
         for item in r_session_init.split(':'):
             try:
-                key, value = item.lsplit('=', 1)
+                key, value = item.split('=', 1)
             except ValueError:
                 warnings.warn(
                     'The item %s in %s should be of the form key=value.' %
@@ -153,9 +153,8 @@ def get_r_session_status(r_session_init=None) -> dict:
 
 
 def is_r_externally_initialized() -> bool:
-    r_session_status = get_r_session_status()
-
-    return r_session_status['current_pid'] == r_session_status.get('PID')
+    r_status = get_r_session_status()
+    return str(r_status['current_pid']) == str(r_status.get('PID'))
 
 
 def set_python_process_info() -> None:
