@@ -2,6 +2,7 @@ import enum
 import os
 import sys
 import typing
+import warnings
 from _rinterface_cffi import ffi
 from . import openrlib
 from . import callbacks
@@ -128,14 +129,14 @@ _PYTHON_SESSION_INITIALIZED = 'PYTHON_SESSION_INITIALIZED'
 def get_r_session_status(r_session_init=None) -> dict:
     """Return information about the R session, if available.
 
-    Information about the R session being already initialized can be communicated
-    by an environment variable exported by the process that initialized it.
-    See discussion at:
+    Information about the R session being already initialized can be
+    communicated by an environment variable exported by the process that
+    initialized it. See discussion at:
     %s
     """ % _REFERENCE_TO_R_SESSIONS
-    
+
     res = {'current_pid': os.getpid()}
-    
+
     if r_session_init is None:
         r_session_init = os.environ.get(_R_SESSION_INITIALIZED)
     if r_session_init:
@@ -143,8 +144,10 @@ def get_r_session_status(r_session_init=None) -> dict:
             try:
                 key, value = item.lsplit('=', 1)
             except ValueError:
-                warnings.warn('The item %s in %s should be of the form key=value.' %
-                              (item, _R_SESSION_INITIALIZED))
+                warnings.warn(
+                    'The item %s in %s should be of the form key=value.' %
+                    (item, _R_SESSION_INITIALIZED)
+                )
             res[key] = value
     return res
 
@@ -161,7 +164,7 @@ def set_python_process_info() -> None:
     Current the information See discussion at:
     %s
     """ % _REFERENCE_TO_R_SESSIONS
-    
+
     info = (('current_pid', os.getpid()),
             ('sys.executable', sys.executable))
     info_string = ':'.join('%s=%s' % x for x in info)
