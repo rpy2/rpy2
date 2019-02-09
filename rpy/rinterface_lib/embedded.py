@@ -1,5 +1,6 @@
 import enum
 import os
+import sys
 import typing
 from _rinterface_cffi import ffi
 from . import openrlib
@@ -35,6 +36,11 @@ def isinitialized() -> bool:
     return bool(rpy2_embeddedR_isinitialized & RPY_R_Status.INITIALIZED.value)
 
 
+def setinitialized() -> None:
+    global rpy2_embeddedR_isinitialized
+    rpy2_embeddedR_isinitialized = RPY_R_Status.INITIALIZED.value
+
+
 def isready() -> bool:
     """Is the embedded R ready for use."""
     INITIALIZED = RPY_R_Status.INITIALIZED
@@ -60,8 +66,6 @@ class RRuntimeError(Exception):
 
 # TODO: can init_once() be used here ?
 def _initr(interactive: bool = True) -> int:
-    global rpy2_embeddedR_isinitialized
-
     rlib = openrlib.rlib
     if isinitialized():
         return
@@ -93,7 +97,7 @@ def _initr(interactive: bool = True) -> int:
 
     rlib.ptr_R_CleanUp = callbacks._cleanup
 
-    rpy2_embeddedR_isinitialized = RPY_R_Status.INITIALIZED.value
+    setinitialized()
 
     # TODO: still needed ?
     rlib.R_CStackLimit = ffi.cast('uintptr_t', -1)
@@ -114,6 +118,54 @@ def endr(fatal: int) -> None:
     rlib.R_gc()
     rlib.Rf_endEmbeddedR(fatal)
     rpy2_embeddedR_isinitialized ^= RPY_R_Status.ENDED.value
+
+
+_REFERENCE_TO_R_SESSIONS = 'https://github.com/rstudio/reticulate/issues/98'
+_R_SESSION_INITIALIZED = 'R_SESSION_INITIALIZED'
+_PYTHON_SESSION_INITIALIZED = 'PYTHON_SESSION_INITIALIZED'
+
+
+def get_r_session_status(r_session_init=None) -> dict:
+    """Return information about the R session, if available.
+
+    Information about the R session being already initialized can be communicated
+    by an environment variable exported by the process that initialized it.
+    See discussion at:
+    %s
+    """ % _REFERENCE_TO_R_SESSIONS
+    
+    res = {'current_pid': os.getpid()}
+    
+    if r_session_init is None:
+        r_session_init = os.environ.get(_R_SESSION_INITIALIZED)
+    if r_session_init:
+        for item in r_session_init.split(':'):
+            try:
+                key, value = item.lsplit('=', 1)
+            except ValueError:
+                warnings.warn('The item %s in %s should be of the form key=value.' %
+                              (item, _R_SESSION_INITIALIZED))
+            res[key] = value
+    return res
+
+
+def is_r_externally_initialized() -> bool:
+    r_session_status = get_r_session_status()
+
+    return r_session_status['current_pid'] == r_session_status.get('PID')
+
+
+def set_python_process_info() -> None:
+    """Set information about the Python process in an environment variable.
+
+    Current the information See discussion at:
+    %s
+    """ % _REFERENCE_TO_R_SESSIONS
+    
+    info = (('current_pid', os.getpid()),
+            ('sys.executable', sys.executable))
+    info_string = ':'.join('%s=%s' % x for x in info)
+    os.environ[_PYTHON_SESSION_INITIALIZED] = info_string
 
 
 # R environments, initialized with rpy2.rinterface.SexpEnvironment

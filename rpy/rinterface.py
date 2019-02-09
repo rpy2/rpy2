@@ -940,13 +940,32 @@ NA_Real = None
 NA_Complex = None
 
 
-def initr() -> None:
+def initr_simple() -> int:
     """Initialize R's embedded C library."""
     status = embedded._initr()
     atexit.register(endr, 0)
     _rinterface._register_external_symbols()
     _post_initr_setup()
     return status
+
+
+def initr_checkenv():
+    # Force the internal initialization flag if there is an environment
+    # variable that indicates that R was alreay initialized in the current
+    # process.
+
+    res = None
+
+    if embedded.is_r_externally_initialized():
+        embedded.setinitialized()
+    else:
+        res = initr_simple()
+        embedded.set_python_process_info()
+
+    return res
+
+
+initr = initr_checkenv
 
 
 def _post_initr_setup():
