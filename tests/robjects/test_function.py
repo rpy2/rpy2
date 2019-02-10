@@ -40,8 +40,19 @@ def test_formals():
     assert n[0] == 'x'
     assert n[1] == 'y'
 
-    
+
+def test_function():
+    r_func = robjects.functions.Function(robjects.r('function(x, y) TRUE'))
+    assert isinstance(r_func.__doc__, str)
+
+
 def test_signaturestranslatedfunction():
-    ri_f = robjects.r('function(x, y) TRUE')
-    stf = robjects.SignatureTranslatedFunction(ri_f)
-    
+    r_func = robjects.r('function(x, y) TRUE')
+    stf = robjects.functions.SignatureTranslatedFunction(r_func)
+    assert isinstance(r_func.__doc__, str)
+
+
+def test_documentedstfunction():
+    dstf = robjects.functions.DocumentedSTFunction(robjects.baseenv['sum'],
+                                                   packagename='base')
+    assert isinstance(dstf.__doc__, str)

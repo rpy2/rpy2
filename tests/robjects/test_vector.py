@@ -192,10 +192,51 @@ def test_nacharacter():
     assert robjects.baseenv['is.na'](vec)[0] is True
 
 
-def test_repr():
-    vec = robjects.IntVector((1,2,3))
+def test_int_repr():
+    vec = robjects.vectors.IntVector((1,2,3))
     s = repr(vec)
     assert s.endswith('[1, 2, 3]')
+
+
+def test_list_repr():
+    vec = robjects.vectors.ListVector((('a', 1),
+                                       ('b', 2),
+                                       ('b', 3)))
+    s = repr(vec)
+    assert s.startswith("R object with classes: ('list',) ")
+
+
+def test_float_repr():
+    vec = robjects.vectors.FloatVector((1,2,3))
+    r = repr(vec).split('\n')
+    assert r[-1].startswith('[')
+    assert r[-1].endswith(']')
+    assert len(r[-1].split(',')) == 3
+
+
+@pytest.mark.parametrize(
+    'params',
+    ((robjects.vectors.DataFrame,
+      dict((('a', ri.IntSexpVector((1, 2, 3))),
+            ('b', ri.IntSexpVector((4, 5, 6))),
+            ('b', ri.IntSexpVector((7, 8, 9)))))),
+     (robjects.vectors.IntVector,
+      (1, 2, 3)),
+     (robjects.vectors.ListVector,
+      (('a', 1), ('b', 2), ('b', 3))),
+     (robjects.vectors.FloatVector,
+      (1, 2, 3)))
+)
+def test_repr_html(params):
+    vec_cls, data = params
+    vec = vec_cls(data)
+    s = vec._repr_html_().split('\n')
+    assert s[2].strip().startswith('<table>')
+    assert s[-2].strip().endswith('</table>')
+
+    s = vec._repr_html_(max_items=2).split('\n')
+    assert s[2].strip().startswith('<table>')
+    assert s[-2].strip().endswith('</table>')
 
 
 def test_repr_nonvectorinlist():
@@ -237,3 +278,20 @@ def test_sequence_to_vector():
     with pytest.raises(ValueError):
         robjects.sequence_to_vector(list())
 
+
+def test_sample():
+    vec = robjects.IntVector(range(100))
+    spl = vec.sample(10)
+    assert len(spl) == 10
+
+
+def test_sample_error():
+    vec = robjects.IntVector(range(100))
+    with pytest.raises(ri.embedded.RRuntimeError):
+        spl = vec.sample(110)
+
+
+def test_sample_replacement():
+    vec = robjects.IntVector(range(100))
+    spl = vec.sample(110, replace=True)
+    assert len(spl) == 110

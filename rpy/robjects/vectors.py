@@ -352,8 +352,8 @@ class Vector(RObjectMixin):
         return super().__repr__() + os.linesep + \
             self.__repr_content__()
 
-    def _repr_html_(self):
-        d = {'elements': self._iter_formatted(),
+    def _repr_html_(self, max_items=7):
+        d = {'elements': self._iter_formatted(max_items=max_items),
              'classname': type(self).__name__,
              'nelements': len(self)}
         html = self._html_template.render(d)
@@ -1184,7 +1184,7 @@ class DataFrame(ListVector):
             if hasattr(e, '_repr_html_'):
                 elements.append(tuple(e._iter_formatted()))
             else:
-                elements.append(['...', ] * len(elements[-1]))
+                elements.append(['...', ])
 
         d = {'column_names': names,
              'rows': range(len(elements[0]) if len(elements) else 0),
