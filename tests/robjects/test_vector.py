@@ -193,9 +193,9 @@ def test_nacharacter():
 
 
 def test_int_repr():
-    vec = robjects.vectors.IntVector((1, 2, 3))
+    vec = robjects.vectors.IntVector((1, 2, ri.NA_Integer))
     s = repr(vec)
-    assert s.endswith('[1, 2, 3]')
+    assert s.endswith('[1, 2, NA_integer_]')
 
 
 def test_list_repr():

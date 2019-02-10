@@ -417,7 +417,12 @@ class IntVector(Vector, IntSexpVector):
         self._add_rops()
 
     def repr_format_elt(self, elt, max_width=8):
-        return '{:,}'.format(elt)
+        max_width = int(max_width)
+        if elt == NA_Integer:
+            res = repr(NA_Integer)
+        else:
+            res = '{:,}'.format(elt)
+        return res
 
     def tabulate(self, nbins=None):
         """ Like the R function tabulate,
