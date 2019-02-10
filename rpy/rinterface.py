@@ -954,15 +954,16 @@ def initr_checkenv():
     # variable that indicates that R was alreay initialized in the current
     # process.
 
-    res = None
+    status = None
 
     if embedded.is_r_externally_initialized():
         embedded.setinitialized()
     else:
-        res = initr_simple()
+        status = embedded._initr()
         embedded.set_python_process_info()
-
-    return res
+    _rinterface._register_external_symbols()
+    _post_initr_setup()
+    return status
 
 
 initr = initr_checkenv
