@@ -294,8 +294,9 @@ class Vector(RObjectMixin):
         for v, k in zip(it_self, it_names):
             yield (k, v)
 
-    def sample(self, n, replace=False, probabilities=None):
-        """ Draw a sample of size n from the vector.
+    def sample(self, n, replace: bool=False, probabilities=None):
+        """ Draw a random sample of size n from the vector.
+
         If 'replace' is True, the sampling is done with replacement.
         The optional argument 'probabilities' can indicate sampling
         probabilities."""
@@ -303,7 +304,10 @@ class Vector(RObjectMixin):
         assert isinstance(n, int)
         assert isinstance(replace, bool)
         if probabilities is not None:
-            probabilities = FloatVector(probabilities)
+            if len(probabilities) != len(self):
+                raise ValueError('The sequence of probabilities must match the length of the vector.')
+            if not isinstance(probabilities, rinterface.FloatSexpVector):
+                probabilities = FloatVector(probabilities)
         res = self._sample(self, IntVector((n,)),
                            replace=BoolVector((replace, )),
                            prob=probabilities)

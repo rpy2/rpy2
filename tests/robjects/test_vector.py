@@ -193,7 +193,7 @@ def test_nacharacter():
 
 
 def test_int_repr():
-    vec = robjects.vectors.IntVector((1,2,3))
+    vec = robjects.vectors.IntVector((1, 2, 3))
     s = repr(vec)
     assert s.endswith('[1, 2, 3]')
 
@@ -266,10 +266,10 @@ def test_itemsnonames():
 
 
 def test_sequence_to_vector():
-    res = robjects.sequence_to_vector((1,2,3))
+    res = robjects.sequence_to_vector((1, 2, 3))
     assert isinstance(res, robjects.IntVector)
 
-    res = robjects.sequence_to_vector((1,2,3.0))
+    res = robjects.sequence_to_vector((1, 2, 3.0))
     assert isinstance(res, robjects.FloatVector)
 
     res = robjects.sequence_to_vector(('ab', 'cd', 'ef'))
@@ -282,6 +282,12 @@ def test_sequence_to_vector():
 def test_sample():
     vec = robjects.IntVector(range(100))
     spl = vec.sample(10)
+    assert len(spl) == 10
+
+
+def test_sample_probabilities():
+    vec = robjects.IntVector(range(100))
+    spl = vec.sample(10, probabilities=robjects.FloatVector([.01] * 100))
     assert len(spl) == 10
 
 
