@@ -6,6 +6,12 @@ def test_init():
     vec = robjects.FactorVector(robjects.StrVector('abaabc'))
     assert len(vec) == 6
 
+
+def test_factor_repr():
+    vec = robjects.vectors.FactorVector(('abc', 'def', 'ghi'))
+    s = repr(vec)
+    assert s.endswith('[abc, def, ghi]')
+
     
 def test_isordered():
     vec = robjects.FactorVector(robjects.StrVector('abaabc'))
@@ -21,6 +27,12 @@ def test_levels():
     vec = robjects.FactorVector(robjects.StrVector('abaabc'))
     assert len(vec.levels) == 3
     assert set(('a','b','c')) == set(tuple(vec.levels))
+
+
+def test_levels_set():
+    vec = robjects.FactorVector(robjects.StrVector('abaabc'))
+    vec.levels = robjects.vectors.StrVector('def')
+    assert set(('d','e','f')) == set(tuple(vec.levels))
 
 
 def test_iter_labels():

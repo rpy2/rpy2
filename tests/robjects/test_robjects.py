@@ -61,7 +61,16 @@ def test_items():
     for ((k_o,v_o), (k,v)) in zip((('a', robjects.IntVector), ), rs.items()):
         assert k_o == k
         assert v_o == type(v)
-            
+
+
+def test_values():
+    v = robjects.IntVector((1,2,3))
+    rs = robjects.robject.RSlots(v)
+    assert len(tuple(rs.items())) == 0
+
+    v.do_slot_assign('a', robjects.IntVector((9,)))
+    for (v_o, v) in zip((robjects.IntVector, ), rs.values()):
+        assert v_o == type(v)
 
 
 def test_init():

@@ -144,7 +144,22 @@ def test_cbind():
     assert len([x for x in dataf.colnames if x == 'a']) == 2
 
 
+def test_rbind():
+    dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
+    dataf = dataf.rbind(dataf)
+    assert dataf.ncol == 2
+    assert dataf.nrow == 4
+
+
+def test_head():
+    dataf = robjects.r('data.frame(a=1:26, b=I(letters))')
+    assert dataf.head(5).nrow == 5
+    assert dataf.head(5).ncol == 2
+
+
 def test_repr():
     dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
     s = repr(dataf)
     assert 'data.frame' in s.split(os.linesep)[0]
+
+

@@ -17,12 +17,6 @@ def silent_console_print():
         yield
 
 
-def test_floor_division():
-    v = robjects.vectors.IntVector((2,3,4))
-    res = v.ro // 2
-    assert tuple(int(x) for x in res) == (1,1,2)
-
-
 def test_extract_by_index():
     seq_R = robjects.baseenv["seq"]
     mySeq = seq_R(0, 10)

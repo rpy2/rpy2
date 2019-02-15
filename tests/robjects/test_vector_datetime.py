@@ -1,5 +1,6 @@
 import datetime
 import pytest
+import pytz
 import time
 from rpy2 import robjects
 
@@ -36,11 +37,13 @@ def test_POSIXct_from_pythontime():
     res = robjects.POSIXct(x)
     assert len(x) == 2
 
+
 def testPOSIXct_fromPythonDatetime():
     x = [datetime.datetime(*_dateval_tuple[:-2]), 
          datetime.datetime(*_dateval_tuple[:-2])]
     res = robjects.POSIXct(x)
     assert len(x) == 2
+
 
 def testPOSIXct_fromSexp():
     sexp = robjects.r('ISOdate(2013, 12, 11)')
@@ -48,3 +51,15 @@ def testPOSIXct_fromSexp():
     assert len(res) == 1
 
 
+def testPOSIXct_repr():
+    sexp = robjects.r('ISOdate(2013, 12, 11)')
+    res = robjects.POSIXct(sexp)
+    s = repr(res)
+    assert s.endswith('[2013-12-1...]')
+
+
+def testPOSIXct_getitem():
+    dt = (datetime.datetime(2014, 12, 11) - datetime.datetime(1970,1,1)).total_seconds()
+    sexp = robjects.r('ISOdate(c(2013, 2014), 12, 11, hour = 0, tz = "UTC")')
+    res = robjects.POSIXct(sexp)
+    assert (res[1] - dt) == 0

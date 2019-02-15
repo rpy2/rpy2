@@ -170,7 +170,7 @@ class VectorOperationsDelegator(object):
         res = globalenv_ri.find('/')(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
-    def __divmod__(self, x):
+    def __mod__(self, x):
         res = globalenv_ri.find('%%')(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 

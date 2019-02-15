@@ -82,7 +82,7 @@ def test_add_operator():
         assert mySeqAdd[i+j+1] == li
 
 
-def test_r_add_aperator():
+def test_r_add_operator():
     seq_R = robjects.r["seq"]
     mySeq = seq_R(0, 10)
     mySeqAdd = mySeq.ro + 2
@@ -90,10 +90,18 @@ def test_r_add_aperator():
         assert li + 2 == mySeqAdd[i]
 
 
+def test_r_sub_operator():
+    seq_R = robjects.r["seq"]
+    mySeq = seq_R(0, 10)
+    mySeqAdd = mySeq.ro - 2
+    for i, li in enumerate(mySeq):
+        assert li - 2 == mySeqAdd[i]
+
+
 def test_r_mult_operator():
     seq_R = robjects.r["seq"]
     mySeq = seq_R(0, 10)
-    mySeqAdd = mySeq.ro + mySeq
+    mySeqAdd = mySeq.ro * 2
     for i, li in enumerate(mySeq):
         assert li * 2 == mySeqAdd[i]
 
@@ -104,6 +112,84 @@ def test_r_power_operator():
     mySeqPow = mySeq.ro ** 2
     for i, li in enumerate(mySeq):
         assert li ** 2 == mySeqPow[i]
+
+def test_r_truediv():
+    v = robjects.vectors.IntVector((2,3,4))
+    res = v.ro / 2
+    assert all(abs(x-y) < 0.001 for x, y in zip(res, (1, 1.5, 2)))
+
+
+def test_r_floor_division():
+    v = robjects.vectors.IntVector((2, 3, 4))
+    res = v.ro // 2
+    assert tuple(int(x) for x in res) == (1, 1, 2)
+
+
+def test_r_mod():
+    v = robjects.vectors.IntVector((2, 3, 4))
+    res = v.ro % 2
+    assert all(x == y for x, y in zip(res,
+                                      (0, 1, 0)))
+
+
+def test_r_and():
+    v = robjects.vectors.BoolVector((True, False))
+    res = v.ro & True
+    assert all(x is y for x, y in zip(res, (True, False)))
+
+
+def test_r_or():
+    v = robjects.vectors.BoolVector((True, False))
+    res = v.ro | False
+    assert all(x is y for x, y in zip(res, (True, False)))
+
+
+def test_r_lt():
+    v = robjects.vectors.IntVector((4, 2, 1))
+    res = v.ro < 2
+    assert all(x is y for x, y in zip(res, (False, False, True)))
+
+
+def test_r_le():
+    v = robjects.vectors.IntVector((4, 2, 1))
+    res = (v.ro <= 2)
+    assert all(x is y for x, y in zip(res, (False, True, True)))
+
+
+def test_r_gt():
+    v = robjects.vectors.IntVector((4, 2, 1))
+    res = v.ro > 2
+    assert all(x is y for x, y in zip(res, (True, False, False)))
+
+
+def test_r_le():
+    v = robjects.vectors.IntVector((4, 2, 1))
+    res = v.ro >= 2
+    assert all(x is y for x, y in zip(res, (True, True, False)))
+
+
+def test_r_eq():
+    v = robjects.vectors.IntVector((4, 2, 1))
+    res = v.ro == 2
+    assert all(x is y for x, y in zip(res, (False, True, False)))
+
+
+def test_r_ne():
+    v = robjects.vectors.IntVector((4, 2, 1))
+    res = v.ro != 2
+    assert all(x is y for x, y in zip(res, (True, False, True)))
+
+
+def test_r_neg():
+    v = robjects.vectors.IntVector((4, 2, 1))
+    res = - v.ro
+    assert all(x is y for x, y in zip(res, (-4, -2, -1)))
+
+
+def test_contains():
+    v = robjects.StrVector(('abc', 'def', 'ghi'))
+    assert 'def' in v
+    assert 'foo' not in v
 
 
 def test_getitem():
@@ -163,6 +249,12 @@ def test_nainteger():
     assert robjects.baseenv['is.na'](vec)[0] is True
 
 
+def test_tabulate():
+    vec = robjects.IntVector((1,2,1,2,1,2,2))
+    tb = vec.tabulate()
+    assert tuple(tb) == (3, 4)
+
+
 def test_nareal():
     vec = robjects.FloatVector((1.0, 2.0, 3.0))
     vec[0] = robjects.NA_Real
@@ -219,13 +311,16 @@ def test_float_repr():
     ((robjects.vectors.DataFrame,
       dict((('a', ri.IntSexpVector((1, 2, 3))),
             ('b', ri.IntSexpVector((4, 5, 6))),
-            ('b', ri.IntSexpVector((7, 8, 9)))))),
+            ('c', ri.IntSexpVector((7, 8, 9))),
+            ('d', ri.IntSexpVector((7, 8, 9))),
+            ('e', ri.IntSexpVector((7, 8, 9))),
+      ))),
      (robjects.vectors.IntVector,
-      (1, 2, 3)),
+      (1, 2, 3, 4, 5)),
      (robjects.vectors.ListVector,
-      (('a', 1), ('b', 2), ('b', 3))),
+      (('a', 1), ('b', 2), ('b', 3), ('c', 4), ('d', 5))),
      (robjects.vectors.FloatVector,
-      (1, 2, 3)))
+      (1, 2, 3, 4, 5)))
 )
 def test_repr_html(params):
     vec_cls, data = params
