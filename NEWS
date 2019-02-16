@@ -1,3 +1,13 @@
+Release 2.9.6
+=============
+
+Bugs fixed
+----------
+
+- Latest release of :mod:`pandas` deprecated :meth:`DataFrame.from_items`.
+  (issue #514).
+
+
 Release 2.9.5
 =============
 
@@ -6,7 +16,7 @@ Bugs fixed
 
 - Missing values in pandas :class:`Category` series were creating
   invalid R factors when converted (issue #493).
- 
+
 
 Release 2.9.4
 =============
