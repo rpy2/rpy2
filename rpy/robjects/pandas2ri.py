@@ -187,8 +187,9 @@ def ri2py_listvector(obj):
 
 @ri2py.register(DataFrame)
 def ri2py_dataframe(obj):
-    items = tuple((k, ri2py(v)) for k, v in obj.items())
-    res = PandasDataFrame.from_items(items)
+    items = OrderedDict((k, ri2py(v) if isinstance(v, SexpVector) else v)
+                        for k, v in obj.items())
+    res = PandasDataFrame.from_dict(items)
     return res
 
 def activate():
