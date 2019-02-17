@@ -401,6 +401,7 @@ class StrSexpVector(SexpVector):
 
     _R_TYPE = openrlib.rlib.STRSXP
     _R_GET_PTR = openrlib._STRING_PTR
+    _R_SIZEOF_ELT = None
     _R_VECTOR_ELT = openrlib.rlib.STRING_ELT
     _R_SET_VECTOR_ELT = openrlib.rlib.SET_STRING_ELT
     _CAST_IN = _as_charsxp_cdata

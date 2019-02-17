@@ -381,6 +381,7 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
     """
 
     _R_TYPE = openrlib.rlib.RAWSXP
+    _R_SIZEOF_ELT = _rinterface.ffi.sizeof('char')
     _NP_TYPESTR = '|u1'
 
     _R_GET_PTR = staticmethod(openrlib.RAW)
