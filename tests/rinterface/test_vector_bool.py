@@ -1,3 +1,4 @@
+import array
 import pytest
 import rpy2.rinterface as ri
 
@@ -10,6 +11,13 @@ def test_init_from_seqr():
     assert len(v) == 3
     for x, y in zip(seq, v):
         assert x == y
+
+
+def test_from_int_memoryview():
+    a = array.array('i', (True, False, True))
+    mv = memoryview(a)
+    vec = ri.BoolSexpVector.from_memoryview(mv)
+    assert (True, False, True) == tuple(vec)
 
 
 def test_getitem():

@@ -1,3 +1,4 @@
+import array
 import pytest
 import rpy2.rinterface as ri
 
@@ -24,6 +25,13 @@ def test_init_From_seq_invalid_float():
     seq = (1.0, 'b', 3.0)
     with pytest.raises(ValueError):
         ri.FloatSexpVector(seq)
+
+
+def test_from_memoryview():
+    a = array.array('d', (x * 1.1 for x in range(3, 103)))
+    mv = memoryview(a)
+    vec = ri.FloatSexpVector.from_memoryview(mv)
+    assert all(abs(x * 1.1 - y) < 0.001 for x, y in zip(range(3, 103), vec))
 
 
 def test_getitem():

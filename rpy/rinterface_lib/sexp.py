@@ -308,6 +308,24 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
                                cast_in)
         return r_vector
 
+    @classmethod
+    @conversion._cdata_res_to_rinterface
+    def from_memoryview(cls, mview):
+        if not embedded.isready():
+            raise embedded.RNotReadyError('Embedded R is not ready to use.')
+        r_vector = None
+        n = len(mview)
+        with memorymanagement.rmemory() as rmemory:
+            r_vector = rmemory.protect(
+                openrlib.rlib.Rf_allocVector(
+                    cls._R_TYPE, n)
+            )
+            src_ptr = _rinterface.ffi.from_buffer(mview)
+            dest_ptr = cls._R_GET_PTR(r_vector)
+            nbytes = n * mview.itemsize
+            _rinterface.ffi.memmove(dest_ptr, src_ptr, nbytes)
+        return r_vector
+
     def __getitem__(
             self,
             i: typing.Union[int, slice]) -> typing.Union[Sexp, VT]:

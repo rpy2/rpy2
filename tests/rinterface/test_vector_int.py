@@ -1,3 +1,4 @@
+import array
 import pytest
 import struct
 import sys
@@ -31,6 +32,13 @@ def test_init_from_seq_invalid_overflow():
     # check 64-bit architecture
     with pytest.raises(OverflowError):
         ri.IntSexpVector((MAX_INT + 1, ))
+
+
+def test_from_memoryview():
+    a = array.array('i', range(3, 103))
+    mv = memoryview(a)
+    vec = ri.IntSexpVector.from_memoryview(mv)
+    assert tuple(range(3, 103)) == tuple(vec)
 
 
 def test_getitem():
