@@ -446,6 +446,7 @@ class BoolSexpVector(SexpVector, NumpyArrayInterface):
     allow an additional "NA" value to represent missingness."""
 
     _R_TYPE = openrlib.rlib.LGLSXP
+    _R_SIZEOF_ELT = _rinterface.ffi.sizeof('Rboolean')
     _NP_TYPESTR = '|i'
     _R_VECTOR_ELT = openrlib.LOGICAL_ELT
     _R_SET_VECTOR_ELT = openrlib.SET_LOGICAL_ELT
@@ -498,6 +499,7 @@ class IntSexpVector(SexpVector, NumpyArrayInterface):
     _R_TYPE = openrlib.rlib.INTSXP
     _R_SET_VECTOR_ELT = openrlib.SET_INTEGER_ELT
     _R_VECTOR_ELT = openrlib.INTEGER_ELT
+    _R_SIZEOF_ELT = _rinterface.ffi.sizeof('int')
     _NP_TYPESTR = '|i'
 
     _R_GET_PTR = staticmethod(openrlib.INTEGER)
@@ -544,6 +546,7 @@ class FloatSexpVector(SexpVector, NumpyArrayInterface):
     _R_TYPE = openrlib.rlib.REALSXP
     _R_VECTOR_ELT = openrlib.REAL_ELT
     _R_SET_VECTOR_ELT = openrlib.SET_REAL_ELT
+    _R_SIZEOF_ELT = _rinterface.ffi.sizeof('double')
     _NP_TYPESTR = '|f'
 
     _CAST_IN = staticmethod(float)
@@ -586,6 +589,7 @@ class ComplexSexpVector(SexpVector):
 
     _R_TYPE = openrlib.rlib.CPLXSXP
     _R_GET_PTR = staticmethod(openrlib.COMPLEX)
+    _R_SIZEOF_ELT = _rinterface.ffi.sizeof('Rcomplex')
 
     @staticmethod
     def _R_VECTOR_ELT(x, i):
@@ -647,6 +651,7 @@ class ListSexpVector(SexpVector):
     """
     _R_TYPE = openrlib.rlib.VECSXP
     _R_GET_PTR = staticmethod(openrlib._VECTOR_PTR)
+    _R_SIZEOF_ELT = None
     _R_VECTOR_ELT = openrlib.rlib.VECTOR_ELT
     _R_SET_VECTOR_ELT = openrlib.rlib.SET_VECTOR_ELT
     _CAST_IN = staticmethod(conversion._get_cdata)
@@ -661,6 +666,7 @@ class PairlistSexpVector(SexpVector):
     """
     _R_TYPE = openrlib.rlib.LISTSXP
     _R_GET_PTR = None
+    _R_SIZEOF_ELT = None
     _R_VECTOR_ELT = None
     _R_SET_VECTOR_ELT = None
     _CAST_IN = staticmethod(conversion._get_cdata)
@@ -726,6 +732,7 @@ class ExprSexpVector(SexpVector):
     _R_TYPE = openrlib.rlib.EXPRSXP
     _R_GET_PTR = None
     _CAST_IN = None
+    _R_SIZEOF_ELT = None
     _R_VECTOR_ELT = openrlib.rlib.VECTOR_ELT
     _R_SET_VECTOR_ELT = None
 
@@ -734,6 +741,7 @@ class LangSexpVector(SexpVector):
     _R_TYPE = openrlib.rlib.LANGSXP
     _R_GET_PTR = None
     _CAST_IN = None
+    _R_SIZEOF_ELT = None
     _R_VECTOR_ELT = None
     _R_SET_VECTOR_ELT = None
 

@@ -34,11 +34,18 @@ def test_init_from_seq_invalid_overflow():
         ri.IntSexpVector((MAX_INT + 1, ))
 
 
-def test_from_memoryview():
+def _test_from_int_memoryview():
     a = array.array('i', range(3, 103))
     mv = memoryview(a)
     vec = ri.IntSexpVector.from_memoryview(mv)
     assert tuple(range(3, 103)) == tuple(vec)
+
+
+def test_from_int_memoryview():
+    a = array.array('l', range(3, 103))
+    mv = memoryview(a)
+    with pytest.raises(ValueError):
+        ri.IntSexpVector.from_memoryview(mv)
 
 
 def test_getitem():

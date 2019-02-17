@@ -34,6 +34,13 @@ def test_from_memoryview():
     assert all(abs(x * 1.1 - y) < 0.001 for x, y in zip(range(3, 103), vec))
 
 
+def test_from_int_memoryview():
+    a = array.array('i', range(3, 103))
+    mv = memoryview(a)
+    with pytest.raises(ValueError):
+        ri.FloatSexpVector.from_memoryview(mv)
+
+
 def test_getitem():
     vec = ri.FloatSexpVector([1.0, 2.0, 3.0])
     assert vec[1] == 2.0

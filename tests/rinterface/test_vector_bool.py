@@ -20,6 +20,13 @@ def test_from_int_memoryview():
     assert (True, False, True) == tuple(vec)
 
 
+def test_from_bool_memoryview():
+    a = array.array('b', (True, False, True))
+    mv = memoryview(a)
+    with pytest.raises(ValueError):
+        ri.BoolSexpVector.from_memoryview(mv)
+
+
 def test_getitem():
     vec = ri.BoolSexpVector([True, False, False])
     assert vec[1] is False

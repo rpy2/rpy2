@@ -253,6 +253,11 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
     def _R_TYPE(self):
         pass
 
+    @property
+    @abc.abstractmethod
+    def _R_SIZEOF_ELT(self):
+        pass
+
     @staticmethod
     @abc.abstractmethod
     def _CAST_IN(self):
@@ -310,9 +315,21 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
 
     @classmethod
     @conversion._cdata_res_to_rinterface
-    def from_memoryview(cls, mview):
+    def from_memoryview(cls, mview: memoryview):
         if not embedded.isready():
             raise embedded.RNotReadyError('Embedded R is not ready to use.')
+        if not mview.contiguous:
+            raise ValueError('The memory view must be contiguous.')
+        if mview.itemsize != cls._R_SIZEOF_ELT:
+            msg = (
+                'Incompatible C type sizes. '
+                'The R array type is {r_size} bytes '
+                'while the Python array type is {py_size} '
+                'bytes.'
+                .format(r_size=cls._R_SIZEOF_ELT,
+                        py_size=mview.itemsize)
+            )
+            raise ValueError(msg)
         r_vector = None
         n = len(mview)
         with memorymanagement.rmemory() as rmemory:
@@ -320,8 +337,8 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
                 openrlib.rlib.Rf_allocVector(
                     cls._R_TYPE, n)
             )
-            src_ptr = _rinterface.ffi.from_buffer(mview)
             dest_ptr = cls._R_GET_PTR(r_vector)
+            src_ptr = _rinterface.ffi.from_buffer(mview)
             nbytes = n * mview.itemsize
             _rinterface.ffi.memmove(dest_ptr, src_ptr, nbytes)
         return r_vector
