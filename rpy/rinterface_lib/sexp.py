@@ -285,7 +285,7 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
                                                _rinterface.SexpCapsule):
             super().__init__(obj)
         elif isinstance(obj, collections.Sized):
-            super().__init__(type(self).from_iterable(obj).__sexp__)
+            super().__init__(type(self).from_object(obj).__sexp__)
         else:
             raise TypeError('The constructor must be called '
                             'with an instance of '
@@ -297,6 +297,7 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
     @conversion._cdata_res_to_rinterface
     def from_iterable(cls, iterable,
                       cast_in: bool = None) -> VT:
+        """Create an R vector/array from an iterable."""
         if not embedded.isready():
             raise embedded.RNotReadyError('Embedded R is not ready to use.')
         if cast_in is None:
@@ -315,7 +316,13 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
 
     @classmethod
     @conversion._cdata_res_to_rinterface
-    def from_memoryview(cls, mview: memoryview):
+    def from_memoryview(cls, mview: memoryview) -> VT:
+        """Create an R vector/array from a memoryview.
+
+        The memoryview must be contiguous, and the C representation
+        for the vector must be compatible between R and Python. If
+        not the case, a :class:`ValueError` exception with will be
+        raised."""
         if not embedded.isready():
             raise embedded.RNotReadyError('Embedded R is not ready to use.')
         if not mview.contiguous:
@@ -342,6 +349,27 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
             nbytes = n * mview.itemsize
             _rinterface.ffi.memmove(dest_ptr, src_ptr, nbytes)
         return r_vector
+
+    @classmethod
+    def from_object(cls, obj) -> VT:
+        """Create an R vector/array from a Python object, if possible.
+
+        An exception :class:`ValueError` will be raised if not possible."""
+
+        res = None
+        try:
+            mv = memoryview(obj)
+            res = cls.from_memoryview(mv)
+        except (TypeError, ValueError):
+            try:
+                res = cls.from_iterable(obj)
+            except ValueError:
+                msg = ('The class methods from_memoryview() and '
+                       'from_iterable() both failed to make a {} '
+                       'from an object of class {}'
+                       .format(cls, type(obj)))
+                raise ValueError(msg)
+        return res
 
     def __getitem__(
             self,
