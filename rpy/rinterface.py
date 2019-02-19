@@ -112,10 +112,6 @@ class NULLType(sexp.Sexp, metaclass=na_values.Singleton):
     def rid(self):
         return self._sexpobject.rid
 
-    @property
-    def typeof(self) -> RTYPES:
-        return RTYPES(_rinterface._TYPEOF(self.__sexp__._cdata))
-
 
 class _MissingArgType(sexp.Sexp, metaclass=na_values.Singleton):
 
@@ -139,10 +135,6 @@ class _MissingArgType(sexp.Sexp, metaclass=na_values.Singleton):
     @property
     def __sexp__(self) -> _rinterface.SexpCapsule:
         return self._sexpobject
-
-    @property
-    def typeof(self) -> RTYPES:
-        return RTYPES(_rinterface._TYPEOF(self.__sexp__._cdata))
 
 
 class SexpSymbol(sexp.Sexp):
