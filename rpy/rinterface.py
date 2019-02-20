@@ -97,9 +97,6 @@ class NULLType(sexp.Sexp, metaclass=na_values.Singleton):
             )
         )
 
-    def __repr__(self) -> str:
-        return super().__repr__() + (' [%s]' % self.typeof)
-
     def __bool__(self) -> bool:
         """This is always False."""
         return False
@@ -124,9 +121,6 @@ class _MissingArgType(sexp.Sexp, metaclass=na_values.Singleton):
                 )
             )
         )
-
-    def __repr__(self) -> str:
-        return super().__repr__() + (' [%s]' % self.typeof)
 
     def __bool__(self) -> bool:
         """This is always False."""
