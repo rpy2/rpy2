@@ -464,6 +464,13 @@ class GeomBar(Geom):
 geom_bar = GeomBar.new
 
 
+class GeomCol(Geom):
+    _constructor = ggplot2_env['geom_col']
+
+
+geom_col = GeomCol.new
+
+
 class GeomBin2D(Geom):
     _constructor = ggplot2_env['geom_bin2d']
 
