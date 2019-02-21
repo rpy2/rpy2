@@ -208,3 +208,9 @@ def test_memoryview_3d():
     assert mv.f_contiguous is True
     assert mv.shape == shape
     assert tuple(x[0][0] for x in mv.tolist()) == (0, 1, 2, 3, 4)
+
+
+def test_array_protocol():
+    v = ri.IntSexpVector(range(10))
+    ai = v.__array_interface__
+    assert ai['version'] == 3

@@ -353,10 +353,15 @@ class NumpyArrayInterface(abc.ABC):
         invalid once the area once R frees the object. It is safer to keep
         the rpy2 object proxying the R object alive for the duration the
         pointer is used in Python / numpy."""
-        return {'shape': bufferprotocol.getshape(self.__sexp__._cdata),
+        shape = bufferprotocol.getshape(self.__sexp__._cdata)
+        data = openrlib.ffi.buffer(self._R_GET_PTR(self.__sexp__._cdata))
+        strides = bufferprotocol.getstrides(self.__sexp__._cdata,
+                                            shape,
+                                            self._R_SIZEOF_ELT)
+        return {'shape': shape,
                 'typestr': self._NP_TYPESTR,
-                'strides': bufferprotocol.getstrides(self.__sexp__._cdata),
-                'data': self._R_GET_PTR(self.__sexp__._cdata),
+                'strides': strides,
+                'data': data,
                 'version': 3}
 
 
@@ -534,7 +539,7 @@ class FloatSexpVector(SexpVector, NumpyArrayInterface):
     _R_VECTOR_ELT = openrlib.REAL_ELT
     _R_SET_VECTOR_ELT = openrlib.SET_REAL_ELT
     _R_SIZEOF_ELT = _rinterface.ffi.sizeof('double')
-    _NP_TYPESTR = '|f'
+    _NP_TYPESTR = '|d'
 
     _CAST_IN = staticmethod(float)
     _R_GET_PTR = staticmethod(openrlib.REAL)
