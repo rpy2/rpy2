@@ -225,6 +225,7 @@ class StrFactorVector(vectors.FactorVector):
         # R is one-offset, Python is zero-offset
         return self.levels[integer-1]
 
+
 class StrDataFrame(vectors.DataFrame):
     
     def __getitem__(self, item):
@@ -249,6 +250,7 @@ def html_vector_horizontal(vector,
         'elt_i_tail': range(max(0, len(vector)-size_tail), len(vector))})
     return html
 
+
 def html_rlist(vector,
                display_nrowmax=10,
                size_tail=2,
@@ -263,10 +265,12 @@ def html_rlist(vector,
         'elt_i_tail': range(max(0, len(vector)-size_tail), len(vector))})
     return html
 
+
 def html_rdataframe(dataf,
                     display_nrowmax=10,
                     display_ncolmax=6,
-                    size_coltail=2, size_rowtail=2,
+                    size_coltail=2,
+                    size_rowtail=2,
                     table_class='rpy2_table'):
     html = template_dataframe.render(
         {'dataf': StrDataFrame(dataf),
@@ -282,6 +286,7 @@ def html_rdataframe(dataf,
      })
     return html
 
+
 def html_sourcecode(sourcecode):
     from pygments import highlight
     from pygments.lexers import SLexer
@@ -292,6 +297,7 @@ def html_sourcecode(sourcecode):
          'syntax_highlighting': formatter.get_style_defs()}
     html = template_sourcecode.render(d)
     return html
+
 
 # FIXME: wherefrom() is taken from the rpy2 documentation
 # May be it should become part of the rpy2 API
@@ -313,6 +319,7 @@ def wherefrom(name, startenv=rinterface.globalenv):
                 retry = True
     return env
 
+
 def _dict_ridentifiedobject(obj):
     if hasattr(obj, '__rname__') and obj.__rname__ is not None:
         env = wherefrom(obj.__rname__)
@@ -327,16 +334,19 @@ def _dict_ridentifiedobject(obj):
          'obj': obj}
     return d
 
+
 def html_ridentifiedobject(obj):
     d = _dict_ridentifiedobject(obj)
     html = template_ridentifiedobject.render(d)
     return html
 
+
 def html_rs4(obj, table_class='rpy2_table'):
     d = _dict_ridentifiedobject(obj)
-    d['table_class']=table_class
+    d['table_class'] = table_class
     html = template_rs4.render(d)
     return html
+
 
 def init_printing():
     ip = get_ipython()
@@ -348,4 +358,3 @@ def init_printing():
     html_f.for_type(RS4, html_rs4)
     html_f.for_type(SignatureTranslatedFunction, html_ridentifiedobject)
     html_f.for_type(SourceCode, html_sourcecode)
-
