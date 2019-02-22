@@ -30,8 +30,8 @@ in a Python :class:`dict`.
 
 .. note::
 
-   The `rinterface` level is largely implemented in C, bridging Python and R C-APIs.
-   There is no easy way to customize it.
+   The `rinterface` level is quite close to R's C API and modifying it may quickly
+   results in segfaults.
 
 
 Conversion
@@ -50,6 +50,8 @@ of convertion objects between the following 3 representations:
 .. code-block:: python
 
    from rpy2.rinterface import StrSexpVector
+
+   
    def tuple_str(tpl):
        res = StrSexpVector(tpl)
        return res
@@ -118,8 +120,7 @@ This can be changed by using our converter as an addition to the default convers
 The conversion is trying to turn an rpy2 object (either :mod:`rpy2.rinterface` or
 :mod:`rpy2.robjects` level, low or high level interface respectively)
 into a Python object (or an object that is more Python-like than the input object).
-This method is a generic as implemented in :meth:`functools.singledispatch`
-(with Python 2, :meth:`singledispatch.singledispatch`).
+This method is a generic as implemented in :meth:`functools.singledispatch`.
 
 For example the optional conversion scheme for :mod:`numpy` objects
 will return numpy arrays whenever possible.
