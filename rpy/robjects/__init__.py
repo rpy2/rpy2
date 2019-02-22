@@ -349,6 +349,22 @@ class ParsedCode(rinterface.SexpVector):
     def source(self):
         return self._source
 
+    
+class SourceCode(str):
+
+    def parse(self, keep_source=True):
+        res = _rparse(text=rinterface.StrSexpVector((self, )))
+        if keep_source:
+            res = ParsedCode(res, source=self)
+        else:
+            res = ParsedCode(res, source=None)
+        return res
+
+    def as_namespace(self, name):
+        """ Name for the namespace """
+        return SignatureTranslatedAnonymousPackage(self,
+                                                   name)
+
 
 class R(object):
     """
