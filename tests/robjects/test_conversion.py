@@ -1,3 +1,4 @@
+import array
 import pytest
 import rpy2.rinterface_lib.sexp
 from rpy2 import rinterface
@@ -68,6 +69,24 @@ def test_mapperPy2R_function():
     assert rob.typeof == rinterface.RTYPES.CLOSXP
 
 
+@pytest.mark.parametrize('ctype', ['h', 'H', 'i', 'I'])
+def test_mapperpy2rpy_int_array(ctype):
+    a = array.array(ctype, range(10))
+    rob = robjects.default_converter.py2rpy(a)
+    assert isinstance(rob, robjects.vectors.IntSexpVector)
+    assert isinstance(rob, robjects.vectors.IntVector)
+    assert rob.typeof == rinterface.RTYPES.INTSXP
+
+
+@pytest.mark.parametrize('ctype', ['d', 'f'])
+def test_mapperpy2rpy_float_array(ctype):
+    a = array.array(ctype, (1.1, 2.2, 3.3))
+    rob = robjects.default_converter.py2rpy(a)
+    assert isinstance(rob, robjects.vectors.FloatSexpVector)
+    assert isinstance(rob, robjects.vectors.FloatVector)
+    assert rob.typeof == rinterface.RTYPES.REALSXP
+
+    
 def noconversion():
     robj_res = robjects.baseenv['pi']
     assert isinstance(robj_res, robjects.RObject)

@@ -122,6 +122,11 @@ def test_rclass_set_usingstring():
     assert x.rclass[0] == 'Foo'
 
 
+def test_rclass_str():
+    s = str(robjects.r)
+    assert isinstance(s, str)
+
+
 def test_do_slot():    
     assert robjects.globalenv.find('BOD').do_slot('reference')[0] == 'A1.4, p. 270'
 

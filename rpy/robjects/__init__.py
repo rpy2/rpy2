@@ -257,9 +257,9 @@ def _py2rpy_sexp(obj):
 @default_converter.py2rpy.register(array.array)
 def _py2rpy_array(obj):
     if obj.typecode in ('h', 'H', 'i', 'I'):
-        res = rinterface.vector(obj, rinterface.RTYPES.INTSXP)
+        res = IntVector(obj)
     elif obj.typecode in ('f', 'd'):
-        res = rinterface.vector(obj, rinterface.RTYPES.REALSXP)
+        res = FloatVector(obj)
     else:
         raise(
             ValueError('Nothing can be done for this array '
@@ -402,12 +402,11 @@ class R(object):
         del(self)
 
     def __str__(self):
-        s = super(R, self).__str__()
-        s += os.linesep
-        version = self["version"]
-        tmp = [n+': '+val[0] for n, val in zip(version.names, version)]
-        s += str.join(os.linesep, tmp)
-        return s
+        version = self['version']
+        s = [super(R, self).__str__()]
+        s.extend('%s: %s' % (n, val[0])
+                 for n, val in zip(version.names, version))
+        return os.linesep.join(s)
 
     def __call__(self, string):
         p = _rparse(text=StrSexpVector((string,)))
