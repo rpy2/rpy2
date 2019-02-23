@@ -214,8 +214,8 @@ R source code:
 from rpy2.robjects import (vectors, 
                            RObject, 
                            SignatureTranslatedFunction,
-                           RS4,
-                           SourceCode)
+                           RS4)
+from rpy2.robjects.packages import SourceCode
 
 
 class StrFactorVector(vectors.FactorVector):

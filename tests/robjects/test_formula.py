@@ -23,3 +23,8 @@ def test_setenvironment():
     env = fml.getenvironment()
     assert newenv.rsame(env)
 
+
+def test_setenvironment_error():
+    fml = robjects.Formula('y ~ x')
+    with pytest.raises(TypeError):
+        fml.setenvironment(rinterface.NA_Logical)

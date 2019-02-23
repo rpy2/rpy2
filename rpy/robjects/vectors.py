@@ -378,9 +378,7 @@ class StrVector(Vector, StrSexpVector):
 
     _factorconstructor = rinterface.baseenv['factor']
 
-    @property
-    def NAvalue(self):
-        return rinterface.NA_Character
+    NAvalue = rinterface.NA_Character
 
     def __init__(self, obj):
         super().__init__(obj)
@@ -409,9 +407,7 @@ class IntVector(Vector, IntSexpVector):
 
     _tabulate = rinterface.baseenv['tabulate']
 
-    @property
-    def NAvalue(self):
-        return rinterface.NA_Integer
+    NAvalue = rinterface.NA_Integer
 
     def __init__(self, obj):
         super().__init__(obj)
@@ -444,9 +440,7 @@ class BoolVector(Vector, BoolSexpVector):
     booleans, or have a bool() representation.
     """
 
-    @property
-    def NAvalue(self):
-        return rinterface.NA_Logical
+    NAvalue = rinterface.NA_Logical
 
     def __init__(self, obj):
         super().__init__(obj)
@@ -479,9 +473,7 @@ class ComplexVector(Vector, ComplexSexpVector):
     complex, or have a complex() representation.
     """
 
-    @property
-    def NAvalue(self):
-        return rinterface.NA_Complex
+    NAvalue = rinterface.NA_Complex
 
     def __init__(self, obj):
         super().__init__(obj)
@@ -499,9 +491,7 @@ class FloatVector(Vector, FloatSexpVector):
     float, or have a float() representation.
     """
 
-    @property
-    def NAvalue(self):
-        return rinterface.NA_Real
+    NAvalue = rinterface.NA_Real
 
     def __init__(self, obj):
         super().__init__(obj)
@@ -531,9 +521,7 @@ class FactorVector(IntVector):
     _nlevels = baseenv_ri['nlevels']
     _isordered = baseenv_ri['is.ordered']
 
-    @property
-    def NAvalue(self):
-        return rinterface.NA_Integer
+    NAvalue = rinterface.NA_Integer
 
     def __init__(self, obj,
                  levels=rinterface.MissingArg,

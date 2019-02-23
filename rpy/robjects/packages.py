@@ -525,3 +525,22 @@ def wherefrom(symbol: str,
         if env.rsame(rinterface.emptyenv):
             break
     return conversion.rpy2py(env)
+
+
+class ParsedCode(rinterface.ExprSexpVector):
+    pass
+
+
+class SourceCode(str):
+
+    _parsed = None
+
+    def parse(self):
+        if self._parsed is None:
+            self._parsed = ParsedCode(rinterface.parse(self))
+        return self._parsed
+
+    def as_namespace(self, name):
+        """ Name for the namespace """
+        return SignatureTranslatedAnonymousPackage(self,
+                                                   name)

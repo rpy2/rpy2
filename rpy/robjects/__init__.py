@@ -331,39 +331,13 @@ class Formula(RObjectMixin, rinterface.Sexp):
     def setenvironment(self, val):
         """ Set the environment in which a formula will find its symbols."""
         if not isinstance(val, rinterface.SexpEnvironment):
-            raise ValueError("The environment must be an instance of" +
+            raise TypeError("The environment must be an instance of" +
                              " rpy2.rinterface.Sexp.environment")
         self.do_slot_assign(".Environment", val)
 
     environment = property(getenvironment, setenvironment,
                            "R environment in which the formula will look for" +
                            " its variables.")
-
-
-class ParsedCode(rinterface.SexpVector):
-    def __init__(self, source=None):
-        self._source = source
-        super(ParsedCode, self).__init__(self)
-
-    @property
-    def source(self):
-        return self._source
-
-    
-class SourceCode(str):
-
-    def parse(self, keep_source=True):
-        res = _rparse(text=rinterface.StrSexpVector((self, )))
-        if keep_source:
-            res = ParsedCode(res, source=self)
-        else:
-            res = ParsedCode(res, source=None)
-        return res
-
-    def as_namespace(self, name):
-        """ Name for the namespace """
-        return SignatureTranslatedAnonymousPackage(self,
-                                                   name)
 
 
 class R(object):

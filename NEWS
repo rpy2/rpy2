@@ -45,6 +45,11 @@ Changes
 - mod:`rpy2.rpy_classic`, an implementation of the `rpy` interface using
   :mod:`rpy2.rinterface` is no longer available.
 
+- :class:`rpy2.robjects.ParsedCode` and
+  :class:`rpy2.robjects.SourceCode` are moved to
+  :class:`rpy2.robjects.packages.ParsedCode` and
+  :class:`rpy2.robjects.packages.SourceCode`.
+
 
 Bugs fixed
 ----------

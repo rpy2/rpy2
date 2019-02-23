@@ -1,4 +1,5 @@
 import io
+import os
 import pytest
 import sys
 import rpy2.robjects as robjects
@@ -126,3 +127,31 @@ def test_installedpackages():
     for row in instapacks:
         assert ncols == len(row)
         
+
+# TODO: Not really a unit test. The design of the code being
+# tested (or not tested) probably need to be re-thought.
+def test_parsedcode():
+    rcode = '1+2'
+    expression = rinterface.parse(rcode)
+    pc = robjects.packages.ParsedCode(expression)
+    assert isinstance(pc, type(expression))
+
+
+def test_sourcecode():
+    rcode = '1+2'
+    expression = rinterface.parse(rcode)
+    sc = robjects.packages.SourceCode(rcode)
+    assert isinstance(sc.parse(), type(expression))
+
+
+def test_sourcecode_as_namespace():
+    rcode = os.linesep.join(
+        ('x <- 1+2',
+         'f <- function(x) x+1')
+    )
+    sc = robjects.packages.SourceCode(rcode)
+    foo_ns = sc.as_namespace('foo_ns')
+    assert hasattr(foo_ns, 'x')
+    assert hasattr(foo_ns, 'f')
+    assert foo_ns.x[0] == 3
+    assert isinstance(foo_ns.f, rinterface.SexpClosure)

@@ -24,43 +24,38 @@ def test_init():
     del(ri_v)
     assert ro_v.typeof == ri.RTYPES.INTSXP
 
-    
-def test_init_strvector():
-    vec = robjects.StrVector(['abc', 'def'])
-    assert 'abc' == vec[0]
-    assert 'def' == vec[1]
-    assert len(vec) == 2
+
+@pytest.mark.parametrize(
+    'cls,expected_na',
+    [(robjects.StrVector, ri.NA_Character),
+     (robjects.IntVector, ri.NA_Integer),
+     (robjects.FloatVector, ri.NA_Real),
+     (robjects.BoolVector, ri.NA_Logical),
+     (robjects.ComplexVector, ri.NA_Complex),
+    ])
+def test_vector_navalue(cls, expected_na):
+    assert cls.NAvalue is expected_na
 
 
-def test_init_intvector():
-    vec = robjects.IntVector([123, 456])
-    assert 123 == vec[0]
-    assert 456 == vec[1]
-    assert len(vec) == 2
+@pytest.mark.parametrize(
+    'cls,values',
+    [(robjects.StrVector, ['abc', 'def']),
+     (robjects.IntVector, [123, 456]),
+     (robjects.FloatVector, [123.0, 456.0]),
+     (robjects.BoolVector, [True, False])])
+def test_init_vectors(cls, values):
+    vec = cls(values)
+    assert len(vec) == len(values)
+    for x, y in zip(vec, values):
+        assert x == y
 
 
-def test_init_floatvector():
-    vec = robjects.FloatVector([123.0, 456.0])
-    assert 123.0 == vec[0]
-    assert 456.0 == vec[1]
-    assert len(vec) == 2
-
-
-def test_init_boolvector():
-    vec = robjects.BoolVector([True, False])
-    assert vec[0] is True
-    assert vec[1] is False
-    assert len(vec) == 2
-
-
-listvector_testdata = (
-    robjects.ListVector({'a': 1, 'b': 2}),
-    robjects.ListVector((('a', 1), ('b', 2))),
-    robjects.ListVector(iter([('a', 1), ('b', 2)]))
-    )
-
-
-@pytest.mark.parametrize('vec', listvector_testdata)
+@pytest.mark.parametrize(
+    'vec',
+    (robjects.ListVector({'a': 1, 'b': 2}),
+     robjects.ListVector((('a', 1), ('b', 2))),
+     robjects.ListVector(iter([('a', 1), ('b', 2)])))
+)
 def test_new_listvector(vec):
     assert 'a' in vec.names
     assert 'b' in vec.names
