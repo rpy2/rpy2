@@ -26,22 +26,38 @@ def test_getsetitem():
 def test_keys():
     env = robjects.Environment()
     env['a'] = 123
+    env['b'] = 234
     keys = list(env.keys())
-    assert len(keys) == 1
+    assert len(keys) == 2
     keys.sort()
     for it_a, it_b in zip(keys,
-                          ('a',)):
+                          ('a', 'b')):
         assert it_a == it_b
+
+
+def test_values():
+    env = robjects.Environment()
+    env['a'] = 123
+    env['b'] = 234
+    values = list(env.values())
+    assert len(values) == 2
+    values.sort(key=lambda x: x[0])
+    for it_a, it_b in zip(values,
+                          (123, 234)):
+        assert len(it_a) == 1
+        assert it_a[0] == it_b
 
 
 def test_items():
     env = robjects.Environment()
     env['a'] = 123
+    env['b'] = 234
     items = list(env.items())
-    assert len(items) == 1
+    assert len(items) == 2
     items.sort(key=lambda x: x[0])
     for it_a, it_b in zip(items,
-                          (('a', 123),)):
+                          (('a', 123),
+                           ('b', 234))):
         assert it_a[0] == it_b[0]
         assert it_a[1][0] == it_b[1]
 
@@ -58,9 +74,11 @@ def test_pop_key():
     assert len(env) == 0
     assert [x[0] for x in robjs] == [123, 456]
     with pytest.raises(KeyError):
-        robjs.append(env.pop('c'))
+        env.pop('c')
     assert env.pop('c', 789) == 789
-        
+    with pytest.raises(ValueError):
+        env.pop('c', 1, 2)
+
 
 def test_popitem():
     env = robjects.Environment()
@@ -76,3 +94,12 @@ def test_popitem():
 
     with pytest.raises(KeyError):
         robjs.append(env.popitem())
+
+
+def test_clear():
+    env = robjects.Environment()
+    env['a'] = 123
+    env['b'] = 234
+    assert len(env) == 2
+    env.clear()
+    assert len(env) == 0

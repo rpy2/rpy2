@@ -1,3 +1,4 @@
+import typing
 import rpy2.rinterface as rinterface
 from rpy2.robjects.robject import RObjectMixin
 from rpy2.robjects import conversion
@@ -27,7 +28,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
             pass
         return res
 
-    def __setitem__(self, item, value):
+    def __setitem__(self, item, value) -> None:
         robj = conversion.converter.py2rpy(value)
         super(Environment, self).__setitem__(item, robj)
 
@@ -63,17 +64,17 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
             pass
         return res
 
-    def keys(self):
-        """ Return a tuple listing the keys in the object """
+    def keys(self) -> typing.Generator[str, None, None]:
+        """ Return an iterator over keys in the environment."""
         return super().keys()
 
-    def items(self):
+    def items(self) -> typing.Generator:
         """ Iterate through the symbols and associated objects in
             this R environment."""
         for k in self:
             yield (k, self[k])
 
-    def values(self):
+    def values(self) -> typing.Generator:
         """ Iterate through the objects in
             this R environment."""
         for k in self:
@@ -103,7 +104,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         del(self[kv[0]])
         return kv
 
-    def clear(self):
+    def clear(self) -> None:
         """ E.clear() -> None.  Remove all items from D. """
         # FIXME: is there a more efficient implementation (when large
         #        number of keys) ?
