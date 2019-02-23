@@ -10,6 +10,17 @@ class TestOrdDict(object):
         x = (('a', 123), ('b', 456), ('c', 789))
         nl = rlc.OrdDict(x)
 
+    def test_repr(self):
+        x = (('a', 123), ('b', 456), ('c', 789))
+        nl = rlc.OrdDict(x)
+        assert isinstance(repr(nl), str)
+
+    def test_iter(self):
+        x = (('a', 123), ('b', 456), ('c', 789))
+        nl = rlc.OrdDict(x)
+        for a, b in zip(nl, x):
+            assert a == b[0]
+
     def test_len(self):
         x = rlc.OrdDict()
         assert len(x) == 0

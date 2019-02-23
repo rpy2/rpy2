@@ -57,14 +57,14 @@ class OrdDict(dict):
         return len(self.__l)
 
     def __ne__(self):
-        raise(Exception("Not yet implemented."))
+        raise(Exception('Not yet implemented.'))
 
     def __repr__(self):
-        s = 'o{'
+        s = ['o{', ]
         for k, v in self.items():
-            s += "'" + str(k) + "': " + str(v) + ", "
-        s += '}'
-        return s
+            s.append("'%s': %s, " % (str(k), str(v)))
+        s.append('}')
+        return ''.join(s)
 
     def __reversed__(self):
         raise(Exception("Not yet implemented."))
