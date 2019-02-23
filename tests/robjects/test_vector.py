@@ -63,6 +63,12 @@ def test_new_listvector(vec):
     assert len(vec.names) == 2
 
 
+def test_strvector_factor():
+    vec = robjects.StrVector(('abc', 'def', 'abc'))
+    fvec = vec.factor()
+    assert isinstance(fvec, robjects.FactorVector)
+
+
 def test_add_operator():
     seq_R = robjects.r["seq"]
     mySeqA = seq_R(0, 3)
@@ -137,6 +143,12 @@ def test_r_or():
     v = robjects.vectors.BoolVector((True, False))
     res = v.ro | False
     assert all(x is y for x, y in zip(res, (True, False)))
+
+
+def test_r_invert():
+    v = robjects.vectors.BoolVector((True, False))
+    res = ~v.ro
+    assert all(x is (not y) for x, y in zip(res, (True, False)))
 
 
 def test_r_lt():

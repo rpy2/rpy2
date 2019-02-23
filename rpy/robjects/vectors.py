@@ -182,6 +182,10 @@ class VectorOperationsDelegator(object):
         res = globalenv_ri.find('&')(self._parent, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
+    def __invert__(self):
+        res = globalenv_ri.find('!')(self._parent)
+        return conversion.rpy2py(res)
+
     # Comparisons
 
     def __lt__(self, x):
@@ -786,8 +790,8 @@ class POSIXlt(POSIXt, ListVector):
     def __getitem__(self, i):
         # "[[" operator returns the components of a time object
         # (and yes, this is confusing)
-        tmp = self.rx2(i-1)
-        return struct_time(*tuple(tmp))
+        tmp = self.rx2(i+1)
+        return struct_time([x[0] for x in tuple(tmp)])
 
 
 class POSIXct(POSIXt, FloatVector):
