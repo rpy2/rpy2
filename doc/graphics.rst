@@ -512,33 +512,6 @@ used the grammar of graphics) are still specified the usual way.
 .. image:: _static/graphics_ggplot2smoothblue.png
    :scale: 50
 
-..
-   Complex example
-   ^^^^^^^^^^^^^^^
-
-   .. sectionauthor:: John Owens
-
-   This example uses *ggplot2* to plot 4 datasets (all combinations of 2
-   colors and 2 linetypes/marker types). It contains examples of mapping
-   attributes to colors, line types, and labels; using python to
-   manipulate data in an R DataFrame; the *melt* operator (from the
-   *reshape* package) to transform the data from a "vertical"
-   representation to a "horizontal" representation suitable for
-   *ggplot2*; and numerous customizations of the output graph, including
-   axis labels, colors, line types, line and marker sizes, and log-scale
-   major and minor lines. 
-
-   .. literalinclude:: _static/demos/graphics.py
-      :start-after: #-- ggplot2perfcolor-begin
-      :end-before: #-- ggplot2perfcolor-end
-
-   .. image:: _static/graphics_ggplot2perfcolor_both.png
-      :scale: 50
-
-   .. module:: rpy2.robjects.lib.grid
-      :synopsis: High-level interface with R
-
-
 
 Package *grid*
 ==============
