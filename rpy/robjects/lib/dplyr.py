@@ -18,7 +18,7 @@ with warnings.catch_warnings():
                         symbol_r2python=dplyr._symbol_r2python,
                         symbol_check_after=dplyr._symbol_check_after)
 
-TARGET_VERSION = '0.7.7'
+TARGET_VERSION = '0.8.0.1'
 if dplyr.__version__ != TARGET_VERSION:
     warnings.warn('This was designed againt dplyr version %s but you have %s' %
                   (TARGET_VERSION, dplyr.__version__))
