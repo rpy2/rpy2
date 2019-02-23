@@ -275,7 +275,7 @@ def test_nacomplex():
 
 def test_nacomplex_workaround():
     vec = robjects.ComplexVector((1+1j, 2+2j, 3+3j))
-    vec[0] = complex(robjects.NA_Complex.r, robjects.NA_Complex.i)
+    vec[0] = complex(robjects.NA_Complex.real, robjects.NA_Complex.imag)
     assert robjects.baseenv['is.na'](vec)[0] is True
 
 def test_nacharacter():

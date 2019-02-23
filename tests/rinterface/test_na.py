@@ -146,3 +146,19 @@ def test_NACharacter_in_vector():
     assert x[0] == 'ab'
     assert x.get_charsxp(1).rid == na_str.rid
     assert x[2] == 'cd'
+
+
+def test_R_to_NAComplex():
+    r_na_complex = ri.evalr('NA_complex_')[0]
+    assert math.isnan(r_na_complex.real)
+    assert math.isnan(r_na_complex.imag)
+
+
+def test_NAComplex_to_r():
+    na_complex = ri.NA_Complex
+    assert ri.baseenv["is.na"](na_complex)[0]
+
+
+def test_bool_NAComplex():
+    with pytest.raises(ValueError):
+        bool(ri.NA_Complex)

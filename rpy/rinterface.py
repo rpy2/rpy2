@@ -879,7 +879,8 @@ conversion._R_RPY2_DEFAULT_MAP = Sexp
 
 conversion._PY_RPY2_MAP.update({
     int: conversion._int_to_sexp,
-    float: conversion._float_to_sexp
+    float: conversion._float_to_sexp,
+    complex: conversion._complex_to_sexp
     })
 
 conversion._PY_R_MAP.update({
@@ -898,7 +899,8 @@ conversion._PY_R_MAP.update({
     sexp.CharSexp: None,
     na_values.NACharacterType: None,
     # complex
-    complex: None,
+    complex: conversion._complex_to_sexp,
+    na_values.NAComplexType: conversion._complex_to_sexp,
     # None
     type(None): lambda x: openrlib.rlib.R_NilValue})
 
@@ -1013,9 +1015,11 @@ def _post_initr_setup():
     NA_Real = na_values.NA_Real
 
     global NA_Complex
-    na_values.NA_Complex = _rinterface.ffi.new(
-        'Rcomplex *',
-        [openrlib.rlib.R_NaReal, openrlib.rlib.R_NaReal])
+    na_values.NA_Complex = na_values.NAComplexType(
+        _rinterface.ffi.new(
+            'Rcomplex *',
+            [openrlib.rlib.R_NaReal, openrlib.rlib.R_NaReal])
+    )
     NA_Complex = na_values.NA_Complex
 
 

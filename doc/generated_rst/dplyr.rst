@@ -260,7 +260,7 @@ implementation of ``dplyr``, it *just works*.
 .. parsed-literal::
 
     [90m# Source:   lazy query [?? x 2][39m
-    [90m# Database: sqlite 3.22.0 [/tmp/tmp9lh5xvkc][39m
+    [90m# Database: sqlite 3.22.0 [/tmp/tmpo4jwnsuk][39m
        gear mean_ptw
       [3m[90m<dbl>[39m[23m    [3m[90m<dbl>[39m[23m
     [90m1[39m     4    [4m1[24m237.
@@ -311,12 +311,6 @@ R.
     <class 'pandas.core.frame.DataFrame'>
 
 
-.. parsed-literal::
-
-    /home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.0.0.dev0-py3.6.egg/rpy2/robjects/pandas2ri.py:195: FutureWarning: from_items is deprecated. Please use DataFrame.from_dict(dict(items), ...) instead. DataFrame.from_dict(OrderedDict(items)) may be used to preserve the key order.
-      res = PandasDataFrame.from_items(items)
-
-
 Using a local converter lets us also go from the pandas data frame to
 our dplyr-augmented R data frame and use the dplyr transformations on
 it.
@@ -350,7 +344,7 @@ it.
       <tbody>
         <tr>
           <td class="rpy2_rowname">0</td>
-            <td class="rpy2_names">0</td>
+            <td class="rpy2_names">1</td>
           <td>1632.0477884748632</td>
         </tr>
       </tbody>

@@ -75,6 +75,17 @@ def _float_to_sexp(val: float):
     return s
 
 
+def _complex_to_sexp(val: complex):
+    rlib = openrlib.rlib
+    s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.CPLXSXP, 1))
+    openrlib.SET_COMPLEX_ELT(
+        s, 0,
+        val
+    )
+    rlib.Rf_unprotect(1)
+    return s
+
+
 # {
 #     'ASCII'
 #     'latin-1': rlib.cetype_t.CE_LATIN1,
