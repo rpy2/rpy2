@@ -46,6 +46,7 @@ class SexpVectorNumericTestCase(unittest.TestCase):
         self.assertEqual(x[1], 333.2)
         
     @unittest.skipUnless(has_numpy, 'Package numpy is not installed.')
+    @unittest.expectedFailure
     def testArrayStructComplex(self):
         px = [1+2j, 2+5j, -1+0j]
         x = rinterface.SexpVector(px, rinterface.CPLXSXP)

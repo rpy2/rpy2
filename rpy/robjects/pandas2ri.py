@@ -143,9 +143,12 @@ def ri2py_vector(obj):
 def ri2py_intvector(obj):
     # special case for factors
     if 'factor' in obj.rclass:
-        res = pandas.Categorical.from_codes(numpy.asarray(obj) - 1,
-                                            categories = obj.do_slot('levels'),
-                                            ordered = 'ordered' in obj.rclass)
+        codes = [x-1 if x > 0 else -1 for x in numpy.array(obj)]
+        res = pandas.Categorical.from_codes(
+            codes,
+            categories = list(obj.do_slot('levels')),
+            ordered = 'ordered' in obj.rclass
+        )
     else:
         res = numpy2ri.ri2py(obj)
     return res

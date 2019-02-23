@@ -7,6 +7,14 @@ Bugs fixed
 - Latest release of :mod:`pandas` deprecated :meth:`DataFrame.from_items`.
   (issue #514).
 
+- Latest release of :mod:`pandas` requires categories to be a list
+  (not an other sequence).
+
+Known issues
+------------
+
+- The numpy buffer implemented by R arrays is broken for complex numbers
+
 
 Release 2.9.5
 =============
