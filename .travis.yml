@@ -61,6 +61,7 @@ install:
 script:
   - |
     flake8 \
+    rpy/ipython/ \
     rpy/rinterface.py \
     rpy/rinterface_lib/ \
     rpy/rlike/functional.py \

@@ -36,7 +36,7 @@ To enable the magics below, execute `%load_ext rpy2.ipython`.
 
 # -----------------------------------------------------------------------------
 #  Copyright (C) 2012 The IPython Development Team
-#  Copyright (C) 2013-2017 rpy2 authors
+#  Copyright (C) 2013-2019 rpy2 authors
 #
 #  Distributed under the terms of the BSD License.  The full license is in
 #  the file COPYING, distributed as part of this software.
@@ -80,16 +80,9 @@ except ImportError:
                             "Unfortunately it could not be loaded,",
                             "as we did not manage to load 'numpy'",
                             "first.")))
-if numpy:
-    from rpy2.robjects import numpy2ri
-    template_converter += numpy2ri.converter
-    if pandas:
-        from rpy2.robjects import pandas2ri
-        template_converter += pandas2ri.converter
 
 # IPython imports.
 
-import IPython
 from IPython.core import displaypub
 from IPython.core.magic import (Magics,
                                 magics_class,
@@ -100,6 +93,14 @@ from IPython.core.magic_arguments import (argument,
                                           argument_group,
                                           magic_arguments,
                                           parse_argstring)
+
+
+if numpy:
+    from rpy2.robjects import numpy2ri
+    template_converter += numpy2ri.converter
+    if pandas:
+        from rpy2.robjects import pandas2ri
+        template_converter += pandas2ri.converter
 
 
 class RInterpreterError(ri.embedded.RRuntimeError):
@@ -377,7 +378,9 @@ class RMagics(Magics):
 
             In [3]: dtype=[('x', '<i4'), ('y', '<f8'), ('z', '|S1')]
 
-            In [4]: datapy = np.array([(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c'), (4, 5, 'e')], dtype=dtype)
+            In [4]: datapy = np.array([(1, 2.9, 'a'), (2, 3.5, 'b'),
+            ...                        (3, 2.1, 'c'), (4, 5, 'e')],
+            ...                        dtype=dtype)
 
             In [5]: %R -i datapy
 

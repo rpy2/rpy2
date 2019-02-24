@@ -1,5 +1,13 @@
 import jinja2
-from IPython.display import HTML
+
+from rpy2.robjects import (vectors,
+                           RObject,
+                           SignatureTranslatedFunction,
+                           RS4)
+from rpy2 import rinterface
+from rpy2.robjects.packages import SourceCode
+from rpy2.robjecrs.packages import wherefrom
+from IPython import get_ipython
 
 
 template_list = jinja2.Template("""
@@ -27,7 +35,7 @@ template_vector_horizontal = jinja2.Template("""
   <td>{{ vector[elt_i] }}</td>
   {%- endfor %}
   {%- if display_ncolmax < (vector | length) %}
-  <td>...</td>  
+  <td>...</td>
   {%- endif %}
   {%- for elt_i in elt_i_tail %}
       <td>{{ vector[elt_i] }}</td>
@@ -58,7 +66,7 @@ template_vector_vertical = jinja2.Template("""
   {%- if has_vector_names %}
     <td class="rpy2_names">...</td>
   {%- endif %}
-    <td>...</td>  
+    <td>...</td>
   </tr>
   {%- endif %}
   {%- for elt_i in elt_i_tail %}
@@ -76,7 +84,8 @@ template_vector_vertical = jinja2.Template("""
 """)
 
 template_dataframe = jinja2.Template("""
-<emph>{{ clsname }}</emph> with {{ dataf.nrow }} rows and {{ dataf | length }} columns:
+<emph>{{ clsname }}</emph> with {{ dataf.nrow }} rows and
+  {{ dataf | length }} columns:
 <table class="{{ table_class }}">
   <thead>
     <tr class="rpy2_names">
@@ -89,7 +98,7 @@ template_dataframe = jinja2.Template("""
       <th>{{ dataf.names[col_i] }}</th>
 {%- endfor %}
 {%- if display_ncolmax < dataf.ncol %}
-      <th>...</th>  
+      <th>...</th>
 {%- endif %}
 {%- for col_i in col_i_tail %}
       <th>{{ dataf.names[col_i] }}</th>
@@ -107,7 +116,7 @@ template_dataframe = jinja2.Template("""
       <td>{{ dataf[col_i][row_i] }}</td>
   {%- endfor %}
   {%- if display_ncolmax < dataf.ncol %}
-       <td>...</td>  
+       <td>...</td>
   {%- endif %}
   {%- for col_i in col_i_tail %}
       <td>{{ dataf[col_i][row_i] }}</td>
@@ -126,7 +135,7 @@ template_dataframe = jinja2.Template("""
       <td>...</td>
   {%- endfor %}
   {%- if display_ncolmax < dataf.ncol %}
-       <td>...</td>  
+       <td>...</td>
   {%- endif %}
   {%- for col_i in range(2) %}
       <td>...</td>
@@ -144,7 +153,7 @@ template_dataframe = jinja2.Template("""
       <td>{{ dataf[col_i][row_i] }}</td>
   {%- endfor %}
   {%- if display_ncolmax < dataf.ncol %}
-       <td>...</td>  
+       <td>...</td>
   {%- endif %}
   {%- for col_i in col_i_tail %}
       <td>{{ dataf[col_i][row_i] }}</td>
@@ -211,12 +220,6 @@ R source code:
 {{ sourcecode }}
 """)
 
-from rpy2.robjects import (vectors, 
-                           RObject, 
-                           SignatureTranslatedFunction,
-                           RS4)
-from rpy2.robjects.packages import SourceCode
-
 
 class StrFactorVector(vectors.FactorVector):
 
@@ -227,7 +230,7 @@ class StrFactorVector(vectors.FactorVector):
 
 
 class StrDataFrame(vectors.DataFrame):
-    
+
     def __getitem__(self, item):
         obj = super(StrDataFrame, self).__getitem__(item)
         if isinstance(obj, vectors.FactorVector):
@@ -282,8 +285,7 @@ def html_rdataframe(dataf,
          'col_i_tail': range(max(0, dataf.ncol-size_coltail), dataf.ncol),
          'row_i_tail': range(max(0, dataf.nrow-size_rowtail), dataf.nrow),
          'size_coltail': size_coltail,
-         'size_rowtail': size_rowtail
-     })
+         'size_rowtail': size_rowtail})
     return html
 
 
@@ -297,27 +299,6 @@ def html_sourcecode(sourcecode):
          'syntax_highlighting': formatter.get_style_defs()}
     html = template_sourcecode.render(d)
     return html
-
-
-# FIXME: wherefrom() is taken from the rpy2 documentation
-# May be it should become part of the rpy2 API
-from rpy2 import rinterface
-def wherefrom(name, startenv=rinterface.globalenv):
-    """ when calling 'get', where the R object is coming from. """
-    env = startenv
-    obj = None
-    retry = True
-    while retry:
-        try:
-            obj = env[name]
-            retry = False
-        except LookupError:
-            env = env.enclos()
-            if env.rsame(rinterface.emptyenv):
-                retry = False
-            else:
-                retry = True
-    return env
 
 
 def _dict_ridentifiedobject(obj):
