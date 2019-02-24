@@ -393,6 +393,13 @@ def test_sample_probabilities():
     assert len(spl) == 10
 
 
+def test_sample_probabilities_error_len():
+    vec = robjects.IntVector(range(100))
+    with pytest.raises(ValueError):
+        vec.sample(10,
+                   probabilities=robjects.FloatVector([.01] * 10))
+
+
 def test_sample_error():
     vec = robjects.IntVector(range(100))
     with pytest.raises(ri.embedded.RRuntimeError):

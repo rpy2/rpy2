@@ -143,7 +143,7 @@ class PackageData(object):
             self._init_setlist()
 
         if name not in self._datasets:
-            raise ValueError('Data set "%s" cannot be found' % name)
+            raise KeyError('Data set "%s" cannot be found' % name)
         env = _new_env()
         _data(StrSexpVector((name, )),
               **{'package': StrSexpVector((self._packagename, )),
@@ -269,7 +269,7 @@ class Package(ModuleType):
 
     def __repr__(self):
         s = super(Package, self).__repr__()
-        return 'rpy2.robjects.packages.Package as a ' + s
+        return 'rpy2.robjects.packages.Package as a %s' % s
 
 
 # alias

@@ -22,6 +22,22 @@ def test_POSIXlt_from_pythontime():
     assert len(x) == 2
 
 
+@pytest.mark.xfail(reason='wday mismatch between R and Python (issue #523)')
+def test_POSIXlt_getitem():
+    x = [time.struct_time(_dateval_tuple), 
+         time.struct_time(_dateval_tuple)]
+    res = robjects.POSIXlt(x)
+    assert res[0] == x[0]
+
+
+def testPOSIXlt_repr():
+    x = [time.struct_time(_dateval_tuple), 
+         time.struct_time(_dateval_tuple)]
+    res = robjects.POSIXlt(x)
+    s = repr(res)
+    assert isinstance(s, str)
+
+
 def test_POSIXct_from_invalidpythontime():
     x = [time.struct_time(_dateval_tuple), 
          time.struct_time(_dateval_tuple)]

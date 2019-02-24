@@ -50,12 +50,17 @@ Changes
   :class:`rpy2.robjects.packages.ParsedCode` and
   :class:`rpy2.robjects.packages.SourceCode`.
 
-
 Bugs fixed
 ----------
 
 - Row names in R data frames were lost when converting to pandas data frames
   (issue #484).
+
+Known issues
+------------
+
+- Mismatch between R's POSIXlt `wday` and Python time struct_time's `tm_wday`
+  (issue #523).
 
 
 Release 2.9.6

@@ -75,16 +75,7 @@ class ExtractDelegator(object):
         return res
 
     def __getitem__(self, item):
-        fun = self._extractfunction
-        args = rlc.TaggedList(item)
-        for i, (k, v) in enumerate(args.items()):
-            if v is MissingArg:
-                continue
-            args[i] = conversion.py2rpy(v)
-        args.insert(0, self._parent)
-        res = fun.rcall(args.items(),
-                        globalenv_ri)
-        res = conversion.rpy2py(res)
+        res = self(item)
         return res
 
     def __setitem__(self, item, value):
@@ -759,7 +750,7 @@ class POSIXt(abc.ABC):
 
 
 class POSIXlt(POSIXt, ListVector):
-    """ Representation of dates with a 9-component structure
+    """ Representation of dates with a 11-component structure
     (similar to Python's time.struct_time).
 
     POSIXlt(seq) -> POSIXlt.
@@ -769,6 +760,14 @@ class POSIXlt(POSIXt, ListVector):
     sequence interface) of time.struct_time objects.
     """
 
+    _expected_colnames = {
+        x: i for i, x in enumerate(
+            ('sec', 'min', 'hour', 'mday', 'mon', 'year',
+             'wday', 'yday', 'isdst', 'zone', 'gmtoff'))
+    }
+    # R starts the week on Sunday while Python starts it on Monday
+    _wday_r_to_py = (6, 0, 1, 2, 3, 4, 5)
+        
     def __init__(self, seq):
         """
         """
@@ -790,8 +789,25 @@ class POSIXlt(POSIXt, ListVector):
     def __getitem__(self, i):
         # "[[" operator returns the components of a time object
         # (and yes, this is confusing)
-        tmp = self.rx2(i+1)
-        return struct_time([x[0] for x in tuple(tmp)])
+        aslist = ListVector(self)
+        idx = self._expected_colnames
+        seq = (aslist[idx['year']][i]+1900,
+               aslist[idx['mon']][i]+1,
+               aslist[idx['mday']][i],
+               aslist[idx['hour']][i],
+               aslist[idx['min']][i],
+               aslist[idx['sec']][i],
+               self._wday_r_to_py[aslist[idx['wday']][i]],
+               aslist[idx['yday']][i]+1,
+               aslist[idx['isdst']][i])
+        return struct_time(
+            seq,
+            {'tm_zone': aslist[idx['zone']][i],
+             'tmp_gmtoff': aslist[idx['gmtoff']][i]}
+        )
+
+    def __repr__(self):
+        return super(Sexp, self).__repr__()
 
 
 class POSIXct(POSIXt, FloatVector):

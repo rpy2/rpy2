@@ -93,8 +93,7 @@ class RS4_Type(type):
             if where is None:
                 where = rinterface.globalenv
             else:
-                where = "package:" + str(where)
-                where = StrSexpVector((where, ))
+                where = StrSexpVector(('package:%s' % where, ))
 
             if python_name is None:
                 python_name = rname
@@ -153,7 +152,7 @@ class RS4Auto_Type(type):
             page_help = None
             try:
                 # R's classes are sometimes documented with a prefix 'class.'
-                page_help = pack_help.fetch(cls_def.__rname__ + "-class")
+                page_help = pack_help.fetch('%s-class' % cls_def.__rname__)
             except rhelp.HelpNotFoundError:
                 pass
             if page_help is None:
@@ -211,9 +210,9 @@ class RS4Auto_Type(type):
                 # prefix to the Python name (and of course remove the
                 # suffix '<-').
                 if funcname.endswith('<-'):
-                    meth_name = 'set_' + funcname[:-2] + '__' + meth_name
+                    meth_name = 'set_%s__%s' % (funcname[:-2], meth_name)
                 else:
-                    meth_name = funcname + '__' + meth_name
+                    meth_name = '%s__%s' % (funcname, meth_name)
                 # finally replace remaining '.'s in the Python name with '_'s
                 meth_name = meth_name.replace('.', '_')
 

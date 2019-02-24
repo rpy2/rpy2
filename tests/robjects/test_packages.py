@@ -50,6 +50,11 @@ class TestPackage(object):
         with pytest.raises(packages.LibraryError):
             robjects.packages.Package(env, "dummy_package")
 
+    def tests_package_repr(self):
+        env = robjects.Environment()
+        pck = robjects.packages.Package(env, "dummy_package")
+        assert isinstance(repr(pck), str)
+
 
 def test_signaturetranslatedanonymouspackage():
     rcode = """
@@ -111,6 +116,22 @@ class TestImportr(object):
                           robjects.packages.PackageData)
         assert isinstance(robjects.packages.data(datasets), 
                           robjects.packages.PackageData)
+
+    def test_datatsets_names(self):
+        datasets = robjects.packages.importr('datasets')
+        datasets_data = robjects.packages.data(datasets)
+        datasets_names = tuple(datasets_data.names())
+        assert len(datasets_names) > 0
+        assert all(isinstance(x, str) for x in datasets_names)
+
+    def test_datatsets_fetch(self):
+        datasets = robjects.packages.importr('datasets')
+        datasets_data = robjects.packages.data(datasets)
+        datasets_names = tuple(datasets_data.names())
+        assert isinstance(datasets_data.fetch(datasets_names[0]),
+                          robjects.Environment)
+        with pytest.raises(KeyError):
+            datasets_data.fetch('foo_%s' % datasets_names[0])
 
 
 def test_wherefrom():

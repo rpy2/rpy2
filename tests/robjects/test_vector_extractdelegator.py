@@ -17,6 +17,17 @@ def silent_console_print():
         yield
 
 
+def test_extract_getitem_by_index():
+    seq_R = robjects.baseenv["seq"]
+    mySeq = seq_R(0, 10)
+    # R indexing starts at one
+    myIndex = robjects.vectors.IntVector(array.array('i', range(1, 11, 2)))
+
+    mySubset = mySeq.rx[myIndex]
+    for i, si in enumerate(myIndex):
+        assert mySeq[si-1] == mySubset[i]
+
+
 def test_extract_by_index():
     seq_R = robjects.baseenv["seq"]
     mySeq = seq_R(0, 10)
