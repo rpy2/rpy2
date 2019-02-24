@@ -32,19 +32,18 @@ class TestGGplot(object):
         gp += ggplot2.geom_point()
         assert isinstance(gp, ggplot2.GGPlot)
 
-    @pytest.mark.skipif(not has_ggplot,
-                        reason='R package ggplot is not installed.')
     @pytest.mark.parametrize(
-        'theme',
-        [ggplot2.theme_grey,
-         ggplot2.theme_classic,
-         ggplot2.theme_dark,
-         ggplot2.theme_light,
-         ggplot2.theme_bw,
-         ggplot2.theme_linedraw,
-         ggplot2.theme_void,
-         ggplot2.theme_minimal])
-    def test_theme(self, theme):
+        'theme_name',
+        ['theme_grey',
+         'theme_classic',
+         'theme_dark',
+         'theme_light',
+         'theme_bw',
+         'theme_linedraw',
+         'theme_void',
+         'theme_minimal'])
+    def test_theme(self, theme_name):
+        theme = getattr(ggplot2, theme_name)
         gp = (ggplot2.ggplot(mtcars) +
               theme())
         assert isinstance(gp, ggplot2.GGPlot)
