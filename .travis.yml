@@ -45,7 +45,7 @@ before_install:
       sudo apt-get install -y r-base
     fi
   - |
-    sudo Rscript ./install_r_packages.r dplyr ggplot2
+    sudo Rscript ./install_r_packages.r dplyr ggplot2 tidyr
     pip install flake8 pytest pytest-cov
     pip install ipython pandas numpy tzlocal
 
