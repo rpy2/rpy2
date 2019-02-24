@@ -12,6 +12,12 @@ tidyr in Python
 
     from rpy2.robjects.lib.tidyr import DataFrame
 
+
+.. parsed-literal::
+
+    /home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.0.0-py3.6.egg/rpy2/robjects/lib/dplyr.py:24: UserWarning: This was designed againt dplyr version 0.8.0.1 but you have 0.7.7
+
+
 (note: ``dplyr`` is implicitly used by ``tidyr``.)
 
 In addition to that, and because this tutorial is in a notebook, we
@@ -39,7 +45,8 @@ frames).
 .. raw:: html
 
     
-    <emph>DataFrame</emph> with 3 rows and 3 columns:
+    <emph>DataFrame</emph> with 3 rows and
+      3 columns:
     <table class="docutils">
       <thead>
         <tr class="rpy2_names">
@@ -87,7 +94,8 @@ frames).
 .. raw:: html
 
     
-    <emph>DataFrame</emph> with 3 rows and 3 columns:
+    <emph>DataFrame</emph> with 3 rows and
+      3 columns:
     <table class="docutils">
       <thead>
         <tr class="rpy2_names">
