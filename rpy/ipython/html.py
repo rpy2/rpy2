@@ -6,7 +6,7 @@ from rpy2.robjects import (vectors,
                            RS4)
 from rpy2 import rinterface
 from rpy2.robjects.packages import SourceCode
-from rpy2.robjecrs.packages import wherefrom
+from rpy2.robjects.packages import wherefrom
 from IPython import get_ipython
 
 
