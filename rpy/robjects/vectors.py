@@ -767,7 +767,7 @@ class POSIXlt(POSIXt, ListVector):
     }
     # R starts the week on Sunday while Python starts it on Monday
     _wday_r_to_py = (6, 0, 1, 2, 3, 4, 5)
-        
+
     def __init__(self, seq):
         """
         """
