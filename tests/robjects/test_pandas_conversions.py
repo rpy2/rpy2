@@ -97,6 +97,12 @@ class TestPandasConversions(object):
             rp_c = robjects.conversion.py2rpy(series)
             assert isinstance(rp_c, rinterface.StrSexpVector)
 
+    def test_object2String_with_None(self):
+        series = pandas.Series([None, "a","b","c","a"], dtype="O")
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_c = robjects.conversion.py2rpy(series)
+            assert isinstance(rp_c, rinterface.StrSexpVector)
+
     def test_factor2Category(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a'))
         with localconverter(default_converter + rpyp.converter) as cv:

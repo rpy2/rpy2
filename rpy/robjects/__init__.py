@@ -275,7 +275,9 @@ default_converter.py2rpy.register(int,
 @default_converter.py2rpy.register(list)
 def _py2rpy_list(obj):
     return vectors.ListVector(
-        rinterface.ListSexpVector([conversion.py2rpy(x) for x in obj])
+        rinterface.ListSexpVector(
+            [conversion.py2rpy(x) for x in obj]
+        )
     )
 
 

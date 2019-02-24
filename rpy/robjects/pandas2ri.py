@@ -112,13 +112,18 @@ def py2rpy_pandasseries(obj):
              IntVector([x.minute for x in obj]),
              FloatSexpVector([x.second + x.microsecond * 1e-6 for x in obj])]
         res = ISOdatetime(*d, tz=StrSexpVector([tzname]))
-        # FIXME: can the POSIXct be created from the POSIXct constructor ?
+        # TODO: can the POSIXct be created from the POSIXct constructor ?
         # (is '<M8[ns]' mapping to Python datetime.datetime ?)
         res = POSIXct(res)
+    elif (obj.dtype.name == 'object' and
+          all(x is None or isinstance(x, str) for x in obj.values)):
+        # TODO: Could this be merged with obj.type.name == 'O' case above ?
+        res = StrVector(obj)
     else:
         # converted as a numpy array
         func = numpy2ri.converter.py2rpy.registry[numpy.ndarray]
         # current conversion as performed by numpy
+
         res = func(obj)
         if len(obj.shape) == 1:
             if (obj.dtype != dt_O_type):
