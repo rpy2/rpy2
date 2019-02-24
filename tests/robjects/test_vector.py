@@ -199,16 +199,33 @@ def test_contains():
     assert 'foo' not in v
 
 
-def test_getitem():
-    letters = robjects.baseenv["letters"]
-    assert letters[0] == 'a'
-    assert letters[25] == 'z'
+@pytest.mark.parametrize(
+    'cls,values',
+    [(robjects.StrVector, ['abc', 'def']),
+     (robjects.IntVector, [123, 456]),
+     (robjects.FloatVector, [123.0, 456.0]),
+     (robjects.BoolVector, [True, False])])
+def test_getitem_int(cls, values):
+    vec = cls(values)
+    assert vec[0] == values[0]
+    assert vec[1] == values[1]
 
 
 def test_getitem_outofbounds():
     letters = robjects.baseenv["letters"]
     with pytest.raises(IndexError):
         letters[26]
+
+@pytest.mark.parametrize(
+    'cls,values',
+    [(robjects.StrVector, ['abc', 'def']),
+     (robjects.IntVector, [123, 456]),
+     (robjects.FloatVector, [123.0, 456.0]),
+     (robjects.BoolVector, [True, False])])
+def test_getitem_invalidtype(cls, values):
+    vec = cls(values)
+    with pytest.raises(TypeError):
+        vec['foo']
 
 
 def test_setitem():
@@ -222,6 +239,18 @@ def test_setitem_outofbounds():
     vec = robjects.r.seq(1, 10)
     with pytest.raises(IndexError):
         vec[20] = 20
+
+
+@pytest.mark.parametrize(
+    'cls,values',
+    [(robjects.StrVector, ['abc', 'def']),
+     (robjects.IntVector, [123, 456]),
+     (robjects.FloatVector, [123.0, 456.0]),
+     (robjects.BoolVector, [True, False])])
+def test_setitem_invalidtype(cls, values):
+    vec = cls(values)
+    with pytest.raises(TypeError):
+        vec['foo'] = values[0]
 
 
 def get_item_list():

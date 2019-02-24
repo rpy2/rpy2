@@ -210,11 +210,7 @@ stat_bin = StatBin.new
 
 class StatBin2D(Stat):
     """ 2D binning of data into squares/rectangles. """
-    try:
-        _constructor = ggplot2_env['stat_bin_2d']
-    except Exception:
-        # fallback for versions of ggplot2 < 2.0
-        _constructor = ggplot2_env['stat_bin2d']
+    _constructor = ggplot2_env['stat_bin_2d']
 
 
 stat_bin2d = StatBin2D.new
@@ -223,11 +219,7 @@ stat_bin_2d = StatBin2D.new
 
 class StatBinhex(Stat):
     """ 2D binning of data into hexagons. """
-    try:
-        _constructor = ggplot2_env['stat_bin_hex']
-    except Exception:
-        # fallback for versions of ggplot2 < 2.0
-        _constructor = ggplot2_env['stat_binhex']
+    _constructor = ggplot2_env['stat_bin_hex']
 
 
 stat_binhex = StatBinhex.new
@@ -260,10 +252,7 @@ stat_density = StatDensity.new
 
 class StatDensity2D(Stat):
     """ 2D density estimate """
-    try:
-        _constructor = ggplot2_env['stat_density_2d']
-    except Exception:
-        _constructor = ggplot2_env['stat_density2d']
+    _constructor = ggplot2_env['stat_density_2d']
 
 
 stat_density2d = StatDensity2D.new
@@ -337,10 +326,7 @@ stat_summary = StatSummary.new
 
 class StatSummary2D(Stat):
     """ Summarize values for y at every unique value for x"""
-    try:
-        _constructor = ggplot2_env['stat_summary_2d']
-    except Exception:
-        _constructor = ggplot2_env['stat_summary2d']
+    _constructor = ggplot2_env['stat_summary_2d']
 
 
 stat_summary2d = StatSummary2D.new
@@ -514,10 +500,7 @@ geom_density = GeomDensity.new
 
 
 class GeomDensity2D(Geom):
-    try:
-        _constructor = ggplot2_env['geom_density_2d']
-    except Exception:
-        _constructor = ggplot2_env['geom_density2d']
+    _constructor = ggplot2_env['geom_density_2d']
 
 
 geom_density2d = GeomDensity2D.new

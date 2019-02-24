@@ -106,7 +106,7 @@ class NULLType(sexp.Sexp, metaclass=na_values.Singleton):
         return self._sexpobject
 
     @property
-    def rid(self):
+    def rid(self) -> int:
         return self._sexpobject.rid
 
 
@@ -176,7 +176,7 @@ class SexpEnvironment(sexp.Sexp):
     @_evaluated_promise
     def find(self,
              key: str,
-             wantfun: int = False) -> sexp.Sexp:
+             wantfun: bool = False) -> sexp.Sexp:
         """Find an item, starting with this R environment.
 
         Raises a `KeyError` if the key cannot be found.
@@ -327,7 +327,7 @@ class SexpEnvironment(sexp.Sexp):
 class SexpPromise(Sexp):
 
     @_cdata_res_to_rinterface
-    def eval(self, env=None) -> sexp.Sexp:
+    def eval(self, env: typing.Optional[SexpEnvironment] = None) -> sexp.Sexp:
         """"Evalute the R "promise".
 
         :param:`env` The environment in which to evaluate the
@@ -378,18 +378,19 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
     _R_GET_PTR = staticmethod(openrlib.RAW)
 
     @staticmethod
-    def _CAST_IN(x):
+    def _CAST_IN(x: typing.Any) -> int:
         if isinstance(x, int):
             if x > 255:
                 raise ValueError('byte must be in range(0, 256)')
+            res = x
         elif isinstance(x, (bytes, bytearray)):
             if len(x) != 1:
                 raise ValueError('byte must be a single character')
-            x = ord(x)
+            res = ord(x)
         else:
             raise ValueError('byte must be an integer [0, 255] or a '
                              'single byte character')
-        return x
+        return res
 
     @staticmethod
     def _R_VECTOR_ELT(x, i: int) -> None:
