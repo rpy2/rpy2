@@ -26,3 +26,23 @@ class TestGGplot(object):
         gp += ggplot2.geom_point()
         assert isinstance(gp, ggplot2.GGPlot)
 
+    def test_aes(self):
+        gp = ggplot2.ggplot(mtcars)
+        gp += ggplot2.aes(x='wt', y='mpg')
+        gp += ggplot2.geom_point()
+        assert isinstance(gp, ggplot2.GGPlot)
+
+    @pytest.mark.parametrize(
+        'theme',
+        [ggplot2.theme_grey,
+         ggplot2.theme_classic,
+         ggplot2.theme_dark,
+         ggplot2.theme_light,
+         ggplot2.theme_bw,
+         ggplot2.theme_linedraw,
+         ggplot2.theme_void,
+         ggplot2.theme_minimal])
+    def test_theme(self, theme):
+        gp = (ggplot2.ggplot(mtcars) +
+              theme())
+        assert isinstance(gp, ggplot2.GGPlot)
