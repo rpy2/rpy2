@@ -34,6 +34,12 @@ frames).
 
     from rpy2.robjects.lib.dplyr import DataFrame
 
+
+.. parsed-literal::
+
+    /home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.0.0-py3.6.egg/rpy2/robjects/lib/dplyr.py:24: UserWarning: This was designed againt dplyr version 0.8.0.1 but you have 0.7.7
+
+
 With this we have the choice of chaining (D3-style)
 
 .. code:: 
@@ -52,7 +58,8 @@ With this we have the choice of chaining (D3-style)
 .. raw:: html
 
     
-    <emph>DataFrame</emph> with 2 rows and 2 columns:
+    <emph>DataFrame</emph> with 2 rows and
+      2 columns:
     <table class="docutils">
       <thead>
         <tr class="rpy2_names">
@@ -139,7 +146,8 @@ Python back from R. To achieve this we simply use the decorator
 .. raw:: html
 
     
-    <emph>DataFrame</emph> with 2 rows and 3 columns:
+    <emph>DataFrame</emph> with 2 rows and
+      3 columns:
     <table class="docutils">
       <thead>
         <tr class="rpy2_names">
@@ -200,7 +208,8 @@ function in R's global environment.
 .. raw:: html
 
     
-    <emph>DataFrame</emph> with 2 rows and 3 columns:
+    <emph>DataFrame</emph> with 2 rows and
+      3 columns:
     <table class="docutils">
       <thead>
         <tr class="rpy2_names">
@@ -260,7 +269,7 @@ implementation of ``dplyr``, it *just works*.
 .. parsed-literal::
 
     [90m# Source:   lazy query [?? x 2][39m
-    [90m# Database: sqlite 3.22.0 [/tmp/tmpo4jwnsuk][39m
+    [90m# Database: sqlite 3.22.0 [/tmp/tmpojj60037][39m
        gear mean_ptw
       [3m[90m<dbl>[39m[23m    [3m[90m<dbl>[39m[23m
     [90m1[39m     4    [4m1[24m237.
@@ -332,7 +341,8 @@ it.
 .. raw:: html
 
     
-    <emph>DataFrame</emph> with 1 rows and 1 columns:
+    <emph>DataFrame</emph> with 1 rows and
+      1 columns:
     <table class="docutils">
       <thead>
         <tr class="rpy2_names">
