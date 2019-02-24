@@ -32,6 +32,8 @@ class TestGGplot(object):
         gp += ggplot2.geom_point()
         assert isinstance(gp, ggplot2.GGPlot)
 
+    @pytest.mark.skipif(not has_ggplot,
+                        reason='R package ggplot is not installed.')
     @pytest.mark.parametrize(
         'theme',
         [ggplot2.theme_grey,
