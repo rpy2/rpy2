@@ -151,7 +151,7 @@ def rpy2py_list(obj):
 @rpy2py.register(Sexp)
 def rpy2py_sexp(obj):
     if (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
-        res = numpy.asarray(obj)
+        res = numpy.array(obj)
     else:
         res = ro.default_converter.rpy2py(obj)
     return res
