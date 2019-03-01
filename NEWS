@@ -4,8 +4,11 @@ Release 3.0.1
 Bugs fixed
 ----------
 
-- script to install R packages for docker image never made it to version
-  control
+- Script to install R packages for docker image never made it to version
+  control.
+
+- Conversion of R arrays/matrices into numpy object trigged a segfault
+  during garbage collection (issue #524).
 
 
 Release 3.0.0
