@@ -46,7 +46,7 @@ before_install:
     fi
   - |
     sudo Rscript ./install_r_packages.r dplyr ggplot2 tidyr
-    pip install flake8 pytest pytest-cov
+    pip install flake8 pytest codecov pytest-cov
     pip install ipython pandas numpy tzlocal
 
 
