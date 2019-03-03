@@ -1,10 +1,14 @@
-This is the source tree or distribution for the rpy2 package.
+.. image:: doc/_static/rpy2_logo_64x64.png
 
 .. image:: https://img.shields.io/pypi/v/rpy2.svg?style=flat-square
     :target: https://pypi.python.org/pypi/rpy2
 
 .. image:: https://travis-ci.com/rpy2/rpy2.svg?branch=master
     :target: https://travis-ci.com/rpy2/rpy2
+
+.. image:: https://codecov.io/gh/rpy2/rpy2/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/rpy2/rpy2
+
 
 
 Installation
