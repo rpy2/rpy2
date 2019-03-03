@@ -86,4 +86,4 @@ script:
     tests
 
 after_success:
-    codecov
+  - codecov
