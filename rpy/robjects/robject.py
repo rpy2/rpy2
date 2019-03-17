@@ -92,36 +92,13 @@ class RObjectMixin(object):
         return rclasses
 
     def __str__(self):
-        # TODO: Clean the win32 madness.
-        if sys.platform == 'win32':
-            tmpf = tempfile.NamedTemporaryFile(mode="w+", delete=False)
-            tfname = tmpf.name
-            tmp = self.__file(rpy2.rinterface.StrSexpVector([tfname, ]),
-                              open=rpy2.rinterface.StrSexpVector(['r+', ]))
-            self.__sink(tmp)
+        s = []
+
+        with (rpy2.rinterface_lib
+              .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
+                                       'consolewrite_print', s.append)):
             self.__show(self)
-            self.__sink()
-            s = tmpf.readlines()
-            tmpf.close()
-            self.__close(tmp)
-            try:
-                del tmpf
-                os.unlink(tfname)
-            except WindowsError:
-                if os.path.exists(tfname):
-                    print('Unable to unlink tempfile %s' % tfname)
-            s = str.join(os.linesep, s)
-        else:
-            s = []
-
-            def f(x):
-                s.append(x)
-
-            with (rpy2.rinterface_lib
-                  .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
-                                           'consolewrite_print', f)):
-                self.__show(self)
-            s = str.join('', s)
+        s = str.join('', s)
         return s
 
     def __getstate__(self, ):
