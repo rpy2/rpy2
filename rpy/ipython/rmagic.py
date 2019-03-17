@@ -66,20 +66,21 @@ try:
     import numpy
     try:
         import pandas
-    except ImportError:
+    except ImportError as ie:
         pandas = None
-        warnings.warn(' '.join(("The Python package 'pandas' is strongly"
-                                "recommended when using `rpy2.ipython`.",
-                                "Unfortunately it could not be loaded,",
-                                "but at least we found 'numpy'.")))
-except ImportError:
+        warnings.warn('The Python package `pandas` is strongly '
+                      'recommended when using `rpy2.ipython`. '
+                      'Unfortunately it could not be loaded '
+                      '(error: %s), '
+                      'but at least we found `numpy`.' % str(ie))
+except ImportError as ie:
     # Give up on numerics
     numpy = None
-    warnings.warn(' '.join(("The Python package 'pandas' is strongly",
-                            "recommended when using `rpy2.ipython`.",
-                            "Unfortunately it could not be loaded,",
-                            "as we did not manage to load 'numpy'",
-                            "first.")))
+    warnings.warn('The Python package `pandas` is strongly '
+                  'recommended when using `rpy2.ipython`. '
+                  'Unfortunately it could not be loaded, '
+                  'as we did not manage to load `numpy` '
+                  'in the first place (error: %s).' % str(ie))
 
 # IPython imports.
 
