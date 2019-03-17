@@ -1,3 +1,13 @@
+Relase 3.0.2
+============
+
+Bugs fixed
+----------
+
+- Failing to import `pandas` or `numpy` when loading the "R magic" extension for jupyter/ipython
+  was hiding the cause of the error in the `ImportError` exception.
+
+
 Release 3.0.1
 =============
 
