@@ -11,6 +11,8 @@ Bugs fixed
 - Fallback when an R `POSIXct` vector does not had an attribute `"tzone"`
   (issue #533).
 
+- Callback for console reset was not set during R initialization.
+
 
 Release 3.0.1
 =============
