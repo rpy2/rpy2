@@ -97,6 +97,8 @@ def _initr(interactive: bool = True) -> int:
     rlib.ptr_R_ShowFiles = callbacks._showfiles
 
     rlib.ptr_R_CleanUp = callbacks._cleanup
+    rlib.ptr_R_ProcessEvents = callbacks._processevents
+    rlib.ptr_R_Busy = callbacks._busy
 
     setinitialized()
 

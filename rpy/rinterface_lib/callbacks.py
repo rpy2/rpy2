@@ -21,6 +21,8 @@ CHOOSEFILE_SIGNATURE = 'int(int, char *, int)'
 CLEANUP_SIGNATURE = 'void(SA_TYPE, int, int)'
 SHOWFILE_SIGNATURE = ('int(int, const char **, const char **, '
                       '    const char *, Rboolean, const char *)')
+PROCESSEVENT_SIGNATURE = 'void(void)'
+BUSY_SIGNATURE = 'void(int)'
 
 
 # TODO: rename to "replace_in_module"
@@ -231,3 +233,33 @@ def _cleanup(saveact, status, runlast):
         cleanup(saveact, status, runlast)
     except Exception as e:
         logger.error(_CLEANUP_EXCEPTION_LOG, str(e))
+
+
+def processevents() -> None:
+    pass
+
+
+_PROCESSEVENTS_EXCEPTION_LOG = 'R[processevents]: %s'
+
+
+@ffi.callback(PROCESSEVENT_SIGNATURE)
+def _processevents() -> None:
+    try:
+        processevents()
+    except Exception as e:
+        logger.error(_PROCESSEVENTS_EXCEPTION_LOG, str(e))
+
+
+def busy(x: int) -> None:
+    pass
+
+
+_BUSY_EXCEPTION_LOG = 'R[busy]: %s'
+
+
+@ffi.callback(BUSY_SIGNATURE)
+def _busy(which) -> None:
+    try:
+        busy(which)
+    except Exception as e:
+        logger.error(_BUSY_EXCEPTION_LOG, str(e))
