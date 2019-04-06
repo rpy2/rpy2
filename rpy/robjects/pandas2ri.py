@@ -174,7 +174,12 @@ def get_timezone():
 def rpy2py_floatvector(obj):
     # special case for POSIXct date objects
     if 'POSIXct' in obj.rclass:
-        tzone_name = obj.do_slot('tzone')[0]
+        try:
+            tzone_name = obj.do_slot('tzone')[0]
+        except KeyError:
+            warnings.warn('R object inheriting from "POSIXct" but without '
+                          'attribute "tzone".')
+            tzone_name = ''
         if tzone_name == '':
             # R is implicitly using the local timezone, while Python
             # time libraries will assume UTC.

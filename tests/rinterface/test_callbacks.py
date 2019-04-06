@@ -3,6 +3,7 @@ import io
 import logging
 import os
 import pytest
+import tempfile
 import sys
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import callbacks
@@ -247,6 +248,19 @@ def test_choosefile_error():
             with pytest.raises(rinterface.embedded.RRuntimeError):
                 with pytest.warns(rinterface.RRuntimeWarning):
                     rinterface.baseenv["file.choose"]()
+
+
+def test_showfiles_default(capsys):
+    filenames = (tempfile.NamedTemporaryFile(), )
+    filenames[0].write(b'abc')
+    filenames[0].flush()
+    headers = ('', )
+    wtitle = ''
+    pager = ''
+    captured = capsys.readouterr()
+    callbacks.showfiles(tuple(x.name for x in filenames),
+                        headers, wtitle, pager)
+    captured.out.endswith('---')
 
 
 def test_showfiles():

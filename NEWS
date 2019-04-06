@@ -4,8 +4,12 @@ Relase 3.0.2
 Bugs fixed
 ----------
 
-- Failing to import `pandas` or `numpy` when loading the "R magic" extension for jupyter/ipython
-  was hiding the cause of the error in the `ImportError` exception.
+- Failing to import `pandas` or `numpy` when loading the "R magic" extension
+  for jupyter/ipython was hiding the cause of the error in the `ImportError`
+  exception.
+
+- Fallback when an R `POSIXct` vector does not had an attribute `"tzone"`
+  (issue #533).
 
 
 Release 3.0.1
