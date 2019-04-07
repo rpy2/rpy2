@@ -9,6 +9,7 @@ from . import callbacks
 
 _options = ('rpy2', '--quiet', '--vanilla', '--no-save')
 rpy2_embeddedR_isinitialized = 0x00
+rstart = None
 
 
 # TODO: move initialization-related code to _rinterface ?
@@ -67,6 +68,7 @@ class RRuntimeError(Exception):
 
 # TODO: can init_once() be used here ?
 def _initr(interactive: bool = True) -> int:
+
     rlib = openrlib.rlib
     if isinitialized():
         return
@@ -76,6 +78,7 @@ def _initr(interactive: bool = True) -> int:
     status = rlib.Rf_initialize_R(ffi.cast('int', n_options),
                                   options_c)
 
+    global rstart
     rstart = ffi.new('Rstart')
     rstart.R_Interactive = interactive
 

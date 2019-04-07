@@ -6,6 +6,9 @@ Changes
 
 - Added callbacks for `ptr_R_Busy()` and `ptr_R_ProcessEvents()`.
 
+- `rstart` now an objects in :mod:`rpy2.rinterface_lib.embedded`
+  (set to `None` until R is initialized).
+
 
 Relase 3.0.2
 ============
