@@ -329,3 +329,25 @@ def test_busy():
         which = 1
         callbacks._busy(which)
     assert tuple(busylist) == (1,)
+
+
+def test_callback():
+
+    callbacklist = []
+    def callback():
+        callbacklist.append(1)
+
+    with utils.obj_in_module(callbacks, 'callback', callback):
+        callbacks._callback()
+    assert tuple(callbacklist) == (1,)
+
+
+def test_yesnocancel():
+
+    def yesnocancel(question):
+        return 1
+
+    question = openrlib.ffi.new('char []', b'What ?')
+    with utils.obj_in_module(callbacks, 'yesnocancel', yesnocancel):
+        res = callbacks._yesnocancel(question)
+    assert res == 1

@@ -12,6 +12,8 @@ Changes
 - Unit tests are included in a subpackage :mod:`rpy2.tests` as was the
   case before release 3.0.0 (issue #528).
 
+- Experimental initialization for Microsoft Windows.
+
 
 Relase 3.0.2
 ============

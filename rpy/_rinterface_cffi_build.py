@@ -193,6 +193,19 @@ void R_CleanTempDir(void);
 void Rf_endEmbeddedR(int fatal);
 """)
 
+if os.name == 'nt':
+    ffibuilder.cdef("""
+    char *getDLLVersion(void);
+    char *getRUser(void);
+    char *get_R_HOME(void);
+    void setup_term_ui(void);
+    int UserBreak;
+    Rboolean AllDevicesKilled;
+    void editorcleanall(void);
+    int GA_initapp(int, char **);
+    void GA_appcleanup(void);
+    void readconsolecfg(void);""")
+
 # include/R_ext/Memory.h
 ffibuilder.cdef("""
 void	R_gc(void);
@@ -481,6 +494,21 @@ extern Rboolean R_Interactive ;
 extern int R_SignalHandlers;
 extern uintptr_t R_CStackLimit;
 """)
+
+if os.name == 'nt':
+    ffibuilder.cdef("""
+    typedef int (*blah1) (const char *, char *, int, int);
+    typedef void (*blah2) (const char *, int);
+    typedef void (*blah3) (void);
+    typedef void (*blah4) (const char *);
+    /* Return value here is expected to be 1 for Yes, -1 for No and 
+     * 0 for Cancel: symbolic constants in graphapp.h */
+    typedef int (*blah5) (const char *);
+    typedef void (*blah6) (int);
+    typedef void (*blah7) (const char *, int, int);
+    typedef enum {RGui, RTerm, LinkDLL} UImode;
+
+    """)
 
 
 ffibuilder.cdef("""

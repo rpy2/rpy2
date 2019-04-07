@@ -1,5 +1,6 @@
 import abc
 import atexit
+import os
 import typing
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
@@ -10,6 +11,9 @@ import rpy2.rinterface_lib.na_values as na_values
 import rpy2.rinterface_lib.bufferprotocol as bufferprotocol
 import rpy2.rinterface_lib.sexp as sexp
 
+if os.name == 'nt':
+    import rpy2.rinterface_lib.embedded_mswin as embedded_mswin
+    embedded._initr = embedded_mswin._initr
 
 Sexp = sexp.Sexp
 StrSexpVector = sexp.StrSexpVector

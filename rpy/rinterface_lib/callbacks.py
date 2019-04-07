@@ -23,6 +23,8 @@ SHOWFILE_SIGNATURE = ('int(int, const char **, const char **, '
                       '    const char *, Rboolean, const char *)')
 PROCESSEVENT_SIGNATURE = 'void(void)'
 BUSY_SIGNATURE = 'void(int)'
+CALLBACK_SIGNATURE = 'void(void)'
+YESNOCANCEL_SIGNATURE = 'int(char *)'  # TODO: should be const char *
 
 
 # TODO: rename to "replace_in_module"
@@ -263,3 +265,35 @@ def _busy(which) -> None:
         busy(which)
     except Exception as e:
         logger.error(_BUSY_EXCEPTION_LOG, str(e))
+
+
+def callback() -> None:
+    pass
+
+
+_CALLBACK_EXCEPTION_LOG = 'R[callback]: %s'
+
+
+@ffi.callback(CALLBACK_SIGNATURE)
+def _callback() -> None:
+    try:
+        callback()
+    except Exception as e:
+        logger.error(_CALLBACK_EXCEPTION_LOG, str(e))
+
+
+def yesnocancel(question: str) -> int:
+    return int(input(question))
+
+
+_YESNOCANCEL_EXCEPTION_LOG = 'R[yesnocancel]: %s'
+
+
+@ffi.callback(YESNOCANCEL_SIGNATURE)
+def _yesnocancel(question):
+    try:
+        q = conversion._cchar_to_str(question)
+        res = yesnocancel(q)
+    except Exception as e:
+        logger.error(_YESNOCANCEL_EXCEPTION_LOG, str(e))
+    return res
