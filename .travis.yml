@@ -83,7 +83,7 @@ script:
     --cov=rpy2.rlike \
     --cov=rpy2.ipython \
     --cov=rpy2.robjects \
-    tests
+    rpy/tests
 
 after_success:
   - codecov

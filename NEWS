@@ -9,6 +9,9 @@ Changes
 - `rstart` now an objects in :mod:`rpy2.rinterface_lib.embedded`
   (set to `None` until R is initialized).
 
+- Unit tests are included in a subpackage :mod:`rpy2.tests` as was the
+  case before release 3.0.0 (issue #528).
+
 
 Relase 3.0.2
 ============
