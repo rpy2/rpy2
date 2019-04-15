@@ -176,7 +176,7 @@ def rpy2py_floatvector(obj):
     if 'POSIXct' in obj.rclass:
         try:
             tzone_name = obj.do_slot('tzone')[0]
-        except KeyError:
+        except LookupError:
             warnings.warn('R object inheriting from "POSIXct" but without '
                           'attribute "tzone".')
             tzone_name = ''
