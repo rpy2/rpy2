@@ -473,10 +473,6 @@ used the grammar of graphics) are still specified the usual way.
    :scale: 50
 
 
-
-
-
-
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- qplot4-begin
    :end-before: #-- qplot4-end
@@ -511,6 +507,22 @@ used the grammar of graphics) are still specified the usual way.
    
 .. image:: _static/graphics_ggplot2smoothblue.png
    :scale: 50
+
+
+Extensions and new features
+---------------------------
+
+The R package `ggplot2` is under active development, and new
+methods (geometry, summary statistics, theme customizations)
+are added regularly. In addition to this there exists a
+dynamic ecosystem of R packages proposing extensions 
+
+Class diagram
+-------------
+
+.. inheritance-diagram:: rpy2.robjects.lib.ggplot2
+   :parts: 1
+
 
 
 Package *grid*
