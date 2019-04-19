@@ -30,6 +30,8 @@ Bugs fixed
 
 - Callback for console reset was not set during R initialization.
 
+- Fixed rternalized function returning rpy2 objects (issue #538).
+
 
 Release 3.0.1
 =============
