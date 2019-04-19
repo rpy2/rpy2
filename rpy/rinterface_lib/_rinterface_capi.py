@@ -437,7 +437,10 @@ def _evaluate_in_r(rargs):
         # To that end, we create a SEXP object to be returned that is
         # not managed by rpy2, leaving the object's lifespan under R's
         # sole control.
-        return conversion._python_to_cdata(res)
+        if hasattr(res, '_sexpobject') and isinstance(res._sexpobject, SexpCapsule):
+            return res._sexpobject._cdata
+        else:
+            return conversion._python_to_cdata(res)
     except Exception as e:
         logger.error('%s: %s' % (type(e), e))
         return rlib.R_NilValue
