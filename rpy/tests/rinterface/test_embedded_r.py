@@ -121,6 +121,14 @@ def test_rternalize():
     assert res[0] == 3
 
 
+def test_rternalize_return_sexp():
+    def f(x, y):
+        return rinterface.IntSexpVector([x[0], y[0]])
+    rfun = rinterface.rternalize(f)
+    res = rfun(1, 2)
+    assert tuple(res) == (1, 2)
+
+
 def test_rternalize_namedargs():
     def f(x, y, z=None):
         if z is None:
