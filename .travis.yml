@@ -84,6 +84,16 @@ script:
     --cov=rpy2.ipython \
     --cov=rpy2.robjects \
     rpy/tests
+  - |
+    pytest \
+    --cov-append \
+    --cov=rpy2.rinterface_lib.embedded \
+    rpy/tests/rinterface/test_noinitialization.py
+  - |
+    pytest \
+    --cov-append \
+    --cov=rpy2.rinterface_lib.embedded \
+    rpy/tests/rinterface/test_endr.py
 
 after_success:
   - codecov
