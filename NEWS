@@ -32,6 +32,9 @@ Bugs fixed
 
 - Fixed rternalized function returning rpy2 objects (issue #538).
 
+- `--vanilla` is no longer among the default options used to initialize R
+  (issue #534).
+
 
 Release 3.0.1
 =============
