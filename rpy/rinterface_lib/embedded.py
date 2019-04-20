@@ -7,7 +7,7 @@ from _rinterface_cffi import ffi
 from . import openrlib
 from . import callbacks
 
-_options = ('rpy2', '--quiet', '--vanilla', '--no-save')
+_options = ('rpy2', '--quiet', '--no-save')
 rpy2_embeddedR_isinitialized = 0x00
 
 
