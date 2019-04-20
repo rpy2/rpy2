@@ -515,12 +515,48 @@ Extensions and new features
 The R package `ggplot2` is under active development, and new
 methods (geometry, summary statistics, theme customizations)
 are added regularly. In addition to this there exists a
-dynamic ecosystem of R packages proposing extensions 
+dynamic ecosystem of R packages proposing extensions, and
+a user may need R code for ggplot2 not included in our
+module. The following steps should make writing the Python
+wrapper code a very minimal effort in many cases:
+
+1. Identify the matching type of extension in our class diagram for
+   :mod:`rpy2.robjects.lib.ggplot2` (for example, is this an new
+   "geometry", statistics, coordinates, theme ?). For example the ggplot2
+   function `stat_quantile` is a statistics and the best matching class is
+   :class:`rpy2.robjects.lib.ggplot2.Stat`. The more general ancestor
+   class :class:`rpy2.robjects.lib.ggplot2.GBaseObject` could also be used.
+
+2. Implement a child class that assign to the class attribute
+   :attr:`_constructor` the R constructor function. For example
+   `stat_quantile`. The Python callable mapping the R constructor
+   is then the class method :meth:`new`. The complete implementation
+   for `stat_quantile` is then:
+   
+   .. code-block:: python
+
+      from rpy2.robjects.packages import importr
+      ggplot2_rpack = importr('ggplot2')
+      class StatQuantile(Stat):
+          """ Continuous quantiles """
+          _constructor = ggplot2_rpack.stat_quantile
+
+      stat_quantile = StatQuantile.new
+
+
 
 Class diagram
 -------------
 
-.. inheritance-diagram:: rpy2.robjects.lib.ggplot2
+.. inheritance-diagram:: rpy2.robjects.lib.ggplot2.GBaseObject
+			 rpy2.robjects.lib.ggplot2.Coord
+			 rpy2.robjects.lib.ggplot2.Element
+			 rpy2.robjects.lib.ggplot2.Facet
+			 rpy2.robjects.lib.ggplot2.Geom
+			 rpy2.robjects.lib.ggplot2.GGPlot
+			 rpy2.robjects.lib.ggplot2.Scale
+			 rpy2.robjects.lib.ggplot2.Stat
+			 rpy2.robjects.lib.ggplot2.Theme
    :parts: 1
 
 
