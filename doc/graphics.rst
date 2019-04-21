@@ -543,6 +543,10 @@ wrapper code a very minimal effort in many cases:
 
       stat_quantile = StatQuantile.new
 
+   The callable :func:`stat_quantile` can now be used like any
+   other ggplot2 statistics in :mod:`rpy2.robjects.lib.ggplot2`
+   (and the object it returns can be added to compose a final
+   ggplot figure).
 
 
 Class diagram
