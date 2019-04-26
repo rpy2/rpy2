@@ -1,7 +1,7 @@
 """Base definitions for R objects."""
 
 import abc
-import collections
+import collections.abc
 import enum
 import typing
 from . import embedded
@@ -280,11 +280,11 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
 
     def __init__(self,
                  obj: typing.Union[_rinterface.SexpCapsule,
-                                   collections.Sized]):
+                                   collections.abc.Sized]):
         if isinstance(obj, Sexp) or isinstance(obj,
                                                _rinterface.SexpCapsule):
             super().__init__(obj)
-        elif isinstance(obj, collections.Sized):
+        elif isinstance(obj, collections.abc.Sized):
             super().__init__(type(self).from_object(obj).__sexp__)
         else:
             raise TypeError('The constructor must be called '
