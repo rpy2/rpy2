@@ -1,5 +1,17 @@
-Relase 3.0.2
-============
+Release 3.0.3
+=============
+
+Bugs fixed
+----------
+
+- Fixed the evaluation of R code using the "R magic" was delaying all
+  output to the end of the execution of that code, independently of
+  whether the attribute `cache_display_data` was `True` or `False`
+  (issue #543).
+
+
+Release 3.0.2
+=============
 
 Bugs fixed
 ----------
