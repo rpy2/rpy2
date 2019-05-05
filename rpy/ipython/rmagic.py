@@ -42,6 +42,7 @@ To enable the magics below, execute `%load_ext rpy2.ipython`.
 #  the file COPYING, distributed as part of this software.
 # -----------------------------------------------------------------------------
 
+import contextlib
 import sys
 import tempfile
 from glob import glob
@@ -245,10 +246,14 @@ class RMagics(Magics):
         to be evaluated in R (we can't use rpy2 function proxies here, as
         withVisible is a LISPy R function).
         """
-        with (rpy2.rinterface_lib
-              .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
-                                       'consolewrite_print',
-                                       self.write_console_regular)):
+        with contextlib.ExitStack() as stack:
+            if self.cache_display_data:
+                gs = stack.enter(
+                    rpy2.rinterface_lib
+                    .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
+                                             'consolewrite_print',
+                                             self.write_console_regular)
+                )
             try:
                 # Need the newline in case the last line in code is a comment.
                 value, visible = ro.r("withVisible({%s\n})" % code)
@@ -722,12 +727,16 @@ class RMagics(Magics):
                 text_result, result, visible = self.eval(code)
                 text_output += text_result
                 if visible:
-                    with (rpy2.rinterface_lib
-                          .callbacks
-                          .obj_in_module(rpy2.rinterface_lib
-                                         .callbacks,
-                                         'consolewrite_print',
-                                         self.write_console_regular)):
+                    #if self.cache_display_data:
+                    with contextlib.ExitStack() as stack:
+                        if self.cache_display_data:
+                            gs = stack.enter_context(
+                                rpy2.rinterface_lib
+                                .callbacks
+                                .obj_in_module(rpy2.rinterface_lib
+                                               .callbacks,
+                                               'consolewrite_print',
+                                               self.write_console_regular))
                         ro.r.show(result)
                         text_output += self.flush()
 
