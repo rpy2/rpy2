@@ -730,7 +730,7 @@ class RMagics(Magics):
                     #if self.cache_display_data:
                     with contextlib.ExitStack() as stack:
                         if self.cache_display_data:
-                            gs = stack.enter_context(
+                            stack.enter_context(
                                 rpy2.rinterface_lib
                                 .callbacks
                                 .obj_in_module(rpy2.rinterface_lib
