@@ -115,7 +115,7 @@ def py2rpy_pandasseries(obj):
         # TODO: can the POSIXct be created from the POSIXct constructor ?
         # (is '<M8[ns]' mapping to Python datetime.datetime ?)
         res = POSIXct(res)
-    elif (obj.dtype.name == 'object' and
+    elif (obj.dtype == dt_O_type and
           all(x is None or isinstance(x, str) for x in obj.values)):
         # TODO: Could this be merged with obj.type.name == 'O' case above ?
         res = StrVector(obj)
