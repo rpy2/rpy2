@@ -248,7 +248,7 @@ class RMagics(Magics):
         """
         with contextlib.ExitStack() as stack:
             if self.cache_display_data:
-                gs = stack.enter(
+                stack.enter(
                     rpy2.rinterface_lib
                     .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
                                              'consolewrite_print',
@@ -727,7 +727,6 @@ class RMagics(Magics):
                 text_result, result, visible = self.eval(code)
                 text_output += text_result
                 if visible:
-                    #if self.cache_display_data:
                     with contextlib.ExitStack() as stack:
                         if self.cache_display_data:
                             stack.enter_context(
