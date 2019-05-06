@@ -21,7 +21,8 @@ import tzlocal
 import warnings
 
 from collections import OrderedDict
-from rpy2.robjects.vectors import (DataFrame,
+from rpy2.robjects.vectors import (BoolVector,
+                                   DataFrame,
                                    FactorVector,
                                    FloatSexpVector,
                                    StrVector,
@@ -115,10 +116,25 @@ def py2rpy_pandasseries(obj):
         # TODO: can the POSIXct be created from the POSIXct constructor ?
         # (is '<M8[ns]' mapping to Python datetime.datetime ?)
         res = POSIXct(res)
-    elif (obj.dtype == dt_O_type and
-          all(x is None or isinstance(x, str) for x in obj.values)):
+    elif (obj.dtype == dt_O_type):
+        homogeneous_type = None
+        for x in obj.values:
+            if x is None:
+                continue
+            if homogeneous_type is None:
+                homogeneous_type = type(x)
+                continue
+            if type(x) is not homogeneous_type:
+                raise ValueError('Series can only be of one type, or None.')
         # TODO: Could this be merged with obj.type.name == 'O' case above ?
-        res = StrVector(obj)
+        res = {
+            bool: BoolVector,
+            None: BoolVector,
+            str: StrVector,
+            bytes: numpy2ri.converter.py2rpy.registry[
+                numpy.ndarray
+            ]
+        }[homogeneous_type](obj)
     else:
         # converted as a numpy array
         func = numpy2ri.converter.py2rpy.registry[numpy.ndarray]

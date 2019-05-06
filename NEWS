@@ -10,7 +10,7 @@ Bugs fixed
   (issue #543).
 
 - Fixed conversion of :class:`pandas.Series` of `dtype` "object" when
-  all items are either of type `str` or `NoneType` (related to issue #540).
+  all items are either all of the same type or are :obj:`None` (issue #540).
 
 
 Release 3.0.2

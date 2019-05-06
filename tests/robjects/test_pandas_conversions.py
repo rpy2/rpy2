@@ -81,6 +81,54 @@ class TestPandasConversions(object):
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.FloatSexpVector)
 
+
+    def test_series_obj_str(self):
+        Series = pandas.core.series.Series
+        s = Series(['x', 'y', 'z'], index=['a', 'b', 'c'])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_s = robjects.conversion.py2rpy(s)
+        assert isinstance(rp_s, rinterface.StrSexpVector)
+
+        s = Series(['x', 'y', None], index=['a', 'b', 'c'])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_s = robjects.conversion.py2rpy(s)
+        assert isinstance(rp_s, rinterface.StrSexpVector)
+
+
+    def test_series_obj_mixed(self):
+        Series = pandas.core.series.Series
+        s = Series(['x', 1, False], index=['a', 'b', 'c'])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            with pytest.raises(ValueError):
+                rp_s = robjects.conversion.py2rpy(s)
+
+        s = Series(['x', 1, None], index=['a', 'b', 'c'])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            with pytest.raises(ValueError):
+                rp_s = robjects.conversion.py2rpy(s)
+
+
+    def test_series_obj_bool(self):
+        Series = pandas.core.series.Series
+        s = Series([True, False, True], index=['a', 'b', 'c'])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_s = robjects.conversion.py2rpy(s)
+        assert isinstance(rp_s, rinterface.BoolSexpVector)
+
+        s = Series([True, False, None], index=['a', 'b', 'c'])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_s = robjects.conversion.py2rpy(s)
+        assert isinstance(rp_s, rinterface.BoolSexpVector)
+
+
+    def test_series_obj_allnone(self):
+        Series = pandas.core.series.Series
+        s = Series([None, None, None], index=['a', 'b', 'c'])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_s = robjects.conversion.py2rpy(s)
+        assert isinstance(rp_s, rinterface.BoolSexpVector)
+
+
     def test_series_issue264(self):
         Series = pandas.core.series.Series
         s = Series(('a', 'b', 'c', 'd', 'e'),
