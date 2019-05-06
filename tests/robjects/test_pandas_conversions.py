@@ -94,6 +94,11 @@ class TestPandasConversions(object):
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.StrSexpVector)
 
+        s = Series(['x', 'y', numpy.nan], index=['a', 'b', 'c'])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_s = robjects.conversion.py2rpy(s)
+        assert isinstance(rp_s, rinterface.StrSexpVector)
+
 
     def test_series_obj_mixed(self):
         Series = pandas.core.series.Series
@@ -103,6 +108,11 @@ class TestPandasConversions(object):
                 rp_s = robjects.conversion.py2rpy(s)
 
         s = Series(['x', 1, None], index=['a', 'b', 'c'])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            with pytest.raises(ValueError):
+                rp_s = robjects.conversion.py2rpy(s)
+
+        s = Series(['x', 1, numpy.nan], index=['a', 'b', 'c'])
         with localconverter(default_converter + rpyp.converter) as cv:
             with pytest.raises(ValueError):
                 rp_s = robjects.conversion.py2rpy(s)
@@ -120,10 +130,25 @@ class TestPandasConversions(object):
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.BoolSexpVector)
 
+        s = Series([True, False, numpy.nan], index=['a', 'b', 'c'])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_s = robjects.conversion.py2rpy(s)
+        assert isinstance(rp_s, rinterface.BoolSexpVector)
+
 
     def test_series_obj_allnone(self):
         Series = pandas.core.series.Series
-        s = Series([None, None, None], index=['a', 'b', 'c'])
+        s = Series([None] * 3, index=['a', 'b', 'c'])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_s = robjects.conversion.py2rpy(s)
+        assert isinstance(rp_s, rinterface.BoolSexpVector)
+
+        s = Series([numpy.nan] * 3, index=['a', 'b', 'c'])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_s = robjects.conversion.py2rpy(s)
+        assert isinstance(rp_s, rinterface.BoolSexpVector)
+
+        s = Series([numpy.nan, None, None], index=['a', 'b', 'c'])
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.BoolSexpVector)

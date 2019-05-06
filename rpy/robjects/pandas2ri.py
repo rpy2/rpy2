@@ -119,13 +119,15 @@ def py2rpy_pandasseries(obj):
     elif (obj.dtype == dt_O_type):
         homogeneous_type = None
         for x in obj.values:
-            if x is None:
+            if x is numpy.nan or x is None:
                 continue
             if homogeneous_type is None:
                 homogeneous_type = type(x)
                 continue
             if type(x) is not homogeneous_type:
-                raise ValueError('Series can only be of one type, or None.')
+                raise ValueError(
+                    'Series can only be of one type, or None (%s != %s)' %
+                    (type(x), homogeneous_type))
         # TODO: Could this be merged with obj.type.name == 'O' case above ?
         res = {
             bool: BoolVector,
