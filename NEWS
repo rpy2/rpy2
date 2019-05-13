@@ -1,4 +1,3 @@
-<<<<<<< local
 Relase 3.1.0
 ============
 
@@ -14,6 +13,16 @@ Changes
   case before release 3.0.0 (issue #528).
 
 - Experimental initialization for Microsoft Windows.
+
+
+Release 3.0.4
+=============
+
+Bugs fixed
+----------
+
+- Fixed conversion of `pandas` :class:`Series` of dtype `pandas.Int32Dtype`,
+  or `pandas.Int64Dtype` (issue #544).
 
 
 Release 3.0.3
