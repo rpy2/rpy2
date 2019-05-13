@@ -1,3 +1,13 @@
+Release 3.0.4
+=============
+
+Bugs fixed
+----------
+
+- Fixed conversion of `pandas` :class:`Series` of dtype `pandas.Int32Dtype`,
+  or `pandas.Int64Dtype` (issue #544).
+
+
 Release 3.0.3
 =============
 

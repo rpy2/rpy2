@@ -73,7 +73,6 @@ class TestPandasConversions(object):
         # assert tuple(rp_df.rx2('s')) == (b'b', b'c', b'd')
         assert tuple(rp_df.rx2('u')) == ('a', 'b', 'c')
         
-            
     def test_series(self):
         Series = pandas.core.series.Series
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
@@ -81,7 +80,18 @@ class TestPandasConversions(object):
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.FloatSexpVector)
 
-
+    @pytest.mark.parametrize('dtype',
+                             ('i', numpy.int32, numpy.int64,
+                              pandas.Int32Dtype, pandas.Int64Dtype))
+    def test_series_int(self, dtype):
+        Series = pandas.core.series.Series
+        s = Series(range(5),
+                   index=['a', 'b', 'c', 'd', 'e'],
+                   dtype=dtype)
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_s = robjects.conversion.py2rpy(s)
+        assert isinstance(rp_s, rinterface.IntSexpVector)
+    
     def test_series_obj_str(self):
         Series = pandas.core.series.Series
         s = Series(['x', 'y', 'z'], index=['a', 'b', 'c'])
@@ -239,7 +249,8 @@ class TestPandasConversions(object):
             rp_df = robjects.conversion.py2rpy(pd_df)
         s = repr(rp_df)  # used to fail with a TypeError.
         s = s.split('\n')
-        repr_str = '[BoolSex..., IntSexp..., FloatSe..., ByteSex..., StrSexp...]'
+        repr_str = ('[BoolSex..., IntSexp..., FloatSe..., '
+                    'ByteSex..., StrSexp...]')
         assert repr_str == s[1].strip()
 
         # Try again with the conversion still active.

@@ -128,6 +128,7 @@ def py2rpy_pandasseries(obj):
                 raise ValueError('Series can only be of one type, or None.')
         # TODO: Could this be merged with obj.type.name == 'O' case above ?
         res = {
+            int: IntVector,
             bool: BoolVector,
             None: BoolVector,
             str: StrVector,
