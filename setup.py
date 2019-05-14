@@ -127,9 +127,8 @@ Python interface to the R language.
 using R's own C-API through either:
 
 - a high-level interface making R functions an objects just like Python
-functions and providing a seamless conversion to numpy and pandas data 
-strucutures
-
+  functions and providing a seamless conversion to numpy and pandas data 
+  structures
 - a low-level interface closer to the C-API
 
 It is also providing features for when working with jupyter notebooks or
