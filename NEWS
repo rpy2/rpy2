@@ -15,6 +15,15 @@ Changes
 - Experimental initialization for Microsoft Windows.
 
 
+Release 3.0.5
+=============
+
+Bugs fixed
+----------
+
+- No longer allow installation if Python 3 but < 3.5.
+
+
 Release 3.0.4
 =============
 
