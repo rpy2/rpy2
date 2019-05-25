@@ -6,7 +6,7 @@ from collections import namedtuple
 
 from setuptools import setup
 
-if sys.version_info[0] < 3:
+if (sys.version_info[0] < 3) or (sys.version_info[0] == 3 and sys.version_info[1] < 5):
     print('rpy2 is no longer supporting Python < 3.'
           'Consider using an older rpy2 release when using an older Python release.')
     sys.exit(1)
