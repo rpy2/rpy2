@@ -187,6 +187,13 @@ def test_console_read_with_error(caplog):
                           ._READCONSOLE_EXCEPTION_LOG % msg))
 
 
+def test_showmessage_default(capsys):
+    buf = 'foo'
+    callbacks.showmessage(buf)
+    captured = capsys.readouterr()
+    assert captured.out.split(os.linesep)[1] == buf
+
+    
 def test_show_message():
 
     def make_callback():
