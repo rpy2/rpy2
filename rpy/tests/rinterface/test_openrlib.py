@@ -9,6 +9,17 @@ def test_dlopen_invalid():
         openrlib._dlopen_rlib(None)
 
 
+def test_get_dataptr_fallback():
+    with pytest.raises(NotImplementedError):
+        openrlib._get_dataptr_fallback(None)
+
+
+def test_get_symbol_or_fallback():
+    func = openrlib._get_symbol_or_fallback('thereisnosuchsymbol',
+                                              lambda x: 'fallback')
+    assert func(None) == 'fallback'
+
+
 def test_get_integer_elt_fallback():
     rpy2.rinterface.initr()
     v = rpy2.rinterface.IntSexpVector([1, 2, 3])
