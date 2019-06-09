@@ -1,4 +1,5 @@
 from .. import utils
+import builtins
 import io
 import logging
 import os
@@ -231,6 +232,12 @@ def test_show_message_with_error(caplog):
                          logging.ERROR,
                          (callbacks
                           ._SHOWMESSAGE_EXCEPTION_LOG % error_msg))
+
+
+def test_choosefile_default():
+    inputvalue = 'foo'
+    with utils.obj_in_module(builtins, 'input', lambda x: inputvalue):
+        assert callbacks.choosefile('foo') == inputvalue
 
 
 def test_choosefile():
