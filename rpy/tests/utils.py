@@ -2,13 +2,14 @@ from contextlib import contextmanager
 
 
 @contextmanager
-def obj_in_module(module, name, func):
-    backup_func = getattr(module, name)
-    setattr(module, name, func)
+def obj_in_module(module, name, obj):
+    backup_obj = getattr(module, name, None)
+    setattr(module, name, obj)
     try:
         yield
     finally:
-        setattr(module, name, backup_func)
+        if backup_obj:
+            setattr(module, name, backup_obj)
 
 def assert_equal_sequence(x, y):
     assert type(x) is type(y)
