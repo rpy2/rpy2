@@ -294,3 +294,23 @@ class TestPandasConversions(object):
                 if 'd' in robjects.globalenv:
                     del(robjects.globalenv['d'])
         assert ok
+
+    def test_Int64Dtype_dataframe(self):
+        df = pandas.DataFrame([(numpy.NaN,)], dtype=pandas.Int64Dtype())
+        with localconverter(default_converter + rpyp.converter) as _:
+            robjects.conversion.py2rpy(df)
+
+    def test_Int32Dtype_dataframe(self):
+        df = pandas.DataFrame([(numpy.NaN,)], dtype=pandas.Int32Dtype())
+        with localconverter(default_converter + rpyp.converter) as _:
+            robjects.conversion.py2rpy(df)
+
+    def test_Int32Dtype_series(self):
+        ds = pandas.Series((numpy.NaN,), dtype=pandas.Int32Dtype())
+        with localconverter(default_converter + rpyp.converter) as _:
+            robjects.conversion.py2rpy(ds)
+
+    def test_Int64Dtype_series(self):
+        ds = pandas.Series((numpy.NaN,), dtype=pandas.Int64Dtype())
+        with localconverter(default_converter + rpyp.converter) as _:
+            robjects.conversion.py2rpy(ds)
