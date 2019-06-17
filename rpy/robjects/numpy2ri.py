@@ -53,14 +53,15 @@ def numpy_O_py2rpy(o):
 def numpy2rpy(o):
     """ Augmented conversion function, converting numpy arrays into
     rpy2.rinterface-level R structures. """
-    if not o.dtype.isnative:
+    if (hasattr(o.dtype, 'isnative') and not o.dtype.isnative) or \
+       (hasattr(o.dtype, 'numpy_dtype') and not o.dtype.numpy_dtype.isnative):
         raise(ValueError('Cannot pass numpy arrays with non-native '
                          'byte orders at the moment.'))
 
     # Most types map onto R arrays:
     if o.dtype.kind in _kinds:
         # "F" means "use column-major order"
-        vec = _kinds[o.dtype.kind](o.ravel('F'))
+        vec = _kinds[o.dtype.kind](numpy.ravel(o, order='F'))
         dim = ro.vectors.IntVector(o.shape)
         # TODO: no dimnames ?
         # TODO: optimize what is below needed/possible ?

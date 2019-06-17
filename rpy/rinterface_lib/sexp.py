@@ -4,6 +4,7 @@ import abc
 import collections.abc
 import enum
 import typing
+import numpy as np
 from . import embedded
 from . import memorymanagement
 from . import openrlib
@@ -236,7 +237,10 @@ class CharSexp(Sexp):
 # will have API-defined code compile for efficiency).
 def _populate_r_vector(iterable, r_vector, set_elt, cast_value):
     for i, v in enumerate(iterable):
-        set_elt(r_vector, i, cast_value(v))
+        if type(v) is float and np.isnan(v):
+            set_elt(r_vector, i, cast_value(0))  # todo: replace with NA_Integer ?
+        else:
+            set_elt(r_vector, i, cast_value(v))
 
 
 VT = typing.TypeVar('VT', bound='SexpVector')
@@ -360,10 +364,10 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
         try:
             mv = memoryview(obj)
             res = cls.from_memoryview(mv)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as e:
             try:
                 res = cls.from_iterable(obj)
-            except ValueError:
+            except ValueError as e2:
                 msg = ('The class methods from_memoryview() and '
                        'from_iterable() both failed to make a {} '
                        'from an object of class {}'
