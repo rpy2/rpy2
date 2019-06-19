@@ -238,7 +238,7 @@ class CharSexp(Sexp):
 def _populate_r_vector(iterable, r_vector, set_elt, cast_value):
     for i, v in enumerate(iterable):
         if type(v) is float and np.isnan(v):
-            set_elt(r_vector, i, cast_value(0))  # todo: replace with NA_Integer ?
+            set_elt(r_vector, i, openrlib.rlib.R_NaInt)
         else:
             set_elt(r_vector, i, cast_value(v))
 
