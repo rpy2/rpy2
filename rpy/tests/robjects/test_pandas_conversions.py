@@ -1,13 +1,12 @@
-import pytest
 import math
-import pytz
-import sys
-import rpy2.robjects as robjects
-from rpy2.robjects import conversion
-import rpy2.rinterface as rinterface
-
 from collections import OrderedDict
 from datetime import datetime
+
+import pytest
+
+from rpy2 import rinterface
+from rpy2 import robjects
+from rpy2.robjects import conversion
 
 has_pandas = True
 try:
@@ -21,7 +20,7 @@ if has_pandas:
     import rpy2.robjects.pandas2ri as rpyp
 
 from rpy2.robjects import default_converter
-from rpy2.robjects.conversion import Converter, localconverter
+from rpy2.robjects.conversion import localconverter
     
 @pytest.mark.skipif(not has_pandas, reason='Package pandas is not installed.')
 class TestPandasConversions(object):
@@ -91,7 +90,27 @@ class TestPandasConversions(object):
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.IntSexpVector)
-    
+
+    @pytest.mark.parametrize('dtype', (pandas.Int32Dtype(), pandas.Int64Dtype()))
+    def test_dataframe_int_nan(self, dtype):
+        a = pandas.DataFrame([(numpy.NaN,)], dtype=dtype, columns=['z'])
+        with localconverter(default_converter + rpyp.converter) as _:
+            b = robjects.conversion.py2rpy(a)
+        assert type(b[0][0]) == rinterface.na_values.NAIntegerType
+        with localconverter(default_converter + rpyp.converter) as _:
+            c = robjects.conversion.rpy2py(b)
+        assert numpy.isnan(c['z'][0])
+
+    @pytest.mark.parametrize('dtype', (pandas.Int32Dtype(), pandas.Int64Dtype()))
+    def test_series_int_nan(self, dtype):
+        a = pandas.Series((numpy.NaN,), dtype=dtype, index=['z'])
+        with localconverter(default_converter + rpyp.converter) as _:
+            b = robjects.conversion.py2rpy(a)
+        assert type(b[0]) == rinterface.na_values.NAIntegerType
+        with localconverter(default_converter + rpyp.converter) as _:
+            c = robjects.conversion.rpy2py(b)
+        assert numpy.isnan(c[0])
+
     def test_series_obj_str(self):
         Series = pandas.core.series.Series
         s = Series(['x', 'y', 'z'], index=['a', 'b', 'c'])
@@ -294,23 +313,3 @@ class TestPandasConversions(object):
                 if 'd' in robjects.globalenv:
                     del(robjects.globalenv['d'])
         assert ok
-
-    def test_Int64Dtype_dataframe(self):
-        df = pandas.DataFrame([(numpy.NaN,)], dtype=pandas.Int64Dtype())
-        with localconverter(default_converter + rpyp.converter) as _:
-            robjects.conversion.py2rpy(df)
-
-    def test_Int32Dtype_dataframe(self):
-        df = pandas.DataFrame([(numpy.NaN,)], dtype=pandas.Int32Dtype())
-        with localconverter(default_converter + rpyp.converter) as _:
-            robjects.conversion.py2rpy(df)
-
-    def test_Int32Dtype_series(self):
-        ds = pandas.Series((numpy.NaN,), dtype=pandas.Int32Dtype())
-        with localconverter(default_converter + rpyp.converter) as _:
-            robjects.conversion.py2rpy(ds)
-
-    def test_Int64Dtype_series(self):
-        ds = pandas.Series((numpy.NaN,), dtype=pandas.Int64Dtype())
-        with localconverter(default_converter + rpyp.converter) as _:
-            robjects.conversion.py2rpy(ds)
