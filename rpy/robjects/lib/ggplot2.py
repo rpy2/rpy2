@@ -53,7 +53,8 @@ import warnings
 
 NULL = robjects.NULL
 
-ggplot2 = importr('ggplot2', on_conflict="warn")
+rlang = importr('rlang', on_conflict='warn')
+ggplot2 = importr('ggplot2', on_conflict='warn')
 ggplot2 = WeakPackage(ggplot2._env,
                       ggplot2.__rname__,
                       translation=ggplot2._translation,
@@ -73,8 +74,11 @@ StrVector = robjects.StrVector
 
 
 def as_symbol(x):
-    res = rinterface.parse(x)
-    return res
+    return rlang.sym(x)
+
+
+def as_expression(x):
+    return rlang.expr(x)
 
 
 class GGPlot(robjects.vectors.ListVector):
@@ -127,7 +131,7 @@ class Aes(robjects.ListVector):
         """Constructor for the class Aes."""
         new_kwargs = copy.copy(kwargs)
         for k, v in kwargs.items():
-            new_kwargs[k] = as_symbol(v)
+            new_kwargs[k] = as_expression(v)
         res = cls(cls._constructor(**new_kwargs))
         return res
 
