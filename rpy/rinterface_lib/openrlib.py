@@ -26,7 +26,7 @@ def _get_symbol_or_fallback(symbol: str, fallback):
     """Get a cffi object from rlib, or the fallback if missing."""
     try:
         res = getattr(rlib, symbol)
-    except ffi.error:
+    except (ffi.error, AttributeError):
         res = fallback
     return res
 
