@@ -364,10 +364,10 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
         try:
             mv = memoryview(obj)
             res = cls.from_memoryview(mv)
-        except (TypeError, ValueError) as e:
+        except (TypeError, ValueError):
             try:
                 res = cls.from_iterable(obj)
-            except ValueError as e2:
+            except ValueError:
                 msg = ('The class methods from_memoryview() and '
                        'from_iterable() both failed to make a {} '
                        'from an object of class {}'
