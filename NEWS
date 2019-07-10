@@ -29,6 +29,8 @@ Bugs fixed
 
 - No longer allow installation if Python 3 but < 3.5.
 
+- Fixed error `undefined symbol: DATAPTR` if R < 3.5 (issue #565).
+
 
 Release 3.0.4
 =============
