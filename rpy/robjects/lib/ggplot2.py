@@ -77,10 +77,6 @@ def as_symbol(x):
     return rlang.sym(x)
 
 
-def as_expression(x):
-    return rlang.expr(x)
-
-
 class GGPlot(robjects.vectors.ListVector):
     """ A Grammar of Graphics Plot.
 
@@ -131,7 +127,7 @@ class Aes(robjects.ListVector):
         """Constructor for the class Aes."""
         new_kwargs = copy.copy(kwargs)
         for k, v in kwargs.items():
-            new_kwargs[k] = as_expression(v)
+            new_kwargs[k] = rlang.parse_expr(v)
         res = cls(cls._constructor(**new_kwargs))
         return res
 
