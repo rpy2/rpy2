@@ -75,6 +75,17 @@ def test_transpose():
         assert mt[i] == val
 
 
+def test_matmul():
+    # 1 3
+    # 2 4
+    m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2)
+    # 1*1+3*2 1*3+3*4
+    # 2*1+4*2 2*3+4*4
+    m2 = m @ m
+    for i,val in enumerate((7.0, 10.0, 15.0, 22.0,)):
+        assert m2[i] == val
+
+
 def test_crossprod():
     m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2)
     mcp = m.crossprod(m)
