@@ -53,6 +53,7 @@ import warnings
 
 NULL = robjects.NULL
 
+rlang = importr('rlang')
 ggplot2 = importr('ggplot2', on_conflict="warn")
 ggplot2 = WeakPackage(ggplot2._env,
                       ggplot2.__rname__,
@@ -127,7 +128,7 @@ class Aes(robjects.ListVector):
         """Constructor for the class Aes."""
         new_kwargs = copy.copy(kwargs)
         for k, v in kwargs.items():
-            new_kwargs[k] = as_symbol(v)
+            new_kwargs[k] = rlang.parse_quo(v, env=base.sys_frame())
         res = cls(cls._constructor(**new_kwargs))
         return res
 

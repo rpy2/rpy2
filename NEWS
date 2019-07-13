@@ -8,6 +8,9 @@ Bugs fixed
 
 - Fixed error `undefined symbol: DATAPTR` if R < 3.5 (issue #565).
 
+- The R package `ggplot2` had API-breaking changes with its release 3.2.0
+  that caused a unit test to fail (issue #562).
+
 
 Release 3.0.4
 =============
