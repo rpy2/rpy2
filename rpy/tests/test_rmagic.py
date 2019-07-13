@@ -207,8 +207,16 @@ def test_cell_magic_localconverter(ipython_with_magic, clean_globalenv):
 
     foo = default_converter + my_converter
 
+    ipython_with_magic.push({'x':x})
+
+    # Missing converter/object with the specified name.
+    with pytest.raises(NameError):
+        ipython_with_magic.run_cell_magic('R', '-i x -c foo',
+                                          snippet)
+
     ipython_with_magic.push({'x':x,
                              'foo': foo})
+
     snippet = textwrap.dedent("""
     x
     """)
