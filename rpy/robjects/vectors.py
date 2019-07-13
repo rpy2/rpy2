@@ -974,6 +974,7 @@ class Matrix(Array):
     _rownames = baseenv_ri['rownames']
     _colnames = baseenv_ri['colnames']
     _dot = baseenv_ri['%*%']
+    _matmul = baseenv_ri['%*%']
     _crossprod = baseenv_ri['crossprod']
     _tcrossprod = baseenv_ri['tcrossprod']
     _svd = baseenv_ri['svd']
@@ -1048,6 +1049,11 @@ class Matrix(Array):
     def transpose(self):
         """ transpose the matrix """
         res = self._transpose(self)
+        return conversion.rpy2py(res)
+
+    def __matmul__(self, x):
+        """ Matrix multiplication. """
+        res = self._matmul(self, conversion.py2rpy(x))
         return conversion.rpy2py(res)
 
     def crossprod(self, m):

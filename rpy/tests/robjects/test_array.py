@@ -78,7 +78,7 @@ def test_transpose():
 def test_matmul():
     # 1 3
     # 2 4
-    m = robjects.r.matrix(robjects.IntVector(range(4)), nrow=2)
+    m = robjects.r.matrix(robjects.IntVector(range(1, 5)), nrow=2)
     # 1*1+3*2 1*3+3*4
     # 2*1+4*2 2*3+4*4
     m2 = m @ m
