@@ -4,6 +4,12 @@ import struct
 import sys
 import rpy2.rinterface as ri
 
+try:
+    import numpy
+    has_numpy = True
+except ModuleNotFoundError:
+    has_numpy = False
+
 ri.initr()
 
 
@@ -188,6 +194,7 @@ def test_memoryview_2d():
                            [4, 9]]
 
 
+@pytest.mark.skipif(not has_numpy)
 def test_memoryview_3d():
     shape = (5, 2, 3)
     values = tuple(range(30))

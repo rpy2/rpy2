@@ -16,7 +16,7 @@ def test_get_dataptr_fallback():
 
 def test_get_symbol_or_fallback():
     func = openrlib._get_symbol_or_fallback('thereisnosuchsymbol',
-                                              lambda x: 'fallback')
+                                            lambda x: 'fallback')
     assert func(None) == 'fallback'
 
 
