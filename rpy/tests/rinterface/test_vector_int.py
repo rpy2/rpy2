@@ -194,7 +194,8 @@ def test_memoryview_2d():
                            [4, 9]]
 
 
-@pytest.mark.skipif(not has_numpy)
+@pytest.mark.skipif(not has_numpy,
+                    reason='numpy currently required for memoryview to work.')
 def test_memoryview_3d():
     shape = (5, 2, 3)
     values = tuple(range(30))
