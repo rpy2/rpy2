@@ -162,6 +162,8 @@ def test_setitem_outffbound():
         vec.__setitem__(10, 6)
 
 
+@pytest.mark.skipif(not has_numpy,
+                    reason='numpy currently required for memoryview to work.')
 def test_memoryview_2d():
     shape = (5, 2)
     values = tuple(range(10))
