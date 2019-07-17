@@ -46,7 +46,6 @@ and provide a more dynamic mapping.
 import rpy2.robjects as robjects
 import rpy2.robjects.constants
 import rpy2.robjects.conversion as conversion
-import rpy2.rinterface as rinterface
 from rpy2.robjects.packages import importr, WeakPackage
 import copy
 import warnings
@@ -54,6 +53,8 @@ import warnings
 NULL = robjects.NULL
 
 rlang = importr('rlang', on_conflict='warn')
+lazyeval = importr('lazyeval', on_conflict='warn')
+base = importr('base', on_conflict='warn')
 ggplot2 = importr('ggplot2', on_conflict='warn')
 ggplot2 = WeakPackage(ggplot2._env,
                       ggplot2.__rname__,
@@ -64,7 +65,7 @@ ggplot2 = WeakPackage(ggplot2._env,
                       symbol_r2python=ggplot2._symbol_r2python,
                       symbol_check_after=ggplot2._symbol_check_after)
 
-TARGET_VERSION = '3.1.0'
+TARGET_VERSION = '3.2.0'
 if ggplot2.__version__ != TARGET_VERSION:
     warnings.warn('This was designed againt ggplot2 version %s but you '
                   'have %s' % (TARGET_VERSION, ggplot2.__version__))
@@ -75,10 +76,6 @@ StrVector = robjects.StrVector
 
 def as_symbol(x):
     return rlang.sym(x)
-
-
-def as_expression(x):
-    return rlang.expr(x)
 
 
 class GGPlot(robjects.vectors.ListVector):
@@ -131,7 +128,9 @@ class Aes(robjects.ListVector):
         """Constructor for the class Aes."""
         new_kwargs = copy.copy(kwargs)
         for k, v in kwargs.items():
-            new_kwargs[k] = as_expression(v)
+            new_kwargs[k] = rlang.parse_quo(
+                v, env=robjects.baseenv['sys.frame']()
+            )
         res = cls(cls._constructor(**new_kwargs))
         return res
 

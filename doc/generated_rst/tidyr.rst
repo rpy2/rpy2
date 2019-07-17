@@ -15,7 +15,7 @@ tidyr in Python
 
 .. parsed-literal::
 
-    /home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.0.0-py3.6.egg/rpy2/robjects/lib/dplyr.py:24: UserWarning: This was designed againt dplyr version 0.8.0.1 but you have 0.7.7
+    /home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.1.0.dev0-py3.6.egg/rpy2/robjects/lib/tidyr.py:13: UserWarning: This was designed againt tidyr version 0.8.2 but you have 0.8.3
 
 
 (note: ``dplyr`` is implicitly used by ``tidyr``.)

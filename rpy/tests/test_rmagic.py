@@ -207,11 +207,25 @@ def test_cell_magic_localconverter(ipython_with_magic, clean_globalenv):
 
     foo = default_converter + my_converter
 
-    ipython_with_magic.push({'x':x,
-                             'foo': foo})
     snippet = textwrap.dedent("""
     x
     """)
+
+    # Missing converter/object with the specified name.
+    ipython_with_magic.push({'x':x})
+    with pytest.raises(NameError):
+        ipython_with_magic.run_cell_magic('R', '-i x -c foo',
+                                          snippet)
+
+    # Converter/object is not a converter.
+    ipython_with_magic.push({'x':x,
+                             'foo': 123})
+    with pytest.raises(TypeError):
+        ipython_with_magic.run_cell_magic('R', '-i x -c foo',
+                                          snippet)
+
+    ipython_with_magic.push({'x':x,
+                             'foo': foo})
 
     with pytest.raises(NotImplementedError):
         ipython_with_magic.run_cell_magic('R', '-i x', snippet)

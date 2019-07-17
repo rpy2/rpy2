@@ -695,9 +695,9 @@ class RMagics(Magics):
                         "name '%s' is not defined" % args.converter
                     )
             if not isinstance(converter, Converter):
-                raise ValueError("'%s' must be a %s object (but it is a %s)."
-                                 % (args.converter, Converter,
-                                    type(localconverter)))
+                raise TypeError("'%s' must be a %s object (but it is a %s)."
+                                % (args.converter, Converter,
+                                   type(localconverter)))
 
         if args.input:
             for input in ','.join(args.input).split(','):
