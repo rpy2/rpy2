@@ -53,8 +53,7 @@ def numpy_O_py2rpy(o):
 def numpy2rpy(o):
     """ Augmented conversion function, converting numpy arrays into
     rpy2.rinterface-level R structures. """
-    if (hasattr(o.dtype, 'isnative') and not o.dtype.isnative) or \
-       (hasattr(o.dtype, 'numpy_dtype') and not o.dtype.numpy_dtype.isnative):
+    if not o.dtype.isnative:
         raise(ValueError('Cannot pass numpy arrays with non-native '
                          'byte orders at the moment.'))
 
