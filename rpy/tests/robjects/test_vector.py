@@ -107,6 +107,17 @@ def test_r_mult_operator():
         assert li * 2 == mySeqAdd[i]
 
 
+def test_r_matmul_operator():
+    # 1 3
+    # 2 4
+    m = robjects.r.matrix(robjects.IntVector(range(1, 5)), nrow=2)
+    # 1*1+3*2 1*3+3*4
+    # 2*1+4*2 2*3+4*4
+    m2 = m.ro @ m
+    for i,val in enumerate((7.0, 10.0, 15.0, 22.0,)):
+        assert m2[i] == val
+
+
 def test_r_power_operator():
     seq_R = robjects.r["seq"]
     mySeq = seq_R(0, 10)

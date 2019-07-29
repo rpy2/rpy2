@@ -80,8 +80,11 @@ class TestPandasConversions(object):
         assert isinstance(rp_s, rinterface.FloatSexpVector)
 
     @pytest.mark.parametrize('dtype',
-                             ('i', numpy.int32, numpy.int64,
-                              pandas.Int32Dtype, pandas.Int64Dtype))
+                             ('i',
+                              numpy.int32 if has_pandas else None,
+                              numpy.int64 if has_pandas else None,
+                              pandas.Int32Dtype if has_pandas else None,
+                              pandas.Int64Dtype if has_pandas else None))
     def test_series_int(self, dtype):
         Series = pandas.core.series.Series
         s = Series(range(5),
