@@ -48,6 +48,9 @@ dt_O_type = numpy.dtype('O')
 
 default_timezone = None
 
+# pandas types for series of integer (optional missing) values.
+integer_array_types = ('Int8', 'Int16', 'Int32', 'Int64', 'UInt8', 'UInt16', 'UInt32', 'UInt64')
+
 
 @py2rpy.register(PandasDataFrame)
 def py2rpy_pandasdataframe(obj):
@@ -136,6 +139,21 @@ def py2rpy_pandasseries(obj):
                 numpy.ndarray
             ]
         }[homogeneous_type](obj)
+    elif obj.dtype.name in integer_array_types:
+        if not obj.dtype.numpy_dtype.isnative:
+            raise(ValueError('Cannot pass numpy arrays with non-native byte orders at the moment.'))
+        if obj.dtype.kind == 'i':
+            vec = IntVector(numpy.ravel(obj, order='F'))
+            dim = IntVector(obj.shape)
+            res = rinterface.baseenv['array'](vec, dim=dim)
+        elif obj.dtype.kind == 'u':
+            raise (ValueError('Cannot convert numpy array of unsigned values -- R does not have unsigned integers.'))
+        else:
+            raise (ValueError('Unknown pandas dtype "%s".' % str(obj.dtype)))
+        if len(obj.shape) == 1:
+            if obj.dtype != dt_O_type:
+                # force into an R vector
+                res = as_vector(res)
     else:
         # converted as a numpy array
         func = numpy2ri.converter.py2rpy.registry[numpy.ndarray]
