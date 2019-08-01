@@ -45,7 +45,8 @@ class ProtectionTracker(object):
 @contextlib.contextmanager
 def rmemory():
     pt = ProtectionTracker()
-    try:
-        yield pt
-    finally:
-        pt.unprotect_all()
+    with openrlib.rlock:
+        try:
+            yield pt
+        finally:
+            pt.unprotect_all()

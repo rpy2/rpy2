@@ -1,4 +1,5 @@
 import platform
+import threading
 import rpy2.situation
 from _rinterface_cffi import ffi
 
@@ -6,7 +7,7 @@ from _rinterface_cffi import ffi
 # TODO: Separate the functions in the module from the side-effect of
 # finding R_HOME and opening the shared library.
 R_HOME = rpy2.situation.get_r_home()
-
+rlock = threading.RLock()
 
 def _dlopen_rlib(r_home: str):
     """Open R's shared C library."""
