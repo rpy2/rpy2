@@ -83,7 +83,8 @@ def _initr(interactive: bool = True) -> int:
         rstart = ffi.new('Rstart')
         rstart.R_Interactive = interactive
 
-        # TODO: Conditional definition in C code (Aqua, TERM, and TERM not "dumb")
+        # TODO: Conditional definition in C code
+        #   (Aqua, TERM, and TERM not "dumb")
         rlib.R_Outputfile = ffi.NULL
         rlib.R_Consolefile = ffi.NULL
         rlib.ptr_R_WriteConsoleEx = callbacks._consolewrite_ex
