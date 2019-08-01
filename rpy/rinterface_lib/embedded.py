@@ -116,7 +116,7 @@ def _initr(interactive: bool = True) -> int:
 def endr(fatal: int) -> None:
     global rpy2_embeddedR_isinitialized
     rlib = openrlib.rlib
-    with rlib.rlock:
+    with openrlib.rlock:
         if rpy2_embeddedR_isinitialized & RPY_R_Status.ENDED.value:
             return
         rlib.R_dot_Last()
