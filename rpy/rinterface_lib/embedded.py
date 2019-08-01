@@ -70,60 +70,62 @@ class RRuntimeError(Exception):
 def _initr(interactive: bool = True) -> int:
 
     rlib = openrlib.rlib
-    if isinitialized():
-        return
-    os.environ['R_HOME'] = openrlib.R_HOME
-    options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
-    n_options = len(options_c)
-    status = rlib.Rf_initialize_R(ffi.cast('int', n_options),
-                                  options_c)
+    with openrlib.rlock:
+        if isinitialized():
+            return
+        os.environ['R_HOME'] = openrlib.R_HOME
+        options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
+        n_options = len(options_c)
+        status = rlib.Rf_initialize_R(ffi.cast('int', n_options),
+                                      options_c)
 
-    global rstart
-    rstart = ffi.new('Rstart')
-    rstart.R_Interactive = interactive
+        global rstart
+        rstart = ffi.new('Rstart')
+        rstart.R_Interactive = interactive
 
-    # TODO: Conditional definition in C code (Aqua, TERM, and TERM not "dumb")
-    rlib.R_Outputfile = ffi.NULL
-    rlib.R_Consolefile = ffi.NULL
-    rlib.ptr_R_WriteConsoleEx = callbacks._consolewrite_ex
-    rlib.ptr_R_WriteConsole = ffi.NULL
+        # TODO: Conditional definition in C code (Aqua, TERM, and TERM not "dumb")
+        rlib.R_Outputfile = ffi.NULL
+        rlib.R_Consolefile = ffi.NULL
+        rlib.ptr_R_WriteConsoleEx = callbacks._consolewrite_ex
+        rlib.ptr_R_WriteConsole = ffi.NULL
 
-    # TODO: Conditional in C code
-    rlib.R_SignalHandlers = 0
+        # TODO: Conditional in C code
+        rlib.R_SignalHandlers = 0
 
-    rlib.ptr_R_ShowMessage = callbacks._showmessage
-    rlib.ptr_R_ReadConsole = callbacks._consoleread
-    rlib.ptr_R_FlushConsole = callbacks._consoleflush
-    rlib.ptr_R_ResetConsole = callbacks._consolereset
+        rlib.ptr_R_ShowMessage = callbacks._showmessage
+        rlib.ptr_R_ReadConsole = callbacks._consoleread
+        rlib.ptr_R_FlushConsole = callbacks._consoleflush
+        rlib.ptr_R_ResetConsole = callbacks._consolereset
 
-    rlib.ptr_R_ChooseFile = callbacks._choosefile
-    rlib.ptr_R_ShowFiles = callbacks._showfiles
+        rlib.ptr_R_ChooseFile = callbacks._choosefile
+        rlib.ptr_R_ShowFiles = callbacks._showfiles
 
-    rlib.ptr_R_CleanUp = callbacks._cleanup
-    rlib.ptr_R_ProcessEvents = callbacks._processevents
-    rlib.ptr_R_Busy = callbacks._busy
+        rlib.ptr_R_CleanUp = callbacks._cleanup
+        rlib.ptr_R_ProcessEvents = callbacks._processevents
+        rlib.ptr_R_Busy = callbacks._busy
 
-    setinitialized()
+        setinitialized()
 
-    # TODO: still needed ?
-    rlib.R_CStackLimit = ffi.cast('uintptr_t', -1)
+        # TODO: still needed ?
+        rlib.R_CStackLimit = ffi.cast('uintptr_t', -1)
 
-    rlib.setup_Rmainloop()
-    return status
+        rlib.setup_Rmainloop()
+        return status
 
 
 def endr(fatal: int) -> None:
     global rpy2_embeddedR_isinitialized
     rlib = openrlib.rlib
-    if rpy2_embeddedR_isinitialized & RPY_R_Status.ENDED.value:
-        return
-    rlib.R_dot_Last()
-    rlib.R_RunExitFinalizers()
-    rlib.Rf_KillAllDevices()
-    rlib.R_CleanTempDir()
-    rlib.R_gc()
-    rlib.Rf_endEmbeddedR(fatal)
-    rpy2_embeddedR_isinitialized ^= RPY_R_Status.ENDED.value
+    with rlib.rlock:
+        if rpy2_embeddedR_isinitialized & RPY_R_Status.ENDED.value:
+            return
+        rlib.R_dot_Last()
+        rlib.R_RunExitFinalizers()
+        rlib.Rf_KillAllDevices()
+        rlib.R_CleanTempDir()
+        rlib.R_gc()
+        rlib.Rf_endEmbeddedR(fatal)
+        rpy2_embeddedR_isinitialized ^= RPY_R_Status.ENDED.value
 
 
 _REFERENCE_TO_R_SESSIONS = 'https://github.com/rstudio/reticulate/issues/98'

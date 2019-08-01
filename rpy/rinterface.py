@@ -949,11 +949,12 @@ NA_Complex = None
 
 def initr_simple() -> int:
     """Initialize R's embedded C library."""
-    status = embedded._initr()
-    atexit.register(endr, 0)
-    _rinterface._register_external_symbols()
-    _post_initr_setup()
-    return status
+    with openrlib.rlock:
+        status = embedded._initr()
+        atexit.register(endr, 0)
+        _rinterface._register_external_symbols()
+        _post_initr_setup()
+        return status
 
 
 def initr_checkenv():
@@ -962,15 +963,15 @@ def initr_checkenv():
     # process.
 
     status = None
-
-    if embedded.is_r_externally_initialized():
-        embedded.setinitialized()
-    else:
-        status = embedded._initr()
-        embedded.set_python_process_info()
-    _rinterface._register_external_symbols()
-    _post_initr_setup()
-    return status
+    with openrlib.rlock:
+        if embedded.is_r_externally_initialized():
+            embedded.setinitialized()
+        else:
+            status = embedded._initr()
+            embedded.set_python_process_info()
+        _rinterface._register_external_symbols()
+        _post_initr_setup()
+        return status
 
 
 initr = initr_checkenv
