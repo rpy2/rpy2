@@ -9,6 +9,7 @@ from _rinterface_cffi import ffi
 R_HOME = rpy2.situation.get_r_home()
 rlock = threading.RLock()
 
+
 def _dlopen_rlib(r_home: str):
     """Open R's shared C library."""
     if r_home is None:
