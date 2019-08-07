@@ -1,8 +1,8 @@
 import abc
 import atexit
 import os
+import math
 import typing
-import numpy as np
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
 import rpy2.rinterface_lib.embedded as embedded
@@ -493,7 +493,7 @@ class BoolSexpVector(SexpVector, NumpyArrayInterface):
 
 
 def nullable_int(v):
-    if type(v) is float and np.isnan(v):
+    if type(v) is float and math.isnan(v):
         return openrlib.rlib.R_NaInt
     else:
         return int(v)

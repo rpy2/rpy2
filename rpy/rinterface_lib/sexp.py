@@ -4,7 +4,6 @@ import abc
 import collections.abc
 import enum
 import typing
-import numpy as np
 from . import embedded
 from . import memorymanagement
 from . import openrlib
