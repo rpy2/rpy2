@@ -7,7 +7,7 @@ import rpy2.rinterface as ri
 try:
     import numpy
     has_numpy = True
-except ModuleNotFoundError:
+except ImportError:
     has_numpy = False
 
 ri.initr()
