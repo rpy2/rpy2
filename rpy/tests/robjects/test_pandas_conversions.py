@@ -94,7 +94,8 @@ class TestPandasConversions(object):
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.IntSexpVector)
 
-    @pytest.mark.parametrize('dtype', (pandas.Int32Dtype(), pandas.Int64Dtype()))
+    @pytest.mark.parametrize('dtype', (pandas.Int32Dtype() if has_pandas else None,
+                                       pandas.Int64Dtype() if has_pandas else None))
     def test_dataframe_int_nan(self, dtype):
         a = pandas.DataFrame([(numpy.NaN,)], dtype=dtype, columns=['z'])
         with localconverter(default_converter + rpyp.converter) as _:
@@ -104,7 +105,8 @@ class TestPandasConversions(object):
             c = robjects.conversion.rpy2py(b)
         # assert numpy.isnan(c['z'][0])  # todo: should be enabled when conversion back to python is implemented
 
-    @pytest.mark.parametrize('dtype', (pandas.Int32Dtype(), pandas.Int64Dtype()))
+    @pytest.mark.parametrize('dtype', (pandas.Int32Dtype() if has_pandas else None,
+                                       pandas.Int64Dtype() if has_pandas else None))
     def test_series_int_nan(self, dtype):
         a = pandas.Series((numpy.NaN,), dtype=dtype, index=['z'])
         with localconverter(default_converter + rpyp.converter) as _:
