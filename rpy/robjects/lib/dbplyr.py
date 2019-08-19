@@ -16,7 +16,7 @@ with warnings.catch_warnings():
 TARGET_VERSION = '1.2.1'
 if dbplyr.__version__ != TARGET_VERSION:
     warnings.warn(
-        'This was designed againt dbplyr version %s '
+        'This was designed against dbplyr version %s '
         'but you have %s' % (TARGET_VERSION, dbplyr.__version__))
 
 sql = dbplyr.sql
