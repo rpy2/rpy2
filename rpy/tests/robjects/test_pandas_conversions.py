@@ -103,7 +103,6 @@ class TestPandasConversions(object):
         assert type(b[0][0]) == rinterface.na_values.NAIntegerType
         with localconverter(default_converter + rpyp.converter) as _:
             c = robjects.conversion.rpy2py(b)
-        # assert numpy.isnan(c['z'][0])  # todo: should be enabled when conversion back to python is implemented
 
     @pytest.mark.parametrize('dtype', (pandas.Int32Dtype() if has_pandas else None,
                                        pandas.Int64Dtype() if has_pandas else None))
@@ -114,7 +113,6 @@ class TestPandasConversions(object):
         assert type(b[0]) == rinterface.na_values.NAIntegerType
         with localconverter(default_converter + rpyp.converter) as _:
             c = robjects.conversion.rpy2py(b)
-        #assert numpy.isnan(c[0])  # todo: should be enabled when conversion back to python is implemented
 
     def test_series_obj_str(self):
         Series = pandas.core.series.Series
