@@ -60,7 +60,7 @@ def numpy2rpy(o):
     # Most types map onto R arrays:
     if o.dtype.kind in _kinds:
         # "F" means "use column-major order"
-        vec = _kinds[o.dtype.kind](o.ravel('F'))
+        vec = _kinds[o.dtype.kind](numpy.ravel(o, order='F'))
         dim = ro.vectors.IntVector(o.shape)
         # TODO: no dimnames ?
         # TODO: optimize what is below needed/possible ?

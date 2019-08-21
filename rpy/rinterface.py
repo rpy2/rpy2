@@ -1,6 +1,7 @@
 import abc
 import atexit
 import os
+import math
 import typing
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
@@ -491,6 +492,13 @@ class BoolSexpVector(SexpVector, NumpyArrayInterface):
         return vector_memoryview(self, 'int', 'i')
 
 
+def nullable_int(v):
+    if type(v) is float and math.isnan(v):
+        return openrlib.rlib.R_NaInt
+    else:
+        return int(v)
+
+
 class IntSexpVector(SexpVector, NumpyArrayInterface):
 
     _R_TYPE = openrlib.rlib.INTSXP
@@ -500,7 +508,7 @@ class IntSexpVector(SexpVector, NumpyArrayInterface):
     _NP_TYPESTR = '|i'
 
     _R_GET_PTR = staticmethod(openrlib.INTEGER)
-    _CAST_IN = staticmethod(int)
+    _CAST_IN = staticmethod(nullable_int)
 
     def __getitem__(self, i: int) -> typing.Union[int, 'IntSexpVector']:
         cdata = self.__sexp__._cdata
