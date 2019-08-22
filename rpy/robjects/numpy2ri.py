@@ -7,6 +7,8 @@ from rpy2.rinterface import (Sexp,
                              RTYPES)
 import numpy
 
+# TODO: move this to rinterface.
+RINT_SIZE = 32
 
 original_converter = None
 
@@ -49,6 +51,29 @@ def numpy_O_py2rpy(o):
     return res
 
 
+def _numpyarray_to_r(a, func):
+    # "F" means "use column-major order"
+    vec = func(numpy.ravel(a, order='F'))
+    # TODO: no dimnames ?
+    # TODO: optimize what is below needed/possible ?
+    #  (other ways to create R arrays ?)
+    dim = ro.vectors.IntVector(a.shape)
+    res = rinterface.baseenv['array'](vec, dim=dim)
+    return res
+
+
+def unsignednumpyint_to_rint(intarray):
+    """Convert a numpy array of unsigned integers to an R array."""
+    if intarray.nbytes >= (RINT_SIZE / 4):
+        raise ValueError(
+            'Cannot convert numpy array of unsigned integers '
+            'with {RINT_SIZE} bits or more.'.format(RINT_SIZE=RINT_SIZE)
+        )
+    else:
+        res = _numpyarray_to_r(intarray, _kinds['i'])
+    return res
+
+
 @py2rpy.register(numpy.ndarray)
 def numpy2rpy(o):
     """ Augmented conversion function, converting numpy arrays into
@@ -59,17 +84,10 @@ def numpy2rpy(o):
 
     # Most types map onto R arrays:
     if o.dtype.kind in _kinds:
-        # "F" means "use column-major order"
-        vec = _kinds[o.dtype.kind](numpy.ravel(o, order='F'))
-        dim = ro.vectors.IntVector(o.shape)
-        # TODO: no dimnames ?
-        # TODO: optimize what is below needed/possible ?
-        #  (other ways to create R arrays ?)
-        res = rinterface.baseenv['array'](vec, dim=dim)
+        res = _numpyarray_to_r(o, _kinds[o.dtype.kind])
     # R does not support unsigned types:
     elif o.dtype.kind == 'u':
-        raise(ValueError('Cannot convert numpy array of unsigned values '
-                         '-- R does not have unsigned integers.'))
+        res = unsignednumpyint_to_rint(o)
     # Array-of-PyObject is treated like a Python list:
     elif o.dtype.kind == 'O':
         res = numpy_O_py2rpy(o)

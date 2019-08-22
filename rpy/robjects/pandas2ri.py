@@ -145,12 +145,9 @@ def py2rpy_pandasseries(obj):
             raise(ValueError('Cannot pass numpy arrays with non-native byte'
                              ' orders at the moment.'))
         if obj.dtype.kind == 'i':
-            vec = IntVector(numpy.ravel(obj, order='F'))
-            dim = IntVector(obj.shape)
-            res = rinterface.baseenv['array'](vec, dim=dim)
+            res = numpy2ri._numpyarray_to_r(IntVector, ro.vectors.IntVector)
         elif obj.dtype.kind == 'u':
-            raise (ValueError('Cannot convert numpy array of unsigned values'
-                              ' -- R does not have unsigned integers.'))
+            res = numpy2ri.unsignednumpyint_to_rint(obj)
         else:
             raise (ValueError('Unknown pandas dtype "%s".' % str(obj.dtype)))
         if len(obj.shape) == 1:
