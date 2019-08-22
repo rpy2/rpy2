@@ -17,11 +17,11 @@ from pandas.core.dtypes.api import is_datetime64_any_dtype
 import pandas
 import numpy
 import pytz
-import tzlocal
 import warnings
 
 from collections import OrderedDict
-from rpy2.robjects.vectors import (BoolVector,
+from rpy2.robjects.vectors import (get_timezone,
+                                   BoolVector,
                                    DataFrame,
                                    FactorVector,
                                    FloatSexpVector,
@@ -42,11 +42,8 @@ converter = conversion.Converter('original pandas conversion')
 py2rpy = converter.py2rpy
 rpy2py = converter.rpy2py
 
-
 # numpy types for Pandas columns that require (even more) special handling
 dt_O_type = numpy.dtype('O')
-
-default_timezone = None
 
 # pandas types for series of integer (optional missing) values.
 integer_array_types = ('Int8', 'Int16', 'Int32', 'Int64', 'UInt8',
@@ -196,36 +193,14 @@ def rpy2py_intvector(obj):
     return res
 
 
-def get_timezone():
-    """ Return the system's timezone settings. """
-    if default_timezone:
-        timezone = default_timezone
-    else:
-        timezone = tzlocal.get_localzone()
-    return timezone
-
-
 @rpy2py.register(FloatSexpVector)
 def rpy2py_floatvector(obj):
-    # special case for POSIXct date objects
-    if 'POSIXct' in obj.rclass:
-        try:
-            tzone_name = obj.do_slot('tzone')[0]
-        except LookupError:
-            warnings.warn('R object inheriting from "POSIXct" but without '
-                          'attribute "tzone".')
-            tzone_name = ''
-        if tzone_name == '':
-            # R is implicitly using the local timezone, while Python
-            # time libraries will assume UTC.
-            tzone = get_timezone()
-        else:
-            tzone = pytz.timezone(tzone_name)
-        foo = (tzone.localize(datetime.fromtimestamp(x)) for x in obj)
-        res = pandas.to_datetime(tuple(foo))
-    else:
-        res = numpy2ri.rpy2py(obj)
-    return res
+    return numpy2ri.rpy2py(obj)
+
+
+@rpy2py.register(POSIXct)
+def rpy2py_posixct(obj):
+    return pandas.to_datetime(tuple(obj.iter_localized_datetime()))
 
 
 @rpy2py.register(ListSexpVector)

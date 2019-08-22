@@ -6,6 +6,7 @@ import pytest
 
 from rpy2 import rinterface
 from rpy2 import robjects
+from rpy2.robjects import vectors
 from rpy2.robjects import conversion
 
 has_pandas = True
@@ -237,7 +238,7 @@ class TestPandasConversions(object):
             assert rp_c[0] != rp_c[1]
 
     def test_timeR2Pandas(self):
-        tzone = rpyp.get_timezone()
+        tzone = robjects.vectors.get_timezone()
         dt = [datetime(1960, 5, 2),
               datetime(1970, 6, 3), 
               datetime(2012, 7, 1)]

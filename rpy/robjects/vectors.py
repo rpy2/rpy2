@@ -11,6 +11,8 @@ import math
 import os
 import jinja2
 import time
+import pytz
+import tzlocal
 from datetime import datetime
 from time import struct_time, mktime, tzname
 from operator import attrgetter
@@ -30,6 +32,9 @@ as_character = baseenv_ri['as.character']
 utils_ri = baseenv_ri['as.environment'](
     rinterface.StrSexpVector(("package:utils", ))
 )
+
+# The default timezone can be used for time or datetime objects.
+default_timezone = None
 
 
 class ExtractDelegator(object):
@@ -810,6 +815,15 @@ class POSIXlt(POSIXt, ListVector):
         return super(Sexp, self).__repr__()
 
 
+def get_timezone():
+    """Return the system's timezone settings."""
+    if default_timezone:
+        timezone = default_timezone
+    else:
+        timezone = tzlocal.get_localzone()
+    return timezone
+
+
 class POSIXct(POSIXt, FloatVector):
     """ Representation of dates as seconds since Epoch.
     This form is preferred to POSIXlt for inclusion in a DataFrame.
@@ -823,6 +837,7 @@ class POSIXct(POSIXt, FloatVector):
 
     _as_posixct = baseenv_ri['as.POSIXct']
     _ISOdatetime = baseenv_ri['ISOdatetime']
+
 
     def __init__(self, seq):
         """ Create a POSIXct from either an R vector or a sequence
@@ -899,6 +914,23 @@ class POSIXct(POSIXt, FloatVector):
                     IntVector([x.second for x in seq])]
 
         return POSIXct._sexp_from_seq(seq, attrgetter('tzinfo'), f)
+
+    def iter_localized_datetime(self):
+        """Iterator yielding localized Python datetime objects."""
+        try:
+            tzone_name = self.do_slot('tzone')[0]
+        except LookupError:
+            warnings.warn('R object inheriting from "POSIXct" but without '
+                          'attribute "tzone".')
+            tzone_name = ''
+        if tzone_name == '':
+            # R is implicitly using the local timezone, while Python
+            # time libraries will assume UTC.
+            tzone = get_timezone()
+        else:
+            tzone = pytz.timezone(tzone_name)
+        for x in self:
+            yield tzone.localize(datetime.fromtimestamp(x))
 
 
 class Array(Vector):
