@@ -145,7 +145,7 @@ def py2rpy_pandasseries(obj):
             raise(ValueError('Cannot pass numpy arrays with non-native byte'
                              ' orders at the moment.'))
         if obj.dtype.kind == 'i':
-            res = numpy2ri._numpyarray_to_r(IntVector, IntVector)
+            res = numpy2ri._numpyarray_to_r(obj, IntVector)
         elif obj.dtype.kind == 'u':
             res = numpy2ri.unsignednumpyint_to_rint(obj)
         else:
