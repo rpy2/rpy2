@@ -838,7 +838,6 @@ class POSIXct(POSIXt, FloatVector):
     _as_posixct = baseenv_ri['as.POSIXct']
     _ISOdatetime = baseenv_ri['ISOdatetime']
 
-
     def __init__(self, seq):
         """ Create a POSIXct from either an R vector or a sequence
         of Python dates.

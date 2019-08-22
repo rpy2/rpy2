@@ -1,7 +1,6 @@
 """This module handles the conversion of data structures
 between R objects handled by rpy2 and pandas objects."""
 
-from datetime import datetime
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import (IntSexpVector,
@@ -16,12 +15,10 @@ from pandas.core.index import Index as PandasIndex
 from pandas.core.dtypes.api import is_datetime64_any_dtype
 import pandas
 import numpy
-import pytz
 import warnings
 
 from collections import OrderedDict
-from rpy2.robjects.vectors import (get_timezone,
-                                   BoolVector,
+from rpy2.robjects.vectors import (BoolVector,
                                    DataFrame,
                                    FactorVector,
                                    FloatSexpVector,
