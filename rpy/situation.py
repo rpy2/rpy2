@@ -5,6 +5,7 @@ R version, rpy2 version, etc...).
 """
 
 import os
+import rpy2
 import subprocess
 import sys
 
@@ -97,6 +98,9 @@ def _make_bold(text):
 
 def iter_info():
 
+    yield _make_bold('rpy2 version:')
+    yield rpy2.__version__
+    
     yield _make_bold('Python version:')
     yield sys.version
     if not (sys.version_info[0] == 3 and sys.version_info[1] >= 5):

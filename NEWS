@@ -26,6 +26,8 @@ Changes
 
 - Experimental initialization for Microsoft Windows.
 
+- :mod:`rpy2.situation` is now also reporting the rpy2 version.
+
 Bugs fixed
 ----------
 
