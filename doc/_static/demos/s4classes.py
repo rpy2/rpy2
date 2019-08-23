@@ -4,8 +4,9 @@ import rpy2.robjects as robjects
 import rpy2.rinterface as rinterface
 from rpy2.robjects.packages import importr
 
-lme4 = importr("lme4")
-getmethod = robjects.baseenv.get("getMethod")
+lme4 = importr('lme4')
+stats = importr('stats')
+getmethod = robjects.baseenv.get('getMethod')
 
 StrVector = robjects.StrVector
 #-- setup-end
@@ -14,7 +15,7 @@ StrVector = robjects.StrVector
 class LmList(robjects.methods.RS4):
     """ Reflection of the S4 class 'lmList'. """
     
-    _coef = getmethod("coef", 
+    _coef = getmethod('coef', 
                       signature = StrVector(["lmList", ]),
                       where = "package:lme4")
     _confint = getmethod("confint", 
