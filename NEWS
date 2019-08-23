@@ -32,6 +32,9 @@ Bugs fixed
 - `aes` in :mod:`rpy2.robjects.lib.ggplot2` had stopped working with the
   R package ggplot2 reaching version 3.2.0. (issue #562).
 
+- Better handling of recent :mod:`pandas` arrays with missing values
+ (related to issue #544).
+
 
 Release 3.0.5
 =============
