@@ -2,11 +2,16 @@
 #-- setup-begin
 import rpy2.robjects as robjects
 import rpy2.rinterface as rinterface
-from rpy2.robjects.packages import importr
+from rpy2.robjects.packages import importr, data
+from rpy2.robjects.methods import getmethod
 
 lme4 = importr('lme4')
+<<<<<<< local
 stats = importr('stats')
 getmethod = robjects.baseenv.get('getMethod')
+=======
+utils = importr('utils')
+>>>>>>> graft
 
 StrVector = robjects.StrVector
 #-- setup-end
@@ -15,6 +20,7 @@ StrVector = robjects.StrVector
 class LmList(robjects.methods.RS4):
     """ Reflection of the S4 class 'lmList'. """
     
+<<<<<<< local
     _coef = getmethod('coef', 
                       signature = StrVector(["lmList", ]),
                       where = "package:lme4")
@@ -27,6 +33,18 @@ class LmList(robjects.methods.RS4):
     _lmfit_from_formula = getmethod("lmList",
                                     signature = StrVector(["formula", "data.frame"]),
                                     where = "package:lme4")
+=======
+    _coef = utils.getS3method(
+        'coef', 
+        'lmList4')
+    _confint = utils.getS3method(
+        'confint', 
+        'lmList4')
+    _formula = utils.getS3method(
+        'formula', 
+        'lmList4')
+    _lmfit_from_formula = staticmethod(lme4.lmList)
+>>>>>>> graft
 
     def _call_get(self):
         return self.do_slot("call")
@@ -48,33 +66,33 @@ class LmList(robjects.methods.RS4):
     
     @staticmethod
     def from_formula(formula, 
-                     data = rinterface.MissingArg,
-                     family = rinterface.MissingArg,
-                     subset = rinterface.MissingArg,
-                     weights = rinterface.MissingArg):
+                     data=rinterface.MissingArg,
+                     family=rinterface.MissingArg,
+                     subset=rinterface.MissingArg,
+                     weights=rinterface.MissingArg):
         """ Build an LmList from a formula """
-        res = LmList._lmfit_from_formula(formula, data,
-                                         family = family,
-                                         subset = subset,
-                                         weights = weights)
+        res = LmList._lmfit_from_formula(formula,
+                                         data=data,
+                                         family=family,
+                                         subset=subset,
+                                         weights=weights)
         res = LmList(res)
         return res
 #-- LmList-end
 
 #-- buildLmList-begin
-sleepstudy = lme4.sleepstudy
+sleepstudy = data(lme4).fetch('sleepstudy')['sleepstudy']
 formula = robjects.Formula('Reaction ~ Days | Subject')
 lml1 = LmList.from_formula(formula, 
-                           sleepstudy)
+                           data=sleepstudy)
 #-- buildLmList-end
 
 
 #-- buildLmListBetterCall-begin
-sleepstudy = lme4.sleepstudy
+sleepstudy = data(lme4).fetch('sleepstudy')['sleepstudy']
 formula = robjects.Formula('Reaction ~ Days | Subject')
-for varname in ('Reaction', 'Days', 'Subject'):
-    formula.environment[varname] = sleepstudy.rx2(varname)
 
-lml1 = LmList.from_formula(formula)
+lml1 = LmList.from_formula(formula,
+                           data=sleepstudy)
 #-- buildLmListBetterCall-end
 
