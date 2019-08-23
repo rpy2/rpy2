@@ -6,12 +6,7 @@ from rpy2.robjects.packages import importr, data
 from rpy2.robjects.methods import getmethod
 
 lme4 = importr('lme4')
-<<<<<<< local
-stats = importr('stats')
-getmethod = robjects.baseenv.get('getMethod')
-=======
 utils = importr('utils')
->>>>>>> graft
 
 StrVector = robjects.StrVector
 #-- setup-end
@@ -20,20 +15,6 @@ StrVector = robjects.StrVector
 class LmList(robjects.methods.RS4):
     """ Reflection of the S4 class 'lmList'. """
     
-<<<<<<< local
-    _coef = getmethod('coef', 
-                      signature = StrVector(["lmList", ]),
-                      where = "package:lme4")
-    _confint = getmethod("confint", 
-                         signature = StrVector(["lmList", ]),
-                         where = "package:lme4")
-    _formula = getmethod("formula", 
-                         signature = StrVector(["lmList", ]),
-                         where = "package:lme4")
-    _lmfit_from_formula = getmethod("lmList",
-                                    signature = StrVector(["formula", "data.frame"]),
-                                    where = "package:lme4")
-=======
     _coef = utils.getS3method(
         'coef', 
         'lmList4')
@@ -44,7 +25,6 @@ class LmList(robjects.methods.RS4):
         'formula', 
         'lmList4')
     _lmfit_from_formula = staticmethod(lme4.lmList)
->>>>>>> graft
 
     def _call_get(self):
         return self.do_slot("call")
