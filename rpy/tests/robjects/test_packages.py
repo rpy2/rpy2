@@ -3,6 +3,7 @@ import os
 import pytest
 import sys
 import rpy2.robjects as robjects
+import rpy2.robjects.help
 import rpy2.robjects.packages as packages
 import rpy2.robjects.packages_utils
 from rpy2.rinterface_lib.embedded import RRuntimeError
@@ -72,13 +73,27 @@ def test_signaturetranslatedanonymouspackage():
     assert hasattr(powerpack, 'cube')
 
 
+def test_installedstpackage_docstring():
+    stats = robjects.packages.importr('stats',
+                                      on_conflict='warn')
+    assert stats.__doc__.startswith('Python representation of an R package.')
+
+
+def test_installedstpackage_docstring_no_rname():
+    stats = robjects.packages.importr('stats',
+                                      on_conflict='warn')
+    stats.__rname__ = None
+    assert stats.__doc__.startswith('Python representation of an R package.\n'
+                                    '<No information available>')
+
+
 class TestImportr(object):
 
     def test_importr_stats(self):
         stats = robjects.packages.importr('stats',
                                           on_conflict='warn')
         assert isinstance(stats, robjects.packages.Package)
-    
+
     def test_import_stats_with_libloc(self):
         path = robjects.packages_utils.get_packagepath('stats')
         stats = robjects.packages.importr('stats', 
