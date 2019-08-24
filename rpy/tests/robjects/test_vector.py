@@ -206,8 +206,8 @@ def test_r_neg():
 
 def test_contains():
     v = robjects.StrVector(('abc', 'def', 'ghi'))
-    assert 'def' in v
-    assert 'foo' not in v
+    assert 'def' in v.ro
+    assert 'foo' not in v.ro
 
 
 @pytest.mark.parametrize(
@@ -344,6 +344,10 @@ def test_list_repr():
     s = repr(vec)
     assert s.startswith("R object with classes: ('list',) ")
 
+    vec2 = robjects.vectors.ListVector((('A', vec),))
+    s = repr(vec2)
+    assert s.startswith("R object with classes: ('list',) ")
+
 
 def test_float_repr():
     vec = robjects.vectors.FloatVector((1,2,3))
@@ -430,6 +434,12 @@ def test_sample():
 def test_sample_probabilities():
     vec = robjects.IntVector(range(100))
     spl = vec.sample(10, probabilities=robjects.FloatVector([.01] * 100))
+    assert len(spl) == 10
+
+
+def test_sample_probabilities_novector():
+    vec = robjects.IntVector(range(100))
+    spl = vec.sample(10, probabilities=[.01] * 100)
     assert len(spl) == 10
 
 

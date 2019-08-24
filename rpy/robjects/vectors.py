@@ -213,8 +213,8 @@ class VectorOperationsDelegator(object):
         return res
 
     def __contains__(self, what):
-        res = globalenv_ri.find('%in%')(self._parent, what)
-        return res
+        res = globalenv_ri.find('%in%')(what, self._parent)
+        return res[0]
 
 
 class Vector(RObjectMixin):

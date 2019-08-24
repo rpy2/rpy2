@@ -50,6 +50,9 @@ Bugs fixed
 - Better handling of recent :mod:`pandas` arrays with missing values
  (related to issue #544).
 
+- The mapping of the R operator `%in%` reachable through the attribute `ro`
+  of R vectors was always returning `True`. It is now working properly.
+
 
 Release 3.0.5
 =============
