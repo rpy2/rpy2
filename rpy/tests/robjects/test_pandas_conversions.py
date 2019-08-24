@@ -237,6 +237,19 @@ class TestPandasConversions(object):
             assert int(rp_c[1]) == 1483228800
             assert rp_c[0] != rp_c[1]
 
+    def test_datetime2posixct_withNA(self):
+        datetime = pandas.Series(
+            pandas.date_range('2017-01-01 00:00:00.234',
+                              periods=20, freq='ms', tz='UTC')
+        )
+        datetime[1] = pandas.NaT
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_c = robjects.conversion.py2rpy(datetime)
+            assert isinstance(rp_c, robjects.vectors.POSIXct)
+            assert int(rp_c[0]) == 1483228800
+            assert math.isnan(rp_c[1])
+            assert rp_c[0] != rp_c[1]
+
     def test_timeR2Pandas(self):
         tzone = robjects.vectors.get_timezone()
         dt = [datetime(1960, 5, 2),
@@ -258,6 +271,15 @@ class TestPandasConversions(object):
         # Check that the round trip did not introduce changes
         for expected, obtained in zip(dt, py_time):
             assert expected == obtained.to_pydatetime()
+
+        # Try with NA.
+        r_time[1] = rinterface.na_values.NA_Real
+        # Convert R POSIXct vector to pandas-compatible vector
+        with localconverter(default_converter + rpyp.converter) as cv:
+            py_time = robjects.conversion.rpy2py(r_time)
+
+        assert py_time[1] is pandas.NaT
+        
 
     def test_repr(self):
         # this should go to testVector, with other tests for repr()

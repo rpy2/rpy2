@@ -197,7 +197,8 @@ def rpy2py_floatvector(obj):
 
 @rpy2py.register(POSIXct)
 def rpy2py_posixct(obj):
-    return pandas.to_datetime(tuple(obj.iter_localized_datetime()))
+    return pandas.to_datetime(tuple(obj.iter_localized_datetime()),
+                              errors='coerce')
 
 
 @rpy2py.register(ListSexpVector)
