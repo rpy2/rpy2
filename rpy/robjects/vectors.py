@@ -929,7 +929,8 @@ class POSIXct(POSIXt, FloatVector):
         else:
             tzone = pytz.timezone(tzone_name)
         for x in self:
-            yield None if math.isnan(x) else tzone.localize(datetime.fromtimestamp(x))
+            yield (None if math.isnan(x)
+                   else tzone.localize(datetime.fromtimestamp(x)))
 
 
 class Array(Vector):
