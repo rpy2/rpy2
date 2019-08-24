@@ -18,7 +18,8 @@ class TestOrdDict(object):
                              (('__cmp__', [None]),
                               ('__eq__', [None]),
                               ('__ne__', [None]),
-                              ('__reversed__', [])))
+                              ('__reversed__', []),
+                              ('sort', [])))
     def test_notimplemented(self, methodname, args):
         nl = rlc.OrdDict()
         with pytest.raises(NotImplementedError):

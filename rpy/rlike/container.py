@@ -125,7 +125,7 @@ class OrdDict(dict):
                 super(OrdDict, self).__setitem__(kv[0], n-i-1)
 
     def sort(self, cmp=None, key=None, reverse=False):
-        raise(Exception("Not yet implemented."))
+        raise NotImplementedError("Not yet implemented.")
 
 
 class TaggedList(list):
