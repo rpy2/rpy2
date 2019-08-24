@@ -162,15 +162,13 @@ if __name__ == '__main__':
         setup_requires = ['cffi>=1.0.0'],
         cffi_modules = ['rpy/_rinterface_cffi_build.py:ffibuilder'],
         package_dir = pack_dir,
-        packages = [pack_name,
-                    pack_name + '.tests',
-                    pack_name + '.rlike',
-                    pack_name + '.rinterface_lib',
-                    pack_name + '.robjects',
-                    pack_name + '.robjects.lib',
-                    pack_name + '.interactive',
-                    pack_name + '.ipython',
-                    ],
+        packages = ([pack_name] +
+                    [f'{pack_name}.{x}'
+                     for x in ('rlike', 'rinterface_lib', 'robjects',
+                               'robjects.lib', 'interactive', 'ipython',
+                               'tests',
+                               'tests.rinterface', 'tests.rlike', 'tests.robjects')]
+                    ),
         classifiers = ['Programming Language :: Python',
                        'Programming Language :: Python :: 3',
                        'Programming Language :: Python :: 3.5',

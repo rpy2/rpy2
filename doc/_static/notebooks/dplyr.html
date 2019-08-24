@@ -12211,7 +12211,7 @@ the original implementation of <code>dplyr</code>, it <em>just works</em>.</p>
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre><span class="ansi-black-intense-fg"># Source:   lazy query [?? x 2]</span>
-<span class="ansi-black-intense-fg"># Database: sqlite 3.22.0 [/tmp/tmpu0xwv2y4]</span>
+<span class="ansi-black-intense-fg"># Database: sqlite 3.29.0 [/tmp/tmpsjq0hplb]</span>
    gear mean_ptw
   <span class="ansi-black-intense-fg">&lt;dbl&gt;</span>    <span class="ansi-black-intense-fg">&lt;dbl&gt;</span>
 <span class="ansi-black-intense-fg">1</span>     4    1237.
@@ -12256,15 +12256,14 @@ to us. If we want to see the SQL code generated that's:</p>
 <div class="prompt"></div>
 
 
-<div class="output_subarea output_stream output_stderr output_text">
-<pre>R[write to console]: &lt;SQL&gt;
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>&lt;SQL&gt;
 SELECT `gear`, AVG(`powertoweight`) AS `mean_ptw`
 FROM (SELECT `mpg`, `cyl`, `disp`, `hp`, `drat`, `wt`, `qsec`, `vs`, `am`, `gear`, `carb`, `hp` * 36.0 / `wt` AS `powertoweight`
 FROM (SELECT *
 FROM `mtcars`
 WHERE (`gear` &gt; 3.0)))
 GROUP BY `gear`
-
 </pre>
 </div>
 </div>

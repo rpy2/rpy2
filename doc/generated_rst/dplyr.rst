@@ -263,7 +263,7 @@ implementation of ``dplyr``, it *just works*.
 .. parsed-literal::
 
     [90m# Source:   lazy query [?? x 2][39m
-    [90m# Database: sqlite 3.22.0 [/tmp/tmpu0xwv2y4][39m
+    [90m# Database: sqlite 3.29.0 [/tmp/tmpsjq0hplb][39m
        gear mean_ptw
       [3m[90m<dbl>[39m[23m    [3m[90m<dbl>[39m[23m
     [90m1[39m     4    [4m1[24m237.
@@ -281,14 +281,13 @@ available to us. If we want to see the SQL code generated that's:
 
 .. parsed-literal::
 
-    R[write to console]: <SQL>
+    <SQL>
     SELECT `gear`, AVG(`powertoweight`) AS `mean_ptw`
     FROM (SELECT `mpg`, `cyl`, `disp`, `hp`, `drat`, `wt`, `qsec`, `vs`, `am`, `gear`, `carb`, `hp` * 36.0 / `wt` AS `powertoweight`
     FROM (SELECT *
     FROM `mtcars`
     WHERE (`gear` > 3.0)))
     GROUP BY `gear`
-    
 
 
 The conversion rules in rpy2 make the above easily applicable to pandas
