@@ -30,6 +30,9 @@ Changes
 
 - :func:`rpy2.robjecs.package_utils.default_symbol_check_after` was
   renamed  :func:`rpy2.robjecs.package_utils.default_symbol_resolve`.
+  The named parameters `default_symbol_check_after` present in few methods
+  in :mod:`rpy2.robjects.packages` and :mod:`rpy2.robjects.functions` were
+  modified to keep a consistent naming.
 
 Bugs fixed
 ----------
