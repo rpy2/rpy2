@@ -10,6 +10,20 @@ class TestOrdDict(object):
         x = (('a', 123), ('b', 456), ('c', 789))
         nl = rlc.OrdDict(x)
 
+    def test_new_invalid(self):
+        with pytest.raises(TypeError):
+            rlc.OrdDict({})
+
+    @pytest.mark.parametrize('methodname,args',
+                             (('__cmp__', [None]),
+                              ('__eq__', [None]),
+                              ('__ne__', [None]),
+                              ('__reversed__', [])))
+    def test_notimplemented(self, methodname, args):
+        nl = rlc.OrdDict()
+        with pytest.raises(NotImplementedError):
+            getattr(nl, methodname)(*args)
+
     def test_repr(self):
         x = (('a', 123), ('b', 456), ('c', 789))
         nl = rlc.OrdDict(x)

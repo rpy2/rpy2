@@ -34,6 +34,13 @@ Changes
   in :mod:`rpy2.robjects.packages` and :mod:`rpy2.robjects.functions` were
   modified to keep a consistent naming.
 
+- Trying to instantiate an :class:`rpy2.rlike.container.OrdDict` with a
+  a :class:`dict` will result in a :class:`TypeError` rather than a
+  :class:`ValueError`.
+
+- Methods of :class:`rpy2.rlike.container.OrdDict` now raise a
+  :class:`NotImplementedError` when not implemented.
+
 Bugs fixed
 ----------
 

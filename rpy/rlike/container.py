@@ -19,8 +19,8 @@ class OrdDict(dict):
             c = c.items()
         elif isinstance(c, dict):
             # FIXME: allow instance from OrdDict ?
-            raise ValueError('A regular dictionnary does not ' +
-                             'conserve the order of its keys.')
+            raise TypeError('A regular dictionnary does not ' +
+                            'conserve the order of its keys.')
 
         super(OrdDict, self).__init__()
         self.__l = []
@@ -33,10 +33,10 @@ class OrdDict(dict):
         return cp
 
     def __cmp__(self, o):
-        raise(Exception("Not yet implemented."))
+        raise(NotImplementedError("Not yet implemented."))
 
-    def __eq__(self):
-        raise(Exception("Not yet implemented."))
+    def __eq__(self, o):
+        raise(NotImplementedError("Not yet implemented."))
 
     def __getitem__(self, key):
         if key is None:
@@ -56,8 +56,8 @@ class OrdDict(dict):
     def __len__(self):
         return len(self.__l)
 
-    def __ne__(self):
-        raise(Exception('Not yet implemented.'))
+    def __ne__(self, o):
+        raise(NotImplementedError('Not yet implemented.'))
 
     def __repr__(self):
         s = ['o{', ]
@@ -67,7 +67,7 @@ class OrdDict(dict):
         return ''.join(s)
 
     def __reversed__(self):
-        raise(Exception("Not yet implemented."))
+        raise(NotImplementedError("Not yet implemented."))
 
     def __setitem__(self, key, value):
         """ Replace the element if the key is known,
