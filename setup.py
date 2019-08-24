@@ -167,7 +167,8 @@ if __name__ == '__main__':
                      for x in ('rlike', 'rinterface_lib', 'robjects',
                                'robjects.lib', 'interactive', 'ipython',
                                'tests',
-                               'tests.rinterface', 'tests.rlike', 'tests.robjects')]
+                               'tests.rinterface', 'tests.rlike', 'tests.robjects',
+                               'tests.robjects.lib')]
                     ),
         classifiers = ['Programming Language :: Python',
                        'Programming Language :: Python :: 3',
