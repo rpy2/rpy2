@@ -163,7 +163,7 @@ class SignatureTranslatedFunction(Function):
                  formals.names,
                  translation=prm_translate,
                  symbol_r2python=symbol_r2python,
-                 symbol_resolve=symbol_resove)
+                 symbol_resolve=symbol_resolve)
 
             msg_prefix = ('Conflict when converting R symbols'
                           ' in the function\'s signature:\n- ')
