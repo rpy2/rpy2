@@ -180,7 +180,7 @@ def test_r_gt():
     assert all(x is y for x, y in zip(res, (True, False, False)))
 
 
-def test_r_le():
+def test_r_ge():
     v = robjects.vectors.IntVector((4, 2, 1))
     res = v.ro >= 2
     assert all(x is y for x, y in zip(res, (True, True, False)))
