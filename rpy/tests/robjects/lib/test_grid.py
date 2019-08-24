@@ -10,6 +10,7 @@ from rpy2.robjects.vectors import FloatVector, StrVector
 # TODO: is there anything to test ?
 def test_unit():
     u = grid.unit(1, 'cm')
+    u = grid.unit(x=1, units='cm')
 
 
 # TODO: is there anything to test ?
