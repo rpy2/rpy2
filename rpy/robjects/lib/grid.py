@@ -23,7 +23,7 @@ grid = WeakPackage(grid._env,
                    on_conflict="warn",
                    version=grid.__version__,
                    symbol_r2python=grid._symbol_r2python,
-                   symbol_check_after=grid._symbol_check_after)
+                   symbol_resolve=grid._symbol_resolve)
 
 grid_env = robjects.baseenv['as.environment']('package:grid')
 
