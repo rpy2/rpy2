@@ -1,6 +1,7 @@
 import pytest
 import sys
-import rpy2.robjects as robjects
+from rpy2 import robjects
+from rpy2 import rinterface
 import rpy2.robjects.conversion as conversion
 r = robjects.r
 
@@ -176,11 +177,15 @@ class TestNumpyConversions(object):
 
 
     def test_dataframe_to_numpy(self):
-        df = robjects.vectors.DataFrame(dict((('a', 1), ('b', 2))))
+        df = robjects.vectors.DataFrame(
+            {'a': 1,
+             'b': 2,
+             'c': robjects.vectors.FactorVector('e')})
         rec = conversion.rpy2py(df)
         assert numpy.recarray == type(rec)
         assert rec.a[0] == 1
         assert rec.b[0] == 2
+        assert rec.c[0] == 'e'
 
     def test_atomic_vector_to_numpy(self):
         v = robjects.vectors.IntVector((1,2,3))
@@ -194,3 +199,25 @@ class TestNumpyConversions(object):
             "B": robjects.vectors.IntVector([1,2,3])})
         b = df.rx2('B')
         assert tuple((1,2,3)) == tuple(b)
+
+
+def test_unsignednumpyint_to_rint():
+    values = (1,2,3)
+    a8 = numpy.array(values, dtype='uint8')
+    v = rpyn.unsignednumpyint_to_rint(a8)
+    assert values == tuple(v)
+
+    a64 = numpy.array(values, dtype='uint64')
+    with pytest.raises(ValueError):
+        rpyn.unsignednumpyint_to_rint(a64)
+
+
+@pytest.mark.parametrize('values,expected_cls',
+                         ((['a', 1, 2], robjects.vectors.ListVector),
+                          (['a', 'b', 'c'], rinterface.StrSexpVector),
+                          ([b'a', b'b', b'c'], rinterface.ByteSexpVector)))
+def test_numpy_O_py2rpy(values, expected_cls):
+    a = numpy.array(values, dtype='O')
+    v = rpyn.numpy_O_py2rpy(a)
+    assert isinstance(v, expected_cls)
+    

@@ -79,8 +79,8 @@ def numpy2rpy(o):
     """ Augmented conversion function, converting numpy arrays into
     rpy2.rinterface-level R structures. """
     if not o.dtype.isnative:
-        raise(ValueError('Cannot pass numpy arrays with non-native '
-                         'byte orders at the moment.'))
+        raise ValueError('Cannot pass numpy arrays with non-native '
+                         'byte orders at the moment.')
 
     # Most types map onto R arrays:
     if o.dtype.kind in _kinds:
@@ -94,8 +94,8 @@ def numpy2rpy(o):
     # Record arrays map onto R data frames:
     elif o.dtype.kind == 'V':
         if o.dtype.names is None:
-            raise(ValueError('Nothing can be done for this numpy array '
-                             'type "%s" at the moment.' % (o.dtype,)))
+            raise ValueError('Nothing can be done for this numpy array '
+                             'type "%s" at the moment.' % (o.dtype,))
         df_args = []
         for field_name in o.dtype.names:
             df_args.append((field_name,
@@ -103,7 +103,7 @@ def numpy2rpy(o):
         res = ro.baseenv["data.frame"].rcall(tuple(df_args), ro.globalenv)
     # It should be impossible to get here:
     else:
-        raise(ValueError('Unknown numpy array type "%s".' % str(o.dtype)))
+        raise ValueError('Unknown numpy array type "%s".' % str(o.dtype))
     return res
 
 
