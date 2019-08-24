@@ -28,6 +28,9 @@ Changes
 
 - :mod:`rpy2.situation` is now also reporting the rpy2 version.
 
+- :func:`rpy2.robjecs.package_utils.default_symbol_check_after` was
+  renamed  :func:`rpy2.robjecs.package_utils.default_symbol_resolve`.
+
 Bugs fixed
 ----------
 

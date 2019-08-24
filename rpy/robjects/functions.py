@@ -7,7 +7,7 @@ from rpy2.robjects import help
 from . import conversion
 
 from rpy2.robjects.packages_utils import (default_symbol_r2python,
-                                          default_symbol_check_after,
+                                          default_symbol_resolve,
                                           _map_symbols,
                                           _fix_map_symbols)
 
@@ -147,7 +147,7 @@ class SignatureTranslatedFunction(Function):
                  init_prm_translate=None,
                  on_conflict='warn',
                  symbol_r2python=default_symbol_r2python,
-                 symbol_check_after=default_symbol_check_after):
+                 symbol_resolve=default_symbol_resolve):
         super(SignatureTranslatedFunction, self).__init__(sexp)
         if init_prm_translate is None:
             prm_translate = OrderedDict()
@@ -163,7 +163,7 @@ class SignatureTranslatedFunction(Function):
                  formals.names,
                  translation=prm_translate,
                  symbol_r2python=symbol_r2python,
-                 symbol_check_after=symbol_check_after)
+                 symbol_resolve=symbol_resove)
 
             msg_prefix = ('Conflict when converting R symbols'
                           ' in the function\'s signature:\n- ')

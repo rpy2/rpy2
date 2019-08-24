@@ -22,10 +22,26 @@ def get_packagepath(package):
 # their access from other modules (without circular dependencies).
 # It not necessarily the absolute best place to have the functions though.
 def default_symbol_r2python(rname):
+    """Replace each dot (.) with an underscore (_)."""
     return rname.replace('.', '_')
 
 
-def default_symbol_check_after(symbol_mapping):
+def default_symbol_resolve(symbol_mapping):
+    """Resolve any conflict in a symbol mapping.
+
+    The argument `symbol_mapping` maps candidate new symbol names
+    (e.g., the names of Python attributes in the namespace returned by
+    :func:`importr`)
+    to a sequence of original symbol names (e.g., the names of objects in
+    an R package). The purpose of this function is to resolved conflicts,
+    that is situations where there is more than one original symbol name
+    associated with a new symbol name.
+
+    :param symbol_mapping: a :class:`dict` or dict-like object.
+    :return: A 2-tuple with conflicts (a :class:`dict` mapping the new
+    symbol to a sequence of matching symbols) and resolutions (a
+    :class:`dict` mapping new).
+    """
     # dict to store the Python symbol -> R symbols mapping causing problems.
     conflicts = dict()
     resolutions = dict()
@@ -59,14 +75,14 @@ def default_symbol_check_after(symbol_mapping):
 def _map_symbols(rnames,
                  translation=dict(),
                  symbol_r2python=default_symbol_r2python,
-                 symbol_check_after=default_symbol_check_after):
+                 symbol_resolve=default_symbol_resolve):
     """
     :param names: an iterable of rnames
     :param translation: a mapping for R name->python name
     :param symbol_r2python: a function to translate an R symbol into a
                             (presumably valid) Python symbol
-    :param symbol_check_after: a function to check a prospective set of
-                               translation and resolve conflicts if needed
+    :param symbol_resolve: a function to check a prospective set of
+                           translation and resolve conflicts if needed
     """
     symbol_mapping = defaultdict(list)
     for rname in rnames:
@@ -75,7 +91,7 @@ def _map_symbols(rnames,
         else:
             rpyname = symbol_r2python(rname)
         symbol_mapping[rpyname].append(rname)
-    conflicts, resolutions = symbol_check_after(symbol_mapping)
+    conflicts, resolutions = symbol_resolve(symbol_mapping)
 
     return (symbol_mapping, conflicts, resolutions)
 
