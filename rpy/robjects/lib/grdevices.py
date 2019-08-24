@@ -17,7 +17,7 @@ grdevices = WeakPackage(grdevices._env,
                         on_conflict="warn",
                         version=grdevices.__version__,
                         symbol_r2python=grdevices._symbol_r2python,
-                        symbol_check_after=grdevices._symbol_check_after)
+                        symbol_resolve=grdevices._symbol_resolve)
 
 # non-interactive file devices
 png = grdevices.png

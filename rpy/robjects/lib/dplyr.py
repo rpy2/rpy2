@@ -16,7 +16,7 @@ with warnings.catch_warnings():
                         on_conflict="warn",
                         version=dplyr.__version__,
                         symbol_r2python=dplyr._symbol_r2python,
-                        symbol_check_after=dplyr._symbol_check_after)
+                        symbol_resolve=dplyr._symbol_resolve)
 
 TARGET_VERSION = '0.8.3'
 if dplyr.__version__ != TARGET_VERSION:

@@ -19,7 +19,7 @@ tidyr = WeakPackage(tidyr._env,
                     on_conflict="warn",
                     version=tidyr.__version__,
                     symbol_r2python=tidyr._symbol_r2python,
-                    symbol_check_after=tidyr._symbol_check_after)
+                    symbol_resolve=tidyr._symbol_resolve)
 
 
 def _wrap(rfunc):

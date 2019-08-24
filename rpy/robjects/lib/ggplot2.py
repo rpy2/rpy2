@@ -63,7 +63,7 @@ ggplot2 = WeakPackage(ggplot2._env,
                       on_conflict="warn",
                       version=ggplot2.__version__,
                       symbol_r2python=ggplot2._symbol_r2python,
-                      symbol_check_after=ggplot2._symbol_check_after)
+                      symbol_resolve=ggplot2._symbol_resolve)
 
 TARGET_VERSION = '3.2.0'
 if ggplot2.__version__ != TARGET_VERSION:
