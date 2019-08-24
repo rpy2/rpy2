@@ -68,7 +68,7 @@ def test_RInterpreterError():
     rie = rmagic.RInterpreterError(line,
                                    err,
                                    stdout)
-    assert str(rie).startswith == (rie.msg_prefix_template)
+    assert str(rie).startswith(rie.msg_prefix_template % (line, err))
 
 
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
