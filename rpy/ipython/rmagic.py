@@ -108,7 +108,8 @@ if numpy:
 class RInterpreterError(ri.embedded.RRuntimeError):
     """An error when running R code in a %%R magic cell."""
 
-    msg_prefix_template = 'Failed to parse and evaluate line %r.\nR error message: %r'
+    msg_prefix_template = ('Failed to parse and evaluate line %r.\n'
+                           'R error message: %r')
     rstdout_prefix = '\nR stdout:\n'
 
     def __init__(self, line, err, stdout):
