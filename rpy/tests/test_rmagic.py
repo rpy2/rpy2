@@ -61,6 +61,16 @@ def set_conversion(ipython_with_magic):
         rmagic.template_converter.deactivate()
 
 
+def test_RInterpreterError():
+    line = 123
+    err = 'Arrh!'
+    stdout = 'Kaput'
+    rie = rmagic.RInterpreterError(line,
+                                   err,
+                                   stdout)
+    assert str(rie).startswith == (rie.msg_prefix_template)
+
+
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_push(ipython_with_magic, clean_globalenv):
     ipython_with_magic.push({'X':np.arange(5), 'Y':np.array([3,5,4,6,7])})
