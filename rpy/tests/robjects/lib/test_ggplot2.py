@@ -20,6 +20,26 @@ class TestGGplot(object):
         gp = ggplot2.ggplot(mtcars)
         assert isinstance(gp, ggplot2.GGPlot)
 
+    def test_element_text(self):
+        et = ggplot2.element_text()
+        assert isinstance(et, ggplot2.ElementText)
+
+    def test_element_text_repr(self):
+        et = ggplot2.element_text()
+        assert repr(et).startswith('<instance of')
+
+    def test_element_rect(self):
+        er = ggplot2.element_rect()
+        assert isinstance(er, ggplot2.ElementRect)
+
+    def test_element_blank(self):
+        eb = ggplot2.element_blank()
+        assert isinstance(eb, ggplot2.ElementBlank)
+
+    def test_labs(self):
+        la = ggplot2.labs()
+        assert isinstance(la, ggplot2.Labs)
+
     def test_add(self):
         gp = ggplot2.ggplot(mtcars)
         gp += ggplot2.aes_string(x='wt', y='mpg')
@@ -37,6 +57,7 @@ class TestGGplot(object):
         ['theme_grey',
          'theme_classic',
          'theme_dark',
+         'theme_grey',
          'theme_light',
          'theme_bw',
          'theme_linedraw',
