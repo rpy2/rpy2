@@ -140,7 +140,8 @@ p <- ggplot(dataf) +
                 y = 'latd',
                 color = 'population_total',
                 size = 'area_total_km2') +
-     geom_point(alpha = 0.5) +
+     # TODO: alpha appears broken here.
+     geom_point() +
      scale_x_continuous('Longitude') +
      scale_y_continuous('Latitude') +
      scale_size(range = c(1, 18)) +
