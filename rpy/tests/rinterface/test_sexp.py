@@ -32,8 +32,10 @@ def test_get():
     assert sexp.typeof == rinterface.RTYPES.CLOSXP
 
 
-def test_list_attrs():
-    x = rinterface.IntSexpVector((1, 2, 3))
+@pytest.mark.parametrize('cls',
+                         (rinterface.IntSexpVector, rinterface.ListSexpVector))
+def test_list_attrs(cls):
+    x = cls((1, 2, 3))
     assert len(x.list_attrs()) == 0
     x.do_slot_assign('a', rinterface.IntSexpVector((33, )))
     assert len(x.list_attrs()) == 1
