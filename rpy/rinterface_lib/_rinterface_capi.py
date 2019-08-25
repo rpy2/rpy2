@@ -401,7 +401,7 @@ def _evaluate_in_r(rargs):
     # An uncaught exception in the boby of this function would
     # result in a segfault. we wrap it in a try-except an report
     # exceptions as logs.
- 
+
     rlib = openrlib.rlib
 
     try:
