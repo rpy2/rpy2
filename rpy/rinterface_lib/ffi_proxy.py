@@ -53,7 +53,8 @@ _cleanup_def = SignatureDefinition('_cleanup', 'void',
                                    ('SA_TYPE', 'int', 'int'))
 _showfiles_def = SignatureDefinition('_showfiles', 'int',
                                      ('int', 'const char **', 'const char **',
-                                      'const char *', 'Rboolean', 'const char *'))
+                                      'const char *', 'Rboolean',
+                                      'const char *'))
 _processevents_def = SignatureDefinition('_processevents', 'void', ('void', ))
 _busy_def = SignatureDefinition('_busy', 'void', ('int', ))
 _callback_def = SignatureDefinition('_callback', 'void', ('void', ))
