@@ -56,6 +56,7 @@ import rpy2.rinterface as ri
 import rpy2.rinterface_lib.callbacks
 import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
+from rpy2.robjects.lib import grdevices
 from rpy2.robjects.conversion import (Converter,
                                       localconverter)
 import warnings
@@ -104,6 +105,8 @@ if numpy:
         from rpy2.robjects import pandas2ri
         template_converter += pandas2ri.converter
 
+has_png = ro.baseenv['capabilities']('png')[0]
+has_cairo = ro.baseenv['capabilities']('cairo')[0]
 
 class RInterpreterError(ri.embedded.RRuntimeError):
     """An error when running R code in a %%R magic cell."""
@@ -418,7 +421,7 @@ class RMagics(Magics):
             if args.units != "px" and getattr(args, 'res') is None:
                 args.res = 72
 
-        plot_arg_names = ['width', 'height', 'pointsize', 'bg']
+        plot_arg_names = ['width', 'height', 'pointsize', 'bg', 'type']
         if self.device == 'png':
             plot_arg_names += ['units', 'res']
 
@@ -438,8 +441,8 @@ class RMagics(Magics):
 
             if self.device == 'png':
                 # Note: that %% is to pass into R for interpolation there
-                ro.r.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
-                         **argdict)
+                grdevices.png("%s/Rplots%%03d.png" % tmpd_fix_slashes,
+                              **argdict)
             elif self.device == 'svg':
                 self.cairo.CairoSVG("%s/Rplot.svg" % tmpd_fix_slashes,
                                     **argdict)
@@ -571,6 +574,14 @@ class RMagics(Magics):
         Resolution of png plotting device sent as an argument to *png* in R.
         Defaults to 72 if *units* is one of ["in", "cm", "mm"].""")
         )
+    @argument(
+        '--type', type=str,
+        choices=['cairo', 'cairo-png', 'Xlib', 'quartz'],
+        help=textwrap.dedent("""
+        Type device used to generate the figure.
+        """
+        )
+    )
     @argument(
         '-c', '--converter',
         default=None,

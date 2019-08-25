@@ -128,7 +128,7 @@ The data frame called `dataf` in our Python notebook was already bound to the na
 We can just use it in subsequent cells.
 
 ```python
-%%R -w 800
+%%R -w 800 --type=cairo
 
 cat("Running an R code cell.\n")
 
@@ -137,8 +137,7 @@ p <- ggplot(dataf) +
                 y = 'latd',
                 color = 'population_total',
                 size = 'area_total_km2') +
-     # TODO: alpha appears broken here.
-     geom_point() +
+     geom_point(alpha = 0.5) +
      scale_x_continuous('Longitude') +
      scale_y_continuous('Latitude') +
      scale_size(range = c(1, 18)) +

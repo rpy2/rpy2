@@ -14,6 +14,8 @@ New features
 
 - The documentation covers the use of notebooks (mainly Jupyter/Jupyterlab).
 
+- The PNG output in Jupyter notebooks R cells can now specify an argument `--type`
+  (passed as the named argument `type` in the R function `png`).
 
 Changes
 -------
