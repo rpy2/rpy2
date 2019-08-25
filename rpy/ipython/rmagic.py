@@ -105,8 +105,6 @@ if numpy:
         from rpy2.robjects import pandas2ri
         template_converter += pandas2ri.converter
 
-has_png = ro.baseenv['capabilities']('png')[0]
-has_cairo = ro.baseenv['capabilities']('cairo')[0]
 
 class RInterpreterError(ri.embedded.RRuntimeError):
     """An error when running R code in a %%R magic cell."""
@@ -579,9 +577,7 @@ class RMagics(Magics):
         choices=['cairo', 'cairo-png', 'Xlib', 'quartz'],
         help=textwrap.dedent("""
         Type device used to generate the figure.
-        """
-        )
-    )
+        """))
     @argument(
         '-c', '--converter',
         default=None,
