@@ -138,7 +138,6 @@ def showmessage(s: str) -> None:
 _SHOWMESSAGE_EXCEPTION_LOG = 'R[show message]: %s'
 
 
-
 @ffi_proxy.callback(ffi_proxy._showmessage_def,
                     ffi,
                     ffi_proxy.ABI)

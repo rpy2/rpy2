@@ -263,7 +263,7 @@ implementation of ``dplyr``, it *just works*.
 .. parsed-literal::
 
     [90m# Source:   lazy query [?? x 2][39m
-    [90m# Database: sqlite 3.29.0 [/tmp/tmpih49wctp][39m
+    [90m# Database: sqlite 3.29.0 [/tmp/tmpmsgm4wqg][39m
        gear mean_ptw
       [3m[90m<dbl>[39m[23m    [3m[90m<dbl>[39m[23m
     [90m1[39m     4    [4m1[24m237.

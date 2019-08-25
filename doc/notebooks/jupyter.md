@@ -1,7 +1,4 @@
-# Notebooka.
-
-
-## Data Import
+# Data Import
 
 We choose to use an external dataset to demonstrate how R's own data import
 features can be used.
@@ -15,13 +12,13 @@ dataf = utils.read_csv('https://raw.githubusercontent.com/jakevdp/PythonDataScie
 dataf
 ```
 
-## Graphics
+# Graphics
 
 R has arguably some the best static visualizations, often looking more polished
 than other visualization systems and this without the need to spend much
 effort with them.
 
-### Using `ggplot2`
+## Using `ggplot2`
 
 ```python
 import rpy2.robjects.lib.ggplot2 as gp
@@ -71,7 +68,7 @@ p = (gp.ggplot(dataf) +
 image_png(p)
 ```
 
-### Using `ggplot2` extensions
+## Using `ggplot2` extensions
 
 To use the viridis color scale, we just need to import the corresponding R package, and write
 3 lines of Python to extend `rpy2`'s ggplot2 wrapper with a new color scale.

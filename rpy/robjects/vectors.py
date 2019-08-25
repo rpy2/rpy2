@@ -1341,7 +1341,8 @@ class DataFrame(ListVector):
            (warning: indexing starts at one in R)
         :param fill: boolean (fill the lines when less entries than columns)
         :param comment_char: comment character
-        :param na_strings: a list of strings which are interpreted to be NA values
+        :param na_strings: a list of strings which are interpreted to be NA
+           values
         :param as_is: boolean (keep the columns of strings as such, or turn
            them into factors)
         """
