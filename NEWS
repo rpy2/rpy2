@@ -10,7 +10,9 @@ New features
 - An :class:`threading.RLock` is added to :mod:`rpy2.rinterface_lib.openrlib` and is
   used by the context manager :func:`rpy2.rinterface_lib.memorymanagement.rmemory`
   to ensure that protect/unprotect cycles cannot be broken by thread switching, at least
-  as the context manager is used to handle such cycles (see issue #571). 
+  as the context manager is used to handle such cycles (see issue #571).
+
+- The documentation covers the use of notebooks (mainly Jupyter/Jupyterlab).
 
 
 Changes
