@@ -5,7 +5,7 @@ New features
 ------------
 
 - Python matrix multiplication (`__matmul__` / `@`) added to
-  R :class:`Matrix objects.
+  R :class:`Matrix` objects.
 
 - An :class:`threading.RLock` is added to :mod:`rpy2.rinterface_lib.openrlib` and is
   used by the context manager :func:`rpy2.rinterface_lib.memorymanagement.rmemory`
