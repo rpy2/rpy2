@@ -1333,17 +1333,17 @@ class DataFrame(ListVector):
                      as_is=False):
         """ Create an instance from data in a .csv file.
 
-        path         : string with a path
-        header       : boolean (heading line with column names or not)
-        sep          : separator character
-        quote        : quote character
-        row_names    : column name, or column index for column names
-          (warning: indexing starts at one in R)
-        fill         : boolean (fill the lines when less entries than columns)
-        comment_char : comment character
-        na_strings   : a list of strings which are interpreted to be NA values
-        as_is        : boolean (keep the columns of strings as such, or turn
-          them into factors)
+        :param path: string with a path
+        :param header: boolean (heading line with column names or not)
+        :param sep: separator character
+        :param quote: quote character
+        :param row_names: column name, or column index for column names
+           (warning: indexing starts at one in R)
+        :param fill: boolean (fill the lines when less entries than columns)
+        :param comment_char: comment character
+        :param na_strings: a list of strings which are interpreted to be NA values
+        :param as_is: boolean (keep the columns of strings as such, or turn
+           them into factors)
         """
         path = conversion.py2rpy(path)
         header = conversion.py2rpy(header)
