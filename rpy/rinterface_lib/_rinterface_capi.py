@@ -3,6 +3,7 @@
 import enum
 import logging
 import warnings
+from . import ffi_proxy
 from . import openrlib
 from _rinterface_cffi import ffi
 from . import conversion
@@ -65,7 +66,9 @@ def _release(cdata):
         _R_PRESERVED[addr] = count
 
 
-@ffi.callback('void (SEXP)')
+@ffi_proxy.callback(ffi_proxy._capsule_finalizer_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _capsule_finalizer(cdata):
     try:
         openrlib.rlib.R_ClearExternalPtr(cdata)
@@ -391,12 +394,14 @@ def unserialize(cdata, cdata_env):
         return res
 
 
-@ffi.callback('SEXP (SEXP args)')
+@ffi_proxy.callback(ffi_proxy._evaluate_in_r_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _evaluate_in_r(rargs):
     # An uncaught exception in the boby of this function would
     # result in a segfault. we wrap it in a try-except an report
     # exceptions as logs.
-
+ 
     rlib = openrlib.rlib
 
     try:

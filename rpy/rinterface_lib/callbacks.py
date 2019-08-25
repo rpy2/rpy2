@@ -8,23 +8,10 @@ from contextlib import contextmanager
 import logging
 import typing
 from _rinterface_cffi import ffi
+from . import ffi_proxy
 from . import conversion
 
 logger = logging.getLogger(__name__)
-
-READCONSOLE_SIGNATURE = 'int(char *, unsigned char *, int, int)'
-RESETCONSOLE_SIGNATURE = 'void(void)'
-WRITECONSOLE_SIGNATURE = 'void(char *, int)'
-WRITECONSOLE_EX_SIGNATURE = 'void(char *, int, int)'
-SHOWMESSAGE_SIGNATURE = 'void(char *)'
-CHOOSEFILE_SIGNATURE = 'int(int, char *, int)'
-CLEANUP_SIGNATURE = 'void(SA_TYPE, int, int)'
-SHOWFILE_SIGNATURE = ('int(int, const char **, const char **, '
-                      '    const char *, Rboolean, const char *)')
-PROCESSEVENT_SIGNATURE = 'void(void)'
-BUSY_SIGNATURE = 'void(int)'
-CALLBACK_SIGNATURE = 'void(void)'
-YESNOCANCEL_SIGNATURE = 'int(char *)'  # TODO: should be const char *
 
 
 # TODO: rename to "replace_in_module"
@@ -45,7 +32,9 @@ def consoleflush():
 _FLUSHCONSOLE_EXCEPTION_LOG = 'R[flush console]: %s'
 
 
-@ffi.callback('void (void)')
+@ffi_proxy.callback(ffi_proxy._consoleflush_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _consoleflush():
     try:
         consoleflush()
@@ -61,7 +50,9 @@ _READCONSOLE_EXCEPTION_LOG = 'R[read into console]: %s'
 _READCONSOLE_INTERNAL_EXCEPTION_LOG = 'Internal rpy2 error with callback: %s'
 
 
-@ffi.callback(READCONSOLE_SIGNATURE)
+@ffi_proxy.callback(ffi_proxy._consoleread_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _consoleread(prompt, buf, n: int, addtohistory) -> int:
     success = None
     try:
@@ -102,7 +93,9 @@ def consolereset() -> None:
 _RESETCONSOLE_EXCEPTION_LOG = 'R[reset console]: %s'
 
 
-@ffi.callback(RESETCONSOLE_SIGNATURE)
+@ffi_proxy.callback(ffi_proxy._consolereset_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _consolereset() -> None:
     try:
         consolereset()
@@ -123,7 +116,9 @@ def consolewrite_warnerror(s: str) -> None:
 _WRITECONSOLE_EXCEPTION_LOG = 'R[write to console]: %s'
 
 
-@ffi.callback(WRITECONSOLE_EX_SIGNATURE)
+@ffi_proxy.callback(ffi_proxy._consolewrite_ex_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _consolewrite_ex(buf, n: int, otype) -> None:
     s = conversion._cchar_to_str_with_maxlen(buf, maxlen=n)
     try:
@@ -143,7 +138,10 @@ def showmessage(s: str) -> None:
 _SHOWMESSAGE_EXCEPTION_LOG = 'R[show message]: %s'
 
 
-@ffi.callback(SHOWMESSAGE_SIGNATURE)
+
+@ffi_proxy.callback(ffi_proxy._showmessage_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _showmessage(buf):
     s = conversion._cchar_to_str(buf)
     try:
@@ -159,7 +157,9 @@ def choosefile(new):
 _CHOOSEFILE_EXCEPTION_LOG = 'R[choose file]: %s'
 
 
-@ffi.callback(CHOOSEFILE_SIGNATURE)
+@ffi_proxy.callback(ffi_proxy._choosefile_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _choosefile(new, buf, n: int) -> int:
     try:
         res = choosefile(new)
@@ -191,7 +191,9 @@ _SHOWFILE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error while '
                                     'showing files for R: %s')
 
 
-@ffi.callback(SHOWFILE_SIGNATURE)
+@ffi_proxy.callback(ffi_proxy._showfiles_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _showfiles(nfiles: int, files, headers, wtitle, delete, pager) -> int:
     filenames = []
     headers_str = []
@@ -229,7 +231,9 @@ def cleanup(saveact, status, runlast):
 _CLEANUP_EXCEPTION_LOG = 'R[cleanup]: %s'
 
 
-@ffi.callback(CLEANUP_SIGNATURE)
+@ffi_proxy.callback(ffi_proxy._cleanup_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _cleanup(saveact, status, runlast):
     try:
         cleanup(saveact, status, runlast)
@@ -244,7 +248,9 @@ def processevents() -> None:
 _PROCESSEVENTS_EXCEPTION_LOG = 'R[processevents]: %s'
 
 
-@ffi.callback(PROCESSEVENT_SIGNATURE)
+@ffi_proxy.callback(ffi_proxy._processevents_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _processevents() -> None:
     try:
         processevents()
@@ -259,7 +265,9 @@ def busy(x: int) -> None:
 _BUSY_EXCEPTION_LOG = 'R[busy]: %s'
 
 
-@ffi.callback(BUSY_SIGNATURE)
+@ffi_proxy.callback(ffi_proxy._busy_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _busy(which) -> None:
     try:
         busy(which)
@@ -274,7 +282,9 @@ def callback() -> None:
 _CALLBACK_EXCEPTION_LOG = 'R[callback]: %s'
 
 
-@ffi.callback(CALLBACK_SIGNATURE)
+@ffi_proxy.callback(ffi_proxy._callback_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _callback() -> None:
     try:
         callback()
@@ -289,7 +299,9 @@ def yesnocancel(question: str) -> int:
 _YESNOCANCEL_EXCEPTION_LOG = 'R[yesnocancel]: %s'
 
 
-@ffi.callback(YESNOCANCEL_SIGNATURE)
+@ffi_proxy.callback(ffi_proxy._yesnocancel_def,
+                    ffi,
+                    ffi_proxy.ABI)
 def _yesnocancel(question):
     try:
         q = conversion._cchar_to_str(question)
