@@ -42,7 +42,7 @@ Changes
   a :class:`dict` will result in a :class:`TypeError` rather than a
   :class:`ValueError`.
 
-- Methods of :class:`rpy2.rlike.container.OrdDict` now raise a
+- Methods of :class:`rpy2.rlike.container.OrdDict` now raises a
   :class:`NotImplementedError` when not implemented.
 
 Bugs fixed
