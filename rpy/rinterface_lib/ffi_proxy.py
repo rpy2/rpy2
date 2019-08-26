@@ -1,5 +1,6 @@
 import enum
 
+
 class InterfaceType(enum.Enum):
     ABI = 1
     API = 2
