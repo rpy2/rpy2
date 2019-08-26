@@ -47,6 +47,12 @@ def test_POSIXct_from_invalidpythontime():
         robjects.POSIXct(x)
 
 
+def test_POSIXct_from_invalidobject():
+    x = ['abc', 3]
+    with pytest.raises(TypeError):
+        robjects.POSIXct(x)
+
+
 def test_POSIXct_from_pythontime():
     x = [time.struct_time(_dateval_tuple), 
          time.struct_time(_dateval_tuple)]

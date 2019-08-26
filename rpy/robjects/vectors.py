@@ -850,7 +850,7 @@ class POSIXct(POSIXt, FloatVector):
         elif isinstance(seq[0], datetime):
             init_param = POSIXct.sexp_from_datetime(seq)
         else:
-            raise ValueError(
+            raise TypeError(
                 'All elements must inherit from time.struct_time or '
                 'datetime.datetime.')
         super().__init__(init_param)
@@ -947,10 +947,11 @@ class Array(Vector):
         return res
 
     def __dim_set(self, value):
+        # TODO: R will create a copy of the object upon assignment
+        #   of a new dimension attribute.
+        raise NotImplementedError("Not yet implemented")
         value = conversion.py2rpy(value)
         self._dim_set(self, value)
-        # TODO: not properly done
-        raise(Exception("Not yet implemented"))
 
     dim = property(__dim_get, __dim_set,
                    "Get or set the dimension of the array.")
