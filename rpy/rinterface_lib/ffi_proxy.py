@@ -1,5 +1,11 @@
-ABI = 0
-API = 1
+import enum
+
+class InterfaceType(enum.Enum):
+    ABI = 1
+    API = 2
+
+
+interface_type = InterfaceType.ABI
 
 
 class SignatureDefinition(object):
@@ -20,9 +26,9 @@ class SignatureDefinition(object):
         )
 
 
-def callback(definition, ffi, signature_type):
+def callback(definition, ffi):
     def decorator(func):
-        if signature_type == ABI:
+        if interface_type == InterfaceType.ABI:
             res = ffi.callback(definition.callback_def)(func)
         else:
             res = ffi.def_extern(definition.extern_def)(func)
