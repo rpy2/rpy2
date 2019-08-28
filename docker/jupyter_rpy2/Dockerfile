@@ -11,7 +11,7 @@ RUN \
   apt-get update -qq && \
   apt-get install -y curl && \
   apt-get remove -y --purge nodejs npm && \
-  curl -sL https://deb.nodesource.com/setup_11.x | bash - && \
+  curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
   apt-get install -y nodejs && \
   wget -O - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
   apt-get update -qq && \

@@ -1,9 +1,9 @@
-FROM ubuntu:18.10
+FROM ubuntu:19.04
 
 MAINTAINER Laurent Gautier <lgautier@gmail.com>
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG CRAN_MIRROR=https://cran.revolutionanalytics.com/
+ARG CRAN_MIRROR=https://cloud.r-project.org
 ARG CRAN_MIRROR_TAG=-cran35
 
 COPY install_apt.sh /opt/

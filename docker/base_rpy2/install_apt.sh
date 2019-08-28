@@ -7,9 +7,12 @@ apt-get install -y \
 	libcurl4-openssl-dev \
 	libnlopt-dev \
         lsb-release
-echo "deb ${CRAN_MIRROR}/bin/linux/ubuntu $(lsb_release -c -s)${CRAN_MIRROR_TAG}/" \
-     >> /etc/apt/sources.list.d/added_repos.list
-apt-key adv --no-tty --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
+apt-key adv \
+        --keyserver keyserver.ubuntu.com \
+        --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+add-apt-repository \
+        --yes \
+        "deb {CRAN_MIRROR}/bin/linux/ubuntu/ $(lsb_release -c -s)${CRAN_MIRROR_TAG}/"
 apt-get update -qq
 apt-get install -y \
         aptdaemon \
