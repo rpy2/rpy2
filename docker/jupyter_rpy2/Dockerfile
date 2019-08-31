@@ -25,7 +25,6 @@ RUN \
   npm install -g configurable-http-proxy && \
   pip3 --no-cache-dir install jupyter notebook && \
   pip3 --no-cache-dir install jupyterlab && \
-  jupyter serverextension enable --py jupyterlab --sys-prefix && \
   pip3 --no-cache-dir install bokeh && \
   pip3 --no-cache-dir install ipywidgets && \
   jupyter nbextension enable --py --sys-prefix widgetsnbextension && \
