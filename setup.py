@@ -168,6 +168,7 @@ if __name__ == '__main__':
                                'robjects.lib', 'interactive', 'ipython',
                                'tests',
                                'tests.rinterface', 'tests.rlike', 'tests.robjects',
+                               'tests.ipython',
                                'tests.robjects.lib')]
                     ),
         classifiers = ['Programming Language :: Python',
