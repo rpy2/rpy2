@@ -7,10 +7,12 @@ ARG CRAN_MIRROR_TAG=-cran35
 
 USER root
 
-ARG LLVM_VERSION=6.0
+ARG LLVM_VERSION=7.0
 
 RUN \
-  echo 'deb http://apt.llvm.org/'"$(lsb_release -c -s)"'/ llvm-toolchain-'"$(lsb_release -c -s)"'-6.0 main' >> /etc/apt/sources.list && \
+  add-apt-repository \
+        --yes \
+        'deb http://apt.llvm.org/'"$(lsb_release -c -s)"'/ llvm-toolchain-'"$(lsb_release -c -s)"'-7 main' && \
   wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add - && \
   apt-get update -qq && \
   apt-get install -y \
@@ -26,14 +28,14 @@ RUN \
 		     wget && \
   rm -rf /var/lib/apt/lists/*
 
-ARG SPARK_VERSION=2.4.0
+ARG SPARK_VERSION=2.4.3
 RUN \
   wget --progress=bar http://mirrors.ocf.berkeley.edu/apache/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
   tar -xzf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
   mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/ && \
   rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
 
-ARG LLVMLITE_VERSION=0.24.0
+ARG LLVMLITE_VERSION=0.27.0
 RUN \
   pip3 --no-cache-dir install wheel --upgrade && \
   pip3 --no-cache-dir install sqlalchemy && \
