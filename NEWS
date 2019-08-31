@@ -16,6 +16,8 @@ New features
 
 - The PNG output in Jupyter notebooks R cells can now specify an argument `--type`
   (passed as the named argument `type` in the R function `png`).
+  For example on some Linux systems and R installations, the type `cairo`
+  can fix issues when alpha transparency is used.
 
 Changes
 -------
