@@ -57,7 +57,7 @@ template_vector_vertical = jinja2.Template("""
   {%- if has_vector_names %}
     <td class="rpy2_names">{{ vector.names[elt_i] }}</td>
   {%- endif %}
-    <td>{{ vector[elt_i]}}</td>
+    <td>{{ "%s" | format(vector[elt_i]) | truncate(12) }}</td>
   </tr>
   {%- endfor %}
   {%- if display_nrowmax < (vector | length) %}
@@ -75,7 +75,7 @@ template_vector_vertical = jinja2.Template("""
   {%- if has_vector_names %}
     <td class="rpy2_names">{{ vector.names[elt_i] }}</td>
   {%- endif %}
-    <td>{{ vector[elt_i] }}</td>
+    <td>{{ "%s" | format(vector[elt_i]) | truncate(12) }}</td>
   </tr>
   {%- endfor %}
 </tr>
@@ -258,6 +258,7 @@ def html_rlist(vector,
                display_nrowmax=10,
                size_tail=2,
                table_class='rpy2_table'):
+    rg = range(max(0, len(vector)-size_tail), len(vector))
     html = template_vector_vertical.render({
         'table_class': table_class,
         'clsname': type(vector).__name__,
@@ -265,7 +266,7 @@ def html_rlist(vector,
         'has_vector_names': vector.names is not rinterface.NULL,
         'display_nrowmax': min(display_nrowmax, len(vector)),
         'size_tail': size_tail,
-        'elt_i_tail': range(max(0, len(vector)-size_tail), len(vector))})
+        'elt_i_tail': rg})
     return html
 
 
