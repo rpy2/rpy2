@@ -69,7 +69,7 @@ notebooks/%.ipynb : notebooks/%.md
                  --run \
                  -o $@ \
 	         $<
-	cp $@ _static/notebooks/
+	cp -p $@ _static/notebooks/
 
 # rule to build sphinx-friendly ReST from ipython notebooks
 notebooks/%.rst : notebooks/%.ipynb

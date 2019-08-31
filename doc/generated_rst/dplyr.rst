@@ -1,5 +1,4 @@
-
-.. code:: 
+.. code:: ipython3
 
     from functools import partial
     from rpy2.ipython import html
@@ -12,7 +11,7 @@ We need 2 things for this:
 
 1- A data frame (using one of R's demo datasets).
 
-.. code:: 
+.. code:: ipython3
 
     from rpy2.robjects.packages import importr, data
     datasets = importr('datasets')
@@ -23,20 +22,20 @@ In addition to that, and because this tutorial is in a notebook, we
 initialize HTML rendering for R objects (pretty display of R data
 frames).
 
-.. code:: 
+.. code:: ipython3
 
     import rpy2.ipython.html
     rpy2.ipython.html.init_printing()
 
 2- dplyr
 
-.. code:: 
+.. code:: ipython3
 
     from rpy2.robjects.lib.dplyr import DataFrame
 
 With this we have the choice of chaining (D3-style)
 
-.. code:: 
+.. code:: ipython3
 
     dataf = (DataFrame(mtcars).
              filter('gear>3').
@@ -83,7 +82,7 @@ With this we have the choice of chaining (D3-style)
 
 or with pipes (magrittr style).
 
-.. code:: 
+.. code:: ipython3
 
     # currently no longer working
     from rpy2.robjects.lib.dplyr import (filter,
@@ -108,7 +107,7 @@ Using a Python function is not too difficult though. We can just call
 Python back from R. To achieve this we simply use the decorator
 ``rternalize``.
 
-.. code:: 
+.. code:: ipython3
 
     # Define a python function, and make
     # it a function R can use through `rternalize`
@@ -175,11 +174,11 @@ Python back from R. To achieve this we simply use the decorator
 It is also possible to carry this out without having to place the custom
 function in R's global environment.
 
-.. code:: 
+.. code:: ipython3
 
     del(globalenv['mean_np'])
 
-.. code:: 
+.. code:: ipython3
 
     from rpy2.robjects.lib.dplyr import StringInEnv
     from rpy2.robjects import Environment
@@ -241,7 +240,7 @@ The seamless translation of transformations to SQL whenever the data are
 in a table can be used directly. Since we are lifting the original
 implementation of ``dplyr``, it *just works*.
 
-.. code:: 
+.. code:: ipython3
 
     from rpy2.robjects.lib.dplyr import dplyr
     # in-memory SQLite database broken in dplyr's src_sqlite
@@ -263,7 +262,7 @@ implementation of ``dplyr``, it *just works*.
 .. parsed-literal::
 
     [90m# Source:   lazy query [?? x 2][39m
-    [90m# Database: sqlite 3.29.0 [/tmp/tmpmsgm4wqg][39m
+    [90m# Database: sqlite 3.29.0 [/tmp/tmp_y626iuh][39m
        gear mean_ptw
       [3m[90m<dbl>[39m[23m    [3m[90m<dbl>[39m[23m
     [90m1[39m     4    [4m1[24m237.
@@ -274,7 +273,7 @@ implementation of ``dplyr``, it *just works*.
 Since we are manipulating R objects, anything available to R is also
 available to us. If we want to see the SQL code generated that's:
 
-.. code:: 
+.. code:: ipython3
 
     silent = dplyr.show_query(res)
 
@@ -294,7 +293,7 @@ The conversion rules in rpy2 make the above easily applicable to pandas
 data frames, completing the "lexical loan" of the dplyr vocabulary from
 R.
 
-.. code:: 
+.. code:: ipython3
 
     from rpy2.robjects import pandas2ri
     from rpy2.robjects import default_converter
@@ -317,7 +316,7 @@ Using a local converter lets us also go from the pandas data frame to
 our dplyr-augmented R data frame and use the dplyr transformations on
 it.
 
-.. code:: 
+.. code:: ipython3
 
     with localconverter(default_converter + pandas2ri.converter) as cv:
         dataf = (DataFrame(pd_mtcars).

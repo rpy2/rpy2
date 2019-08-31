@@ -7,3 +7,4 @@ Getting started
 
    overview
    introduction
+   notebooks

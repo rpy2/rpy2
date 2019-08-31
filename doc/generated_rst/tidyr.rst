@@ -1,5 +1,4 @@
-
-.. code:: 
+.. code:: ipython3
 
     from functools import partial
     from rpy2.ipython import html
@@ -8,7 +7,7 @@
 tidyr in Python
 ===============
 
-.. code:: 
+.. code:: ipython3
 
     from rpy2.robjects.lib.tidyr import DataFrame
 
@@ -18,12 +17,12 @@ In addition to that, and because this tutorial is in a notebook, we
 initialize HTML rendering for R objects (pretty display of R data
 frames).
 
-.. code:: 
+.. code:: ipython3
 
     import rpy2.ipython.html
     rpy2.ipython.html.init_printing()
 
-.. code:: 
+.. code:: ipython3
 
     from collections import OrderedDict
     from rpy2.robjects.vectors import (StrVector,
@@ -78,7 +77,7 @@ frames).
 
 
 
-.. code:: 
+.. code:: ipython3
 
     dataf.spread('x', 'y')
 

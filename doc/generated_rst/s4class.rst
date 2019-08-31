@@ -1,5 +1,4 @@
-
-.. code:: 
+.. code:: ipython3
 
     from functools import partial
     from rpy2.ipython import html
@@ -14,7 +13,7 @@ biology.
 
 We use the bioconductor ``Biobase``:
 
-.. code:: 
+.. code:: ipython3
 
     from rpy2.robjects.packages import importr
     biobase = importr('Biobase')
@@ -22,13 +21,13 @@ We use the bioconductor ``Biobase``:
 The R package contains constructors for the S4 classes defined. They are
 simply functions, and can be used as such through ``rpy2``:
 
-.. code:: 
+.. code:: ipython3
 
     eset = biobase.ExpressionSet() 
 
 The object ``eset`` is an R object of type ``S4``:
 
-.. code:: 
+.. code:: ipython3
 
     type(eset)
 
@@ -43,7 +42,7 @@ The object ``eset`` is an R object of type ``S4``:
 
 It has a class as well:
 
-.. code:: 
+.. code:: ipython3
 
     tuple(eset.rclass)
 
@@ -59,7 +58,7 @@ It has a class as well:
 In R, objects attributes are also known as slots. The attribute names
 can be listed with:
 
-.. code:: 
+.. code:: ipython3
 
     tuple(eset.slotnames())
 
@@ -82,7 +81,7 @@ The attributes can also be accessed through the ``rpy2`` property
 ``slots``. ``slots`` is a mapping between attributes names (keys) and
 their associated R object (values). It can be used as Python ``dict``:
 
-.. code:: 
+.. code:: ipython3
 
     # print keys
     print(tuple(eset.slots.keys()))
@@ -105,7 +104,7 @@ Mapping S4 classes to Python classes
 Writing one's own Python class extending rpy2's ``RS4`` is
 straightforward. That class can be used wrap our ``eset`` object
 
-.. code:: 
+.. code:: ipython3
 
     
     from rpy2.robjects.methods import RS4   
@@ -123,7 +122,7 @@ customizing the handling of S4 objects.
 A simple implementation is a factory function that will conditionally
 wrap the object in our Python class ``ExpressionSet``:
 
-.. code:: 
+.. code:: ipython3
 
     def rpy2py_s4(obj):
         if 'ExpressionSet' in obj.rclass:
@@ -146,7 +145,7 @@ wrap the object in our Python class ``ExpressionSet``:
 
 That function can be be register to a ``Converter``:
 
-.. code:: 
+.. code:: ipython3
 
     from rpy2.robjects import default_converter
     from rpy2.robjects.conversion import Converter, localconverter
@@ -170,7 +169,7 @@ That function can be be register to a ``Converter``:
 When using that converter, the matching R objects are returned as
 instances of our Python class ``ExpressionSet``:
 
-.. code:: 
+.. code:: ipython3
 
     
     with localconverter(my_converter) as cv:
@@ -189,7 +188,7 @@ Class attributes
 The R attribute ``assayData`` can be accessed through the accessor
 method ``exprs()`` in R. We can make it a property in our Python class:
 
-.. code:: 
+.. code:: ipython3
 
     class ExpressionSet(RS4):
         def _exprs_get(self):
@@ -222,7 +221,7 @@ system.
 A natural way to expose the S4 method to Python is to use the
 ``multipledispatch`` package:
 
-.. code:: 
+.. code:: ipython3
 
     from multipledispatch import dispatch
     from functools import partial
@@ -242,7 +241,7 @@ A natural way to expose the S4 method to Python is to use the
 The R method ``rowMedians`` is also defined for matrices, which we can
 expose on the Python end as well:
 
-.. code:: 
+.. code:: ipython3
 
     from rpy2.robjects.vectors import Matrix
     @dispatch(Matrix)
@@ -260,7 +259,7 @@ If this is ever becoming a performance issue, the specific R function
 dispatched can be prefetched and explicitly called in the Python
 function. For example:
 
-.. code:: 
+.. code:: ipython3
 
     from rpy2.robjects.methods import getmethod
     from rpy2.robjects.vectors import StrVector
