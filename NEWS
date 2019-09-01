@@ -47,6 +47,10 @@ Changes
 - Methods of :class:`rpy2.rlike.container.OrdDict` now raises a
   :class:`NotImplementedError` when not implemented.
 
+- The creation of R vectors from Python sequences is now relying on a method
+  :meth:`_populate_r_vector` that allows vectorized implementation to
+  to improve speed.
+
 Bugs fixed
 ----------
 
