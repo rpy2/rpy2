@@ -51,6 +51,9 @@ Changes
   :meth:`_populate_r_vector` that allows vectorized implementation to
   to improve speed.
 
+- Continuous integration tests run against Python 3.6, 3.7, and 3.8. It is
+  no longer checked against Python 3.5.
+
 Bugs fixed
 ----------
 
@@ -58,7 +61,7 @@ Bugs fixed
   R package ggplot2 reaching version 3.2.0. (issue #562).
 
 - Better handling of recent :mod:`pandas` arrays with missing values
- (related to issue #544).
+  (related to issue #544).
 
 - The mapping of the R operator `%in%` reachable through the attribute `ro`
   of R vectors was always returning `True`. It is now working properly.
