@@ -200,7 +200,9 @@ class TestNumpyConversions(object):
         b = df.rx2('B')
         assert tuple((1,2,3)) == tuple(b)
 
-
+    
+@pytest.mark.skipif(not has_numpy,
+                    reason='package numpy cannot be imported')
 def test_unsignednumpyint_to_rint():
     values = (1,2,3)
     a8 = numpy.array(values, dtype='uint8')
@@ -212,6 +214,8 @@ def test_unsignednumpyint_to_rint():
         rpyn.unsignednumpyint_to_rint(a64)
 
 
+@pytest.mark.skipif(not has_numpy,
+                    reason='package numpy cannot be imported')
 @pytest.mark.parametrize('values,expected_cls',
                          ((['a', 1, 2], robjects.vectors.ListVector),
                           (['a', 'b', 'c'], rinterface.StrSexpVector),
