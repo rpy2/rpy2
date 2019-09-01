@@ -43,7 +43,7 @@ def _consoleflush():
 
 def consoleread(prompt: str) -> str:
     """Read input for the R console.
-    
+
     :param prompt: The message prompted.
     :return: A string with the input returned by the user.
     """
