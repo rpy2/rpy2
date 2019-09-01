@@ -35,7 +35,7 @@ Any Python function with the same signature can be used instead. For example:
 .. code-block:: python
 
    def  my_consoleread(prompt: str) -> str:
-       custom_prompt = '???' + prompt
+       custom_prompt = f'R is asking this: {promp}'
        return input(custom_prompt)
  
    rpy2.rinterface_lib.callbacks.consoleread = my_consoleread
@@ -48,8 +48,8 @@ The function "write console" is called whenever output is sent to the R console.
 In R's C API, there are two functions behind the hood, one for regular
 printing, and one for warnings and errors.
 
-.. autofunction:: rpy2.rinterface_lib.callbacks.consolewrite_print(x)
-.. autofunction:: rpy2.rinterface_lib.callbacks.consolewrite_warnerror(x)
+.. autofunction:: rpy2.rinterface_lib.callbacks.consolewrite_print
+.. autofunction:: rpy2.rinterface_lib.callbacks.consolewrite_warnerror
 
 An example should make it obvious:
 
@@ -74,14 +74,25 @@ An example should make it obvious:
    # restore default function
    rpy2.rinterface_lib.callbacks.consolewrite_print = consolewrite_print_backup
 
-.. autofunction:: rpy2.rinterface_lib.callbacks.consolewrite_print(x)
+.. autofunction:: rpy2.rinterface_lib.callbacks.consolewrite_print
+
+Show message
+------------
+
+.. autofunction:: rpy2.rinterface_lib.callbacks.showmessage
+
 
 Flush console
 -------------
 
 The function "flush console" is called whenever output is sent to the R console.
 
-.. autofunction:: rpy2.rinterface_lib.callbacks.consoleflush()
+.. autofunction:: rpy2.rinterface_lib.callbacks.consoleflush
+
+Yes/No/Cancel
+-------------
+
+.. autofunction:: rpy2.rinterface_lib.callbacks.yesnocancel
 
 
 Files
@@ -90,6 +101,7 @@ Files
 Showing files
 -------------
 
+.. autofunction:: rpy2.rinterface_lib.callbacks.showfiles
 
 Choosing files
 --------------
@@ -105,6 +117,17 @@ File choosing a on basic R console has very little bells and whistles.
 
 Other
 =====
+
+Process events
+--------------
+
+.. autofunction:: rpy2.rinterface_lib.callbacks.processevents
+
+Busy
+----
+
+.. autofunction:: rpy2.rinterface_lib.callbacks.busy
+
 
 .. _rinterface-callbacks_cleanup:
 

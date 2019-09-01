@@ -308,7 +308,7 @@ c(3L, 2L, 1L)
 
 .. note::
 
-   By default, calling R functions return R objects.
+   By default, calling R functions returns R objects.
 
 
 More information on functions is in Section :ref:`robjects-functions`.

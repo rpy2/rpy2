@@ -42,6 +42,11 @@ def _consoleflush():
 
 
 def consoleread(prompt: str) -> str:
+    """Read input for the R console.
+    
+    :param prompt: The message prompted.
+    :return: A string with the input returned by the user.
+    """
     return input(prompt)
 
 
@@ -101,6 +106,10 @@ def _consolereset() -> None:
 
 
 def consolewrite_print(s: str) -> None:
+    """R writing to the console/terminal.
+
+    :param s: the data to write to the console/terminal.
+    """
     # TODO: is the callback for flush working with Linux ?
     print(s, end='', flush=True)
 
@@ -171,6 +180,12 @@ def _choosefile(new, buf, n: int) -> int:
 def showfiles(filenames: typing.Tuple[str],
               headers: typing.Tuple[str],
               wtitle: str, pager: str) -> None:
+    """R showing files.
+
+    :param filenames: A tuple of file names.
+    :param headers: A tuple of strings (TODO: check what it is)
+    :wtitle: Title of the "window" showing the files.
+    """
     for fn in filenames:
         print('File: %s' % fn)
         with open(fn) as fh:
@@ -233,6 +248,11 @@ def _cleanup(saveact, status, runlast):
 
 
 def processevents() -> None:
+    """Process R events.
+
+    This function can be periodically called by R to handle
+    events such as window resizing in an interactive graphical
+    device."""
     pass
 
 
@@ -249,6 +269,10 @@ def _processevents() -> None:
 
 
 def busy(x: int) -> None:
+    """R is busy.
+
+    :param x: TODO this is an integer but do not know what it does.
+    """
     pass
 
 
@@ -281,6 +305,11 @@ def _callback() -> None:
 
 
 def yesnocancel(question: str) -> int:
+    """Asking a user to answer yes, no, or cancel.
+
+    :param question: The question asked to the user
+    :return: An integer with the answer.
+    """
     return int(input(question))
 
 

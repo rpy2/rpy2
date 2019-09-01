@@ -390,10 +390,10 @@ but :mod:`rpy2` is designed as a library rather than a threaded R process
 running within Python (yet this can be done as shown below).
 
 The way to restore interactivity is to simply call the function
-:func:`rinterface.process_revents` at regular intervals.
+:func:`rinterface_lib.callbacks.process_revents` at regular intervals.
 
 
-An higher-level interface is available, running the processing of
+A higher-level interface is available, running the processing of
 R events in a thread (see Section :ref:`interactive-reventloop`).
 
 
