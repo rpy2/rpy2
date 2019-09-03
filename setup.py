@@ -149,40 +149,42 @@ if __name__ == '__main__':
         requires.append('singledispatch')
     
     setup(
-        name = pack_name,
-        version = pack_version,
-        description = 'Python interface to the R language (embedded R)',
-        long_description = LONG_DESCRIPTION,
-        url = 'https://rpy2.bitbucket.io',
-        license = 'GPLv2+',
-        author = 'Laurent Gautier',
-        author_email = 'lgautier@gmail.com',
-        requires = requires,
-        install_requires = requires + ['cffi>=1.0.0'],
-        setup_requires = ['cffi>=1.0.0'],
-        cffi_modules = ['rpy/_rinterface_cffi_build.py:ffibuilder'],
-        package_dir = pack_dir,
-        packages = ([pack_name] +
-                    [f'{pack_name}.{x}'
-                     for x in ('rlike', 'rinterface_lib', 'robjects',
-                               'robjects.lib', 'interactive', 'ipython',
-                               'tests',
-                               'tests.rinterface', 'tests.rlike', 'tests.robjects',
-                               'tests.ipython',
-                               'tests.robjects.lib')]
-                    ),
+        name=pack_name,
+        version=pack_version,
+        description='Python interface to the R language (embedded R)',
+        long_description=LONG_DESCRIPTION,
+        url='https://rpy2.bitbucket.io',
+        license='GPLv2+',
+        author='Laurent Gautier',
+        author_email='lgautier@gmail.com',
+        requires=requires,
+        install_requires=requires + ['cffi>=1.10.0'],
+        setup_requires=['cffi>=1.10.0'],
+        cffi_modules=['rpy/_rinterface_cffi_build.py:ffibuilder'],
+        package_dir=pack_dir,
+        packages=([pack_name] +
+                  [f'{pack_name}.{x}'
+                   for x in ('rlike', 'rinterface_lib', 'robjects',
+                             'robjects.lib', 'interactive', 'ipython',
+                             'tests',
+                             'tests.rinterface', 'tests.rlike',
+                             'tests.robjects',
+                             'tests.ipython',
+                             'tests.robjects.lib')]
+        ),
         classifiers = ['Programming Language :: Python',
                        'Programming Language :: Python :: 3',
                        'Programming Language :: Python :: 3.5',
                        'Programming Language :: Python :: 3.6',
                        'Programming Language :: Python :: 3.7',
-                       'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
+                       ('License :: OSI Approved :: GNU General '
+                        'Public License v2 or later (GPLv2+)'),
                        'Intended Audience :: Developers',
                        'Intended Audience :: Science/Research',
                        'Development Status :: 5 - Production/Stable'
-                       ],
+        ],
         package_data = {
             'rpy2': ['images/*.png', ],
             'rpy2': ['doc/source/rpy2_logo.png', ]}
-        )
+    )
 

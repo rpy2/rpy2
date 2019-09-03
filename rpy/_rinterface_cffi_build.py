@@ -4,7 +4,6 @@ import os
 ffibuilder = cffi.FFI()
 ffibuilder.set_source('_rinterface_cffi', None)
 
-
 ffibuilder.cdef(
     """
 typedef unsigned int SEXPTYPE;
