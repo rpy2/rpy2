@@ -4,11 +4,17 @@ It will print information about the rpy2's environment (Python version,
 R version, rpy2 version, etc...).
 """
 
+import argparse
 import os
 import rpy2
 import subprocess
 import sys
 
+try:
+    import rpy2
+    has_rpy2 = True
+except ImportError:
+    has_rpy2 = False
 
 def assert_python_version():
     if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 3):
@@ -99,7 +105,10 @@ def _make_bold(text):
 def iter_info():
 
     yield _make_bold('rpy2 version:')
-    yield rpy2.__version__
+    if has_rpy2:
+        yield rpy2.__version__
+    else:
+        yield 'rpy2 cannot be imported'
     
     yield _make_bold('Python version:')
     yield sys.version
@@ -137,5 +146,9 @@ def iter_info():
 
 if __name__ == '__main__':
 
+    parser = argparse.ArgumentParser(
+        'Command-line tool to report the rpy2'
+        'environment and help diagnose issues')
+    args = parser.parse_args()
     for row in iter_info():
         print(row)
