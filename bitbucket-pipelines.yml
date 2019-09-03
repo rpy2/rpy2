@@ -42,4 +42,4 @@ pipelines:
           - python3 -m pip install numpy pandas ipython tzlocal
           - python3 setup.py install
           - >
-            pytest --junitxml=./test-reports/junit.xml rpy/tests/
+            pytest --junitxml=./test-reports/junit.xml rpy2/tests/

@@ -70,17 +70,17 @@ script:
     --cov=rpy2.rlike \
     --cov=rpy2.ipython \
     --cov=rpy2.robjects \
-    rpy/tests
+    rpy2/tests
   - |
     pytest \
     --cov-append \
     --cov=rpy2.rinterface_lib.embedded \
-    rpy/tests/rinterface/test_noinitialization.py
+    rpy2/tests/rinterface/test_noinitialization.py
   - |
     pytest \
     --cov-append \
     --cov=rpy2.rinterface_lib.embedded \
-    rpy/tests/rinterface/test_endr.py
+    rpy2/tests/rinterface/test_endr.py
   - pip install numpy
   - |
     pytest \
@@ -90,7 +90,7 @@ script:
     --cov=rpy2.rlike \
     --cov=rpy2.ipython \
     --cov=rpy2.robjects \
-    rpy/tests
+    rpy2/tests
   - pip install pandas
   - |
     pytest \
@@ -100,7 +100,7 @@ script:
     --cov=rpy2.rlike \
     --cov=rpy2.ipython \
     --cov=rpy2.robjects \
-    rpy/tests
+    rpy2/tests
 
 after_success:
   - codecov
