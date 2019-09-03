@@ -17,7 +17,6 @@ RUN \
   
 # Run dev version of rpy2
 RUN \
-  python3 -m pip --no-cache-dir install \
-       https://bitbucket.org/rpy2/rpy2/get/default.tar.gz && \
+  python3 -m pip --no-cache-dir install rpy2 && \
   rm -rf /root/.cache
 
