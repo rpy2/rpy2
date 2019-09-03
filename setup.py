@@ -12,7 +12,7 @@ if (sys.version_info[0] < 3) or (sys.version_info[0] == 3 and sys.version_info[1
     sys.exit(1)
 
 pack_name = 'rpy2'
-pack_version = __import__('rpy').__version__
+pack_version = __import__('rpy2').__version__
 
 package_prefix='.'
 
@@ -136,7 +136,7 @@ ipython.
 """
 
 if __name__ == '__main__':
-    pack_dir = {pack_name: os.path.join(package_prefix, 'rpy')}
+    pack_dir = {pack_name: os.path.join(package_prefix, 'rpy2')}
 
     if sys.version_info[0] == 2 and sys.version_info[1] < 7:
         print('rpy2 requires at least Python Version 2.7 '
@@ -160,7 +160,7 @@ if __name__ == '__main__':
         requires=requires,
         install_requires=requires + ['cffi>=1.10.0'],
         setup_requires=['cffi>=1.10.0'],
-        cffi_modules=['rpy/_rinterface_cffi_build.py:ffibuilder'],
+        cffi_modules=['rpy2/_rinterface_cffi_build.py:ffibuilder'],
         package_dir=pack_dir,
         packages=([pack_name] +
                   [f'{pack_name}.{x}'
