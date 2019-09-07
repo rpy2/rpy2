@@ -64,61 +64,6 @@ def cmp_version(x, y):
             return 0
         return cmp_version(x[1:], y[1:])
 
-class RExec(object):
-    """ Compilation-related configuration parameters used by R. """
-
-    def __init__(self, r_home):
-        if sys.platform == 'win32' and '64 bit' in sys.version:
-            r_exec = os.path.join(r_home, 'bin', 'x64', 'R')
-        else:
-            r_exec = os.path.join(r_home, 'bin', 'R')
-        self._r_exec = r_exec
-        self._version = None
-
-    @property
-    def version(self):
-        if self._version is not None:
-            return self._version
-        output = subprocess.check_output((self._r_exec, '--version'), 
-                                         universal_newlines = True)
-        if not output:
-            # sometimes R output goes to stderr
-            output = subprocess.check_output((self._r_exec, '--version'), 
-                                         stderr = subprocess.STDOUT,
-                                         universal_newlines = True)
-        output = iter(output.split('\n'))
-        rversion = next(output)
-        #Twist if 'R --version' spits out a warning
-        if rversion.startswith('WARNING'):
-            warnings.warn('R emitting a warning: %s' % rversion)
-            rversion = next(output)
-        print(rversion)
-        m = re.match('^R ([^ ]+) ([^ ]+) .+$', rversion)
-        if m is None:
-            warnings.warn("Unable to extract R's version number from the string: '%s'" % rversion)
-            # return dummy version 0.0
-            rversion = [0, 0]
-        else:
-            rversion = m.groups()[1]
-            if m.groups()[0] == 'version':
-                rversion = [int(x) for x in rversion.split('.')]
-            else:
-                rversion = ['development', '']
-        self._version = rversion
-        return self._version
-
-    def cmd_config(self, about, allow_empty=False):
-        cmd = (self._r_exec, 'CMD', 'config', about)
-        print(subprocess.list2cmdline(cmd))
-        output = subprocess.check_output(cmd,
-                                         universal_newlines = True)
-        output = output.split(os.linesep)
-        #Twist if 'R RHOME' spits out a warning
-        if output[0].startswith("WARNING"):
-            warnings.warn('R emitting a warning: %s' % output[0])
-            output = output[1:]
-        return output
-
 
 LONG_DESCRIPTION = """
 Python interface to the R language.
@@ -145,7 +90,8 @@ if __name__ == '__main__':
         
     requires = ['pytest', 'jinja2', 'pytz', 'simplegeneric', 'tzlocal']
 
-    if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 4):
+    if (sys.version_info[0] < 3 or
+        (sys.version_info[0] == 3 and sys.version_info[1] < 4)):
         requires.append('singledispatch')
     
     setup(
@@ -163,7 +109,7 @@ if __name__ == '__main__':
         cffi_modules=['rpy2/_rinterface_cffi_build.py:ffibuilder'],
         package_dir=pack_dir,
         packages=([pack_name] +
-                  [f'{pack_name}.{x}'
+                  ['{pack_name}.{x}'.format(pack_name=pack_name, x=x)
                    for x in ('rlike', 'rinterface_lib', 'robjects',
                              'robjects.lib', 'interactive', 'ipython',
                              'tests',
