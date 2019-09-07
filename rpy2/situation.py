@@ -248,6 +248,10 @@ def iter_info():
     yield '  %s'  % c_ext.include_dirs
     yield '  libraries:'
     yield '  %s' % c_ext.libraries
+    yield '  library_dirs:'
+    yield '  %s' % c_ext.library_dirs
+    yield '  extra_link_args:'
+    yield '  %s' % c_ext.extra_link_args
 
 
 if __name__ == '__main__':
