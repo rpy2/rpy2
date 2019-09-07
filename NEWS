@@ -1,4 +1,13 @@
-Relase 3.1.0
+Release 3.2.0
+=============
+
+Bugs fixed
+----------
+
+- `setup.py` is now again compatible with Python2 (issue #580).
+
+
+Release 3.1.0
 ============
 
 New features
