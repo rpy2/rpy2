@@ -291,6 +291,7 @@ def test_png_plotting_args(ipython_with_magic, clean_globalenv):
 
 
 # TODO: There is no test here...
+@pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 @pytest.mark.skipif(not rpacks.isinstalled('Cairo'),
                     reason='R package "Cairo" not installed')
 def test_svg_plotting_args(ipython_with_magic, clean_globalenv):
@@ -317,6 +318,7 @@ def test_svg_plotting_args(ipython_with_magic, clean_globalenv):
         ipython_with_magic.run_cell_magic('R', line, cell)
 
 
+@pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 @pytest.mark.skip(reason='Test for X11 skipped.')
 def test_plotting_X11(ipython_with_magic, clean_globalenv):
     ipython_with_magic.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
