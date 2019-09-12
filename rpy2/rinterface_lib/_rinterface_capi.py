@@ -5,12 +5,13 @@ import logging
 import warnings
 from . import ffi_proxy
 from . import openrlib
-from _rinterface_cffi import ffi
 from . import conversion
 from . import embedded
 from . import memorymanagement
 
 logger = logging.getLogger(__name__)
+
+ffi = openrlib.ffi
 
 # TODO: How can I reliably get MAX_INT from limits.h ?
 _MAX_INT = 2**32-1
@@ -454,10 +455,15 @@ def _evaluate_in_r(rargs):
 
 def _register_external_symbols() -> None:
     python_cchar = ffi.new('char []', b'.Python')
+    ffi_proxy = openrlib.ffi_proxy
+    if ffi_proxy.interface_type == ffi_proxy.InterfaceType.ABI:
+        python_callback = ffi.cast('DL_FUNC', _evaluate_in_r)
+    else:
+        python_callback = ffi.cast('DL_FUNC', openrlib.rlib._evaluate_in_r)
     externalmethods = ffi.new(
         'R_ExternalMethodDef[]',
         [[python_cchar,
-          ffi.cast('DL_FUNC', _evaluate_in_r),
+          python_callback,
           -1],
          [ffi.NULL, ffi.NULL, 0]])
     openrlib.rlib.R_registerRoutines(

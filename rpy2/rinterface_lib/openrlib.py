@@ -1,8 +1,24 @@
 import platform
 import threading
 import rpy2.situation
-from _rinterface_cffi import ffi
+from rpy2.rinterface_lib import ffi_proxy
 
+cffi_mode = rpy2.situation.get_cffi_mode()
+if cffi_mode == rpy2.situation.CFFI_MODE.API:
+    import _rinterface_cffi_api as _rinterface_cffi
+    ffi_proxy.interface_type = ffi_proxy.InterfaceType.API
+elif cffi_mode == rpy2.situation.CFFI_MODE.ABI:
+    import _rinterface_cffi_abi as _rinterface_cffi
+    ffi_proxy.interface_type = ffi_proxy.InterfaceType.ABI
+else:
+    try:
+        import _rinterface_cffi_api as _rinterface_cffi
+        ffi_proxy.interface_type = ffi_proxy.InterfaceType.API
+    except ImportError:
+        import _rinterface_cffi_abi as _rinterface_cffi
+        ffi_proxy.interface_type = ffi_proxy.InterfaceType.ABI
+
+ffi = _rinterface_cffi.ffi
 
 # TODO: Separate the functions in the module from the side-effect of
 # finding R_HOME and opening the shared library.
@@ -20,7 +36,10 @@ def _dlopen_rlib(r_home: str):
     return rlib
 
 
-rlib = _dlopen_rlib(R_HOME)
+if ffi_proxy.interface_type == ffi_proxy.InterfaceType.API:
+    rlib = _rinterface_cffi.lib
+else:
+    rlib = _dlopen_rlib(R_HOME)
 
 
 # R macros and functions

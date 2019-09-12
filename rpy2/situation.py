@@ -5,6 +5,7 @@ R version, rpy2 version, etc...).
 """
 
 import argparse
+import enum
 import os
 import shlex
 import subprocess
@@ -16,6 +17,20 @@ try:
     has_rpy2 = True
 except ImportError:
     has_rpy2 = False
+
+class CFFI_MODE(enum.Enum):
+    API = 'API'
+    ABI = 'ABI'
+    BOTH = 'BOTH'
+
+
+def get_cffi_mode(default=CFFI_MODE.ABI):
+    cffi_mode = os.environ.get('RPY2_CFFI_MODE', '')
+    for m in (CFFI_MODE.API, CFFI_MODE.ABI, CFFI_MODE.BOTH):
+        if cffi_mode.upper() == m.value:
+            return m
+    return default
+
 
 def assert_python_version():
     if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 3):

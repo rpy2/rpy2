@@ -1,7 +1,8 @@
-from _rinterface_cffi import ffi
 from . import embedded
 from . import callbacks
 from . import openrlib
+
+ffi = openrlib.ffi
 
 
 def _initr_win32(interactive: bool = True) -> int:

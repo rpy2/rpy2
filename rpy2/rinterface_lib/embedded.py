@@ -3,9 +3,10 @@ import os
 import sys
 import typing
 import warnings
-from _rinterface_cffi import ffi
 from . import openrlib
 from . import callbacks
+
+ffi = openrlib.ffi
 
 _options = ('rpy2', '--quiet', '--no-save')
 rpy2_embeddedR_isinitialized = 0x00
@@ -70,6 +71,12 @@ class RRuntimeError(Exception):
 def _initr(interactive: bool = True) -> int:
 
     rlib = openrlib.rlib
+    ffi_proxy = openrlib.ffi_proxy
+    if ffi_proxy.interface_type == ffi_proxy.InterfaceType.ABI:
+        callback_funcs = callbacks
+    else:
+        callback_funcs = rlib
+
     with openrlib.rlock:
         if isinitialized():
             return
@@ -81,29 +88,30 @@ def _initr(interactive: bool = True) -> int:
 
         global rstart
         rstart = ffi.new('Rstart')
+
         rstart.R_Interactive = interactive
 
         # TODO: Conditional definition in C code
         #   (Aqua, TERM, and TERM not "dumb")
         rlib.R_Outputfile = ffi.NULL
         rlib.R_Consolefile = ffi.NULL
-        rlib.ptr_R_WriteConsoleEx = callbacks._consolewrite_ex
+        rlib.ptr_R_WriteConsoleEx = callback_funcs._consolewrite_ex
         rlib.ptr_R_WriteConsole = ffi.NULL
 
         # TODO: Conditional in C code
         rlib.R_SignalHandlers = 0
 
-        rlib.ptr_R_ShowMessage = callbacks._showmessage
-        rlib.ptr_R_ReadConsole = callbacks._consoleread
-        rlib.ptr_R_FlushConsole = callbacks._consoleflush
-        rlib.ptr_R_ResetConsole = callbacks._consolereset
+        rlib.ptr_R_ShowMessage = callback_funcs._showmessage
+        rlib.ptr_R_ReadConsole = callback_funcs._consoleread
+        rlib.ptr_R_FlushConsole = callback_funcs._consoleflush
+        rlib.ptr_R_ResetConsole = callback_funcs._consolereset
 
-        rlib.ptr_R_ChooseFile = callbacks._choosefile
-        rlib.ptr_R_ShowFiles = callbacks._showfiles
+        rlib.ptr_R_ChooseFile = callback_funcs._choosefile
+        rlib.ptr_R_ShowFiles = callback_funcs._showfiles
 
-        rlib.ptr_R_CleanUp = callbacks._cleanup
-        rlib.ptr_R_ProcessEvents = callbacks._processevents
-        rlib.ptr_R_Busy = callbacks._busy
+        rlib.ptr_R_CleanUp = callback_funcs._cleanup
+        rlib.ptr_R_ProcessEvents = callback_funcs._processevents
+        rlib.ptr_R_Busy = callback_funcs._busy
 
         setinitialized()
 

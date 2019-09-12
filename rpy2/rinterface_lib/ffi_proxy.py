@@ -26,13 +26,19 @@ class SignatureDefinition(object):
             self.rtype, self.name, ' ,'.join(self.arguments)
         )
 
+    @property
+    def extern_python_def(self):
+        return 'extern "Python" {} {}({});'.format(
+            self.rtype, self.name, ' ,'.join(self.arguments)
+        )
+
 
 def callback(definition, ffi):
     def decorator(func):
         if interface_type == InterfaceType.ABI:
             res = ffi.callback(definition.callback_def)(func)
         else:
-            res = ffi.def_extern(definition.extern_def)(func)
+            res = ffi.def_extern()(func)
         return res
     return decorator
 

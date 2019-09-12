@@ -7,12 +7,13 @@ that makes it possible."""
 from contextlib import contextmanager
 import logging
 import typing
-from _rinterface_cffi import ffi
+from . import openrlib
 from . import ffi_proxy
 from . import conversion
 
 logger = logging.getLogger(__name__)
 
+ffi = openrlib.ffi
 
 # TODO: rename to "replace_in_module"
 @contextmanager

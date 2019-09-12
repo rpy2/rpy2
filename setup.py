@@ -3,6 +3,7 @@ import os, os.path, sys, shutil, re, itertools, warnings
 import tempfile
 import argparse, shlex, subprocess
 from collections import namedtuple
+from rpy2 import situation
 
 from setuptools import setup
 
@@ -64,7 +65,18 @@ def cmp_version(x, y):
             return 0
         return cmp_version(x[1:], y[1:])
 
-
+cffi_mode = situation.get_cffi_mode()
+if cffi_mode == situation.CFFI_MODE.ABI:
+    cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
+elif cffi_mode == situation.CFFI_MODE.API:
+    cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_api']
+elif cffi_mode == situation.CFFI_MODE.BOTH:
+    cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi',
+                    'rpy2/_rinterface_cffi_build.py:ffibuilder_api']
+else:
+    # default interface
+    cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']    
+    
 LONG_DESCRIPTION = """
 Python interface to the R language.
 
@@ -106,7 +118,7 @@ if __name__ == '__main__':
         requires=requires,
         install_requires=requires + ['cffi>=1.10.0'],
         setup_requires=['cffi>=1.10.0'],
-        cffi_modules=['rpy2/_rinterface_cffi_build.py:ffibuilder'],
+        cffi_modules=cffi_modules,
         package_dir=pack_dir,
         packages=([pack_name] +
                   ['{pack_name}.{x}'.format(pack_name=pack_name, x=x)
