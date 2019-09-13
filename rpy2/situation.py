@@ -13,10 +13,11 @@ import sys
 import warnings
 
 try:
-    import rpy2
+    import rpy2  # noqa:F401
     has_rpy2 = True
 except ImportError:
     has_rpy2 = False
+
 
 class CFFI_MODE(enum.Enum):
     API = 'API'
@@ -41,7 +42,7 @@ def assert_python_version():
 def r_version_from_subprocess():
     try:
         tmp = subprocess.check_output(("R", "--version"))
-    except Exception as exc:  # FileNotFoundError, WindowsError, etc
+    except Exception:  # FileNotFoundError, WindowsError, etc
         return None
     r_version = tmp.decode('ascii', 'ignore').split(os.linesep)
     if r_version[0].startswith("WARNING"):
@@ -50,12 +51,12 @@ def r_version_from_subprocess():
         r_version = r_version[0].strip()
     return r_version
 
-        
+
 def r_home_from_subprocess() -> str:
     """Return the R home directory from calling 'R RHOME'."""
     try:
         tmp = subprocess.check_output(("R", "RHOME"), universal_newlines=True)
-    except Exception as exc:  # FileNotFoundError, WindowsError, etc
+    except Exception:  # FileNotFoundError, WindowsError, etc
         return
     r_home = tmp.split(os.linesep)
     if r_home[0].startswith("WARNING"):
@@ -77,7 +78,7 @@ def r_home_from_registry() -> str:
                                 0, winreg.KEY_QUERY_VALUE)
         r_home = winreg.QueryValueEx(hkey, "InstallPath")[0]
         winreg.CloseKey(hkey)
-    except Exception as exc:  # FileNotFoundError, WindowsError, etc
+    except Exception:  # FileNotFoundError, WindowsError, etc
         return None
     if sys.version_info[0] == 2:
         r_home = r_home.encode(sys.getfilesystemencoding())
@@ -104,7 +105,7 @@ def get_r_home() -> str:
     to obtain R_HOME from the registry. If all attempt are unfruitful,
     None is returned.
     """
-    
+
     r_home = os.environ.get("R_HOME")
 
     if not r_home:
@@ -139,7 +140,7 @@ def _get_r_cmd_config(r_home: str, about: str, allow_empty=False):
     output = subprocess.check_output(cmd,
                                      universal_newlines=True)
     output = output.split(os.linesep)
-    #Twist if 'R RHOME' spits out a warning
+    # Twist if 'R RHOME' spits out a warning
     if output[0].startswith("WARNING"):
         warnings.warn("R emitting a warning: %s" % output[0])
         output = output[1:]
@@ -163,9 +164,12 @@ def get_r_flags(r_home: str, flags: str):
     parser.add_argument('-L', action='append')
     parser.add_argument('-l', action='append')
 
-    res = shlex.split(' '.join(_get_r_cmd_config(r_home, flags, allow_empty=False)))
+    res = shlex.split(
+        ' '.join(
+            _get_r_cmd_config(r_home, flags,
+                              allow_empty=False)))
     return parser.parse_known_args(res)
-    
+
 
 def get_r_libs(r_home: str, libs: str):
     return _get_r_cmd_config(r_home, libs, allow_empty=True)
@@ -218,34 +222,38 @@ def iter_info():
     yield _make_bold('rpy2 version:')
     if has_rpy2:
         # TODO: the repeated import is needed, without which Python (3.6)
-        #   raises an UnboundLocalError (local variable reference before assignment).
-        import rpy2
+        #   raises an UnboundLocalError (local variable reference before
+        #   assignment).
+        import rpy2  # noqa: F811
         yield rpy2.__version__
     else:
         yield 'rpy2 cannot be imported'
-    
+
     yield _make_bold('Python version:')
     yield sys.version
     if not (sys.version_info[0] == 3 and sys.version_info[1] >= 5):
-        yield "*** rpy2 is primarily designed for Python >= 3.5" 
-    
+        yield "*** rpy2 is primarily designed for Python >= 3.5"
+
     yield _make_bold("Looking for R's HOME:")
 
     r_home = os.environ.get("R_HOME")
     yield "    Environment variable R_HOME: %s" % r_home
-    
+
     r_home = r_home_from_subprocess()
     yield "    Calling `R RHOME`: %s" % r_home
-    
+
     if sys.platform == 'win32':
         r_home = r_home_from_registry()
         yield "    InstallPath in the registry: %s" % r_home
 
-    try:
-        import rpy2.rinterface_lib.openrlib
-        rlib_status = 'OK'
-    except ImportError as ie:
-        rlib_status = '*** Error while loading: %s ***' % str(ie)
+    if has_rpy2:
+        try:
+            import rpy2.rinterface_lib.openrlib
+            rlib_status = 'OK'
+        except ImportError as ie:
+            rlib_status = '*** Error while loading: %s ***' % str(ie)
+    else:
+        rlib_status = '*** rpy2 is not installed'
 
     yield _make_bold("R version:")
     yield "    In the PATH: %s" % r_version_from_subprocess()
@@ -260,7 +268,7 @@ def iter_info():
     c_ext.add_lib(*get_r_flags(r_home, '--ldflags'))
     c_ext.add_include(*get_r_flags(r_home, '--cppflags'))
     yield '  include:'
-    yield '  %s'  % c_ext.include_dirs
+    yield '  %s' % c_ext.include_dirs
     yield '  libraries:'
     yield '  %s' % c_ext.libraries
     yield '  library_dirs:'
