@@ -11,20 +11,18 @@ ifdef_pat = re.compile('^#ifdef +([^ ]+) *$')
 define_pat = re.compile('^#define +([^ ]+) +([^ ]+) *$')
 
 cdef = []
+definitions = {}
+
 
 if ffibuilder_abi.sizeof('size_t') > 4:
     LONG_VECTOR_SUPPORT = True
     R_XLEN_T_MAX = 4503599627370496
     R_SHORT_LEN_MAX = 2147483647
-    cdef.append("""
-typedef ptrdiff_t R_xlen_t;
-    """)
+    definitions['RPY2_RLEN_LONG'] = True
 else:
-    cdef.append("""
-typedef int R_xlen_t;
-    """)
+    definitions['RPY2_RLEN_SHORT'] = True
 
-definitions = {}
+
 if os.name == 'nt':
     definitions['OSNAME_NT'] = True
 
@@ -36,7 +34,7 @@ def parse(iterrows, rownum, until=None):
             break
         m = ifdef_pat.match(row)
         if m:
-            defined = m.groups()[0]
+            defined = m.groups()[0].strip()
             block = parse(iterrows, row_i, until='#endif')
             if defined in definitions:
                 res.extend(block)
@@ -47,7 +45,8 @@ def parse(iterrows, rownum, until=None):
             definitions[alias] = value.strip()
             continue
         for k, v in definitions.items():
-            row = row.replace(k, v)
+            if isinstance(v, str):
+                row = row.replace(k, v)
         res.append(row)
     return res
 

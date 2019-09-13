@@ -39,6 +39,14 @@ typedef struct {
 /* include/Rinternals.h */
 typedef int R_len_t;
 
+#ifdef RPY2_RLEN_LONG
+typedef ptrdiff_t R_xlen_t;
+#endif
+
+#ifdef RPY2_RLEN_SHORT
+typedef int R_xlen_t;
+#endif
+
 double R_NaN;		/* IEEE NaN */
 double R_NaReal;	/* NA_REAL: IEEE */
 int    R_NaInt;
