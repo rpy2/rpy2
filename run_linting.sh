@@ -3,6 +3,7 @@
 flake8 \
     rpy2/ipython/ \
     rpy2/situation.py \
+    rpy2/_rinterface_cffi_build.py \
     rpy2/rinterface.py \
     rpy2/rinterface_lib/ \
     rpy2/rlike/functional.py \

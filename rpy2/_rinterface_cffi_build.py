@@ -2,9 +2,7 @@ import cffi
 import os
 import re
 import rpy2.situation
-import tokenize
 from rpy2.rinterface_lib import ffi_proxy
-from pycparser import CParser, c_generator
 
 ffibuilder_abi = cffi.FFI()
 ffibuilder_api = cffi.FFI()
@@ -30,9 +28,8 @@ definitions = {}
 if os.name == 'nt':
     definitions['OSNAME_NT'] = True
 
+
 def parse(iterrows, rownum, until=None):
-    parser = CParser()
-    generator = c_generator.CGenerator()
     res = []
     for row_i, row in enumerate(iter(iterrows), rownum):
         if until and row.startswith(until):
@@ -51,11 +48,9 @@ def parse(iterrows, rownum, until=None):
             continue
         for k, v in definitions.items():
             row = row.replace(k, v)
-
-        #ast = parser.parse(row)
-        #print(generator.visit(ast))
         res.append(row)
     return res
+
 
 with open(
         os.path.join(
