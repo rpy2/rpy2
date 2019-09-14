@@ -1,3 +1,7 @@
+/* preprocess-define-begin */
+#define RPY2_ABI_MODE 1
+/* preprocess-define-end */
+
 typedef unsigned int SEXPTYPE;
 
 const unsigned int NILSXP     =  0;

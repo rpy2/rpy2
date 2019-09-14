@@ -6,9 +6,6 @@ class InterfaceType(enum.Enum):
     API = 2
 
 
-interface_type = InterfaceType.ABI
-
-
 class SignatureDefinition(object):
 
     def __init__(self, name, rtype, arguments):
@@ -33,9 +30,16 @@ class SignatureDefinition(object):
         )
 
 
+def get_ffi_mode(ffi):
+    if hasattr(ffi, 'RPY2_API_MODE'):
+        return InterfaceType.API
+    else:
+        return InterfaceType.ABI
+
+
 def callback(definition, ffi):
     def decorator(func):
-        if interface_type == InterfaceType.ABI:
+        if get_ffi_mode(ffi) == InterfaceType.ABI:
             res = ffi.callback(definition.callback_def)(func)
         else:
             res = ffi.def_extern()(func)

@@ -72,7 +72,7 @@ def _initr(interactive: bool = True) -> int:
 
     rlib = openrlib.rlib
     ffi_proxy = openrlib.ffi_proxy
-    if ffi_proxy.interface_type == ffi_proxy.InterfaceType.ABI:
+    if ffi_proxy.get_ffi_mode(ffi) == ffi_proxy.InterfaceType.ABI:
         callback_funcs = callbacks
     else:
         callback_funcs = rlib
