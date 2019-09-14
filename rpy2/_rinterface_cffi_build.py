@@ -72,7 +72,9 @@ ffibuilder_api.set_source('_rinterface_cffi_api',
                           ''.join(cdef),
                           libraries=c_ext.libraries,
                           library_dirs=c_ext.library_dirs,
-                          include_dirs=c_ext.include_dirs)
+                          include_dirs=c_ext.include_dirs,
+                          extra_compile_args=c_ext.extra_compile_args,
+                          extra_link_args=c_ext.extra_link_args)
 cdef_api = (
     ''.join(cdef) +
     os.linesep.join(
