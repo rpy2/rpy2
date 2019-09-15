@@ -55,11 +55,11 @@ def r_version_from_subprocess():
 def r_home_from_subprocess() -> str:
     """Return the R home directory from calling 'R RHOME'."""
     try:
-        tmp = subprocess.check_output(("R", "RHOME"), universal_newlines=True)
+        tmp = subprocess.check_output(('R', 'RHOME'), universal_newlines=True)
     except Exception:  # FileNotFoundError, WindowsError, etc
         return
     r_home = tmp.split(os.linesep)
-    if r_home[0].startswith("WARNING"):
+    if r_home[0].startswith('WARNING'):
         r_home = r_home[1]
     else:
         r_home = r_home[0].strip()
@@ -74,9 +74,9 @@ def r_home_from_registry() -> str:
         import _winreg as winreg
     try:
         hkey = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE,
-                                "Software\\R-core\\R",
+                                'Software\\R-core\\R',
                                 0, winreg.KEY_QUERY_VALUE)
-        r_home = winreg.QueryValueEx(hkey, "InstallPath")[0]
+        r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
         winreg.CloseKey(hkey)
     except Exception:  # FileNotFoundError, WindowsError, etc
         return None
@@ -106,7 +106,7 @@ def get_r_home() -> str:
     None is returned.
     """
 
-    r_home = os.environ.get("R_HOME")
+    r_home = os.environ.get('R_HOME')
 
     if not r_home:
         r_home = r_home_from_subprocess()
@@ -120,7 +120,7 @@ def get_r_exec(r_home: str) -> str:
 
     :param: R HOME directory
     :return: Path to the R executable/binary"""
-    if sys.platform == "win32" and "64 bit" in sys.version:
+    if sys.platform == 'win32' and '64 bit' in sys.version:
         r_exec = os.path.join(r_home, 'bin', 'x64', 'R')
     else:
         r_exec = os.path.join(r_home, 'bin', 'R')
@@ -141,8 +141,8 @@ def _get_r_cmd_config(r_home: str, about: str, allow_empty=False):
                                      universal_newlines=True)
     output = output.split(os.linesep)
     # Twist if 'R RHOME' spits out a warning
-    if output[0].startswith("WARNING"):
-        warnings.warn("R emitting a warning: %s" % output[0])
+    if output[0].startswith('WARNING'):
+        warnings.warn('R emitting a warning: %s' % output[0])
         output = output[1:]
     return output
 
@@ -232,19 +232,19 @@ def iter_info():
     yield _make_bold('Python version:')
     yield sys.version
     if not (sys.version_info[0] == 3 and sys.version_info[1] >= 5):
-        yield "*** rpy2 is primarily designed for Python >= 3.5"
+        yield '*** rpy2 is primarily designed for Python >= 3.5'
 
     yield _make_bold("Looking for R's HOME:")
 
-    r_home = os.environ.get("R_HOME")
-    yield "    Environment variable R_HOME: %s" % r_home
+    r_home = os.environ.get('R_HOME')
+    yield '    Environment variable R_HOME: %s' % r_home
 
     r_home = r_home_from_subprocess()
-    yield "    Calling `R RHOME`: %s" % r_home
+    yield '    Calling `R RHOME`: %s' % r_home
 
     if sys.platform == 'win32':
         r_home = r_home_from_registry()
-        yield "    InstallPath in the registry: %s" % r_home
+        yield '    InstallPath in the registry: %s' % r_home
 
     if has_rpy2:
         try:
@@ -256,11 +256,11 @@ def iter_info():
         rlib_status = '*** rpy2 is not installed'
 
     yield _make_bold("R version:")
-    yield "    In the PATH: %s" % r_version_from_subprocess()
-    yield "    Loading R library from rpy2: %s" % rlib_status
+    yield '    In the PATH: %s' % r_version_from_subprocess()
+    yield '    Loading R library from rpy2: %s' % rlib_status
 
-    r_libs = os.environ.get("R_LIBS")
-    yield _make_bold("Additional directories to load R packages from:")
+    r_libs = os.environ.get('R_LIBS')
+    yield _make_bold('Additional directories to load R packages from:')
     yield r_libs
 
     yield _make_bold('C extension compilation:')
