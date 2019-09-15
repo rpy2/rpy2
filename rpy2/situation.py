@@ -210,7 +210,7 @@ class CExtensionOptions(object):
         else:
             self.library_dirs.extend(args.L)
             self.libraries.extend(args.l)
-            self.extra_link_args.extend(unknown)
+        self.extra_link_args.extend(unknown)
 
 
 def _make_bold(text):

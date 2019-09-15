@@ -75,25 +75,28 @@ ffibuilder_api.set_source('_rinterface_cffi_api',
                           include_dirs=c_ext.include_dirs,
                           extra_compile_args=c_ext.extra_compile_args,
                           extra_link_args=c_ext.extra_link_args)
+
+callback_defns_api = os.linesep.join(
+    x.extern_python_def
+    for x in [ffi_proxy._capsule_finalizer_def,
+              ffi_proxy._evaluate_in_r_def,
+              ffi_proxy._consoleflush_def,
+              ffi_proxy._consoleread_def,
+              ffi_proxy._consolereset_def,
+              ffi_proxy._consolewrite_def,
+              ffi_proxy._consolewrite_ex_def,
+              ffi_proxy._showmessage_def,
+              ffi_proxy._choosefile_def,
+              ffi_proxy._cleanup_def,
+              ffi_proxy._showfiles_def,
+              ffi_proxy._processevents_def,
+              ffi_proxy._busy_def,
+              ffi_proxy._callback_def,
+              ffi_proxy._yesnocancel_def])
+
 cdef_api = (
     ''.join(cdef) +
-    os.linesep.join(
-        x.extern_python_def
-        for x in [ffi_proxy._capsule_finalizer_def,
-                  ffi_proxy._evaluate_in_r_def,
-                  ffi_proxy._consoleflush_def,
-                  ffi_proxy._consoleread_def,
-                  ffi_proxy._consolereset_def,
-                  ffi_proxy._consolewrite_def,
-                  ffi_proxy._consolewrite_ex_def,
-                  ffi_proxy._showmessage_def,
-                  ffi_proxy._choosefile_def,
-                  ffi_proxy._cleanup_def,
-                  ffi_proxy._showfiles_def,
-                  ffi_proxy._processevents_def,
-                  ffi_proxy._busy_def,
-                  ffi_proxy._callback_def,
-                  ffi_proxy._yesnocancel_def])
+    callback_defns_api
     )
 ffibuilder_api.cdef(cdef_api)
 

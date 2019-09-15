@@ -6,17 +6,13 @@ from rpy2.rinterface_lib import ffi_proxy
 cffi_mode = rpy2.situation.get_cffi_mode()
 if cffi_mode == rpy2.situation.CFFI_MODE.API:
     import _rinterface_cffi_api as _rinterface_cffi
-    ffi_proxy.interface_type = ffi_proxy.InterfaceType.API
 elif cffi_mode == rpy2.situation.CFFI_MODE.ABI:
     import _rinterface_cffi_abi as _rinterface_cffi
-    ffi_proxy.interface_type = ffi_proxy.InterfaceType.ABI
 else:
     try:
         import _rinterface_cffi_api as _rinterface_cffi
-        ffi_proxy.interface_type = ffi_proxy.InterfaceType.API
     except ImportError:
         import _rinterface_cffi_abi as _rinterface_cffi
-        ffi_proxy.interface_type = ffi_proxy.InterfaceType.ABI
 
 ffi = _rinterface_cffi.ffi
 
@@ -36,7 +32,7 @@ def _dlopen_rlib(r_home: str):
     return rlib
 
 
-if ffi_proxy.interface_type == ffi_proxy.InterfaceType.API:
+if ffi_proxy.get_ffi_mode(_rinterface_cffi) == ffi_proxy.InterfaceType.API:
     rlib = _rinterface_cffi.lib
 else:
     rlib = _dlopen_rlib(R_HOME)

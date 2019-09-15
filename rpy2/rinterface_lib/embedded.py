@@ -67,12 +67,30 @@ class RRuntimeError(Exception):
     pass
 
 
+def _setcallbacks(rlib, callback_funcs) -> None:
+    """Set R callbacks."""
+    rlib.ptr_R_WriteConsoleEx = callback_funcs._consolewrite_ex
+    rlib.ptr_R_WriteConsole = ffi.NULL
+
+    rlib.ptr_R_ShowMessage = callback_funcs._showmessage
+    rlib.ptr_R_ReadConsole = callback_funcs._consoleread
+    rlib.ptr_R_FlushConsole = callback_funcs._consoleflush
+    rlib.ptr_R_ResetConsole = callback_funcs._consolereset
+
+    rlib.ptr_R_ChooseFile = callback_funcs._choosefile
+    rlib.ptr_R_ShowFiles = callback_funcs._showfiles
+
+    rlib.ptr_R_CleanUp = callback_funcs._cleanup
+    rlib.ptr_R_ProcessEvents = callback_funcs._processevents
+    rlib.ptr_R_Busy = callback_funcs._busy
+    
+
 # TODO: can init_once() be used here ?
-def _initr(interactive: bool = True) -> int:
+def _initr(interactive: bool = True, _want_setcallbacks: bool = True) -> int:
 
     rlib = openrlib.rlib
     ffi_proxy = openrlib.ffi_proxy
-    if ffi_proxy.get_ffi_mode(ffi) == ffi_proxy.InterfaceType.ABI:
+    if ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi) == ffi_proxy.InterfaceType.ABI:
         callback_funcs = callbacks
     else:
         callback_funcs = rlib
@@ -83,10 +101,12 @@ def _initr(interactive: bool = True) -> int:
         os.environ['R_HOME'] = openrlib.R_HOME
         options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
         n_options = len(options_c)
-        status = rlib.Rf_initialize_R(ffi.cast('int', n_options),
+        n_options_c = ffi.cast('int', n_options)
+        status = rlib.Rf_initialize_R(n_options_c,
                                       options_c)
+        setinitialized()
 
-        global rstart
+        # global rstart
         rstart = ffi.new('Rstart')
 
         rstart.R_Interactive = interactive
@@ -95,30 +115,18 @@ def _initr(interactive: bool = True) -> int:
         #   (Aqua, TERM, and TERM not "dumb")
         rlib.R_Outputfile = ffi.NULL
         rlib.R_Consolefile = ffi.NULL
-        rlib.ptr_R_WriteConsoleEx = callback_funcs._consolewrite_ex
-        rlib.ptr_R_WriteConsole = ffi.NULL
 
         # TODO: Conditional in C code
         rlib.R_SignalHandlers = 0
 
-        rlib.ptr_R_ShowMessage = callback_funcs._showmessage
-        rlib.ptr_R_ReadConsole = callback_funcs._consoleread
-        rlib.ptr_R_FlushConsole = callback_funcs._consoleflush
-        rlib.ptr_R_ResetConsole = callback_funcs._consolereset
-
-        rlib.ptr_R_ChooseFile = callback_funcs._choosefile
-        rlib.ptr_R_ShowFiles = callback_funcs._showfiles
-
-        rlib.ptr_R_CleanUp = callback_funcs._cleanup
-        rlib.ptr_R_ProcessEvents = callback_funcs._processevents
-        rlib.ptr_R_Busy = callback_funcs._busy
-
-        setinitialized()
+        if _want_setcallbacks:
+            _setcallbacks(rlib, callback_funcs)
 
         # TODO: still needed ?
         rlib.R_CStackLimit = ffi.cast('uintptr_t', -1)
 
         rlib.setup_Rmainloop()
+
         return status
 
 

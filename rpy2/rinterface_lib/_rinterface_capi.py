@@ -68,7 +68,7 @@ def _release(cdata):
 
 
 @ffi_proxy.callback(ffi_proxy._capsule_finalizer_def,
-                    ffi)
+                    openrlib._rinterface_cffi)
 def _capsule_finalizer(cdata):
     try:
         openrlib.rlib.R_ClearExternalPtr(cdata)
@@ -395,7 +395,7 @@ def unserialize(cdata, cdata_env):
 
 
 @ffi_proxy.callback(ffi_proxy._evaluate_in_r_def,
-                    ffi)
+                    openrlib._rinterface_cffi)
 def _evaluate_in_r(rargs):
     # An uncaught exception in the boby of this function would
     # result in a segfault. we wrap it in a try-except an report
@@ -456,7 +456,7 @@ def _evaluate_in_r(rargs):
 def _register_external_symbols() -> None:
     python_cchar = ffi.new('char []', b'.Python')
     ffi_proxy = openrlib.ffi_proxy
-    if ffi_proxy.interface_type == ffi_proxy.InterfaceType.ABI:
+    if ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi) == ffi_proxy.InterfaceType.ABI:
         python_callback = ffi.cast('DL_FUNC', _evaluate_in_r)
     else:
         python_callback = ffi.cast('DL_FUNC', openrlib.rlib._evaluate_in_r)

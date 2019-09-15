@@ -7,13 +7,12 @@ that makes it possible."""
 from contextlib import contextmanager
 import logging
 import typing
-from . import openrlib
+from .openrlib import ffi
+from .openrlib import _rinterface_cffi
 from . import ffi_proxy
 from . import conversion
 
 logger = logging.getLogger(__name__)
-
-ffi = openrlib.ffi
 
 # TODO: rename to "replace_in_module"
 @contextmanager
@@ -34,7 +33,7 @@ _FLUSHCONSOLE_EXCEPTION_LOG = 'R[flush console]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._consoleflush_def,
-                    ffi)
+                    _rinterface_cffi)
 def _consoleflush():
     try:
         consoleflush()
@@ -56,7 +55,7 @@ _READCONSOLE_INTERNAL_EXCEPTION_LOG = 'Internal rpy2 error with callback: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._consoleread_def,
-                    ffi)
+                    _rinterface_cffi)
 def _consoleread(prompt, buf, n: int, addtohistory) -> int:
     success = None
     try:
@@ -98,7 +97,7 @@ _RESETCONSOLE_EXCEPTION_LOG = 'R[reset console]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._consolereset_def,
-                    ffi)
+                    _rinterface_cffi)
 def _consolereset() -> None:
     try:
         consolereset()
@@ -124,7 +123,7 @@ _WRITECONSOLE_EXCEPTION_LOG = 'R[write to console]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._consolewrite_ex_def,
-                    ffi)
+                    _rinterface_cffi)
 def _consolewrite_ex(buf, n: int, otype) -> None:
     s = conversion._cchar_to_str_with_maxlen(buf, maxlen=n)
     try:
@@ -145,7 +144,7 @@ _SHOWMESSAGE_EXCEPTION_LOG = 'R[show message]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._showmessage_def,
-                    ffi)
+                    _rinterface_cffi)
 def _showmessage(buf):
     s = conversion._cchar_to_str(buf)
     try:
@@ -162,7 +161,7 @@ _CHOOSEFILE_EXCEPTION_LOG = 'R[choose file]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._choosefile_def,
-                    ffi)
+                    _rinterface_cffi)
 def _choosefile(new, buf, n: int) -> int:
     try:
         res = choosefile(new)
@@ -201,7 +200,7 @@ _SHOWFILE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error while '
 
 
 @ffi_proxy.callback(ffi_proxy._showfiles_def,
-                    ffi)
+                    _rinterface_cffi)
 def _showfiles(nfiles: int, files, headers, wtitle, delete, pager) -> int:
     filenames = []
     headers_str = []
@@ -240,7 +239,7 @@ _CLEANUP_EXCEPTION_LOG = 'R[cleanup]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._cleanup_def,
-                    ffi)
+                    _rinterface_cffi)
 def _cleanup(saveact, status, runlast):
     try:
         cleanup(saveact, status, runlast)
@@ -261,7 +260,7 @@ _PROCESSEVENTS_EXCEPTION_LOG = 'R[processevents]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._processevents_def,
-                    ffi)
+                    _rinterface_cffi)
 def _processevents() -> None:
     try:
         processevents()
@@ -281,7 +280,7 @@ _BUSY_EXCEPTION_LOG = 'R[busy]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._busy_def,
-                    ffi)
+                    _rinterface_cffi)
 def _busy(which) -> None:
     try:
         busy(which)
@@ -297,7 +296,7 @@ _CALLBACK_EXCEPTION_LOG = 'R[callback]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._callback_def,
-                    ffi)
+                    _rinterface_cffi)
 def _callback() -> None:
     try:
         callback()
@@ -318,7 +317,7 @@ _YESNOCANCEL_EXCEPTION_LOG = 'R[yesnocancel]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._yesnocancel_def,
-                    ffi)
+                    _rinterface_cffi)
 def _yesnocancel(question):
     try:
         q = conversion._cchar_to_str(question)

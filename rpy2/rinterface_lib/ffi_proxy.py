@@ -30,19 +30,21 @@ class SignatureDefinition(object):
         )
 
 
-def get_ffi_mode(ffi):
-    if hasattr(ffi, 'RPY2_API_MODE'):
+def get_ffi_mode(_rinterface_cffi):
+    if hasattr(_rinterface_cffi, 'lib'):
         return InterfaceType.API
     else:
         return InterfaceType.ABI
 
 
-def callback(definition, ffi):
+def callback(definition, _rinterface_cffi):
     def decorator(func):
-        if get_ffi_mode(ffi) == InterfaceType.ABI:
-            res = ffi.callback(definition.callback_def)(func)
+        if get_ffi_mode(_rinterface_cffi) == InterfaceType.ABI:
+            res = _rinterface_cffi.ffi.callback(definition.callback_def)(func)
+        elif get_ffi_mode(_rinterface_cffi) == InterfaceType.API:
+            res = _rinterface_cffi.ffi.def_extern()(func)
         else:
-            res = ffi.def_extern()(func)
+            raise RuntimeError('The cffi mode is neither ABI or API.')
         return res
     return decorator
 
