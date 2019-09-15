@@ -101,5 +101,15 @@ cdef_api = (
 ffibuilder_api.cdef(cdef_api)
 
 if __name__ == '__main__':
-    ffibuilder_abi.compile(verbose=True)
-    ffibuilder_api.compile(verbose=True)
+
+    # This sort of redundant with setup.py defining cffi_modules,
+    # but at least both use rpy2.situation.get_ffi_mode().
+    cffi_mode = rpy2.situation.get_ffi_mode()
+
+    if cffi_mode in (rpy2.situation.CFFI_MODE.ABI,
+                     rpy2.situation.CFFI_MODE.BOTH):
+        ffibuilder_abi.compile(verbose=True)
+
+    if cffi_mode in (rpy2.situation.CFFI_MODE.API,
+                     rpy2.situation.CFFI_MODE.BOTH):
+        ffibuilder_api.compile(verbose=True)
