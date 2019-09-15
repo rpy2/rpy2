@@ -36,16 +36,16 @@ def get_cffi_mode(default=CFFI_MODE.ABI):
 def assert_python_version():
     if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 3):
         raise RuntimeError(
-            "Python >=3.3 is required to run rpy2")
+            'Python >=3.3 is required to run rpy2')
 
 
 def r_version_from_subprocess():
     try:
-        tmp = subprocess.check_output(("R", "--version"))
+        tmp = subprocess.check_output(('R', '--version'))
     except Exception:  # FileNotFoundError, WindowsError, etc
         return None
     r_version = tmp.decode('ascii', 'ignore').split(os.linesep)
-    if r_version[0].startswith("WARNING"):
+    if r_version[0].startswith('WARNING'):
         r_version = r_version[1]
     else:
         r_version = r_version[0].strip()
