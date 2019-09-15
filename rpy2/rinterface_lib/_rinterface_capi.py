@@ -456,7 +456,11 @@ def _evaluate_in_r(rargs):
 def _register_external_symbols() -> None:
     python_cchar = ffi.new('char []', b'.Python')
     ffi_proxy = openrlib.ffi_proxy
-    if ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi) == ffi_proxy.InterfaceType.ABI:
+    if (
+            ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
+            ==
+            ffi_proxy.InterfaceType.ABI
+    ):
         python_callback = ffi.cast('DL_FUNC', _evaluate_in_r)
     else:
         python_callback = ffi.cast('DL_FUNC', openrlib.rlib._evaluate_in_r)

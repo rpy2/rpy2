@@ -83,14 +83,18 @@ def _setcallbacks(rlib, callback_funcs) -> None:
     rlib.ptr_R_CleanUp = callback_funcs._cleanup
     rlib.ptr_R_ProcessEvents = callback_funcs._processevents
     rlib.ptr_R_Busy = callback_funcs._busy
-    
+
 
 # TODO: can init_once() be used here ?
 def _initr(interactive: bool = True, _want_setcallbacks: bool = True) -> int:
 
     rlib = openrlib.rlib
     ffi_proxy = openrlib.ffi_proxy
-    if ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi) == ffi_proxy.InterfaceType.ABI:
+    if (
+            ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
+            ==
+            ffi_proxy.InterfaceType.ABI
+    ):
         callback_funcs = callbacks
     else:
         callback_funcs = rlib
