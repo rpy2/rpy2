@@ -102,10 +102,6 @@ if __name__ == '__main__':
         sys.exit(1)
         
     requires = ['pytest', 'jinja2', 'pytz', 'simplegeneric', 'tzlocal']
-
-    if (sys.version_info[0] < 3 or
-        (sys.version_info[0] == 3 and sys.version_info[1] < 4)):
-        requires.append('singledispatch')
     
     setup(
         name=pack_name,
