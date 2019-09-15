@@ -95,11 +95,6 @@ ipython.
 
 if __name__ == '__main__':
     pack_dir = {pack_name: os.path.join(package_prefix, 'rpy2')}
-
-    if sys.version_info[0] == 2 and sys.version_info[1] < 7:
-        print('rpy2 requires at least Python Version 2.7 '
-              '(with Python 3.5 or later recommended).')
-        sys.exit(1)
         
     requires = ['pytest', 'jinja2', 'pytz', 'simplegeneric', 'tzlocal']
     
