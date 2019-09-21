@@ -58,10 +58,13 @@ addons:
     update: true
 
 install:
-  - python setup.py install
+  - RPY_CFFI_MODE=ABI python setup.py install
+  - RPY_CFFI_MODE=API python setup.py install
+  - RPY_CFFI_MODE=BOTH python setup.py install
 
 # command to run tests
 script:
+  - export RPY_CFFI_MODE=ABI
   - ./run_linting.sh
   - |
     pytest \
