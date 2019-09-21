@@ -844,7 +844,9 @@ def make_extptr(obj, tag, protected):
                 cdata_protected))
         openrlib.rlib.R_RegisterCFinalizer(
             cdata,
-            _rinterface._capsule_finalizer)
+            (_rinterface._capsule_finalizer_c
+             if _rinterface._capsule_finalizer_c
+             else _rinterface._capsule_finalizer))
         res = _rinterface.SexpCapsuleWithPassenger(cdata, obj, ptr)
     return res
 

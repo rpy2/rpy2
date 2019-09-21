@@ -76,6 +76,14 @@ def _capsule_finalizer(cdata):
         warnings.warn('Exception downgraded to warning: %s' % str(e))
 
 
+# ABI and API modes differs in the what is the exact callback object to be
+# passed to C code.
+if hasattr(openrlib._rinterface_cffi, 'lib'):
+    _capsule_finalizer_c = openrlib._rinterface_cffi.lib._capsule_finalizer
+else:
+    _capsule_finalizer_c = None
+
+
 class UnmanagedSexpCapsule(object):
 
     def __init__(self, cdata):
