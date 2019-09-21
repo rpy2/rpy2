@@ -11,9 +11,12 @@ define_pat = re.compile('^#define +([^ ]+) +([^ ]+) *$')
 
 def define_rlen_kind(ffibuilder, definitions):
     if ffibuilder.sizeof('size_t') > 4:
-        LONG_VECTOR_SUPPORT = True
-        R_XLEN_T_MAX = 4503599627370496
-        R_SHORT_LEN_MAX = 2147483647
+        # The following was defined in the first cffi port,
+        # and they in the C-extension version. They should
+        # be ported to the header.
+        # LONG_VECTOR_SUPPORT = True
+        # R_XLEN_T_MAX = 4503599627370496
+        # R_SHORT_LEN_MAX = 2147483647
         definitions['RPY2_RLEN_LONG'] = True
     else:
         definitions['RPY2_RLEN_SHORT'] = True
@@ -81,10 +84,15 @@ def createbuilder_api():
     cdef = create_cdef(definitions)
     r_home = rpy2.situation.r_home_from_subprocess()
     c_ext = rpy2.situation.CExtensionOptions()
-    c_ext.add_lib(*rpy2.situation.get_r_flags(r_home, '--ldflags'))
-    c_ext.add_include(*rpy2.situation.get_r_flags(r_home, '--cppflags'))
-    define_macros=[('RPY2_RLEN_LONG'
-                    if 'RPY2_RLEN_LONG' in definitions else 'RPY2_RLEN_SHORT', True)]
+    c_ext.add_lib(
+        *rpy2.situation.get_r_flags(r_home, '--ldflags')
+    )
+    c_ext.add_include(
+        *rpy2.situation.get_r_flags(r_home, '--cppflags')
+    )
+    define_macros = [('RPY2_RLEN_LONG'
+                      if 'RPY2_RLEN_LONG' in definitions
+                      else 'RPY2_RLEN_SHORT', True)]
 
     ffibuilder.set_source(
         '_rinterface_cffi_api',
@@ -120,6 +128,7 @@ def createbuilder_api():
             callback_defns_api)
     ffibuilder.cdef(cdef)
     return ffibuilder
+
 
 ffibuilder_abi = createbuilder_abi()
 ffibuilder_api = createbuilder_api()
