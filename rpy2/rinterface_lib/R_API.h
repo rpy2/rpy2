@@ -49,7 +49,7 @@ typedef int R_xlen_t;
 
 double R_NaN;		/* IEEE NaN */
 double R_NaReal;	/* NA_REAL: IEEE */
-int    R_NaInt;
+extern int    R_NaInt;
 
 typedef unsigned char Rbyte;
 
