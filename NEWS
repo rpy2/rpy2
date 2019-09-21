@@ -1,12 +1,22 @@
 Release 3.2.0
 =============
 
+New features
+------------
+
+- rpy2 can built and used with :mod:`cffi`'s ABI or API modes (releases 3.0.x and
+  3.1.x were using the ABI mode exclusively). The default is still the ABI mode,
+  and the behaviour can be controlled through the environment variable
+  `RPY2_CFFI_MODE`. If set, possible values are `ABI` (default if the environment
+  variable is not set), `API`, or `BOTH`. When the latter, both `API` and `ABI`
+  modes are built, and the choice of which one to use can be made at run time.
+
 Bugs fixed
 ----------
 
 - `setup.py` is now again compatible with Python2 (issue #580).
 
-- Unit tests were failing if numpy is not installed. 
+- Unit tests were failing if numpy is not installed.
 
 
 Release 3.1.0
