@@ -51,13 +51,13 @@ def parse(iterrows, rownum, definitions, until=None):
     return res
 
 
-def create_cdef(definitions):
+def create_cdef(definitions, header_filename):
     cdef = []
     with open(
             os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
                 'rinterface_lib',
-                'R_API.h')
+                header_filename)
     ) as fh:
         iterrows = iter(fh)
         cdef.extend(parse(iterrows, 0, definitions))
@@ -70,18 +70,19 @@ def createbuilder_abi():
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
-    cdef = create_cdef(definitions)
+    cdef = create_cdef(definitions, 'R_API.h')
     ffibuilder.set_source('_rinterface_cffi_abi', None)
     ffibuilder.cdef(cdef)
     return ffibuilder
 
 
 def createbuilder_api():
+    header_filename = 'R_API.h'
     ffibuilder = cffi.FFI()
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
-    cdef = create_cdef(definitions)
+    cdef = create_cdef(definitions, header_filename)
     r_home = rpy2.situation.r_home_from_subprocess()
     c_ext = rpy2.situation.CExtensionOptions()
     c_ext.add_lib(
@@ -96,7 +97,7 @@ def createbuilder_api():
 
     ffibuilder.set_source(
         '_rinterface_cffi_api',
-        '#include "R_API.h"',
+        f'#include "{header_filename}"',
         libraries=c_ext.libraries,
         library_dirs=c_ext.library_dirs,
         # If we were using the R headers, we would use
@@ -104,7 +105,7 @@ def createbuilder_api():
         include_dirs=['rpy2/rinterface_lib/'],
         define_macros=define_macros,
         extra_compile_args=c_ext.extra_compile_args,
-        extra_link_args=c_ext.extra_link_args + ['-fvisibility=hidden'])
+        extra_link_args=c_ext.extra_link_args)
 
     callback_defns_api = os.linesep.join(
         x.extern_python_def
@@ -124,7 +125,7 @@ def createbuilder_api():
                   ffi_proxy._callback_def,
                   ffi_proxy._yesnocancel_def])
 
-    cdef = (create_cdef(definitions) +
+    cdef = (create_cdef(definitions, header_filename) +
             callback_defns_api)
     ffibuilder.cdef(cdef)
     return ffibuilder
