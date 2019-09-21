@@ -4,30 +4,27 @@ import re
 import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
 
-ffibuilder_abi = cffi.FFI()
-ffibuilder_api = cffi.FFI()
 
 ifdef_pat = re.compile('^#ifdef +([^ ]+) *$')
 define_pat = re.compile('^#define +([^ ]+) +([^ ]+) *$')
 
-cdef = []
-definitions = {}
+
+def define_rlen_kind(ffibuilder, definitions):
+    if ffibuilder.sizeof('size_t') > 4:
+        LONG_VECTOR_SUPPORT = True
+        R_XLEN_T_MAX = 4503599627370496
+        R_SHORT_LEN_MAX = 2147483647
+        definitions['RPY2_RLEN_LONG'] = True
+    else:
+        definitions['RPY2_RLEN_SHORT'] = True
 
 
-if ffibuilder_abi.sizeof('size_t') > 4:
-    LONG_VECTOR_SUPPORT = True
-    R_XLEN_T_MAX = 4503599627370496
-    R_SHORT_LEN_MAX = 2147483647
-    definitions['RPY2_RLEN_LONG'] = True
-else:
-    definitions['RPY2_RLEN_SHORT'] = True
+def define_osname(definitions):
+    if os.name == 'nt':
+        definitions['OSNAME_NT'] = True
 
 
-if os.name == 'nt':
-    definitions['OSNAME_NT'] = True
-
-
-def parse(iterrows, rownum, until=None):
+def parse(iterrows, rownum, definitions, until=None):
     res = []
     for row_i, row in enumerate(iter(iterrows), rownum):
         if until and row.startswith(until):
@@ -35,7 +32,7 @@ def parse(iterrows, rownum, until=None):
         m = ifdef_pat.match(row)
         if m:
             defined = m.groups()[0].strip()
-            block = parse(iterrows, row_i, until='#endif')
+            block = parse(iterrows, row_i, definitions, until='#endif')
             if defined in definitions:
                 res.extend(block)
             continue
@@ -51,54 +48,81 @@ def parse(iterrows, rownum, until=None):
     return res
 
 
-with open(
-        os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'rinterface_lib',
-            'R_API.h')
-        ) as fh:
-    iterrows = iter(fh)
-    cdef.extend(parse(iterrows, 0))
+def create_cdef(definitions):
+    cdef = []
+    with open(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                'rinterface_lib',
+                'R_API.h')
+    ) as fh:
+        iterrows = iter(fh)
+        cdef.extend(parse(iterrows, 0, definitions))
+    return ''.join(cdef)
 
-ffibuilder_abi.set_source('_rinterface_cffi_abi', None)
-ffibuilder_abi.cdef(''.join(cdef))
 
-r_home = rpy2.situation.r_home_from_subprocess()
-c_ext = rpy2.situation.CExtensionOptions()
-c_ext.add_lib(*rpy2.situation.get_r_flags(r_home, '--ldflags'))
-c_ext.add_include(*rpy2.situation.get_r_flags(r_home, '--cppflags'))
+def createbuilder_abi():
+    ffibuilder = cffi.FFI()
+    cdef = []
+    definitions = {}
+    define_rlen_kind(ffibuilder, definitions)
+    define_osname(definitions)
+    cdef = create_cdef(definitions)
+    ffibuilder.set_source('_rinterface_cffi_abi', None)
+    ffibuilder.cdef(cdef)
+    return ffibuilder
 
-ffibuilder_api.set_source('_rinterface_cffi_api',
-                          ''.join(cdef),
-                          libraries=c_ext.libraries,
-                          library_dirs=c_ext.library_dirs,
-                          include_dirs=c_ext.include_dirs,
-                          extra_compile_args=c_ext.extra_compile_args,
-                          extra_link_args=c_ext.extra_link_args)
 
-callback_defns_api = os.linesep.join(
-    x.extern_python_def
-    for x in [ffi_proxy._capsule_finalizer_def,
-              ffi_proxy._evaluate_in_r_def,
-              ffi_proxy._consoleflush_def,
-              ffi_proxy._consoleread_def,
-              ffi_proxy._consolereset_def,
-              ffi_proxy._consolewrite_def,
-              ffi_proxy._consolewrite_ex_def,
-              ffi_proxy._showmessage_def,
-              ffi_proxy._choosefile_def,
-              ffi_proxy._cleanup_def,
-              ffi_proxy._showfiles_def,
-              ffi_proxy._processevents_def,
-              ffi_proxy._busy_def,
-              ffi_proxy._callback_def,
-              ffi_proxy._yesnocancel_def])
+def createbuilder_api():
+    ffibuilder = cffi.FFI()
+    definitions = {}
+    define_rlen_kind(ffibuilder, definitions)
+    define_osname(definitions)
+    cdef = create_cdef(definitions)
+    r_home = rpy2.situation.r_home_from_subprocess()
+    c_ext = rpy2.situation.CExtensionOptions()
+    c_ext.add_lib(*rpy2.situation.get_r_flags(r_home, '--ldflags'))
+    c_ext.add_include(*rpy2.situation.get_r_flags(r_home, '--cppflags'))
+    define_macros=[('RPY2_RLEN_LONG'
+                    if 'RPY2_RLEN_LONG' in definitions else 'RPY2_RLEN_SHORT', True)]
 
-cdef_api = (
-    ''.join(cdef) +
-    callback_defns_api
-    )
-ffibuilder_api.cdef(cdef_api)
+    ffibuilder.set_source(
+        '_rinterface_cffi_api',
+        '#include "R_API.h"',
+        libraries=c_ext.libraries,
+        library_dirs=c_ext.library_dirs,
+        # If we were using the R headers, we would use
+        # include_dirs=c_ext.include_dirs.
+        include_dirs=['rpy2/rinterface_lib/'],
+        define_macros=define_macros,
+        extra_compile_args=c_ext.extra_compile_args,
+        extra_link_args=c_ext.extra_link_args + ['-fvisibility=hidden'])
+
+    callback_defns_api = os.linesep.join(
+        x.extern_python_def
+        for x in [ffi_proxy._capsule_finalizer_def,
+                  ffi_proxy._evaluate_in_r_def,
+                  ffi_proxy._consoleflush_def,
+                  ffi_proxy._consoleread_def,
+                  ffi_proxy._consolereset_def,
+                  ffi_proxy._consolewrite_def,
+                  ffi_proxy._consolewrite_ex_def,
+                  ffi_proxy._showmessage_def,
+                  ffi_proxy._choosefile_def,
+                  ffi_proxy._cleanup_def,
+                  ffi_proxy._showfiles_def,
+                  ffi_proxy._processevents_def,
+                  ffi_proxy._busy_def,
+                  ffi_proxy._callback_def,
+                  ffi_proxy._yesnocancel_def])
+
+    cdef = (create_cdef(definitions) +
+            callback_defns_api)
+    ffibuilder.cdef(cdef)
+    return ffibuilder
+
+ffibuilder_abi = createbuilder_abi()
+ffibuilder_api = createbuilder_api()
 
 if __name__ == '__main__':
 

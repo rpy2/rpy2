@@ -23,7 +23,9 @@ rlock = threading.RLock()
 
 
 def _dlopen_rlib(r_home: str):
-    """Open R's shared C library."""
+    """Open R's shared C library.
+
+    This is only relevant in ABI mode."""
     if r_home is None:
         raise ValueError('r_home is None. '
                          'Try python -m rpy2.situation')

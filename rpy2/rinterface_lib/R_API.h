@@ -147,11 +147,12 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 
 /* include/Rembedded.h */
 int Rf_initialize_R(int ac, char **av);
-void R_RunExitFinalizers(void);
-void Rf_KillAllDevices(void);
-void R_CleanTempDir(void);
+extern void Rf_initEmbeddedR(int argc, char *argv[]);
+extern void R_RunExitFinalizers(void);
+extern void Rf_KillAllDevices(void);
+extern void R_CleanTempDir(void);
 
-void Rf_endEmbeddedR(int fatal);
+extern void Rf_endEmbeddedR(int fatal);
 
 /* include/R_ext/Memory.h */
 void	R_gc(void);

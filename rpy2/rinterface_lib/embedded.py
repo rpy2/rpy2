@@ -111,9 +111,9 @@ def _initr(interactive: bool = True, _want_setcallbacks: bool = True) -> int:
         setinitialized()
 
         # global rstart
-        rstart = ffi.new('Rstart')
+        # rstart = ffi.new('Rstart')
 
-        rstart.R_Interactive = interactive
+        # rstart.R_Interactive = interactive
 
         # TODO: Conditional definition in C code
         #   (Aqua, TERM, and TERM not "dumb")

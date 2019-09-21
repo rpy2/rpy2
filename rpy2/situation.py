@@ -273,6 +273,8 @@ def iter_info():
     yield '  %s' % c_ext.libraries
     yield '  library_dirs:'
     yield '  %s' % c_ext.library_dirs
+    yield '  extra_compile_args:'
+    yield '  %s' % c_ext.extra_compile_args
     yield '  extra_link_args:'
     yield '  %s' % c_ext.extra_link_args
 
