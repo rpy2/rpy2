@@ -33,6 +33,9 @@ Bugs fixed
   variable `R_HOME` whenever defined (rather that always infer it from the
   R in the PATH).
 
+- Converting R strings back to Python was incorrectly using `Latin1` while `UTF-8` was
+  intended (issue #537).
+
 
 Release 3.1.0
 ============

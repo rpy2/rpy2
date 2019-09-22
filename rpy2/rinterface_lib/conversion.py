@@ -86,12 +86,15 @@ def _complex_to_sexp(val: complex):
     return s
 
 
-# {
-#     'ASCII'
-#     'latin-1': rlib.cetype_t.CE_LATIN1,
-#     'utf-8': rlib.cetype_t.CE_UTF8,
-# }
-_CE_UTF8 = 2
+# Default encoding for converting R string back to Python
+# As defined in R_API.h, possible values are
+#   CE_NATIVE = 0,
+#   CE_UTF8   = 1,
+#   CE_LATIN1 = 2,
+#   CE_BYTES  = 3,
+#   CE_SYMBOL = 5,
+#   CE_ANY    = 99
+_CE_VALUE = openrlib.rlib.CE_UTF8
 
 
 def _str_to_cchar(s, encoding: str = 'utf-8'):

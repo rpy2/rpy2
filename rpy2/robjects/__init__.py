@@ -35,7 +35,6 @@ from rpy2.robjects.functions import SignatureTranslatedFunction
 
 
 _globalenv = rinterface.globalenv
-_rparse = rinterface.baseenv['parse']
 _reval = rinterface.baseenv['eval']
 
 BoolVector = vectors.BoolVector
@@ -385,7 +384,7 @@ class R(object):
         return os.linesep.join(s)
 
     def __call__(self, string):
-        p = _rparse(text=StrSexpVector((string,)))
+        p = rinterface.parse(string)
         res = self.eval(p)
         return conversion.rpy2py(res)
 
