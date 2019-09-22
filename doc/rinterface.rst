@@ -44,27 +44,11 @@ Initialization should only be performed once.
 To avoid unpredictable results when using the embedded R, 
 subsequent calls to :func:`initr` will not have any effect.
 
-The functions :func:`get_initoptions` and :func:`set_initoptions`
+The functions :func:`rpy2.rinterface_lib.embedded.get_initoptions` and
+:func:`rpy2.rinterface_lib.embedded.set_initoptions`
 can be used to modify the options.
 Default parameters for the initialization are otherwise
-in the module variable `initoptions`.
-
-.. warning::
-   
-   Currently the set of default initialization option contains `--vanilla`,
-   which implies that :envvar:`R_LIBS`, whenever set, is ignored.
-   The initialization options will have to be set _before_ the :program:`R`
-   is started.
-
-   This can be achieved very simply by added the following lines before initializing
-   the embedded R, or importing :mod:`rpy2.robjects` as this action performs an initialization.
-
-   .. code-block:: python
-      
-      import rpy2.rinterface
-      rpy2.rinterface.set_initoptions(('rpy2', '--verbose', '--no-save'))
-      
-
+in the module variable `_options`.
 
 .. index::
    single: initialize R_HOME
