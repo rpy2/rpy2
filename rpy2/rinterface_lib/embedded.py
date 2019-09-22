@@ -67,22 +67,26 @@ class RRuntimeError(Exception):
     pass
 
 
-def _setcallbacks(rlib, callback_funcs) -> None:
+def _setcallback(rlib, rlib_symbol, callbacks, callback_symbol) -> None:
     """Set R callbacks."""
-    rlib.ptr_R_WriteConsoleEx = callback_funcs._consolewrite_ex
-    rlib.ptr_R_WriteConsole = ffi.NULL
+    if callback_symbol is None:
+        new_callback = ffi.NULL
+    else:
+        new_callback = getattr(callbacks, callback_symbol)
+    setattr(rlib, rlib_symbol, new_callback)
 
-    rlib.ptr_R_ShowMessage = callback_funcs._showmessage
-    rlib.ptr_R_ReadConsole = callback_funcs._consoleread
-    rlib.ptr_R_FlushConsole = callback_funcs._consoleflush
-    rlib.ptr_R_ResetConsole = callback_funcs._consolereset
 
-    rlib.ptr_R_ChooseFile = callback_funcs._choosefile
-    rlib.ptr_R_ShowFiles = callback_funcs._showfiles
-
-    rlib.ptr_R_CleanUp = callback_funcs._cleanup
-    rlib.ptr_R_ProcessEvents = callback_funcs._processevents
-    rlib.ptr_R_Busy = callback_funcs._busy
+CALLBACK_INIT_PAIRS = (('ptr_R_WriteConsoleEx', '_consolewrite_ex'),
+                       ('ptr_R_WriteConsole', None),
+                       ('ptr_R_ShowMessage', '_showmessage'),
+                       ('ptr_R_ReadConsole', '_consoleread'),
+                       ('ptr_R_FlushConsole', '_consoleflush'),
+                       ('ptr_R_ResetConsole', '_consolereset'),
+                       ('ptr_R_ChooseFile', '_choosefile'),
+                       ('ptr_R_ShowFiles', '_showfiles'),
+                       ('ptr_R_CleanUp', '_cleanup'),
+                       ('ptr_R_ProcessEvents', '_processevents'),
+                       ('ptr_R_Busy', '_busy'))
 
 
 # TODO: can init_once() be used here ?
@@ -124,7 +128,9 @@ def _initr(interactive: bool = True, _want_setcallbacks: bool = True) -> int:
         rlib.R_SignalHandlers = 0
 
         if _want_setcallbacks:
-            _setcallbacks(rlib, callback_funcs)
+            for rlib_symbol, callback_symbol in CALLBACK_INIT_PAIRS:
+                _setcallback(rlib, rlib_symbol,
+                             callback_funcs, callback_symbol)
 
         # TODO: still needed ?
         rlib.R_CStackLimit = ffi.cast('uintptr_t', -1)
