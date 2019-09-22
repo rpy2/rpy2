@@ -47,9 +47,12 @@ typedef ptrdiff_t R_xlen_t;
 typedef int R_xlen_t;
 #endif
 
-double R_NaN;		/* IEEE NaN */
-double R_NaReal;	/* NA_REAL: IEEE */
-extern int    R_NaInt;
+/* R_ext/Arith.h */
+extern double R_NaN;  /* IEEE NaN */
+extern double R_PosInf;  /* IEEE Inf */
+extern double R_NegInf;  /* IEEE -Inf */
+extern double R_NaReal;	 /* NA_REAL: IEEE */
+extern int    R_NaInt;  /* NA_INTEGER:= INT_MIN currently */
 
 typedef unsigned char Rbyte;
 
@@ -271,27 +274,22 @@ void Rf_unprotect(int n);
 void R_PreserveObject(SEXP s);
 void R_ReleaseObject(SEXP s);
 
-SEXP R_NaString; /* a CHARSXP */
-SEXP R_BlankString;
-SEXP R_BlankScalarString;
+extern SEXP R_NaString; /* a CHARSXP */
+extern SEXP R_BlankString;
+extern SEXP R_BlankScalarString;
 
-SEXP R_GlobalEnv;
+extern SEXP R_GlobalEnv;
 
-SEXP R_EmptyEnv;
+extern SEXP R_EmptyEnv;
 
 Rboolean R_EnvironmentIsLocked(SEXP env);
 
-SEXP R_BaseEnv;
-SEXP R_BaseNamespace;
-SEXP R_BaseNamespaceRegistry;
+extern SEXP R_BaseEnv;
+extern SEXP R_BaseNamespace;
 
-SEXP R_BaseEnv;
-SEXP R_BaseNamespace;
-SEXP R_BaseNamespaceRegistry;
-
-SEXP R_NilValue;
-SEXP R_UnboundValue;
-SEXP R_MissingArg;
+extern SEXP R_NilValue;
+extern SEXP R_UnboundValue;
+extern SEXP R_MissingArg;
 
 Rboolean (Rf_isNull)(SEXP s);
 Rboolean (Rf_isList)(SEXP s);
@@ -340,9 +338,9 @@ void (SET_ENVFLAGS)(SEXP x, int v);
 
 /* include/Rdefines.h */
 
-SEXP R_ClassSymbol;
-SEXP R_NameSymbol;
-SEXP R_DimSymbol;
+extern SEXP R_ClassSymbol;
+extern SEXP R_NameSymbol;
+extern SEXP R_DimSymbol;
 
 /* include/R_ext/Parse.h */
 typedef enum {
@@ -475,7 +473,7 @@ extern int  (*ptr_R_EditFiles)(int, const char **,
 extern SEXP (*ptr_do_selectlist)(SEXP, SEXP, SEXP, SEXP);
 extern SEXP (*ptr_do_dataentry)(SEXP, SEXP, SEXP, SEXP);
 extern SEXP (*ptr_do_dataviewer)(SEXP, SEXP, SEXP, SEXP);
-extern void (*ptr_R_ProcessEvents)();
+extern void (*ptr_R_ProcessEvents)(void);
 
 typedef unsigned int R_NativePrimitiveArgType;
 
