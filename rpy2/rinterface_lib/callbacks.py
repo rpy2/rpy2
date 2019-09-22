@@ -73,13 +73,11 @@ def _consoleread(prompt, buf, n: int, addtohistory) -> int:
         # elsewhere ?
         reply_b = reply.encode('utf-8')
         reply_n = min(n, len(reply_b))
+        pybuf = bytearray(n)
+        pybuf[:reply_n] = reply_b[:reply_n]
         ffi.memmove(buf,
-                    reply_b,
-                    reply_n)
-        if reply_n < n:
-            buf[reply_n] = ord(b'\n')
-        for i in range(reply_n+1, n):
-            buf[i] = 0
+                    pybuf,
+                    n)
         if reply_n == 0:
             success = 0
         else:

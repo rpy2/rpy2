@@ -12,6 +12,13 @@ New features
   variable is not set), `API`, or `BOTH`. When the latter, both `API` and `ABI`
   modes are built, and the choice of which one to use can be made at run time.
 
+Changes
+-------
+
+- The "consoleread" callback (reading input to the R console) is now assuming UTF-8
+  (was previously assuming ASCII) and is no longer trying to add a "new line" character
+  at the end of the input.
+
 Bugs fixed
 ----------
 

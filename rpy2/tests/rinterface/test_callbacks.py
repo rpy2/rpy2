@@ -148,7 +148,7 @@ def test_consoleread():
         buf = openrlib.ffi.new('char [%i]' % n)
         res = callbacks._consoleread(prompt, buf, n, 0)
     assert res == 1
-    assert (msg + os.linesep) == openrlib.ffi.string(buf).decode('ascii')
+    assert msg == openrlib.ffi.string(buf).decode('utf-8')
 
 
 def test_consoleread_empty():
@@ -162,7 +162,7 @@ def test_consoleread_empty():
         buf = openrlib.ffi.new('char [%i]' % n)
         res = callbacks._consoleread(prompt, buf, n, 0)
     assert res == 0
-    assert os.linesep == openrlib.ffi.string(buf).decode('ascii')
+    assert len(openrlib.ffi.string(buf).decode('utf-8')) == 0
 
 
 def test_console_read_with_error(caplog):
