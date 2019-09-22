@@ -51,7 +51,8 @@ def consoleread(prompt: str) -> str:
 
 
 _READCONSOLE_EXCEPTION_LOG = 'R[read into console]: %s'
-_READCONSOLE_INTERNAL_EXCEPTION_LOG = 'Internal rpy2 error with callback: %s'
+_READCONSOLE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error with '
+                                       '_consoleread callback: %s')
 
 
 @ffi_proxy.callback(ffi_proxy._consoleread_def,
