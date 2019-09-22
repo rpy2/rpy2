@@ -249,13 +249,14 @@ def iter_info():
 
     if r_home is not None and r_home_default is not None:
         if os.path.abst(r_home) != r_home_default:
-            yield '    Warning: The environment variable R_HOME differs from the default R in the PATH.'
+            yield ('    Warning: The environment variable R_HOME '
+                   'differs from the default R in the PATH.')
     else:
         if r_home_default is None:
-            yield '    Warning: There is no R in the PATH and no R_HOME defined.'
+            yield ('    Warning: There is no R in the PATH and no '
+                   'R_HOME defined.')
         else:
             r_home = r_home_default
-
 
     if has_rpy2:
         try:
@@ -277,7 +278,8 @@ def iter_info():
     yield _make_bold('C extension compilation:')
     c_ext = CExtensionOptions()
     if r_home is None:
-        yield '  Warning: R cannot be found, so no compilation flags can be extracted.'
+        yield ('  Warning: R cannot be found, so no compilation flags '
+               'can be extracted.')
     else:
         c_ext.add_lib(*get_r_flags(r_home, '--ldflags'))
         c_ext.add_include(*get_r_flags(r_home, '--cppflags'))
