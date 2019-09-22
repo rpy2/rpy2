@@ -22,6 +22,10 @@ Bugs fixed
 - :mod:`rpy2.situation` is no longer breaking when R is not the in path and
   there is no environment variable `R_HOME`.
 
+- Build script for the cffi interface is now using the environment
+  variable `R_HOME` whenever defined (rather that always infer it from the
+  R in the PATH).
+
 
 Release 3.1.0
 ============

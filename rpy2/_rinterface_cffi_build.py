@@ -83,7 +83,7 @@ def createbuilder_api():
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
     cdef = create_cdef(definitions, header_filename)
-    r_home = rpy2.situation.r_home_from_subprocess()
+    r_home = rpy2.situation.get_r_home()
     c_ext = rpy2.situation.CExtensionOptions()
     c_ext.add_lib(
         *rpy2.situation.get_r_flags(r_home, '--ldflags')
