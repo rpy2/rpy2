@@ -54,8 +54,8 @@ compiled with the shared library flag). The Docker image
 can also be an easy start for Windows users.
 
 Its name is `rpy2/rpy2`, with currently two possible release tags
-(making the full image names either `rpy2/rpy2:2.9.x` or
-`rpy2/rpy2:devel`).
+(making the full image names either `rpy2/rpy2:3.1.x` or
+`rpy2/rpy2:latest`).
 
 The image was primarily designed to run a jupyter notebook or
 an ipython terminal, as shown in further details below, but
@@ -86,7 +86,7 @@ ipython terminal
 	  
    docker run \
           -it --rm \
-          rpy2/rpy2:2.9.x ipython
+          rpy2/rpy2:3.1.x ipython
 
 
 jupyter notebook
@@ -98,7 +98,7 @@ To run the jupyter notebook on port 8888:
 
    docker run \
           --rm -p 8888:8888 \
-          rpy2/rpy2:2.9.x
+          rpy2/rpy2:3.1.x
 
 Once started, point a web browser to `http://localhost:8888`.
 
@@ -124,26 +124,17 @@ Currently the development is done on UNIX-like operating systems with the
 following software versions. Those are the recommended
 versions to run rpy2 with.
 
-======== ===================================================================
+======== =====================================================================
 Software Versions
-======== ===================================================================
- Python   3.5+ (compatible with 2.7 and >3.3, but features might be missing)
+======== =====================================================================
+ Python   3.5+ (not compatible with any Python 2, not tested with Python < 3.6
  R        3.4+
-======== ===================================================================
+======== =====================================================================
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
 building rpy2 will require the corresponding development headers 
 (check the documentation for more information about builing rpy2). 
 
-rpy2 is almost certainly not working with Python 2.6.
-Older Python versions are even less likely to work.
-
-While Python 3.3 should be working, earlier version of Python 3 are not
-expected to (they might work, they might not - you are on your own).
-
-Rpy2 is not expected to work at all with an R version < 2.8. The use of the
-latest rpy2 with an R version older than the current release is not
-adviced (and mostly unsupported).
 
 Alternative Python implementations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -277,7 +268,7 @@ The shell command will then just be:
    # recommended:
    pip install rpy2
 
-   # or
+   # or (but unsupported)
    easy_install rpy2
 
 
@@ -288,12 +279,21 @@ Upgrading an existing installation is done with:
 	 # recommended:
    pip install rpy2 --upgrade
 
-   # or
+   # or (but unsupported)
    easy_install rpy2 --upgrade
 
 Both utilities have a list of options and their respective documentation should
 be checked for details.
 
+.. note::
+
+   Starting with rpy2 3.2.0, rpy2 can built and used with :mod:`cffi`'s ABI or
+   API modes (releases 3.0.x and 3.1.x were using the ABI mode exclusively).
+   At the time of writing the default is still the ABI mode but the choice
+   can be controlled through the environment variable
+   `RPY2_CFFI_MODE`. If set, possible values are `ABI` (default if the environment
+   variable is not set), `API`, or `BOTH`. When the latter, both `API` and `ABI`
+   modes are built, and the choice of which one to use can be made at run time.
 
 .. _install-setup:
 

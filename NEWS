@@ -5,9 +5,8 @@ New features
 ------------
 
 - rpy2 can built and used with :mod:`cffi`'s ABI or API modes (releases 3.0.x and
-  3.1.x were using the ABI mode exclusively). The API mode is still experimental
-  (and broken at the time of writing), so the default is still the ABI mode,
-  and the behaviour can be controlled through the environment variable
+  3.1.x were using the ABI mode exclusively). At the time of writing the default
+  is still the ABI mode but the choice can be controlled through the environment variable
   `RPY2_CFFI_MODE`. If set, possible values are `ABI` (default if the environment
   variable is not set), `API`, or `BOTH`. When the latter, both `API` and `ABI`
   modes are built, and the choice of which one to use can be made at run time.
