@@ -1,6 +1,7 @@
 import cffi
 import os
 import re
+import sys
 import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
 
@@ -84,6 +85,11 @@ def createbuilder_api():
     define_osname(definitions)
     cdef = create_cdef(definitions, header_filename)
     r_home = rpy2.situation.get_r_home()
+    if r_home is None:
+        sys.exit('Error: rpy2 in API mode cannot be built without R in '
+                 'the PATH or R_HOME defined. Correct this or force '
+                 'ABI mode-only by defining the environment variable '
+                 'RPY2_CFFI_MODE=ABI')
     c_ext = rpy2.situation.CExtensionOptions()
     c_ext.add_lib(
         *rpy2.situation.get_r_flags(r_home, '--ldflags')
