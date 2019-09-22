@@ -201,7 +201,7 @@ def _string_getitem(cdata, i):
 def _string_setitem(cdata, i, value_b):
     rlib = openrlib.rlib
     rlib.SET_STRING_ELT(
-        cdata, i, rlib.Rf_mkCharCE(value_b, conversion._CE_UTF8)
+        cdata, i, rlib.Rf_mkCharCE(value_b, conversion._CE_DEFAULT_VALUE)
     )
 
 

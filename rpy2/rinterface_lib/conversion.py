@@ -94,7 +94,7 @@ def _complex_to_sexp(val: complex):
 #   CE_BYTES  = 3,
 #   CE_SYMBOL = 5,
 #   CE_ANY    = 99
-_CE_VALUE = openrlib.rlib.CE_UTF8
+_CE_DEFAULT_VALUE = openrlib.rlib.CE_UTF8
 
 
 def _str_to_cchar(s, encoding: str = 'utf-8'):
@@ -121,7 +121,7 @@ def _str_to_charsxp(val: str):
         s = rlib.R_NaString
     else:
         cchar = _str_to_cchar(val)
-        s = rlib.Rf_mkCharCE(cchar, _CE_UTF8)
+        s = rlib.Rf_mkCharCE(cchar, _CE_DEFAULT_VALUE)
     return s
 
 
