@@ -134,8 +134,6 @@ if __name__ == '__main__':
                        'Intended Audience :: Science/Research',
                        'Development Status :: 5 - Production/Stable'
         ],
-        package_data = {
-            'rpy2': ['images/*.png', ],
-            'rpy2': ['doc/source/rpy2_logo.png', ]}
+        data_files=[('rpy2/rinterface_lib', ['rpy2/rinterface_lib/R_API.h'])],
     )
 
