@@ -69,8 +69,9 @@ def _consoleread(prompt, buf, n: int, addtohistory) -> int:
         return success
 
     try:
-        # TODO: handle non-ASCII encodings
-        reply_b = reply.encode('ASCII')
+        # TODO: Should the coding by dynamically extracted from
+        # elsewhere ?
+        reply_b = reply.encode('utf-8')
         reply_n = min(n, len(reply_b))
         ffi.memmove(buf,
                     reply_b,
