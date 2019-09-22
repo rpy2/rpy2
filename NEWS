@@ -19,6 +19,9 @@ Bugs fixed
 
 - Unit tests were failing if numpy is not installed.
 
+- :mod:`rpy2.situation` is no longer breaking when R is not the in path and
+  there is no environment variable `R_HOME`.
+
 
 Release 3.1.0
 ============

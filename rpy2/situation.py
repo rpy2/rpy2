@@ -120,6 +120,7 @@ def get_r_exec(r_home: str) -> str:
 
     :param: R HOME directory
     :return: Path to the R executable/binary"""
+
     if sys.platform == 'win32' and '64 bit' in sys.version:
         r_exec = os.path.join(r_home, 'bin', 'x64', 'R')
     else:
@@ -239,12 +240,22 @@ def iter_info():
     r_home = os.environ.get('R_HOME')
     yield '    Environment variable R_HOME: %s' % r_home
 
-    r_home = r_home_from_subprocess()
-    yield '    Calling `R RHOME`: %s' % r_home
-
-    if sys.platform == 'win32':
-        r_home = r_home_from_registry()
+    if sys.platform in ('win32', 'nt'):
+        r_home_default = r_home_from_registry()
         yield '    InstallPath in the registry: %s' % r_home
+    else:
+        r_home_default = r_home_from_subprocess()
+        yield '    Calling `R RHOME`: %s' % r_home
+
+    if r_home is not None and r_home_default is not None:
+        if os.path.abst(r_home) != r_home_default:
+            yield '    Warning: The environment variable R_HOME differs from the default R in the PATH.'
+    else:
+        if r_home_default is None:
+            yield '    Warning: There is no R in the PATH and no R_HOME defined.'
+        else:
+            r_home = r_home_default
+
 
     if has_rpy2:
         try:
@@ -265,8 +276,11 @@ def iter_info():
 
     yield _make_bold('C extension compilation:')
     c_ext = CExtensionOptions()
-    c_ext.add_lib(*get_r_flags(r_home, '--ldflags'))
-    c_ext.add_include(*get_r_flags(r_home, '--cppflags'))
+    if r_home is None:
+        yield '  Warning: R cannot be found, so no compilation flags can be extracted.'
+    else:
+        c_ext.add_lib(*get_r_flags(r_home, '--ldflags'))
+        c_ext.add_include(*get_r_flags(r_home, '--cppflags'))
     yield '  include:'
     yield '  %s' % c_ext.include_dirs
     yield '  libraries:'
