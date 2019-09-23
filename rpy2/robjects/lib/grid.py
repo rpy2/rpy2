@@ -43,15 +43,6 @@ class Unit(robjects.RObject):
     """ Vector of unit values (as in R's grid package) """
     _unit = grid_env['unit']
 
-    def __init__(self, *args, **kwargs):
-        od = OrdDict()
-        for item in args:
-            od[None] = conversion.py2rpy(item)
-        for k, v in kwargs.items():
-            od[k] = conversion.py2rpy(v)
-        res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
-        self.__sexp__ = res.__sexp__
-
     @classmethod
     def unit(cls, *args, **kwargs):
         """ Constructor (uses the R function grid::unit())"""
@@ -265,8 +256,10 @@ class Viewport(robjects.RObject):
 viewport = Viewport.viewport
 
 _grid_dict = {
+    'gpar': Gpar,
     'grob': Grob,
     'gTree': GTree,
+    'unit': Unit,
     'xaxis': XAxis,
     'yaxis': YAxis,
     'viewport': Viewport
