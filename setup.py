@@ -134,6 +134,8 @@ if __name__ == '__main__':
                        'Intended Audience :: Science/Research',
                        'Development Status :: 5 - Production/Stable'
         ],
-        data_files=[('rpy2/rinterface_lib', ['rpy2/rinterface_lib/R_API.h'])],
+        data_files=[('rpy2/rinterface_lib',
+                     ['rpy2/rinterface_lib/R_API.h',
+                      'rpy2/rinterface_lib/R_API_eventloop.h'])],
     )
 

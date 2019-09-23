@@ -8,6 +8,9 @@ from rpy2.rinterface_lib import ffi_proxy
 
 ifdef_pat = re.compile('^#ifdef +([^ ]+) *$')
 define_pat = re.compile('^#define +([^ ]+) +([^ ]+) *$')
+cffi_source_pat = re.compile(
+    '^/[*] cffi_source-begin [*]/.+?/[*] cffi_source-end [*]/',
+    flags=re.MULTILINE | re.DOTALL)
 
 
 def define_rlen_kind(ffibuilder, definitions):
@@ -65,6 +68,17 @@ def create_cdef(definitions, header_filename):
     return ''.join(cdef)
 
 
+def read_header(header_filename):
+    with open(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                'rinterface_lib',
+                header_filename)
+    ) as fh:
+        cdef = fh.read()
+    return cdef
+
+
 def createbuilder_abi():
     ffibuilder = cffi.FFI()
     cdef = []
@@ -84,6 +98,7 @@ def createbuilder_api():
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
     cdef = create_cdef(definitions, header_filename)
+    header_eventloop = read_header('R_API_eventloop.h')
     r_home = rpy2.situation.get_r_home()
     if r_home is None:
         sys.exit('Error: rpy2 in API mode cannot be built without R in '
@@ -103,7 +118,13 @@ def createbuilder_api():
 
     ffibuilder.set_source(
         '_rinterface_cffi_api',
-        f'#include "{header_filename}"',
+        f"""
+        # include "{header_filename}"
+        # include "R_API_eventloop.h"
+        void rpy2_runHandlers(InputHandler *handlers) {{
+          R_runHandlers(handlers, R_checkActivity(0, 1));
+        }}
+        """,
         libraries=c_ext.libraries,
         library_dirs=c_ext.library_dirs,
         # If we were using the R headers, we would use
@@ -134,6 +155,8 @@ def createbuilder_api():
     cdef = (create_cdef(definitions, header_filename) +
             callback_defns_api)
     ffibuilder.cdef(cdef)
+    ffibuilder.cdef(cffi_source_pat.sub('', header_eventloop))
+    ffibuilder.cdef('void rpy2_runHandlers(InputHandler *handlers);')
     return ffibuilder
 
 
