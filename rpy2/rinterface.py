@@ -967,7 +967,7 @@ def initr_simple() -> int:
         return status
 
 
-def initr_checkenv():
+def initr_checkenv() -> typing.Union[int, None]:
     # Force the internal initialization flag if there is an environment
     # variable that indicates that R was alreay initialized in the current
     # process.
@@ -981,13 +981,13 @@ def initr_checkenv():
             embedded.set_python_process_info()
         _rinterface._register_external_symbols()
         _post_initr_setup()
-        return status
+    return status
 
 
 initr = initr_checkenv
 
 
-def _post_initr_setup():
+def _post_initr_setup() -> None:
 
     embedded.emptyenv = SexpEnvironment(
         _rinterface.SexpCapsule(openrlib.rlib.R_EmptyEnv)
@@ -1058,5 +1058,10 @@ def rternalize(function: typing.Callable) -> SexpClosure:
     return res
 
 
-def process_revents() -> void:
+def process_revents() -> None:
+    """Process R events.
+
+    Calling this function a regular interval can help ensure that
+    R is processing input events (e.g., resizing of a window with
+    graphics)."""
     openrlib.rlib.rpy2_runHandlers(openrlib.rlib.R_InputHandlers)
