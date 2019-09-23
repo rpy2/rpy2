@@ -97,7 +97,7 @@ def _complex_to_sexp(val: complex):
 _CE_DEFAULT_VALUE = openrlib.rlib.CE_UTF8
 
 
-def _str_to_cchar(s, encoding: str = 'utf-8'):
+def _str_to_cchar(s: str, encoding: str = 'utf-8'):
     # TODO: use isStrinb and installTrChar
     b = s.encode(encoding)
     return ffi.new('char[]', b)

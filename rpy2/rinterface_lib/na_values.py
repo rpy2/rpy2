@@ -30,10 +30,10 @@ class NAIntegerType(int, metaclass=Singleton):
         embedded.assert_isready()
         return super().__new__(cls, openrlib.rlib.R_NaInt)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'NA_integer_'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'NA_integer_'
 
     def __bool__(self):
@@ -50,10 +50,10 @@ class NACharacterType(sexp.CharSexp, metaclass=Singleton):
             )
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'NA_character_'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'NA_character_'
 
     def __bool__(self):
@@ -69,7 +69,7 @@ class NALogicalType(int, metaclass=Singleton):
     def __repr__(self) -> str:
         return 'NA'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'NA'
 
     def __bool__(self) -> bool:
@@ -85,7 +85,7 @@ class NARealType(float, metaclass=Singleton):
     def __repr__(self) -> str:
         return 'NA_real_'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'NA_real_'
 
     def __bool__(self) -> bool:
@@ -100,10 +100,10 @@ class NAComplexType(complex, metaclass=Singleton):
                                openrlib.rlib.R_NaReal,
                                openrlib.rlib.R_NaReal)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'NA_complex_'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'NA_complex_'
 
     def __bool__(self):

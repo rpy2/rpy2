@@ -17,7 +17,7 @@ class ProtectionTracker(object):
         self._counter = 0
 
     @property
-    def count(self):
+    def count(self) -> int:
         """Return the count for the protection stack."""
         return self._counter
 
