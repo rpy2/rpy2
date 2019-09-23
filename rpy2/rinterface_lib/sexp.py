@@ -193,6 +193,7 @@ class Sexp(object):
             self.__sexp__._cdata,
             openrlib.rlib.R_NameSymbol)
 
+
 # TODO: Duplicate declaration in R_API.h ?
 class CETYPE(enum.Enum):
     """Character encodings for R string."""
