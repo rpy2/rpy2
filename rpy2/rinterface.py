@@ -1056,3 +1056,7 @@ def rternalize(function: typing.Callable) -> SexpClosure:
     #   refcount down to zero when returning
     res.__nested_sexp__ = rpy_fun.__sexp__
     return res
+
+
+def process_revents() -> void:
+    openrlib.rlib.rpy2_runHandlers(openrlib.rlib.R_InputHandlers)
