@@ -3,7 +3,7 @@ FROM rpy2/rpy2:latest
 MAINTAINER Laurent Gautier <lgautier@gmail.com>
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG JUPYTER_ENABLE_LAB=1
+ENV JUPYTER_ENABLE_LAB=1
 
 USER root
 
