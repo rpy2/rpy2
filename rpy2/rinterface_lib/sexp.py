@@ -261,22 +261,22 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
 
     @staticmethod
     @abc.abstractmethod
-    def _CAST_IN(self):
+    def _CAST_IN(o):
         pass
 
     @staticmethod
     @abc.abstractmethod
-    def _R_SET_VECTOR_ELT(self):
+    def _R_SET_VECTOR_ELT(x, i, v):
         pass
 
     @staticmethod
     @abc.abstractmethod
-    def _R_VECTOR_ELT(self):
+    def _R_VECTOR_ELT(x, i):
         pass
 
     @staticmethod
     @abc.abstractmethod
-    def _R_GET_PTR(self):
+    def _R_GET_PTR(o):
         pass
 
     def __init__(self,
