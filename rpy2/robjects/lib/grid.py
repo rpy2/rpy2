@@ -58,15 +58,6 @@ class Gpar(robjects.RObject):
     _gpar = grid_env['gpar']
     _get_gpar = grid_env['get.gpar']
 
-    def __init__(self, *args, **kwargs):
-        od = OrdDict()
-        for item in args:
-            od[None] = conversion.py2rpy(item)
-        for k, v in kwargs.items():
-            od[k] = conversion.py2rpy(v)
-        res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
-        self.__sexp__ = res.__sexp__
-
     @classmethod
     def gpar(cls, *args, **kwargs):
         """ Constructor (uses the R function grid::gpar())"""
