@@ -167,12 +167,12 @@ ipython.
 """
 
 if __name__ == '__main__':
-    pack_dir = {PACK_NAME: os.path.join(package_prefix, 'rpy2')}
+    pack_dir = {PACKAGE_NAME: os.path.join(package_prefix, 'rpy2')}
         
     requires = ['pytest', 'jinja2', 'pytz', 'simplegeneric', 'tzlocal']
     
     setup(
-        name=PACK_NAME,
+        name=PACKAGE_NAME,
         version=pack_version,
         description='Python interface to the R language (embedded R)',
         long_description=LONG_DESCRIPTION,
@@ -185,8 +185,8 @@ if __name__ == '__main__':
         setup_requires=['cffi>=1.10.0'],
         cffi_modules=cffi_modules,
         package_dir=pack_dir,
-        packages=([PACK_NAME] +
-                  ['{pack_name}.{x}'.format(pack_name=PACK_NAME, x=x)
+        packages=([PACKAGE_NAME] +
+                  ['{pack_name}.{x}'.format(pack_name=PACKAGE_NAME, x=x)
                    for x in ('rlike', 'rinterface_lib', 'robjects',
                              'robjects.lib', 'interactive', 'ipython',
                              'tests',
