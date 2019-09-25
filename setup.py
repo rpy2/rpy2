@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 import sys
-if (sys.version_info[0] < 3) or (sys.version_info[0] == 3 and sys.version_info[1] < 5):
+if ((sys.version_info[0] < 3) or
+    (sys.version_info[0] == 3 and sys.version_info[1] < 5)):
     print('rpy2 is no longer supporting Python < 3.'
-          'Consider using an older rpy2 release when using an older Python release.')
+          'Consider using an older rpy2 release when using an '
+          'older Python release.')
     sys.exit(1)
 
-import os, os.path, shutil, re, itertools, warnings
+import os
 import tempfile
-import argparse, shlex, subprocess
-from collections import namedtuple
+import warnings
+import subprocess
 from rpy2 import situation
 
 from setuptools import setup
