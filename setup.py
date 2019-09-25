@@ -7,15 +7,23 @@ if ((sys.version_info[0] < 3) or
           'older Python release.')
     sys.exit(1)
 
+import enum
 import os
-import tempfile
-import warnings
+import shutil
 import subprocess
+import tempfile
+import utils
+import warnings
+
+from distutils.ccompiler import new_compiler
+from distutils.sysconfig import customize_compiler
+from distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
+
 from rpy2 import situation
 
 from setuptools import setup
 
-pack_name = 'rpy2'
+PACKAGE_NAME = 'rpy2'
 pack_version = __import__('rpy2').__version__
 
 package_prefix='.'
@@ -68,12 +76,76 @@ def cmp_version(x, y):
             return 0
         return cmp_version(x[1:], y[1:])
 
+
+class COMPILATION_STATUS(enum.Enum):
+    COMPILE_ERROR=('unable to compile R C extensions - missing headers '
+                   'or R not compiled as a library ?')
+    NO_COMPILER=('unable to compile sqlite3 C extensions - '
+                 'no c compiler?')
+    PLATFORM_ERROR=('unable to compile R C extensions - platform error')
+    OK = None
+
+
+def get_c_extension_status(libraries=['R'], include_dirs=None,
+                           library_dirs=None):
+    c_code = ('#include <Rinterface.h>\n\n'
+              'int main(int argc, char **argv) { return 0; }')
+    tmp_dir = tempfile.mkdtemp(prefix='tmp_pw_r_')
+    bin_file = os.path.join(tmp_dir, 'test_pw_r')
+    src_file = bin_file + '.c'
+    with open(src_file, 'w') as fh:
+        fh.write(c_code)
+
+    compiler = new_compiler()
+    customize_compiler(compiler)
+    try:
+        compiler.link_executable(
+            compiler.compile([src_file], output_dir=tmp_dir,
+                             include_dirs=include_dirs),
+            bin_file,
+            libraries=libraries,
+            library_dirs=library_dirs)
+    except CCompilerError:
+        status = COMPILATION_STATUS.COMPILE_ERROR
+    except DistutilsExecError:
+        status = COMPILATION_STATUS.NO_COMPILER        
+    except DistutilsPlatformError:
+        status = COMPILATION_STATUS.PLATFORM_ERROR
+    else:
+        status = COMPILATION_STATUS.OK
+    shutil.rmtree(tmp_dir)
+    return status
+
+
+def get_r_c_extension_status():
+    r_home = situation.get_r_home()
+    c_ext = situation.CExtensionOptions()
+    c_ext.add_lib(
+        *situation.get_r_flags(r_home, '--ldflags')
+    )
+    c_ext.add_include(
+        *situation.get_r_flags(r_home, '--cppflags')
+    )
+    status = get_c_extension_status(libraries=['R'],
+                                    include_dirs=c_ext.include_dirs,
+                                    library_dirs=c_ext.library_dirs)
+    return status
+
+
+c_extension_status = get_r_c_extension_status()
+
 cffi_mode = situation.get_cffi_mode()
 if cffi_mode == situation.CFFI_MODE.ABI:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
 elif cffi_mode == situation.CFFI_MODE.API:
+    if c_extension_status != COMPILATION_STATUS.OK:
+        print('API mode requested but %s' % c_extension_status.value)
+        sys.exit(1)
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_api']
 elif cffi_mode == situation.CFFI_MODE.BOTH:
+    if c_extension_status != COMPILATION_STATUS.OK:
+        print('API mode requested but %s' % c_extension_status.value)
+        sys.exit(1)
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi',
                     'rpy2/_rinterface_cffi_build.py:ffibuilder_api']
 else:
