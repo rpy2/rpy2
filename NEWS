@@ -18,6 +18,10 @@ Changes
   (was previously assuming ASCII) and is no longer trying to add a "new line" character
   at the end of the input.
 
+- Querying an R environment with an invalid key will generate a :class:`TypeError`
+  or a :class:`ValueError` depending on the issue (rather than always :class:`ValueError`
+  before.
+
 Bugs fixed
 ----------
 

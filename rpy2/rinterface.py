@@ -224,7 +224,9 @@ class SexpEnvironment(sexp.Sexp):
     @_cdata_res_to_rinterface
     @_evaluated_promise
     def __getitem__(self, key: str) -> typing.Any:
-        if not (isinstance(key, str) and len(key)):
+        if not isinstance(key, str):
+            raise TypeError('The key must be a non-empty string.')
+        elif not len(key):
             raise ValueError('The key must be a non-empty string.')
         with memorymanagement.rmemory() as rmemory:
             symbol = rmemory.protect(
@@ -238,7 +240,9 @@ class SexpEnvironment(sexp.Sexp):
 
     def __setitem__(self, key: str, value) -> None:
         # TODO: move body to _rinterface-level function
-        if not (isinstance(key, str) and len(key)):
+        if not isinstance(key, str):
+            raise TypeError('The key must be a non-empty string.')
+        elif not len(key):
             raise ValueError('The key must be a non-empty string.')
         if (self.__sexp__._cdata == openrlib.rlib.R_BaseEnv) or \
            (self.__sexp__._cdata == openrlib.rlib.R_EmptyEnv):
