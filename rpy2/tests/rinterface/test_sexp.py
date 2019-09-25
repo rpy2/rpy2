@@ -261,3 +261,7 @@ def test_charsxp_nchar():
     assert cs.nchar() == 2
     cs = v.get_charsxp(2)
     assert cs.nchar() == 0
+
+
+def test_missingtype():
+    assert not rinterface.MissingArg
