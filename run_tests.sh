@@ -1,7 +1,7 @@
 #!/bin/bash
 
-pip uninstall numpy
-pip uninstall pandas
+pip uninstall -y numpy
+pip uninstall -y pandas
 
 pytest \
     --cov=rpy2.rinterface_lib \
