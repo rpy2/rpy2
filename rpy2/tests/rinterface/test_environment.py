@@ -67,7 +67,7 @@ def test_frame():
     f = env.frame()
     # Outside of an R call stack a frame will be NULL,
     # or so I understand.
-    assert f is ri.NULL
+    assert f is rinterface.NULL
 
 
 def test_find_invalid_notstring():
