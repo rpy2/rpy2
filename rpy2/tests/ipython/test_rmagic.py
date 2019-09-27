@@ -2,7 +2,7 @@ import pytest
 import textwrap
 from itertools import product
 import rpy2.rinterface_lib.callbacks
-from . import utils
+from .. import utils
 
 # Currently numpy is a testing requirement, but rpy2 should work without numpy
 try:
