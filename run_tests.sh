@@ -4,6 +4,7 @@ pip uninstall -y numpy
 pip uninstall -y pandas
 
 pytest \
+    --cov-append \
     --cov=rpy2.rinterface_lib \
     --cov=rpy2.rinterface \
     --cov=rpy2.rlike \
