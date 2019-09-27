@@ -23,11 +23,13 @@ class CFFI_MODE(enum.Enum):
     API = 'API'
     ABI = 'ABI'
     BOTH = 'BOTH'
+    ANY = 'ANY'
 
 
-def get_cffi_mode(default=CFFI_MODE.ABI):
+def get_cffi_mode(default=CFFI_MODE.ANY):
     cffi_mode = os.environ.get('RPY2_CFFI_MODE', '')
-    for m in (CFFI_MODE.API, CFFI_MODE.ABI, CFFI_MODE.BOTH):
+    for m in (CFFI_MODE.API, CFFI_MODE.ABI,
+              CFFI_MODE.BOTH, CFFI_MODE.ANY):
         if cffi_mode.upper() == m.value:
             return m
     return default
@@ -137,7 +139,6 @@ def _get_r_cmd_config(r_home: str, about: str, allow_empty=False):
     :return: a tuple (lines of output)"""
     r_exec = get_r_exec(r_home)
     cmd = (r_exec, 'CMD', 'config', about)
-    print(subprocess.list2cmdline(cmd))
     output = subprocess.check_output(cmd,
                                      universal_newlines=True)
     output = output.split(os.linesep)
