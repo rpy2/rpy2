@@ -3,14 +3,26 @@
 # TODO: rename the module with a prefix _ to indicate that this should
 #   not be used outside of rpy2's own code
 
+from typing import Dict
+from typing import Type
 from . import openrlib
 from . import _rinterface_capi as _rinterface
 
 ffi = openrlib.ffi
-_R_RPY2_MAP = {}
-_R_RPY2_DEFAULT_MAP = None
 
-_PY_RPY2_MAP = {}
+_R_RPY2_MAP: Dict[int, Type] = {}
+
+
+class DummyMissingRpy2Map(object):
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError('The default object mapper class is no set.')
+
+
+_R_RPY2_DEFAULT_MAP = DummyMissingRpy2Map
+
+# TODO: shouldn't the second type strictly inherit from an rpy2
+# R object ?
+_PY_RPY2_MAP: Dict[Type, Type] = {}
 
 
 def _cdata_to_rinterface(cdata):
@@ -103,13 +115,13 @@ def _str_to_cchar(s: str, encoding: str = 'utf-8'):
     return ffi.new('char[]', b)
 
 
-def _cchar_to_str(c, encoding: str = 'utf-8'):
+def _cchar_to_str(c, encoding: str = 'utf-8') -> str:
     # TODO: use isStrinb and installTrChar
     s = ffi.string(c).decode(encoding)
     return s
 
 
-def _cchar_to_str_with_maxlen(c, maxlen: int):
+def _cchar_to_str_with_maxlen(c, maxlen: int) -> str:
     # TODO: use isStrinb and installTrChar
     s = ffi.string(c, maxlen).decode('utf-8')
     return s

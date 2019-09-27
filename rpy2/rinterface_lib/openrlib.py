@@ -30,7 +30,10 @@ def _dlopen_rlib(r_home: str):
         raise ValueError('r_home is None. '
                          'Try python -m rpy2.situation')
     lib_path = rpy2.situation.get_rlib_path(r_home, platform.system())
-    rlib = ffi.dlopen(lib_path)
+    if lib_path is None:
+        raise ValueError('The library path cannot be None.')
+    else:
+        rlib = ffi.dlopen(lib_path)
     return rlib
 
 

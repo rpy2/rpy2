@@ -480,7 +480,7 @@ class StrSexpVector(SexpVector):
             raise TypeError('Indices must be integers or slices, '
                             'not %s' % type(i))
 
-    def get_charsxp(self, i: typing.Union[int, slice]) -> CharSexp:
+    def get_charsxp(self, i: int) -> CharSexp:
         """Get the R CharSexp objects for the index i."""
         i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
         return CharSexp(

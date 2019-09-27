@@ -8,7 +8,7 @@ from . import callbacks
 
 ffi = openrlib.ffi
 
-_options = ('rpy2', '--quiet', '--no-save')
+_options: typing.Tuple[str, ...] = ('rpy2', '--quiet', '--no-save')
 rpy2_embeddedR_isinitialized = 0x00
 rstart = None
 
@@ -30,7 +30,7 @@ def set_initoptions(options: typing.Tuple[str]) -> None:
     _options = tuple(options)
 
 
-def get_initoptions() -> typing.Tuple[str]:
+def get_initoptions() -> typing.Tuple[str, ...]:
     return _options
 
 
@@ -94,7 +94,8 @@ CALLBACK_INIT_PAIRS = (('ptr_R_WriteConsoleEx', '_consolewrite_ex'),
 
 
 # TODO: can init_once() be used here ?
-def _initr(interactive: bool = True, _want_setcallbacks: bool = True) -> int:
+def _initr(interactive: bool = True,
+           _want_setcallbacks: bool = True) -> typing.Optional[int]:
 
     rlib = openrlib.rlib
     ffi_proxy = openrlib.ffi_proxy
@@ -109,7 +110,7 @@ def _initr(interactive: bool = True, _want_setcallbacks: bool = True) -> int:
 
     with openrlib.rlock:
         if isinitialized():
-            return
+            return None
         os.environ['R_HOME'] = openrlib.R_HOME
         options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
         n_options = len(options_c)

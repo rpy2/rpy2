@@ -10,6 +10,7 @@ import os
 import shlex
 import subprocess
 import sys
+from typing import Optional
 import warnings
 
 try:
@@ -54,21 +55,21 @@ def r_version_from_subprocess():
     return r_version
 
 
-def r_home_from_subprocess() -> str:
+def r_home_from_subprocess() -> Optional[str]:
     """Return the R home directory from calling 'R RHOME'."""
     try:
         tmp = subprocess.check_output(('R', 'RHOME'), universal_newlines=True)
     except Exception:  # FileNotFoundError, WindowsError, etc
-        return
+        return None
     r_home = tmp.split(os.linesep)
     if r_home[0].startswith('WARNING'):
-        r_home = r_home[1]
+        res = r_home[1]
     else:
-        r_home = r_home[0].strip()
-    return r_home
+        res = r_home[0].strip()
+    return res
 
 
-def r_home_from_registry() -> str:
+def r_home_from_registry() -> Optional[str]:
     """Return the R home directory from the Windows Registry."""
     try:
         import winreg
@@ -98,7 +99,7 @@ def get_rlib_path(r_home: str, system: str) -> str:
     return lib_path
 
 
-def get_r_home() -> str:
+def get_r_home() -> Optional[str]:
     """Get R's home directory (aka R_HOME).
 
     If an environment variable R_HOME is found it is returned,
@@ -139,14 +140,17 @@ def _get_r_cmd_config(r_home: str, about: str, allow_empty=False):
     :return: a tuple (lines of output)"""
     r_exec = get_r_exec(r_home)
     cmd = (r_exec, 'CMD', 'config', about)
-    output = subprocess.check_output(cmd,
-                                     universal_newlines=True)
-    output = output.split(os.linesep)
+    output = subprocess.check_output(
+        cmd,
+        universal_newlines=True
+    ).split(os.linesep)
     # Twist if 'R RHOME' spits out a warning
     if output[0].startswith('WARNING'):
         warnings.warn('R emitting a warning: %s' % output[0])
-        output = output[1:]
-    return output
+        res = output[1:]
+    else:
+        res = output
+    return res
 
 
 _R_LIBS = ('LAPACK_LIBS', 'BLAS_LIBS')

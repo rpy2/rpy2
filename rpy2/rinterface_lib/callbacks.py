@@ -202,7 +202,7 @@ _SHOWFILE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error while '
 @ffi_proxy.callback(ffi_proxy._showfiles_def,
                     _rinterface_cffi)
 def _showfiles(nfiles: int, files, headers, wtitle, delete, pager) -> int:
-    filenames = []
+    filenames: typing.List[str] = []
     headers_str = []
     wtitle_str = None
     pager_str = None
