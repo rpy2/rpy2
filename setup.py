@@ -32,38 +32,6 @@ R_MIN_VERSION = (3, 3)
 def _format_version(x):
     return '.'.join(map(str, x))
 
-    
-def _get_r_home(r_bin = 'R'):
-    
-    if (os.getenv('R_ENVIRON') is not None) or (os.getenv('R_ENVIRON_USER') is not None):
-        warnings.warn('The environment variable R_ENVIRON or R_ENVIRON_USER is set.'
-                      ' Differences between their settings during build time and run'
-                      ' time may lead to issues when using rpy2.')
-
-    try:
-        r_home = subprocess.check_output((r_bin, "RHOME"),
-                                         universal_newlines=True)
-    except:
-        msg = "Error: Tried to guess R's HOME but no command '%s' in the PATH." % r_bin
-        print(msg)
-        sys.exit(1)
-
-    r_home = r_home.split(os.linesep)
-
-    #Twist if 'R RHOME' spits out a warning
-    if r_home[0].startswith("WARNING"):
-        warnings.warn("R emitting a warning: %s" % r_home[0])
-        r_home = r_home[1].rstrip()
-    else:
-        r_home = r_home[0].rstrip()
-
-    if os.path.exists(os.path.join(r_home, 'Renviron.site')):
-        warnings.warn("The optional file '%s' is defined. Modifying it between "
-                      "build time and run time may lead to issues when using rpy2." %
-                      os.path.join(r_home, 'Renviron.site'))
-
-    return r_home
-
 
 def cmp_version(x, y):
     if (x[0] < y[0]):
@@ -149,8 +117,10 @@ elif cffi_mode == situation.CFFI_MODE.BOTH:
                     'rpy2/_rinterface_cffi_build.py:ffibuilder_api']
 else:
     # default interface
-    cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']    
-    
+    cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
+    if c_extension_status == COMPILATION_STATUS.OK:
+        cffi_modules.append('rpy2/_rinterface_cffi_build.py:ffibuilder_api')
+
 LONG_DESCRIPTION = """
 Python interface to the R language.
 
@@ -212,3 +182,10 @@ if __name__ == '__main__':
                       'rpy2/rinterface_lib/R_API_eventloop.h'])],
     )
 
+    print('---')
+    if 'rpy2/_rinterface_cffi_build.py:ffibuilder_abi' in cffi_modules:
+        print('ABI mode interface built and installed')
+    if 'rpy2/_rinterface_cffi_build.py:ffibuilder_api' in cffi_modules:
+        print('API mode interface built and installed')
+    else:
+        print('API mode interface not build because: %s' % c_extension_status)
