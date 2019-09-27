@@ -16,14 +16,9 @@ try:
 except:
     has_pandas = False
 from IPython.testing.globalipapp import get_ipython
-from IPython.utils.py3compat import PY3
 
-if PY3:
-    from io import StringIO
-    np_string_type = 'U'
-else:
-    from StringIO import StringIO
-    np_string_type = 'S'
+from io import StringIO
+np_string_type = 'U'
 
 from rpy2.ipython import rmagic
 
