@@ -68,19 +68,19 @@ install:
     rm -r dist/
     RPY_CFFI_MODE=ABI
     python setup.py build --force sdist
-    pip install dist/$(ls -t1 dist/*.tar.gz | head)
+    pip install $(ls -t1 dist/*.tar.gz | head)
     pip uninstall -y rpy2
   - |
     rm -r dist/
     RPY_CFFI_MODE=API
     python setup.py build --force sdist
-    pip install dist/$(ls -t1 dist/*tar.gz | head)
+    pip install $(ls -t1 dist/*.tar.gz | head)
     pip uninstall -y rpy2
   - |
     rm -r dist/
     RPY_CFFI_MODE=BOTH
     python setup.py build --force sdist
-    pip install dist/$(ls -t1 dist/*tar.gz | head)
+    pip install $(ls -t1 dist/*.tar.gz | head)
 
 # command to run tests
 script:
