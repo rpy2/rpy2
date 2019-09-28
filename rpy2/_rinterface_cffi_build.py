@@ -123,7 +123,7 @@ def createbuilder_api():
         # include "R_API_eventloop.h"
         void rpy2_runHandlers(InputHandler *handlers) {{
           R_runHandlers(handlers, R_checkActivity(0, 1));
-        }}
+        }};
         """,
         libraries=c_ext.libraries,
         library_dirs=c_ext.library_dirs,

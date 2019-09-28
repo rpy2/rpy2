@@ -390,11 +390,11 @@ R is quite not friendly to multithreading, and trying to play with threads at th
 level can quickly result in an embedded R crashing. Since we are using R's C API
 and Python can do multithreading, getting to such software failure will not be too hard.
 However, multithreading should not be considered impossible, or even very difficult to
-achieved when applying the one guideline below.
+achieve when applying the one guideline below.
 
 :mod:`rpy2` has a lock that can be used as a context manager. Interactions with R
-that a code author knows should never be interrupted by thread can simply be wrapped
-in locked block as follows:
+that a code author knows should never be interrupted by thread switching can simply
+be wrapped in a thread-locked block as follows:
 
 .. code-block:: python
 
@@ -409,7 +409,7 @@ That lock is already used in a handful of critical low-level accesses to the R
 API in the :mod:`rpy2` code base
 (e.g., when a protection/unprotection stack is used for R objects transiently
 protected from garbage collection, or when the embedded R is initialized) but
-can be safely reused by higher level code.
+can be safely reused and nested in higher level code.
 
 .. note::
 
