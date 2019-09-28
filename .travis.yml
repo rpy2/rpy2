@@ -57,23 +57,23 @@ addons:
 install:
   - |
     RPY_CFFI_MODE=ABI python setup.py install
-    pip uninstall rpy2
+    pip uninstall -y rpy2
   - |
     RPY_CFFI_MODE=API python setup.py install
-    pip uninstall rpy2
+    pip uninstall -y rpy2
   - |
     RPY_CFFI_MODE=BOTH python setup.py install
-    pip uninstall rpy2
+    pip uninstall -y rpy2
   - |
     RPY_CFFI_MODE=ABI
     python setup.py build sdist
     pip install dist/$(ls -t1 dist/ | head)
-    pip uninstall rpy2
+    pip uninstall -y rpy2
   - |
     RPY_CFFI_MODE=API
     python setup.py build sdist
     pip install dist/$(ls -t1 dist/ | head)
-    pip uninstall rpy2
+    pip uninstall -y rpy2
   - |
     RPY_CFFI_MODE=BOTH
     python setup.py build sdist
