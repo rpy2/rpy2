@@ -92,14 +92,17 @@ R space and Python space
 
 When using the RPy2 package, two realms are co-existing: R and Python.
 
-The :class:`Sexp_Type` objects can be considered as Python envelopes pointing
+:class:`rpy2.rinterface_lib.sexp.Sexp` objects can be considered as Python envelopes pointing
 to data stored and administered in the R space.
 
-R variables are existing within an embedded R workspace, and can be accessed
+R variables exist within an embedded R workspace, and can be accessed
 from Python through their python object representations.
 
-We distinguish two kind of R objects: named objects and anonymous objects. 
-Named objects have an associated symbol in the R workspace.
+We distinguish two kinds of R objects: named objects and anonymous objects. 
+Named objects have an associated symbol in the R workspace (a "variable name")
+while anonymous objects don't, but are protected from garbage collection on the R side
+for as long as they are used on the Python side.
+
 
 Named objects
 ^^^^^^^^^^^^^
@@ -378,6 +381,46 @@ The way to restore interactivity is to simply call the function
 
 A higher-level interface is available, running the processing of
 R events in a thread (see Section :ref:`interactive-reventloop`).
+
+
+Multithreading
+==============
+
+R is quite not friendly to multithreading, and trying to play with threads at the C
+level can quickly result in an embedded R crashing. Since we are using R's C API
+and Python can do multithreading, getting to such software failure will not be too hard.
+However, multithreading should not be considered impossible, or even very difficult to
+achieved when applying the one guideline below.
+
+:mod:`rpy2` has a lock that can be used as a context manager. Interactions with R
+that a code author knows should never be interrupted by thread can simply be wrapped
+in locked block as follows:
+
+.. code-block:: python
+
+   from rpy2.rinterface_lib import openrlib
+
+   with openrlib.rlock:
+       # (put interactions with R that should not be interrupted by
+       # thread switching here).
+       pass
+
+That lock is already used in a handful of critical low-level accesses to the R
+API in the :mod:`rpy2` code base
+(e.g., when a protection/unprotection stack is used for R objects transiently
+protected from garbage collection, or when the embedded R is initialized) but
+can be safely reused by higher level code.
+
+.. note::
+
+   Web Server Gateway Interfaces (WSGIs) for Python scripts can use multithreading
+   to optimize resources, allowing one process to handle several connections as
+   they are presumable lower latency that what happens on the server side.
+
+   When using :class:`rpy2` to build services that run R code, attention should be
+   paid to whether threads are used, and if the case the lock mentioned in this
+   section should be used to ensure that coherent results results are computed by R
+   even in the presence of multithreading.
 
 
 Classes
