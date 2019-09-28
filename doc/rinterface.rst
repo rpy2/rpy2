@@ -415,7 +415,7 @@ can be safely reused and nested in higher level code.
 
    Web Server Gateway Interfaces (WSGIs) for Python scripts can use multithreading
    to optimize resources, allowing one process to handle several connections as
-   they are presumable lower latency that what happens on the server side.
+   they are presumably of higher latency than what happens on the server side.
 
    When using :class:`rpy2` to build services that run R code, attention should be
    paid to whether threads are used, and if the case the lock mentioned in this
