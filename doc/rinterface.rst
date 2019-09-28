@@ -264,8 +264,8 @@ The R code *1 + 2* translates to an expression of length 3:
 *+(1, 2)*, that is a call to the function *+* (or rather the symbol associated
 with the function) with the arguments *1* and *2*. 
  
->>> ri.str_typeint(expression[0][0].typeof)
-'SYMSXP'
+>>> expression[0][0].typeof
+<RTYPES.SYMSXP: 1>
 >>> tuple(expression[0][1])
 (1.0,)
 >>> tuple(expression[0][2])
@@ -451,7 +451,7 @@ The class :class:`Sexp` is the base class for all R objects.
       .. doctest::
 
          >>> letters.typeof
-         16
+         <RTYPES.STRSXP: 16>
 
    .. method:: __deepcopy__(self)
 
