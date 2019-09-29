@@ -1,3 +1,13 @@
+Release 3.2.1
+=============
+
+Bugs fixed
+----------
+
+- The wrapper for the R package `dbplyr` could not import the underlying
+  package (refactoring elsewhere was not propagated there).
+
+
 Release 3.2.0
 =============
 
