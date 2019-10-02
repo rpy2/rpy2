@@ -94,3 +94,12 @@ script:
 
 after_success:
   - codecov
+
+deploy:
+  provider: releases
+  api_key:
+    secure: 
+  file: "FILE"
+  skip_cleanup: true
+  on:
+    tags: true
