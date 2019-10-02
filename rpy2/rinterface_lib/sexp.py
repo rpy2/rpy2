@@ -176,8 +176,7 @@ class Sexp(object):
 
     @property
     def names(self) -> 'Sexp':
-        # TODO: force finding function
-        return embedded.globalenv.find('names')(self)
+        return embedded.baseenv['names'](self)
 
     @names.setter
     def names(self, value) -> None:

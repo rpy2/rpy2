@@ -7,6 +7,9 @@ Bugs fixed
 - The wrapper for the R package `dbplyr` could not import the underlying
   package (refactoring elsewhere was not propagated there).
 
+- Creating R objects called `names` `globalenv` caused the method
+  :meth:`Sexp.names` to fail (issue #587).
+
 
 Release 3.2.0
 =============
