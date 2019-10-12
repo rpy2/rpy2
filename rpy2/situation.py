@@ -260,6 +260,7 @@ def iter_info():
         if r_home_default is None:
             yield ('    Warning: There is no R in the PATH and no '
                    'R_HOME defined.')
+            return
         else:
             r_home = r_home_default
 
