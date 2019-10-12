@@ -51,6 +51,7 @@ class COMPILATION_STATUS(enum.Enum):
                  'no c compiler?')
     PLATFORM_ERROR=('unable to compile R C extensions - platform error')
     OK = None
+    NO_R='No R in the PATH, or R_HOME defined.'
 
 
 def get_c_extension_status(libraries=['R'], include_dirs=None,
@@ -86,6 +87,8 @@ def get_c_extension_status(libraries=['R'], include_dirs=None,
 
 def get_r_c_extension_status():
     r_home = situation.get_r_home()
+    if r_home is None:
+        return COMPILATION_STATUS.NO_R
     c_ext = situation.CExtensionOptions()
     c_ext.add_lib(
         *situation.get_r_flags(r_home, '--ldflags')
