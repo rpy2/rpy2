@@ -127,8 +127,8 @@ versions to run rpy2 with.
 ======== =====================================================================
 Software Versions
 ======== =====================================================================
- Python   3.5+ (not compatible with any Python 2, not tested with Python < 3.6
- R        3.4+
+ Python   >=3.6
+ R        >=3.4
 ======== =====================================================================
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
