@@ -9,6 +9,7 @@ from . import callbacks
 ffi = openrlib.ffi
 
 _options: typing.Tuple[str, ...] = ('rpy2', '--quiet', '--no-save')
+_C_stack_limit = -1
 rpy2_embeddedR_isinitialized = 0x00
 rstart = None
 
@@ -138,7 +139,7 @@ def _initr(interactive: bool = True,
                              callback_funcs, callback_symbol)
 
         # TODO: still needed ?
-        rlib.R_CStackLimit = ffi.cast('uintptr_t', -1)
+        rlib.R_CStackLimit = ffi.cast('uintptr_t', _C_stack_limit)
 
         rlib.setup_Rmainloop()
 
