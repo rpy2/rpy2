@@ -192,7 +192,10 @@ def rpy2py_intvector(obj):
 
 @rpy2py.register(FloatSexpVector)
 def rpy2py_floatvector(obj):
-    return numpy2ri.rpy2py(obj)
+    if POSIXct.isrinstance(obj):
+        return rpy2py(POSIXct(obj))
+    else:
+        return numpy2ri.rpy2py(obj)
 
 
 @rpy2py.register(POSIXct)

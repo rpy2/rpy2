@@ -914,6 +914,11 @@ class POSIXct(POSIXt, FloatVector):
 
         return POSIXct._sexp_from_seq(seq, attrgetter('tzinfo'), f)
 
+    @staticmethod
+    def isrinstance(obj) -> bool:
+        """Is an R object an instance of POSIXct."""
+        return obj.rclass[0] == 'POSIXct'
+
     def iter_localized_datetime(self):
         """Iterator yielding localized Python datetime objects."""
         try:
