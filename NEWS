@@ -10,6 +10,10 @@ Bugs fixed
 - Creating R objects called `names` `globalenv` caused the method
   :meth:`Sexp.names` to fail (issue #587).
 
+- Whenever the pandas conversion was activated :class:`FloatSexpVector` instances
+  with the R class `POSIXct` attached where not corrected mapped back to pandas
+  datetime arrays. (issue #594)
+
 
 Release 3.2.0
 =============
