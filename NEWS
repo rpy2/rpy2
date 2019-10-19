@@ -7,6 +7,10 @@ Bugs fixed
 - The wrapper for the R package `dbplyr` could not import the underlying
   package (refactoring elsewhere was not propagated there).
 
+- Whenever the pandas conversion was activated :class:`FloatSexpVector` instances
+  with the R class `POSIXct` attached where not corrected mapped back to pandas
+  datetime arrays. (issue #594)
+
 
 Release 3.2.0
 =============
