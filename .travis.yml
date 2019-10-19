@@ -56,29 +56,29 @@ addons:
 
 install:
   - |
-    RPY_CFFI_MODE=ABI python setup.py install
+    RPY2_CFFI_MODE=ABI python setup.py install
     pip uninstall -y rpy2
   - |
-    RPY_CFFI_MODE=API python setup.py install
+    RPY2_CFFI_MODE=API python setup.py install
     pip uninstall -y rpy2
   - |
-    RPY_CFFI_MODE=BOTH python setup.py install
+    RPY2_CFFI_MODE=BOTH python setup.py install
     pip uninstall -y rpy2
   - |
     rm -r dist/
-    RPY_CFFI_MODE=ABI
+    RPY2_CFFI_MODE=ABI
     python setup.py build --force sdist
     pip install $(ls -t1 dist/*.tar.gz | head)
     pip uninstall -y rpy2
   - |
     rm -r dist/
-    RPY_CFFI_MODE=API
+    RPY2_CFFI_MODE=API
     python setup.py build --force sdist
     pip install $(ls -t1 dist/*.tar.gz | head)
     pip uninstall -y rpy2
   - |
     rm -r dist/
-    RPY_CFFI_MODE=BOTH
+    RPY2_CFFI_MODE=BOTH
     python setup.py build --force sdist
     pip install $(ls -t1 dist/*.tar.gz | head)
 
@@ -86,10 +86,10 @@ install:
 script:
   - ./run_linting.sh
   - |
-    export RPY_CFFI_MODE=ABI
+    export RPY2_CFFI_MODE=ABI
     ./run_tests.sh
   - |
-    export RPY_CFFI_MODE=API
+    export RPY2_CFFI_MODE=API
     ./run_tests.sh
 
 after_success:
