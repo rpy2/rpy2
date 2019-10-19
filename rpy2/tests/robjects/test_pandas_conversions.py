@@ -279,7 +279,26 @@ class TestPandasConversions(object):
             py_time = robjects.conversion.rpy2py(r_time)
 
         assert py_time[1] is pandas.NaT
-        
+
+    def test_posixct_in_dataframe_to_pandas(self):
+        tzone = robjects.vectors.get_timezone()
+        dt = [datetime(1960, 5, 2),
+              datetime(1970, 6, 3), 
+              datetime(2012, 7, 1)]
+        dt = [x.replace(tzinfo=tzone) for x in dt]
+        # fix the time
+        ts = [x.timestamp() for x in dt]
+        # Create an R data.frame with a posixct_vector.
+        r_dataf = robjects.vectors.DataFrame({
+            'mydate': robjects.baseenv['as.POSIXct'](
+                rinterface.FloatSexpVector(ts),
+                origin=rinterface.StrSexpVector(('1970-01-01',))
+            )})
+
+        # Convert R POSIXct vector to pandas-compatible vector
+        with localconverter(default_converter + rpyp.converter):
+            py_dataf = robjects.conversion.rpy2py(r_dataf)
+        assert pandas.core.dtypes.common.is_datetime64_any_dtype(py_dataf['mydate'])
 
     def test_repr(self):
         # this should go to testVector, with other tests for repr()
