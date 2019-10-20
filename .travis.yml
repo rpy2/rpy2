@@ -23,6 +23,10 @@ matrix:
       python: 3.8-dev
     - os: osx
       language: generic
+  env:
+    - RPY2_CFFI_MODE=ABI
+    - RPY2_CFFI_MODE=API
+    - RPY2_CFFI_MODE=BOTH
 
 before_install:
   - |
@@ -59,42 +63,16 @@ addons:
     update: true
 
 install:
-  - |
-    RPY2_CFFI_MODE=ABI python setup.py install
-    pip uninstall -y rpy2
-  - |
-    RPY2_CFFI_MODE=API python setup.py install
-    pip uninstall -y rpy2
-  - |
-    RPY2_CFFI_MODE=BOTH python setup.py install
-    pip uninstall -y rpy2
-  - |
+  - python setup.py install
+  - pip uninstall -y rpy2
     rm -r dist/
-    RPY2_CFFI_MODE=ABI
-    python setup.py build --force sdist
-    pip install $(ls -t1 dist/*.tar.gz | head)
-    pip uninstall -y rpy2
-  - |
-    rm -r dist/
-    RPY2_CFFI_MODE=API
-    python setup.py build --force sdist
-    pip install $(ls -t1 dist/*.tar.gz | head)
-    pip uninstall -y rpy2
-  - |
-    rm -r dist/
-    RPY2_CFFI_MODE=BOTH
     python setup.py build --force sdist
     pip install $(ls -t1 dist/*.tar.gz | head)
 
 # command to run tests
 script:
   - ./run_linting.sh
-  - |
-    export RPY2_CFFI_MODE=ABI
-    ./run_tests.sh
-  - |
-    export RPY2_CFFI_MODE=API
-    ./run_tests.sh
+  - ./run_tests.sh
 
 after_success:
   - codecov
