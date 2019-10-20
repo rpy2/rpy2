@@ -67,7 +67,8 @@ before_install:
       sudo apt-get update -qq
       sudo apt-get install -y r-base
     fi
-  - if [[ $RPY2_CFFI_MODE == 'API' ]]; then
+  - |
+    if [[ $RPY2_CFFI_MODE == 'API' ]]; then
       sudo apt-get install -y r-base-dev
     fi
   - |
