@@ -96,7 +96,7 @@ def get_r_c_extension_status():
     c_ext.add_include(
         *situation.get_r_flags(r_home, '--cppflags')
     )
-    status = get_c_extension_status(libraries=['R'],
+    status = get_c_extension_status(libraries=c_ext.libraries,
                                     include_dirs=c_ext.include_dirs,
                                     library_dirs=c_ext.library_dirs)
     return status
