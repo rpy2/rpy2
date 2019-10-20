@@ -71,10 +71,9 @@ before_install:
       cat /etc/apt/sources.list
       sudo apt-get update -qq
       sudo apt-get install -y r-base
-    fi
-  - |
-    if [[ $RPY2_CFFI_MODE == 'API' ]]; then
-      sudo apt-get install -y r-base-dev
+      if [[ $RPY2_CFFI_MODE == 'API' ]]; then
+        sudo apt-get install -y r-base-dev
+      fi
     fi
   - |
     sudo Rscript ./install_r_packages.r dplyr ggplot2 tidyr
