@@ -65,8 +65,10 @@ before_install:
         "deb https://cloud.r-project.org/bin/linux/ubuntu/ $(lsb_release -c -s)-cran35/"
       cat /etc/apt/sources.list
       sudo apt-get update -qq
-      sudo apt-get install -y r-base libpcre2-8-0
+      sudo apt-get install -y r-base
     fi
+  - if [[ $RPY2_CFFI_MODE == 'API' ]]; then
+      sudo apt-get install -y r-base-dev
   - |
     sudo Rscript ./install_r_packages.r dplyr ggplot2 tidyr
     pip install flake8 pytest codecov pytest-cov
