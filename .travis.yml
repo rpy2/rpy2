@@ -8,10 +8,6 @@ cache:
   - packages
   - pip
 
-  - |
-    export RPY2_CFFI_MODE=API
-    ./run_tests.sh
-
 jobs:
   allow_failures:
     - os: osx
@@ -34,11 +30,11 @@ jobs:
       env: RPY2_CFFI_MODE=API
     - os: linux
       dist: xenial
-      python: 3.8-dev
+      python: 3.8
       env: RPY2_CFFI_MODE=ABI
     - os: linux
       dist: xenial
-      python: 3.8-dev
+      python: 3.8
       env: RPY2_CFFI_MODE=API
     - os: osx
       language: generic
@@ -82,6 +78,7 @@ addons:
     update: true
 
 install:
+  - python rpy2/situation.py
   - python setup.py install
   - pip uninstall -y rpy2
   - rm -r dist/
