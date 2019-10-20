@@ -4,6 +4,10 @@ compiler:
   - gcc
   - clang
 
+cache:
+  - packages
+  - pip
+
 matrix:
   allow_failures:
     - os: osx
