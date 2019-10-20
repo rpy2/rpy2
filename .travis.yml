@@ -12,26 +12,40 @@ cache:
     export RPY2_CFFI_MODE=API
     ./run_tests.sh
 
-env:
-  - RPY2_CFFI_MODE=ABI
-  - RPY2_CFFI_MODE=API
-  - RPY2_CFFI_MODE=BOTH
-
-matrix:
+jobs:
   allow_failures:
     - os: osx
   include:
     - os: linux
       dist: xenial
       python: 3.6
+      env: RPY2_CFFI_MODE=ABI
+    - os: linux
+      dist: xenial
+      python: 3.6
+      env: RPY2_CFFI_MODE=API
     - os: linux
       dist: xenial
       python: 3.7
+      env: RPY2_CFFI_MODE=ABI
+    - os: linux
+      dist: xenial
+      python: 3.7
+      env: RPY2_CFFI_MODE=API
     - os: linux
       dist: xenial
       python: 3.8-dev
+      env: RPY2_CFFI_MODE=ABI
+    - os: linux
+      dist: xenial
+      python: 3.8-dev
+      env: RPY2_CFFI_MODE=API
     - os: osx
       language: generic
+      env: RPY2_CFFI_MODE=ABI
+    - os: osx
+      language: generic
+      env: RPY2_CFFI_MODE=API
 
 before_install:
   - |
