@@ -43,6 +43,12 @@ jobs:
       language: generic
       env: RPY2_CFFI_MODE=API
 
+addons:
+  apt:
+    update: true
+    packages:
+      - lsb-release
+
 before_install:
   - |
     if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
@@ -56,7 +62,6 @@ before_install:
       python3 -m venv py3_env 
       source py3_env/bin/activate
     else
-      sudo apt-get install -y lsb-release
       sudo apt-key adv \
         --keyserver keyserver.ubuntu.com \
         --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
@@ -74,11 +79,6 @@ before_install:
     sudo Rscript ./install_r_packages.r dplyr ggplot2 tidyr
     pip install flake8 pytest codecov pytest-cov
     pip install ipython tzlocal
-
-
-addons:
-  apt:
-    update: true
 
 install:
   - python rpy2/situation.py
