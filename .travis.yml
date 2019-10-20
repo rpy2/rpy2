@@ -8,6 +8,15 @@ cache:
   - packages
   - pip
 
+  - |
+    export RPY2_CFFI_MODE=API
+    ./run_tests.sh
+
+env:
+  - RPY2_CFFI_MODE=ABI
+  - RPY2_CFFI_MODE=API
+  - RPY2_CFFI_MODE=BOTH
+
 matrix:
   allow_failures:
     - os: osx
@@ -23,10 +32,6 @@ matrix:
       python: 3.8-dev
     - os: osx
       language: generic
-  env:
-    - RPY2_CFFI_MODE=ABI
-    - RPY2_CFFI_MODE=API
-    - RPY2_CFFI_MODE=BOTH
 
 before_install:
   - |
