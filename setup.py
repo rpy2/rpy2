@@ -151,8 +151,8 @@ if __name__ == '__main__':
         author='Laurent Gautier',
         author_email='lgautier@gmail.com',
         requires=requires,
-        install_requires=requires + ['cffi>=1.10.0,<1.13.0'],
-        setup_requires=['cffi>=1.10.0,<1.13.0'],
+        install_requires=requires + ['cffi>=1.13.1'],
+        setup_requires=['cffi>=1.13.1'],
         cffi_modules=cffi_modules,
         package_dir=pack_dir,
         packages=([PACKAGE_NAME] +
