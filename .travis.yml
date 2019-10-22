@@ -48,6 +48,10 @@ addons:
     update: true
     packages:
       - lsb-release
+  homebrew:
+    packages:
+      - llvm
+    update: true
 
 before_install:
   - |
@@ -57,7 +61,6 @@ before_install:
       echo "Installing OS X binary package for R"
       sudo installer -pkg "/tmp/R-latest.pkg" -target /
       rm "/tmp/R-latest.pkg"
-      brew update
       brew upgrade python3
       python3 -m venv py3_env 
       source py3_env/bin/activate
