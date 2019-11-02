@@ -1,3 +1,13 @@
+Release 3.2.2
+=============
+
+Bugs fixed
+----------
+
+- Python format error when trying to report that the system is not reported
+  on Windows (issue #597).
+
+
 Release 3.2.1
 =============
 
