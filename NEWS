@@ -7,6 +7,9 @@ Bugs fixed
 - Python format error when trying to report that the system is not reported
   on Windows (issue #597).
 
+- The setup script would error on build if R is not installed. It is now
+  printing an error message.
+
 
 Release 3.2.1
 =============
