@@ -86,6 +86,9 @@ def get_c_extension_status(libraries=['R'], include_dirs=None,
 
 def get_r_c_extension_status():
     r_home = situation.get_r_home()
+    if r_home is None:
+        print('There is no R_HOME and the R executable cannot be found.')
+        sys.exit(1)
     c_ext = situation.CExtensionOptions()
     c_ext.add_lib(
         *situation.get_r_flags(r_home, '--ldflags')
