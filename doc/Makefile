@@ -92,7 +92,7 @@ _notebooks_rst: $(MD_NOTEBOOKS:%=notebooks/%.rst)
 
 notebooks: _ensure_notebooks_dir _notebooks _notebooks_html _notebooks_rst
 
-html:
+html: notebooks
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."

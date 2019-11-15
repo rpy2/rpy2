@@ -1,0 +1,4 @@
+jupyter_client
+notebook
+notedown
+sphinx
