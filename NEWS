@@ -1,3 +1,13 @@
+Release 3.3.0
+=============
+
+New features
+------------
+
+- Trying to import an R package that it not installed will now raise an
+  exception :class:`rpy2.robjects.packages.PackageNotInstalledError`.
+
+
 Release 3.2.2
 =============
 

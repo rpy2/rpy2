@@ -375,6 +375,11 @@ class LibraryError(ImportError):
     pass
 
 
+class PackageNotInstalledError(LibraryError):
+    """ Error occuring because the R package to import is not installed."""
+    pass
+
+
 class InstalledPackages(object):
     """ R packages installed. """
     def __init__(self, lib_loc=None):
@@ -463,20 +468,21 @@ def importr(name,
 
     """
 
-    rname = rinterface.StrSexpVector((name, ))
-
+    if not isinstalled(name):
+        raise PackageNotInstalledError(name)
+    
     if suppress_messages:
         ok = quiet_require(name, lib_loc=lib_loc)
     else:
-        ok = _require(rinterface.StrSexpVector(rname),
+        ok = _require(rinterface.StrSexpVector(name),
                       **{'lib.loc': rinterface.StrSexpVector((lib_loc, ))})[0]
     if not ok:
         raise LibraryError("The R package %s could not be imported" % name)
-    if _package_has_namespace(rname,
-                              _system_file(package=rname)):
-        env = _get_namespace(rname)
-        version = _get_namespace_version(rname)[0]
-        exported_names = set(_get_namespace_exports(rname))
+    if _package_has_namespace(name,
+                              _system_file(package=name)):
+        env = _get_namespace(name)
+        version = _get_namespace_version(name)[0]
+        exported_names = set(_get_namespace_exports(name))
     else:
         env = _as_env(rinterface.StrSexpVector(['package:'+name, ]))
         exported_names = None
