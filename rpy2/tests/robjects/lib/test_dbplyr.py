@@ -1,16 +1,18 @@
 import pytest
+from rpy2.robjects.packages import PackageNotInstalledError
 
-# Try to load R dplyr package, and see if it works
-from rpy2.rinterface_lib.embedded import RRuntimeError
 has_dplyr = None
 try:
     from rpy2.robjects.lib import dbplyr
     has_dbplyr = True
-except RRuntimeError:
+    msg = ''
+except PackageNotInstalledError as error:
     has_dbplyr = False
+    msg = str(error)
 
 
-@pytest.mark.skipif(not has_dplyr, reason='R package dbplyr is not installed.')
+@pytest.mark.skipif(not has_dplyr,
+                    reason=msg)
 @pytest.mark.lib_dbplyr
 class TestDplyr(object):
 

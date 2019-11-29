@@ -1,19 +1,18 @@
 import pytest
+from rpy2.robjects.packages import importr, data, PackageNotInstalledError
 
-# Try to load R dplyr package, and see if it works
-from rpy2.rinterface_lib.embedded import RRuntimeError
-has_dplyr = None
 try:
     from rpy2.robjects.lib import dplyr
     has_dplyr = True
-except RRuntimeError:
+    msg = ''
+except PackageNotInstalledError as error:
     has_dplyr = False
+    msg = str(error)
 
-from rpy2.robjects.packages import importr, data
 datasets = importr('datasets')
 mtcars = data(datasets).fetch('mtcars')['mtcars']
 
-@pytest.mark.skipif(not has_dplyr, reason='R package dplyr is not installed.')
+@pytest.mark.skipif(not has_dplyr, reason=msg)
 @pytest.mark.lib_dplyr
 class TestDplyr(object):
 

@@ -1,18 +1,21 @@
 import pytest
 
-# Try to load R ggplot package, and see if it works
-from rpy2.rinterface_lib.embedded import RRuntimeError
-has_ggplot = True
+False
+
+from rpy2.robjects.packages import importr, PackageNotInstalledError
+
 try:
     from rpy2.robjects.lib import ggplot2
-except RRuntimeError:
+    has_ggplot = True
+    msg = ''
+except PackageNotInstalledError as error:
     has_ggplot = False
+    msg = str(error)
 
-from rpy2.robjects.packages import importr
 datasets = importr('datasets')
 mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
 
-@pytest.mark.skipif(not has_ggplot, reason='R package ggplot is not installed.')
+@pytest.mark.skipif(not has_ggplot, reason=msg)
 @pytest.mark.lib_ggplot2
 class TestGGplot(object):
     

@@ -474,7 +474,7 @@ def importr(name,
     if suppress_messages:
         ok = quiet_require(name, lib_loc=lib_loc)
     else:
-        ok = _require(rinterface.StrSexpVector(name),
+        ok = _require(name,
                       **{'lib.loc': rinterface.StrSexpVector((lib_loc, ))})[0]
     if not ok:
         raise LibraryError("The R package %s could not be imported" % name)
