@@ -72,12 +72,14 @@ def test_set_initoptions_after_init():
                                              '--no-save'))
 
 
+def _init_r():
+    from rpy2 import rinterface
+    rinterface.initr()
+
+
 def test_initr():
-    def init_r():
-        from rpy2 import rinterface
-        rinterface.initr()
     preserve_hash = True
-    proc = multiprocessing.Process(target=init_r,
+    proc = multiprocessing.Process(target=_init_r,
                                    args=(preserve_hash,))
     proc.start()
     proc.join()
