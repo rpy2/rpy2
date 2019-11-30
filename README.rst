@@ -9,6 +9,7 @@
 .. image:: https://codecov.io/gh/rpy2/rpy2/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/rpy2/rpy2
 
+.. image:: https://github.com/rpy2/rpy2/workflows/Python%20package/badge.svg
 
 
 Installation
