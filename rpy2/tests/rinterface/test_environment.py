@@ -62,6 +62,11 @@ def test_setitem_invalid():
         env[''] = 0
 
 
+def test_setitem_baseenv_invalid():
+    with pytest.raises(ValueError):
+        rinterface.baseenv['pi'] = 42
+
+
 def test_frame():
     env = rinterface.baseenv["new.env"]()
     f = env.frame()
@@ -206,3 +211,23 @@ def test_del_keyerror():
 def test_del_baseerror():
     with pytest.raises(ValueError):
         rinterface.baseenv.__delitem__('letters')
+
+
+def test_enclos_get():
+    assert isinstance(rinterface.baseenv.enclos, rinterface.SexpEnvironment)
+    env = rinterface.baseenv["new.env"]()
+    assert isinstance(env.enclos, rinterface.SexpEnvironment)
+
+
+def test_enclos_baseenv_set():
+    env = rinterface.baseenv["new.env"]()
+    orig_enclosing_env = rinterface.baseenv.enclos
+    enclosing_env = rinterface.baseenv["new.env"]()
+    env.enclos = enclosing_env
+    assert isinstance(env.enclos, rinterface.SexpEnvironment)
+    assert enclosing_env != env.enclos
+
+
+def test_enclos_baseenv_set_invalid():
+    with pytest.raises(AssertionError):
+        rinterface.baseenv.enclos = 123
