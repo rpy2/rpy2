@@ -470,7 +470,7 @@ def importr(name,
 
     if not isinstalled(name):
         raise PackageNotInstalledError(name)
-    
+
     if suppress_messages:
         ok = quiet_require(name, lib_loc=lib_loc)
     else:
