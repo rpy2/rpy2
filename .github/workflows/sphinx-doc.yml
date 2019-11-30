@@ -1,4 +1,4 @@
-name: Python application
+name: Sphinx documentation
 
 on: [push]
 
@@ -18,7 +18,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install r-base pandoc
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -r doc/requirements.txt
     - name: Build HTML doc
       run: |
         cd doc
