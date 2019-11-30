@@ -32,5 +32,5 @@ jobs:
         python setup.py install
     - name: Test with pytest
       run: |
-        pip install pytest codecov pytest-cov
+        pip install pytest codecov pytest-cov ipython
         ./run_tests.sh
