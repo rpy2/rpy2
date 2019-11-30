@@ -1,0 +1,7 @@
+ipython
+jupyterlab
+nbconvert
+numpy
+pandas
+rpy2
+sphinx
