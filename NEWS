@@ -7,6 +7,10 @@ New features
 - Trying to import an R package that it not installed will now raise an
   exception :class:`rpy2.robjects.packages.PackageNotInstalledError`.
 
+- The R C API functions `void SET_FRAME(SEXP x, SEXP v)`,
+  `void SET_ENCLOS(SEXP x, SEXP v)` and `void SET_HASHTAB(SEXP x, SEXP v)`
+  are now accessible through rpy2.
+
 
 Release 3.2.2
 =============

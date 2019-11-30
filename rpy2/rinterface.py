@@ -308,7 +308,7 @@ class SexpEnvironment(sexp.Sexp):
     def enclos(self, value: 'SexpEnvironment') -> None:
         assert isinstance(value, SexpEnvironment)
         openrlib.rlib.SET_ENCLOS(self.__sexp__._cdata,
-                                 value.__sexp__.cdata)
+                                 value.__sexp__._cdata)
 
     def keys(self) -> typing.Generator[str, None, None]:
         """Generator over the keys (symbols) in the environment."""

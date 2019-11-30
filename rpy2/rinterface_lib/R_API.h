@@ -330,11 +330,9 @@ SEXP (HASHTAB)(SEXP x);
 int (ENVFLAGS)(SEXP x);
 void (SET_ENVFLAGS)(SEXP x, int v);
 
-/* TODO: Why isn't this working ?
-   void SET_FRAME(SEXP x, SEXP, v);
-   void SET_ENCLOS(SEXP x, SEXP, v);
-   void SET_HASHTAB(SEXP x, SEXP, v);
-*/
+void SET_FRAME(SEXP x, SEXP v);
+void SET_ENCLOS(SEXP x, SEXP v);
+void SET_HASHTAB(SEXP x, SEXP v);
 
 /* include/Rdefines.h */
 
