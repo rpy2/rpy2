@@ -497,16 +497,16 @@ class PARSING_STATUS(enum.Enum):
 
 class RParsingError(Exception):
 
-    def __init__(self, msg: str, status: int):
-        super().__init__(msg)
+    def __init__(self, msg: str, status: int = None):
+        full_msg = f'{msg} - {status}'
+        super().__init__(full_msg)
         self.status = status
 
 
-def _parse(cdata, num):
+def _parse(cdata, num, rmemory):
     rlib = openrlib.rlib
     status = ffi.new('ParseStatus[1]', None)
-    res = rlib.Rf_protect(
-        rlib.R_ParseVector(
+    res = rmemory.protect(rlib.R_ParseVector(
             cdata,  # text
             num,
             status,
@@ -519,7 +519,6 @@ def _parse(cdata, num):
     # PARSE_ERROR,
     # PARSE_EOF
     if status[0] != rlib.PARSE_OK:
-        rlib.Rf_unprotect(1)
-        raise RParsingError('R parsing', PARSING_STATUS(status[0]))
-    rlib.Rf_unprotect(1)
+        raise RParsingError('Parsing status not OK',
+                            status=PARSING_STATUS(status[0]))
     return res

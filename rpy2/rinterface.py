@@ -43,8 +43,9 @@ def parse(text: str, num: int = -1):
     if not isinstance(text, str):
         raise TypeError('text must be a string.')
     robj = StrSexpVector([text])
-    return _rinterface._parse(robj.__sexp__._cdata, num)
-
+    with memorymanagement.rmemory() as rmemory:
+        res = _rinterface._parse(robj.__sexp__._cdata, num, rmemory)
+    return res
 
 def evalr(source: str, maxlines: int = -1) -> sexp.Sexp:
     """Evaluate a string as R code.
