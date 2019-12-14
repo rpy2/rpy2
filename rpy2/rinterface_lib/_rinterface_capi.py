@@ -19,6 +19,8 @@ _MAX_INT = 2**32-1
 _R_PRESERVED = dict()
 _PY_PASSENGER = dict()
 
+FFI_MODE = ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi))
+
 
 def get_rid(cdata) -> int:
     """Get the identifier for the R object.
@@ -525,14 +527,14 @@ def _handler_wrap(cond, hdata):
     return openrlib.rlib.R_NilValue
 
 
-if ffi_proxy.get_ffi_mode() is ffi_proxy.InterfaceType.ABI:
+if FFI_MODE is ffi_proxy.InterfaceType.ABI:
     _parsevector_wrap = _parsevector_wrap
     _handler_wrap = _handler_wrap
-elif ffi_proxy.get_ffi_mode() is ffi_proxy.InterfaceType.API:
+elif FFI_MODE is ffi_proxy.InterfaceType.API:
     _parsevector_wrap = openrlib.rlib._parsevector_wrap
     _handler_wrap = openrlib.rlib._handler_wrap
 else:
-    raise ImportError('cffi mode unknown: %s' % ffi_proxy.get_ffi_mode())
+    raise ImportError('cffi mode unknown: %s' % FFI_MODE)
 
 
 def _parse(cdata, num, rmemory):
