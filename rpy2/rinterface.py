@@ -47,6 +47,7 @@ def parse(text: str, num: int = -1):
         res = _rinterface._parse(robj.__sexp__._cdata, num, rmemory)
     return res
 
+
 def evalr(source: str, maxlines: int = -1) -> sexp.Sexp:
     """Evaluate a string as R code.
 
