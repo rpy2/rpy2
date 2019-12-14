@@ -108,6 +108,11 @@ def test_parse_error():
         rinterface.parse("2 + 3 , 1")
 
 
+def test_parse_error_when_evaluting():
+    with pytest.raises(_rinterface.RParsingError):
+        rinterface.parse("list(''=1)")
+
+
 def test_parse_invalid_string():
     with pytest.raises(TypeError):
         rinterface.parse(3)
