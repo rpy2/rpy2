@@ -19,7 +19,7 @@ _MAX_INT = 2**32-1
 _R_PRESERVED = dict()
 _PY_PASSENGER = dict()
 
-FFI_MODE = ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi))
+FFI_MODE = ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
 
 
 def get_rid(cdata) -> int:
