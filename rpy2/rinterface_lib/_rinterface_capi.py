@@ -19,6 +19,8 @@ _MAX_INT = 2**32-1
 _R_PRESERVED = dict()
 _PY_PASSENGER = dict()
 
+FFI_MODE = ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
+
 
 def get_rid(cdata) -> int:
     """Get the identifier for the R object.
@@ -502,24 +504,56 @@ class RParsingError(Exception):
         self.status = status
 
 
-def _parse(cdata, num):
-    rlib = openrlib.rlib
-    status = ffi.new('ParseStatus[1]', None)
-    res = rlib.Rf_protect(
-        rlib.R_ParseVector(
+@ffi_proxy.callback(ffi_proxy._parsevector_wrap_def,
+                    openrlib._rinterface_cffi)
+def _parsevector_wrap(data):
+    try:
+        cdata, num, status = ffi.from_handle(data)
+        res = openrlib.rlib.R_ParseVector(
             cdata,  # text
             num,
             status,
-            rlib.R_NilValue)
-    )
-    # TODO: design better handling of possible status:
-    # PARSE_NULL,
-    # PARSE_OK,
-    # PARSE_INCOMPLETE,
-    # PARSE_ERROR,
-    # PARSE_EOF
-    if status[0] != rlib.PARSE_OK:
-        rlib.Rf_unprotect(1)
-        raise RParsingError('R parsing', PARSING_STATUS(status[0]))
-    rlib.Rf_unprotect(1)
+            openrlib.rlib.R_NilValue)
+    except Exception as e:
+        res = openrlib.rlib.R_NilValue
+        logger.error('_parsevector_wrap: %s', str(e))
+    return res
+
+
+@ffi_proxy.callback(ffi_proxy._handler_def,
+                    openrlib._rinterface_cffi)
+def _handler_wrap(cond, hdata):
+    return openrlib.rlib.R_NilValue
+
+
+if FFI_MODE is ffi_proxy.InterfaceType.ABI:
+    _parsevector_wrap = _parsevector_wrap
+    _handler_wrap = _handler_wrap
+elif FFI_MODE is ffi_proxy.InterfaceType.API:
+    _parsevector_wrap = openrlib.rlib._parsevector_wrap
+    _handler_wrap = openrlib.rlib._handler_wrap
+else:
+    raise ImportError('cffi mode unknown: %s' % FFI_MODE)
+
+
+def _parse(cdata, num):
+    status = ffi.new('ParseStatus[1]', None)
+    data = ffi.new_handle((cdata, num, status))
+    hdata = ffi.NULL
+    with memorymanagement.rmemory() as rmemory:
+        res = rmemory.protect(
+            openrlib.rlib.R_tryCatchError(
+                openrlib.rlib._parsevector_wrap, data,
+                openrlib.rlib._handler_wrap, hdata
+            )
+        )
+        # TODO: design better handling of possible status:
+        # PARSE_NULL,
+        # PARSE_OK,
+        # PARSE_INCOMPLETE,
+        # PARSE_ERROR,
+        # PARSE_EOF
+        if status[0] != openrlib.rlib.PARSE_OK:
+            raise RParsingError('Parsing status not OK',
+                                PARSING_STATUS(status[0]))
     return res

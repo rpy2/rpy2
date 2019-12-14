@@ -79,3 +79,9 @@ _busy_def = SignatureDefinition('_busy', 'void', ('int', ))
 _callback_def = SignatureDefinition('_callback', 'void', ('void', ))
 # TODO: should be const char *
 _yesnocancel_def = SignatureDefinition('_yesnocancel', 'int', ('char *', ))
+
+_parsevector_wrap_def = SignatureDefinition('_parsevector_wrap',
+                                            'SEXP', ('void *data', ))
+
+_handler_def = SignatureDefinition('_handler_wrap',
+                                   'SEXP', ('SEXP cond', 'void *hdata'))
