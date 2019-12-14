@@ -525,14 +525,24 @@ def _handler_wrap(cond, hdata):
     return openrlib.rlib.R_NilValue
 
 
+if ffi_proxy.get_ffi_mode() is ffi_proxy.InterfaceType.ABI:
+    _parsevector_wrap = _parsevector_wrap
+    _handler_wrap = _handler_wrap
+elif ffi_proxy.get_ffi_mode() is ffi_proxy.InterfaceType.API:
+    _parsevector_wrap = openrlib.rlib._parsevector_wrap
+    _handler_wrap = openrlib.rlib._handler_wrap
+else:
+    raise ImportError('cffi mode unknown: %s' % ffi_proxy.get_ffi_mode())
+
+
 def _parse(cdata, num, rmemory):
     status = ffi.new('ParseStatus[1]', None)
     data = ffi.new_handle((cdata, num, status))
     hdata = ffi.NULL
     res = rmemory.protect(
         openrlib.rlib.R_tryCatchError(
-            openrlib.rlib._parsevector_wrap, data,
-            openrlib.rlib._handler_wrap, hdata
+            _parsevector_wrap, data,
+            _handler_wrap, hdata
         )
     )
     # TODO: design better handling of possible status:
