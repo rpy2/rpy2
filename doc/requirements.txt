@@ -1,5 +1,6 @@
 ipython
 jupyterlab
+multipledispatch
 nbconvert
 notedown
 numpy
