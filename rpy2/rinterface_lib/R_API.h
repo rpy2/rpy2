@@ -445,6 +445,8 @@ void R_common_command_line(int *, char **, Rstart);
 void R_set_command_line_arguments(int argc, char **argv);
 
 void setup_Rmainloop(void);
+void run_Rmainloop(void);
+void Rf_mainloop(void);
 
 extern FILE *R_Consolefile;
 extern FILE *R_Outputfile;
