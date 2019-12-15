@@ -1,8 +1,17 @@
+Release 3.2.4
+=============
+
+Bugs fixed
+----------
+
+- An incomplete backport of the bug fixed in 3.2.3 broke the ABI mode.
+
+
 Release 3.2.3
 =============
 
 Bugs fixed
------------
+----------
 
 - Error when parsing strings as R codes could result in a segfault. 
 

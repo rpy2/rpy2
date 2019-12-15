@@ -543,8 +543,8 @@ def _parse(cdata, num):
     with memorymanagement.rmemory() as rmemory:
         res = rmemory.protect(
             openrlib.rlib.R_tryCatchError(
-                openrlib.rlib._parsevector_wrap, data,
-                openrlib.rlib._handler_wrap, hdata
+                _parsevector_wrap, data,
+                _handler_wrap, hdata
             )
         )
         # TODO: design better handling of possible status:
