@@ -1,6 +1,7 @@
 ipython
 jupyterlab
 nbconvert
+notedown
 numpy
 pandas
 rpy2
