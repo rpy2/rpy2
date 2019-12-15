@@ -116,14 +116,14 @@ def _initr(interactive: bool = True,
         options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
         n_options = len(options_c)
         n_options_c = ffi.cast('int', n_options)
-        status = rlib.Rf_initialize_R(n_options_c,
-                                      options_c)
+        status = rlib.Rf_initEmbeddedR(n_options_c,
+                                       options_c)
         setinitialized()
 
         # global rstart
         # rstart = ffi.new('Rstart')
 
-        # rstart.R_Interactive = interactive
+        rlib.R_Interactive = interactive
 
         # TODO: Conditional definition in C code
         #   (Aqua, TERM, and TERM not "dumb")
@@ -140,8 +140,6 @@ def _initr(interactive: bool = True,
 
         # TODO: still needed ?
         rlib.R_CStackLimit = ffi.cast('uintptr_t', _C_stack_limit)
-
-        rlib.setup_Rmainloop()
 
         return status
 

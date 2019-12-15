@@ -11,6 +11,21 @@ New features
   `void SET_ENCLOS(SEXP x, SEXP v)` and `void SET_HASHTAB(SEXP x, SEXP v)`
   are now accessible through rpy2.
 
+Changes
+-------
+
+- When calling R C-API's `R_ParseVector` and a error occurs, the
+  exception message now contains the parsing status.
+
+
+Release 3.2.3
+=============
+
+Bugs fixed
+-----------
+
+- Error when parsing strings as R codes could result in a segfault. 
+
 
 Release 3.2.2
 =============

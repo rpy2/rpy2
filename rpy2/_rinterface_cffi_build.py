@@ -150,7 +150,9 @@ def createbuilder_api():
                   ffi_proxy._processevents_def,
                   ffi_proxy._busy_def,
                   ffi_proxy._callback_def,
-                  ffi_proxy._yesnocancel_def])
+                  ffi_proxy._yesnocancel_def,
+                  ffi_proxy._parsevector_wrap_def,
+                  ffi_proxy._handler_def])
 
     cdef = (create_cdef(definitions, header_filename) +
             callback_defns_api)

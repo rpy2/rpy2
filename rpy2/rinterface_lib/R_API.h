@@ -252,6 +252,9 @@ SEXP (CLOENV)(SEXP x);
 SEXP Rf_eval(SEXP, SEXP);
 SEXP R_tryEval(SEXP, SEXP, int*);
 
+SEXP R_tryCatchError(SEXP (*fun)(void *data), void *data,
+		     SEXP (*hndlr)(SEXP cond, void *hdata), void *hdata);
+
 SEXP Rf_findFun(SEXP sym, SEXP env);
 // SEXP Rf_findFun3(SEXP, SEXP, SEXP);
 
@@ -442,6 +445,8 @@ void R_common_command_line(int *, char **, Rstart);
 void R_set_command_line_arguments(int argc, char **argv);
 
 void setup_Rmainloop(void);
+void run_Rmainloop(void);
+void Rf_mainloop(void);
 
 extern FILE *R_Consolefile;
 extern FILE *R_Outputfile;
