@@ -1,0 +1,28 @@
+name: Sphinx documentation
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install r-base pandoc
+        python -m pip install --upgrade pip
+        pip install -r doc/requirements.txt
+        sudo Rscript ./install_r_packages.r BiocManager dbplyr dplyr ggplot2 hexbin RSQLite tidyr viridis
+        sudo Rscript -e 'BiocManager::install("Biobase")'
+    - name: Build HTML doc
+      run: |
+        cd doc
+        make notebooks
+        make html
