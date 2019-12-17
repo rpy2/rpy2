@@ -161,15 +161,20 @@ def createbuilder_api():
     ffibuilder.cdef('void rpy2_runHandlers(InputHandler *handlers);')
     return ffibuilder
 
+# This sort of redundant with setup.py defining cffi_modules,
+# but at least both use rpy2.situation.get_ffi_mode().
+cffi_mode = rpy2.situation.get_cffi_mode()
 
-ffibuilder_abi = createbuilder_abi()
-ffibuilder_api = createbuilder_api()
+if cffi_mode in (rpy2.situation.CFFI_MODE.ABI,
+                 rpy2.situation.CFFI_MODE.BOTH):
+    ffibuilder_abi = createbuilder_abi()
+
+if cffi_mode in (rpy2.situation.CFFI_MODE.API,
+                 rpy2.situation.CFFI_MODE.BOTH):
+    ffibuilder_api = createbuilder_api()
+
 
 if __name__ == '__main__':
-
-    # This sort of redundant with setup.py defining cffi_modules,
-    # but at least both use rpy2.situation.get_ffi_mode().
-    cffi_mode = rpy2.situation.get_ffi_mode()
 
     if cffi_mode in (rpy2.situation.CFFI_MODE.ABI,
                      rpy2.situation.CFFI_MODE.BOTH):
