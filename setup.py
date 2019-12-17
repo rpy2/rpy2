@@ -102,27 +102,28 @@ def get_r_c_extension_status():
     return status
 
 
-c_extension_status = get_r_c_extension_status()
-
 cffi_mode = situation.get_cffi_mode()
 if cffi_mode == situation.CFFI_MODE.ABI:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
-elif cffi_mode == situation.CFFI_MODE.API:
-    if c_extension_status != COMPILATION_STATUS.OK:
-        print('API mode requested but %s' % c_extension_status.value)
-        sys.exit(1)
-    cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_api']
-elif cffi_mode == situation.CFFI_MODE.BOTH:
-    if c_extension_status != COMPILATION_STATUS.OK:
-        print('API mode requested but %s' % c_extension_status.value)
-        sys.exit(1)
-    cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi',
-                    'rpy2/_rinterface_cffi_build.py:ffibuilder_api']
 else:
-    # default interface
-    cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
-    if c_extension_status == COMPILATION_STATUS.OK:
-        cffi_modules.append('rpy2/_rinterface_cffi_build.py:ffibuilder_api')
+    c_extension_status = get_r_c_extension_status()
+    if cffi_mode == situation.CFFI_MODE.API:
+        if c_extension_status != COMPILATION_STATUS.OK:
+            print('API mode requested but %s' % c_extension_status.value)
+            sys.exit(1)
+        cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_api']
+    elif cffi_mode == situation.CFFI_MODE.BOTH:
+        c_extension_status = get_r_c_extension_status()
+        if c_extension_status != COMPILATION_STATUS.OK:
+            print('API mode requested but %s' % c_extension_status.value)
+            sys.exit(1)
+        cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi',
+                        'rpy2/_rinterface_cffi_build.py:ffibuilder_api']
+    else:
+        # default interface
+        cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
+        if c_extension_status == COMPILATION_STATUS.OK:
+            cffi_modules.append('rpy2/_rinterface_cffi_build.py:ffibuilder_api')
 
 LONG_DESCRIPTION = """
 Python interface to the R language.
