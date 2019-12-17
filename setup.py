@@ -101,8 +101,9 @@ def get_r_c_extension_status():
                                     library_dirs=c_ext.library_dirs)
     return status
 
-
+c_extension_status = None
 cffi_mode = situation.get_cffi_mode()
+print('cffi mode: %s' % cffi_mode)
 if cffi_mode == situation.CFFI_MODE.ABI:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
 else:
@@ -189,5 +190,5 @@ if __name__ == '__main__':
         print('ABI mode interface built and installed')
     if 'rpy2/_rinterface_cffi_build.py:ffibuilder_api' in cffi_modules:
         print('API mode interface built and installed')
-    else:
+    elif c_extension_status is not None:
         print('API mode interface not build because: %s' % c_extension_status)
