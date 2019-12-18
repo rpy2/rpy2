@@ -52,6 +52,7 @@ class COMPILATION_STATUS(enum.Enum):
     PLATFORM_ERROR=('unable to compile R C extensions - platform error')
     OK = None
     NO_R='No R in the PATH, or R_HOME defined.'
+    RFLAGS_ERROR='Unable to get R compilation flags'
 
 
 def get_c_extension_status(libraries=['R'], include_dirs=None,
@@ -90,31 +91,34 @@ def get_r_c_extension_status():
     if r_home is None:
         return COMPILATION_STATUS.NO_R
     c_ext = situation.CExtensionOptions()
-    c_ext.add_lib(
-        *situation.get_r_flags(r_home, '--ldflags')
-    )
-    c_ext.add_include(
-        *situation.get_r_flags(r_home, '--cppflags')
-    )
+    try:
+        c_ext.add_lib(
+            *situation.get_r_flags(r_home, '--ldflags')
+        )
+        c_ext.add_include(
+            *situation.get_r_flags(r_home, '--cppflags')
+        )
+    except subprocess.CalledProcessError as cpe:
+        warnings.warn(str(cpe))
+        return COMPILATION_STATUS.RFLAGS_ERROR
     status = get_c_extension_status(libraries=c_ext.libraries,
                                     include_dirs=c_ext.include_dirs,
                                     library_dirs=c_ext.library_dirs)
     return status
 
-c_extension_status = None
+
 cffi_mode = situation.get_cffi_mode()
 print('cffi mode: %s' % cffi_mode)
+c_extension_status = get_r_c_extension_status()
 if cffi_mode == situation.CFFI_MODE.ABI:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
 else:
-    c_extension_status = get_r_c_extension_status()
     if cffi_mode == situation.CFFI_MODE.API:
         if c_extension_status != COMPILATION_STATUS.OK:
             print('API mode requested but %s' % c_extension_status.value)
             sys.exit(1)
         cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_api']
     elif cffi_mode == situation.CFFI_MODE.BOTH:
-        c_extension_status = get_r_c_extension_status()
         if c_extension_status != COMPILATION_STATUS.OK:
             print('API mode requested but %s' % c_extension_status.value)
             sys.exit(1)
@@ -186,9 +190,14 @@ if __name__ == '__main__':
     )
 
     print('---')
-    if 'rpy2/_rinterface_cffi_build.py:ffibuilder_abi' in cffi_modules:
+    if cffi_mode in (situation.CFFI_MODE.ABI,
+                     situation.CFFI_MODE.BOTH,
+                     situation.CFFI_MODE.ANY):
         print('ABI mode interface built and installed')
-    if 'rpy2/_rinterface_cffi_build.py:ffibuilder_api' in cffi_modules:
+    if cffi_mode in (situation.CFFI_MODE.API,
+                     situation.CFFI_MODE.BOTH):
         print('API mode interface built and installed')
-    elif c_extension_status is not None:
+    if ((cffi_mode == situation.CFFI_MODE.ANY)
+         and
+         (c_extension_status != COMPILATION_STATUS.OK)):
         print('API mode interface not build because: %s' % c_extension_status)
