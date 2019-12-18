@@ -64,7 +64,7 @@ def _numpyarray_to_r(a, func):
 
 def unsignednumpyint_to_rint(intarray):
     """Convert a numpy array of unsigned integers to an R array."""
-    if intarray.nbytes >= (RINT_SIZE / 4):
+    if intarray.nbytes >= (RINT_SIZE / 8):
         raise ValueError(
             'Cannot convert numpy array of unsigned integers '
             'with {RINT_SIZE} bits or more.'.format(RINT_SIZE=RINT_SIZE)
