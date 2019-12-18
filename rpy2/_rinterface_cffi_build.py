@@ -2,6 +2,7 @@ import cffi
 import os
 import re
 import sys
+import warnings
 import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
 
@@ -169,18 +170,39 @@ cffi_mode = rpy2.situation.get_cffi_mode()
 if cffi_mode in (rpy2.situation.CFFI_MODE.ABI,
                  rpy2.situation.CFFI_MODE.BOTH):
     ffibuilder_abi = createbuilder_abi()
+elif cffi_mode == rpy2.situation.CFFI_MODE.ANY:
+    try:
+        ffibuilder_abi = createbuilder_abi()
+    except Exception as e:
+        warnings.warn(str(e))
+        ffibuilder_abi = None
 
 if cffi_mode in (rpy2.situation.CFFI_MODE.API,
                  rpy2.situation.CFFI_MODE.BOTH):
     ffibuilder_api = createbuilder_api()
-
+elif cffi_mode == rpy2.situation.CFFI_MODE.ANY:
+    try:
+        ffibuilder_api = createbuilder_api()
+    except Exception as e:
+        warnings.warn(str(e))
+        ffibuilder_api = None
 
 if __name__ == '__main__':
 
     if cffi_mode in (rpy2.situation.CFFI_MODE.ABI,
                      rpy2.situation.CFFI_MODE.BOTH):
         ffibuilder_abi.compile(verbose=True)
+    elif cffi_mode == rpy2.situation.CFFI_MODE.ANY:
+        try:
+            ffibuilder_api.compile(verbose=True)
+        except Exception as e:
+            warnings.warn(str(e))
 
     if cffi_mode in (rpy2.situation.CFFI_MODE.API,
                      rpy2.situation.CFFI_MODE.BOTH):
         ffibuilder_api.compile(verbose=True)
+    elif cffi_mode == rpy2.situation.CFFI_MODE.ANY:
+        try:
+            ffibuilder_api.compile(verbose=True)
+        except Exception as e:
+            warnings.warn(str(e))

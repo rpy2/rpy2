@@ -96,6 +96,10 @@ def get_rlib_path(r_home: str, system: str) -> str:
         lib_path = os.path.join(r_home, 'lib', 'libR.dylib')
     elif system == 'Windows':
         # i386
+        os.environ['PATH'] = ''.join(
+            (os.environ['PATH'],
+             os.path.join(r_home, 'bin', 'x64'))
+        )
         lib_path = os.path.join(r_home, 'bin', 'x64', 'R.dll')
     else:
         raise ValueError(f'The system {system} is currently not supported.')
