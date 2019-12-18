@@ -161,6 +161,7 @@ def createbuilder_api():
     ffibuilder.cdef('void rpy2_runHandlers(InputHandler *handlers);')
     return ffibuilder
 
+
 # This sort of redundant with setup.py defining cffi_modules,
 # but at least both use rpy2.situation.get_ffi_mode().
 cffi_mode = rpy2.situation.get_cffi_mode()
