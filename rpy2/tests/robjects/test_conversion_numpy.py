@@ -203,15 +203,24 @@ class TestNumpyConversions(object):
     
 @pytest.mark.skipif(not has_numpy,
                     reason='package numpy cannot be imported')
-def test_unsignednumpyint_to_rint():
+@pytest.mark.parametrize('dtype',
+                         ('uint32', 'uint64'))
+def test_unsignednumpyint_to_rint_error(dtype):
     values = (1,2,3)
-    a8 = numpy.array(values, dtype='uint8')
-    v = rpyn.unsignednumpyint_to_rint(a8)
-    assert values == tuple(v)
-
-    a64 = numpy.array(values, dtype='uint64')
+    a = numpy.array(values, dtype=dtype)
     with pytest.raises(ValueError):
-        rpyn.unsignednumpyint_to_rint(a64)
+        rpyn.unsignednumpyint_to_rint(a)
+
+
+@pytest.mark.skipif(not has_numpy,
+                    reason='package numpy cannot be imported')
+@pytest.mark.parametrize('dtype',
+                         ('uint8', 'uint16'))
+def test_unsignednumpyint_to_rint(dtype):
+    values = (1,2,3)
+    a = numpy.array(values, dtype=dtype)
+    v = rpyn.unsignednumpyint_to_rint(a)
+    assert values == tuple(v)
 
 
 @pytest.mark.skipif(not has_numpy,
