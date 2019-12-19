@@ -112,23 +112,25 @@ print('cffi mode: %s' % cffi_mode)
 c_extension_status = get_r_c_extension_status()
 if cffi_mode == situation.CFFI_MODE.ABI:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
+elif cffi_mode == situation.CFFI_MODE.API:
+    if c_extension_status != COMPILATION_STATUS.OK:
+        print('API mode requested but %s' % c_extension_status.value)
+        sys.exit(1)
+    cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_api']
+elif cffi_mode == situation.CFFI_MODE.BOTH:
+    if c_extension_status != COMPILATION_STATUS.OK:
+        print('API mode requested but %s' % c_extension_status.value)
+        sys.exit(1)
+    cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi',
+                    'rpy2/_rinterface_cffi_build.py:ffibuilder_api']
+elif cffi_mode == situation.CFFI_MODE.ANY:
+    # default interface
+    cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
+    if c_extension_status == COMPILATION_STATUS.OK:
+        cffi_modules.append('rpy2/_rinterface_cffi_build.py:ffibuilder_api')
 else:
-    if cffi_mode == situation.CFFI_MODE.API:
-        if c_extension_status != COMPILATION_STATUS.OK:
-            print('API mode requested but %s' % c_extension_status.value)
-            sys.exit(1)
-        cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_api']
-    elif cffi_mode == situation.CFFI_MODE.BOTH:
-        if c_extension_status != COMPILATION_STATUS.OK:
-            print('API mode requested but %s' % c_extension_status.value)
-            sys.exit(1)
-        cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi',
-                        'rpy2/_rinterface_cffi_build.py:ffibuilder_api']
-    else:
-        # default interface
-        cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
-        if c_extension_status == COMPILATION_STATUS.OK:
-            cffi_modules.append('rpy2/_rinterface_cffi_build.py:ffibuilder_api')
+    # This should never happen.
+    raise ValueError('Invalid value for cffi_mode')
 
 LONG_DESCRIPTION = """
 Python interface to the R language.
@@ -190,16 +192,18 @@ if __name__ == '__main__':
     )
 
     print('---')
+    print(cffi_mode)
     if cffi_mode in (situation.CFFI_MODE.ABI,
                      situation.CFFI_MODE.BOTH,
                      situation.CFFI_MODE.ANY):
-        print('ABI mode interface built and installed')
+        print('ABI mode interface built and installed.')
     if cffi_mode in (situation.CFFI_MODE.API,
                      situation.CFFI_MODE.BOTH):
-        print('API mode interface built and installed')
-    if ((cffi_mode == situation.CFFI_MODE.ANY)
-         and
-         (c_extension_status != COMPILATION_STATUS.OK)):
-        print('API mode interface not build because: %s' % c_extension_status)
+        print('API mode interface built and installed.')
+    if cffi_mode == situation.CFFI_MODE.ANY:
+        if c_extension_status == COMPILATION_STATUS.OK:
+            print('API mode interface built and installed.')
+        else:
+            print('API mode interface not build because: %s' % c_extension_status)
     print('To change the API/ABI build mode, set or modify the environment '
           'variable RPY2_CFFI_MODE.')
