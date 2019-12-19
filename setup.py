@@ -201,3 +201,5 @@ if __name__ == '__main__':
          and
          (c_extension_status != COMPILATION_STATUS.OK)):
         print('API mode interface not build because: %s' % c_extension_status)
+    print('To change the API/ABI build mode, set or modify the environment '
+          'variable RPY2_CFFI_MODE.')
