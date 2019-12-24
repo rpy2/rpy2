@@ -2,7 +2,7 @@ name: Upload Python Package
 
 on:
   release:
-    types: [created]
+    types: [created, pull_request]
 
 jobs:
   deploy:
@@ -10,6 +10,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
+        r-version: [3.6, devel]
         os: [ubuntu-latest, macOS-latest, windows-2019]
     steps:
     - uses: actions/checkout@v1
@@ -17,20 +18,28 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      - uses: r-lib/actions/setup-r@master
-      if: startsWith(matrix.os, 'windows'):
-         run: |
-           python -m pip install --upgrade pip
-           pip install setuptools wheel twine
-      if: !startsWith(matrix.os, 'windows'):
-         run: |
-           python -m pip install --upgrade pip
-           pip install setuptools wheel twine
-    - name: Build and publish
+    - name: Set up R
+      uses: r-lib/actions/setup-r@master
+      with:
+        r-version: ${{ matrix.config.r }}
+    - name: Install Windows dependencies  
+      if: runner.os == 'Windows'
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine
+    - name: Install POSIX dependencies
+      if: runner.os != 'Windows'
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine
+    - name: Build
+      run: |
+        python setup.py bdist_wheel
+    - name: Publish
+      if: github.event_name == 'created'
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        python setup.py bdist_wheel
-        twine upload dist/*
+        echo 'here.'
+        # twine upload dist/*
