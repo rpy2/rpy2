@@ -97,10 +97,11 @@ def r_ld_library_path_from_subprocess(r_home: str) -> str:
         r_lib_path = subprocess.check_output(cmd, universal_newlines=True)
     except Exception:  # FileNotFoundError, WindowsError, etc
         r_lib_path = ''
-    print(r_lib_path)
     ld_library_path = os.environ.get('LD_LIBRARY_PATH')
     if ld_library_path:
         pos = r_lib_path.find(ld_library_path)
+    else:
+        pos = None
     if pos == -1 or not ld_library_path:
         res = r_lib_path
     else:
@@ -300,6 +301,8 @@ def iter_info():
             rlib_status = 'OK'
         except ImportError as ie:
             rlib_status = '*** Error while loading: %s ***' % str(ie)
+        except OSError as ose:
+            rlib_status = str(ose)
     else:
         rlib_status = '*** rpy2 is not installed'
 
