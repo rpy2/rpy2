@@ -88,6 +88,26 @@ def r_home_from_registry() -> Optional[str]:
     return r_home
 
 
+def r_ld_library_path_from_subprocess(r_home: str) -> str:
+    """Get the LD_LIBRARY_PATH settings added by R."""
+    cmd = (os.path.join(r_home, 'bin', 'Rscript'),
+           '-e',
+           'cat(Sys.getenv("LD_LIBRARY_PATH"))')
+    try:
+        r_lib_path = subprocess.check_output(cmd, universal_newlines=True)
+    except Exception:  # FileNotFoundError, WindowsError, etc
+        r_lib_path = ''
+    print(r_lib_path)
+    ld_library_path = os.environ.get('LD_LIBRARY_PATH')
+    if ld_library_path:
+        pos = r_lib_path.find(ld_library_path)
+    if pos == -1 or not ld_library_path:
+        res = r_lib_path
+    else: 
+        res = r_lib_path[pos:(pos+len(ld_library_path))]
+    return res
+
+
 def get_rlib_path(r_home: str, system: str) -> str:
     """Get the path for the R shared library."""
     if system == 'Linux':
@@ -270,6 +290,9 @@ def iter_info():
             return
         else:
             r_home = r_home_default
+
+    yield _make_bold("R's additions to LD_LIBRARY_PATH:")
+    yield r_ld_library_path_from_subprocess(r_home)
 
     if has_rpy2:
         try:
