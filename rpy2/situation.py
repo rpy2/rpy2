@@ -106,6 +106,8 @@ def r_ld_library_path_from_subprocess(r_home: str) -> str:
         res = r_lib_path
     else:
         res = r_lib_path[pos:(pos+len(ld_library_path))]
+        if res[-1] == os.pathsep:
+            res = res[:-1]
     return res
 
 
