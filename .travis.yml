@@ -93,8 +93,8 @@ install:
 
 # command to run tests
 script:
-  - ./run_linting.sh
-  - ./run_tests.sh
+  - ./scripts/run_linting.sh
+  - ./scripts/run_tests.sh
 
 after_success:
   - codecov
