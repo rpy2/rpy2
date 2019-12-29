@@ -29,7 +29,7 @@ jobs:
     - name: Lint with flake8
       run: |
         pip install flake8
-        ./run_linting.sh
+        ./scripts/run_linting.sh
     - name: Install package
       run: |
         python setup.py install
@@ -37,4 +37,4 @@ jobs:
       run: |
         export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         pip install pytest codecov pytest-cov ipython
-        ./run_tests.sh
+        ./scripts/run_tests.sh
