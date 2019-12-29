@@ -11,6 +11,10 @@ New features
   `void SET_ENCLOS(SEXP x, SEXP v)` and `void SET_HASHTAB(SEXP x, SEXP v)`
   are now accessible through rpy2.
 
+- The module :mod:`rpy2.situation` can now return `LD_LIBRARY_PATH`
+  information about R. For example with
+  `python -m rpy2.situation LD_LIBRARY_PATH`
+
 Changes
 -------
 

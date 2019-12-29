@@ -105,9 +105,8 @@ def r_ld_library_path_from_subprocess(r_home: str) -> str:
     if pos == -1 or not ld_library_path:
         res = r_lib_path
     else:
-        res = r_lib_path[pos:(pos+len(ld_library_path))]
-        if res[-1] == os.pathsep:
-            res = res[:-1]
+        res = (r_lib_path[pos:(pos+len(ld_library_path))]
+               .rstrip(os.pathsep))
     return res
 
 
@@ -341,6 +340,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         'Command-line tool to report the rpy2'
         'environment and help diagnose issues')
+    parser.add_argument('action',
+                        nargs='?',
+                        choices=('info', 'LD_LIBRARY_PATH'),
+                        default='info',
+                        help=('Action to perform. "info" shows all info, '
+                              'LD_LIBRARY_PATH returns optionally required '
+                              'additions to the environment variable'))
     args = parser.parse_args()
-    for row in iter_info():
-        print(row)
+    if args.action == 'info':
+        for row in iter_info():
+            print(row)
+    elif args.action == 'LD_LIBRARY_PATH':
+        r_home = get_r_home()
+        print(r_ld_library_path_from_subprocess(r_home))
