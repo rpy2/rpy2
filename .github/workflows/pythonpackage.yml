@@ -11,7 +11,7 @@ jobs:
       matrix:
         python-version: [3.6, 3.7, 3.8]
         r-version: [3.6, devel]
-        os: [ubuntu-latest, macOS-latest]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
@@ -34,6 +34,7 @@ jobs:
       run: |
         python setup.py install
     - name: Test with pytest
+      if: runner.os != 'Windows'
       run: |
         export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         pip install pytest codecov pytest-cov ipython
