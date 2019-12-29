@@ -23,6 +23,30 @@ The package is known to compile on Linux, MacOSX, and Windows
 (provided that developper tools are installed, and you are ready
 figure out how by yourself).
 
+In case you find yourself with this source without any idea
+of what it takes to compile anything on your platform, try first
+
+    python setup.py install
+
+Non-system R installations
+--------------------------
+
+Whenever R is in not installed in a system location, the system might not
+know where to find the R shared library.
+
+If `R` is in the `PATH`, that is entering `R` on the command line successfully starts
+an R terminal, but rpy2 does not work because of missing C libraries, try the following
+before starting Python:
+
+
+    export LD_LIBRARY_PATH="$(python -m rpy2.situation LD_LIBRARY_PATH)":${LD_LIBRARY_PATH}
+
+
+Docker
+------
+
+**Note: the automated build of Docker image is currently broken.**
+
 Alternatively, there is a Docker image available to try rpy2 out
 without concerns about the installation process.
 
@@ -37,17 +61,6 @@ To run jupypter notebook on port 8888:
 More information about Docker images can be found in the
 `documentation <doc/overview.rst>`_.
 
-In case you find yourself with this source without any idea
-of what it takes to compile anything on your platform, try first
-
-    python setup.py install
-
-If this fails, consider looking for pre-compiled binaries (they are available on Linux Red Hat,
-CentOS, Debian, Ubuntu, etc...) or using the matching Docker container.
-
-Note that `python setup.py develop` will appear to work, but will result in an
-installation from the `rpy` directory here. The namespaces will be
-incorrect, so don't do that!
 
 Documentation
 =============
