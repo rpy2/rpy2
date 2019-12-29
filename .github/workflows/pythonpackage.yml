@@ -33,8 +33,8 @@ jobs:
     - name: Install package
       run: |
         python setup.py install
-        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
     - name: Test with pytest
       run: |
+        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         pip install pytest codecov pytest-cov ipython
         ./run_tests.sh
