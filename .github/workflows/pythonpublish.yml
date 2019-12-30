@@ -2,39 +2,57 @@ name: Upload Python Package
 
 on:
   release:
-    types: [created, pull_request, push]
+    types: [created]
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
-        r-version: [3.6, devel]
+        r-version: [3.6]
         os: [ubuntu-latest, macOS-latest, windows-2019]
+        exclude:
+        - python-version: 3.8
+          os: windows-2019 
     steps:
     - uses: actions/checkout@v1
-    - name: Set up Python
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Set up R
+    - name: Set up R ${{ matrix.r-version }}
       uses: r-lib/actions/setup-r@master
       with:
-        r-version: ${{ matrix.config.r }}
-    - name: Install Windows dependencies  
-      if: runner.os == 'Windows'
+        r-version: ${{ matrix.r-version }}
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine
-    - name: Install POSIX dependencies
-      if: runner.os != 'Windows'
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools wheel twine
+        python -m pip install setuptools wheel twine
     - name: Build
       run: |
         python setup.py bdist_wheel
+    - id: getfilename
+      run: |
+        echo "::set-output name=file::$(ls dist)"
+    - name: Create package for master on POSIX
+      uses: actions/upload-artifact@v1
+      if: github.event_name == 'pull_request' && matrix.r-version == '3.6' && (!startsWith(matrix.os, 'windows'))
+      with:
+          name: ${{ steps.getfilename.outputs.file }}
+          path: dist/${{ steps.getfilename.outputs.file }}
+    - name: Create package for master on Windows
+      uses: actions/upload-artifact@v1
+      if: github.event_name == 'pull_request' && matrix.r-version == '3.6' && startsWith(matrix.os, 'windows')
+      with:
+          name: rpy2-3.3.0.dev0-py3-none-any.whl
+          path: ${{ steps.getfilename.outputs.file }}  
     - name: Publish
       if: github.event_name == 'created'
       env:
