@@ -24,7 +24,6 @@ jobs:
         r-version: ${{ matrix.r-version }}
     - name: Install dependencies
       run: |
-        sudo apt-get update
         python -m pip install --upgrade pip
     - name: Lint with flake8
       run: |
