@@ -42,7 +42,9 @@ jobs:
       run: |
         python setup.py bdist_wheel
     - id: getfilename
-      run: echo "::set-output name=file::$(ls dist) name=basename::$(ls dist | tr '\n' '\0' | xargs -0 -n 1 basename)"
+      run: |
+        echo "::set-output name=file::$(ls dist)"
+        echo "::set-output name=basename::$(ls dist | tr '\n' '\0' | xargs -0 -n 1 basename)"
     - name: print
       run: |
         echo "${{ github.event_name}}"
