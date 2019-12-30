@@ -44,18 +44,23 @@ jobs:
     - id: getfilename
       run: |
         echo "::set-output name=file::$(ls dist)"
-        echo "::set-output name=basename::$(ls dist | tr '\n' '\0' | xargs -0 -n 1 basename)"
     - name: print
       run: |
         echo "${{ github.event_name}}"
         echo "${{ matrix.r-version }}"
         echo ${{ steps.getfilename.outputs.file }}
-    - name: Create package for master
+    - name: Create package for master on POSIX
       uses: actions/upload-artifact@v1
-      if: github.event_name == 'pull_request' && matrix.r-version == '3.6'
+      if: github.event_name == 'pull_request' && matrix.r-version == '3.6' && os.runner != 'Windows'
       with:
           name: ${{ steps.getfilename.outputs.file }}
           path: dist/${{ steps.getfilename.outputs.file }}
+    - name: Create package for master on Windows
+      uses: actions/upload-artifact@v1
+      if: github.event_name == 'pull_request' && matrix.r-version == '3.6' && os.runner == 'Windows'
+      with:
+          name: ${{ steps.getfilename.outputs.file }}
+          path: dist\${{ steps.getfilename.outputs.file }}  
     - name: Publish
       if: github.event_name == 'created'
       env:
