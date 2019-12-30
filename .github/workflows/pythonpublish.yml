@@ -45,7 +45,7 @@ jobs:
       run: echo "::set-output name=file::$(ls dist/*)"
     - name: Create package for master
       uses: actions/upload-artifact@v1
-      if: github.event_name == 'pull_request' && github.branch == 'master'
+      if: github.event_name == 'pull_request' && ${{ matrix.config.r }} == '3.6'
       with:
           path: ${{ steps.getfilename.outputs.file }}
     - name: Publish
