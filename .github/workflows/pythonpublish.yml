@@ -42,7 +42,7 @@ jobs:
       run: |
         python setup.py bdist_wheel
     - id: getfilename
-      run: echo "::set-output name=file::$(ls dist/*)"
+      run: echo "::set-output name=file::$(ls dist)"
     - name: print
       run: |
         echo "${{ github.event_name}}"
@@ -52,8 +52,8 @@ jobs:
       uses: actions/upload-artifact@v1
       if: github.event_name == 'pull_request' && matrix.r-version == '3.6'
       with:
-          name: basename ${{ steps.getfilename.outputs.file }}
-          path: ${{ steps.getfilename.outputs.file }}
+          name: ${{ steps.getfilename.outputs.file }}
+          path: dist/${{ steps.getfilename.outputs.file }}
     - name: Publish
       if: github.event_name == 'created'
       env:
