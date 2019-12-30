@@ -2,7 +2,13 @@ name: Upload Python Package
 
 on:
   release:
-    types: [created, pull_request, push]
+    types: [created]
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
 
 jobs:
   deploy:
