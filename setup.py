@@ -74,12 +74,15 @@ def get_c_extension_status(libraries=['R'], include_dirs=None,
             bin_file,
             libraries=libraries,
             library_dirs=library_dirs)
-    except CCompilerError:
+    except CCompilerError as cce:
         status = COMPILATION_STATUS.COMPILE_ERROR
-    except DistutilsExecError:
-        status = COMPILATION_STATUS.NO_COMPILER        
-    except DistutilsPlatformError:
+        print(cce)
+    except DistutilsExecError as dee:
+        status = COMPILATION_STATUS.NO_COMPILER
+        print(dee)
+    except DistutilsPlatformError as dpe:
         status = COMPILATION_STATUS.PLATFORM_ERROR
+        print(dpe)
     else:
         status = COMPILATION_STATUS.OK
     shutil.rmtree(tmp_dir)
