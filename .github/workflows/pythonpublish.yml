@@ -29,12 +29,12 @@ jobs:
       with:
         r-version: ${{ matrix.config.r }}
     - name: Install Windows dependencies  
-      if: (!startsWith(matrix.os, 'windows'))
+      if: startsWith(matrix.os, 'windows')
       run: |
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
     - name: Install POSIX dependencies
-      if: startsWith(matrix.os, 'windows')
+      if: (!startsWith(matrix.os, 'windows'))
       run: |
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
@@ -43,6 +43,10 @@ jobs:
         python setup.py bdist_wheel
     - id: getfilename
       run: echo "::set-output name=file::$(ls dist/*)"
+    - name: print
+      run: |
+        echo "${{ github.event_name}}"
+        echo "${{ matrix.config.r}}"
     - name: Create package for master
       uses: actions/upload-artifact@v1
       if: github.event_name == 'pull_request' && matrix.config.r == '3.6'
