@@ -48,8 +48,8 @@ jobs:
       uses: actions/upload-artifact@v1
       if: github.event_name == 'pull_request' && matrix.r-version == '3.6' && startsWith(matrix.os, 'windows') && matrix.python-version != '3.8'
       with:
-          name: ${{ steps.getfilename.outputs.file }}
-          path: dist\${{ steps.getfilename.outputs.file }}  
+          name: rpy2-3.3.0.dev0-py3-none-any.whl
+          path: ${{ steps.getfilename.outputs.file }}  
     - name: Publish
       if: github.event_name == 'created'
       env:
