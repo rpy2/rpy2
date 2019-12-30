@@ -12,6 +12,9 @@ jobs:
         python-version: [3.6, 3.7, 3.8]
         r-version: [3.6]
         os: [ubuntu-latest, macOS-latest, windows-latest]
+      exclude:
+        - os: windows-latest
+          python-version: 3.8
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
@@ -35,7 +38,6 @@ jobs:
         pip install flake8
         ./scripts/run_linting.sh
     - name: Install package
-      if: (!(runner.os == 'Windows && matrix.python-version == '3.8'))
       run: |
         python setup.py install
     - name: Test with pytest
