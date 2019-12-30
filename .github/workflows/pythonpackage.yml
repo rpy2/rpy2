@@ -35,6 +35,7 @@ jobs:
         pip install flake8
         ./scripts/run_linting.sh
     - name: Install package
+      if: (!(runner.os == 'Windows && matrix.python-version == '3.8'))
       run: |
         python setup.py install
     - name: Test with pytest
