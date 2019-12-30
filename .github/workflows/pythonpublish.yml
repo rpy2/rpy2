@@ -12,7 +12,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: matrix.os
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
@@ -24,10 +24,10 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Set up R ${{ matrix.config.r }}
+    - name: Set up R ${{ matrix.r-version }}
       uses: r-lib/actions/setup-r@master
       with:
-        r-version: ${{ matrix.config.r }}
+        r-version: ${{ matrix.r-version }}
     - name: Install Windows dependencies  
       if: startsWith(matrix.os, 'windows')
       run: |
@@ -46,10 +46,10 @@ jobs:
     - name: print
       run: |
         echo "${{ github.event_name}}"
-        echo "${{ matrix.config.r}}"
+        echo "${{ matrix.r-version }}"
     - name: Create package for master
       uses: actions/upload-artifact@v1
-      if: github.event_name == 'pull_request' && matrix.config.r == '3.6'
+      if: github.event_name == 'pull_request' && matrix.r-version == '3.6'
       with:
           path: ${{ steps.getfilename.outputs.file }}
     - name: Publish
