@@ -31,7 +31,7 @@ jobs:
         ./scripts/run_linting.sh
     - name: Install package
       run: |
-        if ["${{ runner.os }}" -eq "Windows"]; then
+        if [ "${{ runner.os }}" = "Windows" ]; then
           pip install -U setuptools
         fi
         python setup.py install
