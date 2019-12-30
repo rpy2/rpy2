@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
-        r-version: [3.6, devel]
+        r-version: [3.6]
         os: [ubuntu-latest, macOS-latest, windows-2019]
     steps:
     - uses: actions/checkout@v1
