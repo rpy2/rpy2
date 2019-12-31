@@ -358,6 +358,7 @@ SEXP R_ParseVector(SEXP text, int num, ParseStatus *status, SEXP srcfile);
 extern Rboolean R_Interactive ;
 extern int R_SignalHandlers;
 extern uintptr_t R_CStackLimit;
+extern uintptr_t R_CStackStart;
 
 typedef enum {
     SA_NORESTORE,/* = 0 */
