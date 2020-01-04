@@ -9,7 +9,7 @@ from . import callbacks
 ffi = openrlib.ffi
 
 _options: typing.Tuple[str, ...] = ('rpy2', '--quiet', '--no-save')
-_C_stack_limit = -1
+_DEFAULT_C_STACK_LIMIT = -1
 rpy2_embeddedR_isinitialized = 0x00
 rstart = None
 
@@ -95,8 +95,10 @@ CALLBACK_INIT_PAIRS = (('ptr_R_WriteConsoleEx', '_consolewrite_ex'),
 
 
 # TODO: can init_once() be used here ?
-def _initr(interactive: bool = True,
-           _want_setcallbacks: bool = True) -> typing.Optional[int]:
+def _initr(
+        interactive: bool = True,
+        _want_setcallbacks: bool = True,
+        _c_stack_limit: int = _DEFAULT_C_STACK_LIMIT) -> typing.Optional[int]:
 
     rlib = openrlib.rlib
     ffi_proxy = openrlib.ffi_proxy
@@ -139,7 +141,8 @@ def _initr(interactive: bool = True,
                              callback_funcs, callback_symbol)
 
         # TODO: still needed ?
-        rlib.R_CStackLimit = ffi.cast('uintptr_t', _C_stack_limit)
+        if _c_stack_limit:
+            rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
 
         return status
 
