@@ -349,7 +349,7 @@ class R(object):
 
     def __new__(cls):
         if cls._instance is None:
-            rinterface.initr()
+            rinterface.initr_simple()
             cls._instance = object.__new__(cls)
         return cls._instance
 
