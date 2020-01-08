@@ -7,7 +7,7 @@ import rpy2.rinterface_lib.callbacks
 
 from . import conversion
 
-rpy2.rinterface.initr()
+rpy2.rinterface.initr_simple()
 
 
 class RSlots(object):
