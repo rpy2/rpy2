@@ -34,6 +34,13 @@ Bugs fixed
 Release 3.2.5
 =============
 
+Bugs fixed
+----------
+
+- Latest release for R package `rlang` broke import through `importr()`.
+  A workaround for :mod:`rpy2.robjects.lib.ggplot2` is to rename the
+  offending R object (issue #631).
+
 Changes
 -------
 
