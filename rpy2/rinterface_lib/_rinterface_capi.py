@@ -500,7 +500,10 @@ class PARSING_STATUS(enum.Enum):
 class RParsingError(Exception):
 
     def __init__(self, msg: str, status: int = None):
-        full_msg = f'{msg} - {status}'
+        full_msg = (
+            '{msg} - {status}'
+            .format(msg=msg, status=status)
+        )
         super().__init__(full_msg)
         self.status = status
 

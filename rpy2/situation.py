@@ -124,7 +124,10 @@ def get_rlib_path(r_home: str, system: str) -> str:
         )
         lib_path = os.path.join(r_home, 'bin', 'x64', 'R.dll')
     else:
-        raise ValueError(f'The system {system} is currently not supported.')
+        raise ValueError(
+            'The system {system} is currently not supported.'
+            .format(system=system)
+        )
     return lib_path
 
 
