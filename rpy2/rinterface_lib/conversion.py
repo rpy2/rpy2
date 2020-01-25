@@ -10,7 +10,7 @@ from . import _rinterface_capi as _rinterface
 
 ffi = openrlib.ffi
 
-_R_RPY2_MAP: Dict[int, Type] = {}
+_R_RPY2_MAP = {}  # type: Dict[int, Type]
 
 
 class DummyMissingRpy2Map(object):

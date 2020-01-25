@@ -119,13 +119,14 @@ def createbuilder_api():
 
     ffibuilder.set_source(
         '_rinterface_cffi_api',
-        f"""
+        """
         # include "{header_filename}"
         # include "R_API_eventloop.h"
         void rpy2_runHandlers(InputHandler *handlers) {{
           R_runHandlers(handlers, R_checkActivity(0, 1));
         }};
-        """,
+        """.format(
+            header_filename=header_filename),
         libraries=c_ext.libraries,
         library_dirs=c_ext.library_dirs,
         # If we were using the R headers, we would use
