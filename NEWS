@@ -31,6 +31,15 @@ Bugs fixed
   with an error when not present).
 
 
+Release 3.2.4
+=============
+
+Bugs fixed
+----------
+
+- An incomplete backport of the bug fixed in 3.2.3 broke the ABI mode.
+
+
 Release 3.2.3
 =============
 
