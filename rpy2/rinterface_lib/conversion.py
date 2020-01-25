@@ -22,7 +22,7 @@ _R_RPY2_DEFAULT_MAP = DummyMissingRpy2Map
 
 # TODO: shouldn't the second type strictly inherit from an rpy2
 # R object ?
-_PY_RPY2_MAP: Dict[Type, Type] = {}
+_PY_RPY2_MAP = {}  # type: Dict[Type, Type]
 
 
 def _cdata_to_rinterface(cdata):
