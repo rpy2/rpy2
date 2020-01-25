@@ -1,3 +1,12 @@
+Release 3.2.5
+=============
+
+Changes
+-------
+
+- f-string requiring Python >= 3.6 removed.
+
+
 Release 3.2.4
 =============
 

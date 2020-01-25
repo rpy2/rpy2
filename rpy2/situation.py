@@ -95,7 +95,10 @@ def get_rlib_path(r_home: str, system: str) -> str:
     elif system == 'Darwin':
         lib_path = os.path.join(r_home, 'lib', 'libR.dylib')
     else:
-        raise ValueError(f'The system {system} is currently not supported.')
+        raise ValueError(
+            'The system {system} is currently not supported.'
+            .format(system=system)
+        )
     return lib_path
 
 
