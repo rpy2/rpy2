@@ -52,7 +52,8 @@ import warnings
 
 NULL = robjects.NULL
 
-rlang = importr('rlang', on_conflict='warn')
+rlang = importr('rlang', on_conflict='warn',
+                robject_translations={'.env': '__env'})
 lazyeval = importr('lazyeval', on_conflict='warn')
 base = importr('base', on_conflict='warn')
 ggplot2 = importr('ggplot2', on_conflict='warn')
