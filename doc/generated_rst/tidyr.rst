@@ -11,6 +11,13 @@ tidyr in Python
 
     from rpy2.robjects.lib.tidyr import DataFrame
 
+
+.. parsed-literal::
+
+    /home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.2.5-py3.6-linux-x86_64.egg/rpy2/robjects/lib/tidyr.py:13: UserWarning: This was designed againt tidyr version 0.8.3 but you have 1.0.2
+      'but you have %s' % (TARGET_VERSION, tidyr.__version__))
+
+
 (note: ``dplyr`` is implicitly used by ``tidyr``.)
 
 In addition to that, and because this tutorial is in a notebook, we

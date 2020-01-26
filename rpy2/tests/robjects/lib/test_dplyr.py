@@ -14,7 +14,6 @@ datasets = importr('datasets')
 mtcars = data(datasets).fetch('mtcars')['mtcars']
 
 @pytest.mark.skipif(not has_dplyr, reason='R package dplyr is not installed.')
-@pytest.mark.lib_dplyr
 class TestDplyr(object):
 
     def test_dataframe(self):
