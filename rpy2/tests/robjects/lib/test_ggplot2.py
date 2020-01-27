@@ -1,7 +1,5 @@
 import pytest
 
-False
-
 from rpy2.robjects.packages import importr, PackageNotInstalledError
 
 try:
@@ -16,7 +14,6 @@ datasets = importr('datasets')
 mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
 
 @pytest.mark.skipif(not has_ggplot, reason=msg)
-@pytest.mark.lib_ggplot2
 class TestGGplot(object):
     
     def test_gglot(self):
