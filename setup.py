@@ -160,7 +160,7 @@ if __name__ == '__main__':
         version=pack_version,
         description='Python interface to the R language (embedded R)',
         long_description=LONG_DESCRIPTION,
-        url='https://rpy2.bitbucket.io',
+        url='https://rpy2.github.io',
         license='GPLv2+',
         author='Laurent Gautier',
         author_email='lgautier@gmail.com',
