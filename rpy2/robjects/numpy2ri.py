@@ -66,10 +66,10 @@ def unsignednumpyint_to_rint(intarray):
     """Convert a numpy array of unsigned integers to an R array."""
     if intarray.itemsize >= (RINT_SIZE / 8):
         raise ValueError(
-            'Cannot convert numpy array of {!s} '
+            'Cannot convert numpy array of {numpy_type!s} '
             '(R integers are signed {RINT_SIZE}-bit integers).'
-            .format(intarray.dtype.type,
-                    RINT_SIZE)
+            .format(numpy_type=intarray.dtype.type,
+                    RINT_SIZE=RINT_SIZE)
         )
     else:
         res = _numpyarray_to_r(intarray, _kinds['i'])
