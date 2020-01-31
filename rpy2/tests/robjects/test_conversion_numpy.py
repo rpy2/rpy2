@@ -119,16 +119,16 @@ class TestNumpyConversions(object):
         # Make sure we got the row/column swap right:
         #assert r['['](f3d_r, 1, 2, 3)[0] == f3d[0, 1, 2]
 
-    def test_scalar(self):
-        i32 = numpy.int32(100)
-        i32_r = conversion.py2rpy(i32)
-        i32_test = numpy.array(i32_r)[0]
-        assert i32 == i32_test
-
-        i64 = numpy.int64(100)
-        i64_r = conversion.py2rpy(i64)
-        i64_test = numpy.array(i64_r)[0]
-        assert i64 == i64_test
+    @pytest.mark.parametrize(
+        'constructor',
+        (numpy.int32, numpy.int64,
+         numpy.uint32, numpy.uint64)
+    )
+    def test_scalar_int(self, constructor):
+        np_value = constructor(100)
+        r_vec = conversion.py2rpy(np_value)
+        r_scalar = numpy.array(r_vec)[0]
+        assert np_value == r_scalar
 
     @pytest.mark.skipif(not (has_numpy and hasattr(numpy, 'float128')),
                         reason='numpy.float128 not available on this system')
