@@ -922,20 +922,26 @@ class POSIXct(POSIXt, FloatVector):
     def iter_localized_datetime(self):
         """Iterator yielding localized Python datetime objects."""
         try:
-            tzone_name = self.do_slot('tzone')[0]
+            r_tzone_name = self.do_slot('tzone')[0]
         except LookupError:
             warnings.warn('R object inheriting from "POSIXct" but without '
                           'attribute "tzone".')
-            tzone_name = ''
-        if tzone_name == '':
+            r_tzone_name = ''
+        if r_tzone_name == '':
             # R is implicitly using the local timezone, while Python
             # time libraries will assume UTC.
-            tzone = get_timezone()
+            r_tzone = get_timezone()
         else:
-            tzone = pytz.timezone(tzone_name)
+            r_tzone = pytz.timezone(tzone_name)
+
+        py_tzone = get_timezone()
+        
         for x in self:
             yield (None if math.isnan(x)
-                   else tzone.localize(datetime.fromtimestamp(x)))
+                   else r_tzone.normalize(
+                           py_tzone.localize(datetime.fromtimestamp(x))
+                   )
+            )
 
 
 class Array(Vector):
