@@ -52,14 +52,14 @@ without concerns about the installation process.
 
 To run the ipython console:
 
-    docker run -it --rm -p 8888:8888 rpy2/jupyter:latest ipython
+    docker run -it --rm -p 8888:8888 rpy2/jupyter-ubuntu ipython
 
 To run jupypter notebook on port 8888:
 
-    docker run --rm -p 8888:8888 rpy2/jupyter:latest
+    docker run --rm -p 8888:8888 rpy2/jupyter-ubuntu
 
 More information about Docker images can be found in the
-`documentation <doc/overview.rst>`_.
+`docker image repository <https://github.com/rpy2/rpy2-docker>`_.
 
 
 Documentation
