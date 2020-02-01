@@ -932,15 +932,16 @@ class POSIXct(POSIXt, FloatVector):
             # time libraries will assume UTC.
             r_tzone = get_timezone()
         else:
-            r_tzone = pytz.timezone(tzone_name)
+            r_tzone = pytz.timezone(r_tzone_name)
 
         py_tzone = get_timezone()
-        
+
         for x in self:
-            yield (None if math.isnan(x)
-                   else r_tzone.normalize(
-                           py_tzone.localize(datetime.fromtimestamp(x))
-                   )
+            yield (
+                None if math.isnan(x)
+                else r_tzone.normalize(
+                        py_tzone.localize(datetime.fromtimestamp(x))
+                )
             )
 
 
