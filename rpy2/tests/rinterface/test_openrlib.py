@@ -27,8 +27,7 @@ def test_get_symbol_or_fallback():
      (rpy2.rinterface.BoolSexpVector, [True, True, False],
       openrlib.LOGICAL_ELT, openrlib._get_logical_elt_fallback),
      (rpy2.rinterface.FloatSexpVector, [1.1, 2.2, 3.3],
-      openrlib.REAL_ELT, openrlib._get_real_elt_fallback)
-    )
+      openrlib.REAL_ELT, openrlib._get_real_elt_fallback))
 )
 def test_get_vec_elt_fallback(rcls, value, func, fallback):
     rpy2.rinterface.initr()
@@ -48,8 +47,7 @@ def test_get_vec_elt_fallback(rcls, value, func, fallback):
       openrlib._get_logical_elt_fallback),
      (rpy2.rinterface.FloatSexpVector, [1.1, 2.2, 3.3],
       openrlib._set_real_elt_fallback,
-      openrlib._get_real_elt_fallback)
-    )
+      openrlib._get_real_elt_fallback))
 )
 def test_set_vec_elt_fallback(rcls, value, func, getter):
     rpy2.rinterface.initr()

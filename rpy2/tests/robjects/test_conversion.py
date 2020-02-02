@@ -22,10 +22,10 @@ def test_mapperR2Python_function():
     ob = robjects.default_converter.rpy2py(sexp)
     assert isinstance(ob, robjects.Function)
 
-    
+
 def test_mapperR2Python_environment():
     sexp = rinterface.globalenv.find('.GlobalEnv')
-    assert isinstance(robjects.default_converter.rpy2py(sexp), 
+    assert isinstance(robjects.default_converter.rpy2py(sexp),
                       robjects.Environment)
 
 
@@ -33,9 +33,9 @@ def test_mapperR2Python_s4():
     robjects.r('setClass("A", representation(x="integer"))')
     classname = rinterface.StrSexpVector(['A', ])
     one = rinterface.IntSexpVector([1, ])
-    sexp = rinterface.globalenv.find('new')(classname, 
-                                           x=one)
-    assert isinstance(robjects.default_converter.rpy2py(sexp), 
+    sexp = rinterface.globalenv.find('new')(classname,
+                                            x=one)
+    assert isinstance(robjects.default_converter.rpy2py(sexp),
                       robjects.RS4)
 
 
@@ -51,7 +51,7 @@ def test_py2ro_mappedtype(value, cls):
     assert isinstance(pyobj, cls)
     rob = robjects.default_converter.py2rpy(pyobj)
     assert isinstance(rob, cls)
-                    
+
 
 def test_mapperPy2R_taggedlist():
     py = robjects.rlc.TaggedList(('a', 'b'),
@@ -63,7 +63,8 @@ def test_mapperPy2R_taggedlist():
 
 
 def test_mapperPy2R_function():
-    func = lambda x: x
+    def func(x):
+        return x
     rob = robjects.default_converter.py2rpy(func)
     assert isinstance(rob, robjects.SignatureTranslatedFunction)
     assert rob.typeof == rinterface.RTYPES.CLOSXP
@@ -86,9 +87,9 @@ def test_mapperpy2rpy_float_array(ctype):
     assert isinstance(rob, robjects.vectors.FloatVector)
     assert rob.typeof == rinterface.RTYPES.REALSXP
 
-    
+
 def noconversion():
     robj_res = robjects.baseenv['pi']
     assert isinstance(robj_res, robjects.RObject)
-    rint_res = robject.conversion.noconversion(robj_res)
+    rint_res = robjects.conversion.noconversion(robj_res)
     assert isinstance(rint_res, rpy2.rinterface_lib.sexp.Sexp)

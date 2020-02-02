@@ -11,6 +11,7 @@ def obj_in_module(module, name, obj):
         if backup_obj:
             setattr(module, name, backup_obj)
 
+
 def assert_equal_sequence(x, y):
     assert type(x) is type(y)
     assert len(x) == len(y)

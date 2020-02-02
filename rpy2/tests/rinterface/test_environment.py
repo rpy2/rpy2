@@ -221,11 +221,12 @@ def test_enclos_get():
 
 def test_enclos_baseenv_set():
     env = rinterface.baseenv["new.env"]()
-    orig_enclosing_env = rinterface.baseenv.enclos
+    assert env.enclos.rid == rinterface.globalenv.rid
     enclosing_env = rinterface.baseenv["new.env"]()
     env.enclos = enclosing_env
     assert isinstance(env.enclos, rinterface.SexpEnvironment)
-    assert enclosing_env != env.enclos
+    assert env.enclos.rid != rinterface.globalenv.rid
+    assert enclosing_env.rid == env.enclos.rid
 
 
 def test_enclos_baseenv_set_invalid():

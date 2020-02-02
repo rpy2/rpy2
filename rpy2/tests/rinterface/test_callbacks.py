@@ -194,7 +194,7 @@ def test_showmessage_default(capsys):
     captured = capsys.readouterr()
     assert captured.out.split(os.linesep)[1] == buf
 
-    
+
 def test_show_message():
 
     def make_callback():
@@ -336,6 +336,7 @@ def test_cleanup():
 def test_busy():
 
     busylist = []
+
     def busy(which):
         busylist.append(which)
 
@@ -348,6 +349,7 @@ def test_busy():
 def test_callback():
 
     callbacklist = []
+
     def callback():
         callbacklist.append(1)
 
