@@ -256,7 +256,7 @@ def iter_info():
         yield '    Calling `R RHOME`: %s' % r_home
 
     if r_home is not None and r_home_default is not None:
-        if os.path.abst(r_home) != r_home_default:
+        if os.path.abspath(r_home) != r_home_default:
             yield ('    Warning: The environment variable R_HOME '
                    'differs from the default R in the PATH.')
     else:

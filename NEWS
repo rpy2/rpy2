@@ -7,6 +7,9 @@ Bugs fixed
 - The conversion of date/time object with specified timezones
   was wrong when different than the local time zone (issue #634)
 
+- Iterating over :mod:`rpy2.situation.iter_info()` could result
+  in a error because of a typo in the code.
+
 
 Release 3.2.5
 =============
