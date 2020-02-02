@@ -32,7 +32,7 @@ pip install numpy
     --cov=rpy2.robjects \
     rpy2/tests
 
-pip install pandas
+pip install `pandas<1.0.0`
 
 pytest \
     --cov-append \

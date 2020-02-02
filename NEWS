@@ -10,6 +10,12 @@ Bugs fixed
 - Iterating over :mod:`rpy2.situation.iter_info()` could result
   in a error because of a typo in the code.
 
+Changes
+-------
+
+- :mod:`pandas` 1.0.0 breaks the conversion layer. A warning
+  is not emitted whenever trying to use `pandas` >= 1.0.
+
 
 Release 3.2.5
 =============

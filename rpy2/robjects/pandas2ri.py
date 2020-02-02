@@ -30,6 +30,9 @@ from rpy2.robjects.vectors import (BoolVector,
 # activate in the function activate() below.
 import rpy2.robjects.numpy2ri as numpy2ri
 
+if not pandas.__version__.startswith('0.'):
+    warnings.warn('pandas >= 1.0 is not supported.')
+
 original_converter = None
 
 ISOdatetime = rinterface.baseenv['ISOdatetime']
