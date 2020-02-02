@@ -31,6 +31,16 @@ Bugs fixed
   with an error when not present).
 
 
+Release 3.2.6
+=============
+
+Bugs fixed
+----------
+
+- The conversion of date/time object with specified timezones
+  was wrong when different than the local time zone (issue #634)
+
+
 Release 3.2.5
 =============
 
