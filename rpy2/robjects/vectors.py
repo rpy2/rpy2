@@ -934,14 +934,10 @@ class POSIXct(POSIXt, FloatVector):
         else:
             r_tzone = pytz.timezone(r_tzone_name)
 
-        py_tzone = get_timezone()
-
         for x in self:
             yield (
                 None if math.isnan(x)
-                else r_tzone.normalize(
-                        py_tzone.localize(datetime.fromtimestamp(x))
-                )
+                else datetime.fromtimestamp(x, r_tzone)
             )
 
 

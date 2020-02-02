@@ -81,7 +81,23 @@ def testPOSIXct_repr():
 
 
 def testPOSIXct_getitem():
-    dt = (datetime.datetime(2014, 12, 11) - datetime.datetime(1970,1,1)).total_seconds()
+    dt = ((datetime.datetime(2014, 12, 11) - datetime.datetime(1970,1,1))
+          .total_seconds())
     sexp = robjects.r('ISOdate(c(2013, 2014), 12, 11, hour = 0, tz = "UTC")')
     res = robjects.POSIXct(sexp)
     assert (res[1] - dt) == 0
+
+
+def testPOSIXct_iter_localized_datetime():
+    timestamp = 1234567890
+    timezone = 'UTC'
+    r_vec = robjects.r('as.POSIXct')(
+        timestamp,
+        origin='1960-01-01', tz=timezone)
+    r_times = robjects.r('strftime')(r_vec,
+                                     format="%H:%M:%S",
+                                     tz=timezone)
+    py_value = next(r_vec.iter_localized_datetime())
+    assert r_times[0] == ':'.join(
+        ('%i' % getattr(py_value, x) for x in ('hour', 'minute', 'second'))
+    )
