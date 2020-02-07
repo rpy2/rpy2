@@ -4,7 +4,7 @@ Release 3.3.0
 New features
 ------------
 
-- Trying to import an R package that it not installed will now raise an
+- Trying to import an R package that is not installed will now raise an
   exception :class:`rpy2.robjects.packages.PackageNotInstalledError`.
 
 - The R C API functions `void SET_FRAME(SEXP x, SEXP v)`,
@@ -47,7 +47,7 @@ Changes
 -------
 
 - :mod:`pandas` 1.0.0 breaks the conversion layer. A warning
-  is not emitted whenever trying to use `pandas` >= 1.0.
+  is now emitted whenever trying to use `pandas` >= 1.0.
 
 
 Release 3.2.5
