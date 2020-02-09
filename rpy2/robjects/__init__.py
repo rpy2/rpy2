@@ -8,15 +8,17 @@ License: GPLv2+
 
 """
 
+import array
+import contextlib
 import os
 import types
-import array
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.robjects.functions
 from rpy2.robjects.environments import Environment
+from rpy2.robjects.methods import methods_env
 from rpy2.robjects.methods import RS4
 
 from . import conversion
@@ -211,9 +213,69 @@ def _rpy2py_sexpenvironment(obj):
     return Environment(obj)
 
 
+class _NAME_CLASS_MAP(object):
+    """Map a name (R class name) to a Python class."""
+
+    def __init__(self, defaultcls):
+        self._default = defaultcls
+        self._map = dict()
+
+    def __contains__(self, key: str):
+        return key in self._map
+
+    def __delitem__(self, key: str):
+        del self._map[key]
+
+    def __getitem__(self, key: str):
+        return self._map[key]
+
+    def __setitem__(self, key:str, value):
+        assert issubclass(value, self._default)
+        self._map[key] = value
+
+    def find_key(self, keys):
+        """Find the first mapping key in a sequence of names (keys)."""
+        for k in keys:
+            if k in self._map:
+                return k
+        return None
+
+    def find(self, keys):
+        """Find the first mapping in a sequence of names (keys)."""
+        k = self.find_key(keys)
+        if k:
+            cls = self._map[k]
+        else:
+            cls = self._default
+        return cls
+
+
+_rs4_map = _NAME_CLASS_MAP(RS4)
+
+@contextlib.contextmanager
+def rs4map_context(d):
+    keep = []
+    for k, v in d.items():
+        if k in _rs4_map:
+            restore = True
+            orig_v = _rs4_map[k]
+        else:
+            restore = False
+            orig_v = None
+        keep.append((k, restore, orig_v))
+        _rs4_map[k] = v
+    yield
+    for k, restore, orig_v in keep:
+        if restore:
+            _rs4_map[k] = orig_v
+        else:
+            del(_rs4_map[k])
+
+
 @default_converter.rpy2py.register(SexpS4)
 def _rpy2py_sexps4(obj):
-    return RS4(obj)
+    cls = _rs4_map.find(methods_env['extends'](obj.rclass))
+    return cls(obj)
 
 
 @default_converter.rpy2py.register(SexpExtPtr)

@@ -1,4 +1,4 @@
-"""Conversion between Python objects, C objects, and R objects."""
+"""Mapping between Python objects, C objects, and R objects."""
 
 # TODO: rename the module with a prefix _ to indicate that this should
 #   not be used outside of rpy2's own code
@@ -156,18 +156,18 @@ def _str_to_symsxp(val: str):
 _PY_R_MAP = {}
 
 
-# TODO: Do special values such as NAs need to be cast into a SEXP when
+# TODO: Do special values such as NAs need to be mapped into a SEXP when
 #   a scalar ?
 def _get_cdata(obj):
-    cast = _PY_R_MAP.get(type(obj))
-    if cast is False:
+    cls = _PY_R_MAP.get(type(obj))
+    if cls is False:
         cdata = obj
-    elif cast is None:
+    elif cls is None:
         try:
             cdata = obj.__sexp__._cdata
         except AttributeError:
             raise ValueError('Not an rpy2 R object and unable '
-                             'to cast it into one: %s' % repr(obj))
+                             'to map it into one: %s' % repr(obj))
     else:
-        cdata = cast(obj)
+        cdata = cls(obj)
     return cdata

@@ -29,15 +29,41 @@ def test_mapperR2Python_environment():
                       robjects.Environment)
 
 
-def test_mapperR2Python_s4():
-    robjects.r('setClass("A", representation(x="integer"))')
+@pytest.fixture(scope='module')
+def _set_class_AB():
+    robjects.r('A <- methods::setClass("A", representation(x="integer"))')
+    robjects.r('B <- methods::setClass("B", contains="A")')
+    yield
+    robjects.r('methods::removeClass("B")')
+    robjects.r('methods::removeClass("A")')
+
+
+def test_mapperR2Python_s4(_set_class_AB):
     classname = rinterface.StrSexpVector(['A', ])
     one = rinterface.IntSexpVector([1, ])
-    sexp = rinterface.globalenv.find('new')(classname, 
-                                           x=one)
+    sexp = rinterface.globalenv['A'](x=one)
     assert isinstance(robjects.default_converter.rpy2py(sexp), 
                       robjects.RS4)
 
+
+def test_mapperR2Python_s4custom(_set_class_AB):
+    class A(robjects.RS4):
+        pass
+    sexp_a = rinterface.globalenv['A']( 
+        x=rinterface.IntSexpVector([1, ])
+    )
+    sexp_b = rinterface.globalenv['B']( 
+        x=rinterface.IntSexpVector([2, ])
+    )
+    with robjects.rs4map_context({'A': A}):
+        assert robjects._rs4_map.find_key(('A', )) == 'A'
+        assert isinstance(
+            robjects.default_converter.rpy2py(sexp_a), 
+            A)
+        assert robjects._rs4_map.find_key(('B', 'A')) == 'A'
+        assert isinstance(
+            robjects.default_converter.rpy2py(sexp_b), 
+            A)
 
 @pytest.mark.parametrize('value,cls', [
     (1, int),
