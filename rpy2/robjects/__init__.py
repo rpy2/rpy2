@@ -11,6 +11,7 @@ License: GPLv2+
 import array
 import contextlib
 import os
+from functools import partial
 import types
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
@@ -213,7 +214,7 @@ def _rpy2py_sexpenvironment(obj):
     return Environment(obj)
 
 
-class _NAME_CLASS_MAP(object):
+class NameClassMap(object):
     """Map a name (R class name) to a Python class."""
 
     def __init__(self, defaultcls):
@@ -250,26 +251,39 @@ class _NAME_CLASS_MAP(object):
         return cls
 
 
-_rs4_map = _NAME_CLASS_MAP(RS4)
+class NameClassMapContext(object):
 
-@contextlib.contextmanager
-def rs4map_context(d):
-    keep = []
-    for k, v in d.items():
-        if k in _rs4_map:
-            restore = True
-            orig_v = _rs4_map[k]
-        else:
-            restore = False
-            orig_v = None
-        keep.append((k, restore, orig_v))
-        _rs4_map[k] = v
-    yield
-    for k, restore, orig_v in keep:
-        if restore:
-            _rs4_map[k] = orig_v
-        else:
-            del(_rs4_map[k])
+    def __init__(self, nameclassmap: NameClassMap,
+                 d: dict):
+        self._nameclassmap = nameclassmap
+        self._d = d
+        self._keep = []
+
+    def __enter__(self):
+        nameclassmap = self._nameclassmap
+        for k, v in self._d.items():
+            if k in nameclassmap:
+                restore = True
+                orig_v = nameclassmap[k]
+            else:
+                restore = False
+                orig_v = None
+            self._keep.append((k, restore, orig_v))
+            nameclassmap[k] = v
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        nameclassmap = self._nameclassmap
+        for k, restore, orig_v in self._keep:
+            if restore:
+                nameclassmap[k] = orig_v
+            else:
+                del(nameclassmap[k])
+        return False
+
+
+_rs4_map = NameClassMap(RS4)
+
+rs4map_context = partial(NameClassMapContext, _rs4_map)
 
 
 @default_converter.rpy2py.register(SexpS4)

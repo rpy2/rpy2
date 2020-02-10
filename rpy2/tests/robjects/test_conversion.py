@@ -29,6 +29,37 @@ def test_mapperR2Python_environment():
                       robjects.Environment)
 
 
+def test_NameClassMap():
+    ncm = robjects.NameClassMap(object)
+    classnames = ('A', 'B')
+    assert ncm.find_key(classnames) is None
+    assert ncm.find(classnames) is object
+    ncm['B'] = list
+    assert ncm.find_key(classnames) == 'B'
+    assert ncm.find(classnames) is list
+    ncm['A'] = tuple
+    assert ncm.find_key(classnames) == 'A'
+    assert ncm.find(classnames) is tuple
+
+
+def test_NameClassMapContext():
+    ncm = robjects.NameClassMap(object)
+    with robjects.NameClassMapContext(ncm, {}):
+        assert not len(ncm._map)
+    assert not len(ncm._map)
+    with robjects.NameClassMapContext(d, {'A': list}):
+        assert set(ncm._map.keys()) == set('A')
+    assert not len(ncm._map)
+    ncm['B'] = tuple
+    with robjects.NameClassMapContext(d, {'A': list}):
+        assert set(ncm._map.keys()) == set('AB')
+    assert set(ncm._map.keys) == set('B')
+    with robjects.NameClassMapContext(d, {'B': list}):
+        assert set(ncm._map.keys()) == set('B')
+    assert set(ncm._map.keys) == set('B')
+    assert ncm['B'] is tuple
+
+
 @pytest.fixture(scope='module')
 def _set_class_AB():
     robjects.r('A <- methods::setClass("A", representation(x="integer"))')
