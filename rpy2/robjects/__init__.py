@@ -235,14 +235,19 @@ class NameClassMap(object):
         self._map[key] = value
 
     def find_key(self, keys):
-        """Find the first mapping key in a sequence of names (keys)."""
+        """Find the first mapping key in a sequence of names (keys).
+
+        Returns None if no mapping key."""
         for k in keys:
             if k in self._map:
                 return k
         return None
 
     def find(self, keys):
-        """Find the first mapping in a sequence of names (keys)."""
+        """Find the first mapping in a sequence of names (keys).
+
+        Returns the default class (specified when creating the
+        instance if no mapping key."""
         k = self.find_key(keys)
         if k:
             cls = self._map[k]
