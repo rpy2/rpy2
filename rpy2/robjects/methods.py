@@ -24,6 +24,12 @@ class RS4(RObjectMixin, rinterface.SexpS4):
     def do_slot(self, name):
         return conversion.rpy2py(super(RS4, self).do_slot(name))
 
+    def extends(self):
+        """Return the R classes this extends.
+
+        This calls the R function methods::extends()."""
+        return methods_env['extends'](self.rclass)
+
     @staticmethod
     def isclass(name):
         """ Return whether the given name is a defined class. """

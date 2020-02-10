@@ -15,6 +15,14 @@ New features
   information about R. For example with
   `python -m rpy2.situation LD_LIBRARY_PATH`
 
+- :meth:`rpy2.robjects.methods.RS4.extends` lists the class names in the
+  inheritance line.
+  
+- The conversion of S4 objects from R to Python allows much more flexibility
+  and better allow the use of independent code converting different classes.
+  The Sphinx documentation contains an example. This should address concerns
+  at the origin of issue #539.
+
 Changes
 -------
 
