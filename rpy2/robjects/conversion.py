@@ -1,8 +1,8 @@
 """
-The module contains the conversion functions to be
-used by the rpy2.robjects functions and methods.
+The module contains the conversions to be
+used by rpy2.robjects functions and methods.
 
-These functions are initially empty place-holders,
+Conversions are initially empty place-holders,
 raising a NotImplementedError exception.
 """
 
@@ -19,7 +19,7 @@ def noconversion(obj):
     rinterface-level rpy2 objects.
 
     :param obj: Any object
-    :return: Either an rinterface-leve object or a Python object.
+    :return: Either an rinterface-level object or a Python object.
     """
     if isinstance(obj, rpy2.rinterface_lib.sexp.Sexp):
         res = (rpy2.rinterface_lib.conversion

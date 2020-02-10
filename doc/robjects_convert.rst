@@ -174,3 +174,50 @@ At the time of writing :func:`singledispath` does not provide a way to `unregist
 Removing the additional conversion rule without restarting Python is left as an
 exercise for the reader.
 
+.. note::
+
+   Customizing the conversion of S4 classes should preferably done using a separate
+   dedicated system.
+
+   The system is rather simple and can easily be described with an example.
+
+   .. code-block:: python
+
+      import rpy2.robjects as robjects
+      from rpy2.robjects.packages import importr
+
+      class LMER(robjects.RS4):
+          """Custom class."""
+          pass
+
+      lme4 = importr('lme4')
+
+      res = robjects.r('lmer(Reaction ~ Days + (Days | Subject), sleepstudy)')
+
+      # Map the R/S4 class 'lmerMod' to our Python class LMER.
+      with robjects.rs4map_context({'lmerMod': LMER}):
+          res2 = robjects.r('lmer(Reaction ~ Days + (Days | Subject), sleepstudy)')
+
+   When running the example above, `res` is an instance of class :class:`rpy2.robjects.methods.RS4`,
+   which is the default mapping for R `S4` instances, while `res2` is an instance of our
+   custom class `LMER`.
+
+   The class mapping is using the hierarchy of R/S4-defined classes and tries to find the first
+   matching Python-defined class. For example, the R/S4 class `lmerMod` has a parent class
+   `merMod` (defined in R S4). Let run the following example after the previous one.
+   
+   .. code-block:: python
+
+      class MER(robjects.RS4):
+          """Custom class."""
+          pass
+
+      with robjects.rs4map_context({'merMod': MER}):
+          res3 = robjects.r('lmer(Reaction ~ Days + (Days | Subject), sleepstudy)')
+
+      with robjects.rs4map_context({'lmerMod': LMER,
+                                    'merMod': MER}):
+          res4 = robjects.r('lmer(Reaction ~ Days + (Days | Subject), sleepstudy)')
+
+   `res3` will be a `MER` instance: there is no mapping for the R/S4 class `lmerMod` but there
+   is a mapping for its R/S4 parent `merMod`. `res4` will be an `LMER` instance. 

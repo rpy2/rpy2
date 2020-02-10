@@ -29,15 +29,72 @@ def test_mapperR2Python_environment():
                       robjects.Environment)
 
 
-def test_mapperR2Python_s4():
-    robjects.r('setClass("A", representation(x="integer"))')
+def test_NameClassMap():
+    ncm = robjects.NameClassMap(object)
+    classnames = ('A', 'B')
+    assert ncm.find_key(classnames) is None
+    assert ncm.find(classnames) is object
+    ncm['B'] = list
+    assert ncm.find_key(classnames) == 'B'
+    assert ncm.find(classnames) is list
+    ncm['A'] = tuple
+    assert ncm.find_key(classnames) == 'A'
+    assert ncm.find(classnames) is tuple
+
+
+def test_NameClassMapContext():
+    ncm = robjects.NameClassMap(object)
+    with robjects.NameClassMapContext(ncm, {}):
+        assert not len(ncm._map)
+    assert not len(ncm._map)
+    with robjects.NameClassMapContext(d, {'A': list}):
+        assert set(ncm._map.keys()) == set('A')
+    assert not len(ncm._map)
+    ncm['B'] = tuple
+    with robjects.NameClassMapContext(d, {'A': list}):
+        assert set(ncm._map.keys()) == set('AB')
+    assert set(ncm._map.keys) == set('B')
+    with robjects.NameClassMapContext(d, {'B': list}):
+        assert set(ncm._map.keys()) == set('B')
+    assert set(ncm._map.keys) == set('B')
+    assert ncm['B'] is tuple
+
+
+@pytest.fixture(scope='module')
+def _set_class_AB():
+    robjects.r('A <- methods::setClass("A", representation(x="integer"))')
+    robjects.r('B <- methods::setClass("B", contains="A")')
+    yield
+    robjects.r('methods::removeClass("B")')
+    robjects.r('methods::removeClass("A")')
+
+
+def test_mapperR2Python_s4(_set_class_AB):
     classname = rinterface.StrSexpVector(['A', ])
     one = rinterface.IntSexpVector([1, ])
-    sexp = rinterface.globalenv.find('new')(classname, 
-                                           x=one)
+    sexp = rinterface.globalenv['A'](x=one)
     assert isinstance(robjects.default_converter.rpy2py(sexp), 
                       robjects.RS4)
 
+
+def test_mapperR2Python_s4custom(_set_class_AB):
+    class A(robjects.RS4):
+        pass
+    sexp_a = rinterface.globalenv['A']( 
+        x=rinterface.IntSexpVector([1, ])
+    )
+    sexp_b = rinterface.globalenv['B']( 
+        x=rinterface.IntSexpVector([2, ])
+    )
+    with robjects.rs4map_context({'A': A}):
+        assert robjects._rs4_map.find_key(('A', )) == 'A'
+        assert isinstance(
+            robjects.default_converter.rpy2py(sexp_a), 
+            A)
+        assert robjects._rs4_map.find_key(('B', 'A')) == 'A'
+        assert isinstance(
+            robjects.default_converter.rpy2py(sexp_b), 
+            A)
 
 @pytest.mark.parametrize('value,cls', [
     (1, int),
