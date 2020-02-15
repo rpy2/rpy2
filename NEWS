@@ -41,6 +41,10 @@ New features
   to identify objects supporting a `__sexp__` protocol, and that abstract
   class can also be used with type hints.
 
+- :func:`rpy2.robjects.functions.wrap_r_functions` can create Python functions
+  with matching signature from R functions.
+
+
 Changes
 -------
 
