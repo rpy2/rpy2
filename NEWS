@@ -23,6 +23,10 @@ New features
   The Sphinx documentation contains an example. This should address concerns
   at the origin of issue #539.
 
+- :func:`rpy2.robjects.functions.wrap_r_functions` can create Python functions
+  with matching signature from R functions.
+
+
 Changes
 -------
 

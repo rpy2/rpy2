@@ -56,3 +56,20 @@ def test_documentedstfunction():
     dstf = robjects.functions.DocumentedSTFunction(robjects.baseenv['sum'],
                                                    packagename='base')
     assert isinstance(dstf.__doc__, str)
+
+
+@pytest.mark.parametrize(
+    'rcode,parameter_names',
+    (
+        ('function(x, y=FALSE, z="abc") TRUE', ('x', 'y', 'z')),
+        ('function(x, y=FALSE, z="abc") {TRUE}', ('x', 'y', 'z')),
+        ('function(x, ..., y=FALSE, z="abc") TRUE', ('x', '___', 'y', 'z')),
+        ('function(x, y=FALSE, z, ...) TRUE', ('x', 'y', 'z', '___'))
+    )
+)
+def test_wrap_r_function(rcode, parameter_names):
+    r_func = robjects.r(rcode)
+    stf = robjects.functions.SignatureTranslatedFunction(r_func)
+    foo = robjects.functions.wrap_r_function(r_func, 'foo')
+    assert foo._r_func.rid == r_func.rid
+    assert tuple(foo.__signature__.parameters.keys()) == parameter_names
