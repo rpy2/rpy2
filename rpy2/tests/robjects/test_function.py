@@ -59,7 +59,7 @@ def test_documentedstfunction():
 
 
 @pytest.mark.parametrize(
-    'rcode,parameter_names',
+    'r_code,parameter_names',
     (
         ('function(x, y=FALSE, z="abc") TRUE', ('x', 'y', 'z')),
         ('function(x, y=FALSE, z="abc") {TRUE}', ('x', 'y', 'z')),
@@ -67,9 +67,26 @@ def test_documentedstfunction():
         ('function(x, y=FALSE, z, ...) TRUE', ('x', 'y', 'z', '___'))
     )
 )
-def test_wrap_r_function(rcode, parameter_names):
-    r_func = robjects.r(rcode)
+def test_map_signature(r_code, parameter_names):
+    r_func = robjects.r(r_code)
     stf = robjects.functions.SignatureTranslatedFunction(r_func)
-    foo = robjects.functions.wrap_r_function(r_func, 'foo')
+    signature = robjects.functions.map_signature(r_func)
+    assert tuple(signature.parameters.keys()) == parameter_names
+
+
+@pytest.mark.parametrize(
+    'full_repr,method_of',
+    ((False, False),
+     (False, True),
+     (True, False),
+     (True, True))
+)
+def test_wrap_r_function(full_repr, method_of):
+    r_code = 'function(x, y=FALSE, z="abc") TRUE'
+    parameter_names = ('x', 'y', 'z')
+    r_func = robjects.r(r_code)
+    stf = robjects.functions.SignatureTranslatedFunction(r_func)
+    foo = robjects.functions.wrap_r_function(r_func, 'foo',
+                                             full_repr=full_repr)
     assert foo._r_func.rid == r_func.rid
     assert tuple(foo.__signature__.parameters.keys()) == parameter_names
