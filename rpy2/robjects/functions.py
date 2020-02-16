@@ -242,8 +242,37 @@ class DocumentedSTFunction(SignatureTranslatedFunction):
         return os.linesep.join(doc)
 
 
+def map_signature(r_func: SignatureTranslatedFunction,
+                  method_of: bool = False):
+    """
+    Map the signature of an function to the signature of a Python function.
+
+    Args:
+        r_func (SignatureTranslatedFunction): an R function
+        method_of (bool): Whether the function should be treated as a method
+            (adds a `self` param to the signature if so).
+    Returns:
+        An inspect.Signature.
+    """
+    params = []
+    if method_of:
+        params.append(inspect.Parameter('self',
+                                        inspect.Parameter.POSITIONAL_ONLY))
+    r_params = _formals_fixed(r_func)
+    rev_prm_trans = {v: k for k, v in r_func._prm_translate.items()}
+    if r_params.names is not rinterface.NULL:
+        params.extend([
+            inspect.Parameter(
+                rev_prm_trans.get(name) if rev_prm_trans.get(name) else name,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD
+            )
+            for name in list(r_params.names)
+        ])
+    return inspect.Signature(params)
+
+
 def wrap_r_function(r_func: SignatureTranslatedFunction, name: str, *,
-                    method_of=None, full_repr=False):
+                    method_of: bool = False, full_repr: bool = False):
     """
     Wrap an rpy2 function handle with a Python function with a matching signature.
 
@@ -251,7 +280,7 @@ def wrap_r_function(r_func: SignatureTranslatedFunction, name: str, *,
         r_func (rpy2.robjects.functions.SignatureTranslatedFunction): The
             function to be wrapped.
         name (str): The name of the function.
-        is_method (bool): Whether the function should be treated as a method
+        method_of (bool): Whether the function should be treated as a method
             (adds a `self` param to the signature if so).
         full_repr (bool): Whether to have the full body of the R function in
             the docstring dynamically generated.
@@ -264,19 +293,9 @@ def wrap_r_function(r_func: SignatureTranslatedFunction, name: str, *,
         value = r_func(*args, **kwargs)
         return value
 
-    # Construct function signature
-    params = []
-    if method_of is not None:
-        params.append(inspect.Parameter('self', inspect.Parameter.POSITIONAL_ONLY))
-    r_params = r_func.formals().names
-    if r_params != rinterface.NULL:
-        params.extend([
-            inspect.Parameter(name.replace('.', '_'),
-                              inspect.Parameter.POSITIONAL_OR_KEYWORD)
-            for name in list(r_func.formals().names)
-        ])
+    signature = map_signature(r_func, method_of=method_of)
 
-    if method_of is not None:
+    if method_of:
         docstring = ('This method of `{}` is implemented in R.'
                      .format(method_of._robj.rclass[0]))
     else:
@@ -294,7 +313,7 @@ def wrap_r_function(r_func: SignatureTranslatedFunction, name: str, *,
 
     wrapped_func.__name__ = name
     wrapped_func.__qualname__ = name
-    wrapped_func.__signature__ = inspect.Signature(params)
+    wrapped_func.__signature__ = signature
     wrapped_func.__doc__ = docstring
     wrapped_func._r_func = r_func
 
