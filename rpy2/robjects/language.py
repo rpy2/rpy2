@@ -2,19 +2,33 @@
 Utilities for manipulating or evaluating the R language.
 """
 
-import rpy2.robjects.conversion as conversion
+# TODO: uuid is used to create a temporary symbol. This is a ugly
+#     hack to work around an issue with with calling R functions
+#     (language objects seem to be evaluated when doing so from rpy2
+#     but not when doing it from R).
+import uuid
+from rpy2.robjects import conversion
+from rpy2.robjects.robject import RObject
 import rpy2.rinterface as ri
 _reval = ri.baseenv['eval']
 _parse = ri.parse
+_str2lang = ri.baseenv['str2lang']
 
 
-def eval(x, envir=ri.globalenv):
+def eval(x: str, envir: ri.SexpEnvironment = ri.globalenv) -> ri.Sexp:
     """ Evaluate R code. If the input object is an R expression it
     evaluates it directly, if it is a string it parses it before
     evaluating it.
 
     By default the evaluation is performed in R's global environment
-    but a specific environment can be specified."""
+    but a specific environment can be specified.
+
+    Args:
+        x (str): a string to be parsed and evaluated as R code
+        envir (rpy2.rinterface.SexpEnvironment): An R environment in
+          which to evaluate the R code.
+    Returns:
+        The R objects resulting from the evaluation."""
     if isinstance(x, str):
         p = _parse(x)
     else:
@@ -22,3 +36,42 @@ def eval(x, envir=ri.globalenv):
     res = _reval(p, envir=envir)
     res = conversion.rpy2py(res)
     return res
+
+
+class LangVector(RObject, ri.LangSexpVector):
+    """R language object.
+
+    R language objects are unevaluated constructs using the R language.
+    They can be found in the default values for named arguments, for example:
+    ```r
+    r_function(x, n = ncol(x))
+    ```
+    The default value for `n` is then the result of calling the R function
+    `ncol()` on the object `x` passed at the first argument.
+    """
+
+    def __repr__(self):
+        # TODO: hack to work around an issue with calling R functions
+        #   with rpy2 (language objects seem to be evaluated). Without
+        #   the issue, the representation should simply be
+        #   ri.baseenv['deparse'](self)[0]
+        tmp_r_var = str(uuid.uuid4())
+        representation = None
+        try:
+            ri.globalenv[tmp_r_var] = self
+            representation = ri.evalr('deparse(`{}`)'.format(tmp_r_var))[0]
+        finally:
+            del ri.globalenv[tmp_r_var]
+        return 'Rlang( {} )'.format(representation)
+
+    @classmethod
+    def from_string(cls, s: str):
+        """Create an R language object from a string.
+
+        Args:
+            s: a string containing (only) R code.
+
+        Returns:
+            An instance of the class.
+        """
+        return cls(_str2lang(s))

@@ -24,6 +24,7 @@ from rpy2.robjects.methods import RS4
 
 from . import conversion
 from . import vectors
+from . import language
 
 from rpy2.rinterface import (Sexp,
                              SexpVector,
@@ -128,8 +129,11 @@ def sexpvector_to_ro(obj):
         cls = vectors.ListVector
     elif obj.typeof == rinterface.RTYPES.LISTSXP:
         cls = rinterface.PairlistSexpVector
-    elif obj.typeof == rinterface.RTYPES.LANGSXP and 'formula' in rcls:
-        cls = Formula
+    elif obj.typeof == rinterface.RTYPES.LANGSXP:
+        if 'formula' in rcls:
+            cls = Formula
+        else:
+            cls = language.LangVector
     elif obj.typeof == rinterface.RTYPES.CPLXSXP:
         cls = _vector_matrix_array(obj, vectors.ComplexVector,
                                    vectors.ComplexMatrix, vectors.ComplexArray)

@@ -23,6 +23,9 @@ New features
   The Sphinx documentation contains an example. This should address concerns
   at the origin of issue #539.
 
+- :class:`rpy2.robjects.language.LangVector` to map R language objects at
+  the `robjects` level.
+
 Changes
 -------
 
