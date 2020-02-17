@@ -261,7 +261,7 @@ def map_signature(r_func: SignatureTranslatedFunction,
     if method_of:
         params.append(inspect.Parameter('self',
                                         inspect.Parameter.POSITIONAL_ONLY))
-    r_params = _formals_fixed(r_func)
+    r_params = r_func.formals()
     rev_prm_transl = {v: k for k, v in r_func._prm_translate.items()}
     if r_params.names is not rinterface.NULL:
         for name, default in zip(r_params.names, r_params):
