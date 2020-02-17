@@ -29,6 +29,12 @@ def test_mapperR2Python_environment():
                       robjects.Environment)
 
 
+def test_mapperR2Python_lang():
+    sexp = rinterface.baseenv['str2lang']('1+2')
+    ob = robjects.default_converter.rpy2py(sexp)
+    assert isinstance(ob, robjects.language.LangVector)
+
+
 def test_NameClassMap():
     ncm = robjects.NameClassMap(object)
     classnames = ('A', 'B')
@@ -47,16 +53,16 @@ def test_NameClassMapContext():
     with robjects.NameClassMapContext(ncm, {}):
         assert not len(ncm._map)
     assert not len(ncm._map)
-    with robjects.NameClassMapContext(d, {'A': list}):
+    with robjects.NameClassMapContext(ncm, {'A': list}):
         assert set(ncm._map.keys()) == set('A')
     assert not len(ncm._map)
     ncm['B'] = tuple
-    with robjects.NameClassMapContext(d, {'A': list}):
+    with robjects.NameClassMapContext(ncm, {'A': list}):
         assert set(ncm._map.keys()) == set('AB')
-    assert set(ncm._map.keys) == set('B')
-    with robjects.NameClassMapContext(d, {'B': list}):
+    assert set(ncm._map.keys()) == set('B')
+    with robjects.NameClassMapContext(ncm, {'B': list}):
         assert set(ncm._map.keys()) == set('B')
-    assert set(ncm._map.keys) == set('B')
+    assert set(ncm._map.keys()) == set('B')
     assert ncm['B'] is tuple
 
 

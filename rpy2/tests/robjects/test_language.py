@@ -1,7 +1,8 @@
 import pytest
 import rpy2.robjects as robjects
 import rpy2.robjects.language as lg
-rinterface = robjects.rinterface
+from rpy2 import rinterface
+from rpy2.rinterface_lib import embedded
 
 
 @pytest.fixture(scope='module')
@@ -35,3 +36,17 @@ def testeval_in_environment(clean_globalenv):
     assert 'y' in env.keys()
     assert env['y'][0] == 2
 
+
+def test_LangVector_from_string():
+    lang_obj = lg.LangVector.from_string('1+2')
+    assert lang_obj.typeof == rinterface.RTYPES.LANGSXP
+
+
+def test_LangVector_repr():
+    lang_obj = lg.LangVector.from_string('1+2')
+    assert repr(lang_obj) == 'Rlang( 1 + 2 )'
+
+
+def test_LangVector_from_string_invalid():
+    with pytest.raises(embedded.RRuntimeError):
+        lang_obj = lg.LangVector.from_string(1)
