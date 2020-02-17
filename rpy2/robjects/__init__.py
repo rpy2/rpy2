@@ -48,6 +48,7 @@ ComplexVector = vectors.ComplexVector
 StrVector = vectors.StrVector
 FactorVector = vectors.FactorVector
 Vector = vectors.Vector
+PairlistVector = vectors.PairlistVector
 ListVector = vectors.ListVector
 DateVector = vectors.DateVector
 POSIXct = vectors.POSIXct
@@ -128,7 +129,7 @@ def sexpvector_to_ro(obj):
     elif obj.typeof == rinterface.RTYPES.VECSXP:
         cls = vectors.ListVector
     elif obj.typeof == rinterface.RTYPES.LISTSXP:
-        cls = rinterface.PairlistSexpVector
+        cls = PairlistVector
     elif obj.typeof == rinterface.RTYPES.LANGSXP:
         if 'formula' in rcls:
             cls = Formula

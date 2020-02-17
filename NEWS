@@ -26,6 +26,9 @@ New features
 - :class:`rpy2.robjects.language.LangVector` to map R language objects at
   the `robjects` level.
 
+- :class:`rpy2.robjects.vectors.PairlistVector` to map R pairlist objects at
+  the `robjects` level.
+
 Changes
 -------
 

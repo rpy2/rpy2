@@ -20,7 +20,7 @@ import warnings
 
 from rpy2.rinterface import (Sexp, ListSexpVector, StrSexpVector,
                              IntSexpVector, ByteSexpVector, BoolSexpVector,
-                             ComplexSexpVector,
+                             ComplexSexpVector, PairlistSexpVector,
                              FloatSexpVector, NA_Real, NA_Integer,
                              NA_Character, NA_Logical, NULL, MissingArg)
 
@@ -583,12 +583,17 @@ class FactorVector(IntVector):
             yield levels[x-1]
 
 
+class PairlistVector(Vector, PairlistSexpVector):
+    """R pairlist vector."""
+    pass
+
+
 class ListVector(Vector, ListSexpVector):
     """ R list (vector of arbitray elements)
 
-    ListVector(itemable) -> ListVector.
+    ListVector(iterable) -> ListVector.
 
-    The parameter 'itemable' can be:
+    The parameter 'iterable' can be:
 
     - an object with a method `items()`, such for example a dict,
       a rpy2.rlike.container.TaggedList,
