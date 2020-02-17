@@ -15,7 +15,7 @@ _parse = ri.parse
 _str2lang = ri.baseenv['str2lang']
 
 
-def eval(x: str, envir: ri.SexpEnvironment=ri.globalenv) -> ri.Sexp:
+def eval(x: str, envir: ri.SexpEnvironment = ri.globalenv) -> ri.Sexp:
     """ Evaluate R code. If the input object is an R expression it
     evaluates it directly, if it is a string it parses it before
     evaluating it.
@@ -42,7 +42,7 @@ class LangVector(RObject, ri.LangSexpVector):
     """R language object.
 
     R language objects are unevaluated constructs using the R language.
-    They can be found in the default values for named arguments, for example:    
+    They can be found in the default values for named arguments, for example:
     ```r
     r_function(x, n = ncol(x))
     ```
