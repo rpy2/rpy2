@@ -59,28 +59,28 @@ def test_documentedstfunction():
 
 
 @pytest.mark.parametrize(
-    'r_code,parameter_names',
+    'r_code,parameter_names,valid_kwargs',
     (
-        ('function(x, y=FALSE, z="abc") TRUE', ('x', 'y', 'z')),
-        ('function(x, y=FALSE, z="abc") {TRUE}', ('x', 'y', 'z')),
-        ('function(x, ..., y=FALSE, z="abc") TRUE', ('x', '___', 'y', 'z')),
-        ('function(x, y=FALSE, z, ...) TRUE', ('x', 'y', 'z', '___'))
+        ('function(x, y=FALSE, z="abc") TRUE', ('x', 'y', 'z'), True),
+        ('function(x, y=FALSE, z="abc") {TRUE}', ('x', 'y', 'z'), True),
+        ('function(x, ..., y=FALSE, z="abc") TRUE', ('x', '___', 'y', 'z'), True),
+        ('function(x, y=FALSE, z, ...) TRUE', ('x', 'y', 'z', '___'), False)
     )
 )
-def test_map_signature(r_code, parameter_names):
+@pytest.mark.parametrize('map_defaults', (True, False))
+def test_map_signature(r_code, parameter_names, valid_kwargs, map_defaults):
     r_func = robjects.r(r_code)
     stf = robjects.functions.SignatureTranslatedFunction(r_func)
-    signature = robjects.functions.map_signature(r_func)
-    assert tuple(signature.parameters.keys()) == parameter_names
+    if not valid_kwargs:
+        with pytest.raises(ValueError):
+            signature = robjects.functions.map_signature(r_func, map_defaults=map_defaults)
+    else:
+        signature = robjects.functions.map_signature(r_func, map_defaults=map_defaults)
+        assert tuple(signature.parameters.keys()) == parameter_names
 
 
-@pytest.mark.parametrize(
-    'full_repr,method_of',
-    ((False, False),
-     (False, True),
-     (True, False),
-     (True, True))
-)
+@pytest.mark.parametrize('full_repr', (True, False))
+@pytest.mark.parametrize('method_of', (True, False))
 def test_wrap_r_function(full_repr, method_of):
     r_code = 'function(x, y=FALSE, z="abc") TRUE'
     parameter_names = ('x', 'y', 'z')
