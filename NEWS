@@ -26,6 +26,9 @@ New features
 - :class:`rpy2.robjects.language.LangVector` to map R language objects at
   the `robjects` level.
 
+- :class:`rpy2.robjects.vectors.PairlistVector` to map R pairlist objects at
+  the `robjects` level.
+
 - :func:`rpy2.robjects.functions.wrap_r_functions` can create Python functions
   with matching signature from R functions.
 
