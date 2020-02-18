@@ -90,3 +90,6 @@ def test_wrap_r_function(full_repr, method_of):
                                              full_repr=full_repr)
     assert foo._r_func.rid == r_func.rid
     assert tuple(foo.__signature__.parameters.keys()) == parameter_names
+    if not method_of:
+        res = foo(1)
+        assert res[0] is True
