@@ -11,6 +11,84 @@ import rpy2.rinterface_lib.sexp
 import rpy2.rinterface_lib.conversion
 
 
+class NameClassMap(object):
+    """Map a name (R class name) to a Python class."""
+
+    def __init__(self, defaultcls):
+        self._default = defaultcls
+        self._map = dict()
+
+    def __contains__(self, key: str):
+        return key in self._map
+
+    def __delitem__(self, key: str):
+        del self._map[key]
+
+    def __getitem__(self, key: str):
+        return self._map[key]
+
+    def __setitem__(self, key:str, value):
+        assert issubclass(value, self._default)
+        self._map[key] = value
+
+    def find_key(self, keys):
+        """
+        Find the first mapping key in a sequence of names (keys).
+
+        Args:
+          keys (iterable): The keys are the R classes (the last being the
+            most distant ancestor class)
+        Returns:
+           None if no mapping key.
+        """
+        for k in keys:
+            if k in self._map:
+                return k
+        return None
+
+    def find(self, keys):
+        """Find the first mapping in a sequence of names (keys).
+
+        Returns the default class (specified when creating the
+        instance if no mapping key."""
+        k = self.find_key(keys)
+        if k:
+            cls = self._map[k]
+        else:
+            cls = self._default
+        return cls
+
+
+class NameClassMapContext(object):
+
+    def __init__(self, nameclassmap: NameClassMap,
+                 d: dict):
+        self._nameclassmap = nameclassmap
+        self._d = d
+        self._keep = []
+
+    def __enter__(self):
+        nameclassmap = self._nameclassmap
+        for k, v in self._d.items():
+            if k in nameclassmap:
+                restore = True
+                orig_v = nameclassmap[k]
+            else:
+                restore = False
+                orig_v = None
+            self._keep.append((k, restore, orig_v))
+            nameclassmap[k] = v
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        nameclassmap = self._nameclassmap
+        for k, restore, orig_v in self._keep:
+            if restore:
+                nameclassmap[k] = orig_v
+            else:
+                del(nameclassmap[k])
+        return False
+
+
 def noconversion(obj):
     """
     Bypass robject-level conversion.
@@ -86,6 +164,8 @@ class Converter(object):
     py2rpy = property(lambda self: self._py2rpy)
     rpy2py = property(lambda self: self._rpy2py)
     lineage = property(lambda self: self._lineage)
+    
+
 
     def __init__(self, name,
                  template=None):
@@ -93,6 +173,8 @@ class Converter(object):
         self._name = name
         self._py2rpy = py2rpy
         self._rpy2py = rpy2py
+        self._rpy2py_nc_map = {SexpS4: NameClassMap(RS4),
+                               rinterface.ListSexpVector: NameClassMap(ListVector)}
 
         if template is None:
             lineage = tuple()
