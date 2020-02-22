@@ -747,7 +747,7 @@ class RMagics(Magics):
                                                .callbacks,
                                                'consolewrite_print',
                                                self.write_console_regular))
-                        ro.r.show(result)
+                        display(result)
                         text_output += self.flush()
 
         except RInterpreterError as e:
