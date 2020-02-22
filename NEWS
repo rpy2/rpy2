@@ -43,6 +43,8 @@ Bugs fixed
 
 - Building ABI only mode could require an API build environment (and fail
   with an error when not present).
+  
+- SVG output for the R magic were incorrectly bytes objects.
 
 
 Release 3.2.6
