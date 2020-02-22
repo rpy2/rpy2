@@ -487,7 +487,7 @@ class RMagics(Magics):
             # -- empty ones are not published
             if stat(imgfile).st_size >= 1000:
                 with open(imgfile, 'rb') as fh_img:
-                    images.append(fh_img.read())
+                    images.append(fh_img.read().decode())
 
         mimetypes = {'png': 'image/png', 'svg': 'image/svg+xml'}
         mime = mimetypes[self.device]
