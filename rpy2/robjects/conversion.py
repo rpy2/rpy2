@@ -9,10 +9,13 @@ raising a NotImplementedError exception.
 from functools import singledispatch
 import rpy2.rinterface_lib.sexp
 import rpy2.rinterface_lib.conversion
+import rpy2.rinterface
 
 
 class NameClassMap(object):
     """Map a name (R class name) to a Python class."""
+
+    default = property(lambda self: self._default)
 
     def __init__(self, defaultcls):
         self._default = defaultcls
@@ -28,7 +31,11 @@ class NameClassMap(object):
         return self._map[key]
 
     def __setitem__(self, key:str, value):
-        assert issubclass(value, self._default)
+        if not issubclass(value, self._default):
+            raise ValueError(
+                'The new class must be a subclass of {}'
+                '(and {} is not)'
+                .format(self._default, value))
         self._map[key] = value
 
     def find_key(self, keys):
@@ -125,6 +132,7 @@ def overlay_converter(src, target):
         if k is object and v is _rpy2py:
             continue
         target._rpy2py.register(k, v)
+    target._rpy2py_nc_map = src._rpy2py_nc_map.copy()
 
 
 def _py2rpy(obj):
@@ -163,9 +171,8 @@ class Converter(object):
     name = property(lambda self: self._name)
     py2rpy = property(lambda self: self._py2rpy)
     rpy2py = property(lambda self: self._rpy2py)
+    rpy2py_nc_name = property(lambda self: self._rpy2py_nc_map)
     lineage = property(lambda self: self._lineage)
-    
-
 
     def __init__(self, name,
                  template=None):
@@ -173,11 +180,10 @@ class Converter(object):
         self._name = name
         self._py2rpy = py2rpy
         self._rpy2py = rpy2py
-        self._rpy2py_nc_map = {SexpS4: NameClassMap(RS4),
-                               rinterface.ListSexpVector: NameClassMap(ListVector)}
 
         if template is None:
             lineage = tuple()
+            self._rpy2py_nc_map = {}
         else:
             lineage = list(template.lineage)
             lineage.append(name)
@@ -198,6 +204,11 @@ class Converter(object):
         py2rpy = singledispatch(_py2rpy)
         rpy2py = singledispatch(_rpy2py)
         return (py2rpy, rpy2py)
+
+    def rclass_map_context(self, cls, d: dict):
+        return NameClassMapContext(
+            self._rpy2py_nc_map[cls],
+            d)
 
 
 class ConversionContext(object):

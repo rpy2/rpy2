@@ -219,18 +219,17 @@ def _rpy2py_sexpenvironment(obj):
     return Environment(obj)
 
 
-rs4map_context = partial(NameClassMapContext, _type_map[SexpS4])
-
-
 @default_converter.rpy2py.register(rinterface.ListSexpVector)
 def _rpy2py_listsexp(obj):
-    cls = _type_map[rinterface.ListSexpVector].find(obj.rclass)
+    clsmap = conversion.converter.rpy2py_nc_name[rinterface.ListSexpVector]
+    cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(SexpS4)
 def _rpy2py_sexps4(obj):
-    cls = _type_map[SexpS4].find(methods_env['extends'](obj.rclass))
+    clsmap = conversion.converter.rpy2py_nc_name[SexpS4]
+    cls = clsmap.find(methods_env['extends'](obj.rclass))
     return cls(obj)
 
 
@@ -325,6 +324,15 @@ def _function_to_rpy(func):
 @default_converter.rpy2py.register(object)
 def _(obj):
     return obj
+
+
+default_converter._rpy2py_nc_map.update(
+    {
+        rinterface.SexpS4: conversion.NameClassMap(RS4),
+        rinterface.ListSexpVector: conversion.NameClassMap(ListVector),
+        rinterface.SexpEnvironment: conversion.NameClassMap(Environment)
+    }
+)
 
 
 class Formula(RObjectMixin, rinterface.Sexp):

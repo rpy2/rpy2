@@ -195,7 +195,10 @@ exercise for the reader.
       res = robjects.r('lmer(Reaction ~ Days + (Days | Subject), sleepstudy)')
 
       # Map the R/S4 class 'lmerMod' to our Python class LMER.
-      with robjects.rs4map_context({'lmerMod': LMER}):
+      with robjects.conversion.converter.rclass_map_context(
+          rinterface.rinterface.SexpS4,
+	  {'lmerMod': LMER}
+      ):
           res2 = robjects.r('lmer(Reaction ~ Days + (Days | Subject), sleepstudy)')
 
    When running the example above, `res` is an instance of class :class:`rpy2.robjects.methods.RS4`,
@@ -212,11 +215,16 @@ exercise for the reader.
           """Custom class."""
           pass
 
-      with robjects.rs4map_context({'merMod': MER}):
+      with robjects.conversion.converter.rclass_map_context(
+          rinterface.rinterface.SexpS4,
+	  {'merMod': MER}
+      ):
           res3 = robjects.r('lmer(Reaction ~ Days + (Days | Subject), sleepstudy)')
 
-      with robjects.rs4map_context({'lmerMod': LMER,
-                                    'merMod': MER}):
+      with robjects.conversion.converter.rclass_map_context(
+          rinterface.rinterface.SexpS4,
+	  {'lmerMod': LMER,
+           'merMod': MER}):
           res4 = robjects.r('lmer(Reaction ~ Days + (Days | Subject), sleepstudy)')
 
    `res3` will be a `MER` instance: there is no mapping for the R/S4 class `lmerMod` but there
