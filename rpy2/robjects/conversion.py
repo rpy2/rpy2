@@ -30,7 +30,7 @@ class NameClassMap(object):
     def __getitem__(self, key: str):
         return self._map[key]
 
-    def __setitem__(self, key:str, value):
+    def __setitem__(self, key: str, value):
         if not issubclass(value, self._default):
             raise ValueError(
                 'The new class must be a subclass of {}'
