@@ -18,10 +18,12 @@ New features
 - :meth:`rpy2.robjects.methods.RS4.extends` lists the class names in the
   inheritance line.
   
-- The conversion of S4 objects from R to Python allows much more flexibility
+- The conversion of R objectsto Python allows much more flexibility
   and better allow the use of independent code converting different classes.
-  The Sphinx documentation contains an example. This should address concerns
-  at the origin of issue #539.
+  This is currently limited to R objects that are lists, environments, or
+  S4 objects. The Sphinx documentation contains an example. While this is
+  still work in progress this should already address concerns
+  at the origin of issue #539 about S4 classes.
 
 - :class:`rpy2.robjects.language.LangVector` to map R language objects at
   the `robjects` level.
