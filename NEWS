@@ -31,6 +31,10 @@ New features
 - :class:`rpy2.robjects.vectors.PairlistVector` to map R pairlist objects at
   the `robjects` level.
 
+- An alternative function to display the output of R cells can be
+  specified using `-d` or `--display` in the magic arguments
+  (in :mod:`rpy2.ipython.rmagic`).
+
 Changes
 -------
 
