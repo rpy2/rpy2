@@ -298,6 +298,9 @@ def test_display_args(ipython_with_magic, clean_globalenv):
     def display(x):
         res.append(x)
 
+    with pytest.raises(KeyError):
+        ipython_with_magic.run_cell_magic('R', '--display=display', cell)
+
     ipython_with_magic.push(
         {'display': display}
     )
