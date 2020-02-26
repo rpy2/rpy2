@@ -285,6 +285,28 @@ def test_png_plotting_args(ipython_with_magic, clean_globalenv):
         ipython_with_magic.run_cell_magic('R', line, cell)
 
 
+def test_display_args(ipython_with_magic, clean_globalenv):
+
+    ipython_with_magic.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
+
+    cell = '''
+    x <- 123
+    as.integer(x + 1)
+    '''
+
+    res = []
+    def display(x):
+        res.append(x)
+
+    ipython_with_magic.push(
+        {'display': display}
+    )
+
+    ipython_with_magic.run_cell_magic('R', '--display=display', cell)
+    assert len(res) == 1
+    assert tuple(res[0]) == (124,)
+
+
 # TODO: There is no test here...
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 @pytest.mark.skipif(not rpacks.isinstalled('Cairo'),
