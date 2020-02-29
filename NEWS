@@ -35,6 +35,12 @@ New features
   specified using `-d` or `--display` in the magic arguments
   (in :mod:`rpy2.ipython.rmagic`).
 
+- Python classes representing underlying R objects no longer have to
+  exclusively rely on inheritance from :mod:`rpy2.rinterface` objects`.
+  An abstract class :class:`rpy2.rinterface_lib.sexp.SupportsSEXP` is added
+  to identify objects supporting a `__sexp__` protocol, and that abstract
+  class can also be used with type hints.
+
 Changes
 -------
 
