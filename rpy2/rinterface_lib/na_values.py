@@ -1,5 +1,6 @@
 """NA (Non-Available) values in R."""
 
+import abc
 from . import embedded
 from . import openrlib
 from . import sexp
@@ -15,6 +16,10 @@ class Singleton(type):
         if cls not in instances:
             instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return instances[cls]
+
+
+class SingletonABC(Singleton, abc.ABCMeta):
+    pass
 
 
 NA_Character = None
@@ -40,7 +45,7 @@ class NAIntegerType(int, metaclass=Singleton):
         raise ValueError('R value for missing integer value')
 
 
-class NACharacterType(sexp.CharSexp, metaclass=Singleton):
+class NACharacterType(sexp.CharSexp, metaclass=SingletonABC):
 
     def __init__(self):
         embedded.assert_isready()
