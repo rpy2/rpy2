@@ -9,6 +9,91 @@ raising a NotImplementedError exception.
 from functools import singledispatch
 import rpy2.rinterface_lib.sexp
 import rpy2.rinterface_lib.conversion
+import rpy2.rinterface
+
+
+class NameClassMap(object):
+    """Map a name (R class name) to a Python class."""
+
+    default = property(lambda self: self._default)
+
+    def __init__(self, defaultcls):
+        self._default = defaultcls
+        self._map = dict()
+
+    def __contains__(self, key: str):
+        return key in self._map
+
+    def __delitem__(self, key: str):
+        del self._map[key]
+
+    def __getitem__(self, key: str):
+        return self._map[key]
+
+    def __setitem__(self, key: str, value):
+        if not issubclass(value, self._default):
+            raise ValueError(
+                'The new class must be a subclass of {}'
+                '(and {} is not)'
+                .format(self._default, value))
+        self._map[key] = value
+
+    def find_key(self, keys):
+        """
+        Find the first mapping key in a sequence of names (keys).
+
+        Args:
+          keys (iterable): The keys are the R classes (the last being the
+            most distant ancestor class)
+        Returns:
+           None if no mapping key.
+        """
+        for k in keys:
+            if k in self._map:
+                return k
+        return None
+
+    def find(self, keys):
+        """Find the first mapping in a sequence of names (keys).
+
+        Returns the default class (specified when creating the
+        instance if no mapping key."""
+        k = self.find_key(keys)
+        if k:
+            cls = self._map[k]
+        else:
+            cls = self._default
+        return cls
+
+
+class NameClassMapContext(object):
+
+    def __init__(self, nameclassmap: NameClassMap,
+                 d: dict):
+        self._nameclassmap = nameclassmap
+        self._d = d
+        self._keep = []
+
+    def __enter__(self):
+        nameclassmap = self._nameclassmap
+        for k, v in self._d.items():
+            if k in nameclassmap:
+                restore = True
+                orig_v = nameclassmap[k]
+            else:
+                restore = False
+                orig_v = None
+            self._keep.append((k, restore, orig_v))
+            nameclassmap[k] = v
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        nameclassmap = self._nameclassmap
+        for k, restore, orig_v in self._keep:
+            if restore:
+                nameclassmap[k] = orig_v
+            else:
+                del(nameclassmap[k])
+        return False
 
 
 def noconversion(obj):
@@ -47,6 +132,7 @@ def overlay_converter(src, target):
         if k is object and v is _rpy2py:
             continue
         target._rpy2py.register(k, v)
+    target._rpy2py_nc_map = src._rpy2py_nc_map.copy()
 
 
 def _py2rpy(obj):
@@ -85,6 +171,7 @@ class Converter(object):
     name = property(lambda self: self._name)
     py2rpy = property(lambda self: self._py2rpy)
     rpy2py = property(lambda self: self._rpy2py)
+    rpy2py_nc_name = property(lambda self: self._rpy2py_nc_map)
     lineage = property(lambda self: self._lineage)
 
     def __init__(self, name,
@@ -96,6 +183,7 @@ class Converter(object):
 
         if template is None:
             lineage = tuple()
+            self._rpy2py_nc_map = {}
         else:
             lineage = list(template.lineage)
             lineage.append(name)
@@ -116,6 +204,11 @@ class Converter(object):
         py2rpy = singledispatch(_py2rpy)
         rpy2py = singledispatch(_rpy2py)
         return (py2rpy, rpy2py)
+
+    def rclass_map_context(self, cls, d: dict):
+        return NameClassMapContext(
+            self._rpy2py_nc_map[cls],
+            d)
 
 
 class ConversionContext(object):

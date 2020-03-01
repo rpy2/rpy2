@@ -18,10 +18,12 @@ New features
 - :meth:`rpy2.robjects.methods.RS4.extends` lists the class names in the
   inheritance line.
   
-- The conversion of S4 objects from R to Python allows much more flexibility
+- The conversion of R objectsto Python allows much more flexibility
   and better allow the use of independent code converting different classes.
-  The Sphinx documentation contains an example. This should address concerns
-  at the origin of issue #539.
+  This is currently limited to R objects that are lists, environments, or
+  S4 objects. The Sphinx documentation contains an example. While this is
+  still work in progress this should already address concerns
+  at the origin of issue #539 about S4 classes.
 
 - :class:`rpy2.robjects.language.LangVector` to map R language objects at
   the `robjects` level.
@@ -29,8 +31,17 @@ New features
 - :class:`rpy2.robjects.vectors.PairlistVector` to map R pairlist objects at
   the `robjects` level.
 
+- An alternative function to display the output of R cells can be
+  specified using `-d` or `--display` in the magic arguments
+  (in :mod:`rpy2.ipython.rmagic`).
+
+- Python classes representing underlying R objects no longer have to
+  exclusively rely on inheritance from :mod:`rpy2.rinterface` objects`.
+  An abstract class :class:`rpy2.rinterface_lib.sexp.SupportsSEXP` is added
+  to identify objects supporting a `__sexp__` protocol, and that abstract
+  class can also be used with type hints.
 - :func:`rpy2.robjects.functions.wrap_r_functions` can create Python functions
-  with matching signature from R functions.
+  with matching signature from R functions
 
 Changes
 -------
@@ -46,6 +57,8 @@ Bugs fixed
 
 - Building ABI only mode could require an API build environment (and fail
   with an error when not present).
+  
+- SVG output for the R magic were incorrectly bytes objects.
 
 
 Release 3.2.6

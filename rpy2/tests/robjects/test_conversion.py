@@ -36,7 +36,7 @@ def test_mapperR2Python_lang():
 
 
 def test_NameClassMap():
-    ncm = robjects.NameClassMap(object)
+    ncm = robjects.conversion.NameClassMap(object)
     classnames = ('A', 'B')
     assert ncm.find_key(classnames) is None
     assert ncm.find(classnames) is object
@@ -49,21 +49,35 @@ def test_NameClassMap():
 
 
 def test_NameClassMapContext():
-    ncm = robjects.NameClassMap(object)
-    with robjects.NameClassMapContext(ncm, {}):
+    ncm = robjects.conversion.NameClassMap(object)
+    with robjects.conversion.NameClassMapContext(ncm, {}):
         assert not len(ncm._map)
     assert not len(ncm._map)
-    with robjects.NameClassMapContext(ncm, {'A': list}):
+    with robjects.conversion.NameClassMapContext(ncm, {'A': list}):
         assert set(ncm._map.keys()) == set('A')
     assert not len(ncm._map)
     ncm['B'] = tuple
-    with robjects.NameClassMapContext(ncm, {'A': list}):
+    with robjects.conversion.NameClassMapContext(ncm, {'A': list}):
         assert set(ncm._map.keys()) == set('AB')
     assert set(ncm._map.keys()) == set('B')
-    with robjects.NameClassMapContext(ncm, {'B': list}):
+    with robjects.conversion.NameClassMapContext(ncm, {'B': list}):
         assert set(ncm._map.keys()) == set('B')
     assert set(ncm._map.keys()) == set('B')
     assert ncm['B'] is tuple
+
+
+def test_Converter_rclass_map_context():
+    converter = robjects.default_converter
+
+    class FooEnv(robjects.Environment):
+        pass
+
+    ncm = converter.rpy2py_nc_name[rinterface.SexpEnvironment]
+    with robjects.default_converter.rclass_map_context(
+            rinterface.SexpEnvironment, {'A': FooEnv}
+    ):
+        assert set(ncm._map.keys()) == set('A')
+    assert not len(ncm._map)
 
 
 @pytest.fixture(scope='module')
@@ -92,12 +106,16 @@ def test_mapperR2Python_s4custom(_set_class_AB):
     sexp_b = rinterface.globalenv['B']( 
         x=rinterface.IntSexpVector([2, ])
     )
-    with robjects.rs4map_context({'A': A}):
-        assert robjects._rs4_map.find_key(('A', )) == 'A'
+    rs4_map = robjects.conversion.converter.rpy2py_nc_name[rinterface.SexpS4]
+    with robjects.conversion.NameClassMapContext(
+            rs4_map,
+            {'A': A}
+    ):
+        assert rs4_map.find_key(('A', )) == 'A'
         assert isinstance(
             robjects.default_converter.rpy2py(sexp_a), 
             A)
-        assert robjects._rs4_map.find_key(('B', 'A')) == 'A'
+        assert rs4_map.find_key(('B', 'A')) == 'A'
         assert isinstance(
             robjects.default_converter.rpy2py(sexp_b), 
             A)
