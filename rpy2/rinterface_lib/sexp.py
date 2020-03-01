@@ -45,7 +45,14 @@ class RTYPES(enum.IntEnum):
     FUNSXP = openrlib.rlib.FUNSXP
 
 
-class Sexp(object):
+class SupportsSEXP(object, metaclass=abc.ABCMeta):
+
+    @abc.abstractproperty
+    def __sexp__(self):
+        pass
+
+
+class Sexp(SupportsSEXP):
     """Base class for R objects.
 
     The name of a class corresponds to the name SEXP
@@ -53,11 +60,12 @@ class Sexp(object):
 
     __slots__ = ('_sexpobject', )
 
-    def __init__(self, sexp: typing.Union['Sexp', '_rinterface.SexpCapsule']):
+    def __init__(self, sexp: typing.Union[SupportsSEXP,
+                                          '_rinterface.SexpCapsule']):
         if not embedded.isready():
             raise embedded.RNotReadyError('Embedded R is not ready to use.')
 
-        if isinstance(sexp, Sexp):
+        if isinstance(sexp, SupportsSEXP):
             self._sexpobject = sexp.__sexp__
         elif (isinstance(sexp, _rinterface.SexpCapsule) or
               isinstance(sexp, _rinterface.UnmanagedSexpCapsule)):

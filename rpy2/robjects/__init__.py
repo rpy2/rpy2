@@ -219,86 +219,17 @@ def _rpy2py_sexpenvironment(obj):
     return Environment(obj)
 
 
-class NameClassMap(object):
-    """Map a name (R class name) to a Python class."""
-
-    def __init__(self, defaultcls):
-        self._default = defaultcls
-        self._map = dict()
-
-    def __contains__(self, key: str):
-        return key in self._map
-
-    def __delitem__(self, key: str):
-        del self._map[key]
-
-    def __getitem__(self, key: str):
-        return self._map[key]
-
-    def __setitem__(self, key:str, value):
-        assert issubclass(value, self._default)
-        self._map[key] = value
-
-    def find_key(self, keys):
-        """Find the first mapping key in a sequence of names (keys).
-
-        Returns None if no mapping key."""
-        for k in keys:
-            if k in self._map:
-                return k
-        return None
-
-    def find(self, keys):
-        """Find the first mapping in a sequence of names (keys).
-
-        Returns the default class (specified when creating the
-        instance if no mapping key."""
-        k = self.find_key(keys)
-        if k:
-            cls = self._map[k]
-        else:
-            cls = self._default
-        return cls
-
-
-class NameClassMapContext(object):
-
-    def __init__(self, nameclassmap: NameClassMap,
-                 d: dict):
-        self._nameclassmap = nameclassmap
-        self._d = d
-        self._keep = []
-
-    def __enter__(self):
-        nameclassmap = self._nameclassmap
-        for k, v in self._d.items():
-            if k in nameclassmap:
-                restore = True
-                orig_v = nameclassmap[k]
-            else:
-                restore = False
-                orig_v = None
-            self._keep.append((k, restore, orig_v))
-            nameclassmap[k] = v
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        nameclassmap = self._nameclassmap
-        for k, restore, orig_v in self._keep:
-            if restore:
-                nameclassmap[k] = orig_v
-            else:
-                del(nameclassmap[k])
-        return False
-
-
-_rs4_map = NameClassMap(RS4)
-
-rs4map_context = partial(NameClassMapContext, _rs4_map)
+@default_converter.rpy2py.register(rinterface.ListSexpVector)
+def _rpy2py_listsexp(obj):
+    clsmap = conversion.converter.rpy2py_nc_name[rinterface.ListSexpVector]
+    cls = clsmap.find(obj.rclass)
+    return cls(obj)
 
 
 @default_converter.rpy2py.register(SexpS4)
 def _rpy2py_sexps4(obj):
-    cls = _rs4_map.find(methods_env['extends'](obj.rclass))
+    clsmap = conversion.converter.rpy2py_nc_name[SexpS4]
+    cls = clsmap.find(methods_env['extends'](obj.rclass))
     return cls(obj)
 
 
@@ -393,6 +324,15 @@ def _function_to_rpy(func):
 @default_converter.rpy2py.register(object)
 def _(obj):
     return obj
+
+
+default_converter._rpy2py_nc_map.update(
+    {
+        rinterface.SexpS4: conversion.NameClassMap(RS4),
+        rinterface.ListSexpVector: conversion.NameClassMap(ListVector),
+        rinterface.SexpEnvironment: conversion.NameClassMap(Environment)
+    }
+)
 
 
 class Formula(RObjectMixin, rinterface.Sexp):

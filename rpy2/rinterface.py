@@ -91,7 +91,7 @@ def vector_memoryview(obj: sexp.SexpVector,
     return mv
 
 
-class NULLType(sexp.Sexp, metaclass=na_values.Singleton):
+class NULLType(sexp.Sexp, metaclass=na_values.SingletonABC):
     """A singleton class for R's NULL."""
 
     def __init__(self):
@@ -117,7 +117,7 @@ class NULLType(sexp.Sexp, metaclass=na_values.Singleton):
         return self._sexpobject.rid
 
 
-class _MissingArgType(sexp.Sexp, metaclass=na_values.Singleton):
+class _MissingArgType(sexp.Sexp, metaclass=na_values.SingletonABC):
 
     def __init__(self):
         embedded.assert_isready()
