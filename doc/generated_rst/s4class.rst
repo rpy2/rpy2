@@ -4,13 +4,6 @@
     from rpy2.ipython import html
     html.html_rdataframe=partial(html.html_rdataframe, table_class="docutils")
 
-
-.. parsed-literal::
-
-    /home/laurent/Desktop/software/python/py36_env/lib/python3.6/site-packages/rpy2-3.3.0.dev0-py3.6-linux-x86_64.egg/rpy2/robjects/pandas2ri.py:14: FutureWarning: pandas.core.index is deprecated and will be removed in a future version.  The public classes are available in the top-level namespace.
-      from pandas.core.index import Index as PandasIndex
-
-
 Basic handling
 ==============
 
