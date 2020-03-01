@@ -1,9 +1,11 @@
 import inspect
 import os
 import re
+import typing
 from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
+from rpy2.rinterface_lib import na_values
 from rpy2.robjects import help
 from . import conversion
 
@@ -242,9 +244,36 @@ class DocumentedSTFunction(SignatureTranslatedFunction):
         return os.linesep.join(doc)
 
 
-def map_signature(r_func: SignatureTranslatedFunction,
-                  method_of: bool = False,
-                  map_defaults: bool = True):
+# TODO: shouldn't this be in a more central place / or more general interest ?
+_SCALAR_COMPAT_RTYPES = set(
+    getattr(rinterface.RTYPES, name).value
+    for name in ('STRSXP', 'INTSXP', 'REALSXP', 'LGLSXP', 'CPLXSXP')
+)
+
+
+def _map_default_value(value):
+    """
+    Map default in the R signature.
+
+    Because of R's lazy evaluation some default might be unevaluated expressions.
+
+    Args:
+      value:
+    """
+    if value.__sexp__.typeof in _SCALAR_COMPAT_RTYPES:
+        res = value[0]
+    else:
+        res = value
+    return res
+
+
+def map_signature(
+        r_func: SignatureTranslatedFunction,
+        method_of: bool = False,
+        map_default: typing.Optional[
+            typing.Callable[[rinterface.Sexp], typing.Any]
+        ] = _map_default_value
+) -> inspect.Signature:
     """
     Map the signature of an function to the signature of a Python function.
 
@@ -252,8 +281,8 @@ def map_signature(r_func: SignatureTranslatedFunction,
         r_func (SignatureTranslatedFunction): an R function
         method_of (bool): Whether the function should be treated as a method
             (adds a `self` param to the signature if so).
-        map_defaults: Map default in the R signature. Because of R's lazy
-            evaluation some default might be unevaluated expressions.
+        map_default (function): Function to map default values in the Python
+            signature.
     Returns:
         An inspect.Signature.
     """
@@ -264,14 +293,17 @@ def map_signature(r_func: SignatureTranslatedFunction,
     r_params = r_func.formals()
     rev_prm_transl = {v: k for k, v in r_func._prm_translate.items()}
     if r_params.names is not rinterface.NULL:
-        for name, default in zip(r_params.names, r_params):
+        for name, default_orig in zip(r_params.names, r_params):
             transl_name = rev_prm_transl.get(name)
+            default_orig = default_orig[0]
+            if map_default and not rinterface.MissingArg.rsame(default_orig):
+                default_mapped = map_default(default_orig)
+            else:
+                default_mapped = inspect.Parameter.empty
             prm = inspect.Parameter(
                 transl_name if transl_name else name,
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                default=(inspect.Parameter.empty
-                         if rinterface.MissingArg.rsame(default[0])
-                         else default[0])
+                default=default_mapped
             )
             params.append(prm)
     return inspect.Signature(params)
@@ -279,7 +311,7 @@ def map_signature(r_func: SignatureTranslatedFunction,
 
 def wrap_r_function(r_func: SignatureTranslatedFunction, name: str, *,
                     method_of: bool = False, full_repr: bool = False,
-                    map_defaults: bool = False):
+                    map_default: typing.Callable[[rinterface.Sexp], typing.Any] = _map_default_value):
     """
     Wrap an rpy2 function handle with a Python function with a matching signature.
 
@@ -291,8 +323,8 @@ def wrap_r_function(r_func: SignatureTranslatedFunction, name: str, *,
             (adds a `self` param to the signature if so).
         full_repr (bool): Whether to have the full body of the R function in
             the docstring dynamically generated.
-        map_defaults: Map default in the R signature. Because of R's lazy
-            evaluation some default might be unevaluated expressions.
+        map_default (function): Function to map default values in the Python
+            signature.
     Returns:
         A function
     """
@@ -302,7 +334,7 @@ def wrap_r_function(r_func: SignatureTranslatedFunction, name: str, *,
         value = r_func(*args, **kwargs)
         return value
 
-    signature = map_signature(r_func, method_of=method_of, map_defaults=map_defaults)
+    signature = map_signature(r_func, method_of=method_of, map_default=map_default)
 
     if method_of:
         docstring = ('This method of `{}` is implemented in R.'
