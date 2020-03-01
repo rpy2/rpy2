@@ -2,12 +2,13 @@ import inspect
 import os
 import re
 import typing
+import warnings
 from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import na_values
 from rpy2.robjects import help
-from . import conversion
+from rpy2.robjects import conversion
 
 from rpy2.robjects.packages_utils import (default_symbol_r2python,
                                           default_symbol_resolve,
@@ -133,10 +134,10 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         res = conversion.rpy2py(res)
         return res
 
-    def rcall(self, *args):
+    def rcall(self, keyvals, environment):
         """ Wrapper around the parent method
         rpy2.rinterface.SexpClosure.rcall(). """
-        res = super(Function, self).rcall(*args)
+        res = super(Function, self).rcall(keyvals, environment)
         return res
 
 
@@ -251,7 +252,7 @@ _SCALAR_COMPAT_RTYPES = set(
 )
 
 
-def _map_default_value(value):
+def _map_default_value(value: rinterface.Sexp):
     """
     Map default in the R signature.
 
@@ -282,7 +283,7 @@ def map_signature(
         method_of (bool): Whether the function should be treated as a method
             (adds a `self` param to the signature if so).
         map_default (function): Function to map default values in the Python
-            signature.
+            signature. No mapping to default values is done if None.
     Returns:
         An inspect.Signature.
     """
@@ -294,6 +295,8 @@ def map_signature(
     rev_prm_transl = {v: k for k, v in r_func._prm_translate.items()}
     if r_params.names is not rinterface.NULL:
         for name, default_orig in zip(r_params.names, r_params):
+            if name == '...':
+                warnings.warn('The R ellispsis is not yet supported.')
             transl_name = rev_prm_transl.get(name)
             default_orig = default_orig[0]
             if map_default and not rinterface.MissingArg.rsame(default_orig):
@@ -309,9 +312,11 @@ def map_signature(
     return inspect.Signature(params)
 
 
-def wrap_r_function(r_func: SignatureTranslatedFunction, name: str, *,
-                    method_of: bool = False, full_repr: bool = False,
-                    map_default: typing.Callable[[rinterface.Sexp], typing.Any] = _map_default_value):
+def wrap_r_function(
+        r_func: SignatureTranslatedFunction, name: str, *,
+        method_of: bool = False, full_repr: bool = False,
+        map_default: typing.Callable[[rinterface.Sexp], typing.Any] = _map_default_value
+) -> typing.Callable:
     """
     Wrap an rpy2 function handle with a Python function with a matching signature.
 
@@ -324,9 +329,9 @@ def wrap_r_function(r_func: SignatureTranslatedFunction, name: str, *,
         full_repr (bool): Whether to have the full body of the R function in
             the docstring dynamically generated.
         map_default (function): Function to map default values in the Python
-            signature.
+            signature. No mapping to default values is done if None.
     Returns:
-        A function
+        A function wrapping an underlying R function.
     """
     name = name.replace('.', '_')
 
