@@ -262,7 +262,10 @@ def _map_default_value(value: rinterface.Sexp):
       value:
     """
     if value.__sexp__.typeof in _SCALAR_COMPAT_RTYPES:
-        res = value[0]
+        if len(res) == 1:
+            res = value[0]
+        else:
+            res = value
     else:
         res = value
     return res
