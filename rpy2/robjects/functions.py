@@ -273,7 +273,7 @@ def _map_default_value(value: rinterface.Sexp):
 
 def map_signature(
         r_func: SignatureTranslatedFunction,
-        method_of: bool = False,
+        is_method: bool = False,
         map_default: typing.Optional[
             typing.Callable[[rinterface.Sexp], typing.Any]
         ] = _map_default_value
@@ -283,7 +283,7 @@ def map_signature(
 
     Args:
         r_func (SignatureTranslatedFunction): an R function
-        method_of (bool): Whether the function should be treated as a method
+        is_method (bool): Whether the function should be treated as a method
             (adds a `self` param to the signature if so).
         map_default (function): Function to map default values in the Python
             signature. No mapping to default values is done if None.
@@ -291,7 +291,7 @@ def map_signature(
         An inspect.Signature.
     """
     params = []
-    if method_of:
+    if is_method:
         params.append(inspect.Parameter('self',
                                         inspect.Parameter.POSITIONAL_ONLY))
     r_params = r_func.formals()
@@ -317,7 +317,7 @@ def map_signature(
 
 def wrap_r_function(
         r_func: SignatureTranslatedFunction, name: str, *,
-        method_of: bool = False, full_repr: bool = False,
+        is_method: bool = False, full_repr: bool = False,
         map_default: typing.Callable[[rinterface.Sexp], typing.Any] = _map_default_value
 ) -> typing.Callable:
     """
@@ -327,7 +327,7 @@ def wrap_r_function(
         r_func (rpy2.robjects.functions.SignatureTranslatedFunction): The
             function to be wrapped.
         name (str): The name of the function.
-        method_of (bool): Whether the function should be treated as a method
+        is_method (bool): Whether the function should be treated as a method
             (adds a `self` param to the signature if so).
         full_repr (bool): Whether to have the full body of the R function in
             the docstring dynamically generated.
@@ -342,11 +342,11 @@ def wrap_r_function(
         value = r_func(*args, **kwargs)
         return value
 
-    signature = map_signature(r_func, method_of=method_of, map_default=map_default)
+    signature = map_signature(r_func, is_method=is_method, map_default=map_default)
 
-    if method_of:
+    if is_method:
         docstring = ('This method of `{}` is implemented in R.'
-                     .format(method_of._robj.rclass[0]))
+                     .format(is_method._robj.rclass[0]))
     else:
         docstring = 'This function wraps the following R function.'
 
