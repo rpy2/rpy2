@@ -262,7 +262,7 @@ def _map_default_value(value: rinterface.Sexp):
       value:
     """
     if value.__sexp__.typeof in _SCALAR_COMPAT_RTYPES:
-        if len(res) == 1:
+        if len(value) == 1:
             res = value[0]
         else:
             res = value
@@ -298,8 +298,8 @@ def map_signature(
     rev_prm_transl = {v: k for k, v in r_func._prm_translate.items()}
     if r_params.names is not rinterface.NULL:
         for name, default_orig in zip(r_params.names, r_params):
-            if name == '...':
-                warnings.warn('The R ellispsis is not yet supported.')
+            if default_orig == '...':
+                warnings.warn('The R ellispsis is not yet well supported.')
             transl_name = rev_prm_transl.get(name)
             default_orig = default_orig[0]
             if map_default and not rinterface.MissingArg.rsame(default_orig):
