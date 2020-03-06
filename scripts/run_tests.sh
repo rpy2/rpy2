@@ -43,7 +43,7 @@ pytest \
     --cov=rpy2.robjects \
     rpy2/tests
 
-sudo Rscript ./install_r_packages.r ggplot2 dplyr tidyr dbplyr
+sudo Rscript ./install_r_packages.r ggplot2 dplyr tidyr dbplyr lazyeval
 pytest \
     --cov-append \
     --cov=rpy2.rinterface_lib \
