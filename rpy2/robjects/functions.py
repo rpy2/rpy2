@@ -277,9 +277,12 @@ def map_signature(
         map_default: typing.Optional[
             typing.Callable[[rinterface.Sexp], typing.Any]
         ] = _map_default_value
-) -> inspect.Signature:
+) -> typing.Tuple[inspect.Signature, typing.Optional[int]]:
     """
     Map the signature of an function to the signature of a Python function.
+
+    While mapping the signature, it will report the eventual presence of
+    an R ellipsis.
 
     Args:
         r_func (SignatureTranslatedFunction): an R function
@@ -288,17 +291,19 @@ def map_signature(
         map_default (function): Function to map default values in the Python
             signature. No mapping to default values is done if None.
     Returns:
-        An inspect.Signature.
+        A tuple (inspect.Signature, int or None).
     """
     params = []
+    r_ellipsis = None
     if is_method:
         params.append(inspect.Parameter('self',
                                         inspect.Parameter.POSITIONAL_ONLY))
     r_params = r_func.formals()
     rev_prm_transl = {v: k for k, v in r_func._prm_translate.items()}
     if r_params.names is not rinterface.NULL:
-        for name, default_orig in zip(r_params.names, r_params):
+        for i, (name, default_orig) in enumerate(zip(r_params.names, r_params)):
             if default_orig == '...':
+                r_ellipsis = i
                 warnings.warn('The R ellispsis is not yet well supported.')
             transl_name = rev_prm_transl.get(name)
             default_orig = default_orig[0]
@@ -312,7 +317,7 @@ def map_signature(
                 default=default_mapped
             )
             params.append(prm)
-    return inspect.Signature(params)
+    return (inspect.Signature(params), r_ellipsis)
 
 
 def wrap_r_function(
@@ -338,11 +343,21 @@ def wrap_r_function(
     """
     name = name.replace('.', '_')
 
-    def wrapped_func(*args, **kwargs):
-        value = r_func(*args, **kwargs)
-        return value
+    signature, r_ellipsis = map_signature(r_func, is_method=is_method,
+                                          map_default=map_default)
 
-    signature = map_signature(r_func, is_method=is_method, map_default=map_default)
+    if r_ellipsis:
+        def wrapped_func(*args, **kwargs):
+            new_args = (list((None, x) for x in rinterface.args[:r_ellipsis]) +
+                        list(args[r_ellipsis]) +
+                        list((None, x) for x in args[min(r_ellipsis+1, len(args)-1):]) +
+                        list(kwargs.items()))
+            value = r_func.rcall(new_args, rinterface.globalenv)
+            return value
+    else:
+        def wrapped_func(*args, **kwargs):
+            value = r_func(*args, **kwargs)
+            return value
 
     if is_method:
         docstring = ('This method of `{}` is implemented in R.'
