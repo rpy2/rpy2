@@ -69,17 +69,17 @@ def test_map_default_values(value, expected):
 
 
 @pytest.mark.parametrize(
-    'r_code,parameter_names',
+    'r_code,parameter_names,r_ellipsis',
     (
-        ('function(x, y=FALSE, z="abc") TRUE', ('x', 'y', 'z')),
-        ('function(x, y=FALSE, z="abc") {TRUE}', ('x', 'y', 'z')),
-        ('function(x, ..., y=FALSE, z="abc") TRUE', ('x', '___', 'y', 'z')),
+        ('function(x, y=FALSE, z="abc") TRUE', ('x', 'y', 'z'), None),
+        ('function(x, y=FALSE, z="abc") {TRUE}', ('x', 'y', 'z'), None),
+        ('function(x, ..., y=FALSE, z="abc") TRUE', ('x', '___', 'y', 'z'), 1),
     )
 )
-def test_map_signature(r_code, parameter_names):
+def test_map_signature(r_code, parameter_names, r_ellipsis):
     r_func = robjects.r(r_code)
     stf = robjects.functions.SignatureTranslatedFunction(r_func)
-    signature = robjects.functions.map_signature(r_func)
+    signature, r_ellipsis = robjects.functions.map_signature(r_func)
     assert tuple(signature.parameters.keys()) == parameter_names
 
 
@@ -93,7 +93,34 @@ def test_map_signature_invalid(r_code, parameter_names):
     r_func = robjects.r(r_code)
     stf = robjects.functions.SignatureTranslatedFunction(r_func)
     with pytest.raises(ValueError):
-        signature = robjects.functions.map_signature(r_func)
+        signature, r_ellipsis = robjects.functions.map_signature(stf)
+
+
+@pytest.mark.parametrize(
+    'r_code,args,kwargs,expected',
+    (
+         ('function(x, y=1, z=2) {sum(x, y, z)}',
+          (3, ), {}, 6),
+         ('function(x, y=1, z=2) {sum(x, y, z)}',
+          (3, 4), {}, 9),
+         ('function(...) {sum(...)}',
+          (3, 2, 4), {}, 9),
+        ('function(x, ...) {sum(x, ...)}',
+          (3, 2, 4), {}, 9),
+        ('function(x, ..., z=1) {sum(x, ..., z)}',
+          (3, 2, 4), {}, 10),
+        ('function(x, ..., z=1) {sum(x, ..., z)}',
+          (3, 2, 4), {'z': 2}, 11),
+    )
+)
+def test_wrap_r_function_args(r_code, args, kwargs, expected):
+    full_repr = True
+    r_func = robjects.r(r_code)
+    stf = robjects.functions.SignatureTranslatedFunction(r_func)
+    w_func = robjects.functions.wrap_r_function(stf, 'foo',
+                                                full_repr=full_repr)
+    res = w_func(*args, **kwargs)
+    assert tuple(res) == (expected, )
 
 
 @pytest.mark.parametrize('full_repr', (True, False))
