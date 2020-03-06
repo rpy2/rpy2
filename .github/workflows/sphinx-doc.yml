@@ -20,7 +20,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r doc/requirements.txt
         python setup.py install
-        sudo Rscript ./install_r_packages.r BiocManager dbplyr dplyr ggplot2 hexbin RSQLite tidyr viridis
+        sudo Rscript ./install_r_packages.r BiocManager dbplyr dplyr ggplot2 hexbin lazyeval RSQLite tidyr viridis
         sudo Rscript -e 'BiocManager::install("Biobase")'
     - name: Build HTML doc
       run: |
