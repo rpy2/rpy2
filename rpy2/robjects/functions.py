@@ -327,8 +327,10 @@ def map_signature(
 def wrap_r_function(
         r_func: SignatureTranslatedFunction, name: str, *,
         is_method: bool = False, full_repr: bool = False,
-        map_default: typing.Callable[[rinterface.Sexp],
-                                     typing.Any] = _map_default_value
+        map_default: typing.Optional[
+            typing.Callable[[rinterface.Sexp],
+                            typing.Any]
+            ] = _map_default_value
 ) -> typing.Callable:
     """
     Wrap an rpy2 function handle with a Python function with a matching signature.
@@ -364,9 +366,10 @@ def wrap_r_function(
             value = r_func(*args, **kwargs)
             return value
 
+    docstring = []
     if is_method:
-        docstring = ['This method of `{}` is implemented in R.'
-                     .format(is_method._robj.rclass[0])]
+        docstring.append('This method of `{}` is implemented in R.'
+                         .format(is_method._robj.rclass[0]))
     else:
         docstring.append('This function wraps the following R function.')
 
