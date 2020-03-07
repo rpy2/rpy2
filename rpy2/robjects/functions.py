@@ -323,7 +323,8 @@ def map_signature(
 def wrap_r_function(
         r_func: SignatureTranslatedFunction, name: str, *,
         is_method: bool = False, full_repr: bool = False,
-        map_default: typing.Callable[[rinterface.Sexp], typing.Any] = _map_default_value
+        map_default: typing.Callable[[rinterface.Sexp],
+                                     typing.Any] = _map_default_value
 ) -> typing.Callable:
     """
     Wrap an rpy2 function handle with a Python function with a matching signature.
