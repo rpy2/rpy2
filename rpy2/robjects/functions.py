@@ -1,6 +1,7 @@
 import inspect
 import os
 import re
+import textwrap
 import typing
 import warnings
 from collections import OrderedDict
@@ -364,25 +365,35 @@ def wrap_r_function(
             return value
 
     if is_method:
-        docstring = ('This method of `{}` is implemented in R.'
-                     .format(is_method._robj.rclass[0]))
+        docstring = ['This method of `{}` is implemented in R.'
+                     .format(is_method._robj.rclass[0])]
     else:
-        docstring = 'This function wraps the following R function.'
+        docstring.append('This function wraps the following R function.')
 
+    if r_ellipsis:
+        docstring.extend(
+            ('',
+             textwrap.dedent(
+                 """The R ellipsis "..." present in the function's parameters
+                 is mapped to a python iterable of (name, value) pairs (such as
+                 it is returned by the `dict` method `items()` for example."""),
+             ''
+            )
+        )
     if full_repr:
-        docstring += '\n\n{}'.format(r_func.r_repr())
+        docstring.append('\n{}'.format(r_func.r_repr()))
     else:
         r_repr = r_func.r_repr()
         i = r_repr.find('\n{')
         if i == -1:
-            docstring += '\n\n{}'.format(r_func.r_repr())
+            docstring.append('\n{}'.format(r_func.r_repr()))
         else:
-            docstring += '\n\n{}\n{{\n  ...\n}}'.format(r_repr[:i])
+            docstring.append('\n{}\n{{\n  ...\n}}'.format(r_repr[:i]))
 
     wrapped_func.__name__ = name
     wrapped_func.__qualname__ = name
     wrapped_func.__signature__ = signature
-    wrapped_func.__doc__ = docstring
+    wrapped_func.__doc__ = '\n'.join(docstring)
     wrapped_func._r_func = r_func
 
     return wrapped_func
