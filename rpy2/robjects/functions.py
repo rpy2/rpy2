@@ -1,10 +1,15 @@
+import inspect
 import os
 import re
+import textwrap
+import typing
+import warnings
 from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
+from rpy2.rinterface_lib import na_values
 from rpy2.robjects import help
-from . import conversion
+from rpy2.robjects import conversion
 
 from rpy2.robjects.packages_utils import (default_symbol_r2python,
                                           default_symbol_resolve,
@@ -97,7 +102,7 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         )
 
     @docstring_property(__doc__)
-    def __doc__(self):
+    def __doc__(self) -> str:
         fm = _formals_fixed(self)
         doc = list(['Python representation of an R function.',
                     'R arguments:', ''])
@@ -130,10 +135,12 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         res = conversion.rpy2py(res)
         return res
 
-    def rcall(self, *args):
+    def rcall(self,
+              keyvals,
+              environment: rinterface.SexpEnvironment) -> rinterface.sexp.Sexp:
         """ Wrapper around the parent method
         rpy2.rinterface.SexpClosure.rcall(). """
-        res = super(Function, self).rcall(*args)
+        res = super(Function, self).rcall(keyvals, environment)
         return res
 
 
@@ -143,7 +150,7 @@ class SignatureTranslatedFunction(Function):
     argument names in Python. """
     _prm_translate = None
 
-    def __init__(self, sexp,
+    def __init__(self, sexp: rinterface.SexpClosure,
                  init_prm_translate=None,
                  on_conflict='warn',
                  symbol_r2python=default_symbol_r2python,
@@ -199,8 +206,9 @@ pattern_samp = re.compile(r'\\samp\{(.+?)\}')
 
 class DocumentedSTFunction(SignatureTranslatedFunction):
 
-    def __init__(self, sexp, init_prm_translate=None,
-                 packagename=None):
+    def __init__(self, sexp: rinterface.sexp.Sexp,
+                 init_prm_translate=None,
+                 packagename: typing.Optional[str] = None):
         super(DocumentedSTFunction,
               self).__init__(sexp,
                              init_prm_translate=init_prm_translate)
@@ -239,3 +247,153 @@ class DocumentedSTFunction(SignatureTranslatedFunction):
             doc.append(' '.join((item.name, ': ', description, ',')))
             doc.append('')
         return os.linesep.join(doc)
+
+
+# TODO: shouldn't this be in a more central place / or more general interest ?
+_SCALAR_COMPAT_RTYPES = set(
+    getattr(rinterface.RTYPES, name).value
+    for name in ('STRSXP', 'INTSXP', 'REALSXP', 'LGLSXP', 'CPLXSXP')
+)
+
+
+def _map_default_value(value: rinterface.Sexp):
+    """
+    Map default in the R signature.
+
+    Because of R's lazy evaluation some default might be unevaluated expressions.
+
+    Args:
+      value:
+    """
+    if value.__sexp__.typeof in _SCALAR_COMPAT_RTYPES:
+        if len(value) == 1:
+            res = value[0]
+        else:
+            res = value
+    else:
+        res = value
+    return res
+
+
+def map_signature(
+        r_func: SignatureTranslatedFunction,
+        is_method: bool = False,
+        map_default: typing.Optional[
+            typing.Callable[[rinterface.Sexp], typing.Any]
+        ] = _map_default_value
+) -> typing.Tuple[inspect.Signature, typing.Optional[int]]:
+    """
+    Map the signature of an function to the signature of a Python function.
+
+    While mapping the signature, it will report the eventual presence of
+    an R ellipsis.
+
+    Args:
+        r_func (SignatureTranslatedFunction): an R function
+        is_method (bool): Whether the function should be treated as a method
+            (adds a `self` param to the signature if so).
+        map_default (function): Function to map default values in the Python
+            signature. No mapping to default values is done if None.
+    Returns:
+        A tuple (inspect.Signature, int or None).
+    """
+    params = []
+    r_ellipsis = None
+    if is_method:
+        params.append(inspect.Parameter('self',
+                                        inspect.Parameter.POSITIONAL_ONLY))
+    r_params = r_func.formals()
+    rev_prm_transl = {v: k for k, v in r_func._prm_translate.items()}
+    if r_params.names is not rinterface.NULL:
+        for i, (name, default_orig) in enumerate(zip(r_params.names, r_params)):
+            if default_orig == '...':
+                r_ellipsis = i
+                warnings.warn('The R ellispsis is not yet well supported.')
+            transl_name = rev_prm_transl.get(name)
+            default_orig = default_orig[0]
+            if map_default and not rinterface.MissingArg.rsame(default_orig):
+                default_mapped = map_default(default_orig)
+            else:
+                default_mapped = inspect.Parameter.empty
+            prm = inspect.Parameter(
+                transl_name if transl_name else name,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                default=default_mapped
+            )
+            params.append(prm)
+    return (inspect.Signature(params), r_ellipsis)
+
+
+def wrap_r_function(
+        r_func: SignatureTranslatedFunction, name: str, *,
+        is_method: bool = False, full_repr: bool = False,
+        map_default: typing.Callable[[rinterface.Sexp],
+                                     typing.Any] = _map_default_value
+) -> typing.Callable:
+    """
+    Wrap an rpy2 function handle with a Python function with a matching signature.
+
+    Args:
+        r_func (rpy2.robjects.functions.SignatureTranslatedFunction): The
+            function to be wrapped.
+        name (str): The name of the function.
+        is_method (bool): Whether the function should be treated as a method
+            (adds a `self` param to the signature if so).
+        full_repr (bool): Whether to have the full body of the R function in
+            the docstring dynamically generated.
+        map_default (function): Function to map default values in the Python
+            signature. No mapping to default values is done if None.
+    Returns:
+        A function wrapping an underlying R function.
+    """
+    name = name.replace('.', '_')
+
+    signature, r_ellipsis = map_signature(r_func, is_method=is_method,
+                                          map_default=map_default)
+
+    if r_ellipsis:
+        def wrapped_func(*args, **kwargs):
+            new_args = (list((None, x) for x in rinterface.args[:r_ellipsis]) +
+                        list(args[r_ellipsis]) +
+                        list((None, x) for x in args[min(r_ellipsis+1, len(args)-1):]) +
+                        list(kwargs.items()))
+            value = r_func.rcall(new_args, rinterface.globalenv)
+            return value
+    else:
+        def wrapped_func(*args, **kwargs):
+            value = r_func(*args, **kwargs)
+            return value
+
+    if is_method:
+        docstring = ['This method of `{}` is implemented in R.'
+                     .format(is_method._robj.rclass[0])]
+    else:
+        docstring.append('This function wraps the following R function.')
+
+    if r_ellipsis:
+        docstring.extend(
+            ('',
+             textwrap.dedent(
+                 """The R ellipsis "..." present in the function's parameters
+                 is mapped to a python iterable of (name, value) pairs (such as
+                 it is returned by the `dict` method `items()` for example."""),
+             ''
+            )
+        )
+    if full_repr:
+        docstring.append('\n{}'.format(r_func.r_repr()))
+    else:
+        r_repr = r_func.r_repr()
+        i = r_repr.find('\n{')
+        if i == -1:
+            docstring.append('\n{}'.format(r_func.r_repr()))
+        else:
+            docstring.append('\n{}\n{{\n  ...\n}}'.format(r_repr[:i]))
+
+    wrapped_func.__name__ = name
+    wrapped_func.__qualname__ = name
+    wrapped_func.__signature__ = signature
+    wrapped_func.__doc__ = '\n'.join(docstring)
+    wrapped_func._r_func = r_func
+
+    return wrapped_func
