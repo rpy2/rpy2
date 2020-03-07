@@ -101,7 +101,7 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         )
 
     @docstring_property(__doc__)
-    def __doc__(self):
+    def __doc__(self) -> str:
         fm = _formals_fixed(self)
         doc = list(['Python representation of an R function.',
                     'R arguments:', ''])
@@ -134,7 +134,9 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         res = conversion.rpy2py(res)
         return res
 
-    def rcall(self, keyvals, environment):
+    def rcall(self,
+              keyvals,
+              environment: rinterface.SexpEnvironment) -> rinterface.sexp.Sexp:
         """ Wrapper around the parent method
         rpy2.rinterface.SexpClosure.rcall(). """
         res = super(Function, self).rcall(keyvals, environment)
@@ -147,7 +149,7 @@ class SignatureTranslatedFunction(Function):
     argument names in Python. """
     _prm_translate = None
 
-    def __init__(self, sexp,
+    def __init__(self, sexp: rinterface.SexpClosure,
                  init_prm_translate=None,
                  on_conflict='warn',
                  symbol_r2python=default_symbol_r2python,
@@ -203,8 +205,9 @@ pattern_samp = re.compile(r'\\samp\{(.+?)\}')
 
 class DocumentedSTFunction(SignatureTranslatedFunction):
 
-    def __init__(self, sexp, init_prm_translate=None,
-                 packagename=None):
+    def __init__(self, sexp: rinterface.sexp.Sexp,
+                 init_prm_translate=None,
+                 packagename: typing.Optional[str] = None):
         super(DocumentedSTFunction,
               self).__init__(sexp,
                              init_prm_translate=init_prm_translate)
