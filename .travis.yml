@@ -79,7 +79,7 @@ before_install:
       fi
     fi
   - |
-    sudo Rscript ./install_r_packages.r dplyr ggplot2 tidyr
+    sudo Rscript ./install_r_packages.r dplyr ggplot2 lazyeval tidyr
     pip install flake8 pytest codecov pytest-cov
     pip install ipython tzlocal
 
