@@ -20,8 +20,6 @@ from rpy2.robjects.packages_utils import (default_symbol_r2python,
 baseenv_ri = rinterface.baseenv
 
 # Needed to avoid circular imports.
-_reval = rinterface.baseenv['eval']
-
 __formals = baseenv_ri.find('formals')
 __args = baseenv_ri.find('args')
 __is_null = baseenv_ri.find('is.null')
