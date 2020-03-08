@@ -114,26 +114,32 @@ def test_map_signature_invalid(r_code, parameter_names):
     )
 )
 def test_wrap_r_function_args(r_code, args, kwargs, expected):
-    full_repr = True
     r_func = robjects.r(r_code)
     stf = robjects.functions.SignatureTranslatedFunction(r_func)
-    w_func = robjects.functions.wrap_r_function(stf, 'foo',
-                                                full_repr=full_repr)
+    w_func = robjects.functions.wrap_r_function(stf, 'foo')
     res = w_func(*args, **kwargs)
     assert tuple(res) == (expected, )
 
 
-@pytest.mark.parametrize('full_repr', (True, False))
-@pytest.mark.parametrize('method_of', (True, False))
-def test_wrap_r_function(full_repr, method_of):
+@pytest.mark.parametrize('is_method', (True, False))
+def test_wrap_r_function(is_method):
     r_code = 'function(x, y=FALSE, z="abc") TRUE'
-    parameter_names = ('x', 'y', 'z')
+    parameter_names = ('self', 'x', 'y', 'z') if is_method else ('x', 'y', 'z')
     r_func = robjects.r(r_code)
     stf = robjects.functions.SignatureTranslatedFunction(r_func)
     foo = robjects.functions.wrap_r_function(r_func, 'foo',
-                                             full_repr=full_repr)
+                                             is_method=is_method)
     assert foo._r_func.rid == r_func.rid
     assert tuple(foo.__signature__.parameters.keys()) == parameter_names
-    if not method_of:
+    if not is_method:
         res = foo(1)
         assert res[0] is True
+
+
+@pytest.mark.parametrize('wrap_docstring',
+                         (None, robjects.functions.wrap_docstring_default))
+def test_wrap_r_function_docstrings(wrap_docstring):
+    r_code = 'function(x, y=FALSE, z="abc") TRUE'
+    r_func = robjects.r(r_code)
+    foo = robjects.functions.wrap_r_function(r_func, 'foo', wrap_docstring=wrap_docstring)
+    # TODO: only an integration test ? Nothing is tested.
