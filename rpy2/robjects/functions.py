@@ -322,13 +322,70 @@ def map_signature(
     return (inspect.Signature(params), r_ellipsis)
 
 
+def wrap_docstring_default(
+        r_func: SignatureTranslatedFunction,
+        is_method: bool,
+        signature: inspect.Signature,
+        r_ellipsis: typing.Optional[int], *,
+        full_repr: bool = False
+) -> str:
+    """
+    Create a docstring that for a wrapped function.
+
+    Args:
+        r_func (SignatureTranslatedFunction): an R function
+        is_method (bool): Whether the function should be treated as a method
+            (a `self` parameter is added to the signature if so).
+        signature (inspect.Signature): A mapped signature for `r_func`
+        r_ellipsis (bool): Index of the parameter containing the R ellipsis (`...`).
+            None if the R ellipsis is not in the function signature.
+        full_repr (bool): Whether to have the full body of the R function in
+            the docstring dynamically generated.
+    Returns:
+        A string.
+    """
+    docstring = []
+
+    docstring.append('This {} wraps the following R function.'
+                     .format('method' if is_method else 'function'))
+
+    if r_ellipsis:
+        docstring.extend(
+            ('',
+             textwrap.dedent(
+                 """The R ellipsis "..." present in the function's parameters
+                 is mapped to a python iterable of (name, value) pairs (such as
+                 it is returned by the `dict` method `items()` for example."""),
+             ''
+            )
+        )
+    if full_repr:
+        docstring.append('\n{}'.format(r_func.r_repr()))
+    else:
+        r_repr = r_func.r_repr()
+        i = r_repr.find('\n{')
+        if i == -1:
+            docstring.append('\n{}'.format(r_func.r_repr()))
+        else:
+            docstring.append('\n{}\n{{\n  ...\n}}'.format(r_repr[:i]))
+    
+    return '\n'.join(docstring)
+
+
 def wrap_r_function(
         r_func: SignatureTranslatedFunction, name: str, *,
         is_method: bool = False, full_repr: bool = False,
         map_default: typing.Optional[
             typing.Callable[[rinterface.Sexp],
                             typing.Any]
-            ] = _map_default_value
+            ] = _map_default_value,
+        wrap_docstring: typing.Optional[
+            typing.Callable[[SignatureTranslatedFunction,
+                             bool,
+                             inspect.Signature,
+                             typing.Optional[int]],
+                            str]
+            ] = wrap_docstring_default
 ) -> typing.Callable:
     """
     Wrap an rpy2 function handle with a Python function with a matching signature.
@@ -339,8 +396,6 @@ def wrap_r_function(
         name (str): The name of the function.
         is_method (bool): Whether the function should be treated as a method
             (adds a `self` param to the signature if so).
-        full_repr (bool): Whether to have the full body of the R function in
-            the docstring dynamically generated.
         map_default (function): Function to map default values in the Python
             signature. No mapping to default values is done if None.
     Returns:
@@ -364,37 +419,15 @@ def wrap_r_function(
             value = r_func(*args, **kwargs)
             return value
 
-    docstring = []
-    if is_method:
-        docstring.append('This method of `{}` is implemented in R.'
-                         .format(is_method._robj.rclass[0]))
+    if wrap_docstring:
+        docstring = wrap_docstring(r_func, is_method, signature, r_ellipsis)
     else:
-        docstring.append('This function wraps the following R function.')
-
-    if r_ellipsis:
-        docstring.extend(
-            ('',
-             textwrap.dedent(
-                 """The R ellipsis "..." present in the function's parameters
-                 is mapped to a python iterable of (name, value) pairs (such as
-                 it is returned by the `dict` method `items()` for example."""),
-             ''
-            )
-        )
-    if full_repr:
-        docstring.append('\n{}'.format(r_func.r_repr()))
-    else:
-        r_repr = r_func.r_repr()
-        i = r_repr.find('\n{')
-        if i == -1:
-            docstring.append('\n{}'.format(r_func.r_repr()))
-        else:
-            docstring.append('\n{}\n{{\n  ...\n}}'.format(r_repr[:i]))
+        docstring = 'This is a dynamically created wrapper for an R function.'
 
     wrapped_func.__name__ = name
     wrapped_func.__qualname__ = name
     wrapped_func.__signature__ = signature
-    wrapped_func.__doc__ = '\n'.join(docstring)
+    wrapped_func.__doc__ = docstring
     wrapped_func._r_func = r_func
 
     return wrapped_func
