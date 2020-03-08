@@ -177,14 +177,16 @@ def _choosefile(new, buf, n: int) -> int:
     return len(res_cdata)
 
 
-def showfiles(filenames: typing.Tuple[str],
-              headers: typing.Tuple[str],
-              wtitle: str, pager: str) -> None:
+def showfiles(filenames: typing.Tuple[str, ...],
+              headers: typing.Tuple[str, ...],
+              wtitle: typing.Optional[str],
+              pager: typing.Optional[str]) -> None:
     """R showing files.
 
     :param filenames: A tuple of file names.
     :param headers: A tuple of strings (TODO: check what it is)
     :wtitle: Title of the "window" showing the files.
+    :pager: Pager to use to show the list of files.
     """
     for fn in filenames:
         print('File: %s' % fn)

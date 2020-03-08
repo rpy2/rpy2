@@ -114,6 +114,8 @@ def _initr(
     with openrlib.rlock:
         if isinitialized():
             return None
+        if openrlib.R_HOME is None:
+            raise ValueError('openrlib.R_HOME cannot be None.')
         os.environ['R_HOME'] = openrlib.R_HOME
         options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
         n_options = len(options_c)

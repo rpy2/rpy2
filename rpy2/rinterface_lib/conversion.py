@@ -153,7 +153,7 @@ def _str_to_symsxp(val: str):
     return s
 
 
-_PY_R_MAP = {}
+_PY_R_MAP = {}  # type: Dict[Type, Type]
 
 
 # TODO: Do special values such as NAs need to be mapped into a SEXP when

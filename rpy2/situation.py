@@ -97,16 +97,15 @@ def r_ld_library_path_from_subprocess(r_home: str) -> str:
         r_lib_path = subprocess.check_output(cmd, universal_newlines=True)
     except Exception:  # FileNotFoundError, WindowsError, etc
         r_lib_path = ''
+    res = None
     ld_library_path = os.environ.get('LD_LIBRARY_PATH')
     if ld_library_path:
         pos = r_lib_path.find(ld_library_path)
-    else:
-        pos = None
-    if pos == -1 or not ld_library_path:
+        if pos != -1:
+            res = (r_lib_path[pos:(pos+len(ld_library_path))]
+                   .rstrip(os.pathsep))
+    if res is None:
         res = r_lib_path
-    else:
-        res = (r_lib_path[pos:(pos+len(ld_library_path))]
-               .rstrip(os.pathsep))
     return res
 
 

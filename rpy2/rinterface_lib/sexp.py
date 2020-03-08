@@ -109,8 +109,9 @@ class Sexp(SupportsSEXP):
     def __getstate__(self) -> bytes:
         with memorymanagement.rmemory() as rmemory:
             ser = rmemory.protect(
-                _rinterface.serialize(self.__sexp__._cdata,
-                                      embedded.globalenv.__sexp__._cdata)
+                _rinterface.serialize(
+                    self.__sexp__._cdata,
+                    embedded.globalenv.__sexp__._cdata)
             )
             n = openrlib.rlib.Rf_xlength(ser)
             res = bytes(_rinterface.ffi.buffer(openrlib.rlib.RAW(ser), n))
@@ -426,7 +427,7 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
     def __len__(self) -> int:
         return openrlib.rlib.Rf_xlength(self.__sexp__._cdata)
 
-    def index(self, item) -> int:
+    def index(self, item: typing.Any) -> int:
         for i, e in enumerate(self):
             if e == item:
                 return i
@@ -452,7 +453,7 @@ class StrSexpVector(SexpVector):
 
     def __getitem__(
             self,
-            i: typing.Union[int, slice]) -> 'typing.Union[str, StrSexpVector]':
+            i: typing.Union[int, slice]) -> typing.Union['StrSexpVector', str]:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
