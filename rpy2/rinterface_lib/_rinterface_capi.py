@@ -209,7 +209,7 @@ def _string_setitem(cdata: ffi.CData, i: int, value_b) -> None:
     )
 
 
-def _has_slot(cdata:ffi.CData, name_b) -> bool:
+def _has_slot(cdata: ffi.CData, name_b) -> bool:
     res = openrlib.rlib.R_has_slot(cdata, name_b)
     return bool(res)
 
