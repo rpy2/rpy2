@@ -112,6 +112,13 @@ def _initr(
         callback_funcs = rlib
 
     with openrlib.rlock:
+
+        if rlib.R_NilValue != ffi.NULL:
+            warnings.warn('The R library was initialized outside of rpy2. '
+                          'Attempting to use it nevertheless.')
+            setinitialized()
+            return None
+
         if isinitialized():
             return None
         os.environ['R_HOME'] = openrlib.R_HOME
