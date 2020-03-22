@@ -1,6 +1,7 @@
 """Interface to and utilities for R's memory management."""
 
 import contextlib
+import typing
 from . import openrlib
 
 
@@ -43,7 +44,7 @@ class ProtectionTracker(object):
 
 
 @contextlib.contextmanager
-def rmemory():
+def rmemory() -> typing.Iterator[ProtectionTracker]:
     pt = ProtectionTracker()
     with openrlib.rlock:
         try:

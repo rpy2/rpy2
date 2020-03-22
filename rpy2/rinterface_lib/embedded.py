@@ -114,6 +114,8 @@ def _initr(
     with openrlib.rlock:
         if isinitialized():
             return None
+        if openrlib.R_HOME is None:
+            raise ValueError('openrlib.R_HOME cannot be None.')
         os.environ['R_HOME'] = openrlib.R_HOME
         options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
         n_options = len(options_c)
@@ -209,10 +211,3 @@ def set_python_process_info() -> None:
             ('sys.executable', sys.executable))
     info_string = ':'.join('%s=%s' % x for x in info)
     os.environ[_PYTHON_SESSION_INITIALIZED] = info_string
-
-
-# R environments, initialized with rpy2.rinterface.SexpEnvironment
-# objects when R is initialized.
-emptyenv = None
-baseenv = None
-globalenv = None

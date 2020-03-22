@@ -1,25 +1,10 @@
 """NA (Non-Available) values in R."""
-
-import abc
-from . import embedded
-from . import openrlib
-from . import sexp
-from . import _rinterface_capi as _rinterface
-
-
-class Singleton(type):
-
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        instances = cls._instances
-        if cls not in instances:
-            instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return instances[cls]
-
-
-class SingletonABC(Singleton, abc.ABCMeta):
-    pass
+from rpy2.rinterface_lib import embedded
+from rpy2.rinterface_lib import openrlib
+from rpy2.rinterface_lib import sexp
+from rpy2.rinterface_lib.sexp import Singleton
+from rpy2.rinterface_lib.sexp import SingletonABC
+import rpy2.rinterface_lib._rinterface_capi as _rinterface
 
 
 NA_Character = None

@@ -1,5 +1,6 @@
 import platform
 import threading
+import typing
 import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
 
@@ -22,7 +23,7 @@ R_HOME = rpy2.situation.get_r_home()
 rlock = threading.RLock()
 
 
-def _dlopen_rlib(r_home: str):
+def _dlopen_rlib(r_home: typing.Optional[str]):
     """Open R's shared C library.
 
     This is only relevant in ABI mode."""

@@ -1,7 +1,10 @@
 # TODO: make it cffi-buildable with conditional function definition
 # (Python if ABI, C if API)
+import abc
 import enum
 import logging
+from typing import Tuple
+import typing
 import warnings
 from . import ffi_proxy
 from . import openrlib
@@ -16,13 +19,13 @@ ffi = openrlib.ffi
 # TODO: How can I reliably get MAX_INT from limits.h ?
 _MAX_INT = 2**32-1
 
-_R_PRESERVED = dict()
+_R_PRESERVED = dict()  # type: typing.Dict[int, int]
 _PY_PASSENGER = dict()
 
 FFI_MODE = ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
 
 
-def get_rid(cdata) -> int:
+def get_rid(cdata: ffi.CData) -> int:
     """Get the identifier for the R object.
 
     This is intended to be like Python's `id()`, but
@@ -30,7 +33,7 @@ def get_rid(cdata) -> int:
     return int(ffi.cast('uintptr_t', cdata))
 
 
-def protected_rids():
+def protected_rids() -> Tuple[Tuple[int, int], ...]:
     """Sequence of R IDs protected from collection by rpy2."""
     keys = tuple(_R_PRESERVED.keys())
     res = []
@@ -41,7 +44,7 @@ def protected_rids():
     return tuple(res)
 
 
-def is_cdata_sexp(obj) -> bool:
+def is_cdata_sexp(obj: typing.Any) -> bool:
     """Is the object a cffi `CData` object pointing to an R object ?"""
     if (isinstance(obj, ffi.CData) and
             ffi.typeof(obj).cname == 'struct SEXPREC *'):
@@ -50,7 +53,7 @@ def is_cdata_sexp(obj) -> bool:
         return False
 
 
-def _preserve(cdata):
+def _preserve(cdata: ffi.CData) -> int:
     addr = int(ffi.cast('uintptr_t', cdata))
     count = _R_PRESERVED.get(addr, 0)
     if count == 0:
@@ -59,7 +62,7 @@ def _preserve(cdata):
     return addr
 
 
-def _release(cdata):
+def _release(cdata: ffi.CData) -> None:
     addr = int(ffi.cast('uintptr_t', cdata))
     count = _R_PRESERVED[addr] - 1
     if count == 0:
@@ -71,7 +74,7 @@ def _release(cdata):
 
 @ffi_proxy.callback(ffi_proxy._capsule_finalizer_def,
                     openrlib._rinterface_cffi)
-def _capsule_finalizer(cdata):
+def _capsule_finalizer(cdata: ffi.CData) -> None:
     try:
         openrlib.rlib.R_ClearExternalPtr(cdata)
     except Exception as e:
@@ -86,14 +89,10 @@ else:
     _capsule_finalizer_c = None
 
 
-class UnmanagedSexpCapsule(object):
-
-    def __init__(self, cdata):
-        assert is_cdata_sexp(cdata)
-        self._cdata = cdata
+class CapsuleBase:
 
     @property
-    def typeof(self):
+    def typeof(self) -> int:
         return _TYPEOF(self._cdata)
 
     @property
@@ -101,11 +100,34 @@ class UnmanagedSexpCapsule(object):
         return get_rid(self._cdata)
 
 
-class SexpCapsule(UnmanagedSexpCapsule):
+class UninitializedRCapsule(CapsuleBase):
+
+    @property
+    def _cdata(self):
+        raise RuntimeError('The embedded R is not initialized.')
+
+    @property
+    def typeof(self) -> int:
+        return self._typeof
+
+    def __init__(self, typeof):
+        self._typeof = typeof
+
+
+class UnmanagedSexpCapsule(CapsuleBase):
 
     __slots__ = ('_cdata', )
 
-    def __init__(self, cdata):
+    def __init__(self, cdata: ffi.CData):
+        assert is_cdata_sexp(cdata)
+        self._cdata = cdata
+
+
+class SexpCapsule(CapsuleBase):
+
+    __slots__ = ('_cdata', )
+
+    def __init__(self, cdata: ffi.CData):
         assert is_cdata_sexp(cdata)
         _preserve(cdata)
         self._cdata = cdata
@@ -126,7 +148,7 @@ class SexpCapsule(UnmanagedSexpCapsule):
 class SexpCapsuleWithPassenger(SexpCapsule):
     __slots__ = ('_cdata', '_passenger')
 
-    def __init__(self, cdata, passenger, ptr):
+    def __init__(self, cdata: ffi.CData, passenger, ptr):
         assert is_cdata_sexp(cdata)
         addr = _preserve(cdata)
         _PY_PASSENGER[addr] = passenger
@@ -138,6 +160,13 @@ class SexpCapsuleWithPassenger(SexpCapsule):
         _release(self._cdata)
         if addr not in _PY_PASSENGER:
             del(_PY_PASSENGER[addr])
+
+
+class SupportsSEXP(object, metaclass=abc.ABCMeta):
+
+    @abc.abstractproperty
+    def __sexp__(self):
+        pass
 
 
 def _findvar(symbol, r_environment):
@@ -162,37 +191,37 @@ def _GET_DIM(robj):
     return res
 
 
-def _GET_DIMNAMES(robj):
+def _GET_DIMNAMES(robj) -> ffi.CData:
     res = openrlib.rlib.Rf_getAttrib(robj,
                                      openrlib.rlib.R_DimNames)
     return res
 
 
-def _GET_LEVELS(robj):
+def _GET_LEVELS(robj: ffi.CData) -> ffi.CData:
     res = openrlib.rlib.Rf_getAttrib(robj,
                                      openrlib.rlib.R_LevelsSymbol)
     return res
 
 
-def _GET_NAMES(robj):
+def _GET_NAMES(robj: ffi.CData) -> ffi.CData:
     res = openrlib.rlib.Rf_getAttrib(robj,
                                      openrlib.rlib.R_NamesSymbol)
     return res
 
 
-def _TYPEOF(robj):
+def _TYPEOF(robj: ffi.CData) -> int:
     return robj.sxpinfo.type
 
 
-def _SET_TYPEOF(robj, v):
+def _SET_TYPEOF(robj: ffi.CData, v: int):
     robj.sxpinfo.type = v
 
 
-def _NAMED(robj):
+def _NAMED(robj: ffi.CData) -> int:
     return robj.sxpinfo.named
 
 
-def _string_getitem(cdata, i):
+def _string_getitem(cdata: ffi.CData, i: int) -> str:
     rlib = openrlib.rlib
     return conversion._cchar_to_str(
         rlib.R_CHAR(rlib.STRING_ELT(cdata, i))
@@ -200,14 +229,14 @@ def _string_getitem(cdata, i):
 
 
 # TODO: still used ?
-def _string_setitem(cdata, i, value_b):
+def _string_setitem(cdata: ffi.CData, i: int, value_b) -> None:
     rlib = openrlib.rlib
     rlib.SET_STRING_ELT(
         cdata, i, rlib.Rf_mkCharCE(value_b, conversion._CE_DEFAULT_VALUE)
     )
 
 
-def _has_slot(cdata, name_b):
+def _has_slot(cdata: ffi.CData, name_b) -> bool:
     res = openrlib.rlib.R_has_slot(cdata, name_b)
     return bool(res)
 
@@ -250,7 +279,7 @@ def _evaluated_promise(function):
     return _
 
 
-def _python_index_to_c(cdata, i: int) -> int:
+def _python_index_to_c(cdata: ffi.CData, i: int) -> int:
     """Compute the C value for a Python-style index.
 
     The function will translate a Python-style index that
@@ -273,14 +302,14 @@ def _python_index_to_c(cdata, i: int) -> int:
 
 
 # TODO: make it a general check for names or symbols ?
-def _assert_valid_slotname(name: str):
+def _assert_valid_slotname(name: str) -> None:
     if not isinstance(name, str):
         raise ValueError('Invalid name %s' % repr(name))
     elif len(name) == 0:
         raise ValueError('The name cannot be an empty string')
 
 
-def _list_attrs(cdata):
+def _list_attrs(cdata: ffi.CData) -> ffi.CData:
     rlib = openrlib.rlib
     attrs = rlib.ATTRIB(cdata)
     nvalues = rlib.Rf_length(attrs)
@@ -316,7 +345,7 @@ def _list_attrs(cdata):
     return names
 
 
-def _remove(name, env, inherits):
+def _remove(name: ffi.CData, env: ffi.CData, inherits) -> ffi.CData:
     rlib = openrlib.rlib
     with memorymanagement.rmemory() as rmemory:
         internal = rmemory.protect(
@@ -331,7 +360,7 @@ def _remove(name, env, inherits):
     return res
 
 
-def _geterrmessage():
+def _geterrmessage() -> str:
     rlib = openrlib.rlib
     # TODO: use isString and installTrChar
     with memorymanagement.rmemory() as rmemory:
@@ -350,7 +379,7 @@ def _geterrmessage():
     return res
 
 
-def serialize(cdata, cdata_env):
+def serialize(cdata: ffi.CData, cdata_env: ffi.CData) -> ffi.CData:
     """Serialize an R object to an R string.
 
     Note that the R string returned is *not* protected from
@@ -376,7 +405,7 @@ def serialize(cdata, cdata_env):
         return res
 
 
-def unserialize(cdata, cdata_env):
+def unserialize(cdata: ffi.CData, cdata_env: ffi.CData) -> ffi.CData:
     """Unserialize an R string to an R object.
 
     Note that the R object returned is *not* protected from
@@ -406,7 +435,7 @@ def unserialize(cdata, cdata_env):
 
 @ffi_proxy.callback(ffi_proxy._evaluate_in_r_def,
                     openrlib._rinterface_cffi)
-def _evaluate_in_r(rargs):
+def _evaluate_in_r(rargs: ffi.CData) -> ffi.CData:
     # An uncaught exception in the boby of this function would
     # result in a segfault. we wrap it in a try-except an report
     # exceptions as logs.
@@ -499,7 +528,7 @@ class PARSING_STATUS(enum.Enum):
 
 class RParsingError(Exception):
 
-    def __init__(self, msg: str, status: int = None):
+    def __init__(self, msg: str, status: PARSING_STATUS = None):
         full_msg = (
             '{msg} - {status}'
             .format(msg=msg, status=status)
@@ -510,7 +539,7 @@ class RParsingError(Exception):
 
 @ffi_proxy.callback(ffi_proxy._parsevector_wrap_def,
                     openrlib._rinterface_cffi)
-def _parsevector_wrap(data):
+def _parsevector_wrap(data: ffi.CData):
     try:
         cdata, num, status = ffi.from_handle(data)
         res = openrlib.rlib.R_ParseVector(
@@ -524,6 +553,7 @@ def _parsevector_wrap(data):
     return res
 
 
+# TODO: is this complete ?
 @ffi_proxy.callback(ffi_proxy._handler_def,
                     openrlib._rinterface_cffi)
 def _handler_wrap(cond, hdata):
@@ -540,7 +570,7 @@ else:
     raise ImportError('cffi mode unknown: %s' % FFI_MODE)
 
 
-def _parse(cdata, num, rmemory):
+def _parse(cdata: ffi.CData, num, rmemory) -> ffi.CData:
     status = ffi.new('ParseStatus[1]', None)
     data = ffi.new_handle((cdata, num, status))
     hdata = ffi.NULL

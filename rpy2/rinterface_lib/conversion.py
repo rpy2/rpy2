@@ -3,10 +3,12 @@
 # TODO: rename the module with a prefix _ to indicate that this should
 #   not be used outside of rpy2's own code
 
+from typing import Callable
 from typing import Dict
 from typing import Type
-from . import openrlib
-from . import _rinterface_capi as _rinterface
+from typing import Union
+from rpy2.rinterface_lib import openrlib
+from rpy2.rinterface_lib import _rinterface_capi as _rinterface
 
 ffi = openrlib.ffi
 
@@ -18,11 +20,13 @@ class DummyMissingRpy2Map(object):
         raise NotImplementedError('The default object mapper class is no set.')
 
 
-_R_RPY2_DEFAULT_MAP = DummyMissingRpy2Map
+_R_RPY2_DEFAULT_MAP: Type[
+    Union[DummyMissingRpy2Map, '_rinterface.SupportsSEXP']
+] = DummyMissingRpy2Map
 
 # TODO: shouldn't the second type strictly inherit from an rpy2
 # R object ?
-_PY_RPY2_MAP = {}  # type: Dict[Type, Type]
+_PY_RPY2_MAP = {}  # type: Dict[Type, Callable]
 
 
 def _cdata_to_rinterface(cdata):
@@ -153,7 +157,7 @@ def _str_to_symsxp(val: str):
     return s
 
 
-_PY_R_MAP = {}
+_PY_R_MAP = {}  # type: Dict[Type, Union[Callable, None, bool]]
 
 
 # TODO: Do special values such as NAs need to be mapped into a SEXP when
