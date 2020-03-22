@@ -1,5 +1,6 @@
 # TODO: make it cffi-buildable with conditional function definition
 # (Python if ABI, C if API)
+import abc
 import enum
 import logging
 from typing import Tuple
@@ -159,6 +160,13 @@ class SexpCapsuleWithPassenger(SexpCapsule):
         _release(self._cdata)
         if addr not in _PY_PASSENGER:
             del(_PY_PASSENGER[addr])
+
+
+class SupportsSEXP(object, metaclass=abc.ABCMeta):
+
+    @abc.abstractproperty
+    def __sexp__(self):
+        pass
 
 
 def _findvar(symbol, r_environment):

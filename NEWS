@@ -46,6 +46,13 @@ New features
 - :func:`rpy2.robjects.functions.wrap_r_functions` can create Python functions
   with matching signature from R functions.
 
+- New class :class:`rpy2.rinterface_lib._rinterface_capi.UninitializedRCapsule`
+  to allow the instanciation of "placeholder" rpy2 objects before the
+  embedded R is initialized. This facilitate the use of static typing checks
+  such as mypy, mocking for tests that do not involve the execution of R
+  code, and allow cleaner implementations of module-level globals
+  that are R objects.
+
 
 Changes
 -------

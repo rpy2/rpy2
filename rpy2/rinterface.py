@@ -3,6 +3,7 @@ import atexit
 import os
 import math
 import typing
+from typing import Union
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
 import rpy2.rinterface_lib.embedded as embedded
@@ -155,6 +156,13 @@ class SexpPromise(Sexp):
         return openrlib.rlib.Rf_eval(self.__sexp__._cdata, env)
 
 
+NPCOMPAT_TYPE = typing.TypeVar('NPCOMPAT_TYPE',
+                               'ByteSexpVector',
+                               'BoolSexpVector',
+                               'IntSexpVector',
+                               'FloatSexpVector')
+
+
 class NumpyArrayInterface(abc.ABC):
     """Numpy-specific API for accessing the content of a numpy array.
 
@@ -162,7 +170,7 @@ class NumpyArrayInterface(abc.ABC):
     and is only available / possible for some of the R vectors."""
 
     @property
-    def __array_interface__(self) -> dict:
+    def __array_interface__(self: NPCOMPAT_TYPE) -> dict:
         """Return an `__array_interface__` version 3.
 
         Note that the pointer returned in the items 'data' corresponds to
@@ -217,7 +225,9 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
     def _R_SET_VECTOR_ELT(x, i: int, val) -> None:
         openrlib.RAW(x)[i] = val
 
-    def __getitem__(self, i: int) -> typing.Union[int, 'ByteSexpVector']:
+    def __getitem__(self,
+                    i: Union[int, slice]) -> Union[int, 'ByteSexpVector']:
+
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -234,7 +244,7 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: int, value) -> None:
+    def __setitem__(self, i: Union[int, slice], value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -269,8 +279,8 @@ class BoolSexpVector(SexpVector, NumpyArrayInterface):
         else:
             return bool(x)
 
-    def __getitem__(self, i: int) -> typing.Union[typing.Optional[bool],
-                                                  'BoolSexpVector']:
+    def __getitem__(self, i: Union[int, slice]) -> Union[typing.Optional[bool],
+                                                         'BoolSexpVector']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -286,7 +296,7 @@ class BoolSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: int, value) -> None:
+    def __setitem__(self, i: Union[int, slice], value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -322,7 +332,7 @@ class IntSexpVector(SexpVector, NumpyArrayInterface):
     _R_GET_PTR = staticmethod(openrlib.INTEGER)
     _CAST_IN = staticmethod(nullable_int)
 
-    def __getitem__(self, i: int) -> typing.Union[int, 'IntSexpVector']:
+    def __getitem__(self, i: Union[int, slice]) -> Union[int, 'IntSexpVector']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -340,7 +350,7 @@ class IntSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: int, value) -> None:
+    def __setitem__(self, i: Union[int, slice], value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -369,7 +379,9 @@ class FloatSexpVector(SexpVector, NumpyArrayInterface):
     _CAST_IN = staticmethod(float)
     _R_GET_PTR = staticmethod(openrlib.REAL)
 
-    def __getitem__(self, i: int) -> typing.Union[float, 'FloatSexpVector']:
+    def __getitem__(
+            self, i: Union[int, slice]
+    ) -> Union[float, 'FloatSexpVector']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -384,7 +396,7 @@ class FloatSexpVector(SexpVector, NumpyArrayInterface):
                             type(i))
         return res
 
-    def __setitem__(self, i: int, value) -> None:
+    def __setitem__(self, i: Union[int, slice], value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -429,8 +441,9 @@ class ComplexSexpVector(SexpVector):
                 )
         return res
 
-    def __getitem__(self,
-                    i: int) -> typing.Union[complex, 'ComplexSexpVector']:
+    def __getitem__(
+            self, i: Union[int, slice]
+    ) -> Union[complex, 'ComplexSexpVector']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -446,7 +459,7 @@ class ComplexSexpVector(SexpVector):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: int, value) -> None:
+    def __setitem__(self, i: Union[int, slice], value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -488,7 +501,7 @@ class PairlistSexpVector(SexpVector):
     _R_SET_VECTOR_ELT = None
     _CAST_IN = staticmethod(conversion._get_cdata)
 
-    def __getitem__(self, i: int) -> Sexp:
+    def __getitem__(self, i: Union[int, slice]) -> Sexp:
         cdata = self.__sexp__._cdata
         rlib = openrlib.rlib
         if isinstance(i, int):
@@ -570,7 +583,7 @@ class LangSexpVector(SexpVector):
             openrlib.rlib.Rf_nthcdr(cdata, i_c)
         )
 
-    def __setitem__(self, i: int, value) -> None:
+    def __setitem__(self, i: int, value: sexp.SupportsSEXP) -> None:
         cdata = self.__sexp__._cdata
         i_c = _rinterface._python_index_to_c(cdata, i)
         openrlib.rlib.SETCAR(

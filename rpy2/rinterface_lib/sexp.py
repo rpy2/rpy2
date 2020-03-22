@@ -9,13 +9,14 @@ from rpy2.rinterface_lib import memorymanagement
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
 from rpy2.rinterface_lib._rinterface_capi import _evaluated_promise
+from rpy2.rinterface_lib._rinterface_capi import SupportsSEXP
 from rpy2.rinterface_lib import conversion
 from rpy2.rinterface_lib.conversion import _cdata_res_to_rinterface
 
 
 class Singleton(type):
 
-    _instances = {}
+    _instances: typing.Dict[typing.Type['Singleton'], 'Singleton'] = {}
 
     def __call__(cls, *args, **kwargs):
         instances = cls._instances
@@ -60,13 +61,6 @@ class RTYPES(enum.IntEnum):
     FREESXP = openrlib.rlib.FREESXP
 
     FUNSXP = openrlib.rlib.FUNSXP
-
-
-class SupportsSEXP(object, metaclass=abc.ABCMeta):
-
-    @abc.abstractproperty
-    def __sexp__(self):
-        pass
 
 
 class Sexp(SupportsSEXP):
@@ -456,10 +450,10 @@ class SexpEnvironment(Sexp):
 
 # R environments, initialized with rpy2.rinterface.SexpEnvironment
 # objects when R is initialized.
-_UNINIT_CAPSULE = _rinterface.UninitializedRCapsule(RTYPES.ENVSXP.value)
-emptyenv = SexpEnvironment(_UNINIT_CAPSULE)
-baseenv = SexpEnvironment(_UNINIT_CAPSULE)
-globalenv = SexpEnvironment(_UNINIT_CAPSULE)
+_UNINIT_CAPSULE_ENV = _rinterface.UninitializedRCapsule(RTYPES.ENVSXP.value)
+emptyenv = SexpEnvironment(_UNINIT_CAPSULE_ENV)
+baseenv = SexpEnvironment(_UNINIT_CAPSULE_ENV)
+globalenv = SexpEnvironment(_UNINIT_CAPSULE_ENV)
 
 
 # TODO: move to _rinterface-level function (as ABI / API compatibility
@@ -610,7 +604,7 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
 
     def __getitem__(
             self,
-            i: typing.Union[int, slice]) -> typing.Union[Sexp, VT]:
+            i: typing.Union[int, slice]) -> typing.Union[Sexp, VT, typing.Any]:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -695,6 +689,8 @@ class StrSexpVector(SexpVector):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
+            if not isinstance(value, str):
+                value = str(value)
             self._R_SET_VECTOR_ELT(
                 cdata, i_c,
                 _as_charsxp_cdata(value)
