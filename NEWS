@@ -65,6 +65,16 @@ Bugs fixed
 - SVG output for the R magic were incorrectly bytes objects.
 
 
+Release 3.2.7
+=============
+
+Bugs fixed
+----------
+
+- An f-string in `_rinterface_cffi_build.py` prevented installation
+  on Python 3.5 (issue #654).
+
+
 Release 3.2.6
 =============
 
