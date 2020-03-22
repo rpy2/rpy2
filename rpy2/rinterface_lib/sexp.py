@@ -13,6 +13,21 @@ from rpy2.rinterface_lib import conversion
 from rpy2.rinterface_lib.conversion import _cdata_res_to_rinterface
 
 
+class Singleton(type):
+
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        instances = cls._instances
+        if cls not in instances:
+            instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return instances[cls]
+
+
+class SingletonABC(Singleton, abc.ABCMeta):
+    pass
+
+
 class RTYPES(enum.IntEnum):
     """Native R types as defined in R's C API."""
 
@@ -62,9 +77,10 @@ class Sexp(SupportsSEXP):
 
     __slots__ = ('_sexpobject', )
 
-    def __init__(self, sexp: typing.Union[SupportsSEXP,
-                                          '_rinterface.SexpCapsule',
-                                          '_rinterface.UninitializedRCapsule']):
+    def __init__(self,
+                 sexp: typing.Union[SupportsSEXP,
+                                    '_rinterface.SexpCapsule',
+                                    '_rinterface.UninitializedRCapsule']):
         if isinstance(sexp, SupportsSEXP):
             self._sexpobject = sexp.__sexp__
         elif isinstance(sexp, _rinterface.CapsuleBase):
@@ -199,6 +215,32 @@ class Sexp(SupportsSEXP):
         return openrlib.rlib.Rf_getAttrib(
             self.__sexp__._cdata,
             openrlib.rlib.R_NameSymbol)
+
+
+class NULLType(Sexp, metaclass=SingletonABC):
+    """A singleton class for R's NULL."""
+
+    def __init__(self):
+        embedded.assert_isready()
+        super().__init__(
+            Sexp(
+                _rinterface.UnmanagedSexpCapsule(
+                    openrlib.rlib.R_NilValue
+                )
+            )
+        )
+
+    def __bool__(self) -> bool:
+        """This is always False."""
+        return False
+
+    @property
+    def __sexp__(self) -> _rinterface.SexpCapsule:
+        return self._sexpobject
+
+    @property
+    def rid(self) -> int:
+        return self._sexpobject.rid
 
 
 # TODO: Duplicate declaration in R_API.h ?
@@ -418,6 +460,7 @@ _UNINIT_CAPSULE = _rinterface.UninitializedRCapsule(RTYPES.ENVSXP.value)
 emptyenv = SexpEnvironment(_UNINIT_CAPSULE)
 baseenv = SexpEnvironment(_UNINIT_CAPSULE)
 globalenv = SexpEnvironment(_UNINIT_CAPSULE)
+
 
 # TODO: move to _rinterface-level function (as ABI / API compatibility
 # will have API-defined code compile for efficiency).

@@ -10,7 +10,7 @@ import rpy2.rinterface_lib.conversion as conversion
 from rpy2.rinterface_lib.conversion import _cdata_res_to_rinterface
 import rpy2.rinterface_lib.memorymanagement as memorymanagement
 from rpy2.rinterface_lib import na_values
-from rpy2.rinterface_lib.na_values import NULLType
+from rpy2.rinterface_lib.sexp import NULLType
 import rpy2.rinterface_lib.bufferprotocol as bufferprotocol
 import rpy2.rinterface_lib.sexp as sexp
 from rpy2.rinterface_lib.sexp import SexpEnvironment

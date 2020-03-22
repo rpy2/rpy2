@@ -1,6 +1,5 @@
 # TODO: make it cffi-buildable with conditional function definition
 # (Python if ABI, C if API)
-import abc
 import enum
 import logging
 from typing import Tuple
