@@ -7,8 +7,8 @@ from typing import Callable
 from typing import Dict
 from typing import Type
 from typing import Union
-from . import openrlib
-from . import _rinterface_capi as _rinterface
+from rpy2.rinterface_lib import openrlib
+from rpy2.rinterface_lib import _rinterface_capi as _rinterface
 
 ffi = openrlib.ffi
 
@@ -21,7 +21,7 @@ class DummyMissingRpy2Map(object):
 
 
 _R_RPY2_DEFAULT_MAP: Type[
-    Union[DummyMissingRpy2Map, _rinterface.SupportsSEXP]
+    Union[DummyMissingRpy2Map, '_rinterface.SupportsSEXP']
 ] = DummyMissingRpy2Map
 
 # TODO: shouldn't the second type strictly inherit from an rpy2
