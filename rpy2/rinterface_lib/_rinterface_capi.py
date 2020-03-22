@@ -1,5 +1,6 @@
 # TODO: make it cffi-buildable with conditional function definition
 # (Python if ABI, C if API)
+import abc
 import enum
 import logging
 from typing import Tuple
@@ -88,11 +89,7 @@ else:
     _capsule_finalizer_c = None
 
 
-class UnmanagedSexpCapsule(object):
-
-    def __init__(self, cdata: ffi.CData):
-        assert is_cdata_sexp(cdata)
-        self._cdata = cdata
+class CapsuleBase:
 
     @property
     def typeof(self) -> int:
@@ -103,7 +100,30 @@ class UnmanagedSexpCapsule(object):
         return get_rid(self._cdata)
 
 
-class SexpCapsule(UnmanagedSexpCapsule):
+class UninitializedRCapsule(CapsuleBase):
+
+    @property
+    def _cdata(self):
+        raise RuntimeError('The embedded R is not initialized.')
+
+    @property
+    def typeof(self) -> int:
+        return self._typeof
+
+    def __init__(self, typeof):
+        self._typeof = typeof
+
+
+class UnmanagedSexpCapsule(CapsuleBase):
+
+    __slots__ = ('_cdata', )
+
+    def __init__(self, cdata: ffi.CData):
+        assert is_cdata_sexp(cdata)
+        self._cdata = cdata
+
+
+class SexpCapsule(CapsuleBase):
 
     __slots__ = ('_cdata', )
 

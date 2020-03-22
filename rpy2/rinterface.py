@@ -7,10 +7,16 @@ from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
 import rpy2.rinterface_lib.embedded as embedded
 import rpy2.rinterface_lib.conversion as conversion
+from rpy2.rinterface_lib.conversion import _cdata_res_to_rinterface
 import rpy2.rinterface_lib.memorymanagement as memorymanagement
-import rpy2.rinterface_lib.na_values as na_values
+from rpy2.rinterface_lib import na_values
+from rpy2.rinterface_lib.na_values import NULLType
 import rpy2.rinterface_lib.bufferprotocol as bufferprotocol
 import rpy2.rinterface_lib.sexp as sexp
+from rpy2.rinterface_lib.sexp import SexpEnvironment
+from rpy2.rinterface_lib.sexp import emptyenv
+from rpy2.rinterface_lib.sexp import baseenv
+from rpy2.rinterface_lib.sexp import globalenv
 
 if os.name == 'nt':
     import rpy2.rinterface_lib.embedded_mswin as embedded_mswin
@@ -24,8 +30,6 @@ RTYPES = sexp.RTYPES
 
 unserialize = sexp.unserialize
 
-_cdata_res_to_rinterface = conversion._cdata_res_to_rinterface
-_evaluated_promise = _rinterface._evaluated_promise
 R_NilValue = openrlib.rlib.R_NilValue
 
 endr = embedded.endr
@@ -91,32 +95,6 @@ def vector_memoryview(obj: sexp.SexpVector,
     return mv
 
 
-class NULLType(sexp.Sexp, metaclass=na_values.SingletonABC):
-    """A singleton class for R's NULL."""
-
-    def __init__(self):
-        embedded.assert_isready()
-        super().__init__(
-            sexp.Sexp(
-                _rinterface.UnmanagedSexpCapsule(
-                    openrlib.rlib.R_NilValue
-                )
-            )
-        )
-
-    def __bool__(self) -> bool:
-        """This is always False."""
-        return False
-
-    @property
-    def __sexp__(self) -> _rinterface.SexpCapsule:
-        return self._sexpobject
-
-    @property
-    def rid(self) -> int:
-        return self._sexpobject.rid
-
-
 class _MissingArgType(sexp.Sexp, metaclass=na_values.SingletonABC):
 
     def __init__(self):
@@ -163,178 +141,6 @@ class SexpSymbol(sexp.Sexp):
         )
 
 
-class SexpEnvironment(sexp.Sexp):
-    """Proxy for an R "environment" object.
-
-    An R "environment" object can be thought of as a mix of a
-    mapping (like a `dict`) and a scope. To make it more "Pythonic",
-    both aspects are kept separate and the method `__getitem__` will
-    get an item as it would for a Python `dict` while the method `find`
-    will get an item as if it was a scope.
-
-    As soon as R is initialized the following main environments become
-    available to the user:
-    - `globalenv`: The "workspace" for the current R process. This can
-      be thought of as when `__name__ == '__main__'` in Python.
-    - `baseenv`: The namespace of R's "base" package.
-    """
-
-    @_cdata_res_to_rinterface
-    @_evaluated_promise
-    def find(self,
-             key: str,
-             wantfun: bool = False) -> sexp.Sexp:
-        """Find an item, starting with this R environment.
-
-        Raises a `KeyError` if the key cannot be found.
-
-        This method is called `find` because it is somewhat different
-        from the method :meth:`get` in Python mappings such :class:`dict`.
-        This is looking for a key across enclosing environments, returning
-        the first key found."""
-
-        if not isinstance(key, str):
-            raise TypeError('The key must be a non-empty string.')
-        elif not len(key):
-            raise ValueError('The key must be a non-empty string.')
-        with memorymanagement.rmemory() as rmemory:
-            symbol = rmemory.protect(
-                openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
-            )
-            if wantfun:
-                # One would expect this to be like
-                #   res = _rinterface._findfun(symbol, self.__sexp__._cdata)
-                # but R's findfun will segfault if the symbol is not in
-                # the environment. :/
-                rho = self
-                while rho.rid != emptyenv.rid:
-                    res = _rinterface._findVarInFrame(symbol,
-                                                      rho.__sexp__._cdata)
-                    if _rinterface._TYPEOF(res) in (openrlib.rlib.CLOSXP,
-                                                    openrlib.rlib.BUILTINSXP):
-                        break
-                    # TODO: move check of R_UnboundValue to _rinterface ?
-                    res = openrlib.rlib.R_UnboundValue
-                    rho = rho.enclos
-            else:
-                res = _rinterface._findvar(symbol, self.__sexp__._cdata)
-        # TODO: move check of R_UnboundValue to _rinterface ?
-        if res == openrlib.rlib.R_UnboundValue:
-            raise KeyError("'%s' not found" % key)
-        return res
-
-    @_cdata_res_to_rinterface
-    @_evaluated_promise
-    def __getitem__(self, key: str) -> typing.Any:
-        if not isinstance(key, str):
-            raise TypeError('The key must be a non-empty string.')
-        elif not len(key):
-            raise ValueError('The key must be a non-empty string.')
-        with memorymanagement.rmemory() as rmemory:
-            symbol = rmemory.protect(
-                openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
-            )
-            res = _rinterface._findVarInFrame(symbol, self.__sexp__._cdata)
-        # TODO: move check of R_UnboundValue to _rinterface
-        if res == openrlib.rlib.R_UnboundValue:
-            raise KeyError("'%s' not found" % key)
-        return res
-
-    def __setitem__(self, key: str, value) -> None:
-        # TODO: move body to _rinterface-level function
-        if not isinstance(key, str):
-            raise TypeError('The key must be a non-empty string.')
-        elif not len(key):
-            raise ValueError('The key must be a non-empty string.')
-        if (self.__sexp__._cdata == openrlib.rlib.R_BaseEnv) or \
-           (self.__sexp__._cdata == openrlib.rlib.R_EmptyEnv):
-            raise ValueError('Cannot remove variables from the base or '
-                             'empty environments.')
-        # TODO: call to Rf_duplicate needed ?
-        with memorymanagement.rmemory() as rmemory:
-            symbol = rmemory.protect(
-                openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
-            )
-            cdata = rmemory.protect(conversion._get_cdata(value))
-            cdata_copy = rmemory.protect(
-                openrlib.rlib.Rf_duplicate(cdata)
-            )
-            openrlib.rlib.Rf_defineVar(symbol,
-                                       cdata_copy,
-                                       self.__sexp__._cdata)
-
-    def __len__(self) -> int:
-        with memorymanagement.rmemory() as rmemory:
-            symbols = rmemory.protect(
-                openrlib.rlib.R_lsInternal(self.__sexp__._cdata,
-                                           openrlib.rlib.TRUE)
-            )
-            n = openrlib.rlib.Rf_xlength(symbols)
-        return n
-
-    def __delitem__(self, key: str) -> None:
-        # Testing that key is a non-empty string is implicitly
-        # performed when checking that the key is in the environment.
-        if key not in self:
-            raise KeyError("'%s' not found" % key)
-
-        if self.__sexp__ == baseenv.__sexp__:
-            raise ValueError('Values from the R base environment '
-                             'cannot be removed.')
-        # TODO: also check it is not R_EmpyEnv or R_BaseNamespace
-        if self.is_locked():
-            ValueError('Cannot remove an item from a locked '
-                       'environment.')
-
-        with memorymanagement.rmemory() as rmemory:
-            key_cdata = rmemory.protect(
-                openrlib.rlib.Rf_mkString(conversion._str_to_cchar(key))
-            )
-            _rinterface._remove(key_cdata,
-                                self.__sexp__._cdata,
-                                openrlib.rlib.Rf_ScalarLogical(
-                                    openrlib.rlib.FALSE))
-
-    @_cdata_res_to_rinterface
-    def frame(self) -> 'typing.Union[NULLType, SexpEnvironment]':
-        """Get the parent frame of the environment."""
-        return openrlib.rlib.FRAME(self.__sexp__._cdata)
-
-    @property
-    @_cdata_res_to_rinterface
-    def enclos(self) -> 'typing.Union[NULLType, SexpEnvironment]':
-        """Get or set the enclosing environment."""
-        return openrlib.rlib.ENCLOS(self.__sexp__._cdata)
-
-    @enclos.setter
-    def enclos(self, value: 'SexpEnvironment') -> None:
-        assert isinstance(value, SexpEnvironment)
-        openrlib.rlib.SET_ENCLOS(self.__sexp__._cdata,
-                                 value.__sexp__._cdata)
-
-    def keys(self) -> typing.Generator[str, None, None]:
-        """Generator over the keys (symbols) in the environment."""
-        with memorymanagement.rmemory() as rmemory:
-            symbols = rmemory.protect(
-                openrlib.rlib.R_lsInternal(self.__sexp__._cdata,
-                                           openrlib.rlib.TRUE)
-            )
-            n = openrlib.rlib.Rf_xlength(symbols)
-            res = []
-            for i in range(n):
-                res.append(_rinterface._string_getitem(symbols, i))
-        for e in res:
-            yield e
-
-    def __iter__(self) -> typing.Generator[str, None, None]:
-        """See method `keys()`."""
-        return self.keys()
-
-    def is_locked(self) -> bool:
-        return openrlib.rlib.R_EnvironmentIsLocked(
-            self.__sexp__._cdata)
-
-
 class SexpPromise(Sexp):
 
     @_cdata_res_to_rinterface
@@ -345,7 +151,7 @@ class SexpPromise(Sexp):
           promise.
         """
         if not env:
-            env = embedded.globalenv
+            env = globalenv
         return openrlib.rlib.Rf_eval(self.__sexp__._cdata, env)
 
 
@@ -785,7 +591,7 @@ class SexpClosure(Sexp):
             res = rmemory.protect(
                 openrlib.rlib.R_tryEval(
                     call_r,
-                    embedded.globalenv.__sexp__._cdata,
+                    globalenv.__sexp__._cdata,
                     error_occured))
             if error_occured[0]:
                 raise embedded.RRuntimeError(_rinterface._geterrmessage())
@@ -950,9 +756,6 @@ class RRuntimeWarning(RuntimeWarning):
     pass
 
 
-emptyenv = None
-baseenv = None
-globalenv = None
 NULL = None
 MissingArg = None
 NA_Character = None
@@ -995,23 +798,9 @@ initr = initr_checkenv
 
 def _post_initr_setup() -> None:
 
-    embedded.emptyenv = SexpEnvironment(
-        _rinterface.SexpCapsule(openrlib.rlib.R_EmptyEnv)
-    )
-    global emptyenv
-    emptyenv = embedded.emptyenv
-
-    embedded.baseenv = SexpEnvironment(
-        _rinterface.SexpCapsule(openrlib.rlib.R_BaseEnv)
-    )
-    global baseenv
-    baseenv = embedded.baseenv
-
-    embedded.globalenv = SexpEnvironment(
-        _rinterface.SexpCapsule(openrlib.rlib.R_GlobalEnv)
-    )
-    global globalenv
-    globalenv = embedded.globalenv
+    emptyenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_EmptyEnv)
+    baseenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_BaseEnv)
+    globalenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_GlobalEnv)
 
     global NULL
     NULL = NULLType()
