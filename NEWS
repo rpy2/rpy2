@@ -63,6 +63,10 @@ Changes
 - :mod:`rpy2.rinterface_lib.embedded` has a module-level "constant"
   `DEFAULT_C_STACK_LIMIT` used when initializing the embedded R.
 
+- When creating a :mod:`rpy2.robjects.vectors.DataFrame` from (name, vector)
+  pairs, the names are no longer transformed to syntactically valid R
+  symbols (issue #660).
+
 Bugs fixed
 -----------
 

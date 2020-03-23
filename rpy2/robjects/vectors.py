@@ -1170,15 +1170,16 @@ class DataFrame(ListVector):
         </table>
     """)
 
-    def __init__(self, obj, stringsasfactor=False):
+    def __init__(self, obj, stringsasfactor=False, checknames=False):
         """ Create a new data frame.
 
         :param obj: object inheriting from rpy2.rinterface.SexpVector,
-                    or inheriting from TaggedList
-                    or a mapping name -> value
+            or inheriting from TaggedList or a mapping name -> value
         :param stringsasfactors: Boolean indicating whether vectors
-                    of strings should be turned to vectors. Note
-                    that factors will not be turned to string vectors.
+            of strings should be turned to vectors. Note that factors
+            will not be turned to string vectors.
+        :param checknames: Boolean indicating whether column names
+            should be transformed to R syntactically valid names.
         """
         if isinstance(obj, rinterface.ListSexpVector):
             if obj.typeof != rinterface.RTYPES.VECSXP:
@@ -1222,7 +1223,8 @@ class DataFrame(ListVector):
                           'conflicting with named parameter '
                           'in underlying R function "data.frame()".')
         else:
-            kv.append(('stringsAsFactors', stringsasfactor))
+            kv.extend((('stringsAsFactors', stringsasfactor),
+                       ('check.names', checknames)))
 
         # Call R's data frame constructor
         kv = tuple(kv)

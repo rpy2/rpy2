@@ -72,6 +72,13 @@ class TestPandasConversions(object):
         assert pd_df.shape[1] == rp_df.ncol
         # assert tuple(rp_df.rx2('s')) == (b'b', b'c', b'd')
         assert tuple(rp_df.rx2('u')) == ('a', 'b', 'c')
+
+    def test_dataframe_columnnames(self):
+        pd_df = pandas.DataFrame({'the one': [1, 2], 'the other': [3, 4]})
+        # Convert to R
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_df = robjects.conversion.py2rpy(pd_df)
+        assert tuple(rp_df.names) == ('the one', 'the other')
         
     def test_series(self):
         Series = pandas.core.series.Series
