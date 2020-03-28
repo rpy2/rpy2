@@ -852,7 +852,7 @@ class Date(FloatVector):
         else:
             raise TypeError(
                 'Unable to create an R Date vector from objects of type %s' %
-                type(se))
+                type(seq))
         super().__init__(init_param)
 
     @classmethod

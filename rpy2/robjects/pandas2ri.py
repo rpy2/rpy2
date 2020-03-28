@@ -93,7 +93,7 @@ def py2rpy_categoryseries(obj):
     return res
 
 
-_PANDASTYPE2RPY2 =  {
+_PANDASTYPE2RPY2 = {
     datetime.date: Date,
     int: IntVector,
     bool: BoolVector,
