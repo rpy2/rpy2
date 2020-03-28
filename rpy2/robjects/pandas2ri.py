@@ -8,7 +8,7 @@ from rpy2.rinterface import (IntSexpVector,
                              Sexp,
                              SexpVector,
                              StrSexpVector)
-
+import datetime
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pandas.core.series import Series as PandasSeries
 from pandas.core.index import Index as PandasIndex
@@ -20,6 +20,7 @@ import warnings
 from collections import OrderedDict
 from rpy2.robjects.vectors import (BoolVector,
                                    DataFrame,
+                                   Date,
                                    FactorVector,
                                    FloatSexpVector,
                                    StrVector,
@@ -92,6 +93,18 @@ def py2rpy_categoryseries(obj):
     return res
 
 
+_PANDASTYPE2RPY2 =  {
+    datetime.date: Date,
+    int: IntVector,
+    bool: BoolVector,
+    None: BoolVector,
+    str: StrVector,
+    bytes: numpy2ri.converter.py2rpy.registry[
+        numpy.ndarray
+    ]
+}
+
+
 @py2rpy.register(PandasSeries)
 def py2rpy_pandasseries(obj):
     if obj.dtype.name == 'O':
@@ -125,15 +138,7 @@ def py2rpy_pandasseries(obj):
             if type(x) is not homogeneous_type:
                 raise ValueError('Series can only be of one type, or None.')
         # TODO: Could this be merged with obj.type.name == 'O' case above ?
-        res = {
-            int: IntVector,
-            bool: BoolVector,
-            None: BoolVector,
-            str: StrVector,
-            bytes: numpy2ri.converter.py2rpy.registry[
-                numpy.ndarray
-            ]
-        }[homogeneous_type](obj)
+        res = _PANDASTYPE2RPY2[homogeneous_type](obj)
     elif obj.dtype.name in integer_array_types:
         if not obj.dtype.numpy_dtype.isnative:
             raise(ValueError('Cannot pass numpy arrays with non-native byte'

@@ -13,6 +13,7 @@ import jinja2
 import time
 import pytz
 import tzlocal
+from datetime import date
 from datetime import datetime
 from time import struct_time, mktime, tzname
 from operator import attrgetter
@@ -827,6 +828,36 @@ def get_timezone():
     else:
         timezone = tzlocal.get_localzone()
     return timezone
+
+
+class Date(FloatVector):
+    """ Representation of dates as number of days since 1/1/1970.
+
+    Date(seq) -> Date.
+
+    The constructor accepts either an R vector floats
+    or a sequence (an object with the Python
+    sequence interface) of time.struct_time objects.
+    """
+
+    def __init__(self, seq):
+        """ Create a POSIXct from either an R vector or a sequence
+        of Python datetime.date objects.
+        """
+
+        if isinstance(seq, Sexp):
+            init_param = seq
+        elif isinstance(seq[0], date):
+            init_param = Date.sexp_from_date(seq)
+        else:
+            raise TypeError(
+                'Unable to create an R Date vector from objects of type %s' %
+                type(se))
+        super().__init__(init_param)
+
+    @classmethod
+    def sexp_from_date(cls, seq):
+        return cls(FloatVector(seq))
 
 
 class POSIXct(POSIXt, FloatVector):

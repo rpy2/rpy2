@@ -257,6 +257,14 @@ class TestPandasConversions(object):
             assert math.isnan(rp_c[1])
             assert rp_c[0] != rp_c[1]
 
+    def test_date2posixct(self):
+        today = datetime.now().date()
+        date = pandas.Series([today])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_c = robjects.conversion.py2rpy(date)
+            assert isinstance(rp_c, robjects.vectors.IntSexpVector)
+            assert tuple(int(x) for x in rp_c) == tuple(today.to_ordinal())
+
     def test_timeR2Pandas(self):
         tzone = robjects.vectors.get_timezone()
         dt = [datetime(1960, 5, 2),
