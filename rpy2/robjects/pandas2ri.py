@@ -11,7 +11,7 @@ from rpy2.rinterface import (IntSexpVector,
 import datetime
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pandas.core.series import Series as PandasSeries
-from pandas.core.index import Index as PandasIndex
+from pandas import Index as PandasIndex
 from pandas.core.dtypes.api import is_datetime64_any_dtype
 import pandas
 import numpy
