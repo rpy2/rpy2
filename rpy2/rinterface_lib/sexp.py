@@ -509,7 +509,7 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
                                                _rinterface.SexpCapsule):
             super().__init__(obj)
         elif isinstance(obj, collections.abc.Sized):
-            super().__init__(type(self).from_object(obj).__sexp__)
+            super().__init__(self.from_object(obj).__sexp__)
         else:
             raise TypeError('The constructor must be called '
                             'with an instance of '
@@ -611,7 +611,7 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
             res = conversion._cdata_to_rinterface(
                 self._R_VECTOR_ELT(cdata, i_c))
         elif isinstance(i, slice):
-            res = type(self).from_iterable(
+            res = self.from_iterable(
                 [
                     self._R_VECTOR_ELT(
                         cdata, i_c
@@ -641,6 +641,10 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
 
     def __len__(self) -> int:
         return openrlib.rlib.Rf_xlength(self.__sexp__._cdata)
+
+    def __iter__(self) -> typing.Iterator[typing.Union[Sexp, VT, typing.Any]]:
+        for i in range(len(self)):
+            yield self[i]
 
     def index(self, item: typing.Any) -> int:
         for i, e in enumerate(self):
@@ -674,7 +678,7 @@ class StrSexpVector(SexpVector):
             i_c = _rinterface._python_index_to_c(cdata, i)
             res = _rinterface._string_getitem(cdata, i_c)
         elif isinstance(i, slice):
-            res = type(self).from_iterable(
+            res = self.from_iterable(
                 [_rinterface._string_getitem(cdata, i_c)
                  for i_c in range(*i.indices(len(self)))]
             )

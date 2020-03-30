@@ -1,4 +1,3 @@
-import abc
 import atexit
 import os
 import math
@@ -21,7 +20,7 @@ from rpy2.rinterface_lib.sexp import globalenv
 
 if os.name == 'nt':
     import rpy2.rinterface_lib.embedded_mswin as embedded_mswin
-    embedded._initr = embedded_mswin._initr
+    embedded._initr = embedded_mswin._initr_win32
 
 Sexp = sexp.Sexp
 StrSexpVector = sexp.StrSexpVector
@@ -163,14 +162,16 @@ NPCOMPAT_TYPE = typing.TypeVar('NPCOMPAT_TYPE',
                                'FloatSexpVector')
 
 
-class NumpyArrayInterface(abc.ABC):
+class NumpyArrayMixin:
     """Numpy-specific API for accessing the content of a numpy array.
 
     This interface implements version 3 of Numpy's `__array_interface__`
     and is only available / possible for some of the R vectors."""
 
     @property
-    def __array_interface__(self: NPCOMPAT_TYPE) -> dict:
+    def __array_interface__(
+            self: typing.Intersection['NumpyArrayMixin', NPCOMPAT_TYPE]
+    ) -> dict:
         """Return an `__array_interface__` version 3.
 
         Note that the pointer returned in the items 'data' corresponds to
@@ -190,7 +191,7 @@ class NumpyArrayInterface(abc.ABC):
                 'version': 3}
 
 
-class ByteSexpVector(SexpVector, NumpyArrayInterface):
+class ByteSexpVector(SexpVector, NumpyArrayMixin):
     """Array of bytes.
 
     This is the R equivalent to a Python :class:`bytesarray`.
@@ -259,7 +260,7 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
 
 
-class BoolSexpVector(SexpVector, NumpyArrayInterface):
+class BoolSexpVector(NumpyArrayMixin, SexpVector):
     """Array of booleans.
 
     Note that R is internally storing booleans as integers to
@@ -321,7 +322,7 @@ def nullable_int(v):
         return int(v)
 
 
-class IntSexpVector(SexpVector, NumpyArrayInterface):
+class IntSexpVector(SexpVector, NumpyArrayMixin):
 
     _R_TYPE = openrlib.rlib.INTSXP
     _R_SET_VECTOR_ELT = openrlib.SET_INTEGER_ELT
@@ -368,7 +369,7 @@ class IntSexpVector(SexpVector, NumpyArrayInterface):
         return vector_memoryview(self, 'int', 'i')
 
 
-class FloatSexpVector(SexpVector, NumpyArrayInterface):
+class FloatSexpVector(SexpVector, NumpyArrayMixin):
 
     _R_TYPE = openrlib.rlib.REALSXP
     _R_VECTOR_ELT = openrlib.REAL_ELT
@@ -779,7 +780,7 @@ NA_Real = None
 NA_Complex = None
 
 
-def initr_simple() -> int:
+def initr_simple() -> typing.Optional[int]:
     """Initialize R's embedded C library."""
     with openrlib.rlock:
         status = embedded._initr()
@@ -789,7 +790,7 @@ def initr_simple() -> int:
         return status
 
 
-def initr_checkenv() -> typing.Union[int, None]:
+def initr_checkenv() -> typing.Optional[int]:
     # Force the internal initialization flag if there is an environment
     # variable that indicates that R was alreay initialized in the current
     # process.

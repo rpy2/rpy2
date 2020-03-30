@@ -7,6 +7,11 @@ raising a NotImplementedError exception.
 """
 
 from functools import singledispatch
+from typing import Any
+from typing import Callable
+from typing import Optional
+import typing
+from rpy2.rinterface_lib import _rinterface_capi
 import rpy2.rinterface_lib.sexp
 import rpy2.rinterface_lib.conversion
 import rpy2.rinterface
@@ -72,7 +77,7 @@ class NameClassMapContext(object):
                  d: dict):
         self._nameclassmap = nameclassmap
         self._d = d
-        self._keep = []
+        self._keep: typing.List[typing.Tuple[str, bool, Optional[str]]] = []
 
     def __enter__(self):
         nameclassmap = self._nameclassmap
@@ -232,9 +237,9 @@ class ConversionContext(object):
 
 localconverter = ConversionContext
 
-converter = None
-py2rpy = None
-rpy2py = None
+converter: Converter = Converter('empty')
+py2rpy: Callable[[Any], _rinterface_capi.SupportsSEXP] = converter.py2rpy
+rpy2py: Callable[[_rinterface_capi.SupportsSEXP], Any] = converter.rpy2py
 
 
 def set_conversion(this_converter):

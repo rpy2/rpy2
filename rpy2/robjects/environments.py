@@ -37,8 +37,8 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         return conversion.converter.rpy2py(super().enclos)
 
     @enclos.setter
-    def enclos(self, value) -> None:
-        super().enclos = value
+    def enclos(self, value: rinterface.SexpEnvironment) -> None:
+        super(Environment, self).enclos = value
 
     @property
     def frame(self):

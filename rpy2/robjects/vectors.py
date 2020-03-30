@@ -1,6 +1,7 @@
 import abc
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
+from rpy2.rinterface_lib import sexp
 from . import conversion
 
 import rpy2.rlike.container as rlc
@@ -997,10 +998,10 @@ class Array(Vector):
         value = conversion.py2rpy(value)
         self._dim_set(self, value)
 
-    dim = property(__dim_get, __dim_set,
+    dim = property(__dim_get, __dim_set, None,
                    "Get or set the dimension of the array.")
 
-    def __dimnames_get(self):
+    def __dimnames_get(self) -> sexp.Sexp:
         """ Return a list of name vectors
         (like the R function 'dimnames' does)."""
 

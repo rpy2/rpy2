@@ -3,6 +3,7 @@ import os
 import re
 import textwrap
 import typing
+from typing import Union
 import warnings
 from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin
@@ -146,7 +147,7 @@ class SignatureTranslatedFunction(Function):
     """ Python representation of an R function, where
     the names in named argument are translated to valid
     argument names in Python. """
-    _prm_translate = None
+    _prm_translate: typing.Optional[Union[OrderedDict, dict]] = None
 
     def __init__(self, sexp: rinterface.SexpClosure,
                  init_prm_translate=None,
@@ -155,10 +156,10 @@ class SignatureTranslatedFunction(Function):
                  symbol_resolve=default_symbol_resolve):
         super(SignatureTranslatedFunction, self).__init__(sexp)
         if init_prm_translate is None:
-            prm_translate = OrderedDict()
+            self._prm_translate = OrderedDict()
         else:
             assert isinstance(init_prm_translate, dict)
-            prm_translate = init_prm_translate
+            self._prm_translate = init_prm_translate
 
         formals = self.formals()
         if formals.__sexp__._cdata != rinterface.NULL.__sexp__._cdata:
@@ -166,7 +167,7 @@ class SignatureTranslatedFunction(Function):
              conflicts,
              resolutions) = _map_symbols(
                  formals.names,
-                 translation=prm_translate,
+                 translation=self._prm_translate,
                  symbol_r2python=symbol_r2python,
                  symbol_resolve=symbol_resolve)
 
@@ -181,8 +182,8 @@ class SignatureTranslatedFunction(Function):
             symbol_mapping.update(resolutions)
             reserved_pynames = set(dir(self))
 
-            prm_translate.update((k, v[0]) for k, v in symbol_mapping.items())
-        self._prm_translate = prm_translate
+            self._prm_translate.update((k, v[0])
+                                       for k, v in symbol_mapping.items())
         if hasattr(sexp, '__rname__'):
             self.__rname__ = sexp.__rname__
 
@@ -204,7 +205,7 @@ pattern_samp = re.compile(r'\\samp\{(.+?)\}')
 
 class DocumentedSTFunction(SignatureTranslatedFunction):
 
-    def __init__(self, sexp: rinterface.sexp.Sexp,
+    def __init__(self, sexp: rinterface.SexpClosure,
                  init_prm_translate=None,
                  packagename: typing.Optional[str] = None):
         super(DocumentedSTFunction,
