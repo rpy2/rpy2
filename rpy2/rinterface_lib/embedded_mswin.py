@@ -6,6 +6,7 @@ ffi = openrlib.ffi
 
 _DEFAULT_C_STACK_LIMIT = -1
 
+
 def _initr_win32(
         interactive: bool = True,
         _want_setcallbacks: bool = True,
