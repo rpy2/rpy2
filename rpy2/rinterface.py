@@ -170,7 +170,7 @@ class NumpyArrayMixin:
 
     @property
     def __array_interface__(
-            self: typing.Intersection['NumpyArrayMixin', NPCOMPAT_TYPE]
+            self: NPCOMPAT_TYPE
     ) -> dict:
         """Return an `__array_interface__` version 3.
 
@@ -191,7 +191,7 @@ class NumpyArrayMixin:
                 'version': 3}
 
 
-class ByteSexpVector(SexpVector, NumpyArrayMixin):
+class ByteSexpVector(NumpyArrayMixin, SexpVector):
     """Array of bytes.
 
     This is the R equivalent to a Python :class:`bytesarray`.
@@ -322,7 +322,7 @@ def nullable_int(v):
         return int(v)
 
 
-class IntSexpVector(SexpVector, NumpyArrayMixin):
+class IntSexpVector(NumpyArrayMixin, SexpVector):
 
     _R_TYPE = openrlib.rlib.INTSXP
     _R_SET_VECTOR_ELT = openrlib.SET_INTEGER_ELT
@@ -369,7 +369,7 @@ class IntSexpVector(SexpVector, NumpyArrayMixin):
         return vector_memoryview(self, 'int', 'i')
 
 
-class FloatSexpVector(SexpVector, NumpyArrayMixin):
+class FloatSexpVector(NumpyArrayMixin, SexpVector):
 
     _R_TYPE = openrlib.rlib.REALSXP
     _R_VECTOR_ELT = openrlib.REAL_ELT
