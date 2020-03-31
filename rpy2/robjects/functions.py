@@ -147,7 +147,7 @@ class SignatureTranslatedFunction(Function):
     """ Python representation of an R function, where
     the names in named argument are translated to valid
     argument names in Python. """
-    _prm_translate: typing.Optional[Union[OrderedDict, dict]] = None
+    _prm_translate: Union[OrderedDict, dict] = {}
 
     def __init__(self, sexp: rinterface.SexpClosure,
                  init_prm_translate=None,
@@ -429,6 +429,5 @@ def wrap_r_function(
     wrapped_func.__qualname__ = name
     wrapped_func.__signature__ = signature
     wrapped_func.__doc__ = docstring
-    wrapped_func._r_func = r_func
 
     return wrapped_func

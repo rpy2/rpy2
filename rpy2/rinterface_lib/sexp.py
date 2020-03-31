@@ -90,7 +90,7 @@ class Sexp(SupportsSEXP):
         return super().__repr__() + (' [%s]' % self.typeof)
 
     @property
-    def __sexp__(self) -> '_rinterface.SexpCapsule':
+    def __sexp__(self) -> '_rinterface.CapsuleBase':
         """Access to the underlying C pointer to the R object.
 
         When assigning a new SexpCapsule to this attribute, the
@@ -100,7 +100,7 @@ class Sexp(SupportsSEXP):
 
     @__sexp__.setter
     def __sexp__(self,
-                 value: '_rinterface.SexpCapsule') -> None:
+                 value: '_rinterface.CapsuleBase') -> None:
         assert isinstance(value, _rinterface.SexpCapsule)
         if value.typeof != self.__sexp__.typeof:
             raise ValueError('New capsule type mismatch: %s' %
@@ -448,8 +448,6 @@ class SexpEnvironment(Sexp):
             self.__sexp__._cdata)
 
 
-# R environments, initialized with rpy2.rinterface.SexpEnvironment
-# objects when R is initialized.
 _UNINIT_CAPSULE_ENV = _rinterface.UninitializedRCapsule(RTYPES.ENVSXP.value)
 emptyenv = SexpEnvironment(_UNINIT_CAPSULE_ENV)
 baseenv = SexpEnvironment(_UNINIT_CAPSULE_ENV)
@@ -732,7 +730,7 @@ _DEFAULT_RCLASS_NAMES = {
     RTYPES.LANGSXP: 'language'}
 
 
-def rclass_get(scaps: _rinterface.SexpCapsule) -> StrSexpVector:
+def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
     rlib = openrlib.rlib
     with memorymanagement.rmemory() as rmemory:
         classes = rmemory.protect(
@@ -760,7 +758,7 @@ def rclass_get(scaps: _rinterface.SexpCapsule) -> StrSexpVector:
 
 
 def rclass_set(
-        scaps: _rinterface.SexpCapsule,
+        scaps: _rinterface.CapsuleBase,
         value: 'typing.Union[StrSexpVector, str]'
 ) -> None:
     if isinstance(value, StrSexpVector):

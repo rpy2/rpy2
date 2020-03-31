@@ -12,8 +12,14 @@ import rpy2.rinterface_lib.memorymanagement as memorymanagement
 from rpy2.rinterface_lib import na_values
 from rpy2.rinterface_lib.sexp import NULLType
 import rpy2.rinterface_lib.bufferprotocol as bufferprotocol
-import rpy2.rinterface_lib.sexp as sexp
+from rpy2.rinterface_lib import sexp
+from rpy2.rinterface_lib.sexp import CharSexp  # noqa: F401
+from rpy2.rinterface_lib.sexp import RTYPES
+from rpy2.rinterface_lib.sexp import SexpVector
+from rpy2.rinterface_lib.sexp import StrSexpVector
+from rpy2.rinterface_lib.sexp import Sexp
 from rpy2.rinterface_lib.sexp import SexpEnvironment
+from rpy2.rinterface_lib.sexp import unserialize  # noqa: F401
 from rpy2.rinterface_lib.sexp import emptyenv
 from rpy2.rinterface_lib.sexp import baseenv
 from rpy2.rinterface_lib.sexp import globalenv
@@ -21,14 +27,6 @@ from rpy2.rinterface_lib.sexp import globalenv
 if os.name == 'nt':
     import rpy2.rinterface_lib.embedded_mswin as embedded_mswin
     embedded._initr = embedded_mswin._initr_win32
-
-Sexp = sexp.Sexp
-StrSexpVector = sexp.StrSexpVector
-CharSexp = sexp.CharSexp
-SexpVector = sexp.SexpVector
-RTYPES = sexp.RTYPES
-
-unserialize = sexp.unserialize
 
 R_NilValue = openrlib.rlib.R_NilValue
 
@@ -95,27 +93,6 @@ def vector_memoryview(obj: sexp.SexpVector,
     return mv
 
 
-class _MissingArgType(sexp.Sexp, metaclass=na_values.SingletonABC):
-
-    def __init__(self):
-        embedded.assert_isready()
-        super().__init__(
-            sexp.Sexp(
-                _rinterface.UnmanagedSexpCapsule(
-                    openrlib.rlib.R_MissingArg
-                )
-            )
-        )
-
-    def __bool__(self) -> bool:
-        """This is always False."""
-        return False
-
-    @property
-    def __sexp__(self) -> _rinterface.SexpCapsule:
-        return self._sexpobject
-
-
 class SexpSymbol(sexp.Sexp):
     """An unevaluated R symbol."""
 
@@ -139,6 +116,37 @@ class SexpSymbol(sexp.Sexp):
                 self._sexpobject._cdata
             )
         )
+
+
+class _MissingArgType(SexpSymbol, metaclass=na_values.SingletonABC):
+
+    def __init__(self):
+        if embedded.isready():
+            tmp = sexp.Sexp(
+                _rinterface.UnmanagedSexpCapsule(
+                    openrlib.rlib.R_MissingArg
+                )
+            )
+        else:
+            tmp = sexp.Sexp(
+                Sexp(_rinterface.UninitializedRCapsule(RTYPES.SYMSXP.value))
+            )
+        super().__init__(tmp)
+
+    def __bool__(self) -> bool:
+        """This is always False."""
+        return False
+
+    @property
+    def __sexp__(self) -> _rinterface.SexpCapsule:
+        return self._sexpobject
+
+
+# R environments, initialized with rpy2.rinterface.SexpEnvironment
+# objects when R is initialized.
+MissingArg = SexpSymbol(
+    _rinterface.UninitializedRCapsule(RTYPES.ENVSXP.value)
+)
 
 
 class SexpPromise(Sexp):
@@ -771,7 +779,7 @@ class RRuntimeWarning(RuntimeWarning):
 
 
 NULL = None
-MissingArg = None
+MissingArg = _MissingArgType()
 NA_Character = None
 NA_Integer = None
 NA_Logical = None
@@ -819,8 +827,9 @@ def _post_initr_setup() -> None:
     global NULL
     NULL = NULLType()
 
-    global MissingArg
-    MissingArg = _MissingArgType()
+    globalenv.__sexp__ = _rinterface.UnmanagedSexpCapsule(
+        openrlib.rlib.R_MissingArg
+    )
 
     global NA_Character
     na_values.NA_Character = na_values.NACharacterType()
