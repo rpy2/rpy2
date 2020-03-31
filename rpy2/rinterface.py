@@ -96,8 +96,14 @@ def vector_memoryview(obj: sexp.SexpVector,
 class SexpSymbol(sexp.Sexp):
     """An unevaluated R symbol."""
 
-    def __init__(self, obj):
-        if isinstance(obj, Sexp) or isinstance(obj, _rinterface.SexpCapsule):
+    def __init__(
+            self,
+            obj: Union[Sexp,
+                       _rinterface.SexpCapsule,
+                       _rinterface.UninitializedRCapsule,
+                       str]
+    ):
+        if isinstance(obj, Sexp) or isinstance(obj, _rinterface.CapsuleBase):
             super().__init__(obj)
         elif isinstance(obj, str):
             name_cdata = _rinterface.ffi.new('char []', obj.encode('utf-8'))
@@ -142,11 +148,7 @@ class _MissingArgType(SexpSymbol, metaclass=na_values.SingletonABC):
         return self._sexpobject
 
 
-# R environments, initialized with rpy2.rinterface.SexpEnvironment
-# objects when R is initialized.
-MissingArg = SexpSymbol(
-    _rinterface.UninitializedRCapsule(RTYPES.ENVSXP.value)
-)
+MissingArg = _MissingArgType()
 
 
 class SexpPromise(Sexp):
@@ -827,7 +829,7 @@ def _post_initr_setup() -> None:
     global NULL
     NULL = NULLType()
 
-    globalenv.__sexp__ = _rinterface.UnmanagedSexpCapsule(
+    MissingArg._sexpobject = _rinterface.UnmanagedSexpCapsule(
         openrlib.rlib.R_MissingArg
     )
 
