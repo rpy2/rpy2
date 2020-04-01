@@ -106,6 +106,10 @@ if numpy:
         template_converter += pandas2ri.converter
 
 
+def CELL_DISPLAY_DEFAULT(res, args):
+    return ro.r.show(res)
+
+
 class RInterpreterError(ri.embedded.RRuntimeError):
     """An error when running R code in a %%R magic cell."""
 
@@ -591,7 +595,11 @@ class RMagics(Magics):
         '-d', '--display',
         default=None,
         help=textwrap.dedent("""
-        Name of function to use to display the output of an R cell.
+        Name of function to use to display the output of an R cell (the last
+        object or function call that does not have a left-hand side
+        assignment). That function will have the signature `(robject, args)`
+        where `robject` is the R objects that is an output of the cell, and
+        `args` a namespace with all parameters passed to the cell.
         """))
     @argument(
         'code',
@@ -737,7 +745,7 @@ class RMagics(Magics):
                 except KeyError:
                     raise NameError("name '%s' is not defined" % args.display)
         else:
-            cell_display = ro.r.show
+            cell_display = CELL_DISPLAY_DEFAULT
 
         tmpd = self.setup_graphics(args)
 
@@ -764,7 +772,7 @@ class RMagics(Magics):
                                                .callbacks,
                                                'consolewrite_print',
                                                self.write_console_regular))
-                        cell_display(result)
+                        cell_display(result, args)
                         text_output += self.flush()
 
         except RInterpreterError as e:
