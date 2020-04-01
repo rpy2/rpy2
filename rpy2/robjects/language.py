@@ -6,6 +6,7 @@ Utilities for manipulating or evaluating the R language.
 #     hack to work around an issue with with calling R functions
 #     (language objects seem to be evaluated when doing so from rpy2
 #     but not when doing it from R).
+import typing
 import uuid
 from rpy2.robjects import conversion
 from rpy2.robjects.robject import RObject
@@ -38,6 +39,9 @@ def eval(x: str, envir: ri.SexpEnvironment = ri.globalenv) -> ri.Sexp:
     return res
 
 
+LangVector_VT = typing.TypeVar('LangVector_VT', bound='LangVector')
+
+
 class LangVector(RObject, ri.LangSexpVector):
     """R language object.
 
@@ -65,7 +69,7 @@ class LangVector(RObject, ri.LangSexpVector):
         return 'Rlang( {} )'.format(representation)
 
     @classmethod
-    def from_string(cls, s: str):
+    def from_string(cls: typing.Type[LangVector], s: str) -> LangVector:
         """Create an R language object from a string.
 
         Args:

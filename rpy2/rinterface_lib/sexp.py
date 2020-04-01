@@ -215,21 +215,22 @@ class NULLType(Sexp, metaclass=SingletonABC):
     """A singleton class for R's NULL."""
 
     def __init__(self):
-        embedded.assert_isready()
-        super().__init__(
-            Sexp(
+        if embedded.isready():
+            tmp = Sexp(
                 _rinterface.UnmanagedSexpCapsule(
                     openrlib.rlib.R_NilValue
                 )
             )
-        )
+        else:
+            tmp = Sexp(_rinterface.UninitializedRCapsule(RTYPES.NILSXP.value))
+        super().__init__(tmp)
 
     def __bool__(self) -> bool:
         """This is always False."""
         return False
 
     @property
-    def __sexp__(self) -> _rinterface.SexpCapsule:
+    def __sexp__(self) -> _rinterface.CapsuleBase:
         return self._sexpobject
 
     @property

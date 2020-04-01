@@ -135,7 +135,7 @@ class _MissingArgType(SexpSymbol, metaclass=na_values.SingletonABC):
             )
         else:
             tmp = sexp.Sexp(
-                Sexp(_rinterface.UninitializedRCapsule(RTYPES.SYMSXP.value))
+                _rinterface.UninitializedRCapsule(RTYPES.SYMSXP.value)
             )
         super().__init__(tmp)
 
