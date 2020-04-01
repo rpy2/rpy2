@@ -69,7 +69,7 @@ class LangVector(RObject, ri.LangSexpVector):
         return 'Rlang( {} )'.format(representation)
 
     @classmethod
-    def from_string(cls: typing.Type[LangVector], s: str) -> LangVector:
+    def from_string(cls: typing.Type[LangVector_VT], s: str) -> LangVector_VT:
         """Create an R language object from a string.
 
         Args:
