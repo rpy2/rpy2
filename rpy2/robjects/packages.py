@@ -162,8 +162,6 @@ class Package(ModuleType):
     __rname__ = None
     _translation = None
     _rpy2r = None
-    __fill_rpy2r__ = None
-    __update_dict__ = None
     _exported_names = None
     _symbol_r2python = None
     __version__ = None

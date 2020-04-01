@@ -69,12 +69,13 @@ def r_home_from_subprocess() -> Optional[str]:
     return res
 
 
+# TODO: move all Windows all code into an os-specific module ?
 def r_home_from_registry() -> Optional[str]:
     """Return the R home directory from the Windows Registry."""
     try:
-        import winreg
+        import winreg  # type: ignore
     except ImportError:
-        import _winreg as winreg
+        import _winreg as winreg  # type: ignore
     try:
         hkey = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE,
                                 'Software\\R-core\\R',
@@ -355,4 +356,7 @@ if __name__ == '__main__':
             print(row)
     elif args.action == 'LD_LIBRARY_PATH':
         r_home = get_r_home()
+        if not r_home:
+            print('R cannot be found in the PATH and RHOME cannot be found.')
+            sys.exit(1)
         print(r_ld_library_path_from_subprocess(r_home))

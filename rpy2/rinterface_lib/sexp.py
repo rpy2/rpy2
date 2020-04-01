@@ -90,7 +90,7 @@ class Sexp(SupportsSEXP):
         return super().__repr__() + (' [%s]' % self.typeof)
 
     @property
-    def __sexp__(self) -> '_rinterface.SexpCapsule':
+    def __sexp__(self) -> '_rinterface.CapsuleBase':
         """Access to the underlying C pointer to the R object.
 
         When assigning a new SexpCapsule to this attribute, the
@@ -100,7 +100,7 @@ class Sexp(SupportsSEXP):
 
     @__sexp__.setter
     def __sexp__(self,
-                 value: '_rinterface.SexpCapsule') -> None:
+                 value: '_rinterface.CapsuleBase') -> None:
         assert isinstance(value, _rinterface.SexpCapsule)
         if value.typeof != self.__sexp__.typeof:
             raise ValueError('New capsule type mismatch: %s' %
@@ -215,21 +215,22 @@ class NULLType(Sexp, metaclass=SingletonABC):
     """A singleton class for R's NULL."""
 
     def __init__(self):
-        embedded.assert_isready()
-        super().__init__(
-            Sexp(
+        if embedded.isready():
+            tmp = Sexp(
                 _rinterface.UnmanagedSexpCapsule(
                     openrlib.rlib.R_NilValue
                 )
             )
-        )
+        else:
+            tmp = Sexp(_rinterface.UninitializedRCapsule(RTYPES.NILSXP.value))
+        super().__init__(tmp)
 
     def __bool__(self) -> bool:
         """This is always False."""
         return False
 
     @property
-    def __sexp__(self) -> _rinterface.SexpCapsule:
+    def __sexp__(self) -> _rinterface.CapsuleBase:
         return self._sexpobject
 
     @property
@@ -448,8 +449,6 @@ class SexpEnvironment(Sexp):
             self.__sexp__._cdata)
 
 
-# R environments, initialized with rpy2.rinterface.SexpEnvironment
-# objects when R is initialized.
 _UNINIT_CAPSULE_ENV = _rinterface.UninitializedRCapsule(RTYPES.ENVSXP.value)
 emptyenv = SexpEnvironment(_UNINIT_CAPSULE_ENV)
 baseenv = SexpEnvironment(_UNINIT_CAPSULE_ENV)
@@ -509,7 +508,7 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
                                                _rinterface.SexpCapsule):
             super().__init__(obj)
         elif isinstance(obj, collections.abc.Sized):
-            super().__init__(type(self).from_object(obj).__sexp__)
+            super().__init__(self.from_object(obj).__sexp__)
         else:
             raise TypeError('The constructor must be called '
                             'with an instance of '
@@ -611,7 +610,7 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
             res = conversion._cdata_to_rinterface(
                 self._R_VECTOR_ELT(cdata, i_c))
         elif isinstance(i, slice):
-            res = type(self).from_iterable(
+            res = self.from_iterable(
                 [
                     self._R_VECTOR_ELT(
                         cdata, i_c
@@ -641,6 +640,10 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
 
     def __len__(self) -> int:
         return openrlib.rlib.Rf_xlength(self.__sexp__._cdata)
+
+    def __iter__(self) -> typing.Iterator[typing.Union[Sexp, VT, typing.Any]]:
+        for i in range(len(self)):
+            yield self[i]
 
     def index(self, item: typing.Any) -> int:
         for i, e in enumerate(self):
@@ -674,7 +677,7 @@ class StrSexpVector(SexpVector):
             i_c = _rinterface._python_index_to_c(cdata, i)
             res = _rinterface._string_getitem(cdata, i_c)
         elif isinstance(i, slice):
-            res = type(self).from_iterable(
+            res = self.from_iterable(
                 [_rinterface._string_getitem(cdata, i_c)
                  for i_c in range(*i.indices(len(self)))]
             )
@@ -728,7 +731,7 @@ _DEFAULT_RCLASS_NAMES = {
     RTYPES.LANGSXP: 'language'}
 
 
-def rclass_get(scaps: _rinterface.SexpCapsule) -> StrSexpVector:
+def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
     rlib = openrlib.rlib
     with memorymanagement.rmemory() as rmemory:
         classes = rmemory.protect(
@@ -756,7 +759,7 @@ def rclass_get(scaps: _rinterface.SexpCapsule) -> StrSexpVector:
 
 
 def rclass_set(
-        scaps: _rinterface.SexpCapsule,
+        scaps: _rinterface.CapsuleBase,
         value: 'typing.Union[StrSexpVector, str]'
 ) -> None:
     if isinstance(value, StrSexpVector):

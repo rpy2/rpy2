@@ -358,13 +358,13 @@ class Formula(RObjectMixin, rinterface.Sexp):
     def setenvironment(self, val):
         """ Set the environment in which a formula will find its symbols."""
         if not isinstance(val, rinterface.SexpEnvironment):
-            raise TypeError("The environment must be an instance of" +
-                             " rpy2.rinterface.Sexp.environment")
-        self.do_slot_assign(".Environment", val)
+            raise TypeError('The environment must be an instance of'
+                            ' rpy2.rinterface.Sexp.environment')
+        self.do_slot_assign('.Environment', val)
 
-    environment = property(getenvironment, setenvironment,
-                           "R environment in which the formula will look for" +
-                           " its variables.")
+    environment = property(getenvironment, setenvironment, None,
+                           'R environment in which the formula will look for '
+                           'its variables.')
 
 
 class R(object):
