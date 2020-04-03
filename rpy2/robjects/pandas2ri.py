@@ -10,7 +10,6 @@ from rpy2.rinterface import (IntSexpVector,
                              StrSexpVector)
 import datetime
 import functools
-from rpy2.rinterface import openrlib
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pandas.core.series import Series as PandasSeries
 from pandas import Index as PandasIndex
