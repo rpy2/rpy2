@@ -122,18 +122,15 @@ class TestPandasConversions(object):
         with localconverter(default_converter + rpyp.converter) as _:
             c = robjects.conversion.rpy2py(b)
 
-    def test_series_obj_str(self):
+    @pytest.mark.parametrize('data', (['x', 'y', 'z'],
+                                      ['x', 'y', None],
+                                      ['x', 'y', numpy.nan]))
+    def test_series_obj_str(self, data):
         Series = pandas.core.series.Series
-        s = Series(['x', 'y', 'z'], index=['a', 'b', 'c'])
+        s = Series(data, index=['a', 'b', 'c'])
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.StrSexpVector)
-
-        s = Series(['x', 'y', None], index=['a', 'b', 'c'])
-        with localconverter(default_converter + rpyp.converter) as cv:
-            rp_s = robjects.conversion.py2rpy(s)
-        assert isinstance(rp_s, rinterface.StrSexpVector)
-
 
     def test_series_obj_mixed(self):
         Series = pandas.core.series.Series
