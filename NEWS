@@ -71,6 +71,9 @@ Changes
   pairs, the names are no longer transformed to syntactically valid R
   symbols (issue #660).
 
+- The value `nan` in :mod:`pandas` Series with strings is now converter
+  to R NA (issue #668).
+
 Bugs fixed
 -----------
 
