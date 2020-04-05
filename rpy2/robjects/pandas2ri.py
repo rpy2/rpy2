@@ -98,7 +98,7 @@ def _str_populate_r_vector(iterable, r_vector,
                            set_elt,
                            cast_value):
     for i, v in enumerate(iterable):
-        if v == numpy.nan:
+        if v == numpy.nan or v is pandas.NA:
             v = None
         set_elt(r_vector, i, cast_value(v))
 

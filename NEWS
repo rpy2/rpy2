@@ -71,8 +71,11 @@ Changes
   pairs, the names are no longer transformed to syntactically valid R
   symbols (issue #660).
 
-- The value `nan` in :mod:`pandas` Series with strings is now converter
+- The value `nan` in :mod:`pandas` Series with strings is now converted
   to R NA (issue #668).
+
+- Initial support for :const:`pandas.NA` (still experimental in pandas
+  at the time of writing, and rpy2 support is limited to arrays of strings).
 
 Bugs fixed
 -----------

@@ -124,7 +124,9 @@ class TestPandasConversions(object):
 
     @pytest.mark.parametrize('data', (['x', 'y', 'z'],
                                       ['x', 'y', None],
-                                      ['x', 'y', numpy.nan]))
+                                      ['x', 'y', numpy.nan],
+                                      ['x', 'y', pandas.NA],
+    ))
     def test_series_obj_str(self, data):
         Series = pandas.core.series.Series
         s = Series(data, index=['a', 'b', 'c'])
