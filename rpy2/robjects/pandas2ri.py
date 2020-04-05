@@ -9,6 +9,7 @@ from rpy2.rinterface import (IntSexpVector,
                              SexpVector,
                              StrSexpVector)
 import datetime
+import functools
 from pandas.core.frame import DataFrame as PandasDataFrame
 from pandas.core.series import Series as PandasSeries
 from pandas import Index as PandasIndex
@@ -93,15 +94,25 @@ def py2rpy_categoryseries(obj):
     return res
 
 
+def _str_populate_r_vector(iterable, r_vector,
+                           set_elt,
+                           cast_value):
+    for i, v in enumerate(iterable):
+        if v == numpy.nan or v is pandas.NA:
+            v = None
+        set_elt(r_vector, i, cast_value(v))
+
+
 _PANDASTYPE2RPY2 = {
     datetime.date: Date,
     int: IntVector,
     bool: BoolVector,
     None: BoolVector,
-    str: StrVector,
-    bytes: numpy2ri.converter.py2rpy.registry[
+    str: functools.partial(StrVector.from_iterable,
+                           populate_func=_str_populate_r_vector),
+    bytes: (numpy2ri.converter.py2rpy.registry[
         numpy.ndarray
-    ]
+    ])
 }
 
 
