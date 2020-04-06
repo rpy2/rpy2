@@ -130,7 +130,7 @@ class TestPandasConversions(object):
          ['x', 'y', pandas.NA])
     )
     @pytest.mark.parametrize(
-        'dtype', ['O', pandas.StringDType()]
+        'dtype', ['O', pandas.StringDtype()]
     )
     def test_series_obj_str(self, data, dtype):
         Series = pandas.core.series.Series
