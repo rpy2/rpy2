@@ -78,7 +78,7 @@ Changes
   at the time of writing, and rpy2 support is limited to arrays of strings).
 
 - :pandas: series of dtype :class:`pandas.StringDType`, experimental in pandas 1.0,
-  are now supported by the converted (in the pandas-to-R direction)
+  are now supported by the converted (in the pandas-to-R direction)  (issue #669)
 
 Bugs fixed
 -----------
