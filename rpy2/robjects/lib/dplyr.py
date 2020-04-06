@@ -20,7 +20,8 @@ with warnings.catch_warnings():
 TARGET_VERSION = '0.8.'
 if not dplyr.__version__.startswith(TARGET_VERSION):
     warnings.warn(
-        'This was designed againt dplyr versions starting with %s but you have %s' %
+        'This was designed againt dplyr versions starting with %s'
+        ' but you have %s' %
         (TARGET_VERSION, dplyr.__version__))
 
 StringInEnv = namedtuple('StringInEnv', 'string env')
