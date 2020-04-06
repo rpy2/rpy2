@@ -150,6 +150,8 @@ def py2rpy_pandasseries(obj):
                 raise ValueError('Series can only be of one type, or None.')
         # TODO: Could this be merged with obj.type.name == 'O' case above ?
         res = _PANDASTYPE2RPY2[homogeneous_type](obj)
+    elif obj.dtype.type == str:
+        res = _PANDASTYPE2RPY2[str](obj)
     elif obj.dtype.name in integer_array_types:
         if not obj.dtype.numpy_dtype.isnative:
             raise(ValueError('Cannot pass numpy arrays with non-native byte'
