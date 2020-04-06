@@ -80,6 +80,9 @@ Changes
 - :pandas: series of dtype :class:`pandas.StringDType`, experimental in pandas 1.0,
   are now supported by the converted (in the pandas-to-R direction)  (issue #669)
 
+- Version checking for the mapping of R packages in :mod:`rpy2.robjects.lib` is
+  now more permissive (check that version prefixes are matching).
+
 Bugs fixed
 -----------
 
