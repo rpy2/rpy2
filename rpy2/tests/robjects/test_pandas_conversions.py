@@ -122,14 +122,19 @@ class TestPandasConversions(object):
         with localconverter(default_converter + rpyp.converter) as _:
             c = robjects.conversion.rpy2py(b)
 
-    @pytest.mark.parametrize('data', (['x', 'y', 'z'],
-                                      ['x', 'y', None],
-                                      ['x', 'y', numpy.nan],
-                                      ['x', 'y', pandas.NA],
-    ))
-    def test_series_obj_str(self, data):
+    @pytest.mark.parametrize(
+        'data',
+        (['x', 'y', 'z'],
+         ['x', 'y', None],
+         ['x', 'y', numpy.nan],
+         ['x', 'y', pandas.NA])
+    )
+    @pytest.mark.parametrize(
+        'dtype', ['O', pandas.StringDType()]
+    )
+    def test_series_obj_str(self, data, dtype):
         Series = pandas.core.series.Series
-        s = Series(data, index=['a', 'b', 'c'])
+        s = Series(data, index=['a', 'b', 'c'], dtype=dtype)
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.StrSexpVector)

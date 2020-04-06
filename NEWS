@@ -77,6 +77,9 @@ Changes
 - Initial support for :const:`pandas.NA` (still experimental in pandas
   at the time of writing, and rpy2 support is limited to arrays of strings).
 
+- :pandas: series of dtype :class:`pandas.StringDType`, experimental in pandas 1.0,
+  are now supported by the converted (in the pandas-to-R direction)
+
 Bugs fixed
 -----------
 
