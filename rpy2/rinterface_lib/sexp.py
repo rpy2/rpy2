@@ -3,6 +3,7 @@
 import abc
 import collections.abc
 import enum
+import functools
 import typing
 from rpy2.rinterface_lib import embedded
 from rpy2.rinterface_lib import memorymanagement
@@ -519,21 +520,25 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
     @classmethod
     @_cdata_res_to_rinterface
     def from_iterable(cls, iterable,
-                      populate_func=None) -> VT:
+                      populate_func=None,
+                      set_elt=None,
+                      cast_value=None) -> VT:
         """Create an R vector/array from an iterable."""
         if not embedded.isready():
             raise embedded.RNotReadyError('Embedded R is not ready to use.')
         if populate_func is None:
             populate_func = _populate_r_vector
+        if set_elt is None:
+            set_elt = cls._R_SET_VECTOR_ELT
+        if cast_value is None:
+            cast_value = cls._CAST_IN
         n = len(iterable)
         with memorymanagement.rmemory() as rmemory:
             r_vector = rmemory.protect(
                 openrlib.rlib.Rf_allocVector(
                     cls._R_TYPE, n)
             )
-            populate_func(iterable, r_vector,
-                          cls._R_SET_VECTOR_ELT,
-                          cls._CAST_IN)
+            populate_func(iterable, r_vector, set_elt, cast_value)
         return r_vector
 
     @classmethod
@@ -605,11 +610,10 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
             res = self.from_iterable(
                 [
                     self._R_VECTOR_ELT(
-                        cdata, i_c
+                        cdata, i_c, 
                     ) for i_c in range(*i.indices(len(self)))
                 ],
-                populate_func=lambda iterable, r_vector: _populate_r_vector(
-                    iterable, r_vector, self._R_SET_VECTOR_ELT, lambda x: x)
+                cast_value=lambda x: x
             )
         else:
             raise TypeError(

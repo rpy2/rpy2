@@ -108,8 +108,10 @@ _PANDASTYPE2RPY2 = {
     int: IntVector,
     bool: BoolVector,
     None: BoolVector,
-    str: functools.partial(StrVector.from_iterable,
-                           populate_func=_str_populate_r_vector),
+    str: functools.partial(
+        StrVector.from_iterable,
+        populate_func=functools.partial(StrVector, populate_func=_str_populate_r_vector)
+    ),
     bytes: (numpy2ri.converter.py2rpy.registry[
         numpy.ndarray
     ])
