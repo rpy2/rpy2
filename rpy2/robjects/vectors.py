@@ -1371,8 +1371,8 @@ class DataFrame(ListVector):
         res = utils_ri['head'](self, *args, **kwargs)
         return conversion.rpy2py(res)
 
-    @staticmethod
-    def from_csvfile(path, header=True, sep=',',
+    @classmethod
+    def from_csvfile(cls, path, header=True, sep=',',
                      quote='"', dec='.',
                      row_names=rinterface.MissingArg,
                      col_names=rinterface.MissingArg,
@@ -1416,8 +1416,7 @@ class DataFrame(ListVector):
                                      'comment.char': comment_char,
                                      'na.strings': na_strings,
                                      'as.is': as_is})
-        res = conversion.rpy2py(res)
-        return res
+        return cls(res)
 
     def to_csvfile(self, path, quote=True, sep=',',
                    eol=os.linesep, na='NA', dec='.',

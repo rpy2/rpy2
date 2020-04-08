@@ -226,11 +226,15 @@ def _NAMED(robj: FFI.CData) -> int:
     return robj.sxpinfo.named
 
 
-def _string_getitem(cdata: FFI.CData, i: int) -> str:
-    rlib = openrlib.rlib
-    return conversion._cchar_to_str(
-        rlib.R_CHAR(rlib.STRING_ELT(cdata, i))
-    )
+def _string_getitem(cdata: FFI.CData, i: int) -> typing.Optional[str]:
+    elt = openrlib.rlib.STRING_ELT(cdata, i)
+    if elt == openrlib.rlib.R_NaString:
+        res = None
+    else:
+        res = conversion._cchar_to_str(
+            openrlib.rlib.R_CHAR(elt)
+        )
+    return res
 
 
 # TODO: still used ?

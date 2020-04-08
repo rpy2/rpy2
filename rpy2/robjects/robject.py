@@ -5,7 +5,7 @@ import weakref
 import rpy2.rinterface
 import rpy2.rinterface_lib.callbacks
 
-from . import conversion
+from rpy2.robjects import conversion
 
 rpy2.rinterface.initr_simple()
 

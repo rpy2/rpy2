@@ -91,6 +91,9 @@ Bugs fixed
   
 - SVG output for the R magic were incorrectly bytes objects.
 
+- :meth:`rpy2.rinterface_lib.sexp.StrSexpVector.__getitem__` was returning the string
+  `'NA'` when an R NA value. Not it returns `rpy2.rinterface_lib.na_values.NA_Character`.
+
 
 Release 3.2.7
 =============
