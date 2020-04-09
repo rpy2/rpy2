@@ -50,9 +50,11 @@ def test_NameClassMap():
 
 def test_NameClassMapContext():
     ncm = robjects.conversion.NameClassMap(object)
+    assert not len(ncm._map)
     with robjects.conversion.NameClassMapContext(ncm, {}):
         assert not len(ncm._map)
     assert not len(ncm._map)
+    
     with robjects.conversion.NameClassMapContext(ncm, {'A': list}):
         assert set(ncm._map.keys()) == set('A')
     assert not len(ncm._map)

@@ -329,7 +329,9 @@ def _(obj):
 default_converter._rpy2py_nc_map.update(
     {
         rinterface.SexpS4: conversion.NameClassMap(RS4),
-        rinterface.ListSexpVector: conversion.NameClassMap(ListVector),
+        rinterface.ListSexpVector: conversion.NameClassMap(
+            ListVector,
+            {'data.frame': DataFrame}),
         rinterface.SexpEnvironment: conversion.NameClassMap(Environment)
     }
 )

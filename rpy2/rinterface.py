@@ -124,7 +124,7 @@ class SexpSymbol(sexp.Sexp):
         )
 
 
-class _MissingArgType(SexpSymbol, metaclass=na_values.SingletonABC):
+class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
 
     def __init__(self):
         if embedded.isready():
@@ -738,20 +738,20 @@ conversion._PY_R_MAP.update({
     _rinterface.ffi.CData: False,
     # integer
     int: conversion._int_to_sexp,
-    na_values.NAIntegerType: conversion._int_to_sexp,
+    sexp.NAIntegerType: conversion._int_to_sexp,
     # float
     float: conversion._float_to_sexp,
-    na_values.NARealType: conversion._float_to_sexp,
+    sexp.NARealType: conversion._float_to_sexp,
     # boolean
     bool: conversion._bool_to_sexp,
-    na_values.NALogicalType: conversion._bool_to_sexp,
+    sexp.NALogicalType: conversion._bool_to_sexp,
     # string
     str: conversion._str_to_sexp,
     sexp.CharSexp: None,
-    na_values.NACharacterType: None,
+    sexp.NACharacterType: None,
     # complex
     complex: conversion._complex_to_sexp,
-    na_values.NAComplexType: conversion._complex_to_sexp,
+    sexp.NAComplexType: conversion._complex_to_sexp,
     # None
     type(None): lambda x: openrlib.rlib.R_NilValue})
 
@@ -834,24 +834,24 @@ def _post_initr_setup() -> None:
     )
 
     global NA_Character
-    na_values.NA_Character = na_values.NACharacterType()
+    na_values.NA_Character = sexp.NACharacterType()
     NA_Character = na_values.NA_Character
 
     global NA_Integer
-    na_values.NA_Integer = na_values.NAIntegerType(openrlib.rlib.R_NaInt)
+    na_values.NA_Integer = sexp.NAIntegerType(openrlib.rlib.R_NaInt)
     NA_Integer = na_values.NA_Integer
 
     global NA_Logical, NA
-    na_values.NA_Logical = na_values.NALogicalType(openrlib.rlib.R_NaInt)
+    na_values.NA_Logical = sexp.NALogicalType(openrlib.rlib.R_NaInt)
     NA_Logical = na_values.NA_Logical
     NA = NA_Logical
 
     global NA_Real
-    na_values.NA_Real = na_values.NARealType(openrlib.rlib.R_NaReal)
+    na_values.NA_Real = sexp.NARealType(openrlib.rlib.R_NaReal)
     NA_Real = na_values.NA_Real
 
     global NA_Complex
-    na_values.NA_Complex = na_values.NAComplexType(
+    na_values.NA_Complex = sexp.NAComplexType(
         _rinterface.ffi.new(
             'Rcomplex *',
             [openrlib.rlib.R_NaReal, openrlib.rlib.R_NaReal])
