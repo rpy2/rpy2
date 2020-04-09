@@ -25,12 +25,14 @@ def test_getitem():
         vec[(2, 3)]
 
 
-def test_setitem():
+@pytest.mark.parametrize('value',
+                         ('boo', ri.NA_Character))
+def test_setitem(value):
     vec = ri.StrSexpVector(['foo', 'bar', 'baz'])
-    vec[1] = 'boo'
-    assert vec[1] == 'boo'
+    vec[1] = value
+    assert vec[1] == value
     with pytest.raises(TypeError):
-        vec[(2, 3)] = 'boo'
+        vec[(2, 3)] = value
 
 
 def test_getslice():

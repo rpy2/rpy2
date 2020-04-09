@@ -53,7 +53,7 @@ New features
   code, and allow cleaner implementations of module-level globals
   that are R objects.
 
-- New class :class:`rpy2.robjects.vectors.Date` to represent R dates.
+- New class :class:`rpy2.robjects.vectors.DateVector` to represent R dates.
 
 - :class:`pandas.Series` containing date objects can now be converted to R
   `Date` vectors.
@@ -90,6 +90,9 @@ Bugs fixed
   with an error when not present).
   
 - SVG output for the R magic were incorrectly bytes objects.
+
+- :meth:`rpy2.rinterface_lib.sexp.StrSexpVector.__getitem__` was returning the string
+  `'NA'` when an R NA value. Not it returns `rpy2.rinterface_lib.na_values.NA_Character`.
 
 
 Release 3.2.7

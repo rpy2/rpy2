@@ -106,10 +106,10 @@ class TestPandasConversions(object):
                                        pandas.Int64Dtype() if has_pandas else None))
     def test_dataframe_int_nan(self, dtype):
         a = pandas.DataFrame([(numpy.NaN,)], dtype=dtype, columns=['z'])
-        with localconverter(default_converter + rpyp.converter) as _:
+        with localconverter(default_converter + rpyp.converter) as cv:
             b = robjects.conversion.py2rpy(a)
-        assert type(b[0][0]) == rinterface.na_values.NAIntegerType
-        with localconverter(default_converter + rpyp.converter) as _:
+        assert b[0][0] is rinterface.na_values.NA_Integer
+        with localconverter(default_converter + rpyp.converter) as cv:
             c = robjects.conversion.rpy2py(b)
 
     @pytest.mark.parametrize('dtype', (pandas.Int32Dtype() if has_pandas else None,
@@ -118,7 +118,7 @@ class TestPandasConversions(object):
         a = pandas.Series((numpy.NaN,), dtype=dtype, index=['z'])
         with localconverter(default_converter + rpyp.converter) as _:
             b = robjects.conversion.py2rpy(a)
-        assert type(b[0]) == rinterface.na_values.NAIntegerType
+        assert b[0] is rinterface.na_values.NA_Integer
         with localconverter(default_converter + rpyp.converter) as _:
             c = robjects.conversion.rpy2py(b)
 
@@ -203,7 +203,7 @@ class TestPandasConversions(object):
 
     def test_factorwithNA2Category(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a', None))
-        assert factor[3] == rinterface.na_values.NA_Integer
+        assert factor[3] is rinterface.na_values.NA_Integer
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.rpy2py(factor)
         assert isinstance(rp_c, pandas.Categorical)
@@ -266,8 +266,8 @@ class TestPandasConversions(object):
         date = pandas.Series([today])
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.py2rpy(date)
-            assert isinstance(rp_c, robjects.vectors.IntSexpVector)
-            assert tuple(int(x) for x in rp_c) == tuple(today.to_ordinal())
+            assert isinstance(rp_c, robjects.vectors.FloatSexpVector)
+            assert tuple(int(x) for x in rp_c) == (today.toordinal(), )
 
     def test_timeR2Pandas(self):
         tzone = robjects.vectors.get_timezone()

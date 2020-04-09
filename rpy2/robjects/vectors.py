@@ -724,11 +724,6 @@ class ListVector(Vector, ListSexpVector):
         return res
 
 
-class DateVector(FloatVector):
-    """ Vector of dates """
-    pass
-
-
 class POSIXt(abc.ABC):
     """ POSIX time vector. This is an abstract class. """
 
@@ -831,7 +826,7 @@ def get_timezone():
     return timezone
 
 
-class Date(FloatVector):
+class DateVector(FloatVector):
     """ Representation of dates as number of days since 1/1/1970.
 
     Date(seq) -> Date.
@@ -849,7 +844,7 @@ class Date(FloatVector):
         if isinstance(seq, Sexp):
             init_param = seq
         elif isinstance(seq[0], date):
-            init_param = Date.sexp_from_date(seq)
+            init_param = DateVector.sexp_from_date(seq)
         else:
             raise TypeError(
                 'Unable to create an R Date vector from objects of type %s' %
@@ -858,7 +853,7 @@ class Date(FloatVector):
 
     @classmethod
     def sexp_from_date(cls, seq):
-        return cls(FloatVector(seq))
+        return cls(FloatVector([x.toordinal() for x in seq]))
 
 
 class POSIXct(POSIXt, FloatVector):
@@ -1371,8 +1366,8 @@ class DataFrame(ListVector):
         res = utils_ri['head'](self, *args, **kwargs)
         return conversion.rpy2py(res)
 
-    @staticmethod
-    def from_csvfile(path, header=True, sep=',',
+    @classmethod
+    def from_csvfile(cls, path, header=True, sep=',',
                      quote='"', dec='.',
                      row_names=rinterface.MissingArg,
                      col_names=rinterface.MissingArg,
@@ -1416,8 +1411,7 @@ class DataFrame(ListVector):
                                      'comment.char': comment_char,
                                      'na.strings': na_strings,
                                      'as.is': as_is})
-        res = conversion.rpy2py(res)
-        return res
+        return cls(res)
 
     def to_csvfile(self, path, quote=True, sep=',',
                    eol=os.linesep, na='NA', dec='.',

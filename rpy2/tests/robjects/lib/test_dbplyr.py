@@ -11,9 +11,8 @@ except PackageNotInstalledError as error:
     msg = str(error)
 
 
-@pytest.mark.skipif(not has_dplyr,
+@pytest.mark.skipif(not (has_dplyr and has_dbplyr),
                     reason=msg)
-@pytest.mark.lib_dbplyr
 class TestDplyr(object):
 
     def test_sql(self):
