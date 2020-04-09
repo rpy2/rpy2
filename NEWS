@@ -53,7 +53,7 @@ New features
   code, and allow cleaner implementations of module-level globals
   that are R objects.
 
-- New class :class:`rpy2.robjects.vectors.Date` to represent R dates.
+- New class :class:`rpy2.robjects.vectors.DateVector` to represent R dates.
 
 - :class:`pandas.Series` containing date objects can now be converted to R
   `Date` vectors.
