@@ -4,7 +4,6 @@ between R objects handled by rpy2 and pandas objects."""
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import na_values
-from rpy2.rinterface_lib import openrlib
 from rpy2.rinterface import (IntSexpVector,
                              ListSexpVector,
                              Sexp,
@@ -100,7 +99,13 @@ def _str_populate_r_vector(iterable, r_vector,
                            set_elt,
                            cast_value):
     for i, v in enumerate(iterable):
-        if v is None or v is pandas.NA or (isinstance(v, float) and math.isnan(v)):
+        if (
+                v is None
+                or
+                v is pandas.NA
+                or
+                (isinstance(v, float) and math.isnan(v))
+        ):
             v = na_values.NA_Character
         set_elt(r_vector, i, cast_value(v))
 
