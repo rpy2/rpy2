@@ -98,7 +98,8 @@ CALLBACK_INIT_PAIRS = (('ptr_R_WriteConsoleEx', '_consolewrite_ex'),
 def _initr(
         interactive: bool = True,
         _want_setcallbacks: bool = True,
-        _c_stack_limit: int = _DEFAULT_C_STACK_LIMIT) -> typing.Optional[int]:
+        _c_stack_limit: int = _DEFAULT_C_STACK_LIMIT
+) -> typing.Optional[int]:
 
     rlib = openrlib.rlib
     ffi_proxy = openrlib.ffi_proxy

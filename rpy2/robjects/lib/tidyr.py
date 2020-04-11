@@ -6,11 +6,12 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     tidyr = importr('tidyr', on_conflict="warn")
 
-TARGET_VERSION = '1.0.0'
+TARGET_VERSION = '1.0.'
 
-if tidyr.__version__ != TARGET_VERSION:
-    warnings.warn('This was designed againt tidyr version %s '
-                  'but you have %s' % (TARGET_VERSION, tidyr.__version__))
+if not tidyr.__version__.startswith(TARGET_VERSION):
+    warnings.warn(
+        'This was designed againt tidyr versions starting with %s '
+        'but you have %s' % (TARGET_VERSION, tidyr.__version__))
 
 tidyr = WeakPackage(tidyr._env,
                     tidyr.__rname__,

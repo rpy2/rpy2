@@ -1,4 +1,3 @@
-import abc
 import atexit
 import os
 import math
@@ -13,23 +12,21 @@ import rpy2.rinterface_lib.memorymanagement as memorymanagement
 from rpy2.rinterface_lib import na_values
 from rpy2.rinterface_lib.sexp import NULLType
 import rpy2.rinterface_lib.bufferprotocol as bufferprotocol
-import rpy2.rinterface_lib.sexp as sexp
+from rpy2.rinterface_lib import sexp
+from rpy2.rinterface_lib.sexp import CharSexp  # noqa: F401
+from rpy2.rinterface_lib.sexp import RTYPES
+from rpy2.rinterface_lib.sexp import SexpVector
+from rpy2.rinterface_lib.sexp import StrSexpVector
+from rpy2.rinterface_lib.sexp import Sexp
 from rpy2.rinterface_lib.sexp import SexpEnvironment
+from rpy2.rinterface_lib.sexp import unserialize  # noqa: F401
 from rpy2.rinterface_lib.sexp import emptyenv
 from rpy2.rinterface_lib.sexp import baseenv
 from rpy2.rinterface_lib.sexp import globalenv
 
 if os.name == 'nt':
     import rpy2.rinterface_lib.embedded_mswin as embedded_mswin
-    embedded._initr = embedded_mswin._initr
-
-Sexp = sexp.Sexp
-StrSexpVector = sexp.StrSexpVector
-CharSexp = sexp.CharSexp
-SexpVector = sexp.SexpVector
-RTYPES = sexp.RTYPES
-
-unserialize = sexp.unserialize
+    embedded._initr = embedded_mswin._initr_win32
 
 R_NilValue = openrlib.rlib.R_NilValue
 
@@ -96,32 +93,17 @@ def vector_memoryview(obj: sexp.SexpVector,
     return mv
 
 
-class _MissingArgType(sexp.Sexp, metaclass=na_values.SingletonABC):
-
-    def __init__(self):
-        embedded.assert_isready()
-        super().__init__(
-            sexp.Sexp(
-                _rinterface.UnmanagedSexpCapsule(
-                    openrlib.rlib.R_MissingArg
-                )
-            )
-        )
-
-    def __bool__(self) -> bool:
-        """This is always False."""
-        return False
-
-    @property
-    def __sexp__(self) -> _rinterface.SexpCapsule:
-        return self._sexpobject
-
-
 class SexpSymbol(sexp.Sexp):
     """An unevaluated R symbol."""
 
-    def __init__(self, obj):
-        if isinstance(obj, Sexp) or isinstance(obj, _rinterface.SexpCapsule):
+    def __init__(
+            self,
+            obj: Union[Sexp,
+                       _rinterface.SexpCapsule,
+                       _rinterface.UninitializedRCapsule,
+                       str]
+    ):
+        if isinstance(obj, Sexp) or isinstance(obj, _rinterface.CapsuleBase):
             super().__init__(obj)
         elif isinstance(obj, str):
             name_cdata = _rinterface.ffi.new('char []', obj.encode('utf-8'))
@@ -140,6 +122,33 @@ class SexpSymbol(sexp.Sexp):
                 self._sexpobject._cdata
             )
         )
+
+
+class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
+
+    def __init__(self):
+        if embedded.isready():
+            tmp = sexp.Sexp(
+                _rinterface.UnmanagedSexpCapsule(
+                    openrlib.rlib.R_MissingArg
+                )
+            )
+        else:
+            tmp = sexp.Sexp(
+                _rinterface.UninitializedRCapsule(RTYPES.SYMSXP.value)
+            )
+        super().__init__(tmp)
+
+    def __bool__(self) -> bool:
+        """This is always False."""
+        return False
+
+    @property
+    def __sexp__(self) -> _rinterface.SexpCapsule:
+        return self._sexpobject
+
+
+MissingArg = _MissingArgType()
 
 
 class SexpPromise(Sexp):
@@ -163,14 +172,16 @@ NPCOMPAT_TYPE = typing.TypeVar('NPCOMPAT_TYPE',
                                'FloatSexpVector')
 
 
-class NumpyArrayInterface(abc.ABC):
+class NumpyArrayMixin:
     """Numpy-specific API for accessing the content of a numpy array.
 
     This interface implements version 3 of Numpy's `__array_interface__`
     and is only available / possible for some of the R vectors."""
 
     @property
-    def __array_interface__(self: NPCOMPAT_TYPE) -> dict:
+    def __array_interface__(
+            self: NPCOMPAT_TYPE
+    ) -> dict:
         """Return an `__array_interface__` version 3.
 
         Note that the pointer returned in the items 'data' corresponds to
@@ -190,7 +201,7 @@ class NumpyArrayInterface(abc.ABC):
                 'version': 3}
 
 
-class ByteSexpVector(SexpVector, NumpyArrayInterface):
+class ByteSexpVector(NumpyArrayMixin, SexpVector):
     """Array of bytes.
 
     This is the R equivalent to a Python :class:`bytesarray`.
@@ -259,7 +270,7 @@ class ByteSexpVector(SexpVector, NumpyArrayInterface):
                 'Indices must be integers or slices, not %s' % type(i))
 
 
-class BoolSexpVector(SexpVector, NumpyArrayInterface):
+class BoolSexpVector(NumpyArrayMixin, SexpVector):
     """Array of booleans.
 
     Note that R is internally storing booleans as integers to
@@ -321,7 +332,7 @@ def nullable_int(v):
         return int(v)
 
 
-class IntSexpVector(SexpVector, NumpyArrayInterface):
+class IntSexpVector(NumpyArrayMixin, SexpVector):
 
     _R_TYPE = openrlib.rlib.INTSXP
     _R_SET_VECTOR_ELT = openrlib.SET_INTEGER_ELT
@@ -368,7 +379,7 @@ class IntSexpVector(SexpVector, NumpyArrayInterface):
         return vector_memoryview(self, 'int', 'i')
 
 
-class FloatSexpVector(SexpVector, NumpyArrayInterface):
+class FloatSexpVector(NumpyArrayMixin, SexpVector):
 
     _R_TYPE = openrlib.rlib.REALSXP
     _R_VECTOR_ELT = openrlib.REAL_ELT
@@ -727,20 +738,20 @@ conversion._PY_R_MAP.update({
     _rinterface.ffi.CData: False,
     # integer
     int: conversion._int_to_sexp,
-    na_values.NAIntegerType: conversion._int_to_sexp,
+    sexp.NAIntegerType: conversion._int_to_sexp,
     # float
     float: conversion._float_to_sexp,
-    na_values.NARealType: conversion._float_to_sexp,
+    sexp.NARealType: conversion._float_to_sexp,
     # boolean
     bool: conversion._bool_to_sexp,
-    na_values.NALogicalType: conversion._bool_to_sexp,
+    sexp.NALogicalType: conversion._bool_to_sexp,
     # string
     str: conversion._str_to_sexp,
     sexp.CharSexp: None,
-    na_values.NACharacterType: None,
+    sexp.NACharacterType: None,
     # complex
     complex: conversion._complex_to_sexp,
-    na_values.NAComplexType: conversion._complex_to_sexp,
+    sexp.NAComplexType: conversion._complex_to_sexp,
     # None
     type(None): lambda x: openrlib.rlib.R_NilValue})
 
@@ -770,7 +781,7 @@ class RRuntimeWarning(RuntimeWarning):
 
 
 NULL = None
-MissingArg = None
+MissingArg = _MissingArgType()
 NA_Character = None
 NA_Integer = None
 NA_Logical = None
@@ -779,7 +790,7 @@ NA_Real = None
 NA_Complex = None
 
 
-def initr_simple() -> int:
+def initr_simple() -> typing.Optional[int]:
     """Initialize R's embedded C library."""
     with openrlib.rlock:
         status = embedded._initr()
@@ -789,7 +800,7 @@ def initr_simple() -> int:
         return status
 
 
-def initr_checkenv() -> typing.Union[int, None]:
+def initr_checkenv() -> typing.Optional[int]:
     # Force the internal initialization flag if there is an environment
     # variable that indicates that R was alreay initialized in the current
     # process.
@@ -818,28 +829,29 @@ def _post_initr_setup() -> None:
     global NULL
     NULL = NULLType()
 
-    global MissingArg
-    MissingArg = _MissingArgType()
+    MissingArg._sexpobject = _rinterface.UnmanagedSexpCapsule(
+        openrlib.rlib.R_MissingArg
+    )
 
     global NA_Character
-    na_values.NA_Character = na_values.NACharacterType()
+    na_values.NA_Character = sexp.NACharacterType()
     NA_Character = na_values.NA_Character
 
     global NA_Integer
-    na_values.NA_Integer = na_values.NAIntegerType(openrlib.rlib.R_NaInt)
+    na_values.NA_Integer = sexp.NAIntegerType(openrlib.rlib.R_NaInt)
     NA_Integer = na_values.NA_Integer
 
     global NA_Logical, NA
-    na_values.NA_Logical = na_values.NALogicalType(openrlib.rlib.R_NaInt)
+    na_values.NA_Logical = sexp.NALogicalType(openrlib.rlib.R_NaInt)
     NA_Logical = na_values.NA_Logical
     NA = NA_Logical
 
     global NA_Real
-    na_values.NA_Real = na_values.NARealType(openrlib.rlib.R_NaReal)
+    na_values.NA_Real = sexp.NARealType(openrlib.rlib.R_NaReal)
     NA_Real = na_values.NA_Real
 
     global NA_Complex
-    na_values.NA_Complex = na_values.NAComplexType(
+    na_values.NA_Complex = sexp.NAComplexType(
         _rinterface.ffi.new(
             'Rcomplex *',
             [openrlib.rlib.R_NaReal, openrlib.rlib.R_NaReal])

@@ -12,6 +12,9 @@ from . import conversion
 from . import embedded
 from . import memorymanagement
 
+from _cffi_backend import FFI  # type: ignore
+
+
 logger = logging.getLogger(__name__)
 
 ffi = openrlib.ffi
@@ -25,7 +28,7 @@ _PY_PASSENGER = dict()
 FFI_MODE = ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
 
 
-def get_rid(cdata: ffi.CData) -> int:
+def get_rid(cdata: FFI.CData) -> int:
     """Get the identifier for the R object.
 
     This is intended to be like Python's `id()`, but
@@ -46,14 +49,14 @@ def protected_rids() -> Tuple[Tuple[int, int], ...]:
 
 def is_cdata_sexp(obj: typing.Any) -> bool:
     """Is the object a cffi `CData` object pointing to an R object ?"""
-    if (isinstance(obj, ffi.CData) and
+    if (isinstance(obj, FFI.CData) and
             ffi.typeof(obj).cname == 'struct SEXPREC *'):
         return True
     else:
         return False
 
 
-def _preserve(cdata: ffi.CData) -> int:
+def _preserve(cdata: FFI.CData) -> int:
     addr = int(ffi.cast('uintptr_t', cdata))
     count = _R_PRESERVED.get(addr, 0)
     if count == 0:
@@ -62,7 +65,7 @@ def _preserve(cdata: ffi.CData) -> int:
     return addr
 
 
-def _release(cdata: ffi.CData) -> None:
+def _release(cdata: FFI.CData) -> None:
     addr = int(ffi.cast('uintptr_t', cdata))
     count = _R_PRESERVED[addr] - 1
     if count == 0:
@@ -74,7 +77,7 @@ def _release(cdata: ffi.CData) -> None:
 
 @ffi_proxy.callback(ffi_proxy._capsule_finalizer_def,
                     openrlib._rinterface_cffi)
-def _capsule_finalizer(cdata: ffi.CData) -> None:
+def _capsule_finalizer(cdata: FFI.CData) -> None:
     try:
         openrlib.rlib.R_ClearExternalPtr(cdata)
     except Exception as e:
@@ -90,6 +93,8 @@ else:
 
 
 class CapsuleBase:
+
+    _cdata: FFI.CData
 
     @property
     def typeof(self) -> int:
@@ -118,7 +123,7 @@ class UnmanagedSexpCapsule(CapsuleBase):
 
     __slots__ = ('_cdata', )
 
-    def __init__(self, cdata: ffi.CData):
+    def __init__(self, cdata: FFI.CData):
         assert is_cdata_sexp(cdata)
         self._cdata = cdata
 
@@ -127,7 +132,7 @@ class SexpCapsule(CapsuleBase):
 
     __slots__ = ('_cdata', )
 
-    def __init__(self, cdata: ffi.CData):
+    def __init__(self, cdata: FFI.CData):
         assert is_cdata_sexp(cdata)
         _preserve(cdata)
         self._cdata = cdata
@@ -148,7 +153,7 @@ class SexpCapsule(CapsuleBase):
 class SexpCapsuleWithPassenger(SexpCapsule):
     __slots__ = ('_cdata', '_passenger')
 
-    def __init__(self, cdata: ffi.CData, passenger, ptr):
+    def __init__(self, cdata: FFI.CData, passenger, ptr):
         assert is_cdata_sexp(cdata)
         addr = _preserve(cdata)
         _PY_PASSENGER[addr] = passenger
@@ -191,52 +196,56 @@ def _GET_DIM(robj):
     return res
 
 
-def _GET_DIMNAMES(robj) -> ffi.CData:
+def _GET_DIMNAMES(robj) -> FFI.CData:
     res = openrlib.rlib.Rf_getAttrib(robj,
                                      openrlib.rlib.R_DimNames)
     return res
 
 
-def _GET_LEVELS(robj: ffi.CData) -> ffi.CData:
+def _GET_LEVELS(robj: FFI.CData) -> FFI.CData:
     res = openrlib.rlib.Rf_getAttrib(robj,
                                      openrlib.rlib.R_LevelsSymbol)
     return res
 
 
-def _GET_NAMES(robj: ffi.CData) -> ffi.CData:
+def _GET_NAMES(robj: FFI.CData) -> FFI.CData:
     res = openrlib.rlib.Rf_getAttrib(robj,
                                      openrlib.rlib.R_NamesSymbol)
     return res
 
 
-def _TYPEOF(robj: ffi.CData) -> int:
+def _TYPEOF(robj: FFI.CData) -> int:
     return robj.sxpinfo.type
 
 
-def _SET_TYPEOF(robj: ffi.CData, v: int):
+def _SET_TYPEOF(robj: FFI.CData, v: int):
     robj.sxpinfo.type = v
 
 
-def _NAMED(robj: ffi.CData) -> int:
+def _NAMED(robj: FFI.CData) -> int:
     return robj.sxpinfo.named
 
 
-def _string_getitem(cdata: ffi.CData, i: int) -> str:
-    rlib = openrlib.rlib
-    return conversion._cchar_to_str(
-        rlib.R_CHAR(rlib.STRING_ELT(cdata, i))
-    )
+def _string_getitem(cdata: FFI.CData, i: int) -> typing.Optional[str]:
+    elt = openrlib.rlib.STRING_ELT(cdata, i)
+    if elt == openrlib.rlib.R_NaString:
+        res = None
+    else:
+        res = conversion._cchar_to_str(
+            openrlib.rlib.R_CHAR(elt)
+        )
+    return res
 
 
 # TODO: still used ?
-def _string_setitem(cdata: ffi.CData, i: int, value_b) -> None:
+def _string_setitem(cdata: FFI.CData, i: int, value_b) -> None:
     rlib = openrlib.rlib
     rlib.SET_STRING_ELT(
         cdata, i, rlib.Rf_mkCharCE(value_b, conversion._CE_DEFAULT_VALUE)
     )
 
 
-def _has_slot(cdata: ffi.CData, name_b) -> bool:
+def _has_slot(cdata: FFI.CData, name_b) -> bool:
     res = openrlib.rlib.R_has_slot(cdata, name_b)
     return bool(res)
 
@@ -279,7 +288,7 @@ def _evaluated_promise(function):
     return _
 
 
-def _python_index_to_c(cdata: ffi.CData, i: int) -> int:
+def _python_index_to_c(cdata: FFI.CData, i: int) -> int:
     """Compute the C value for a Python-style index.
 
     The function will translate a Python-style index that
@@ -309,7 +318,7 @@ def _assert_valid_slotname(name: str) -> None:
         raise ValueError('The name cannot be an empty string')
 
 
-def _list_attrs(cdata: ffi.CData) -> ffi.CData:
+def _list_attrs(cdata: FFI.CData) -> FFI.CData:
     rlib = openrlib.rlib
     attrs = rlib.ATTRIB(cdata)
     nvalues = rlib.Rf_length(attrs)
@@ -345,7 +354,7 @@ def _list_attrs(cdata: ffi.CData) -> ffi.CData:
     return names
 
 
-def _remove(name: ffi.CData, env: ffi.CData, inherits) -> ffi.CData:
+def _remove(name: FFI.CData, env: FFI.CData, inherits) -> FFI.CData:
     rlib = openrlib.rlib
     with memorymanagement.rmemory() as rmemory:
         internal = rmemory.protect(
@@ -379,7 +388,7 @@ def _geterrmessage() -> str:
     return res
 
 
-def serialize(cdata: ffi.CData, cdata_env: ffi.CData) -> ffi.CData:
+def serialize(cdata: FFI.CData, cdata_env: FFI.CData) -> FFI.CData:
     """Serialize an R object to an R string.
 
     Note that the R string returned is *not* protected from
@@ -405,7 +414,7 @@ def serialize(cdata: ffi.CData, cdata_env: ffi.CData) -> ffi.CData:
         return res
 
 
-def unserialize(cdata: ffi.CData, cdata_env: ffi.CData) -> ffi.CData:
+def unserialize(cdata: FFI.CData, cdata_env: FFI.CData) -> FFI.CData:
     """Unserialize an R string to an R object.
 
     Note that the R object returned is *not* protected from
@@ -435,7 +444,7 @@ def unserialize(cdata: ffi.CData, cdata_env: ffi.CData) -> ffi.CData:
 
 @ffi_proxy.callback(ffi_proxy._evaluate_in_r_def,
                     openrlib._rinterface_cffi)
-def _evaluate_in_r(rargs: ffi.CData) -> ffi.CData:
+def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
     # An uncaught exception in the boby of this function would
     # result in a segfault. we wrap it in a try-except an report
     # exceptions as logs.
@@ -539,7 +548,7 @@ class RParsingError(Exception):
 
 @ffi_proxy.callback(ffi_proxy._parsevector_wrap_def,
                     openrlib._rinterface_cffi)
-def _parsevector_wrap(data: ffi.CData):
+def _parsevector_wrap(data: FFI.CData):
     try:
         cdata, num, status = ffi.from_handle(data)
         res = openrlib.rlib.R_ParseVector(
@@ -570,7 +579,7 @@ else:
     raise ImportError('cffi mode unknown: %s' % FFI_MODE)
 
 
-def _parse(cdata: ffi.CData, num, rmemory) -> ffi.CData:
+def _parse(cdata: FFI.CData, num, rmemory) -> FFI.CData:
     status = ffi.new('ParseStatus[1]', None)
     data = ffi.new_handle((cdata, num, status))
     hdata = ffi.NULL

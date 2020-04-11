@@ -153,7 +153,7 @@ ipython.
 if __name__ == '__main__':
     pack_dir = {PACKAGE_NAME: os.path.join(package_prefix, 'rpy2')}
         
-    requires = ['pytest', 'jinja2', 'pytz', 'simplegeneric', 'tzlocal']
+    requires = ['pytest', 'jinja2', 'pytz', 'tzlocal']
     
     setup(
         name=PACKAGE_NAME,

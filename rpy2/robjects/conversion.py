@@ -7,30 +7,44 @@ raising a NotImplementedError exception.
 """
 
 from functools import singledispatch
+from typing import Any
+from typing import Callable
+from typing import Optional
+import typing
+from rpy2.rinterface_lib import _rinterface_capi
 import rpy2.rinterface_lib.sexp
 import rpy2.rinterface_lib.conversion
 import rpy2.rinterface
 
 
 class NameClassMap(object):
-    """Map a name (R class name) to a Python class."""
+    """Map a name (R class name) to a Python class.
+
+    R class names, as returned for example by the R function
+    `class()`, are arrays of strings representing the
+    lineage. This is an helper class to map a given R class
+    (as a sequence of names) to a Python class."""
+
+    _default: typing.Type
+    _map: typing.Dict[str, typing.Type]
 
     default = property(lambda self: self._default)
 
-    def __init__(self, defaultcls):
+    def __init__(self, defaultcls: typing.Type = object,
+                 namemap: dict = {}):
         self._default = defaultcls
-        self._map = dict()
+        self._map = namemap.copy()
 
-    def __contains__(self, key: str):
+    def __contains__(self, key: str) -> bool:
         return key in self._map
 
-    def __delitem__(self, key: str):
+    def __delitem__(self, key: str) -> None:
         del self._map[key]
 
-    def __getitem__(self, key: str):
+    def __getitem__(self, key: str) -> typing.Type:
         return self._map[key]
 
-    def __setitem__(self, key: str, value):
+    def __setitem__(self, key: str, value: typing.Type):
         if not issubclass(value, self._default):
             raise ValueError(
                 'The new class must be a subclass of {}'
@@ -38,7 +52,14 @@ class NameClassMap(object):
                 .format(self._default, value))
         self._map[key] = value
 
-    def find_key(self, keys):
+    def copy(self) -> 'NameClassMap':
+        return NameClassMap(defaultcls=self._default,
+                            namemap=self._map.copy())
+
+    def update(self, mapping):
+        self._map.update(mapping)
+
+    def find_key(self, keys: typing.Iterable[str]) -> typing.Optional[str]:
         """
         Find the first mapping key in a sequence of names (keys).
 
@@ -53,7 +74,7 @@ class NameClassMap(object):
                 return k
         return None
 
-    def find(self, keys):
+    def find(self, keys: typing.Iterable[str]) -> typing.Type:
         """Find the first mapping in a sequence of names (keys).
 
         Returns the default class (specified when creating the
@@ -67,12 +88,13 @@ class NameClassMap(object):
 
 
 class NameClassMapContext(object):
+    """Context manager to add/override in-place name->class maps."""
 
     def __init__(self, nameclassmap: NameClassMap,
                  d: dict):
         self._nameclassmap = nameclassmap
         self._d = d
-        self._keep = []
+        self._keep: typing.List[typing.Tuple[str, bool, Optional[str]]] = []
 
     def __enter__(self):
         nameclassmap = self._nameclassmap
@@ -114,8 +136,9 @@ def noconversion(obj):
     return res
 
 
-def overlay_converter(src, target):
-    """
+def overlay_converter(src: 'Converter', target: 'Converter') -> None:
+    """Overlay a converter onto an other.
+
     :param src: source of additional conversion rules
     :type src: :class:`Converter`
     :param target: target. The conversion rules in the src will
@@ -168,14 +191,18 @@ class Converter(object):
     a Converter objects combining the translation rules from the
     different converters.
     """
+    _name: str
+    _rpy2py_nc_map: NameClassMap
+    _lineage: typing.Tuple[str, ...]
+
     name = property(lambda self: self._name)
     py2rpy = property(lambda self: self._py2rpy)
     rpy2py = property(lambda self: self._rpy2py)
     rpy2py_nc_name = property(lambda self: self._rpy2py_nc_map)
     lineage = property(lambda self: self._lineage)
 
-    def __init__(self, name,
-                 template=None):
+    def __init__(self, name: str,
+                 template: typing.Optional['Converter'] = None):
         (py2rpy, rpy2py) = Converter.make_dispatch_functions()
         self._name = name
         self._py2rpy = py2rpy
@@ -183,7 +210,7 @@ class Converter(object):
 
         if template is None:
             lineage = tuple()
-            self._rpy2py_nc_map = {}
+            self._rpy2py_nc_map = NameClassMap()
         else:
             lineage = list(template.lineage)
             lineage.append(name)
@@ -191,7 +218,7 @@ class Converter(object):
             overlay_converter(template, self)
         self._lineage = lineage
 
-    def __add__(self, converter):
+    def __add__(self, converter: 'Converter') -> 'Converter':
         assert isinstance(converter, Converter)
         new_name = '%s + %s' % (self.name, converter.name)
         # create a copy of `self` as the result converter
@@ -205,7 +232,7 @@ class Converter(object):
         rpy2py = singledispatch(_rpy2py)
         return (py2rpy, rpy2py)
 
-    def rclass_map_context(self, cls, d: dict):
+    def rclass_map_context(self, cls, d: typing.Dict[str, typing.Type]):
         return NameClassMapContext(
             self._rpy2py_nc_map[cls],
             d)
@@ -232,9 +259,9 @@ class ConversionContext(object):
 
 localconverter = ConversionContext
 
-converter = None
-py2rpy = None
-rpy2py = None
+converter: Converter = Converter('empty')
+py2rpy: Callable[[Any], _rinterface_capi.SupportsSEXP] = converter.py2rpy
+rpy2py: Callable[[_rinterface_capi.SupportsSEXP], Any] = converter.rpy2py
 
 
 def set_conversion(this_converter):

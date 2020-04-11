@@ -12,6 +12,7 @@ from rpy2.rinterface_lib._rinterface_capi import _evaluated_promise
 from rpy2.rinterface_lib._rinterface_capi import SupportsSEXP
 from rpy2.rinterface_lib import conversion
 from rpy2.rinterface_lib.conversion import _cdata_res_to_rinterface
+from rpy2.rinterface_lib import na_values
 
 
 class Singleton(type):
@@ -90,7 +91,7 @@ class Sexp(SupportsSEXP):
         return super().__repr__() + (' [%s]' % self.typeof)
 
     @property
-    def __sexp__(self) -> '_rinterface.SexpCapsule':
+    def __sexp__(self) -> '_rinterface.CapsuleBase':
         """Access to the underlying C pointer to the R object.
 
         When assigning a new SexpCapsule to this attribute, the
@@ -100,7 +101,7 @@ class Sexp(SupportsSEXP):
 
     @__sexp__.setter
     def __sexp__(self,
-                 value: '_rinterface.SexpCapsule') -> None:
+                 value: '_rinterface.CapsuleBase') -> None:
         assert isinstance(value, _rinterface.SexpCapsule)
         if value.typeof != self.__sexp__.typeof:
             raise ValueError('New capsule type mismatch: %s' %
@@ -215,21 +216,22 @@ class NULLType(Sexp, metaclass=SingletonABC):
     """A singleton class for R's NULL."""
 
     def __init__(self):
-        embedded.assert_isready()
-        super().__init__(
-            Sexp(
+        if embedded.isready():
+            tmp = Sexp(
                 _rinterface.UnmanagedSexpCapsule(
                     openrlib.rlib.R_NilValue
                 )
             )
-        )
+        else:
+            tmp = Sexp(_rinterface.UninitializedRCapsule(RTYPES.NILSXP.value))
+        super().__init__(tmp)
 
     def __bool__(self) -> bool:
         """This is always False."""
         return False
 
     @property
-    def __sexp__(self) -> _rinterface.SexpCapsule:
+    def __sexp__(self) -> _rinterface.CapsuleBase:
         return self._sexpobject
 
     @property
@@ -448,8 +450,6 @@ class SexpEnvironment(Sexp):
             self.__sexp__._cdata)
 
 
-# R environments, initialized with rpy2.rinterface.SexpEnvironment
-# objects when R is initialized.
 _UNINIT_CAPSULE_ENV = _rinterface.UninitializedRCapsule(RTYPES.ENVSXP.value)
 emptyenv = SexpEnvironment(_UNINIT_CAPSULE_ENV)
 baseenv = SexpEnvironment(_UNINIT_CAPSULE_ENV)
@@ -509,7 +509,7 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
                                                _rinterface.SexpCapsule):
             super().__init__(obj)
         elif isinstance(obj, collections.abc.Sized):
-            super().__init__(type(self).from_object(obj).__sexp__)
+            super().__init__(self.from_object(obj).__sexp__)
         else:
             raise TypeError('The constructor must be called '
                             'with an instance of '
@@ -518,31 +518,27 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
                             'rpy2.rinterface._rinterface.SexpCapsule')
 
     @classmethod
-    def _populate_r_vector(cls, iterable,
-                           r_vector):
-        return _populate_r_vector(iterable,
-                                  r_vector,
-                                  cls._R_SET_VECTOR_ELT,
-                                  cls._CAST_IN)
-
-    @classmethod
     @_cdata_res_to_rinterface
     def from_iterable(cls, iterable,
-                      populate_func=None) -> VT:
+                      populate_func=None,
+                      set_elt=None,
+                      cast_value=None) -> VT:
         """Create an R vector/array from an iterable."""
         if not embedded.isready():
             raise embedded.RNotReadyError('Embedded R is not ready to use.')
+        if populate_func is None:
+            populate_func = _populate_r_vector
+        if set_elt is None:
+            set_elt = cls._R_SET_VECTOR_ELT
+        if cast_value is None:
+            cast_value = cls._CAST_IN
         n = len(iterable)
         with memorymanagement.rmemory() as rmemory:
             r_vector = rmemory.protect(
                 openrlib.rlib.Rf_allocVector(
                     cls._R_TYPE, n)
             )
-            if populate_func is None:
-                cls._populate_r_vector(iterable,
-                                       r_vector)
-            else:
-                populate_func(iterable, r_vector)
+            populate_func(iterable, r_vector, set_elt, cast_value)
         return r_vector
 
     @classmethod
@@ -611,14 +607,13 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
             res = conversion._cdata_to_rinterface(
                 self._R_VECTOR_ELT(cdata, i_c))
         elif isinstance(i, slice):
-            res = type(self).from_iterable(
+            res = self.from_iterable(
                 [
                     self._R_VECTOR_ELT(
-                        cdata, i_c
+                        cdata, i_c,
                     ) for i_c in range(*i.indices(len(self)))
                 ],
-                populate_func=lambda iterable, r_vector: _populate_r_vector(
-                    iterable, r_vector, self._R_SET_VECTOR_ELT, lambda x: x)
+                cast_value=lambda x: x
             )
         else:
             raise TypeError(
@@ -641,6 +636,10 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
 
     def __len__(self) -> int:
         return openrlib.rlib.Rf_xlength(self.__sexp__._cdata)
+
+    def __iter__(self) -> typing.Iterator[typing.Union[Sexp, VT, typing.Any]]:
+        for i in range(len(self)):
+            yield self[i]
 
     def index(self, item: typing.Any) -> int:
         for i, e in enumerate(self):
@@ -668,13 +667,16 @@ class StrSexpVector(SexpVector):
 
     def __getitem__(
             self,
-            i: typing.Union[int, slice]) -> typing.Union['StrSexpVector', str]:
+            i: typing.Union[int, slice]
+    ) -> typing.Union['StrSexpVector', str, 'na_values.NA_Character']:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
             res = _rinterface._string_getitem(cdata, i_c)
+            if res is None:
+                res = na_values.NA_Character
         elif isinstance(i, slice):
-            res = type(self).from_iterable(
+            res = self.from_iterable(
                 [_rinterface._string_getitem(cdata, i_c)
                  for i_c in range(*i.indices(len(self)))]
             )
@@ -683,23 +685,36 @@ class StrSexpVector(SexpVector):
                             ' not %s' % type(i))
         return res
 
-    def __setitem__(self,
-                    i: typing.Union[int, slice],
-                    value: typing.Union[str, typing.Sequence[str]]) -> None:
+    def __setitem__(
+            self,
+            i: typing.Union[int, slice],
+            value: typing.Union[str, typing.Sequence[typing.Optional[str]],
+                                'StrSexpVector', 'na_values.NA_Character']
+    ) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            if not isinstance(value, str):
-                value = str(value)
+            if isinstance(value, Sexp):
+                val_cdata = value.__sexp__._cdata
+            else:
+                if not isinstance(value, str):
+                    value = str(value)
+                val_cdata = _as_charsxp_cdata(value)
             self._R_SET_VECTOR_ELT(
                 cdata, i_c,
-                _as_charsxp_cdata(value)
+                val_cdata
             )
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
+                if v is None:
+                    v_cdata = openrlib.rlib.R_NaString
+                else:
+                    if not isinstance(value, str):
+                        v = str(v)
+                    v_cdata = _as_charsxp_cdata(v)
                 self._R_SET_VECTOR_ELT(
                     cdata, i_c,
-                    _as_charsxp_cdata(v)
+                    v_cdata
                 )
         else:
             raise TypeError('Indices must be integers or slices, '
@@ -728,7 +743,7 @@ _DEFAULT_RCLASS_NAMES = {
     RTYPES.LANGSXP: 'language'}
 
 
-def rclass_get(scaps: _rinterface.SexpCapsule) -> StrSexpVector:
+def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
     rlib = openrlib.rlib
     with memorymanagement.rmemory() as rmemory:
         classes = rmemory.protect(
@@ -756,7 +771,7 @@ def rclass_get(scaps: _rinterface.SexpCapsule) -> StrSexpVector:
 
 
 def rclass_set(
-        scaps: _rinterface.SexpCapsule,
+        scaps: _rinterface.CapsuleBase,
         value: 'typing.Union[StrSexpVector, str]'
 ) -> None:
     if isinstance(value, StrSexpVector):
@@ -785,3 +800,89 @@ def unserialize(state):
         )
         res = _rinterface.SexpCapsule(ser)
     return res
+
+
+class NAIntegerType(int, metaclass=Singleton):
+
+    def __new__(cls, *args, **kwargs):
+        embedded.assert_isready()
+        return super().__new__(cls, openrlib.rlib.R_NaInt)
+
+    def __repr__(self) -> str:
+        return 'NA_integer_'
+
+    def __str__(self) -> str:
+        return 'NA_integer_'
+
+    def __bool__(self):
+        raise ValueError('R value for missing integer value')
+
+
+class NACharacterType(CharSexp, metaclass=SingletonABC):
+
+    def __init__(self):
+        embedded.assert_isready()
+        super().__init__(
+            CharSexp(
+                _rinterface.SexpCapsule(openrlib.rlib.R_NaString)
+            )
+        )
+
+    def __repr__(self) -> str:
+        return 'NA_character_'
+
+    def __str__(self) -> str:
+        return 'NA_character_'
+
+    def __bool__(self):
+        raise ValueError('R value for missing character value')
+
+
+class NALogicalType(int, metaclass=Singleton):
+
+    def __new__(cls, *args, **kwargs):
+        embedded.assert_isready()
+        return super().__new__(cls, openrlib.rlib.R_NaInt)
+
+    def __repr__(self) -> str:
+        return 'NA'
+
+    def __str__(self) -> str:
+        return 'NA'
+
+    def __bool__(self) -> bool:
+        raise ValueError('R value for missing boolean value')
+
+
+class NARealType(float, metaclass=Singleton):
+
+    def __new__(cls, *args, **kwargs):
+        embedded.assert_isready()
+        return super().__new__(cls, openrlib.rlib.R_NaReal)
+
+    def __repr__(self) -> str:
+        return 'NA_real_'
+
+    def __str__(self) -> str:
+        return 'NA_real_'
+
+    def __bool__(self) -> bool:
+        raise ValueError('R value for missing float value')
+
+
+class NAComplexType(complex, metaclass=Singleton):
+
+    def __new__(cls, *args, **kwargs):
+        embedded.assert_isready()
+        return super().__new__(cls,
+                               openrlib.rlib.R_NaReal,
+                               openrlib.rlib.R_NaReal)
+
+    def __repr__(self) -> str:
+        return 'NA_complex_'
+
+    def __str__(self) -> str:
+        return 'NA_complex_'
+
+    def __bool__(self):
+        raise ValueError('R value for missing complex value')

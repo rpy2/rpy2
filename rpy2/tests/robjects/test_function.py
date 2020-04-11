@@ -1,4 +1,5 @@
 import pytest
+import inspect
 import rpy2.robjects as robjects
 rinterface = robjects.rinterface
 import array
@@ -129,7 +130,7 @@ def test_wrap_r_function(is_method):
     stf = robjects.functions.SignatureTranslatedFunction(r_func)
     foo = robjects.functions.wrap_r_function(r_func, 'foo',
                                              is_method=is_method)
-    assert foo._r_func.rid == r_func.rid
+    assert inspect.getclosurevars(foo).nonlocals['r_func'].rid == r_func.rid
     assert tuple(foo.__signature__.parameters.keys()) == parameter_names
     if not is_method:
         res = foo(1)

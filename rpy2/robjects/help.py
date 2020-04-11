@@ -165,8 +165,8 @@ class Page(object):
     def _section_get(self):
         return self._sections
 
-    sections = property(_section_get, None,
-                        "Sections in the in help page, as a dict.")
+    sections = property(_section_get, None, None,
+                        'Sections in the in help page, as a dict.')
 
     def __getitem__(self, item):
         """ Get a section """
