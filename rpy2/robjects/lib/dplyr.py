@@ -1,6 +1,5 @@
 from collections import namedtuple
 from rpy2 import robjects
-from rpy2.robjects import language
 from rpy2.robjects.packages import (importr,
                                     WeakPackage)
 import warnings
