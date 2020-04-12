@@ -184,30 +184,8 @@ Gentoo.
 OS X (MacOS) precompiled binaries
 ---------------------------------
 
-A binary *wheel* for OS X is available on pypi since rpy2-2.9.3 (see `issue #403`_).
+rpy2 is in Macports, Homebrew, and Fink. Binary are now also availabe on pypi.
 
-.. _issue #403: `https://bitbucket.org/rpy2/rpy2/issues/403`
-
-On, OS X rpy2 is in Macports, Homebrew, and Fink.
-
-
-.. index::
-  single: install;win32
-
-Microsoft's Windows precompiled binaries
-----------------------------------------
-
-If available, the executable can be run; this will install the package
-in the default Python installation.
-
-For few releases in the 2.0.x series,
-Microsoft Windows binaries were contributed by Laurent Oget from Predictix.
-
-There is currently no binaries or support for Microsoft Windows
-(because of lack of ressources more than anything else), but
-the collection of Unofficial Windows Binaries for Python Extension Packages
-provided by Christoph Gohlke includes rpy2:
-http://www.lfd.uci.edu/~gohlke/pythonlibs/
 
 .. index::
   single: install;source
