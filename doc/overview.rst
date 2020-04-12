@@ -263,28 +263,8 @@ The most frequent errors seem to be because of missing headers.
 Compiling on OS X
 ^^^^^^^^^^^^^^^^^
 
-*XCode* tools will be required in order to compile rpy2. Please refer to the documentation on the Apple
+*XCode* tools will be required in order to build rpy2 in API mode. Please refer to the documentation on the Apple
 site for more details about what they are and how to install them.
-
-On OS X "Snow Leopard" (10.6.8), it was reported that setting architecture flags was sometimes needed
-
-.. code-block:: bash
-
-   env ARCHFLAGS="-arch i386 -arch x86_64" pip install rpy2
-
-or 
-
-.. code-block:: bash
-
-   env ARCHFLAGS="-arch i386 -arch x86_64" python setup.py build install
-
-Some people have reported trouble with OS X "Lion". Please check the bug tracker if you are in that situation.
-
-.. note::
-   
-   When compiling R from source, do not forget to specify
-   *--enable-R-shlib* at the *./configure* step.
-
 
 .. index::
   single: test;whole installation
