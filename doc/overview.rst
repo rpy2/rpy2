@@ -148,39 +148,23 @@ the above code results in an error.
 Download
 --------
 
-The following options are, or could be, available for download:
+The following options are available for download:
 
   * Source packages. Released versions are available on Pypi
     (Sourceforge is no longer used).
     Snapshots of the development version can be downloaded from
-    bitbucket
+    github
 
     .. note::
-       The repository on bitbucket has several branches. Make sure to select
-       the one you are interested in.
+       The repository on bitbucket has several release branches
+       starting with `v`.
 
   * Pre-compiled binary packages for
 
-    * Microsoft's Windows - unofficial and unsupported binaries are provided
-      by Christoph Gohlke (http://www.lfd.uci.edu/~gohlke/pythonlibs/); 
-      there is otherwise currently
-      close to no support for this platform
+    * Apple's MacOS X are now also available on pypi
 
-    * Apple's MacOS X (although Fink and Macports are available, there does not
-      seem to be binaries currently available)
+    * Linux distributions are sometimes available. Check with your distribution
 
-    * Linux distributions
-
-`rpy2` has been reported compiling successfully on all 3 platforms, provided
-that development items such as Python headers and a C compiler are installed.
-
-.. note::
-   Choose files from the `rpy2` package, not `rpy`.
-
-.. note::
-   The *pip* or *easy_install* commands can be used,
-   although they currently only provide installation from source
-   (see :ref:`install-easyinstall`).
 
 Linux precompiled binaries
 --------------------------
