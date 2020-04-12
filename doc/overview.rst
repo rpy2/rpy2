@@ -48,35 +48,12 @@ Installation
 Docker image
 ------------
 
-There is a Docker image available to try rpy2 out
+There are few Docker images available to try rpy2 out
 without even reading about requirements (e.g., R installed
-compiled with the shared library flag). The Docker image
+compiled with the shared library flag). The Docker images
 can also be an easy start for Windows users.
 
-Its name is `rpy2/rpy2`, with currently two possible release tags
-(making the full image names either `rpy2/rpy2:3.1.x` or
-`rpy2/rpy2:latest`).
-
-The image was primarily designed to run a jupyter notebook or
-an ipython terminal, as shown in further details below, but
-it can also constitute a base image for custom needs.
-
-.. note::
-
-   If behind a proxy, one will need to pass the relevant
-   environment variables when running a container from the image.
-   Without this the container will not be able to communicate with
-   the internet and perform operations such as downloading and installing
-   additional R packages from CRAN or Python packages from pip.
-
-   .. code-block::bash
-
-      docker run \
-             --env http_proxy=<my http proxy> \
-	     --env https_proxy=<my https proxy> \
-	     --env HTTP_PROXY=<my http proxy> \
-	     --env HTTPS_PROXY=<my https proxy> \
-             <rest of the command line>
+More information is available here: https://github.com/rpy2/rpy2-docker
 
 
 ipython terminal
@@ -309,23 +286,7 @@ To install from a downloaded source archive `<rpy_package>`, do in a shell:
   python setup.py build install
 
 This will build the package, guessing the R HOME from
-the R executable found in the PATH.
-
-Beside the regular options for :mod:`distutils`-way of building and installing
-Python packages, it is otherwise possible to give explicitly the location for the R HOME:
-
-.. code-block:: bash
-
-   python setup.py build --r-home /opt/packages/R/lib install
-
-
-Other options to build the package are:
-
-.. code-block:: bash
-
-   --r-home-lib # for exotic location of the R shared libraries
-
-   --r-home-modules # for R shared modules
+the R executable found in the `PATH`.
 
 
 Compiling on Linux
@@ -335,6 +296,7 @@ Given that you have the libraries and development headers listed above, this
 should be butter smooth.
 
 The most frequent errors seem to be because of missing headers.
+
 
 Compiling on OS X
 ^^^^^^^^^^^^^^^^^
@@ -356,33 +318,10 @@ or
 
 Some people have reported trouble with OS X "Lion". Please check the bug tracker if you are in that situation.
 
-
-Using rpy2 with other versions of R or Python
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-.. warning::
-
-   When building rpy2, it is checked that this is against a recommended
-   version of R. Building against a different version is possible, although
-   not supported at all, through the flag *--ignore-check-rversion*
-
-   .. code-block:: bash
-
-      python setup.py build_ext --ignore-check-rversion install
-   
-   Since recently, development R is no longer returning
-   an R version and the check ends with an error
-   "Error: R >= <some version> required (and R told 'development.').".
-   The flag *--ignore-check-rversion* is then required in order to build.
-   
-
 .. note::
    
    When compiling R from source, do not forget to specify
    *--enable-R-shlib* at the *./configure* step.
-
-
 
 
 .. index::
@@ -396,73 +335,10 @@ the different layers constituting the packages can be tested independently.
 
 .. code-block:: bash
 
-   python -m 'rpy2.tests'
+   pytest --pyargs 'rpy2.tests'
 
-On Python 2.6, this should return that all tests were successful.
-
-
-Whenever more details are needed, one can consider running tests
-for specific parts of the package. For example:
-
-.. code-block:: bash
-
-  python -m rpy2.rinterface.tests.__init__		
-
-  # or
-  
-  python -m rpy2.robjects.tests.__init__
-    
-.. note:: 
-
-   Running the tests in an interactive session appears to trigger spurious exceptions
-   when testing callback functions raising exceptions.
-   If unsure, simply use the former way to test (in a shell).
-
-.. warning::
-
-  For reasons that remain to be elucidated, running the test suites used to leave the Python
-  interpreter in a fragile state, soon crashing after the tests have been run.
-
-  It is not clear whether this is still the case, but is recommended to terminate the 
-  Python process after the tests and start working with a fresh new session.
-
-
-To test the :mod:`rpy2.robjects` high-level interface:
-
-.. code-block:: bash
-
-  python -m 'rpy2.robjects.tests.__init__'
-
-or for a full control of options
-
-.. code-block:: python
-
-  import rpy2.robjects.tests
-  import unittest
-
-  # the verbosity level can be increased if needed
-  tr = unittest.TextTestRunner(verbosity = 1)
-  suite = rpy2.robjects.tests.suite()
-  tr.run(suite)
-
-If interested in the lower-level interface, the tests can be run with:
-
-.. code-block:: bash
-
-  python -m 'rpy2.rinterface.tests.__init__'
-
-or for a full control of options
-
-.. code-block:: python
-
-  import rpy2.rinterface.tests
-  import unittest
-
-  # the verbosity level can be increased if needed
-  tr = unittest.TextTestRunner(verbosity = 1)
-  suite = rpy2.rinterface.tests.suite()
-  tr.run(suite)
-
+The documentation for `pytest` should be consulted to customize how
+tests are run.
 
 Contents
 ========
@@ -487,13 +363,6 @@ Based on the previous one.
 
 High-level interface, with an eye for interactive work. Largely based
 on :mod:`rpy2.robjects`.
-
-:mod:`rpy2.rpy_classic`
------------------------
-
-High-level interface similar to the one in RPy-1.x.
-This is provided for compatibility reasons, as well as to facilitate the migration
-to RPy2.
 
 :mod:`rpy2.rlike`
 -----------------
@@ -528,9 +397,9 @@ any :class:`rpy2.robjects.Function` can be given any
 :class:`rpy2.rinterface.Sexp`. Because of R's functional basis,
 a container-like extension is also present.
 
-The module :mod:`rpy2.rpy_classic` is using delegation, letting us
-demonstrate how to extend :mod:`rpy2.rinterface` with an alternative
-to inheritance.
+However, inheritance is not the only choice. Any custome class implementing
+the interface :class:`rpy2.rinterface.SupportsSEXP` can integrate seamlessly
+and be used with the rest of rpy2.
 
 
 Acknowledgements
@@ -538,18 +407,46 @@ Acknowledgements
 
 Acknowledgements for contributions, support, and early testing go to (alphabetical order):
 
+Philipp A.,
 Alexander Belopolsky,
+Dan Brown,
+Beau Bruce,
+Brad Buran,
+Erik Cederstrand,
 Brad Chapman,
+Evgeny Cherkashin,
+Dav Clark,
 Peter Cock,
+Michaël Defferrard,
 Dirk Eddelbuettel,
+Isuru Fernando,
+Daniel Ge,
+Christoph Gohlke,
+Dale Jung,
 Thomas Kluyver,
+David Koppstein,
+Michał Krassowski,
+Antony Lee,
+Kenneth Lyons,
+Mikolaj Magnuski,
+Gijs Molenaar,
 Walter Moreira, 
 Laurent Oget,
+Pablo Oliveira,
 John Owens,
+Fabian Philips,
+Andrey Portnoy,
 Nicolas Rapin,
+Brad Reisfeld,
+Joon Ro,
+Andy Shapiro,
+Justin Shenk,
 Grzegorz Slodkowicz,
-Nathaniel Smith,
+Joan Smith,
+Nathaniel J. Smith,
+Jeff Tratner,
 Gregory Warnes,
+Liang-Bo Wang,
 as well as
 the JRI author(s),
 the R authors,
