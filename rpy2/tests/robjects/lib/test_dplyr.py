@@ -1,16 +1,16 @@
 import pytest
-from rpy2.robjects.packages import importr, data, PackageNotInstalledError
+from rpy2.robjects import packages
 
 try:
     from rpy2.robjects.lib import dplyr
     has_dplyr = True
     msg = ''
-except PackageNotInstalledError as error:
+except packages.PackageNotInstalledError as error:
     has_dplyr = False
     msg = str(error)
 
-datasets = importr('datasets')
-mtcars = data(datasets).fetch('mtcars')['mtcars']
+datasets = packages.importr('datasets')
+mtcars = packages.data(datasets).fetch('mtcars')['mtcars']
 
 @pytest.mark.skipif(not has_dplyr, reason=msg)
 class TestDplyr(object):

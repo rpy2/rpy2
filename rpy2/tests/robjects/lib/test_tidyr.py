@@ -1,21 +1,19 @@
 import pytest
 
-from rpy2.robjects.packages import (importr,
-                                    data,
-                                    PackageNotInstalledError)
+from rpy2.robjects import packages
 
 try:
     from rpy2.robjects.lib import tidyr
     has_tidyr = True
     msg = ''
-except PackageNotInstalledError as error:
+except packages.PackageNotInstalledError as error:
     has_tidyr = False
     msg = str(error)
 
 from rpy2 import rinterface
 from rpy2.robjects import vectors
-datasets = importr('datasets')
-mtcars = data(datasets).fetch('mtcars')['mtcars']
+datasets = packages.importr('datasets')
+mtcars = packages.data(datasets).fetch('mtcars')['mtcars']
 
 @pytest.mark.skipif(not has_tidyr,
                     reason=msg)

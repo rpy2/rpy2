@@ -6,16 +6,18 @@ import warnings
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    dplyr = importr('dplyr', on_conflict="warn")
+    dplyr_ = importr('dplyr', on_conflict="warn")
     lazyeval = importr('lazyeval', on_conflict="warn")
-    dplyr = WeakPackage(dplyr._env,
-                        dplyr.__rname__,
-                        translation=dplyr._translation,
-                        exported_names=dplyr._exported_names,
+    rlang = importr('rlang', on_conflict='warn',
+                    robject_translations={'.env': '__env'})
+    dplyr = WeakPackage(dplyr_._env,
+                        dplyr_.__rname__,
+                        translation=dplyr_._translation,
+                        exported_names=dplyr_._exported_names,
                         on_conflict="warn",
-                        version=dplyr.__version__,
-                        symbol_r2python=dplyr._symbol_r2python,
-                        symbol_resolve=dplyr._symbol_resolve)
+                        version=dplyr_.__version__,
+                        symbol_r2python=dplyr_._symbol_r2python,
+                        symbol_resolve=dplyr_._symbol_resolve)
 
 TARGET_VERSION = '0.8.'
 if not dplyr.__version__.startswith(TARGET_VERSION):
