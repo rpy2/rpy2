@@ -9,6 +9,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - RELEASE_3_*_*
 
 jobs:
   deploy:
