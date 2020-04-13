@@ -1,3 +1,18 @@
+Release 3.3.1
+=============
+
+Bugs fixed
+-----------
+
+- :meth:`rpy2.robjects.conversion.NameClassMap.update` can update
+  the mapping (:class:`dict`) or the default class.
+
+Changes
+-------
+
+- Adding local converters was overwriting the base `NameClassMap`.
+
+
 Release 3.3.0
 =============
 
