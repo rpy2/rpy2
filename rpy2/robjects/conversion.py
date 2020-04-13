@@ -56,8 +56,12 @@ class NameClassMap(object):
         return NameClassMap(defaultcls=self._default,
                             namemap=self._map.copy())
 
-    def update(self, mapping):
+    def update(self,
+               mapping: typing.Dict[str, typing.Type],
+               default: typing.Optional[typing.Type] = None):
         self._map.update(mapping)
+        if default:
+            self._default = default
 
     def find_key(self, keys: typing.Iterable[str]) -> typing.Optional[str]:
         """
@@ -155,7 +159,8 @@ def overlay_converter(src: 'Converter', target: 'Converter') -> None:
         if k is object and v is _rpy2py:
             continue
         target._rpy2py.register(k, v)
-    target._rpy2py_nc_map = src._rpy2py_nc_map.copy()
+    target._rpy2py_nc_map.update(src._rpy2py_nc_map._map.copy(),
+                                 default=src._rpy2py_nc_map._default)
 
 
 def _py2rpy(obj):
@@ -207,10 +212,10 @@ class Converter(object):
         self._name = name
         self._py2rpy = py2rpy
         self._rpy2py = rpy2py
+        self._rpy2py_nc_map = NameClassMap()
 
         if template is None:
             lineage = tuple()
-            self._rpy2py_nc_map = NameClassMap()
         else:
             lineage = list(template.lineage)
             lineage.append(name)
