@@ -28,6 +28,7 @@ jobs:
         sudo Rscript -e 'BiocManager::install("Biobase")'
     - name: Build HTML doc
       run: |
+        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         cd doc
         make notebooks
         make html
