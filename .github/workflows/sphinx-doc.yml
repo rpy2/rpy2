@@ -13,10 +13,14 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - name: Set up R 3.6
+      uses: r-lib/actions/setup-r@master
+      with:
+        r-version: 3.6
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install r-base pandoc
+        sudo apt-get install pandoc
         python -m pip install --upgrade pip
         pip install -r doc/requirements.txt
         python setup.py install
