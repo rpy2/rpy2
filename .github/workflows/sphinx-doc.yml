@@ -29,7 +29,7 @@ jobs:
     - name: Build HTML doc
       run: |
         export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH})
-	python -m rpy2.situation
+        python -m rpy2.situation
         cd doc
         make notebooks
         make html
