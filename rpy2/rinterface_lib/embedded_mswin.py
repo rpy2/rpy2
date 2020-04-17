@@ -37,7 +37,7 @@ def _initr_win32(
             rstart.ShowMessage = callbacks._showmessage
             rstart.YesNoCancel = callbacks._yesnocancel
             rstart.Busy = callbacks._busy
-    
+
         rstart.R_Quiet = True
         rstart.R_Interactive = interactive
         rstart.RestoreAction = openrlib.rlib.SA_RESTORE
@@ -57,7 +57,7 @@ def _initr_win32(
         n_options_c = ffi.cast('int', n_options)
         status = openrlib.rlib.Rf_initEmbeddedR(n_options_c, options_c)
         embedded.setinitialized()
-    
+
         # TODO: still needed ?
         openrlib.rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
 
