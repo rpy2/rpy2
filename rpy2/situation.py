@@ -279,10 +279,10 @@ def iter_info():
 
     if sys.platform in ('win32', 'nt'):
         r_home_default = r_home_from_registry()
-        yield '    InstallPath in the registry: %s' % r_home
+        yield '    InstallPath in the registry: %s' % r_home_default
     else:
         r_home_default = r_home_from_subprocess()
-        yield '    Calling `R RHOME`: %s' % r_home
+        yield '    Calling `R RHOME`: %s' % r_home_default
 
     if r_home is not None and r_home_default is not None:
         if os.path.abspath(r_home) != r_home_default:
