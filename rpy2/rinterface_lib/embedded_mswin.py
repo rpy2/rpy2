@@ -1,4 +1,5 @@
 import sys
+import typing
 from . import embedded
 from . import callbacks
 from . import openrlib
@@ -19,7 +20,7 @@ def _initr_win32(
         _want_setcallbacks: bool = True,
         _c_stack_limit: int = _DEFAULT_C_STACK_LIMIT
 
-) -> int:
+) -> typing.Optional[int]:
     with openrlib.rlock:
         if embedded.isinitialized():
             return None
