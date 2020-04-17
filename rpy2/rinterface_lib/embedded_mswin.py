@@ -1,9 +1,16 @@
+import sys
 from . import embedded
 from . import callbacks
 from . import openrlib
 
 ffi = openrlib.ffi
 
+# These constants are default values from R sources
+_DEFAULT_VSIZE = 67108864  # vector heap size
+_DEFAULT_NSIZE = 350000  # language heap size
+_DEFAULT_MAX_VSIZE = sys.maxsize  # max vector heap size
+_DEFAULT_MAX_NSIZE = 50000000  # max language heap size
+_DEFAULT_PPSIZE = 50000  # stack size
 _DEFAULT_C_STACK_LIMIT = -1
 
 
@@ -34,7 +41,15 @@ def _initr_win32(
         rstart.R_Interactive = interactive
         rstart.RestoreAction = openrlib.rlib.SA_RESTORE
         rstart.SaveAction = openrlib.rlib.SA_NOSAVE
-    
+
+        rstart.vsize = ffi.cast('size_t', _DEFAULT_VSIZE)
+        rstart.nsize = ffi.cast('size_t', _DEFAULT_NSIZE)
+        rstart.max_vsize = ffi.cast('size_t', _DEFAULT_MAX_VSIZE)
+        rstart.max_nsize = ffi.cast('size_t', _DEFAULT_MAX_NSIZE)
+        rstart.ppsize = ffi.cast('size_t', _DEFAULT_PPSIZE)
+
+        openrlib.rlib.R_SetParams(rstart)
+
         options_c = [ffi.new('char[]', o.encode('ASCII'))
                      for o in embedded._options]
         n_options = len(options_c)
@@ -44,7 +59,5 @@ def _initr_win32(
     
         # TODO: still needed ?
         openrlib.rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
-    
-        openrlib.rlib.R_SetParams(rstart)
-    
+
         return status
