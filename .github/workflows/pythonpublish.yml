@@ -56,7 +56,7 @@ jobs:
           name: rpy2-3.3.0.dev0-py3-none-any.whl
           path: ${{ steps.getfilename.outputs.file }}  
     - name: Publish
-      if: github.event_name == 'created'
+      if: github.event_name == 'release'
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
