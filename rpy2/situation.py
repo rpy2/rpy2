@@ -145,7 +145,7 @@ def get_r_home() -> Optional[str]:
 
     if not r_home:
         r_home = r_home_from_subprocess()
-    if not r_home and sys.platform == 'win32':
+    if not r_home and os.name == 'nt':
         r_home = r_home_from_registry()
     return r_home
 
@@ -261,8 +261,7 @@ def _make_bold_win32(text):
 
 def iter_info():
 
-    make_bold = _make_bold_win32 if sys.platform in ('win32', 'nt') \
-                else _make_bold_unix
+    make_bold = _make_bold_win32 if os.name == 'nt' else _make_bold_unix
 
     yield make_bold('rpy2 version:')
     if has_rpy2:
@@ -284,7 +283,7 @@ def iter_info():
     r_home = os.environ.get('R_HOME')
     yield '    Environment variable R_HOME: %s' % r_home
 
-    if sys.platform in ('win32', 'nt'):
+    if os.name == 'nt':
         r_home_default = r_home_from_registry()
         yield '    InstallPath in the registry: %s' % r_home_default
         r_user = os.environ.get('R_USER')
@@ -308,7 +307,7 @@ def iter_info():
             r_home = r_home_default
 
     # not applicable for Windows
-    if sys.platform not in ('win32', 'nt'):
+    if os.name != 'nt':
         yield make_bold("R's additions to LD_LIBRARY_PATH:")
         yield r_ld_library_path_from_subprocess(r_home)
 
@@ -332,7 +331,7 @@ def iter_info():
     yield r_libs
 
     # not working on Windows
-    if sys.platform not in ('win32', 'nt'):
+    if os.name != 'nt':
         yield make_bold('C extension compilation:')
         c_ext = CExtensionOptions()
         if r_home is None:
