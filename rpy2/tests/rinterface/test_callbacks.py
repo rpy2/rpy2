@@ -100,8 +100,7 @@ def test_resetconsole_error(caplog):
                           ._RESETCONSOLE_EXCEPTION_LOG % error_msg))
 
 
-@pytest.mark.skipif(os.name == 'nt',
-                    reason='Not supported on Windows')
+@pytest.mark.skipif(os.name == 'nt', reason='Not supported on Windows')
 def test_flushconsole():
 
     def make_callback():
@@ -120,8 +119,7 @@ def test_flushconsole():
         assert f.__closure__[0].cell_contents == 1
 
 
-@pytest.mark.skipif(os.name == 'nt',
-                    reason='Not supported on Windows')
+@pytest.mark.skipif(os.name == 'nt', reason='Not supported on Windows')
 def test_flushconsole_with_error(caplog):
     msg = "Doesn't work."
 
@@ -244,8 +242,7 @@ def test_choosefile_default():
         assert callbacks.choosefile('foo') == inputvalue
 
 
-@pytest.mark.skipif(os.name == 'nt',
-                    reason='Not supported on Windows')
+@pytest.mark.skipif(os.name == 'nt', reason='Not supported on Windows')
 def test_choosefile():
     me = "me"
 
@@ -257,8 +254,7 @@ def test_choosefile():
         assert me == res[0]
 
 
-@pytest.mark.skipif(os.name == 'nt',
-                    reason='Not supported on Windows')
+@pytest.mark.skipif(os.name == 'nt', reason='Not supported on Windows')
 def test_choosefile_error():
 
     def f(prompt):
@@ -287,8 +283,7 @@ def test_showfiles_default(capsys):
         os.unlink(tmp.name)
 
 
-@pytest.mark.skipif(os.name == 'nt',
-                    reason='Not supported on Windows')
+@pytest.mark.skipif(os.name == 'nt', reason='Not supported on Windows')
 def test_showfiles():
     sf = []
 
@@ -307,8 +302,7 @@ def test_showfiles():
         assert 'R Information' == sf[0]
 
 
-@pytest.mark.skipif(os.name == 'nt',
-                    reason='Not supported on Windows')
+@pytest.mark.skipif(os.name == 'nt', reason='Not supported on Windows')
 def test_showfiles_error(caplog):
 
     msg = "Doesn't work."
