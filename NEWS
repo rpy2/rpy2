@@ -1,3 +1,13 @@
+Release 3.3.2
+=============
+
+Bugs fixed
+----------
+
+- Initial fixes to have rpy2 running in ABI mode on Windows.
+  Few tests are not passing (many in callbacks for R's C API).
+
+
 Release 3.3.1
 =============
 
