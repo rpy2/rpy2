@@ -112,7 +112,7 @@ def r_ld_library_path_from_subprocess(r_home: str) -> str:
 
 def get_rlib_path(r_home: str, system: str) -> str:
     """Get the path for the R shared library."""
-    if system == 'Linux':
+    if system == 'FreeBSD' or system == 'Linux':
         lib_path = os.path.join(r_home, 'lib', 'libR.so')
     elif system == 'Darwin':
         lib_path = os.path.join(r_home, 'lib', 'libR.dylib')
