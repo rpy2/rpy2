@@ -100,6 +100,8 @@ def test_resetconsole_error(caplog):
                           ._RESETCONSOLE_EXCEPTION_LOG % error_msg))
 
 
+@pytest.mark.skipif(os.name == 'nt',
+                    reason='Not supported on Windows')
 def test_flushconsole():
 
     def make_callback():
@@ -118,6 +120,8 @@ def test_flushconsole():
         assert f.__closure__[0].cell_contents == 1
 
 
+@pytest.mark.skipif(os.name == 'nt',
+                    reason='Not supported on Windows')
 def test_flushconsole_with_error(caplog):
     msg = "Doesn't work."
 
@@ -192,7 +196,7 @@ def test_showmessage_default(capsys):
     buf = 'foo'
     callbacks.showmessage(buf)
     captured = capsys.readouterr()
-    assert captured.out.split(os.linesep)[1] == buf
+    assert captured.out.split('\n')[1] == buf
 
     
 def test_show_message():
@@ -240,6 +244,8 @@ def test_choosefile_default():
         assert callbacks.choosefile('foo') == inputvalue
 
 
+@pytest.mark.skipif(os.name == 'nt',
+                    reason='Not supported on Windows')
 def test_choosefile():
     me = "me"
 
@@ -251,6 +257,8 @@ def test_choosefile():
         assert me == res[0]
 
 
+@pytest.mark.skipif(os.name == 'nt',
+                    reason='Not supported on Windows')
 def test_choosefile_error():
 
     def f(prompt):
@@ -265,18 +273,22 @@ def test_choosefile_error():
 
 
 def test_showfiles_default(capsys):
-    filenames = (tempfile.NamedTemporaryFile(), )
-    filenames[0].write(b'abc')
-    filenames[0].flush()
-    headers = ('', )
-    wtitle = ''
-    pager = ''
-    captured = capsys.readouterr()
-    callbacks.showfiles(tuple(x.name for x in filenames),
-                        headers, wtitle, pager)
-    captured.out.endswith('---')
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        tmp.write(b'abc')
+        tmp.close()
+        filenames = (tmp, )
+        headers = ('', )
+        wtitle = ''
+        pager = ''
+        captured = capsys.readouterr()
+        callbacks.showfiles(tuple(x.name for x in filenames),
+                            headers, wtitle, pager)
+        captured.out.endswith('---')
+        os.unlink(tmp.name)
 
 
+@pytest.mark.skipif(os.name == 'nt',
+                    reason='Not supported on Windows')
 def test_showfiles():
     sf = []
 
@@ -295,6 +307,8 @@ def test_showfiles():
         assert 'R Information' == sf[0]
 
 
+@pytest.mark.skipif(os.name == 'nt',
+                    reason='Not supported on Windows')
 def test_showfiles_error(caplog):
 
     msg = "Doesn't work."
