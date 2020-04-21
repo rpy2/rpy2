@@ -14,8 +14,7 @@ import jinja2
 import time
 import pytz
 import tzlocal
-from datetime import date
-from datetime import datetime
+from datetime import date, datetime, timedelta, timezone
 from time import struct_time, mktime, tzname
 from operator import attrgetter
 import warnings
@@ -951,6 +950,16 @@ class POSIXct(POSIXt, FloatVector):
         """Is an R object an instance of POSIXct."""
         return obj.rclass[0] == 'POSIXct'
 
+    @staticmethod
+    def _datetime_from_timestamp(ts, tz) -> datetime:
+        """Platform-dependent conversion from timestamp to datetime"""
+        if os.name != 'nt' or ts > 0:
+            return datetime.fromtimestamp(ts, tz)
+        else:
+            dt_utc = datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=ts)
+            dt = dt_utc.replace(tzinfo=tz) 
+            return dt + dt.utcoffset()
+
     def iter_localized_datetime(self):
         """Iterator yielding localized Python datetime objects."""
         try:
@@ -969,7 +978,7 @@ class POSIXct(POSIXt, FloatVector):
         for x in self:
             yield (
                 None if math.isnan(x)
-                else datetime.fromtimestamp(x, r_tzone)
+                else POSIXct._datetime_from_timestamp(x, r_tzone)
             )
 
 
