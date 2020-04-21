@@ -1,3 +1,4 @@
+import os
 import pytest
 import rpy2.robjects as robjects
 import rpy2.robjects.help as rh
@@ -61,6 +62,9 @@ class TestPage(object):
         assert len(d) > 0
 
 
+@pytest.mark.xfail(
+    os.name == 'nt',
+    reason='Windows is missing library/translations/Meta/Rd.rds file')
 def test_pages():
     pages = rh.pages('plot')
     assert isinstance(pages, tuple)
