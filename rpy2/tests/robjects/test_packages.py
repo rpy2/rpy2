@@ -83,8 +83,9 @@ def test_installedstpackage_docstring_no_rname():
     stats = robjects.packages.importr('stats',
                                       on_conflict='warn')
     stats.__rname__ = None
-    assert stats.__doc__.startswith('Python representation of an R package.\n'
-                                    '<No information available>')
+    assert stats.__doc__.startswith(
+        'Python representation of an R package.%s' % os.linesep +
+        '<No information available>')
 
 
 class TestImportr(object):
@@ -181,7 +182,7 @@ def test_sourcecode():
 
 
 def test_sourcecode_as_namespace():
-    rcode = os.linesep.join(
+    rcode = '\n'.join(
         ('x <- 1+2',
          'f <- function(x) x+1')
     )
