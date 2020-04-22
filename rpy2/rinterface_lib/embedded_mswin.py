@@ -25,6 +25,13 @@ def _initr_win32(
         if embedded.isinitialized():
             return None
 
+        options_c = [ffi.new('char[]', o.encode('ASCII'))
+                     for o in embedded._options]
+        n_options = len(options_c)
+        n_options_c = ffi.cast('int', n_options)
+        status = openrlib.rlib.Rf_initEmbeddedR(n_options_c, options_c)
+        embedded.setinitialized()
+
         embedded.rstart = ffi.new('Rstart')
         rstart = embedded.rstart
         rstart.rhome = openrlib.rlib.get_R_HOME()
@@ -50,13 +57,6 @@ def _initr_win32(
         rstart.ppsize = ffi.cast('size_t', _DEFAULT_PPSIZE)
 
         openrlib.rlib.R_SetParams(rstart)
-
-        options_c = [ffi.new('char[]', o.encode('ASCII'))
-                     for o in embedded._options]
-        n_options = len(options_c)
-        n_options_c = ffi.cast('int', n_options)
-        status = openrlib.rlib.Rf_initEmbeddedR(n_options_c, options_c)
-        embedded.setinitialized()
 
         # TODO: still needed ?
         openrlib.rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)

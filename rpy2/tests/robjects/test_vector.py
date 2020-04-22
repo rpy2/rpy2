@@ -1,6 +1,7 @@
 import pytest
 import rpy2.robjects as robjects
 ri = robjects.rinterface
+import os
 import array
 import time
 import datetime
@@ -390,8 +391,9 @@ def test_repr_nonvectorinlist():
                                            ('b', robjects.Formula('y ~ x')),
                                            )))
     s = repr(vec)
-    assert s.startswith("R object with classes: ('list',) "
-                        "mapped to:\n[IntSexpVector, LangSexpVector]")
+    assert s.startswith("R object with classes: ('list',) " +
+                        "mapped to:%s" % os.linesep +
+                        "[IntSexpVector, LangSexpVector]")
 
 
 def test_items():
