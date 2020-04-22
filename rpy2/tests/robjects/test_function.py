@@ -127,7 +127,6 @@ def test_wrap_r_function(is_method):
     r_code = 'function(x, y=FALSE, z="abc") TRUE'
     parameter_names = ('self', 'x', 'y', 'z') if is_method else ('x', 'y', 'z')
     r_func = robjects.r(r_code)
-    stf = robjects.functions.SignatureTranslatedFunction(r_func)
     foo = robjects.functions.wrap_r_function(r_func, 'foo',
                                              is_method=is_method)
     assert inspect.getclosurevars(foo).nonlocals['r_func'].rid == r_func.rid

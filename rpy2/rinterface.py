@@ -860,8 +860,15 @@ def _post_initr_setup() -> None:
 
 
 def rternalize(function: typing.Callable) -> SexpClosure:
-    """ Takes an arbitrary Python function and wrap it
-    in such a way that it can be called from the R side. """
+    """ Make a Python function callable from R.
+
+    Takes an arbitrary Python function and wrap it in such a way that
+    it can be called from the R side.
+
+    :param:`function` A Python callable object.
+    :return: A wrapped R object that can be use like any other rpy2
+    object."""
+
     assert callable(function)
     rpy_fun = SexpExtPtr.from_pyobject(function)
     # TODO: this is a hack. Find a better way.

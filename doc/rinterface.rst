@@ -281,6 +281,8 @@ with the function) with the arguments *1* and *2*.
 
 .. autofunction:: parse()
 
+.. index::
+   single: rternalize
 
 Calling Python functions from R
 -------------------------------
@@ -330,8 +332,8 @@ The lower-level function :func:`rternalize` will take an arbitray
 Python function and return an :class:`rinterface.SexpClosure` instance,
 that is a object that can be used by R as a function.
 
-
 .. autofunction:: rternalize()
+
 
 Interactive features
 ====================

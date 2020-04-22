@@ -393,12 +393,12 @@ def wrap_r_function(
 
     Args:
         r_func (rpy2.robjects.functions.SignatureTranslatedFunction): The
-            function to be wrapped.
+        function to be wrapped.
         name (str): The name of the function.
         is_method (bool): Whether the function should be treated as a method
-            (adds a `self` param to the signature if so).
+        (adds a `self` param to the signature if so).
         map_default (function): Function to map default values in the Python
-            signature. No mapping to default values is done if None.
+        signature. No mapping to default values is done if None.
     Returns:
         A function wrapping an underlying R function.
     """

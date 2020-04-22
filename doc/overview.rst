@@ -55,44 +55,6 @@ can also be an easy start for Windows users.
 
 More information is available here: https://github.com/rpy2/rpy2-docker
 
-
-ipython terminal
-^^^^^^^^^^^^^^^^
-
-.. code-block:: bash
-	  
-   docker run \
-          -it --rm \
-          rpy2/rpy2:3.1.x ipython
-
-
-jupyter notebook
-^^^^^^^^^^^^^^^^
-
-To run the jupyter notebook on port 8888:
-
-.. code-block:: bash
-
-   docker run \
-          --rm -p 8888:8888 \
-          rpy2/rpy2:3.1.x
-
-Once started, point a web browser to `http://localhost:8888`.
-
-.. note::
-
-   If using `docker-machine` (which should be the case when on
-   a Mac or a Windows PC), this will not be `localhost`. The IP
-   address will be given by:
-
-   .. code-block:: bash
-
-      docker-machine ip [name-of-your-docker-machine-vm]
-
-   If usure about the name of your docker-machine VM, check the
-   output of the command `docker-machine ls`.
-
-   
 	   
 Requirements
 ------------
@@ -105,12 +67,17 @@ versions to run rpy2 with.
 Software Versions
 ======== =====================================================================
  Python   >=3.6
- R        >=3.4
+ R        >=3.5
 ======== =====================================================================
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
 building rpy2 will require the corresponding development headers 
 (check the documentation for more information about builing rpy2). 
+
+.. note::
+
+   Running `rpy2` on Windows is currently not supported although relative success
+   was recently reported with the lastest in the 3.3.x series. 
 
 
 Alternative Python implementations
