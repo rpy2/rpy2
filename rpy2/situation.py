@@ -334,7 +334,7 @@ def iter_info():
     c_ext = CExtensionOptions()
     if r_home is None:
         yield ('    Warning: R cannot be found, so no compilation flags '
-                'can be extracted.')
+               'can be extracted.')
     else:
         try:
             c_ext.add_lib(*get_r_flags(r_home, '--ldflags'))
@@ -351,7 +351,6 @@ def iter_info():
             yield '  %s' % c_ext.extra_link_args
         except subprocess.CalledProcessError:
             yield ('    Warning: Unable to get R compilation flags.')
-
 
 
 if __name__ == '__main__':

@@ -956,8 +956,9 @@ class POSIXct(POSIXt, FloatVector):
         if os.name != 'nt' or ts > 0:
             return datetime.fromtimestamp(ts, tz)
         else:
-            dt_utc = datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=ts)
-            dt = dt_utc.replace(tzinfo=tz) 
+            dt_utc = (datetime(1970, 1, 1, tzinfo=timezone.utc) +
+                      timedelta(seconds=ts))
+            dt = dt_utc.replace(tzinfo=tz)
             return dt + dt.utcoffset()
 
     def iter_localized_datetime(self):
