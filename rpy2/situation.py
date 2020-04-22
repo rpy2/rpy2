@@ -330,26 +330,28 @@ def iter_info():
     yield make_bold('Additional directories to load R packages from:')
     yield r_libs
 
-    # not working on Windows
-    if os.name != 'nt':
-        yield make_bold('C extension compilation:')
-        c_ext = CExtensionOptions()
-        if r_home is None:
-            yield ('  Warning: R cannot be found, so no compilation flags '
-                   'can be extracted.')
-        else:
+    yield make_bold('C extension compilation:')
+    c_ext = CExtensionOptions()
+    if r_home is None:
+        yield ('    Warning: R cannot be found, so no compilation flags '
+                'can be extracted.')
+    else:
+        try:
             c_ext.add_lib(*get_r_flags(r_home, '--ldflags'))
             c_ext.add_include(*get_r_flags(r_home, '--cppflags'))
-        yield '  include:'
-        yield '  %s' % c_ext.include_dirs
-        yield '  libraries:'
-        yield '  %s' % c_ext.libraries
-        yield '  library_dirs:'
-        yield '  %s' % c_ext.library_dirs
-        yield '  extra_compile_args:'
-        yield '  %s' % c_ext.extra_compile_args
-        yield '  extra_link_args:'
-        yield '  %s' % c_ext.extra_link_args
+            yield '  include:'
+            yield '  %s' % c_ext.include_dirs
+            yield '  libraries:'
+            yield '  %s' % c_ext.libraries
+            yield '  library_dirs:'
+            yield '  %s' % c_ext.library_dirs
+            yield '  extra_compile_args:'
+            yield '  %s' % c_ext.extra_compile_args
+            yield '  extra_link_args:'
+            yield '  %s' % c_ext.extra_link_args
+        except subprocess.CalledProcessError:
+            yield ('    Warning: Unable to get R compilation flags.')
+
 
 
 if __name__ == '__main__':
