@@ -95,7 +95,9 @@ def r_ld_library_path_from_subprocess(r_home: str) -> str:
            '-e',
            'cat(Sys.getenv("LD_LIBRARY_PATH"))')
     try:
-        r_lib_path = subprocess.check_output(cmd, universal_newlines=True)
+        r_lib_path = subprocess.check_output(cmd,
+                                             universal_newlines=True,
+                                             stderr=subprocess.PIPE)
     except Exception:  # FileNotFoundError, WindowsError, etc
         r_lib_path = ''
     res = None

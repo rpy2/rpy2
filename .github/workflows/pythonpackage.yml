@@ -42,7 +42,6 @@ jobs:
       run: |
         python setup.py install
     - name: Test with pytest
-      if: runner.os != 'Windows'
       run: |
         export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         pip install pytest codecov pytest-cov ipython
