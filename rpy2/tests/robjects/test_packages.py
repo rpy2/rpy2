@@ -84,8 +84,8 @@ def test_installedstpackage_docstring_no_rname():
                                       on_conflict='warn')
     stats.__rname__ = None
     assert stats.__doc__.startswith(
-        'Python representation of an R package.%s' % os.linesep +
-        '<No information available>')
+        'Python representation of an R package.%s'
+        '<No information available>' % os.linesep)
 
 
 class TestImportr(object):

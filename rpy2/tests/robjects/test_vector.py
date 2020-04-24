@@ -391,9 +391,8 @@ def test_repr_nonvectorinlist():
                                            ('b', robjects.Formula('y ~ x')),
                                            )))
     s = repr(vec)
-    assert s.startswith("R object with classes: ('list',) " +
-                        "mapped to:%s" % os.linesep +
-                        "[IntSexpVector, LangSexpVector]")
+    assert s.startswith("R object with classes: ('list',) mapped to:%s"
+                        "[IntSexpVector, LangSexpVector]" % os.linesep)
 
 
 def test_items():
