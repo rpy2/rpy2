@@ -802,7 +802,7 @@ def initr_simple() -> typing.Optional[int]:
 
 def initr_checkenv() -> typing.Optional[int]:
     # Force the internal initialization flag if there is an environment
-    # variable that indicates that R was alreay initialized in the current
+    # variable that indicates that R was already initialized in the current
     # process.
 
     status = None

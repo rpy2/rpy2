@@ -275,7 +275,7 @@ def test_png_plotting_args(ipython_with_magic, clean_globalenv):
     plot(x, y, pch=23, bg='orange', cex=2)
     '''
 
-    png_px_args = [' '.join(('--units=px',w,h,p)) for 
+    png_px_args = [' '.join(('--input=x,y --units=px',w,h,p)) for
                    w, h, p in product(['--width=400 ',''],
                                       ['--height=400',''],
                                       ['-p=10', ''])]
@@ -293,7 +293,7 @@ def test_display_args(ipython_with_magic, clean_globalenv):
     '''
 
     res = []
-    def display(x):
+    def display(x, a):
         res.append(x)
 
     with pytest.raises(NameError):

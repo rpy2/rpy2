@@ -20,6 +20,8 @@ def set_filenames_to_delete():
             os.unlink(fn)
 
 
+@pytest.mark.xfail(os.name == 'nt',
+                   reason='Windows produces non-empty file with no plot')
 def test_rendertobytes_noplot():
     with grdevices.render_to_bytesio(grdevices.png) as b:
         pass
