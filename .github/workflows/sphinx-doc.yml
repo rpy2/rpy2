@@ -16,7 +16,7 @@ jobs:
     - name: Set up R 3.6
       uses: r-lib/actions/setup-r@master
       with:
-        r-version: 3.6
+        r-version: 4.0
     - name: Install dependencies
       run: |
         sudo apt-get update
