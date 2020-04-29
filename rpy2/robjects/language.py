@@ -13,7 +13,11 @@ from rpy2.robjects.robject import RObject
 import rpy2.rinterface as ri
 _reval = ri.baseenv['eval']
 _parse = ri.parse
-_str2lang = ri.baseenv['str2lang']
+
+try:
+    _str2lang = ri.baseenv['str2lang']
+except KeyError:
+    _str2lang = ri.evalr('function(s) parse(text=s, keep.source=FALSE)[[1]]')
 
 
 def eval(x: str, envir: ri.SexpEnvironment = ri.globalenv) -> ri.Sexp:
