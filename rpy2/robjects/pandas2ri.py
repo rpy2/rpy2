@@ -178,7 +178,7 @@ def py2rpy_pandasseries(obj):
             if ((type(x) is not homogeneous_type)
                 and not
                 ((isinstance(x, float) and math.isnan(x))
-                 or x is pandas.NA)):
+                 or pandas.isna(x))):
                 raise ValueError('Series can only be of one type, or None '
                                  '(and here we have %s and %s).' %
                                  (homogeneous_type, type(x)))
