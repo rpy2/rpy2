@@ -10,7 +10,7 @@ jobs:
       max-parallel: 4
       matrix:
         python-version: [3.5, 3.6, 3.7, 3.8]
-        r-version: [3.6]
+        r-version: [3.6, 4.0]
         os: [ubuntu-latest, macOS-latest, windows-latest]
         exclude:
             # os: windows-latest
