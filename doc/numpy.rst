@@ -1,10 +1,9 @@
-
+.. _robjects-numpy:
 
 Numpy
 =====
 
-A popular solution for scientific computing with Python is :mod:`numpy` 
-(previous instances were :mod:`Numpy` and :mod:`numarray`).
+A popular solution for scientific computing with Python is :mod:`numpy`.
 
 :mod:`rpy2` has features to ease bidirectional communication with :mod:`numpy`.
 

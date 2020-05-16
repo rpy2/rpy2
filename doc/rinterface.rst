@@ -690,23 +690,23 @@ Those missing values can also be used with the :mod:`rpy2.robjects` layer
 and more documentation about their usage can be found there
 (see :ref:`robjects-missingvalues`).
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NAIntegerType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NAIntegerType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NARealType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NARealType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NALogicalType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NALogicalType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NACharacterType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NACharacterType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NAComplexType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NAComplexType()
    :show-inheritance:
    :members:
 
