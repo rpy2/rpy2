@@ -9,7 +9,7 @@ flake8 \
     rpy2/rlike/functional.py \
     rpy2/rlike/indexing.py \
     rpy2/robjects/c*.py \
-    rpy2/robjects/environment.py \
+    rpy2/robjects/environments.py \
     rpy2/robjects/language.py \
     rpy2/robjects/lib \
     rpy2/robjects/methods.py \
