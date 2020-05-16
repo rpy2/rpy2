@@ -14,6 +14,7 @@ from . import conversion
 
 logger = logging.getLogger(__name__)
 
+
 # TODO: rename to "replace_in_module"
 @contextmanager
 def obj_in_module(module, name: str, obj):
