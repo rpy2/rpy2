@@ -1,7 +1,10 @@
 Release 3.3.3
 =============
 
-- Fallback for when `str2lang` is missing (R < 3.6) 
+- Fallback for when `str2lang` is missing (R < 3.6)
+
+- Fix segfault with :meth:`PairListSexpVector.__getitem__` when
+  elements of the R pairlist have a `NILSXP` name (issue #700)
 
 
 Release 3.3.2
