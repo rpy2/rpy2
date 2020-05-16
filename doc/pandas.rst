@@ -1,6 +1,12 @@
+.. _robjects-pandas:
+
 ****************************
 Interoperability with pandas
 ****************************
+
+This section of the documentation is focused on the practical use of the pandas conversion helper.
+For more information about the conversion mechanism, check the more general documentation about
+:mod:`rpy2.robjects.conversion`.
 
 .. note::
 

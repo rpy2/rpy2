@@ -31,21 +31,28 @@ in a Python :class:`dict`.
 .. note::
 
    The `rinterface` level is quite close to R's C API and modifying it may quickly
-   results in segfaults.
+   result in segfaults.
 
 
 Conversion
 ----------
 
 In its high-level interface :mod:`rpy2` is using a conversion system that has the task
-of convertion objects between the following 3 representations:
-- lower-level interface to R (:mod:`rpy2.rinterface` level),
-- higher-level interface to R (:mod:`rpy2.robjects` level)
-- other (no :mod:`rpy2`) representations
+of convertion objects between the following 2 representations:
+- rpy2 objects, that are proxies to R objects in the embedded R process.
+- other (non-rpy2) Python objects. This may cover Python objects in the standard lib,
+  or any other Python class defined in additional packages or modules.
 
- For example, if one wanted have all Python :class:`tuple` turned into R `character`
- vectors (1D arrays of strings) as exposed by `rpy2`'s low-level interface the function
- would look like:
+.. note::
+
+   The rpy2 packages has :mod:`rpy2.robjects.numpy2ri` and :mod:`rpy2.robjects.pandas2ri`
+   to convert from and to :mod:`numpy` and :mod:`pandas` objects respectively.
+   Sections :ref:`robjects-numpy` and :ref:`robjects-pandas` contain information about
+   working with rpy2 and :mod:`numpy` or :mod:`pandas` objects.
+
+For example, if one wanted have all Python :class:`tuple` turned into R `character`
+vectors (1D arrays of strings) as exposed by `rpy2`'s low-level interface the function
+would look like:
  
 .. code-block:: python
 
