@@ -10,25 +10,50 @@ Mapping rpy2 objects to arbitrary python objects
 Protocols
 ---------
 
-At the lower level (:mod:`rpy2.rinterface`), the rpy2 objects exposing
+At the lower level (:mod:`rpy2.rinterface`), the rpy2 objects wrapping
 R objects implement Python protocols to make them feel as natural to a Python
-programmer as possible. With them they can be passed as arguments to many
-non-rpy2 functions without the need for conversion.
+programmer as possible, and in many cases allow to use them with non-R or non-rpy2
+functions without the need for conversion.
 
-R vectors are mapped to Python objects implementing the methods
-:meth:`__getitem__` / :meth:`__setitem__` in the sequence
-protocol so elements can be accessed easily. They also implement the Python buffer
-protocol, allowing them be used in :mod:`numpy` functions without the need for data
-copying or conversion.
+For example, R vectors are mapped to Python objects implementing the methods
+:meth:`__len_`, :meth:`__getitem__`, :meth:`__setitem__` defined in the sequence
+protocol. Python functions working with sequences can then be passed such R
+objects:
 
-R functions are mapped to Python objects implementing the :meth:`__call__` so they
-can be called just as if they were functions.
+.. code-block::
 
-R environments are mapped to Python objects implementing :meth:`__getitem__` /
-:meth:`__setitem__` in the mapping protocol so elements can be accessed similarly to
-in a Python :class:`dict`.
+   import rpy2.rinterface as ri
+   ri.initr()
+
+   # R array of integers
+   r_vec = ri.IntSexpVector([1,2,3])
+
+   # enumerate() can use our r_vec
+   for i, elt in enumerate(r_vec):
+       print('r_vec[%i]: %i' % (i, elt))
+
+
+rpy2 objects with compatible underlying C representations also implement
+the :mod:`numpy` :attr:`__array_interface__`, allowing them be used in
+:mod:`numpy` functions without the need for datacopying or conversion.
 
 .. note::
+
+   Before the move to :mod:`cffi` Python's buffer protocol was also implemented
+   but the Python does not allow classes to define it outside of the Python C-API,
+   and `cffi` does not allow the use of the Python's C-API.
+
+   Some rpy2 vectors will have a method :meth:`memoryview` that will return
+   views that implement the buffer protocol.
+
+R functions are mapped to Python objects that implement the :meth:`__call__` so they
+can be called just as if they were functions.
+
+R environments are mapped to Python objects that implement :meth:`__len__`,
+:meth:`__getitem__`, :meth:`__setitem__` in the mapping protocol so elements
+can be accessed similarly to in a Python :class:`dict`.
+
+.. warning::
 
    The `rinterface` level is quite close to R's C API and modifying it may quickly
    result in segfaults.
@@ -38,10 +63,13 @@ Conversion
 ----------
 
 In its high-level interface :mod:`rpy2` is using a conversion system that has the task
-of convertion objects between the following 2 representations:
+of conversion objects between the following 2 representations:
 - rpy2 objects, that are proxies to R objects in the embedded R process.
 - other (non-rpy2) Python objects. This may cover Python objects in the standard lib,
   or any other Python class defined in additional packages or modules.
+
+The `py2rpy` will indicate a conversion from Python (optionally non-rpy2) to rpy2,
+and `rpy2py` from rpy2 to (optionally) non-rpy2.
 
 .. note::
 
@@ -50,7 +78,8 @@ of convertion objects between the following 2 representations:
    Sections :ref:`robjects-numpy` and :ref:`robjects-pandas` contain information about
    working with rpy2 and :mod:`numpy` or :mod:`pandas` objects.
 
-For example, if one wanted have all Python :class:`tuple` turned into R `character`
+As an example of conversion function, if one wanted have all Python :class:`tuple`
+turned into R `character`
 vectors (1D arrays of strings) as exposed by `rpy2`'s low-level interface the function
 would look like:
  
@@ -63,43 +92,103 @@ would look like:
        res = StrSexpVector(tpl)
        return res
 
-
+   
 Converter objects
 ^^^^^^^^^^^^^^^^^
 
-The class :class:`rpy2.robjects.conversion.Converter` groups such conversion functions
-into one object.
+rpy2's conversion system is relying on single dispatch as implemented in
+:meth:`functools.singledispatch`. This means that a conversion function,
+such as the example function `tuple_str` above, will be associated with
+the Python class for which the function should be called.
+In our example, the Python class is :class:`tuple` because we want to use it
+when an incoming object is a tuple, and our function is written to handle tuples
+and return an rpy2 object.
+   
+The class :class:`rpy2.robjects.conversion.Converter` groups conversion rules
+into one object. This helps will defining sets of coherent conversion rules, or
+conversion domains. The conversions utilities for :mod:`numpy` or :mod:`pandas`
+mentioned above are examples of such converters.
 
-Our conversion function defined above can then be registered as follows:
+The dispatch functions for "(optionally) non-rpy2 to rpy2" and
+"rpy2 to (optionally) non-rpy2" are
+:attr:`rpy2.robjects.converters.Converter.py2rpy` and
+:attr:`rpy2.robjects.converters.Converter.rpy2py` respectively.
+
+Our conversion function defined above can be registered in a converter as follows:
 
 .. code-block:: python
    
    from rpy2.robjects.conversion import Converter
-   my_converter = Converter('my converter')
-   my_converter.py2rpy.register(tuple, tuple_str)
+   seq_converter = Converter('sequence converter')
+   seq_converter.py2rpy.register(tuple, tuple_str)
 
-Converter objects are additive, which can be an easy way to create simple combinations of
-conversion rules. For example, creating a converter that adds the rule above to the default
-conversion rules is written:
+Conversion set of rules in converter objects be layered on the top of one another,
+to create sets of combined conversion rules. To help with writing concise and
+clear code, :class:`Converter` objects can be added. For example, creating a
+converter that adds the rule above to the default conversion rules in rpy2
+will look like:
 
 .. code-block:: python
 		
    from rpy2.robjects import default_converter
-   default_converter + my_converter
+   conversion_rules = default_converter + seq_converter
 
+.. note::
+
+   While a dispatch solely based on Python classes will work very well in the
+   direction "non-rpy2 to rpy2" it will show limits in the direction
+   "rpy2 to non-rpy2" when stepping out of simple cases,
+   or when independently-developed are combined.
+
+   The direction "rpy2 to non-rpy2" is not working so well in those cases
+   because rpy2 classes are mirroring the type of R objects at the C-level (as
+   defined in R's C-API). However, class definitions in R often sit outside
+   of structures found at the C level, and as a mere attribute of the R object
+   that contains class names. For example, an R `data.frame` is a `LISTSXP` at
+   C-level, but it has an attribute `"class"` that says `"data.frame"`. Nothing
+   would prevent someone to set the `"class"` attribute to `"data.frame"`
+   to an R object of different type at C-level.
+
+   In order to resolve that duality of class definitions, the rpy2 conversion system can
+   optionally defer the final dispatch to a second-stage dispatch.
+   
+   The attribute :attr:`rpy2.robjects.conversion.Converter.rpy2py_nc_name` is
+   mapping an rpy2 type to a :class:`rpy2.robjects.conversion.NameClassMap` that
+   resolves a sequence of R class names to the matching conversion
+   function.
+
+   For example, a conversion rule for R objects of class "lm" that are R lists at
+   the C level (this is a real exemple - R's linear model fit objects are just that)
+   can be added to a converter with:
+
+   .. code-block:: python
+
+      class Lm(rinterface.ListSexpVector):
+          # implement attributes, properties, methods to make the handling of
+	  # the R object more convenient on the Python side
+	  pass
+
+      clsmap = myconverter.rpy2py_nc_name[rinterface.ListSexpVector]
+      clsmap.update({'lm': Lm})
+   
+   
 Local conversion rules
 ^^^^^^^^^^^^^^^^^^^^^^
 
 The conversion rules can be customized globally (See section `Customizing the conversion`)
-or through the use of local converters as context managers. The latter is
-recommended when experimenting or wishing a specific behavior of the conversion
-system that is limited in time.
+or through the use of local converters as context managers.
 
-We can use this to example, if we want to change `rpy2`'s current refusal to handle
-sequences of unspecified type.
+.. note::
 
-The following code is throwing an error that `rpy2` does not know how to handle
-Python sequences.
+   The use of local conversion rules is
+   much recommended as modifying the global conversion rules can lead to wasted resources
+   (e.g., unnecessary round-trip conversions if the code is successively passing results from
+   calling R functions to the next R functions) or errors (conversion cannot be guaranteed to
+   be without loss, as concepts present in either language are not always able to survive
+   a round trip).
+   
+As an example, we show how to write an alternative to rpy2 not knowing what to do with
+Python tuples.
 
 .. code-block:: python
 
@@ -109,48 +198,37 @@ Python sequences.
    base = importr('base')
 
    # error here:
+   # NotImplementedError: Conversion 'py2rpy' not defined for objects of type '<class 'tuple'>'
    res = base.paste(x, collapse="-")
 
-This can be changed by using our converter as an addition to the default conversion scheme:
+This can be changed by using our converter defined above as an addition to the
+default conversion scheme:
 
 .. code-block:: python
 
    from rpy2.robjects import default_converter
    from rpy2.robjects.conversion import Converter, localconverter
-   with localconverter(default_converter + my_converter) as cv:
+   with localconverter(conversion_rules) as cv:
        res = base.paste(x, collapse="-")
-
-
-:func:`rpy2py`
-^^^^^^^^^^^^^^
-
-The conversion is trying to turn an rpy2 object (either :mod:`rpy2.rinterface` or
-:mod:`rpy2.robjects` level, low or high level interface respectively)
-into a Python object (or an object that is more Python-like than the input object).
-This method is a generic as implemented in :meth:`functools.singledispatch`.
-
-For example the optional conversion scheme for :mod:`numpy` objects
-will return numpy arrays whenever possible.
 
 .. note::
 
-   `robjects`-level objects are also implicitly `rinterface`-level objects
-   because of the inheritance relationship in their class definitions,
-   but the reverse is not true.
-   The `robjects` level is an higher level of abstraction, aiming at simplifying
-   one's use of R from Python (although at the possible cost of performances).
+   A local conversion rule can also ensure that code is robust against arbitrary changes
+   in the conversion system made by the caller.
 
+   For example, to ensure that a function always uses rpy2's default conversion,
+   irrespective of what are the conversion rules defined by the caller of the code:
 
-:func:`py2rpy`
-^^^^^^^^^^^^^^
+   .. code-block:: python
 
-The conversion is between (presumably) non-rpy2 objects
-and rpy2 objects. The result tend to be a lower-level interface
-object (:mod:`rpy2.rinterface`) because this conversion is often the step before an
-object is passed to R.
+      from rpy2.robjects import default_converter
+      from rpy2.robjects.conversion import localconverter
 
-This method is a generic as implemented in :meth:`functools.singledispatch`
-(with Python 2, :meth:`singledispatch.singledispatch`).
+      def my_function(obj):
+          with localconverter(default_converter) as cv:
+              # block of code mixing Python code and calls to R functions
+	      # interacting with the objects returned by R in the Python code
+	      pass
 
 
 Customizing the conversion
@@ -208,11 +286,13 @@ exercise for the reader.
       ):
           res2 = robjects.r('lmer(Reaction ~ Days + (Days | Subject), sleepstudy)')
 
-   When running the example above, `res` is an instance of class :class:`rpy2.robjects.methods.RS4`,
+   When running the example above, `res` is an instance of class
+   :class:`rpy2.robjects.methods.RS4`,
    which is the default mapping for R `S4` instances, while `res2` is an instance of our
    custom class `LMER`.
 
-   The class mapping is using the hierarchy of R/S4-defined classes and tries to find the first
+   The class mapping is using the hierarchy of R/S4-defined classes and tries to find
+   the first
    matching Python-defined class. For example, the R/S4 class `lmerMod` has a parent class
    `merMod` (defined in R S4). Let run the following example after the previous one.
    
