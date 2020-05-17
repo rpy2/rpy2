@@ -467,7 +467,9 @@ def importr(name,
     """
 
     if not isinstalled(name):
-        raise PackageNotInstalledError('The R package "%s" is not installed.' % name)
+        raise PackageNotInstalledError(
+            'The R package "%s" is not installed.' % name
+        )
 
     if suppress_messages:
         ok = quiet_require(name, lib_loc=lib_loc)
