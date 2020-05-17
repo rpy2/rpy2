@@ -1,6 +1,9 @@
 Release 3.3.3
 =============
 
+Bugs fixed
+----------
+
 - Fallback for when `str2lang` is missing (R < 3.6)
 
 - Fix segfault with :meth:`PairListSexpVector.__getitem__` when
