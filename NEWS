@@ -1,3 +1,14 @@
+Release 3.3.4
+=============
+
+Bugs fixed
+----------
+
+- Creating an R vector object from a Python object implementing
+  the buffer protocol could give incorrect results as C-level
+  incompatibilities could be missed (issue #702).
+
+
 Release 3.3.3
 =============
 
