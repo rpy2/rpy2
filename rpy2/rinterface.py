@@ -68,9 +68,10 @@ def evalr(source: str, maxlines: int = -1) -> sexp.Sexp:
 def vector_memoryview(obj: sexp.SexpVector,
                       sizeof_str: str, cast_str: str) -> memoryview:
     """
-    - sizeof_str: type in a string to use with ffi.sizeof()
+    :param:`obj` R vector
+    :param:`sizeof_str` Type in a string to use with ffi.sizeof()
         (for example "int")
-    - cast_str: type in a string to use with memoryview.cast()
+    :param:`cast_str` Type in a string to use with memoryview.cast()
         (for example "i")
     """
     b = openrlib.ffi.buffer(
