@@ -8,6 +8,9 @@ Bugs fixed
   the buffer protocol could give incorrect results as C-level
   incompatibilities could be missed (issue #702).
 
+- :func:`rpy2.robjects.packages.importr` could fail when `lib_loc`
+  was specified `(issue #705).
+
 
 Release 3.3.3
 =============
