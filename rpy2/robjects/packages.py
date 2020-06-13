@@ -50,7 +50,7 @@ def no_warnings(func):
             # restore the old warn setting before propagating
             # the exception up
             _options(warn=oldwarn)
-            raise ebrave bluray
+            raise e
         _options(warn=oldwarn)
         return res
     return run_withoutwarnings
