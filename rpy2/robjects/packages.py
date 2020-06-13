@@ -50,7 +50,7 @@ def no_warnings(func):
             # restore the old warn setting before propagating
             # the exception up
             _options(warn=oldwarn)
-            raise e
+            raise ebrave bluray
         _options(warn=oldwarn)
         return res
     return run_withoutwarnings
@@ -466,7 +466,7 @@ def importr(name,
 
     """
 
-    if not isinstalled(name):
+    if not isinstalled(name, lib_loc=lib_loc):
         raise PackageNotInstalledError(
             'The R package "%s" is not installed.' % name
         )
