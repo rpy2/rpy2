@@ -466,7 +466,7 @@ def importr(name,
 
     """
 
-    if not isinstalled(name):
+    if not isinstalled(name, lib_loc=lib_loc):
         raise PackageNotInstalledError(
             'The R package "%s" is not installed.' % name
         )
