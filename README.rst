@@ -61,6 +61,9 @@ To run jupypter notebook on port 8888:
 More information about Docker images can be found in the
 `docker image repository <https://github.com/rpy2/rpy2-docker>`_.
 
+Images with jupyter are can be used with
+`mybinder <https://github.com/rpy2/rpy2-mybinder>`_.
+
 
 Documentation
 =============
