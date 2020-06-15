@@ -20,12 +20,12 @@ class TestPage(object):
     def test_init(self):
         base_help = rh.Package('base')
         p = base_help.fetch('print')
-        assert tuple(p.sections.keys())[0] == 'title'
+        assert tuple(p.sections.keys())[0] == '\\title'
 
     def test_fetch(self):
         base_help = rh.Package('base')
         f = base_help.fetch('print')
-        assert 'title' in f.sections.keys()
+        assert '\\title' in f.sections.keys()
 
     def test_to_docstring(self):
         base_help = rh.Package('base')
@@ -37,28 +37,28 @@ class TestPage(object):
         base_help = rh.Package('base')
         p = base_help.fetch('print')
         d = p.title()
-        assert isinstance(d, str)
+        assert all(isinstance(x, str) for x in d)
         assert len(d) > 0
 
     def test_description(self):
         base_help = rh.Package('base')
         p = base_help.fetch('print')
         d = p.description()
-        assert isinstance(d, str)
+        assert all(isinstance(x, str) for x in d)
         assert len(d) > 0
 
     def test_seealso(self):
         base_help = rh.Package('base')
         p = base_help.fetch('print')
         d = p.seealso()
-        assert isinstance(d, str)
+        assert all(isinstance(x, str) for x in d)
         assert len(d) > 0
 
     def test_usage(self):
         base_help = rh.Package('base')
         p = base_help.fetch('print')
         d = p.usage()
-        assert isinstance(d, str)
+        assert all(isinstance(x, str) for x in d)
         assert len(d) > 0
 
 

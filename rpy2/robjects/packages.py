@@ -318,7 +318,7 @@ class InstalledSTPackage(SignatureTranslatedPackage):
             try:
                 doc.append(rhelp.docstring(self.__rname__,
                                            self.__rname__ + '-package',
-                                           sections=['description']))
+                                           sections=['\\description']))
             except rhelp.HelpNotFoundError:
                 doc.append('[R help was not found]')
         return os.linesep.join(doc)
@@ -346,7 +346,7 @@ class InstalledPackage(Package):
             try:
                 doc.append(rhelp.docstring(self.__rname__,
                                            self.__rname__ + '-package',
-                                           sections=['description']))
+                                           sections=['\\description']))
             except rhelp.HelpNotFoundError:
                 doc.append('[R help was not found]')
         return os.linesep.join(doc)

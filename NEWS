@@ -1,3 +1,13 @@
+Release 4.0.0
+=============
+
+Changes
+-------
+
+- The dynamic generation of docstrings for R man pages
+  is now using R's `Rd2txt`.
+
+
 Release 3.3.4
 =============
 

@@ -215,10 +215,14 @@ class DocumentedSTFunction(SignatureTranslatedFunction):
 
     @docstring_property(__doc__)
     def __doc__(self):
-        doc = ['Python representation of an R function.']
+        doc = ['Wrapper around an R function.',
+               '',
+               'The docstring below is built from the R documentation.',
+               '']
+
         description = help.docstring(self.__rpackagename__,
                                      self.__rname__,
-                                     sections=['description'])
+                                     sections=['\\description'])
         doc.append(description)
 
         fm = _formals_fixed(self)
@@ -237,14 +241,17 @@ class DocumentedSTFunction(SignatureTranslatedFunction):
         doc.extend((')', ''))
         package = help.Package(self.__rpackagename__)
         page = package.fetch(self.__rname__)
+        doc.append('Args:')
         for item in page.arguments():
-            description = item.value
-            description = description.replace('\n', '')
-            description, count = pattern_link.subn(r'\1', description)
-            description, count = pattern_code.subn(r'`\1`', description)
-            description, count = pattern_samp.subn(r'`\1`', description)
-            doc.append(' '.join((item.name, ': ', description, ',')))
+            description = ('%s  ' % os.linesep).join(item.value)
+            doc.append(' '.join(('  ', item.name, ': ', description)))
             doc.append('')
+
+        doc.append(help.docstring(self.__rpackagename__,
+                                  self.__rname__,
+                                  sections=['\\details'])
+        )
+
         return os.linesep.join(doc)
 
 
