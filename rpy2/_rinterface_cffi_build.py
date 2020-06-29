@@ -148,13 +148,22 @@ def read_source(src_filename):
 
 def createbuilder_abi():
     ffibuilder = cffi.FFI()
-    cdef = []
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
     cdef = create_cdef(definitions, 'R_API.h')
     ffibuilder.set_source('_rinterface_cffi_abi', None)
-    ffibuilder.cdef(cdef)
+
+    with open(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                'rinterface_lib',
+                'RPY2.h')
+    ) as fh:
+        header_rpy2 = fh.read()
+
+    ffibuilder.cdef(os.linesep.join((cdef, header_rpy2)))
+
     return ffibuilder
 
 
@@ -166,6 +175,7 @@ def createbuilder_api():
     define_osname(definitions)
     eventloop_h = read_source('R_API_eventloop.h')
     eventloop_c = read_source('R_API_eventloop.c')
+    header_rpy2 = read_header('RPY2.h')
     r_home = rpy2.situation.get_r_home()
     if r_home is None:
         sys.exit('Error: rpy2 in API mode cannot be built without R in '
@@ -213,10 +223,12 @@ def createbuilder_api():
                   ffi_proxy._callback_def,
                   ffi_proxy._yesnocancel_def,
                   ffi_proxy._parsevector_wrap_def,
-                  ffi_proxy._handler_def])
+                  ffi_proxy._handler_def,
+                  ffi_proxy._findvar_in_frame_def])
 
-    cdef = (create_cdef(definitions, header_filename) +
-            callback_defns_api)
+    cdef = os.linesep.join((create_cdef(definitions, header_filename),
+                            callback_defns_api,
+                            header_rpy2))
     ffibuilder.cdef(cdef)
     cdef_eventloop, _ = c_preprocess(
         iter(eventloop_h.split('\n')),

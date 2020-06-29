@@ -313,8 +313,9 @@ class SexpEnvironment(Sexp):
         elif not len(key):
             raise ValueError('The key must be a non-empty string.')
         with memorymanagement.rmemory() as rmemory:
+            key_cchar = conversion._str_to_cchar(key)
             symbol = rmemory.protect(
-                openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
+                openrlib.rlib.Rf_install(key_cchar)
             )
             if wantfun:
                 # One would expect this to be like
@@ -323,8 +324,15 @@ class SexpEnvironment(Sexp):
                 # the environment. :/
                 rho = self
                 while rho.rid != emptyenv.rid:
-                    res = _rinterface._findVarInFrame(symbol,
-                                                      rho.__sexp__._cdata)
+                    exec_data = _rinterface.ffi.new(
+                        'struct RPY2_sym_env_data *',
+                        [symbol, rho.__sexp__._cdata, openrlib.rlib.R_NilValue]
+                    )
+                    _ = openrlib.rlib.R_ToplevelExec(openrlib.rlib._findvar_in_frame, exec_data)
+                    if _ != openrlib.rlib.TRUE:
+                        raise embedded.RRuntimeError('R C-API Rf_findVarInFrame()')
+                    res = exec_data.data
+
                     if _rinterface._TYPEOF(res) in (openrlib.rlib.CLOSXP,
                                                     openrlib.rlib.BUILTINSXP):
                         break
@@ -346,10 +354,19 @@ class SexpEnvironment(Sexp):
         elif not len(key):
             raise ValueError('The key must be a non-empty string.')
         with memorymanagement.rmemory() as rmemory:
+            key_cchar = conversion._str_to_cchar(key)
             symbol = rmemory.protect(
-                openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
+                openrlib.rlib.Rf_install(key_cchar)
             )
-            res = _rinterface._findVarInFrame(symbol, self.__sexp__._cdata)
+            exec_data = _rinterface.ffi.new(
+                'struct RPY2_sym_env_data *',
+                [symbol, self.__sexp__._cdata, openrlib.rlib.R_NilValue]
+            )
+            _ = openrlib.rlib.R_ToplevelExec(openrlib.rlib._findvar_in_frame, exec_data)
+            if _ != openrlib.rlib.TRUE:
+                raise embedded.RRuntimeError('R C-API Rf_findVarInFrame()')
+            res = exec_data.data
+                                               
         # TODO: move check of R_UnboundValue to _rinterface
         if res == openrlib.rlib.R_UnboundValue:
             raise KeyError("'%s' not found" % key)
@@ -367,8 +384,9 @@ class SexpEnvironment(Sexp):
                              'empty environments.')
         # TODO: call to Rf_duplicate needed ?
         with memorymanagement.rmemory() as rmemory:
+            key_cchar = conversion._str_to_cchar(key)
             symbol = rmemory.protect(
-                openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
+                openrlib.rlib.Rf_install(key_cchar)
             )
             cdata = rmemory.protect(conversion._get_cdata(value))
             cdata_copy = rmemory.protect(

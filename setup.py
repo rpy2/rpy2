@@ -216,5 +216,6 @@ if __name__ == '__main__':
                        'Development Status :: 5 - Production/Stable'
         ],
         package_data={'rpy2': ['rinterface_lib/R_API.h',
-                               'rinterface_lib/R_API_eventloop.h']}
+                               'rinterface_lib/R_API_eventloop.h',
+                               'rinterface_lib/RPY2.h']}
     )
