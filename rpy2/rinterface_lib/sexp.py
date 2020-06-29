@@ -367,7 +367,6 @@ class SexpEnvironment(Sexp):
                 'struct RPY2_sym_env_data *',
                 [symbol, self.__sexp__._cdata, openrlib.rlib.R_NilValue]
             )
-<<<<<<< HEAD
             _ = openrlib.rlib.R_ToplevelExec(
                 openrlib.rlib._findvar_in_frame,
                 exec_data
@@ -375,14 +374,6 @@ class SexpEnvironment(Sexp):
             if _ != openrlib.rlib.TRUE:
                 raise embedded.RRuntimeError('R C-API Rf_findVarInFrame()')
             res = exec_data.data
-
-=======
-            _ = openrlib.rlib.R_ToplevelExec(openrlib.rlib._findvar_in_frame, exec_data)
-            if _ != openrlib.rlib.TRUE:
-                raise embedded.RRuntimeError('R C-API Rf_findVarInFrame()')
-            res = exec_data.data
-                                               
->>>>>>> Fix issue #710 (API mode only).
         # TODO: move check of R_UnboundValue to _rinterface
         if res == openrlib.rlib.R_UnboundValue:
             raise KeyError("'%s' not found" % key)
