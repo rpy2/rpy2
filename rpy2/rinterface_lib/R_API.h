@@ -252,6 +252,7 @@ SEXP (CLOENV)(SEXP x);
 SEXP Rf_eval(SEXP, SEXP);
 SEXP R_tryEval(SEXP, SEXP, int*);
 
+Rboolean R_ToplevelExec(void (*fun)(void *), void *data);
 SEXP R_tryCatchError(SEXP (*fun)(void *data), void *data,
 		     SEXP (*hndlr)(SEXP cond, void *hdata), void *hdata);
 
@@ -356,6 +357,7 @@ SEXP R_ParseVector(SEXP text, int num, ParseStatus *status, SEXP srcfile);
 
 /* include/Rinterface.h */
 extern Rboolean R_Interactive ;
+extern void* R_GlobalContext;
 extern int R_SignalHandlers;
 extern uintptr_t R_CStackLimit;
 extern uintptr_t R_CStackStart;
