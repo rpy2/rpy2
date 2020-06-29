@@ -7,6 +7,20 @@ Changes
 - The dynamic generation of docstrings for R man pages
   is now using R's `Rd2txt`.
 
+- The :func:`rpy2.rinterface_lib._rinterface_capi._findVarInFrame`
+  is replaced by the function
+  :func:`rpy2.rinterface_lib._rinterface_capi._findvar_in_frame`
+  (see fix to issue #710).
+
+Bugs fixed
+----------
+
+- The C function `Rf_findVarInFrame()` in the R API can trigger
+  in an R-level error, and while this is rare, when it does
+  when embedded in Python it creates a segfault. Calls are
+  now wrapped in `R_ToplevelExec()` to limit the propagation
+  of R exceptions. This solved issue #710.
+
 
 Release 3.3.4
 =============

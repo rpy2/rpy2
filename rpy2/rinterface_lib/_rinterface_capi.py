@@ -186,8 +186,13 @@ def _findfun(symbol, r_environment):
                            r_environment)
 
 
-def _findVarInFrame(symbol, r_environment):
-    return openrlib.rlib.Rf_findVarInFrame(r_environment, symbol)
+@ffi_proxy.callback(ffi_proxy._findvar_in_frame_def,
+                    openrlib._rinterface_cffi)
+def _findvar_in_frame(cdata):
+    cdata_struct = ffi.cast('struct RPY2_sym_env_data *', cdata)
+    res = openrlib.rlib.Rf_findVarInFrame(cdata_struct.environment, cdata_struct.symbol)
+    cdata_struct.data = res
+    return
 
 
 def _GET_DIM(robj):
