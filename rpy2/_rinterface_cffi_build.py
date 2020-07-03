@@ -110,7 +110,7 @@ def createbuilder_api():
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
     cdef = create_cdef(definitions, header_filename)
-    eventloop_h = read_source('R_API_eventloop.h')  
+    eventloop_h = read_source('R_API_eventloop.h')
     eventloop_c = read_source('R_API_eventloop.c')
     r_home = rpy2.situation.get_r_home()
     if r_home is None:
