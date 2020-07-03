@@ -7,7 +7,12 @@ import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
 
 
-ifdef_pat = re.compile('^#ifdef +([^ ]+) *$')
+DEFINES = ('RPY2_RLEN_LONG', 'RPY2_RLEN_SHORT', 'OSNAME_NT')
+ifdef_pat_template = (r'(^#ifdef {name}\n)'
+                      r'((?:.*\n)*)'
+                      r'(#else  /\* {name} \*/\n)'
+                      r'((?:.*\n)*)'
+                      r'(#endif  /\* {name} \*/\n)')
 define_pat = re.compile('^#define +([^ ]+) +([^ ]+) *$')
 cffi_source_pat = re.compile(
     '^/[*] cffi_source-begin [*]/.+?/[*] cffi_source-end [*]/',
@@ -37,13 +42,6 @@ def parse(iterrows, rownum, definitions, until=None):
     for row_i, row in enumerate(iter(iterrows), rownum):
         if until and row.startswith(until):
             break
-        m = ifdef_pat.match(row)
-        if m:
-            defined = m.groups()[0].strip()
-            block = parse(iterrows, row_i, definitions, until='#endif')
-            if defined in definitions:
-                res.extend(block)
-            continue
         m = define_pat.match(row)
         if m:
             alias, value = m.groups()
@@ -66,15 +64,28 @@ def create_cdef(definitions, header_filename):
     ) as fh:
         iterrows = iter(fh)
         cdef.extend(parse(iterrows, 0, definitions))
-    return ''.join(cdef)
+    res = ''.join(cdef)
+    for name in DEFINES:
+        pat = ifdef_pat_template.format(name=name)
+        if name in definitions:
+            replace_idx = 2
+        else:
+            replace_idx = 4
+        m = re.search(pat, res, flags=re.MULTILINE)
+        while m:
+            beg, end = m.span()
+            replace_str = m.group(replace_idx)
+            res = ''.join((res[:beg], replace_str, res[end:]))
+            m = re.search(pat, res, flags=re.MULTILINE)
+    return res
+            
 
-
-def read_header(header_filename):
+def read_source(src_filename):
     with open(
             os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
                 'rinterface_lib',
-                header_filename)
+                src_filename)
     ) as fh:
         cdef = fh.read()
     return cdef
@@ -99,7 +110,8 @@ def createbuilder_api():
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
     cdef = create_cdef(definitions, header_filename)
-    header_eventloop = read_header('R_API_eventloop.h')
+    eventloop_h = read_source('R_API_eventloop.h')    
+    eventloop_c = read_source('R_API_eventloop.c')
     r_home = rpy2.situation.get_r_home()
     if r_home is None:
         sys.exit('Error: rpy2 in API mode cannot be built without R in '
@@ -119,14 +131,7 @@ def createbuilder_api():
 
     ffibuilder.set_source(
         '_rinterface_cffi_api',
-        """
-        # include "{header_filename}"
-        # include "R_API_eventloop.h"
-        void rpy2_runHandlers(InputHandler *handlers) {{
-          R_runHandlers(handlers, R_checkActivity(0, 1));
-        }};
-        """.format(
-            header_filename=header_filename),
+        eventloop_c,
         libraries=c_ext.libraries,
         library_dirs=c_ext.library_dirs,
         # If we were using the R headers, we would use
@@ -159,7 +164,7 @@ def createbuilder_api():
     cdef = (create_cdef(definitions, header_filename) +
             callback_defns_api)
     ffibuilder.cdef(cdef)
-    ffibuilder.cdef(cffi_source_pat.sub('', header_eventloop))
+    ffibuilder.cdef(cffi_source_pat.sub('', eventloop_h))
     ffibuilder.cdef('void rpy2_runHandlers(InputHandler *handlers);')
     return ffibuilder
 
