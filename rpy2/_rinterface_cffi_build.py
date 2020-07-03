@@ -7,16 +7,63 @@ import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
 
 
-DEFINES = ('RPY2_RLEN_LONG', 'RPY2_RLEN_SHORT', 'OSNAME_NT')
-ifdef_pat_template = (r'(^#ifdef {name}\n)'
-                      r'((?:.*\n)*)'
-                      r'(#else  /\* {name} \*/\n)'
-                      r'((?:.*\n)*)'
-                      r'(#endif  /\* {name} \*/\n)')
+DEFINES = (
+    'RPY2_RLEN_LONG',  # C-type for length of R vector
+    'RPY2_RLEN_SHORT',  # C-type for length of R vector
+    'OSNAME_NT'  # Windows system
+)
+IFDEF_PAT_TEMPLATE = (
+    r'(?ms)'
+    r'(^#ifdef {name}\n)'
+    r'(.*?)'
+    r'(^#else  /\* {name} \*/\n)'
+    r'(.*?)'
+    r'(^#endif  /\* {name} \*/\n)')
 define_pat = re.compile('^#define +([^ ]+) +([^ ]+) *$')
-cffi_source_pat = re.compile(
-    '^/[*] cffi_source-begin [*]/.+?/[*] cffi_source-end [*]/',
-    flags=re.MULTILINE | re.DOTALL)
+
+
+def c_preprocess_define(csource, definitions={}):
+    res = []
+    localdefinitions = definitions.copy()
+    for row in csource.split('\n'):
+        m = define_pat.match(row)
+        if m:
+            localdefinitions[m.group(1)] = m.group(2)
+            continue
+        for k, v in localdefinitions.items():
+            if isinstance(v, str):
+                row = row.replace(k, v)
+        res.append(row)
+    return '\n'.join(res)
+
+
+def c_preprocess_ifdef(csource, name, definitions):
+    """
+    Rudimentary C-preprocessor for ifdef blocks.
+
+    Args:
+    - csource: a string with C code
+    - name: the name in `#ifdef <name>` to process in
+      the csource
+    - definitions: a mapping (e.g., set or dict contaning
+      which "names" are defined)
+
+    Returns:
+    The csource with the conditional ifdef blocks for name
+    processed.
+    """
+    pattern = IFDEF_PAT_TEMPLATE.format(name=name)
+    if name in definitions:
+        replace_idx = 2
+    else:
+        replace_idx = 4
+    m = re.search(pattern, csource)
+    while m:
+        beg, end = m.span()
+        replace_str = m.group(replace_idx)
+        csource = ''.join((csource[:beg], replace_str, csource[end:]))
+        m = re.search(pattern, csource)
+    return csource
 
 
 def define_rlen_kind(ffibuilder, definitions):
@@ -37,23 +84,6 @@ def define_osname(definitions):
         definitions['OSNAME_NT'] = True
 
 
-def parse(iterrows, rownum, definitions, until=None):
-    res = []
-    for row_i, row in enumerate(iter(iterrows), rownum):
-        if until and row.startswith(until):
-            break
-        m = define_pat.match(row)
-        if m:
-            alias, value = m.groups()
-            definitions[alias] = value.strip()
-            continue
-        for k, v in definitions.items():
-            if isinstance(v, str):
-                row = row.replace(k, v)
-        res.append(row)
-    return res
-
-
 def create_cdef(definitions, header_filename):
     cdef = []
     with open(
@@ -62,22 +92,18 @@ def create_cdef(definitions, header_filename):
                 'rinterface_lib',
                 header_filename)
     ) as fh:
-        iterrows = iter(fh)
-        cdef.extend(parse(iterrows, 0, definitions))
-    res = ''.join(cdef)
+        csource = fh.read()
+
+    cdef = c_preprocess_define(csource)
+    with open('/tmp/foo_def.h', 'w') as fh:
+        fh.write(cdef)
+
     for name in DEFINES:
-        pat = ifdef_pat_template.format(name=name)
-        if name in definitions:
-            replace_idx = 2
-        else:
-            replace_idx = 4
-        m = re.search(pat, res, flags=re.MULTILINE)
-        while m:
-            beg, end = m.span()
-            replace_str = m.group(replace_idx)
-            res = ''.join((res[:beg], replace_str, res[end:]))
-            m = re.search(pat, res, flags=re.MULTILINE)
-    return res
+        cdef = c_preprocess_ifdef(cdef, name, definitions)
+    with open('/tmp/foo_ifdef.h', 'w') as fh:
+        fh.write(cdef)
+
+    return cdef
 
 
 def read_source(src_filename):
@@ -109,7 +135,6 @@ def createbuilder_api():
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
-    cdef = create_cdef(definitions, header_filename)
     eventloop_h = read_source('R_API_eventloop.h')
     eventloop_c = read_source('R_API_eventloop.c')
     r_home = rpy2.situation.get_r_home()
@@ -164,7 +189,9 @@ def createbuilder_api():
     cdef = (create_cdef(definitions, header_filename) +
             callback_defns_api)
     ffibuilder.cdef(cdef)
-    ffibuilder.cdef(cffi_source_pat.sub('', eventloop_h))
+    ffibuilder.cdef(
+        c_preprocess_ifdef(eventloop_h, 'CFFI_SOURCE', {'CFFI_SOURCE'})
+    )
     ffibuilder.cdef('void rpy2_runHandlers(InputHandler *handlers);')
     return ffibuilder
 

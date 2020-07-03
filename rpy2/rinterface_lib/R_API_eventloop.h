@@ -1,6 +1,8 @@
-/* cffi_source-begin */
+#ifdef CFFI_SOURCE
+
+#else  /* CFFI_SOURCE */
 # include <sys/select.h> /* for fd_set */
-/* cffi_source-end */
+#endif  /* CFFI_SOURCE */
 
 typedef void (*InputHandlerProc)(void *userData);
 typedef struct _InputHandler InputHandler;
@@ -34,7 +36,9 @@ extern InputHandler *R_InputHandlers;
 extern void (* R_PolledEvents)(void);
 extern int R_wait_usec;
 
-/* cffi_source-begin */
+#ifdef CFFI_SOURCE
+
+#else  /* CFFI_SOURCE */
 /* The definitions below require fd_set, which is only defined through
  * the include of sys/select.h . */
 extern InputHandler *getSelectedHandler(InputHandler *handlers, fd_set *mask);
@@ -45,4 +49,4 @@ extern void R_runHandlers(InputHandler *handlers, fd_set *mask);
 extern int R_SelectEx(int  n,  fd_set  *readfds,  fd_set  *writefds,
 		      fd_set *exceptfds, struct timeval *timeout,
 		      void (*intr)(void));
-/* cffi_source-end */
+#endif  /* CFFI_SOURCE */
