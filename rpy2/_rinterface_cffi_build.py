@@ -30,12 +30,13 @@ def _c_preprocess_block(csource,
             continue
         m_ifdef = IFDEF_PAT.match(row)
         if m_ifdef:
-            block, defs = _c_preprocess_block(
+            subblock, subdefs = _c_preprocess_ifdef(
                 csource,
+                m_ifdef.group(1) in localdefs,
                 definitions=localdefs,
                 rownum=rownum)
-            block.extend(tmp)
-            definitions.update(defs)
+            block.extend(subblock)
+            definitions.update(subdefs)
             continue
 
         m_else = ELSE_PAT.match(row)
@@ -49,6 +50,27 @@ def _c_preprocess_block(csource,
             if isinstance(v, str):
                 row = row.replace(k, v)
         block.append(row)
+
+
+def _c_preprocess_ifdef(csource, want_block_a,
+                        definitions={}, rownum=0):
+    ending, block_a, defs_a = _c_preprocess_block(
+        csource,
+        definitions=definitions,
+        rownum=rownum)
+    if ending == 'else':
+        ending, block_b, defs_b = _c_preprocess_block(
+            csource,
+            definitions=definitions,
+            rownum=rownum)
+    else:
+        block_b = ''
+        defs_b = definitions
+    assert ending == 'endif'
+    if want_block_a:
+        return (block_a, defs_a)
+    else:
+        return (block_b, defs_b)
 
 
 def c_preprocess(csource, definitions={}, rownum=0):
@@ -76,25 +98,11 @@ def c_preprocess(csource, definitions={}, rownum=0):
         m_ifdef = IFDEF_PAT.match(row)
         if m_ifdef:
             name = m_ifdef.group(1)
-            ending, block_a, defs_a = _c_preprocess_block(
-                csource,
-                definitions=localdefs,
-                rownum=rownum)
-            if ending == 'else':
-                ending, block_b, defs_b = _c_preprocess_block(
-                    csource,
-                    definitions=localdefs,
-                    rownum=rownum)
-            else:
-                block_b = ''
-                defs = localdefs
-            assert ending == 'endif'
-            if name in localdefs:
-                block.extend(block_a)
-                localdefs.update(defs_a)
-            else:
-                block.extend(block_b)
-                localdefs.update(defs_b)
+            subblock, subdefs = _c_preprocess_ifdef(csource, name in localdefs,
+                                                    definitions=localdefs,
+                                                    rownum=0)
+            block.extend(subblock)
+            localdefs.update(subdefs)
             continue
         for k, v in localdefs.items():
             if isinstance(v, str):

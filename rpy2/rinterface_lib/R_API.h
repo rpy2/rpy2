@@ -388,14 +388,14 @@ typedef enum {
 
 #ifdef OSNAME_NT
 char *getDLLVersion(void);
-char *getRUser(void);
-char *get_R_HOME(void);
+extern char *(*getRUser)(void);
+extern char *(*get_R_HOME)(void);
 void setup_term_ui(void);
 extern int UserBreak;
 extern Rboolean AllDevicesKilled;
 void editorcleanall(void);
-int GA_initapp(int, char **);
-void GA_appcleanup(void);
+extern int GA_initapp(int, char **);
+extern void GA_appcleanup(void);
 void readconsolecfg(void);
 
 typedef int (*blah1) (const char *, char *, int, int);

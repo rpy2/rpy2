@@ -32,8 +32,11 @@ extern InputHandler *addInputHandler(InputHandler *handlers,
 				     int activity);
 extern InputHandler *getInputHandler(InputHandler *handlers, int fd);
 extern int           removeInputHandler(InputHandler **handlers, InputHandler *it);
+#ifdef OSNAME_NT
+#else
 extern InputHandler *R_InputHandlers;
 extern void (* R_PolledEvents)(void);
+#endif
 extern int R_wait_usec;
 
 #ifdef CFFI_SOURCE
@@ -42,9 +45,13 @@ extern int R_wait_usec;
 /* The definitions below require fd_set, which is only defined through
  * the include of sys/select.h . */
 extern InputHandler *getSelectedHandler(InputHandler *handlers, fd_set *mask);
+
+#ifdef OSNAME_NT
+#else
 extern fd_set *R_checkActivity(int usec, int ignore_stdin);
 extern fd_set *R_checkActivityEx(int usec, int ignore_stdin, void (*intr)(void));
 extern void R_runHandlers(InputHandler *handlers, fd_set *mask);
+#endif
 
 extern int R_SelectEx(int  n,  fd_set  *readfds,  fd_set  *writefds,
 		      fd_set *exceptfds, struct timeval *timeout,
