@@ -12,39 +12,51 @@ DEFINES = (
     'RPY2_RLEN_SHORT',  # C-type for length of R vector
     'OSNAME_NT'  # Windows system
 )
-IFDEF_PAT_TEMPLATE = (
-    r'(?ms)'
-    r'(^#ifdef {name}\n)'
-    r'(.*?)'
-    r'(^#else  /\* {name} \*/\n)'
-    r'(.*?)'
-    r'(^#endif  /\* {name} \*/\n)')
-define_pat = re.compile('^#define +([^ ]+) +([^ ]+) *$')
+IFDEF_PAT = re.compile('^#ifdef (.+) ?.*$')
+ELSE_PAT = re.compile('^#else ?.*$')
+ENDIF_PAT = re.compile('^#endif ?.*$')
+DEFINE_PAT = re.compile('^#define +([^ ]+) +([^ ]+) *$')
 
 
-def c_preprocess_define(csource, definitions={}):
-    res = []
-    localdefinitions = definitions.copy()
-    for row in csource.split('\n'):
-        m = define_pat.match(row)
+def _c_preprocess_block(csource,
+                        definitions={}, rownum=0):
+    localdefs = definitions.copy()
+    block = []
+    for row in csource:
+        rownum += 1
+        m = DEFINE_PAT.match(row)
         if m:
-            localdefinitions[m.group(1)] = m.group(2)
+            localdefs[m.group(1)] = m.group(2)
             continue
-        for k, v in localdefinitions.items():
+        m_ifdef = IFDEF_PAT.match(row)
+        if m_ifdef:
+            block, defs = _c_preprocess_block(
+                csource,
+                definitions=localdefs,
+                rownum=rownum)
+            block.extend(tmp)
+            definitions.update(defs)
+            continue
+
+        m_else = ELSE_PAT.match(row)
+        if m_else:
+            return ('else', block, definitions)
+
+        m_endif = ENDIF_PAT.match(row)
+        if m_endif:
+            return ('endif', block, definitions)
+        for k, v in localdefs.items():
             if isinstance(v, str):
                 row = row.replace(k, v)
-        res.append(row)
-    return '\n'.join(res)
+        block.append(row)
 
 
-def c_preprocess_ifdef(csource, name, definitions):
+def c_preprocess(csource, definitions={}, rownum=0):
     """
     Rudimentary C-preprocessor for ifdef blocks.
 
     Args:
-    - csource: a string with C code
-    - name: the name in `#ifdef <name>` to process in
-      the csource
+    - csource: iterator C source code
     - definitions: a mapping (e.g., set or dict contaning
       which "names" are defined)
 
@@ -52,18 +64,43 @@ def c_preprocess_ifdef(csource, name, definitions):
     The csource with the conditional ifdef blocks for name
     processed.
     """
-    pattern = IFDEF_PAT_TEMPLATE.format(name=name)
-    if name in definitions:
-        replace_idx = 2
-    else:
-        replace_idx = 4
-    m = re.search(pattern, csource)
-    while m:
-        beg, end = m.span()
-        replace_str = m.group(replace_idx)
-        csource = ''.join((csource[:beg], replace_str, csource[end:]))
-        m = re.search(pattern, csource)
-    return csource
+
+    localdefs = definitions.copy()
+    block = []
+    for row in csource:
+        rownum += 1
+        m = DEFINE_PAT.match(row)
+        if m:
+            localdefs[m.group(1)] = m.group(2)
+            continue
+        m_ifdef = IFDEF_PAT.match(row)
+        if m_ifdef:
+            name = m_ifdef.group(1)
+            ending, block_a, defs_a = _c_preprocess_block(
+                csource,
+                definitions=localdefs,
+                rownum=rownum)
+            if ending == 'else':
+                ending, block_b, defs_b = _c_preprocess_block(
+                    csource,
+                    definitions=localdefs,
+                    rownum=rownum)
+            else:
+                block_b = ''
+                defs = localdefs
+            assert ending == 'endif'
+            if name in localdefs:
+                block.extend(block_a)
+                localdefs.update(defs_a)
+            else:
+                block.extend(block_b)
+                localdefs.update(defs_b)
+            continue
+        for k, v in localdefs.items():
+            if isinstance(v, str):
+                row = row.replace(k, v)
+        block.append(row)
+    return block, rownum
 
 
 def define_rlen_kind(ffibuilder, definitions):
@@ -92,18 +129,8 @@ def create_cdef(definitions, header_filename):
                 'rinterface_lib',
                 header_filename)
     ) as fh:
-        csource = fh.read()
-
-    cdef = c_preprocess_define(csource)
-    with open('/tmp/foo_def.h', 'w') as fh:
-        fh.write(cdef)
-
-    for name in DEFINES:
-        cdef = c_preprocess_ifdef(cdef, name, definitions)
-    with open('/tmp/foo_ifdef.h', 'w') as fh:
-        fh.write(cdef)
-
-    return cdef
+        cdef, _ = c_preprocess(fh, definitions=definitions, rownum=0)
+    return ''.join(cdef)
 
 
 def read_source(src_filename):
@@ -189,9 +216,11 @@ def createbuilder_api():
     cdef = (create_cdef(definitions, header_filename) +
             callback_defns_api)
     ffibuilder.cdef(cdef)
-    ffibuilder.cdef(
-        c_preprocess_ifdef(eventloop_h, 'CFFI_SOURCE', {'CFFI_SOURCE'})
-    )
+    cdef_eventloop, _ = c_preprocess(
+        iter(eventloop_h.split('\n')),
+        definitions={'CFFI_SOURCE': True},
+        rownum=1)
+    ffibuilder.cdef('\n'.join(cdef_eventloop))
     ffibuilder.cdef('void rpy2_runHandlers(InputHandler *handlers);')
     return ffibuilder
 
