@@ -3,8 +3,8 @@ import os
 import sys
 import typing
 import warnings
-from . import openrlib
-from . import callbacks
+from rpy2.rinterface_lib import openrlib
+from rpy2.rinterface_lib import callbacks
 
 ffi = openrlib.ffi
 

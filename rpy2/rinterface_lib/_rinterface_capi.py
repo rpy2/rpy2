@@ -6,11 +6,11 @@ import logging
 from typing import Tuple
 import typing
 import warnings
-from . import ffi_proxy
-from . import openrlib
-from . import conversion
-from . import embedded
-from . import memorymanagement
+from rpy2.rinterface_lib import ffi_proxy
+from rpy2.rinterface_lib import openrlib
+from rpy2.rinterface_lib import conversion
+from rpy2.rinterface_lib import embedded
+from rpy2.rinterface_lib import memorymanagement
 
 from _cffi_backend import FFI  # type: ignore
 
@@ -84,7 +84,7 @@ def _capsule_finalizer(cdata: FFI.CData) -> None:
         warnings.warn('Exception downgraded to warning: %s' % str(e))
 
 
-# ABI and API modes differs in the what is the exact callback object to be
+# ABI and API modes differs in what is the exact callback object to be
 # passed to C code.
 if hasattr(openrlib._rinterface_cffi, 'lib'):
     _capsule_finalizer_c = openrlib._rinterface_cffi.lib._capsule_finalizer
@@ -186,10 +186,11 @@ def _findfun(symbol, r_environment):
                            r_environment)
 
 
+
 @ffi_proxy.callback(ffi_proxy._findvar_in_frame_def,
                     openrlib._rinterface_cffi)
 def _findvar_in_frame(cdata):
-    cdata_struct = ffi.cast('struct RPY2_sym_env_data *', cdata)
+    cdata_struct = openrlib.ffi.cast('struct RPY2_sym_env_data *', cdata)
     res = openrlib.rlib.Rf_findVarInFrame(
         cdata_struct.environment,
         cdata_struct.symbol
@@ -607,3 +608,5 @@ def _parse(cdata: FFI.CData, num, rmemory) -> FFI.CData:
         raise RParsingError('Parsing status not OK',
                             status=PARSING_STATUS(status[0]))
     return res
+
+
