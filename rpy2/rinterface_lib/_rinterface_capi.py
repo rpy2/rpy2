@@ -186,7 +186,6 @@ def _findfun(symbol, r_environment):
                            r_environment)
 
 
-
 @ffi_proxy.callback(ffi_proxy._findvar_in_frame_def,
                     openrlib._rinterface_cffi)
 def _findvar_in_frame(cdata):

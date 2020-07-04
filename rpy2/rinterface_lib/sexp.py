@@ -374,6 +374,7 @@ class SexpEnvironment(Sexp):
             if _ != openrlib.rlib.TRUE:
                 raise embedded.RRuntimeError('R C-API Rf_findVarInFrame()')
             res = exec_data.data
+
         # TODO: move check of R_UnboundValue to _rinterface
         if res == openrlib.rlib.R_UnboundValue:
             raise KeyError("'%s' not found" % key)
