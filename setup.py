@@ -22,6 +22,7 @@ from rpy2 import situation
 
 from setuptools import setup
 from distutils.command.build import build as du_build
+from distutils.command.install import install as du_install
 
 PACKAGE_NAME = 'rpy2'
 pack_version = __import__('rpy2').__version__
@@ -136,29 +137,39 @@ else:
     raise ValueError('Invalid value for cffi_mode')
 
 
+def _cffi_mode_status():
+    print('---')
+    print(cffi_mode)
+    if cffi_mode in (situation.CFFI_MODE.ABI,
+                     situation.CFFI_MODE.BOTH,
+                     situation.CFFI_MODE.ANY):
+        print('ABI mode interface built.')
+    if cffi_mode in (situation.CFFI_MODE.API,
+                     situation.CFFI_MODE.BOTH):
+        print('API mode interface built.')
+    if cffi_mode == situation.CFFI_MODE.ANY:
+        if c_extension_status == COMPILATION_STATUS.OK:
+            print('API mode interface built.')
+        else:
+            print('API mode interface not built because: %s' % c_extension_status)
+    print('To change the API/ABI build mode, set or modify the environment '
+          'variable RPY2_CFFI_MODE.')
+
+
 class build(du_build):
 
     def run(self):
         print('cffi mode: %s' % cffi_mode)
-
         du_build.run(self)
+        _cffi_mode_status()
 
-        print('---')
-        print(cffi_mode)
-        if cffi_mode in (situation.CFFI_MODE.ABI,
-                         situation.CFFI_MODE.BOTH,
-                         situation.CFFI_MODE.ANY):
-            print('ABI mode interface built.')
-        if cffi_mode in (situation.CFFI_MODE.API,
-                         situation.CFFI_MODE.BOTH):
-            print('API mode interface built.')
-        if cffi_mode == situation.CFFI_MODE.ANY:
-            if c_extension_status == COMPILATION_STATUS.OK:
-                print('API mode interface built.')
-            else:
-                print('API mode interface not built because: %s' % c_extension_status)
-        print('To change the API/ABI build mode, set or modify the environment '
-              'variable RPY2_CFFI_MODE.')
+
+class install(du_install):
+
+    def run(self):
+        print('cffi mode: %s' % cffi_mode)
+        du_install.run(self)
+        _cffi_mode_status()
 
 
 LONG_DESCRIPTION = """
@@ -194,7 +205,7 @@ if __name__ == '__main__':
         install_requires=requires + ['cffi>=1.10.0'],
         setup_requires=['cffi>=1.10.0'],
         cffi_modules=cffi_modules,
-        cmdclass = dict(build=build),
+        cmdclass = dict(build=build, install=install),
         package_dir=pack_dir,
         packages=([PACKAGE_NAME] +
                   ['{pack_name}.{x}'.format(pack_name=PACKAGE_NAME, x=x)
