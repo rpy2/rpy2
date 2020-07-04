@@ -154,14 +154,6 @@ def createbuilder_abi():
     cdef = create_cdef(definitions, 'R_API.h')
     ffibuilder.set_source('_rinterface_cffi_abi', None)
 
-    with open(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                'rinterface_lib',
-                'RPY2.h')
-    ) as fh:
-        header_rpy2 = fh.read()
-
     ffibuilder.cdef(os.linesep.join((cdef, header_rpy2)))
 
     return ffibuilder
@@ -175,7 +167,7 @@ def createbuilder_api():
     define_osname(definitions)
     eventloop_h = read_source('R_API_eventloop.h')
     eventloop_c = read_source('R_API_eventloop.c')
-    header_rpy2 = read_header('RPY2.h')
+    rpy2_h = read_source('RPY2.h')
     r_home = rpy2.situation.get_r_home()
     if r_home is None:
         sys.exit('Error: rpy2 in API mode cannot be built without R in '
@@ -195,7 +187,7 @@ def createbuilder_api():
 
     ffibuilder.set_source(
         '_rinterface_cffi_api',
-        eventloop_c,
+        eventloop_c + rpy2_h,
         libraries=c_ext.libraries,
         library_dirs=c_ext.library_dirs,
         # If we were using the R headers, we would use
@@ -207,29 +199,31 @@ def createbuilder_api():
 
     callback_defns_api = os.linesep.join(
         x.extern_python_def
-        for x in [ffi_proxy._capsule_finalizer_def,
-                  ffi_proxy._evaluate_in_r_def,
-                  ffi_proxy._consoleflush_def,
-                  ffi_proxy._consoleread_def,
-                  ffi_proxy._consolereset_def,
-                  ffi_proxy._consolewrite_def,
-                  ffi_proxy._consolewrite_ex_def,
-                  ffi_proxy._showmessage_def,
-                  ffi_proxy._choosefile_def,
-                  ffi_proxy._cleanup_def,
-                  ffi_proxy._showfiles_def,
-                  ffi_proxy._processevents_def,
-                  ffi_proxy._busy_def,
-                  ffi_proxy._callback_def,
-                  ffi_proxy._yesnocancel_def,
-                  ffi_proxy._parsevector_wrap_def,
-                  ffi_proxy._handler_def,
-                  ffi_proxy._findvar_in_frame_def])
+        for x in [
+                ffi_proxy._capsule_finalizer_def,
+                ffi_proxy._evaluate_in_r_def,
+                ffi_proxy._consoleflush_def,
+                ffi_proxy._consoleread_def,
+                ffi_proxy._consolereset_def,
+                ffi_proxy._consolewrite_def,
+                ffi_proxy._consolewrite_ex_def,
+                ffi_proxy._showmessage_def,
+                ffi_proxy._choosefile_def,
+                ffi_proxy._cleanup_def,
+                ffi_proxy._showfiles_def,
+                ffi_proxy._processevents_def,
+                ffi_proxy._busy_def,
+                ffi_proxy._callback_def,
+                ffi_proxy._yesnocancel_def,
+                ffi_proxy._parsevector_wrap_def,
+                ffi_proxy._handler_def,
+                ffi_proxy._findvar_in_frame_def
+        ])
 
-    cdef = os.linesep.join((create_cdef(definitions, header_filename),
-                            callback_defns_api,
-                            header_rpy2))
-    ffibuilder.cdef(cdef)
+    ffibuilder.cdef(create_cdef(definitions, header_filename))
+    ffibuilder.cdef(rpy2_h)
+    ffibuilder.cdef(callback_defns_api)
+    
     cdef_eventloop, _ = c_preprocess(
         iter(eventloop_h.split('\n')),
         definitions={'CFFI_SOURCE': True},
