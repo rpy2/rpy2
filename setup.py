@@ -135,6 +135,7 @@ else:
     # This should never happen.
     raise ValueError('Invalid value for cffi_mode')
 
+
 class build(du_build):
 
     def run(self):
@@ -158,6 +159,7 @@ class build(du_build):
                 print('API mode interface not built because: %s' % c_extension_status)
         print('To change the API/ABI build mode, set or modify the environment '
               'variable RPY2_CFFI_MODE.')
+
 
 LONG_DESCRIPTION = """
 Python interface to the R language.
