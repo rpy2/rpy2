@@ -1,7 +1,37 @@
+Release 3.4.0
+=============
+
+Changes
+-------
+
+- The dynamic generation of docstrings for R man pages
+  is now using R's `Rd2txt`.
+
+
+Release 3.3.4
+=============
+
+Bugs fixed
+----------
+
+- Creating an R vector object from a Python object implementing
+  the buffer protocol could give incorrect results as C-level
+  incompatibilities could be missed (issue #702).
+
+- :func:`rpy2.robjects.packages.importr` could fail when `lib_loc`
+  was specified `(issue #705).
+
+
 Release 3.3.3
 =============
 
-- Fallback for when `str2lang` is missing (R < 3.6) 
+Bugs fixed
+----------
+
+- Fallback for when `str2lang` is missing (R < 3.6)
+
+- Fix segfault with :meth:`PairListSexpVector.__getitem__` when
+  elements of the R pairlist have a `NILSXP` name (issue #700)
 
 
 Release 3.3.2
@@ -110,8 +140,8 @@ Changes
 - Initial support for :const:`pandas.NA` (still experimental in pandas
   at the time of writing, and rpy2 support is limited to arrays of strings).
 
-- :pandas: series of dtype :class:`pandas.StringDType`, experimental in pandas 1.0,
-  are now supported by the converted (in the pandas-to-R direction)  (issue #669)
+- :mod:`pandas` series of dtype :class:`pandas.StringDType`, experimental in pandas 1.0,
+  are now supported by the converted (in the pandas-to-R direction) (issue #669)
 
 - Version checking for the mapping of R packages in :mod:`rpy2.robjects.lib` is
   now more permissive (check that version prefixes are matching).
@@ -267,7 +297,7 @@ Bugs fixed
 
 
 Release 3.1.0
-============
+=============
 
 New features
 ------------

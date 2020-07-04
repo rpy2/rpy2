@@ -318,7 +318,7 @@ class InstalledSTPackage(SignatureTranslatedPackage):
             try:
                 doc.append(rhelp.docstring(self.__rname__,
                                            self.__rname__ + '-package',
-                                           sections=['description']))
+                                           sections=['\\description']))
             except rhelp.HelpNotFoundError:
                 doc.append('[R help was not found]')
         return os.linesep.join(doc)
@@ -346,7 +346,7 @@ class InstalledPackage(Package):
             try:
                 doc.append(rhelp.docstring(self.__rname__,
                                            self.__rname__ + '-package',
-                                           sections=['description']))
+                                           sections=['\\description']))
             except rhelp.HelpNotFoundError:
                 doc.append('[R help was not found]')
         return os.linesep.join(doc)
@@ -466,8 +466,10 @@ def importr(name,
 
     """
 
-    if not isinstalled(name):
-        raise PackageNotInstalledError(name)
+    if not isinstalled(name, lib_loc=lib_loc):
+        raise PackageNotInstalledError(
+            'The R package "%s" is not installed.' % name
+        )
 
     if suppress_messages:
         ok = quiet_require(name, lib_loc=lib_loc)

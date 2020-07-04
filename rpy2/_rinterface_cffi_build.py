@@ -6,12 +6,103 @@ import warnings
 import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
 
+IFDEF_PAT = re.compile('^#ifdef (.+) ?.*$')
+ELSE_PAT = re.compile('^#else ?.*$')
+ENDIF_PAT = re.compile('^#endif ?.*$')
+DEFINE_PAT = re.compile('^#define +([^ ]+) +([^ ]+) *$')
 
-ifdef_pat = re.compile('^#ifdef +([^ ]+) *$')
-define_pat = re.compile('^#define +([^ ]+) +([^ ]+) *$')
-cffi_source_pat = re.compile(
-    '^/[*] cffi_source-begin [*]/.+?/[*] cffi_source-end [*]/',
-    flags=re.MULTILINE | re.DOTALL)
+
+def _c_preprocess_block(csource,
+                        definitions={}, rownum=0):
+    localdefs = definitions.copy()
+    block = []
+    for row in csource:
+        rownum += 1
+        m = DEFINE_PAT.match(row)
+        if m:
+            localdefs[m.group(1)] = m.group(2)
+            continue
+        m_ifdef = IFDEF_PAT.match(row)
+        if m_ifdef:
+            subblock, subdefs = _c_preprocess_ifdef(
+                csource,
+                m_ifdef.group(1) in localdefs,
+                definitions=localdefs,
+                rownum=rownum)
+            block.extend(subblock)
+            definitions.update(subdefs)
+            continue
+
+        m_else = ELSE_PAT.match(row)
+        if m_else:
+            return ('else', block, definitions)
+
+        m_endif = ENDIF_PAT.match(row)
+        if m_endif:
+            return ('endif', block, definitions)
+        for k, v in localdefs.items():
+            if isinstance(v, str):
+                row = row.replace(k, v)
+        block.append(row)
+
+
+def _c_preprocess_ifdef(csource, want_block_a,
+                        definitions={}, rownum=0):
+    ending, block_a, defs_a = _c_preprocess_block(
+        csource,
+        definitions=definitions,
+        rownum=rownum)
+    if ending == 'else':
+        ending, block_b, defs_b = _c_preprocess_block(
+            csource,
+            definitions=definitions,
+            rownum=rownum)
+    else:
+        block_b = ''
+        defs_b = definitions
+    assert ending == 'endif'
+    if want_block_a:
+        return (block_a, defs_a)
+    else:
+        return (block_b, defs_b)
+
+
+def c_preprocess(csource, definitions={}, rownum=0):
+    """
+    Rudimentary C-preprocessor for ifdef blocks.
+
+    Args:
+    - csource: iterator C source code
+    - definitions: a mapping (e.g., set or dict contaning
+      which "names" are defined)
+
+    Returns:
+    The csource with the conditional ifdef blocks for name
+    processed.
+    """
+
+    localdefs = definitions.copy()
+    block = []
+    for row in csource:
+        rownum += 1
+        m = DEFINE_PAT.match(row)
+        if m:
+            localdefs[m.group(1)] = m.group(2)
+            continue
+        m_ifdef = IFDEF_PAT.match(row)
+        if m_ifdef:
+            name = m_ifdef.group(1)
+            subblock, subdefs = _c_preprocess_ifdef(csource, name in localdefs,
+                                                    definitions=localdefs,
+                                                    rownum=0)
+            block.extend(subblock)
+            localdefs.update(subdefs)
+            continue
+        for k, v in localdefs.items():
+            if isinstance(v, str):
+                row = row.replace(k, v)
+        block.append(row)
+    return block, rownum
 
 
 def define_rlen_kind(ffibuilder, definitions):
@@ -32,30 +123,6 @@ def define_osname(definitions):
         definitions['OSNAME_NT'] = True
 
 
-def parse(iterrows, rownum, definitions, until=None):
-    res = []
-    for row_i, row in enumerate(iter(iterrows), rownum):
-        if until and row.startswith(until):
-            break
-        m = ifdef_pat.match(row)
-        if m:
-            defined = m.groups()[0].strip()
-            block = parse(iterrows, row_i, definitions, until='#endif')
-            if defined in definitions:
-                res.extend(block)
-            continue
-        m = define_pat.match(row)
-        if m:
-            alias, value = m.groups()
-            definitions[alias] = value.strip()
-            continue
-        for k, v in definitions.items():
-            if isinstance(v, str):
-                row = row.replace(k, v)
-        res.append(row)
-    return res
-
-
 def create_cdef(definitions, header_filename):
     cdef = []
     with open(
@@ -64,17 +131,16 @@ def create_cdef(definitions, header_filename):
                 'rinterface_lib',
                 header_filename)
     ) as fh:
-        iterrows = iter(fh)
-        cdef.extend(parse(iterrows, 0, definitions))
+        cdef, _ = c_preprocess(fh, definitions=definitions, rownum=0)
     return ''.join(cdef)
 
 
-def read_header(header_filename):
+def read_source(src_filename):
     with open(
             os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
                 'rinterface_lib',
-                header_filename)
+                src_filename)
     ) as fh:
         cdef = fh.read()
     return cdef
@@ -98,8 +164,8 @@ def createbuilder_api():
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
-    cdef = create_cdef(definitions, header_filename)
-    header_eventloop = read_header('R_API_eventloop.h')
+    eventloop_h = read_source('R_API_eventloop.h')
+    eventloop_c = read_source('R_API_eventloop.c')
     r_home = rpy2.situation.get_r_home()
     if r_home is None:
         sys.exit('Error: rpy2 in API mode cannot be built without R in '
@@ -119,14 +185,7 @@ def createbuilder_api():
 
     ffibuilder.set_source(
         '_rinterface_cffi_api',
-        """
-        # include "{header_filename}"
-        # include "R_API_eventloop.h"
-        void rpy2_runHandlers(InputHandler *handlers) {{
-          R_runHandlers(handlers, R_checkActivity(0, 1));
-        }};
-        """.format(
-            header_filename=header_filename),
+        eventloop_c,
         libraries=c_ext.libraries,
         library_dirs=c_ext.library_dirs,
         # If we were using the R headers, we would use
@@ -159,7 +218,11 @@ def createbuilder_api():
     cdef = (create_cdef(definitions, header_filename) +
             callback_defns_api)
     ffibuilder.cdef(cdef)
-    ffibuilder.cdef(cffi_source_pat.sub('', header_eventloop))
+    cdef_eventloop, _ = c_preprocess(
+        iter(eventloop_h.split('\n')),
+        definitions={'CFFI_SOURCE': True},
+        rownum=1)
+    ffibuilder.cdef('\n'.join(cdef_eventloop))
     ffibuilder.cdef('void rpy2_runHandlers(InputHandler *handlers);')
     return ffibuilder
 

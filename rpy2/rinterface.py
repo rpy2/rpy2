@@ -68,9 +68,10 @@ def evalr(source: str, maxlines: int = -1) -> sexp.Sexp:
 def vector_memoryview(obj: sexp.SexpVector,
                       sizeof_str: str, cast_str: str) -> memoryview:
     """
-    - sizeof_str: type in a string to use with ffi.sizeof()
+    :param:`obj` R vector
+    :param:`sizeof_str` Type in a string to use with ffi.sizeof()
         (for example "int")
-    - cast_str: type in a string to use with memoryview.cast()
+    :param:`cast_str` Type in a string to use with memoryview.cast()
         (for example "i")
     """
     b = openrlib.ffi.buffer(
@@ -530,11 +531,13 @@ class PairlistSexpVector(SexpVector):
                     ))
                 res_name = rmemory.protect(
                     rlib.Rf_allocVector(RTYPES.STRSXP, 1))
-                rlib.SET_STRING_ELT(
-                    res_name,
-                    0,
-                    rlib.PRINTNAME(rlib.TAG(item_cdata)))
-                rlib.Rf_namesgets(res_cdata, res_name)
+                item_cdata_name = rlib.PRINTNAME(rlib.TAG(item_cdata))
+                if _rinterface._TYPEOF(item_cdata_name) != rlib.NILSXP:
+                    rlib.SET_STRING_ELT(
+                        res_name,
+                        0,
+                        item_cdata_name)
+                    rlib.Rf_namesgets(res_cdata, res_name)
                 res = conversion._cdata_to_rinterface(res_cdata)
         elif isinstance(i, slice):
             iter_indices = range(*i.indices(len(self)))

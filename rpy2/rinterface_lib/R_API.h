@@ -41,11 +41,13 @@ typedef int R_len_t;
 
 #ifdef RPY2_RLEN_LONG
 typedef ptrdiff_t R_xlen_t;
-#endif
+#else  /* RPY2_RLEN_LONG */
+#endif  /* RPY2_RLEN_LONG */
 
 #ifdef RPY2_RLEN_SHORT
 typedef int R_xlen_t;
-#endif
+#else  /* RPY2_RLEN_SHORT */
+#endif  /* RPY2_RLEN_SHORT */
 
 /* R_ext/Arith.h */
 extern double R_NaN;  /* IEEE NaN */
@@ -373,14 +375,14 @@ typedef enum {
 
 #ifdef OSNAME_NT
 char *getDLLVersion(void);
-char *getRUser(void);
-char *get_R_HOME(void);
+extern char *(*getRUser)(void);
+extern char *(*get_R_HOME)(void);
 void setup_term_ui(void);
 extern int UserBreak;
 extern Rboolean AllDevicesKilled;
 void editorcleanall(void);
-int GA_initapp(int, char **);
-void GA_appcleanup(void);
+extern int GA_initapp(int, char **);
+extern void GA_appcleanup(void);
 void readconsolecfg(void);
 
 typedef int (*blah1) (const char *, char *, int, int);
@@ -393,7 +395,8 @@ typedef int (*blah5) (const char *);
 typedef void (*blah6) (int);
 typedef void (*blah7) (const char *, int, int);
 typedef enum {RGui, RTerm, LinkDLL} UImode;
-#endif
+#else  /* OSNAME_NT */
+#endif  /* OSNAME_NT */
 
 /* preprocess-define-begin */
 #define R_SIZE_T size_t
@@ -428,20 +431,24 @@ typedef struct
   blah6 Busy;
   UImode CharacterMode;
   blah7 WriteConsoleEx; /* used only if WriteConsole is NULL */
-#endif
+#else  /* OSNAME_NT */
+#endif  /* OSNAME_NT */
 } structRstart;
 
 typedef structRstart *Rstart;
 
-void R_DefParams(Rstart);
-void R_SetParams(Rstart);
+void R_DefParams(Rstart rs);
+void R_SetParams(Rstart rs);
 
 #ifdef OSNAME_NT
-void R_SetWin32(Rstart);
-#endif
+void R_SetWin32(Rstart rs);
+#else  /* OSNAME_NT */
+#endif  /* OSNAME_NT */
 
-void R_SizeFromEnv(Rstart);
-void R_common_command_line(int *, char **, Rstart);
+/*
+void R_SizeFromEnv(Rstart rs);
+void R_common_command_line(int *n, char **argv, Rstart rs);
+*/
 
 void R_set_command_line_arguments(int argc, char **argv);
 

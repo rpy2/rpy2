@@ -554,14 +554,24 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
             raise embedded.RNotReadyError('Embedded R is not ready to use.')
         if not mview.contiguous:
             raise ValueError('The memory view must be contiguous.')
-        if mview.itemsize != cls._R_SIZEOF_ELT:
+        if (
+                (mview.itemsize != cls._R_SIZEOF_ELT)
+                or
+                not (cls._NP_TYPESTR == '|u1' or
+                     cls._NP_TYPESTR.endswith(mview.format))
+        ):
             msg = (
                 'Incompatible C type sizes. '
-                'The R array type is {r_size} bytes '
-                'while the Python array type is {py_size} '
-                'bytes.'
-                .format(r_size=cls._R_SIZEOF_ELT,
-                        py_size=mview.itemsize)
+                'The R array type is {r_type} with {r_size} byte{r_size_pl} '
+                'per item '
+                'while the Python array type is {py_type} with {py_size} '
+                'byte{py_size_pl} per item.'
+                .format(r_type=cls._R_TYPE,
+                        r_size=cls._R_SIZEOF_ELT,
+                        r_size_pl='s' if cls._R_SIZEOF_ELT > 1 else '',
+                        py_type=mview.format,
+                        py_size=mview.itemsize,
+                        py_size_pl='s' if mview.itemsize > 1 else '')
             )
             raise ValueError(msg)
         r_vector = None
