@@ -1,16 +1,3 @@
-/*
- * The cffi building steps is able to handle
- * very basic C-preprocessing. #ifdef blocks
- * must be of the form
- * ```
- * #ifdef <name>
- * ...
- * # #else  <comment with <name>>
- * # ...
- * # #endif  <comment with <name>>
- * ```
- */
-
 typedef unsigned int SEXPTYPE;
 
 const unsigned int NILSXP     =  0;

@@ -6,12 +6,6 @@ import warnings
 import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
 
-
-DEFINES = (
-    'RPY2_RLEN_LONG',  # C-type for length of R vector
-    'RPY2_RLEN_SHORT',  # C-type for length of R vector
-    'OSNAME_NT'  # Windows system
-)
 IFDEF_PAT = re.compile('^#ifdef (.+) ?.*$')
 ELSE_PAT = re.compile('^#else ?.*$')
 ENDIF_PAT = re.compile('^#endif ?.*$')
