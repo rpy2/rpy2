@@ -607,5 +607,3 @@ def _parse(cdata: FFI.CData, num, rmemory) -> FFI.CData:
         raise RParsingError('Parsing status not OK',
                             status=PARSING_STATUS(status[0]))
     return res
-
-

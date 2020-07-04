@@ -153,6 +153,7 @@ def createbuilder_abi():
     define_osname(definitions)
     cdef = create_cdef(definitions, 'R_API.h')
     ffibuilder.set_source('_rinterface_cffi_abi', None)
+    ffibuilder.cdef(cdef)
     return ffibuilder
 
 
