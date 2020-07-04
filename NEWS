@@ -1,3 +1,12 @@
+Release 3.3.5
+=============
+
+Bugs fixed
+----------
+
+- The source file `R_API_eventloop.c` was oddly missing from the repos.
+
+
 Release 3.3.4
 =============
 
