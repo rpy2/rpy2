@@ -219,5 +219,6 @@ if __name__ == '__main__':
         ],
         package_data={'rpy2': ['rinterface_lib/R_API.h',
                                'rinterface_lib/R_API_eventloop.h',
+                               'rinterface_lib/R_API_eventloop.c',
                                'rinterface_lib/RPY2.h']}
     )
