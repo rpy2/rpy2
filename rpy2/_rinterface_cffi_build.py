@@ -156,7 +156,7 @@ def createbuilder_abi():
     cdef_r, _ = c_preprocess(
         iter(r_h.split('\n')),
         definitions=definitions,
-        rownum=1)    
+        rownum=1) 
     ffibuilder.set_source('_rinterface_cffi_abi', None)
     ffibuilder.cdef('\n'.join(cdef_r))
     return ffibuilder
