@@ -439,8 +439,9 @@ void R_DefParams(Rstart rs);
 void R_SetParams(Rstart rs);
 
 #ifdef OSNAME_NT
-void R_SetWin32(Rstart rs);
 #else  /* OSNAME_NT */
+/* Technically in the include but hiden through Rdll.hide. */
+void R_SetWin32(Rstart rs);
 #endif  /* OSNAME_NT */
 
 /*
