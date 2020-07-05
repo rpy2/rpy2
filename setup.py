@@ -22,7 +22,7 @@ from rpy2 import situation
 
 from setuptools import setup
 from distutils.command.build import build as du_build
-from distutils.command.install import install as du_install
+from setuptools.command.install import install as du_install
 
 PACKAGE_NAME = 'rpy2'
 pack_version = __import__('rpy2').__version__
@@ -167,7 +167,6 @@ class build(du_build):
 class install(du_install):
 
     def run(self):
-        print('cffi mode: %s' % cffi_mode)
         du_install.run(self)
         _cffi_mode_status()
 
