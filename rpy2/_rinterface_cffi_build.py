@@ -114,8 +114,6 @@ def define_rlen_kind(ffibuilder, definitions):
         # R_XLEN_T_MAX = 4503599627370496
         # R_SHORT_LEN_MAX = 2147483647
         definitions['RPY2_RLEN_LONG'] = True
-    else:
-        definitions['RPY2_RLEN_SHORT'] = True
 
 
 def define_osname(definitions):
@@ -151,18 +149,29 @@ def createbuilder_abi():
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
-    cdef = create_cdef(definitions, 'R_API.h')
+    r_h = read_source('R_API.h')
+    # TODO: is R_INTERFACE_PTRS defined for all non-Windows systems?
+    if not os.name == 'nt':
+        definitions['R_INTERFACE_PTRS'] = True
+    cdef_r, _ = c_preprocess(
+        iter(r_h.split('\n')),
+        definitions=definitions,
+        rownum=1)    
     ffibuilder.set_source('_rinterface_cffi_abi', None)
-    ffibuilder.cdef(cdef)
+    ffibuilder.cdef('\n'.join(cdef_r))
     return ffibuilder
 
 
 def createbuilder_api():
-    header_filename = 'R_API.h'
     ffibuilder = cffi.FFI()
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
+    # TODO: is R_INTERFACE_PTRS defined for all non-Windows systems?
+    if not os.name == 'nt':
+        definitions['R_INTERFACE_PTRS'] = True
+
+    r_h = read_source('R_API.h')
     eventloop_h = read_source('R_API_eventloop.h')
     eventloop_c = read_source('R_API_eventloop.c')
     rpy2_h = read_source('RPY2.h')
@@ -179,9 +188,8 @@ def createbuilder_api():
     c_ext.add_include(
         *rpy2.situation.get_r_flags(r_home, '--cppflags')
     )
-    define_macros = [('RPY2_RLEN_LONG'
-                      if 'RPY2_RLEN_LONG' in definitions
-                      else 'RPY2_RLEN_SHORT', True)]
+    if 'RPY2_RLEN_LONG' in definitions:
+        definitions['RPY2_RLEN_LONG'] = True
 
     ffibuilder.set_source(
         '_rinterface_cffi_api',
@@ -191,7 +199,7 @@ def createbuilder_api():
         # If we were using the R headers, we would use
         # include_dirs=c_ext.include_dirs.
         include_dirs=['rpy2/rinterface_lib/'],
-        define_macros=define_macros,
+        define_macros=list(definitions.items()),
         extra_compile_args=c_ext.extra_compile_args,
         extra_link_args=c_ext.extra_link_args)
 
@@ -218,7 +226,12 @@ def createbuilder_api():
                 ffi_proxy._exec_findvar_in_frame_def
         ])
 
-    ffibuilder.cdef(create_cdef(definitions, header_filename))
+    cdef_r, _ = c_preprocess(
+        iter(r_h.split('\n')),
+        definitions=definitions,
+        rownum=1)
+
+    ffibuilder.cdef('\n'.join(cdef_r))
     ffibuilder.cdef(rpy2_h)
     ffibuilder.cdef(callback_defns_api)
 

@@ -42,12 +42,8 @@ typedef int R_len_t;
 #ifdef RPY2_RLEN_LONG
 typedef ptrdiff_t R_xlen_t;
 #else  /* RPY2_RLEN_LONG */
-#endif  /* RPY2_RLEN_LONG */
-
-#ifdef RPY2_RLEN_SHORT
 typedef int R_xlen_t;
-#else  /* RPY2_RLEN_SHORT */
-#endif  /* RPY2_RLEN_SHORT */
+#endif  /* RPY2_RLEN_LONG */
 
 /* R_ext/Arith.h */
 extern double R_NaN;  /* IEEE NaN */
@@ -461,6 +457,7 @@ void Rf_mainloop(void);
 extern FILE *R_Consolefile;
 extern FILE *R_Outputfile;
 
+#ifdef R_INTERFACE_PTRS
 extern void (*ptr_R_Suicide)(const char *);
 extern void (*ptr_R_ShowMessage)(const char *);
 extern int  (*ptr_R_ReadConsole)(const char *, unsigned char *, int, int);
@@ -487,6 +484,7 @@ extern SEXP (*ptr_do_selectlist)(SEXP, SEXP, SEXP, SEXP);
 extern SEXP (*ptr_do_dataentry)(SEXP, SEXP, SEXP, SEXP);
 extern SEXP (*ptr_do_dataviewer)(SEXP, SEXP, SEXP, SEXP);
 extern void (*ptr_R_ProcessEvents)(void);
+#endif  /* R_INTERFACE_PTRS */
 
 typedef unsigned int R_NativePrimitiveArgType;
 
