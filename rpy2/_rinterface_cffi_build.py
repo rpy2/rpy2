@@ -215,7 +215,7 @@ def createbuilder_api():
                 ffi_proxy._yesnocancel_def,
                 ffi_proxy._parsevector_wrap_def,
                 ffi_proxy._handler_def,
-                ffi_proxy._findvar_in_frame_def
+                ffi_proxy._exec_findvar_in_frame_def
         ])
 
     ffibuilder.cdef(create_cdef(definitions, header_filename))

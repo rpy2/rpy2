@@ -92,5 +92,5 @@ _parsevector_wrap_def = SignatureDefinition('_parsevector_wrap',
 _handler_def = SignatureDefinition('_handler_wrap',
                                    'SEXP', ('SEXP cond', 'void *hdata'))
 
-_findvar_in_frame_def = SignatureDefinition('_findvar_in_frame',
-                                            'void', ('void *data', ))
+_exec_findvar_in_frame_def = SignatureDefinition('_exec_findvar_in_frame',
+                                                 'void', ('void *data', ))

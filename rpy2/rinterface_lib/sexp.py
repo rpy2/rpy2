@@ -323,21 +323,12 @@ class SexpEnvironment(Sexp):
                 # but R's findfun will segfault if the symbol is not in
                 # the environment. :/
                 rho = self
-                while rho.rid != emptyenv.rid:
-                    exec_data = _rinterface.ffi.new(
-                        'struct RPY2_sym_env_data *',
-                        [symbol, rho.__sexp__._cdata, openrlib.rlib.R_NilValue]
-                    )
-                    _ = openrlib.rlib.R_ToplevelExec(
-                        openrlib.rlib._findvar_in_frame,
-                        exec_data
-                    )
-                    if _ != openrlib.rlib.TRUE:
-                        raise embedded.RRuntimeError(
-                            'R C-API Rf_findVarInFrame()'
+                while self.rid != emptyenv.rid:
+                    res = rmemory.protect(
+                        _rinterface.findvar_in_frame_wrap(
+                            rho.__sexp__._cdata, symbol
                         )
-                    res = exec_data.data
-
+                    )
                     if _rinterface._TYPEOF(res) in (openrlib.rlib.CLOSXP,
                                                     openrlib.rlib.BUILTINSXP):
                         break
@@ -363,17 +354,11 @@ class SexpEnvironment(Sexp):
             symbol = rmemory.protect(
                 openrlib.rlib.Rf_install(key_cchar)
             )
-            exec_data = _rinterface.ffi.new(
-                'struct RPY2_sym_env_data *',
-                [symbol, self.__sexp__._cdata, openrlib.rlib.R_NilValue]
+            res = rmemory.protect(
+                _rinterface.findvar_in_frame_wrap(
+                    self.__sexp__._cdata, symbol
+                )
             )
-            _ = openrlib.rlib.R_ToplevelExec(
-                openrlib.rlib._findvar_in_frame,
-                exec_data
-            )
-            if _ != openrlib.rlib.TRUE:
-                raise embedded.RRuntimeError('R C-API Rf_findVarInFrame()')
-            res = exec_data.data
 
         # TODO: move check of R_UnboundValue to _rinterface
         if res == openrlib.rlib.R_UnboundValue:
