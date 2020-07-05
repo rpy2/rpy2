@@ -438,12 +438,6 @@ typedef structRstart *Rstart;
 void R_DefParams(Rstart rs);
 void R_SetParams(Rstart rs);
 
-#ifdef OSNAME_NT
-#else  /* OSNAME_NT */
-/* Technically in the include but hiden through Rdll.hide. */
-void R_SetWin32(Rstart rs);
-#endif  /* OSNAME_NT */
-
 /*
 void R_SizeFromEnv(Rstart rs);
 void R_common_command_line(int *n, char **argv, Rstart rs);
