@@ -257,7 +257,7 @@ class Package(ModuleType):
                 self._exported_names.add(rpyname)
             try:
                 riobj = self._env[rname]
-            except rinterface.RRuntimeError as rre:
+            except rinterface.embedded.RRuntimeError as rre:
                 warn(str(rre))
             rpyobj = conversion.rpy2py(riobj)
             if hasattr(rpyobj, '__rname__'):

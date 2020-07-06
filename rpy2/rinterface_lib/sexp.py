@@ -313,8 +313,9 @@ class SexpEnvironment(Sexp):
         elif not len(key):
             raise ValueError('The key must be a non-empty string.')
         with memorymanagement.rmemory() as rmemory:
+            key_cchar = conversion._str_to_cchar(key)
             symbol = rmemory.protect(
-                openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
+                openrlib.rlib.Rf_install(key_cchar)
             )
             if wantfun:
                 # One would expect this to be like
@@ -322,9 +323,12 @@ class SexpEnvironment(Sexp):
                 # but R's findfun will segfault if the symbol is not in
                 # the environment. :/
                 rho = self
-                while rho.rid != emptyenv.rid:
-                    res = _rinterface._findVarInFrame(symbol,
-                                                      rho.__sexp__._cdata)
+                while self.rid != emptyenv.rid:
+                    res = rmemory.protect(
+                        _rinterface.findvar_in_frame_wrap(
+                            rho.__sexp__._cdata, symbol
+                        )
+                    )
                     if _rinterface._TYPEOF(res) in (openrlib.rlib.CLOSXP,
                                                     openrlib.rlib.BUILTINSXP):
                         break
@@ -346,10 +350,16 @@ class SexpEnvironment(Sexp):
         elif not len(key):
             raise ValueError('The key must be a non-empty string.')
         with memorymanagement.rmemory() as rmemory:
+            key_cchar = conversion._str_to_cchar(key)
             symbol = rmemory.protect(
-                openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
+                openrlib.rlib.Rf_install(key_cchar)
             )
-            res = _rinterface._findVarInFrame(symbol, self.__sexp__._cdata)
+            res = rmemory.protect(
+                _rinterface.findvar_in_frame_wrap(
+                    self.__sexp__._cdata, symbol
+                )
+            )
+
         # TODO: move check of R_UnboundValue to _rinterface
         if res == openrlib.rlib.R_UnboundValue:
             raise KeyError("'%s' not found" % key)
@@ -367,8 +377,9 @@ class SexpEnvironment(Sexp):
                              'empty environments.')
         # TODO: call to Rf_duplicate needed ?
         with memorymanagement.rmemory() as rmemory:
+            key_cchar = conversion._str_to_cchar(key)
             symbol = rmemory.protect(
-                openrlib.rlib.Rf_install(conversion._str_to_cchar(key))
+                openrlib.rlib.Rf_install(key_cchar)
             )
             cdata = rmemory.protect(conversion._get_cdata(value))
             cdata_copy = rmemory.protect(
