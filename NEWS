@@ -4,7 +4,9 @@ Release 3.3.5
 Bugs fixed
 ----------
 
-- The source file `R_API_eventloop.c` was oddly missing from the repos.
+- The callback handler to read input to R returned an
+  invalid result, leading to R asking for input
+  without ever acknowledging it received it.
 
 
 Release 3.3.4
