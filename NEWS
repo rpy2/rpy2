@@ -22,6 +22,17 @@ Bugs fixed
   of R exceptions. This solved issue #710.
 
 
+Release 3.3.5
+=============
+
+Bugs fixed
+----------
+
+- The callback handler to read input to R returned an
+  invalid result, leading to R asking for input
+  without ever acknowledging it received it.
+
+
 Release 3.3.4
 =============
 
