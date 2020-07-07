@@ -75,8 +75,6 @@ def _consoleread(prompt, buf, n: int, addtohistory) -> int:
         reply_n = min(n, len(reply_b))
         pybuf = bytearray(n)
         pybuf[:reply_n] = reply_b[:reply_n]
-        pybuf[reply_n] = ord('\n')
-        pybuf[reply_n+1] = 0
         openrlib.ffi.memmove(buf,
                              pybuf,
                              n)
