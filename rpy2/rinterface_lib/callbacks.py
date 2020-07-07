@@ -29,7 +29,7 @@ def consoleflush():
     pass
 
 
-_FLUSHCONSOLE_EXCEPTION_LOG = 'R[flush console]: %s'
+_FLUSHCONSOLE_EXCEPTION_LOG = '[R-consoleflush]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._consoleflush_def,
@@ -41,27 +41,30 @@ def _consoleflush():
         logger.error(_FLUSHCONSOLE_EXCEPTION_LOG, str(e))
 
 
-def consoleread(prompt: str) -> str:
+def consoleread(prompt: str, addtohistory: int) -> str:
     """Read input for the R console.
 
     :param prompt: The message prompted.
+    :param addtohistory: Whether the input should be added to a
+    readline history. 
     :return: A string with the input returned by the user.
     """
     return input(prompt)
 
 
-_READCONSOLE_EXCEPTION_LOG = 'R[read into console]: %s'
+_READCONSOLE_EXCEPTION_LOG = '[R-consoleread]: %s'
 _READCONSOLE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error with '
                                        '_consoleread callback: %s')
 
 
 @ffi_proxy.callback(ffi_proxy._consoleread_def,
                     openrlib._rinterface_cffi)
-def _consoleread(prompt, buf, n: int, addtohistory) -> int:
+def _consoleread(prompt, buf, n: int, addtohistory: int) -> int:
+    import pdb; pdb.set_trace()
     success = None
     try:
         s = conversion._cchar_to_str(prompt)
-        reply = consoleread(s)
+        reply = consoleread(s, addtohistory)
     except Exception as e:
         success = 0
         logger.error(_READCONSOLE_EXCEPTION_LOG, str(e))
@@ -93,7 +96,7 @@ def consolereset() -> None:
     pass
 
 
-_RESETCONSOLE_EXCEPTION_LOG = 'R[reset console]: %s'
+_RESETCONSOLE_EXCEPTION_LOG = '[R-consolereset]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._consolereset_def,
@@ -119,7 +122,7 @@ def consolewrite_warnerror(s: str) -> None:
     logger.warning(_WRITECONSOLE_EXCEPTION_LOG, s)
 
 
-_WRITECONSOLE_EXCEPTION_LOG = 'R[write to console]: %s'
+_WRITECONSOLE_EXCEPTION_LOG = '[R-consolewrite_ex]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._consolewrite_ex_def,
@@ -140,7 +143,7 @@ def showmessage(s: str) -> None:
     print(s)
 
 
-_SHOWMESSAGE_EXCEPTION_LOG = 'R[show message]: %s'
+_SHOWMESSAGE_EXCEPTION_LOG = '[R-showmessage]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._showmessage_def,
@@ -157,7 +160,7 @@ def choosefile(new):
     return input('Enter file name:')
 
 
-_CHOOSEFILE_EXCEPTION_LOG = 'R[choose file]: %s'
+_CHOOSEFILE_EXCEPTION_LOG = '[R-choosefile]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._choosefile_def,
@@ -196,7 +199,7 @@ def showfiles(filenames: typing.Tuple[str, ...],
             print('---')
 
 
-_SHOWFILE_EXCEPTION_LOG = 'R[show file]: %s'
+_SHOWFILE_EXCEPTION_LOG = '[R-showfile]: %s'
 _SHOWFILE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error while '
                                     'showing files for R: %s')
 
@@ -237,7 +240,7 @@ def cleanup(saveact, status, runlast):
     pass
 
 
-_CLEANUP_EXCEPTION_LOG = 'R[cleanup]: %s'
+_CLEANUP_EXCEPTION_LOG = '[R-cleanup]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._cleanup_def,
@@ -258,7 +261,7 @@ def processevents() -> None:
     pass
 
 
-_PROCESSEVENTS_EXCEPTION_LOG = 'R[processevents]: %s'
+_PROCESSEVENTS_EXCEPTION_LOG = '[R-processevents]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._processevents_def,
@@ -278,7 +281,7 @@ def busy(x: int) -> None:
     pass
 
 
-_BUSY_EXCEPTION_LOG = 'R[busy]: %s'
+_BUSY_EXCEPTION_LOG = '[R-busy]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._busy_def,
@@ -294,7 +297,7 @@ def callback() -> None:
     pass
 
 
-_CALLBACK_EXCEPTION_LOG = 'R[callback]: %s'
+_CALLBACK_EXCEPTION_LOG = '[R-callback]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._callback_def,
@@ -315,7 +318,7 @@ def yesnocancel(question: str) -> int:
     return int(input(question))
 
 
-_YESNOCANCEL_EXCEPTION_LOG = 'R[yesnocancel]: %s'
+_YESNOCANCEL_EXCEPTION_LOG = '[R-yesnocancel]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._yesnocancel_def,

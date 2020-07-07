@@ -12,6 +12,13 @@ Changes
   :func:`rpy2.rinterface_lib._rinterface_capi._findvar_in_frame`
   (see fix to issue #710).
 
+- The callback to read R input (:func:`consoleread`) has an
+  new parameter `addtohistory` to better map the signature of
+  the underlying R-C-API function.
+
+- The error messages for the R callbacks are slightly changed
+  (now begins and ends with square brackets).
+
 Bugs fixed
 ----------
 
