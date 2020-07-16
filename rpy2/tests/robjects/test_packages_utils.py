@@ -54,6 +54,18 @@ def test___map_symbols():
     (symbol_mapping,
      conflicts,
      resolutions) = p_u._map_symbols(rnames, translations)
+
+def test__map_symbols_hidden_function():
+    rnames = ('exported_func', 'hidden_func', '.onAttach', '__NAMESPACE__')
+    (symbol_mapping,
+     conflicts,
+     resolutions) = p_u._map_symbols(rnames,
+                                     exported_names={'exported_func'})
+    assert len(symbol_mapping.keys()) == len(rnames) \
+           and 'exported_func' in symbol_mapping \
+           and '__hidden_func' in symbol_mapping \
+           and '_onAttach' in symbol_mapping \
+           and '__NAMESPACE__' in symbol_mapping
     
     
 def test__fix_map_symbols_invalidonconflict():

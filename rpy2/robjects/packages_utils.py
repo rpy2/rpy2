@@ -21,9 +21,14 @@ def get_packagepath(package):
 # The functions are in this module in order to facilitate
 # their access from other modules (without circular dependencies).
 # It not necessarily the absolute best place to have the functions though.
-def default_symbol_r2python(rname):
+def default_symbol_r2python(rname, exported_names=None):
     """Replace each dot (.) with an underscore (_)."""
-    return rname.replace('.', '_')
+    res = rname.replace('.', '_')
+    return res \
+        if exported_names is None \
+        or rname in exported_names \
+        or res.startswith('_') \
+        else "__" + res
 
 
 def default_symbol_resolve(symbol_mapping):
@@ -75,7 +80,8 @@ def default_symbol_resolve(symbol_mapping):
 def _map_symbols(rnames,
                  translation=dict(),
                  symbol_r2python=default_symbol_r2python,
-                 symbol_resolve=default_symbol_resolve):
+                 symbol_resolve=default_symbol_resolve,
+                 exported_names=None):
     """
     :param names: an iterable of rnames
     :param translation: a mapping for R name->python name
@@ -89,7 +95,7 @@ def _map_symbols(rnames,
         if rname in translation:
             rpyname = translation[rname]
         else:
-            rpyname = symbol_r2python(rname)
+            rpyname = symbol_r2python(rname, exported_names=exported_names)
         symbol_mapping[rpyname].append(rname)
     conflicts, resolutions = symbol_resolve(symbol_mapping)
 

@@ -225,7 +225,8 @@ class Package(ModuleType):
              self._env,
              translation=self._translation,
              symbol_r2python=self._symbol_r2python,
-             symbol_resolve=self._symbol_resolve
+             symbol_resolve=self._symbol_resolve,
+             exported_names=self._exported_names
          )
         msg_prefix = ('Conflict when converting R symbols'
                       ' in the package "%s"'
