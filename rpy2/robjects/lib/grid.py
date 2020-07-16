@@ -16,14 +16,7 @@ NULL = robjects.NULL
 
 grid = importr('grid')
 
-grid = WeakPackage(grid._env,
-                   grid.__rname__,
-                   translation=grid._translation,
-                   exported_names=grid._exported_names,
-                   on_conflict="warn",
-                   version=grid.__version__,
-                   symbol_r2python=grid._symbol_r2python,
-                   symbol_resolve=grid._symbol_resolve)
+grid = WeakPackage(grid)
 
 grid_env = robjects.baseenv['as.environment']('package:grid')
 

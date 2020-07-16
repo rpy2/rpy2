@@ -10,14 +10,7 @@ from rpy2.robjects.packages import importr, WeakPackage
 
 grdevices = importr('grDevices')
 
-grdevices = WeakPackage(grdevices._env,
-                        grdevices.__rname__,
-                        translation=grdevices._translation,
-                        exported_names=grdevices._exported_names,
-                        on_conflict="warn",
-                        version=grdevices.__version__,
-                        symbol_r2python=grdevices._symbol_r2python,
-                        symbol_resolve=grdevices._symbol_resolve)
+grdevices = WeakPackage(grdevices)
 
 # non-interactive file devices
 png = grdevices.png

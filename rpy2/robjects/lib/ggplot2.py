@@ -57,14 +57,7 @@ rlang = importr('rlang', on_conflict='warn',
 lazyeval = importr('lazyeval', on_conflict='warn')
 base = importr('base', on_conflict='warn')
 ggplot2 = importr('ggplot2', on_conflict='warn')
-ggplot2 = WeakPackage(ggplot2._env,
-                      ggplot2.__rname__,
-                      translation=ggplot2._translation,
-                      exported_names=ggplot2._exported_names,
-                      on_conflict="warn",
-                      version=ggplot2.__version__,
-                      symbol_r2python=ggplot2._symbol_r2python,
-                      symbol_resolve=ggplot2._symbol_resolve)
+ggplot2 = WeakPackage(ggplot2)
 
 TARGET_VERSION = '3.3.'
 if not ggplot2.__version__.startswith(TARGET_VERSION):

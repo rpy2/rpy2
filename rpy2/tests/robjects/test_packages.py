@@ -58,14 +58,7 @@ class TestPackage(object):
 
     def tests_weak_package(self):
         pcki = robjects.packages.importr('stats', on_conflict='warn')
-        pck = robjects.packages.WeakPackage(pcki._env,
-                                   pcki.__rname__,
-                                   translation=pcki._translation,
-                                   exported_names=pcki._exported_names,
-                                   on_conflict="warn",
-                                   version=pcki.__version__,
-                                   symbol_r2python=pcki._symbol_r2python,
-                                   symbol_resolve=pcki._symbol_resolve)
+        pck = robjects.packages.WeakPackage(pcki)
         assert pck._exported_names == pcki._exported_names
         assert [i for i in pck._env] == [i for i in pcki._env]
         assert len(set(pcki.__dict__.keys()).difference(set(pck.__dict__.keys()))) == 0

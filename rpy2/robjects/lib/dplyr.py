@@ -10,14 +10,7 @@ with warnings.catch_warnings():
     lazyeval = importr('lazyeval', on_conflict="warn")
     rlang = importr('rlang', on_conflict='warn',
                     robject_translations={'.env': '__env'})
-    dplyr = WeakPackage(dplyr_._env,
-                        dplyr_.__rname__,
-                        translation=dplyr_._translation,
-                        exported_names=dplyr_._exported_names,
-                        on_conflict="warn",
-                        version=dplyr_.__version__,
-                        symbol_r2python=dplyr_._symbol_r2python,
-                        symbol_resolve=dplyr_._symbol_resolve)
+    dplyr = WeakPackage(dplyr_)
 
 TARGET_VERSION = '0.8.'
 if not dplyr.__version__.startswith(TARGET_VERSION):
