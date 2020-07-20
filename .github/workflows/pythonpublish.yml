@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
-        r-version: [3.6]
+        r-version: [4.0]
         os: [ubuntu-latest, macOS-latest, windows-2019]
         exclude:
         - python-version: 3.8
@@ -43,18 +43,12 @@ jobs:
     - id: getfilename
       run: |
         echo "::set-output name=file::$(ls dist)"
-    - name: Create package for master on POSIX
+    - name: Create package for master
       uses: actions/upload-artifact@v1
-      if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == '3.6' && (!startsWith(matrix.os, 'windows'))
+      if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == '4.0'
       with:
           name: ${{ steps.getfilename.outputs.file }}
           path: dist/${{ steps.getfilename.outputs.file }}
-    - name: Create package for master on Windows
-      uses: actions/upload-artifact@v1
-      if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == '3.6' && startsWith(matrix.os, 'windows')
-      with:
-          name: rpy2-3.4.0.dev0-py3-none-any.whl
-          path: ${{ steps.getfilename.outputs.file }}  
     - name: Publish
       if: github.event_name == 'created'
       env:
