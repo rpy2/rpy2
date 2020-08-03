@@ -9,13 +9,15 @@ from rpy2 import robjects
 from rpy2.robjects import vectors
 from rpy2.robjects import conversion
 
-has_pandas = True
+has_pandas = False
 try:
     import pandas
-    import numpy
     has_pandas = True
-except:
-    has_pandas = False
+
+has_numpy = False
+try:
+    import numpy
+    has_numpy = True
 
 if has_pandas:
     import rpy2.robjects.pandas2ri as rpyp
@@ -122,6 +124,8 @@ class TestPandasConversions(object):
         with localconverter(default_converter + rpyp.converter) as _:
             c = robjects.conversion.rpy2py(b)
 
+    @pytest.mark.skipif(not (has_numpy and has_pandas),
+                        reason='Packages numpy and pandas must be installed.')
     @pytest.mark.parametrize(
         'data',
         (['x', 'y', 'z'],
