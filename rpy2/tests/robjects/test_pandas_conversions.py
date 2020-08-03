@@ -18,6 +18,8 @@ has_numpy = False
 try:
     import numpy
     has_numpy = True
+except:
+    numpy = None
 
 if has_pandas:
     import rpy2.robjects.pandas2ri as rpyp

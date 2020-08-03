@@ -8,9 +8,10 @@ r = robjects.r
 has_numpy = True
 try:
     import numpy
+    has_numpy = True
     import rpy2.robjects.numpy2ri as rpyn
 except:
-    has_numpy = False
+    numpy = None
 
 
 @pytest.fixture()
