@@ -31,6 +31,9 @@ Bugs fixed
 - The unit tests for importing R packages with `lib_loc` were
   broken (issue #720).
 
+- Trying to create a memoryview for an R array with complex values
+  was failing with an attribute error.
+
 
 Release 3.3.5
 =============
