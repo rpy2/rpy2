@@ -13,6 +13,8 @@ has_pandas = False
 try:
     import pandas
     has_pandas = True
+except:
+    pandas = None
 
 has_numpy = False
 try:
