@@ -568,6 +568,7 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
         if (
                 (mview.itemsize != cls._R_SIZEOF_ELT)
                 or
+                not hasattr(cls, '_NP_TYPESTR') or
                 not (cls._NP_TYPESTR == '|u1' or
                      cls._NP_TYPESTR.endswith(mview.format))
         ):
