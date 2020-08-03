@@ -119,6 +119,8 @@ class TestNumpyConversions(object):
         # Make sure we got the row/column swap right:
         #assert r['['](f3d_r, 1, 2, 3)[0] == f3d[0, 1, 2]
 
+    @pytest.mark.skipif(not has_numpy,
+                        reason='package numpy cannot be imported')
     @pytest.mark.parametrize(
         'constructor',
         (numpy.int32, numpy.int64,
