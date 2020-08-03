@@ -1,3 +1,13 @@
+Release 3.3.6
+=============
+
+Bugs fixed
+----------
+
+- The unit tests for importing R packages with `lib_loc` were
+  broken (issue #720).
+
+
 Release 3.3.5
 =============
 
