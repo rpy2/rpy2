@@ -50,12 +50,13 @@ jobs:
     - name: Test with pytest on Windows
       if: runner.os == 'Windows'
       run: |
-        export OS=${{ runner.os }}
-        export PYTHON=${{ matrix.python-version }}
         pip install pytest codecov pytest-cov ipython
         ./scripts/run_tests.sh
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
+      env:
+        OS: ${{ runner.os }}
+        PYTHON: ${{ matrix.python-version }}
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         env_vars: OS,PYTHON
