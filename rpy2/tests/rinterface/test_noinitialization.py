@@ -27,6 +27,6 @@ def test_assert_isready():
                     reason='Can only be tested when embedded R not ready.')
 def test_sexp_rnotready():
     with pytest.raises(embedded.RNotReadyError):
-        rinterface.sexp.Sexp(rintertace.globalenv)
+        rinterface.sexp.Sexp(rinterface.globalenv)
 
 
