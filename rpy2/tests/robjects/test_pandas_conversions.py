@@ -10,7 +10,7 @@ from rpy2.robjects import vectors
 from rpy2.robjects import conversion
 
 
-class DummyNamespace(object):
+class MockNamespace(object):
     def __getattr__(self, name):
         return None
 
@@ -20,14 +20,14 @@ try:
     import pandas
     has_pandas = True
 except:
-    pandas = DummyNamespace()
+    pandas = MockNamespace()
 
 has_numpy = False
 try:
     import numpy
     has_numpy = True
 except:
-    numpy = DummyNamespace()
+    numpy = MockNamespace()
 
 if has_pandas:
     import rpy2.robjects.pandas2ri as rpyp
@@ -144,7 +144,7 @@ class TestPandasConversions(object):
          ['x', 'y', pandas.NA])
     )
     @pytest.mark.parametrize(
-        'dtype', ['O', pandas.StringDtype()]
+        'dtype', ['O', pandas.StringDtype() if has_pandas else None]
     )
     def test_series_obj_str(self, data, dtype):
         Series = pandas.core.series.Series
