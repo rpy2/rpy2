@@ -323,7 +323,7 @@ class SexpEnvironment(Sexp):
                 # but R's findfun will segfault if the symbol is not in
                 # the environment. :/
                 rho = self
-                while self.rid != emptyenv.rid:
+                while rho.rid != emptyenv.rid:
                     res = rmemory.protect(
                         _rinterface.findvar_in_frame_wrap(
                             rho.__sexp__._cdata, symbol
