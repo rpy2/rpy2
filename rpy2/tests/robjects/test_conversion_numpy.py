@@ -5,13 +5,19 @@ from rpy2 import rinterface
 import rpy2.robjects.conversion as conversion
 r = robjects.r
 
-has_numpy = True
+
+class DummyNamespace(object):
+    def __getattr__(self, name):
+        return None
+
+
+has_numpy = False
 try:
     import numpy
     has_numpy = True
     import rpy2.robjects.numpy2ri as rpyn
 except:
-    numpy = None
+    numpy = DummyNamespace()
 
 
 @pytest.fixture()
