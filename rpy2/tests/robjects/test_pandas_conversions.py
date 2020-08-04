@@ -9,19 +9,25 @@ from rpy2 import robjects
 from rpy2.robjects import vectors
 from rpy2.robjects import conversion
 
+
+class DummyNamespace(object):
+    def __getattr__(self, name):
+        return None
+
+
 has_pandas = False
 try:
     import pandas
     has_pandas = True
 except:
-    pandas = None
+    pandas = DummyNamespace()
 
 has_numpy = False
 try:
     import numpy
     has_numpy = True
 except:
-    numpy = None
+    numpy = DummyNamespace()
 
 if has_pandas:
     import rpy2.robjects.pandas2ri as rpyp
