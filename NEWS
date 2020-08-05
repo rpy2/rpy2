@@ -21,10 +21,6 @@ Bugs fixed
   now wrapped in `R_ToplevelExec()` to limit the propagation
   of R exceptions. This solved issue #710.
 
-- Looking strictly for functions with `SexpEnvironment.find()`
-  was failing internally (therefore raising an exception other
-  than :class:`KeyError`).
-
 
 Release 3.3.6
 =============
