@@ -46,9 +46,17 @@ jobs:
       run: |
         export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         pip install pytest codecov pytest-cov ipython
-        ./scripts/run_tests.sh
+        bash -e ./scripts/run_tests.sh
     - name: Test with pytest on Windows
       if: runner.os == 'Windows'
       run: |
         pip install pytest codecov pytest-cov ipython
         ./scripts/run_tests.sh
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      env:
+        OS: ${{ runner.os }}
+        PYTHON: ${{ matrix.python-version }}
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        env_vars: OS,PYTHON

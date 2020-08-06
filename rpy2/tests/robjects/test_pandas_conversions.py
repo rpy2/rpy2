@@ -9,13 +9,25 @@ from rpy2 import robjects
 from rpy2.robjects import vectors
 from rpy2.robjects import conversion
 
-has_pandas = True
+
+class MockNamespace(object):
+    def __getattr__(self, name):
+        return None
+
+
+has_pandas = False
 try:
     import pandas
-    import numpy
     has_pandas = True
 except:
-    has_pandas = False
+    pandas = MockNamespace()
+
+has_numpy = False
+try:
+    import numpy
+    has_numpy = True
+except:
+    numpy = MockNamespace()
 
 if has_pandas:
     import rpy2.robjects.pandas2ri as rpyp
@@ -122,6 +134,8 @@ class TestPandasConversions(object):
         with localconverter(default_converter + rpyp.converter) as _:
             c = robjects.conversion.rpy2py(b)
 
+    @pytest.mark.skipif(not (has_numpy and has_pandas),
+                        reason='Packages numpy and pandas must be installed.')
     @pytest.mark.parametrize(
         'data',
         (['x', 'y', 'z'],
@@ -130,7 +144,7 @@ class TestPandasConversions(object):
          ['x', 'y', pandas.NA])
     )
     @pytest.mark.parametrize(
-        'dtype', ['O', pandas.StringDtype()]
+        'dtype', ['O', pandas.StringDtype() if has_pandas else None]
     )
     def test_series_obj_str(self, data, dtype):
         Series = pandas.core.series.Series

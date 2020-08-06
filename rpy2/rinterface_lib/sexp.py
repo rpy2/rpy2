@@ -323,7 +323,7 @@ class SexpEnvironment(Sexp):
                 # but R's findfun will segfault if the symbol is not in
                 # the environment. :/
                 rho = self
-                while self.rid != emptyenv.rid:
+                while rho.rid != emptyenv.rid:
                     res = rmemory.protect(
                         _rinterface.findvar_in_frame_wrap(
                             rho.__sexp__._cdata, symbol
@@ -568,6 +568,7 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
         if (
                 (mview.itemsize != cls._R_SIZEOF_ELT)
                 or
+                not hasattr(cls, '_NP_TYPESTR') or
                 not (cls._NP_TYPESTR == '|u1' or
                      cls._NP_TYPESTR.endswith(mview.format))
         ):
