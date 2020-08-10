@@ -58,4 +58,5 @@ pytest \
     --cov=rpy2.rlike \
     --cov=rpy2.ipython \
     --cov=rpy2.robjects \
+    --cov=rpy2.robjects.lib \
     rpy2/tests/robjects/lib
