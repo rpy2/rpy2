@@ -72,7 +72,9 @@ class RRuntimeError(Exception):
     pass
 
 
-def _setcallback(rlib, rlib_symbol, callbacks, callback_symbol) -> None:
+def _setcallback(rlib, rlib_symbol: str,
+                 callbacks,
+                 callback_symbol: str) -> None:
     """Set R callbacks."""
     if callback_symbol is None:
         new_callback = ffi.NULL

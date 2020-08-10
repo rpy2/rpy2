@@ -1,7 +1,8 @@
-from . import openrlib
+import typing
+from rpy2.rinterface_lib import openrlib
 
 
-def getrank(cdata):
+def getrank(cdata) -> int:
     dim_cdata = openrlib.rlib.Rf_getAttrib(cdata,
                                            openrlib.rlib.R_DimSymbol)
     if dim_cdata == openrlib.rlib.R_NilValue:
@@ -10,7 +11,7 @@ def getrank(cdata):
         return openrlib.rlib.Rf_length(dim_cdata)
 
 
-def getshape(cdata, rk=None) -> tuple:
+def getshape(cdata, rk: typing.Optional[int] = None) -> typing.Tuple[int, ...]:
     if rk is None:
         rk = getrank(cdata)
     dim_cdata = openrlib.rlib.Rf_getAttrib(cdata,
@@ -24,7 +25,8 @@ def getshape(cdata, rk=None) -> tuple:
     return tuple(shape)
 
 
-def getstrides(cdata, shape, itemsize):
+def getstrides(cdata, shape: typing.Tuple[int, ...],
+               itemsize: int) -> typing.Tuple[int, ...]:
     rk = len(shape)
     strides = [None, ] * rk
     strides[0] = itemsize
