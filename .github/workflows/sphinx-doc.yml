@@ -8,8 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python 3.8
+    - uses: actions/checkout@v2
+    - name: Set up Python
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
@@ -33,3 +33,8 @@ jobs:
         cd doc
         make notebooks
         make html
+    - name: Archive documentation
+      uses: actions/upload-artifact@v2
+      with:
+        name: html-doc
+	path: _build/html
