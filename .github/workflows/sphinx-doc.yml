@@ -3,7 +3,7 @@ name: Sphinx documentation
 on: [push]
 
 env:
-  R-VERSION: 4.0
+  R-VERSION: "4.0"
 
 jobs:
   build:
@@ -26,7 +26,7 @@ jobs:
         cache-name: cache-R-packages
       with:
         path: /opt/R/**/lib/R/library
-        key: ${{ runner.os }}-${{ env.R-VERSION }}-build-${{ env.cache-name }}
+        key: ${{ runner.os }}-R${{ env.R-VERSION }}-build-${{ env.cache-name }}
         restore-keys: |
           ${{ runner.os }}-${{ env.R_VERSION }}-build-
     - name: Install dependencies
