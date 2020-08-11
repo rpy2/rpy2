@@ -2,6 +2,9 @@ name: Sphinx documentation
 
 on: [push]
 
+env:
+  R-VERSION: 4.0
+
 jobs:
   build:
 
@@ -16,7 +19,16 @@ jobs:
     - name: Set up R
       uses: r-lib/actions/setup-r@master
       with:
-        r-version: 4.0
+        r-version: ${{ env.R-VERSION }}
+    - name: Cache R packages
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-R-packages
+      with:
+        path: /opt/R/**/lib/R/library
+        key: ${{ runner.os }}-${{ env.R-VERSION }}-build-${{ env.cache-name }}
+        restore-keys: |
+          ${{ runner.os }}-${{ env.R_VERSION }}-build-
     - name: Install dependencies
       run: |
         sudo apt-get update
