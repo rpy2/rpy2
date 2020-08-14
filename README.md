@@ -1,12 +1,12 @@
 ![logo](doc/_static/rpy2_logo_64x64.png)
 
-[![pypi][https://img.shields.io/pypi/v/rpy2.svg?style=flat-square]][https://pypi.python.org/pypi/rpy2]
+[![pypi](https://img.shields.io/pypi/v/rpy2.svg?style=flat-square)](https://pypi.python.org/pypi/rpy2)
 
-[![Travis][https://travis-ci.com/rpy2/rpy2.svg?branch=master]][https://travis-ci.com/rpy2/rpy2]
+[![Travis](https://travis-ci.com/rpy2/rpy2.svg?branch=master)](https://travis-ci.com/rpy2/rpy2)
 
-[![Codecov][https://codecov.io/gh/rpy2/rpy2/branch/master/graph/badge.svg]][https://codecov.io/gh/rpy2/rpy2]
+[![Codecov](https://codecov.io/gh/rpy2/rpy2/branch/master/graph/badge.svg)](https://codecov.io/gh/rpy2/rpy2)
 
-[![GH Actions][https://github.com/rpy2/rpy2/workflows/Python%20package/badge.svg]][https://github.com/rpy2/rpy2/actions?query=workflow%3A%22Python+package%22]
+[![GH Actions](https://github.com/rpy2/rpy2/workflows/Python%20package/badge.svg)](https://github.com/rpy2/rpy2/actions?query=workflow%3A%22Python+package%22)
 
 
 # Installation
@@ -24,7 +24,10 @@ figure out how by yourself).
 In case you find yourself with this source without any idea
 of what it takes to compile anything on your platform, try first
 
-    python setup.py install
+```bash
+python setup.py install
+```
+
 
 ## Non system-R installations
 
