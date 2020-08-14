@@ -64,8 +64,8 @@ Images with jupyter are can be used with
 
 # Documentation
 
-Documentation is available either in the source tree (to be built),
-or online (on readthedocs).
+Documentation is available either in the source tree (`doc/`),
+or [online](https://rpy2.github.io/index_doc.html).
 
 
 ## Testing
