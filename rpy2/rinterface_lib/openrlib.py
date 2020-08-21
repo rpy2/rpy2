@@ -45,7 +45,7 @@ else:
 
 
 # R macros and functions
-def _get_symbol_or_fallback(symbol: str, fallback):
+def _get_symbol_or_fallback(symbol: str, fallback: typing.Any):
     """Get a cffi object from rlib, or the fallback if missing."""
     try:
         res = getattr(rlib, symbol)
@@ -117,7 +117,7 @@ INTEGER_ELT = _get_symbol_or_fallback('INTEGER_ELT',
                                       _get_integer_elt_fallback)
 
 
-def _set_integer_elt_fallback(vec, i: int, value):
+def _set_integer_elt_fallback(vec, i: int, value: int):
     INTEGER(vec)[i] = value
 
 
@@ -149,7 +149,7 @@ REAL_ELT = _get_symbol_or_fallback('REAL_ELT',
                                    _get_real_elt_fallback)
 
 
-def _set_real_elt_fallback(vec, i: int, value):
+def _set_real_elt_fallback(vec, i: int, value: float):
     REAL(vec)[i] = value
 
 

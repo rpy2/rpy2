@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # TODO: rename to "replace_in_module"
 @contextmanager
-def obj_in_module(module, name: str, obj):
+def obj_in_module(module, name: str, obj: typing.Any):
     obj_orig = getattr(module, name)
     setattr(module, name, obj)
     try:
@@ -34,7 +34,7 @@ _FLUSHCONSOLE_EXCEPTION_LOG = 'R[flush console]: %s'
 
 @ffi_proxy.callback(ffi_proxy._consoleflush_def,
                     openrlib._rinterface_cffi)
-def _consoleflush():
+def _consoleflush() -> None:
     try:
         consoleflush()
     except Exception as e:
@@ -69,7 +69,7 @@ def _consoleread(prompt, buf, n: int, addtohistory) -> int:
         return success
 
     try:
-        # TODO: Should the coding by dynamically extracted from
+        # TODO: Should the coding be dynamically extracted from
         # elsewhere ?
         reply_b = reply.encode('utf-8')
         reply_n = min(n, len(reply_b))
@@ -126,7 +126,7 @@ _WRITECONSOLE_EXCEPTION_LOG = 'R[write to console]: %s'
 
 @ffi_proxy.callback(ffi_proxy._consolewrite_ex_def,
                     openrlib._rinterface_cffi)
-def _consolewrite_ex(buf, n: int, otype) -> None:
+def _consolewrite_ex(buf, n: int, otype: int) -> None:
     s = conversion._cchar_to_str_with_maxlen(buf, maxlen=n)
     try:
         if otype == 0:
@@ -275,7 +275,7 @@ def _processevents() -> None:
 def busy(x: int) -> None:
     """R is busy.
 
-    :param x: TODO this is an integer but do not know what it does.
+    :param x: TODO this is an integer but I do not know what it does.
     """
     pass
 
@@ -285,7 +285,7 @@ _BUSY_EXCEPTION_LOG = 'R[busy]: %s'
 
 @ffi_proxy.callback(ffi_proxy._busy_def,
                     openrlib._rinterface_cffi)
-def _busy(which) -> None:
+def _busy(which: int) -> None:
     try:
         busy(which)
     except Exception as e:

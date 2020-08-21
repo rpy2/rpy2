@@ -21,6 +21,7 @@ pytest \
 
 pytest \
     --cov-append \
+    --cov-report=xml \
     --cov=rpy2.rinterface_lib.embedded \
     rpy2/tests/rinterface/test_endr.py
 
@@ -47,7 +48,8 @@ pytest \
     --cov=rpy2.robjects \
     rpy2/tests
 
-sudo Rscript ./install_r_packages.r ggplot2 dplyr tidyr dbplyr lazyeval
+sudo Rscript ./install_r_packages.r ggplot2 dplyr tidyr dbplyr lazyeval rlang
+
 pytest \
     --cov-append \
     --cov-report=xml \
@@ -56,4 +58,5 @@ pytest \
     --cov=rpy2.rlike \
     --cov=rpy2.ipython \
     --cov=rpy2.robjects \
+    --cov=rpy2.robjects.lib \
     rpy2/tests/robjects/lib
