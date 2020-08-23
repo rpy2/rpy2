@@ -54,7 +54,7 @@ jobs:
         ./scripts/run_tests.sh
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
-      if: matrix.os == 'ubuntu-20.04' && matrix.python_version == 3.8 && matrix.r_version == 4.0
+      if: matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.8' && matrix.r-version == '4.0'
       env:
         OS: ${{ runner.os }}
         PYTHON: ${{ matrix.python-version }}
