@@ -144,27 +144,6 @@ def read_source(src_filename):
     return cdef
 
 
-def r_version_build():
-    version_line = rpy2.situation.r_version_from_subprocess()
-    m = re.match(
-        r'^R version ([^ ]+) (?:([^ ]+) )?\(([^\)]+)\) -- (.+)$',
-        version_line
-    )
-    r_version = m.group(1).split('.')
-    r_release_status = m.group(2)
-    r_svn = m.group(3).split(' ')[1].lstrip('r')
-    c_declare = """
-    static const int R_MAJOR = 4;
-    //static char *const R_MINOR = "{r_minor}";
-    //static char *const R_STATUS = "{r_status}";
-    //static char *const R_SVN_REVISION = "{r_svn}";
-    """.format(r_major=r_version[0],
-               r_minor='.'.join(r_version[1:]),
-               r_status=r_release_status,
-               r_svn=r_svn)
-    return c_declare
-
-
 def createbuilder_abi():
     ffibuilder = cffi.FFI()
     definitions = {}
@@ -180,7 +159,6 @@ def createbuilder_abi():
         rownum=1)
     ffibuilder.set_source('_rinterface_cffi_abi', None)
     ffibuilder.cdef('\n'.join(cdef_r))
-    ffibuilder.cdef(r_version_build())
     return ffibuilder
 
 
@@ -213,11 +191,9 @@ def createbuilder_api():
     if 'RPY2_RLEN_LONG' in definitions:
         definitions['RPY2_RLEN_LONG'] = True
 
-    r_version = r_version_build()
-
     ffibuilder.set_source(
         '_rinterface_cffi_api',
-        eventloop_c + rpy2_h + r_version,
+        eventloop_c + rpy2_h,
         libraries=c_ext.libraries,
         library_dirs=c_ext.library_dirs,
         # If we were using the R headers, we would use
@@ -255,7 +231,7 @@ def createbuilder_api():
         definitions=definitions,
         rownum=1)
     ffibuilder.cdef('\n'.join(cdef_r))
-    ffibuilder.cdef(r_version)
+
     ffibuilder.cdef(rpy2_h)
     ffibuilder.cdef(callback_defns_api)
 
