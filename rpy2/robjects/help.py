@@ -54,8 +54,8 @@ _Rd_deparse = tools_ns['.Rd_deparse']
 __rd_meta = os.path.join('Meta', 'Rd.rds')
 __package_meta = os.path.join('Meta', 'package.rds')
 
-p_newarg = re.compile('^\s*([a-zA-Z\._][a-zA-Z0-9\._]*?)\s*:\s*(.+?)\s*$')
-p_desc = re.compile('^\s+([^\s]+.*?)\s*$')
+p_newarg = re.compile(r'^\s*([a-zA-Z\._][a-zA-Z0-9\._]*?)\s*:\s*(.+?)\s*$')
+p_desc = re.compile(r'^\s+([^\s]+.*?)\s*$')
 
 
 def _Rd2txt(section_doc):
