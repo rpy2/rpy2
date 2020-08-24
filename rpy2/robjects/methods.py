@@ -121,7 +121,7 @@ class RS4_Type(abc.ABCMeta):
 
 # playground to experiment with more metaclass-level automation
 
-class RS4Auto_Type(type):
+class RS4Auto_Type(abc.ABCMeta):
     """ This type (metaclass) takes an R S4 class
     and create a Python class out of it,
     copying the R documention page into the Python docstring.
