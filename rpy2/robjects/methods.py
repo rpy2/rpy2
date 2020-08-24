@@ -236,7 +236,7 @@ class RS4Auto_Type(abc.ABCMeta):
                     raise Exception("Duplicated attribute/method name.")
                 cls_dict[meth_name] = meth
 
-        return type.__new__(mcs, name, bases, cls_dict)
+        return abc.ABCMeta.__new__(mcs, name, bases, cls_dict)
 
 
 def set_accessors(cls, cls_name, where, acs):
