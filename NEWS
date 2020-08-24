@@ -10,6 +10,9 @@ Bugs fixed
 - Trying to create a memoryview for an R array with complex values
   was failing with an attribute error.
 
+- Fix the constructor of metaclass
+  :class:`rpy2.robjects.methods.RS4Auto_Type`.
+
 
 Release 3.3.5
 =============
