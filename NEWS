@@ -12,13 +12,6 @@ Changes
   :func:`rpy2.rinterface_lib._rinterface_capi._findvar_in_frame`
   (see fix to issue #710).
 
-- rpy2-3.0.0 made the constructor for :class:`StrSexpVector` no
-  longer accept items that are not :class:`str`, which differs
-  from R "character" vectors that will cast items to string. This
-  is now reverted and the function :meth:`str` is called as necessary
-  (fixes issue #728).
-
-
 Bugs fixed
 ----------
 

@@ -4,22 +4,18 @@ import rpy2.rinterface as ri
 ri.initr()
 
 
-@pytest.mark.parametrize('seq',
-                         (['foo', 'bar', 'baz'],
-                          [1, 2, 3]))
-def test_init_from_seqr(seq):
-    v = ri.StrSexpVector(seq)
-    assert len(v) == 3
-    for x, y in zip(seq, v):
-        assert x == y
-
-
 def test_init_from_seqr():
     seq = ['foo', 'bar', 'baz']
     v = ri.StrSexpVector(seq)
     assert len(v) == 3
     for x, y in zip(seq, v):
         assert x == y
+
+
+def test_init_from_seq_invalid_item():
+    seq = ['foo', 0, 'baz']
+    with pytest.raises(Exception):
+        ri.StrSexpVector(seq)
 
 
 def test_getitem():

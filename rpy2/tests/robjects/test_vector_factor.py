@@ -2,11 +2,8 @@ import pytest
 from rpy2 import robjects
 
 
-@pytest.mark.parametrize('seq',
-                          (('abaabc'),
-                           (1, 2, 3, 4, 5, 6)))
-def test_init(seq):
-    vec = robjects.FactorVector(seq)
+def test_init():
+    vec = robjects.FactorVector(robjects.StrVector('abaabc'))
     assert len(vec) == 6
 
 

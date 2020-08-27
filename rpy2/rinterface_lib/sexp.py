@@ -670,13 +670,11 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
         raise ValueError("'%s' is not in R vector" % item)
 
 
-def _as_charsxp_cdata(x: typing.Union[CharSexp, str, object]):
+def _as_charsxp_cdata(x: typing.Union[CharSexp, str]):
     if isinstance(x, CharSexp):
         return x.__sexp__._cdata
     else:
-        return conversion._str_to_charsxp(
-            x if isinstance(x, str) else str(x)
-        )
+        return conversion._str_to_charsxp(x)
 
 
 class StrSexpVector(SexpVector):
