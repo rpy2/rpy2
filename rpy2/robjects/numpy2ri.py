@@ -178,6 +178,11 @@ def rpy2py_sexp(obj):
 
 
 def activate():
+    warnings.warn('The global conversion available with activate() '
+                  'is deprecated and will be removed in the next major release. '
+                  'Use a local converter.',
+                  category=DeprecationWarning)
+
     global original_converter
 
     # If module is already activated, there is nothing to do

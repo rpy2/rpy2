@@ -12,6 +12,10 @@ Changes
   :func:`rpy2.rinterface_lib._rinterface_capi._findvar_in_frame`
   (see fix to issue #710).
 
+- The functions :func:`rpy2.robjects.numpy.activate()` and
+  :func:`rpy2.robjects.pandas.activate()` are deprecated and will
+  be removed in rpy2-3.5.0.
+
 Bugs fixed
 ----------
 
