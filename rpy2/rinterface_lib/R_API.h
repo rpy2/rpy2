@@ -42,12 +42,8 @@ typedef int R_len_t;
 #ifdef RPY2_RLEN_LONG
 typedef ptrdiff_t R_xlen_t;
 #else  /* RPY2_RLEN_LONG */
-#endif  /* RPY2_RLEN_LONG */
-
-#ifdef RPY2_RLEN_SHORT
 typedef int R_xlen_t;
-#else  /* RPY2_RLEN_SHORT */
-#endif  /* RPY2_RLEN_SHORT */
+#endif  /* RPY2_RLEN_LONG */
 
 /* R_ext/Arith.h */
 extern double R_NaN;  /* IEEE NaN */
@@ -254,6 +250,7 @@ SEXP (CLOENV)(SEXP x);
 SEXP Rf_eval(SEXP, SEXP);
 SEXP R_tryEval(SEXP, SEXP, int*);
 
+Rboolean R_ToplevelExec(void (*fun)(void *), void *data);
 SEXP R_tryCatchError(SEXP (*fun)(void *data), void *data,
 		     SEXP (*hndlr)(SEXP cond, void *hdata), void *hdata);
 
@@ -358,6 +355,7 @@ SEXP R_ParseVector(SEXP text, int num, ParseStatus *status, SEXP srcfile);
 
 /* include/Rinterface.h */
 extern Rboolean R_Interactive ;
+extern void* R_GlobalContext;
 extern int R_SignalHandlers;
 extern uintptr_t R_CStackLimit;
 extern uintptr_t R_CStackStart;
@@ -440,11 +438,6 @@ typedef structRstart *Rstart;
 void R_DefParams(Rstart rs);
 void R_SetParams(Rstart rs);
 
-#ifdef OSNAME_NT
-void R_SetWin32(Rstart rs);
-#else  /* OSNAME_NT */
-#endif  /* OSNAME_NT */
-
 /*
 void R_SizeFromEnv(Rstart rs);
 void R_common_command_line(int *n, char **argv, Rstart rs);
@@ -459,6 +452,7 @@ void Rf_mainloop(void);
 extern FILE *R_Consolefile;
 extern FILE *R_Outputfile;
 
+#ifdef R_INTERFACE_PTRS
 extern void (*ptr_R_Suicide)(const char *);
 extern void (*ptr_R_ShowMessage)(const char *);
 extern int  (*ptr_R_ReadConsole)(const char *, unsigned char *, int, int);
@@ -485,6 +479,7 @@ extern SEXP (*ptr_do_selectlist)(SEXP, SEXP, SEXP, SEXP);
 extern SEXP (*ptr_do_dataentry)(SEXP, SEXP, SEXP, SEXP);
 extern SEXP (*ptr_do_dataviewer)(SEXP, SEXP, SEXP, SEXP);
 extern void (*ptr_R_ProcessEvents)(void);
+#endif  /* R_INTERFACE_PTRS */
 
 typedef unsigned int R_NativePrimitiveArgType;
 

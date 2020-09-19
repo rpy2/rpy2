@@ -5,6 +5,7 @@
 
 from typing import Callable
 from typing import Dict
+from typing import Optional
 from typing import Type
 from typing import Union
 from rpy2.rinterface_lib import openrlib
@@ -131,7 +132,7 @@ def _cchar_to_str_with_maxlen(c, maxlen: int) -> str:
     return s
 
 
-def _str_to_charsxp(val: str):
+def _str_to_charsxp(val: Optional[str]):
     rlib = openrlib.rlib
     if val is None:
         s = rlib.R_NaString

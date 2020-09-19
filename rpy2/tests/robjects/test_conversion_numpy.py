@@ -5,12 +5,19 @@ from rpy2 import rinterface
 import rpy2.robjects.conversion as conversion
 r = robjects.r
 
-has_numpy = True
+
+class DummyNamespace(object):
+    def __getattr__(self, name):
+        return None
+
+
+has_numpy = False
 try:
     import numpy
+    has_numpy = True
     import rpy2.robjects.numpy2ri as rpyn
 except:
-    has_numpy = False
+    numpy = DummyNamespace()
 
 
 @pytest.fixture()
@@ -119,6 +126,8 @@ class TestNumpyConversions(object):
         # Make sure we got the row/column swap right:
         #assert r['['](f3d_r, 1, 2, 3)[0] == f3d[0, 1, 2]
 
+    @pytest.mark.skipif(not has_numpy,
+                        reason='package numpy cannot be imported')
     @pytest.mark.parametrize(
         'constructor',
         (numpy.int32, numpy.int64,

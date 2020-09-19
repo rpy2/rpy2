@@ -1,8 +1,8 @@
 import sys
 import typing
-from . import embedded
-from . import callbacks
-from . import openrlib
+from rpy2.rinterface_lib import embedded
+from rpy2.rinterface_lib import callbacks
+from rpy2.rinterface_lib import openrlib
 
 ffi = openrlib.ffi
 

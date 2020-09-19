@@ -22,11 +22,3 @@ def test_assert_isready():
     with pytest.raises(embedded.RNotReadyError):
         embedded.assert_isready()
 
-
-@pytest.mark.skipif(embedded.rpy2_embeddedR_isinitialized,
-                    reason='Can only be tested when embedded R not ready.')
-def test_sexp_rnotready():
-    with pytest.raises(embedded.RNotReadyError):
-        rinterface.sexp.Sexp(rintertace.globalenv)
-
-

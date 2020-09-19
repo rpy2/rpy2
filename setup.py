@@ -135,6 +135,7 @@ else:
     # This should never happen.
     raise ValueError('Invalid value for cffi_mode')
 
+
 class build(du_build):
 
     def run(self):
@@ -159,6 +160,7 @@ class build(du_build):
         print('To change the API/ABI build mode, set or modify the environment '
               'variable RPY2_CFFI_MODE.')
 
+
 LONG_DESCRIPTION = """
 Python interface to the R language.
 
@@ -176,8 +178,14 @@ ipython.
 
 if __name__ == '__main__':
     pack_dir = {PACKAGE_NAME: os.path.join(package_prefix, 'rpy2')}
-        
-    requires = ['pytest', 'jinja2', 'pytz', 'tzlocal']
+
+    with open(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                'requirements.txt')
+    ) as fh:
+        requires = fh.read().splitlines()
+        print(requires)
     
     setup(
         name=PACKAGE_NAME,
@@ -188,8 +196,7 @@ if __name__ == '__main__':
         license='GPLv2+',
         author='Laurent Gautier',
         author_email='lgautier@gmail.com',
-        requires=requires,
-        install_requires=requires + ['cffi>=1.10.0'],
+        install_requires=requires,
         setup_requires=['cffi>=1.10.0'],
         cffi_modules=cffi_modules,
         cmdclass = dict(build=build),
@@ -216,5 +223,7 @@ if __name__ == '__main__':
                        'Development Status :: 5 - Production/Stable'
         ],
         package_data={'rpy2': ['rinterface_lib/R_API.h',
-                               'rinterface_lib/R_API_eventloop.h']}
+                               'rinterface_lib/R_API_eventloop.h',
+                               'rinterface_lib/R_API_eventloop.c',
+                               'rinterface_lib/RPY2.h']}
     )

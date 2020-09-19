@@ -29,8 +29,7 @@ from rpy2.robjects.vectors import (BoolVector,
                                    IntVector,
                                    POSIXct)
 
-# pandas is requiring numpy. We add the numpy conversion will be
-# activate in the function activate() below.
+# The pandas converter requires numpy.
 import rpy2.robjects.numpy2ri as numpy2ri
 
 original_converter = None
@@ -259,6 +258,10 @@ def rpy2py_dataframe(obj):
 
 
 def activate():
+    warnings.warn('The global conversion available with activate() '
+                  'is deprecated and will be removed in the next major release. '
+                  'Use a local converter.',
+                  category=DeprecationWarning)
     global original_converter
     # If module is already activated, there is nothing to do.
     if original_converter is not None:

@@ -7,6 +7,51 @@ Changes
 - The dynamic generation of docstrings for R man pages
   is now using R's `Rd2txt`.
 
+- The :func:`rpy2.rinterface_lib._rinterface_capi._findVarInFrame`
+  is replaced by the function
+  :func:`rpy2.rinterface_lib._rinterface_capi._findvar_in_frame`
+  (see fix to issue #710).
+
+- The functions :func:`rpy2.robjects.numpy.activate()` and
+  :func:`rpy2.robjects.pandas.activate()` are deprecated and will
+  be removed in rpy2-3.5.0.
+
+Bugs fixed
+----------
+
+- The C function `Rf_findVarInFrame()` in the R API can trigger
+  in an R-level error, and while this is rare, when it does
+  when embedded in Python it creates a segfault. Calls are
+  now wrapped in `R_ToplevelExec()` to limit the propagation
+  of R exceptions. This solved issue #710.
+
+
+Release 3.3.6
+=============
+
+Bugs fixed
+----------
+
+- The unit tests for importing R packages with `lib_loc` were
+  broken (issue #720).
+
+- Trying to create a memoryview for an R array with complex values
+  was failing with an attribute error.
+
+- Fix the constructor of metaclass
+  :class:`rpy2.robjects.methods.RS4Auto_Type`.
+
+
+Release 3.3.5
+=============
+
+Bugs fixed
+----------
+
+- The callback handler to read input to R returned an
+  invalid result, leading to R asking for input
+  without ever acknowledging it received it.
+
 
 Release 3.3.4
 =============

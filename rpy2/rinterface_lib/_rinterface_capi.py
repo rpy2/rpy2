@@ -6,11 +6,11 @@ import logging
 from typing import Tuple
 import typing
 import warnings
-from . import ffi_proxy
-from . import openrlib
-from . import conversion
-from . import embedded
-from . import memorymanagement
+from rpy2.rinterface_lib import ffi_proxy
+from rpy2.rinterface_lib import openrlib
+from rpy2.rinterface_lib import conversion
+from rpy2.rinterface_lib import embedded
+from rpy2.rinterface_lib import memorymanagement
 
 from _cffi_backend import FFI  # type: ignore
 
@@ -84,7 +84,7 @@ def _capsule_finalizer(cdata: FFI.CData) -> None:
         warnings.warn('Exception downgraded to warning: %s' % str(e))
 
 
-# ABI and API modes differs in the what is the exact callback object to be
+# ABI and API modes differs in what is the exact callback object to be
 # passed to C code.
 if hasattr(openrlib._rinterface_cffi, 'lib'):
     _capsule_finalizer_c = openrlib._rinterface_cffi.lib._capsule_finalizer
@@ -186,8 +186,58 @@ def _findfun(symbol, r_environment):
                            r_environment)
 
 
-def _findVarInFrame(symbol, r_environment):
-    return openrlib.rlib.Rf_findVarInFrame(r_environment, symbol)
+@ffi_proxy.callback(ffi_proxy._exec_findvar_in_frame_def,
+                    openrlib._rinterface_cffi)
+def _exec_findvar_in_frame(cdata):
+    cdata_struct = openrlib.ffi.cast('struct RPY2_sym_env_data *', cdata)
+    res = openrlib.rlib.Rf_findVarInFrame(
+        cdata_struct.environment,
+        cdata_struct.symbol
+    )
+    cdata_struct.data = res
+    return
+
+
+def findvar_in_frame(rho, symbol):
+    """Safer wrapper around Rf_findVarInFrame()
+
+    Run the function Rf_findVarInFrame() in R's C-API through
+    R_ToplevelExec().
+
+    Note: All arguments, and the object returned, are C-level
+    R objects.
+
+    Args:
+    - rho: An R environment.
+    - symbol: An R symbol (as returned by Rf_install())
+    Returns:
+    The object found.
+    """
+    # One would expect this to be like
+    #   res = _rinterface._findfun(symbol, self.__sexp__._cdata)
+    # but R's findfun will segfault if an error occurs while
+    # accessing the matching object in the environment.
+    exec_data = ffi.new(
+        'struct RPY2_sym_env_data *',
+        [symbol, rho, openrlib.rlib.R_NilValue]
+    )
+    _ = openrlib.rlib.R_ToplevelExec(
+        openrlib.rlib._exec_findvar_in_frame,
+        exec_data
+    )
+    if _ != openrlib.rlib.TRUE:
+        raise embedded.RRuntimeError(
+            'R C-API Rf_findVarInFrame()'
+        )
+    return exec_data.data
+
+
+if FFI_MODE is ffi_proxy.InterfaceType.ABI:
+    findvar_in_frame_wrap = openrlib.rlib.Rf_findVarInFrame
+elif FFI_MODE is ffi_proxy.InterfaceType.API:
+    findvar_in_frame_wrap = findvar_in_frame
+else:
+    raise ImportError('cffi mode unknown: %s' % FFI_MODE)
 
 
 def _GET_DIM(robj):

@@ -14,14 +14,6 @@ jobs:
   include:
     - os: linux
       dist: xenial
-      python: 3.6
-      env: RPY2_CFFI_MODE=ABI
-    - os: linux
-      dist: xenial
-      python: 3.6
-      env: RPY2_CFFI_MODE=API
-    - os: linux
-      dist: xenial
       python: 3.7
       env: RPY2_CFFI_MODE=ABI
     - os: linux
@@ -80,14 +72,14 @@ before_install:
     fi
   - |
     sudo Rscript ./install_r_packages.r dplyr ggplot2 lazyeval tidyr
-    pip install flake8 pytest codecov pytest-cov
-    pip install ipython tzlocal
+    pip install -U flake8 pytest codecov pytest-cov
+    pip install -U ipython tzlocal
 
 install:
   - python rpy2/situation.py
   - python setup.py install
   - pip uninstall -y rpy2
-  - rm -r dist/
+  - python setup.py clean
   - python setup.py build --force sdist
   - pip install $(ls -t1 dist/*.tar.gz | head)
 
