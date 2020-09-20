@@ -38,12 +38,14 @@ jobs:
     - name: Create base virtualenv
       run: |
         python -m venv pyenv_base
+        ${{ matrix.venv_activate }}
+        pip install -U pip wheel
     - name: Install extra dependencies
       if: runner.os == 'Windows' && matrix.python-version == '3.8'
       run: |
         echo "Bug in setuptools requires update"
         ${{ matrix.venv_activate }}
-        python -m pip install --upgrade setuptools pycparser wheel
+        python -m pip install --upgrade setuptools pycparser
     - name: Lint with flake8
       run: |
         ${{ matrix.venv_activate }}
