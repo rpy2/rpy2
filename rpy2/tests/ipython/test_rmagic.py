@@ -97,6 +97,8 @@ def test_push(ipython_with_magic, clean_globalenv):
                                    ipython_with_magic.user_ns['Y'])
 
 
+@pytest.mark.skipif(IPython is None,
+                    reason='The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_push_localscope(ipython_with_magic, clean_globalenv):
     """Test that Rpush looks for variables in the local scope first."""
