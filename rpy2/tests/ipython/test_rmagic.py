@@ -24,17 +24,14 @@ except ModuleNotFoundError as no_ipython:
     IPython = None
     
 if IPython is None:
+    rmagic = None
     get_ipython = None
 else:
+    from rpy2.ipython import rmagic
     from IPython.testing.globalipapp import get_ipython
 
 from io import StringIO
 np_string_type = 'U'
-
-if IPython is None:
-    rmagic = None
-else:
-    from rpy2.ipython import rmagic
 
 # from IPython.core.getipython import get_ipython
 from rpy2 import rinterface
@@ -51,10 +48,10 @@ def clean_globalenv():
         del rinterface.globalenv[name]
 
 
-@pytest.mark.skipif(IPython is None,
-                    reason='The optional package IPython cannot be imported.')
 @pytest.fixture(scope='module')
 def ipython_with_magic():
+    if IPython is None:
+        return None
     ip = get_ipython()
     # This is just to get a minimally modified version of the changes
     # working
