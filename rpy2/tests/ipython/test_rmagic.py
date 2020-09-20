@@ -1,5 +1,6 @@
 import pytest
 import textwrap
+import warnings
 from itertools import product
 import rpy2.rinterface_lib.callbacks
 from .. import utils
