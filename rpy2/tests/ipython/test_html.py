@@ -11,12 +11,11 @@ except ModuleNotFoundError as no_ipython:
     IPython = None
 
 if IPython is None:
-    html = types.SimpleNamespace
-    html.html_vector_horizontal = None
-    html.html_rlist = None
-    html.html_rdataframe = None
-    html.html_sourcecode = None
-    html.html_ridentifiedobject = None
+    html = types.SimpleNamespace(html_vector_horizontal=None,
+                                 html_rlist=None,
+                                 html_rdataframe=None,
+                                 html_sourcecode=None,
+                                 html_ridentifiedobject=None)
 else:
     from rpy2.ipython import html
     
