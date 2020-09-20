@@ -6,7 +6,7 @@ from rpy2.robjects.packages import importr
 try:
     import IPython
 except ModuleNotFoundError as no_ipython:
-    warnings.warn(no_ipython)
+    warnings.warn(str(no_ipython))
     IPython = None
 
 from rpy2.ipython import html

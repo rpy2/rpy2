@@ -15,12 +15,25 @@ try:
     has_pandas = True
 except:
     has_pandas = False
-from IPython.testing.globalipapp import get_ipython
+
+try:
+    import IPython
+except ModuleNotFoundError as no_ipython:
+    warnings.warn(str(no_ipython))
+    IPython = None
+    
+if IPython is None:
+    get_ipython = None
+else:
+    from IPython.testing.globalipapp import get_ipython
 
 from io import StringIO
 np_string_type = 'U'
 
-from rpy2.ipython import rmagic
+if IPython is None:
+    rmagic = None
+else:
+    from rpy2.ipython import rmagic
 
 # from IPython.core.getipython import get_ipython
 from rpy2 import rinterface
@@ -28,6 +41,7 @@ from rpy2.robjects import r, vectors, globalenv
 import rpy2.robjects.packages as rpacks
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 @pytest.fixture(scope='module')
 def clean_globalenv():
     yield
@@ -35,6 +49,7 @@ def clean_globalenv():
         del rinterface.globalenv[name]
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 @pytest.fixture(scope='module')
 def ipython_with_magic():
     ip = get_ipython()
@@ -44,6 +59,7 @@ def ipython_with_magic():
     return ip
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 @pytest.fixture(scope='function')
 def set_conversion(ipython_with_magic):
     if hasattr(rmagic.template_converter, 'activate'):
@@ -56,6 +72,7 @@ def set_conversion(ipython_with_magic):
         rmagic.template_converter.deactivate()
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 def test_RInterpreterError():
     line = 123
     err = 'Arrh!'
@@ -66,6 +83,7 @@ def test_RInterpreterError():
     assert str(rie).startswith(rie.msg_prefix_template % (line, err))
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_push(ipython_with_magic, clean_globalenv):
     ipython_with_magic.push({'X':np.arange(5), 'Y':np.array([3,5,4,6,7])})
@@ -96,6 +114,7 @@ def test_push_localscope(ipython_with_magic, clean_globalenv):
     np.testing.assert_equal(result, 12345)
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_pandas, reason='pandas is not available in python')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_push_dataframe(ipython_with_magic, clean_globalenv):
@@ -117,6 +136,7 @@ def test_push_dataframe(ipython_with_magic, clean_globalenv):
     assert np.isnan(missing), missing
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_pull(ipython_with_magic, clean_globalenv):
     r('Z=c(11:20)')
@@ -127,6 +147,7 @@ def test_pull(ipython_with_magic, clean_globalenv):
                                    np.arange(11,21))
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_Rconverter(ipython_with_magic, clean_globalenv):
     # If we get to dropping numpy requirement, we might use something
@@ -180,6 +201,7 @@ def test_Rconverter(ipython_with_magic, clean_globalenv):
     assert tuple(fromr_dataf_np['y']) == tuple(dataf_np_roundtrip['y'])
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_cell_magic(ipython_with_magic, clean_globalenv):
     ipython_with_magic.push({'x': np.arange(5), 'y': np.array([3,5,4,6,7])})
@@ -199,6 +221,7 @@ def test_cell_magic(ipython_with_magic, clean_globalenv):
     np.testing.assert_almost_equal(ipython_with_magic.user_ns['r'], np.array([-0.2,  0.9, -1. ,  0.1,  0.2]))
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 def test_cell_magic_localconverter(ipython_with_magic, clean_globalenv):
     x = (1,2,3)
     from rpy2.rinterface import IntSexpVector
@@ -241,6 +264,7 @@ def test_cell_magic_localconverter(ipython_with_magic, clean_globalenv):
     assert isinstance(globalenv['x'], vectors.IntVector)
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 def test_rmagic_localscope(ipython_with_magic, clean_globalenv):
     ipython_with_magic.push({'x':0})
     ipython_with_magic.run_line_magic('R', '-i x -o result result <-x+1')
@@ -264,6 +288,7 @@ def test_rmagic_localscope(ipython_with_magic, clean_globalenv):
             "-i var_not_defined 1+1")
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 # TODO: There is no test here...
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_png_plotting_args(ipython_with_magic, clean_globalenv):
@@ -285,6 +310,7 @@ def test_png_plotting_args(ipython_with_magic, clean_globalenv):
         ipython_with_magic.run_cell_magic('R', line, cell)
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 def test_display_args(ipython_with_magic, clean_globalenv):
 
     cell = '''
@@ -308,6 +334,7 @@ def test_display_args(ipython_with_magic, clean_globalenv):
     assert tuple(res[0]) == (124,)
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 # TODO: There is no test here...
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 @pytest.mark.skipif(not rpacks.isinstalled('Cairo'),
@@ -336,6 +363,7 @@ def test_svg_plotting_args(ipython_with_magic, clean_globalenv):
         ipython_with_magic.run_cell_magic('R', line, cell)
 
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 @pytest.mark.skip(reason='Test for X11 skipped.')
 def test_plotting_X11(ipython_with_magic, clean_globalenv):
