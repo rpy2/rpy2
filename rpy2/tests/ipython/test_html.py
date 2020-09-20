@@ -16,7 +16,7 @@ else:
     
 base = importr('base')
 
-@pytest.mark.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
+@pytest.mark.skipif(IPython is None, 'The optional package IPython cannot be imported.')
 @pytest.mark.parametrize(
     'o,func',
     [(vectors.IntVector([1, 2, 3]), html.html_vector_horizontal),
