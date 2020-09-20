@@ -1,10 +1,19 @@
 import pytest
+import warnings
 from rpy2.robjects import vectors
 from rpy2.robjects.packages import importr
-from rpy2.ipython import html
 
+try:
+    import IPython
+except ModuleNotFoundError as no_ipython:
+    warnings.warn(mnfe)
+    IPython = None
+
+from rpy2.ipython import html
+    
 base = importr('base')
 
+@pytest.skipif(Ipython is None, 'The optional package IPython cannot be imported.')
 @pytest.mark.parametrize(
     'o,func',
     [(vectors.IntVector([1, 2, 3]), html.html_vector_horizontal),
