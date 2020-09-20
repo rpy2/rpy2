@@ -37,7 +37,7 @@ jobs:
         r-version: ${{ matrix.r-version }}
     - name: Create base virtualenv
       run: |
-        python -m venv py_base_env
+        python -m venv pyenv_base
     - name: Install extra dependencies
       if: runner.os == 'Windows' && matrix.python-version == '3.8'
       run: |
