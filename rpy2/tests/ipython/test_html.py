@@ -9,7 +9,10 @@ except ModuleNotFoundError as no_ipython:
     warnings.warn(str(no_ipython))
     IPython = None
 
-from rpy2.ipython import html
+if IPython is None:
+    html = None
+else:
+    from rpy2.ipython import html
     
 base = importr('base')
 
