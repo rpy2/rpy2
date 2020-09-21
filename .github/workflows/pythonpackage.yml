@@ -15,12 +15,16 @@ jobs:
         include:
           - os: windows-latest
             venv_activate: .\pyenv_base\Scripts\activate.bat
+            ld_libpath: 
           - os: ubuntu-20.04
             venv_activate: source pyenv_base/bin/activate
+            ld_libpath: export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
           - os: ubuntu-latest
             venv_activate: source pyenv_base/bin/activate
+            ld_libpath: export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
           - os: macOS-latest
             venv_activate: source pyenv_base/bin/activate
+            ld_libpath: export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         exclude:
             # os: windows-latest
             # python-version: 3.8
@@ -65,31 +69,31 @@ jobs:
         python setup.py install
     - name: Test with minimal dependencies
       run: |
-        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
+        ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
         pip install pytest codecov pytest-cov
         bash -e ./scripts/run_test_min_deps.sh
     - name: Test with numpy
       run: |
-        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
+        ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
         pip install numpy
         bash -e ./scripts/run_test_numpy.sh
     - name: Test with pandas
       run: |
-        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
+        ${{ matrix.ld_libpath }}
         ${{matrix.venv_activate }}
         pip install pandas
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
       run: |
-        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
+        ${{ matrix.ld_libpath }}
         ${{matrix.venv_activate }}
         pip install ipython
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with R deps
       run: |
-        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
+        ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
         bash -e ./scripts/run_test_rdeps.sh
     - name: Upload coverage to Codecov
