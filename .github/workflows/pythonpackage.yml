@@ -14,7 +14,7 @@ jobs:
         os: [ubuntu-latest, ubuntu-20.04, macOS-latest, windows-latest]
         include:
           - os: windows-latest
-            venv_activate: 
+            venv_activate: pyenv_base\Scripts\activate
             ld_libpath: 
           - os: ubuntu-20.04
             venv_activate: source pyenv_base/bin/activate
@@ -26,7 +26,7 @@ jobs:
             venv_activate: source pyenv_base/bin/activate
             ld_libpath: export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         exclude:
-          - os: windows-latest
+          #- os: windows-latest
           # python-version: 3.8
           - python-version: 3.5  
     steps:
@@ -40,13 +40,13 @@ jobs:
       with:
         r-version: ${{ matrix.r-version }}
     - name: Create base virtualenv (non-windows)
-      if: runner.os != 'windows'
+      if: runner.os != 'windows-latest'
       run: |
         python -m venv pyenv_base
         ${{ matrix.venv_activate }}
         pip install -U pip wheel
     - name: Create base virtualenv (windows)
-      if: runner.os == 'windows'
+      if: runner.os == 'windows-latest'
       shell: cmd
       run: |
         pip install -U pip wheel
