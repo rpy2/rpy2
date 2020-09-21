@@ -26,7 +26,7 @@ jobs:
             venv_activate: source pyenv_base/bin/activate
             ld_libpath: export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         exclude:
-            # os: windows-latest
+            os: windows-latest
             # python-version: 3.8
           - python-version: 3.5  
     steps:
