@@ -35,7 +35,15 @@ jobs:
       uses: r-lib/actions/setup-r@master
       with:
         r-version: ${{ matrix.r-version }}
-    - name: Create base virtualenv
+    - name: Create base virtualenv (non-windows)
+      if: runner.os != 'windows'
+      run: |
+        python -m venv pyenv_base
+        ${{ matrix.venv_activate }}
+        pip install -U pip wheel
+    - name: Create base virtualenv (windows)
+      if: runner.os == 'windows'
+      shell: cmd
       run: |
         python -m venv pyenv_base
         ${{ matrix.venv_activate }}
