@@ -14,7 +14,7 @@ jobs:
         os: [ubuntu-latest, ubuntu-20.04, macOS-latest, windows-latest]
         include:
           - os: windows-latest
-            venv_activate: pyenv_base\Scripts\activate
+            venv_activate: 
             ld_libpath: 
           - os: ubuntu-20.04
             venv_activate: source pyenv_base/bin/activate

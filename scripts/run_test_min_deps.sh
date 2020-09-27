@@ -1,7 +1,6 @@
 #!/bin/bash
 
 pytest \
-    --cov-append \
     --cov-report=xml \
     --cov=rpy2.rinterface_lib \
     --cov=rpy2.rinterface \
