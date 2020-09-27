@@ -4,30 +4,25 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       max-parallel: 4
       matrix:
         python-version: [3.6, 3.7, 3.8]
         r-version: [3.6, 4.0]
         os: [ubuntu-latest, ubuntu-20.04, macOS-latest, windows-latest]
+        experimental: [false]
+        venv_activate: ["source pyenv_base/bin/activate"]
+        ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"]
         include:
           - os: windows-latest
             venv_activate: 
-            ld_libpath: 
-          - os: ubuntu-20.04
-            venv_activate: source pyenv_base/bin/activate
-            ld_libpath: export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
-          - os: ubuntu-latest
-            venv_activate: source pyenv_base/bin/activate
-            ld_libpath: export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
-          - os: macOS-latest
-            venv_activate: source pyenv_base/bin/activate
-            ld_libpath: export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
+            ld_libpath:
+            experimental: true
         exclude:
-          #- os: windows-latest
-          # python-version: 3.8
+          - os: windows-latest
+            python-version: 3.8
           - python-version: 3.5  
     steps:
     - uses: actions/checkout@v1
