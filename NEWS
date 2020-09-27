@@ -13,6 +13,9 @@ Bugs fixed
 - Fix the constructor of metaclass
   :class:`rpy2.robjects.methods.RS4Auto_Type`.
 
+- Fix call to end the embedded R in :class:`rpy2.robjects.R.__cleanup__`
+  (issue #734).
+
 
 Release 3.3.5
 =============
