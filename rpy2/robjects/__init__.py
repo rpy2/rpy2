@@ -401,7 +401,7 @@ class R(object):
 
     # TODO: check that this is properly working
     def __cleanup__(self):
-        rinterface.endEmbeddedR()
+        rinterface.embedded.endr(0)
         del(self)
 
     def __str__(self):
