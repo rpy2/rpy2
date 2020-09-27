@@ -18,6 +18,8 @@ jobs:
         include:
           - os: windows-latest
             experimental: true
+	    r-version: 4.0
+	    python-version: 3.7
             venv_activate: ""
             ld_libpath: ""
         exclude:
