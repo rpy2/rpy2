@@ -51,7 +51,7 @@ jobs:
       run: |
         pip install -U pip wheel
     - name: Install extra dependencies
-      if: runner.os == 'Windows' && matrix.python-version == '3.8'
+      if: runner.os == 'windows-latest' && matrix.python-version == '3.8'
       run: |
         echo "Bug in setuptools requires update"
         ${{ matrix.venv_activate }}
