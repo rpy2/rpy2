@@ -19,7 +19,7 @@ with warnings.catch_warnings():
                         symbol_r2python=dplyr_._symbol_r2python,
                         symbol_resolve=dplyr_._symbol_resolve)
 
-TARGET_VERSION = '0.8.'
+TARGET_VERSION = '0.1.'
 if not dplyr.__version__.startswith(TARGET_VERSION):
     warnings.warn(
         'This was designed againt dplyr versions starting with %s'
