@@ -11,15 +11,15 @@ jobs:
       matrix:
         python-version: [3.6, 3.7, 3.8]
         r-version: [3.6, 4.0]
-        os: [ubuntu-latest, ubuntu-20.04, macOS-latest, windows-latest]
+        os: [ubuntu-latest, ubuntu-20.04, macOS-latest]
         experimental: [false]
         venv_activate: ["source pyenv_base/bin/activate"]
         ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"]
         include:
           - os: windows-latest
-            venv_activate: "" 
+	    experimental: true
+            venv_activate: ""
             ld_libpath: ""
-            experimental: true
         exclude:
           - os: windows-latest
             python-version: 3.8
@@ -35,18 +35,18 @@ jobs:
       with:
         r-version: ${{ matrix.r-version }}
     - name: Create base virtualenv (non-windows)
-      if: runner.os != 'Windows'
+      if: matrix.os != 'windows-latest'
       run: |
         python -m venv pyenv_base
         ${{ matrix.venv_activate }}
         pip install -U pip wheel
     - name: Create base virtualenv (windows)
-      if: runner.os == 'Windows'
+      if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
         pip install -U pip wheel
     - name: Install extra dependencies
-      if: runner.os == 'Windows' && matrix.python-version == '3.8'
+      if: matrix.os == 'windows-latest' && matrix.python-version == '3.8'
       run: |
         echo "Bug in setuptools requires update"
         ${{ matrix.venv_activate }}
