@@ -40,18 +40,18 @@ jobs:
       with:
         r-version: ${{ matrix.r-version }}
     - name: Create base virtualenv (non-windows)
-      if: runner.os != 'windows-latest'
+      if: runner.os != 'Windows'
       run: |
         python -m venv pyenv_base
         ${{ matrix.venv_activate }}
         pip install -U pip wheel
     - name: Create base virtualenv (windows)
-      if: runner.os == 'windows-latest'
+      if: runner.os == 'Windows'
       shell: cmd
       run: |
         pip install -U pip wheel
     - name: Install extra dependencies
-      if: runner.os == 'windows-latest' && matrix.python-version == '3.8'
+      if: runner.os == 'Windows' && matrix.python-version == '3.8'
       run: |
         echo "Bug in setuptools requires update"
         ${{ matrix.venv_activate }}
