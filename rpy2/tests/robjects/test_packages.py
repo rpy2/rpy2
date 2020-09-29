@@ -56,6 +56,12 @@ class TestPackage(object):
         pck = robjects.packages.Package(env, "dummy_package")
         assert isinstance(repr(pck), str)
 
+    def tests_weak_package(self):
+        pcki = robjects.packages.importr('stats', on_conflict='warn')
+        pck = robjects.packages.WeakPackage(pcki)
+        assert pck._exported_names == pcki._exported_names
+        assert [i for i in pck._env] == [i for i in pcki._env]
+        assert len(set(pcki.__dict__.keys()).difference(set(pck.__dict__.keys()))) == 0
 
 def test_signaturetranslatedanonymouspackage():
     rcode = """

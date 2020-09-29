@@ -13,14 +13,7 @@ if not tidyr.__version__.startswith(TARGET_VERSION):
         'This was designed againt tidyr versions starting with %s '
         'but you have %s' % (TARGET_VERSION, tidyr.__version__))
 
-tidyr = WeakPackage(tidyr._env,
-                    tidyr.__rname__,
-                    translation=tidyr._translation,
-                    exported_names=tidyr._exported_names,
-                    on_conflict="warn",
-                    version=tidyr.__version__,
-                    symbol_r2python=tidyr._symbol_r2python,
-                    symbol_resolve=tidyr._symbol_resolve)
+tidyr = WeakPackage(tidyr)
 
 
 def _wrap(rfunc):

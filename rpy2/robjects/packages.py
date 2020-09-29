@@ -225,7 +225,8 @@ class Package(ModuleType):
              self._env,
              translation=self._translation,
              symbol_r2python=self._symbol_r2python,
-             symbol_resolve=self._symbol_resolve
+             symbol_resolve=self._symbol_resolve,
+             exported_names=self._exported_names
          )
         msg_prefix = ('Conflict when converting R symbols'
                       ' in the package "%s"'
@@ -358,12 +359,25 @@ class WeakPackage(Package):
     a warning (and a None returned) whenever the desired symbol is
     not found (rather than a traditional `AttributeError`).
     """
+    def __init__(self, package: Package):
+        self._env = package._env
+        self.__rname__ = package.__rname__
+        self._translation = package._translation
+        self._rpy2r = package._rpy2r
+        self._symbol_r2python = package._symbol_r2python
+        self._symbol_resolve = package._symbol_resolve
+        self._exported_names = package._exported_names
+        self.__version__ = package.__version__
+        self.__rdata__ = package.__rdata__
+        for k, v in package.__dict__.items():
+            self.__dict__[k] = v
 
     def __getattr__(self, name):
         res = self.__dict__.get(name)
         if res is None:
             warnings.warn(
-                "The symbol '%s' is not in this R namespace/package." % name
+                "The symbol '%s' is not in this R namespace/package: %s"
+                % (name, self.__rname__)
             )
         return res
 
