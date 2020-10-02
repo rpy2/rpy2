@@ -250,7 +250,7 @@ def rpy2py_listvector(obj):
 
 @rpy2py.register(DataFrame)
 def rpy2py_dataframe(obj):
-    items = OrderedDict((k, rpy2py(v) if isinstance(v, Sexp) else v)
+    items = OrderedDict((k, rpy2py_listvector(v) if isinstance(v, Sexp) else v)
                         for k, v in obj.items())
     res = PandasDataFrame.from_dict(items)
     res.index = obj.rownames
