@@ -16,12 +16,18 @@ rstart = None
 
 # TODO: move initialization-related code to _rinterface ?
 class RPY_R_Status(enum.Enum):
+    """Possible status for the embedded R."""
     INITIALIZED = 0x01
     BUSY = 0x02
     ENDED = 0x04
 
 
 def set_initoptions(options: typing.Tuple[str]) -> None:
+    """Set initialization options for the embedded R.
+
+    :param:`options` A tuple of string with the options
+    (e.g., '--verbose', '--quiet').
+    """
     if rpy2_embeddedR_isinitialized:
         raise RuntimeError('Options can no longer be set once '
                            'R is initialized.')
@@ -32,6 +38,7 @@ def set_initoptions(options: typing.Tuple[str]) -> None:
 
 
 def get_initoptions() -> typing.Tuple[str, ...]:
+    """Get the initialization options for the embedded R."""
     return _options
 
 
@@ -40,7 +47,11 @@ def isinitialized() -> bool:
     return bool(rpy2_embeddedR_isinitialized & RPY_R_Status.INITIALIZED.value)
 
 
-def setinitialized() -> None:
+def _setinitialized() -> None:
+    """Set the embedded R as initialized.
+
+    This may result in a later segfault if used with the embedded R has not
+    been initialized. You should not have to use it."""
     global rpy2_embeddedR_isinitialized
     rpy2_embeddedR_isinitialized = RPY_R_Status.INITIALIZED.value
 
@@ -125,10 +136,7 @@ def _initr(
         n_options_c = ffi.cast('int', n_options)
         status = rlib.Rf_initEmbeddedR(n_options_c,
                                        options_c)
-        setinitialized()
-
-        # global rstart
-        # rstart = ffi.new('Rstart')
+        _setinitialized()
 
         rlib.R_Interactive = interactive
 
@@ -206,7 +214,7 @@ def is_r_externally_initialized() -> bool:
 def set_python_process_info() -> None:
     """Set information about the Python process in an environment variable.
 
-    Current the information See discussion at:
+    See discussion at:
     %s
     """ % _REFERENCE_TO_R_SESSIONS
 

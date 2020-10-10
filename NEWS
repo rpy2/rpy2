@@ -16,6 +16,10 @@ Changes
   :func:`rpy2.robjects.pandas.activate()` are deprecated and will
   be removed in rpy2-3.5.0.
 
+- :func:`rpy2.rinterface_lib.embedded.setinitialized` was renamed to
+  :func:`rpy2.rinterface_lib.embedded._setinitialized` to indicate that
+  one should not use it.
+
 Bugs fixed
 ----------
 

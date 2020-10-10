@@ -30,7 +30,7 @@ def _initr_win32(
         n_options = len(options_c)
         n_options_c = ffi.cast('int', n_options)
         status = openrlib.rlib.Rf_initEmbeddedR(n_options_c, options_c)
-        embedded.setinitialized()
+        embedded._setinitialized()
 
         embedded.rstart = ffi.new('Rstart')
         rstart = embedded.rstart
