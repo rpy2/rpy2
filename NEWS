@@ -29,6 +29,9 @@ Bugs fixed
   now wrapped in `R_ToplevelExec()` to limit the propagation
   of R exceptions. This solved issue #710.
 
+- Initializing the embedded R caused the loss of ability to use Ctrl-C
+  to send SIGINT to a Python process (issue #723)
+
 
 Release 3.3.6
 =============
