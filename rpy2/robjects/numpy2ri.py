@@ -6,6 +6,7 @@ from rpy2.rinterface import (Sexp,
                              StrSexpVector, ByteSexpVector,
                              RTYPES)
 import numpy
+import warnings
 
 # TODO: move this to rinterface.
 RINT_SIZE = 32
@@ -179,8 +180,8 @@ def rpy2py_sexp(obj):
 
 def activate():
     warnings.warn('The global conversion available with activate() '
-                  'is deprecated and will be removed in the next major release. '
-                  'Use a local converter.',
+                  'is deprecated and will be removed in the next major '
+                  'release. Use a local converter.',
                   category=DeprecationWarning)
 
     global original_converter

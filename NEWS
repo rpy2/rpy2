@@ -16,6 +16,10 @@ Changes
   :func:`rpy2.robjects.pandas.activate()` are deprecated and will
   be removed in rpy2-3.5.0.
 
+- :func:`rpy2.rinterface_lib.embedded.setinitialized` was renamed to
+  :func:`rpy2.rinterface_lib.embedded._setinitialized` to indicate that
+  one should not use it.
+
 Bugs fixed
 ----------
 
@@ -40,6 +44,9 @@ Bugs fixed
 
 - Fix the constructor of metaclass
   :class:`rpy2.robjects.methods.RS4Auto_Type`.
+
+- Fix call to end the embedded R in :class:`rpy2.robjects.R.__cleanup__`
+  (issue #734).
 
 
 Release 3.3.5

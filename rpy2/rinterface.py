@@ -811,7 +811,7 @@ def initr_checkenv() -> typing.Optional[int]:
     status = None
     with openrlib.rlock:
         if embedded.is_r_externally_initialized():
-            embedded.setinitialized()
+            embedded._setinitialized()
         else:
             status = embedded._initr()
             embedded.set_python_process_info()
