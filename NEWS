@@ -31,6 +31,9 @@ Bugs fixed
 
 - More complete and correct mapping of R class names in
   :func:`rpy2.rinterface_lib.sexp.rclass_get`.
+  
+- Initializing the embedded R caused the loss of ability to use Ctrl-C
+  to send SIGINT to a Python process (issue #723)
 
 
 Release 3.3.6
