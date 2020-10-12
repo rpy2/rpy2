@@ -752,20 +752,41 @@ class StrSexpVector(SexpVector):
         )
 
 
-# TODO: complete class names.
-_DEFAULT_RCLASS_NAMES = {
+_TYPE2STR = {
+    RTYPES.NILSXP: 'NULL',
+    RTYPES.SYMSXP: 'symbol',  # alias: name
+    RTYPES.LISTSXP: 'pairlist',
+    RTYPES.CLOSXP: 'closure',
     RTYPES.ENVSXP: 'environment',
-    RTYPES.CLOSXP: 'function',
-    RTYPES.SPECIALSXP: 'function',
-    RTYPES.BUILTINSXP: 'function',
-    RTYPES.REALSXP: 'numeric',
+    RTYPES.PROMSXP: 'promise',
+    RTYPES.LANGSXP: 'language',
+    RTYPES.SPECIALSXP: 'special',
+    RTYPES.BUILTINSXP: 'builtin',
+    RTYPES.CHARSXP: 'char',
+    RTYPES.LGLSXP: 'logical',
+    RTYPES.INTSXP: 'integer',
+    RTYPES.REALSXP: 'double',  # alias: numeric
+    RTYPES.CPLXSXP: 'complex',
     RTYPES.STRSXP: 'character',
-    RTYPES.SYMSXP: 'name',
+    RTYPES.DOTSXP: '...',
+    RTYPES.ANYSXP: 'any',
+    RTYPES.EXPRSXP: 'expression',
     RTYPES.VECSXP: 'list',
-    RTYPES.LANGSXP: 'language'}
+    RTYPES.EXTPTRSXP: 'externalptr',
+    RTYPES.BCODESXP: 'bytecode',
+    RTYPES.WEAKREFSXP: 'weakref',
+    RTYPES.RAWSXP: 'raw',
+    RTYPES.S4SXP: 'S4'
+}
 
 
 def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
+    """ Get the R class name.
+
+    If no specific attribute "class" is defined from the objects, this
+    will perform the equivalent of R_data_class()
+    (src/main/attrib.c in the R source code).
+    """
     rlib = openrlib.rlib
     with memorymanagement.rmemory() as rmemory:
         classes = rmemory.protect(
@@ -783,10 +804,28 @@ def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
                     classname = 'array'
             else:
                 typeof = RTYPES(scaps.typeof)
-                classname = _DEFAULT_RCLASS_NAMES.get(
-                    typeof, str(typeof))
-            classes = StrSexpVector.from_iterable(
-                [classname])
+                if typeof in (RTYPES.CLOSXP,
+                              RTYPES.SPECIALSXP,
+                              RTYPES.BUILTINSXP):
+                    classname = 'function'
+                elif typeof == RTYPES.REALSXP:
+                    classname = 'numeric'
+                elif typeof == RTYPES.SYMSXP:
+                    classname = 'name'
+                elif typeof == RTYPES.LANGSXP:
+                    symb = rlib.CAR(scaps._cdata)
+                    symb_rstr = openrlib.rlib.PRINTNAME(symb)
+                    symb_str = conversion._cchar_to_str(
+                        openrlib.rlib.R_CHAR(symb_rstr)
+                    )
+                    if symb_str in ('if', 'while', 'for', '=', '<-', '(', '{'):
+                        classname = symb_str
+                    else:
+                        classname = 'call'
+                else:
+                    classname = _TYPE2STR.get(
+                        typeof, str(typeof))
+            classes = StrSexpVector.from_iterable([classname])
         else:
             classes = conversion._cdata_to_rinterface(classes)
     return classes
@@ -796,6 +835,10 @@ def rclass_set(
         scaps: _rinterface.CapsuleBase,
         value: 'typing.Union[StrSexpVector, str]'
 ) -> None:
+    """ Set the R class.
+
+    :param:`scaps` A capsule with a pointer to an R object.
+    :param:`value` An R vector of strings."""
     if isinstance(value, StrSexpVector):
         value_r = value
     elif isinstance(value, str):
