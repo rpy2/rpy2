@@ -1,6 +1,7 @@
 import atexit
 import os
 import math
+import signal
 import typing
 from typing import Union
 from rpy2.rinterface_lib import openrlib
@@ -31,6 +32,10 @@ if os.name == 'nt':
 R_NilValue = openrlib.rlib.R_NilValue
 
 endr = embedded.endr
+
+
+def _sigint_handler(sig, frame):
+    raise KeyboardInterrupt()
 
 
 @_cdata_res_to_rinterface
@@ -811,7 +816,7 @@ def initr_checkenv() -> typing.Optional[int]:
     status = None
     with openrlib.rlock:
         if embedded.is_r_externally_initialized():
-            embedded.setinitialized()
+            embedded._setinitialized()
         else:
             status = embedded._initr()
             embedded.set_python_process_info()
@@ -860,6 +865,8 @@ def _post_initr_setup() -> None:
             [openrlib.rlib.R_NaReal, openrlib.rlib.R_NaReal])
     )
     NA_Complex = na_values.NA_Complex
+
+    signal.signal(signal.SIGINT, _sigint_handler)
 
 
 def rternalize(function: typing.Callable) -> SexpClosure:

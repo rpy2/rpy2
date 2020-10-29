@@ -16,6 +16,10 @@ Changes
   :func:`rpy2.robjects.pandas.activate()` are deprecated and will
   be removed in rpy2-3.5.0.
 
+- :func:`rpy2.rinterface_lib.embedded.setinitialized` was renamed to
+  :func:`rpy2.rinterface_lib.embedded._setinitialized` to indicate that
+  one should not use it.
+
 Bugs fixed
 ----------
 
@@ -24,6 +28,12 @@ Bugs fixed
   when embedded in Python it creates a segfault. Calls are
   now wrapped in `R_ToplevelExec()` to limit the propagation
   of R exceptions. This solved issue #710.
+
+- More complete and correct mapping of R class names in
+  :func:`rpy2.rinterface_lib.sexp.rclass_get`.
+  
+- Initializing the embedded R caused the loss of ability to use Ctrl-C
+  to send SIGINT to a Python process (issue #723)
 
 
 Release 3.3.6
