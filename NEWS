@@ -20,6 +20,9 @@ Changes
   :func:`rpy2.rinterface_lib.embedded._setinitialized` to indicate that
   one should not use it.
 
+- :meth:`rpy2.robjects.lib.ggplot2.vars` to map the R function
+  `ggplot2::vars` (issue #742).
+
 Bugs fixed
 ----------
 

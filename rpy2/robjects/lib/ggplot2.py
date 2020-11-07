@@ -140,6 +140,31 @@ class Aes(robjects.ListVector):
 aes = Aes.new
 
 
+class Vars(robjects.ListVector):
+    """ Aesthetics mapping, using expressions rather than string
+    (this is the most common form when using the package in R - it might
+    be easier to use AesString when working in Python using rpy2 -
+    see class AesString in this Python module).
+    """
+    _constructor = ggplot2_env['vars']
+
+    @classmethod
+    def new(cls, *args):
+        """Constructor for the class Vars."""
+        new_args = list()
+        for a in args:
+            new_args.append(
+                rlang.parse_quo(
+                    a, env=robjects.baseenv['sys.frame']()
+                )
+            )
+        res = cls(cls._constructor(*new_args))
+        return res
+
+
+vars = Vars.new
+
+
 class AesString(robjects.ListVector):
     """ Aesthetics mapping, using strings rather than expressions (the later
     being most common form when using the package in R - see class Aes
