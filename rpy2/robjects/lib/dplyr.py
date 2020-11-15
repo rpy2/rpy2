@@ -1,4 +1,5 @@
 from collections import namedtuple
+from rpy2 import rinterface
 from rpy2 import robjects
 from rpy2.robjects.packages import (importr,
                                     WeakPackage)
@@ -105,6 +106,66 @@ def _make_pipe2(rfunc, cls, env=robjects.globalenv):
     return inner
 
 
+_arrange = rinterface.evalr("""
+function(dataf, ..., _by_group = FALSE) {
+  dplyr::arrange(dataf, !!!(rlang::parse_exprs(...)),
+                 .by_group = _by_group)
+}
+""")
+
+_count = rinterface.evalr("""
+function(x, ..., wt = NULL, sort = FALSE, name = NULL,
+         _drop = group_by_drop_default(x)) {
+  dplyr::count(x, !!!(rlang::ensyms(...)),
+               wt = !!rlang::enquo(wt),
+               sort = sort, name = name,
+               .drop = .drop)
+}
+""")
+
+_distinct = rinterface.evalr("""
+function(dataf, ..., _keep_all = FALSE) {
+  dplyr::distinct(dataf, !!!(rlang::parse_exprs(...)),
+                  .keep_all = _keep_all)
+}
+""")
+
+_filter = rinterface.evalr("""
+function(dataf, ..., _preserve = FALSE) {
+  dplyr::filter(dataf, !!!(rlang::parse_exprs(...)),
+                .preserve = .preserve) 
+}
+""")
+
+_mutate = rinterface.evalr("""
+function(dataf, ...) {
+  dplyr::mutate(dataf, !!!(rlang::quos(...)))
+}
+""")
+
+_select = rinterface.evalr("""
+function(dataf, ...) {
+  dplyr::select(dataf, !!!(rlang::parse_exprs(...)))
+}
+""")
+
+
+def result_as(func, constructor=None):
+    """Wrap the result using the constructor.
+
+    This decorator is intended for methods. The first arguments
+    passed to func must be 'self'.
+
+    Args:
+    constructor: a constructor to call using the result of func(). If None,
+    the type of self will be used."""
+    def inner(self, *args, **kwargs):
+        if constructor is None:
+            constructor = type(self)
+        res = func(self, *args, **kwargs)
+        return constructor(res)
+
+
 class DataFrame(robjects.DataFrame):
     """DataFrame object extending the object of the same name in
     `rpy2.robjects.vectors` with functionalities defined in the R
@@ -113,26 +174,62 @@ class DataFrame(robjects.DataFrame):
     def __rshift__(self, other):
         return other(self)
 
+    @result_as
+    def arrange(self, *args, _by_group = False):
+        """Call the R function `dplyr::arrange()`."""
+        res = _arrange(self, *args, _by_group=_by_group)
+        return res
+
+    @result_as
     def copy_to(self, destination, name, **kwargs):
         """
         - destination: database
         - name: table name in the destination database
         """
         res = dplyr.copy_to(destination, self, name=name)
-        return type(self)(res)
+        return res
 
+    @result_as
     def collapse(self, *args, **kwargs):
         """
         Call the function `collapse` in the R package `dplyr`.
         """
+        return dplyr.collapse(self, *args, **kwargs)
 
-        cls = type(self)
-        return cls(dplyr.collapse(self, *args, **kwargs))
-
+    @result_as
     def collect(self, *args, **kwargs):
         """Call the function `collect` in the R package `dplyr`."""
-        cls = type(self)
-        return cls(dplyr.collect(self, *args, **kwargs))
+        return dplyr.collect(self, *args, **kwargs)
+
+    @result_as
+    def count(self, *args, **kwargs):
+        """Call the function `count` in the R package `dplyr`."""
+        return _count(self, *args, **kwargs)
+
+    @result_as
+    def distinct(self, *args, _keep_all = False):
+        """Call the R function `dplyr::distinct()`."""
+        res = _distinct(self, *args, _keep_all=_keep_all)
+        return res
+
+    @result_as
+    def filter(self, *args, _preserve = False):
+        """Call the R function `dplyr::filter()`."""
+        res = _filter(self, *args, _preserve=_preserve)
+        return res
+
+
+    @result_as
+    def mutate(self, **kwargs):
+        """Call the R function `dplyr::mutate()`."""
+        res = _mutate(self, **kwargs)
+        return res
+
+    @result_as
+    def select(self, *args):
+        """Call the R function `dplyr::mutate()`."""
+        res = _select(self, *args)
+        return res
 
 
 class GroupedDataFrame(DataFrame):
@@ -140,12 +237,7 @@ class GroupedDataFrame(DataFrame):
     pass
 
 
-DataFrame.arrange = _wrap(dplyr.arrange_, None)
-DataFrame.distinct = _wrap(dplyr.distinct_, None)
-DataFrame.mutate = _wrap(dplyr.mutate_, None)
 DataFrame.transmute = _wrap(dplyr.transmute_, None)
-DataFrame.filter = _wrap(dplyr.filter_, None)
-DataFrame.select = _wrap(dplyr.select_, None)
 DataFrame.group_by = _wrap(dplyr.group_by_, GroupedDataFrame)
 DataFrame.ungroup = _wrap(dplyr.ungroup, None)
 DataFrame.distinct = _wrap(dplyr.distinct_, None)
@@ -183,13 +275,12 @@ GroupedDataFrame.summarize = _wrap(dplyr.summarize_, DataFrame)
 GroupedDataFrame.summarise = GroupedDataFrame.summarize
 GroupedDataFrame.ungroup = _wrap(dplyr.ungroup, DataFrame)
 
-arrange = _make_pipe(dplyr.arrange_, DataFrame)
-count = _make_pipe(dplyr.count_, DataFrame)
-distinct = _make_pipe(dplyr.distinct_, DataFrame)
-mutate = _make_pipe(dplyr.mutate_, DataFrame)
+arrange = _make_pipe(_arrange, DataFrame)
+count = _make_pipe(_count, DataFrame)
+mutate = _make_pipe(_mutate, DataFrame)
 transmute = _make_pipe(dplyr.transmute_, DataFrame)
-filter = _make_pipe(dplyr.filter_, DataFrame)
-select = _make_pipe(dplyr.select_, DataFrame)
+filter = _make_pipe(_filter, DataFrame)
+select = _make_pipe(_select, DataFrame)
 group_by = _make_pipe(dplyr.group_by_, DataFrame)
 summarize = _make_pipe(dplyr.summarize_, DataFrame)
 summarise = summarize
