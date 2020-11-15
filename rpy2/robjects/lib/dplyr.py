@@ -133,7 +133,7 @@ function(dataf, ..., _keep_all = FALSE) {
 _filter = rinterface.evalr("""
 function(dataf, ..., _preserve = FALSE) {
   dplyr::filter(dataf, !!!(rlang::parse_exprs(...)),
-                .preserve = .preserve) 
+                .preserve = .preserve)
 }
 """)
 
@@ -161,9 +161,11 @@ def result_as(func, constructor=None):
     the type of self will be used."""
     def inner(self, *args, **kwargs):
         if constructor is None:
-            constructor = type(self)
+            wrap = type(self)
+        else:
+            wrap = constructor
         res = func(self, *args, **kwargs)
-        return constructor(res)
+        return wrap(res)
 
 
 class DataFrame(robjects.DataFrame):
@@ -175,7 +177,7 @@ class DataFrame(robjects.DataFrame):
         return other(self)
 
     @result_as
-    def arrange(self, *args, _by_group = False):
+    def arrange(self, *args, _by_group=False):
         """Call the R function `dplyr::arrange()`."""
         res = _arrange(self, *args, _by_group=_by_group)
         return res
@@ -207,17 +209,16 @@ class DataFrame(robjects.DataFrame):
         return _count(self, *args, **kwargs)
 
     @result_as
-    def distinct(self, *args, _keep_all = False):
+    def distinct(self, *args, _keep_all=False):
         """Call the R function `dplyr::distinct()`."""
         res = _distinct(self, *args, _keep_all=_keep_all)
         return res
 
     @result_as
-    def filter(self, *args, _preserve = False):
+    def filter(self, *args, _preserve=False):
         """Call the R function `dplyr::filter()`."""
         res = _filter(self, *args, _preserve=_preserve)
         return res
-
 
     @result_as
     def mutate(self, **kwargs):
