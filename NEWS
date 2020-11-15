@@ -38,6 +38,10 @@ Bugs fixed
 - Initializing the embedded R caused the loss of ability to use Ctrl-C
   to send SIGINT to a Python process (issue #723)
 
+- :mod:`rpy2.sitation` is now working when the environment variable
+  `R_HOME` is set even though R is not in the `PATH` or in the Windows
+  registry (issue #744).
+
 
 Release 3.3.6
 =============
