@@ -20,7 +20,7 @@ with warnings.catch_warnings():
                         symbol_r2python=dplyr_._symbol_r2python,
                         symbol_resolve=dplyr_._symbol_resolve)
 
-TARGET_VERSION = '0.1.'
+TARGET_VERSION = '1.0'
 if not dplyr.__version__.startswith(TARGET_VERSION):
     warnings.warn(
         'This was designed againt dplyr versions starting with %s'
@@ -106,48 +106,81 @@ def _make_pipe2(rfunc, cls, env=robjects.globalenv):
     return inner
 
 
-_arrange = rinterface.evalr("""
-function(dataf, ..., _by_group = FALSE) {
+def _fix_call(func):
+    def inner(self, *args, **kwargs):
+        if len(args) > 0:
+            if len(kwargs) > 0:
+                res = func(self, *args, **kwargs)
+            else:
+                res = func(self, *args)
+        else:
+            if len(kwargs) > 0:
+                res = func(self, **kwargs)
+            else:
+                res = func(self)
+        return res
+    return inner
+
+
+_arrange = _fix_call(
+    rinterface.evalr("""
+function(dataf, ..., .by_group = FALSE) {
   dplyr::arrange(dataf, !!!(rlang::parse_exprs(...)),
-                 .by_group = _by_group)
+                 .by_group = .by_group)
 }
 """)
+)
 
-_count = rinterface.evalr("""
+_count = _fix_call(
+    rinterface.evalr("""
 function(x, ..., wt = NULL, sort = FALSE, name = NULL,
-         _drop = group_by_drop_default(x)) {
+         .drop = group_by_drop_default(x)) {
   dplyr::count(x, !!!(rlang::ensyms(...)),
                wt = !!rlang::enquo(wt),
                sort = sort, name = name,
                .drop = .drop)
 }
 """)
+)
 
-_distinct = rinterface.evalr("""
-function(dataf, ..., _keep_all = FALSE) {
+_distinct = _fix_call(
+    rinterface.evalr("""
+function(dataf, ..., .keep_all = FALSE) {
   dplyr::distinct(dataf, !!!(rlang::parse_exprs(...)),
-                  .keep_all = _keep_all)
+                  .keep_all = .keep_all)
 }
 """)
+)
 
-_filter = rinterface.evalr("""
-function(dataf, ..., _preserve = FALSE) {
-  dplyr::filter(dataf, !!!(rlang::parse_exprs(...)),
-                .preserve = .preserve)
+_filter = _fix_call(
+    rinterface.evalr("""
+function(dataf, ..., .preserve = FALSE) {
+  if (missing(...)) {
+    dplyr::filter(dataf,
+                  .preserve = .preserve)
+  } else {
+    dplyr::filter(dataf, !!!(rlang::parse_exprs(...)),
+                  .preserve = .preserve)
+  }
 }
 """)
+)
 
-_mutate = rinterface.evalr("""
+_mutate = _fix_call(
+    rinterface.evalr("""
 function(dataf, ...) {
   dplyr::mutate(dataf, !!!(rlang::quos(...)))
 }
 """)
+)
 
-_select = rinterface.evalr("""
+_select = _fix_call(
+    rinterface.evalr("""
 function(dataf, ...) {
   dplyr::select(dataf, !!!(rlang::parse_exprs(...)))
 }
 """)
+)
 
 
 def result_as(func, constructor=None):
@@ -164,8 +197,10 @@ def result_as(func, constructor=None):
             wrap = type(self)
         else:
             wrap = constructor
+
         res = func(self, *args, **kwargs)
         return wrap(res)
+    return inner
 
 
 class DataFrame(robjects.DataFrame):
@@ -179,10 +214,9 @@ class DataFrame(robjects.DataFrame):
     @result_as
     def arrange(self, *args, _by_group=False):
         """Call the R function `dplyr::arrange()`."""
-        res = _arrange(self, *args, _by_group=_by_group)
+        res = _arrange(self, *args, **{'.by_group': _by_group})
         return res
 
-    @result_as
     def copy_to(self, destination, name, **kwargs):
         """
         - destination: database
@@ -211,13 +245,13 @@ class DataFrame(robjects.DataFrame):
     @result_as
     def distinct(self, *args, _keep_all=False):
         """Call the R function `dplyr::distinct()`."""
-        res = _distinct(self, *args, _keep_all=_keep_all)
+        res = _distinct(self, *args, **{'.keep_all': _keep_all})
         return res
 
     @result_as
     def filter(self, *args, _preserve=False):
         """Call the R function `dplyr::filter()`."""
-        res = _filter(self, *args, _preserve=_preserve)
+        res = _filter(self, *args, **{'.preserve': _preserve})
         return res
 
     @result_as
@@ -280,7 +314,7 @@ arrange = _make_pipe(_arrange, DataFrame)
 count = _make_pipe(_count, DataFrame)
 mutate = _make_pipe(_mutate, DataFrame)
 transmute = _make_pipe(dplyr.transmute_, DataFrame)
-filter = _make_pipe(_filter, DataFrame)
+filter = result_as(_filter)
 select = _make_pipe(_select, DataFrame)
 group_by = _make_pipe(dplyr.group_by_, DataFrame)
 summarize = _make_pipe(dplyr.summarize_, DataFrame)
