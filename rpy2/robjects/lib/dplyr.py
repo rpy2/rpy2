@@ -101,6 +101,7 @@ def result_as(func, constructor=None):
             wrap = type(self)
         else:
             wrap = constructor
+
         res = func(self, *args, **kwargs)
         return wrap(res)
     return inner
