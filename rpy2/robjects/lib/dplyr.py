@@ -1,5 +1,4 @@
 from collections import namedtuple
-from rpy2 import rinterface
 from rpy2 import robjects
 from rpy2.robjects.packages import (importr,
                                     WeakPackage)
@@ -122,67 +121,6 @@ def _fix_call(func):
     return inner
 
 
-_arrange = _fix_call(
-    rinterface.evalr("""
-function(dataf, ..., .by_group = FALSE) {
-  dplyr::arrange(dataf, !!!(rlang::parse_exprs(...)),
-                 .by_group = .by_group)
-}
-""")
-)
-
-_count = _fix_call(
-    rinterface.evalr("""
-function(x, ..., wt = NULL, sort = FALSE, name = NULL,
-         .drop = group_by_drop_default(x)) {
-  dplyr::count(x, !!!(rlang::ensyms(...)),
-               wt = !!rlang::enquo(wt),
-               sort = sort, name = name,
-               .drop = .drop)
-}
-""")
-)
-
-_distinct = _fix_call(
-    rinterface.evalr("""
-function(dataf, ..., .keep_all = FALSE) {
-  dplyr::distinct(dataf, !!!(rlang::parse_exprs(...)),
-                  .keep_all = .keep_all)
-}
-""")
-)
-
-_filter = _fix_call(
-    rinterface.evalr("""
-function(dataf, ..., .preserve = FALSE) {
-  if (missing(...)) {
-    dplyr::filter(dataf,
-                  .preserve = .preserve)
-  } else {
-    dplyr::filter(dataf, !!!(rlang::parse_exprs(...)),
-                  .preserve = .preserve)
-  }
-}
-""")
-)
-
-_mutate = _fix_call(
-    rinterface.evalr("""
-function(dataf, ...) {
-  dplyr::mutate(dataf, !!!(rlang::quos(...)))
-}
-""")
-)
-
-_select = _fix_call(
-    rinterface.evalr("""
-function(dataf, ...) {
-  dplyr::select(dataf, !!!(rlang::parse_exprs(...)))
-}
-""")
-)
-
-
 def result_as(func, constructor=None):
     """Wrap the result using the constructor.
 
@@ -197,7 +135,6 @@ def result_as(func, constructor=None):
             wrap = type(self)
         else:
             wrap = constructor
-
         res = func(self, *args, **kwargs)
         return wrap(res)
     return inner
@@ -214,7 +151,7 @@ class DataFrame(robjects.DataFrame):
     @result_as
     def arrange(self, *args, _by_group=False):
         """Call the R function `dplyr::arrange()`."""
-        res = _arrange(self, *args, **{'.by_group': _by_group})
+        res = dplyr.arrange(self, *args, **{'.by_group': _by_group})
         return res
 
     def copy_to(self, destination, name, **kwargs):
@@ -240,42 +177,70 @@ class DataFrame(robjects.DataFrame):
     @result_as
     def count(self, *args, **kwargs):
         """Call the function `count` in the R package `dplyr`."""
-        return _count(self, *args, **kwargs)
+        return dplyr.count(self, *args, **kwargs)
 
     @result_as
     def distinct(self, *args, _keep_all=False):
         """Call the R function `dplyr::distinct()`."""
-        res = _distinct(self, *args, **{'.keep_all': _keep_all})
+        res = dplyr.distinct(self, *args, **{'.keep_all': _keep_all})
         return res
 
     @result_as
     def filter(self, *args, _preserve=False):
         """Call the R function `dplyr::filter()`."""
-        res = _filter(self, *args, **{'.preserve': _preserve})
+        res = dplyr.filter(self, *args, **{'.preserve': _preserve})
         return res
+
+    def group_by(self, *args):
+        """Call the R function `dplyr::group_by()`."""
+        res = dplyr.group_by(self, *args)
+        return GroupedDataFrame(res)
 
     @result_as
     def mutate(self, **kwargs):
         """Call the R function `dplyr::mutate()`."""
-        res = _mutate(self, **kwargs)
+        res = dplyr.mutate(self, **kwargs)
         return res
 
     @result_as
     def select(self, *args):
-        """Call the R function `dplyr::mutate()`."""
-        res = _select(self, *args)
+        """Call the R function `dplyr::select()`."""
+        res = dplyr.select(self, *args)
         return res
+
+    @result_as
+    def transmute(self, *args, **kwargs):
+        """Call the R function `dplyr::transmute()`."""
+        res = dplyr.transmute(self, *args, **kwargs)
+        return res
+
+
+def guess_wrap_type(x):
+    if dplyr.is_grouped_df(x):
+        return GroupedDataFrame
+    else:
+        return DataFrame
 
 
 class GroupedDataFrame(DataFrame):
     """DataFrame grouped by one of several factors."""
-    pass
+
+    def summarize(self, *args, **kwargs):
+        """Call the R function `dplyr::summarize()`.
+
+        This can return a GroupedDataFrame or a DataFrame.
+        """
+        res = dplyr.summarize(self, *args, **kwargs)
+        return guess_wrap_type(res)(res)
+
+    def ungroup(self, *args,
+                _add=False, _drop=robjects.rl('group_by_drop_default(.data)')):
+        res = dplyr.ungroup(*args, _add=_add, _drop=_drop)
+        return guess_wrap_type(res)(res)
+
+    summarise = summarize
 
 
-DataFrame.transmute = _wrap(dplyr.transmute_, None)
-DataFrame.group_by = _wrap(dplyr.group_by_, GroupedDataFrame)
-DataFrame.ungroup = _wrap(dplyr.ungroup, None)
-DataFrame.distinct = _wrap(dplyr.distinct_, None)
 DataFrame.inner_join = _wrap2(dplyr.inner_join, None)
 DataFrame.left_join = _wrap2(dplyr.left_join, None)
 DataFrame.right_join = _wrap2(dplyr.right_join, None)
@@ -289,8 +254,6 @@ DataFrame.setdiff = _wrap2(dplyr.setdiff, None)
 DataFrame.sample_n = _wrap(dplyr.sample_n, None)
 DataFrame.sample_frac = _wrap(dplyr.sample_frac, None)
 DataFrame.slice = _wrap(dplyr.slice_, None)
-
-DataFrame.count = _wrap(dplyr.count_, None)
 DataFrame.tally = _wrap(dplyr.tally, None)
 
 DataFrame.mutate_if = _wrap(dplyr.mutate_if, None)
@@ -306,20 +269,16 @@ DataFrame.transmute_all = _wrap(dplyr.transmute_all, None)
 DataFrame.transmute_if = _wrap(dplyr.transmute_if, None)
 DataFrame.transmute_at = _wrap(dplyr.transmute_at, None)
 
-GroupedDataFrame.summarize = _wrap(dplyr.summarize_, DataFrame)
-GroupedDataFrame.summarise = GroupedDataFrame.summarize
-GroupedDataFrame.ungroup = _wrap(dplyr.ungroup, DataFrame)
-
-arrange = _make_pipe(_arrange, DataFrame)
-count = _make_pipe(_count, DataFrame)
-mutate = _make_pipe(_mutate, DataFrame)
-transmute = _make_pipe(dplyr.transmute_, DataFrame)
-filter = result_as(_filter)
-select = _make_pipe(_select, DataFrame)
-group_by = _make_pipe(dplyr.group_by_, DataFrame)
-summarize = _make_pipe(dplyr.summarize_, DataFrame)
+arrange = _make_pipe(dplyr.arrange, DataFrame)
+count = _make_pipe(dplyr.count, DataFrame)
+mutate = _make_pipe(dplyr.mutate, DataFrame)
+transmute = _make_pipe(dplyr.transmute, DataFrame)
+filter = result_as(dplyr.filter)
+select = _make_pipe(dplyr.select, DataFrame)
+group_by = _make_pipe(dplyr.group_by, GroupedDataFrame)
+summarize = _make_pipe(dplyr.summarize, guess_wrap_type)
 summarise = summarize
-distinct = _make_pipe(dplyr.distinct_, DataFrame)
+distinct = _make_pipe(dplyr.distinct, DataFrame)
 inner_join = _make_pipe2(dplyr.inner_join, DataFrame)
 left_join = _make_pipe2(dplyr.left_join, DataFrame)
 right_join = _make_pipe2(dplyr.right_join, DataFrame)
