@@ -418,6 +418,7 @@ class R(object):
 
 
 r = R()
+rl = language.LangVector.from_string
 
 conversion.set_conversion(default_converter)
 
