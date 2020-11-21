@@ -76,6 +76,8 @@ class LangVector(RObject, ri.LangSexpVector):
     def from_string(cls: typing.Type[LangVector_VT], s: str) -> LangVector_VT:
         """Create an R language object from a string.
 
+        This creates an unevaluated R language object.
+
         Args:
             s: a string containing (only) R code.
 
