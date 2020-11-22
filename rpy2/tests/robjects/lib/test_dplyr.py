@@ -43,6 +43,10 @@ class TestDplyr(object):
         dataf_filter = dplyr.filter(dataf, rl('gear > 3'))
         assert ngear_gt_3 == dataf_filter.nrow
 
+    def test_group_by(self):
+        dataf_a = dplyr.DataFrame(mtcars)
+        dataf_g = dataf_a.group_by(rl('gear'))
+
     def test_splitmerge_function(self):
         dataf = dplyr.DataFrame(mtcars)
         dataf_by_gear = dataf.group_by(rl('gear'))
