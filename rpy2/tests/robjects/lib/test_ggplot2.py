@@ -52,6 +52,15 @@ class TestGGplot(object):
         gp += ggplot2.geom_point()
         assert isinstance(gp, ggplot2.GGPlot)
 
+    def test_vars(self):
+        gp = (
+            ggplot2.ggplot(mtcars)
+            + ggplot2.aes(x='wt', y='mpg')
+            + ggplot2.geom_point()
+            + ggplot2.facet_wrap(ggplot2.vars('gears'))
+            )
+        assert isinstance(gp, ggplot2.GGPlot)
+
     @pytest.mark.parametrize(
         'theme_name',
         ['theme_grey',

@@ -285,6 +285,7 @@ def iter_info():
     r_home = os.environ.get('R_HOME')
     yield '    Environment variable R_HOME: %s' % r_home
 
+    r_home_default = None
     if os.name == 'nt':
         r_home_default = r_home_from_registry()
         yield '    InstallPath in the registry: %s' % r_home_default
@@ -293,8 +294,11 @@ def iter_info():
     else:
         r_home_default = r_home_from_subprocess()
         yield '    Calling `R RHOME`: %s' % r_home_default
-    yield '    Environment variable R_LIBS_USER: %s' \
-          % os.environ.get('R_LIBS_USER')
+
+    yield (
+        '    Environment variable R_LIBS_USER: %s'
+        % os.environ.get('R_LIBS_USER')
+    )
 
     if r_home is not None and r_home_default is not None:
         if os.path.abspath(r_home) != r_home_default:
@@ -304,7 +308,6 @@ def iter_info():
         if r_home_default is None:
             yield ('    Warning: There is no R in the PATH and no '
                    'R_HOME defined.')
-            return
         else:
             r_home = r_home_default
 
