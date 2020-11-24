@@ -34,7 +34,8 @@ dataf.colnames
 ```python
 stats = importr('stats')
 base = importr('base')
-stats.lm('elevation_m ~ latd + longd', data=dataf)
+fit = stats.lm('elevation_m ~ latd + longd', data=dataf)
+fit
 ```
 
 # Graphics

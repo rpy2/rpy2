@@ -17,7 +17,7 @@ def test_init_invalid():
 def test_init():
     m = rinterface.globalenv.find('matrix')(1, nrow=5, ncol=3)
     a = robjects.vectors.FloatArray(m)
-    assert tuple(a.rclass) == ('matrix', )
+    assert tuple(a.rclass) == ('matrix', 'array')
 
 
 def test_dim():

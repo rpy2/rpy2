@@ -2,6 +2,7 @@
 
 import abc
 import collections.abc
+from collections import OrderedDict
 import enum
 import typing
 from rpy2.rinterface_lib import embedded
@@ -752,6 +753,25 @@ class StrSexpVector(SexpVector):
         )
 
 
+class RVersion(metaclass=Singleton):
+
+    _version = None
+
+    def __init__(self):
+        assert embedded.isinitialized()
+        robj = StrSexpVector(['R.version'])
+        with memorymanagement.rmemory() as rmemory:
+            parsed = _rinterface._parse(robj.__sexp__._cdata, 1, rmemory)
+        res = baseenv['eval'](parsed)
+        self._version = OrderedDict((k, v[0]) for k, v in zip(res.names, res))
+
+    def __getitem__(self, k):
+        return self._version[k]
+
+    def keys(self):
+        return self._version.keys()
+
+
 _TYPE2STR = {
     RTYPES.NILSXP: 'NULL',
     RTYPES.SYMSXP: 'symbol',  # alias: name
@@ -799,33 +819,39 @@ def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
             ndim = rlib.Rf_length(dim)
             if ndim > 0:
                 if ndim == 2:
-                    classname = 'matrix'
+                    if int(RVersion()['major']) >= 4:
+                        classname = ('matrix', 'array')
+                    else:
+                        classname = ('matrix', )
                 else:
-                    classname = 'array'
+                    classname = ('array', )
             else:
                 typeof = RTYPES(scaps.typeof)
                 if typeof in (RTYPES.CLOSXP,
                               RTYPES.SPECIALSXP,
                               RTYPES.BUILTINSXP):
-                    classname = 'function'
+                    classname = ('function', )
                 elif typeof == RTYPES.REALSXP:
-                    classname = 'numeric'
+                    classname = ('numeric', )
                 elif typeof == RTYPES.SYMSXP:
-                    classname = 'name'
+                    classname = ('name', )
                 elif typeof == RTYPES.LANGSXP:
                     symb = rlib.CAR(scaps._cdata)
-                    symb_rstr = openrlib.rlib.PRINTNAME(symb)
-                    symb_str = conversion._cchar_to_str(
-                        openrlib.rlib.R_CHAR(symb_rstr)
-                    )
-                    if symb_str in ('if', 'while', 'for', '=', '<-', '(', '{'):
-                        classname = symb_str
+                    if openrlib.rlib.Rf_isSymbol(symb):
+                        symb_rstr = openrlib.rlib.PRINTNAME(symb)
+                        symb_str = conversion._cchar_to_str(
+                            openrlib.rlib.R_CHAR(symb_rstr)
+                        )
+                        if symb_str in ('if', 'while', 'for', '=',
+                                        '<-', '(', '{'):
+                            classname = (symb_str, )
+                        else:
+                            classname = ('call', )
                     else:
-                        classname = 'call'
+                        classname = ('call', )
                 else:
-                    classname = _TYPE2STR.get(
-                        typeof, str(typeof))
-            classes = StrSexpVector.from_iterable([classname])
+                    classname = (_TYPE2STR.get(typeof, str(typeof)), )
+            classes = StrSexpVector.from_iterable(classname)
         else:
             classes = conversion._cdata_to_rinterface(classes)
     return classes
