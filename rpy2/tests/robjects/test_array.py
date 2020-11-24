@@ -17,7 +17,7 @@ def test_init_invalid():
 def test_init():
     m = rinterface.globalenv.find('matrix')(1, nrow=5, ncol=3)
     a = robjects.vectors.FloatArray(m)
-    if int(rinterface.sexp.Rversion()['major']) >= 4:
+    if int(rinterface.sexp.RVersion()['major']) >= 4:
         expected = ('matrix', 'array')
     else:
         expected = ('matrix', )
