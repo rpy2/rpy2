@@ -2,6 +2,11 @@
 DataFrames and dplyr
 ********************
 
+.. index::
+   pair: robjects; dplyr
+
+.. _robjects-lib-dplyr:
+
 dplyr
 =====
 
@@ -14,6 +19,8 @@ dplyr
 
 .. include:: generated_rst/dplyr.rst
 
+
+.. _robjects-lib-tidyr:
 
 tidyr
 =====
