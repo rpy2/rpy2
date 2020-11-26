@@ -25,16 +25,5 @@ to Python notebooks.
 
    .. _jupyter.ipynb: _static/notebooks/jupyter.ipynb
    .. _jupyter.html: _static/notebooks/jupyter.html
-
-   In addition to this, parts of the `rpy2` documentation are themselves
-   based on jupyter notebooks. Check them out:
-
-   .. toctree::
-      :maxdepth: 2
-
-      pandas
-      lib_dplyr
-
-
    
 .. include:: jupyter.rst
