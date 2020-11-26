@@ -127,13 +127,7 @@ class Aes(robjects.ListVector):
 
     @classmethod
     def new(cls, **kwargs):
-        """Constructor for the class Aes."""
-        new_kwargs = copy.copy(kwargs)
-        for k, v in kwargs.items():
-            new_kwargs[k] = rlang.parse_quo(
-                v, env=robjects.baseenv['sys.frame']()
-            )
-        res = cls(cls._constructor(**new_kwargs))
+        res = cls(cls._constructor(**kwargs))
         return res
 
 
