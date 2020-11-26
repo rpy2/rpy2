@@ -79,9 +79,9 @@ class LangVector(RObject, ri.LangSexpVector):
         This creates an unevaluated R language object.
 
         Args:
-            s: a string containing (only) R code.
+            s: R source code in a string.
 
         Returns:
-            An instance of the class.
+            An instance of the class the method is from (e.g., LangVector)
         """
         return cls(_str2lang(s))
