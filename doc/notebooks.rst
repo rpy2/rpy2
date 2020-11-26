@@ -16,16 +16,8 @@ For example `Google's Colab`_,
 .. _`Azure Notebooks`: https://notebooks.azure.com/
 .. _`Google Cloud AI Platform Notebooks`: https://cloud.google.com/ai-platform-notebooks
 
-Part of the documentation is already also available as jupyter notebooks:
-
-.. toctree::
-   :maxdepth: 2
-
-   pandas
-   lib_dplyr
-
-
-However this section shows how specific rpy2 features are designed for notebooks.
+This section shows how `rpy2` can be used to add everything R can offer
+to Python notebooks.
 
 .. note::
 
@@ -34,4 +26,15 @@ However this section shows how specific rpy2 features are designed for notebooks
    .. _jupyter.ipynb: _static/notebooks/jupyter.ipynb
    .. _jupyter.html: _static/notebooks/jupyter.html
 
+   In addition to this, parts of the `rpy2` documentation are themselves
+   based on jupyter notebooks. Check them out:
+
+   .. toctree::
+      :maxdepth: 2
+
+      pandas
+      lib_dplyr
+
+
+   
 .. include:: generated_rst/jupyter.rst
