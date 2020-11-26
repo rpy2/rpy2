@@ -37,4 +37,4 @@ to Python notebooks.
 
 
    
-.. include:: generated_rst/jupyter.rst
+.. include:: jupyter.rst
