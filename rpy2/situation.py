@@ -13,6 +13,11 @@ import sys
 from typing import Optional
 import warnings
 
+if sys.maxsize > 2**32
+    r_version_folder = 'x64'
+else:
+    r_version_folder = 'i386'
+
 try:
     import rpy2  # noqa:F401
     has_rpy2 = True
@@ -122,9 +127,9 @@ def get_rlib_path(r_home: str, system: str) -> str:
         # i386
         os.environ['PATH'] = ''.join(
             (os.environ['PATH'],
-             os.path.join(r_home, 'bin', 'x64'))
+             os.path.join(r_home, 'bin', r_version_folder))
         )
-        lib_path = os.path.join(r_home, 'bin', 'x64', 'R.dll')
+        lib_path = os.path.join(r_home, 'bin', r_version_folder, 'R.dll')
     else:
         raise ValueError(
             'The system {system} is currently not supported.'
