@@ -93,7 +93,7 @@ _notebooks_html: $(MD_NOTEBOOKS:%=_static/notebooks/%.html)
 _notebooks_rst: $(MD_NOTEBOOKS:%=notebooks/%.rst)
 
 _notebooks_parents:
-	cp -u notebooks/notebooks.rst generated_rst/
+	cp -u generated_wrapper_rst/notebooks.rst generated_rst/
 
 notebooks: _ensure_notebooks_dir _notebooks _notebooks_html _notebooks_rst _notebooks_parents
 

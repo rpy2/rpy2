@@ -186,10 +186,10 @@ We can just use it in subsequent cells.
 cat("Running an R code cell.\n")
 
 p <- ggplot(dataf) +
-     aes(x=rl('longd'),
-         y= rl('latd'),
-         color=rl('population_total'),
-         size=rl('area_total_km2')) +
+     aes(x=longd,
+         y=latd,
+         color=population_total,
+         size=area_total_km2) +
      geom_point(alpha=0.5) +
      scale_x_continuous('Longitude') +
      scale_y_continuous('Latitude') +
