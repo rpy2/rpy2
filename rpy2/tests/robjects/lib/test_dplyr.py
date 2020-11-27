@@ -1,5 +1,6 @@
 import pytest
 from rpy2.robjects import packages
+from rpy2.robjects import rl
 
 try:
     from rpy2.robjects.lib import dplyr
@@ -33,21 +34,34 @@ class TestDplyr(object):
     def test_filter_onefilter_method(self):
         dataf = dplyr.DataFrame(mtcars)
         ngear_gt_3 = len(tuple(x for x in dataf.rx2('gear') if x > 3))
-        dataf_filter = dataf.filter('gear > 3')        
+        dataf_filter = dataf.filter(rl('gear > 3'))
         assert ngear_gt_3 == dataf_filter.nrow
 
     def test_filter_onefilter_function(self):
         dataf = dplyr.DataFrame(mtcars)
         ngear_gt_3 = len(tuple(x for x in dataf.rx2('gear') if x > 3))
-        dataf_filter = dplyr.filter(dataf, 'gear > 3')        
+        dataf_filter = dplyr.filter(dataf, rl('gear > 3'))
         assert ngear_gt_3 == dataf_filter.nrow
+
+    def test_group_by(self):
+        dataf_a = dplyr.DataFrame(mtcars)
+        dataf_g = dataf_a.group_by(rl('gear'))
 
     def test_splitmerge_function(self):
         dataf = dplyr.DataFrame(mtcars)
-        dataf_by_gear = dataf.group_by('gear')
-        dataf_sum_gear = dataf_by_gear.summarize(foo='sum(gear)')
-        assert type(dataf_sum_gear) is dplyr.DataFrame
-    
+        dataf_by_gear = dataf.group_by(rl('gear'))
+        dataf_avg_mpg = dataf_by_gear.summarize(foo=rl('mean(mpg)'))
+        assert isinstance(dataf_avg_mpg, dplyr.DataFrame)
+
+    def test_mutate(self):
+        dataf_a = dplyr.DataFrame(mtcars)
+        dataf_b = dataf_a.mutate(foo=1, bar=rl('gear+1'))
+        assert type(dataf_b) is dplyr.DataFrame
+        assert all(a == b for a, b in zip(dataf_a.rx2('gear'),
+                                          dataf_b.rx2('gear')))
+        assert all(a+1 == b for a, b in zip(dataf_a.rx2('gear'),
+                                            dataf_b.rx2('bar')))
+        
     def test_join(self):
         dataf_a = dplyr.DataFrame(mtcars)
         dataf_b = dataf_a.mutate(foo=1)
@@ -66,7 +80,7 @@ class TestDplyr(object):
         
     def test_arrange(self):
         dataf = dplyr.DataFrame(mtcars)
-        dataf_arrange = dataf.arrange('mpg')
+        dataf_arrange = dataf.arrange(rl('mpg'))
         assert tuple(sorted(dataf.collect().rx2('mpg'))) == \
             tuple(dataf_arrange.collect().rx2('mpg'))
 

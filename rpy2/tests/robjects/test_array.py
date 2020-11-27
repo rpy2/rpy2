@@ -17,7 +17,11 @@ def test_init_invalid():
 def test_init():
     m = rinterface.globalenv.find('matrix')(1, nrow=5, ncol=3)
     a = robjects.vectors.FloatArray(m)
-    assert tuple(a.rclass) == ('matrix', )
+    if int(rinterface.sexp.RVersion()['major']) >= 4:
+        expected = ('matrix', 'array')
+    else:
+        expected = ('matrix', )
+    assert tuple(a.rclass) == expected
 
 
 def test_dim():

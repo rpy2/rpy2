@@ -173,6 +173,9 @@ def rpy2py_list(obj):
 def rpy2py_sexp(obj):
     if (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
         res = numpy.array(obj)
+        # Special case for R string arrays.
+        if obj.typeof is rinterface.RTYPES.STRSXP:
+            res[res == rinterface.NA_Character] = None
     else:
         res = ro.default_converter.rpy2py(obj)
     return res

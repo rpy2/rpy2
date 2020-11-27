@@ -1,6 +1,14 @@
 Release 3.4.0
 =============
 
+New Features
+------------
+
+- The mapping of the R C API now includes `Rf_isSymbol()`.
+
+- Singleton class :class:`rpy2.rinterface_lib.sexp.RVersion` to report
+  the R version for the embedded R.
+
 Changes
 -------
 
@@ -23,6 +31,9 @@ Changes
 - :meth:`rpy2.robjects.lib.ggplot2.vars` to map the R function
   `ggplot2::vars` (issue #742).
 
+- Report correctly the class of R matrix objects with R>=4.0: it is
+  now `('matrix', 'array')`. With R<4.0 `('matrix')` is still reported.
+
 Bugs fixed
 ----------
 
@@ -41,6 +52,13 @@ Bugs fixed
 - :mod:`rpy2.sitation` is now working when the environment variable
   `R_HOME` is set even though R is not in the `PATH` or in the Windows
   registry (issue #744).
+
+- Handling an R language objects could result in a segfault when its
+  R class was queried (issue #749).
+
+- The conversion of R string arrays to `numpy` arrays was leaving
+  R's `NA` value as R NA objects. NAs in this type of arrays are now
+  turned to `None` in the resulting `numpy` array (issue #751).
 
 
 Release 3.3.6
