@@ -53,8 +53,13 @@ Bugs fixed
   `R_HOME` is set even though R is not in the `PATH` or in the Windows
   registry (issue #744).
 
-- Handling an R language objects could result in a segfault when it
+- Handling an R language objects could result in a segfault when its
   R class was queried (issue #749).
+
+- The conversion of R string arrays to `numpy` arrays was leaving
+  R's `NA` value as R NA objects. NAs in this type of arrays are now
+  turned to `None` in the resulting `numpy` array (issue #751).
+
 
 Release 3.3.6
 =============

@@ -3,11 +3,13 @@ Using rpy2 in notebooks
 ***********************
 
 `rpy2` is designed to play well with notebooks. While the target
-notebook is jupyter, it used in other notebook systems (some of
+notebook is jupyter, it is used in other notebook systems (some of
 them are based on `Jupyter`_, or are managed Jupyter notebook systems).
-For example `Google's Colab`_,
+
+rpy2 is working, and is sometimes available by default, with
+`Google's Colab`_,
 `Databricks notebooks`_, `AWS SageMaker`_, `Azure Notebooks`_,
-`Google Cloud AI Platform Notebooks`_, or Coursera Notebooks.
+or `Google Cloud AI Platform Notebooks`_.
 
 .. _`Jupyter`: https://jupyter.org/
 .. _`Google's Colab`: https://research.google.com/colaboratory/faq.html
