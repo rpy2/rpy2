@@ -1,4 +1,5 @@
 import atexit
+import contextlib
 import os
 import math
 import signal
@@ -32,6 +33,50 @@ if os.name == 'nt':
 R_NilValue = openrlib.rlib.R_NilValue
 
 endr = embedded.endr
+
+_evaluation_context = globalenv
+
+
+def get_evaluation_context() -> SexpEnvironment:
+    """Get the frame (environment) in which R code is currently evaluated."""
+    return _evaluation_context
+
+
+@contextlib.contextmanager
+def local_context(
+        env: typing.Optional[SexpEnvironment] = None,
+        use_rlock: bool = True
+) -> typing.Iterator[SexpEnvironment]:
+    """Local context for the evaluation of R code.
+
+    Args:
+    - env: an environment to use as a context. If not specified (None, the
+      default), a child environment to the current context is created.
+    - use_rlock: whether to use a threading lock (see the documentation about
+      "rlock". The default is True.
+
+    Returns:
+    Yield the environment (passed to env, or created).
+    """
+
+    global _evaluation_context
+
+    parent_frame = _evaluation_context
+    if env is None:
+        env = baseenv['new.env'](
+            baseenv['parent.frame']()
+                    if parent_frame is None
+                    else parent_frame)
+    try:
+        if use_rlock:
+            with openrlib.rlock:
+                _evaluation_context = env
+                yield env
+        else:
+            _evaluation_context = env
+            yield env
+    finally:
+        _evaluation_context = parent_frame
 
 
 def _sigint_handler(sig, frame):
@@ -166,7 +211,7 @@ class SexpPromise(Sexp):
         :param:`env` The environment in which to evaluate the
           promise.
         """
-        if not env:
+        if env is None:
             env = globalenv
         return openrlib.rlib.Rf_eval(self.__sexp__._cdata, env)
 
@@ -620,30 +665,36 @@ class SexpClosure(Sexp):
             call_r = rmemory.protect(
                 _rinterface.build_rcall(self.__sexp__._cdata, args,
                                         kwargs.items()))
+            call_context = _evaluation_context
             res = rmemory.protect(
                 openrlib.rlib.R_tryEval(
                     call_r,
-                    globalenv.__sexp__._cdata,
-                    error_occured))
+                    call_context.__sexp__._cdata,
+                    error_occured)
+            )
             if error_occured[0]:
                 raise embedded.RRuntimeError(_rinterface._geterrmessage())
         return res
 
     @_cdata_res_to_rinterface
-    def rcall(self, keyvals, environment: SexpEnvironment):
+    def rcall(self, keyvals,
+              environment: typing.Optional[SexpEnvironment] = None):
         """Call/evaluate an R function.
 
         Args:
         - keyvals: a sequence of key/value (name/parameter) pairs. A
-            name/parameter that is None will indicated an unnamed parameter.
-            Like in R, keys/names do not have to be unique, partial matching
-            can be used, and named/unnamed parameters can occur at any position
-            in the sequence.
-        - environment: a R environment in which to evaluate the function.
+          name/parameter that is None will indicated an unnamed parameter.
+          Like in R, keys/names do not have to be unique, partial matching
+          can be used, and named/unnamed parameters can occur at any position
+          in the sequence.
+        - environment: an optional R environment to evaluate the function.
         """
         # TODO: check keyvals are pairs ?
+        if environment is None:
+            environment = _evaluation_context
         assert isinstance(environment, SexpEnvironment)
         error_occured = _rinterface.ffi.new('int *', 0)
+
         with memorymanagement.rmemory() as rmemory:
             call_r = rmemory.protect(
                 _rinterface.build_rcall(self.__sexp__._cdata, [],
