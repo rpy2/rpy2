@@ -65,8 +65,8 @@ def local_context(
     if env is None:
         env = baseenv['new.env'](
             baseenv['parent.frame']()
-                    if parent_frame is None
-                    else parent_frame)
+            if parent_frame is None
+            else parent_frame)
     try:
         if use_rlock:
             with openrlib.rlock:
