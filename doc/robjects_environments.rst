@@ -57,7 +57,7 @@ An environment is also iter-able, returning all the symbols
 Environments as (temporary) local contexts
 ------------------------------------------
 
-Environments are like nested boxed, each with an arbritrary number of
+Environments are like nested boxes, each with an arbritrary number of
 symbols (the objects names) bound to objects (the actual code or data
 associated with the symbol). The topmost environment is `globalenv`
 (`.GlobalEnv` in R).
