@@ -95,7 +95,7 @@ However, we could also an other environment.
 
 There as several mechanisms to do that, and one them is to use
 :func:`rpy2.robjects.environments.local_context` (also available
-as `:func:`rpy2.robjects.local_context`). It provides an easy way to
+as :func:`rpy2.robjects.local_context`). It provides an easy way to
 temporarily set evaluation contexts.
 
 .. code-block:: python
