@@ -157,7 +157,7 @@ def _initr(
         if _c_stack_limit:
             rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
 
-        return status
+    return status
 
 
 def endr(fatal: int) -> None:
