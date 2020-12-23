@@ -13,7 +13,7 @@ import sys
 from typing import Optional
 import warnings
 
-if sys.maxsize > 2**32
+if sys.maxsize > 2**32:
     r_version_folder = 'x64'
 else:
     r_version_folder = 'i386'
