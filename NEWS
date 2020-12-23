@@ -66,6 +66,9 @@ Bugs fixed
 - `rpy2.situation.get_rlib_path()` was returning an environment variable
   with an invalid separator on Windows (mentioned in issue 754).
 
+- Extracting documentation pages for R objects in packages could
+  generate spurious warnings when several "section" tags are present.
+
 
 Release 3.3.6
 =============

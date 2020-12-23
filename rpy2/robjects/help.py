@@ -29,7 +29,7 @@ del(tmp_minor)
 
 _eval = rinterface.baseenv['eval']
 
-NON_UNIQUE_TAGS = set(('\\alias', '\\keyword'))
+NON_UNIQUE_TAGS = set((r'\alias', r'\keyword', r'\section'))
 
 
 def quiet_require(name: str, lib_loc: typing.Optional[str] = None) -> bool:
@@ -178,7 +178,7 @@ class Page(object):
         for elt_i in range(len(struct_rdb)):
             elt = rinterface.baseenv['['](struct_rdb, elt_i+1)
             rd_tag = elt[0].do_slot("Rd_tag")[0]
-            if rd_tag == '\\section':
+            if rd_tag == r'\section':
                 rd_section = rd_tag[0][2:]
             if rd_tag in sections and rd_tag not in NON_UNIQUE_TAGS:
                 warnings.warn('Section of the R doc duplicated: %s' % rd_tag)
@@ -198,7 +198,7 @@ class Page(object):
 
     def arguments(self) -> typing.List[Item]:
         """ Get the arguments and descriptions as a list of Item objects. """
-        section_doc = self._sections.get('\\arguments')
+        section_doc = self._sections.get(r'\arguments')
         res = list()
         if section_doc is None:
             return res
@@ -240,23 +240,23 @@ class Page(object):
 
     def description(self) -> str:
         """ Get the description of the entry """
-        return self._get_section('\\description')
+        return self._get_section(r'\description')
 
     def title(self) -> str:
         """ Get the title """
-        return self._get_section('\\title')
+        return self._get_section(r'\title')
 
     def value(self) -> str:
         """ Get the value returned """
-        return self._get_section('\\value')
+        return self._get_section(r'\value')
 
     def seealso(self) -> str:
         """ Get the other documentation entries recommended """
-        return self._get_section('\\seealso')
+        return self._get_section(r'\seealso')
 
     def usage(self) -> str:
         """ Get the usage for the object """
-        return self._get_section('\\usage')
+        return self._get_section(r'\usage')
 
     def iteritems(self):
         """ iterator through the sections names and content
@@ -416,8 +416,8 @@ def pages(topic):
 
 
 def docstring(package: Package, alias: str,
-              sections: typing.Tuple[str, ...] = ('\\usage',
-                                                  '\\arguments')
+              sections: typing.Tuple[str, ...] = (r'\usage',
+                                                  r'\arguments')
 ) -> str:
     """Fetch the R documentation for an alias in a package."""
     if not isinstance(package, Package):
