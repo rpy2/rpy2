@@ -125,7 +125,7 @@ def get_rlib_path(r_home: str, system: str) -> str:
         lib_path = os.path.join(r_home, 'lib', 'libR.dylib')
     elif system == 'Windows':
         # i386
-        os.environ['PATH'] = ''.join(
+        os.environ['PATH'] = os.pathjoin.join(
             (os.environ['PATH'],
              os.path.join(r_home, 'bin', r_version_folder))
         )
