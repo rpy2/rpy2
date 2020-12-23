@@ -840,7 +840,8 @@ def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
                         symb_rstr = openrlib.rlib.PRINTNAME(symb)
                         symb_str = conversion._cchar_to_str(
                             openrlib.rlib.R_CHAR(symb_rstr),
-                            conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(symb_rstr)]
+                            conversion._R_ENC_PY[openrlib.rlib
+                                                 .Rf_getCharCE(symb_rstr)]
                         )
                         if symb_str in ('if', 'while', 'for', '=',
                                         '<-', '(', '{'):
