@@ -207,6 +207,11 @@ than it think. Just be warned.)
 R's NAMED
 ^^^^^^^^^
 
+.. warning::
+
+   Starting with version 4.0, R not longer uses `NAMED` to keep track of whether
+   an R object can be collected. It is now using a reference-counting system.
+
 Whenever the pass-by-value paradigm is applied stricly,
 garbage collection is straightforward as objects only live within
 the scope they are declared, but R is using a slight modification

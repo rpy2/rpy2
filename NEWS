@@ -9,6 +9,12 @@ New Features
 - Singleton class :class:`rpy2.rinterface_lib.sexp.RVersion` to report
   the R version for the embedded R.
 
+- :func:`rpy2.rinterface.local_context` to create a context manager
+  to evaluate R code within a local environment.
+
+- The `staticmethod` :meth:`rpy2.robjects.vectors.DateVector.isrinstance`
+  will tell whether an R objects is an R `Date` array.
+
 Changes
 -------
 
@@ -53,8 +59,23 @@ Bugs fixed
   `R_HOME` is set even though R is not in the `PATH` or in the Windows
   registry (issue #744).
 
-- Handling an R language objects could result in a segfault when it
+- Handling an R language objects could result in a segfault when its
   R class was queried (issue #749).
+
+- The conversion of R string arrays to `numpy` arrays was leaving
+  R's `NA` value as R NA objects. NAs in this type of arrays are now
+  turned to `None` in the resulting `numpy` array (issue #751).
+
+- `rpy2.situation.get_rlib_path()` was returning an environment variable
+  with an invalid separator on Windows (mentioned in issue 754).
+
+- Extracting documentation pages for R objects in packages could
+  generate spurious warnings when several "section" tags are present.
+
+- R `Date` arrays/vectors were not wrapped into
+  :class:`rpy2.robjects.vectors.DateVector` objects but left as
+  R arrays of floats (which they are at the C level).
+
 
 Release 3.3.6
 =============

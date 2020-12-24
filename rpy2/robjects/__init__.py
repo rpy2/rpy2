@@ -18,7 +18,8 @@ import rpy2.rlike.container as rlc
 
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.robjects.functions
-from rpy2.robjects.environments import Environment
+from rpy2.robjects.environments import (Environment,
+                                        local_context)
 from rpy2.robjects.methods import methods_env
 from rpy2.robjects.methods import RS4
 
@@ -117,6 +118,8 @@ def sexpvector_to_ro(obj):
     elif obj.typeof == rinterface.RTYPES.REALSXP:
         if vectors.POSIXct.isrinstance(obj):
             cls = vectors.POSIXct
+        elif vectors.DateVector.isrinstance(obj):
+            cls = vectors.DateVector
         else:
             cls = _vector_matrix_array(obj, vectors.FloatVector,
                                        vectors.FloatMatrix, vectors.FloatArray)

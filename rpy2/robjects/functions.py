@@ -136,10 +136,11 @@ class Function(RObjectMixin, rinterface.SexpClosure):
 
     def rcall(self,
               keyvals,
-              environment: rinterface.SexpEnvironment) -> rinterface.sexp.Sexp:
+              environment: typing.Optional[rinterface.SexpEnvironment] = None
+    ) -> rinterface.sexp.Sexp:
         """ Wrapper around the parent method
         rpy2.rinterface.SexpClosure.rcall(). """
-        res = super(Function, self).rcall(keyvals, environment)
+        res = super(Function, self).rcall(keyvals, environment=environment)
         return res
 
 
@@ -420,7 +421,7 @@ def wrap_r_function(
                         list(args[r_ellipsis]) +
                         list((None, x) for x in args[min(r_ellipsis+1, len(args)-1):]) +
                         list(kwargs.items()))
-            value = r_func.rcall(new_args, rinterface.globalenv)
+            value = r_func.rcall(new_args)
             return value
     else:
         def wrapped_func(*args, **kwargs):

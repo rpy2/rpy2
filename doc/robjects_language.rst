@@ -26,7 +26,7 @@ the context of the data frame `data`. At the moment of the call `x > 0` is
 otherwise only an unevaluated language object.
 
 In rpy2, the class :class:`rpy2.robjects.language.LangVector` represents such objects.
-The constructor that builds them from strings is :meth:`rpy2.language.LangVector.from_string`,
+The constructor that builds them from strings is :meth:`rpy2.robjects.language.LangVector.from_string`,
 and is otherwise aliased as :func:`rpy2.robjects.rl`
 
 Should you find yourself unsure about how to represent a particular R idiom in Python,

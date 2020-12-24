@@ -103,7 +103,7 @@ def numpy2rpy(o):
         for field_name in o.dtype.names:
             df_args.append((field_name,
                             conversion.py2rpy(o[field_name])))
-        res = ro.baseenv["data.frame"].rcall(tuple(df_args), ro.globalenv)
+        res = ro.baseenv["data.frame"].rcall(tuple(df_args))
     # It should be impossible to get here:
     else:
         raise ValueError('Unknown numpy array type "%s".' % str(o.dtype))
@@ -173,6 +173,9 @@ def rpy2py_list(obj):
 def rpy2py_sexp(obj):
     if (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
         res = numpy.array(obj)
+        # Special case for R string arrays.
+        if obj.typeof is rinterface.RTYPES.STRSXP:
+            res[res == rinterface.NA_Character] = None
     else:
         res = ro.default_converter.rpy2py(obj)
     return res

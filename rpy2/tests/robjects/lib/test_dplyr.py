@@ -61,11 +61,14 @@ class TestDplyr(object):
                                           dataf_b.rx2('gear')))
         assert all(a+1 == b for a, b in zip(dataf_a.rx2('gear'),
                                             dataf_b.rx2('bar')))
-        
-    def test_join(self):
+
+    @pytest.mark.parametrize('join_method',
+                             ('inner_join', 'left_join', 'right_join',
+                              'full_join'))
+    def test_join(self, join_method):
         dataf_a = dplyr.DataFrame(mtcars)
         dataf_b = dataf_a.mutate(foo=1)
-        dataf_c = dataf_a.inner_join(dataf_b, by=dataf_a.colnames)
+        dataf_c = getattr(dataf_a, join_method)(dataf_b, by=dataf_a.colnames)
         all_names = list(dataf_a.colnames)
         all_names.append('foo')
         assert sorted(list(all_names)) == sorted(list(dataf_c.colnames))

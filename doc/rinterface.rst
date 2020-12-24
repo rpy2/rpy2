@@ -117,7 +117,8 @@ Those two objects could be accessed from Python using their names.
 
    hyp <- function(x, y) sqrt(x^2 + y^2)
 
-Two environments are provided as :class:`rpy2.rinterface.SexpEnvironment`
+By default R starts with two environments: `baseenv` and `globalenv`.
+Both are instances of class :class:`rpy2.rinterface.SexpEnvironment` in rpy2.
 
 .. index::
    single: globalenv
@@ -125,7 +126,7 @@ Two environments are provided as :class:`rpy2.rinterface.SexpEnvironment`
 
 .. rubric:: globalenv
 
-The global environment can be seen as the root (or topmost) environment,
+The global environment (`globalenv`) can be seen as the root (or topmost) environment,
 and is in fact a list, that is a sequence, of environments.
 
 When an R library (package in R's terminology) is loaded,
@@ -140,7 +141,7 @@ The library is said to be attached to the current search path.
 
 .. rubric:: baseenv
 
-The base package has a namespace, that can be accessed as an environment.
+The base package has a namespace (`baseenv`), that can be accessed as an environment.
 
 .. note::
    
