@@ -12,6 +12,9 @@ New Features
 - :func:`rpy2.rinterface.local_context` to create a context manager
   to evaluate R code within a local environment.
 
+- The `staticmethod` :meth:`rpy2.robjects.vectors.DateVector.isrinstance`
+  will tell whether an R objects is an R `Date` array.
+
 Changes
 -------
 
@@ -68,6 +71,10 @@ Bugs fixed
 
 - Extracting documentation pages for R objects in packages could
   generate spurious warnings when several "section" tags are present.
+
+- R `Date` arrays/vectors were not wrapped into
+  :class:`rpy2.robjects.vectors.DateVector` objects but left as
+  R arrays of floats (which they are at the C level).
 
 
 Release 3.3.6
