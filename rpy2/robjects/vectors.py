@@ -854,6 +854,11 @@ class DateVector(FloatVector):
     def sexp_from_date(cls, seq):
         return cls(FloatVector([x.toordinal() for x in seq]))
 
+    @staticmethod
+    def isrinstance(obj) -> bool:
+        """Return whether an R object an instance of Date."""
+        return obj.rclass[-1] == 'Date'
+
 
 class POSIXct(POSIXt, FloatVector):
     """ Representation of dates as seconds since Epoch.
