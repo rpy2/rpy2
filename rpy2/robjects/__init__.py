@@ -118,6 +118,8 @@ def sexpvector_to_ro(obj):
     elif obj.typeof == rinterface.RTYPES.REALSXP:
         if vectors.POSIXct.isrinstance(obj):
             cls = vectors.POSIXct
+        elif vectors.DateVector.isrinstance(obj):
+            cls = vectors.DateVector
         else:
             cls = _vector_matrix_array(obj, vectors.FloatVector,
                                        vectors.FloatMatrix, vectors.FloatArray)
