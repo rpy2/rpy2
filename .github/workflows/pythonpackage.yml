@@ -10,7 +10,7 @@ jobs:
       max-parallel: 4
       matrix:
         python-version: [3.6, 3.7, 3.8]
-        r-version: [3.6, 4.0]
+        r-version: [3.6, release]
         os: [ubuntu-latest, ubuntu-20.04, macOS-latest]
         experimental: [false]
         venv_activate: ["source pyenv_base/bin/activate"]
@@ -18,7 +18,7 @@ jobs:
         include:
           - os: windows-latest
             experimental: true
-            r-version: 4.0
+            r-version: release
             python-version: 3.7
             venv_activate: ""
             ld_libpath: ""
@@ -92,7 +92,7 @@ jobs:
         bash -e ./scripts/run_test_rdeps.sh
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
-      if: matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.8' && matrix.r-version == '4.0'
+      if: matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.8' && matrix.r-version == 'release'
       env:
         OS: ${{ runner.os }}
         PYTHON: ${{ matrix.python-version }}
