@@ -9,22 +9,25 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-        r-version: [3.6, release]
-        os: [ubuntu-latest, ubuntu-20.04, macOS-latest]
-        experimental: [false]
-        venv_activate: ["source pyenv_base/bin/activate"]
-        ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"]
-        include:
-          - os: windows-latest
-            experimental: true
-            r-version: release
-            python-version: 3.7
-            venv_activate: ""
-            ld_libpath: ""
-        exclude:
-          - os: windows-latest
-            python-version: 3.8
+        config:
+	- {os: ubuntu-20.04, python-version: 3.6, r: 'release', venv_activate: ["source pyenv_base/bin/activate"],\
+           ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"],\
+           rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", experimental: false}
+	- {os: ubuntu-20.04, python-version: 3.7, r: 'release', venv_activate: ["source pyenv_base/bin/activate"],\
+           ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"],\
+           rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", experimental: false}
+	- {os: ubuntu-20.04, python-version: 3.8, r: 'release', venv_activate: ["source pyenv_base/bin/activate"],\
+           ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"],\
+           rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", experimental: false}
+	- {os: maxOS-latest, python-version: 3.6, r: 'release', venv_activate: ["source pyenv_base/bin/activate"],\
+           ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"],\
+           experimental: false}
+        - {os: maxOS-latest, python-version: 3.8, r: 'release', venv_activate: ["source pyenv_base/bin/activate"],\
+           ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"],\
+           experimental: false}
+        - {os: windows-latest, python-version: 3.7, r: 'release', venv_activate: "",\
+           "",\
+           experimental: true}
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
