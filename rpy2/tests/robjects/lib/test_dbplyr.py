@@ -1,19 +1,18 @@
 import pytest
-from rpy2.robjects.packages import PackageNotInstalledError
+from rpy2.robjects import packages
 
-has_dplyr = None
+has_dbplyr = None
 try:
     from rpy2.robjects.lib import dbplyr
     has_dbplyr = True
     msg = ''
-except PackageNotInstalledError as error:
+except packages.PackageNotInstalledError as error:
     has_dbplyr = False
     msg = str(error)
 
 
-@pytest.mark.skipif(not has_dplyr,
+@pytest.mark.skipif(not has_dbplyr,
                     reason=msg)
-@pytest.mark.lib_dbplyr
 class TestDplyr(object):
 
     def test_sql(self):

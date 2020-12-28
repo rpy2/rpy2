@@ -35,6 +35,12 @@ def test_mapperR2Python_lang():
     assert isinstance(ob, robjects.language.LangVector)
 
 
+def test_mapperR2Python_Date():
+    sexp = rinterface.baseenv.find('as.Date')('2020-01-01')
+    assert isinstance(robjects.default_converter.rpy2py(sexp), 
+                      robjects.vectors.DateVector)
+
+
 def test_NameClassMap():
     ncm = robjects.conversion.NameClassMap(object)
     classnames = ('A', 'B')
@@ -50,9 +56,11 @@ def test_NameClassMap():
 
 def test_NameClassMapContext():
     ncm = robjects.conversion.NameClassMap(object)
+    assert not len(ncm._map)
     with robjects.conversion.NameClassMapContext(ncm, {}):
         assert not len(ncm._map)
     assert not len(ncm._map)
+    
     with robjects.conversion.NameClassMapContext(ncm, {'A': list}):
         assert set(ncm._map.keys()) == set('A')
     assert not len(ncm._map)

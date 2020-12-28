@@ -1,4 +1,5 @@
 import enum
+import os
 
 
 class InterfaceType(enum.Enum):
@@ -57,9 +58,14 @@ _evaluate_in_r_def = SignatureDefinition('_evaluate_in_r',
 
 
 _consoleflush_def = SignatureDefinition('_consoleflush', 'void', ('void', ))
-_consoleread_def = SignatureDefinition('_consoleread', 'int',
-                                       ('char *', 'unsigned char *',
-                                        'int', 'int'))
+if os.name == 'nt':
+    _consoleread_def = SignatureDefinition('_consoleread', 'int',
+                                           ('char *', 'char *',
+                                            'int', 'int'))
+else:
+    _consoleread_def = SignatureDefinition('_consoleread', 'int',
+                                           ('char *', 'unsigned char *',
+                                            'int', 'int'))
 _consolereset_def = SignatureDefinition('_consolereset', 'void', ('void', ))
 _consolewrite_def = SignatureDefinition('_consolewrite', 'void',
                                         ('char *', 'int'))
@@ -85,3 +91,6 @@ _parsevector_wrap_def = SignatureDefinition('_parsevector_wrap',
 
 _handler_def = SignatureDefinition('_handler_wrap',
                                    'SEXP', ('SEXP cond', 'void *hdata'))
+
+_exec_findvar_in_frame_def = SignatureDefinition('_exec_findvar_in_frame',
+                                                 'void', ('void *data', ))

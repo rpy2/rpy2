@@ -13,6 +13,11 @@ import sys
 from typing import Optional
 import warnings
 
+if sys.maxsize > 2**32:
+    r_version_folder = 'x64'
+else:
+    r_version_folder = 'i386'
+
 try:
     import rpy2  # noqa:F401
     has_rpy2 = True
@@ -69,12 +74,13 @@ def r_home_from_subprocess() -> Optional[str]:
     return res
 
 
+# TODO: move all Windows all code into an os-specific module ?
 def r_home_from_registry() -> Optional[str]:
     """Return the R home directory from the Windows Registry."""
     try:
-        import winreg
+        import winreg  # type: ignore
     except ImportError:
-        import _winreg as winreg
+        import _winreg as winreg  # type: ignore
     try:
         hkey = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE,
                                 'Software\\R-core\\R',
@@ -94,35 +100,36 @@ def r_ld_library_path_from_subprocess(r_home: str) -> str:
            '-e',
            'cat(Sys.getenv("LD_LIBRARY_PATH"))')
     try:
-        r_lib_path = subprocess.check_output(cmd, universal_newlines=True)
+        r_lib_path = subprocess.check_output(cmd,
+                                             universal_newlines=True,
+                                             stderr=subprocess.PIPE)
     except Exception:  # FileNotFoundError, WindowsError, etc
         r_lib_path = ''
+    res = None
     ld_library_path = os.environ.get('LD_LIBRARY_PATH')
     if ld_library_path:
         pos = r_lib_path.find(ld_library_path)
-    else:
-        pos = None
-    if pos == -1 or not ld_library_path:
+        if pos != -1:
+            res = (r_lib_path[pos:(pos+len(ld_library_path))]
+                   .rstrip(os.pathsep))
+    if res is None:
         res = r_lib_path
-    else:
-        res = (r_lib_path[pos:(pos+len(ld_library_path))]
-               .rstrip(os.pathsep))
     return res
 
 
 def get_rlib_path(r_home: str, system: str) -> str:
     """Get the path for the R shared library."""
-    if system == 'Linux':
+    if system == 'FreeBSD' or system == 'Linux':
         lib_path = os.path.join(r_home, 'lib', 'libR.so')
     elif system == 'Darwin':
         lib_path = os.path.join(r_home, 'lib', 'libR.dylib')
     elif system == 'Windows':
         # i386
-        os.environ['PATH'] = ''.join(
+        os.environ['PATH'] = os.pathsep.join(
             (os.environ['PATH'],
-             os.path.join(r_home, 'bin', 'x64'))
+             os.path.join(r_home, 'bin', r_version_folder))
         )
-        lib_path = os.path.join(r_home, 'bin', 'x64', 'R.dll')
+        lib_path = os.path.join(r_home, 'bin', r_version_folder, 'R.dll')
     else:
         raise ValueError(
             'The system {system} is currently not supported.'
@@ -145,7 +152,7 @@ def get_r_home() -> Optional[str]:
 
     if not r_home:
         r_home = r_home_from_subprocess()
-    if not r_home and sys.platform == 'win32':
+    if not r_home and os.name == 'nt':
         r_home = r_home_from_registry()
     return r_home
 
@@ -251,13 +258,19 @@ class CExtensionOptions(object):
         self.extra_link_args.extend(unknown)
 
 
-def _make_bold(text):
+def _make_bold_unix(text):
     return '%s%s%s' % ('\033[1m', text, '\033[0m')
+
+
+def _make_bold_win32(text):
+    return text
 
 
 def iter_info():
 
-    yield _make_bold('rpy2 version:')
+    make_bold = _make_bold_win32 if os.name == 'nt' else _make_bold_unix
+
+    yield make_bold('rpy2 version:')
     if has_rpy2:
         # TODO: the repeated import is needed, without which Python (3.6)
         #   raises an UnboundLocalError (local variable reference before
@@ -267,22 +280,30 @@ def iter_info():
     else:
         yield 'rpy2 cannot be imported'
 
-    yield _make_bold('Python version:')
+    yield make_bold('Python version:')
     yield sys.version
     if not (sys.version_info[0] == 3 and sys.version_info[1] >= 5):
         yield '*** rpy2 is primarily designed for Python >= 3.5'
 
-    yield _make_bold("Looking for R's HOME:")
+    yield make_bold("Looking for R's HOME:")
 
     r_home = os.environ.get('R_HOME')
     yield '    Environment variable R_HOME: %s' % r_home
 
-    if sys.platform in ('win32', 'nt'):
+    r_home_default = None
+    if os.name == 'nt':
         r_home_default = r_home_from_registry()
-        yield '    InstallPath in the registry: %s' % r_home
+        yield '    InstallPath in the registry: %s' % r_home_default
+        r_user = os.environ.get('R_USER')
+        yield '    Environment variable R_USER: %s' % r_user
     else:
         r_home_default = r_home_from_subprocess()
-        yield '    Calling `R RHOME`: %s' % r_home
+        yield '    Calling `R RHOME`: %s' % r_home_default
+
+    yield (
+        '    Environment variable R_LIBS_USER: %s'
+        % os.environ.get('R_LIBS_USER')
+    )
 
     if r_home is not None and r_home_default is not None:
         if os.path.abspath(r_home) != r_home_default:
@@ -292,12 +313,13 @@ def iter_info():
         if r_home_default is None:
             yield ('    Warning: There is no R in the PATH and no '
                    'R_HOME defined.')
-            return
         else:
             r_home = r_home_default
 
-    yield _make_bold("R's additions to LD_LIBRARY_PATH:")
-    yield r_ld_library_path_from_subprocess(r_home)
+    # not applicable for Windows
+    if os.name != 'nt':
+        yield make_bold("R's additions to LD_LIBRARY_PATH:")
+        yield r_ld_library_path_from_subprocess(r_home)
 
     if has_rpy2:
         try:
@@ -310,32 +332,35 @@ def iter_info():
     else:
         rlib_status = '*** rpy2 is not installed'
 
-    yield _make_bold("R version:")
+    yield make_bold("R version:")
     yield '    In the PATH: %s' % r_version_from_subprocess()
     yield '    Loading R library from rpy2: %s' % rlib_status
 
     r_libs = os.environ.get('R_LIBS')
-    yield _make_bold('Additional directories to load R packages from:')
+    yield make_bold('Additional directories to load R packages from:')
     yield r_libs
 
-    yield _make_bold('C extension compilation:')
+    yield make_bold('C extension compilation:')
     c_ext = CExtensionOptions()
     if r_home is None:
-        yield ('  Warning: R cannot be found, so no compilation flags '
+        yield ('    Warning: R cannot be found, so no compilation flags '
                'can be extracted.')
     else:
-        c_ext.add_lib(*get_r_flags(r_home, '--ldflags'))
-        c_ext.add_include(*get_r_flags(r_home, '--cppflags'))
-    yield '  include:'
-    yield '  %s' % c_ext.include_dirs
-    yield '  libraries:'
-    yield '  %s' % c_ext.libraries
-    yield '  library_dirs:'
-    yield '  %s' % c_ext.library_dirs
-    yield '  extra_compile_args:'
-    yield '  %s' % c_ext.extra_compile_args
-    yield '  extra_link_args:'
-    yield '  %s' % c_ext.extra_link_args
+        try:
+            c_ext.add_lib(*get_r_flags(r_home, '--ldflags'))
+            c_ext.add_include(*get_r_flags(r_home, '--cppflags'))
+            yield '  include:'
+            yield '  %s' % c_ext.include_dirs
+            yield '  libraries:'
+            yield '  %s' % c_ext.libraries
+            yield '  library_dirs:'
+            yield '  %s' % c_ext.library_dirs
+            yield '  extra_compile_args:'
+            yield '  %s' % c_ext.extra_compile_args
+            yield '  extra_link_args:'
+            yield '  %s' % c_ext.extra_link_args
+        except subprocess.CalledProcessError:
+            yield ('    Warning: Unable to get R compilation flags.')
 
 
 if __name__ == '__main__':
@@ -356,4 +381,7 @@ if __name__ == '__main__':
             print(row)
     elif args.action == 'LD_LIBRARY_PATH':
         r_home = get_r_home()
+        if not r_home:
+            print('R cannot be found in the PATH and RHOME cannot be found.')
+            sys.exit(1)
         print(r_ld_library_path_from_subprocess(r_home))

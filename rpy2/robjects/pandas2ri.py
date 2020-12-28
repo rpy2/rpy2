@@ -3,31 +3,33 @@ between R objects handled by rpy2 and pandas objects."""
 
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
+from rpy2.rinterface_lib import na_values
 from rpy2.rinterface import (IntSexpVector,
                              ListSexpVector,
                              Sexp,
                              SexpVector,
                              StrSexpVector)
-
-from pandas.core.frame import DataFrame as PandasDataFrame
-from pandas.core.series import Series as PandasSeries
-from pandas.core.index import Index as PandasIndex
-from pandas.core.dtypes.api import is_datetime64_any_dtype
-import pandas
+import datetime
+import functools
+import math
 import numpy
+import pandas
+import pandas.core.series
+from pandas.core.frame import DataFrame as PandasDataFrame
+from pandas.core.dtypes.api import is_datetime64_any_dtype
 import warnings
 
 from collections import OrderedDict
 from rpy2.robjects.vectors import (BoolVector,
                                    DataFrame,
+                                   DateVector,
                                    FactorVector,
                                    FloatSexpVector,
                                    StrVector,
                                    IntVector,
                                    POSIXct)
 
-# pandas is requiring numpy. We add the numpy conversion will be
-# activate in the function activate() below.
+# The pandas converter requires numpy.
 import rpy2.robjects.numpy2ri as numpy2ri
 
 original_converter = None
@@ -63,7 +65,7 @@ def py2rpy_pandasdataframe(obj):
     return DataFrame(od)
 
 
-@py2rpy.register(PandasIndex)
+@py2rpy.register(pandas.Index)
 def py2rpy_pandasindex(obj):
     if obj.dtype.kind == 'O':
         return StrVector(obj)
@@ -92,7 +94,49 @@ def py2rpy_categoryseries(obj):
     return res
 
 
-@py2rpy.register(PandasSeries)
+def _str_populate_r_vector(iterable, r_vector,
+                           set_elt,
+                           cast_value):
+    for i, v in enumerate(iterable):
+        if (
+                v is None
+                or
+                v is pandas.NA
+                or
+                (isinstance(v, float) and math.isnan(v))
+        ):
+            v = na_values.NA_Character
+        set_elt(r_vector, i, cast_value(v))
+
+
+def _int_populate_r_vector(iterable, r_vector,
+                           set_elt,
+                           cast_value):
+    for i, v in enumerate(iterable):
+        if v is None or v is pandas.NA:
+            v = math.nan
+        set_elt(r_vector, i, cast_value(v))
+
+
+_PANDASTYPE2RPY2 = {
+    datetime.date: DateVector,
+    int: functools.partial(
+        IntVector.from_iterable,
+        populate_func=_int_populate_r_vector
+    ),
+    bool: BoolVector,
+    None: BoolVector,
+    str: functools.partial(
+        StrVector.from_iterable,
+        populate_func=_str_populate_r_vector
+    ),
+    bytes: (numpy2ri.converter.py2rpy.registry[
+        numpy.ndarray
+    ])
+}
+
+
+@py2rpy.register(pandas.core.series.Series)
 def py2rpy_pandasseries(obj):
     if obj.dtype.name == 'O':
         warnings.warn('Element "%s" is of dtype "O" and converted '
@@ -114,6 +158,14 @@ def py2rpy_pandasseries(obj):
         # TODO: can the POSIXct be created from the POSIXct constructor ?
         # (is '<M8[ns]' mapping to Python datetime.datetime ?)
         res = POSIXct(res)
+    elif obj.dtype.type == str:
+        res = _PANDASTYPE2RPY2[str](obj)
+    elif obj.dtype.name in integer_array_types:
+        res = _PANDASTYPE2RPY2[int](obj)
+        if len(obj.shape) == 1:
+            if obj.dtype != dt_O_type:
+                # force into an R vector
+                res = as_vector(res)
     elif (obj.dtype == dt_O_type):
         homogeneous_type = None
         for x in obj.values:
@@ -122,32 +174,15 @@ def py2rpy_pandasseries(obj):
             if homogeneous_type is None:
                 homogeneous_type = type(x)
                 continue
-            if type(x) is not homogeneous_type:
-                raise ValueError('Series can only be of one type, or None.')
+            if ((type(x) is not homogeneous_type)
+                and not
+                ((isinstance(x, float) and math.isnan(x))
+                 or pandas.isna(x))):
+                raise ValueError('Series can only be of one type, or None '
+                                 '(and here we have %s and %s).' %
+                                 (homogeneous_type, type(x)))
         # TODO: Could this be merged with obj.type.name == 'O' case above ?
-        res = {
-            int: IntVector,
-            bool: BoolVector,
-            None: BoolVector,
-            str: StrVector,
-            bytes: numpy2ri.converter.py2rpy.registry[
-                numpy.ndarray
-            ]
-        }[homogeneous_type](obj)
-    elif obj.dtype.name in integer_array_types:
-        if not obj.dtype.numpy_dtype.isnative:
-            raise(ValueError('Cannot pass numpy arrays with non-native byte'
-                             ' orders at the moment.'))
-        if obj.dtype.kind == 'i':
-            res = numpy2ri._numpyarray_to_r(obj, IntVector)
-        elif obj.dtype.kind == 'u':
-            res = numpy2ri.unsignednumpyint_to_rint(obj)
-        else:
-            raise (ValueError('Unknown pandas dtype "%s".' % str(obj.dtype)))
-        if len(obj.shape) == 1:
-            if obj.dtype != dt_O_type:
-                # force into an R vector
-                res = as_vector(res)
+        res = _PANDASTYPE2RPY2[homogeneous_type](obj)
     else:
         # converted as a numpy array
         func = numpy2ri.converter.py2rpy.registry[numpy.ndarray]
@@ -223,6 +258,10 @@ def rpy2py_dataframe(obj):
 
 
 def activate():
+    warnings.warn('The global conversion available with activate() '
+                  'is deprecated and will be removed in the next '
+                  'major release. Use a local converter.',
+                  category=DeprecationWarning)
     global original_converter
     # If module is already activated, there is nothing to do.
     if original_converter is not None:

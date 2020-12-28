@@ -106,6 +106,10 @@ if numpy:
         template_converter += pandas2ri.converter
 
 
+def CELL_DISPLAY_DEFAULT(res, args):
+    return ro.r.show(res)
+
+
 class RInterpreterError(ri.embedded.RRuntimeError):
     """An error when running R code in a %%R magic cell."""
 
@@ -487,7 +491,7 @@ class RMagics(Magics):
             # -- empty ones are not published
             if stat(imgfile).st_size >= 1000:
                 with open(imgfile, 'rb') as fh_img:
-                    images.append(fh_img.read())
+                    images.append(fh_img.read().decode())
 
         mimetypes = {'png': 'image/png', 'svg': 'image/svg+xml'}
         mime = mimetypes[self.device]
@@ -587,6 +591,16 @@ class RMagics(Magics):
         specified/None, the defaut converter for the magic\'s module is used
         (that is rpy2\'s default converter + numpy converter + pandas converter
         if all three are available)."""))
+    @argument(
+        '-d', '--display',
+        default=None,
+        help=textwrap.dedent("""
+        Name of function to use to display the output of an R cell (the last
+        object or function call that does not have a left-hand side
+        assignment). That function will have the signature `(robject, args)`
+        where `robject` is the R objects that is an output of the cell, and
+        `args` a namespace with all parameters passed to the cell.
+        """))
     @argument(
         'code',
         nargs='*',
@@ -722,6 +736,17 @@ class RMagics(Magics):
                 with localconverter(converter) as cv:
                     ro.r.assign(input, val)
 
+        if args.display:
+            try:
+                cell_display = local_ns[args.display]
+            except KeyError:
+                try:
+                    cell_display = self.shell.user_ns[args.display]
+                except KeyError:
+                    raise NameError("name '%s' is not defined" % args.display)
+        else:
+            cell_display = CELL_DISPLAY_DEFAULT
+
         tmpd = self.setup_graphics(args)
 
         text_output = ''
@@ -747,7 +772,7 @@ class RMagics(Magics):
                                                .callbacks,
                                                'consolewrite_print',
                                                self.write_console_regular))
-                        ro.r.show(result)
+                        cell_display(result, args)
                         text_output += self.flush()
 
         except RInterpreterError as e:

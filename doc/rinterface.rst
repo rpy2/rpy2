@@ -117,7 +117,8 @@ Those two objects could be accessed from Python using their names.
 
    hyp <- function(x, y) sqrt(x^2 + y^2)
 
-Two environments are provided as :class:`rpy2.rinterface.SexpEnvironment`
+By default R starts with two environments: `baseenv` and `globalenv`.
+Both are instances of class :class:`rpy2.rinterface.SexpEnvironment` in rpy2.
 
 .. index::
    single: globalenv
@@ -125,7 +126,7 @@ Two environments are provided as :class:`rpy2.rinterface.SexpEnvironment`
 
 .. rubric:: globalenv
 
-The global environment can be seen as the root (or topmost) environment,
+The global environment (`globalenv`) can be seen as the root (or topmost) environment,
 and is in fact a list, that is a sequence, of environments.
 
 When an R library (package in R's terminology) is loaded,
@@ -140,7 +141,7 @@ The library is said to be attached to the current search path.
 
 .. rubric:: baseenv
 
-The base package has a namespace, that can be accessed as an environment.
+The base package has a namespace (`baseenv`), that can be accessed as an environment.
 
 .. note::
    
@@ -281,6 +282,8 @@ with the function) with the arguments *1* and *2*.
 
 .. autofunction:: parse()
 
+.. index::
+   single: rternalize
 
 Calling Python functions from R
 -------------------------------
@@ -330,8 +333,8 @@ The lower-level function :func:`rternalize` will take an arbitray
 Python function and return an :class:`rinterface.SexpClosure` instance,
 that is a object that can be used by R as a function.
 
-
 .. autofunction:: rternalize()
+
 
 Interactive features
 ====================
@@ -688,23 +691,23 @@ Those missing values can also be used with the :mod:`rpy2.robjects` layer
 and more documentation about their usage can be found there
 (see :ref:`robjects-missingvalues`).
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NAIntegerType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NAIntegerType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NARealType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NARealType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NALogicalType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NALogicalType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NACharacterType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NACharacterType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NAComplexType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NAComplexType()
    :show-inheritance:
    :members:
 

@@ -21,6 +21,7 @@ from distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatfo
 from rpy2 import situation
 
 from setuptools import setup
+from distutils.command.build import build as du_build
 
 PACKAGE_NAME = 'rpy2'
 pack_version = __import__('rpy2').__version__
@@ -111,7 +112,6 @@ def get_r_c_extension_status():
 
 
 cffi_mode = situation.get_cffi_mode()
-print('cffi mode: %s' % cffi_mode)
 c_extension_status = get_r_c_extension_status()
 if cffi_mode == situation.CFFI_MODE.ABI:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
@@ -135,6 +135,32 @@ else:
     # This should never happen.
     raise ValueError('Invalid value for cffi_mode')
 
+
+class build(du_build):
+
+    def run(self):
+        print('cffi mode: %s' % cffi_mode)
+
+        du_build.run(self)
+
+        print('---')
+        print(cffi_mode)
+        if cffi_mode in (situation.CFFI_MODE.ABI,
+                         situation.CFFI_MODE.BOTH,
+                         situation.CFFI_MODE.ANY):
+            print('ABI mode interface built.')
+        if cffi_mode in (situation.CFFI_MODE.API,
+                         situation.CFFI_MODE.BOTH):
+            print('API mode interface built.')
+        if cffi_mode == situation.CFFI_MODE.ANY:
+            if c_extension_status == COMPILATION_STATUS.OK:
+                print('API mode interface built.')
+            else:
+                print('API mode interface not built because: %s' % c_extension_status)
+        print('To change the API/ABI build mode, set or modify the environment '
+              'variable RPY2_CFFI_MODE.')
+
+
 LONG_DESCRIPTION = """
 Python interface to the R language.
 
@@ -152,8 +178,14 @@ ipython.
 
 if __name__ == '__main__':
     pack_dir = {PACKAGE_NAME: os.path.join(package_prefix, 'rpy2')}
-        
-    requires = ['pytest', 'jinja2', 'pytz', 'simplegeneric', 'tzlocal']
+
+    with open(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                'requirements.txt')
+    ) as fh:
+        requires = fh.read().splitlines()
+        print(requires)
     
     setup(
         name=PACKAGE_NAME,
@@ -164,10 +196,10 @@ if __name__ == '__main__':
         license='GPLv2+',
         author='Laurent Gautier',
         author_email='lgautier@gmail.com',
-        requires=requires,
-        install_requires=requires + ['cffi>=1.10.0'],
+        install_requires=requires,
         setup_requires=['cffi>=1.10.0'],
         cffi_modules=cffi_modules,
+        cmdclass = dict(build=build),
         package_dir=pack_dir,
         packages=([PACKAGE_NAME] +
                   ['{pack_name}.{x}'.format(pack_name=PACKAGE_NAME, x=x)
@@ -191,22 +223,7 @@ if __name__ == '__main__':
                        'Development Status :: 5 - Production/Stable'
         ],
         package_data={'rpy2': ['rinterface_lib/R_API.h',
-                               'rinterface_lib/R_API_eventloop.h']}
+                               'rinterface_lib/R_API_eventloop.h',
+                               'rinterface_lib/R_API_eventloop.c',
+                               'rinterface_lib/RPY2.h']}
     )
-
-    print('---')
-    print(cffi_mode)
-    if cffi_mode in (situation.CFFI_MODE.ABI,
-                     situation.CFFI_MODE.BOTH,
-                     situation.CFFI_MODE.ANY):
-        print('ABI mode interface built and installed.')
-    if cffi_mode in (situation.CFFI_MODE.API,
-                     situation.CFFI_MODE.BOTH):
-        print('API mode interface built and installed.')
-    if cffi_mode == situation.CFFI_MODE.ANY:
-        if c_extension_status == COMPILATION_STATUS.OK:
-            print('API mode interface built and installed.')
-        else:
-            print('API mode interface not build because: %s' % c_extension_status)
-    print('To change the API/ABI build mode, set or modify the environment '
-          'variable RPY2_CFFI_MODE.')

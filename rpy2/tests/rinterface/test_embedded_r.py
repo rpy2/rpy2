@@ -46,6 +46,11 @@ def _call_with_ended_r(queue):
     queue.put(res)
 
 
+def _init_r():
+    from rpy2 import rinterface
+    rinterface.initr()
+
+
 @pytest.mark.skip(reason='Spawned process seems to share '
                   'initialization state with parent.')
 def test_call_error_when_ended_r():
@@ -73,12 +78,12 @@ def test_set_initoptions_after_init():
 
 
 def test_initr():
-    def init_r():
-        from rpy2 import rinterface
-        rinterface.initr()
     preserve_hash = True
-    proc = multiprocessing.Process(target=init_r,
-                                   args=(preserve_hash,))
+    args = ()
+    if os.name != 'nt':
+        args = (preserve_hash,)
+    proc = multiprocessing.Process(target=_init_r,
+                                   args=args)
     proc.start()
     proc.join()
 
@@ -194,13 +199,18 @@ def testInterruptR():
         rpy_code.write(rpy_code_str)
     cmd = (sys.executable, rpy_code.name)
     with open(os.devnull, 'w') as fnull:
+        creationflags = 0
+        if os.name == 'nt':
+            creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
         child_proc = subprocess.Popen(cmd,
                                       stdout=fnull,
-                                      stderr=fnull)
+                                      stderr=fnull,
+                                      creationflags=creationflags)
         time.sleep(1)  # required for the SIGINT to function
         # (appears like a bug w/ subprocess)
         # (the exact sleep time migth be machine dependent :( )
-        child_proc.send_signal(signal.SIGINT)
+        sigint = signal.CTRL_C_EVENT if os.name == 'nt' else signal.SIGINT
+        child_proc.send_signal(sigint)
         time.sleep(1)  # required for the SIGINT to function
         ret_code = child_proc.poll()
     assert ret_code is not None  # Interruption failed

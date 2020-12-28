@@ -47,7 +47,6 @@ import rpy2.robjects as robjects
 import rpy2.robjects.constants
 import rpy2.robjects.conversion as conversion
 from rpy2.robjects.packages import importr, WeakPackage
-import copy
 import warnings
 
 NULL = robjects.NULL
@@ -66,10 +65,11 @@ ggplot2 = WeakPackage(ggplot2._env,
                       symbol_r2python=ggplot2._symbol_r2python,
                       symbol_resolve=ggplot2._symbol_resolve)
 
-TARGET_VERSION = '3.2.1'
-if ggplot2.__version__ != TARGET_VERSION:
-    warnings.warn('This was designed againt ggplot2 version %s but you '
-                  'have %s' % (TARGET_VERSION, ggplot2.__version__))
+TARGET_VERSION = '3.3.'
+if not ggplot2.__version__.startswith(TARGET_VERSION):
+    warnings.warn(
+        'This was designed againt ggplot2 versions starting with %s but you '
+        'have %s' % (TARGET_VERSION, ggplot2.__version__))
 ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
 
 StrVector = robjects.StrVector
@@ -126,17 +126,36 @@ class Aes(robjects.ListVector):
 
     @classmethod
     def new(cls, **kwargs):
-        """Constructor for the class Aes."""
-        new_kwargs = copy.copy(kwargs)
-        for k, v in kwargs.items():
-            new_kwargs[k] = rlang.parse_quo(
-                v, env=robjects.baseenv['sys.frame']()
-            )
-        res = cls(cls._constructor(**new_kwargs))
+        res = cls(cls._constructor(**kwargs))
         return res
 
 
 aes = Aes.new
+
+
+class Vars(robjects.ListVector):
+    """ Aesthetics mapping, using expressions rather than string
+    (this is the most common form when using the package in R - it might
+    be easier to use AesString when working in Python using rpy2 -
+    see class AesString in this Python module).
+    """
+    _constructor = ggplot2_env['vars']
+
+    @classmethod
+    def new(cls, *args):
+        """Constructor for the class Vars."""
+        new_args = list()
+        for a in args:
+            new_args.append(
+                rlang.parse_quo(
+                    a, env=robjects.baseenv['sys.frame']()
+                )
+            )
+        res = cls(cls._constructor(*new_args))
+        return res
+
+
+vars = Vars.new
 
 
 class AesString(robjects.ListVector):

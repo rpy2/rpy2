@@ -1,6 +1,7 @@
 import abc
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
+from rpy2.rinterface_lib import sexp
 from . import conversion
 
 import rpy2.rlike.container as rlc
@@ -13,7 +14,7 @@ import jinja2
 import time
 import pytz
 import tzlocal
-from datetime import datetime
+from datetime import date, datetime, timedelta, timezone
 from time import struct_time, mktime, tzname
 from operator import attrgetter
 import warnings
@@ -722,11 +723,6 @@ class ListVector(Vector, ListSexpVector):
         return res
 
 
-class DateVector(FloatVector):
-    """ Vector of dates """
-    pass
-
-
 class POSIXt(abc.ABC):
     """ POSIX time vector. This is an abstract class. """
 
@@ -829,6 +825,41 @@ def get_timezone():
     return timezone
 
 
+class DateVector(FloatVector):
+    """ Representation of dates as number of days since 1/1/1970.
+
+    Date(seq) -> Date.
+
+    The constructor accepts either an R vector floats
+    or a sequence (an object with the Python
+    sequence interface) of time.struct_time objects.
+    """
+
+    def __init__(self, seq):
+        """ Create a POSIXct from either an R vector or a sequence
+        of Python datetime.date objects.
+        """
+
+        if isinstance(seq, Sexp):
+            init_param = seq
+        elif isinstance(seq[0], date):
+            init_param = DateVector.sexp_from_date(seq)
+        else:
+            raise TypeError(
+                'Unable to create an R Date vector from objects of type %s' %
+                type(seq))
+        super().__init__(init_param)
+
+    @classmethod
+    def sexp_from_date(cls, seq):
+        return cls(FloatVector([x.toordinal() for x in seq]))
+
+    @staticmethod
+    def isrinstance(obj) -> bool:
+        """Return whether an R object an instance of Date."""
+        return obj.rclass[-1] == 'Date'
+
+
 class POSIXct(POSIXt, FloatVector):
     """ Representation of dates as seconds since Epoch.
     This form is preferred to POSIXlt for inclusion in a DataFrame.
@@ -924,6 +955,17 @@ class POSIXct(POSIXt, FloatVector):
         """Is an R object an instance of POSIXct."""
         return obj.rclass[0] == 'POSIXct'
 
+    @staticmethod
+    def _datetime_from_timestamp(ts, tz) -> datetime:
+        """Platform-dependent conversion from timestamp to datetime"""
+        if os.name != 'nt' or ts > 0:
+            return datetime.fromtimestamp(ts, tz)
+        else:
+            dt_utc = (datetime(1970, 1, 1, tzinfo=timezone.utc) +
+                      timedelta(seconds=ts))
+            dt = dt_utc.replace(tzinfo=tz)
+            return dt + dt.utcoffset()
+
     def iter_localized_datetime(self):
         """Iterator yielding localized Python datetime objects."""
         try:
@@ -942,7 +984,7 @@ class POSIXct(POSIXt, FloatVector):
         for x in self:
             yield (
                 None if math.isnan(x)
-                else datetime.fromtimestamp(x, r_tzone)
+                else POSIXct._datetime_from_timestamp(x, r_tzone)
             )
 
 
@@ -966,10 +1008,10 @@ class Array(Vector):
         value = conversion.py2rpy(value)
         self._dim_set(self, value)
 
-    dim = property(__dim_get, __dim_set,
+    dim = property(__dim_get, __dim_set, None,
                    "Get or set the dimension of the array.")
 
-    def __dimnames_get(self):
+    def __dimnames_get(self) -> sexp.Sexp:
         """ Return a list of name vectors
         (like the R function 'dimnames' does)."""
 
@@ -1170,15 +1212,16 @@ class DataFrame(ListVector):
         </table>
     """)
 
-    def __init__(self, obj, stringsasfactor=False):
+    def __init__(self, obj, stringsasfactor=False, checknames=False):
         """ Create a new data frame.
 
         :param obj: object inheriting from rpy2.rinterface.SexpVector,
-                    or inheriting from TaggedList
-                    or a mapping name -> value
+            or inheriting from TaggedList or a mapping name -> value
         :param stringsasfactors: Boolean indicating whether vectors
-                    of strings should be turned to vectors. Note
-                    that factors will not be turned to string vectors.
+            of strings should be turned to vectors. Note that factors
+            will not be turned to string vectors.
+        :param checknames: Boolean indicating whether column names
+            should be transformed to R syntactically valid names.
         """
         if isinstance(obj, rinterface.ListSexpVector):
             if obj.typeof != rinterface.RTYPES.VECSXP:
@@ -1222,7 +1265,8 @@ class DataFrame(ListVector):
                           'conflicting with named parameter '
                           'in underlying R function "data.frame()".')
         else:
-            kv.append(('stringsAsFactors', stringsasfactor))
+            kv.extend((('stringsAsFactors', stringsasfactor),
+                       ('check.names', checknames)))
 
         # Call R's data frame constructor
         kv = tuple(kv)
@@ -1337,8 +1381,8 @@ class DataFrame(ListVector):
         res = utils_ri['head'](self, *args, **kwargs)
         return conversion.rpy2py(res)
 
-    @staticmethod
-    def from_csvfile(path, header=True, sep=',',
+    @classmethod
+    def from_csvfile(cls, path, header=True, sep=',',
                      quote='"', dec='.',
                      row_names=rinterface.MissingArg,
                      col_names=rinterface.MissingArg,
@@ -1382,8 +1426,7 @@ class DataFrame(ListVector):
                                      'comment.char': comment_char,
                                      'na.strings': na_strings,
                                      'as.is': as_is})
-        res = conversion.rpy2py(res)
-        return res
+        return cls(res)
 
     def to_csvfile(self, path, quote=True, sep=',',
                    eol=os.linesep, na='NA', dec='.',
@@ -1391,17 +1434,17 @@ class DataFrame(ListVector):
                    qmethod='escape', append=False):
         """ Save the data into a .csv file.
 
-        path         : string with a path
-        quote        : quote character
-        sep          : separator character
-        eol          : end-of-line character(s)
-        na           : string for missing values
-        dec          : string for decimal separator
-        row_names    : boolean (save row names, or not)
-        col_names    : boolean (save column names, or not)
-        comment_char : method to 'escape' special characters
-        append       : boolean (append if the file in the path is
-          already existing, or not)
+        :param path         : string with a path
+        :param quote        : quote character
+        :param sep          : separator character
+        :param eol          : end-of-line character(s)
+        :param na           : string for missing values
+        :param dec          : string for decimal separator
+        :param row_names    : boolean (save row names, or not)
+        :param col_names    : boolean (save column names, or not)
+        :param comment_char : method to 'escape' special characters
+        :param append       : boolean (append if the file in the path is
+        already existing, or not)
         """
         path = conversion.py2rpy(path)
         append = conversion.py2rpy(append)

@@ -34,7 +34,8 @@ dataf.colnames
 ```python
 stats = importr('stats')
 base = importr('base')
-stats.lm('elevation_m ~ latd + longd', data=dataf)
+fit = stats.lm('elevation_m ~ latd + longd', data=dataf)
+fit
 ```
 
 # Graphics
@@ -55,6 +56,17 @@ However, the best way to have `ggplot2` might be to use `ggplot2` from Python.
 import rpy2.robjects.lib.ggplot2 as gp
 ```
 
+
+R lets is function parameters be unevaluated language objects, which is fairly different
+from Python's immediate evaluation. `rpy2` has a utility code to create such R language
+objects from Python strings.
+It can then become very easy to mix Python and R, with R like a domain-specific language
+used from Python.
+
+```python
+from rpy2.robjects import rl
+```
+
 Calling `ggplot2` looks pretty much like it would in R, which allows one to use the
 all available documentation and examples available for the R package. Remember that
 this is not a reimplementation of ggplot2 with inevitable differences and delay
@@ -62,10 +74,10 @@ for having the latest changes: the R package itself is generating the figures.
 
 ```python
 p = (gp.ggplot(dataf) +
-     gp.aes_string(x='longd',
-                   y='latd',
-                   color='population_total',
-                   size='area_total_km2') +
+     gp.aes(x=rl('longd'),
+            y=rl('latd'),
+            color=rl('population_total'),
+            size=rl('area_total_km2')) +
      gp.geom_point() +
      gp.scale_color_continuous(trans='log10'))
 ```
@@ -84,10 +96,10 @@ get the figure we want is:
 ```python
 from rpy2.robjects.vectors import IntVector
 p = (gp.ggplot(dataf) +
-     gp.aes_string(x='longd',
-                   y='latd',
-                   color='population_total',
-                   size='area_total_km2') +
+     gp.aes(x=rl('longd'),
+            y=rl('latd'),
+            color=rl('population_total'),
+            size=rl('area_total_km2')) +
      gp.geom_point(alpha=0.5) +
      # Axis definitions.
      gp.scale_x_continuous('Longitude') +
@@ -124,10 +136,10 @@ That new color scale can then be used as any other scale already present in `ggp
 
 ```python
 p = (gp.ggplot(dataf) +
-     gp.aes_string(x='longd',
-                   y='latd',
-                   color='population_total',
-                   size='area_total_km2') +
+     gp.aes(x=rl('longd'),
+            y=rl('latd'),
+            color=rl('population_total'),
+            size=rl('area_total_km2')) +
      gp.geom_point(alpha=0.5) +
      gp.scale_x_continuous('Longitude') +
      gp.scale_y_continuous('Latitude') +
@@ -174,14 +186,14 @@ We can just use it in subsequent cells.
 cat("Running an R code cell.\n")
 
 p <- ggplot(dataf) +
-     aes_string(x = 'longd',
-                y = 'latd',
-                color = 'population_total',
-                size = 'area_total_km2') +
-     geom_point(alpha = 0.5) +
+     aes(x=longd,
+         y=latd,
+         color=population_total,
+         size=area_total_km2) +
+     geom_point(alpha=0.5) +
      scale_x_continuous('Longitude') +
      scale_y_continuous('Latitude') +
-     scale_size(range = c(1, 18)) +
+     scale_size(range=c(1, 18)) +
      scale_color_viridis(trans='log10') +
      ggtitle('California Cities: Area and Population') +
      theme_light(base_size=16)

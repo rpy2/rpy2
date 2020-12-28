@@ -1,3 +1,4 @@
+import abc
 from types import SimpleNamespace
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
@@ -78,7 +79,7 @@ def getclassdef(cls_name, cls_packagename):
     return cls_def
 
 
-class RS4_Type(type):
+class RS4_Type(abc.ABCMeta):
 
     def __new__(mcs, name, bases, cls_dict):
 
@@ -120,7 +121,7 @@ class RS4_Type(type):
 
 # playground to experiment with more metaclass-level automation
 
-class RS4Auto_Type(type):
+class RS4Auto_Type(abc.ABCMeta):
     """ This type (metaclass) takes an R S4 class
     and create a Python class out of it,
     copying the R documention page into the Python docstring.
@@ -235,7 +236,7 @@ class RS4Auto_Type(type):
                     raise Exception("Duplicated attribute/method name.")
                 cls_dict[meth_name] = meth
 
-        return type.__new__(mcs, name, bases, cls_dict)
+        return abc.ABCMeta.__new__(mcs, name, bases, cls_dict)
 
 
 def set_accessors(cls, cls_name, where, acs):

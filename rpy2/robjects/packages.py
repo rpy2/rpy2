@@ -1,4 +1,5 @@
 import os
+import typing
 import warnings
 from types import ModuleType
 from warnings import warn
@@ -64,19 +65,19 @@ def _eval_quiet(expr):
 # FIXME: should this be part of the API for rinterface ?
 #        (may be it is already the case and there is code
 #        duplicaton ?)
-def reval(string, envir=_globalenv):
+def reval(string: str,
+          envir: typing.Optional[rinterface.SexpEnvironment] = None):
     """ Evaluate a string as R code
     :param string: R code
     :type string: a :class:`str`
-    :param envir: an environment in which the environment should take
-      place (default: R's global environment)
+    :param envir: Optional environment to evaluate the R code.
     """
     p = rinterface.parse(string)
     res = _reval(p, envir=envir)
     return res
 
 
-def quiet_require(name, lib_loc=None):
+def quiet_require(name: str, lib_loc=None):
     """ Load an R package /quietly/ (suppressing messages to the console). """
     if lib_loc is None:
         lib_loc = "NULL"
@@ -162,8 +163,6 @@ class Package(ModuleType):
     __rname__ = None
     _translation = None
     _rpy2r = None
-    __fill_rpy2r__ = None
-    __update_dict__ = None
     _exported_names = None
     _symbol_r2python = None
     __version__ = None
@@ -259,7 +258,7 @@ class Package(ModuleType):
                 self._exported_names.add(rpyname)
             try:
                 riobj = self._env[rname]
-            except rinterface.RRuntimeError as rre:
+            except rinterface.embedded.RRuntimeError as rre:
                 warn(str(rre))
             rpyobj = conversion.rpy2py(riobj)
             if hasattr(rpyobj, '__rname__'):
@@ -320,7 +319,7 @@ class InstalledSTPackage(SignatureTranslatedPackage):
             try:
                 doc.append(rhelp.docstring(self.__rname__,
                                            self.__rname__ + '-package',
-                                           sections=['description']))
+                                           sections=['\\description']))
             except rhelp.HelpNotFoundError:
                 doc.append('[R help was not found]')
         return os.linesep.join(doc)
@@ -348,7 +347,7 @@ class InstalledPackage(Package):
             try:
                 doc.append(rhelp.docstring(self.__rname__,
                                            self.__rname__ + '-package',
-                                           sections=['description']))
+                                           sections=['\\description']))
             except rhelp.HelpNotFoundError:
                 doc.append('[R help was not found]')
         return os.linesep.join(doc)
@@ -468,8 +467,10 @@ def importr(name,
 
     """
 
-    if not isinstalled(name):
-        raise PackageNotInstalledError(name)
+    if not isinstalled(name, lib_loc=lib_loc):
+        raise PackageNotInstalledError(
+            'The R package "%s" is not installed.' % name
+        )
 
     if suppress_messages:
         ok = quiet_require(name, lib_loc=lib_loc)

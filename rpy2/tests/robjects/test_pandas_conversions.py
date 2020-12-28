@@ -9,13 +9,25 @@ from rpy2 import robjects
 from rpy2.robjects import vectors
 from rpy2.robjects import conversion
 
-has_pandas = True
+
+class MockNamespace(object):
+    def __getattr__(self, name):
+        return None
+
+
+has_pandas = False
 try:
     import pandas
-    import numpy
     has_pandas = True
 except:
-    has_pandas = False
+    pandas = MockNamespace()
+
+has_numpy = False
+try:
+    import numpy
+    has_numpy = True
+except:
+    numpy = MockNamespace()
 
 if has_pandas:
     import rpy2.robjects.pandas2ri as rpyp
@@ -72,6 +84,13 @@ class TestPandasConversions(object):
         assert pd_df.shape[1] == rp_df.ncol
         # assert tuple(rp_df.rx2('s')) == (b'b', b'c', b'd')
         assert tuple(rp_df.rx2('u')) == ('a', 'b', 'c')
+
+    def test_dataframe_columnnames(self):
+        pd_df = pandas.DataFrame({'the one': [1, 2], 'the other': [3, 4]})
+        # Convert to R
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_df = robjects.conversion.py2rpy(pd_df)
+        assert tuple(rp_df.names) == ('the one', 'the other')
         
     def test_series(self):
         Series = pandas.core.series.Series
@@ -99,10 +118,10 @@ class TestPandasConversions(object):
                                        pandas.Int64Dtype() if has_pandas else None))
     def test_dataframe_int_nan(self, dtype):
         a = pandas.DataFrame([(numpy.NaN,)], dtype=dtype, columns=['z'])
-        with localconverter(default_converter + rpyp.converter) as _:
+        with localconverter(default_converter + rpyp.converter) as cv:
             b = robjects.conversion.py2rpy(a)
-        assert type(b[0][0]) == rinterface.na_values.NAIntegerType
-        with localconverter(default_converter + rpyp.converter) as _:
+        assert b[0][0] is rinterface.na_values.NA_Integer
+        with localconverter(default_converter + rpyp.converter) as cv:
             c = robjects.conversion.rpy2py(b)
 
     @pytest.mark.parametrize('dtype', (pandas.Int32Dtype() if has_pandas else None,
@@ -111,22 +130,28 @@ class TestPandasConversions(object):
         a = pandas.Series((numpy.NaN,), dtype=dtype, index=['z'])
         with localconverter(default_converter + rpyp.converter) as _:
             b = robjects.conversion.py2rpy(a)
-        assert type(b[0]) == rinterface.na_values.NAIntegerType
+        assert b[0] is rinterface.na_values.NA_Integer
         with localconverter(default_converter + rpyp.converter) as _:
             c = robjects.conversion.rpy2py(b)
 
-    def test_series_obj_str(self):
+    @pytest.mark.skipif(not (has_numpy and has_pandas),
+                        reason='Packages numpy and pandas must be installed.')
+    @pytest.mark.parametrize(
+        'data',
+        (['x', 'y', 'z'],
+         ['x', 'y', None],
+         ['x', 'y', numpy.nan],
+         ['x', 'y', pandas.NA])
+    )
+    @pytest.mark.parametrize(
+        'dtype', ['O', pandas.StringDtype() if has_pandas else None]
+    )
+    def test_series_obj_str(self, data, dtype):
         Series = pandas.core.series.Series
-        s = Series(['x', 'y', 'z'], index=['a', 'b', 'c'])
+        s = Series(data, index=['a', 'b', 'c'], dtype=dtype)
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.StrSexpVector)
-
-        s = Series(['x', 'y', None], index=['a', 'b', 'c'])
-        with localconverter(default_converter + rpyp.converter) as cv:
-            rp_s = robjects.conversion.py2rpy(s)
-        assert isinstance(rp_s, rinterface.StrSexpVector)
-
 
     def test_series_obj_mixed(self):
         Series = pandas.core.series.Series
@@ -192,7 +217,7 @@ class TestPandasConversions(object):
 
     def test_factorwithNA2Category(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a', None))
-        assert factor[3] == rinterface.na_values.NA_Integer
+        assert factor[3] is rinterface.na_values.NA_Integer
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.rpy2py(factor)
         assert isinstance(rp_c, pandas.Categorical)
@@ -249,6 +274,14 @@ class TestPandasConversions(object):
             assert int(rp_c[0]) == 1483228800
             assert math.isnan(rp_c[1])
             assert rp_c[0] != rp_c[1]
+
+    def test_date2posixct(self):
+        today = datetime.now().date()
+        date = pandas.Series([today])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            rp_c = robjects.conversion.py2rpy(date)
+            assert isinstance(rp_c, robjects.vectors.FloatSexpVector)
+            assert tuple(int(x) for x in rp_c) == (today.toordinal(), )
 
     def test_timeR2Pandas(self):
         tzone = robjects.vectors.get_timezone()

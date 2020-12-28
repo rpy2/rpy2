@@ -3,8 +3,8 @@ import os
 import sys
 import typing
 import warnings
-from . import openrlib
-from . import callbacks
+from rpy2.rinterface_lib import openrlib
+from rpy2.rinterface_lib import callbacks
 
 ffi = openrlib.ffi
 
@@ -16,12 +16,18 @@ rstart = None
 
 # TODO: move initialization-related code to _rinterface ?
 class RPY_R_Status(enum.Enum):
+    """Possible status for the embedded R."""
     INITIALIZED = 0x01
     BUSY = 0x02
     ENDED = 0x04
 
 
 def set_initoptions(options: typing.Tuple[str]) -> None:
+    """Set initialization options for the embedded R.
+
+    :param:`options` A tuple of string with the options
+    (e.g., '--verbose', '--quiet').
+    """
     if rpy2_embeddedR_isinitialized:
         raise RuntimeError('Options can no longer be set once '
                            'R is initialized.')
@@ -32,6 +38,7 @@ def set_initoptions(options: typing.Tuple[str]) -> None:
 
 
 def get_initoptions() -> typing.Tuple[str, ...]:
+    """Get the initialization options for the embedded R."""
     return _options
 
 
@@ -40,7 +47,11 @@ def isinitialized() -> bool:
     return bool(rpy2_embeddedR_isinitialized & RPY_R_Status.INITIALIZED.value)
 
 
-def setinitialized() -> None:
+def _setinitialized() -> None:
+    """Set the embedded R as initialized.
+
+    This may result in a later segfault if used with the embedded R has not
+    been initialized. You should not have to use it."""
     global rpy2_embeddedR_isinitialized
     rpy2_embeddedR_isinitialized = RPY_R_Status.INITIALIZED.value
 
@@ -72,7 +83,9 @@ class RRuntimeError(Exception):
     pass
 
 
-def _setcallback(rlib, rlib_symbol, callbacks, callback_symbol) -> None:
+def _setcallback(rlib, rlib_symbol: str,
+                 callbacks,
+                 callback_symbol: str) -> None:
     """Set R callbacks."""
     if callback_symbol is None:
         new_callback = ffi.NULL
@@ -98,7 +111,8 @@ CALLBACK_INIT_PAIRS = (('ptr_R_WriteConsoleEx', '_consolewrite_ex'),
 def _initr(
         interactive: bool = True,
         _want_setcallbacks: bool = True,
-        _c_stack_limit: int = _DEFAULT_C_STACK_LIMIT) -> typing.Optional[int]:
+        _c_stack_limit: int = _DEFAULT_C_STACK_LIMIT
+) -> typing.Optional[int]:
 
     rlib = openrlib.rlib
     ffi_proxy = openrlib.ffi_proxy
@@ -114,16 +128,15 @@ def _initr(
     with openrlib.rlock:
         if isinitialized():
             return None
+        if openrlib.R_HOME is None:
+            raise ValueError('openrlib.R_HOME cannot be None.')
         os.environ['R_HOME'] = openrlib.R_HOME
         options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
         n_options = len(options_c)
         n_options_c = ffi.cast('int', n_options)
         status = rlib.Rf_initEmbeddedR(n_options_c,
                                        options_c)
-        setinitialized()
-
-        # global rstart
-        # rstart = ffi.new('Rstart')
+        _setinitialized()
 
         rlib.R_Interactive = interactive
 
@@ -201,7 +214,7 @@ def is_r_externally_initialized() -> bool:
 def set_python_process_info() -> None:
     """Set information about the Python process in an environment variable.
 
-    Current the information See discussion at:
+    See discussion at:
     %s
     """ % _REFERENCE_TO_R_SESSIONS
 
@@ -209,10 +222,3 @@ def set_python_process_info() -> None:
             ('sys.executable', sys.executable))
     info_string = ':'.join('%s=%s' % x for x in info)
     os.environ[_PYTHON_SESSION_INITIALIZED] = info_string
-
-
-# R environments, initialized with rpy2.rinterface.SexpEnvironment
-# objects when R is initialized.
-emptyenv = None
-baseenv = None
-globalenv = None

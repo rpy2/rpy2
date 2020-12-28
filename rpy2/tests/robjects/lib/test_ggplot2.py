@@ -1,16 +1,16 @@
 import pytest
 
-from rpy2.robjects.packages import importr, PackageNotInstalledError
+from rpy2.robjects import packages
 
 try:
     from rpy2.robjects.lib import ggplot2
     has_ggplot = True
     msg = ''
-except PackageNotInstalledError as error:
+except packages.PackageNotInstalledError as error:
     has_ggplot = False
     msg = str(error)
 
-datasets = importr('datasets')
+datasets = packages.importr('datasets')
 mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
 
 @pytest.mark.skipif(not has_ggplot, reason=msg)
@@ -50,6 +50,15 @@ class TestGGplot(object):
         gp = ggplot2.ggplot(mtcars)
         gp += ggplot2.aes(x='wt', y='mpg')
         gp += ggplot2.geom_point()
+        assert isinstance(gp, ggplot2.GGPlot)
+
+    def test_vars(self):
+        gp = (
+            ggplot2.ggplot(mtcars)
+            + ggplot2.aes(x='wt', y='mpg')
+            + ggplot2.geom_point()
+            + ggplot2.facet_wrap(ggplot2.vars('gears'))
+            )
         assert isinstance(gp, ggplot2.GGPlot)
 
     @pytest.mark.parametrize(

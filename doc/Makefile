@@ -19,6 +19,8 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
+_dummy := $(shell mkdir -p generated_rst)
+
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
 
 help:
@@ -90,7 +92,10 @@ _notebooks_html: $(MD_NOTEBOOKS:%=_static/notebooks/%.html)
 
 _notebooks_rst: $(MD_NOTEBOOKS:%=notebooks/%.rst)
 
-notebooks: _ensure_notebooks_dir _notebooks _notebooks_html _notebooks_rst
+_notebooks_parents:
+	cp -u generated_wrapper_rst/notebooks.rst generated_rst/
+
+notebooks: _ensure_notebooks_dir _notebooks _notebooks_html _notebooks_rst _notebooks_parents
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

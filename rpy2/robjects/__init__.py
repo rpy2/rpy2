@@ -18,7 +18,8 @@ import rpy2.rlike.container as rlc
 
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.robjects.functions
-from rpy2.robjects.environments import Environment
+from rpy2.robjects.environments import (Environment,
+                                        local_context)
 from rpy2.robjects.methods import methods_env
 from rpy2.robjects.methods import RS4
 
@@ -117,6 +118,8 @@ def sexpvector_to_ro(obj):
     elif obj.typeof == rinterface.RTYPES.REALSXP:
         if vectors.POSIXct.isrinstance(obj):
             cls = vectors.POSIXct
+        elif vectors.DateVector.isrinstance(obj):
+            cls = vectors.DateVector
         else:
             cls = _vector_matrix_array(obj, vectors.FloatVector,
                                        vectors.FloatMatrix, vectors.FloatArray)
@@ -329,7 +332,9 @@ def _(obj):
 default_converter._rpy2py_nc_map.update(
     {
         rinterface.SexpS4: conversion.NameClassMap(RS4),
-        rinterface.ListSexpVector: conversion.NameClassMap(ListVector),
+        rinterface.ListSexpVector: conversion.NameClassMap(
+            ListVector,
+            {'data.frame': DataFrame}),
         rinterface.SexpEnvironment: conversion.NameClassMap(Environment)
     }
 )
@@ -358,13 +363,13 @@ class Formula(RObjectMixin, rinterface.Sexp):
     def setenvironment(self, val):
         """ Set the environment in which a formula will find its symbols."""
         if not isinstance(val, rinterface.SexpEnvironment):
-            raise TypeError("The environment must be an instance of" +
-                             " rpy2.rinterface.Sexp.environment")
-        self.do_slot_assign(".Environment", val)
+            raise TypeError('The environment must be an instance of'
+                            ' rpy2.rinterface.Sexp.environment')
+        self.do_slot_assign('.Environment', val)
 
-    environment = property(getenvironment, setenvironment,
-                           "R environment in which the formula will look for" +
-                           " its variables.")
+    environment = property(getenvironment, setenvironment, None,
+                           'R environment in which the formula will look for '
+                           'its variables.')
 
 
 class R(object):
@@ -399,7 +404,7 @@ class R(object):
 
     # TODO: check that this is properly working
     def __cleanup__(self):
-        rinterface.endEmbeddedR()
+        rinterface.embedded.endr(0)
         del(self)
 
     def __str__(self):
@@ -416,6 +421,7 @@ class R(object):
 
 
 r = R()
+rl = language.LangVector.from_string
 
 conversion.set_conversion(default_converter)
 
