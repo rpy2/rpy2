@@ -15,7 +15,7 @@ jobs:
         experimental: [false]
         venv_activate: ["source pyenv_base/bin/activate"]
         ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"]
-        rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"
+        rspm: ["https://packagemanager.rstudio.com/cran/__linux__/focal/latest"]
         include:
           - os: windows-latest
             experimental: true
