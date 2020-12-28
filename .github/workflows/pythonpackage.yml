@@ -22,16 +22,13 @@ jobs:
           {os: ubuntu-20.04, python-version: 3.8, r: 'release', venv_activate: ["source pyenv_base/bin/activate"],\
            ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"],\
            rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", experimental: false}
-        - |
-          {os: maxOS-latest, python-version: 3.6, r: 'release', venv_activate: ["source pyenv_base/bin/activate"],\
+        - {os: maxOS-latest, python-version: 3.6, r: 'release', venv_activate: ["source pyenv_base/bin/activate"],\
            ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"],\
            experimental: false}
-        - |
-          {os: maxOS-latest, python-version: 3.8, r: 'release', venv_activate: ["source pyenv_base/bin/activate"],\
+        - {os: maxOS-latest, python-version: 3.8, r: 'release', venv_activate: ["source pyenv_base/bin/activate"],\
            ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"],\
            experimental: false}
-        - |
-          {os: windows-latest, python-version: 3.7, r: 'release', venv_activate: "",\
+        - {os: windows-latest, python-version: 3.7, r: 'release', venv_activate: "",\
            "",\
            experimental: true}
     steps:
