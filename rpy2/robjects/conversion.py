@@ -22,8 +22,20 @@ class NameClassMap(object):
 
     R class names, as returned for example by the R function
     `class()`, are arrays of strings representing the
-    lineage. This is an helper class to map a given R class
-    (as a sequence of names) to a Python class."""
+    class lineage. This class helps mapping the class of an R
+    object (a sequence of names) to a Python class.
+
+    For example, R data frames are of class "data.frame", but are
+    R lists (VECSEXP) at the C level. The NameClassMap for that
+    such R VECSEXP objects would be:
+
+    NameClassMap(robjects.vectors.ListVector,
+                 {'data.frame': robjects.vectors.DataFrame})
+
+    This means that the default class on the Python side will be
+    `ListVector`, but if the R object is a "data.frame" it will
+    be a `DataFrame`.
+    """
 
     _default: typing.Type
     _map: typing.Dict[str, typing.Type]

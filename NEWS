@@ -40,6 +40,9 @@ Changes
 - Report correctly the class of R matrix objects with R>=4.0: it is
   now `('matrix', 'array')`. With R<4.0 `('matrix')` is still reported.
 
+- The conversion of R/rpy2 objects to python objects using R class name mapping(*)
+  is extended to more classes. (*: The documentation about conversion covers the topic)
+
 Bugs fixed
 ----------
 
