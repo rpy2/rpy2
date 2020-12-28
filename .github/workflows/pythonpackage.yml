@@ -15,7 +15,6 @@ jobs:
         experimental: [false]
         venv_activate: ["source pyenv_base/bin/activate"]
         ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"]
-        rspm: ["https://packagemanager.rstudio.com/cran/__linux__/focal/latest"]
         include:
           - os: windows-latest
             experimental: true
@@ -23,12 +22,9 @@ jobs:
             python-version: 3.7
             venv_activate: ""
             ld_libpath: ""
-            rspm: ""
         exclude:
           - os: windows-latest
             python-version: 3.8
-    env:
-      RSPM: ${{ matrix.config.rspm }}
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
@@ -89,6 +85,10 @@ jobs:
         ${{matrix.venv_activate }}
         python -m pip install ipython
         bash -e ./scripts/run_test_pandas.sh
+    - name: Set RSPM
+      if: startsWith(matrix.os, 'ubuntu'
+      run:
+          echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
     - name: Test with R deps
       run: |
         ${{ matrix.ld_libpath }}
