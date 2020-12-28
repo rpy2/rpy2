@@ -29,7 +29,7 @@ class NameClassMap(object):
     R lists (VECSEXP) at the C level. The NameClassMap for that
     such R VECSEXP objects would be:
 
-    NameClassMap(robjects.vectors.ListVector, 
+    NameClassMap(robjects.vectors.ListVector,
                  {'data.frame': robjects.vectors.DataFrame})
 
     This means that the default class on the Python side will be
