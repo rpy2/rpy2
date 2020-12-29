@@ -29,6 +29,10 @@ jobs:
         key: ${{ runner.os }}-R${{ env.R-VERSION }}-build-${{ env.cache-name }}
         restore-keys: |
           ${{ runner.os }}-${{ env.R_VERSION }}-build-
+    - name: Set RSPM
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
     - name: Install dependencies
       run: |
         sudo apt-get update
