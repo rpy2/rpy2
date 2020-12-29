@@ -26,16 +26,6 @@ if not dplyr.__version__.startswith(TARGET_VERSION):
         (TARGET_VERSION, dplyr.__version__))
 
 
-def _wrap(rfunc, cls):
-    def func(dataf, *args, **kwargs):
-        res = rfunc(dataf, *args, **kwargs)
-        if cls is None:
-            return type(dataf)(res)
-        else:
-            return cls(res)
-    return func
-
-
 def _wrap2(rfunc, cls, env=robjects.globalenv):
     def func(dataf_a, dataf_b, *args, **kwargs):
         res = rfunc(dataf_a, dataf_b,
@@ -113,7 +103,7 @@ class DataFrame(robjects.DataFrame):
 
     @property
     def is_grouped_df(self) -> bool:
-        """Is the DataFrame is a grouped state"""
+        """Is the DataFrame in a grouped state"""
         return dplyr.is_grouped_df(self)[0]
 
     def __rshift__(self, other):
@@ -168,9 +158,11 @@ class DataFrame(robjects.DataFrame):
         res = dplyr.filter(self, *args, **{'.preserve': _preserve})
         return res
 
-    def group_by(self, *args):
+    def group_by(self, *args, _add=False,
+                 _drop=robjects.rl('group_by_drop_default(.data)')):
         """Call the R function `dplyr::group_by()`."""
-        res = dplyr.group_by(self, *args)
+        res = dplyr.group_by(self, *args,
+                             **{'.add': _add, '.drop': _drop})
         return GroupedDataFrame(res)
 
     @result_as
@@ -198,21 +190,21 @@ class DataFrame(robjects.DataFrame):
         return res
 
     @result_as
-    def mutate_all(self, **kwargs):
+    def mutate_all(self, *args, **kwargs):
         """Call the R function `dplyr::mutate_all()`."""
-        res = dplyr.mutate_all(self, **kwargs)
+        res = dplyr.mutate_all(self, *args, **kwargs)
         return res
 
     @result_as
-    def mutate_at(self, **kwargs):
+    def mutate_at(self, *args, **kwargs):
         """Call the R function `dplyr::mutate_at()`."""
-        res = dplyr.mutate_at(self, **kwargs)
+        res = dplyr.mutate_at(self, *args, **kwargs)
         return res
 
     @result_as
-    def mutate_if(self, **kwargs):
+    def mutate_if(self, *args, **kwargs):
         """Call the R function `dplyr::mutate_if()`."""
-        res = dplyr.mutate_if(self, **kwargs)
+        res = dplyr.mutate_if(self, *args, **kwargs)
         return res
 
     @result_as
@@ -362,9 +354,8 @@ def guess_wrap_type(x):
 class GroupedDataFrame(DataFrame):
     """DataFrame grouped by one of several factors."""
 
-    def ungroup(self, *args,
-                _add=False, _drop=robjects.rl('group_by_drop_default(.data)')):
-        res = dplyr.ungroup(*args, _add=_add, _drop=_drop)
+    def ungroup(self, *args):
+        res = dplyr.ungroup(self, *args)
         return guess_wrap_type(res)(res)
 
 

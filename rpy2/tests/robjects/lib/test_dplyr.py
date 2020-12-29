@@ -1,6 +1,7 @@
 import pytest
 from rpy2.robjects import packages
 from rpy2.robjects import rl
+from rpy2.robjects.vectors import StrVector
 
 try:
     from rpy2.robjects.lib import dplyr
@@ -43,9 +44,37 @@ class TestDplyr(object):
         dataf_filter = dplyr.filter(dataf, rl('gear > 3'))
         assert ngear_gt_3 == dataf_filter.nrow
 
+    def test_count(self):
+        dataf_a = dplyr.DataFrame(mtcars)
+        res = dataf_a.count()
+        assert tuple(res.rx2('n')) == (dataf_a.nrow, )
+
+    def test_distinct(self):
+        dataf_a = dplyr.DataFrame(mtcars)
+        res = dataf_a.distinct()
+        assert res.nrow == dataf_a.nrow
+
+    def test_sample_n(self):
+        dataf_a = dplyr.DataFrame(mtcars)
+        res = dataf_a.sample_n(5)
+        assert res.nrow == 5
+
+    def test_sample_frac(self):
+        dataf_a = dplyr.DataFrame(mtcars)
+        res = dataf_a.sample_frac(.5)
+        assert res.nrow == int(dataf_a.nrow / 2)
+
+    def test_sample_select(self):
+        dataf_a = dplyr.DataFrame(mtcars)
+        res = dataf_a.select('gear')
+        assert res.nrow == dataf_a.nrow
+
     def test_group_by(self):
         dataf_a = dplyr.DataFrame(mtcars)
         dataf_g = dataf_a.group_by(rl('gear'))
+        assert dataf_g.is_grouped_df
+        assert not dataf_g.ungroup().is_grouped_df
+        assert dataf_g.is_grouped_df
 
     def test_splitmerge_function(self):
         dataf = dplyr.DataFrame(mtcars)
@@ -61,6 +90,16 @@ class TestDplyr(object):
                                           dataf_b.rx2('gear')))
         assert all(a+1 == b for a, b in zip(dataf_a.rx2('gear'),
                                             dataf_b.rx2('bar')))
+
+    def test_mutate_at(self):
+        dataf_a = dplyr.DataFrame(mtcars)
+        dataf_b = dataf_a.mutate_at(StrVector(["gear"]), rl('sqrt'))
+        assert type(dataf_b) is dplyr.DataFrame
+
+    def test_mutate_at(self):
+        dataf_a = dplyr.DataFrame(mtcars)
+        dataf_b = dataf_a.mutate_all(rl('sqrt'))
+        assert type(dataf_b) is dplyr.DataFrame
 
     @pytest.mark.parametrize('join_method',
                              ('inner_join', 'left_join', 'right_join',
