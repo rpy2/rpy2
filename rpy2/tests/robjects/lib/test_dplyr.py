@@ -96,7 +96,7 @@ class TestDplyr(object):
         dataf_b = dataf_a.mutate_at(StrVector(["gear"]), rl('sqrt'))
         assert type(dataf_b) is dplyr.DataFrame
 
-    def test_mutate_at(self):
+    def test_mutate_all(self):
         dataf_a = dplyr.DataFrame(mtcars)
         dataf_b = dataf_a.mutate_all(rl('sqrt'))
         assert type(dataf_b) is dplyr.DataFrame
