@@ -26,6 +26,16 @@ if not dplyr.__version__.startswith(TARGET_VERSION):
         (TARGET_VERSION, dplyr.__version__))
 
 
+def _wrap(rfunc, cls):
+    def func(dataf, *args, **kwargs):
+        res = rfunc(dataf, *args, **kwargs)
+        if cls is None:
+            return type(dataf)(res)
+        else:
+            return cls(res)
+    return func
+
+
 def _wrap2(rfunc, cls, env=robjects.globalenv):
     def func(dataf_a, dataf_b, *args, **kwargs):
         res = rfunc(dataf_a, dataf_b,
