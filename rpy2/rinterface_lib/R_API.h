@@ -376,8 +376,8 @@ typedef enum {
 
 #ifdef OSNAME_NT
 char *getDLLVersion(void);
-extern char *getRUser)(void);
-extern char *get_R_HOME)(void);
+extern char *getRUser(void);
+extern char *get_R_HOME(void);
 void setup_term_ui(void);
 extern int UserBreak;
 extern Rboolean AllDevicesKilled;

@@ -111,7 +111,7 @@ Converter objects
 :class:`rpy2.robjects.conversion.Converter` objects are designed
 to keep sets of conversion rules together. There can be as many instances
 of that class as desired, but the one called `converter` in
-:mod:`rpy2.convertion.conversion` is the one used whenever conversion is needed.
+:mod:`rpy2.robjects.conversion` is the one used whenever conversion is needed.
 
 The :class:`Converter` has 2 attributes `rpy2py` and `py2rpy` to resolve
 the conversion from R (`rinterface-level`) to an arbitrary Python representation,
@@ -156,64 +156,61 @@ will look like:
    from rpy2.robjects import default_converter
    conversion_rules = default_converter + seq_converter
 
+While a dispatch solely based on Python classes will work very well in the
+direction "Python to `rpy2.rinterface`" it will quickly show limits in the direction
+"`rpy2.rinterface` to Python", especially when independently-developed conversions
+must be  combined.
+
+The issue with converting from `rpy2.rinterface` to Python is not working too well
+because `rpy2.rinterface` mirrors the type of R objects at the C-level (as
+defined in R's C-API), but class definitions in R often sit outside
+of structure types found at the C level. They are just a mere attribute of the R object
+that contains a list class names. For example, an R `data.frame` is a `VECSXP` at
+C-level (that is an R `list`), but it has an attribute `"class"` that contains `"data.frame"`.
+   
 .. note::
 
-   While a dispatch solely based on Python classes will work very well in the
-   direction "Python to `rpy2.rinterface`" it will quickly show limits in the direction
-   "`rpy2.rinterface` to Python", especially when independently-developed conversions
-   must be  combined.
-
-   The issue with converting from `rpy2.rinterface` to Python is not working too well
-   because `rpy2.rinterface` mirrors the type of R objects at the C-level (as
-   defined in R's C-API), but class definitions in R often sit outside
-   of structure types found at the C level. They are just a mere attribute of the R object
-   that contains a list class names. For example, an R `data.frame` is a `VECSXP` at
-   C-level (that is an R `list`), but it has an attribute `"class"` that contains `"data.frame"`.
-
-   .. note::
-
-      Nothing would prevent someone to set the `"class"` attribute to `"data.frame"` to an R
-      object of different type at C-level. For example, it is perfectly possible to write
-      the following in R, and create an invalid data frame:
-
-      .. code-block:: r
-
-         > x <- c(1, 2, 3)
-	 > str(x)
-         int [1:3] 1 2 3
-	 > class(x) <- "data.frame"
-	 > str(x)
-         'data.frame':	0 obs. of  3 variables:
-          'data.frame' int  character(0) character(0) character(0)
-         Warning message:
-         In format.data.frame(x, trim = TRUE, drop0trailing = TRUE, ...) :
-           corrupt data frame: columns will be truncated or padded with NAs
+   Nothing would prevent someone to set the `"class"` attribute to `"data.frame"` to an R
+   object of different type at C-level. For example, it is perfectly possible to write
+   the following in R, and create an invalid data frame:
+   
+   .. code-block:: r
+		   
+      > x <- c(1, 2, 3)
+      > str(x)
+      int [1:3] 1 2 3
+      > class(x) <- "data.frame"
+      > str(x)
+      'data.frame':	0 obs. of  3 variables:
+       'data.frame' int  character(0) character(0) character(0)
+      Warning message:
+        In format.data.frame(x, trim = TRUE, drop0trailing = TRUE, ...) :
+        corrupt data frame: columns will be truncated or padded with NAs
  
-   To allow a dispatch based name-specified classes in R, the rpy2 conversion system
-   uses a secondary mechanism (the primary mechanism is the single dispatch-based one
-   presented above).
+To allow a dispatch based name-specified classes in R, the rpy2 conversion system
+uses a secondary mechanism (the primary mechanism is the single dispatch-based one
+presented above).
 
-   Instances of :class:`rpy2.robjects.conversion.NameClassMap` can map and R class name to
-   a Python class. Remember that this mapping only happen within the context of an :mod:`rpy2.rinterface`
-   class though. The attribute :attr:`rpy2.robjects.conversion.Converter._rpy2py_nc_name` is
-   a :class:`dict` where keys are :mod:`rpy2.rinterface` classes to wrap C-level R objects, and
-   values are instances of :class:`rpy2.robjects.conversion.NameClassMap`.
+Instances of :class:`rpy2.robjects.conversion.NameClassMap` can map and R class name to
+a Python class. Remember that this mapping only happen within the context of an :mod:`rpy2.rinterface`
+class though. The attribute :attr:`rpy2.robjects.conversion.Converter._rpy2py_nc_name` is
+a :class:`dict` where keys are :mod:`rpy2.rinterface` classes to wrap C-level R objects, and
+values are instances of :class:`rpy2.robjects.conversion.NameClassMap`.
 
-   For example, a conversion rule for R objects of class "lm" that are R lists at
-   the C level (this is a real exemple - R's linear model fit objects are just that)
-   can be added to a converter with:
+For example, a conversion rule for R objects of class "lm" that are R lists at
+the C level (this is a real exemple - R's linear model fit objects are just that)
+can be added to a converter with:
 
-   .. code-block:: python
+.. code-block:: python
 
-      class Lm(rinterface.ListSexpVector):
-          # implement attributes, properties, methods to make the handling of
-	  # the R object more convenient on the Python side
-	  pass
+   class Lm(rinterface.ListSexpVector):
+       # implement attributes, properties, methods to make the handling of
+       # the R object more convenient on the Python side
+       pass
 
-      clsmap = myconverter._rpy2py_nc_name[rinterface.ListSexpVector]
-      clsmap.update({'lm': Lm})
-   
-   
+   clsmap = myconverter._rpy2py_nc_name[rinterface.ListSexpVector]
+   clsmap.update({'lm': Lm})
+
 Local conversion rules
 ^^^^^^^^^^^^^^^^^^^^^^
 
