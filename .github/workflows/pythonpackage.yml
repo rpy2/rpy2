@@ -86,7 +86,7 @@ jobs:
         python -m pip install ipython
         bash -e ./scripts/run_test_pandas.sh
     - name: Set RSPM
-      if: startsWith(matrix.os, 'ubuntu'
+      if: startsWith(matrix.os, 'ubuntu')
       run:
           echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
     - name: Test with R deps
