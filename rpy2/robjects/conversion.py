@@ -43,7 +43,9 @@ class NameClassMap(object):
     default = property(lambda self: self._default)
 
     def __init__(self, defaultcls: typing.Type = object,
-                 namemap: dict = {}):
+                 namemap: typing.Optional[dict] = None):
+        if namemap is None:
+            namemap = {}
         self._default = defaultcls
         self._map = namemap.copy()
 
