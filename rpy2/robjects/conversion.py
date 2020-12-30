@@ -181,6 +181,8 @@ def _py2rpy(obj):
     This function will convert Python objects into rpy2.rinterface
     objects.
     """
+    if isinstance(obj, _rinterface_capi.SupportsSEXP):
+        return obj
     raise NotImplementedError(
         "Conversion 'py2rpy' not defined for objects of type '%s'" %
         str(type(obj))
