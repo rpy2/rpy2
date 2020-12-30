@@ -885,7 +885,7 @@ def _update_R_ENC_PY():
 
     l10n_info = tuple(baseenv['l10n_info']())
     if platform.system() == 'Windows':
-        val_latin1 = 'cp{}'.format(l10n_info[3])
+        val_latin1 = 'cp{:d}'.format(l10n_info[3][0])
     else:
         val_latin1 = 'latin1'
     conversion._R_ENC_PY[openrlib.rlib.CE_LATIN1] = val_latin1
