@@ -131,7 +131,10 @@ def _initr(
         elif openrlib.R_HOME is None:
             raise ValueError('openrlib.R_HOME cannot be None.')
         elif openrlib.rlib.R_NilValue != ffi.NULL:
-            warnings.warn('R was initialized outside of rpy2 (R_NilValue != NULL). Trying to use it nevertheless.')
+            warnings.warn(
+                'R was initialized outside of rpy2 (R_NilValue != NULL). '
+                'Trying to use it nevertheless.'
+            )
             _setinitialized()
             return None
         os.environ['R_HOME'] = openrlib.R_HOME
