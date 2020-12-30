@@ -43,6 +43,11 @@ Changes
 - The conversion of R/rpy2 objects to python objects using R class name mapping
   is extended to more classes. The documentation about conversion covers the topic.
 
+- If `R_NilValue` is not null when the initialization of the embedded R is attempted,
+  it is now assumed that R was initialized through other means (e.g., an other C library in the
+  same process) and the C-level initialization is be skipped.
+
+
 Bugs fixed
 ----------
 
