@@ -77,7 +77,10 @@ Bugs fixed
   turned to `None` in the resulting `numpy` array (issue #751).
 
 - `rpy2.situation.get_rlib_path()` was returning an environment variable
-  with an invalid separator on Windows (mentioned in issue 754).
+  with an invalid separator on Windows (mentioned in issue #754).
+
+- R strings encoded with something else than 'utf-8' could result in
+  errors when trying to convert to Python strings (issue #754).
 
 - Extracting documentation pages for R objects in packages could
   generate spurious warnings when several "section" tags are present.
