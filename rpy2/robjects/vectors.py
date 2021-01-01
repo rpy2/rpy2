@@ -691,20 +691,26 @@ class ListVector(Vector, ListSexpVector):
                 elements.append(e)
 
         names = list()
+        rnames = self.names
         if len(self) <= max_items:
-            names.extend(self.names)
+            names.extend(
+                rnames
+                if rnames != rinterface.NULL
+                else '[no name]'*len(self)
+            )
         else:
             half_items = max_items // 2
             for i in range(0, half_items):
                 try:
-                    name = self.names[i]
+                    name = (rnames[i]
+                            if rnames != rinterface.NULL else '[no name]')
                 except TypeError:
                     name = '[no name]'
                 names.append(name)
             names.append('...')
             for i in range(-half_items, 0):
                 try:
-                    name = self.names[i]
+                    name = rnames[i]
                 except TypeError:
                     name = '[no name]'
                 names.append(name)

@@ -88,7 +88,7 @@ class RObjectMixin(object):
         except Exception:
             rclasses = 'Unable to fetch R classes.' + os.linesep
         os.linesep.join((rclasses,
-                         repr(super())))
+                         super().__repr__()))
         return rclasses
 
     def __str__(self):

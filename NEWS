@@ -89,6 +89,9 @@ Bugs fixed
   :class:`rpy2.robjects.vectors.DateVector` objects but left as
   R arrays of floats (which they are at the C level).
 
+- The HTML representation of short R lists without names could
+  fail with an error.
+
 
 Release 3.3.6
 =============
