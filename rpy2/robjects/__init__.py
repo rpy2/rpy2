@@ -114,20 +114,20 @@ def _convert_rpy2py_floatvector(obj):
 
 @default_converter.rpy2py.register(rinterface.ComplexSexpVector)
 def _convert_rpy2py_complexvector(obj):
-    cls = _vector_matrix_array(obj, vectors.ComplexVector,
-                               vectors.ComplexMatrix, vectors.ComplexArray)
+    clsmap = conversion.converter.rpy2py_nc_name[rinterface.ComplexSexpVector]
+    cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.BoolSexpVector)
 def _convert_rpy2py_boolvector(obj):
-    cls = _vector_matrix_array(obj, vectors.BoolVector,
-                               vectors.BoolMatrix, vectors.BoolArray)
+    clsmap = conversion.converter.rpy2py_nc_name[rinterface.BoolSexpVector]
+    cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.StrSexpVector)
-def _convert_rpy2py_strvector(obj):
+def _convert_rpy2py_strvector(obj):    
     cls = _vector_matrix_array(obj, vectors.StrVector,
                                vectors.StrMatrix, vectors.StrArray)
     return cls(obj)
@@ -336,6 +336,22 @@ default_converter._rpy2py_nc_map.update(
                                              vectors.FloatMatrix, vectors.FloatArray)(obj),
             {'Date': DateVector,
              'POSIXct': POSIXct}),
+        rinterface.BoolSexpVector: conversion.NameClassMap(
+            lambda obj: _vector_matrix_array(obj, vectors.BoolVector,
+                                             vectors.BoolMatrix, vectors.BoolArray)(obj)
+        ),
+        rinterface.ByteSexpVector: conversion.NameClassMap(
+            lambda obj: _vector_matrix_array(obj, vectors.ByteVector,
+                                             vectors.ByteMatrix, vectors.ByteArray)(obj)
+        ),
+        rinterface.StrSexpVector: conversion.NameClassMap(
+            lambda obj: _vector_matrix_array(obj, vectors.StrVector,
+                                             vectors.StrMatrix, vectors.StrArray)(obj)
+        ),
+        rinterface.ComplexSexpVector: conversion.NameClassMap(
+            lambda obj: _vector_matrix_array(obj, vectors.ComplexVector,
+                                             vectors.ComplexMatrix, vectors.ComplexArray)(obj)
+        ),
         rinterface.ListSexpVector: conversion.NameClassMap(
             ListVector,
             {'data.frame': DataFrame}),

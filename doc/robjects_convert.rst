@@ -211,7 +211,6 @@ can be added to a converter with:
    clsmap = myconverter._rpy2py_nc_name[rinterface.ListSexpVector]
    clsmap.update({'lm': Lm})
 
-
 Local conversion rules
 ^^^^^^^^^^^^^^^^^^^^^^
 
