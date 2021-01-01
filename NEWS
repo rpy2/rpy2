@@ -92,6 +92,9 @@ Bugs fixed
 - The HTML representation of short R lists without names could
   fail with an error.
 
+- The :meth:`__repr__` of `robjects`-level objects was not displaying
+  the rpy2 class the R object is mapped to.
+
 
 Release 3.3.6
 =============

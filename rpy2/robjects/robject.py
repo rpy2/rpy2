@@ -81,16 +81,6 @@ class RObjectMixin(object):
             self.__slots = RSlots(self)
         return self.__slots
 
-    def __repr__(self):
-        try:
-            rclasses = ('R object with classes: {} mapped to:'
-                        .format(tuple(self.rclass)))
-        except Exception:
-            rclasses = 'Unable to fetch R classes.' + os.linesep
-        os.linesep.join((rclasses,
-                         super().__repr__()))
-        return rclasses
-
     def __str__(self):
         s = []
 
@@ -108,6 +98,18 @@ class RObjectMixin(object):
         rds, __dict__ = state
         super().__setstate__(rds)
         self.__dict__.update(__dict__)
+
+    def __repr__(self):
+        res = [super(RObjectMixin, self).__repr__()]
+        try:
+            res.append(
+                'R classes: {}'
+                .format(tuple(self.rclass))
+            )
+        except Exception:
+            res.append('Unable to fetch R classes.')
+        return os.linesep.join(res)
+
 
     def r_repr(self):
         """ String representation for an object that can be
