@@ -49,6 +49,7 @@ jobs:
       run: |
         echo "::set-output name=file::$(basename -a $(ls dist/*.whl))"
     - id: getfilename_targz
+      if: (matrix.r-version == '4.0' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8')
       run: |
         echo "::set-output name=file::$(basename -a $(ls dist/*.tar.gz))"
     - name: Create package for master
@@ -59,7 +60,7 @@ jobs:
           path: dist/${{ steps.getfilename_wheel.outputs.file }}
     - name: Create source package for master
       uses: actions/upload-artifact@v1
-      if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == '4.0' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8'
+      if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == '4.0' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8')
       with:
           name: ${{ steps.getfilename_targz.outputs.file }}
           path: dist/${{ steps.getfilename_targz.outputs.file }}
