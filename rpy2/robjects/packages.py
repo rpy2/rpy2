@@ -389,7 +389,7 @@ class InstalledPackages(object):
         self.colnames = self.lib_results.do_slot('dimnames')[1]  # column names
         self.lib_packname_i = self.colnames.index('Package')
 
-    def isinstalled(self, packagename):
+    def isinstalled(self, packagename: str):
         if not isinstance(packagename, rinterface.StrSexpVector):
             rinterface.StrSexpVector((packagename, ))
         else:
@@ -413,7 +413,7 @@ class InstalledPackages(object):
             yield tuple(lib_results[x*nrows+row_i] for x in colrg)
 
 
-def isinstalled(name,
+def isinstalled(name: str,
                 lib_loc=None):
     """
     Find whether an R package is installed
@@ -427,7 +427,7 @@ def isinstalled(name,
     return instapack.isinstalled(name)
 
 
-def importr(name,
+def importr(name: str,
             lib_loc=None,
             robject_translations={},
             signature_translation=True,
