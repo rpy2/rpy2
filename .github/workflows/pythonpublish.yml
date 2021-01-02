@@ -42,7 +42,7 @@ jobs:
       run: |
         python setup.py bdist_wheel
     - name: Build sdist
-      if: (matrix.r-version == '4.0' && matrix.os == 'ubuntu' && matrix.python-version == '3.8')
+      if: (matrix.r-version == '4.0' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8')
       run: |
         python setup.py sdist
     - id: getfilename
