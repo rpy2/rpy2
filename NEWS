@@ -1,3 +1,13 @@
+Release 3.4.1
+=============
+
+Bugs fixed
+----------
+
+- The file `requirements.txt` was missing from the source distribution
+  on pypi (issue #764).
+
+
 Release 3.4.0
 =============
 
