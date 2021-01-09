@@ -149,6 +149,7 @@ def _initr(
         rlib.Rf_initialize_R(n_options_c, options_c)
         if _c_stack_limit:
             rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
+        rlib.R_Interactive = True
         rlib.setup_Rmainloop()
 
         _setinitialized()
