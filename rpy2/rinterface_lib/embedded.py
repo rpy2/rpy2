@@ -145,7 +145,7 @@ def _initr(
         # Instead of calling Rf_initEmbeddedR which breaks threaded context
         # perform the initialization manually to set R_CStackLimit before
         # calling setup_Rmainloop(), see:
-        # https://github.com/rpy2/rpy2/issues/729        
+        # https://github.com/rpy2/rpy2/issues/729
         rlib.Rf_initialize_R(n_options_c, options_c)
         if _c_stack_limit:
             rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
