@@ -1,3 +1,13 @@
+Release 3.4.2
+=============
+
+Bugs fixed
+----------
+
+- Multithreading during the initialization of the embedded R no longer
+  triggers a fatal error (issue #729)
+
+
 Release 3.4.1
 =============
 
