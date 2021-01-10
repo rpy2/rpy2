@@ -128,8 +128,8 @@ class Aes(robjects.ListVector):
     _constructor = ggplot2_env['aes']
 
     @classmethod
-    def new(cls, **kwargs):
-        res = cls(cls._constructor(**kwargs))
+    def new(cls, *args, **kwargs):
+        res = cls(cls._constructor(*args, **kwargs))
         return res
 
 
