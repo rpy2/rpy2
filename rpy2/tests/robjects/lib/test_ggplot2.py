@@ -20,6 +20,10 @@ class TestGGplot(object):
         gp = ggplot2.ggplot(mtcars)
         assert isinstance(gp, ggplot2.GGPlot)
 
+    def test_gglot_mapping(self):
+        gp = ggplot2.ggplot(mtcars, ggplot2.aes_string(x='gear'))
+        assert isinstance(gp, ggplot2.GGPlot)
+
     def test_element_text(self):
         et = ggplot2.element_text()
         assert isinstance(et, ggplot2.ElementText)

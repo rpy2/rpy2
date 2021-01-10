@@ -47,6 +47,7 @@ import rpy2.robjects as robjects
 import rpy2.robjects.constants
 import rpy2.robjects.conversion as conversion
 from rpy2.robjects.packages import importr, WeakPackage
+from rpy2.robjects import rl
 import warnings
 
 NULL = robjects.NULL
@@ -79,6 +80,8 @@ def as_symbol(x):
     return rlang.sym(x)
 
 
+_AES_RLANG = rl('ggplot2::aes()')
+
 class GGPlot(robjects.vectors.ListVector):
     """ A Grammar of Graphics Plot.
 
@@ -91,10 +94,10 @@ class GGPlot(robjects.vectors.ListVector):
     _add = ggplot2._env['%+%']
 
     @classmethod
-    def new(cls, data):
+    def new(cls, data, mapping=_AES_RLANG, **kwargs):
         """ Constructor for the class GGplot. """
         data = conversion.py2rpy(data)
-        res = cls(cls._constructor(data))
+        res = cls(cls._constructor(data, mapping=mapping, **kwargs))
         return res
 
     def plot(self, vp=rpy2.robjects.constants.NULL):
