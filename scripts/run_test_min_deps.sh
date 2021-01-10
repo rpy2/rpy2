@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 pytest \
     --cov-report=xml \
@@ -23,3 +24,10 @@ pytest \
     --cov-report=term \
     --cov=rpy2.rinterface_lib.embedded \
     rpy2/tests/rinterface/test_endr.py
+
+pytest \
+    --cov-append \
+    --cov-report=xml \
+    --cov-report=term \
+    --cov=rpy2.rinterface_lib.embedded \
+    rpy2/tests/rinterface/test_threading.py
