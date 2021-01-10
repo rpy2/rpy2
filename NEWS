@@ -7,6 +7,14 @@ Bugs fixed
 - Multithreading during the initialization of the embedded R no longer
   triggers a fatal error (issue #729)
 
+Changes
+-------
+
+- :mod:`pytest` is now an optional package. Optional sets of packages are
+  `numpy`, `pandas`, `test`, and `all` (all optional packages). They
+  can be specified during the installation. For example
+  `pip install rpy2[test]`. (issue #670)
+
 
 Release 3.4.1
 =============

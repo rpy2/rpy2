@@ -15,9 +15,24 @@ The project's webpage is here: https://rpy2.github.io/
 pip install rpy2
 ```
 
-The package is known to compile on Linux, MacOSX, and Windows
+The package has optional depencies providing
+specific functionalities not otherwise required to use the rest of rpy2.
+
+For example, to be able to run the unit tests:
+```bash
+pip install rpy2[test]
+```
+
+To install all dependencies, use:
+
+```bash
+pip install rpy2[all]
+```
+
+The package is known to compile on Linux, MacOSX
 (provided that developper tools are installed, and you are ready
-figure out how by yourself).
+figure out how by yourself). The situation is currently a little
+more complicated on Windows. Check the issue tracker.
 
 In case you find yourself with this source without any idea
 of what it takes to compile anything on your platform, try first
