@@ -82,6 +82,7 @@ def as_symbol(x):
 
 _AES_RLANG = rl('ggplot2::aes()')
 
+
 class GGPlot(robjects.vectors.ListVector):
     """ A Grammar of Graphics Plot.
 
