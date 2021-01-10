@@ -186,7 +186,16 @@ if __name__ == '__main__':
     ) as fh:
         requires = fh.read().splitlines()
         print(requires)
-    
+
+    extras_require = {
+        'test': ['pytest'],
+        'numpy': ['pandas'],
+        'pandas': ['numpy', 'pandas']
+    }
+    extras_require['all'] = list(
+        set(x for lst in extras_require.values()
+            for x in lst)
+    )
     setup(
         name=PACKAGE_NAME,
         version=pack_version,
@@ -197,6 +206,7 @@ if __name__ == '__main__':
         author='Laurent Gautier',
         author_email='lgautier@gmail.com',
         install_requires=requires,
+        extras_require=extras_require,
         setup_requires=['cffi>=1.10.0'],
         cffi_modules=cffi_modules,
         cmdclass = dict(build=build),
