@@ -51,7 +51,7 @@ jobs:
       run: |
         echo "Bug in setuptools requires update"
         ${{ matrix.venv_activate }}
-        python -m pip install --upgrade setuptools pycparser tzdata
+        python -m pip install --upgrade setuptools pycparser
     - name: Lint with flake8
       run: |
         ${{ matrix.venv_activate }}
