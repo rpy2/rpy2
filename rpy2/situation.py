@@ -88,7 +88,14 @@ def r_home_from_registry() -> Optional[str]:
         r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
         winreg.CloseKey(hkey)
     except Exception:  # FileNotFoundError, WindowsError, etc
-        return None
+        try:
+            hkey = winreg.OpenKeyEx(winreg.HKEY_CURRENT_USER,
+                                    'Software\\R-core\\R',
+                                    0, winreg.KEY_QUERY_VALUE)
+            r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
+            winreg.CloseKey(hkey)
+        except Exception:  # FileNotFoundError, WindowsError, etc
+            return None
     if sys.version_info[0] == 2:
         r_home = r_home.encode(sys.getfilesystemencoding())
     return r_home
