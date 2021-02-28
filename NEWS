@@ -1,3 +1,14 @@
+Release 3.4.3
+=============
+
+Bugs fixed
+----------
+
+- Calling mod:`rpy2.situation` to report on the environment no longer
+  stops with an uncaught exception when no R home can be determined
+  (issue #774)
+
+ 
 Release 3.4.2
 =============
 
