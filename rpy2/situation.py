@@ -319,7 +319,10 @@ def iter_info():
     # not applicable for Windows
     if os.name != 'nt':
         yield make_bold("R's additions to LD_LIBRARY_PATH:")
-        yield r_ld_library_path_from_subprocess(r_home)
+        if r_home is None:
+            yield('     *** undefined when not R home can be determined')
+        else:
+            yield r_ld_library_path_from_subprocess(r_home)
 
     if has_rpy2:
         try:
