@@ -951,7 +951,7 @@ def _post_initr_setup() -> None:
                 raise ve
     else:
         warn_about_thread = True
-    if  warn_about_thread:
+    if warn_about_thread:
         warnings.warn(
             textwrap.dedent(
                 """R is not initialized by the main thread.
