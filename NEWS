@@ -8,6 +8,9 @@ Bugs fixed
   stops with an uncaught exception when no R home can be determined
   (issue #774)
 
+- Converting pandas series with the older numpy types could result
+  in an error (issue #781)
+
  
 Release 3.4.2
 =============
