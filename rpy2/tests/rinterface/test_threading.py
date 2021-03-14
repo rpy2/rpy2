@@ -18,7 +18,7 @@ class ThreadWithExceptions(Thread):
 
 @pytest.mark.skipif(embedded.rpy2_embeddedR_isinitialized,
                     reason='Can only be tested before R is initialized.')
-def test_threading():
+def test_threading__initr():
     thread = ThreadWithExceptions(target=rpy2.rinterface_lib.embedded._initr)
     thread.start()
     thread.join()
@@ -27,7 +27,9 @@ def test_threading():
 
 @pytest.mark.skipif(embedded.rpy2_embeddedR_isinitialized,
                     reason='Can only be tested before R is initialized.')
-def test_threading_signal():
+def test_threading_initr_simple():
+    # This initialization performs more post-initialization setup compared to _initr.
+    # It will check whether R is initialized from the main thread.
     thread = ThreadWithExceptions(target=rpy2.rinterface.initr_simple)
     with pytest.warns(
         UserWarning,
