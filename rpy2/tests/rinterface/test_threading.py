@@ -1,16 +1,8 @@
 import pytest
+import rpy2.rinterface
+import rpy2.rinterface_lib.embedded
 from threading import Thread
 from rpy2.rinterface import embedded
-
-
-def rpy2_init():
-    from rpy2.rinterface_lib.embedded import _initr
-    _initr()
-
-
-def rpy2_init_simple():
-    from rpy2.rinterface import initr_simple
-    initr_simple()
 
 
 class ThreadWithExceptions(Thread):
@@ -27,7 +19,7 @@ class ThreadWithExceptions(Thread):
 @pytest.mark.skipif(embedded.rpy2_embeddedR_isinitialized,
                     reason='Can only be tested before R is initialized.')
 def test_threading():
-    thread = ThreadWithExceptions(target=rpy2_init)
+    thread = ThreadWithExceptions(target=rpy2.rinterface_lib.embedded._initr)
     thread.start()
     thread.join()
     assert not thread.exception
@@ -36,7 +28,7 @@ def test_threading():
 @pytest.mark.skipif(embedded.rpy2_embeddedR_isinitialized,
                     reason='Can only be tested before R is initialized.')
 def test_threading_signal():
-    thread = ThreadWithExceptions(target=rpy2_init_simple)
+    thread = ThreadWithExceptions(target=rpy2.rinterface.initr_simple)
     with pytest.warns(
         UserWarning,
         match=(
