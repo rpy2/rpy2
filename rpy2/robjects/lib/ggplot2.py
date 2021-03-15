@@ -43,11 +43,13 @@ and provide a more dynamic mapping.
 """
 
 
+import rpy2.rinterface_lib._rinterface_capi as _rinterface_capi
 import rpy2.robjects as robjects
 import rpy2.robjects.constants
 import rpy2.robjects.conversion as conversion
 from rpy2.robjects.packages import importr, WeakPackage
 from rpy2.robjects import rl
+import typing
 import warnings
 
 NULL = robjects.NULL
@@ -1324,6 +1326,57 @@ map_data = ggplot2.map_data
 theme = ggplot2_env['theme']
 
 ggtitle = ggplot2.ggtitle
+xlab = ggplot2.xlab
+ylab = ggplot2.ylab
+guide_axis = ggplot2.guide_axis
+guide_bins = ggplot2.guide_bins
+guide_colorbar = ggplot2.guide_colorbar
+guide_colourbar = guide_colorbar
+guide_colorsteps = ggplot2.guide_colorsteps
+guide_coloursteps = guide_colorsteps
+guide_geom = ggplot2.guide_geom
+guide_legend = ggplot2.guide_legend
+guide_merge = ggplot2.guide_merge
+guide_none = ggplot2.guide_none
+guide_train = ggplot2.guide_train
+guide_transform = ggplot2.guide_transform
+
+
+def as_labeller(x: typing.Union[typing.Dict[str, str],
+                                _rinterface_capi.SupportsSEXP],
+                *args, **kwargs):
+    """
+    Create a ggplot2 labeller.
+
+    See the R man page for `ggplot2::as_labeller` for details.
+
+    :param x: Either an R object, a dict mapping strings with current
+    labels to strings with new labels
+    :return: A ggplot2 object
+    """
+    # TODO: The type hit for in x as a typing.Dict might have to be
+    # changed to a generic alias type and collections.abc.Mapping
+    # to allow the use of default and other dict-like structures.
+    #
+    # The type hit for x is not typing.Callable[[str], str]
+    # because the R man page for labellers suggests that other
+    # signatures are possible.
+
+    if isinstance(x, dict):
+        # TODO: Should this there be a catchall like r_x = x?
+        r_x = StrVector(list(x.values()))
+        r_x.names = list(x.keys())
+    else:
+        if callable(x) and not isinstance(x, rpy2.rinterface.SexpClosure):
+            raise ValueError(
+                'ggplot2 labeller functions must be R functions. '
+                'Consider using the rpy2 function rternalize() when '
+                'wanting to use Python functions.')
+        else:
+            r_x = x
+
+    return ggplot2.as_labeller(r_x, *args, **kwargs)
+
 
 original_rpy2py = conversion.rpy2py
 

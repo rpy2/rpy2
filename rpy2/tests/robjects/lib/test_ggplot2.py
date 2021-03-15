@@ -1,6 +1,7 @@
 import pytest
 
 from rpy2.robjects import packages
+from rpy2.robjects import rl
 
 try:
     from rpy2.robjects.lib import ggplot2
@@ -85,4 +86,19 @@ class TestGGplot(object):
         theme = getattr(ggplot2, theme_name)
         gp = (ggplot2.ggplot(mtcars) +
               theme())
+        assert isinstance(gp, ggplot2.GGPlot)
+
+    @pytest.mark.parametrize(
+        'labeller',
+        (rl('as_labeller(c(`0` = "Zero", `1` = "One"))'),
+         {'0': 'Zero', '1': 'One'})
+    )
+    def test_as_labeller(self, labeller):
+        gp = (
+            ggplot2.ggplot(mtcars) +
+            ggplot2.facet_wrap(
+                rl('~am'),
+                labeller=ggplot2.as_labeller(labeller)
+            )
+        )
         assert isinstance(gp, ggplot2.GGPlot)
