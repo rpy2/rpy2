@@ -102,7 +102,12 @@ class TestPandasConversions(object):
     @pytest.mark.parametrize('dtype',
                              ('i',
                               numpy.int32 if has_pandas else None,
+                              numpy.int8 if has_pandas else None,
+                              numpy.int16 if has_pandas else None,
+                              numpy.int32 if has_pandas else None,
                               numpy.int64 if has_pandas else None,
+                              numpy.uint8 if has_pandas else None,
+                              numpy.uint16 if has_pandas else None,
                               pandas.Int32Dtype if has_pandas else None,
                               pandas.Int64Dtype if has_pandas else None))
     def test_series_int(self, dtype):
@@ -114,8 +119,9 @@ class TestPandasConversions(object):
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.IntSexpVector)
 
-    @pytest.mark.parametrize('dtype', (pandas.Int32Dtype() if has_pandas else None,
-                                       pandas.Int64Dtype() if has_pandas else None))
+    @pytest.mark.parametrize('dtype',
+                             (pandas.Int32Dtype() if has_pandas else None,
+                              pandas.Int64Dtype() if has_pandas else None))
     def test_dataframe_int_nan(self, dtype):
         a = pandas.DataFrame([(numpy.NaN,)], dtype=dtype, columns=['z'])
         with localconverter(default_converter + rpyp.converter) as cv:
