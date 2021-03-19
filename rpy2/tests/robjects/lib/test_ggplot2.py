@@ -91,7 +91,7 @@ class TestGGplot(object):
     @pytest.mark.parametrize(
         'labeller',
         (rl('as_labeller(c(`0` = "Zero", `1` = "One"))'),
-         {'0': 'Zero', '1': 'One'})
+         ggplot2.dict2rvec({'0': 'Zero', '1': 'One'}))
     )
     def test_as_labeller(self, labeller):
         gp = (

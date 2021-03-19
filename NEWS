@@ -1,3 +1,17 @@
+Release 3.4.3
+=============
+
+Changes
+-------
+
+- :mod:`rpy2.robjects.lib.ggplot2` maps more functions in the
+  R package (issue #767)
+
+- Utility function :func:`rpy2.robjects.lib.ggplot2.dict2rvec`
+  to convert a Python `Dict[str, str]` into an R named vector
+  of strings.
+
+
 Release 3.4.2
 =============
 

@@ -1342,44 +1342,17 @@ guide_train = ggplot2.guide_train
 guide_transform = ggplot2.guide_transform
 
 
-def as_labeller(x: typing.Union[typing.Dict[str, str],
-                                _rinterface_capi.SupportsSEXP],
-                *args, **kwargs):
+def dict2rvec(d):
+    """Convert a python dict[str, str] into an R named vector.
     """
-    Create a ggplot2 labeller.
+    r_x = StrVector(list(d.values()))
+    r_x.names = list(d.keys())
+    return r_x
 
-    See the R man page for `ggplot2::as_labeller` for details.
 
-    :param x: Either an R object, a dict mapping strings with current
-    labels to strings with new labels
-    :return: A ggplot2 object
-    """
-    # TODO: The type hit for in x as a typing.Dict might have to be
-    # changed to a generic alias type and collections.abc.Mapping
-    # to allow the use of default and other dict-like structures.
-    #
-    # The type hit for x is not typing.Callable[[str], str]
-    # because the R man page for labellers suggests that other
-    # signatures are possible.
-
-    if isinstance(x, dict):
-        # TODO: Should this there be a catchall like r_x = x?
-        r_x = StrVector(list(x.values()))
-        r_x.names = list(x.keys())
-    else:
-        if callable(x) and not isinstance(x, rpy2.rinterface.SexpClosure):
-            raise ValueError(
-                'ggplot2 labeller functions must be R functions. '
-                'Consider using the rpy2 function rternalize() when '
-                'wanting to use Python functions.')
-        else:
-            r_x = x
-
-    return ggplot2.as_labeller(r_x, *args, **kwargs)
-
+as_labeller = ggplot2.as_labeller
 
 original_rpy2py = conversion.rpy2py
-
 
 def ggplot2_conversion(robj):
 
