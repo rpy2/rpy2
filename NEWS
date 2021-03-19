@@ -11,6 +11,9 @@ Bugs fixed
 - Converting pandas series with the older numpy types could result
   in an error (issue #781)
 
+- Numpy converter was not properly turing R integer or float arrays
+  into their numpy equivalent.
+
  
 Release 3.4.2
 =============
