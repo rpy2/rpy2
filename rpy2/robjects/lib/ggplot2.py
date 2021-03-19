@@ -42,14 +42,11 @@ and provide a more dynamic mapping.
 
 """
 
-
-import rpy2.rinterface_lib._rinterface_capi as _rinterface_capi
 import rpy2.robjects as robjects
 import rpy2.robjects.constants
 import rpy2.robjects.conversion as conversion
 from rpy2.robjects.packages import importr, WeakPackage
 from rpy2.robjects import rl
-import typing
 import warnings
 
 NULL = robjects.NULL
@@ -1353,6 +1350,7 @@ def dict2rvec(d):
 as_labeller = ggplot2.as_labeller
 
 original_rpy2py = conversion.rpy2py
+
 
 def ggplot2_conversion(robj):
 
