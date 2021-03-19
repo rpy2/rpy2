@@ -4,7 +4,10 @@ import os
 import math
 import platform
 import signal
+import textwrap
+import threading
 import typing
+import warnings
 from typing import Union
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
@@ -937,7 +940,28 @@ def _post_initr_setup() -> None:
     )
     NA_Complex = na_values.NA_Complex
 
-    signal.signal(signal.SIGINT, _sigint_handler)
+    warn_about_thread = False
+    if threading.current_thread() is threading.main_thread():
+        try:
+            signal.signal(signal.SIGINT, _sigint_handler)
+        except ValueError as ve:
+            if str(ve) == 'signal only works in main thread':
+                warn_about_thread = True
+            else:
+                raise ve
+    else:
+        warn_about_thread = True
+    if warn_about_thread:
+        warnings.warn(
+            textwrap.dedent(
+                """R is not initialized by the main thread.
+                Its taking over SIGINT cannot be reversed here, and as a
+                consequence the embedded R cannot be interrupted with Ctrl-C.
+                Consider (re)setting the signal handler of your choice from
+                the main thread."""
+            )
+        )
+
     _update_R_ENC_PY()
 
 

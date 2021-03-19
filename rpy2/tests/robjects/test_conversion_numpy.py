@@ -154,7 +154,11 @@ class TestNumpyConversions(object):
         env['x'] = x
         assert len(env) == 1
         # do have an R object of the right type ?
-        x_r = env['x']
+        with conversion.localconverter(
+            robjects.default_converter
+        ) as lc:
+            x_r = env['x']
+
         assert robjects.rinterface.RTYPES.REALSXP == x_r.typeof
         #
         assert tuple(x_r.dim) == (20,)
@@ -184,7 +188,15 @@ class TestNumpyConversions(object):
         b = df.rx2('B')
         assert tuple((1,2,3)) == tuple(b)
 
-    
+    def test_rint_to_numpy(self):
+        a = robjects.r('c(1:4)')
+        assert isinstance(a, numpy.ndarray)
+
+    def test_rfloat_to_numpy(self):
+        a = robjects.r('c(1.0, 2.0, 3.0)')
+        assert isinstance(a, numpy.ndarray)
+
+
 @pytest.mark.skipif(not has_numpy,
                     reason='package numpy cannot be imported')
 @pytest.mark.parametrize('dtype',
@@ -217,4 +229,5 @@ def test_numpy_O_py2rpy(values, expected_cls):
     a = numpy.array(values, dtype='O')
     v = rpyn.numpy_O_py2rpy(a)
     assert isinstance(v, expected_cls)
+
     

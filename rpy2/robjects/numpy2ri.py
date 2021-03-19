@@ -169,6 +169,16 @@ def rpy2py_list(obj):
     return res
 
 
+@rpy2py.register(rinterface.IntSexpVector)
+def rpy2py_intvector(obj):
+    return numpy.array(obj)
+
+
+@rpy2py.register(rinterface.FloatSexpVector)
+def rpy2py_floatvector(obj):
+    return numpy.array(obj)
+
+
 @rpy2py.register(Sexp)
 def rpy2py_sexp(obj):
     if (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):

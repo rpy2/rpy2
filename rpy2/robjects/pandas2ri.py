@@ -188,7 +188,7 @@ def py2rpy_pandasseries(obj):
         func = numpy2ri.converter.py2rpy.registry[numpy.ndarray]
         # current conversion as performed by numpy
 
-        res = func(obj)
+        res = func(obj.values)
         if len(obj.shape) == 1:
             if (obj.dtype != dt_O_type):
                 # force into an R vector

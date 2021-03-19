@@ -1,8 +1,8 @@
 Release 3.4.3
 =============
 
-Changes
--------
+New features
+------------
 
 - :mod:`rpy2.robjects.lib.ggplot2` maps more functions in the
   R package (issue #767)
@@ -10,6 +10,19 @@ Changes
 - Utility function :func:`rpy2.robjects.lib.ggplot2.dict2rvec`
   to convert a Python `Dict[str, str]` into an R named vector
   of strings.
+
+Bugs fixed
+----------
+
+- Calling mod:`rpy2.situation` to report on the environment no longer
+  stops with an uncaught exception when no R home can be determined
+  (issue #774)
+
+- Converting pandas series with the older numpy types could result
+  in an error (issue #781)
+
+- Numpy converter was not properly turing R integer or float arrays
+  into their numpy equivalent.
 
 
 Release 3.4.2
