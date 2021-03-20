@@ -81,16 +81,28 @@ def r_home_from_registry() -> Optional[str]:
         import winreg  # type: ignore
     except ImportError:
         import _winreg as winreg  # type: ignore
-    try:
-        hkey = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE,
-                                'Software\\R-core\\R',
-                                0, winreg.KEY_QUERY_VALUE)
-        r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
-        winreg.CloseKey(hkey)
-    except Exception:  # FileNotFoundError, WindowsError, etc
-        return None
-    if sys.version_info[0] == 2:
-        r_home = r_home.encode(sys.getfilesystemencoding())
+    # There are two possible locations for RHOME in the registry
+    # We prefer the user installation (which the user has more control
+    # over). Thus, HKEY_CURRENT_USER is the first item in the list and
+    # the for-loop breaks at the first hit.
+    for w_hkey in [winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE]:
+        try:
+            with winreg.OpenKeyEx(w_hkey,
+                                  'Software\\R-core\\R',
+                                  0, winreg.KEY_QUERY_VALUE) as hkey:
+                r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
+        except Exception:  # FileNotFoundError, WindowsError, OSError, etc.
+            pass
+        else:
+            # We have a path RHOME
+            if sys.version_info[0] == 2:
+                # Python 2 path compatibility
+                r_home = r_home.encode(sys.getfilesystemencoding())
+            # Break the loop, because we have a hit.
+            break
+    else:
+        # for-loop did not break - RHOME is unknown.
+        r_home = None
     return r_home
 
 
