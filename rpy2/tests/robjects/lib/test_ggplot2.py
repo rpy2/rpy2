@@ -8,6 +8,7 @@ try:
     has_ggplot = True
     msg = ''
 except packages.PackageNotInstalledError as error:
+    ggplot2 = None
     has_ggplot = False
     msg = str(error)
 
