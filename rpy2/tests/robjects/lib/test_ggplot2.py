@@ -8,7 +8,6 @@ try:
     has_ggplot = True
     msg = ''
 except packages.PackageNotInstalledError as error:
-    ggplot2 = None
     has_ggplot = False
     msg = str(error)
 
@@ -92,10 +91,11 @@ class TestGGplot(object):
     @pytest.mark.parametrize(
         'labeller',
         (rl('as_labeller(c(`0` = "Zero", `1` = "One"))'),
-         ggplot2.dict2rvec({'0': 'Zero', '1': 'One'} if has_ggplot
-                           else None))
+         {'0': 'Zero', '1': 'One'})
     )
     def test_as_labeller(self, labeller):
+        if isinstance(labeller, dict):
+            labeller = ggplot2.dict2rvec(labeller)
         gp = (
             ggplot2.ggplot(mtcars) +
             ggplot2.facet_wrap(
