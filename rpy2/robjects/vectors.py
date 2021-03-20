@@ -696,7 +696,7 @@ class ListVector(Vector, ListSexpVector):
             names.extend(
                 rnames
                 if rnames != rinterface.NULL
-                else '[no name]'*len(self)
+                else ['[no name]'] * len(self)
             )
         else:
             half_items = max_items // 2
