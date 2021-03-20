@@ -42,11 +42,11 @@ and provide a more dynamic mapping.
 
 """
 
-
 import rpy2.robjects as robjects
 import rpy2.robjects.constants
 import rpy2.robjects.conversion as conversion
 from rpy2.robjects.packages import importr, WeakPackage
+from rpy2.robjects import rl
 import warnings
 
 NULL = robjects.NULL
@@ -79,6 +79,9 @@ def as_symbol(x):
     return rlang.sym(x)
 
 
+_AES_RLANG = rl('ggplot2::aes()')
+
+
 class GGPlot(robjects.vectors.ListVector):
     """ A Grammar of Graphics Plot.
 
@@ -91,10 +94,10 @@ class GGPlot(robjects.vectors.ListVector):
     _add = ggplot2._env['%+%']
 
     @classmethod
-    def new(cls, data):
+    def new(cls, data, mapping=_AES_RLANG, **kwargs):
         """ Constructor for the class GGplot. """
         data = conversion.py2rpy(data)
-        res = cls(cls._constructor(data))
+        res = cls(cls._constructor(data, mapping=mapping, **kwargs))
         return res
 
     def plot(self, vp=rpy2.robjects.constants.NULL):
@@ -125,8 +128,8 @@ class Aes(robjects.ListVector):
     _constructor = ggplot2_env['aes']
 
     @classmethod
-    def new(cls, **kwargs):
-        res = cls(cls._constructor(**kwargs))
+    def new(cls, *args, **kwargs):
+        res = cls(cls._constructor(*args, **kwargs))
         return res
 
 
@@ -1320,6 +1323,31 @@ map_data = ggplot2.map_data
 theme = ggplot2_env['theme']
 
 ggtitle = ggplot2.ggtitle
+xlab = ggplot2.xlab
+ylab = ggplot2.ylab
+guide_axis = ggplot2.guide_axis
+guide_bins = ggplot2.guide_bins
+guide_colorbar = ggplot2.guide_colorbar
+guide_colourbar = guide_colorbar
+guide_colorsteps = ggplot2.guide_colorsteps
+guide_coloursteps = guide_colorsteps
+guide_geom = ggplot2.guide_geom
+guide_legend = ggplot2.guide_legend
+guide_merge = ggplot2.guide_merge
+guide_none = ggplot2.guide_none
+guide_train = ggplot2.guide_train
+guide_transform = ggplot2.guide_transform
+
+
+def dict2rvec(d):
+    """Convert a python dict[str, str] into an R named vector.
+    """
+    r_x = StrVector(list(d.values()))
+    r_x.names = list(d.keys())
+    return r_x
+
+
+as_labeller = ggplot2.as_labeller
 
 original_rpy2py = conversion.rpy2py
 
