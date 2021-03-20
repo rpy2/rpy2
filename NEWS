@@ -24,6 +24,9 @@ Bugs fixed
 - Numpy converter was not properly turing R integer or float arrays
   into their numpy equivalent (issue #785)
 
+- The HTML representation of R list without named element was
+  incorrect (issue #787)
+
 
 Release 3.4.2
 =============
