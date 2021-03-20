@@ -27,6 +27,8 @@ Bugs fixed
 - The HTML representation of R list without named element was
   incorrect (issue #787)
 
+- Fix for when R is installed in a user home directory on Windows (PR #788)
+
 
 Release 3.4.2
 =============
