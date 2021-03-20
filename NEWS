@@ -22,7 +22,7 @@ Bugs fixed
   in an error (issue #781)
 
 - Numpy converter was not properly turing R integer or float arrays
-  into their numpy equivalent.
+  into their numpy equivalent (issue #785)
 
 
 Release 3.4.2
