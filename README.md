@@ -15,9 +15,24 @@ The project's webpage is here: https://rpy2.github.io/
 pip install rpy2
 ```
 
-The package is known to compile on Linux, MacOSX, and Windows
+The package has optional depencies providing
+specific functionalities not otherwise required to use the rest of rpy2.
+
+For example, to be able to run the unit tests:
+```bash
+pip install rpy2[test]
+```
+
+To install all dependencies, use:
+
+```bash
+pip install rpy2[all]
+```
+
+The package is known to compile on Linux, MacOSX
 (provided that developper tools are installed, and you are ready
-figure out how by yourself).
+figure out how by yourself). The situation is currently a little
+more complicated on Windows. Check the issue tracker.
 
 In case you find yourself with this source without any idea
 of what it takes to compile anything on your platform, try first
@@ -47,13 +62,13 @@ export LD_LIBRARY_PATH="$(python -m rpy2.situation LD_LIBRARY_PATH)":${LD_LIBRAR
 To try `rpy2` in an `ipython` console:
 
 ```bash
-docker run -it --rm -p 8888:8888 rpy2/jupyter-ubuntu ipython
+docker run --rm -p 8888:8888 rpy2/jupyter-ubuntu:master-20.04 ipython
 ```
 
 To run a jupypter notebook on port 8888:
 
 ```bash
-docker run --rm -p 8888:8888 rpy2/jupyter-ubuntu
+docker run --rm -p 8888:8888 rpy2/jupyter-ubuntu:master-20.04
 ```
 
 More information about Docker images can be found in the

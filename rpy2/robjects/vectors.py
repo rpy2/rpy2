@@ -691,20 +691,26 @@ class ListVector(Vector, ListSexpVector):
                 elements.append(e)
 
         names = list()
+        rnames = self.names
         if len(self) <= max_items:
-            names.extend(self.names)
+            names.extend(
+                rnames
+                if rnames != rinterface.NULL
+                else ['[no name]'] * len(self)
+            )
         else:
             half_items = max_items // 2
             for i in range(0, half_items):
                 try:
-                    name = self.names[i]
+                    name = (rnames[i]
+                            if rnames != rinterface.NULL else '[no name]')
                 except TypeError:
                     name = '[no name]'
                 names.append(name)
             names.append('...')
             for i in range(-half_items, 0):
                 try:
-                    name = self.names[i]
+                    name = rnames[i]
                 except TypeError:
                     name = '[no name]'
                 names.append(name)
@@ -853,6 +859,11 @@ class DateVector(FloatVector):
     @classmethod
     def sexp_from_date(cls, seq):
         return cls(FloatVector([x.toordinal() for x in seq]))
+
+    @staticmethod
+    def isrinstance(obj) -> bool:
+        """Return whether an R object an instance of Date."""
+        return obj.rclass[-1] == 'Date'
 
 
 class POSIXct(POSIXt, FloatVector):
@@ -1429,17 +1440,17 @@ class DataFrame(ListVector):
                    qmethod='escape', append=False):
         """ Save the data into a .csv file.
 
-        path         : string with a path
-        quote        : quote character
-        sep          : separator character
-        eol          : end-of-line character(s)
-        na           : string for missing values
-        dec          : string for decimal separator
-        row_names    : boolean (save row names, or not)
-        col_names    : boolean (save column names, or not)
-        comment_char : method to 'escape' special characters
-        append       : boolean (append if the file in the path is
-          already existing, or not)
+        :param path         : string with a path
+        :param quote        : quote character
+        :param sep          : separator character
+        :param eol          : end-of-line character(s)
+        :param na           : string for missing values
+        :param dec          : string for decimal separator
+        :param row_names    : boolean (save row names, or not)
+        :param col_names    : boolean (save column names, or not)
+        :param comment_char : method to 'escape' special characters
+        :param append       : boolean (append if the file in the path is
+        already existing, or not)
         """
         path = conversion.py2rpy(path)
         append = conversion.py2rpy(append)

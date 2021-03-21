@@ -81,16 +81,6 @@ class RObjectMixin(object):
             self.__slots = RSlots(self)
         return self.__slots
 
-    def __repr__(self):
-        try:
-            rclasses = ('R object with classes: {} mapped to:'
-                        .format(tuple(self.rclass)))
-        except Exception:
-            rclasses = 'Unable to fetch R classes.' + os.linesep
-        os.linesep.join((rclasses,
-                         repr(super())))
-        return rclasses
-
     def __str__(self):
         s = []
 
@@ -109,6 +99,18 @@ class RObjectMixin(object):
         super().__setstate__(rds)
         self.__dict__.update(__dict__)
 
+    def __repr__(self):
+        res = [super(RObjectMixin, self).__repr__()]
+        try:
+            res.append(
+                'R classes: {}'
+                .format(tuple(self.rclass))
+            )
+        except Exception:
+            res.append('Unable to fetch R classes.')
+        return os.linesep.join(res)
+
+
     def r_repr(self):
         """ String representation for an object that can be
         directly evaluated as R code.
@@ -124,7 +126,6 @@ class RObjectMixin(object):
 
         - wrapped in a Python tuple if a string (the R class
         is a vector of strings, and this is made for convenience)
-
         - wrapped in a StrSexpVector
 
         Note that when setting the class R may make a copy of
@@ -132,7 +133,8 @@ class RObjectMixin(object):
         If this must be avoided, and if the number of parent
         classes before and after the change are compatible,
         the class name can be changed in-place by replacing
-        vector elements."""
+        vector elements.
+        """
 
         try:
             res = super(RObjectMixin, self).rclass

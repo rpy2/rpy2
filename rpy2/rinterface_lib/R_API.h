@@ -342,6 +342,9 @@ extern SEXP R_ClassSymbol;
 extern SEXP R_NameSymbol;
 extern SEXP R_DimSymbol;
 
+/* include/Rinternals.h */
+Rboolean (Rf_isSymbol)(SEXP s);
+
 /* include/R_ext/Parse.h */
 typedef enum {
     PARSE_NULL,
@@ -373,8 +376,8 @@ typedef enum {
 
 #ifdef OSNAME_NT
 char *getDLLVersion(void);
-extern char *(*getRUser)(void);
-extern char *(*get_R_HOME)(void);
+extern char *getRUser(void);
+extern char *get_R_HOME(void);
 void setup_term_ui(void);
 extern int UserBreak;
 extern Rboolean AllDevicesKilled;

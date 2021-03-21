@@ -156,3 +156,34 @@ def test_scalar_convert_double():
 
 def test_scalar_convert_boolean():
     assert 'logical' == rinterface.baseenv['typeof'](True)[0]
+
+
+@pytest.mark.parametrize('give_env', (True, False))
+@pytest.mark.parametrize('use_rlock', (True, False))
+def test_call_in_context(give_env, use_rlock):
+    ls = rinterface.baseenv['ls']
+    get = rinterface.baseenv['get']
+    if give_env:
+        env = rinterface.baseenv['new.env']()
+    else:
+        env = None
+    assert 'foo' not in ls()
+    with rinterface.local_context(env=env, use_rlock=use_rlock) as lc:
+        lc['foo'] = 123
+        assert tuple(get('foo')) == (123, )
+    assert 'foo' not in ls()
+
+
+@pytest.mark.parametrize('use_rlock', (True, False))
+def test_call_in_context_nested(use_rlock):
+    ls = rinterface.baseenv['ls']
+    get = rinterface.baseenv['get']
+    assert 'foo' not in ls()
+    with rinterface.local_context() as lc_a:
+        lc_a['foo'] = 123
+        assert tuple(get('foo')) == (123, )
+        with rinterface.local_context(use_rlock=use_rlock) as lc_b:
+            lc_b['foo'] = 456
+            assert tuple(get('foo')) == (456, )
+        assert tuple(get('foo')) == (123, )
+    assert 'foo' not in ls()

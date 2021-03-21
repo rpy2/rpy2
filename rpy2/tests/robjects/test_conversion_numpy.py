@@ -22,41 +22,16 @@ except:
 
 @pytest.fixture()
 def numpy_conversion():
-    rpyn.activate()
-    yield
-    rpyn.deactivate()
+    with conversion.localconverter(
+            robjects.default_converter + rpyn.converter
+    ) as lc:
+        yield
 
 
 @pytest.mark.skipif(not has_numpy,
                     reason='package numpy cannot be imported')
 @pytest.mark.usefixtures('numpy_conversion')
 class TestNumpyConversions(object):
-
-    def test_activate(self):
-        rpyn.deactivate()
-        #FIXME: is the following still making sense ?
-        assert rpyn.py2rpy != conversion.py2rpy
-        l = len(conversion.py2rpy.registry)
-        k = set(conversion.py2rpy.registry.keys())
-        rpyn.activate()
-        assert len(conversion.py2rpy.registry) > l
-        rpyn.deactivate()
-        assert len(conversion.py2rpy.registry) == l
-        assert set(conversion.py2rpy.registry.keys()) == k
-
-    def test_activate_twice(self):
-        rpyn.deactivate()
-        #FIXME: is the following still making sense ?
-        assert rpyn.py2rpy != conversion.py2rpy
-        l = len(conversion.py2rpy.registry)
-        k = set(conversion.py2rpy.registry.keys())
-        rpyn.activate()
-        rpyn.deactivate()
-        rpyn.activate()
-        assert len(conversion.py2rpy.registry) > l
-        rpyn.deactivate()
-        assert len(conversion.py2rpy.registry) == l
-        assert set(conversion.py2rpy.registry.keys()) == k
 
     def check_homogeneous(self, obj, mode, storage_mode):
         converted = conversion.py2rpy(obj)
@@ -179,7 +154,11 @@ class TestNumpyConversions(object):
         env['x'] = x
         assert len(env) == 1
         # do have an R object of the right type ?
-        x_r = env['x']
+        with conversion.localconverter(
+            robjects.default_converter
+        ) as lc:
+            x_r = env['x']
+
         assert robjects.rinterface.RTYPES.REALSXP == x_r.typeof
         #
         assert tuple(x_r.dim) == (20,)
@@ -209,7 +188,15 @@ class TestNumpyConversions(object):
         b = df.rx2('B')
         assert tuple((1,2,3)) == tuple(b)
 
-    
+    def test_rint_to_numpy(self):
+        a = robjects.r('c(1:4)')
+        assert isinstance(a, numpy.ndarray)
+
+    def test_rfloat_to_numpy(self):
+        a = robjects.r('c(1.0, 2.0, 3.0)')
+        assert isinstance(a, numpy.ndarray)
+
+
 @pytest.mark.skipif(not has_numpy,
                     reason='package numpy cannot be imported')
 @pytest.mark.parametrize('dtype',
@@ -242,4 +229,5 @@ def test_numpy_O_py2rpy(values, expected_cls):
     a = numpy.array(values, dtype='O')
     v = rpyn.numpy_O_py2rpy(a)
     assert isinstance(v, expected_cls)
+
     

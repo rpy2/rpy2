@@ -20,7 +20,7 @@ except KeyError:
     _str2lang = ri.evalr('function(s) parse(text=s, keep.source=FALSE)[[1]]')
 
 
-def eval(x: str, envir: ri.SexpEnvironment = ri.globalenv) -> ri.Sexp:
+def eval(x: str, envir: typing.Optional[ri.SexpEnvironment] = None) -> ri.Sexp:
     """ Evaluate R code. If the input object is an R expression it
     evaluates it directly, if it is a string it parses it before
     evaluating it.
@@ -29,16 +29,19 @@ def eval(x: str, envir: ri.SexpEnvironment = ri.globalenv) -> ri.Sexp:
     but a specific environment can be specified.
 
     Args:
-        x (str): a string to be parsed and evaluated as R code
-        envir (rpy2.rinterface.SexpEnvironment): An R environment in
-          which to evaluate the R code.
+    - x (str): a string to be parsed and evaluated as R code
+    - envir (rpy2.rinterface.SexpEnvironment): An optional R environment
+    in which to evaluate the R code.
     Returns:
-        The R objects resulting from the evaluation."""
+    The R objects resulting from the evaluation."""
+
+    if envir is None:
+        envir = ri.get_evaluation_context()
     if isinstance(x, str):
         p = _parse(x)
     else:
         p = x
-    res = _reval(p, envir=envir)
+    res = _reval(p, env=envir)
     res = conversion.rpy2py(res)
     return res
 
@@ -76,10 +79,12 @@ class LangVector(RObject, ri.LangSexpVector):
     def from_string(cls: typing.Type[LangVector_VT], s: str) -> LangVector_VT:
         """Create an R language object from a string.
 
+        This creates an unevaluated R language object.
+
         Args:
-            s: a string containing (only) R code.
+            s: R source code in a string.
 
         Returns:
-            An instance of the class.
+            An instance of the class the method is from (e.g., LangVector)
         """
         return cls(_str2lang(s))

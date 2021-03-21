@@ -13,6 +13,8 @@ from rpy2.rinterface_lib import conversion
 
 logger = logging.getLogger(__name__)
 
+_CCHAR_ENCODING = 'utf-8'
+
 
 # TODO: rename to "replace_in_module"
 @contextmanager
@@ -60,7 +62,7 @@ _READCONSOLE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error with '
 def _consoleread(prompt, buf, n: int, addtohistory) -> int:
     success = None
     try:
-        s = conversion._cchar_to_str(prompt)
+        s = conversion._cchar_to_str(prompt, _CCHAR_ENCODING)
         reply = consoleread(s)
     except Exception as e:
         success = 0
@@ -127,7 +129,7 @@ _WRITECONSOLE_EXCEPTION_LOG = 'R[write to console]: %s'
 @ffi_proxy.callback(ffi_proxy._consolewrite_ex_def,
                     openrlib._rinterface_cffi)
 def _consolewrite_ex(buf, n: int, otype: int) -> None:
-    s = conversion._cchar_to_str_with_maxlen(buf, maxlen=n)
+    s = conversion._cchar_to_str_with_maxlen(buf, n, _CCHAR_ENCODING)
     try:
         if otype == 0:
             consolewrite_print(s)
@@ -148,7 +150,7 @@ _SHOWMESSAGE_EXCEPTION_LOG = 'R[show message]: %s'
 @ffi_proxy.callback(ffi_proxy._showmessage_def,
                     openrlib._rinterface_cffi)
 def _showmessage(buf):
-    s = conversion._cchar_to_str(buf)
+    s = conversion._cchar_to_str(buf, _CCHAR_ENCODING)
     try:
         showmessage(s)
     except Exception as e:
@@ -211,11 +213,17 @@ def _showfiles(nfiles: int, files, headers, wtitle, delete, pager) -> int:
     wtitle_str = None
     pager_str = None
     try:
-        wtitle_str = conversion._cchar_to_str(wtitle)
-        pager_str = conversion._cchar_to_str(pager)
+        wtitle_str = conversion._cchar_to_str(wtitle, _CCHAR_ENCODING)
+        pager_str = conversion._cchar_to_str(pager, _CCHAR_ENCODING)
         for i in range(nfiles):
-            filenames.append(conversion._cchar_to_str(files[i]))
-            headers_str.append(conversion._cchar_to_str(headers[i]))
+            filenames.append(
+                conversion._cchar_to_str(files[i],
+                                         _CCHAR_ENCODING)
+            )
+            headers_str.append(
+                conversion._cchar_to_str(headers[i],
+                                         _CCHAR_ENCODING)
+            )
     except Exception as e:
         logger.error(_SHOWFILE_INTERNAL_EXCEPTION_LOG, str(e))
 
@@ -324,7 +332,7 @@ _YESNOCANCEL_EXCEPTION_LOG = 'R[yesnocancel]: %s'
                     openrlib._rinterface_cffi)
 def _yesnocancel(question):
     try:
-        q = conversion._cchar_to_str(question)
+        q = conversion._cchar_to_str(question, _CCHAR_ENCODING)
         res = yesnocancel(q)
     except Exception as e:
         logger.error(_YESNOCANCEL_EXCEPTION_LOG, str(e))

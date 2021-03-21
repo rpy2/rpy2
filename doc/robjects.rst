@@ -18,6 +18,7 @@ The robjects package
    robjects_rpackages
    robjects_oop
    robjects_serialization
+   robjects_language
 
 
 

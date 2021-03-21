@@ -13,6 +13,11 @@ import sys
 from typing import Optional
 import warnings
 
+if sys.maxsize > 2**32:
+    r_version_folder = 'x64'
+else:
+    r_version_folder = 'i386'
+
 try:
     import rpy2  # noqa:F401
     has_rpy2 = True
@@ -76,16 +81,28 @@ def r_home_from_registry() -> Optional[str]:
         import winreg  # type: ignore
     except ImportError:
         import _winreg as winreg  # type: ignore
-    try:
-        hkey = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE,
-                                'Software\\R-core\\R',
-                                0, winreg.KEY_QUERY_VALUE)
-        r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
-        winreg.CloseKey(hkey)
-    except Exception:  # FileNotFoundError, WindowsError, etc
-        return None
-    if sys.version_info[0] == 2:
-        r_home = r_home.encode(sys.getfilesystemencoding())
+    # There are two possible locations for RHOME in the registry
+    # We prefer the user installation (which the user has more control
+    # over). Thus, HKEY_CURRENT_USER is the first item in the list and
+    # the for-loop breaks at the first hit.
+    for w_hkey in [winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE]:
+        try:
+            with winreg.OpenKeyEx(w_hkey,
+                                  'Software\\R-core\\R',
+                                  0, winreg.KEY_QUERY_VALUE) as hkey:
+                r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
+        except Exception:  # FileNotFoundError, WindowsError, OSError, etc.
+            pass
+        else:
+            # We have a path RHOME
+            if sys.version_info[0] == 2:
+                # Python 2 path compatibility
+                r_home = r_home.encode(sys.getfilesystemencoding())
+            # Break the loop, because we have a hit.
+            break
+    else:
+        # for-loop did not break - RHOME is unknown.
+        r_home = None
     return r_home
 
 
@@ -120,11 +137,11 @@ def get_rlib_path(r_home: str, system: str) -> str:
         lib_path = os.path.join(r_home, 'lib', 'libR.dylib')
     elif system == 'Windows':
         # i386
-        os.environ['PATH'] = ''.join(
+        os.environ['PATH'] = os.pathsep.join(
             (os.environ['PATH'],
-             os.path.join(r_home, 'bin', 'x64'))
+             os.path.join(r_home, 'bin', r_version_folder))
         )
-        lib_path = os.path.join(r_home, 'bin', 'x64', 'R.dll')
+        lib_path = os.path.join(r_home, 'bin', r_version_folder, 'R.dll')
     else:
         raise ValueError(
             'The system {system} is currently not supported.'
@@ -285,6 +302,7 @@ def iter_info():
     r_home = os.environ.get('R_HOME')
     yield '    Environment variable R_HOME: %s' % r_home
 
+    r_home_default = None
     if os.name == 'nt':
         r_home_default = r_home_from_registry()
         yield '    InstallPath in the registry: %s' % r_home_default
@@ -293,8 +311,11 @@ def iter_info():
     else:
         r_home_default = r_home_from_subprocess()
         yield '    Calling `R RHOME`: %s' % r_home_default
-    yield '    Environment variable R_LIBS_USER: %s' \
-          % os.environ.get('R_LIBS_USER')
+
+    yield (
+        '    Environment variable R_LIBS_USER: %s'
+        % os.environ.get('R_LIBS_USER')
+    )
 
     if r_home is not None and r_home_default is not None:
         if os.path.abspath(r_home) != r_home_default:
@@ -304,14 +325,16 @@ def iter_info():
         if r_home_default is None:
             yield ('    Warning: There is no R in the PATH and no '
                    'R_HOME defined.')
-            return
         else:
             r_home = r_home_default
 
     # not applicable for Windows
     if os.name != 'nt':
         yield make_bold("R's additions to LD_LIBRARY_PATH:")
-        yield r_ld_library_path_from_subprocess(r_home)
+        if r_home is None:
+            yield('     *** undefined when not R home can be determined')
+        else:
+            yield r_ld_library_path_from_subprocess(r_home)
 
     if has_rpy2:
         try:

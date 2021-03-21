@@ -34,7 +34,8 @@ def _initr_win32(
 
         embedded.rstart = ffi.new('Rstart')
         rstart = embedded.rstart
-        rstart.rhome = openrlib.rlib.get_R_HOME()
+        rhome = openrlib.rlib.get_R_HOME()
+        rstart.rhome = rhome
         rstart.home = openrlib.rlib.getRUser()
         rstart.CharacterMode = openrlib.rlib.LinkDLL
         if _want_setcallbacks:
