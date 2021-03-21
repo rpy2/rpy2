@@ -62,13 +62,13 @@ export LD_LIBRARY_PATH="$(python -m rpy2.situation LD_LIBRARY_PATH)":${LD_LIBRAR
 To try `rpy2` in an `ipython` console:
 
 ```bash
-docker run -it --rm -p 8888:8888 rpy2/jupyter-ubuntu ipython
+docker run --rm -p 8888:8888 rpy2/jupyter-ubuntu:master-20.04 ipython
 ```
 
 To run a jupypter notebook on port 8888:
 
 ```bash
-docker run --rm -p 8888:8888 rpy2/jupyter-ubuntu
+docker run --rm -p 8888:8888 rpy2/jupyter-ubuntu:master-20.04
 ```
 
 More information about Docker images can be found in the
