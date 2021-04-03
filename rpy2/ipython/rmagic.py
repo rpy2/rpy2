@@ -780,28 +780,28 @@ class RMagics(Magics):
             print(e.stdout)
             if not e.stdout.endswith(e.err):
                 print(e.err)
-            if tmpd:
-                rmtree(tmpd)
-            return
+            raise e
         finally:
             if self.device in ['png', 'svg']:
                 ro.r('dev.off()')
+            if text_output:
+                # display_data.append(('RMagic.R', {'text/plain':text_output}))
+                displaypub.publish_display_data(
+                    data={'text/plain': text_output}, source='RMagic.R')
+            # publish the R images
+            if self.device in ['png', 'svg']:
+                display_data, md = self.publish_graphics(
+                    tmpd, args.isolate_svgs
+                )
 
-        if text_output:
-            # display_data.append(('RMagic.R', {'text/plain':text_output}))
-            displaypub.publish_display_data(
-                data={'text/plain': text_output}, source='RMagic.R')
-        # publish the R images
-        if self.device in ['png', 'svg']:
-            display_data, md = self.publish_graphics(tmpd, args.isolate_svgs)
-
-            for tag, disp_d in display_data:
-                displaypub.publish_display_data(data=disp_d, source=tag,
-                                                metadata=md)
+                for tag, disp_d in display_data:
+                    displaypub.publish_display_data(data=disp_d, source=tag,
+                                                    metadata=md)
 
             # kill the temporary directory - currently created only for "svg"
             # and "png" (else it's None)
-            rmtree(tmpd)
+            if tmpd:
+                rmtree(tmpd)
 
         if args.output:
             with localconverter(converter) as cv:

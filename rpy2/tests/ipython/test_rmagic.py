@@ -121,6 +121,15 @@ def test_push_localscope(ipython_with_magic, clean_globalenv):
 
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
+def test_run_cell_with_error(ipython_with_magic, clean_globalenv):
+    """Run an R block with an error."""
+
+    with pytest.raises(rmagic.RInterpreterError):
+        ipython_with_magic.run_line_magic('R', '"a" + 1')
+
+
+@pytest.mark.skipif(IPython is None,
+                    reason='The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_pandas, reason='pandas is not available in python')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_push_dataframe(ipython_with_magic, clean_globalenv):
