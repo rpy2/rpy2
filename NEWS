@@ -6,7 +6,6 @@ Changes
 
 - `RRuntimeError` exceptions raised while evaluating R code
   an R magic (ipython/jupyter) are now propagated (issue #792).
-  
 
 
 Release 3.4.3
