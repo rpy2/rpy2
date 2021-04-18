@@ -174,12 +174,12 @@ class TestPandasConversions(object):
 
     def test_series_obj_bool(self):
         Series = pandas.core.series.Series
-        s = Series([True, False, True], index=['a', 'b', 'c'])
+        s = Series([True, False, True], index=['a', 'b', 'c'], dtype='bool')
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.BoolSexpVector)
 
-        s = Series([True, False, None], index=['a', 'b', 'c'])
+        s = Series([True, False, None], index=['a', 'b', 'c'], dtype='bool')
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.BoolSexpVector)

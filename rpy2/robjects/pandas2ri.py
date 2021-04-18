@@ -5,7 +5,6 @@ import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import na_values
 from rpy2.rinterface import (IntSexpVector,
-                             ListSexpVector,
                              Sexp,
                              SexpVector,
                              StrSexpVector)
@@ -210,21 +209,6 @@ def ri2py_vector(obj):
     return res
 
 
-@rpy2py.register(IntSexpVector)
-def rpy2py_intvector(obj):
-    # special case for factors
-    if 'factor' in obj.rclass:
-        codes = [x-1 if x > 0 else -1 for x in numpy.array(obj)]
-        res = pandas.Categorical.from_codes(
-            codes,
-            categories=list(obj.do_slot('levels')),
-            ordered='ordered' in obj.rclass
-        )
-    else:
-        res = numpy2ri.rpy2py(obj)
-    return res
-
-
 @rpy2py.register(FloatSexpVector)
 def rpy2py_floatvector(obj):
     if POSIXct.isrinstance(obj):
@@ -239,15 +223,6 @@ def rpy2py_posixct(obj):
                               errors='coerce')
 
 
-@rpy2py.register(ListSexpVector)
-def rpy2py_listvector(obj):
-    if 'data.frame' in obj.rclass:
-        res = rpy2py(DataFrame(obj))
-    else:
-        res = numpy2ri.rpy2py(obj)
-    return res
-
-
 @rpy2py.register(DataFrame)
 def rpy2py_dataframe(obj):
     items = OrderedDict((k, rpy2py(v) if isinstance(v, Sexp) else v)
@@ -255,6 +230,30 @@ def rpy2py_dataframe(obj):
     res = PandasDataFrame.from_dict(items)
     res.index = obj.rownames
     return res
+
+
+def _to_pandas_factor(obj):
+    codes = [x-1 if x > 0 else -1 for x in numpy.array(obj)]
+    res = pandas.Categorical.from_codes(
+        codes,
+        categories=list(obj.do_slot('levels')),
+        ordered='ordered' in obj.rclass
+    )
+    return res
+
+
+converter._rpy2py_nc_map.update(
+    {
+        rinterface.IntSexpVector: conversion.NameClassMap(
+            numpy2ri.rpy2py,
+            {'factor': _to_pandas_factor}
+        ),
+        rinterface.ListSexpVector: conversion.NameClassMap(
+            numpy2ri.rpy2py,
+            {'data.frame': lambda obj: rpy2py(DataFrame(obj))}
+        )
+    }
+)
 
 
 def activate():

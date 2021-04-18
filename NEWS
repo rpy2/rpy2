@@ -1,3 +1,14 @@
+Release 3.5.0
+=============
+
+Changes
+-------
+
+- Better customizablity of conversion rules from R objects with `typeof`
+  `INTSXP` (array of integers), `VECSEXP` (R list), and `LGLSXP` (array of
+  booleans) :mod:`pandas`.
+
+
 Release 3.4.4
 ==============
 
