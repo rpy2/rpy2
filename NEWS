@@ -8,6 +8,9 @@ Changes
   `INTSXP` (array of integers), `VECSEXP` (R list), and `LGLSXP` (array of
   booleans) :mod:`pandas`.
 
+- The representation of R integer is no longer using a comma separator
+  for thousands (issue #797).
+
 
 Release 3.4.4
 ==============
