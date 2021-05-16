@@ -12,6 +12,16 @@ Changes
   for thousands (issue #797).
 
 
+Release 3.4.5
+=============
+
+Changes
+-------
+
+- The deprecation warning when using :func:`rpy2.robjects.lib.grid.activate`
+  was missing (indirectly revealed through issue #804).
+
+
 Release 3.4.4
 ==============
 

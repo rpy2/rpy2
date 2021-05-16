@@ -7,6 +7,7 @@ system and graphic primitives to built visualizations.
 
 """
 
+import warnings
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
 from rpy2.rlike.container import OrdDict
@@ -278,6 +279,10 @@ def grid_rpy2py(robj):
 
 
 def activate():
+    warnings.warn('The global conversion available with activate() '
+                  'is deprecated and will be removed in the next '
+                  'major release. Use a local converter.',
+                  category=DeprecationWarning)
     global original_py2rpy, original_rpy2py
 
     # If module is already activated, there is nothing to do
