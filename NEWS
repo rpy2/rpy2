@@ -18,8 +18,8 @@ Release 3.4.5
 Changes
 -------
 
-- The deprecation warning when using :func:`rpy2.robjects.lib.grid.activate`
-  was missing (indirectly revealed through issue #804).
+- The named argument `LINPACK` in :meth:`rpy2.robjects.vectors.Matrix.svd`
+  is no longer present in R.
 
 
 Release 3.4.4
