@@ -18,8 +18,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-        r-version: [4.0]
+        python-version: [3.7, 3.8, 3.9]
+        r-version: [release]
         os: [ubuntu-latest, macOS-latest, windows-2019]
         exclude:
         - python-version: 3.8
