@@ -98,12 +98,26 @@ from IPython.core.magic_arguments import (argument,
                                           parse_argstring)
 
 
-if numpy:
-    from rpy2.robjects import numpy2ri
-    template_converter += numpy2ri.converter
-    if pandas:
-        from rpy2.robjects import pandas2ri
-        template_converter += pandas2ri.converter
+def _get_ipython_template_converter(template_converter=template_converter,
+                                    numpy=numpy, pandas=pandas):
+    if numpy:
+        from rpy2.robjects import numpy2ri
+        template_converter += numpy2ri.converter
+        if pandas:
+            from rpy2.robjects import pandas2ri
+            template_converter += pandas2ri.converter
+    return template_converter
+
+
+def _get_converter(template_converter=template_converter):
+    return Converter('ipython conversion',
+                     template=template_converter)
+
+
+ipy_template_converter = _get_ipython_template_converter(template_converter,
+                                                         numpy=numpy,
+                                                         pandas=pandas)
+converter = _get_converter(template_converter=ipy_template_converter)
 
 
 def CELL_DISPLAY_DEFAULT(res, args):
@@ -128,10 +142,6 @@ class RInterpreterError(ri.embedded.RRuntimeError):
         if self.stdout and (self.stdout != self.err):
             s += self.rstdout_prefix + self.stdout
         return s
-
-
-converter = Converter('ipython conversion',
-                      template=template_converter)
 
 
 # The default conversion for lists is currently to make them an R list. That
@@ -187,11 +197,8 @@ class RMagics(Magics):
         """
         super(RMagics, self).__init__(shell)
         self.cache_display_data = cache_display_data
-
         self.Rstdout_cache = []
-
         self.converter = converter
-
         self.set_R_plotting_device(device)
 
     def set_R_plotting_device(self, device):

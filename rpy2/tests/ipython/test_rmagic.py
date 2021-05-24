@@ -167,32 +167,32 @@ def test_pull(ipython_with_magic, clean_globalenv):
 
 
 def _test_Rconverter(ipython_with_magic, clean_globalenv,
-                     converter, dataf_py, cls):
+                    dataf_py, cls):
     # If we get to dropping numpy requirement, we might use something
     # like the following:
     # assert tuple(buffer(a).buffer_info()) == tuple(buffer(b).buffer_info())
 
     # store it in the notebook's user namespace
     ipython_with_magic.user_ns['dataf_py'] = dataf_py
+
     # equivalent to:
     #     %Rpush dataf_np
     # that is send Python object 'dataf_py' into R's globalenv
     # as 'dataf_r'. The current conversion rules should make it an
     # R data frame.
-    with rpy2.robjects.conversion.localconverter(converter):
-        ipython_with_magic.run_line_magic('Rpush', 'dataf_py')
+    ipython_with_magic.run_line_magic('Rpush', 'dataf_py')
 
     # Now retreive 'dataf_py' from R's globalenv. Twice because
     # we want to test whether copies are made
-    with rpy2.robjects.conversion.localconverter(converter):
-        fromr_dataf_py = ipython_with_magic.run_line_magic('Rget', 'dataf_py')
-        fromr_dataf_py_again = ipython_with_magic.run_line_magic('Rget', 'dataf_py')
+    fromr_dataf_py = ipython_with_magic.run_line_magic(
+        'Rget', 'dataf_py'
+    )
+    fromr_dataf_py_again = ipython_with_magic.run_line_magic(
+        'Rget', 'dataf_py'
+    )
 
-    # check whether the data frame retrieved has the same content
-    # as the original recarray
+    assert isinstance(fromr_dataf_py, cls)
     assert len(dataf_py) == len(fromr_dataf_py)
-    for col_i, col_n in enumerate(('x', 'y')):
-        assert isinstance(fromr_dataf_py, cls)
 
     # retrieve `dataf_py` from R into `fromr_dataf_py` in the notebook. 
     ipython_with_magic.run_cell_magic('R',
@@ -206,7 +206,7 @@ def _test_Rconverter(ipython_with_magic, clean_globalenv,
 
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
-@pytest.mark.skipif(not has_numpy, reason='numpy not installed')
+@pytest.mark.skipif(has_pandas or (not has_numpy), reason='numpy not installed')
 def test_Rconverter_numpy(ipython_with_magic, clean_globalenv):
     # If we get to dropping numpy requirement, we might use something
     # like the following:
@@ -219,20 +219,24 @@ def test_Rconverter_numpy(ipython_with_magic, clean_globalenv):
                ('y', '<f8'),
                ('z', '|%s1' % np_string_type)]
     )
-    _test_Rconverter(ipython_with_magic, clean_globalenv,
-                     rpy2.robjects.numpy2ri.converter, dataf_np, np.ndarray)
+    _test_Rconverter(
+        ipython_with_magic, clean_globalenv,
+        dataf_np, np.ndarray
+    )
 
 
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_pandas, reason='pandas not installed')
 def test_Rconverter_pandas(ipython_with_magic, clean_globalenv):
-    dataf_np= pd.DataFrame.from_dict(
+    dataf_pd= pd.DataFrame.from_dict(
     {'x': (1, 2, 3),
      'y': (2.9, 3.5, 2.1),
      'z': ('a', 'b', 'c')})
-    _test_Rconverter(ipython_with_magic, clean_globalenv,
-                     rpy2.robjects.pandas2ri.converter, dataf_np, pd.DataFrame)
+    _test_Rconverter(
+        ipython_with_magic, clean_globalenv,
+        dataf_pd, pd.DataFrame
+    )
 
 
 @pytest.mark.skipif(IPython is None,
