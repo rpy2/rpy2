@@ -142,6 +142,9 @@ def _initr(
         n_options = len(options_c)
         n_options_c = ffi.cast('int', n_options)
 
+        # TODO: Conditional in C code
+        rlib.R_SignalHandlers = 0
+
         # Instead of calling Rf_initEmbeddedR which breaks threaded context
         # perform the initialization manually to set R_CStackLimit before
         # calling setup_Rmainloop(), see:
@@ -160,9 +163,6 @@ def _initr(
         #   (Aqua, TERM, and TERM not "dumb")
         rlib.R_Outputfile = ffi.NULL
         rlib.R_Consolefile = ffi.NULL
-
-        # TODO: Conditional in C code
-        rlib.R_SignalHandlers = 0
 
         if _want_setcallbacks:
             for rlib_symbol, callback_symbol in CALLBACK_INIT_PAIRS:
