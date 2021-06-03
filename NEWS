@@ -13,6 +13,10 @@ Changes
 
 - Requirement is now Python>=3.7. :mod:`rpy2` is no longer tested with Python 3.6.
 
+- :mod:`rpy2.robject.lib.grid` was refactored to fix the conversion. This
+  fixes issue #804. A classes now have a `classmethod` `r` for the R
+  constructor (the `__init__` is the Python constructor).
+
 
 Release 3.4.5
 =============
