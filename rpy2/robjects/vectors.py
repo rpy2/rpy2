@@ -1508,9 +1508,3 @@ rtypeof2rotype = {
     rinterface.RTYPES.CPLXSXP: ComplexVector,
     rinterface.RTYPES.LGLSXP: BoolVector
 }
-
-
-__all__ = ['Vector', 'StrVector', 'IntVector', 'BoolVector', 'ComplexVector',
-           'FloatVector', 'FactorVector', 'Vector',
-           'ListVector', 'POSIXlt', 'POSIXct',
-           'Array', 'Matrix', 'DataFrame']

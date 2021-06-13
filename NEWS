@@ -17,6 +17,8 @@ Changes
   fixes issue #804. A classes now have a `classmethod` `r` for the R
   constructor (the `__init__` is the Python constructor).
 
+- :obj:`rpy2.robjects.vectors.__all__` is removed.
+
 
 Release 3.4.5
 =============
