@@ -91,7 +91,20 @@ class TestPandasConversions(object):
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_df = robjects.conversion.py2rpy(pd_df)
         assert tuple(rp_df.names) == ('the one', 'the other')
-        
+
+    def test_dataframe_warns_duplicated_index(self):
+        # should raise if index had duplicated elements
+        pd_df = pandas.DataFrame({'x': [1, 2]}, index=['a', 'a'])
+        with pytest.warns(UserWarning, match='DataFrame contains duplicated elements in the index'):
+            with localconverter(default_converter + rpyp.converter) as cv:
+                robjects.conversion.py2rpy(pd_df)
+        # should not raise if no duplicated elements
+        pd_df = pandas.DataFrame({'x': [1, 2]}, index=['a', 'b'])
+        with pytest.warns(None) as record:
+            with localconverter(default_converter + rpyp.converter) as cv:
+                robjects.conversion.py2rpy(pd_df)
+        assert not record.list
+
     def test_series(self):
         Series = pandas.core.series.Series
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
