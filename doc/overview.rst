@@ -66,8 +66,8 @@ versions to run rpy2 with.
 ======== =====================================================================
 Software Versions
 ======== =====================================================================
- Python   >=3.6
- R        >=3.5
+ Python   >=3.7
+ R        >=4.0
 ======== =====================================================================
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
@@ -171,11 +171,16 @@ The shell command will then just be:
 
 .. code-block:: bash
 
-   # recommended:
+   # minimal
    pip install rpy2
 
-   # or (but unsupported)
-   easy_install rpy2
+   # or
+   # to run tests
+   pip install rpy2[test]
+
+   # or
+   # all dependencies
+   pip install rpy2[all]
 
 
 Upgrading an existing installation is done with:
@@ -185,8 +190,6 @@ Upgrading an existing installation is done with:
 	 # recommended:
    pip install rpy2 --upgrade
 
-   # or (but unsupported)
-   easy_install rpy2 --upgrade
 
 Both utilities have a list of options and their respective documentation should
 be checked for details.
@@ -212,7 +215,15 @@ To install from a downloaded source archive `<rpy_package>`, do in a shell:
 
   tar -xzf <rpy_package>.tar.gz
   cd <rpy_package>
+
+  
   python setup.py build install
+  # or
+  pip install .
+  # or (to install requirements to test
+  pip install .[test]
+
+  
 
 This will build the package, guessing the R HOME from
 the R executable found in the `PATH`.

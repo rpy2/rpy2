@@ -240,15 +240,14 @@ class NULLType(Sexp, metaclass=SingletonABC):
         return self._sexpobject.rid
 
 
-# TODO: Duplicate declaration in R_API.h ?
 class CETYPE(enum.Enum):
     """Character encodings for R string."""
-    CE_NATIVE = 0
-    CE_UTF8 = 1
-    CE_LATIN1 = 2
-    CE_BYTES = 3
-    CE_SYMBOL = 5
-    CE_ANY = 99
+    CE_NATIVE = openrlib.rlib.CE_NATIVE
+    CE_UTF8 = openrlib.rlib.CE_UTF8
+    CE_LATIN1 = openrlib.rlib.CE_LATIN1
+    CE_BYTES = openrlib.rlib.CE_BYTES
+    CE_SYMBOL = openrlib.rlib.CE_SYMBOL
+    CE_ANY = openrlib.rlib.CE_ANY
 
 
 class NCHAR_TYPE(enum.Enum):
@@ -314,7 +313,7 @@ class SexpEnvironment(Sexp):
         elif not len(key):
             raise ValueError('The key must be a non-empty string.')
         with memorymanagement.rmemory() as rmemory:
-            key_cchar = conversion._str_to_cchar(key)
+            key_cchar = conversion._str_to_cchar(key, 'utf-8')
             symbol = rmemory.protect(
                 openrlib.rlib.Rf_install(key_cchar)
             )
@@ -840,7 +839,9 @@ def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
                     if openrlib.rlib.Rf_isSymbol(symb):
                         symb_rstr = openrlib.rlib.PRINTNAME(symb)
                         symb_str = conversion._cchar_to_str(
-                            openrlib.rlib.R_CHAR(symb_rstr)
+                            openrlib.rlib.R_CHAR(symb_rstr),
+                            conversion._R_ENC_PY[openrlib.rlib
+                                                 .Rf_getCharCE(symb_rstr)]
                         )
                         if symb_str in ('if', 'while', 'for', '=',
                                         '<-', '(', '{'):

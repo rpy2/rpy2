@@ -113,7 +113,7 @@ class DataFrame(robjects.DataFrame):
 
     @property
     def is_grouped_df(self) -> bool:
-        """Is the DataFrame is a grouped state"""
+        """Is the DataFrame in a grouped state"""
         return dplyr.is_grouped_df(self)[0]
 
     def __rshift__(self, other):
@@ -168,9 +168,11 @@ class DataFrame(robjects.DataFrame):
         res = dplyr.filter(self, *args, **{'.preserve': _preserve})
         return res
 
-    def group_by(self, *args):
+    def group_by(self, *args, _add=False,
+                 _drop=robjects.rl('group_by_drop_default(.data)')):
         """Call the R function `dplyr::group_by()`."""
-        res = dplyr.group_by(self, *args)
+        res = dplyr.group_by(self, *args,
+                             **{'.add': _add, '.drop': _drop})
         return GroupedDataFrame(res)
 
     @result_as
@@ -198,21 +200,21 @@ class DataFrame(robjects.DataFrame):
         return res
 
     @result_as
-    def mutate_all(self, **kwargs):
+    def mutate_all(self, *args, **kwargs):
         """Call the R function `dplyr::mutate_all()`."""
-        res = dplyr.mutate_all(self, **kwargs)
+        res = dplyr.mutate_all(self, *args, **kwargs)
         return res
 
     @result_as
-    def mutate_at(self, **kwargs):
+    def mutate_at(self, *args, **kwargs):
         """Call the R function `dplyr::mutate_at()`."""
-        res = dplyr.mutate_at(self, **kwargs)
+        res = dplyr.mutate_at(self, *args, **kwargs)
         return res
 
     @result_as
-    def mutate_if(self, **kwargs):
+    def mutate_if(self, *args, **kwargs):
         """Call the R function `dplyr::mutate_if()`."""
-        res = dplyr.mutate_if(self, **kwargs)
+        res = dplyr.mutate_if(self, *args, **kwargs)
         return res
 
     @result_as
@@ -362,15 +364,14 @@ def guess_wrap_type(x):
 class GroupedDataFrame(DataFrame):
     """DataFrame grouped by one of several factors."""
 
-    def ungroup(self, *args,
-                _add=False, _drop=robjects.rl('group_by_drop_default(.data)')):
-        res = dplyr.ungroup(*args, _add=_add, _drop=_drop)
+    def ungroup(self, *args):
+        res = dplyr.ungroup(self, *args)
         return guess_wrap_type(res)(res)
 
 
-DataFrame.union = _wrap2(dplyr.union, None)
-DataFrame.intersect = _wrap2(dplyr.intersect, None)
-DataFrame.setdiff = _wrap2(dplyr.setdiff, None)
+DataFrame.union = _wrap2(dplyr.union_data_frame, None)
+DataFrame.intersect = _wrap2(dplyr.intersect_data_frame, None)
+DataFrame.setdiff = _wrap2(dplyr.setdiff_data_frame, None)
 
 arrange = _make_pipe(dplyr.arrange, DataFrame)
 count = _make_pipe(dplyr.count, DataFrame)
@@ -388,9 +389,9 @@ right_join = _make_pipe2(dplyr.right_join, DataFrame)
 full_join = _make_pipe2(dplyr.full_join, DataFrame)
 semi_join = _make_pipe2(dplyr.semi_join, DataFrame)
 anti_join = _make_pipe2(dplyr.anti_join, DataFrame)
-union = _make_pipe2(dplyr.union, DataFrame)
-intersect = _make_pipe2(dplyr.intersect, DataFrame)
-setdiff = _make_pipe2(dplyr.setdiff, DataFrame)
+union = _make_pipe2(dplyr.union_data_frame, DataFrame)
+intersect = _make_pipe2(dplyr.intersect_data_frame, DataFrame)
+setdiff = _make_pipe2(dplyr.setdiff_data_frame, DataFrame)
 sample_n = _make_pipe(dplyr.sample_n, DataFrame)
 sample_frac = _make_pipe(dplyr.sample_frac, DataFrame)
 slice = _make_pipe(dplyr.slice_, DataFrame)

@@ -282,7 +282,8 @@ def _string_getitem(cdata: FFI.CData, i: int) -> typing.Optional[str]:
         res = None
     else:
         res = conversion._cchar_to_str(
-            openrlib.rlib.R_CHAR(elt)
+            openrlib.rlib.R_CHAR(elt),
+            conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(elt)]
         )
     return res
 
@@ -522,8 +523,10 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
                 pyargs.append(conversion._cdata_to_rinterface(cdata))
             else:
                 # Named arguments
+                rname = rlib.PRINTNAME(rlib.TAG(rargs))
                 name = conversion._cchar_to_str(
-                    rlib.R_CHAR(rlib.PRINTNAME(rlib.TAG(rargs)))
+                    rlib.R_CHAR(rname),
+                    conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(rname)]
                 )
                 pykwargs[name] = conversion._cdata_to_rinterface(cdata)
             rargs = rlib.CDR(rargs)

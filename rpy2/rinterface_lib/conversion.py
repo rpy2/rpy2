@@ -111,24 +111,26 @@ def _complex_to_sexp(val: complex):
 #   CE_BYTES  = 3,
 #   CE_SYMBOL = 5,
 #   CE_ANY    = 99
-_CE_DEFAULT_VALUE = openrlib.rlib.CE_UTF8
+
+# Default encoding for converting R strings to Python
+_R_ENC_PY = {None: 'ascii'}
 
 
 def _str_to_cchar(s: str, encoding: str = 'utf-8'):
-    # TODO: use isStrinb and installTrChar
+    # TODO: use isString and installTrChar
     b = s.encode(encoding)
     return ffi.new('char[]', b)
 
 
-def _cchar_to_str(c, encoding: str = 'utf-8') -> str:
-    # TODO: use isStrinb and installTrChar
+def _cchar_to_str(c, encoding: str) -> str:
+    # TODO: use isString and installTrChar
     s = ffi.string(c).decode(encoding)
     return s
 
 
-def _cchar_to_str_with_maxlen(c, maxlen: int) -> str:
-    # TODO: use isStrinb and installTrChar
-    s = ffi.string(c, maxlen).decode('utf-8')
+def _cchar_to_str_with_maxlen(c, maxlen: int, encoding: str) -> str:
+    # TODO: use isString and installTrChar
+    s = ffi.string(c, maxlen).decode(encoding)
     return s
 
 
@@ -137,8 +139,8 @@ def _str_to_charsxp(val: Optional[str]):
     if val is None:
         s = rlib.R_NaString
     else:
-        cchar = _str_to_cchar(val)
-        s = rlib.Rf_mkCharCE(cchar, _CE_DEFAULT_VALUE)
+        cchar = _str_to_cchar(val, encoding='utf-8')
+        s = rlib.Rf_mkCharCE(cchar, openrlib.rlib.CE_UTF8)
     return s
 
 

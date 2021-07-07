@@ -2,8 +2,12 @@ import atexit
 import contextlib
 import os
 import math
+import platform
 import signal
+import textwrap
+import threading
 import typing
+import warnings
 from typing import Union
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
@@ -171,7 +175,7 @@ class SexpSymbol(sexp.Sexp):
         return conversion._cchar_to_str(
             openrlib._STRING_VALUE(
                 self._sexpobject._cdata
-            )
+            ), 'utf-8'
         )
 
 
@@ -879,6 +883,25 @@ def initr_checkenv() -> typing.Optional[int]:
 initr = initr_checkenv
 
 
+def _update_R_ENC_PY():
+    conversion._R_ENC_PY[openrlib.rlib.CE_UTF8] = 'utf-8'
+
+    l10n_info = tuple(baseenv['l10n_info']())
+    if platform.system() == 'Windows':
+        val_latin1 = 'cp{:d}'.format(l10n_info[3][0])
+    else:
+        val_latin1 = 'latin1'
+    conversion._R_ENC_PY[openrlib.rlib.CE_LATIN1] = val_latin1
+
+    if l10n_info[1]:
+        val_native = conversion._R_ENC_PY[openrlib.rlib.CE_UTF8]
+    else:
+        val_native = val_latin1
+    conversion._R_ENC_PY[openrlib.rlib.CE_NATIVE] = val_native
+
+    conversion._R_ENC_PY[openrlib.rlib.CE_ANY] = 'utf-8'
+
+
 def _post_initr_setup() -> None:
 
     emptyenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_EmptyEnv)
@@ -917,7 +940,29 @@ def _post_initr_setup() -> None:
     )
     NA_Complex = na_values.NA_Complex
 
-    signal.signal(signal.SIGINT, _sigint_handler)
+    warn_about_thread = False
+    if threading.current_thread() is threading.main_thread():
+        try:
+            signal.signal(signal.SIGINT, _sigint_handler)
+        except ValueError as ve:
+            if str(ve) == 'signal only works in main thread':
+                warn_about_thread = True
+            else:
+                raise ve
+    else:
+        warn_about_thread = True
+    if warn_about_thread:
+        warnings.warn(
+            textwrap.dedent(
+                """R is not initialized by the main thread.
+                Its taking over SIGINT cannot be reversed here, and as a
+                consequence the embedded R cannot be interrupted with Ctrl-C.
+                Consider (re)setting the signal handler of your choice from
+                the main thread."""
+            )
+        )
+
+    _update_R_ENC_PY()
 
 
 def rternalize(function: typing.Callable) -> SexpClosure:

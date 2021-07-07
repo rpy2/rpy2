@@ -160,6 +160,6 @@ def test_head():
 def test_repr():
     dataf = robjects.r('data.frame(a=1:2, b=I(c("a", "b")))')
     s = repr(dataf)
-    assert 'data.frame' in s.split(os.linesep)[0]
+    assert 'data.frame' in s.split(os.linesep)[1]
 
 

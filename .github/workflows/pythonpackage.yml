@@ -9,8 +9,8 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-        r-version: [3.6, 4.0]
+        python-version: [3.7, 3.8, 3.9]
+        r-version: [4.0, 'release']
         os: [ubuntu-latest, ubuntu-20.04, macOS-latest]
         experimental: [false]
         venv_activate: ["source pyenv_base/bin/activate"]
@@ -18,13 +18,15 @@ jobs:
         include:
           - os: windows-latest
             experimental: true
-            r-version: 4.0
+            r-version: 'release'
             python-version: 3.7
             venv_activate: ""
             ld_libpath: ""
         exclude:
           - os: windows-latest
             python-version: 3.8
+          - os: macOS-latest
+            r-version: 4.0
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
@@ -85,6 +87,10 @@ jobs:
         ${{matrix.venv_activate }}
         python -m pip install ipython
         bash -e ./scripts/run_test_pandas.sh
+    - name: Set RSPM
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
     - name: Test with R deps
       run: |
         ${{ matrix.ld_libpath }}
@@ -92,7 +98,7 @@ jobs:
         bash -e ./scripts/run_test_rdeps.sh
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
-      if: matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.8' && matrix.r-version == '4.0'
+      if: matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.8' && matrix.r-version == 'release'
       env:
         OS: ${{ runner.os }}
         PYTHON: ${{ matrix.python-version }}

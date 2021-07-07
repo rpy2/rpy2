@@ -1,4 +1,5 @@
 import contextlib
+import os
 import typing
 import rpy2.rinterface as rinterface
 from rpy2.robjects.robject import RObjectMixin
@@ -116,6 +117,12 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         #        number of keys) ?
         for k in self:
             del(self[k])
+
+    def __repr__(self):
+        return os.linesep.join(
+            (super(Environment, self).__repr__(),
+             'n items: {:d}'.format(len(self)))
+        )
 
 
 @contextlib.contextmanager

@@ -3,71 +3,36 @@ import contextlib
 import os
 import tempfile
 
+from rpy2.robjects.conversion import localconverter
+import rpy2.robjects as robjects
 from rpy2.robjects.lib import grid
 from rpy2.robjects.vectors import FloatVector, StrVector
 
 
-# TODO: is there anything to test ?
-def test_unit():
-    u = grid.unit(1, 'cm')
-    u = grid.unit(x=1, units='cm')
-
-
-# TODO: is there anything to test ?
-def test_gpar():
-    g = grid.gpar(col='blue')
-
-
-# TODO: is there anything to test ?
-def test_grob():
-    g = grid.grob(name='foo')
-
-
-# TODO: is there anything to test ?
-def test_rect():
-    r = grid.rect(x=grid.unit(0, 'cm'))
-
-
-# TODO: is there anything to test ?
-def test_lines():
-    l = grid.lines(x=grid.unit(FloatVector([0, 1]), 'cm'))
-
-
-# TODO: is there anything to test ?
-def test_circle():
-    c = grid.circle(x=0)
-
-
-# TODO: is there anything to test ?
-def test_points():
-    c = grid.points()
-
-
-# TODO: is there anything to test ?
-def test_text():
-    t = grid.text('t0')
-
-
-# TODO: is there anything to test ?
-def test_gtree():
-    g = grid.GTree.gtree()
-
-
-# TODO: is there anything to test ?
-def test_grobtree():
-    g = grid.GTree.grobtree()
-
-
-# TODO: is there anything to test ?
-@pytest.mark.parametrize('axis', (grid.XAxis.xaxis, grid.YAxis.yaxis))
-def test_axis(axis):
-    g = axis()
-
-
-# TODO: is there anything to test ?
-@pytest.mark.parametrize('axisgrob', (grid.XAxis.xaxisgrob, grid.YAxis.yaxisgrob))
-def test_axisgrob(axisgrob):
-    g = axisgrob()
+@pytest.mark.parametrize(
+    'constructor,args,kwargs,res_cls',
+    ((grid.unit, (1, 'cm'), {}, grid.Unit),
+     (grid.unit, (), {'x': 1, 'units': 'cm'}, grid.Unit),
+     (grid.gpar, (), {'col': 'blue'}, grid.Gpar),
+     (grid.grob, (), {'name': 'foo'}, grid.Grob),
+     (grid.rect, (), {'x': grid.unit(0, 'cm')}, grid.Rect),
+     (grid.lines, (), {'x': grid.unit(FloatVector([0, 1]), 'cm')}, grid.Lines),
+     (grid.circle, (), {'x': 0}, grid.Circle),
+     (grid.points, (), {}, grid.Points),
+     (grid.text, ('t0', ), {}, grid.Text),
+     (grid.GTree.gtree, (), {}, grid.GTree),
+     (grid.GTree.grobtree, (), {}, grid.GTree),
+     (grid.XAxis.xaxis, (), {}, grid.XAxis),
+     (grid.YAxis.yaxis, (), {}, grid.YAxis),
+     (grid.XAxis.xaxisgrob, (), {}, grid.XAxis),
+     (grid.YAxis.yaxisgrob, (), {}, grid.YAxis),
+    )
+)
+def test_constructor_and_rpy2py(constructor, args, kwargs, res_cls):
+    r_obj = constructor(*args, **kwargs)
+    with localconverter(robjects.default_converter + grid.converter) as cv:
+        rp_obj = cv.rpy2py(r_obj)
+    assert isinstance(rp_obj, res_cls)
 
 
 # TODO: is there anything to test ?

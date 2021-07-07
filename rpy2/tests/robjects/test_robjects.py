@@ -142,21 +142,3 @@ def test_slots():
     assert len(s) == 1
     assert tuple(s.keys()) == ('names', )
     assert tuple(s['names']) == (0, )
-
-
-@pytest.mark.parametrize(
-    'cls, values, expected_cls',
-    [(rinterface.IntSexpVector, (1, 2), robjects.vectors.IntVector),
-     (rinterface.FloatSexpVector, (1.1, 2.2), robjects.vectors.FloatVector),
-     (rinterface.BoolSexpVector, (True, False), robjects.vectors.BoolVector),
-     (rinterface.ByteSexpVector, b'ab', robjects.vectors.ByteVector),
-     (lambda x: rinterface.evalr(x), 'y ~ x', robjects.Formula)])
-def test_sexpvector_to_ro(cls, values, expected_cls):
-    v_ri = cls(values)
-    v_ro = robjects.sexpvector_to_ro(v_ri)
-    assert isinstance(v_ro, expected_cls)
-
-
-def test_sexpvector_to_ro_error_notvector():
-    with pytest.raises(ValueError):
-        robjects.sexpvector_to_ro(rinterface.globalenv)
