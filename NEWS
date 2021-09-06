@@ -19,6 +19,11 @@ Changes
 
 - :obj:`rpy2.robjects.vectors.__all__` is removed.
 
+Bugs fixed
+----------
+
+- Clear R warning about partial argument name matching (issue #821).
+
 
 Release 3.4.5
 =============
