@@ -41,6 +41,10 @@ class TestGGplot(object):
         eb = ggplot2.element_blank()
         assert isinstance(eb, ggplot2.ElementBlank)
 
+    def test_element_line(self):
+        eb = ggplot2.element_line()
+        assert isinstance(eb, ggplot2.ElementLine)
+
     def test_labs(self):
         la = ggplot2.labs()
         assert isinstance(la, ggplot2.Labs)
