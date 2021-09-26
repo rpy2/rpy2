@@ -438,7 +438,7 @@ class SexpEnvironment(Sexp):
         openrlib.rlib.SET_ENCLOS(self.__sexp__._cdata,
                                  value.__sexp__._cdata)
 
-    def keys(self) -> typing.Generator[str, None, None]:
+    def keys(self) -> typing.Generator[typing.Optional[str], None, None]:
         """Generator over the keys (symbols) in the environment."""
         with memorymanagement.rmemory() as rmemory:
             symbols = rmemory.protect(
@@ -452,7 +452,7 @@ class SexpEnvironment(Sexp):
         for e in res:
             yield e
 
-    def __iter__(self) -> typing.Generator[str, None, None]:
+    def __iter__(self) -> typing.Generator[typing.Optional[str], None, None]:
         """See method `keys()`."""
         return self.keys()
 
@@ -812,6 +812,7 @@ def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
             rlib.Rf_getAttrib(scaps._cdata,
                               rlib.R_ClassSymbol))
         if rlib.Rf_length(classes) == 0:
+            classname: typing.Tuple[str, ...]
             dim = rmemory.protect(
                 rlib.Rf_getAttrib(scaps._cdata,
                                   rlib.R_DimSymbol))
