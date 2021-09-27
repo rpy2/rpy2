@@ -1150,6 +1150,25 @@ class ElementText(Element):
 element_text = ElementText.new
 
 
+class ElementLine(Element):
+
+    _constructor = ggplot2.element_line
+
+    @classmethod
+    def new(cls,  colour=NULL, size=NULL, linetype=NULL, lineend=NULL,
+            color=NULL, arrow=NULL, inherit_blank=False):
+        res = cls(
+            cls._constructor(colour=colour, size=size,
+                             linetype=linetype, lineend=lineend,
+                             color=color, arrow=arrow,
+                             inherit_blank=inherit_blank)
+        )
+        return res
+
+
+element_line = ElementLine.new
+
+
 class ElementRect(Element):
 
     _constructor = ggplot2.element_rect

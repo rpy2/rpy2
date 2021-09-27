@@ -25,6 +25,12 @@ Bugs fixed
 - Clear R warning about partial argument name matching (issue #821).
 
 
+Release 3.4.6
+=============
+
+- Added a class and an alias to map ggplot2's `element_line` (issue #822).
+
+
 Release 3.4.5
 =============
 
