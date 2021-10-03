@@ -1012,7 +1012,8 @@ class Array(Vector):
     dim = property(__dim_get, __dim_set, None,
                    "Get or set the dimension of the array.")
 
-    def __dimnames_get(self) -> sexp.Sexp:
+    @property
+    def names(self) -> sexp.Sexp:
         """ Return a list of name vectors
         (like the R function 'dimnames' does)."""
 
@@ -1020,7 +1021,8 @@ class Array(Vector):
         res = conversion.rpy2py(res)
         return res
 
-    def __dimnames_set(self, value):
+    @names.setter
+    def names(self, value) -> None:
         """ Set list of name vectors
         (like the R function 'dimnames' does)."""
 
@@ -1028,8 +1030,6 @@ class Array(Vector):
         res = self._dimnames_set(self, value)
         self.__sexp__ = res.__sexp__
 
-    names = property(__dimnames_get, __dimnames_set, None,
-                     "names associated with the dimension.")
     dimnames = names
 
 

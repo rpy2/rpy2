@@ -74,8 +74,9 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         """ Return an iterator over keys in the environment."""
         return super().keys()
 
-    def items(self) -> typing.Generator[typing.Tuple[str, rinterface.Sexp],
-                                        None, None]:
+    def items(self) -> typing.Generator[
+            typing.Tuple[typing.Optional[str], rinterface.Sexp],
+            None, None]:
         """ Iterate through the symbols and associated objects in
             this R environment."""
         for k in self:

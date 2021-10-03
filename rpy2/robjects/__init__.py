@@ -9,10 +9,9 @@ License: GPLv2+
 """
 
 import array
-import contextlib
 import os
-from functools import partial
 import types
+import typing
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
@@ -86,7 +85,16 @@ def _rpy2py_robject(obj):
     return obj
 
 
-def _vector_matrix_array(obj, vector_cls, matrix_cls, array_cls):
+VT = typing.TypeVar('VT')
+MT = typing.TypeVar('MT')
+AT = typing.TypeVar('AT')
+
+
+def _vector_matrix_array(
+        obj, vector_cls: typing.Type[VT],
+        matrix_cls: typing.Type[MT],
+        array_cls: typing.Type[AT]) -> typing.Union[
+            typing.Type[VT], typing.Type[MT], typing.Type[AT]]:
     # Should it be promoted to array or matrix ?
     try:
         dim = obj.do_slot("dim")
@@ -328,25 +336,30 @@ default_converter._rpy2py_nc_map.update(
     {
         rinterface.SexpS4: conversion.NameClassMap(RS4),
         rinterface.IntSexpVector: conversion.NameClassMap(
-            lambda obj: _vector_matrix_array(obj, vectors.IntVector,
-                                             vectors.IntMatrix, vectors.IntArray)(obj),
+            lambda obj: _vector_matrix_array(
+                obj, vectors.IntVector,
+                vectors.IntMatrix, vectors.IntArray)(obj),
             {'factor': FactorVector}),
         rinterface.FloatSexpVector: conversion.NameClassMap(
-            lambda obj: _vector_matrix_array(obj, vectors.FloatVector,
-                                             vectors.FloatMatrix, vectors.FloatArray)(obj),
+            lambda obj: _vector_matrix_array(
+                obj, vectors.FloatVector,
+                vectors.FloatMatrix, vectors.FloatArray)(obj),
             {'Date': DateVector,
              'POSIXct': POSIXct}),
         rinterface.BoolSexpVector: conversion.NameClassMap(
-            lambda obj: _vector_matrix_array(obj, vectors.BoolVector,
-                                             vectors.BoolMatrix, vectors.BoolArray)(obj)
+            lambda obj: _vector_matrix_array(
+                obj, vectors.BoolVector,
+                vectors.BoolMatrix, vectors.BoolArray)(obj)
         ),
         rinterface.ByteSexpVector: conversion.NameClassMap(
-            lambda obj: _vector_matrix_array(obj, vectors.ByteVector,
-                                             vectors.ByteMatrix, vectors.ByteArray)(obj)
+            lambda obj: _vector_matrix_array(
+                obj, vectors.ByteVector,
+                vectors.ByteMatrix, vectors.ByteArray)(obj)
         ),
         rinterface.StrSexpVector: conversion.NameClassMap(
-            lambda obj: _vector_matrix_array(obj, vectors.StrVector,
-                                             vectors.StrMatrix, vectors.StrArray)(obj)
+            lambda obj: _vector_matrix_array(
+                obj, vectors.StrVector,
+                vectors.StrMatrix, vectors.StrArray)(obj)
         ),
         rinterface.ComplexSexpVector: conversion.NameClassMap(
             lambda obj: _vector_matrix_array(obj, vectors.ComplexVector,

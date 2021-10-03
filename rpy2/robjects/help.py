@@ -2,7 +2,6 @@
 R help system.
 
 """
-import enum
 import os
 from collections import namedtuple
 import re
@@ -62,7 +61,9 @@ def _Rd2txt(section_doc):
     tempfilename = rinterface.baseenv['tempfile']()[0]
     filecon = rinterface.baseenv['file'](tempfilename, open='w')
     try:
-        tools_ns['Rd2txt'](section_doc, out=filecon, fragment=True)[0].split('\n')
+        tools_ns['Rd2txt'](
+            section_doc, out=filecon, fragment=True
+        )[0].split('\n')
         rinterface.baseenv['flush'](filecon)
         rinterface.baseenv['close'](filecon)
         with open(tempfilename) as fh:
@@ -105,7 +106,7 @@ CREATE INDEX alias_idx ON rd_alias_meta (alias);
 ''')
     dbcon.commit()
 
-
+    
 def populate_metaRd_db(package_name: str, dbcon,
                        package_path: typing.Optional[str] = None) -> None:
     """ Populate a database with the meta-information
@@ -199,7 +200,7 @@ class Page(object):
     def arguments(self) -> typing.List[Item]:
         """ Get the arguments and descriptions as a list of Item objects. """
         section_doc = self._sections.get(r'\arguments')
-        res = list()
+        res: typing.List[Item] = list()
         if section_doc is None:
             return res
         else:
@@ -208,7 +209,7 @@ class Page(object):
             section_rows = _Rd2txt(section_doc)
             if len(section_rows) < 3:
                 return res
-            for row in section_rows[2: ]:
+            for row in section_rows[2:]:
                 if arg_name is None:
                     m = p_newarg.match(row)
                     if m:
@@ -263,8 +264,9 @@ class Page(object):
         in the documentation Page. """
         return self.sections.iteritems
 
-    def to_docstring(self,
-                     section_names: typing.Optional[typing.Tuple[str, ...]] = None
+    def to_docstring(
+            self,
+            section_names: typing.Optional[typing.Tuple[str, ...]] = None
     ) -> str:
         """ section_names: list of section names to consider. If None
         all sections are used.
@@ -409,7 +411,7 @@ def pages(topic):
             try:
                 page = pack.fetch(topic)
                 res.append(page)
-            except HelpNotFoundError as hnfe:
+            except HelpNotFoundError:
                 pass
 
     return tuple(res)
