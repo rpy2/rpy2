@@ -12,7 +12,25 @@ _options = ('rpy2', '--quiet', '--no-save')  # type: typing.Tuple[str, ...]
 _DEFAULT_C_STACK_LIMIT: int = -1
 rpy2_embeddedR_isinitialized = 0x00
 
-rstart = None
+
+class Is_RStart(typing.Protocol):
+    @property
+    def rhome(self): ...
+
+    @rhome.setter
+    def rhome(self): ...
+
+    @property
+    def home(self): ...
+
+    @home.setter
+    def home(self): ...
+
+    @property
+    def CharacterMode(self): ...
+
+
+rstart: Is_RStart = None
 
 
 # TODO: move initialization-related code to _rinterface ?
