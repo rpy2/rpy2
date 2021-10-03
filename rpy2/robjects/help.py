@@ -106,7 +106,7 @@ CREATE INDEX alias_idx ON rd_alias_meta (alias);
 ''')
     dbcon.commit()
 
-    
+
 def populate_metaRd_db(package_name: str, dbcon,
                        package_path: typing.Optional[str] = None) -> None:
     """ Populate a database with the meta-information
@@ -179,8 +179,6 @@ class Page(object):
         for elt_i in range(len(struct_rdb)):
             elt = rinterface.baseenv['['](struct_rdb, elt_i+1)
             rd_tag = elt[0].do_slot("Rd_tag")[0]
-            if rd_tag == r'\section':
-                rd_section = rd_tag[0][2:]
             if rd_tag in sections and rd_tag not in NON_UNIQUE_TAGS:
                 warnings.warn('Section of the R doc duplicated: %s' % rd_tag)
             sections[rd_tag] = elt
@@ -417,10 +415,10 @@ def pages(topic):
     return tuple(res)
 
 
-def docstring(package: Package, alias: str,
-              sections: typing.Tuple[str, ...] = (r'\usage',
-                                                  r'\arguments')
-) -> str:
+def docstring(
+        package: Package, alias: str,
+        sections: typing.Tuple[str, ...] = (r'\usage',
+                                            r'\arguments')) -> str:
     """Fetch the R documentation for an alias in a package."""
     if not isinstance(package, Package):
         package = Package(package)
