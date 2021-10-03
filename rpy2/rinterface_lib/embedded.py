@@ -6,6 +6,11 @@ import warnings
 from rpy2.rinterface_lib import openrlib
 from rpy2.rinterface_lib import callbacks
 
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import Protocol
+else:
+    from typing import Protocol
+
 ffi = openrlib.ffi
 
 _options = ('rpy2', '--quiet', '--no-save')  # type: typing.Tuple[str, ...]
@@ -13,7 +18,7 @@ _DEFAULT_C_STACK_LIMIT: int = -1
 rpy2_embeddedR_isinitialized = 0x00
 
 
-class Is_RStart(typing.Protocol):
+class Is_RStart(Protocol):
     @property
     def rhome(self): ...
 

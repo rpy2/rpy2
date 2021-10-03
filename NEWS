@@ -23,6 +23,8 @@ Changes
   removed and replaced by
   :class:`rpy2.rinterface.SexpVectorWithNumpyInterface`.
 
+- With Python < 3.8 the module :mod:`typing_extensions` is now a requirement.
+
 Bugs fixed
 ----------
 
