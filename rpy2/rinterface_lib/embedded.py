@@ -9,8 +9,9 @@ from rpy2.rinterface_lib import callbacks
 ffi = openrlib.ffi
 
 _options = ('rpy2', '--quiet', '--no-save')  # type: typing.Tuple[str, ...]
-_DEFAULT_C_STACK_LIMIT = -1
+_DEFAULT_C_STACK_LIMIT: int = -1
 rpy2_embeddedR_isinitialized = 0x00
+
 rstart = None
 
 
@@ -85,7 +86,7 @@ class RRuntimeError(Exception):
 
 def _setcallback(rlib, rlib_symbol: str,
                  callbacks,
-                 callback_symbol: str) -> None:
+                 callback_symbol: typing.Optional[str]) -> None:
     """Set R callbacks."""
     if callback_symbol is None:
         new_callback = ffi.NULL

@@ -1,3 +1,4 @@
+import abc
 import atexit
 import contextlib
 import os
@@ -180,6 +181,11 @@ class SexpSymbol(sexp.Sexp):
 
 
 class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
+    """Missing argument in a call to an R function.
+
+    When evaluating a function, arguments that are not specified
+    can take a default value when named, otherwise they will
+    take a special value that indicates that they are missing."""
 
     def __init__(self):
         if embedded.isready():
@@ -220,22 +226,20 @@ class SexpPromise(Sexp):
         return openrlib.rlib.Rf_eval(self.__sexp__._cdata, env)
 
 
-NPCOMPAT_TYPE = typing.TypeVar('NPCOMPAT_TYPE',
-                               'ByteSexpVector',
-                               'BoolSexpVector',
-                               'IntSexpVector',
-                               'FloatSexpVector')
-
-
-class NumpyArrayMixin:
+class SexpVectorWithNumpyInterface(SexpVector):
     """Numpy-specific API for accessing the content of a numpy array.
 
     This interface implements version 3 of Numpy's `__array_interface__`
     and is only available / possible for some of the R vectors."""
 
     @property
+    @abc.abstractmethod
+    def _NP_TYPESTR(self) -> str:
+        pass
+
+    @property
     def __array_interface__(
-            self: NPCOMPAT_TYPE
+            self
     ) -> dict:
         """Return an `__array_interface__` version 3.
 
@@ -255,8 +259,20 @@ class NumpyArrayMixin:
                 'data': data,
                 'version': 3}
 
+    @classmethod
+    def _check_C_compatible(cls, mview):
+        return (
+            mview.itemsize == cls._R_SIZEOF_ELT
+            and
+            (
+                cls._NP_TYPESTR == '|u1'
+                or
+                cls._NP_TYPESTR.endswith(mview.format)
+            )
+        )
 
-class ByteSexpVector(NumpyArrayMixin, SexpVector):
+
+class ByteSexpVector(SexpVectorWithNumpyInterface):
     """Array of bytes.
 
     This is the R equivalent to a Python :class:`bytesarray`.
@@ -325,7 +341,7 @@ class ByteSexpVector(NumpyArrayMixin, SexpVector):
                 'Indices must be integers or slices, not %s' % type(i))
 
 
-class BoolSexpVector(NumpyArrayMixin, SexpVector):
+class BoolSexpVector(SexpVectorWithNumpyInterface):
     """Array of booleans.
 
     Note that R is internally storing booleans as integers to
@@ -345,8 +361,12 @@ class BoolSexpVector(NumpyArrayMixin, SexpVector):
         else:
             return bool(x)
 
-    def __getitem__(self, i: Union[int, slice]) -> Union[typing.Optional[bool],
+    def __getitem__(self, i: Union[int, slice]) -> Union[bool,
+                                                         'sexp.NALogicalType',
                                                          'BoolSexpVector']:
+        res: Union[bool,
+                   'sexp.NALogicalType',
+                   'BoolSexpVector']
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -387,7 +407,7 @@ def nullable_int(v):
         return int(v)
 
 
-class IntSexpVector(NumpyArrayMixin, SexpVector):
+class IntSexpVector(SexpVectorWithNumpyInterface):
 
     _R_TYPE = openrlib.rlib.INTSXP
     _R_SET_VECTOR_ELT = openrlib.SET_INTEGER_ELT
@@ -434,7 +454,7 @@ class IntSexpVector(NumpyArrayMixin, SexpVector):
         return vector_memoryview(self, 'int', 'i')
 
 
-class FloatSexpVector(NumpyArrayMixin, SexpVector):
+class FloatSexpVector(SexpVectorWithNumpyInterface):
 
     _R_TYPE = openrlib.rlib.REALSXP
     _R_VECTOR_ELT = openrlib.REAL_ELT
@@ -651,7 +671,12 @@ class LangSexpVector(SexpVector):
             openrlib.rlib.Rf_nthcdr(cdata, i_c)
         )
 
-    def __setitem__(self, i: int, value: sexp.SupportsSEXP) -> None:
+    def __setitem__(self, i: typing.Union[int, slice],
+                    value: sexp.SupportsSEXP) -> None:
+        if isinstance(i, slice):
+            raise NotImplementedError(
+                'Assigning slices to LangSexpVectors is not yet implemented.'
+            )
         cdata = self.__sexp__._cdata
         i_c = _rinterface._python_index_to_c(cdata, i)
         openrlib.rlib.SETCAR(
