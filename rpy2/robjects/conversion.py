@@ -233,9 +233,9 @@ class Converter(object):
         if template is None:
             lineage = tuple()
         else:
-            lineage = list(template.lineage)
-            lineage.append(name)
-            lineage = tuple(lineage)
+            _ = list(template.lineage)
+            _.append(name)
+            lineage = tuple(_)
             overlay_converter(template, self)
         self._lineage = lineage
 

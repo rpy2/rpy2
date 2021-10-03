@@ -185,6 +185,8 @@ if __name__ == '__main__':
                 'requirements.txt')
     ) as fh:
         requires = fh.read().splitlines()
+    if sys.version_info[:2] < (3, 8):
+        requires.append('typing-extensions')
         print(requires)
 
     extras_require = {

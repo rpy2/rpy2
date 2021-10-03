@@ -1,6 +1,4 @@
 import os
-import sys
-import tempfile
 import weakref
 import rpy2.rinterface
 import rpy2.rinterface_lib.callbacks
@@ -109,7 +107,6 @@ class RObjectMixin(object):
         except Exception:
             res.append('Unable to fetch R classes.')
         return os.linesep.join(res)
-
 
     def r_repr(self):
         """ String representation for an object that can be

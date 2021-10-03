@@ -19,10 +19,19 @@ Changes
 
 - :obj:`rpy2.robjects.vectors.__all__` is removed.
 
+- Cleaner class design by having :class:`rpy2.rinterface.NumpyArrayMixin`
+  removed and replaced by
+  :class:`rpy2.rinterface.SexpVectorWithNumpyInterface`.
+
+- With Python < 3.8 the module :mod:`typing_extensions` is now a requirement.
+
 Bugs fixed
 ----------
 
 - Clear R warning about partial argument name matching (issue #821).
+
+- Setting slice of a StrSexpVector where some of the elements are not strings
+  could fail.
 
 
 Release 3.4.6

@@ -6,14 +6,14 @@ from rpy2.rinterface_lib import ffi_proxy
 
 cffi_mode = rpy2.situation.get_cffi_mode()
 if cffi_mode == rpy2.situation.CFFI_MODE.API:
-    import _rinterface_cffi_api as _rinterface_cffi
+    import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
 elif cffi_mode == rpy2.situation.CFFI_MODE.ABI:
-    import _rinterface_cffi_abi as _rinterface_cffi
+    import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
 else:
     try:
-        import _rinterface_cffi_api as _rinterface_cffi
+        import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
     except ImportError:
-        import _rinterface_cffi_abi as _rinterface_cffi
+        import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
 
 ffi = _rinterface_cffi.ffi
 

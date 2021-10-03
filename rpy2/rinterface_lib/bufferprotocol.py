@@ -17,6 +17,7 @@ def getshape(cdata, rk: typing.Optional[int] = None) -> typing.Tuple[int, ...]:
     dim_cdata = openrlib.rlib.Rf_getAttrib(cdata,
                                            openrlib.rlib.R_DimSymbol)
 
+    shape: typing.Tuple[int, ...]
     if dim_cdata == openrlib.rlib.R_NilValue:
         shape = (openrlib.rlib.Rf_length(cdata), )
     else:

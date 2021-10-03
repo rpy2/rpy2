@@ -65,6 +65,16 @@ class RTYPES(enum.IntEnum):
     FUNSXP = openrlib.rlib.FUNSXP
 
 
+# The following constants can be use to create Python proxies
+# for R objects while R has not been initialized yet.
+UNINIT_CAPSULE_CHAR = _rinterface.UninitializedRCapsule(RTYPES.CHARSXP.value)
+UNINIT_CAPSULE_INTEGER = _rinterface.UninitializedRCapsule(RTYPES.INTSXP.value)
+UNINIT_CAPSULE_LOGICAL = _rinterface.UninitializedRCapsule(RTYPES.LGLSXP.value)
+UNINIT_CAPSULE_REAL = _rinterface.UninitializedRCapsule(RTYPES.REALSXP.value)
+UNINIT_CAPSULE_CPLX = _rinterface.UninitializedRCapsule(RTYPES.CPLXSXP.value)
+UNINIT_CAPSULE_ENV = _rinterface.UninitializedRCapsule(RTYPES.ENVSXP.value)
+
+
 class Sexp(SupportsSEXP):
     """Base class for R objects.
 
@@ -205,7 +215,7 @@ class Sexp(SupportsSEXP):
         openrlib.rlib.Rf_namesgets(
             self.__sexp__._cdata, value.__sexp__._cdata)
 
-    @property
+    @property  # type: ignore
     @conversion._cdata_res_to_rinterface
     def names_from_c_attribute(self) -> 'Sexp':
         return openrlib.rlib.Rf_getAttrib(
@@ -234,6 +244,10 @@ class NULLType(Sexp, metaclass=SingletonABC):
     @property
     def __sexp__(self) -> _rinterface.CapsuleBase:
         return self._sexpobject
+
+    @__sexp__.setter
+    def __sexp__(self, value) -> None:
+        raise TypeError('The capsule for the R object cannot be modified.')
 
     @property
     def rid(self) -> int:
@@ -426,7 +440,7 @@ class SexpEnvironment(Sexp):
         """Get the parent frame of the environment."""
         return openrlib.rlib.FRAME(self.__sexp__._cdata)
 
-    @property
+    @property  # type: ignore
     @_cdata_res_to_rinterface
     def enclos(self) -> 'typing.Union[NULLType, SexpEnvironment]':
         """Get or set the enclosing environment."""
@@ -461,10 +475,9 @@ class SexpEnvironment(Sexp):
             self.__sexp__._cdata)
 
 
-_UNINIT_CAPSULE_ENV = _rinterface.UninitializedRCapsule(RTYPES.ENVSXP.value)
-emptyenv = SexpEnvironment(_UNINIT_CAPSULE_ENV)
-baseenv = SexpEnvironment(_UNINIT_CAPSULE_ENV)
-globalenv = SexpEnvironment(_UNINIT_CAPSULE_ENV)
+emptyenv = SexpEnvironment(UNINIT_CAPSULE_ENV)
+baseenv = SexpEnvironment(UNINIT_CAPSULE_ENV)
+globalenv = SexpEnvironment(UNINIT_CAPSULE_ENV)
 
 
 # TODO: move to _rinterface-level function (as ABI / API compatibility
@@ -553,6 +566,27 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
         return r_vector
 
     @classmethod
+    def _raise_incompatible_C_size(cls, mview):
+        msg = (
+            'Incompatible C type sizes. '
+            'The R array type is "{r_type}" with {r_size} byte{r_size_pl} '
+            'per item '
+            'while the Python array type is "{py_type}" with {py_size} '
+            'byte{py_size_pl} per item.'
+            .format(r_type=cls._R_TYPE,
+                    r_size=cls._R_SIZEOF_ELT,
+                    r_size_pl='s' if cls._R_SIZEOF_ELT > 1 else '',
+                    py_type=mview.format,
+                    py_size=mview.itemsize,
+                    py_size_pl='s' if mview.itemsize > 1 else '')
+        )
+        raise ValueError(msg)
+
+    @classmethod
+    def _check_C_compatible(cls, mview):
+        return mview.itemsize == cls._R_SIZEOF_ELT
+
+    @classmethod
     @_cdata_res_to_rinterface
     def from_memoryview(cls, mview: memoryview) -> VT:
         """Create an R vector/array from a memoryview.
@@ -565,27 +599,9 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
             raise embedded.RNotReadyError('Embedded R is not ready to use.')
         if not mview.contiguous:
             raise ValueError('The memory view must be contiguous.')
-        if (
-                (mview.itemsize != cls._R_SIZEOF_ELT)
-                or
-                not hasattr(cls, '_NP_TYPESTR') or
-                not (cls._NP_TYPESTR == '|u1' or
-                     cls._NP_TYPESTR.endswith(mview.format))
-        ):
-            msg = (
-                'Incompatible C type sizes. '
-                'The R array type is {r_type} with {r_size} byte{r_size_pl} '
-                'per item '
-                'while the Python array type is {py_type} with {py_size} '
-                'byte{py_size_pl} per item.'
-                .format(r_type=cls._R_TYPE,
-                        r_size=cls._R_SIZEOF_ELT,
-                        r_size_pl='s' if cls._R_SIZEOF_ELT > 1 else '',
-                        py_type=mview.format,
-                        py_size=mview.itemsize,
-                        py_size_pl='s' if mview.itemsize > 1 else '')
-            )
-            raise ValueError(msg)
+        if not cls._check_C_compatible(mview):
+            cls._raise_incompatible_C_size(mview)
+
         r_vector = None
         n = len(mview)
         with memorymanagement.rmemory() as rmemory:
@@ -604,8 +620,6 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
         """Create an R vector/array from a Python object, if possible.
 
         An exception :class:`ValueError` will be raised if not possible."""
-
-        res = None
         try:
             mv = memoryview(obj)
             res = cls.from_memoryview(mv)
@@ -690,13 +704,16 @@ class StrSexpVector(SexpVector):
     def __getitem__(
             self,
             i: typing.Union[int, slice]
-    ) -> typing.Union['StrSexpVector', str, 'na_values.NA_Character']:
+    ) -> typing.Union['StrSexpVector', str, 'NACharacterType']:
         cdata = self.__sexp__._cdata
+        res: typing.Union['StrSexpVector', str, 'NACharacterType']
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            res = _rinterface._string_getitem(cdata, i_c)
-            if res is None:
-                res = na_values.NA_Character
+            _ = _rinterface._string_getitem(cdata, i_c)
+            if _ is None:
+                res = na_values.NA_Character  # type: ignore
+            else:
+                res = _
         elif isinstance(i, slice):
             res = self.from_iterable(
                 [_rinterface._string_getitem(cdata, i_c)
@@ -711,7 +728,7 @@ class StrSexpVector(SexpVector):
             self,
             i: typing.Union[int, slice],
             value: typing.Union[str, typing.Sequence[typing.Optional[str]],
-                                'StrSexpVector', 'na_values.NA_Character']
+                                'StrSexpVector', 'NACharacterType']
     ) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
@@ -727,12 +744,14 @@ class StrSexpVector(SexpVector):
                 val_cdata
             )
         elif isinstance(i, slice):
-            for i_c, v in zip(range(*i.indices(len(self))), value):
-                if v is None:
+            for i_c, _ in zip(range(*i.indices(len(self))), value):
+                if _ is None:
                     v_cdata = openrlib.rlib.R_NaString
                 else:
-                    if not isinstance(value, str):
-                        v = str(v)
+                    if isinstance(_, str):
+                        v = _
+                    else:
+                        v = str(_)
                     v_cdata = _as_charsxp_cdata(v)
                 self._R_SET_VECTOR_ELT(
                     cdata, i_c,
