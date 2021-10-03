@@ -142,8 +142,8 @@ def vector_memoryview(obj: sexp.SexpVector,
     # to write C extensions. We have to use numpy.
     # TODO: Having numpy a requirement just for this is a problem.
     # TODO: numpy needed for memoryview
-    #   (as long as https://bugs.python.org/issue34778 not resolved)
-    import numpy
+    #   (as long as https://bugs.python.org/issue34778 is not resolved)
+    import numpy  # type: ignore
     a = numpy.frombuffer(b, dtype=cast_str).reshape(shape, order='F')
     mv = memoryview(a)
     return mv
@@ -207,6 +207,10 @@ class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
     @property
     def __sexp__(self) -> _rinterface.SexpCapsule:
         return self._sexpobject
+
+    @__sexp__.setter
+    def __sexp__(self, value) -> None:
+        raise TypeError('The capsule for the R object cannot be modified.')
 
 
 MissingArg = _MissingArgType()
@@ -371,7 +375,8 @@ class BoolSexpVector(SexpVectorWithNumpyInterface):
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
             elt = openrlib.LOGICAL_ELT(cdata, i_c)
-            res = na_values.NA_Logical if elt == NA_Logical else bool(elt)
+            res = (na_values.NA_Logical  # type: ignore
+                   if elt == NA_Logical else bool(elt))
         elif isinstance(i, slice):
             res = type(self).from_iterable(
                 [openrlib.LOGICAL_ELT(cdata, i_c)
@@ -736,7 +741,7 @@ class SexpClosure(Sexp):
                 raise embedded.RRuntimeError(_rinterface._geterrmessage())
         return res
 
-    @property
+    @property  # type: ignore
     @_cdata_res_to_rinterface
     def closureenv(self) -> SexpEnvironment:
         """Closure of the R function."""

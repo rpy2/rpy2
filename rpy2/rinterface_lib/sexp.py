@@ -215,7 +215,7 @@ class Sexp(SupportsSEXP):
         openrlib.rlib.Rf_namesgets(
             self.__sexp__._cdata, value.__sexp__._cdata)
 
-    @property
+    @property  # type: ignore
     @conversion._cdata_res_to_rinterface
     def names_from_c_attribute(self) -> 'Sexp':
         return openrlib.rlib.Rf_getAttrib(
@@ -244,6 +244,10 @@ class NULLType(Sexp, metaclass=SingletonABC):
     @property
     def __sexp__(self) -> _rinterface.CapsuleBase:
         return self._sexpobject
+
+    @__sexp__.setter
+    def __sexp__(self, value) -> None:
+        raise TypeError('The capsule for the R object cannot be modified.')
 
     @property
     def rid(self) -> int:
@@ -436,7 +440,7 @@ class SexpEnvironment(Sexp):
         """Get the parent frame of the environment."""
         return openrlib.rlib.FRAME(self.__sexp__._cdata)
 
-    @property
+    @property  # type: ignore
     @_cdata_res_to_rinterface
     def enclos(self) -> 'typing.Union[NULLType, SexpEnvironment]':
         """Get or set the enclosing environment."""
@@ -616,7 +620,6 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
         """Create an R vector/array from a Python object, if possible.
 
         An exception :class:`ValueError` will be raised if not possible."""
-
         try:
             mv = memoryview(obj)
             res = cls.from_memoryview(mv)
@@ -703,11 +706,12 @@ class StrSexpVector(SexpVector):
             i: typing.Union[int, slice]
     ) -> typing.Union['StrSexpVector', str, 'NACharacterType']:
         cdata = self.__sexp__._cdata
+        res: typing.Union['StrSexpVector', str, 'NACharacterType']
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
             _ = _rinterface._string_getitem(cdata, i_c)
             if _ is None:
-                res = na_values.NA_Character
+                res = na_values.NA_Character  # type: ignore
             else:
                 res = _
         elif isinstance(i, slice):
@@ -744,7 +748,9 @@ class StrSexpVector(SexpVector):
                 if _ is None:
                     v_cdata = openrlib.rlib.R_NaString
                 else:
-                    if not isinstance(_, str):
+                    if isinstance(_, str):
+                        v = _
+                    else:
                         v = str(_)
                     v_cdata = _as_charsxp_cdata(v)
                 self._R_SET_VECTOR_ELT(
