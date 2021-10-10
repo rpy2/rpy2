@@ -761,8 +761,6 @@ class StrSexpVector(SexpVector):
                     isinstance(value, NACharacterType)
                     or
                     isinstance(value, str)
-                    or
-                    len(value) == 1
             ):
                 value_slice = itertools.cycle((value, ))
             else:
