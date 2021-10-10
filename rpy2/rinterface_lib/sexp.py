@@ -679,9 +679,11 @@ class SexpVector(Sexp, SexpVectorAbstract):
     def __init__(self,
                  obj: typing.Union[_rinterface.SexpCapsule,
                                    collections.abc.Sized]):
-        if (isinstance(obj, Sexp)
-            or
-            isinstance(obj, _rinterface.SexpCapsule)):
+        if (
+                isinstance(obj, Sexp)
+                or
+                isinstance(obj, _rinterface.SexpCapsule)
+        ):
             super().__init__(obj)
         elif isinstance(obj, collections.abc.Sized):
             robj: Sexp = type(self).from_object(obj)
@@ -756,11 +758,11 @@ class StrSexpVector(SexpVector):
         elif isinstance(i, slice):
             value_slice: typing.Iterable
             if (
-            isinstance(value, NACharacterType)
+                    isinstance(value, NACharacterType)
                     or
                     isinstance(value, str)
-                or
-                len(value) == 1
+                    or
+                    len(value) == 1
             ):
                 value_slice = itertools.cycle((value, ))
             else:

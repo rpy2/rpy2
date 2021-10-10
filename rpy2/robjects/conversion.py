@@ -37,7 +37,10 @@ class NameClassMap(object):
     be a `DataFrame`.
     """
 
-    _default: typing.Type
+    _default: typing.Union[
+        typing.Any,
+        typing.Callable[[typing.Any], typing.Any]
+    ]
     _map: typing.Dict[str, typing.Type]
 
     default = property(lambda self: self._default)
@@ -61,7 +64,11 @@ class NameClassMap(object):
     def __getitem__(self, key: str) -> typing.Type:
         return self._map[key]
 
-    def __setitem__(self, key: str, value: typing.Type):
+    def __setitem__(self, key: str,
+                    value: typing.Union[
+                        typing.Any,
+                        typing.Callable[[typing.Any], typing.Any]
+                    ]):
         if not issubclass(value, self._default):
             raise ValueError(
                 'The new class must be a subclass of {}'
@@ -216,7 +223,8 @@ class Converter(object):
     different converters.
     """
     _name: str
-    _rpy2py_nc_map: typing.Dict[SupportsSEXP, NameClassMap]
+    _rpy2py_nc_map: typing.Dict[typing.Type[_rinterface_capi.SupportsSEXP],
+                                NameClassMap]
     _lineage: typing.Tuple[str, ...]
 
     name = property(lambda self: self._name)
