@@ -763,6 +763,8 @@ class StrSexpVector(SexpVector):
                     isinstance(value, str)
             ):
                 value_slice = itertools.cycle((value, ))
+            elif len(value) == 1:
+                value_slice = itertools.cycle(value)
             else:
                 value_slice = value
             for i_c, _ in zip(range(*i.indices(len(self))), value_slice):
