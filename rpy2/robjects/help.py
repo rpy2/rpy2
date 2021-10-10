@@ -356,12 +356,14 @@ class Package(object):
         )
         # since the selection is on a verified rowid we are sure to
         # exactly get one row
-        res = c.fetchall()
-        rkey = StrSexpVector((res[0][0][:-3], ))
-        _type = res[0][2]
-        rpath = StrSexpVector((os.path.join(self.package_path,
-                                            'help',
-                                            self.__package_name + '.rdb'),))
+        res_all = c.fetchall()
+        rkey = StrSexpVector((res_all[0][0][:-3], ))
+        _type = res_all[0][2]
+        rpath = StrSexpVector(
+            (os.path.join(self.package_path,
+                          'help',
+                          f'{self.__package_name}.rdb'),)
+        )
 
         rdx_variables = (
             self._rdx[self._rdx.do_slot('names').index('variables')]

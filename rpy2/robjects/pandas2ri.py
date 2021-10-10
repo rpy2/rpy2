@@ -11,11 +11,11 @@ from rpy2.rinterface import (IntSexpVector,
 import datetime
 import functools
 import math
-import numpy
-import pandas
-import pandas.core.series
-from pandas.core.frame import DataFrame as PandasDataFrame
-from pandas.core.dtypes.api import is_datetime64_any_dtype
+import numpy  # type: ignore
+import pandas  # type: ignore
+import pandas.core.series  # type: ignore
+from pandas.core.frame import DataFrame as PandasDataFrame  # type: ignore
+from pandas.core.dtypes.api import is_datetime64_any_dtype  # type: ignore
 import warnings
 
 from collections import OrderedDict

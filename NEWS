@@ -25,6 +25,11 @@ Changes
 
 - With Python < 3.8 the module :mod:`typing_extensions` is now a requirement.
 
+- Initialization and update steps for
+  :class:`rpy2.robjects.conversion.NameClassMap` were update to ensure
+  type hints are correct. This probably solved cryptic bugs with conversion
+  system.
+
 Bugs fixed
 ----------
 
