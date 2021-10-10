@@ -42,7 +42,10 @@ class NameClassMap(object):
 
     default = property(lambda self: self._default)
 
-    def __init__(self, defaultcls: typing.Type = object,
+    def __init__(self,
+                 defaultcls: typing.Union[
+                     typing.Type,
+                     typing.Callable[[typing.Any], typing.Any]] = object,
                  namemap: typing.Optional[dict] = None):
         if namemap is None:
             namemap = {}
@@ -213,7 +216,7 @@ class Converter(object):
     different converters.
     """
     _name: str
-    _rpy2py_nc_map: NameClassMap
+    _rpy2py_nc_map: typing.Dict[SupportsSEXP, NameClassMap]
     _lineage: typing.Tuple[str, ...]
 
     name = property(lambda self: self._name)

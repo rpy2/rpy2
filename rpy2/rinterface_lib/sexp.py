@@ -4,6 +4,7 @@ import abc
 import collections.abc
 from collections import OrderedDict
 import enum
+import itertools
 import typing
 from rpy2.rinterface_lib import embedded
 from rpy2.rinterface_lib import memorymanagement
@@ -452,7 +453,7 @@ class SexpEnvironment(Sexp):
         openrlib.rlib.SET_ENCLOS(self.__sexp__._cdata,
                                  value.__sexp__._cdata)
 
-    def keys(self) -> typing.Generator[typing.Optional[str], None, None]:
+    def keys(self) -> typing.Generator[str, None, None]:
         """Generator over the keys (symbols) in the environment."""
         with memorymanagement.rmemory() as rmemory:
             symbols = rmemory.protect(
@@ -462,11 +463,16 @@ class SexpEnvironment(Sexp):
             n = openrlib.rlib.Rf_xlength(symbols)
             res = []
             for i in range(n):
-                res.append(_rinterface._string_getitem(symbols, i))
+                _ = _rinterface._string_getitem(symbols, i)
+                if _ is None:
+                    raise TypeError(
+                        'R symbol string should not be able to be NA.'
+                    )
+                res.append(_)
         for e in res:
             yield e
 
-    def __iter__(self) -> typing.Generator[typing.Optional[str], None, None]:
+    def __iter__(self) -> typing.Generator[str, None, None]:
         """See method `keys()`."""
         return self.keys()
 
@@ -479,22 +485,17 @@ emptyenv = SexpEnvironment(UNINIT_CAPSULE_ENV)
 baseenv = SexpEnvironment(UNINIT_CAPSULE_ENV)
 globalenv = SexpEnvironment(UNINIT_CAPSULE_ENV)
 
+VT = typing.TypeVar('VT', bound='SexpVector')
+
 
 # TODO: move to _rinterface-level function (as ABI / API compatibility
 # will have API-defined code compile for efficiency).
-def _populate_r_vector(iterable, r_vector, set_elt, cast_value):
+def _populate_r_vector(iterable, r_vector, set_elt, cast_value) -> None:
     for i, v in enumerate(iterable):
         set_elt(r_vector, i, cast_value(v))
 
 
-VT = typing.TypeVar('VT', bound='SexpVector')
-
-
-class SexpVector(Sexp, metaclass=abc.ABCMeta):
-    """Base abstract class for R vector objects.
-
-    R vector objects are, at the C level, essentially C arrays wrapped in
-    the general structure for R objects."""
+class SexpVectorAbstract(SupportsSEXP, metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
@@ -525,21 +526,6 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def _R_GET_PTR(o):
         pass
-
-    def __init__(self,
-                 obj: typing.Union[_rinterface.SexpCapsule,
-                                   collections.abc.Sized]):
-        if isinstance(obj, Sexp) or isinstance(obj,
-                                               _rinterface.SexpCapsule):
-            super().__init__(obj)
-        elif isinstance(obj, collections.abc.Sized):
-            super().__init__(self.from_object(obj).__sexp__)
-        else:
-            raise TypeError('The constructor must be called '
-                            'with an instance of '
-                            'rpy2.rinterface.Sexp '
-                            'or an instance of '
-                            'rpy2.rinterface._rinterface.SexpCapsule')
 
     @classmethod
     @_cdata_res_to_rinterface
@@ -684,6 +670,30 @@ class SexpVector(Sexp, metaclass=abc.ABCMeta):
         raise ValueError("'%s' is not in R vector" % item)
 
 
+class SexpVector(Sexp, SexpVectorAbstract):
+    """Base abstract class for R vector objects.
+
+    R vector objects are, at the C level, essentially C arrays wrapped in
+    the general structure for R objects."""
+
+    def __init__(self,
+                 obj: typing.Union[_rinterface.SexpCapsule,
+                                   collections.abc.Sized]):
+        if (isinstance(obj, Sexp)
+            or
+            isinstance(obj, _rinterface.SexpCapsule)):
+            super().__init__(obj)
+        elif isinstance(obj, collections.abc.Sized):
+            robj: Sexp = type(self).from_object(obj)
+            super().__init__(robj)
+        else:
+            raise TypeError('The constructor must be called '
+                            'with an instance of '
+                            'rpy2.rinterface.Sexp '
+                            'or an instance of '
+                            'rpy2.rinterface._rinterface.SexpCapsule')
+
+
 def _as_charsxp_cdata(x: typing.Union[CharSexp, str]):
     if isinstance(x, CharSexp):
         return x.__sexp__._cdata
@@ -744,7 +754,18 @@ class StrSexpVector(SexpVector):
                 val_cdata
             )
         elif isinstance(i, slice):
-            for i_c, _ in zip(range(*i.indices(len(self))), value):
+            value_slice: typing.Iterable
+            if (
+            isinstance(value, NACharacterType)
+                    or
+                    isinstance(value, str)
+                or
+                len(value) == 1
+            ):
+                value_slice = itertools.cycle((value, ))
+            else:
+                value_slice = value
+            for i_c, _ in zip(range(*i.indices(len(self))), value_slice):
                 if _ is None:
                     v_cdata = openrlib.rlib.R_NaString
                 else:
