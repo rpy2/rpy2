@@ -19,7 +19,9 @@ with warnings.catch_warnings():
                         symbol_resolve=dplyr_._symbol_resolve)
 
 TARGET_VERSION = '1.0'
-if not dplyr.__version__.startswith(TARGET_VERSION):
+if ((dplyr.__version__ is None)
+    or
+    (not dplyr.__version__.startswith(TARGET_VERSION))):
     warnings.warn(
         'This was designed againt dplyr versions starting with %s'
         ' but you have %s' %
@@ -353,6 +355,10 @@ class DataFrame(robjects.DataFrame):
         res = dplyr.transmute_if(self, *args, **kwargs)
         return res
 
+    union = _wrap2(dplyr.union_data_frame, None)
+    intersect = _wrap2(dplyr.intersect_data_frame, None)
+    setdiff = _wrap2(dplyr.setdiff_data_frame, None)
+
 
 def guess_wrap_type(x):
     if dplyr.is_grouped_df(x)[0]:
@@ -369,9 +375,6 @@ class GroupedDataFrame(DataFrame):
         return guess_wrap_type(res)(res)
 
 
-DataFrame.union = _wrap2(dplyr.union_data_frame, None)
-DataFrame.intersect = _wrap2(dplyr.intersect_data_frame, None)
-DataFrame.setdiff = _wrap2(dplyr.setdiff_data_frame, None)
 
 arrange = _make_pipe(dplyr.arrange, DataFrame)
 count = _make_pipe(dplyr.count, DataFrame)

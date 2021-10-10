@@ -65,9 +65,9 @@ from rpy2.robjects.conversion import converter as template_converter
 # Try loading pandas and numpy, emitting a warning if either cannot be
 # loaded.
 try:
-    import numpy
+    import numpy  # type: ignore
     try:
-        import pandas
+        import pandas  # type: ignore
     except ImportError as ie:
         pandas = None
         warnings.warn('The Python package `pandas` is strongly '
@@ -86,13 +86,13 @@ except ImportError as ie:
 
 # IPython imports.
 
-from IPython.core import displaypub
-from IPython.core.magic import (Magics,
+from IPython.core import displaypub  # type: ignore
+from IPython.core.magic import (Magics,   # type: ignore
                                 magics_class,
                                 line_cell_magic,
                                 line_magic,
                                 needs_local_scope)
-from IPython.core.magic_arguments import (argument,
+from IPython.core.magic_arguments import (argument,  # type: ignore
                                           argument_group,
                                           magic_arguments,
                                           parse_argstring)
