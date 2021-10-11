@@ -63,7 +63,7 @@ jobs:
       run: |
         ${{ matrix.venv_activate }}
         python setup.py install
-	rm -r build/
+        rm -r build/
     - name: Test with minimal dependencies
       run: |
         ${{ matrix.ld_libpath }}
