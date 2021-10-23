@@ -92,6 +92,10 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
+    - name: Install R dependencies
+      run: |
+        install.packages(c("ggplot2", "dplyr", "tidyr", "dbplyr", "lazyeval", "rlang"))
+        shell: Rscript {0}
     - name: Test with R deps
       run: |
         ${{ matrix.ld_libpath }}
