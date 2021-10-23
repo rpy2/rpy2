@@ -95,7 +95,7 @@ jobs:
     - name: Install R dependencies
       run: |
         install.packages(c("ggplot2", "dplyr", "tidyr", "dbplyr", "lazyeval", "rlang"))
-        shell: Rscript {0}
+      shell: Rscript {0}
     - name: Test with R deps
       run: |
         ${{ matrix.ld_libpath }}
