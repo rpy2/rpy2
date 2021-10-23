@@ -19,9 +19,11 @@ with warnings.catch_warnings():
                         symbol_resolve=dplyr_._symbol_resolve)
 
 TARGET_VERSION = '1.0'
-if ((dplyr.__version__ is None)
-    or
-    (not dplyr.__version__.startswith(TARGET_VERSION))):
+if (
+  (dplyr.__version__ is None)
+  or
+  (not dplyr.__version__.startswith(TARGET_VERSION))
+):
     warnings.warn(
         'This was designed againt dplyr versions starting with %s'
         ' but you have %s' %
@@ -373,7 +375,6 @@ class GroupedDataFrame(DataFrame):
     def ungroup(self, *args):
         res = dplyr.ungroup(self, *args)
         return guess_wrap_type(res)(res)
-
 
 
 arrange = _make_pipe(dplyr.arrange, DataFrame)
