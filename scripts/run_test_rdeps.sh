@@ -1,7 +1,5 @@
 #!/bin/bash
 
-sudo Rscript ./install_r_packages.r ggplot2 dplyr tidyr dbplyr lazyeval rlang
-
 pytest \
     --cache-clear \
     --cov-append \

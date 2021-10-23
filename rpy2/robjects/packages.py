@@ -165,8 +165,8 @@ class Package(ModuleType):
     _rpy2r = None
     _exported_names = None
     _symbol_r2python = None
-    __version__ = None
-    __rdata__ = None
+    __version__: typing.Optional[str] = None
+    __rdata__: typing.Optional[PackageData] = None
 
     def __init__(self, env, name, translation={},
                  exported_names=None, on_conflict='fail',
@@ -479,6 +479,7 @@ def importr(name: str,
                       **{'lib.loc': rinterface.StrSexpVector((lib_loc, ))})[0]
     if not ok:
         raise LibraryError("The R package %s could not be imported" % name)
+    exported_names: typing.Optional[typing.Set[str]]
     if _package_has_namespace(name,
                               _system_file(package=name)):
         env = _get_namespace(name)
@@ -489,6 +490,7 @@ def importr(name: str,
         exported_names = None
         version = None
 
+    pack: typing.Union[InstalledSTPackage, InstalledPackage]
     if signature_translation:
         pack = InstalledSTPackage(env, name,
                                   translation=robject_translations,

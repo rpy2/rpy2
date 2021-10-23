@@ -25,6 +25,11 @@ Changes
 
 - With Python < 3.8 the module :mod:`typing_extensions` is now a requirement.
 
+- Initialization and update steps for
+  :class:`rpy2.robjects.conversion.NameClassMap` were update to ensure
+  type hints are correct. This probably solved cryptic bugs with conversion
+  system.
+
 Bugs fixed
 ----------
 
@@ -33,6 +38,12 @@ Bugs fixed
 - Setting slice of a StrSexpVector where some of the elements are not strings
   could fail.
 
+- Assigning items to an R array of strings using a slice of more than one
+  element was likely to fail.
+
+- The rinterface-level conversion of Python integers to R integer is now
+  checking that integer are not larger than what R can handle.
+  
 
 Release 3.4.6
 =============

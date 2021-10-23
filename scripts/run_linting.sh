@@ -10,6 +10,7 @@ flake8 \
     rpy2/rlike/indexing.py \
     rpy2/robjects/c*.py \
     rpy2/robjects/environments.py \
+    rpy2/robjects/functions.py \
     rpy2/robjects/help.py \
     rpy2/robjects/language.py \
     rpy2/robjects/lib \

@@ -10,7 +10,7 @@ import copy
 import itertools
 import math
 import os
-import jinja2
+import jinja2  # type: ignore
 import time
 import pytz
 import tzlocal
