@@ -49,7 +49,8 @@ def assert_python_version():
 
 def r_version_from_subprocess():
     try:
-        tmp = subprocess.check_output(('R', '--version'), stderr=subprocess.STDOUT)
+        tmp = subprocess.check_output(('R', '--version'),
+                                      stderr=subprocess.STDOUT)
     except Exception:  # FileNotFoundError, WindowsError, etc
         return None
     r_version = tmp.decode('ascii', 'ignore').split(os.linesep)
