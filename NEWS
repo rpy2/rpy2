@@ -40,6 +40,9 @@ Bugs fixed
 
 - Assigning items to an R array of strings using a slice of more than one
   element was likely to fail.
+
+- The rinterface-level conversion of Python integers to R integer is now
+  checking that integer are not larger than what R can handle.
   
 
 Release 3.4.6
