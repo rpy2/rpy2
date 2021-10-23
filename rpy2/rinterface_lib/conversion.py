@@ -179,7 +179,7 @@ def _get_cdata(obj):
             cdata = obj.__sexp__._cdata
         except AttributeError:
             raise ValueError('Not an rpy2 R object and unable '
-                             'to map it into one: %s' % repr(obj))
+                             'to map it to one: %s' % repr(obj))
     else:
         cdata = cls(obj)
     return cdata
