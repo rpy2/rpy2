@@ -833,10 +833,10 @@ class RMagics(Magics):
 
 
 __doc__ = __doc__.format(
-                R_DOC=' '*8 + RMagics.R.__doc__,
-                RPUSH_DOC=' '*8 + str(RMagics.Rpush.__doc__),
-                RPULL_DOC=' '*8 + RMagics.Rpull.__doc__,
-                RGET_DOC=' '*8 + RMagics.Rget.__doc__
+                R_DOC='{0}{1}'.format(' '*8, RMagics.R.__doc__),
+                RPUSH_DOC='{0}{1}'.format(' '*8, RMagics.Rpush.__doc__),
+                RPULL_DOC='{0}{1}'.format(' '*8, RMagics.Rpull.__doc__),
+                RGET_DOC='{0}{1}'.format(' '*8, RMagics.Rget.__doc__)
 )
 
 
