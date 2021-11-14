@@ -12,7 +12,7 @@ _new_env = rinterface.baseenv["new.env"]
 class Environment(RObjectMixin, sexp.SexpEnvironment):
     """ An R environement, implementing Python's mapping interface. """
 
-    def __init__(self, o: typing.Optional[sexp.SexpEnvironment]=None):
+    def __init__(self, o: typing.Optional[sexp.SexpEnvironment] = None):
         if o is None:
             o = _new_env(hash=rinterface.BoolSexpVector([True, ]))
         super(sexp.SexpEnvironment, self).__init__(o)
