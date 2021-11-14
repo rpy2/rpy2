@@ -484,6 +484,7 @@ class SexpEnvironment(Sexp):
 emptyenv = SexpEnvironment(UNINIT_CAPSULE_ENV)
 baseenv = SexpEnvironment(UNINIT_CAPSULE_ENV)
 globalenv = SexpEnvironment(UNINIT_CAPSULE_ENV)
+NULL = NULLType()
 
 VT = typing.TypeVar('VT', bound='SexpVector')
 

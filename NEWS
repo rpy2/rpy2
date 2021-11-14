@@ -30,6 +30,9 @@ Changes
   type hints are correct. This probably solved cryptic bugs with conversion
   system.
 
+- :obj:`rpy2.rinterface.NULL` can be refererenced in code before the embedded
+  R is initialized.
+
 Bugs fixed
 ----------
 

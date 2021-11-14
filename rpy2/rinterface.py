@@ -17,6 +17,7 @@ import rpy2.rinterface_lib.conversion as conversion
 from rpy2.rinterface_lib.conversion import _cdata_res_to_rinterface
 import rpy2.rinterface_lib.memorymanagement as memorymanagement
 from rpy2.rinterface_lib import na_values
+from rpy2.rinterface_lib.sexp import NULL
 from rpy2.rinterface_lib.sexp import NULLType
 import rpy2.rinterface_lib.bufferprotocol as bufferprotocol
 from rpy2.rinterface_lib import sexp
@@ -873,7 +874,6 @@ class RRuntimeWarning(RuntimeWarning):
     pass
 
 
-NULL = None
 MissingArg = _MissingArgType()
 NA_Character = None
 NA_Integer = None
@@ -937,9 +937,9 @@ def _post_initr_setup() -> None:
     emptyenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_EmptyEnv)
     baseenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_BaseEnv)
     globalenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_GlobalEnv)
-
-    global NULL
-    NULL = NULLType()
+    NULL._sexpobject = _rinterface.UnmanagedSexpCapsule(
+        openrlib.rlib.R_NilValue
+    )
 
     MissingArg._sexpobject = _rinterface.UnmanagedSexpCapsule(
         openrlib.rlib.R_MissingArg
