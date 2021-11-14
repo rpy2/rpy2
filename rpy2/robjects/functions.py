@@ -187,7 +187,9 @@ class SignatureTranslatedFunction(Function):
             self._prm_translate.update((k, v[0])
                                        for k, v in symbol_mapping.items())
         if hasattr(sexp, '__rname__'):
-            self.__rname__ = sexp.__rname__
+            # TODO: mypy does not use the line above and trips on
+            # __rname__ being not always present.
+            self.__rname__ = sexp.__rname__  # type: ignore
 
     def __call__(self, *args, **kwargs):
         prm_translate = self._prm_translate
@@ -276,8 +278,12 @@ def _map_default_value(value: rinterface.Sexp):
       value:
     """
     if value.__sexp__.typeof in _SCALAR_COMPAT_RTYPES:
-        if len(value) == 1:
-            res = value[0]
+        # TODO: The dynamic check of typeof (to ensure that that
+        # the underlying R object is of a compatible type makes
+        # mypy trip. There is no way to check type outside of runtime.
+        # Code refactoring would be needed.
+        if len(value) == 1:  # type: ignore
+            res = value[0]  # type: ignore
         else:
             res = value
     else:

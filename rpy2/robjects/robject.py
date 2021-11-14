@@ -1,4 +1,6 @@
+import abc
 import os
+import typing
 import weakref
 import rpy2.rinterface
 import rpy2.rinterface_lib.callbacks
@@ -11,7 +13,12 @@ rpy2.rinterface.initr_simple()
 class RSlots(object):
     """ Attributes of an R object as a Python mapping.
 
-    The parent proxy to the underlying R object is held as a
+    R objects can have attributes (slots) that are identified
+    by a string key (a name) and that can have any R object
+    as the associated value. This class represents a view
+    of those attributes that is a Python mapping.
+
+    The proxy to the underlying "parent" R object is held as a
     weak reference. The attributes are therefore not protected
     from garbage collection unless bound to a Python symbol or
     in an other container.
@@ -22,11 +29,11 @@ class RSlots(object):
     def __init__(self, robj):
         self._robj = weakref.proxy(robj)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str):
         value = self._robj.do_slot(key)
         return conversion.rpy2py(value)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value):
         rpy2_value = conversion.py2rpy(value)
         self._robj.do_slot_assign(key, rpy2_value)
 
@@ -53,10 +60,10 @@ class RSlots(object):
 _get_exported_value = rpy2.rinterface.baseenv['::']
 
 
-class RObjectMixin(object):
-    """ Class to provide methods common to all RObject instances. """
+class RObjectMixin(abc.ABC):
+    """ Abstract class to provide methods common to all RObject instances. """
 
-    __rname__ = None
+    __rname__: typing.Optional[str] = None
 
     __tempfile = rpy2.rinterface.baseenv.find("tempfile")
     __file = rpy2.rinterface.baseenv.find("file")
