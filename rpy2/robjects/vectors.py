@@ -969,7 +969,11 @@ class POSIXct(POSIXt, FloatVector):
             dt_utc = (datetime(1970, 1, 1, tzinfo=timezone.utc) +
                       timedelta(seconds=ts))
             dt = dt_utc.replace(tzinfo=tz)
-            return dt + dt.utcoffset()
+            offset = dt.utcoffset()
+            if offset is None:
+                return dt
+            else:
+                return dt + offset
 
     def iter_localized_datetime(self):
         """Iterator yielding localized Python datetime objects."""

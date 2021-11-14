@@ -12,10 +12,10 @@ _new_env = rinterface.baseenv["new.env"]
 class Environment(RObjectMixin, sexp.SexpEnvironment):
     """ An R environement, implementing Python's mapping interface. """
 
-    def __init__(self, o=None):
+    def __init__(self, o: typing.Optional[sexp.SexpEnvironment]=None):
         if o is None:
             o = _new_env(hash=rinterface.BoolSexpVector([True, ]))
-        super(Environment, self).__init__(o)
+        super(sexp.SexpEnvironment, self).__init__(o)
 
     def __getitem__(self, item: str):
         res = super(Environment, self).__getitem__(item)
@@ -41,7 +41,11 @@ class Environment(RObjectMixin, sexp.SexpEnvironment):
 
     @enclos.setter
     def enclos(self, value: sexp.SexpEnvironment) -> None:
-        super(Environment, self).enclos = value
+        # TODO: I can't figure out why mypy is throwing an error
+        # here. There scope of this assignment is rather limited
+        # (the setter in the parent class SexpEnvironment has the same
+        # signature).
+        super().enclos = value  # type: ignore
 
     @property
     def frame(self) -> sexp.SexpEnvironment:

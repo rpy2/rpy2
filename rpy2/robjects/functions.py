@@ -448,7 +448,10 @@ def wrap_r_function(
 
     wrapped_func.__name__ = name
     wrapped_func.__qualname__ = name
-    wrapped_func.__signature__ = signature
+    # TODO: Open issue in mypy about __signature.
+    # https://github.com/python/mypy/issues/5958
+    # Ignore the type check for now.
+    wrapped_func.__signature__ = signature  # type: ignore
     wrapped_func.__doc__ = docstring
 
     return wrapped_func
