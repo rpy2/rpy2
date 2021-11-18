@@ -171,6 +171,7 @@ def testExternalPythonFromExpression():
 
 
 def testInterruptR():
+    expected_code = 42  # this is an arbitrary exit code that we check for below
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py',
                                      delete=False) as rpy_code:
         rpy2_path = os.path.dirname(rpy2.__path__[0])
@@ -193,8 +194,8 @@ def testInterruptR():
         try:
             ri.baseenv['eval'](ri.parse(rcode))
         except Exception as e:
-            sys.exit(0)
-      """ % rpy2_path
+            sys.exit(%d)
+      """ % (rpy2_path, expected_code)
 
         rpy_code.write(rpy_code_str)
     cmd = (sys.executable, rpy_code.name)
@@ -213,7 +214,7 @@ def testInterruptR():
         child_proc.send_signal(sigint)
         time.sleep(1)  # required for the SIGINT to function
         ret_code = child_proc.poll()
-    assert ret_code is not None  # Interruption failed
+    assert ret_code == expected_code  # Interruption failed
 
 
 # TODO: still needed ?
