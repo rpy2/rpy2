@@ -10,6 +10,7 @@ import signal
 import sys
 import subprocess
 import tempfile
+import textwrap
 import time
 
 
@@ -180,24 +181,26 @@ def testInterruptR():
         import sys
         sys.path.insert(0, '%s')
         import rpy2.rinterface as ri
+        from rpy2.rinterface_lib import callbacks
+        from rpy2.rinterface_lib import embedded
 
         ri.initr()
         def f(x):
             pass
-        ri.set_writeconsole_regular(f)
         rcode = \"\"\"
         i <- 0;
         while(TRUE) {
           i <- i+1;
           Sys.sleep(0.01);
         }\"\"\"
-        try:
-            ri.baseenv['eval'](ri.parse(rcode))
-        except Exception as e:
-            sys.exit(%d)
+        with callbacks.obj_in_module(callbacks, 'consolewrite_print', f):
+            try:
+                ri.baseenv['eval'](ri.parse(rcode))
+            except embedded.RRuntimeError:
+                sys.exit(%d)
       """ % (rpy2_path, expected_code)
 
-        rpy_code.write(rpy_code_str)
+        rpy_code.write(textwrap.dedent(rpy_code_str))
     cmd = (sys.executable, rpy_code.name)
     with open(os.devnull, 'w') as fnull:
         creationflags = 0
@@ -212,8 +215,7 @@ def testInterruptR():
         # (the exact sleep time migth be machine dependent :( )
         sigint = signal.CTRL_C_EVENT if os.name == 'nt' else signal.SIGINT
         child_proc.send_signal(sigint)
-        time.sleep(1)  # required for the SIGINT to function
-        ret_code = child_proc.poll()
+        ret_code = child_proc.wait(timeout=1)  # required for the SIGINT to function
     assert ret_code == expected_code  # Interruption failed
 
 
