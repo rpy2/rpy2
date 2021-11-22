@@ -171,13 +171,27 @@ def testExternalPythonFromExpression():
     xp = rinterface.baseenv['vector'](xp_name, 3)
 
 
-def testInterruptR():
+def test_interrupt_r_compute():
+    do_test_interrupt('while(TRUE) {}')
+
+
+def test_interrupt_r_compute_with_sleep():
+    do_test_interrupt('''
+    i <- 0;
+    while(TRUE) {
+      i <- i+1;
+      Sys.sleep(0.01);
+    }
+    ''')
+
+
+def do_test_interrupt(rcode):
     expected_code = 42  # this is an arbitrary exit code that we check for below
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py',
                                      delete=False) as rpy_code:
         rpy2_path = os.path.dirname(rpy2.__path__[0])
 
-        rpy_code_str = """
+        rpy_code_str = textwrap.dedent("""
         import sys
         sys.path.insert(0, '%s')
         import rpy2.rinterface as ri
@@ -187,20 +201,15 @@ def testInterruptR():
         ri.initr()
         def f(x):
             pass
-        rcode = \"\"\"
-        i <- 0;
-        while(TRUE) {
-          i <- i+1;
-          Sys.sleep(0.01);
-        }\"\"\"
+        rcode = '''%s'''
         with callbacks.obj_in_module(callbacks, 'consolewrite_print', f):
             try:
                 ri.baseenv['eval'](ri.parse(rcode))
             except embedded.RRuntimeError:
                 sys.exit(%d)
-      """ % (rpy2_path, expected_code)
+      """) % (rpy2_path, rcode, expected_code)
 
-        rpy_code.write(textwrap.dedent(rpy_code_str))
+        rpy_code.write(rpy_code_str)
     cmd = (sys.executable, rpy_code.name)
     with open(os.devnull, 'w') as fnull:
         creationflags = 0
@@ -215,7 +224,10 @@ def testInterruptR():
         # (the exact sleep time migth be machine dependent :( )
         sigint = signal.CTRL_C_EVENT if os.name == 'nt' else signal.SIGINT
         child_proc.send_signal(sigint)
-        ret_code = child_proc.wait(timeout=1)  # required for the SIGINT to function
+        try:
+            ret_code = child_proc.wait(timeout=1)  # required for the SIGINT to function
+        finally:
+            child_proc.terminate()  # Important to make sure child processes like while(TRUE){} are terminated.
     assert ret_code == expected_code  # Interruption failed
 
 
