@@ -33,6 +33,9 @@ Changes
 - :obj:`rpy2.rinterface.NULL` can be refererenced in code before the embedded
   R is initialized.
 
+- `LD_LIBRARY_PATH` is obtained from the executable `RScript` and set prior
+  to initializing R at the rinterface level (issue #833).
+
 Bugs fixed
 ----------
 
