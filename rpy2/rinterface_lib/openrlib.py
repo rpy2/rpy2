@@ -20,7 +20,9 @@ ffi = _rinterface_cffi.ffi
 # TODO: Separate the functions in the module from the side-effect of
 # finding R_HOME and opening the shared library.
 R_HOME = rpy2.situation.get_r_home()
-LD_LIBRARY_PATH = rpy2.situation.r_ld_library_path_from_subprocess(R_HOME)
+LD_LIBRARY_PATH = (rpy2.situation.r_ld_library_path_from_subprocess(R_HOME)
+                   if R_HOME is not None
+                   else '')
 rlock = threading.RLock()
 
 
