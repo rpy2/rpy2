@@ -255,6 +255,12 @@ def _initr(
             _setinitialized()
             return None
         os.environ['R_HOME'] = openrlib.R_HOME
+        os.environ['LD_LIBRARY_PATH'] = (
+            ':'.join(
+                (openrlib.LD_LIBRARY_PATH,
+                 os.environ.get('LD_LIBRARY_PATH', ''))
+                )
+        )
         options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
         n_options = len(options_c)
         n_options_c = ffi.cast('int', n_options)
