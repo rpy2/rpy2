@@ -34,21 +34,21 @@ Changes
   R is initialized.
 
 - `LD_LIBRARY_PATH` is obtained from the executable `RScript` and set prior
-  to initializing R at the rinterface level (issue #833).
+  to initializing R at the :mod:`rpy2.rinterface` level (issue #833).
 
 Bugs fixed
 ----------
 
-- Clear R warning about partial argument name matching (issue #821).
+- R warning about partial argument name matching is now cleared (issue #821).
 
-- Setting slice of a StrSexpVector where some of the elements are not strings
-  could fail.
+- Setting a slice for a StrSexpVector where some of the elements are not strings
+  no longer fails.
 
 - Assigning items to an R array of strings using a slice of more than one
   element was likely to fail.
 
-- The rinterface-level conversion of Python integers to R integer is now
-  checking that integer are not larger than what R can handle.
+- The :mod:`rpy2.rinterface`-level conversion of Python integers to R integers is now
+  checking that integers are not larger than what R can handle.
   
 
 Release 3.4.6
