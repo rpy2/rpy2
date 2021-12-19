@@ -203,7 +203,8 @@ def do_test_interrupt(rcode):
             # This flush is important to make sure we avoid a deadlock.
             print(x, flush=True)
         rcode = '''
-        writeLines('executing-rcode');
+        message('executing-rcode')
+        console.flush()
         %s
         '''
         with callbacks.obj_in_module(callbacks, 'consolewrite_print', f):
