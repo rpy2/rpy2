@@ -171,21 +171,18 @@ def testExternalPythonFromExpression():
     xp = rinterface.baseenv['vector'](xp_name, 3)
 
 
-def test_interrupt_r_compute():
-    do_test_interrupt('while(TRUE) {}')
-
-
-def test_interrupt_r_compute_with_sleep():
-    do_test_interrupt('''
-    i <- 0;
-    while(TRUE) {
-      i <- i+1;
-      Sys.sleep(0.01);
-    }
-    ''')
-
-
-def do_test_interrupt(rcode):
+@pytest.mark.parametrize(
+    'rcode',
+    ('while(TRUE) {}',
+     """
+     i <- 0;
+     while(TRUE) {
+       i <- i+1;
+       Sys.sleep(0.01);
+     }
+     """)
+)
+def test_interrupt_r(rcode):
     expected_code = 42  # this is an arbitrary exit code that we check for below
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py',
                                      delete=False) as rpy_code:
