@@ -200,8 +200,12 @@ def do_test_interrupt(rcode):
 
         ri.initr()
         def f(x):
-            pass
-        rcode = '''%s'''
+            # This flush is important to make sure we avoid a deadlock.
+            print(x, flush=True)
+        rcode = '''
+        writeLines('executing-rcode');
+        %s
+        '''
         with callbacks.obj_in_module(callbacks, 'consolewrite_print', f):
             try:
                 ri.baseenv['eval'](ri.parse(rcode))
@@ -215,20 +219,34 @@ def do_test_interrupt(rcode):
         creationflags = 0
         if os.name == 'nt':
             creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
-        child_proc = subprocess.Popen(cmd,
-                                      stdout=fnull,
-                                      stderr=fnull,
-                                      creationflags=creationflags)
-        time.sleep(1)  # required for the SIGINT to function
-        # (appears like a bug w/ subprocess)
-        # (the exact sleep time migth be machine dependent :( )
-        sigint = signal.CTRL_C_EVENT if os.name == 'nt' else signal.SIGINT
-        child_proc.send_signal(sigint)
-        try:
-            ret_code = child_proc.wait(timeout=1)  # required for the SIGINT to function
-        finally:
-            child_proc.terminate()  # Important to make sure child processes like while(TRUE){} are terminated.
-    assert ret_code == expected_code  # Interruption failed
+        # This context manager ensures that appropriate cleanup happens for the
+        # process and for stdout.
+        with subprocess.Popen(cmd,
+                              # Since we are reading from stdout, it's important to ensure we work
+                              # well with buffering. We make sure to flush when printing, but a viable
+                              # alternative is starting the Python process as unbuffered using `-u`.
+                              # If we weren't explicitly flushing then buffering could result in a
+                              # deadlock where the parent waits for the message from the child, but the
+                              # child is in an infinite loop that will only terminate if interrupted by
+                              # the parent.
+                              stdout=subprocess.PIPE,
+                              stderr=fnull,
+                              creationflags=creationflags) as child_proc:
+            # We wait for the child process to send a message signalling that
+            # R code is being executed since we want to ensure that we only send
+            # the signal at that point. If we send it while Python is executing,
+            # we would instead get a KeyboardInterrupt.
+            for line in child_proc.stdout:
+                if line == b'executing-rcode\n':
+                    break
+            sigint = signal.CTRL_C_EVENT if os.name == 'nt' else signal.SIGINT
+            child_proc.send_signal(sigint)
+            # Wait for the process to terminate. Timeout ensures we don't wait indefinitely.
+            ret_code = child_proc.wait(timeout=10)
+    # This test checks for a specific exit code to ensure that the above code
+    # block exited correctly. This is important to distinguish our expected
+    # process interruption from other errors the test might encounter.
+    assert ret_code == expected_code
 
 
 # TODO: still needed ?
