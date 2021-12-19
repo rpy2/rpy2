@@ -36,6 +36,8 @@ Changes
 - `LD_LIBRARY_PATH` is obtained from the executable `RScript` and set prior
   to initializing R at the :mod:`rpy2.rinterface` level (issue #833).
 
+- The package is now fully typed with type hints.
+
 Bugs fixed
 ----------
 
