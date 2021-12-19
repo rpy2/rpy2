@@ -278,18 +278,18 @@ def _processevents() -> None:
     try:
         processevents()
     except KeyboardInterrupt:
-        # This function is a Python callback. A keyboard interruption is captured
-        # in Python, but R must be notified that an interruption occured so it
-        # can handle it.
+        # This function is a Python callback. A keyboard interruption is
+        # captured in Python, but R must be notified that an interruption
+        # occured so it can handle it.
         rlib = openrlib.rlib
         if os.name == 'nt':
-            # On Windows, the global C-level R variable `UserBreak` is set to one
-            # to notifying R that a `SIGBREAK` has been sent
+            # On Windows, the global C-level R variable `UserBreak` is set
+            # to one to notifying R that a `SIGBREAK` has been sent
             # (see the R source - `src/gnuwin32/embeddedR.c:my_onintr()`).
             rlib.UserBreak = 1
         else:
-            # On UNIX-like, R can be notified that a SIGINT has been sent through
-            # the C-level R variable `R_interrupts_pending`
+            # On UNIX-like, R can be notified that a SIGINT has been sent
+            # through the C-level R variable `R_interrupts_pending`
             # (see the R source - `src/main/main.c:handleInterrupt()`)
             rlib.R_interrupts_pending = 1
     except Exception as e:
