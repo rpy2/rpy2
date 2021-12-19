@@ -1,4 +1,5 @@
 import abc
+import collections.abc
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import sexp
@@ -10,13 +11,14 @@ import copy
 import itertools
 import math
 import os
-import jinja2
+import jinja2  # type: ignore
 import time
 import pytz
 import tzlocal
 from datetime import date, datetime, timedelta, timezone
 from time import struct_time, mktime, tzname
 from operator import attrgetter
+import typing
 import warnings
 
 from rpy2.rinterface import (Sexp, ListSexpVector, StrSexpVector,
@@ -218,6 +220,9 @@ class VectorOperationsDelegator(object):
         return res[0]
 
 
+_sample = rinterface.baseenv['sample']
+
+
 class Vector(RObjectMixin):
     """Vector(seq) -> Vector.
 
@@ -232,8 +237,6 @@ class Vector(RObjectMixin):
 
     - the delegators rx or rx2
     """
-
-    _sample = rinterface.baseenv['sample']
 
     _html_template = jinja2.Template(
         """
@@ -295,7 +298,8 @@ class Vector(RObjectMixin):
         for v, k in zip(it_self, it_names):
             yield (k, v)
 
-    def sample(self, n, replace: bool = False, probabilities=None):
+    def sample(self: collections.abc.Sized, n: int, replace: bool = False,
+               probabilities: typing.Optional[collections.abc.Sized] = None):
         """ Draw a random sample of size n from the vector.
 
         If 'replace' is True, the sampling is done with replacement.
@@ -310,9 +314,9 @@ class Vector(RObjectMixin):
                                  'match the length of the vector.')
             if not isinstance(probabilities, rinterface.FloatSexpVector):
                 probabilities = FloatVector(probabilities)
-        res = self._sample(self, IntVector((n,)),
-                           replace=BoolVector((replace, )),
-                           prob=probabilities)
+        res = _sample(self, IntVector((n,)),
+                      replace=BoolVector((replace, )),
+                      prob=probabilities)
         res = conversion.rpy2py(res)
         return res
 
@@ -965,7 +969,11 @@ class POSIXct(POSIXt, FloatVector):
             dt_utc = (datetime(1970, 1, 1, tzinfo=timezone.utc) +
                       timedelta(seconds=ts))
             dt = dt_utc.replace(tzinfo=tz)
-            return dt + dt.utcoffset()
+            offset = dt.utcoffset()
+            if offset is None:
+                return dt
+            else:
+                return dt + offset
 
     def iter_localized_datetime(self):
         """Iterator yielding localized Python datetime objects."""
@@ -1012,7 +1020,8 @@ class Array(Vector):
     dim = property(__dim_get, __dim_set, None,
                    "Get or set the dimension of the array.")
 
-    def __dimnames_get(self) -> sexp.Sexp:
+    @property
+    def names(self) -> sexp.Sexp:
         """ Return a list of name vectors
         (like the R function 'dimnames' does)."""
 
@@ -1020,7 +1029,8 @@ class Array(Vector):
         res = conversion.rpy2py(res)
         return res
 
-    def __dimnames_set(self, value):
+    @names.setter
+    def names(self, value) -> None:
         """ Set list of name vectors
         (like the R function 'dimnames' does)."""
 
@@ -1028,8 +1038,6 @@ class Array(Vector):
         res = self._dimnames_set(self, value)
         self.__sexp__ = res.__sexp__
 
-    names = property(__dimnames_get, __dimnames_set, None,
-                     "names associated with the dimension.")
     dimnames = names
 
 
@@ -1508,9 +1516,3 @@ rtypeof2rotype = {
     rinterface.RTYPES.CPLXSXP: ComplexVector,
     rinterface.RTYPES.LGLSXP: BoolVector
 }
-
-
-__all__ = ['Vector', 'StrVector', 'IntVector', 'BoolVector', 'ComplexVector',
-           'FloatVector', 'FactorVector', 'Vector',
-           'ListVector', 'POSIXlt', 'POSIXct',
-           'Array', 'Matrix', 'DataFrame']

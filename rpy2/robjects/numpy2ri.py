@@ -4,7 +4,7 @@ import rpy2.rinterface as rinterface
 from rpy2.rinterface import (Sexp,
                              StrSexpVector, ByteSexpVector,
                              RTYPES)
-import numpy
+import numpy  # type: ignore
 import warnings
 
 # TODO: move this to rinterface.

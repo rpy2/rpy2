@@ -1,3 +1,4 @@
+import abc
 import atexit
 import contextlib
 import os
@@ -16,6 +17,7 @@ import rpy2.rinterface_lib.conversion as conversion
 from rpy2.rinterface_lib.conversion import _cdata_res_to_rinterface
 import rpy2.rinterface_lib.memorymanagement as memorymanagement
 from rpy2.rinterface_lib import na_values
+from rpy2.rinterface_lib.sexp import NULL
 from rpy2.rinterface_lib.sexp import NULLType
 import rpy2.rinterface_lib.bufferprotocol as bufferprotocol
 from rpy2.rinterface_lib import sexp
@@ -141,8 +143,8 @@ def vector_memoryview(obj: sexp.SexpVector,
     # to write C extensions. We have to use numpy.
     # TODO: Having numpy a requirement just for this is a problem.
     # TODO: numpy needed for memoryview
-    #   (as long as https://bugs.python.org/issue34778 not resolved)
-    import numpy
+    #   (as long as https://bugs.python.org/issue34778 is not resolved)
+    import numpy  # type: ignore
     a = numpy.frombuffer(b, dtype=cast_str).reshape(shape, order='F')
     mv = memoryview(a)
     return mv
@@ -180,6 +182,11 @@ class SexpSymbol(sexp.Sexp):
 
 
 class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
+    """Missing argument in a call to an R function.
+
+    When evaluating a function, arguments that are not specified
+    can take a default value when named, otherwise they will
+    take a special value that indicates that they are missing."""
 
     def __init__(self):
         if embedded.isready():
@@ -202,6 +209,10 @@ class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
     def __sexp__(self) -> _rinterface.SexpCapsule:
         return self._sexpobject
 
+    @__sexp__.setter
+    def __sexp__(self, value) -> None:
+        raise TypeError('The capsule for the R object cannot be modified.')
+
 
 MissingArg = _MissingArgType()
 
@@ -220,22 +231,20 @@ class SexpPromise(Sexp):
         return openrlib.rlib.Rf_eval(self.__sexp__._cdata, env)
 
 
-NPCOMPAT_TYPE = typing.TypeVar('NPCOMPAT_TYPE',
-                               'ByteSexpVector',
-                               'BoolSexpVector',
-                               'IntSexpVector',
-                               'FloatSexpVector')
-
-
-class NumpyArrayMixin:
+class SexpVectorWithNumpyInterface(SexpVector):
     """Numpy-specific API for accessing the content of a numpy array.
 
     This interface implements version 3 of Numpy's `__array_interface__`
     and is only available / possible for some of the R vectors."""
 
     @property
+    @abc.abstractmethod
+    def _NP_TYPESTR(self) -> str:
+        pass
+
+    @property
     def __array_interface__(
-            self: NPCOMPAT_TYPE
+            self
     ) -> dict:
         """Return an `__array_interface__` version 3.
 
@@ -255,8 +264,20 @@ class NumpyArrayMixin:
                 'data': data,
                 'version': 3}
 
+    @classmethod
+    def _check_C_compatible(cls, mview):
+        return (
+            mview.itemsize == cls._R_SIZEOF_ELT
+            and
+            (
+                cls._NP_TYPESTR == '|u1'
+                or
+                cls._NP_TYPESTR.endswith(mview.format)
+            )
+        )
 
-class ByteSexpVector(NumpyArrayMixin, SexpVector):
+
+class ByteSexpVector(SexpVectorWithNumpyInterface):
     """Array of bytes.
 
     This is the R equivalent to a Python :class:`bytesarray`.
@@ -325,7 +346,7 @@ class ByteSexpVector(NumpyArrayMixin, SexpVector):
                 'Indices must be integers or slices, not %s' % type(i))
 
 
-class BoolSexpVector(NumpyArrayMixin, SexpVector):
+class BoolSexpVector(SexpVectorWithNumpyInterface):
     """Array of booleans.
 
     Note that R is internally storing booleans as integers to
@@ -345,13 +366,18 @@ class BoolSexpVector(NumpyArrayMixin, SexpVector):
         else:
             return bool(x)
 
-    def __getitem__(self, i: Union[int, slice]) -> Union[typing.Optional[bool],
+    def __getitem__(self, i: Union[int, slice]) -> Union[bool,
+                                                         'sexp.NALogicalType',
                                                          'BoolSexpVector']:
+        res: Union[bool,
+                   'sexp.NALogicalType',
+                   'BoolSexpVector']
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
             elt = openrlib.LOGICAL_ELT(cdata, i_c)
-            res = na_values.NA_Logical if elt == NA_Logical else bool(elt)
+            res = (na_values.NA_Logical  # type: ignore
+                   if elt == NA_Logical else bool(elt))
         elif isinstance(i, slice):
             res = type(self).from_iterable(
                 [openrlib.LOGICAL_ELT(cdata, i_c)
@@ -387,7 +413,7 @@ def nullable_int(v):
         return int(v)
 
 
-class IntSexpVector(NumpyArrayMixin, SexpVector):
+class IntSexpVector(SexpVectorWithNumpyInterface):
 
     _R_TYPE = openrlib.rlib.INTSXP
     _R_SET_VECTOR_ELT = openrlib.SET_INTEGER_ELT
@@ -434,7 +460,7 @@ class IntSexpVector(NumpyArrayMixin, SexpVector):
         return vector_memoryview(self, 'int', 'i')
 
 
-class FloatSexpVector(NumpyArrayMixin, SexpVector):
+class FloatSexpVector(SexpVectorWithNumpyInterface):
 
     _R_TYPE = openrlib.rlib.REALSXP
     _R_VECTOR_ELT = openrlib.REAL_ELT
@@ -651,7 +677,12 @@ class LangSexpVector(SexpVector):
             openrlib.rlib.Rf_nthcdr(cdata, i_c)
         )
 
-    def __setitem__(self, i: int, value: sexp.SupportsSEXP) -> None:
+    def __setitem__(self, i: typing.Union[int, slice],
+                    value: sexp.SupportsSEXP) -> None:
+        if isinstance(i, slice):
+            raise NotImplementedError(
+                'Assigning slices to LangSexpVectors is not yet implemented.'
+            )
         cdata = self.__sexp__._cdata
         i_c = _rinterface._python_index_to_c(cdata, i)
         openrlib.rlib.SETCAR(
@@ -711,7 +742,7 @@ class SexpClosure(Sexp):
                 raise embedded.RRuntimeError(_rinterface._geterrmessage())
         return res
 
-    @property
+    @property  # type: ignore
     @_cdata_res_to_rinterface
     def closureenv(self) -> SexpEnvironment:
         """Closure of the R function."""
@@ -843,7 +874,6 @@ class RRuntimeWarning(RuntimeWarning):
     pass
 
 
-NULL = None
 MissingArg = _MissingArgType()
 NA_Character = None
 NA_Integer = None
@@ -907,9 +937,9 @@ def _post_initr_setup() -> None:
     emptyenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_EmptyEnv)
     baseenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_BaseEnv)
     globalenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_GlobalEnv)
-
-    global NULL
-    NULL = NULLType()
+    NULL._sexpobject = _rinterface.UnmanagedSexpCapsule(
+        openrlib.rlib.R_NilValue
+    )
 
     MissingArg._sexpobject = _rinterface.UnmanagedSexpCapsule(
         openrlib.rlib.R_MissingArg

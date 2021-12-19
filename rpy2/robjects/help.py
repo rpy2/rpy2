@@ -2,7 +2,6 @@
 R help system.
 
 """
-import enum
 import os
 from collections import namedtuple
 import re
@@ -62,7 +61,9 @@ def _Rd2txt(section_doc):
     tempfilename = rinterface.baseenv['tempfile']()[0]
     filecon = rinterface.baseenv['file'](tempfilename, open='w')
     try:
-        tools_ns['Rd2txt'](section_doc, out=filecon, fragment=True)[0].split('\n')
+        tools_ns['Rd2txt'](
+            section_doc, out=filecon, fragment=True
+        )[0].split('\n')
         rinterface.baseenv['flush'](filecon)
         rinterface.baseenv['close'](filecon)
         with open(tempfilename) as fh:
@@ -178,8 +179,6 @@ class Page(object):
         for elt_i in range(len(struct_rdb)):
             elt = rinterface.baseenv['['](struct_rdb, elt_i+1)
             rd_tag = elt[0].do_slot("Rd_tag")[0]
-            if rd_tag == r'\section':
-                rd_section = rd_tag[0][2:]
             if rd_tag in sections and rd_tag not in NON_UNIQUE_TAGS:
                 warnings.warn('Section of the R doc duplicated: %s' % rd_tag)
             sections[rd_tag] = elt
@@ -199,7 +198,7 @@ class Page(object):
     def arguments(self) -> typing.List[Item]:
         """ Get the arguments and descriptions as a list of Item objects. """
         section_doc = self._sections.get(r'\arguments')
-        res = list()
+        res: typing.List[Item] = list()
         if section_doc is None:
             return res
         else:
@@ -208,7 +207,7 @@ class Page(object):
             section_rows = _Rd2txt(section_doc)
             if len(section_rows) < 3:
                 return res
-            for row in section_rows[2: ]:
+            for row in section_rows[2:]:
                 if arg_name is None:
                     m = p_newarg.match(row)
                     if m:
@@ -263,8 +262,9 @@ class Page(object):
         in the documentation Page. """
         return self.sections.iteritems
 
-    def to_docstring(self,
-                     section_names: typing.Optional[typing.Tuple[str, ...]] = None
+    def to_docstring(
+            self,
+            section_names: typing.Optional[typing.Tuple[str, ...]] = None
     ) -> str:
         """ section_names: list of section names to consider. If None
         all sections are used.
@@ -356,12 +356,14 @@ class Package(object):
         )
         # since the selection is on a verified rowid we are sure to
         # exactly get one row
-        res = c.fetchall()
-        rkey = StrSexpVector((res[0][0][:-3], ))
-        _type = res[0][2]
-        rpath = StrSexpVector((os.path.join(self.package_path,
-                                            'help',
-                                            self.__package_name + '.rdb'),))
+        res_all = c.fetchall()
+        rkey = StrSexpVector((res_all[0][0][:-3], ))
+        _type = res_all[0][2]
+        rpath = StrSexpVector(
+            (os.path.join(self.package_path,
+                          'help',
+                          f'{self.__package_name}.rdb'),)
+        )
 
         rdx_variables = (
             self._rdx[self._rdx.do_slot('names').index('variables')]
@@ -409,16 +411,16 @@ def pages(topic):
             try:
                 page = pack.fetch(topic)
                 res.append(page)
-            except HelpNotFoundError as hnfe:
+            except HelpNotFoundError:
                 pass
 
     return tuple(res)
 
 
-def docstring(package: Package, alias: str,
-              sections: typing.Tuple[str, ...] = (r'\usage',
-                                                  r'\arguments')
-) -> str:
+def docstring(
+        package: Package, alias: str,
+        sections: typing.Tuple[str, ...] = (r'\usage',
+                                            r'\arguments')) -> str:
     """Fetch the R documentation for an alias in a package."""
     if not isinstance(package, Package):
         package = Package(package)

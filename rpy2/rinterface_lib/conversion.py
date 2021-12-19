@@ -68,7 +68,12 @@ def _python_to_cdata(obj):
 # TODO: can scalars in R's C API be used ?
 def _int_to_sexp(val: int):
     rlib = openrlib.rlib
-    # TODO: test value is not too large for R's ints
+    # TODO: _rinterface._MAX_INT is determined empirically.
+    if val > _rinterface._MAX_INT:
+        raise ValueError(
+            f'The Python integer {val} is larger than {_rinterface._MAX_INT} ('
+            'R\'s largest possible integer).'
+        )
     s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.INTSXP, 1))
     openrlib.SET_INTEGER_ELT(s, 0, val)
     rlib.Rf_unprotect(1)
@@ -174,7 +179,7 @@ def _get_cdata(obj):
             cdata = obj.__sexp__._cdata
         except AttributeError:
             raise ValueError('Not an rpy2 R object and unable '
-                             'to map it into one: %s' % repr(obj))
+                             'to map it to one: %s' % repr(obj))
     else:
         cdata = cls(obj)
     return cdata

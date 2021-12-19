@@ -6,12 +6,129 @@ import warnings
 from rpy2.rinterface_lib import openrlib
 from rpy2.rinterface_lib import callbacks
 
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import Protocol
+else:
+    from typing import Protocol
+
 ffi = openrlib.ffi
 
 _options = ('rpy2', '--quiet', '--no-save')  # type: typing.Tuple[str, ...]
-_DEFAULT_C_STACK_LIMIT = -1
+_DEFAULT_C_STACK_LIMIT: int = -1
 rpy2_embeddedR_isinitialized = 0x00
-rstart = None
+
+
+class Is_RStart(Protocol):
+    @property
+    def rhome(self): ...
+
+    @rhome.setter
+    def rhome(self, value) -> None: ...
+
+    @property
+    def home(self): ...
+
+    @home.setter
+    def home(self, value) -> None: ...
+
+    @property
+    def CharacterMode(self): ...
+
+    @CharacterMode.setter
+    def CharacterMode(self, value) -> None: ...
+
+    @property
+    def ReadConsole(self): ...
+
+    @ReadConsole.setter
+    def ReadConsole(self, value) -> None: ...
+
+    @property
+    def WriteConsoleEx(self): ...
+
+    @WriteConsoleEx.setter
+    def WriteConsoleEx(self, value) -> None: ...
+
+    @property
+    def CallBack(self): ...
+
+    @CallBack.setter
+    def CallBack(self, value) -> None: ...
+
+    @property
+    def ShowMessage(self): ...
+
+    @ShowMessage.setter
+    def ShowMessage(self, value) -> None: ...
+
+    @property
+    def YesNoCancel(self): ...
+
+    @YesNoCancel.setter
+    def YesNoCancel(self, value) -> None: ...
+
+    @property
+    def Busy(self): ...
+
+    @Busy.setter
+    def Busy(self, value) -> None: ...
+
+    @property
+    def R_Quiet(self): ...
+
+    @R_Quiet.setter
+    def R_Quiet(self, value) -> None: ...
+
+    @property
+    def R_Interactive(self): ...
+
+    @R_Interactive.setter
+    def R_Interactive(self, value) -> None: ...
+
+    @property
+    def RestoreAction(self): ...
+
+    @RestoreAction.setter
+    def RestoreAction(self, value) -> None: ...
+
+    @property
+    def SaveAction(self): ...
+
+    @SaveAction.setter
+    def SaveAction(self, value) -> None: ...
+
+    @property
+    def vsize(self): ...
+
+    @vsize.setter
+    def vsize(self, value) -> None: ...
+
+    @property
+    def nsize(self): ...
+
+    @nsize.setter
+    def nsize(self, value) -> None: ...
+
+    @property
+    def max_vsize(self): ...
+
+    @max_vsize.setter
+    def max_vsize(self, value) -> None: ...
+
+    @property
+    def max_nsize(self): ...
+
+    @max_nsize.setter
+    def max_nsize(self, value) -> None: ...
+
+    @property
+    def ppsize(self): ...
+
+    @ppsize.setter
+    def ppsize(self, value) -> None: ...
+
+
+rstart: Is_RStart = None  # type: ignore
 
 
 # TODO: move initialization-related code to _rinterface ?
@@ -85,7 +202,7 @@ class RRuntimeError(Exception):
 
 def _setcallback(rlib, rlib_symbol: str,
                  callbacks,
-                 callback_symbol: str) -> None:
+                 callback_symbol: typing.Optional[str]) -> None:
     """Set R callbacks."""
     if callback_symbol is None:
         new_callback = ffi.NULL
@@ -138,6 +255,12 @@ def _initr(
             _setinitialized()
             return None
         os.environ['R_HOME'] = openrlib.R_HOME
+        os.environ['LD_LIBRARY_PATH'] = (
+            ':'.join(
+                (openrlib.LD_LIBRARY_PATH,
+                 os.environ.get('LD_LIBRARY_PATH', ''))
+                )
+        )
         options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
         n_options = len(options_c)
         n_options_c = ffi.cast('int', n_options)

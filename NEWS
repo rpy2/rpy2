@@ -13,6 +13,49 @@ Changes
 
 - Requirement is now Python>=3.7. :mod:`rpy2` is no longer tested with Python 3.6.
 
+- :mod:`rpy2.robject.lib.grid` was refactored to fix the conversion. This
+  fixes issue #804. A classes now have a `classmethod` `r` for the R
+  constructor (the `__init__` is the Python constructor).
+
+- :obj:`rpy2.robjects.vectors.__all__` is removed.
+
+- Cleaner class design by having :class:`rpy2.rinterface.NumpyArrayMixin`
+  removed and replaced by
+  :class:`rpy2.rinterface.SexpVectorWithNumpyInterface`.
+
+- With Python < 3.8 the module :mod:`typing_extensions` is now a requirement.
+
+- Initialization and update steps for
+  :class:`rpy2.robjects.conversion.NameClassMap` were update to ensure
+  type hints are correct. This probably solved cryptic bugs with conversion
+  system.
+
+- :obj:`rpy2.rinterface.NULL` can be refererenced in code before the embedded
+  R is initialized.
+
+- `LD_LIBRARY_PATH` is obtained from the executable `RScript` and set prior
+  to initializing R at the :mod:`rpy2.rinterface` level (issue #833).
+
+Bugs fixed
+----------
+
+- R warning about partial argument name matching is now cleared (issue #821).
+
+- Setting a slice for a StrSexpVector where some of the elements are not strings
+  no longer fails.
+
+- Assigning items to an R array of strings using a slice of more than one
+  element was likely to fail.
+
+- The :mod:`rpy2.rinterface`-level conversion of Python integers to R integers is now
+  checking that integers are not larger than what R can handle.
+  
+
+Release 3.4.6
+=============
+
+- Added a class and an alias to map ggplot2's `element_line` (issue #822).
+
 
 Release 3.4.5
 =============

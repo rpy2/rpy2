@@ -7,12 +7,12 @@ from rpy2.rinterface_lib import openrlib
 ffi = openrlib.ffi
 
 # These constants are default values from R sources
-_DEFAULT_VSIZE = 67108864  # vector heap size
-_DEFAULT_NSIZE = 350000  # language heap size
-_DEFAULT_MAX_VSIZE = sys.maxsize  # max vector heap size
-_DEFAULT_MAX_NSIZE = 50000000  # max language heap size
-_DEFAULT_PPSIZE = 50000  # stack size
-_DEFAULT_C_STACK_LIMIT = -1
+_DEFAULT_VSIZE: int = 67108864  # vector heap size
+_DEFAULT_NSIZE: int = 350000  # language heap size
+_DEFAULT_MAX_VSIZE: int = sys.maxsize  # max vector heap size
+_DEFAULT_MAX_NSIZE: int = 50000000  # max language heap size
+_DEFAULT_PPSIZE: int = 50000  # stack size
+_DEFAULT_C_STACK_LIMIT: int = -1
 
 
 def _initr_win32(

@@ -16,22 +16,24 @@ def getshape(cdata, rk: typing.Optional[int] = None) -> typing.Tuple[int, ...]:
         rk = getrank(cdata)
     dim_cdata = openrlib.rlib.Rf_getAttrib(cdata,
                                            openrlib.rlib.R_DimSymbol)
-    shape = [None, ] * rk
+
+    shape: typing.Tuple[int, ...]
     if dim_cdata == openrlib.rlib.R_NilValue:
-        shape[0] = openrlib.rlib.Rf_length(cdata)
+        shape = (openrlib.rlib.Rf_length(cdata), )
     else:
+        _ = []
         for i in range(rk):
-            shape[i] = openrlib.INTEGER_ELT(dim_cdata, i)
-    return tuple(shape)
+            _.append(openrlib.INTEGER_ELT(dim_cdata, i))
+        shape = tuple(_)
+    return shape
 
 
 def getstrides(cdata, shape: typing.Tuple[int, ...],
                itemsize: int) -> typing.Tuple[int, ...]:
     rk = len(shape)
-    strides = [None, ] * rk
-    strides[0] = itemsize
+    strides = [itemsize, ]
     for i in range(1, rk):
-        strides[i] = shape[i-1] * strides[i-1]
+        strides.append(shape[i-1] * strides[i-1])
     return tuple(strides)
 
 

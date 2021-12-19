@@ -26,7 +26,7 @@ jobs:
           - os: windows-latest
             python-version: 3.8
           - os: macOS-latest
-            r-version: 4.0
+            r-version: 'release'
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
@@ -63,6 +63,7 @@ jobs:
       run: |
         ${{ matrix.venv_activate }}
         python setup.py install
+        rm -r build/
     - name: Test with minimal dependencies
       run: |
         ${{ matrix.ld_libpath }}
@@ -91,6 +92,10 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
+    - name: Install R dependencies
+      run: |
+        install.packages(c("ggplot2", "dplyr", "tidyr", "dbplyr", "lazyeval", "rlang"))
+      shell: Rscript {0}
     - name: Test with R deps
       run: |
         ${{ matrix.ld_libpath }}
