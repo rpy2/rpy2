@@ -85,7 +85,13 @@ class NameClassMap(object):
                             namemap=self._map.copy())
 
     def update(self,
-               mapping: typing.Dict[str, typing.Type],
+               mapping: typing.Dict[
+                   str,
+                   typing.Union[
+                       typing.Any,
+                       typing.Callable[[typing.Any], typing.Any]
+                   ]
+               ],
                default: typing.Optional[typing.Type] = None):
         self._map.update(mapping)
         if default:
