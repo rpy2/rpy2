@@ -356,6 +356,9 @@ typedef enum {
 
 SEXP R_ParseVector(SEXP text, int num, ParseStatus *status, SEXP srcfile);
 
+/* include/Defn.h */
+extern int R_interrupts_pending;
+
 /* include/Rinterface.h */
 extern Rboolean R_Interactive ;
 extern void* R_GlobalContext;
