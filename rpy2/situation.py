@@ -426,7 +426,9 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose',
                         choices=('ERROR', 'WARNING', 'INFO', 'DEBUG'),
                         default='WARNING',
-                        help='Verbosity level. Options are given by increasing order of verbosity (defaut: %(default)s)')
+                        help=('Verbosity level. Options are given by '
+                              'increasing order of verbosity '
+                              '(defaut: %(default)s)'))
     args = parser.parse_args()
     logger.name = 'rpy2.situation'
     logger.setLevel(getattr(logging, args.verbose))
