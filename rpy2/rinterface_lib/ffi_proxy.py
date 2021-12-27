@@ -75,16 +75,12 @@ _evaluate_in_r_def: SignatureDefinition = SignatureDefinition(
 _consoleflush_def: SignatureDefinition = SignatureDefinition(
     '_consoleflush', 'void', ('void', ))
 
-if os.name == 'nt':
-    _consoleread_def: SignatureDefinition = SignatureDefinition(
-        '_consoleread', 'int',
-        ('char *', 'char *',
-         'int', 'int'))
-else:
-    _consoleread_def: SignatureDefinition = SignatureDefinition(
-        '_consoleread', 'int',
-        ('char *', 'unsigned char *',
-         'int', 'int'))
+_consoleread_def: SignatureDefinition = SignatureDefinition(
+    '_consoleread', 'int',
+    ('char *',
+     'char *' if os.name == 'nt' else 'unsigned char *',
+     'int', 'int'))
+
 _consolereset_def: SignatureDefinition = SignatureDefinition(
     '_consolereset', 'void', ('void', ))
 _consolewrite_def: SignatureDefinition = SignatureDefinition(
