@@ -148,7 +148,7 @@ def evalr(
         enclos: typing.Union[
             None,
             'ListSexpVector', 'PairlistSexpVector',
-            'NULLType', '_MissingArgType'] = None  
+            'NULLType', '_MissingArgType'] = None
 ) -> sexp.Sexp:
     """Evaluate a string as R code.
 
@@ -765,7 +765,9 @@ class LangSexpVector(SexpVector):
         )
 
     @classmethod
-    def from_string(cls: typing.Type[LangSexpVector_VT], s: str) -> LangSexpVector_VT:
+    def from_string(
+            cls: typing.Type[LangSexpVector_VT], s: str
+    ) -> LangSexpVector_VT:
         """Create an R language object from a string.
 
         This creates an unevaluated R language object.
