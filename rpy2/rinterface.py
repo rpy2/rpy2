@@ -118,7 +118,6 @@ def evalr_expr(
             'ListSexpVector', 'PairlistSexpVector',
             'NULLType',
             '_MissingArgType'] = None
-                            
 ) -> sexp.Sexp:
     """Evaluate an R expression.
 
@@ -149,8 +148,7 @@ def evalr(
         enclos: typing.Union[
             None,
             'ListSexpVector', 'PairlistSexpVector',
-            'NULLType', '_MissingArgType'] = None
-                            
+            'NULLType', '_MissingArgType'] = None  
 ) -> sexp.Sexp:
     """Evaluate a string as R code.
 
@@ -715,16 +713,20 @@ class ExprSexpVector(SexpVector):
 
 _str2lang = None
 
+
 def _get_str2lang():
     global _str2lang
     if _str2lang is None:
         try:
             _str2lang = baseenv['str2lang']
         except KeyError:
-            # TODO: This exists to ensure compatibility with older versions of R.
-            #   If should be removed when older versions of R are no longer supported.
-            _str2lang = ri.evalr('function(s) base::parse(text=s, keep.source=FALSE)[[1]]')
+            # TODO: This exists to ensure compatibility with
+            # older versions of R. If should be removed when
+            # older versions of R are no longer supported.
+            _str2lang = evalr('function(s) '
+                              'base::parse(text=s, keep.source=FALSE)[[1]]')
     return _str2lang
+
 
 LangSexpVector_VT = typing.TypeVar('LangSexpVector_VT', bound='LangSexpVector')
 
