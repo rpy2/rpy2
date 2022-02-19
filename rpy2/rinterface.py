@@ -106,18 +106,70 @@ def parse(text: str, num: int = -1):
     return res
 
 
-def evalr(source: str, maxlines: int = -1) -> sexp.Sexp:
+def evalr_expr(
+        expr: 'ExprSexpVector',
+        envir: typing.Union[
+            None,
+            'SexpEnvironment', 'NULLType',
+            'ListSexpVector', 'PairlistSexpVector', int,
+            '_MissingArgType'] = None,
+        enclos: typing.Union[
+            None,
+            'ListSexpVector', 'PairlistSexpVector',
+            'NULLType',
+            '_MissingArgType'] = None
+                            
+) -> sexp.Sexp:
+    """Evaluate an R expression.
+
+    :param:`expr` An R expression.
+    :param:`envir` An optional R environment in which the evaluation
+      will happen.
+    :param:`enclos` An enclosure. This is only relevant when envir
+      is a list, a pairlist, or a data.frame. It specifies where to
+    look for objects not found in envir.
+    :return: The R objects resulting from the evaluation of the code"""
+
+    if envir is None:
+        envir = MissingArg
+    if enclos is None:
+        enclos = MissingArg
+    res = baseenv['eval'](expr, envir=envir, enclos=enclos)
+    return res
+
+
+def evalr(
+        source: str,
+        maxlines: int = -1,
+        envir: typing.Union[
+            None,
+            'SexpEnvironment', 'NULLType',
+            'ListSexpVector', 'PairlistSexpVector', int,
+            '_MissingArgType'] = None,
+        enclos: typing.Union[
+            None,
+            'ListSexpVector', 'PairlistSexpVector',
+            'NULLType', '_MissingArgType'] = None
+                            
+) -> sexp.Sexp:
     """Evaluate a string as R code.
 
     Evaluate a string as R just as it would happen when writing
     code in an R terminal.
 
-    :param:`text` A string to be evaluated as R code.
+    :param:`text` A string to be evaluated as R code,
+    or an R expression.
     :param:`maxlines` The maximum number of lines to parse. If -1, no
-      limit is applied."""
+      limit is applied.
+    :param:`envir` An optional R environment in which the evaluation
+      will happen.
+    :param:`enclos` An enclosure. This is only relevant when envir
+      is a list, a pairlist, or a data.frame. It specifies where to
+    look for objects not found in envir.
+    :return: The R objects resulting from the evaluation of the code"""
 
-    res = parse(source, num=maxlines)
-    res = baseenv['eval'](res)
+    expr = parse(source, num=maxlines)
+    res = evalr_expr(expr, envir=envir, enclos=enclos)
     return res
 
 
@@ -661,7 +713,27 @@ class ExprSexpVector(SexpVector):
     _R_SET_VECTOR_ELT = None
 
 
+_str2lang = None
+
+def _get_str2lang():
+    global _str2lang
+    if _str2lang is None:
+        try:
+            _str2lang = baseenv['str2lang']
+        except KeyError:
+            # TODO: This exists to ensure compatibility with older versions of R.
+            #   If should be removed when older versions of R are no longer supported.
+            _str2lang = ri.evalr('function(s) base::parse(text=s, keep.source=FALSE)[[1]]')
+    return _str2lang
+
+LangSexpVector_VT = typing.TypeVar('LangSexpVector_VT', bound='LangSexpVector')
+
+
 class LangSexpVector(SexpVector):
+    """An R language object.
+
+    To create from a (Python) string containing R code
+    use the classmethod `from_string`."""
     _R_TYPE = openrlib.rlib.LANGSXP
     _R_GET_PTR = None
     _CAST_IN = None
@@ -689,6 +761,20 @@ class LangSexpVector(SexpVector):
             openrlib.rlib.Rf_nthcdr(cdata, i_c),
             value.__sexp__._cdata
         )
+
+    @classmethod
+    def from_string(cls: typing.Type[LangSexpVector_VT], s: str) -> LangSexpVector_VT:
+        """Create an R language object from a string.
+
+        This creates an unevaluated R language object.
+
+        Args:
+            s: R source code in a string.
+
+        Returns:
+            An instance of the class the method is called from.
+        """
+        return cls(_get_str2lang()(s))
 
 
 class SexpClosure(Sexp):

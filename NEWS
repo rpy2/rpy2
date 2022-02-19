@@ -1,6 +1,22 @@
 Release 3.5.0
 =============
 
+New features
+------------
+
+- :obj:`rpy2.rinterface.NULL` can be refererenced in code before the embedded
+  R is initialized.
+
+- `LD_LIBRARY_PATH` is obtained from the executable `RScript` and set prior
+  to initializing R at the :mod:`rpy2.rinterface` level (issue #833).
+
+- The package is now fully typed with type hints.
+
+- The :func:`rpy2.rinterface.evalr` accepts the named parameters `envir`
+  and `enclos`, mirroring better the signature of the R function `eval`.
+
+- New function :func:`rpy2.rinterface.evalr_expr` to evaluate R expressions.
+
 Changes
 -------
 
@@ -26,17 +42,12 @@ Changes
 - With Python < 3.8 the module :mod:`typing_extensions` is now a requirement.
 
 - Initialization and update steps for
-  :class:`rpy2.robjects.conversion.NameClassMap` were update to ensure
+  :class:`rpy2.robjects.conversion.NameClassMap` were updated to ensure
   type hints are correct. This probably solved cryptic bugs with conversion
   system.
 
-- :obj:`rpy2.rinterface.NULL` can be refererenced in code before the embedded
-  R is initialized.
-
-- `LD_LIBRARY_PATH` is obtained from the executable `RScript` and set prior
-  to initializing R at the :mod:`rpy2.rinterface` level (issue #833).
-
-- The package is now fully typed with type hints.
+- :meth:`rpy2.rinterface.LangSexpVector.from_string` was at the robject level (class method of
+  :class:`rpy2.robjects.language.LangVector`) but is now at the interface level.
 
 Bugs fixed
 ----------
