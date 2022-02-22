@@ -17,6 +17,7 @@ New features
 
 - New function :func:`rpy2.rinterface.evalr_expr` to evaluate R expressions.
 
+
 Changes
 -------
 
@@ -48,6 +49,12 @@ Changes
 
 - :meth:`rpy2.rinterface.LangSexpVector.from_string` was at the robject level (class method of
   :class:`rpy2.robjects.language.LangVector`) but is now at the interface level.
+
+- :meth:`rpy2.rinterface.get_evaluation_context` is deprecated. The module
+  level context variable `evaluation_context` should be used instead. The
+  use of the context variable should address issues when using nested
+  :meth:`rpy2.rinterface.local_context`.
+
 
 Bugs fixed
 ----------

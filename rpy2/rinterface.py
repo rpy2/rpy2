@@ -1,6 +1,7 @@
 import abc
 import atexit
 import contextlib
+import contextvars
 import os
 import math
 import platform
@@ -40,12 +41,16 @@ R_NilValue = openrlib.rlib.R_NilValue
 
 endr = embedded.endr
 
-_evaluation_context = globalenv
+evaluation_context = contextvars.ContextVar('evaluation_context',
+                                            default=globalenv)
 
 
 def get_evaluation_context() -> SexpEnvironment:
     """Get the frame (environment) in which R code is currently evaluated."""
-    return _evaluation_context
+    warnings.warn('This function is deprecated. '
+                  'Use evaluation_context directly.',
+                  DeprecationWarning, stacklevel=2)
+    return evaluation_context.get()
 
 
 @contextlib.contextmanager
@@ -65,9 +70,7 @@ def local_context(
     Yield the environment (passed to env, or created).
     """
 
-    global _evaluation_context
-
-    parent_frame = _evaluation_context
+    parent_frame = evaluation_context.get()
     if env is None:
         env = baseenv['new.env'](
             baseenv['parent.frame']()
@@ -76,13 +79,13 @@ def local_context(
     try:
         if use_rlock:
             with openrlib.rlock:
-                _evaluation_context = env
+                token = evaluation_context.set(env)
                 yield env
         else:
-            _evaluation_context = env
+            token = evaluation_context.set(env)
             yield env
     finally:
-        _evaluation_context = parent_frame
+        evaluation_context.reset(token)
 
 
 def _sigint_handler(sig, frame):
@@ -123,14 +126,15 @@ def evalr_expr(
 
     :param:`expr` An R expression.
     :param:`envir` An optional R environment in which the evaluation
-      will happen.
+      will happen. If None, which is the default, the environment in
+     the context variable `evaluation_context` is used.
     :param:`enclos` An enclosure. This is only relevant when envir
       is a list, a pairlist, or a data.frame. It specifies where to
     look for objects not found in envir.
     :return: The R objects resulting from the evaluation of the code"""
 
     if envir is None:
-        envir = MissingArg
+        envir = evaluation_context.get()
     if enclos is None:
         enclos = MissingArg
     res = baseenv['eval'](expr, envir=envir, enclos=enclos)
@@ -790,7 +794,7 @@ class SexpClosure(Sexp):
             call_r = rmemory.protect(
                 _rinterface.build_rcall(self.__sexp__._cdata, args,
                                         kwargs.items()))
-            call_context = _evaluation_context
+            call_context = evaluation_context.get()
             res = rmemory.protect(
                 openrlib.rlib.R_tryEval(
                     call_r,
@@ -816,7 +820,7 @@ class SexpClosure(Sexp):
         """
         # TODO: check keyvals are pairs ?
         if environment is None:
-            environment = _evaluation_context
+            environment = evaluation_context.get()
         assert isinstance(environment, SexpEnvironment)
         error_occured = _rinterface.ffi.new('int *', 0)
 
