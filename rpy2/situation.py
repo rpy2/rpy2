@@ -310,6 +310,10 @@ def iter_info():
 
     yield make_bold('rpy2 version:')
     if has_rpy2:
+        # TODO: the repeated import is needed, without which Python
+        #   raises an UnboundLocalError (local variable reference before
+        #   assignment).
+        import rpy2  # noqa: F811
         yield rpy2.__version__
     else:
         yield 'rpy2 cannot be imported'
