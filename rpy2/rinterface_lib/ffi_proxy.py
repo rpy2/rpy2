@@ -1,5 +1,9 @@
 import enum
+import logging
 import os
+import typing
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class InterfaceType(enum.Enum):
@@ -9,33 +13,42 @@ class InterfaceType(enum.Enum):
 
 class SignatureDefinition(object):
 
-    def __init__(self, name, rtype, arguments):
+    def __init__(self, name: str, rtype: str,
+                 arguments: typing.Tuple[str, ...]):
         self.name = name
         self.rtype = rtype
         self.arguments = arguments
 
     @property
-    def callback_def(self):
+    def callback_def(self) -> str:
         return '{} ({})'.format(self.rtype, ' ,'.join(self.arguments))
 
     @property
-    def extern_def(self):
+    def extern_def(self) -> str:
         return '{} {}({})'.format(
             self.rtype, self.name, ' ,'.join(self.arguments)
         )
 
     @property
-    def extern_python_def(self):
+    def extern_python_def(self) -> str:
         return 'extern "Python" {} {}({});'.format(
             self.rtype, self.name, ' ,'.join(self.arguments)
         )
 
 
-def get_ffi_mode(_rinterface_cffi):
-    if hasattr(_rinterface_cffi, 'lib'):
-        return InterfaceType.API
-    else:
-        return InterfaceType.ABI
+FFI_MODE: typing.Optional[InterfaceType] = None
+
+
+def get_ffi_mode(_rinterface_cffi) -> InterfaceType:
+    global FFI_MODE
+    if FFI_MODE is None:
+        if hasattr(_rinterface_cffi, 'lib'):
+            res = InterfaceType.API
+        else:
+            res = InterfaceType.ABI
+        logger.debug(f'cffi mode is {res}')
+        FFI_MODE = res
+    return FFI_MODE
 
 
 def callback(definition, _rinterface_cffi):
@@ -51,46 +64,62 @@ def callback(definition, _rinterface_cffi):
 
 
 # Callbacks
-_capsule_finalizer_def = SignatureDefinition('_capsule_finalizer',
-                                             'void', ('SEXP',))
-_evaluate_in_r_def = SignatureDefinition('_evaluate_in_r',
-                                         'SEXP', ('SEXP args',))
+_capsule_finalizer_def: SignatureDefinition = SignatureDefinition(
+    '_capsule_finalizer',
+    'void', ('SEXP',))
 
+_evaluate_in_r_def: SignatureDefinition = SignatureDefinition(
+    '_evaluate_in_r',
+    'SEXP', ('SEXP args',))
 
-_consoleflush_def = SignatureDefinition('_consoleflush', 'void', ('void', ))
-if os.name == 'nt':
-    _consoleread_def = SignatureDefinition('_consoleread', 'int',
-                                           ('char *', 'char *',
-                                            'int', 'int'))
-else:
-    _consoleread_def = SignatureDefinition('_consoleread', 'int',
-                                           ('char *', 'unsigned char *',
-                                            'int', 'int'))
-_consolereset_def = SignatureDefinition('_consolereset', 'void', ('void', ))
-_consolewrite_def = SignatureDefinition('_consolewrite', 'void',
-                                        ('char *', 'int'))
-_consolewrite_ex_def = SignatureDefinition('_consolewrite_ex', 'void',
-                                           ('char *', 'int', 'int'))
-_showmessage_def = SignatureDefinition('_showmessage', 'void', ('char *', ))
-_choosefile_def = SignatureDefinition('_choosefile', 'int',
-                                      ('int', 'char *', 'int'))
-_cleanup_def = SignatureDefinition('_cleanup', 'void',
-                                   ('SA_TYPE', 'int', 'int'))
-_showfiles_def = SignatureDefinition('_showfiles', 'int',
-                                     ('int', 'const char **', 'const char **',
-                                      'const char *', 'Rboolean',
-                                      'const char *'))
-_processevents_def = SignatureDefinition('_processevents', 'void', ('void', ))
-_busy_def = SignatureDefinition('_busy', 'void', ('int', ))
-_callback_def = SignatureDefinition('_callback', 'void', ('void', ))
+_consoleflush_def: SignatureDefinition = SignatureDefinition(
+    '_consoleflush', 'void', ('void', ))
+
+_consoleread_def: SignatureDefinition = SignatureDefinition(
+    '_consoleread', 'int',
+    ('char *',
+     'char *' if os.name == 'nt' else 'unsigned char *',
+     'int', 'int'))
+
+_consolereset_def: SignatureDefinition = SignatureDefinition(
+    '_consolereset', 'void', ('void', ))
+_consolewrite_def: SignatureDefinition = SignatureDefinition(
+    '_consolewrite', 'void',
+    ('char *', 'int'))
+_consolewrite_ex_def: SignatureDefinition = SignatureDefinition(
+    '_consolewrite_ex', 'void',
+    ('char *', 'int', 'int'))
+_showmessage_def: SignatureDefinition = SignatureDefinition(
+    '_showmessage', 'void', ('char *', ))
+_choosefile_def: SignatureDefinition = SignatureDefinition(
+    '_choosefile', 'int',
+    ('int', 'char *', 'int'))
+_cleanup_def: SignatureDefinition = SignatureDefinition(
+    '_cleanup', 'void',
+    ('SA_TYPE', 'int', 'int'))
+_showfiles_def: SignatureDefinition = SignatureDefinition(
+    '_showfiles', 'int',
+    ('int', 'const char **', 'const char **',
+     'const char *', 'Rboolean',
+     'const char *'))
+_processevents_def: SignatureDefinition = SignatureDefinition(
+    '_processevents', 'void', ('void', ))
+_busy_def: SignatureDefinition = SignatureDefinition(
+    '_busy', 'void', ('int', ))
+_callback_def: SignatureDefinition = SignatureDefinition(
+    '_callback', 'void', ('void', ))
 # TODO: should be const char *
-_yesnocancel_def = SignatureDefinition('_yesnocancel', 'int', ('char *', ))
+_yesnocancel_def: SignatureDefinition = SignatureDefinition(
+    '_yesnocancel', 'int', ('char *', ))
 
-_parsevector_wrap_def = SignatureDefinition('_parsevector_wrap',
-                                            'SEXP', ('void *data', ))
+_parsevector_wrap_def: SignatureDefinition = SignatureDefinition(
+    '_parsevector_wrap',
+    'SEXP', ('void *data', ))
 
-_handler_def = SignatureDefinition('_handler_wrap',
-                                   'SEXP', ('SEXP cond', 'void *hdata'))
+_handler_def: SignatureDefinition = SignatureDefinition(
+    '_handler_wrap',
+    'SEXP', ('SEXP cond', 'void *hdata'))
 
-_exec_findvar_in_frame_def = SignatureDefinition('_exec_findvar_in_frame',
-                                                 'void', ('void *data', ))
+_exec_findvar_in_frame_def: SignatureDefinition = SignatureDefinition(
+    '_exec_findvar_in_frame',
+    'void', ('void *data', ))
