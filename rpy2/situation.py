@@ -42,9 +42,9 @@ def get_cffi_mode(default=CFFI_MODE.ANY):
 
 
 def assert_python_version():
-    if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 3):
+    if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 7):
         raise RuntimeError(
-            'Python >=3.3 is required to run rpy2')
+            'Python >=3.7 is required to run rpy2')
 
 
 def r_version_from_subprocess():
@@ -285,18 +285,12 @@ def iter_info():
 
     yield make_bold('rpy2 version:')
     if has_rpy2:
-        # TODO: the repeated import is needed, without which Python (3.6)
-        #   raises an UnboundLocalError (local variable reference before
-        #   assignment).
-        import rpy2  # noqa: F811
         yield rpy2.__version__
     else:
         yield 'rpy2 cannot be imported'
 
     yield make_bold('Python version:')
     yield sys.version
-    if not (sys.version_info[0] == 3 and sys.version_info[1] >= 5):
-        yield '*** rpy2 is primarily designed for Python >= 3.5'
 
     yield make_bold("Looking for R's HOME:")
 
