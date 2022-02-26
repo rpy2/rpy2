@@ -1,6 +1,13 @@
 Release 3.5.0
 =============
 
+New Features
+------------
+
+- :mod:`rpy2.situation` is now using a module-level (called `logger`) to
+  facilitate troubleshooting. When the module is run as an executable
+  the flag `--verbose` can take the possible values DEBUG, INFO, WARNING, ERROR.
+
 Changes
 -------
 

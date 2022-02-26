@@ -1,8 +1,11 @@
+import logging
 import platform
 import threading
 import typing
 import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
+
+logger = logging.getLogger(__name__)
 
 cffi_mode = rpy2.situation.get_cffi_mode()
 if cffi_mode == rpy2.situation.CFFI_MODE.API:
