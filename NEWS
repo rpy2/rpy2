@@ -17,6 +17,9 @@ New features
 
 - New function :func:`rpy2.rinterface.evalr_expr` to evaluate R expressions.
 
+- :mod:`rpy2.situation` is now using a module-level (called `logger`) to
+  facilitate troubleshooting. When the module is run as an executable
+  the flag `--verbose` can take the possible values DEBUG, INFO, WARNING, ERROR.
 
 Changes
 -------

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import sys
 if ((sys.version_info[0] < 3) or
-    (sys.version_info[0] == 3 and sys.version_info[1] < 5)):
-    print('rpy2 is no longer supporting Python < 3.5.'
+    (sys.version_info[0] == 3 and sys.version_info[1] < 7)):
+    print('rpy2 is no longer supporting Python < 3.7.'
           'Consider using an older rpy2 release when using an '
           'older Python release.')
     sys.exit(1)
@@ -225,9 +225,9 @@ if __name__ == '__main__':
         ),
         classifiers = ['Programming Language :: Python',
                        'Programming Language :: Python :: 3',
-                       'Programming Language :: Python :: 3.6',
                        'Programming Language :: Python :: 3.7',
                        'Programming Language :: Python :: 3.8',
+                       'Programming Language :: Python :: 3.9',
                        ('License :: OSI Approved :: GNU General '
                         'Public License v2 or later (GPLv2+)'),
                        'Intended Audience :: Developers',
