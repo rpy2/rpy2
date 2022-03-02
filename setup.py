@@ -205,7 +205,7 @@ if __name__ == '__main__':
         long_description=LONG_DESCRIPTION,
         url='https://rpy2.github.io',
         project_urls={
-            "Source": "https://github.com/rpy2/rpy2",
+            'Source': 'https://github.com/rpy2/rpy2',
         },
         license='GPLv2+',
         author='Laurent Gautier',
