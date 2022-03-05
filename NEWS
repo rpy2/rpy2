@@ -59,6 +59,9 @@ Changes
   :meth:`rpy2.rinterface.local_context`.
 
 
+- Added recommendation to try :meth:`pandas.DataFrame.infer_objects` when
+  the converion to R data frames fails because of mixed types (issue #794).
+
 Bugs fixed
 ----------
 

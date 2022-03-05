@@ -177,9 +177,12 @@ def py2rpy_pandasseries(obj):
                 and not
                 ((isinstance(x, float) and math.isnan(x))
                  or pandas.isna(x))):
-                raise ValueError('Series can only be of one type, or None '
-                                 '(and here we have %s and %s).' %
-                                 (homogeneous_type, type(x)))
+                raise ValueError(
+                    'Series can only be of one type, or None '
+                    '(and here we have %s and %s). If happening with '
+                    'a pandas DataFrame the method infer_objects() '
+                    'will normalize data types before conversion.' %
+                    (homogeneous_type, type(x)))
         # TODO: Could this be merged with obj.type.name == 'O' case above ?
         res = _PANDASTYPE2RPY2[homogeneous_type](obj)
     else:
