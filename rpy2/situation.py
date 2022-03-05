@@ -35,7 +35,7 @@ class CFFI_MODE(enum.Enum):
     ANY = 'ANY'
 
 
-def get_cffi_mode(default=CFFI_MODE.ANY):
+def get_cffi_mode(default=CFFI_MODE.API):
     cffi_mode = os.environ.get('RPY2_CFFI_MODE', '')
     res = default
     for m in (CFFI_MODE.API, CFFI_MODE.ABI,
