@@ -364,6 +364,7 @@ class SexpEnvironment(Sexp):
             raise TypeError('The key must be a non-empty string.')
         elif not len(key):
             raise ValueError('The key must be a non-empty string.')
+        assert embedded.isinitialized()
         with memorymanagement.rmemory() as rmemory:
             key_cchar = conversion._str_to_cchar(key)
             symbol = rmemory.protect(
