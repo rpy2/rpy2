@@ -204,6 +204,11 @@ if __name__ == '__main__':
         description='Python interface to the R language (embedded R)',
         long_description=LONG_DESCRIPTION,
         url='https://rpy2.github.io',
+        project_urls={
+            'Documentation': 'https://rpy2.github.io/doc.html',
+            'Source': 'https://github.com/rpy2/rpy2',
+            'Tracker': 'https://github.com/rpy2/rpy2/issues'
+        },
         license='GPLv2+',
         author='Laurent Gautier',
         author_email='lgautier@gmail.com',
