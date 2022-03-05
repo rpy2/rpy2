@@ -212,7 +212,7 @@ R's NAMED
    Starting with version 4.0, R not longer uses `NAMED` to keep track of whether
    an R object can be collected. It is now using a reference-counting system.
 
-Whenever the pass-by-value paradigm is applied stricly,
+Whenever the pass-by-value paradigm is applied strictly,
 garbage collection is straightforward as objects only live within
 the scope they are declared, but R is using a slight modification
 of this in order to minimize memory usage. Each R object has an
@@ -236,6 +236,6 @@ to a variable *mine* in the R globalenv namespace:
 2
 
 The *named* is 2 to indicate to :program:`R` that *mine* should be 
-copied if a modication of any sort is performed on the object. That copy
+copied if a modification of any sort is performed on the object. That copy
 will be local to the scope of the modification within R.
 
