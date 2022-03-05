@@ -1,8 +1,21 @@
 Release 3.5.0
 =============
 
-New Features
+New features
 ------------
+
+- :obj:`rpy2.rinterface.NULL` can be refererenced in code before the embedded
+  R is initialized.
+
+- `LD_LIBRARY_PATH` is obtained from the executable `RScript` and set prior
+  to initializing R at the :mod:`rpy2.rinterface` level (issue #833).
+
+- The package is now fully typed with type hints.
+
+- The :func:`rpy2.rinterface.evalr` accepts the named parameters `envir`
+  and `enclos`, mirroring better the signature of the R function `eval`.
+
+- New function :func:`rpy2.rinterface.evalr_expr` to evaluate R expressions.
 
 - :mod:`rpy2.situation` is now using a module-level (called `logger`) to
   facilitate troubleshooting. When the module is run as an executable
@@ -33,17 +46,18 @@ Changes
 - With Python < 3.8 the module :mod:`typing_extensions` is now a requirement.
 
 - Initialization and update steps for
-  :class:`rpy2.robjects.conversion.NameClassMap` were update to ensure
+  :class:`rpy2.robjects.conversion.NameClassMap` were updated to ensure
   type hints are correct. This probably solved cryptic bugs with conversion
   system.
 
-- :obj:`rpy2.rinterface.NULL` can be refererenced in code before the embedded
-  R is initialized.
+- :meth:`rpy2.rinterface.LangSexpVector.from_string` was at the robject level (class method of
+  :class:`rpy2.robjects.language.LangVector`) but is now at the interface level.
 
-- `LD_LIBRARY_PATH` is obtained from the executable `RScript` and set prior
-  to initializing R at the :mod:`rpy2.rinterface` level (issue #833).
+- :meth:`rpy2.rinterface.get_evaluation_context` is deprecated. The module
+  level context variable `evaluation_context` should be used instead. The
+  use of the context variable should address issues when using nested
+  :meth:`rpy2.rinterface.local_context`.
 
-- The package is now fully typed with type hints.
 
 - Added recommendation to try :meth:`pandas.DataFrame.infer_objects` when
   the converion to R data frames fails because of mixed types (issue #794).

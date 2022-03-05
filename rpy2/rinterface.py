@@ -1,6 +1,7 @@
 import abc
 import atexit
 import contextlib
+import contextvars
 import os
 import math
 import platform
@@ -40,12 +41,16 @@ R_NilValue = openrlib.rlib.R_NilValue
 
 endr = embedded.endr
 
-_evaluation_context = globalenv
+evaluation_context = contextvars.ContextVar('evaluation_context',
+                                            default=globalenv)
 
 
 def get_evaluation_context() -> SexpEnvironment:
     """Get the frame (environment) in which R code is currently evaluated."""
-    return _evaluation_context
+    warnings.warn('This function is deprecated. '
+                  'Use evaluation_context directly.',
+                  DeprecationWarning, stacklevel=2)
+    return evaluation_context.get()
 
 
 @contextlib.contextmanager
@@ -65,9 +70,7 @@ def local_context(
     Yield the environment (passed to env, or created).
     """
 
-    global _evaluation_context
-
-    parent_frame = _evaluation_context
+    parent_frame = evaluation_context.get()
     if env is None:
         env = baseenv['new.env'](
             baseenv['parent.frame']()
@@ -76,13 +79,13 @@ def local_context(
     try:
         if use_rlock:
             with openrlib.rlock:
-                _evaluation_context = env
+                token = evaluation_context.set(env)
                 yield env
         else:
-            _evaluation_context = env
+            token = evaluation_context.set(env)
             yield env
     finally:
-        _evaluation_context = parent_frame
+        evaluation_context.reset(token)
 
 
 def _sigint_handler(sig, frame):
@@ -106,18 +109,69 @@ def parse(text: str, num: int = -1):
     return res
 
 
-def evalr(source: str, maxlines: int = -1) -> sexp.Sexp:
+def evalr_expr(
+        expr: 'ExprSexpVector',
+        envir: typing.Union[
+            None,
+            'SexpEnvironment', 'NULLType',
+            'ListSexpVector', 'PairlistSexpVector', int,
+            '_MissingArgType'] = None,
+        enclos: typing.Union[
+            None,
+            'ListSexpVector', 'PairlistSexpVector',
+            'NULLType',
+            '_MissingArgType'] = None
+) -> sexp.Sexp:
+    """Evaluate an R expression.
+
+    :param:`expr` An R expression.
+    :param:`envir` An optional R environment in which the evaluation
+      will happen. If None, which is the default, the environment in
+     the context variable `evaluation_context` is used.
+    :param:`enclos` An enclosure. This is only relevant when envir
+      is a list, a pairlist, or a data.frame. It specifies where to
+    look for objects not found in envir.
+    :return: The R objects resulting from the evaluation of the code"""
+
+    if envir is None:
+        envir = evaluation_context.get()
+    if enclos is None:
+        enclos = MissingArg
+    res = baseenv['eval'](expr, envir=envir, enclos=enclos)
+    return res
+
+
+def evalr(
+        source: str,
+        maxlines: int = -1,
+        envir: typing.Union[
+            None,
+            'SexpEnvironment', 'NULLType',
+            'ListSexpVector', 'PairlistSexpVector', int,
+            '_MissingArgType'] = None,
+        enclos: typing.Union[
+            None,
+            'ListSexpVector', 'PairlistSexpVector',
+            'NULLType', '_MissingArgType'] = None
+) -> sexp.Sexp:
     """Evaluate a string as R code.
 
     Evaluate a string as R just as it would happen when writing
     code in an R terminal.
 
-    :param:`text` A string to be evaluated as R code.
+    :param:`text` A string to be evaluated as R code,
+    or an R expression.
     :param:`maxlines` The maximum number of lines to parse. If -1, no
-      limit is applied."""
+      limit is applied.
+    :param:`envir` An optional R environment in which the evaluation
+      will happen.
+    :param:`enclos` An enclosure. This is only relevant when envir
+      is a list, a pairlist, or a data.frame. It specifies where to
+    look for objects not found in envir.
+    :return: The R objects resulting from the evaluation of the code"""
 
-    res = parse(source, num=maxlines)
-    res = baseenv['eval'](res)
+    expr = parse(source, num=maxlines)
+    res = evalr_expr(expr, envir=envir, enclos=enclos)
     return res
 
 
@@ -661,7 +715,31 @@ class ExprSexpVector(SexpVector):
     _R_SET_VECTOR_ELT = None
 
 
+_str2lang = None
+
+
+def _get_str2lang():
+    global _str2lang
+    if _str2lang is None:
+        try:
+            _str2lang = baseenv['str2lang']
+        except KeyError:
+            # TODO: This exists to ensure compatibility with
+            # older versions of R. If should be removed when
+            # older versions of R are no longer supported.
+            _str2lang = evalr('function(s) '
+                              'base::parse(text=s, keep.source=FALSE)[[1]]')
+    return _str2lang
+
+
+LangSexpVector_VT = typing.TypeVar('LangSexpVector_VT', bound='LangSexpVector')
+
+
 class LangSexpVector(SexpVector):
+    """An R language object.
+
+    To create from a (Python) string containing R code
+    use the classmethod `from_string`."""
     _R_TYPE = openrlib.rlib.LANGSXP
     _R_GET_PTR = None
     _CAST_IN = None
@@ -690,6 +768,22 @@ class LangSexpVector(SexpVector):
             value.__sexp__._cdata
         )
 
+    @classmethod
+    def from_string(
+            cls: typing.Type[LangSexpVector_VT], s: str
+    ) -> LangSexpVector_VT:
+        """Create an R language object from a string.
+
+        This creates an unevaluated R language object.
+
+        Args:
+            s: R source code in a string.
+
+        Returns:
+            An instance of the class the method is called from.
+        """
+        return cls(_get_str2lang()(s))
+
 
 class SexpClosure(Sexp):
 
@@ -700,7 +794,7 @@ class SexpClosure(Sexp):
             call_r = rmemory.protect(
                 _rinterface.build_rcall(self.__sexp__._cdata, args,
                                         kwargs.items()))
-            call_context = _evaluation_context
+            call_context = evaluation_context.get()
             res = rmemory.protect(
                 openrlib.rlib.R_tryEval(
                     call_r,
@@ -726,7 +820,7 @@ class SexpClosure(Sexp):
         """
         # TODO: check keyvals are pairs ?
         if environment is None:
-            environment = _evaluation_context
+            environment = evaluation_context.get()
         assert isinstance(environment, SexpEnvironment)
         error_occured = _rinterface.ffi.new('int *', 0)
 

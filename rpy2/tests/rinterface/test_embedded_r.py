@@ -123,7 +123,13 @@ def test_parse_invalid_string():
     with pytest.raises(TypeError):
         rinterface.parse(3)
 
-
+@pytest.mark.parametrize(
+    'envir',
+    (None, rinterface.globalenv, rinterface.ListSexpVector([])))
+def test_evalr(envir):
+    res = rinterface.evalr('1 + 2', envir=envir)
+    assert tuple(res) == (3, )
+    
 def test_rternalize():
     def f(x, y):
         return x[0]+y[0]
