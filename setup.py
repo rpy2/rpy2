@@ -15,6 +15,7 @@ import tempfile
 import warnings
 
 from distutils.ccompiler import new_compiler
+from distutils.core import Extension
 from distutils.sysconfig import customize_compiler
 from distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
 
@@ -113,6 +114,7 @@ def get_r_c_extension_status():
 
 cffi_mode = situation.get_cffi_mode()
 c_extension_status = get_r_c_extension_status()
+ext_modules = []
 if cffi_mode == situation.CFFI_MODE.ABI:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
 elif cffi_mode == situation.CFFI_MODE.API:
@@ -120,6 +122,8 @@ elif cffi_mode == situation.CFFI_MODE.API:
         print('API mode requested but %s' % c_extension_status.value)
         sys.exit(1)
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_api']
+    ext_modules = [Extension('rpy2.rinterface_lib._bufferprotocol',
+                             ['rpy2/rinterface_lib/_bufferprotocol.c'])]
 elif cffi_mode == situation.CFFI_MODE.BOTH:
     if c_extension_status != COMPILATION_STATUS.OK:
         print('API mode requested but %s' % c_extension_status.value)
@@ -131,6 +135,8 @@ elif cffi_mode == situation.CFFI_MODE.ANY:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
     if c_extension_status == COMPILATION_STATUS.OK:
         cffi_modules.append('rpy2/_rinterface_cffi_build.py:ffibuilder_api')
+        ext_modules = [Extension('rpy2.rinterface_lib._bufferprotocol',
+                                 ['rpy2/rinterface_lib/_bufferprotocol.c'])]
 else:
     # This should never happen.
     raise ValueError('Invalid value for cffi_mode')
@@ -216,6 +222,7 @@ if __name__ == '__main__':
         extras_require=extras_require,
         setup_requires=['cffi>=1.10.0'],
         cffi_modules=cffi_modules,
+        ext_modules=ext_modules,
         cmdclass = dict(build=build),
         package_dir=pack_dir,
         packages=([PACKAGE_NAME] +
@@ -243,6 +250,7 @@ if __name__ == '__main__':
                                'rinterface_lib/R_API_eventloop.h',
                                'rinterface_lib/R_API_eventloop.c',
                                'rinterface_lib/RPY2.h',
+                               'rinterface_lib/_bufferprotocol.c',
                                'py.typed']},
         zip_safe=False
     )
