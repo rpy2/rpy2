@@ -122,8 +122,10 @@ elif cffi_mode == situation.CFFI_MODE.API:
         print('API mode requested but %s' % c_extension_status.value)
         sys.exit(1)
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_api']
-    ext_modules = [Extension('rpy2.rinterface_lib._bufferprotocol',
-                             ['rpy2/rinterface_lib/_bufferprotocol.c'])]
+    ext_modules = [
+        Extension('rpy2.rinterface_lib._bufferprotocol',
+                  ['rpy2/rinterface_lib/_bufferprotocol.c'])
+    ]
 elif cffi_mode == situation.CFFI_MODE.BOTH:
     if c_extension_status != COMPILATION_STATUS.OK:
         print('API mode requested but %s' % c_extension_status.value)
@@ -135,8 +137,10 @@ elif cffi_mode == situation.CFFI_MODE.ANY:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
     if c_extension_status == COMPILATION_STATUS.OK:
         cffi_modules.append('rpy2/_rinterface_cffi_build.py:ffibuilder_api')
-        ext_modules = [Extension('rpy2.rinterface_lib._bufferprotocol',
-                                 ['rpy2/rinterface_lib/_bufferprotocol.c'])]
+        ext_modules = [
+            Extension('rpy2.rinterface_lib._bufferprotocol',
+                      ['rpy2/rinterface_lib/_bufferprotocol.c'])
+        ]
 else:
     # This should never happen.
     raise ValueError('Invalid value for cffi_mode')
@@ -198,7 +202,8 @@ if __name__ == '__main__':
     extras_require = {
         'test': ['pytest'],
         'numpy': ['pandas'],
-        'pandas': ['numpy', 'pandas']
+        'pandas': ['numpy', 'pandas'],
+        'setup': ['setuptools']
     }
     extras_require['all'] = list(
         set(x for lst in extras_require.values()
@@ -220,7 +225,7 @@ if __name__ == '__main__':
         author_email='lgautier@gmail.com',
         install_requires=requires,
         extras_require=extras_require,
-        setup_requires=['cffi>=1.10.0'],
+        setup_requires=['cffi>=1.10.0', 'setuptools'],
         cffi_modules=cffi_modules,
         ext_modules=ext_modules,
         cmdclass = dict(build=build),

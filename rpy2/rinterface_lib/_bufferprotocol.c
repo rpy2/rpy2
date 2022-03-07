@@ -3,40 +3,40 @@
 
 
 static PyObject *
-memoryview_fordered(PyObject *self, PyObject *args)
+memoryview_swapstrides(PyObject *self, PyObject *args)
 {
-    const char *cast_str;
-    Py_buffer view;
-    PyObject *shape;
+    Py_buffer *view;
     PyObject *memoryview;
-    Py_ssize_t tmp_stride;
-    int ndim;
 
-    if (!PyArg_ParseTuple(args, "OsO!",
-			  &memoryview,
-			  &cast_str,
-			  &PyTuple_Type, &shape))
+    if (!PyArg_ParseTuple(args, "O",
+			  &memoryview)) {
         return NULL;
-
-    int status = PyObject_GetBuffer(memoryview, &view,
-				    PyBUF_WRITABLE | PyBUF_FORMAT |
-				    PyBUF_STRIDES | PyBUF_F_CONTIGUOUS);
-    // test status
-    ndim = view.ndim;
-    for (int i=0; i < (ndim/2); i++) {
-      tmp_stride = view.strides[ndim - i];
-      view.strides[ndim - i] = view.strides[i];
-      view.strides[i] = tmp_stride;
     }
-    PyBuffer_Release(&view);
+
+    if (!PyMemoryView_Check(memoryview)) {
+      PyErr_SetString(PyExc_ValueError, "obj must be a memoryview.");
+      return NULL;
+    }
+    view = PyMemoryView_GET_BUFFER(memoryview);
+    if (!PyBuffer_IsContiguous(view, 'A')) {
+      PyErr_SetString(PyExc_ValueError, "obj must have a continuous buffer.");
+      return NULL;
+    }
+    int ndim = view->ndim;
+    Py_ssize_t prev_dim = 1;
+    for (Py_ssize_t i=0; i < ndim; i++) {
+      view->strides[i] = view->itemsize*prev_dim;
+      prev_dim = view->shape[i];
+    }
+    ((PyMemoryViewObject *)memoryview)->flags |= PyBUF_F_CONTIGUOUS;
     return Py_None;
 };
 
 
 static PyMethodDef _BufferProtocolMethods[] =
   {
-   {"memoryview_fordered", memoryview_fordered, METH_VARARGS,
-    "Set the strides to be Fortran-ordered."},
+   {"memoryview_swapstrides", memoryview_swapstrides, METH_VARARGS,
+    "memoryview_swapstrides(obj). Swap the strides to be Fortran-ordered."},
    {NULL, NULL, 0, NULL}
   };
 
