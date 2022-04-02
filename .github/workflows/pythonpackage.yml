@@ -62,7 +62,7 @@ jobs:
     - name: Install package
       run: |
         ${{ matrix.venv_activate }}
-        python setup.py install
+        pip install -e .
         rm -r build/
     - name: Test with minimal dependencies
       run: |
