@@ -76,6 +76,9 @@ Bugs fixed
 - The :mod:`rpy2.rinterface`-level conversion of Python integers to R integers is now
   checking that integers are not larger than what R can handle.
   
+- Trying to access items in an R environment before R is initialized is no
+  longer ending with a segfault (issue #842).
+
 
 Release 3.4.6
 =============
