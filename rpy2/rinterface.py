@@ -194,13 +194,18 @@ def vector_memoryview(obj: sexp.SexpVector,
     # mv = memoryview(b).cast(cast_str, shape, order='F')
     # ```
     # but Python does not handle FORTRAN-ordered arrays without having
-    # to write C extensions. We have to use numpy.
-    # TODO: Having numpy a requirement just for this is a problem.
-    # TODO: numpy needed for memoryview
-    #   (as long as https://bugs.python.org/issue34778 is not resolved)
-    import numpy  # type: ignore
-    a = numpy.frombuffer(b, dtype=cast_str).reshape(shape, order='F')
-    mv = memoryview(a)
+    # to write C extensions (see
+    # https://bugs.python.org/issue34778 is not resolved).
+    # Having numpy a requirement just for this is a problem so a
+    # C function to swap the strides in place was written
+    try:
+        import rpy2.rinterface_lib._bufferprotocol as bp   # type: ignore
+        mv = memoryview(b).cast(cast_str, shape)
+        bp.memoryview_swapstrides(mv)
+    except ImportError:
+        import numpy  # type: ignore
+        a = numpy.frombuffer(b, dtype=cast_str).reshape(shape, order='F')
+        mv = memoryview(a)
     return mv
 
 
