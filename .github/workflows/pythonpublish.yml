@@ -45,14 +45,14 @@ jobs:
       run: |
         pip wheel -w dist --no-deps -e .
     - name: Build sdist
-      if: (matrix.r-version == env.default_r && matrix.os == 'ubuntu-latest' && matrix.python-version == default_python)
+      if: (matrix.r-version == env.default_r && matrix.os == 'ubuntu-latest' && matrix.python-version == env.default_python)
       run: |
         python setup.py sdist
     - id: getfilename_wheel
       run: |
         echo "::set-output name=file::$(basename -a $(ls dist/*.whl))"
     - id: getfilename_targz
-      if: (matrix.r-version == env.default_r && matrix.os == 'ubuntu-latest' && matrix.python-version == default_python)
+      if: (matrix.r-version == env.default_r && matrix.os == 'ubuntu-latest' && matrix.python-version == env.default_python)
       run: |
         echo "::set-output name=file::$(basename -a $(ls dist/*.tar.gz))"
     - name: Create package for master
@@ -63,7 +63,7 @@ jobs:
           path: dist/${{ steps.getfilename_wheel.outputs.file }}
     - name: Create source package for master
       uses: actions/upload-artifact@v1
-      if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == env.default_r && matrix.os == 'ubuntu-latest' && matrix.python-version == default_python)
+      if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == env.default_r && matrix.os == 'ubuntu-latest' && matrix.python-version == env.default_python)
       with:
           name: ${{ steps.getfilename_targz.outputs.file }}
           path: dist/${{ steps.getfilename_targz.outputs.file }}
