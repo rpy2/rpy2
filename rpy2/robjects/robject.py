@@ -14,20 +14,20 @@ def _add_warn_reticulate_hook():
     msg = """
     WARNING: While the R package "reticulate" was developped after
     Python-R bridges such as rpy2 already existed, it does not
-    consider that it might be called from a Python process. This
+    consider that it could be called from a Python process. This
     results in a quasi-obligatory segfault when rpy2 is evaluating
-    R code using reticulate. On the hand rpy2 is accounting for the
+    R code using reticulate. On the hand, rpy2 is accounting for the
     fact that it might already be running embedded in a Python
     process. This is why:
     - Python -> rpy2 -> R -> reticulate: crashes
     - R -> reticulate -> Python -> rpy2: works
 
-    The issue is tracked here:
+    The issue with reticulate is tracked here:
     https://github.com/rstudio/reticulate/issues/208
     """
     rpy2.rinterface.evalr(f"""
     setHook(packageEvent("reticulate", "onLoad"),
-            function(...) cat({msg}))
+            function(...) cat({repr(msg)}))
     """)
 
 
