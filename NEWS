@@ -58,10 +58,14 @@ Changes
   use of the context variable should address issues when using nested
   :meth:`rpy2.rinterface.local_context`.
 
-
 - Added recommendation to try :meth:`pandas.DataFrame.infer_objects` when
   the converion to R data frames fails because of mixed types (issue #794).
 
+- No longer implicit dependency on :mod:`numpy` for memory views. The Python
+  API has an unresolved issue around handling FORTRAN-ordered arrays without
+  going to C-level (https://bugs.python.org/issue34778), and C-extension
+  as added to rpy2 to cut the dependency on numpy for just this (PR #856).
+   
 Bugs fixed
 ----------
 
