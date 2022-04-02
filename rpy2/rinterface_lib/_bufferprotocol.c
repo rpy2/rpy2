@@ -28,6 +28,7 @@ memoryview_swapstrides(PyObject *self, PyObject *args)
     view->strides[i] = view->itemsize*prod_prev_dim;
     prod_prev_dim *= view->shape[i];
   }
+  ((PyMemoryViewObject *)memoryview)->flags |= PyBUF_F_CONTIGUOUS;
   return Py_None;
 };
 
