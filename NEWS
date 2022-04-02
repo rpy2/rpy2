@@ -1,5 +1,197 @@
+Release 3.5.0
+=============
+
+New features
+------------
+
+- :obj:`rpy2.rinterface.NULL` can be refererenced in code before the embedded
+  R is initialized.
+
+- `LD_LIBRARY_PATH` is obtained from the executable `RScript` and set prior
+  to initializing R at the :mod:`rpy2.rinterface` level (issue #833).
+
+- The package is now fully typed with type hints.
+
+- The :func:`rpy2.rinterface.evalr` accepts the named parameters `envir`
+  and `enclos`, mirroring better the signature of the R function `eval`.
+
+- New function :func:`rpy2.rinterface.evalr_expr` to evaluate R expressions.
+
+- :mod:`rpy2.situation` is now using a module-level (called `logger`) to
+  facilitate troubleshooting. When the module is run as an executable
+  the flag `--verbose` can take the possible values DEBUG, INFO, WARNING, ERROR.
+
+Changes
+-------
+
+- Better customizablity of conversion rules from R objects with `typeof`
+  `INTSXP` (array of integers), `VECSEXP` (R list), and `LGLSXP` (array of
+  booleans) :mod:`pandas`.
+
+- The representation of R integer is no longer using a comma separator
+  for thousands (issue #797).
+
+- Requirement is now Python>=3.7. :mod:`rpy2` is no longer tested with Python 3.6.
+
+- :mod:`rpy2.robject.lib.grid` was refactored to fix the conversion. This
+  fixes issue #804. A classes now have a `classmethod` `r` for the R
+  constructor (the `__init__` is the Python constructor).
+
+- :obj:`rpy2.robjects.vectors.__all__` is removed.
+
+- Cleaner class design by having :class:`rpy2.rinterface.NumpyArrayMixin`
+  removed and replaced by
+  :class:`rpy2.rinterface.SexpVectorWithNumpyInterface`.
+
+- With Python < 3.8 the module :mod:`typing_extensions` is now a requirement.
+
+- Initialization and update steps for
+  :class:`rpy2.robjects.conversion.NameClassMap` were updated to ensure
+  type hints are correct. This probably solved cryptic bugs with conversion
+  system.
+
+- :meth:`rpy2.rinterface.LangSexpVector.from_string` was at the robject level (class method of
+  :class:`rpy2.robjects.language.LangVector`) but is now at the interface level.
+
+- :meth:`rpy2.rinterface.get_evaluation_context` is deprecated. The module
+  level context variable `evaluation_context` should be used instead. The
+  use of the context variable should address issues when using nested
+  :meth:`rpy2.rinterface.local_context`.
+
+
+- Added recommendation to try :meth:`pandas.DataFrame.infer_objects` when
+  the converion to R data frames fails because of mixed types (issue #794).
+
+Bugs fixed
+----------
+
+- R warning about partial argument name matching is now cleared (issue #821).
+
+- Setting a slice for a StrSexpVector where some of the elements are not strings
+  no longer fails.
+
+- Assigning items to an R array of strings using a slice of more than one
+  element was likely to fail.
+
+- The :mod:`rpy2.rinterface`-level conversion of Python integers to R integers is now
+  checking that integers are not larger than what R can handle.
+  
+- Trying to access items in an R environment before R is initialized is no
+  longer ending with a segfault (issue #842).
+
+
+Release 3.4.6
+=============
+
+- Added a class and an alias to map ggplot2's `element_line` (issue #822).
+
+
+Release 3.4.5
+=============
+
+Changes
+-------
+
+- The deprecation warning when using :func:`rpy2.robjects.lib.grid.activate`
+  was missing (indirectly revealed through issue #804).
+
+- The named argument `LINPACK` in :meth:`rpy2.robjects.vectors.Matrix.svd`
+  is no longer present in R.
+
+Bugs fixed
+----------
+
+- SIGPIPE sent to a process running Python+rpy2 could result in a segfault.
+  This was caused by an incorrect setting of R signal handlers (issue #809).
+
+
+Release 3.4.4
+==============
+
+Changes
+-------
+
+- `RRuntimeError` exceptions raised while evaluating R code
+  an R magic (ipython/jupyter) are now propagated (issue #792).
+  
+
+
+Release 3.4.3
+=============
+
+New features
+------------
+
+- :mod:`rpy2.robjects.lib.ggplot2` maps more functions in the
+  R package (issue #767)
+
+- Utility function :func:`rpy2.robjects.lib.ggplot2.dict2rvec`
+  to convert a Python `Dict[str, str]` into an R named vector
+  of strings.
+
+Bugs fixed
+----------
+
+- Calling mod:`rpy2.situation` to report on the environment no longer
+  stops with an uncaught exception when no R home can be determined
+  (issue #774)
+
+- Converting pandas series with the older numpy types could result
+  in an error (issue #781)
+
+- Numpy converter was not properly turing R integer or float arrays
+  into their numpy equivalent (issue #785)
+
+- The HTML representation of R list without named element was
+  incorrect (issue #787)
+
+- Fix for when R is installed in a user home directory on Windows (PR #788)
+
+
+Release 3.4.2
+=============
+
+Bugs fixed
+----------
+
+- Multithreading during the initialization of the embedded R no longer
+  triggers a fatal error (issue #729)
+
+Changes
+-------
+
+- :mod:`pytest` is now an optional package. Optional sets of packages are
+  `numpy`, `pandas`, `test`, and `all` (all optional packages). They
+  can be specified during the installation. For example
+  `pip install rpy2[test]`. (issue #670)
+
+
+Release 3.4.1
+=============
+
+Bugs fixed
+----------
+
+- The file `requirements.txt` was missing from the source distribution
+  on pypi (issue #764).
+
+
 Release 3.4.0
 =============
+
+New Features
+------------
+
+- The mapping of the R C API now includes `Rf_isSymbol()`.
+
+- Singleton class :class:`rpy2.rinterface_lib.sexp.RVersion` to report
+  the R version for the embedded R.
+
+- :func:`rpy2.rinterface.local_context` to create a context manager
+  to evaluate R code within a local environment.
+
+- The `staticmethod` :meth:`rpy2.robjects.vectors.DateVector.isrinstance`
+  will tell whether an R objects is an R `Date` array.
 
 Changes
 -------
@@ -12,6 +204,30 @@ Changes
   :func:`rpy2.rinterface_lib._rinterface_capi._findvar_in_frame`
   (see fix to issue #710).
 
+- The functions :func:`rpy2.robjects.numpy.activate()` and
+  :func:`rpy2.robjects.pandas.activate()` are deprecated and will
+  be removed in rpy2-3.5.0.
+
+- :func:`rpy2.rinterface_lib.embedded.setinitialized` was renamed to
+  :func:`rpy2.rinterface_lib.embedded._setinitialized` to indicate that
+  one should not use it.
+
+- :meth:`rpy2.robjects.lib.ggplot2.vars` to map the R function
+  `ggplot2::vars` (issue #742).
+
+- Report correctly the class of R matrix objects with R>=4.0: it is
+  now `('matrix', 'array')`. With R<4.0 `('matrix')` is still reported.
+
+- The conversion of R/rpy2 objects to python objects using R class name mapping
+  is extended to more classes. The documentation about conversion covers the topic.
+
+- If `R_NilValue` is not null when the initialization of the embedded R is attempted,
+  it is now assumed that R was initialized through other means (e.g., an other C library in the
+  same process) and the C-level initialization is be skipped.
+
+- The conversion `rpy2py` is now working with any Python object inheriting
+  from `_rinterface_capi.SupportsSEXP`.
+
 Bugs fixed
 ----------
 
@@ -20,6 +236,61 @@ Bugs fixed
   when embedded in Python it creates a segfault. Calls are
   now wrapped in `R_ToplevelExec()` to limit the propagation
   of R exceptions. This solved issue #710.
+
+- More complete and correct mapping of R class names in
+  :func:`rpy2.rinterface_lib.sexp.rclass_get`.
+  
+- Initializing the embedded R caused the loss of ability to use Ctrl-C
+  to send SIGINT to a Python process (issue #723)
+
+- :mod:`rpy2.sitation` is now working when the environment variable
+  `R_HOME` is set even though R is not in the `PATH` or in the Windows
+  registry (issue #744).
+
+- Handling an R language objects could result in a segfault when its
+  R class was queried (issue #749).
+
+- The conversion of R string arrays to `numpy` arrays was leaving
+  R's `NA` value as R NA objects. NAs in this type of arrays are now
+  turned to `None` in the resulting `numpy` array (issue #751).
+
+- `rpy2.situation.get_rlib_path()` was returning an environment variable
+  with an invalid separator on Windows (mentioned in issue #754).
+
+- R strings encoded with something else than 'utf-8' could result in
+  errors when trying to convert to Python strings (issue #754).
+
+- Extracting documentation pages for R objects in packages could
+  generate spurious warnings when several "section" tags are present.
+
+- R `Date` arrays/vectors were not wrapped into
+  :class:`rpy2.robjects.vectors.DateVector` objects but left as
+  R arrays of floats (which they are at the C level).
+
+- The HTML representation of short R lists without names could
+  fail with an error.
+
+- The :meth:`__repr__` of `robjects`-level objects was not displaying
+  the rpy2 class the R object is mapped to.
+
+
+Release 3.3.6
+=============
+
+Bugs fixed
+----------
+
+- The unit tests for importing R packages with `lib_loc` were
+  broken (issue #720).
+
+- Trying to create a memoryview for an R array with complex values
+  was failing with an attribute error.
+
+- Fix the constructor of metaclass
+  :class:`rpy2.robjects.methods.RS4Auto_Type`.
+
+- Fix call to end the embedded R in :class:`rpy2.robjects.R.__cleanup__`
+  (issue #734).
 
 
 Release 3.3.5
@@ -44,7 +315,7 @@ Bugs fixed
   incompatibilities could be missed (issue #702).
 
 - :func:`rpy2.robjects.packages.importr` could fail when `lib_loc`
-  was specified `(issue #705).
+  was specified (issue #705).
 
 
 Release 3.3.3

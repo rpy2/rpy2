@@ -17,6 +17,13 @@ def test_init_invalid():
         ri.LangSexpVector(seq)
 
 
+def test_rclass():
+    rgetattr = ri.baseenv.find('::')
+    formula = rgetattr('stats', 'formula')
+    f = formula(ri.StrSexpVector(['y ~ x', ]))
+    assert f.rclass[0] == 'formula'
+
+
 def test_getitem():
     rgetattr = ri.baseenv.find('::')
     formula = rgetattr('stats', 'formula')

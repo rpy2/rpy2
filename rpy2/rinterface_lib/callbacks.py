@@ -7,16 +7,19 @@ that makes it possible."""
 from contextlib import contextmanager
 import logging
 import typing
+import os
 from rpy2.rinterface_lib import openrlib
 from rpy2.rinterface_lib import ffi_proxy
 from rpy2.rinterface_lib import conversion
 
 logger = logging.getLogger(__name__)
 
+_CCHAR_ENCODING = 'utf-8'
+
 
 # TODO: rename to "replace_in_module"
 @contextmanager
-def obj_in_module(module, name: str, obj):
+def obj_in_module(module, name: str, obj: typing.Any):
     obj_orig = getattr(module, name)
     setattr(module, name, obj)
     try:
@@ -34,7 +37,7 @@ _FLUSHCONSOLE_EXCEPTION_LOG = 'R[flush console]: %s'
 
 @ffi_proxy.callback(ffi_proxy._consoleflush_def,
                     openrlib._rinterface_cffi)
-def _consoleflush():
+def _consoleflush() -> None:
     try:
         consoleflush()
     except Exception as e:
@@ -60,7 +63,7 @@ _READCONSOLE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error with '
 def _consoleread(prompt, buf, n: int, addtohistory) -> int:
     success = None
     try:
-        s = conversion._cchar_to_str(prompt)
+        s = conversion._cchar_to_str(prompt, _CCHAR_ENCODING)
         reply = consoleread(s)
     except Exception as e:
         success = 0
@@ -69,7 +72,7 @@ def _consoleread(prompt, buf, n: int, addtohistory) -> int:
         return success
 
     try:
-        # TODO: Should the coding by dynamically extracted from
+        # TODO: Should the coding be dynamically extracted from
         # elsewhere ?
         reply_b = reply.encode('utf-8')
         reply_n = min(n, len(reply_b))
@@ -126,8 +129,8 @@ _WRITECONSOLE_EXCEPTION_LOG = 'R[write to console]: %s'
 
 @ffi_proxy.callback(ffi_proxy._consolewrite_ex_def,
                     openrlib._rinterface_cffi)
-def _consolewrite_ex(buf, n: int, otype) -> None:
-    s = conversion._cchar_to_str_with_maxlen(buf, maxlen=n)
+def _consolewrite_ex(buf, n: int, otype: int) -> None:
+    s = conversion._cchar_to_str_with_maxlen(buf, n, _CCHAR_ENCODING)
     try:
         if otype == 0:
             consolewrite_print(s)
@@ -148,7 +151,7 @@ _SHOWMESSAGE_EXCEPTION_LOG = 'R[show message]: %s'
 @ffi_proxy.callback(ffi_proxy._showmessage_def,
                     openrlib._rinterface_cffi)
 def _showmessage(buf):
-    s = conversion._cchar_to_str(buf)
+    s = conversion._cchar_to_str(buf, _CCHAR_ENCODING)
     try:
         showmessage(s)
     except Exception as e:
@@ -211,11 +214,17 @@ def _showfiles(nfiles: int, files, headers, wtitle, delete, pager) -> int:
     wtitle_str = None
     pager_str = None
     try:
-        wtitle_str = conversion._cchar_to_str(wtitle)
-        pager_str = conversion._cchar_to_str(pager)
+        wtitle_str = conversion._cchar_to_str(wtitle, _CCHAR_ENCODING)
+        pager_str = conversion._cchar_to_str(pager, _CCHAR_ENCODING)
         for i in range(nfiles):
-            filenames.append(conversion._cchar_to_str(files[i]))
-            headers_str.append(conversion._cchar_to_str(headers[i]))
+            filenames.append(
+                conversion._cchar_to_str(files[i],
+                                         _CCHAR_ENCODING)
+            )
+            headers_str.append(
+                conversion._cchar_to_str(headers[i],
+                                         _CCHAR_ENCODING)
+            )
     except Exception as e:
         logger.error(_SHOWFILE_INTERNAL_EXCEPTION_LOG, str(e))
 
@@ -268,6 +277,21 @@ _PROCESSEVENTS_EXCEPTION_LOG = 'R[processevents]: %s'
 def _processevents() -> None:
     try:
         processevents()
+    except KeyboardInterrupt:
+        # This function is a Python callback. A keyboard interruption is
+        # captured in Python, but R must be notified that an interruption
+        # occured so it can handle it.
+        rlib = openrlib.rlib
+        if os.name == 'nt':
+            # On Windows, the global C-level R variable `UserBreak` is set
+            # to one to notifying R that a `SIGBREAK` has been sent
+            # (see the R source - `src/gnuwin32/embeddedR.c:my_onintr()`).
+            rlib.UserBreak = 1
+        else:
+            # On UNIX-like, R can be notified that a SIGINT has been sent
+            # through the C-level R variable `R_interrupts_pending`
+            # (see the R source - `src/main/main.c:handleInterrupt()`)
+            rlib.R_interrupts_pending = 1
     except Exception as e:
         logger.error(_PROCESSEVENTS_EXCEPTION_LOG, str(e))
 
@@ -275,7 +299,7 @@ def _processevents() -> None:
 def busy(x: int) -> None:
     """R is busy.
 
-    :param x: TODO this is an integer but do not know what it does.
+    :param x: TODO this is an integer but I do not know what it does.
     """
     pass
 
@@ -285,7 +309,7 @@ _BUSY_EXCEPTION_LOG = 'R[busy]: %s'
 
 @ffi_proxy.callback(ffi_proxy._busy_def,
                     openrlib._rinterface_cffi)
-def _busy(which) -> None:
+def _busy(which: int) -> None:
     try:
         busy(which)
     except Exception as e:
@@ -324,7 +348,7 @@ _YESNOCANCEL_EXCEPTION_LOG = 'R[yesnocancel]: %s'
                     openrlib._rinterface_cffi)
 def _yesnocancel(question):
     try:
-        q = conversion._cchar_to_str(question)
+        q = conversion._cchar_to_str(question, _CCHAR_ENCODING)
         res = yesnocancel(q)
     except Exception as e:
         logger.error(_YESNOCANCEL_EXCEPTION_LOG, str(e))

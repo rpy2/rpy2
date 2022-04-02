@@ -11,7 +11,7 @@ _libpaths = rinterface.baseenv['.libPaths']
 _find_package = rinterface.baseenv['find.package']
 
 
-def get_packagepath(package):
+def get_packagepath(package: str) -> str:
     """ return the path to an R package installed """
     res = _find_package(rinterface.StrSexpVector((package, )))
     return res[0]
@@ -20,8 +20,8 @@ def get_packagepath(package):
 # Functions to translate R symbols to Python symbols.
 # The functions are in this module in order to facilitate
 # their access from other modules (without circular dependencies).
-# It not necessarily the absolute best place to have the functions though.
-def default_symbol_r2python(rname):
+# It is not necessarily the absolute best place to have the functions though.
+def default_symbol_r2python(rname: str) -> str:
     """Replace each dot (.) with an underscore (_)."""
     return rname.replace('.', '_')
 
@@ -39,8 +39,8 @@ def default_symbol_resolve(symbol_mapping):
 
     :param symbol_mapping: a :class:`dict` or dict-like object.
     :return: A 2-tuple with conflicts (a :class:`dict` mapping the new
-    symbol to a sequence of matching symbols) and resolutions (a
-    :class:`dict` mapping new).
+    symbol to a sequence of symbols already matching) and resolutions (a
+    :class:`dict` mapping new symbol).
     """
     # dict to store the Python symbol -> R symbols mapping causing problems.
     conflicts = dict()
@@ -56,12 +56,12 @@ def default_symbol_resolve(symbol_mapping):
                 # there is an R symbol identical to the proposed Python symbol;
                 # we keep that pair mapped, and change the Python symbol for
                 # the other R symbol(s) according to PEP 0008
-                for i, s in enumerate(r_symbols):
+                for i, r_name in enumerate(r_symbols):
                     if i == idx:
-                        resolutions[py_symbol] = [s, ]
+                        resolutions[py_symbol] = [r_name, ]
                     else:
                         new_py_symbol = py_symbol + '_'
-                        resolutions[new_py_symbol] = [s, ]
+                        resolutions[new_py_symbol] = [r_name, ]
             except ValueError:
                 # I am unsure about what to do at this point:
                 # add it as a conflict

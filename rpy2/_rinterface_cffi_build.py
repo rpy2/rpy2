@@ -1,4 +1,4 @@
-import cffi
+import cffi  # type: ignore
 import os
 import re
 import sys

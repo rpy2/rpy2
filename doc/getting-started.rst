@@ -7,4 +7,6 @@ Getting started
 
    overview
    introduction
-   notebooks
+   generated_rst/notebooks
+   generated_rst/pandas
+   generated_rst/dplyr

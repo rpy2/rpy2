@@ -1,4 +1,5 @@
 import os
+import typing
 import warnings
 from types import ModuleType
 from warnings import warn
@@ -64,19 +65,19 @@ def _eval_quiet(expr):
 # FIXME: should this be part of the API for rinterface ?
 #        (may be it is already the case and there is code
 #        duplicaton ?)
-def reval(string, envir=_globalenv):
+def reval(string: str,
+          envir: typing.Optional[rinterface.SexpEnvironment] = None):
     """ Evaluate a string as R code
     :param string: R code
     :type string: a :class:`str`
-    :param envir: an environment in which the environment should take
-      place (default: R's global environment)
+    :param envir: Optional environment to evaluate the R code.
     """
     p = rinterface.parse(string)
     res = _reval(p, envir=envir)
     return res
 
 
-def quiet_require(name, lib_loc=None):
+def quiet_require(name: str, lib_loc=None):
     """ Load an R package /quietly/ (suppressing messages to the console). """
     if lib_loc is None:
         lib_loc = "NULL"
@@ -164,8 +165,8 @@ class Package(ModuleType):
     _rpy2r = None
     _exported_names = None
     _symbol_r2python = None
-    __version__ = None
-    __rdata__ = None
+    __version__: typing.Optional[str] = None
+    __rdata__: typing.Optional[PackageData] = None
 
     def __init__(self, env, name, translation={},
                  exported_names=None, on_conflict='fail',
@@ -388,7 +389,7 @@ class InstalledPackages(object):
         self.colnames = self.lib_results.do_slot('dimnames')[1]  # column names
         self.lib_packname_i = self.colnames.index('Package')
 
-    def isinstalled(self, packagename):
+    def isinstalled(self, packagename: str):
         if not isinstance(packagename, rinterface.StrSexpVector):
             rinterface.StrSexpVector((packagename, ))
         else:
@@ -412,7 +413,7 @@ class InstalledPackages(object):
             yield tuple(lib_results[x*nrows+row_i] for x in colrg)
 
 
-def isinstalled(name,
+def isinstalled(name: str,
                 lib_loc=None):
     """
     Find whether an R package is installed
@@ -426,7 +427,7 @@ def isinstalled(name,
     return instapack.isinstalled(name)
 
 
-def importr(name,
+def importr(name: str,
             lib_loc=None,
             robject_translations={},
             signature_translation=True,
@@ -478,6 +479,7 @@ def importr(name,
                       **{'lib.loc': rinterface.StrSexpVector((lib_loc, ))})[0]
     if not ok:
         raise LibraryError("The R package %s could not be imported" % name)
+    exported_names: typing.Optional[typing.Set[str]]
     if _package_has_namespace(name,
                               _system_file(package=name)):
         env = _get_namespace(name)
@@ -488,6 +490,7 @@ def importr(name,
         exported_names = None
         version = None
 
+    pack: typing.Union[InstalledSTPackage, InstalledPackage]
     if signature_translation:
         pack = InstalledSTPackage(env, name,
                                   translation=robject_translations,

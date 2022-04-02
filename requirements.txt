@@ -1,5 +1,4 @@
 cffi>=1.10.0
 jinja2
-pytest
 pytz
 tzlocal

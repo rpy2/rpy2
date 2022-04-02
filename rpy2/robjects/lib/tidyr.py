@@ -6,7 +6,7 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     tidyr = importr('tidyr', on_conflict="warn")
 
-TARGET_VERSION = '1.0.'
+TARGET_VERSION = '1.1.'
 
 if not tidyr.__version__.startswith(TARGET_VERSION):
     warnings.warn(
@@ -34,7 +34,7 @@ def _wrap(rfunc):
 class DataFrame(dplyr.DataFrame):
     gather = _wrap(tidyr.gather)
     spread = _wrap(tidyr.spread)
+    summarize = dplyr._wrap(dplyr.summarize, None)
 
 
-DataFrame.summarize = dplyr._wrap(dplyr.summarize, None)
 DataFrame.summarise = DataFrame.summarize

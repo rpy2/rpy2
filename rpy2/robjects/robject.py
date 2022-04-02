@@ -1,6 +1,6 @@
+import abc
 import os
-import sys
-import tempfile
+import typing
 import weakref
 import rpy2.rinterface
 import rpy2.rinterface_lib.callbacks
@@ -10,10 +10,39 @@ from rpy2.robjects import conversion
 rpy2.rinterface.initr_simple()
 
 
+def _add_warn_reticulate_hook():
+    msg = """
+    WARNING: While the R package "reticulate" was developped after
+    Python-R bridges such as rpy2 already existed, it does not
+    consider that it could be called from a Python process. This
+    results in a quasi-obligatory segfault when rpy2 is evaluating
+    R code using reticulate. On the hand, rpy2 is accounting for the
+    fact that it might already be running embedded in a Python
+    process. This is why:
+    - Python -> rpy2 -> R -> reticulate: crashes
+    - R -> reticulate -> Python -> rpy2: works
+
+    The issue with reticulate is tracked here:
+    https://github.com/rstudio/reticulate/issues/208
+    """
+    rpy2.rinterface.evalr(f"""
+    setHook(packageEvent("reticulate", "onLoad"),
+            function(...) cat({repr(msg)}))
+    """)
+
+
+_add_warn_reticulate_hook()
+
+
 class RSlots(object):
     """ Attributes of an R object as a Python mapping.
 
-    The parent proxy to the underlying R object is held as a
+    R objects can have attributes (slots) that are identified
+    by a string key (a name) and that can have any R object
+    as the associated value. This class represents a view
+    of those attributes that is a Python mapping.
+
+    The proxy to the underlying "parent" R object is held as a
     weak reference. The attributes are therefore not protected
     from garbage collection unless bound to a Python symbol or
     in an other container.
@@ -24,11 +53,11 @@ class RSlots(object):
     def __init__(self, robj):
         self._robj = weakref.proxy(robj)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str):
         value = self._robj.do_slot(key)
         return conversion.rpy2py(value)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value):
         rpy2_value = conversion.py2rpy(value)
         self._robj.do_slot_assign(key, rpy2_value)
 
@@ -55,10 +84,10 @@ class RSlots(object):
 _get_exported_value = rpy2.rinterface.baseenv['::']
 
 
-class RObjectMixin(object):
-    """ Class to provide methods common to all RObject instances. """
+class RObjectMixin(abc.ABC):
+    """ Abstract class to provide methods common to all RObject instances. """
 
-    __rname__ = None
+    __rname__: typing.Optional[str] = None
 
     __tempfile = rpy2.rinterface.baseenv.find("tempfile")
     __file = rpy2.rinterface.baseenv.find("file")
@@ -81,16 +110,6 @@ class RObjectMixin(object):
             self.__slots = RSlots(self)
         return self.__slots
 
-    def __repr__(self):
-        try:
-            rclasses = ('R object with classes: {} mapped to:'
-                        .format(tuple(self.rclass)))
-        except Exception:
-            rclasses = 'Unable to fetch R classes.' + os.linesep
-        os.linesep.join((rclasses,
-                         repr(super())))
-        return rclasses
-
     def __str__(self):
         s = []
 
@@ -109,6 +128,17 @@ class RObjectMixin(object):
         super().__setstate__(rds)
         self.__dict__.update(__dict__)
 
+    def __repr__(self):
+        res = [super(RObjectMixin, self).__repr__()]
+        try:
+            res.append(
+                'R classes: {}'
+                .format(tuple(self.rclass))
+            )
+        except Exception:
+            res.append('Unable to fetch R classes.')
+        return os.linesep.join(res)
+
     def r_repr(self):
         """ String representation for an object that can be
         directly evaluated as R code.
@@ -124,7 +154,6 @@ class RObjectMixin(object):
 
         - wrapped in a Python tuple if a string (the R class
         is a vector of strings, and this is made for convenience)
-
         - wrapped in a StrSexpVector
 
         Note that when setting the class R may make a copy of
@@ -132,7 +161,8 @@ class RObjectMixin(object):
         If this must be avoided, and if the number of parent
         classes before and after the change are compatible,
         the class name can be changed in-place by replacing
-        vector elements."""
+        vector elements.
+        """
 
         try:
             res = super(RObjectMixin, self).rclass

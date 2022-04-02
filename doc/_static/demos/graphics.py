@@ -1,6 +1,6 @@
 
 #-- setup-begin
-from rpy2 import robjects
+import rpy2.robjects as robjects
 from rpy2.robjects import Formula, Environment
 from rpy2.robjects.vectors import IntVector, FloatVector
 from rpy2.robjects.lib import grid
@@ -15,7 +15,6 @@ grdevices = importr('grDevices')
 base = importr('base')
 datasets = importr('datasets')
 
-grid.activate()
 #-- setup-end
 
 ANTIALIAS="subpixel"
@@ -136,6 +135,7 @@ pp.plot()
 grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2geombin2d.png',
               width = 1000, height = 350, antialias=ANTIALIAS, type="cairo")
+
 grid.newpage()
 grid.viewport(layout=grid.layout(1, 3)).push()
 
@@ -398,7 +398,7 @@ params = (('lm', 'y ~ x'),
           ('loess', 'y ~ x'))
           
 for col_i in (1,2,3):
-   vp = grid.viewport(**{'layout.pos.col':col_i, 'layout.pos.row': 1})
+   vp = grid.viewport(**{'layout.pos.col': col_i, 'layout.pos.row': 1})
    method, formula = params[col_i-1]
    gp = ggplot2.ggplot(mtcars)
    pp = (gp +
@@ -479,7 +479,7 @@ pp.plot()
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2perfcolor_both.png',
-              width = 900, height = 412, antialias=ANTIALIAS, type="cairo")
+              width=900, height=412, antialias=ANTIALIAS, type="cairo")
 grid.newpage()
 grid.viewport(layout=grid.layout(1, 2)).push()
 #-- ggplot2perfcolor-begin
@@ -565,34 +565,34 @@ df.names[tuple(df.colnames).index('value')] = 'Performance'
 # scale_colour_manual: associate color datasets with actual colors and names
 # geom_point and geom_line: thicker points and lines
 # scale_linetype_manual: associate perf types with linetypes
-for col_i, yscale in enumerate(['log', 'linear']): 
-  vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 1})
-  pp = (ggplot2.ggplot(df) +
-        ggplot2.aes_string(x='variable', y='Performance', color='color', 
-                           shape='PerfType', linetype='PerfType') +
-        ggplot2.ggtitle('Performance vs. Color') +
-        ggplot2.theme(**{'legend.key.size' : ro.r.unit(1.4, "lines") } ) +
-        ggplot2.scale_colour_manual("Color", 
-                                    values=colormap,
-                                    breaks=colormap.names,
-                                    labels=[elt[1] for elt in 
-                                            colormap_labels]) +
-        ggplot2.geom_point(size=3) +
-        ggplot2.scale_linetype_manual(values=linemap) +
-        ggplot2.geom_line(size=1.5))
-
-  # custom y-axis lines: major lines ("breaks") are every 10^n; 9
-  #   minor lines ("minor_breaks") between major lines
-  if (yscale == 'log'):
-    pp = (pp +
-          ggplot2.scale_y_log10(
-             breaks = ro.r("10^(%d:%d)" % (gflops_range[0], 
-                                           gflops_range[1])),
-             minor_breaks = 
-             ro.r("rep(10^(%d:%d), each=9) * rep(1:9, %d)" %
-                  (gflops_range[0] - 1, gflops_range[1], 
-                   gflops_range[1] - gflops_range[0])))
-    )
+for col_i, yscale in enumerate(['log', 'linear']):
+   vp = grid.viewport(**{'layout.pos.col': col_i+1, 'layout.pos.row': 1})
+   pp = (ggplot2.ggplot(df) +
+         ggplot2.aes_string(x='variable', y='Performance', color='color', 
+                            shape='PerfType', linetype='PerfType') +
+         ggplot2.ggtitle('Performance vs. Color') +
+         ggplot2.theme(**{'legend.key.size' : ro.r.unit(1.4, "lines") } ) +
+         ggplot2.scale_colour_manual("Color", 
+                                     values=colormap,
+                                     breaks=colormap.names,
+                                     labels=[elt[1] for elt in 
+                                             colormap_labels]) +
+         ggplot2.geom_point(size=3) +
+         ggplot2.scale_linetype_manual(values=linemap) +
+         ggplot2.geom_line(size=1.5))
+   
+   # custom y-axis lines: major lines ("breaks") are every 10^n; 9
+   #   minor lines ("minor_breaks") between major lines
+   if (yscale == 'log'):
+      pp = (pp +
+            ggplot2.scale_y_log10(
+               breaks = ro.r("10^(%d:%d)" % (gflops_range[0], 
+                                             gflops_range[1])),
+               minor_breaks = 
+               ro.r("rep(10^(%d:%d), each=9) * rep(1:9, %d)" %
+                    (gflops_range[0] - 1, gflops_range[1], 
+                     gflops_range[1] - gflops_range[0])))
+      )
 
   #pp.plot(vp = vp)
 #-- ggplot2perfcolor-end
@@ -661,8 +661,8 @@ for col_i, trans in enumerate(("identity", "log2", "sqrt")):
    vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 1})
    pp = (gp +
          ggplot2.aes_string(x='carat', y='price') +
-         ggplot2.geom_point(alpha = 0.1, size = 1) +
-         ggplot2.coord_trans(x = trans, y = trans) +
+         ggplot2.geom_point(alpha=0.1, size=1) +
+         ggplot2.coord_trans(x=trans, y=trans) +
          ggplot2.ggtitle("%s on axis" % trans))
    # plot into the viewport
    pp.plot(vp = vp)
@@ -671,7 +671,7 @@ for col_i, trans in enumerate(("identity", "log2", "sqrt")):
    vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 2})
    pp = (gp +
          ggplot2.aes_string(x='%s(carat)' % trans, y='%s(price)' % trans) +
-         ggplot2.geom_point(alpha = 0.1, size = 1) +
+         ggplot2.geom_point(alpha=0.1, size=1) +
          ggplot2.ggtitle("%s(<variable>)" % trans))
    pp.plot(vp = vp)
 
@@ -679,12 +679,12 @@ for col_i, trans in enumerate(("identity", "log2", "sqrt")):
 
 #-- ggplot2mtcarscoordtransannot-begin
 vp = grid.viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
-g = grid.rect(x = grid.unit(0.7, "npc"),
-              y = grid.unit(0.2, "npc"),
-              width = grid.unit(0.1, "npc"),
-              height = grid.unit(0.1, "npc"),
-              gp = grid.gpar(fill = "red"),
-              vp = vp)
+g = grid.rect(x=grid.unit(0.7, "npc"),
+              y=grid.unit(0.2, "npc"),
+              width=grid.unit(0.1, "npc"),
+              height=grid.unit(0.1, "npc"),
+              gp=grid.gpar(fill = "red"),
+              vp=vp)
 g.draw()
 #-- ggplot2mtcarscoordtransannot-end
 

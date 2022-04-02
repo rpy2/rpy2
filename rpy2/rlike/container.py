@@ -182,6 +182,11 @@ class TaggedList(list):
         resitems = super(TaggedList, self).__imul__(y)
         return self
 
+    def __mul__(self, y):
+        restags = self.__tags__ * y.__tags__
+        resitems = super(TaggedList, self).__mul__(y)
+        return type(self)(tuple(resitems), tags=restags)
+
     @staticmethod
     def from_items(tagval):
         res = TaggedList([])

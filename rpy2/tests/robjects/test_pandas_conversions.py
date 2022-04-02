@@ -9,13 +9,25 @@ from rpy2 import robjects
 from rpy2.robjects import vectors
 from rpy2.robjects import conversion
 
-has_pandas = True
+
+class MockNamespace(object):
+    def __getattr__(self, name):
+        return None
+
+
+has_pandas = False
 try:
     import pandas
-    import numpy
     has_pandas = True
 except:
-    has_pandas = False
+    pandas = MockNamespace()
+
+has_numpy = False
+try:
+    import numpy
+    has_numpy = True
+except:
+    numpy = MockNamespace()
 
 if has_pandas:
     import rpy2.robjects.pandas2ri as rpyp
@@ -90,7 +102,12 @@ class TestPandasConversions(object):
     @pytest.mark.parametrize('dtype',
                              ('i',
                               numpy.int32 if has_pandas else None,
+                              numpy.int8 if has_pandas else None,
+                              numpy.int16 if has_pandas else None,
+                              numpy.int32 if has_pandas else None,
                               numpy.int64 if has_pandas else None,
+                              numpy.uint8 if has_pandas else None,
+                              numpy.uint16 if has_pandas else None,
                               pandas.Int32Dtype if has_pandas else None,
                               pandas.Int64Dtype if has_pandas else None))
     def test_series_int(self, dtype):
@@ -102,8 +119,9 @@ class TestPandasConversions(object):
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.IntSexpVector)
 
-    @pytest.mark.parametrize('dtype', (pandas.Int32Dtype() if has_pandas else None,
-                                       pandas.Int64Dtype() if has_pandas else None))
+    @pytest.mark.parametrize('dtype',
+                             (pandas.Int32Dtype() if has_pandas else None,
+                              pandas.Int64Dtype() if has_pandas else None))
     def test_dataframe_int_nan(self, dtype):
         a = pandas.DataFrame([(numpy.NaN,)], dtype=dtype, columns=['z'])
         with localconverter(default_converter + rpyp.converter) as cv:
@@ -122,6 +140,8 @@ class TestPandasConversions(object):
         with localconverter(default_converter + rpyp.converter) as _:
             c = robjects.conversion.rpy2py(b)
 
+    @pytest.mark.skipif(not (has_numpy and has_pandas),
+                        reason='Packages numpy and pandas must be installed.')
     @pytest.mark.parametrize(
         'data',
         (['x', 'y', 'z'],
@@ -130,7 +150,7 @@ class TestPandasConversions(object):
          ['x', 'y', pandas.NA])
     )
     @pytest.mark.parametrize(
-        'dtype', ['O', pandas.StringDtype()]
+        'dtype', ['O', pandas.StringDtype() if has_pandas else None]
     )
     def test_series_obj_str(self, data, dtype):
         Series = pandas.core.series.Series
@@ -154,12 +174,12 @@ class TestPandasConversions(object):
 
     def test_series_obj_bool(self):
         Series = pandas.core.series.Series
-        s = Series([True, False, True], index=['a', 'b', 'c'])
+        s = Series([True, False, True], index=['a', 'b', 'c'], dtype='bool')
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.BoolSexpVector)
 
-        s = Series([True, False, None], index=['a', 'b', 'c'])
+        s = Series([True, False, None], index=['a', 'b', 'c'], dtype='bool')
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.py2rpy(s)
         assert isinstance(rp_s, rinterface.BoolSexpVector)
@@ -334,14 +354,14 @@ class TestPandasConversions(object):
         s = s.split('\n')
         repr_str = ('[BoolSex..., IntSexp..., FloatSe..., '
                     'ByteSex..., StrSexp...]')
-        assert repr_str == s[1].strip()
+        assert repr_str == s[2].strip()
 
         # Try again with the conversion still active.
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_df = robjects.conversion.py2rpy(pd_df)
             s = repr(rp_df)  # used to fail with a TypeError.
         s = s.split('\n')
-        assert repr_str == s[1].strip()
+        assert repr_str == s[2].strip()
 
     def test_ri2pandas(self):
         rdataf = robjects.r('data.frame(a=1:2, '

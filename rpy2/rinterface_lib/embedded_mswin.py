@@ -1,18 +1,18 @@
 import sys
 import typing
-from . import embedded
-from . import callbacks
-from . import openrlib
+from rpy2.rinterface_lib import embedded
+from rpy2.rinterface_lib import callbacks
+from rpy2.rinterface_lib import openrlib
 
 ffi = openrlib.ffi
 
 # These constants are default values from R sources
-_DEFAULT_VSIZE = 67108864  # vector heap size
-_DEFAULT_NSIZE = 350000  # language heap size
-_DEFAULT_MAX_VSIZE = sys.maxsize  # max vector heap size
-_DEFAULT_MAX_NSIZE = 50000000  # max language heap size
-_DEFAULT_PPSIZE = 50000  # stack size
-_DEFAULT_C_STACK_LIMIT = -1
+_DEFAULT_VSIZE: int = 67108864  # vector heap size
+_DEFAULT_NSIZE: int = 350000  # language heap size
+_DEFAULT_MAX_VSIZE: int = sys.maxsize  # max vector heap size
+_DEFAULT_MAX_NSIZE: int = 50000000  # max language heap size
+_DEFAULT_PPSIZE: int = 50000  # stack size
+_DEFAULT_C_STACK_LIMIT: int = -1
 
 
 def _initr_win32(
@@ -30,11 +30,12 @@ def _initr_win32(
         n_options = len(options_c)
         n_options_c = ffi.cast('int', n_options)
         status = openrlib.rlib.Rf_initEmbeddedR(n_options_c, options_c)
-        embedded.setinitialized()
+        embedded._setinitialized()
 
         embedded.rstart = ffi.new('Rstart')
         rstart = embedded.rstart
-        rstart.rhome = openrlib.rlib.get_R_HOME()
+        rhome = openrlib.rlib.get_R_HOME()
+        rstart.rhome = rhome
         rstart.home = openrlib.rlib.getRUser()
         rstart.CharacterMode = openrlib.rlib.LinkDLL
         if _want_setcallbacks:

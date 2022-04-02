@@ -12947,8 +12947,13 @@ ul.typeahead-list  > li > a.pull-right {
 /*# sourceMappingURL=style.min.css.map */
     </style>
 <style type="text/css">
-    .highlight .hll { background-color: #ffffcc }
-.highlight  { background: #f8f8f8; }
+    pre { line-height: 125%; margin: 0; }
+td.linenos pre { color: #000000; background-color: #f0f0f0; padding: 0 5px 0 5px; }
+span.linenos { color: #000000; background-color: #f0f0f0; padding: 0 5px 0 5px; }
+td.linenos pre.special { color: #000000; background-color: #ffffc0; padding: 0 5px 0 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding: 0 5px 0 5px; }
+.highlight .hll { background-color: #ffffcc }
+.highlight { background: #f8f8f8; }
 .highlight .c { color: #408080; font-style: italic } /* Comment */
 .highlight .err { border: 1px solid #FF0000 } /* Error */
 .highlight .k { color: #008000; font-weight: bold } /* Keyword */
@@ -13079,8 +13084,8 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">rpy2.ipython</span> <span class="k">import</span> <span class="n">html</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">rpy2.ipython</span> <span class="kn">import</span> <span class="n">html</span>
 <span class="n">html</span><span class="o">.</span><span class="n">html_rdataframe</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">html</span><span class="o">.</span><span class="n">html_rdataframe</span><span class="p">,</span> <span class="n">table_class</span><span class="o">=</span><span class="s2">&quot;docutils&quot;</span><span class="p">)</span>
 </pre></div>
 
@@ -13103,7 +13108,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">rpy2.robjects.packages</span> <span class="k">import</span> <span class="n">importr</span><span class="p">,</span> <span class="n">data</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">rpy2.robjects.packages</span> <span class="kn">import</span> <span class="n">importr</span><span class="p">,</span> <span class="n">data</span>
 <span class="n">datasets</span> <span class="o">=</span> <span class="n">importr</span><span class="p">(</span><span class="s1">&#39;datasets&#39;</span><span class="p">)</span>
 <span class="n">mtcars_env</span> <span class="o">=</span> <span class="n">data</span><span class="p">(</span><span class="n">datasets</span><span class="p">)</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s1">&#39;mtcars&#39;</span><span class="p">)</span>
 <span class="n">mtcars</span> <span class="o">=</span> <span class="n">mtcars_env</span><span class="p">[</span><span class="s1">&#39;mtcars&#39;</span><span class="p">]</span>
@@ -13151,7 +13156,8 @@ R data frames).</p>
 <div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">rpy2.robjects.lib.dplyr</span> <span class="k">import</span> <span class="n">DataFrame</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">rpy2.robjects.lib.dplyr</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="kn">import</span> <span class="n">rl</span>
 </pre></div>
 
     </div>
@@ -13172,11 +13178,13 @@ R data frames).</p>
 <div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf</span> <span class="o">=</span> <span class="p">(</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">mtcars</span><span class="p">)</span><span class="o">.</span>
-         <span class="nb">filter</span><span class="p">(</span><span class="s1">&#39;gear&gt;3&#39;</span><span class="p">)</span><span class="o">.</span>
-         <span class="n">mutate</span><span class="p">(</span><span class="n">powertoweight</span><span class="o">=</span><span class="s1">&#39;hp*36/wt&#39;</span><span class="p">)</span><span class="o">.</span>
-         <span class="n">group_by</span><span class="p">(</span><span class="s1">&#39;gear&#39;</span><span class="p">)</span><span class="o">.</span>
-         <span class="n">summarize</span><span class="p">(</span><span class="n">mean_ptw</span><span class="o">=</span><span class="s1">&#39;mean(powertoweight)&#39;</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataf</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">DataFrame</span><span class="p">(</span><span class="n">mtcars</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;gear&gt;3&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="n">powertoweight</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;hp*36/wt&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;gear&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">summarize</span><span class="p">(</span><span class="n">mean_ptw</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;mean(powertoweight)&#39;</span><span class="p">))</span>
+<span class="p">)</span>
 
 <span class="n">dataf</span>
 </pre></div>
@@ -13188,6 +13196,17 @@ R data frames).</p>
 <div class="output_wrapper">
 <div class="output">
 
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>`summarise()` ungrouping output (override with `.groups` argument)
+</pre>
+</div>
+</div>
 
 <div class="output_area">
 
@@ -13245,17 +13264,17 @@ R data frames).</p>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># currently no longer working</span>
-<span class="kn">from</span> <span class="nn">rpy2.robjects.lib.dplyr</span> <span class="k">import</span> <span class="p">(</span><span class="nb">filter</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects.lib.dplyr</span> <span class="kn">import</span> <span class="p">(</span><span class="nb">filter</span><span class="p">,</span>
                                      <span class="n">mutate</span><span class="p">,</span>
                                      <span class="n">group_by</span><span class="p">,</span>
                                      <span class="n">summarize</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="kc">False</span><span class="p">:</span>
     <span class="n">dataf</span> <span class="o">=</span> <span class="p">(</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">mtcars</span><span class="p">)</span> <span class="o">&gt;&gt;</span>
-             <span class="nb">filter</span><span class="p">(</span><span class="s1">&#39;gear&gt;3&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span>
-             <span class="n">mutate</span><span class="p">(</span><span class="n">powertoweight</span><span class="o">=</span><span class="s1">&#39;hp*36/wt&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span>
-             <span class="n">group_by</span><span class="p">(</span><span class="s1">&#39;gear&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span>
-             <span class="n">summarize</span><span class="p">(</span><span class="n">mean_ptw</span><span class="o">=</span><span class="s1">&#39;mean(powertoweight)&#39;</span><span class="p">))</span>
+             <span class="nb">filter</span><span class="p">(</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;gear&gt;3&#39;</span><span class="p">))</span> <span class="o">&gt;&gt;</span>
+             <span class="n">mutate</span><span class="p">(</span><span class="n">powertoweight</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;hp*36/wt&#39;</span><span class="p">))</span> <span class="o">&gt;&gt;</span>
+             <span class="n">group_by</span><span class="p">(</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;gear&#39;</span><span class="p">))</span> <span class="o">&gt;&gt;</span>
+             <span class="n">summarize</span><span class="p">(</span><span class="n">mean_ptw</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;mean(powertoweight)&#39;</span><span class="p">)))</span>
 
     <span class="n">dataf</span>
 </pre></div>
@@ -13268,8 +13287,9 @@ R data frames).</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The strings passed to the dplyr function are evaluated as expression,
-just like this is happening when using dplyr in R. This means that
+<p>The function <code>rl</code> creates unevaluated R language objects, which
+are then consummed by the <code>dplyr</code> function, just like it would be
+happening when using <code>dplyr</code> in R itself. This means that
 when writing <code>mean(powertoweight)</code> the R function <code>mean()</code> is used.</p>
 <p>Using a Python function is not too difficult though. We can just
 call Python back from R. To achieve this we simply
@@ -13285,7 +13305,7 @@ use the decorator <code>rternalize</code>.</p>
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Define a python function, and make</span>
 <span class="c1"># it a function R can use through `rternalize`</span>
-<span class="kn">from</span> <span class="nn">rpy2.rinterface</span> <span class="k">import</span> <span class="n">rternalize</span>
+<span class="kn">from</span> <span class="nn">rpy2.rinterface</span> <span class="kn">import</span> <span class="n">rternalize</span>
 <span class="nd">@rternalize</span>
 <span class="k">def</span> <span class="nf">mean_np</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="kn">import</span> <span class="nn">statistics</span>
@@ -13293,17 +13313,19 @@ use the decorator <code>rternalize</code>.</p>
 
 <span class="c1"># Bind that function to a symbol in R&#39;s</span>
 <span class="c1"># global environment</span>
-<span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="k">import</span> <span class="n">globalenv</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="kn">import</span> <span class="n">globalenv</span>
 <span class="n">globalenv</span><span class="p">[</span><span class="s1">&#39;mean_np&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_np</span>
 
 <span class="c1"># Write a dplyr chain of operations,</span>
 <span class="c1"># using our Python function `mean_np`</span>
-<span class="n">dataf</span> <span class="o">=</span> <span class="p">(</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">mtcars</span><span class="p">)</span><span class="o">.</span>
-         <span class="nb">filter</span><span class="p">(</span><span class="s1">&#39;gear&gt;3&#39;</span><span class="p">)</span><span class="o">.</span>
-         <span class="n">mutate</span><span class="p">(</span><span class="n">powertoweight</span><span class="o">=</span><span class="s1">&#39;hp*36/wt&#39;</span><span class="p">)</span><span class="o">.</span>
-         <span class="n">group_by</span><span class="p">(</span><span class="s1">&#39;gear&#39;</span><span class="p">)</span><span class="o">.</span>
-         <span class="n">summarize</span><span class="p">(</span><span class="n">mean_ptw</span><span class="o">=</span><span class="s1">&#39;mean(powertoweight)&#39;</span><span class="p">,</span>
-                   <span class="n">mean_np_ptw</span><span class="o">=</span><span class="s1">&#39;mean_np(powertoweight)&#39;</span><span class="p">))</span>
+<span class="n">dataf</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">DataFrame</span><span class="p">(</span><span class="n">mtcars</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;gear&gt;3&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="n">powertoweight</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;hp*36/wt&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;gear&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">summarize</span><span class="p">(</span><span class="n">mean_ptw</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;mean(powertoweight)&#39;</span><span class="p">),</span>
+               <span class="n">mean_np_ptw</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;mean_np(powertoweight)&#39;</span><span class="p">))</span>
+<span class="p">)</span>
 
 <span class="n">dataf</span>
 </pre></div>
@@ -13315,6 +13337,17 @@ use the decorator <code>rternalize</code>.</p>
 <div class="output_wrapper">
 <div class="output">
 
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>`summarise()` ungrouping output (override with `.groups` argument)
+</pre>
+</div>
+</div>
 
 <div class="output_area">
 
@@ -13365,7 +13398,8 @@ use the decorator <code>rternalize</code>.</p>
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>It is also possible to carry this out without having to
-place the custom function in R's global environment.</p>
+place the custom function in R's global environment, although
+this is not straightforward.</p>
 
 </div>
 </div>
@@ -13375,31 +13409,35 @@ place the custom function in R's global environment.</p>
 <div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">del</span><span class="p">(</span><span class="n">globalenv</span><span class="p">[</span><span class="s1">&#39;mean_np&#39;</span><span class="p">])</span>
-</pre></div>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># First we delete our Python callback in globalenv to</span>
+<span class="c1"># ensure that we are picking up our callback in our</span>
+<span class="c1"># specific environment rather than this one.</span>
+<span class="k">del</span><span class="p">(</span><span class="n">globalenv</span><span class="p">[</span><span class="s1">&#39;mean_np&#39;</span><span class="p">])</span>
 
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">rpy2.robjects.lib.dplyr</span> <span class="k">import</span> <span class="n">StringInEnv</span>
-<span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="k">import</span> <span class="n">Environment</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="kn">import</span> <span class="n">Environment</span>
 <span class="n">my_env</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">()</span>
 <span class="n">my_env</span><span class="p">[</span><span class="s1">&#39;mean_np&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_np</span>
 
-<span class="n">dataf</span> <span class="o">=</span> <span class="p">(</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">mtcars</span><span class="p">)</span><span class="o">.</span>
-         <span class="nb">filter</span><span class="p">(</span><span class="s1">&#39;gear&gt;3&#39;</span><span class="p">)</span><span class="o">.</span>
-         <span class="n">mutate</span><span class="p">(</span><span class="n">powertoweight</span><span class="o">=</span><span class="s1">&#39;hp*36/wt&#39;</span><span class="p">)</span><span class="o">.</span>
-         <span class="n">group_by</span><span class="p">(</span><span class="s1">&#39;gear&#39;</span><span class="p">)</span><span class="o">.</span>
-         <span class="n">summarize</span><span class="p">(</span><span class="n">mean_ptw</span><span class="o">=</span><span class="s1">&#39;mean(powertoweight)&#39;</span><span class="p">,</span>
-                   <span class="n">mean_np_ptw</span><span class="o">=</span><span class="n">StringInEnv</span><span class="p">(</span><span class="s1">&#39;mean_np(powertoweight)&#39;</span><span class="p">,</span>
-                                           <span class="n">my_env</span><span class="p">)))</span>
+
+<span class="c1"># Create an rlang &quot;quosure&quot; object within</span>
+<span class="c1"># a given environment. We use the R package</span>
+<span class="c1"># rlang used by dplyr.</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects.lib.dplyr</span> <span class="kn">import</span> <span class="n">rlang</span>
+
+<span class="n">myquo</span> <span class="o">=</span> <span class="n">rlang</span><span class="o">.</span><span class="n">quo</span><span class="o">.</span><span class="n">rcall</span><span class="p">(</span>
+    <span class="p">[(</span><span class="kc">None</span><span class="p">,</span> <span class="n">rl</span><span class="p">(</span><span class="s1">&#39;mean_np(rlang::enexpr(powertoweight))&#39;</span><span class="p">))],</span>
+    <span class="n">environment</span><span class="o">=</span><span class="n">my_env</span>
+<span class="p">)</span>
+
+<span class="n">dataf</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">DataFrame</span><span class="p">(</span><span class="n">mtcars</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;gear&gt;3&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="n">powertoweight</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;hp*36/wt&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;gear&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">summarize</span><span class="p">(</span>
+        <span class="n">mean_ptw</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;mean(powertoweight)&#39;</span><span class="p">),</span>
+        <span class="n">mean_np_ptw</span><span class="o">=</span><span class="n">myquo</span><span class="p">)</span>
+<span class="p">)</span>
 
 <span class="n">dataf</span>
 </pre></div>
@@ -13414,7 +13452,18 @@ place the custom function in R's global environment.</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[9]:</div>
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>`summarise()` ungrouping output (override with `.groups` argument)
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[8]:</div>
 
 
 
@@ -13471,10 +13520,10 @@ the original implementation of <code>dplyr</code>, it <em>just works</em>.</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">rpy2.robjects.lib.dplyr</span> <span class="k">import</span> <span class="n">dplyr</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">rpy2.robjects.lib.dplyr</span> <span class="kn">import</span> <span class="n">dplyr</span>
 <span class="c1"># in-memory SQLite database broken in dplyr&#39;s src_sqlite</span>
 <span class="c1"># db = dplyr.src_sqlite(&quot;:memory:&quot;)</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
@@ -13482,11 +13531,11 @@ the original implementation of <code>dplyr</code>, it <em>just works</em>.</p>
     <span class="n">db</span> <span class="o">=</span> <span class="n">dplyr</span><span class="o">.</span><span class="n">src_sqlite</span><span class="p">(</span><span class="n">db_fh</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
     <span class="c1"># copy the table to that database</span>
     <span class="n">dataf_db</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">mtcars</span><span class="p">)</span><span class="o">.</span><span class="n">copy_to</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;mtcars&quot;</span><span class="p">)</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="p">(</span><span class="n">dataf_db</span><span class="o">.</span>
-           <span class="nb">filter</span><span class="p">(</span><span class="s1">&#39;gear&gt;3&#39;</span><span class="p">)</span><span class="o">.</span>
-           <span class="n">mutate</span><span class="p">(</span><span class="n">powertoweight</span><span class="o">=</span><span class="s1">&#39;hp*36/wt&#39;</span><span class="p">)</span><span class="o">.</span>
-           <span class="n">group_by</span><span class="p">(</span><span class="s1">&#39;gear&#39;</span><span class="p">)</span><span class="o">.</span>
-           <span class="n">summarize</span><span class="p">(</span><span class="n">mean_ptw</span><span class="o">=</span><span class="s1">&#39;mean(powertoweight)&#39;</span><span class="p">))</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">(</span><span class="n">dataf_db</span>
+           <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;gear&gt;3&#39;</span><span class="p">))</span>
+           <span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="n">powertoweight</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;hp*36/wt&#39;</span><span class="p">))</span>
+           <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;gear&#39;</span><span class="p">))</span>
+           <span class="o">.</span><span class="n">summarize</span><span class="p">(</span><span class="n">mean_ptw</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;mean(powertoweight)&#39;</span><span class="p">)))</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
 <span class="c1"># </span>
 </pre></div>
@@ -13506,7 +13555,7 @@ the original implementation of <code>dplyr</code>, it <em>just works</em>.</p>
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre><span class="ansi-black-intense-fg"># Source:   lazy query [?? x 2]</span>
-<span class="ansi-black-intense-fg"># Database: sqlite 3.30.1 [/tmp/tmpi6hg0ve6]</span>
+<span class="ansi-black-intense-fg"># Database: sqlite 3.33.0 [/tmp/tmp91uwb_jm]</span>
    gear mean_ptw
   <span class="ansi-black-intense-fg">&lt;dbl&gt;</span>    <span class="ansi-black-intense-fg">&lt;dbl&gt;</span>
 <span class="ansi-black-intense-fg">1</span>     4    <span class="ansi-underline">1</span>237.
@@ -13531,7 +13580,7 @@ to us. If we want to see the SQL code generated that's:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">silent</span> <span class="o">=</span> <span class="n">dplyr</span><span class="o">.</span><span class="n">show_query</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
@@ -13554,9 +13603,8 @@ to us. If we want to see the SQL code generated that's:</p>
 <pre>&lt;SQL&gt;
 SELECT `gear`, AVG(`powertoweight`) AS `mean_ptw`
 FROM (SELECT `mpg`, `cyl`, `disp`, `hp`, `drat`, `wt`, `qsec`, `vs`, `am`, `gear`, `carb`, `hp` * 36.0 / `wt` AS `powertoweight`
-FROM (SELECT *
 FROM `mtcars`
-WHERE (`gear` &gt; 3.0)))
+WHERE (`gear` &gt; 3.0))
 GROUP BY `gear`
 </pre>
 </div>
@@ -13577,12 +13625,12 @@ completing the "lexical loan" of the dplyr vocabulary from R.</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="k">import</span> <span class="n">pandas2ri</span>
-<span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="k">import</span> <span class="n">default_converter</span>
-<span class="kn">from</span> <span class="nn">rpy2.robjects.conversion</span> <span class="k">import</span> <span class="n">localconverter</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="kn">import</span> <span class="n">pandas2ri</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="kn">import</span> <span class="n">default_converter</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects.conversion</span> <span class="kn">import</span> <span class="n">localconverter</span>
 
 <span class="c1"># Using a conversion context in which the pandas conversion is</span>
 <span class="c1"># added to the default conversion rules, the rpy2 object</span>
@@ -13627,15 +13675,15 @@ on it.</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">localconverter</span><span class="p">(</span><span class="n">default_converter</span> <span class="o">+</span> <span class="n">pandas2ri</span><span class="o">.</span><span class="n">converter</span><span class="p">)</span> <span class="k">as</span> <span class="n">cv</span><span class="p">:</span>
-    <span class="n">dataf</span> <span class="o">=</span> <span class="p">(</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">pd_mtcars</span><span class="p">)</span><span class="o">.</span>
-             <span class="nb">filter</span><span class="p">(</span><span class="s1">&#39;gear&gt;=3&#39;</span><span class="p">)</span><span class="o">.</span>
-             <span class="n">mutate</span><span class="p">(</span><span class="n">powertoweight</span><span class="o">=</span><span class="s1">&#39;hp*36/wt&#39;</span><span class="p">)</span><span class="o">.</span>
-             <span class="n">group_by</span><span class="p">(</span><span class="s1">&#39;gear&#39;</span><span class="p">)</span><span class="o">.</span>
-             <span class="n">summarize</span><span class="p">(</span><span class="n">mean_ptw</span><span class="o">=</span><span class="s1">&#39;mean(powertoweight)&#39;</span><span class="p">))</span>
+    <span class="n">dataf</span> <span class="o">=</span> <span class="p">(</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">pd_mtcars</span><span class="p">)</span>
+             <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;gear&gt;=3&#39;</span><span class="p">))</span>
+             <span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="n">powertoweight</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;hp*36/wt&#39;</span><span class="p">))</span>
+             <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;gear&#39;</span><span class="p">))</span>
+             <span class="o">.</span><span class="n">summarize</span><span class="p">(</span><span class="n">mean_ptw</span><span class="o">=</span><span class="n">rl</span><span class="p">(</span><span class="s1">&#39;mean(powertoweight)&#39;</span><span class="p">)))</span>
 
 <span class="n">dataf</span>
 </pre></div>
@@ -13650,7 +13698,7 @@ on it.</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[13]:</div>
+    <div class="prompt output_prompt">Out[12]:</div>
 
 
 

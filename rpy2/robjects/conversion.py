@@ -22,16 +22,42 @@ class NameClassMap(object):
 
     R class names, as returned for example by the R function
     `class()`, are arrays of strings representing the
-    lineage. This is an helper class to map a given R class
-    (as a sequence of names) to a Python class."""
+    class lineage. This class helps mapping the class of an R
+    object (a sequence of names) to a Python class.
 
-    _default: typing.Type
-    _map: typing.Dict[str, typing.Type]
+    For example, R data frames are of class "data.frame", but are
+    R lists (VECSEXP) at the C level. The NameClassMap for that
+    such R VECSEXP objects would be:
+
+    NameClassMap(robjects.vectors.ListVector,
+                 {'data.frame': robjects.vectors.DataFrame})
+
+    This means that the default class on the Python side will be
+    `ListVector`, but if the R object is a "data.frame" it will
+    be a `DataFrame`.
+    """
+
+    _default: typing.Union[
+        typing.Any,
+        typing.Callable[[typing.Any], typing.Any]
+    ]
+    _map: typing.Dict[
+        str,
+        typing.Union[
+            typing.Any,
+            typing.Callable[[typing.Any], typing.Any]
+        ]
+    ]
 
     default = property(lambda self: self._default)
 
-    def __init__(self, defaultcls: typing.Type = object,
-                 namemap: dict = {}):
+    def __init__(self,
+                 defaultcls: typing.Union[
+                     typing.Type,
+                     typing.Callable[[typing.Any], typing.Any]] = object,
+                 namemap: typing.Optional[dict] = None):
+        if namemap is None:
+            namemap = {}
         self._default = defaultcls
         self._map = namemap.copy()
 
@@ -41,15 +67,17 @@ class NameClassMap(object):
     def __delitem__(self, key: str) -> None:
         del self._map[key]
 
-    def __getitem__(self, key: str) -> typing.Type:
+    def __getitem__(
+            self, key: str
+    ) -> typing.Union[typing.Type,
+                      typing.Callable[[typing.Any], typing.Any]]:
         return self._map[key]
 
-    def __setitem__(self, key: str, value: typing.Type):
-        if not issubclass(value, self._default):
-            raise ValueError(
-                'The new class must be a subclass of {}'
-                '(and {} is not)'
-                .format(self._default, value))
+    def __setitem__(self, key: str,
+                    value: typing.Union[
+                        typing.Type[typing.Any],
+                        typing.Callable[[typing.Any], typing.Any]
+                    ]):
         self._map[key] = value
 
     def copy(self) -> 'NameClassMap':
@@ -57,7 +85,13 @@ class NameClassMap(object):
                             namemap=self._map.copy())
 
     def update(self,
-               mapping: typing.Dict[str, typing.Type],
+               mapping: typing.Dict[
+                   str,
+                   typing.Union[
+                       typing.Any,
+                       typing.Callable[[typing.Any], typing.Any]
+                   ]
+               ],
                default: typing.Optional[typing.Type] = None):
         self._map.update(mapping)
         if default:
@@ -78,7 +112,9 @@ class NameClassMap(object):
                 return k
         return None
 
-    def find(self, keys: typing.Iterable[str]) -> typing.Type:
+    def find(
+            self, keys: typing.Iterable[str]
+    ) -> typing.Union[typing.Type, typing.Callable[[typing.Any], typing.Any]]:
         """Find the first mapping in a sequence of names (keys).
 
         Returns the default class (specified when creating the
@@ -159,8 +195,17 @@ def overlay_converter(src: 'Converter', target: 'Converter') -> None:
         if k is object and v is _rpy2py:
             continue
         target._rpy2py.register(k, v)
-    target._rpy2py_nc_map.update(src._rpy2py_nc_map._map.copy(),
-                                 default=src._rpy2py_nc_map._default)
+    for k, v in src.rpy2py_nc_map.items():
+        if k in target.rpy2py_nc_map:
+            target.rpy2py_nc_map[k].update(
+                v._map.copy(),
+                default=v._default
+            )
+        else:
+            target.rpy2py_nc_map[k] = NameClassMap(
+                v._default,
+                namemap=v._map.copy(),
+            )
 
 
 def _py2rpy(obj):
@@ -169,6 +214,8 @@ def _py2rpy(obj):
     This function will convert Python objects into rpy2.rinterface
     objects.
     """
+    if isinstance(obj, _rinterface_capi.SupportsSEXP):
+        return obj
     raise NotImplementedError(
         "Conversion 'py2rpy' not defined for objects of type '%s'" %
         str(type(obj))
@@ -197,13 +244,18 @@ class Converter(object):
     different converters.
     """
     _name: str
-    _rpy2py_nc_map: NameClassMap
+    _rpy2py_nc_map: typing.Dict[
+        typing.Type[rpy2.rinterface_lib.sexp.Sexp],
+        NameClassMap
+    ]
     _lineage: typing.Tuple[str, ...]
 
     name = property(lambda self: self._name)
     py2rpy = property(lambda self: self._py2rpy)
     rpy2py = property(lambda self: self._rpy2py)
-    rpy2py_nc_name = property(lambda self: self._rpy2py_nc_map)
+    rpy2py_nc_map = property(lambda self: self._rpy2py_nc_map)
+    # TODO: rpy2py_nc_name should be deprecated.
+    rpy2py_nc_name = rpy2py_nc_map
     lineage = property(lambda self: self._lineage)
 
     def __init__(self, name: str,
@@ -212,14 +264,14 @@ class Converter(object):
         self._name = name
         self._py2rpy = py2rpy
         self._rpy2py = rpy2py
-        self._rpy2py_nc_map = NameClassMap()
-
+        self._rpy2py_nc_map = {}
+        lineage: typing.Tuple[str, ...]
         if template is None:
             lineage = tuple()
         else:
-            lineage = list(template.lineage)
-            lineage.append(name)
-            lineage = tuple(lineage)
+            _ = list(template.lineage)
+            _.append(name)
+            lineage = tuple(_)
             overlay_converter(template, self)
         self._lineage = lineage
 
@@ -239,7 +291,7 @@ class Converter(object):
 
     def rclass_map_context(self, cls, d: typing.Dict[str, typing.Type]):
         return NameClassMapContext(
-            self._rpy2py_nc_map[cls],
+            self.rpy2py_nc_map[cls],
             d)
 
 

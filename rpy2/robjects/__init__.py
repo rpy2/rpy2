@@ -9,16 +9,16 @@ License: GPLv2+
 """
 
 import array
-import contextlib
 import os
-from functools import partial
 import types
+import typing
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
 
 from rpy2.robjects.robject import RObjectMixin, RObject
 import rpy2.robjects.functions
-from rpy2.robjects.environments import Environment
+from rpy2.robjects.environments import (Environment,
+                                        local_context)
 from rpy2.robjects.methods import methods_env
 from rpy2.robjects.methods import RS4
 
@@ -85,7 +85,16 @@ def _rpy2py_robject(obj):
     return obj
 
 
-def _vector_matrix_array(obj, vector_cls, matrix_cls, array_cls):
+VT = typing.TypeVar('VT')
+MT = typing.TypeVar('MT')
+AT = typing.TypeVar('AT')
+
+
+def _vector_matrix_array(
+        obj, vector_cls: typing.Type[VT],
+        matrix_cls: typing.Type[MT],
+        array_cls: typing.Type[AT]) -> typing.Union[
+            typing.Type[VT], typing.Type[MT], typing.Type[AT]]:
     # Should it be promoted to array or matrix ?
     try:
         dim = obj.do_slot("dim")
@@ -97,60 +106,57 @@ def _vector_matrix_array(obj, vector_cls, matrix_cls, array_cls):
         return vector_cls
 
 
-def sexpvector_to_ro(obj):
+@default_converter.rpy2py.register(rinterface.IntSexpVector)
+def _convert_rpy2py_intvector(obj):
+    clsmap = conversion.converter.rpy2py_nc_name[rinterface.IntSexpVector]
+    cls = clsmap.find(obj.rclass)
+    return cls(obj)
 
-    if not isinstance(obj, rinterface.SexpVector):
-        raise ValueError('%s is not an R vector.' % obj)
 
-    rcls = obj.rclass
+@default_converter.rpy2py.register(rinterface.FloatSexpVector)
+def _convert_rpy2py_floatvector(obj):
+    clsmap = conversion.converter.rpy2py_nc_name[rinterface.FloatSexpVector]
+    cls = clsmap.find(obj.rclass)
+    return cls(obj)
 
-    if 'data.frame' in rcls:
-        cls = vectors.DataFrame
-    # TODO: There no case/switch statement in Python, but may be
-    # there is a more elegant way to implement this.
-    elif obj.typeof == rinterface.RTYPES.INTSXP:
-        if 'factor' in rcls:
-            cls = vectors.FactorVector
-        else:
-            cls = _vector_matrix_array(obj, vectors.IntVector,
-                                       vectors.IntMatrix, vectors.IntArray)
-    elif obj.typeof == rinterface.RTYPES.REALSXP:
-        if vectors.POSIXct.isrinstance(obj):
-            cls = vectors.POSIXct
-        else:
-            cls = _vector_matrix_array(obj, vectors.FloatVector,
-                                       vectors.FloatMatrix, vectors.FloatArray)
-    elif obj.typeof == rinterface.RTYPES.LGLSXP:
-        cls = _vector_matrix_array(obj, vectors.BoolVector,
-                                   vectors.BoolMatrix, vectors.BoolArray)
-    elif obj.typeof == rinterface.RTYPES.STRSXP:
-        cls = _vector_matrix_array(obj, vectors.StrVector,
-                                   vectors.StrMatrix, vectors.StrArray)
-    elif obj.typeof == rinterface.RTYPES.VECSXP:
-        cls = vectors.ListVector
-    elif obj.typeof == rinterface.RTYPES.LISTSXP:
-        cls = PairlistVector
-    elif obj.typeof == rinterface.RTYPES.LANGSXP:
-        if 'formula' in rcls:
-            cls = Formula
-        else:
-            cls = language.LangVector
-    elif obj.typeof == rinterface.RTYPES.CPLXSXP:
-        cls = _vector_matrix_array(obj, vectors.ComplexVector,
-                                   vectors.ComplexMatrix, vectors.ComplexArray)
-    elif obj.typeof == rinterface.RTYPES.RAWSXP:
-        cls = _vector_matrix_array(obj, vectors.ByteVector,
-                                   vectors.ByteMatrix, vectors.ByteArray)
+
+@default_converter.rpy2py.register(rinterface.ComplexSexpVector)
+def _convert_rpy2py_complexvector(obj):
+    clsmap = conversion.converter.rpy2py_nc_name[rinterface.ComplexSexpVector]
+    cls = clsmap.find(obj.rclass)
+    return cls(obj)
+
+
+@default_converter.rpy2py.register(rinterface.BoolSexpVector)
+def _convert_rpy2py_boolvector(obj):
+    clsmap = conversion.converter.rpy2py_nc_name[rinterface.BoolSexpVector]
+    cls = clsmap.find(obj.rclass)
+    return cls(obj)
+
+
+@default_converter.rpy2py.register(rinterface.StrSexpVector)
+def _convert_rpy2py_strvector(obj):    
+    cls = _vector_matrix_array(obj, vectors.StrVector,
+                               vectors.StrMatrix, vectors.StrArray)
+    return cls(obj)
+
+
+@default_converter.rpy2py.register(rinterface.ByteSexpVector)
+def _convert_rpy2py_bytevector(obj):
+    cls = _vector_matrix_array(obj, vectors.ByteVector,
+                               vectors.ByteMatrix, vectors.ByteArray)
+    return cls(obj)
+
+
+default_converter.rpy2py.register(rinterface.PairlistSexpVector, PairlistVector)
+
+@default_converter.rpy2py.register(rinterface.LangSexpVector)
+def _convert_rpy2py_langvector(obj):
+    if 'formula' in obj.rclass:
+        cls = Formula
     else:
-        cls = None
-
-    if cls is not None:
-        return cls(obj)
-    else:
-        return obj
-
-
-default_converter.rpy2py.register(SexpVector, sexpvector_to_ro)
+        cls = language.LangVector
+    return cls(obj)
 
 
 TYPEORDER = {bool: (0, BoolVector),
@@ -329,13 +335,42 @@ def _(obj):
 default_converter._rpy2py_nc_map.update(
     {
         rinterface.SexpS4: conversion.NameClassMap(RS4),
+        rinterface.IntSexpVector: conversion.NameClassMap(
+            lambda obj: _vector_matrix_array(
+                obj, vectors.IntVector,
+                vectors.IntMatrix, vectors.IntArray)(obj),
+            {'factor': FactorVector}),
+        rinterface.FloatSexpVector: conversion.NameClassMap(
+            lambda obj: _vector_matrix_array(
+                obj, vectors.FloatVector,
+                vectors.FloatMatrix, vectors.FloatArray)(obj),
+            {'Date': DateVector,
+             'POSIXct': POSIXct}),
+        rinterface.BoolSexpVector: conversion.NameClassMap(
+            lambda obj: _vector_matrix_array(
+                obj, vectors.BoolVector,
+                vectors.BoolMatrix, vectors.BoolArray)(obj)
+        ),
+        rinterface.ByteSexpVector: conversion.NameClassMap(
+            lambda obj: _vector_matrix_array(
+                obj, vectors.ByteVector,
+                vectors.ByteMatrix, vectors.ByteArray)(obj)
+        ),
+        rinterface.StrSexpVector: conversion.NameClassMap(
+            lambda obj: _vector_matrix_array(
+                obj, vectors.StrVector,
+                vectors.StrMatrix, vectors.StrArray)(obj)
+        ),
+        rinterface.ComplexSexpVector: conversion.NameClassMap(
+            lambda obj: _vector_matrix_array(obj, vectors.ComplexVector,
+                                             vectors.ComplexMatrix, vectors.ComplexArray)(obj)
+        ),
         rinterface.ListSexpVector: conversion.NameClassMap(
             ListVector,
             {'data.frame': DataFrame}),
         rinterface.SexpEnvironment: conversion.NameClassMap(Environment)
     }
 )
-
 
 class Formula(RObjectMixin, rinterface.Sexp):
 
@@ -401,7 +436,7 @@ class R(object):
 
     # TODO: check that this is properly working
     def __cleanup__(self):
-        rinterface.endEmbeddedR()
+        rinterface.embedded.endr(0)
         del(self)
 
     def __str__(self):
@@ -418,6 +453,7 @@ class R(object):
 
 
 r = R()
+rl = language.LangVector.from_string
 
 conversion.set_conversion(default_converter)
 

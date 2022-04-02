@@ -1,4 +1,5 @@
 import abc
+import collections.abc
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import sexp
@@ -10,13 +11,14 @@ import copy
 import itertools
 import math
 import os
-import jinja2
+import jinja2  # type: ignore
 import time
 import pytz
 import tzlocal
 from datetime import date, datetime, timedelta, timezone
 from time import struct_time, mktime, tzname
 from operator import attrgetter
+import typing
 import warnings
 
 from rpy2.rinterface import (Sexp, ListSexpVector, StrSexpVector,
@@ -218,6 +220,9 @@ class VectorOperationsDelegator(object):
         return res[0]
 
 
+_sample = rinterface.baseenv['sample']
+
+
 class Vector(RObjectMixin):
     """Vector(seq) -> Vector.
 
@@ -232,8 +237,6 @@ class Vector(RObjectMixin):
 
     - the delegators rx or rx2
     """
-
-    _sample = rinterface.baseenv['sample']
 
     _html_template = jinja2.Template(
         """
@@ -295,7 +298,8 @@ class Vector(RObjectMixin):
         for v, k in zip(it_self, it_names):
             yield (k, v)
 
-    def sample(self, n, replace: bool = False, probabilities=None):
+    def sample(self: collections.abc.Sized, n: int, replace: bool = False,
+               probabilities: typing.Optional[collections.abc.Sized] = None):
         """ Draw a random sample of size n from the vector.
 
         If 'replace' is True, the sampling is done with replacement.
@@ -310,9 +314,9 @@ class Vector(RObjectMixin):
                                  'match the length of the vector.')
             if not isinstance(probabilities, rinterface.FloatSexpVector):
                 probabilities = FloatVector(probabilities)
-        res = self._sample(self, IntVector((n,)),
-                           replace=BoolVector((replace, )),
-                           prob=probabilities)
+        res = _sample(self, IntVector((n,)),
+                      replace=BoolVector((replace, )),
+                      prob=probabilities)
         res = conversion.rpy2py(res)
         return res
 
@@ -414,13 +418,8 @@ class IntVector(Vector, IntSexpVector):
         super().__init__(obj)
         self._add_rops()
 
-    def repr_format_elt(self, elt, max_width=8):
-        max_width = int(max_width)
-        if elt == NA_Integer:
-            res = repr(NA_Integer)
-        else:
-            res = '{:,}'.format(elt)
-        return res
+    def repr_format_elt(self, elt, max_width: int = 8):
+        return repr(elt)
 
     def tabulate(self, nbins=None):
         """ Like the R function tabulate,
@@ -691,20 +690,26 @@ class ListVector(Vector, ListSexpVector):
                 elements.append(e)
 
         names = list()
+        rnames = self.names
         if len(self) <= max_items:
-            names.extend(self.names)
+            names.extend(
+                rnames
+                if rnames != rinterface.NULL
+                else ['[no name]'] * len(self)
+            )
         else:
             half_items = max_items // 2
             for i in range(0, half_items):
                 try:
-                    name = self.names[i]
+                    name = (rnames[i]
+                            if rnames != rinterface.NULL else '[no name]')
                 except TypeError:
                     name = '[no name]'
                 names.append(name)
             names.append('...')
             for i in range(-half_items, 0):
                 try:
-                    name = self.names[i]
+                    name = rnames[i]
                 except TypeError:
                     name = '[no name]'
                 names.append(name)
@@ -854,6 +859,11 @@ class DateVector(FloatVector):
     def sexp_from_date(cls, seq):
         return cls(FloatVector([x.toordinal() for x in seq]))
 
+    @staticmethod
+    def isrinstance(obj) -> bool:
+        """Return whether an R object an instance of Date."""
+        return obj.rclass[-1] == 'Date'
+
 
 class POSIXct(POSIXt, FloatVector):
     """ Representation of dates as seconds since Epoch.
@@ -959,7 +969,11 @@ class POSIXct(POSIXt, FloatVector):
             dt_utc = (datetime(1970, 1, 1, tzinfo=timezone.utc) +
                       timedelta(seconds=ts))
             dt = dt_utc.replace(tzinfo=tz)
-            return dt + dt.utcoffset()
+            offset = dt.utcoffset()
+            if offset is None:
+                return dt
+            else:
+                return dt + offset
 
     def iter_localized_datetime(self):
         """Iterator yielding localized Python datetime objects."""
@@ -1006,7 +1020,8 @@ class Array(Vector):
     dim = property(__dim_get, __dim_set, None,
                    "Get or set the dimension of the array.")
 
-    def __dimnames_get(self) -> sexp.Sexp:
+    @property
+    def names(self) -> sexp.Sexp:
         """ Return a list of name vectors
         (like the R function 'dimnames' does)."""
 
@@ -1014,7 +1029,8 @@ class Array(Vector):
         res = conversion.rpy2py(res)
         return res
 
-    def __dimnames_set(self, value):
+    @names.setter
+    def names(self, value) -> None:
         """ Set list of name vectors
         (like the R function 'dimnames' does)."""
 
@@ -1022,8 +1038,6 @@ class Array(Vector):
         res = self._dimnames_set(self, value)
         self.__sexp__ = res.__sexp__
 
-    names = property(__dimnames_get, __dimnames_set, None,
-                     "names associated with the dimension.")
     dimnames = names
 
 
@@ -1158,7 +1172,7 @@ class Matrix(Array):
             nu = min(tuple(self.dim))
         if nv is None:
             nv = min(tuple(self.dim))
-        res = self._svd(self, nu=nu, nv=nv, LINPACK=False)
+        res = self._svd(self, nu=nu, nv=nv)
         return conversion.rpy2py(res)
 
     def dot(self, m):
@@ -1429,17 +1443,17 @@ class DataFrame(ListVector):
                    qmethod='escape', append=False):
         """ Save the data into a .csv file.
 
-        path         : string with a path
-        quote        : quote character
-        sep          : separator character
-        eol          : end-of-line character(s)
-        na           : string for missing values
-        dec          : string for decimal separator
-        row_names    : boolean (save row names, or not)
-        col_names    : boolean (save column names, or not)
-        comment_char : method to 'escape' special characters
-        append       : boolean (append if the file in the path is
-          already existing, or not)
+        :param path         : string with a path
+        :param quote        : quote character
+        :param sep          : separator character
+        :param eol          : end-of-line character(s)
+        :param na           : string for missing values
+        :param dec          : string for decimal separator
+        :param row_names    : boolean (save row names, or not)
+        :param col_names    : boolean (save column names, or not)
+        :param comment_char : method to 'escape' special characters
+        :param append       : boolean (append if the file in the path is
+        already existing, or not)
         """
         path = conversion.py2rpy(path)
         append = conversion.py2rpy(append)
@@ -1502,9 +1516,3 @@ rtypeof2rotype = {
     rinterface.RTYPES.CPLXSXP: ComplexVector,
     rinterface.RTYPES.LGLSXP: BoolVector
 }
-
-
-__all__ = ['Vector', 'StrVector', 'IntVector', 'BoolVector', 'ComplexVector',
-           'FloatVector', 'FactorVector', 'Vector',
-           'ListVector', 'POSIXlt', 'POSIXct',
-           'Array', 'Matrix', 'DataFrame']

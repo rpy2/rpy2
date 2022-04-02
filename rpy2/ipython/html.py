@@ -1,4 +1,4 @@
-import jinja2
+import jinja2  # type: ignore
 
 from rpy2.robjects import (vectors,
                            RObject,
@@ -7,7 +7,7 @@ from rpy2.robjects import (vectors,
 from rpy2 import rinterface
 from rpy2.robjects.packages import SourceCode
 from rpy2.robjects.packages import wherefrom
-from IPython import get_ipython
+from IPython import get_ipython  # type: ignore
 
 
 template_list = jinja2.Template("""
@@ -291,9 +291,9 @@ def html_rdataframe(dataf,
 
 
 def html_sourcecode(sourcecode):
-    from pygments import highlight
-    from pygments.lexers import SLexer
-    from pygments.formatters import HtmlFormatter
+    from pygments import highlight  # type: ignore
+    from pygments.lexers import SLexer  # type: ignore
+    from pygments.formatters import HtmlFormatter  # type: ignore
     formatter = HtmlFormatter()
     htmlcode = highlight(sourcecode, SLexer(), formatter)
     d = {'sourcecode': htmlcode,

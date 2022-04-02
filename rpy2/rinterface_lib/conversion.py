@@ -5,6 +5,7 @@
 
 from typing import Callable
 from typing import Dict
+from typing import Optional
 from typing import Type
 from typing import Union
 from rpy2.rinterface_lib import openrlib
@@ -67,7 +68,12 @@ def _python_to_cdata(obj):
 # TODO: can scalars in R's C API be used ?
 def _int_to_sexp(val: int):
     rlib = openrlib.rlib
-    # TODO: test value is not too large for R's ints
+    # TODO: _rinterface._MAX_INT is determined empirically.
+    if val > _rinterface._MAX_INT:
+        raise ValueError(
+            f'The Python integer {val} is larger than {_rinterface._MAX_INT} ('
+            'R\'s largest possible integer).'
+        )
     s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.INTSXP, 1))
     openrlib.SET_INTEGER_ELT(s, 0, val)
     rlib.Rf_unprotect(1)
@@ -110,34 +116,36 @@ def _complex_to_sexp(val: complex):
 #   CE_BYTES  = 3,
 #   CE_SYMBOL = 5,
 #   CE_ANY    = 99
-_CE_DEFAULT_VALUE = openrlib.rlib.CE_UTF8
+
+# Default encoding for converting R strings to Python
+_R_ENC_PY = {None: 'ascii'}
 
 
 def _str_to_cchar(s: str, encoding: str = 'utf-8'):
-    # TODO: use isStrinb and installTrChar
+    # TODO: use isString and installTrChar
     b = s.encode(encoding)
     return ffi.new('char[]', b)
 
 
-def _cchar_to_str(c, encoding: str = 'utf-8') -> str:
-    # TODO: use isStrinb and installTrChar
+def _cchar_to_str(c, encoding: str) -> str:
+    # TODO: use isString and installTrChar
     s = ffi.string(c).decode(encoding)
     return s
 
 
-def _cchar_to_str_with_maxlen(c, maxlen: int) -> str:
-    # TODO: use isStrinb and installTrChar
-    s = ffi.string(c, maxlen).decode('utf-8')
+def _cchar_to_str_with_maxlen(c, maxlen: int, encoding: str) -> str:
+    # TODO: use isString and installTrChar
+    s = ffi.string(c, maxlen).decode(encoding)
     return s
 
 
-def _str_to_charsxp(val: str):
+def _str_to_charsxp(val: Optional[str]):
     rlib = openrlib.rlib
     if val is None:
         s = rlib.R_NaString
     else:
-        cchar = _str_to_cchar(val)
-        s = rlib.Rf_mkCharCE(cchar, _CE_DEFAULT_VALUE)
+        cchar = _str_to_cchar(val, encoding='utf-8')
+        s = rlib.Rf_mkCharCE(cchar, openrlib.rlib.CE_UTF8)
     return s
 
 
@@ -171,7 +179,7 @@ def _get_cdata(obj):
             cdata = obj.__sexp__._cdata
         except AttributeError:
             raise ValueError('Not an rpy2 R object and unable '
-                             'to map it into one: %s' % repr(obj))
+                             'to map it to one: %s' % repr(obj))
     else:
         cdata = cls(obj)
     return cdata

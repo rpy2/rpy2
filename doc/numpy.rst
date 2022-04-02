@@ -99,32 +99,52 @@ functions, or for interactive users much more familiar with the :mod:`numpy` syn
 From `numpy` to `rpy2`:
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The activation (and deactivation) of the automatic conversion
-of `numpy` objects into `rpy2` objects can be made with:
+Some of the conversions operations require the copy of data in R structures
+into Python structures. Whenever this happens, the time it takes and the
+memory required will depend on object sizes. Because of this reason the
+use of a local converter is recommended: it makes limiting the use
+of conversion rules to code blocks of interest easier to achieve.
 
 .. code-block:: python
    
    from rpy2.robjects import numpy2ri
-   numpy2ri.activate()
-   numpy2ri.deactivate()
-   
-.. warning::
+   from rpy2.robjects import default_converter
+   from rpy2.robjects.conversion localconverter
 
-   In earlier versions of rpy2, the import was all that was needed to
-   have the conversion. A side-effect when importing a module can
-   lead to problems, and there is now an extra step to make the
-   conversion active: call the function :func:`rpy2.robjects.numpy2ri.activate`.
+   # Create a converter that starts with rpy2's default converter
+   # to which the numpy conversion rules are added.
+   np_cv_rules = default_converter + numpy2ri.converter
+
+   with localconverter(np_cv_rules) as cv:
+       # Anything here and until the `with` block is exited
+       # will use our numpy converter whenever objects are
+       # passed to R or are returned by R while calling
+       # rpy2.robjects functions.
+       pass
+
+An example of usage is:
+
+.. code-block:: python
+
+   from rpy2.robjects.packages import importr
+   stats = importr('base')
+   with localconverter(np_cv_rules) as cv:
+       v_np = stats.rlogis(100, location=0, scale=1)
+       # `v_np` is a numpy array
+
+   # Outside of the scope of the local converter the
+   # result will not be automatically converted to a
+   # numpy object.
+   v_nonp = stats.rlogis(100, location=0, scale=1)
 
 .. note::
 
-   Why make this an optional import, while it could have been included
-   in the function :func:`py2ri` (as done in the original patch 
-   submitted for that function) ?
-
-   Although both are valid and reasonable options, the design decision
-   was taken in order to decouple `rpy2` from `numpy` the most, and
-   do not assume that having `numpy` installed automatically
-   meant that a programmer wanted to use it. 
+   Why make :mod:`numpy` an optional feature for :mod:`rpy2`?
+   This was a design decision taken in order to:
+   - ensure that :mod:`rpy2` can function without :mod:`numpy`. An early motivation for
+   this was compatibility with Python 3 and dropping support for Python 2.
+   :mod:`rpy2` did that much earlier than :mod:`numpy` did.
+   - make potentially resource-consuming conversions optional
 
 .. note::
 

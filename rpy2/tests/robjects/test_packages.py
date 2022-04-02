@@ -96,14 +96,18 @@ class TestImportr(object):
         assert isinstance(stats, robjects.packages.Package)
 
     def test_import_stats_with_libloc(self):
-        path = robjects.packages_utils.get_packagepath('stats')
+        path = os.path.dirname(
+            robjects.packages_utils.get_packagepath('stats')
+        )
         stats = robjects.packages.importr('stats', 
                                           on_conflict='warn',
                                           lib_loc = path)
         assert isinstance(stats, robjects.packages.Package)
 
     def test_import_stats_with_libloc_and_suppressmessages(self):
-        path = robjects.packages_utils.get_packagepath('stats')
+        path = os.path.dirname(
+            robjects.packages_utils.get_packagepath('stats')
+        )
         stats = robjects.packages.importr('stats',
                                           lib_loc=path,
                                           on_conflict='warn',

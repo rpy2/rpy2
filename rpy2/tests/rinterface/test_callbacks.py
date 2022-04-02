@@ -139,10 +139,10 @@ def test_flushconsole_with_error(caplog):
 
 
 def test_consoleread():
-    msg = 'yes'
+    msg_orig = 'yes'
 
     def sayyes(prompt):
-        return msg
+        return msg_orig
 
     with utils.obj_in_module(callbacks, 'consoleread', sayyes):
         prompt = openrlib.ffi.new('char []', b'foo')
@@ -150,7 +150,8 @@ def test_consoleread():
         buf = openrlib.ffi.new('char [%i]' % n)
         res = callbacks._consoleread(prompt, buf, n, 0)
     assert res == 1
-    assert msg == openrlib.ffi.string(buf).decode('utf-8')
+    msg = openrlib.ffi.string(buf).decode('utf-8')
+    assert msg_orig == msg.rstrip()
 
 
 def test_consoleread_empty():
@@ -164,7 +165,8 @@ def test_consoleread_empty():
         buf = openrlib.ffi.new('char [%i]' % n)
         res = callbacks._consoleread(prompt, buf, n, 0)
     assert res == 0
-    assert len(openrlib.ffi.string(buf).decode('utf-8')) == 0
+    msg = openrlib.ffi.string(buf).decode('utf-8')
+    assert msg.rstrip() == ''
 
 
 def test_console_read_with_error(caplog):

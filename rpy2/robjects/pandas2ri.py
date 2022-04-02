@@ -5,18 +5,17 @@ import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import na_values
 from rpy2.rinterface import (IntSexpVector,
-                             ListSexpVector,
                              Sexp,
                              SexpVector,
                              StrSexpVector)
 import datetime
 import functools
 import math
-import numpy
-import pandas
-import pandas.core.series
-from pandas.core.frame import DataFrame as PandasDataFrame
-from pandas.core.dtypes.api import is_datetime64_any_dtype
+import numpy  # type: ignore
+import pandas  # type: ignore
+import pandas.core.series  # type: ignore
+from pandas.core.frame import DataFrame as PandasDataFrame  # type: ignore
+from pandas.core.dtypes.api import is_datetime64_any_dtype  # type: ignore
 import warnings
 
 from collections import OrderedDict
@@ -29,8 +28,7 @@ from rpy2.robjects.vectors import (BoolVector,
                                    IntVector,
                                    POSIXct)
 
-# pandas is requiring numpy. We add the numpy conversion will be
-# activate in the function activate() below.
+# The pandas converter requires numpy.
 import rpy2.robjects.numpy2ri as numpy2ri
 
 original_converter = None
@@ -179,9 +177,12 @@ def py2rpy_pandasseries(obj):
                 and not
                 ((isinstance(x, float) and math.isnan(x))
                  or pandas.isna(x))):
-                raise ValueError('Series can only be of one type, or None '
-                                 '(and here we have %s and %s).' %
-                                 (homogeneous_type, type(x)))
+                raise ValueError(
+                    'Series can only be of one type, or None '
+                    '(and here we have %s and %s). If happening with '
+                    'a pandas DataFrame the method infer_objects() '
+                    'will normalize data types before conversion.' %
+                    (homogeneous_type, type(x)))
         # TODO: Could this be merged with obj.type.name == 'O' case above ?
         res = _PANDASTYPE2RPY2[homogeneous_type](obj)
     else:
@@ -189,7 +190,7 @@ def py2rpy_pandasseries(obj):
         func = numpy2ri.converter.py2rpy.registry[numpy.ndarray]
         # current conversion as performed by numpy
 
-        res = func(obj)
+        res = func(obj.values)
         if len(obj.shape) == 1:
             if (obj.dtype != dt_O_type):
                 # force into an R vector
@@ -211,21 +212,6 @@ def ri2py_vector(obj):
     return res
 
 
-@rpy2py.register(IntSexpVector)
-def rpy2py_intvector(obj):
-    # special case for factors
-    if 'factor' in obj.rclass:
-        codes = [x-1 if x > 0 else -1 for x in numpy.array(obj)]
-        res = pandas.Categorical.from_codes(
-            codes,
-            categories=list(obj.do_slot('levels')),
-            ordered='ordered' in obj.rclass
-        )
-    else:
-        res = numpy2ri.rpy2py(obj)
-    return res
-
-
 @rpy2py.register(FloatSexpVector)
 def rpy2py_floatvector(obj):
     if POSIXct.isrinstance(obj):
@@ -240,15 +226,6 @@ def rpy2py_posixct(obj):
                               errors='coerce')
 
 
-@rpy2py.register(ListSexpVector)
-def rpy2py_listvector(obj):
-    if 'data.frame' in obj.rclass:
-        res = rpy2py(DataFrame(obj))
-    else:
-        res = numpy2ri.rpy2py(obj)
-    return res
-
-
 @rpy2py.register(DataFrame)
 def rpy2py_dataframe(obj):
     items = OrderedDict((k, rpy2py(v) if isinstance(v, Sexp) else v)
@@ -258,7 +235,35 @@ def rpy2py_dataframe(obj):
     return res
 
 
+def _to_pandas_factor(obj):
+    codes = [x-1 if x > 0 else -1 for x in numpy.array(obj)]
+    res = pandas.Categorical.from_codes(
+        codes,
+        categories=list(obj.do_slot('levels')),
+        ordered='ordered' in obj.rclass
+    )
+    return res
+
+
+converter._rpy2py_nc_map.update(
+    {
+        rinterface.IntSexpVector: conversion.NameClassMap(
+            numpy2ri.rpy2py,
+            {'factor': _to_pandas_factor}
+        ),
+        rinterface.ListSexpVector: conversion.NameClassMap(
+            numpy2ri.rpy2py,
+            {'data.frame': lambda obj: rpy2py(DataFrame(obj))}
+        )
+    }
+)
+
+
 def activate():
+    warnings.warn('The global conversion available with activate() '
+                  'is deprecated and will be removed in the next '
+                  'major release. Use a local converter.',
+                  category=DeprecationWarning)
     global original_converter
     # If module is already activated, there is nothing to do.
     if original_converter is not None:

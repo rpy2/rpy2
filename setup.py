@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import sys
 if ((sys.version_info[0] < 3) or
-    (sys.version_info[0] == 3 and sys.version_info[1] < 5)):
-    print('rpy2 is no longer supporting Python < 3.5.'
+    (sys.version_info[0] == 3 and sys.version_info[1] < 7)):
+    print('rpy2 is no longer supporting Python < 3.7.'
           'Consider using an older rpy2 release when using an '
           'older Python release.')
     sys.exit(1)
@@ -195,18 +195,35 @@ if __name__ == '__main__':
                 'requirements.txt')
     ) as fh:
         requires = fh.read().splitlines()
+    if sys.version_info[:2] < (3, 8):
+        requires.append('typing-extensions')
         print(requires)
-    
+
+    extras_require = {
+        'test': ['pytest'],
+        'numpy': ['pandas'],
+        'pandas': ['numpy', 'pandas']
+    }
+    extras_require['all'] = list(
+        set(x for lst in extras_require.values()
+            for x in lst)
+    )
     setup(
         name=PACKAGE_NAME,
         version=pack_version,
         description='Python interface to the R language (embedded R)',
         long_description=LONG_DESCRIPTION,
         url='https://rpy2.github.io',
+        project_urls={
+            'Documentation': 'https://rpy2.github.io/doc.html',
+            'Source': 'https://github.com/rpy2/rpy2',
+            'Tracker': 'https://github.com/rpy2/rpy2/issues'
+        },
         license='GPLv2+',
         author='Laurent Gautier',
         author_email='lgautier@gmail.com',
         install_requires=requires,
+        extras_require=extras_require,
         setup_requires=['cffi>=1.10.0'],
         cffi_modules=cffi_modules,
         cmdclass = dict(build=build, install=install),
@@ -223,9 +240,9 @@ if __name__ == '__main__':
         ),
         classifiers = ['Programming Language :: Python',
                        'Programming Language :: Python :: 3',
-                       'Programming Language :: Python :: 3.6',
                        'Programming Language :: Python :: 3.7',
                        'Programming Language :: Python :: 3.8',
+                       'Programming Language :: Python :: 3.9',
                        ('License :: OSI Approved :: GNU General '
                         'Public License v2 or later (GPLv2+)'),
                        'Intended Audience :: Developers',
@@ -235,5 +252,7 @@ if __name__ == '__main__':
         package_data={'rpy2': ['rinterface_lib/R_API.h',
                                'rinterface_lib/R_API_eventloop.h',
                                'rinterface_lib/R_API_eventloop.c',
-                               'rinterface_lib/RPY2.h']}
+                               'rinterface_lib/RPY2.h',
+                               'py.typed']},
+        zip_safe=False
     )

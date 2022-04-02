@@ -1,7 +1,15 @@
+import abc
 import atexit
+import contextlib
+import contextvars
 import os
 import math
+import platform
+import signal
+import textwrap
+import threading
 import typing
+import warnings
 from typing import Union
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
@@ -10,6 +18,7 @@ import rpy2.rinterface_lib.conversion as conversion
 from rpy2.rinterface_lib.conversion import _cdata_res_to_rinterface
 import rpy2.rinterface_lib.memorymanagement as memorymanagement
 from rpy2.rinterface_lib import na_values
+from rpy2.rinterface_lib.sexp import NULL
 from rpy2.rinterface_lib.sexp import NULLType
 import rpy2.rinterface_lib.bufferprotocol as bufferprotocol
 from rpy2.rinterface_lib import sexp
@@ -32,6 +41,56 @@ R_NilValue = openrlib.rlib.R_NilValue
 
 endr = embedded.endr
 
+evaluation_context = contextvars.ContextVar('evaluation_context',
+                                            default=globalenv)
+
+
+def get_evaluation_context() -> SexpEnvironment:
+    """Get the frame (environment) in which R code is currently evaluated."""
+    warnings.warn('This function is deprecated. '
+                  'Use evaluation_context directly.',
+                  DeprecationWarning, stacklevel=2)
+    return evaluation_context.get()
+
+
+@contextlib.contextmanager
+def local_context(
+        env: typing.Optional[SexpEnvironment] = None,
+        use_rlock: bool = True
+) -> typing.Iterator[SexpEnvironment]:
+    """Local context for the evaluation of R code.
+
+    Args:
+    - env: an environment to use as a context. If not specified (None, the
+      default), a child environment to the current context is created.
+    - use_rlock: whether to use a threading lock (see the documentation about
+      "rlock". The default is True.
+
+    Returns:
+    Yield the environment (passed to env, or created).
+    """
+
+    parent_frame = evaluation_context.get()
+    if env is None:
+        env = baseenv['new.env'](
+            baseenv['parent.frame']()
+            if parent_frame is None
+            else parent_frame)
+    try:
+        if use_rlock:
+            with openrlib.rlock:
+                token = evaluation_context.set(env)
+                yield env
+        else:
+            token = evaluation_context.set(env)
+            yield env
+    finally:
+        evaluation_context.reset(token)
+
+
+def _sigint_handler(sig, frame):
+    raise KeyboardInterrupt()
+
 
 @_cdata_res_to_rinterface
 def parse(text: str, num: int = -1):
@@ -50,18 +109,69 @@ def parse(text: str, num: int = -1):
     return res
 
 
-def evalr(source: str, maxlines: int = -1) -> sexp.Sexp:
+def evalr_expr(
+        expr: 'ExprSexpVector',
+        envir: typing.Union[
+            None,
+            'SexpEnvironment', 'NULLType',
+            'ListSexpVector', 'PairlistSexpVector', int,
+            '_MissingArgType'] = None,
+        enclos: typing.Union[
+            None,
+            'ListSexpVector', 'PairlistSexpVector',
+            'NULLType',
+            '_MissingArgType'] = None
+) -> sexp.Sexp:
+    """Evaluate an R expression.
+
+    :param:`expr` An R expression.
+    :param:`envir` An optional R environment in which the evaluation
+      will happen. If None, which is the default, the environment in
+     the context variable `evaluation_context` is used.
+    :param:`enclos` An enclosure. This is only relevant when envir
+      is a list, a pairlist, or a data.frame. It specifies where to
+    look for objects not found in envir.
+    :return: The R objects resulting from the evaluation of the code"""
+
+    if envir is None:
+        envir = evaluation_context.get()
+    if enclos is None:
+        enclos = MissingArg
+    res = baseenv['eval'](expr, envir=envir, enclos=enclos)
+    return res
+
+
+def evalr(
+        source: str,
+        maxlines: int = -1,
+        envir: typing.Union[
+            None,
+            'SexpEnvironment', 'NULLType',
+            'ListSexpVector', 'PairlistSexpVector', int,
+            '_MissingArgType'] = None,
+        enclos: typing.Union[
+            None,
+            'ListSexpVector', 'PairlistSexpVector',
+            'NULLType', '_MissingArgType'] = None
+) -> sexp.Sexp:
     """Evaluate a string as R code.
 
     Evaluate a string as R just as it would happen when writing
     code in an R terminal.
 
-    :param:`text` A string to be evaluated as R code.
+    :param:`text` A string to be evaluated as R code,
+    or an R expression.
     :param:`maxlines` The maximum number of lines to parse. If -1, no
-      limit is applied."""
+      limit is applied.
+    :param:`envir` An optional R environment in which the evaluation
+      will happen.
+    :param:`enclos` An enclosure. This is only relevant when envir
+      is a list, a pairlist, or a data.frame. It specifies where to
+    look for objects not found in envir.
+    :return: The R objects resulting from the evaluation of the code"""
 
-    res = parse(source, num=maxlines)
-    res = baseenv['eval'](res)
+    expr = parse(source, num=maxlines)
+    res = evalr_expr(expr, envir=envir, enclos=enclos)
     return res
 
 
@@ -87,8 +197,8 @@ def vector_memoryview(obj: sexp.SexpVector,
     # to write C extensions. We have to use numpy.
     # TODO: Having numpy a requirement just for this is a problem.
     # TODO: numpy needed for memoryview
-    #   (as long as https://bugs.python.org/issue34778 not resolved)
-    import numpy
+    #   (as long as https://bugs.python.org/issue34778 is not resolved)
+    import numpy  # type: ignore
     a = numpy.frombuffer(b, dtype=cast_str).reshape(shape, order='F')
     mv = memoryview(a)
     return mv
@@ -121,11 +231,16 @@ class SexpSymbol(sexp.Sexp):
         return conversion._cchar_to_str(
             openrlib._STRING_VALUE(
                 self._sexpobject._cdata
-            )
+            ), 'utf-8'
         )
 
 
 class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
+    """Missing argument in a call to an R function.
+
+    When evaluating a function, arguments that are not specified
+    can take a default value when named, otherwise they will
+    take a special value that indicates that they are missing."""
 
     def __init__(self):
         if embedded.isready():
@@ -148,6 +263,10 @@ class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
     def __sexp__(self) -> _rinterface.SexpCapsule:
         return self._sexpobject
 
+    @__sexp__.setter
+    def __sexp__(self, value) -> None:
+        raise TypeError('The capsule for the R object cannot be modified.')
+
 
 MissingArg = _MissingArgType()
 
@@ -161,27 +280,25 @@ class SexpPromise(Sexp):
         :param:`env` The environment in which to evaluate the
           promise.
         """
-        if not env:
+        if env is None:
             env = globalenv
         return openrlib.rlib.Rf_eval(self.__sexp__._cdata, env)
 
 
-NPCOMPAT_TYPE = typing.TypeVar('NPCOMPAT_TYPE',
-                               'ByteSexpVector',
-                               'BoolSexpVector',
-                               'IntSexpVector',
-                               'FloatSexpVector')
-
-
-class NumpyArrayMixin:
+class SexpVectorWithNumpyInterface(SexpVector):
     """Numpy-specific API for accessing the content of a numpy array.
 
     This interface implements version 3 of Numpy's `__array_interface__`
     and is only available / possible for some of the R vectors."""
 
     @property
+    @abc.abstractmethod
+    def _NP_TYPESTR(self) -> str:
+        pass
+
+    @property
     def __array_interface__(
-            self: NPCOMPAT_TYPE
+            self
     ) -> dict:
         """Return an `__array_interface__` version 3.
 
@@ -201,8 +318,20 @@ class NumpyArrayMixin:
                 'data': data,
                 'version': 3}
 
+    @classmethod
+    def _check_C_compatible(cls, mview):
+        return (
+            mview.itemsize == cls._R_SIZEOF_ELT
+            and
+            (
+                cls._NP_TYPESTR == '|u1'
+                or
+                cls._NP_TYPESTR.endswith(mview.format)
+            )
+        )
 
-class ByteSexpVector(NumpyArrayMixin, SexpVector):
+
+class ByteSexpVector(SexpVectorWithNumpyInterface):
     """Array of bytes.
 
     This is the R equivalent to a Python :class:`bytesarray`.
@@ -271,7 +400,7 @@ class ByteSexpVector(NumpyArrayMixin, SexpVector):
                 'Indices must be integers or slices, not %s' % type(i))
 
 
-class BoolSexpVector(NumpyArrayMixin, SexpVector):
+class BoolSexpVector(SexpVectorWithNumpyInterface):
     """Array of booleans.
 
     Note that R is internally storing booleans as integers to
@@ -291,13 +420,18 @@ class BoolSexpVector(NumpyArrayMixin, SexpVector):
         else:
             return bool(x)
 
-    def __getitem__(self, i: Union[int, slice]) -> Union[typing.Optional[bool],
+    def __getitem__(self, i: Union[int, slice]) -> Union[bool,
+                                                         'sexp.NALogicalType',
                                                          'BoolSexpVector']:
+        res: Union[bool,
+                   'sexp.NALogicalType',
+                   'BoolSexpVector']
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
             elt = openrlib.LOGICAL_ELT(cdata, i_c)
-            res = na_values.NA_Logical if elt == NA_Logical else bool(elt)
+            res = (na_values.NA_Logical  # type: ignore
+                   if elt == NA_Logical else bool(elt))
         elif isinstance(i, slice):
             res = type(self).from_iterable(
                 [openrlib.LOGICAL_ELT(cdata, i_c)
@@ -333,7 +467,7 @@ def nullable_int(v):
         return int(v)
 
 
-class IntSexpVector(NumpyArrayMixin, SexpVector):
+class IntSexpVector(SexpVectorWithNumpyInterface):
 
     _R_TYPE = openrlib.rlib.INTSXP
     _R_SET_VECTOR_ELT = openrlib.SET_INTEGER_ELT
@@ -380,7 +514,7 @@ class IntSexpVector(NumpyArrayMixin, SexpVector):
         return vector_memoryview(self, 'int', 'i')
 
 
-class FloatSexpVector(NumpyArrayMixin, SexpVector):
+class FloatSexpVector(SexpVectorWithNumpyInterface):
 
     _R_TYPE = openrlib.rlib.REALSXP
     _R_VECTOR_ELT = openrlib.REAL_ELT
@@ -581,7 +715,31 @@ class ExprSexpVector(SexpVector):
     _R_SET_VECTOR_ELT = None
 
 
+_str2lang = None
+
+
+def _get_str2lang():
+    global _str2lang
+    if _str2lang is None:
+        try:
+            _str2lang = baseenv['str2lang']
+        except KeyError:
+            # TODO: This exists to ensure compatibility with
+            # older versions of R. If should be removed when
+            # older versions of R are no longer supported.
+            _str2lang = evalr('function(s) '
+                              'base::parse(text=s, keep.source=FALSE)[[1]]')
+    return _str2lang
+
+
+LangSexpVector_VT = typing.TypeVar('LangSexpVector_VT', bound='LangSexpVector')
+
+
 class LangSexpVector(SexpVector):
+    """An R language object.
+
+    To create from a (Python) string containing R code
+    use the classmethod `from_string`."""
     _R_TYPE = openrlib.rlib.LANGSXP
     _R_GET_PTR = None
     _CAST_IN = None
@@ -597,13 +755,34 @@ class LangSexpVector(SexpVector):
             openrlib.rlib.Rf_nthcdr(cdata, i_c)
         )
 
-    def __setitem__(self, i: int, value: sexp.SupportsSEXP) -> None:
+    def __setitem__(self, i: typing.Union[int, slice],
+                    value: sexp.SupportsSEXP) -> None:
+        if isinstance(i, slice):
+            raise NotImplementedError(
+                'Assigning slices to LangSexpVectors is not yet implemented.'
+            )
         cdata = self.__sexp__._cdata
         i_c = _rinterface._python_index_to_c(cdata, i)
         openrlib.rlib.SETCAR(
             openrlib.rlib.Rf_nthcdr(cdata, i_c),
             value.__sexp__._cdata
         )
+
+    @classmethod
+    def from_string(
+            cls: typing.Type[LangSexpVector_VT], s: str
+    ) -> LangSexpVector_VT:
+        """Create an R language object from a string.
+
+        This creates an unevaluated R language object.
+
+        Args:
+            s: R source code in a string.
+
+        Returns:
+            An instance of the class the method is called from.
+        """
+        return cls(_get_str2lang()(s))
 
 
 class SexpClosure(Sexp):
@@ -615,30 +794,36 @@ class SexpClosure(Sexp):
             call_r = rmemory.protect(
                 _rinterface.build_rcall(self.__sexp__._cdata, args,
                                         kwargs.items()))
+            call_context = evaluation_context.get()
             res = rmemory.protect(
                 openrlib.rlib.R_tryEval(
                     call_r,
-                    globalenv.__sexp__._cdata,
-                    error_occured))
+                    call_context.__sexp__._cdata,
+                    error_occured)
+            )
             if error_occured[0]:
                 raise embedded.RRuntimeError(_rinterface._geterrmessage())
         return res
 
     @_cdata_res_to_rinterface
-    def rcall(self, keyvals, environment: SexpEnvironment):
+    def rcall(self, keyvals,
+              environment: typing.Optional[SexpEnvironment] = None):
         """Call/evaluate an R function.
 
         Args:
         - keyvals: a sequence of key/value (name/parameter) pairs. A
-            name/parameter that is None will indicated an unnamed parameter.
-            Like in R, keys/names do not have to be unique, partial matching
-            can be used, and named/unnamed parameters can occur at any position
-            in the sequence.
-        - environment: a R environment in which to evaluate the function.
+          name/parameter that is None will indicated an unnamed parameter.
+          Like in R, keys/names do not have to be unique, partial matching
+          can be used, and named/unnamed parameters can occur at any position
+          in the sequence.
+        - environment: an optional R environment to evaluate the function.
         """
         # TODO: check keyvals are pairs ?
+        if environment is None:
+            environment = evaluation_context.get()
         assert isinstance(environment, SexpEnvironment)
         error_occured = _rinterface.ffi.new('int *', 0)
+
         with memorymanagement.rmemory() as rmemory:
             call_r = rmemory.protect(
                 _rinterface.build_rcall(self.__sexp__._cdata, [],
@@ -651,7 +836,7 @@ class SexpClosure(Sexp):
                 raise embedded.RRuntimeError(_rinterface._geterrmessage())
         return res
 
-    @property
+    @property  # type: ignore
     @_cdata_res_to_rinterface
     def closureenv(self) -> SexpEnvironment:
         """Closure of the R function."""
@@ -783,7 +968,6 @@ class RRuntimeWarning(RuntimeWarning):
     pass
 
 
-NULL = None
 MissingArg = _MissingArgType()
 NA_Character = None
 NA_Integer = None
@@ -811,7 +995,7 @@ def initr_checkenv() -> typing.Optional[int]:
     status = None
     with openrlib.rlock:
         if embedded.is_r_externally_initialized():
-            embedded.setinitialized()
+            embedded._setinitialized()
         else:
             status = embedded._initr()
             embedded.set_python_process_info()
@@ -823,14 +1007,33 @@ def initr_checkenv() -> typing.Optional[int]:
 initr = initr_checkenv
 
 
+def _update_R_ENC_PY():
+    conversion._R_ENC_PY[openrlib.rlib.CE_UTF8] = 'utf-8'
+
+    l10n_info = tuple(baseenv['l10n_info']())
+    if platform.system() == 'Windows':
+        val_latin1 = 'cp{:d}'.format(l10n_info[3][0])
+    else:
+        val_latin1 = 'latin1'
+    conversion._R_ENC_PY[openrlib.rlib.CE_LATIN1] = val_latin1
+
+    if l10n_info[1]:
+        val_native = conversion._R_ENC_PY[openrlib.rlib.CE_UTF8]
+    else:
+        val_native = val_latin1
+    conversion._R_ENC_PY[openrlib.rlib.CE_NATIVE] = val_native
+
+    conversion._R_ENC_PY[openrlib.rlib.CE_ANY] = 'utf-8'
+
+
 def _post_initr_setup() -> None:
 
     emptyenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_EmptyEnv)
     baseenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_BaseEnv)
     globalenv.__sexp__ = _rinterface.SexpCapsule(openrlib.rlib.R_GlobalEnv)
-
-    global NULL
-    NULL = NULLType()
+    NULL._sexpobject = _rinterface.UnmanagedSexpCapsule(
+        openrlib.rlib.R_NilValue
+    )
 
     MissingArg._sexpobject = _rinterface.UnmanagedSexpCapsule(
         openrlib.rlib.R_MissingArg
@@ -861,6 +1064,30 @@ def _post_initr_setup() -> None:
     )
     NA_Complex = na_values.NA_Complex
 
+    warn_about_thread = False
+    if threading.current_thread() is threading.main_thread():
+        try:
+            signal.signal(signal.SIGINT, _sigint_handler)
+        except ValueError as ve:
+            if str(ve) == 'signal only works in main thread':
+                warn_about_thread = True
+            else:
+                raise ve
+    else:
+        warn_about_thread = True
+    if warn_about_thread:
+        warnings.warn(
+            textwrap.dedent(
+                """R is not initialized by the main thread.
+                Its taking over SIGINT cannot be reversed here, and as a
+                consequence the embedded R cannot be interrupted with Ctrl-C.
+                Consider (re)setting the signal handler of your choice from
+                the main thread."""
+            )
+        )
+
+    _update_R_ENC_PY()
+
 
 def rternalize(function: typing.Callable) -> SexpClosure:
     """ Make a Python function callable from R.
@@ -868,9 +1095,10 @@ def rternalize(function: typing.Callable) -> SexpClosure:
     Takes an arbitrary Python function and wrap it in such a way that
     it can be called from the R side.
 
-    :param:`function` A Python callable object.
+    :param function: A Python callable object.
     :return: A wrapped R object that can be use like any other rpy2
-    object."""
+    object.
+    """
 
     assert callable(function)
     rpy_fun = SexpExtPtr.from_pyobject(function)

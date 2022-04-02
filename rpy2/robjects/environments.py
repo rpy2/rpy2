@@ -1,18 +1,21 @@
+import contextlib
+import os
 import typing
 import rpy2.rinterface as rinterface
+import rpy2.rinterface_lib.sexp as sexp
 from rpy2.robjects.robject import RObjectMixin
 from rpy2.robjects import conversion
 
 _new_env = rinterface.baseenv["new.env"]
 
 
-class Environment(RObjectMixin, rinterface.SexpEnvironment):
+class Environment(RObjectMixin, sexp.SexpEnvironment):
     """ An R environement, implementing Python's mapping interface. """
 
-    def __init__(self, o=None):
+    def __init__(self, o: typing.Optional[sexp.SexpEnvironment] = None):
         if o is None:
             o = _new_env(hash=rinterface.BoolSexpVector([True, ]))
-        super(Environment, self).__init__(o)
+        super(sexp.SexpEnvironment, self).__init__(o)
 
     def __getitem__(self, item: str):
         res = super(Environment, self).__getitem__(item)
@@ -33,15 +36,19 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         super(Environment, self).__setitem__(item, robj)
 
     @property
-    def enclos(self) -> rinterface.SexpEnvironment:
+    def enclos(self) -> typing.Union[sexp.SexpEnvironment, sexp.NULLType]:
         return conversion.converter.rpy2py(super().enclos)
 
     @enclos.setter
-    def enclos(self, value: rinterface.SexpEnvironment) -> None:
-        super(Environment, self).enclos = value
+    def enclos(self, value: sexp.SexpEnvironment) -> None:
+        # TODO: I can't figure out why mypy is throwing an error
+        # here. There scope of this assignment is rather limited
+        # (the setter in the parent class SexpEnvironment has the same
+        # signature).
+        super().enclos = value  # type: ignore
 
     @property
-    def frame(self) -> rinterface.SexpEnvironment:
+    def frame(self) -> sexp.SexpEnvironment:
         return conversion.converter.rpy2py(super().frame)
 
     def find(self, item: str, wantfun: bool = False):
@@ -72,20 +79,21 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         """ Return an iterator over keys in the environment."""
         return super().keys()
 
-    def items(self) -> typing.Generator[typing.Tuple[str, rinterface.Sexp],
-                                        None, None]:
+    def items(self) -> typing.Generator[
+            typing.Tuple[str, sexp.Sexp],
+            None, None]:
         """ Iterate through the symbols and associated objects in
             this R environment."""
-        for k in self:
-            yield (k, self[k])
+        for k, v in zip(self.keys(), self.values()):
+            yield (k, v)
 
-    def values(self) -> typing.Generator[rinterface.Sexp, None, None]:
+    def values(self) -> typing.Generator[sexp.Sexp, None, None]:
         """ Iterate through the objects in
             this R environment."""
         for k in self:
             yield self[k]
 
-    def pop(self, k: str, *args) -> rinterface.Sexp:
+    def pop(self, k: str, *args) -> sexp.Sexp:
         """ E.pop(k[, d]) -> v, remove the specified key
         and return the corresponding value. If the key is not found,
         d is returned if given, otherwise KeyError is raised."""
@@ -100,7 +108,7 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
             raise KeyError(k)
         return v
 
-    def popitem(self) -> typing.Tuple[str, rinterface.Sexp]:
+    def popitem(self) -> typing.Tuple[str, sexp.Sexp]:
         """ E.popitem() -> (k, v), remove and return some (key, value)
         pair as a 2-tuple; but raise KeyError if E is empty. """
         if len(self) == 0:
@@ -115,3 +123,32 @@ class Environment(RObjectMixin, rinterface.SexpEnvironment):
         #        number of keys) ?
         for k in self:
             del(self[k])
+
+    def __repr__(self):
+        return os.linesep.join(
+            (super(Environment, self).__repr__(),
+             'n items: {:d}'.format(len(self)))
+        )
+
+
+@contextlib.contextmanager
+def local_context(
+        env: typing.Optional[sexp.SexpEnvironment] = None,
+        use_rlock: bool = True
+) -> typing.Iterator[Environment]:
+    """Local context for the evaluation of R code.
+
+    This is a wrapper around the rpy2.rinterface function with the
+    same name.
+
+    Args:
+    - env: an environment to use as a context. If not specified (None, the
+      default), a child environment to the current context is created.
+    - use_rlock: whether to use a threading lock (see the documentation about
+      "rlock". The default is True.
+
+    Returns:
+    Yield the environment (passed to env, or created).
+    """
+    with rinterface.local_context(env=env, use_rlock=use_rlock) as lc:
+        yield Environment(lc)

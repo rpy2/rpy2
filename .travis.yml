@@ -79,7 +79,7 @@ install:
   - python rpy2/situation.py
   - python setup.py install
   - pip uninstall -y rpy2
-  - rm -r dist/
+  - python setup.py clean
   - python setup.py build --force sdist
   - pip install $(ls -t1 dist/*.tar.gz | head)
 

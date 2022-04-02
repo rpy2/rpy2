@@ -83,7 +83,10 @@ def test_non_asciil():
     char = sexp[0]
     assert isinstance(char, str)
     # FIXME: the following line is failing on drone, but not locally
-    #   assert u'\u21a7'.encode('utf-8') == char.encode('utf-8')
+    assert u'\u21a7'.encode('utf-8') == char.encode('utf-8')
     # because of this, the following line is used to pass the test
     # until I have more reports from users or manage to reproduce
     # myself what is happening on drone.io.
+    sexp = ri.evalr('c("ěščřžýáíé", "abc", "百折不撓")')
+    assert all(isinstance(x, str) for x in sexp)
+    

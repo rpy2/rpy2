@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 ffi = openrlib.ffi
 
 # TODO: How can I reliably get MAX_INT from limits.h ?
-_MAX_INT = 2**32-1
+_MAX_INT: int = 2**32-1
 
 _R_PRESERVED = dict()  # type: typing.Dict[int, int]
 _PY_PASSENGER = dict()
@@ -282,16 +282,17 @@ def _string_getitem(cdata: FFI.CData, i: int) -> typing.Optional[str]:
         res = None
     else:
         res = conversion._cchar_to_str(
-            openrlib.rlib.R_CHAR(elt)
+            openrlib.rlib.R_CHAR(elt),
+            conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(elt)]
         )
     return res
 
 
 # TODO: still used ?
-def _string_setitem(cdata: FFI.CData, i: int, value_b) -> None:
+def _string_setitem(cdata: FFI.CData, i: int, CE: int, value_b) -> None:
     rlib = openrlib.rlib
     rlib.SET_STRING_ELT(
-        cdata, i, rlib.Rf_mkCharCE(value_b, conversion._CE_DEFAULT_VALUE)
+        cdata, i, rlib.Rf_mkCharCE(value_b, CE)
     )
 
 
@@ -522,8 +523,10 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
                 pyargs.append(conversion._cdata_to_rinterface(cdata))
             else:
                 # Named arguments
+                rname = rlib.PRINTNAME(rlib.TAG(rargs))
                 name = conversion._cchar_to_str(
-                    rlib.R_CHAR(rlib.PRINTNAME(rlib.TAG(rargs)))
+                    rlib.R_CHAR(rname),
+                    conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(rname)]
                 )
                 pykwargs[name] = conversion._cdata_to_rinterface(cdata)
             rargs = rlib.CDR(rargs)

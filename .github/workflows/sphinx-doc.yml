@@ -2,27 +2,44 @@ name: Sphinx documentation
 
 on: [push]
 
+env:
+  R-VERSION: "4.0"
+
 jobs:
   build:
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python 3.8
+    - uses: actions/checkout@v2
+    - name: Set up Python
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
-    - name: Set up R 3.6
+    - name: Set up R
       uses: r-lib/actions/setup-r@master
       with:
-        r-version: 4.0
+        r-version: ${{ env.R-VERSION }}
+    - name: Cache R packages
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-R-packages
+      with:
+        path: /opt/R/**/lib/R/library
+        key: ${{ runner.os }}-R${{ env.R-VERSION }}-build-${{ env.cache-name }}
+        restore-keys: |
+          ${{ runner.os }}-${{ env.R_VERSION }}-build-
+    - name: Set RSPM
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install pandoc
+        sudo apt-get install pandoc graphviz libgraphviz-dev
         python -m pip install --upgrade pip
         pip install -r doc/requirements.txt
+        pip uninstall -y rpy2
         python setup.py install
         sudo Rscript ./install_r_packages.r BiocManager dbplyr dplyr ggplot2 hexbin lazyeval RSQLite tidyr viridis
         sudo Rscript -e 'BiocManager::install("Biobase")'
@@ -33,3 +50,8 @@ jobs:
         cd doc
         make notebooks
         make html
+    - name: Archive documentation
+      uses: actions/upload-artifact@v2
+      with:
+        name: html-doc
+        path: doc/_build/html

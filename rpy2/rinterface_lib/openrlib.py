@@ -1,25 +1,31 @@
+import logging
 import platform
 import threading
 import typing
 import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
 
+logger = logging.getLogger(__name__)
+
 cffi_mode = rpy2.situation.get_cffi_mode()
 if cffi_mode == rpy2.situation.CFFI_MODE.API:
-    import _rinterface_cffi_api as _rinterface_cffi
+    import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
 elif cffi_mode == rpy2.situation.CFFI_MODE.ABI:
-    import _rinterface_cffi_abi as _rinterface_cffi
+    import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
 else:
     try:
-        import _rinterface_cffi_api as _rinterface_cffi
+        import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
     except ImportError:
-        import _rinterface_cffi_abi as _rinterface_cffi
+        import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
 
 ffi = _rinterface_cffi.ffi
 
 # TODO: Separate the functions in the module from the side-effect of
 # finding R_HOME and opening the shared library.
 R_HOME = rpy2.situation.get_r_home()
+LD_LIBRARY_PATH = (rpy2.situation.r_ld_library_path_from_subprocess(R_HOME)
+                   if R_HOME is not None
+                   else '')
 rlock = threading.RLock()
 
 
@@ -45,7 +51,7 @@ else:
 
 
 # R macros and functions
-def _get_symbol_or_fallback(symbol: str, fallback):
+def _get_symbol_or_fallback(symbol: str, fallback: typing.Any):
     """Get a cffi object from rlib, or the fallback if missing."""
     try:
         res = getattr(rlib, symbol)
@@ -117,7 +123,7 @@ INTEGER_ELT = _get_symbol_or_fallback('INTEGER_ELT',
                                       _get_integer_elt_fallback)
 
 
-def _set_integer_elt_fallback(vec, i: int, value):
+def _set_integer_elt_fallback(vec, i: int, value: int):
     INTEGER(vec)[i] = value
 
 
@@ -149,7 +155,7 @@ REAL_ELT = _get_symbol_or_fallback('REAL_ELT',
                                    _get_real_elt_fallback)
 
 
-def _set_real_elt_fallback(vec, i: int, value):
+def _set_real_elt_fallback(vec, i: int, value: float):
     REAL(vec)[i] = value
 
 

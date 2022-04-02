@@ -2,7 +2,8 @@ name: Upload Python Package
 
 on:
   release:
-    types: [created]
+    types:
+      - released
   pull_request:
     branches:
       - master
@@ -17,8 +18,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-        r-version: [3.6]
+        python-version: [3.7, 3.8, 3.9, "3.10"]
+        r-version: [release]
         os: [ubuntu-latest, macOS-latest, windows-2019]
         exclude:
         - python-version: 3.8
@@ -37,26 +38,34 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install setuptools wheel twine
-    - name: Build
+    - name: Build wheel
       run: |
         python setup.py bdist_wheel
-    - id: getfilename
+    - name: Build sdist
+      if: (matrix.r-version == '4.0' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8')
       run: |
-        echo "::set-output name=file::$(ls dist)"
-    - name: Create package for master on POSIX
+        python setup.py sdist
+    - id: getfilename_wheel
+      run: |
+        echo "::set-output name=file::$(basename -a $(ls dist/*.whl))"
+    - id: getfilename_targz
+      if: (matrix.r-version == '4.0' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8')
+      run: |
+        echo "::set-output name=file::$(basename -a $(ls dist/*.tar.gz))"
+    - name: Create package for master
       uses: actions/upload-artifact@v1
-      if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == '3.6' && (!startsWith(matrix.os, 'windows'))
+      if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == '4.0'
       with:
-          name: ${{ steps.getfilename.outputs.file }}
-          path: dist/${{ steps.getfilename.outputs.file }}
-    - name: Create package for master on Windows
+          name: ${{ steps.getfilename_wheel.outputs.file }}
+          path: dist/${{ steps.getfilename_wheel.outputs.file }}
+    - name: Create source package for master
       uses: actions/upload-artifact@v1
-      if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == '3.6' && startsWith(matrix.os, 'windows')
+      if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == '4.0' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8')
       with:
-          name: rpy2-3.3.0.dev0-py3-none-any.whl
-          path: ${{ steps.getfilename.outputs.file }}  
+          name: ${{ steps.getfilename_targz.outputs.file }}
+          path: dist/${{ steps.getfilename_targz.outputs.file }}
     - name: Publish
-      if: github.event_name == 'created'
+      if: github.event_name == 'release'
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
