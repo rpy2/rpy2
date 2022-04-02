@@ -12,7 +12,7 @@ rpy2.rinterface.initr_simple()
 
 def _add_warn_reticulate_hook():
     msg = """
-    WARNING: While the R package "reticulate" was developped after
+    WARNING: While the R package "reticulate" was developed after
     Python-R bridges such as rpy2 already existed, it does not
     consider that it could be called from a Python process. This
     results in a quasi-obligatory segfault when rpy2 is evaluating
