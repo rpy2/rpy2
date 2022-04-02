@@ -40,7 +40,7 @@ jobs:
         python -m pip install setuptools wheel twine
     - name: Build wheel
       run: |
-        python setup.py bdist_wheel
+        pip wheel -w dist --no-deps -e .
     - name: Build sdist
       if: (matrix.r-version == '4.0' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8')
       run: |
