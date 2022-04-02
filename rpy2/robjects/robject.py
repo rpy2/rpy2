@@ -153,7 +153,7 @@ class RObjectMixin(abc.ABC):
         When setting the rclass, the new value will be:
 
         - wrapped in a Python tuple if a string (the R class
-        is a vector of strings, and this is made for convenience)
+          is a vector of strings, and this is made for convenience)
         - wrapped in a StrSexpVector
 
         Note that when setting the class R may make a copy of

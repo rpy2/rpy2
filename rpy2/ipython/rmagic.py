@@ -208,14 +208,11 @@ class RMagics(Magics):
         must be installed. Because Cairo forces "onefile=TRUE",
         it is not posible to include multiple plots per cell.
 
-        Parameters
-        ----------
-
-        device : ['png', 'X11', 'svg']
-            Device to be used for plotting.
-            Currently only "png" and "X11" are supported,
-            with 'png' and 'svg' being most useful in the notebook,
-            and 'X11' allowing interactive plots in the terminal.
+        :param device: ['png', 'X11', 'svg']
+          Device to be used for plotting.
+          Currently only "png" and "X11" are supported,
+          with 'png' and 'svg' being most useful in the notebook,
+          and 'X11' allowing interactive plots in the terminal.
 
         """
         device = device.strip()

@@ -96,8 +96,8 @@ def _sigint_handler(sig, frame):
 def parse(text: str, num: int = -1):
     """Parse a string as R code.
 
-    :param:`text` A string with R code to parse.
-    :param:`num` The maximum number of lines to parse. If -1, no
+    :param text: A string with R code to parse.
+    :param num: The maximum number of lines to parse. If -1, no
       limit is applied.
     """
 
@@ -124,11 +124,11 @@ def evalr_expr(
 ) -> sexp.Sexp:
     """Evaluate an R expression.
 
-    :param:`expr` An R expression.
-    :param:`envir` An optional R environment in which the evaluation
+    :param expr: An R expression.
+    :param envir: An optional R environment in which the evaluation
       will happen. If None, which is the default, the environment in
      the context variable `evaluation_context` is used.
-    :param:`enclos` An enclosure. This is only relevant when envir
+    :param enclos: An enclosure. This is only relevant when envir
       is a list, a pairlist, or a data.frame. It specifies where to
     look for objects not found in envir.
     :return: The R objects resulting from the evaluation of the code"""
@@ -159,13 +159,13 @@ def evalr(
     Evaluate a string as R just as it would happen when writing
     code in an R terminal.
 
-    :param:`text` A string to be evaluated as R code,
+    :param str text: A string to be evaluated as R code,
     or an R expression.
-    :param:`maxlines` The maximum number of lines to parse. If -1, no
+    :param int maxlines: The maximum number of lines to parse. If -1, no
       limit is applied.
-    :param:`envir` An optional R environment in which the evaluation
+    :param envir: An optional R environment in which the evaluation
       will happen.
-    :param:`enclos` An enclosure. This is only relevant when envir
+    :param enclos: An enclosure. This is only relevant when envir
       is a list, a pairlist, or a data.frame. It specifies where to
     look for objects not found in envir.
     :return: The R objects resulting from the evaluation of the code"""
@@ -178,10 +178,10 @@ def evalr(
 def vector_memoryview(obj: sexp.SexpVector,
                       sizeof_str: str, cast_str: str) -> memoryview:
     """
-    :param:`obj` R vector
-    :param:`sizeof_str` Type in a string to use with ffi.sizeof()
+    :param obj: R vector
+    :param str sizeof_str: Type in a string to use with ffi.sizeof()
         (for example "int")
-    :param:`cast_str` Type in a string to use with memoryview.cast()
+    :param str cast_str: Type in a string to use with memoryview.cast()
         (for example "i")
     """
     b = openrlib.ffi.buffer(
@@ -282,7 +282,7 @@ class SexpPromise(Sexp):
     def eval(self, env: typing.Optional[SexpEnvironment] = None) -> sexp.Sexp:
         """"Evalute the R "promise".
 
-        :param:`env` The environment in which to evaluate the
+        :param env: The environment in which to evaluate the
           promise.
         """
         if env is None:
@@ -1101,6 +1101,7 @@ def rternalize(function: typing.Callable) -> SexpClosure:
     it can be called from the R side.
 
     :param function: A Python callable object.
+
     :return: A wrapped R object that can be use like any other rpy2
     object.
     """
