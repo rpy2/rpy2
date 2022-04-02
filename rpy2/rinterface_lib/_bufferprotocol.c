@@ -5,31 +5,30 @@
 static PyObject *
 memoryview_swapstrides(PyObject *self, PyObject *args)
 {
-    Py_buffer *view;
-    PyObject *memoryview;
-
-    if (!PyArg_ParseTuple(args, "O",
-			  &memoryview)) {
-        return NULL;
-    }
-
-    if (!PyMemoryView_Check(memoryview)) {
-      PyErr_SetString(PyExc_ValueError, "obj must be a memoryview.");
-      return NULL;
-    }
-    view = PyMemoryView_GET_BUFFER(memoryview);
-    if (!PyBuffer_IsContiguous(view, 'A')) {
-      PyErr_SetString(PyExc_ValueError, "obj must have a continuous buffer.");
-      return NULL;
-    }
-    int ndim = view->ndim;
-    Py_ssize_t prev_dim = 1;
-    for (Py_ssize_t i=0; i < ndim; i++) {
-      view->strides[i] = view->itemsize*prev_dim;
-      prev_dim = view->shape[i];
-    }
-    ((PyMemoryViewObject *)memoryview)->flags |= PyBUF_F_CONTIGUOUS;
-    return Py_None;
+  Py_buffer *view;
+  PyObject *memoryview;
+  
+  if (!PyArg_ParseTuple(args, "O",
+			&memoryview)) {
+    return NULL;
+  }
+  
+  if (!PyMemoryView_Check(memoryview)) {
+    PyErr_SetString(PyExc_ValueError, "obj must be a memoryview.");
+    return NULL;
+  }
+  view = PyMemoryView_GET_BUFFER(memoryview);
+  if (!PyBuffer_IsContiguous(view, 'A')) {
+    PyErr_SetString(PyExc_ValueError, "obj must have a continuous buffer.");
+    return NULL;
+  }
+  int ndim = view->ndim;
+  Py_ssize_t prod_prev_dim = 1;
+  for (Py_ssize_t i=0; i < ndim; i++) {
+    view->strides[i] = view->itemsize*prod_prev_dim;
+    prod_prev_dim *= view->shape[i];
+  }
+  return Py_None;
 };
 
 
