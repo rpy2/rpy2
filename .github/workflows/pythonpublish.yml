@@ -72,4 +72,4 @@ jobs:
       run: |
         echo 'Uploading to pypi'
         echo $(ls dist/*)
-        twine upload dist/rpy2-*.whl dist/rpy2-*.tar.gz
+        twine upload $(find dist -regextype posix-extended -regex "dist/rpy2.*\.((whl)|(tar\.gz))")
