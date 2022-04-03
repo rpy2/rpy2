@@ -72,4 +72,4 @@ jobs:
       if: github.event_name == 'release'
       uses: pypa/gh-action-pypi-publish@master
       with:
-        password: ${{ secrers.PYPI_API_TOKEN }}
+        password: ${{ secrets.PYPI_API_TOKEN }}
