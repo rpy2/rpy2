@@ -14,14 +14,13 @@ import subprocess
 import tempfile
 import warnings
 
+from setuptools import setup, Extension
 from distutils.ccompiler import new_compiler
-from distutils.core import Extension
 from distutils.sysconfig import customize_compiler
 from distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
 
 from rpy2 import situation
 
-from setuptools import setup
 from distutils.command.build import build as du_build
 
 PACKAGE_NAME = 'rpy2'
