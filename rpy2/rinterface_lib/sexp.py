@@ -648,8 +648,12 @@ class SexpVectorAbstract(SupportsSEXP, metaclass=abc.ABCMeta):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
+            if isinstance(value, Sexp):
+                val_cdata = value.__sexp__._cdata
+            else:
+                val_cdata = conversion._python_to_cdata(value)
             self._R_SET_VECTOR_ELT(cdata, i_c,
-                                   value.__sexp__._cdata)
+                                   val_cdata)
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
                 self._R_SET_VECTOR_ELT(cdata, i_c,

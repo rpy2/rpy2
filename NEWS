@@ -1,3 +1,14 @@
+Release 3.5.1
+=============
+
+Bugs fixed
+----------
+
+- Fix `__setitem__` on R list when the value is a simple Python object with
+  a default low-level conversion (issue #864). 
+
+
+
 Release 3.5.0
 =============
 
