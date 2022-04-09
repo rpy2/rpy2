@@ -149,11 +149,19 @@ class RInterpreterError(ri.embedded.RRuntimeError):
 # the way python lists are automatically converted by numpy functions), so
 # for interactive use in the rmagic, we call unlist, which converts lists to
 # vectors **if the list was of uniform (atomic) type**.
-@converter.rpy2py.register(list)
-def rpy2py_list(obj):
+@converter.py2rpy.register(list)
+def py2rpy_list(obj):
     # simplify2array is a utility function, but nice for us
     # TODO: use an early binding of the R function
-    return ro.r.simplify2array(obj)
+    robj = ri.ListSexpVector(
+            [ro.conversion.converter.py2rpy(x) for x in obj]
+        )
+    res = ro.r.simplify2array(robj)
+    # The current default converter for the ipython rmagic
+    # might make `res` a numpy array. We need to ensure that
+    # a rpy2 objects is returned (issue #866).
+    res_rpy = ro.conversion.converter.py2rpy(res)
+    return res_rpy
 
 
 # TODO: remove ?

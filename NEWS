@@ -5,8 +5,10 @@ Bugs fixed
 ----------
 
 - Fix `__setitem__` on R list when the value is a simple Python object with
-  a default low-level conversion (issue #864). 
+  a default low-level conversion (issue #864).
 
+- The default converter for the rmagic could fail with a
+  :class:`RecursionError` (issue #866).
 
 
 Release 3.5.0
