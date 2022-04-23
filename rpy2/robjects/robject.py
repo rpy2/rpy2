@@ -12,17 +12,11 @@ rpy2.rinterface.initr_simple()
 
 def _add_warn_reticulate_hook():
     msg = """
-    WARNING: The R package "reticulate" does not
-    consider that it could be called from a Python process. This
-    results in a quasi-obligatory segfault when rpy2 is evaluating
-    R code using it. On the hand, rpy2 is accounting for the
-    fact that it might already be running embedded in a Python
-    process. This is why:
-    - Python -> rpy2 -> R -> reticulate: crashes
-    - R -> reticulate -> Python -> rpy2: works
-
-    The issue with reticulate is tracked here:
-    https://github.com/rstudio/reticulate/issues/208
+    WARNING: The R package "reticulate" only fixed recently
+    an issue that caused a segfault when used with rpy2:
+    https://github.com/rstudio/reticulate/pull/1188
+    Make sure that you use a version of that package that includes
+    the fix.
     """
     rpy2.rinterface.evalr(f"""
     setHook(packageEvent("reticulate", "onLoad"),
