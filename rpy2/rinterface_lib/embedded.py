@@ -262,6 +262,14 @@ def _initr(
             _setinitialized()
             return None
         os.environ['R_HOME'] = openrlib.R_HOME
+        # TODO: Setting LD_LIBRARY_PATH after the process has started
+        # is too late. Because of this, the line below does not help
+        # address issues where calling R from the command line is working
+        # (as it is a shell script setting environment variables before
+        # start the binary in a child process). Calling C's dlopen with
+        # the path of the shared library could address this but for the
+        # API mode this would require writing a C wrapper to manually
+        # load each each symbol in the C library.
         os.environ['LD_LIBRARY_PATH'] = (
             ':'.join(
                 (openrlib.LD_LIBRARY_PATH,
