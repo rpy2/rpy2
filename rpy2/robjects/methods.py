@@ -23,7 +23,8 @@ class RS4(RObjectMixin, rinterface.SexpS4):
         return methods_env['slotNames'](self)
 
     def do_slot(self, name):
-        return conversion.rpy2py(super(RS4, self).do_slot(name))
+        return (conversion.get_conversion()
+                .rpy2py(super(RS4, self).do_slot(name)))
 
     def extends(self):
         """Return the R classes this extends.
@@ -34,13 +35,14 @@ class RS4(RObjectMixin, rinterface.SexpS4):
     @staticmethod
     def isclass(name):
         """ Return whether the given name is a defined class. """
-        name = conversion.py2rpy(name)
+        name = conversion.get_conversion().py2rpy(name)
         return methods_env['isClass'](name)[0]
 
     def validobject(self, test=False, complete=False):
         """ Return whether the instance is 'valid' for its class. """
-        test = conversion.py2rpy(test)
-        complete = conversion.py2rpy(complete)
+        cv = conversion.get_conversion()
+        test = cv.py2rpy(test)
+        complete = cv.py2rpy(complete)
         return methods_env['validObject'](self, test=test,
                                           complete=complete)[0]
 
@@ -109,7 +111,7 @@ class RS4_Type(abc.ABCMeta):
             r_meth = getmethod(StrSexpVector((rname, )),
                                signature=signature,
                                where=where)
-            r_meth = conversion.rpy2py(r_meth)
+            r_meth = conversion.get_conversion().rpy2py(r_meth)
             if as_property:
                 cls_dict[python_name] = property(r_meth, None, None,
                                                  doc=docstring)
@@ -254,7 +256,7 @@ def set_accessors(cls, cls_name, where, acs):
         r_meth = getmethod(StrSexpVector((r_name, )),
                            signature=StrSexpVector((cls_name, )),
                            where=where)
-        r_meth = conversion.rpy2py(r_meth)
+        r_meth = conversion.get_conversion().rpy2py(r_meth)
         if as_property:
             setattr(cls, python_name, property(r_meth, None, None))
         else:

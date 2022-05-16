@@ -48,10 +48,10 @@ class RSlots(object):
 
     def __getitem__(self, key: str):
         value = self._robj.do_slot(key)
-        return conversion.rpy2py(value)
+        return conversion.get_conversion().rpy2py(value)
 
     def __setitem__(self, key: str, value):
-        rpy2_value = conversion.py2rpy(value)
+        rpy2_value = conversion.get_conversion().py2rpy(value)
         self._robj.do_slot_assign(key, rpy2_value)
 
     def __len__(self):

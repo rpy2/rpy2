@@ -19,7 +19,7 @@ class Environment(RObjectMixin, sexp.SexpEnvironment):
 
     def __getitem__(self, item: str):
         res = super(Environment, self).__getitem__(item)
-        res = conversion.converter.rpy2py(res)
+        res = conversion.get_conversion().rpy2py(res)
         # objects in a R environment have an associated name / symbol
         try:
             res.__rname__ = item
@@ -32,12 +32,12 @@ class Environment(RObjectMixin, sexp.SexpEnvironment):
         return res
 
     def __setitem__(self, item: str, value: typing.Any) -> None:
-        robj = conversion.converter.py2rpy(value)
+        robj = conversion.get_conversion().py2rpy(value)
         super(Environment, self).__setitem__(item, robj)
 
     @property
     def enclos(self) -> typing.Union[sexp.SexpEnvironment, sexp.NULLType]:
-        return conversion.converter.rpy2py(super().enclos)
+        return conversion.get_conversion().rpy2py(super().enclos)
 
     @enclos.setter
     def enclos(self, value: sexp.SexpEnvironment) -> None:
@@ -49,7 +49,7 @@ class Environment(RObjectMixin, sexp.SexpEnvironment):
 
     @property
     def frame(self) -> sexp.SexpEnvironment:
-        return conversion.converter.rpy2py(super().frame)
+        return conversion.get_conversion().rpy2py(super().frame)
 
     def find(self, item: str, wantfun: bool = False):
         """Find an item, starting with this R environment.
@@ -65,7 +65,7 @@ class Environment(RObjectMixin, sexp.SexpEnvironment):
         :rtype: object (as returned by :func:`conversion.converter.rpy2py`)
         """
         res = super(Environment, self).find(item, wantfun=wantfun)
-        res = conversion.converter.rpy2py(res)
+        res = conversion.get_conversion().rpy2py(res)
         # TODO: There is a design issue here. The attribute __rname__ is
         # intended to store the symbol name of the R object but this is
         # meaningless for non-rpy2 objects.

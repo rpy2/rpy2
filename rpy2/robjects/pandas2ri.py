@@ -53,7 +53,7 @@ def py2rpy_pandasdataframe(obj):
     od = OrderedDict()
     for name, values in obj.iteritems():
         try:
-            od[name] = conversion.py2rpy(values)
+            od[name] = conversion.converter_ctx.get().py2rpy(values)
         except Exception as e:
             warnings.warn('Error while trying to convert '
                           'the column "%s". Fall back to string conversion. '
@@ -202,7 +202,8 @@ def py2rpy_pandasseries(obj):
                            StrVector(tuple(str(x) for x in obj.index)))
     else:
         res.do_slot_assign('dimnames',
-                           SexpVector(conversion.py2rpy(obj.index)))
+                           SexpVector(conversion.converter_ctx
+                                      .get().py2rpy(obj.index)))
     return res
 
 
@@ -271,10 +272,10 @@ def activate():
 
     original_converter = conversion.Converter(
         'snapshot before pandas conversion',
-        template=conversion.converter)
+        template=conversion.get_conversion())
     numpy2ri.activate()
     new_converter = conversion.Converter('snapshot before pandas conversion',
-                                         template=conversion.converter)
+                                         template=conversion.get_conversion())
     numpy2ri.deactivate()
 
     for k, v in py2rpy.registry.items():

@@ -208,7 +208,7 @@ def vector_memoryview(obj: sexp.SexpVector,
         # The typed signature for memoryview does not help the static
         # type checker verify that a numpy.ndarray implement the buffer
         # protocol. Type checking is ignored to avoid a check error.
-        mv = memoryview(a) # type: ignore
+        mv = memoryview(a)  # type: ignore
     return mv
 
 

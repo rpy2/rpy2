@@ -108,28 +108,32 @@ def _vector_matrix_array(
 
 @default_converter.rpy2py.register(rinterface.IntSexpVector)
 def _convert_rpy2py_intvector(obj):
-    clsmap = conversion.converter.rpy2py_nc_name[rinterface.IntSexpVector]
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[rinterface.IntSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.FloatSexpVector)
 def _convert_rpy2py_floatvector(obj):
-    clsmap = conversion.converter.rpy2py_nc_name[rinterface.FloatSexpVector]
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[rinterface.FloatSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.ComplexSexpVector)
 def _convert_rpy2py_complexvector(obj):
-    clsmap = conversion.converter.rpy2py_nc_name[rinterface.ComplexSexpVector]
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[rinterface.ComplexSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.BoolSexpVector)
 def _convert_rpy2py_boolvector(obj):
-    clsmap = conversion.converter.rpy2py_nc_name[rinterface.BoolSexpVector]
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[rinterface.BoolSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
@@ -227,14 +231,16 @@ def _rpy2py_sexpenvironment(obj):
 
 @default_converter.rpy2py.register(rinterface.ListSexpVector)
 def _rpy2py_listsexp(obj):
-    clsmap = conversion.converter.rpy2py_nc_name[rinterface.ListSexpVector]
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[rinterface.ListSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(SexpS4)
 def _rpy2py_sexps4(obj):
-    clsmap = conversion.converter.rpy2py_nc_name[SexpS4]
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[SexpS4])
     cls = clsmap.find(methods_env['extends'](obj.rclass))
     return cls(obj)
 
@@ -296,17 +302,19 @@ default_converter.py2rpy.register(int,
 
 @default_converter.py2rpy.register(list)
 def _py2rpy_list(obj):
+    cv = conversion.get_conversion()
     return vectors.ListVector(
         rinterface.ListSexpVector(
-            [conversion.py2rpy(x) for x in obj]
+            [cv.py2rpy(x) for x in obj]
         )
     )
 
 
 @default_converter.py2rpy.register(rlc.TaggedList)
 def _py2rpy_taggedlist(obj):
+    cv = conversion.get_conversion()
     res = vectors.ListVector(
-        rinterface.ListSexpVector([conversion.py2rpy(x) for x in obj])
+        rinterface.ListSexpVector([cv.py2rpy(x) for x in obj])
     )
     res.do_slot_assign('names', rinterface.StrSexpVector(obj.tags))
     return res
@@ -324,7 +332,7 @@ def _function_to_rpy(func):
         res = conversion.py2ro(res)
         return res
     rfunc = rinterface.rternalize(wrap)
-    return conversion.rpy2py(rfunc)
+    return conversion.get_conversion().rpy2py(rfunc)
 
 
 @default_converter.rpy2py.register(object)
@@ -389,7 +397,7 @@ class Formula(RObjectMixin, rinterface.Sexp):
     def getenvironment(self):
         """ Get the environment in which the formula is finding its symbols."""
         res = self.do_slot(".Environment")
-        res = conversion.rpy2py(res)
+        res = conversion.get_conversion().rpy2py(res)
         return res
 
     def setenvironment(self, val):
@@ -429,7 +437,7 @@ class R(object):
 
     def __getitem__(self, item):
         res = _globalenv.find(item)
-        res = conversion.rpy2py(res)
+        res = conversion.get_conversion().rpy2py(res)
         if hasattr(res, '__rname__'):
             res.__rname__ = item
         return res
@@ -449,7 +457,7 @@ class R(object):
     def __call__(self, string):
         p = rinterface.parse(string)
         res = self.eval(p)
-        return conversion.rpy2py(res)
+        return conversion.get_conversion().rpy2py(res)
 
 
 r = R()
@@ -457,6 +465,6 @@ rl = language.LangVector.from_string
 
 conversion.set_conversion(default_converter)
 
-globalenv = conversion.converter.rpy2py(_globalenv)
-baseenv = conversion.converter.rpy2py(rinterface.baseenv)
-emptyenv = conversion.converter.rpy2py(rinterface.emptyenv)
+globalenv = conversion.converter_ctx.get().rpy2py(_globalenv)
+baseenv = conversion.converter_ctx.get().rpy2py(rinterface.baseenv)
+emptyenv = conversion.converter_ctx.get().rpy2py(rinterface.emptyenv)

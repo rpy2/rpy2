@@ -32,26 +32,6 @@ def test_eval():
     assert res[0] == 625
 
 
-def test_override_rpy2py():
-    class Density(object):
-        def __init__(self, x):
-            self._x = x
-
-    def f(obj):
-        pyobj = robjects.default_converter.rpy2py(obj)
-        inherits = rinterface.baseenv['inherits']
-        classname = rinterface.StrSexpVector(['density', ])
-                                          
-        if inherits(pyobj, classname)[0]:
-            pyobj = Density(pyobj)
-        return pyobj
-    robjects.conversion.rpy2py = f
-    x = robjects.r.rnorm(100)
-    d = robjects.r.density(x)
-
-    assert isinstance(d, Density)
-
-
 def test_items():
     v = robjects.IntVector((1,2,3))
     rs = robjects.robject.RSlots(v)
