@@ -31,7 +31,10 @@ def __getattr__(name):
             '{__name__}.converter.',
             DeprecationWarning
         )
-        return globals()[_deprecated_name]()
+        if name == 'converter':
+            return globals()[_deprecated_name]()
+        else:
+            return globals()[_deprecated_name]
     raise AttributeError(f'module {__name__} has no attribute {name}')
 
 
