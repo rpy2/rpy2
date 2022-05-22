@@ -113,16 +113,17 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         return os.linesep.join(doc)
 
     def __call__(self, *args, **kwargs):
-        new_args = [conversion.py2rpy(a) for a in args]
+        cv = conversion.get_conversion()
+        new_args = [cv.py2rpy(a) for a in args]
         new_kwargs = {}
         for k, v in kwargs.items():
             # TODO: shouldn't this be handled by the conversion itself ?
             if isinstance(v, rinterface.Sexp):
                 new_kwargs[k] = v
             else:
-                new_kwargs[k] = conversion.py2rpy(v)
+                new_kwargs[k] = cv.py2rpy(v)
         res = super(Function, self).__call__(*new_args, **new_kwargs)
-        res = conversion.rpy2py(res)
+        res = cv.rpy2py(res)
         return res
 
     def formals(self):
@@ -130,7 +131,7 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         (as the R function 'formals()' would).
         """
         res = _formals_fixed(self)
-        res = conversion.rpy2py(res)
+        res = conversion.get_conversion().rpy2py(res)
         return res
 
     def rcall(

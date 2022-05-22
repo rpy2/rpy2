@@ -6,15 +6,36 @@ Conversions are initially empty place-holders,
 raising a NotImplementedError exception.
 """
 
+import contextvars
 from functools import singledispatch
+import os
 from typing import Any
-from typing import Callable
 from typing import Optional
 import typing
+import warnings
 from rpy2.rinterface_lib import _rinterface_capi
 import rpy2.rinterface_lib.sexp
 import rpy2.rinterface_lib.conversion
 import rpy2.rinterface
+
+
+deprecated_names = {'converter', 'py2rpy', 'rpy2py'}
+
+
+def __getattr__(name):
+    if name in deprecated_names:
+        _deprecated_name = f'_deprecated_{name}'
+        warnings.warn(
+            'The use of {name} in module {__name__} is deprecated. '
+            'Use (__name__}.get_conversion() instead of '
+            '{__name__}.converter.',
+            DeprecationWarning
+        )
+        if name == 'converter':
+            return globals()[_deprecated_name]()
+        else:
+            return globals()[_deprecated_name]
+    raise AttributeError(f'module {__name__} has no attribute {name}')
 
 
 class NameClassMap(object):
@@ -283,6 +304,20 @@ class Converter(object):
         overlay_converter(converter, result_converter)
         return result_converter
 
+    def __str__(self):
+        res = [str(type(self))]
+        for subcv in ('py2rpy', 'rpy2py'):
+            res.append(subcv)
+            for cls in getattr(self, subcv).registry.keys():
+                res.append(f'- {cls.__module__}.{cls.__name__}')
+                if subcv == 'rpy2py':
+                    ncmap = self._rpy2py_nc_map.get(cls)
+                    if ncmap:
+                        for k, v in ncmap._map.items():
+                            res.append(f'  - {k} (in {v.__module__})')
+            res.append('---')
+        return os.linesep.join(res)
+
     @staticmethod
     def make_dispatch_functions():
         py2rpy = singledispatch(_py2rpy)
@@ -301,7 +336,7 @@ class ConversionContext(object):
     """
     def __init__(self, ctx_converter):
         assert isinstance(ctx_converter, Converter)
-        self._original_converter = converter
+        self._original_converter = converter_ctx.get()
         self.ctx_converter = Converter('Converter-%i-in-context' % id(self),
                                        template=ctx_converter)
 
@@ -316,9 +351,31 @@ class ConversionContext(object):
 
 localconverter = ConversionContext
 
-converter: Converter = Converter('empty')
-py2rpy: Callable[[Any], _rinterface_capi.SupportsSEXP] = converter.py2rpy
-rpy2py: Callable[[_rinterface_capi.SupportsSEXP], Any] = converter.rpy2py
+converter_ctx = contextvars.ContextVar('converter',
+                                       default=Converter('empty'))
+
+
+def _deprecated_converter():
+    return converter_ctx.get('converter')
+
+
+def _deprecated_py2rpy(
+        obj: Any
+) -> _rinterface_capi.SupportsSEXP:
+    return converter_ctx.get('converter').py2rpy(obj)
+
+
+def _deprecated_rpy2py(
+        obj: Any
+) -> _rinterface_capi.SupportsSEXP:
+    return converter_ctx.get('converter').rpy2py(obj)
+
+
+def get_conversion():
+    """
+    Get the conversion rules active in the current context.
+    """
+    return converter_ctx.get()
 
 
 def set_conversion(this_converter):
@@ -327,10 +384,7 @@ def set_conversion(this_converter):
     :param this_converter: The conversion rules
     :type this_converter: :class:`Converter`
     """
-    global converter, py2rpy, rpy2py
-    converter = this_converter
-    py2rpy = converter.py2rpy
-    rpy2py = converter.rpy2py
+    converter_ctx.set(this_converter)
 
 
 set_conversion(Converter('base converter'))

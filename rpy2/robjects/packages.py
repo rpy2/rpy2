@@ -239,6 +239,7 @@ class Package(ModuleType):
                          exception)
         symbol_mapping.update(resolutions)
         reserved_pynames = set(dir(self))
+        cv = conversion.get_conversion()
         for rpyname, rnames in symbol_mapping.items():
             # last paranoid check
             if len(rnames) > 1:
@@ -260,7 +261,7 @@ class Package(ModuleType):
                 riobj = self._env[rname]
             except rinterface.embedded.RRuntimeError as rre:
                 warn(str(rre))
-            rpyobj = conversion.rpy2py(riobj)
+            rpyobj = cv.rpy2py(riobj)
             if hasattr(rpyobj, '__rname__'):
                 rpyobj.__rname__ = rname
             # TODO: shouldn't the original R name be also in the __dict__ ?

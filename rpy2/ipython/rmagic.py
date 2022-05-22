@@ -58,9 +58,9 @@ import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
 from rpy2.robjects.lib import grdevices
 from rpy2.robjects.conversion import (Converter,
-                                      localconverter)
+                                      localconverter,
+                                      get_conversion)
 import warnings
-from rpy2.robjects.conversion import converter as template_converter
 
 # Try loading pandas and numpy, emitting a warning if either cannot be
 # loaded.
@@ -96,6 +96,8 @@ from IPython.core.magic_arguments import (argument,  # type: ignore
                                           argument_group,
                                           magic_arguments,
                                           parse_argstring)
+
+template_converter = get_conversion()
 
 
 def _get_ipython_template_converter(template_converter=template_converter,
@@ -153,14 +155,15 @@ class RInterpreterError(ri.embedded.RRuntimeError):
 def py2rpy_list(obj):
     # simplify2array is a utility function, but nice for us
     # TODO: use an early binding of the R function
+    cv = ro.conversion.get_conversion()
     robj = ri.ListSexpVector(
-            [ro.conversion.converter.py2rpy(x) for x in obj]
+            [cv.py2rpy(x) for x in obj]
         )
     res = ro.r.simplify2array(robj)
     # The current default converter for the ipython rmagic
     # might make `res` a numpy array. We need to ensure that
     # a rpy2 objects is returned (issue #866).
-    res_rpy = ro.conversion.converter.py2rpy(res)
+    res_rpy = cv.py2rpy(res)
     return res_rpy
 
 

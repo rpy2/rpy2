@@ -96,7 +96,7 @@ class GGPlot(robjects.vectors.ListVector):
     @classmethod
     def new(cls, data, mapping=_AES_RLANG, **kwargs):
         """ Constructor for the class GGplot. """
-        data = conversion.py2rpy(data)
+        data = conversion.get_conversion().py2rpy(data)
         res = cls(cls._constructor(data, mapping=mapping, **kwargs))
         return res
 
@@ -197,10 +197,10 @@ class Layer(robjects.RObject):
             *args, **kwargs):
         """ Constructor for the class Layer. """
         for i, elt in enumerate(args):
-            args[i] = conversion.py2ro(elt)
+            args[i] = conversion.py2rpy(elt)
 
         for k in kwargs:
-            kwargs[k] = conversion.py2ro(kwargs[k])
+            kwargs[k] = conversion.py2rpy(kwargs[k])
 
         res = cls(cls.contructor)(*args, **kwargs)
         return res
@@ -1368,7 +1368,9 @@ def dict2rvec(d):
 
 as_labeller = ggplot2.as_labeller
 
-original_rpy2py = conversion.rpy2py
+# TODO: This side effect can create a issues that
+# are hard to troubleshoot (import order).
+original_rpy2py = conversion.get_conversion().rpy2py
 
 
 def ggplot2_conversion(robj):

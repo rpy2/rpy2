@@ -2,6 +2,7 @@ import pytest
 import sys
 from rpy2 import robjects
 from rpy2 import rinterface
+import rpy2.rlike.container
 import rpy2.robjects.conversion as conversion
 r = robjects.r
 
@@ -34,7 +35,7 @@ def numpy_conversion():
 class TestNumpyConversions(object):
 
     def check_homogeneous(self, obj, mode, storage_mode):
-        converted = conversion.py2rpy(obj)
+        converted = conversion.converter_ctx.get().py2rpy(obj)
         assert r["mode"](converted)[0] == mode
         assert r["storage.mode"](converted)[0] == storage_mode
         assert list(obj) == list(converted)
@@ -77,7 +78,7 @@ class TestNumpyConversions(object):
     def test_vector_bytes(self):
         l = [b'a', b'b', b'c']
         s = numpy.array(l, dtype = '|S1')
-        converted = conversion.py2rpy(s)
+        converted = conversion.converter_ctx.get().py2rpy(s)
         assert r["mode"](converted)[0] == 'raw'
         assert r["storage.mode"](converted)[0] == 'raw'
         assert bytearray(b''.join(l)) == bytearray(converted)
@@ -85,7 +86,7 @@ class TestNumpyConversions(object):
     def test_array(self):
 
         i2d = numpy.array([[1, 2, 3], [4, 5, 6]], dtype='i')
-        i2d_r = conversion.py2rpy(i2d)
+        i2d_r = conversion.converter_ctx.get().py2rpy(i2d)
         assert r['storage.mode'](i2d_r)[0] == 'integer'
         assert tuple(r['dim'](i2d_r)) == (2, 3)
 
@@ -93,7 +94,7 @@ class TestNumpyConversions(object):
         assert r['['](i2d_r, 1, 2)[0] == i2d[0, 1]
 
         f3d = numpy.arange(24, dtype='f').reshape((2, 3, 4))
-        f3d_r = conversion.py2rpy(f3d)
+        f3d_r = conversion.converter_ctx.get().py2rpy(f3d)
 
         assert r['storage.mode'](f3d_r)[0] == 'double'
         assert tuple(r['dim'](f3d_r)) == (2, 3, 4)
@@ -110,7 +111,7 @@ class TestNumpyConversions(object):
     )
     def test_scalar_int(self, constructor):
         np_value = constructor(100)
-        r_vec = conversion.py2rpy(np_value)
+        r_vec = conversion.converter_ctx.get().py2rpy(np_value)
         r_scalar = numpy.array(r_vec)[0]
         assert np_value == r_scalar
 
@@ -118,13 +119,13 @@ class TestNumpyConversions(object):
                         reason='numpy.float128 not available on this system')
     def test_scalar_f128(self):
         f128 = numpy.float128(100.000000003)
-        f128_r = conversion.py2rpy(f128)
+        f128_r = conversion.converter_ctx.get().py2rpy(f128)
         f128_test = numpy.array(f128_r)[0]
         assert f128 == f128_test
 
     def test_object_array(self):
         o = numpy.array([1, "a", 3.2], dtype=numpy.object_)
-        o_r = conversion.py2rpy(o)
+        o_r = conversion.converter_ctx.get().py2rpy(o)
         assert r['mode'](o_r)[0] == 'list'
         assert r['[['](o_r, 1)[0] == 1
         assert r['[['](o_r, 2)[0] == 'a'
@@ -133,7 +134,7 @@ class TestNumpyConversions(object):
     def test_record_array(self):
         rec = numpy.array([(1, 2.3), (2, -0.7), (3, 12.1)],
                           dtype=[("count", "i"), ("value", numpy.double)])
-        rec_r = conversion.py2rpy(rec)
+        rec_r = conversion.converter_ctx.get().py2rpy(rec)
         assert r["is.data.frame"](rec_r)[0] is True
         assert tuple(r["names"](rec_r)) == ("count", "value")
         count_r = rec_r[rec_r.names.index('count')]
@@ -146,7 +147,7 @@ class TestNumpyConversions(object):
     def test_bad_array(self):
         u = numpy.array([1, 2, 3], dtype=numpy.uint32)
         with pytest.raises(ValueError):
-            conversion.py2rpy(u)
+            conversion.converter_ctx.get().py2rpy(u)
 
     def test_assign_numpy_object(self):
         x = numpy.arange(-10., 10., 1)
@@ -174,6 +175,19 @@ class TestNumpyConversions(object):
         assert rec.a[0] == 1
         assert rec.b[0] == 2
         assert rec.c[0] == 'e'
+
+
+    def test_rlist_to_numpy(self):
+        df = robjects.vectors.ListVector(
+            {'a': 1,
+             'b': 2,
+             'c': robjects.vectors.FactorVector('e')})
+        rec = conversion.rpy2py(df)
+        assert rpy2.rlike.container.OrdDict == type(rec)
+        assert rec['a'][0] == 1
+        assert rec['b'][0] == 2
+        assert rec['c'][0] == 1  # not 'e'.
+
 
     def test_atomic_vector_to_numpy(self):
         v = robjects.vectors.IntVector((1,2,3))

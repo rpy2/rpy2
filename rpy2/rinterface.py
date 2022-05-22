@@ -205,7 +205,10 @@ def vector_memoryview(obj: sexp.SexpVector,
     except ImportError:
         import numpy  # type: ignore
         a = numpy.frombuffer(b, dtype=cast_str).reshape(shape, order='F')
-        mv = memoryview(a)
+        # The typed signature for memoryview does not help the static
+        # type checker verify that a numpy.ndarray implement the buffer
+        # protocol. Type checking is ignored to avoid a check error.
+        mv = memoryview(a)  # type: ignore
     return mv
 
 

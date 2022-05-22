@@ -1,6 +1,22 @@
 Release 3.5.2
 =============
 
+New features
+------------
+
+- The string representation for :class:`rpy2.robjects.conversion.Converter`
+  objects lists classes the converter will dispatch on.
+
+Bugs fixed
+----------
+
+- :meth:`rpy2.robjects.vectors.FactorVector.iter_labels` was failing if
+  any element is NA (issue #879).
+
+- The definition of converters was not thread-safe. The fix deprecates
+  the use of :obj:`rpy2.robjects.conversion.converter` and replaces it
+  with :func:`rpy2.robjects.conversion.get_conversion`.
+
 
 Release 3.5.1
 =============
