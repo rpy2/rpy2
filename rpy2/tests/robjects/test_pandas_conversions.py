@@ -171,18 +171,36 @@ class TestPandasConversions(object):
             with pytest.raises(ValueError):
                 rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
 
-
-    def test_series_obj_bool(self):
+    @pytest.mark.parametrize(
+        'data',
+        ([True, False, True],
+         [True, False, None])
+    )
+    @pytest.mark.parametrize(
+        'dtype', [bool, pandas.BooleanDtype() if has_pandas else None]
+    )
+    def test_series_obj_bool(self, data, dtype):
         Series = pandas.core.series.Series
-        s = Series([True, False, True], index=['a', 'b', 'c'], dtype='bool')
+        s = Series(data, index=['a', 'b', 'c'], dtype=dtype)
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
         assert isinstance(rp_s, rinterface.BoolSexpVector)
 
-        s = Series([True, False, None], index=['a', 'b', 'c'], dtype='bool')
+
+    @pytest.mark.parametrize(
+        'data',
+        ([1.1, 2.2, 3.3],
+         [1.1, 2.2, None])
+    )
+    @pytest.mark.parametrize(
+        'dtype', [float, pandas.Float64Dtype() if has_pandas else None]
+    )
+    def test_series_obj_float(self, data, dtype):
+        Series = pandas.core.series.Series
+        s = Series(data, index=['a', 'b', 'c'], dtype=dtype)
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
-        assert isinstance(rp_s, rinterface.BoolSexpVector)
+        assert isinstance(rp_s, rinterface.FloatSexpVector)
 
 
     def test_series_obj_allnone(self):
