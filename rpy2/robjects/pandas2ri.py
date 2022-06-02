@@ -224,9 +224,24 @@ def py2rpy_pandasseries(obj):
     return res
 
 
+def _ri2py_vector(obj):
+    x = numpy2ri.rpy2py(obj)
+    try:
+        # if names is assigned, convert to pandas series
+        return pandas.Series(x, obj.names)
+    except:
+        # if dimnames assigned, it's a named matrix, convert to pandas dataframe
+        try:
+            rownames, colnames = obj.do_slot("dimnames")
+            x = pandas.DataFrame(x, index=rownames, columns=colnames)
+        finally:
+            # plain vector/matrix
+            return x
+    
+
 @rpy2py.register(SexpVector)
 def ri2py_vector(obj):
-    res = numpy2ri.rpy2py(obj)
+    res = _ri2py_vector(obj)
     return res
 
 
@@ -235,7 +250,7 @@ def rpy2py_floatvector(obj):
     if POSIXct.isrinstance(obj):
         return rpy2py(POSIXct(obj))
     else:
-        return numpy2ri.rpy2py(obj)
+        return _ri2py_vector(obj)
 
 
 @rpy2py.register(POSIXct)

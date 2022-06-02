@@ -415,3 +415,19 @@ class TestPandasConversions(object):
                 if 'd' in robjects.globalenv:
                     del(robjects.globalenv['d'])
         assert ok
+
+    def test_ri2pandas_named_vector(self):
+        rdataf = robjects.r("c('a' = 5, 'b' = 6, 'c' = 7, 'd' = 8)")
+        with localconverter(default_converter + rpyp.converter) as cv:
+            pandas_df = cv.rpy2py(rdataf)
+        assert all(x == y for x, y in zip(rdataf.names, pandas_df.index))
+
+        rdataf = robjects.r['matrix'](robjects.FloatVector([4, 5, 1, 10, 8, 3]), 
+                                      nrow = 2, ncol = 3, byrow = True)
+        rdataf.rownames = robjects.StrVector(["Row 1", "Row 2"])
+        rdataf.colnames = robjects.StrVector(["Column 1", "Column 2", "Column 3"])
+        with localconverter(default_converter + rpyp.converter) as cv:
+            pandas_df = cv.rpy2py(rdataf)
+        assert all(x == y for x, y in zip(rdataf.rownames, pandas_df.index))
+        assert all(x == y for x, y in zip(rdataf.colnames, pandas_df.columns))
+
