@@ -14,7 +14,7 @@ import subprocess
 import tempfile
 import warnings
 
-from setuptools import setup, Extension
+from setuptools import setup, Extension, dist
 from distutils.ccompiler import new_compiler
 from distutils.sysconfig import customize_compiler
 from distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
@@ -110,6 +110,7 @@ def get_r_c_extension_status():
                                     library_dirs=c_ext.library_dirs)
     return status
 
+dist.Distribution().fetch_build_eggs(["packaging;platform_system=='Windows'"])
 
 cffi_mode = situation.get_cffi_mode()
 c_extension_status = get_r_c_extension_status()
