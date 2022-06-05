@@ -108,18 +108,16 @@ def r_home_from_registry() -> Optional[str]:
                 def get_version(i):
                     try:
                         return Version(winreg.EnumKey(hkey, i))
-                    except:
+                    except Exception:
                         return None
 
                 latest = max(
-                    (
-                        v
-                        for v in (get_version(i) for i in range(winreg.QueryInfoKey(hkey)[0]))
-                        if v is not None
-                    )
+                    (v for v in (get_version(i)
+                                 for i in range(winreg.QueryInfoKey(hkey)[0]))
+                     if v is not None)
                 )
 
-                with winreg.OpenKeyEx(hkey,f'{latest}') as subkey:
+                with winreg.OpenKeyEx(hkey, f'{latest}') as subkey:
                     r_home = winreg.QueryValueEx(subkey, "InstallPath")[0]
 
                 # check for an earlier version
