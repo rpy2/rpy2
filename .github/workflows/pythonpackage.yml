@@ -62,7 +62,7 @@ jobs:
     - name: Install package
       run: |
         ${{ matrix.venv_activate }}
-        pip install -e .
+        pip install .
         rm -r build/
     - name: Test with minimal dependencies
       run: |
@@ -93,10 +93,12 @@ jobs:
       run: |
         echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
     - name: Install R dependencies
+      if: matrix.os != 'windows-latest'
       run: |
         install.packages(c("ggplot2", "dplyr", "tidyr", "dbplyr", "lazyeval", "rlang"))
       shell: Rscript {0}
     - name: Test with R deps
+      if: matrix.os != 'windows-latest'
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
