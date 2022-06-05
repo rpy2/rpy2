@@ -1,3 +1,13 @@
+Release 3.5.3
+=============
+
+Bugs fixed
+----------
+
+- Pandas converter no longer fails with arrays of `dtype`
+  :class:`pandas.BoolDtype` or :class:`pandas.Float64Dtype`.(issue #880).
+
+
 Release 3.5.2
 =============
 

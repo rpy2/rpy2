@@ -23,6 +23,7 @@ from rpy2.robjects.vectors import (BoolVector,
                                    DataFrame,
                                    DateVector,
                                    FactorVector,
+                                   FloatVector,
                                    FloatSexpVector,
                                    StrVector,
                                    IntVector,
@@ -93,19 +94,26 @@ def py2rpy_categoryseries(obj):
     return res
 
 
-def _str_populate_r_vector(iterable, r_vector,
-                           set_elt,
-                           cast_value):
-    for i, v in enumerate(iterable):
-        if (
-                v is None
-                or
-                v is pandas.NA
-                or
-                (isinstance(v, float) and math.isnan(v))
-        ):
-            v = na_values.NA_Character
-        set_elt(r_vector, i, cast_value(v))
+def _populate_r_vector_with_na(na_value):
+    def f(iterable, r_vector,
+          set_elt,
+          cast_value):
+        for i, v in enumerate(iterable):
+            if (
+                    v is None
+                    or
+                    v is pandas.NA
+                    or
+                    (isinstance(v, float) and math.isnan(v))
+            ):
+                v = na_value
+            set_elt(r_vector, i, cast_value(v))
+    return f
+
+
+_str_populate_r_vector = _populate_r_vector_with_na(na_values.NA_Character)
+_bool_populate_r_vector = _populate_r_vector_with_na(na_values.NA_Logical)
+_float_populate_r_vector = _populate_r_vector_with_na(na_values.NA_Real)
 
 
 def _int_populate_r_vector(iterable, r_vector,
@@ -123,11 +131,18 @@ _PANDASTYPE2RPY2 = {
         IntVector.from_iterable,
         populate_func=_int_populate_r_vector
     ),
-    bool: BoolVector,
+    pandas.BooleanDtype: functools.partial(
+        BoolVector.from_iterable,
+        populate_func=_bool_populate_r_vector
+    ),
     None: BoolVector,
     str: functools.partial(
         StrVector.from_iterable,
         populate_func=_str_populate_r_vector
+    ),
+    pandas.Float64Dtype: functools.partial(
+        FloatVector.from_iterable,
+        populate_func=_float_populate_r_vector
     ),
     bytes: (numpy2ri.converter.py2rpy.registry[
         numpy.ndarray
@@ -157,7 +172,7 @@ def py2rpy_pandasseries(obj):
         # TODO: can the POSIXct be created from the POSIXct constructor ?
         # (is '<M8[ns]' mapping to Python datetime.datetime ?)
         res = POSIXct(res)
-    elif obj.dtype.type == str:
+    elif obj.dtype.type is str:
         res = _PANDASTYPE2RPY2[str](obj)
     elif obj.dtype.name in integer_array_types:
         res = _PANDASTYPE2RPY2[int](obj)
@@ -185,6 +200,8 @@ def py2rpy_pandasseries(obj):
                     (homogeneous_type, type(x)))
         # TODO: Could this be merged with obj.type.name == 'O' case above ?
         res = _PANDASTYPE2RPY2[homogeneous_type](obj)
+    elif type(obj.dtype) in (pandas.Float64Dtype, pandas.BooleanDtype):
+        res = _PANDASTYPE2RPY2[type(obj.dtype)](obj)
     else:
         # converted as a numpy array
         func = numpy2ri.converter.py2rpy.registry[numpy.ndarray]
