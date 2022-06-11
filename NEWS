@@ -7,6 +7,9 @@ Bugs fixed
 - Pandas converter no longer fails with arrays of `dtype`
   :class:`pandas.BoolDtype` or :class:`pandas.Float64Dtype`.(issue #880).
 
+- Numpy conversion could fail is R objects is a low-level wrapper
+  for an R list (issue #890)
+
 
 Release 3.5.2
 =============
