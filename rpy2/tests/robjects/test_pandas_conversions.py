@@ -73,7 +73,7 @@ class TestPandasConversions(object):
             pylist = cv.rpy2py(rlist)
         assert len(pylist) == 2
         assert set(pylist.keys()) == set(rlist.names)
-        
+
     def test_dataframe(self):
         # Content for test data frame
         l = (
@@ -286,42 +286,29 @@ class TestPandasConversions(object):
             rp_c = robjects.conversion.converter_ctx.get().py2rpy(category)
             assert isinstance(rp_c, robjects.vectors.FactorVector)
 
-    @pytest.mark.parametrize(
-        'py_timezone,cv_timezone,delta',
-        (('UTC', 'UTC', 0),
-         (None, 'UTC', 0),
-         (None, 'UTC+1:00', 1),
-         ('UTC+1:00', 'UTC+1:00', 0)))
-    def test_datetime2posixct(self, py_timezone, cv_timezone, delta):
+    def test_datetime2posixct(self):
         datetime = pandas.Series(
             pandas.date_range('2017-01-01 00:00:00.234',
-                              periods=20, freq='h', tz=py_timezone)
+                              periods=20, freq='ms', tz='UTC')
         )
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.converter_ctx.get().py2rpy(datetime)
             assert isinstance(rp_c, robjects.vectors.POSIXct)
-            assert int(rp_c[0]) == 1483228800.234
-            assert int(rp_c[1]) == 1483228800.234
+            assert int(rp_c[0]) == 1483228800
+            assert int(rp_c[1]) == 1483228800
             assert rp_c[0] != rp_c[1]
 
-    @pytest.mark.parametrize(
-        'py_timezone,cv_timezone,delta',
-        (('UTC', 'UTC', 0),
-         (None, 'UTC', 0),
-         (None, 'UTC+1:00', 1),
-         ('UTC+1:00', 'UTC+1:00', 0)))
-    def test_datetime2posixct_withNA(self, py_timezone, cv_timezone, delta):
+    def test_datetime2posixct_withNA(self):
         datetime = pandas.Series(
             pandas.date_range('2017-01-01 00:00:00.234',
-                              periods=20, freq='h', tz=py_timezone)
+                              periods=20, freq='ms', tz='UTC')
         )
         datetime[1] = pandas.NaT
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.converter_ctx.get().py2rpy(datetime)
             assert isinstance(rp_c, robjects.vectors.POSIXct)
-            assert int(rp_c[0]) == 1483228800.234
+            assert int(rp_c[0]) == 1483228800
             assert math.isnan(rp_c[1])
-            assert rp_c[0] != rp_c[1]
 
     def test_date2posixct(self):
         today = datetime.now().date()
