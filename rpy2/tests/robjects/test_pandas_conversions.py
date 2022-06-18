@@ -62,6 +62,18 @@ class TestPandasConversions(object):
         assert len(conversion.converter_ctx.get().py2rpy.registry) == l
         assert set(conversion.converter_ctx.get().py2rpy.registry.keys()) == k
 
+    @pytest.mark.parametrize(
+        'cls',
+        (robjects.ListVector,
+         rinterface.ListSexpVector)
+    )
+    def test_list(self, cls):
+        rlist = cls(robjects.ListVector({'a': 1, 'b': 'c'}))
+        with localconverter(default_converter + rpyp.converter) as cv:
+            pylist = cv.rpy2py(rlist)
+        assert len(pylist) == 2
+        assert set(pylist.keys()) == set(rlist.names)
+
     def test_dataframe(self):
         # Content for test data frame
         l = (
@@ -297,7 +309,6 @@ class TestPandasConversions(object):
             assert isinstance(rp_c, robjects.vectors.POSIXct)
             assert int(rp_c[0]) == 1483228800
             assert math.isnan(rp_c[1])
-            assert rp_c[0] != rp_c[1]
 
     def test_date2posixct(self):
         today = datetime.now().date()
