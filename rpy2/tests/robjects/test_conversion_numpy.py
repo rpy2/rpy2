@@ -176,12 +176,19 @@ class TestNumpyConversions(object):
         assert rec.b[0] == 2
         assert rec.c[0] == 'e'
 
-
-    def test_rlist_to_numpy(self):
-        df = robjects.vectors.ListVector(
-            {'a': 1,
-             'b': 2,
-             'c': robjects.vectors.FactorVector('e')})
+    @pytest.mark.parametrize(
+        'cls',
+        (robjects.ListVector,
+         rinterface.ListSexpVector)
+    )
+    def test_rlist_to_numpy(self, cls):
+        df = cls(
+            robjects.ListVector(
+                {'a': 1,
+                 'b': 2,
+                 'c': robjects.vectors.FactorVector('e')}
+            )
+        )
         rec = conversion.rpy2py(df)
         assert rpy2.rlike.container.OrdDict == type(rec)
         assert rec['a'][0] == 1

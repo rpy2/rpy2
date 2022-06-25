@@ -178,11 +178,11 @@ def rpy2py_data_frame(obj):
     return res
 
 
-def rpy2py_list(obj):
+def rpy2py_list(obj: rinterface.ListSexpVector):
     # not a data.frame, yet is it still possible to convert it
-    res = rlc.OrdDict(
-        [(n, ro.conversion.converter_ctx.get().rpy2py(x))
-         for n, x in obj.items()])
+    if not isinstance(obj, ro.vectors.ListVector):
+        obj = ro.vectors.ListVector(obj)
+    res = rlc.OrdDict(obj.items())
     return res
 
 
