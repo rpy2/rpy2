@@ -110,6 +110,11 @@ def get_r_c_extension_status():
                                     library_dirs=c_ext.library_dirs)
     return status
 
+# TODO: The following line is required because setup.py tries to figure out
+# requirements before setuptools's own machinery to ensure requirements starts,
+# even if the named argument `setup_requires` is added to setup().
+# There should be a better way to do this than side download/install a package
+# at import time. This is limited to Windows.
 dist.Distribution().fetch_build_eggs(["packaging;platform_system=='Windows'"])
 
 cffi_mode = situation.get_cffi_mode()
