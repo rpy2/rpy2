@@ -10,6 +10,8 @@ Bugs fixed
 - Numpy and pandas conversion could fail an R object is a low-level wrapper
   for an R list (issue #890).
 
+- Fixed detection of the R install path on Windows (issues #875 and #885).
+
 
 Release 3.5.2
 =============
