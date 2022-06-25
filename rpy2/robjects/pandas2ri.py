@@ -270,7 +270,7 @@ converter._rpy2py_nc_map.update(
             {'factor': _to_pandas_factor}
         ),
         rinterface.ListSexpVector: conversion.NameClassMap(
-            numpy2ri.rpy2py,
+            numpy2ri.rpy2py_list,
             {'data.frame': lambda obj: rpy2py(DataFrame(obj))}
         )
     }
