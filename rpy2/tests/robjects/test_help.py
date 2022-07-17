@@ -33,6 +33,10 @@ class TestPage(object):
         ds = p.to_docstring()
         assert ds[:5] == 'title'
 
+        n = base_help.fetch('ncol')
+        assert '\\details' not in n.sections.keys()
+        assert p.to_docstring()
+
     def test_title(self):
         base_help = rh.Package('base')
         p = base_help.fetch('print')

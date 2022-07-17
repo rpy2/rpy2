@@ -274,6 +274,13 @@ class Page(object):
 
         if section_names is None:
             section_names = self.sections.keys()
+        else:
+            available_sections = set(self.sections.keys())
+            section_names = [
+                name
+                for name in section_names
+                if name in available_sections
+            ]
 
         def walk(tree):
             if not isinstance(tree, str):
