@@ -274,13 +274,6 @@ class Page(object):
 
         if section_names is None:
             section_names = self.sections.keys()
-        else:
-            available_sections = set(self.sections.keys())
-            section_names = [
-                name
-                for name in section_names
-                if name in available_sections
-            ]
 
         def walk(tree):
             if not isinstance(tree, str):
@@ -291,6 +284,8 @@ class Page(object):
                 s.append(' ')
 
         for name in section_names:
+            if name not in self.sections:
+                continue
             name_str = name[1:] if name.startswith('\\') else name
             s.append(name_str)
             s.append(os.linesep)
