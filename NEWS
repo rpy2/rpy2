@@ -12,6 +12,9 @@ Bugs fixed
 
 - Fixed detection of the R install path on Windows (issues #875 and #885).
 
+- Fixed error with dynamic docstring generation for functions
+  without arguments (issue #903).
+
 
 Release 3.5.2
 =============

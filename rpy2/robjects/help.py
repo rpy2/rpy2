@@ -163,6 +163,7 @@ Item = namedtuple('Item', 'name value')
 
 class Page(object):
     """ An R documentation page.
+
     The original R structure is a nested sequence of components,
     corresponding to the latex-like .Rd file
 
@@ -240,6 +241,10 @@ class Page(object):
     def description(self) -> str:
         """ Get the description of the entry """
         return self._get_section(r'\description')
+
+    def details(self) -> str:
+        """ Get the section Details for the documentation entry."""
+        return self._get_section(r'\details')
 
     def title(self) -> str:
         """ Get the title """
