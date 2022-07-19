@@ -15,6 +15,9 @@ Bugs fixed
 - Fixed error with dynamic docstring generation for functions
   without arguments (issue #903).
 
+- Fixed error with dynamic docstring generation when R functions
+  are missing the section 'Details' (isue #902).
+
 
 Release 3.5.2
 =============

@@ -43,7 +43,7 @@ def test_formals():
 
 
 @pytest.mark.parametrize('rcode',
-                         ('function(x, y) TRUE', 'function() TRUE')
+                         ('function(x, y) TRUE', 'function() TRUE'))
 def test_function(rcode):
     r_func = robjects.functions.Function(robjects.r(rcode))
     assert isinstance(r_func.__doc__, str)
@@ -58,7 +58,7 @@ def test_signaturestranslatedfunction(rcode):
 
 
 @pytest.mark.parametrize('name',
-                         ('sum', 'Sys.Date'))
+                         ('sum', 'Sys.Date', 'append'))
 def test_documentedstfunction(name):
     dstf = robjects.functions.DocumentedSTFunction(robjects.baseenv[name],
                                                    packagename='base')
