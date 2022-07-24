@@ -171,7 +171,9 @@ def test_rternalize_extraargs():
 
 
 def test_rternalize_formals():
-    def f(a, /, b, c=1, *, d=2, e):
+    # TODO: update to `def f(a, /, b, c=1, *, d=2, e):`
+    # once 3.7 is dropped from CI
+    def f(a, b, c=1, *, d=2, e):
         return 1
     rfun = rinterface.rternalize(f)
     rnames = rinterface.baseenv['names']
