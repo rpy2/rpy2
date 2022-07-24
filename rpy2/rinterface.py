@@ -2,6 +2,7 @@ import abc
 import atexit
 import contextlib
 import contextvars
+import inspect
 import os
 import math
 import platform
@@ -10,6 +11,7 @@ import textwrap
 import threading
 import typing
 import warnings
+from collections import defaultdict
 from typing import Union
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
@@ -1097,6 +1099,15 @@ def _post_initr_setup() -> None:
     _update_R_ENC_PY()
 
 
+def _find_first(nodes, of_type):
+    candidates = [
+        node
+        for node in nodes
+        if isinstance(node, of_type)
+    ]
+    return candidates[0]
+
+
 def rternalize(function: typing.Callable) -> SexpClosure:
     """ Make a Python function callable from R.
 
@@ -1108,15 +1119,88 @@ def rternalize(function: typing.Callable) -> SexpClosure:
     :return: A wrapped R object that can be use like any other rpy2
     object.
     """
-
     assert callable(function)
     rpy_fun = SexpExtPtr.from_pyobject(function)
-    # TODO: this is a hack. Find a better way.
-    template = parse("""
-      function(...) { .External(".Python", foo, ...);
-    }
+
+    signature = inspect.signature(function)
+    params = defaultdict(list)
+    for name, param in signature.parameters.items():
+        params[param.kind].append(name)
+
+    # any *args or **kwargs?
+    has_var_params = (
+        params[inspect.Parameter.VAR_POSITIONAL]
+        or params[inspect.Parameter.VAR_KEYWORD]
+    )
+
+    params_r_sig = [
+        *params[inspect.Parameter.POSITIONAL_ONLY],
+        *params[inspect.Parameter.POSITIONAL_OR_KEYWORD],
+        *params[inspect.Parameter.KEYWORD_ONLY]
+    ]
+    if has_var_params:
+        params_r_sig.append('...')
+    r_func_args = ', '.join(params_r_sig)
+
+    arguments_code = ''
+
+    # always pass positional-only arguments, let Python throw error if missing
+    if params[inspect.Parameter.POSITIONAL_ONLY]:
+        positionals = ', '.join(params[inspect.Parameter.POSITIONAL_ONLY])
+        arguments_code += """
+        RPY2_ARGUMENTS <- base::c(RPY2_ARGUMENTS, base::list(%s))
+        """ % positionals
+
+    # treat all params which might be default as potentially missing
+    # (regardless of whether they are default or not as we cannot
+    # reflect the Python signature in R 1-1, so instead let's allow
+    # Python itself to raise an exception if user passed wrong args).
+    possibly_default = [
+        *params[inspect.Parameter.POSITIONAL_OR_KEYWORD],
+        *params[inspect.Parameter.KEYWORD_ONLY]
+    ]
+
+    for param in possibly_default:
+        arguments_code += f"""
+        if (!base::missing({param})) {{
+            RPY2_ARGUMENTS[['{param}']] <- {param}
+        }}
+        """
+
+    if has_var_params:
+        arguments_code += """
+        RPY2_ARGUMENTS <- base::c(
+            RPY2_ARGUMENTS,
+            ...
+        )
+        """
+
+    template = parse(f"""
+    function({r_func_args}) {{
+        RPY2_ARGUMENTS <- base::list(
+           ".Python",
+           RPY2_FUN_PLACEHOLDER
+        )
+
+        {arguments_code}
+
+        do.call(
+           .External,
+           RPY2_ARGUMENTS
+        );
+    }}
     """)
-    template[0][2][1][2] = rpy_fun
+
+    function_definition = _find_first(template, of_type=LangSexpVector)
+    function_body = _find_first(function_definition, of_type=LangSexpVector)
+
+    list_assignment = _find_first(function_body, of_type=LangSexpVector)
+
+    args_list = _find_first(list_assignment, of_type=LangSexpVector)
+
+    assert str(args_list[2]) == 'RPY2_FUN_PLACEHOLDER'
+    args_list[2] = rpy_fun
+
     # TODO: use lower-level eval ?
     res = baseenv['eval'](template)
     # TODO: hack to prevent the nested function from having its

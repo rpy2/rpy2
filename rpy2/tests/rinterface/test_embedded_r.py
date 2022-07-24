@@ -129,7 +129,8 @@ def test_parse_invalid_string():
 def test_evalr(envir):
     res = rinterface.evalr('1 + 2', envir=envir)
     assert tuple(res) == (3, )
-    
+
+
 def test_rternalize():
     def f(x, y):
         return x[0]+y[0]
@@ -157,6 +158,26 @@ def test_rternalize_namedargs():
     assert res[0] == 3
     res = rfun(1, 2, z=8)
     assert res[0] == 8
+
+
+def test_rternalize_extraargs():
+    def f():
+        return 1
+    rfun = rinterface.rternalize(f)
+    assert rfun()[0] == 1
+    with pytest.raises(rinterface.embedded.RRuntimeError,
+                       match=r'unused argument \(1\)'):
+        rfun(1)
+
+
+def test_rternalize_formals():
+    def f(a, /, b, c=1, *, d=2, e):
+        return 1
+    rfun = rinterface.rternalize(f)
+    rnames = rinterface.baseenv['names']
+    rformals = rinterface.baseenv['formals']
+    rpaste = rinterface.baseenv['paste']
+    assert list(rnames(rformals(rfun))) == ['a', 'b', 'c', 'd', 'e']
 
 
 def test_external_python():
