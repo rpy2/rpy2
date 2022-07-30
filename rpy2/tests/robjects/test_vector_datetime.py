@@ -5,6 +5,7 @@ import time
 from rpy2 import robjects
 
 _dateval_tuple = (1984, 1, 6, 6, 22, 0, 1, 6, 0) 
+_zones = (None, 'America/New_York', 'Australia/Sydney')
 
 
 def test_POSIXlt_from_invalidpythontime():
@@ -54,17 +55,43 @@ def test_POSIXct_from_invalidobject():
 
 
 def test_POSIXct_from_pythontime():
-    x = [time.struct_time(_dateval_tuple), 
+    x = [time.struct_time(_dateval_tuple),
          time.struct_time(_dateval_tuple)]
-    res = robjects.POSIXct(x)
-    assert len(x) == 2
+
+    try:
+        for zone in _zones:
+            robjects.vectors.default_timezone = pytz.timezone(zone) if zone else None
+            res = robjects.POSIXct(x)
+            assert list(res.slots['class']) == ['POSIXct', 'POSIXt']
+            assert len(res) == 2
+            assert res.slots['tzone'][0] == (zone if zone else '')
+    finally:
+        robjects.vectors.default_timezone = None
 
 
 def testPOSIXct_fromPythonDatetime():
-    x = [datetime.datetime(*_dateval_tuple[:-2]), 
+    x = [datetime.datetime(*_dateval_tuple[:-2]),
          datetime.datetime(*_dateval_tuple[:-2])]
-    res = robjects.POSIXct(x)
-    assert len(x) == 2
+
+    try:
+        for zone in _zones:
+            robjects.vectors.default_timezone = pytz.timezone(zone) if zone else None
+            res = robjects.POSIXct(x)
+            assert list(res.slots['class']) == ['POSIXct', 'POSIXt']
+            assert len(res) == 2
+            assert res.slots['tzone'][0] == (zone if zone else '')
+    finally:
+        robjects.vectors.default_timezone = None
+
+
+def testPOSIXct_fromLocalizedPythonDatetime():
+    for zone in _zones[1:]:
+        dt = pytz.timezone(zone).localize(datetime.datetime(*_dateval_tuple[:-2]))
+        x = [dt, dt]
+        res = robjects.POSIXct(x)
+        assert list(res.slots['class']) == ['POSIXct', 'POSIXt']
+        assert len(res) == 2
+        assert res.slots['tzone'][0] == (zone if zone else '')
 
 
 def testPOSIXct_fromSexp():
