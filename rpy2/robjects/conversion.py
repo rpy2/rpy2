@@ -175,7 +175,7 @@ class NameClassMapContext(object):
             if restore:
                 nameclassmap[k] = orig_v
             else:
-                del(nameclassmap[k])
+                del nameclassmap[k]
         return False
 
 

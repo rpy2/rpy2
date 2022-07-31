@@ -207,7 +207,7 @@ class Package(ModuleType):
     def __update_dict__(self, on_conflict='fail'):
         """ Update the __dict__ according to what is in the R environment """
         for elt in self._rpy2r:
-            del(self.__dict__[elt])
+            del self.__dict__[elt]
         self._rpy2r.clear()
         self.__fill_rpy2r__(on_conflict=on_conflict)
 
@@ -216,7 +216,7 @@ class Package(ModuleType):
 
         - on_conflict: 'fail' or 'warn' (default: 'fail')
         """
-        assert(on_conflict in ('fail', 'warn'))
+        assert on_conflict in ('fail', 'warn')
 
         name = self.__rname__
 

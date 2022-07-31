@@ -69,7 +69,7 @@ def _release(cdata: FFI.CData) -> None:
     addr = int(ffi.cast('uintptr_t', cdata))
     count = _R_PRESERVED[addr] - 1
     if count == 0:
-        del(_R_PRESERVED[addr])
+        del _R_PRESERVED[addr]
         openrlib.rlib.R_ReleaseObject(cdata)
     else:
         _R_PRESERVED[addr] = count
@@ -164,7 +164,7 @@ class SexpCapsuleWithPassenger(SexpCapsule):
         addr = get_rid(self._cdata)
         _release(self._cdata)
         if addr not in _PY_PASSENGER:
-            del(_PY_PASSENGER[addr])
+            del _PY_PASSENGER[addr]
 
 
 class SupportsSEXP(object, metaclass=abc.ABCMeta):

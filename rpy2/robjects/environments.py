@@ -99,7 +99,7 @@ class Environment(RObjectMixin, sexp.SexpEnvironment):
         d is returned if given, otherwise KeyError is raised."""
         if k in self:
             v = self[k]
-            del(self[k])
+            del self[k]
         elif args:
             if len(args) > 1:
                 raise ValueError('Invalid number of optional parameters.')
@@ -114,7 +114,7 @@ class Environment(RObjectMixin, sexp.SexpEnvironment):
         if len(self) == 0:
             raise KeyError()
         kv = next(self.items())
-        del(self[kv[0]])
+        del self[kv[0]]
         return kv
 
     def clear(self) -> None:
@@ -122,7 +122,7 @@ class Environment(RObjectMixin, sexp.SexpEnvironment):
         # FIXME: is there a more efficient implementation (when large
         #        number of keys) ?
         for k in self:
-            del(self[k])
+            del self[k]
 
     def __repr__(self):
         return os.linesep.join(
