@@ -170,6 +170,41 @@ def test_rternalize_extraargs():
         rfun(1)
 
 
+@pytest.mark.parametrize(
+    'args',
+    ((),
+     (1,),
+     (1, 2))
+)
+def test_rternalize_map_ellipsis_args(args):
+    def f(x, *args):
+        return len(args)
+    rfun = rinterface.rternalize(f)
+    assert ('x', '...') == tuple(rinterface.baseenv['formals'](rfun).names)
+    assert rfun(0, *args)[0] == len(args)
+
+
+@pytest.mark.parametrize(
+    'kwargs',
+    ({},
+     {'y': 1},
+     {'y': 1, 'z': 2})
+)
+def test_rternalize_map_ellipsis_kwargs(kwargs):
+    def f(x, **kwargs):
+        return len(kwargs)
+    rfun = rinterface.rternalize(f)
+    assert ('x', '...') == tuple(rinterface.baseenv['formals'](rfun).names)
+    assert rfun(0, **kwargs)[0] == len(kwargs)
+
+
+def test_rternalize_map_ellipsis_args_kwargs_error():
+    def f(x, *args, y = 2, **kwargs):
+        pass
+    with pytest.raises(ValueError):
+        rfun = rinterface.rternalize(f)
+
+
 def test_rternalize_formals():
     # TODO: update to `def f(a, /, b, c=1, *, d=2, e):`
     # once 3.7 is dropped from CI

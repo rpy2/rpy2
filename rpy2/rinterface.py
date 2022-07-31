@@ -11,7 +11,6 @@ import textwrap
 import threading
 import typing
 import warnings
-from collections import defaultdict
 from typing import Union
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
@@ -1100,12 +1099,12 @@ def _post_initr_setup() -> None:
 
 
 def _find_first(nodes, of_type):
-    candidates = [
-        node
-        for node in nodes
-        if isinstance(node, of_type)
-    ]
-    return candidates[0]
+    for node in nodes:
+        if isinstance(node, of_type):
+            return node
+    raise ValueError(
+        f'No node of type {of_type}'
+    )
 
 
 def rternalize(function: typing.Callable) -> SexpClosure:
@@ -1113,6 +1112,73 @@ def rternalize(function: typing.Callable) -> SexpClosure:
 
     Takes an arbitrary Python function and wrap it in such a way that
     it can be called from the R side.
+
+    The Python ellipsis arguments`*args` and `**kwargs` are
+    translated to the R ellipsis `...`.
+
+    For example:
+
+    .. code-block:: python
+       @rternalize
+       def foo(x, *args, y=2):
+           pass
+
+    will be visible in R with the signature:
+
+    .. code-block:: r
+       function (x, ..., z)
+
+    The only limitation is that whenever `*args` and `**kwargs` are
+    both present in the Python declaration they must be consecutive.
+    For example:
+
+    .. code-block:: python
+       def foo(x, *args, y=2, **kwargs):
+           pass
+
+    is a valid Python declaration. However, it cannot be "rternalized"
+    because the R ellipsis can only appear at most once in the signature
+    of a given function. Trying to apply the decorator `rternalize` would
+    raise an exception.
+
+    The following Python function can be "rternalized":
+
+    .. code-block:: python
+       def foo(x, *args, **kwargs):
+           pass
+
+    It is visible to R with the signature
+
+    .. code-block:: r
+       function (x, ..., z)
+
+    Python function definitions can allow the optional naming of required
+    arguments. The mapping of signatures between Python and R is then
+    quasi-indentical since R does it for unnamed arguments. The check
+    that all arguments are present is still performed on the Python side.
+
+    Example:
+
+    .. code-block:: python
+       @ri.rternalize
+       def foo(x, *, y, z):
+           print(f'x: {x[0]}, y: {y[0]}, z: {z[0]}')
+           return ri.NULL
+
+    >>> _ = foo(1, 2, 3)
+    x: 1, y: 2, z: 3
+    ValueErro: None
+    >>> _ = foo(1)
+    TypeError: rternalized foo() missing 2 required keyword-only arguments: 'y' and 'z'
+    >>> _ = foo(1, z=2, y=3)
+    x: 1, y: 3, z: 2
+    >>> _ = foo(1, z=2, y=3)
+    x: 1, y: 3, z: 2
+
+    Note that whenever the Python function has an ellipsis (either `*args`
+    or `**kwargs`) earlier parameters in the signature that are
+    positional-or-keyword are considered to be positional arguments in a
+    function call.
 
     :param function: A Python callable object.
 
@@ -1123,83 +1189,57 @@ def rternalize(function: typing.Callable) -> SexpClosure:
     rpy_fun = SexpExtPtr.from_pyobject(function)
 
     signature = inspect.signature(function)
-    params = defaultdict(list)
-    for name, param in signature.parameters.items():
-        params[param.kind].append(name)
+    has_ellipsis = None
+    params_r_sig = []
+    for p_i, (name, param) in enumerate(signature.parameters.items()):
+        if (
+                param.kind is inspect.Parameter.VAR_POSITIONAL or
+                param.kind is inspect.Parameter.VAR_KEYWORD
+        ):
+            if has_ellipsis:
+                if has_ellipsis != (p_i - 1):
+                    raise ValueError(
+                        'R functions can only have one ellipsis. '
+                        'As consequence your Python function must have *args '
+                        'and **kwargs that are consecutive in function '
+                        'signature.'
+                    )
+            else:
+                # The ellipsis can only be added once.
+                has_ellipsis = p_i
+                params_r_sig.append('...')
+        else:
+            params_r_sig.append(name)
 
-    # any *args or **kwargs?
-    has_var_params = (
-        params[inspect.Parameter.VAR_POSITIONAL]
-        or params[inspect.Parameter.VAR_KEYWORD]
-    )
-
-    params_r_sig = [
-        *params[inspect.Parameter.POSITIONAL_ONLY],
-        *params[inspect.Parameter.POSITIONAL_OR_KEYWORD],
-        *params[inspect.Parameter.KEYWORD_ONLY]
-    ]
-    if has_var_params:
-        params_r_sig.append('...')
     r_func_args = ', '.join(params_r_sig)
 
-    arguments_code = ''
-
-    # always pass positional-only arguments, let Python throw error if missing
-    if params[inspect.Parameter.POSITIONAL_ONLY]:
-        positionals = ', '.join(params[inspect.Parameter.POSITIONAL_ONLY])
-        arguments_code += """
-        RPY2_ARGUMENTS <- base::c(RPY2_ARGUMENTS, base::list(%s))
-        """ % positionals
-
-    # treat all params which might be default as potentially missing
-    # (regardless of whether they are default or not as we cannot
-    # reflect the Python signature in R 1-1, so instead let's allow
-    # Python itself to raise an exception if user passed wrong args).
-    possibly_default = [
-        *params[inspect.Parameter.POSITIONAL_OR_KEYWORD],
-        *params[inspect.Parameter.KEYWORD_ONLY]
-    ]
-
-    for param in possibly_default:
-        arguments_code += f"""
-        if (!base::missing({param})) {{
-            RPY2_ARGUMENTS[['{param}']] <- {param}
-        }}
-        """
-
-    if has_var_params:
-        arguments_code += """
-        RPY2_ARGUMENTS <- base::c(
-            RPY2_ARGUMENTS,
-            ...
-        )
-        """
-
-    template = parse(f"""
+    r_src = f"""
     function({r_func_args}) {{
-        RPY2_ARGUMENTS <- base::list(
-           ".Python",
-           RPY2_FUN_PLACEHOLDER
+        py_func <- RPY2_FUN_PLACEHOLDER
+        lst_args <- base::as.list(base::match.call())
+        RPY2_ARGUMENTS <- base::c(
+            base::list(
+                ".Python",
+                py_func
+            ),
+            utils::tail(lst_args, n=base::length(lst_args)-1)
         )
-
-        {arguments_code}
-
-        do.call(
-           .External,
+        res <- base::do.call(
+           base::.External,
            RPY2_ARGUMENTS
         );
+
+        res
     }}
-    """)
+    """
+    template = parse(r_src)
 
     function_definition = _find_first(template, of_type=LangSexpVector)
     function_body = _find_first(function_definition, of_type=LangSexpVector)
+    rpy_fun_node = function_body[1]
 
-    list_assignment = _find_first(function_body, of_type=LangSexpVector)
-
-    args_list = _find_first(list_assignment, of_type=LangSexpVector)
-
-    assert str(args_list[2]) == 'RPY2_FUN_PLACEHOLDER'
-    args_list[2] = rpy_fun
+    assert str(rpy_fun_node[2]) == 'RPY2_FUN_PLACEHOLDER'
+    rpy_fun_node[2] = rpy_fun
 
     # TODO: use lower-level eval ?
     res = baseenv['eval'](template)
