@@ -22,9 +22,9 @@ tmp_major = int(tmp[tmp.do_slot('names').index('major')][0])
 tmp_minor = float(tmp[tmp.do_slot('names').index('minor')][0])
 readRDS = rinterface.baseenv['readRDS']
 
-del(tmp)
-del(tmp_major)
-del(tmp_minor)
+del tmp
+del tmp_major
+del tmp_minor
 
 _eval = rinterface.baseenv['eval']
 
