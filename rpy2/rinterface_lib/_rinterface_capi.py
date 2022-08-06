@@ -573,11 +573,12 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
                             'Parameter name mismatch. R call considering the argument '
                             f'"{py_posonly[rarg_i]}" as a position-independent '
                             'keyword argument while it is positional-only '
-                            'in the rternalized Python function.' 
+                            'in the rternalized Python function.'
                         )
-                elif (py_has_ellipsis
-                      and
-                      (rarg_i < (len(py_posonly) + len(py_positionalorkw)))
+                elif (
+                        py_has_ellipsis
+                        and
+                        (rarg_i < (len(py_posonly) + len(py_positionalorkw)))
                 ):
                     if py_positionalorkw[rarg_i - len(py_posonly)] == name:
                         # This is considered an unnamed argument and names are matching.
@@ -592,8 +593,8 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
                             f'"{py_posonly[rarg_i]}" as a position-independent '
                             'keyword argument while it is positional-or-keyword '
                             'followed by an positional ellipsis `*args` in the '
-                            'rternalized Python function.' 
-                        )                    
+                            'rternalized Python function.'
+                        )
                 else:
                     pykwargs[name] = conversion._cdata_to_rinterface(cdata)
             rargs = rlib.CDR(rargs)
