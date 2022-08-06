@@ -2,7 +2,7 @@
 # Basic handling
 
 The S4 system is one the OOP systems in R.
-Its largest use might in the Bioconductor collection of packages
+Its largest use might be in the Bioconductor collection of packages
 for bioinformatics and computational biology.
 
 We use the bioconductor `Biobase`:
