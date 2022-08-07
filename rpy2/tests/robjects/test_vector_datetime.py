@@ -83,7 +83,7 @@ def test_POSIXct_from_python_times(x, default_timezone_mocker):
 def test_POSIXct_from_python_pytz_timezone(default_timezone_mocker):
     zone = default_timezone_mocker
     x = [pytz.timezone(zone).localize(datetime.datetime(*_dateval_tuple[:-2])),
-         pytz.timezone(zone).localize(datetime.datetime(*_dateval_tuple[:-2]))])
+         pytz.timezone(zone).localize(datetime.datetime(*_dateval_tuple[:-2]))]
     res = robjects.POSIXct(x)
     assert list(res.slots['class']) == ['POSIXct', 'POSIXt']
     assert len(res) == 2
