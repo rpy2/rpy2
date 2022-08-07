@@ -1,3 +1,14 @@
+Release 3.5.4
+=============
+
+Changes
+-------
+
+- :func:`rpy2.robjects.methods.getclassdef` is now explicitly
+  naming the optional arugment R package name when calling
+  the underlying R function.
+
+
 Release 3.5.3
 =============
 
