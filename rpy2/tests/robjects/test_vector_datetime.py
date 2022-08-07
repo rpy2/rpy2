@@ -68,9 +68,7 @@ def default_timezone_mocker(request):
     ([time.struct_time(_dateval_tuple),
       time.struct_time(_dateval_tuple)],
      [datetime.datetime(*_dateval_tuple[:-2]),
-      datetime.datetime(*_dateval_tuple[:-2])],
-     [pytz.timezone(zone).localize(datetime.datetime(*_dateval_tuple[:-2])),
-      pytz.timezone(zone).localize(datetime.datetime(*_dateval_tuple[:-2]))])
+      datetime.datetime(*_dateval_tuple[:-2])])
 )
 def test_POSIXct_from_python_times(x, default_timezone_mocker):
     res = robjects.POSIXct(x)
