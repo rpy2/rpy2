@@ -57,7 +57,8 @@ def test_POSIXct_from_invalidobject():
 @pytest.fixture
 def default_timezone_mocker(scope='module', params=_zones):
     import rpy2.robjects.vectors
-    rpy2.robjects.vectors.default_timezone = pytz.timezone(request.param)
+    zone = request.param
+    rpy2.robjects.vectors.default_timezone = pytz.timezone(zone)
     yield zone
     rpy2.robjects.vectors.default_timezone = None
 
