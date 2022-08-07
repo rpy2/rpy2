@@ -54,8 +54,8 @@ def test_POSIXct_from_invalidobject():
         robjects.POSIXct(x)
 
 
-@pytest.fixture
-def default_timezone_mocker(scope='module', params=_zones):
+@pytest.fixture(scope='module', params=_zones)
+def default_timezone_mocker(request):
     import rpy2.robjects.vectors
     zone = request.param
     rpy2.robjects.vectors.default_timezone = pytz.timezone(zone)
@@ -76,8 +76,17 @@ def test_POSIXct_from_python_times(x, default_timezone_mocker):
     res = robjects.POSIXct(x)
     assert list(res.slots['class']) == ['POSIXct', 'POSIXt']
     assert len(res) == 2
-    a = request.getfixturevalue(a)
     zone = default_timezone_mocker
+    assert res.slots['tzone'][0] == (zone if zone else '')
+
+
+def test_POSIXct_from_python_pytz_timezone(default_timezone_mocker):
+    zone = default_timezone_mocker
+    x = [pytz.timezone(zone).localize(datetime.datetime(*_dateval_tuple[:-2])),
+         pytz.timezone(zone).localize(datetime.datetime(*_dateval_tuple[:-2]))])
+    res = robjects.POSIXct(x)
+    assert list(res.slots['class']) == ['POSIXct', 'POSIXt']
+    assert len(res) == 2
     assert res.slots['tzone'][0] == (zone if zone else '')
 
 
