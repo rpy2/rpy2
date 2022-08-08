@@ -1126,7 +1126,7 @@ def rternalize(function: typing.Callable) -> SexpClosure:
     will be visible in R with the signature:
 
     .. code-block:: r
-       function (x, ..., z)
+       function (x, ..., y)
 
     The only limitation is that whenever `*args` and `**kwargs` are
     both present in the Python declaration they must be consecutive.
