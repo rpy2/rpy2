@@ -3,6 +3,7 @@ import pytest
 import pytz
 import time
 from rpy2 import robjects
+import rpy2.robjects.vectors
 
 _dateval_tuple = (1984, 1, 6, 6, 22, 0, 1, 6, 0) 
 _zones = (None, 'America/New_York', 'Australia/Sydney')
@@ -56,7 +57,6 @@ def test_POSIXct_from_invalidobject():
 
 @pytest.fixture(scope='module', params=_zones)
 def default_timezone_mocker(request):
-    import rpy2.robjects.vectors
     zone = request.param
     if zone:
         rpy2.robjects.vectors.default_timezone = pytz.timezone(zone)
@@ -79,8 +79,9 @@ def test_POSIXct_from_python_times(x, default_timezone_mocker):
     assert res.slots['tzone'][0] == (zone if zone else '')
 
 
-def test_POSIXct_from_python_pytz_timezone(default_timezone_mocker):
-    zone = default_timezone_mocker
+@pytest.mark.parametrize('zone',
+                         _zones[1:])
+def test_POSIXct_from_python_pytz_timezone(zone):
     x = [pytz.timezone(zone).localize(datetime.datetime(*_dateval_tuple[:-2])),
          pytz.timezone(zone).localize(datetime.datetime(*_dateval_tuple[:-2]))]
     res = robjects.POSIXct(x)
@@ -125,22 +126,13 @@ def testPOSIXct_iter_localized_datetime():
     )
 
 
-def test_POSIXct_datetime_from_timestamp():
-
-    try:
-        for zone in _zones:
-            if not zone:
-                continue
-            robjects.vectors.default_timezone = pytz.timezone(zone)
-
-            tzone = robjects.vectors.get_timezone()
-            dt = [datetime.datetime(1900, 1, 1),
-                  datetime.datetime(1970, 1, 1),
-                  datetime.datetime(2000, 1, 1)]
-            dt = [tzone.localize(x) for x in dt]
-            ts = [x.timestamp() for x in dt]
-            res = [robjects.POSIXct._datetime_from_timestamp(x, tzone) for x in ts]
-            for expected, obtained in zip(dt, res):
-                assert expected == obtained
-    finally:
-        robjects.vectors.default_timezone = None
+def test_POSIXct_datetime_from_timestamp(default_timezone_mocker):
+    tzone = robjects.vectors.get_timezone()
+    dt = [datetime.datetime(1900, 1, 1),
+          datetime.datetime(1970, 1, 1),
+          datetime.datetime(2000, 1, 1)]
+    dt = [tzone.localize(x) for x in dt]
+    ts = [x.timestamp() for x in dt]
+    res = [robjects.POSIXct._datetime_from_timestamp(x, tzone) for x in ts]
+    for expected, obtained in zip(dt, res):
+        assert expected == obtained
