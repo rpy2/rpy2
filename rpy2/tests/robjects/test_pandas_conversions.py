@@ -234,13 +234,13 @@ class TestPandasConversions(object):
         assert isinstance(rp_s, rinterface.StrSexpVector)
 
     def test_object2String(self):
-        series = pandas.Series(["a","b","c","a"], dtype="O")
+        series = pandas.Series(['a', 'b', 'c', 'a'], dtype='O')
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.converter_ctx.get().py2rpy(series)
             assert isinstance(rp_c, rinterface.StrSexpVector)
 
     def test_object2String_with_None(self):
-        series = pandas.Series([None, "a","b","c","a"], dtype="O")
+        series = pandas.Series([None, 'a', 'b', 'c', 'a'], dtype='O')
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_c = robjects.conversion.converter_ctx.get().py2rpy(series)
             assert isinstance(rp_c, rinterface.StrSexpVector)
