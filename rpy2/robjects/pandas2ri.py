@@ -5,7 +5,6 @@ import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import na_values
 from rpy2.rinterface import (IntSexpVector,
-                             Sexp,
                              SexpVector,
                              StrSexpVector)
 import datetime
