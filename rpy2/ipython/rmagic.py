@@ -91,7 +91,8 @@ from IPython.core.magic import (Magics,   # type: ignore
                                 magics_class,
                                 line_cell_magic,
                                 line_magic,
-                                needs_local_scope)
+                                needs_local_scope,
+                                no_var_expand)
 from IPython.core.magic_arguments import (argument,  # type: ignore
                                           argument_group,
                                           magic_arguments,
@@ -622,6 +623,7 @@ class RMagics(Magics):
         )
     @needs_local_scope
     @line_cell_magic
+    @no_var_expand
     def R(self, line, cell=None, local_ns=None):
         """
         Execute code in R, optionally returning results to the Python runtime.

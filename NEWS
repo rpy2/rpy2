@@ -4,7 +4,8 @@ Release 3.5.4
 Bugs fixed
 ----------
 
-- Better handling of timezone in :class:`rpy2.robjects.vectors.POSIXct` (issue #917).
+- Better handling of timezone in :class:`rpy2.robjects.vectors.POSIXct`
+  (issue #917).
 
 Changes
 -------
@@ -12,6 +13,11 @@ Changes
 - :func:`rpy2.robjects.methods.getclassdef` is now explicitly
   naming the optional argument with the R package name when calling
   the underlying R function.
+
+- The `%R` line magic for ipython/jupyter was trying to substitute anything
+  after a dolar (`$`) sign, which caused issue since this character is
+  used to access by name elements in R containers. No substitution
+  is happening anymore (issue #922).
 
 
 Release 3.5.3
