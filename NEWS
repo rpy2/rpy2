@@ -1,11 +1,16 @@
 Release 3.5.4
 =============
 
+Bugs fixed
+----------
+
+- Better handling of timezone in :class:`rpy2.robjects.vectors.POSIXct` (issue #917).
+
 Changes
 -------
 
 - :func:`rpy2.robjects.methods.getclassdef` is now explicitly
-  naming the optional arugment R package name when calling
+  naming the optional argument with the R package name when calling
   the underlying R function.
 
 
