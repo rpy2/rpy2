@@ -103,7 +103,7 @@ class TestPandasConversions(object):
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_df = robjects.conversion.converter_ctx.get().py2rpy(pd_df)
         assert tuple(rp_df.names) == ('the one', 'the other')
-        
+
     def test_series(self):
         Series = pandas.core.series.Series
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
@@ -392,27 +392,36 @@ class TestPandasConversions(object):
         s = s.split('\n')
         assert repr_str == s[2].strip()
 
-    def test_ri2pandas(self):
-        rdataf = robjects.r('data.frame(a=1:2, '
-                            '           b=I(c("a", "b")), '
-                            '           c=c("a", "b"))')
+    @pytest.mark.parametrize(
+        'colnames',
+        (('w', 'x', 'y', 'z'),
+         ('w', 'x', 'y', 'x'))
+    )
+    @pytest.mark.parametrize(
+        'r_rownames,py_rownames',
+        (('NULL', ('1', '2')),
+         ('c("a", "b")',('a', 'b')))
+    )
+    def test_ri2pandas(self, r_rownames, py_rownames, colnames):
+        rdataf = robjects.r(
+            f'data.frame({colnames[0]}=1:2, '
+            f'           {colnames[1]}=1:2, '
+            f'           {colnames[2]}=I(c("a", "b")), '
+            f'           {colnames[3]}=factor(c("a", "b")), '
+            f'           row.names={r_rownames}, '
+            '            check.names=FALSE)')
         with localconverter(default_converter + rpyp.converter) as cv:
             pandas_df = robjects.conversion.converter_ctx.get().rpy2py(rdataf)
 
         assert isinstance(pandas_df, pandas.DataFrame)
-        assert ('a', 'b', 'c') == tuple(pandas_df.keys())
-        assert pandas_df['a'].dtype in (numpy.dtype('int32'),
+        assert colnames == tuple(pandas_df.keys())
+        assert pandas_df['w'].dtype in (numpy.dtype('int32'),
                                         numpy.dtype('int64'))
-        assert pandas_df['b'].dtype == numpy.dtype('O')
-        assert isinstance(pandas_df['c'].dtype,
-                          pandas.api.types.CategoricalDtype)
-
-    def test_ri2pandas(self):
-        rdataf = robjects.r('data.frame(a=1:2, '
-                            '           row.names=c("a", "b"))')
-        with localconverter(default_converter + rpyp.converter) as cv:
-            pandas_df = cv.rpy2py(rdataf)
-        assert all(x == y for x, y in zip(rdataf.rownames, pandas_df.index))
+        assert pandas_df['y'].dtype == numpy.dtype('O')
+        if 'z' in colnames:
+            assert isinstance(pandas_df['z'].dtype,
+                              pandas.api.types.CategoricalDtype)
+        assert tuple(pandas_df.index) == py_rownames
 
     def test_ri2pandas_issue207(self):
         d = robjects.DataFrame({'x': 1})
