@@ -7,6 +7,9 @@ Bugs fixed
 - Better handling of timezone in :class:`rpy2.robjects.vectors.POSIXct`
   (issue #917).
 
+- :mod:`pandas` conversion is now correctly handling R data frames with duplicated
+  column names. They were dropped tbefore that (issue #925).
+
 Changes
 -------
 
