@@ -206,7 +206,7 @@ if __name__ == '__main__':
 
     extras_require = {
         'test': ['pytest'],
-        'numpy': ['pandas'],
+        'numpy': ['numpy'],
         'pandas': ['numpy', 'pandas'],
         'setup': ['setuptools']
     }
