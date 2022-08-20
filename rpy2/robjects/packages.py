@@ -534,7 +534,7 @@ def wherefrom(symbol: str,
         env = env.enclos
         if env.rsame(rinterface.emptyenv):
             break
-    return conversion.rpy2py(env)
+    return conversion.get_conversion().rpy2py(env)
 
 
 class ParsedCode(rinterface.ExprSexpVector):
