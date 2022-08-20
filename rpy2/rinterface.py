@@ -1216,13 +1216,13 @@ def rternalize(function: typing.Callable) -> SexpClosure:
     r_src = f"""
     function({r_func_args}) {{
         py_func <- RPY2_FUN_PLACEHOLDER
-        lst_args <- base::as.list(base::match.call())
+        lst_args <- base::as.list(base::match.call()[-1])
         RPY2_ARGUMENTS <- base::c(
             base::list(
                 ".Python",
                 py_func
             ),
-            utils::tail(lst_args, n=base::length(lst_args)-1)
+            lst_args
         )
         res <- base::do.call(
            base::.External,
