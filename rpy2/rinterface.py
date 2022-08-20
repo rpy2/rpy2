@@ -1150,7 +1150,7 @@ def rternalize(function: typing.Callable) -> SexpClosure:
     It is visible to R with the signature
 
     .. code-block:: r
-       function (x, ..., z)
+       function (x, ...)
 
     Python function definitions can allow the optional naming of required
     arguments. The mapping of signatures between Python and R is then
