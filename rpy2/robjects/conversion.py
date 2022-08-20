@@ -26,9 +26,9 @@ def __getattr__(name):
     if name in deprecated_names:
         _deprecated_name = f'_deprecated_{name}'
         warnings.warn(
-            'The use of {name} in module {__name__} is deprecated. '
-            'Use (__name__}.get_conversion() instead of '
-            '{__name__}.converter.',
+            f'The use of {name} in module {__name__} is deprecated. '
+            f'Use {__name__}.get_conversion() instead of '
+            f'{__name__}.converter.',
             DeprecationWarning
         )
         if name == 'converter':
