@@ -1149,7 +1149,7 @@ Let us consider the following simple example:
 
 .. code-block:: python
    
-   ep = rinterface.SexpExtPtr("hohoho")
+   ep = rinterface.SexpExtPtr.from_pyobject('hohoho')
 
 The Python string is now encapsulated into an R external pointer, and visible as such
 by the embedded R process.
@@ -1161,12 +1161,12 @@ can be considered (here still a simple example):
 
    import ctypes
    class Point2D(ctypes.Structure):
-       _fields_ = [("x", ctypes.c_int),
-                   ("y", ctypes.c_int)]
+       _fields_ = [('x', ctypes.c_int),
+                   ('y', ctypes.c_int)]
 
    pt = Point2D()
 
-   ep = rinterface.SexpExtPtr(pt)
+   ep = rinterface.SexpExtPtr.from_pyobject(pt)
 
 
 However, this remains a rather academic exercise unless there exists a way to access the
