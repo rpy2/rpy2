@@ -4,8 +4,8 @@ Release 3.5.4
 New features
 ------------
 
-- :func:`rpy2.rinterface.rternalize` mirrors more accurately in R the function
-  signature defined in Python (issue #905).
+- :func:`rpy2.rinterface.rternalize` can optionally mirror more accurately in R
+  the function signature defined in Python (issue #905).
 
 Bugs fixed
 ----------
