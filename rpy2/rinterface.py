@@ -2,6 +2,7 @@ import abc
 import atexit
 import contextlib
 import contextvars
+import functools
 import inspect
 import os
 import math
@@ -1107,11 +1108,19 @@ def _find_first(nodes, of_type):
     )
 
 
-def rternalize(function: typing.Callable) -> SexpClosure:
+def rternalize(
+        function: typing.Optional[typing.Callable] = None, *,
+        signature: bool = False
+) -> SexpClosure:
     """ Make a Python function callable from R.
 
     Takes an arbitrary Python function and wrap it in such a way that
     it can be called from the R side.
+
+    This factory can be used as a decorator, and has an optional
+    named argument "signature" that can be True or False (default is
+    False). When True, the R function wrapping the Python one will
+    have a matching signature or a close one, as detailed below.
 
     The Python ellipsis arguments`*args` and `**kwargs` are
     translated to the R ellipsis `...`.
@@ -1119,7 +1128,7 @@ def rternalize(function: typing.Callable) -> SexpClosure:
     For example:
 
     .. code-block:: python
-       @rternalize
+       @rternalize(signature=True)
        def foo(x, *args, y=2):
            pass
 
@@ -1160,7 +1169,7 @@ def rternalize(function: typing.Callable) -> SexpClosure:
     Example:
 
     .. code-block:: python
-       @ri.rternalize
+       @rternalize(signature=True)
        def foo(x, *, y, z):
            print(f'x: {x[0]}, y: {y[0]}, z: {z[0]}')
            return ri.NULL
@@ -1185,61 +1194,72 @@ def rternalize(function: typing.Callable) -> SexpClosure:
     :return: A wrapped R object that can be use like any other rpy2
     object.
     """
+
+    if function is None:
+        return functools.partial(rternalize, signature=signature)
+
     assert callable(function)
     rpy_fun = SexpExtPtr.from_pyobject(function)
 
-    signature = inspect.signature(function)
-    has_ellipsis = None
-    params_r_sig = []
-    for p_i, (name, param) in enumerate(signature.parameters.items()):
-        if (
-                param.kind is inspect.Parameter.VAR_POSITIONAL or
-                param.kind is inspect.Parameter.VAR_KEYWORD
-        ):
-            if has_ellipsis:
-                if has_ellipsis != (p_i - 1):
-                    raise ValueError(
-                        'R functions can only have one ellipsis. '
-                        'As consequence your Python function must have *args '
-                        'and **kwargs that are consecutive in function '
-                        'signature.'
-                    )
+    if not signature:
+        template = parse("""
+        function(...) { .External(".Python", foo, ...);
+        }
+        """)
+        template[0][2][1][2] = rpy_fun
+    else:
+        signature = inspect.signature(function)
+        has_ellipsis = None
+        params_r_sig = []
+        for p_i, (name, param) in enumerate(signature.parameters.items()):
+            if (
+                    param.kind is inspect.Parameter.VAR_POSITIONAL or
+                    param.kind is inspect.Parameter.VAR_KEYWORD
+            ):
+                if has_ellipsis:
+                    if has_ellipsis != (p_i - 1):
+                        raise ValueError(
+                            'R functions can only have one ellipsis. '
+                            'As consequence your Python function must have *args '
+                            'and **kwargs that are consecutive in function '
+                            'signature.'
+                        )
+                else:
+                    # The ellipsis can only be added once.
+                    has_ellipsis = p_i
+                    params_r_sig.append('...')
             else:
-                # The ellipsis can only be added once.
-                has_ellipsis = p_i
-                params_r_sig.append('...')
-        else:
-            params_r_sig.append(name)
+                params_r_sig.append(name)
 
-    r_func_args = ', '.join(params_r_sig)
+        r_func_args = ', '.join(params_r_sig)
 
-    r_src = f"""
-    function({r_func_args}) {{
-        py_func <- RPY2_FUN_PLACEHOLDER
-        lst_args <- base::as.list(base::match.call()[-1])
-        RPY2_ARGUMENTS <- base::c(
-            base::list(
-                ".Python",
-                py_func
-            ),
-            lst_args
-        )
-        res <- base::do.call(
-           base::.External,
-           RPY2_ARGUMENTS
-        );
+        r_src = f"""
+        function({r_func_args}) {{
+            py_func <- RPY2_FUN_PLACEHOLDER
+            lst_args <- base::as.list(base::match.call()[-1])
+            RPY2_ARGUMENTS <- base::c(
+                base::list(
+                    ".Python",
+                    py_func
+                ),
+                lst_args
+            )
+            res <- base::do.call(
+               base::.External,
+               RPY2_ARGUMENTS
+            );
 
-        res
-    }}
-    """
-    template = parse(r_src)
+            res
+        }}
+        """
+        template = parse(r_src)
 
-    function_definition = _find_first(template, of_type=LangSexpVector)
-    function_body = _find_first(function_definition, of_type=LangSexpVector)
-    rpy_fun_node = function_body[1]
+        function_definition = _find_first(template, of_type=LangSexpVector)
+        function_body = _find_first(function_definition, of_type=LangSexpVector)
+        rpy_fun_node = function_body[1]
 
-    assert str(rpy_fun_node[2]) == 'RPY2_FUN_PLACEHOLDER'
-    rpy_fun_node[2] = rpy_fun
+        assert str(rpy_fun_node[2]) == 'RPY2_FUN_PLACEHOLDER'
+        rpy_fun_node[2] = rpy_fun
 
     # TODO: use lower-level eval ?
     res = baseenv['eval'](template)

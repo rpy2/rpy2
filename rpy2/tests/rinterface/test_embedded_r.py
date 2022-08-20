@@ -131,10 +131,11 @@ def test_evalr(envir):
     assert tuple(res) == (3, )
 
 
-def test_rternalize():
+@pytest.mark.parametrize('signature', ((True, ), (False, )))
+def test_rternalize(signature):
     def f(x, y):
         return x[0]+y[0]
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=signature)
     res = rfun(1, 2)
     assert res[0] == 3
 
@@ -142,7 +143,7 @@ def test_rternalize():
 def test_rternalize_return_sexp():
     def f(x, y):
         return rinterface.IntSexpVector([x[0], y[0]])
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=False)
     res = rfun(1, 2)
     assert tuple(res) == (1, 2)
 
@@ -153,17 +154,18 @@ def test_rternalize_namedargs():
             return x[0]+y[0]
         else:
             return z[0]
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=False)
     res = rfun(1, 2)
     assert res[0] == 3
     res = rfun(1, 2, z=8)
     assert res[0] == 8
 
 
-def test_rternalize_extraargs():
+@pytest.mark.parametrize('signature', ((True, ), (False, )))
+def test_rternalize_extraargs(signature):
     def f():
         return 1
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=signature)
     assert rfun()[0] == 1
     with pytest.raises(rinterface.embedded.RRuntimeError,
                        match=r'unused argument \(1\)'):
@@ -179,7 +181,7 @@ def test_rternalize_extraargs():
 def test_rternalize_map_ellipsis_args(args):
     def f(x, *args):
         return len(args)
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=True)
     assert ('x', '...') == tuple(rinterface.baseenv['formals'](rfun).names)
     assert rfun(0, *args)[0] == len(args)
 
@@ -193,7 +195,7 @@ def test_rternalize_map_ellipsis_args(args):
 def test_rternalize_map_ellipsis_kwargs(kwargs):
     def f(x, **kwargs):
         return len(kwargs)
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=True)
     assert ('x', '...') == tuple(rinterface.baseenv['formals'](rfun).names)
     assert rfun(0, **kwargs)[0] == len(kwargs)
 
@@ -202,7 +204,7 @@ def test_rternalize_map_ellipsis_args_kwargs_error():
     def f(x, *args, y = 2, **kwargs):
         pass
     with pytest.raises(ValueError):
-        rfun = rinterface.rternalize(f)
+        rfun = rinterface.rternalize(f, signature=True)
 
 
 def test_rternalize_formals():
@@ -210,7 +212,7 @@ def test_rternalize_formals():
     # once 3.7 is dropped from CI
     def f(a, b, c=1, *, d=2, e):
         return 1
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=True)
     rnames = rinterface.baseenv['names']
     rformals = rinterface.baseenv['formals']
     rpaste = rinterface.baseenv['paste']
