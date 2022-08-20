@@ -16,6 +16,13 @@ Bugs fixed
 - :mod:`pandas` conversion is now correctly handling R data frames with duplicated
   column names. They were dropped tbefore that (issue #925).
 
+- :mod:`pandas` conversion is now correctly handling R data frames with nested
+  columns (issue #930).
+
+- Importing :mod:`rpy2.ipython.rmagic` while :mod:`pandas` is not installed resulted
+  in an error.
+
+
 Changes
 -------
 

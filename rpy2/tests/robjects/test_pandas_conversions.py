@@ -423,6 +423,73 @@ class TestPandasConversions(object):
                               pandas.api.types.CategoricalDtype)
         assert tuple(pandas_df.index) == py_rownames
 
+    @pytest.mark.parametrize(
+        'rcode,names,values',
+        (
+            ('list(list(x=1, y=3), list(x=2, y=4))',
+             ('x', 'y'), ((1, 2), (3, 4))),
+            ('list(list(x=1), list(x=2, y=4))',
+             ('x', 'y'), ((1, 2), (None, 4)))
+        )
+    )
+    def test__records_to_columns(self, rcode, names, values):
+        rlist = robjects.r(rcode)
+        columns = rpyp._records_to_columns(rlist)
+        assert tuple(columns.keys()) == names
+        for n, v in zip(names, values):
+            assert tuple(columns[n]) == v
+
+    @pytest.mark.parametrize(
+        'rcode,names,values',
+        (
+            ('data.frame('
+             '  a = c("a", "b"),'
+             '  b = c(1, 2)'
+             ')',
+             ('a', 'b'),
+             (["a", "b"], [1, 2])),
+            ('data.frame('
+             '  a = c("a", "b"),'
+             '  b = I(list(list(x=1, y=3), list(x=2, y=4)))'
+             ')',
+             ('a', ('b', 'x'), ('b', 'y')),
+             (["a", "b"], [1, 2], [3, 4]))
+        )
+    )
+    def test__flatten_dataframe(self, rcode, names, values):
+        rdataf = robjects.r(rcode)
+        colnames_lst = []
+        columns = tuple(rpyp._flatten_dataframe(rdataf, colnames_lst))
+        assert tuple(colnames_lst) == names
+
+    @pytest.mark.parametrize(
+        'rcode,names,values',
+        (
+            ('data.frame('
+             '  a = c("a", "b"),'
+             '  b = I(list(list(x=1, y=3), list(x=2, y=4)))'
+             ')',
+             ('a', ('b', 'x'), ('b', 'y')),
+             (["a", "b"], [1, 2], [3, 4])),
+            ('data.frame('
+             '  b = I(list(list(x=1, y=3), list(x=2, y=4)))'
+             ')',
+             (('b', 'x'), ('b', 'y')),
+             ([1, 2], [3, 4])),
+            ('aggregate(gear ~ am, mtcars, '
+             'function(x) c(mean = mean(x), sd = sd(x)), '
+             'simplify=FALSE)',
+             ('am', ('gear', 'mean'), ('gear', 'sd')),
+             ([0.0, 1.0], [3.210526, 4.384615],
+              [0.418854, 0.506370]))
+        )
+    )
+    def test_dataframe_with_list(self, rcode, names, values):
+        rdataf = robjects.r(rcode)
+        with localconverter(default_converter + rpyp.converter) as cv:
+            pandas_df = robjects.conversion.converter_ctx.get().rpy2py(rdataf)
+        assert tuple(pandas_df.columns) == names
+
     def test_ri2pandas_issue207(self):
         d = robjects.DataFrame({'x': 1})
         with localconverter(default_converter + rpyp.converter) as cv:
