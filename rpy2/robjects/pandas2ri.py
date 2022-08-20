@@ -5,7 +5,6 @@ import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import na_values
 from rpy2.rinterface import (IntSexpVector,
-                             Sexp,
                              SexpVector,
                              StrSexpVector)
 import datetime
@@ -246,9 +245,11 @@ def rpy2py_posixct(obj):
 
 @rpy2py.register(DataFrame)
 def rpy2py_dataframe(obj):
-    items = OrderedDict((k, rpy2py(v) if isinstance(v, Sexp) else v)
-                        for k, v in obj.items())
-    res = PandasDataFrame.from_dict(items)
+    rpy2py = conversion.get_conversion().rpy2py
+    res = pandas.DataFrame.from_dict(
+        OrderedDict((i, rpy2py(_)) for i, _ in enumerate(obj))
+    )
+    res.columns = obj.colnames
     res.index = obj.rownames
     return res
 

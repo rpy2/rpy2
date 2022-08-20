@@ -16,8 +16,7 @@ import time
 import pytz
 import tzlocal
 from datetime import date, datetime, timedelta, timezone
-from time import struct_time, mktime, tzname
-from operator import attrgetter
+from time import struct_time, mktime
 import typing
 import warnings
 
@@ -944,7 +943,7 @@ class POSIXct(POSIXt, FloatVector):
                 )
 
         if tz_info is None:
-            tz_info = tzname[0]
+            tz_info = default_timezone.zone if default_timezone else ''
         # We could use R's as.POSIXct instead of ISOdatetime
         # since as.POSIXct is used by it anyway, but the overall
         # interface for dates and conversion between formats
@@ -964,7 +963,7 @@ class POSIXct(POSIXt, FloatVector):
                     IntVector([x.tm_hour for x in seq]),
                     IntVector([x.tm_min for x in seq]),
                     IntVector([x.tm_sec for x in seq])]
-        return POSIXct._sexp_from_seq(seq, lambda elt: time.tzname[0], f)
+        return POSIXct._sexp_from_seq(seq, lambda elt: elt.tm_zone, f)
 
     @staticmethod
     def sexp_from_datetime(seq):
@@ -978,7 +977,10 @@ class POSIXct(POSIXt, FloatVector):
                     IntVector([x.minute for x in seq]),
                     IntVector([x.second for x in seq])]
 
-        return POSIXct._sexp_from_seq(seq, attrgetter('tzinfo'), f)
+        def get_tz(elt):
+            return elt.tzinfo.zone if elt.tzinfo else None
+
+        return POSIXct._sexp_from_seq(seq, get_tz, f)
 
     @staticmethod
     def isrinstance(obj) -> bool:
