@@ -78,6 +78,7 @@ try:
 except ImportError as ie:
     # Give up on numerics
     numpy = None
+    pandas = None
     warnings.warn('The Python package `pandas` is strongly '
                   'recommended when using `rpy2.ipython`. '
                   'Unfortunately it could not be loaded, '

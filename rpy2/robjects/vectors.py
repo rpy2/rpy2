@@ -1376,7 +1376,7 @@ class DataFrame(ListVector):
 
     def _get_colnames(self):
         res = baseenv_ri["colnames"](self)
-        return conversion.rpy2py(res)
+        return conversion.get_conversion().rpy2py(res)
 
     def _set_colnames(self, colnames):
         res = baseenv_ri["colnames<-"](

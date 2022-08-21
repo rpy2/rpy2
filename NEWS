@@ -1,6 +1,12 @@
 Release 3.5.4
 =============
 
+New features
+------------
+
+- :func:`rpy2.rinterface.rternalize` can optionally mirror more accurately in R
+  the function signature defined in Python (issue #905).
+
 Bugs fixed
 ----------
 
@@ -9,6 +15,13 @@ Bugs fixed
 
 - :mod:`pandas` conversion is now correctly handling R data frames with duplicated
   column names. They were dropped tbefore that (issue #925).
+
+- :mod:`pandas` conversion is now correctly handling R data frames with nested
+  columns (issue #930).
+
+- Importing :mod:`rpy2.ipython.rmagic` while :mod:`pandas` is not installed resulted
+  in an error.
+
 
 Changes
 -------
