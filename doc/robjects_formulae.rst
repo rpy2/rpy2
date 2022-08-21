@@ -47,7 +47,7 @@ The class :class:`robjects.Formula` is representing an :program:`R` formula.
   fit = stats.lm(fmla)
 
 One drawback with that approach is that pretty printing of
-the `fit` object is note quite as good as what one would
+the `fit` object is not quite as good as what one would
 expect when working in :program:`R`: the `call` item now displays the code
 for the function used to perform the fit.
 

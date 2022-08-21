@@ -73,9 +73,11 @@ class ClassRepresentation(RS4):
                          "Name of the R class")
 
 
-def getclassdef(cls_name, cls_packagename):
-    cls_def = methods_env['getClassDef'](StrSexpVector((cls_name,)),
-                                         StrSexpVector((cls_packagename, )))
+def getclassdef(cls_name: str, packagename=rinterface.MissingArg):
+    cls_def = methods_env['getClassDef'](
+        StrSexpVector((cls_name,)),
+        package=StrSexpVector((packagename, ))
+    )
     cls_def = ClassRepresentation(cls_def)
     cls_def.__rname__ = cls_name
     return cls_def
