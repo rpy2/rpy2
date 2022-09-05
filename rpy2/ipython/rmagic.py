@@ -359,7 +359,7 @@ class RMagics(Magics):
             val = _find(rhs, local_ns)
         except NameError:
             val = _find(rhs, self.shell.user_ns)
-        env[lhs]= val
+        env[lhs] = val
 
     # @skip_doctest
     @needs_local_scope
@@ -574,7 +574,6 @@ class RMagics(Magics):
 
         return display_data, md
 
-
     # @skip_doctest
     @magic_arguments()
     @argument(
@@ -591,7 +590,7 @@ class RMagics(Magics):
         nested in a namespace visible from the current notebook/ipython
         shell. For example, '-i myvariable' or
         '-i mypackage.myothervariable' would both work.
-        
+
         Each input can be either the name of Python object, in which
         case the same name will be used for the R object, or an
         expression of the form <r-name>=<python-name>.""")
