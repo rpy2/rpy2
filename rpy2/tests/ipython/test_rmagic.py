@@ -75,6 +75,8 @@ def test_RInterpreterError():
     assert str(rie).startswith(rie.msg_prefix_template % (line, err))
 
 
+@pytest.mark.skipif(IPython is None,
+                    reason='The optional package IPython cannot be imported.')
 @pytest.mark.parametrize(
     'arg,expected',
     (('foo', ('foo', 'foo')),
