@@ -1,3 +1,24 @@
+Release 3.5.5
+=============
+
+New features
+------------
+  
+- For ipython and Jupyter notebooks, R "magics" accepting optional input arguments
+  (`-i` or `--input`) can now be of form `<python-name>` or
+  `<r-name>=<python-name>`. The former is the way is has been working so far:
+  the R object is given the name of the Python object. The latter allows to
+  specify the name under which the input object will be known to R. In addition
+  to that the python name can optionally be a path, that is a name nested in a
+  sequence of namespaces. For example, `-i module.varname`. The magics
+  concerned are `%R`, `%%R`, and `%Rpush` (issues #934 and #935).
+
+- For ipython and Jupyter notebooks, R "magics" accepting an optional conversion
+  argument (`-c/--converter`) now also accepts names that are a path in Python,
+  that is a name nested in a sequence of namespaces. For example,
+  `-c rpy2.robjects.default_converter` (issue #934).
+
+
 Release 3.5.4
 =============
 
