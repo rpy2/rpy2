@@ -361,7 +361,36 @@ class RMagics(Magics):
             val = _find(rhs, self.shell.user_ns)
         env[lhs] = val
 
+    def _find_converter(self, name: str) -> ro.conversion.Converter:
+        if name is None:
+            converter = self.converter
+        else:
+            try:
+                converter = _find(name, local_ns)
+            except NameError:
+                converter = _find(name, self.shell.user_ns)
+
+            if not isinstance(converter, Converter):
+                raise TypeError("'%s' must be a %s object (but it is a %s)."
+                                % (converter, Converter,
+                                   type(converter)))
+        return converter
+
     # @skip_doctest
+    @magic_arguments()
+    @argument(
+        '-c', '--converter',
+        default=None,
+        help=textwrap.dedent("""
+        Name of local converter to use. A converter contains the rules to
+        convert objects back and forth between Python and R. If not
+        specified/None, the defaut converter for the magic\'s module is used
+        (that is rpy2\'s default converter + numpy converter + pandas converter
+        if all three are available)."""))
+    @argument(
+        'inputs',
+        nargs='*',
+        )
     @needs_local_scope
     @line_magic
     def Rpush(self, line, local_ns=None):
@@ -384,13 +413,15 @@ class RMagics(Magics):
             Out[11]: array([ 6.23333333])
 
         """
+        args = parse_argstring(self.Rpush, line)
+
+        converter = self._find_converter(args.converter)
+
         if local_ns is None:
             local_ns = {}
 
-        inputs = line.split(' ')
-
-        with localconverter(self.converter):
-            for arg in inputs:
+        with localconverter(converter):
+            for arg in args.inputs:
                 self._import_name_into_r(arg, ro.globalenv, local_ns)
 
     # @skip_doctest
@@ -782,18 +813,7 @@ class RMagics(Magics):
         if local_ns is None:
             local_ns = {}
 
-        if args.converter is None:
-            converter = self.converter
-        else:
-            try:
-                converter = _find(args.converter, local_ns)
-            except NameError:
-                converter = _find(args.converter, self.shell.user_ns)
-
-            if not isinstance(converter, Converter):
-                raise TypeError("'%s' must be a %s object (but it is a %s)."
-                                % (converter, Converter,
-                                   type(converter)))
+        converter = self._find_converter(args.converter)
 
         if args.input:
             with localconverter(converter) as cv:

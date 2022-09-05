@@ -18,6 +18,9 @@ New features
   that is a name nested in a sequence of namespaces. For example,
   `-c rpy2.robjects.default_converter` (issue #934).
 
+- The "magic" `%Rpush` accepts an optional argument `-c/--converter` that is
+  similar in nature to the argument of the same name in `%R` and `%%R`.
+
 
 Release 3.5.4
 =============
