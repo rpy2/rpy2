@@ -194,11 +194,11 @@ def _find(name: str, ns: dict):
     while look_for_i < len(obj_path):
         try:
             obj = getattr(obj, obj_path[look_for_i])
-        except AttributeError:
+        except AttributeError as e:
             raise AttributeError(
                 f"'{'.'.join(obj_path[:look_for_i])}' "
                 f"has no attribute '{obj_path[look_for_i]}'."
-            )
+            ) from e
         look_for_i += 1
     return obj
 
