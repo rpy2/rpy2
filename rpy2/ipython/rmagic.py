@@ -178,7 +178,7 @@ def _find(name: str, ns: dict):
     a sequence of dot-separated namespaces with the name of the
     object last (e.g., `package.module.name`).
     Returns:
-    The object wanted. Raises a NameError or an Attribute error if not found.
+    The object wanted. Raises a NameError or an AttributeError if not found.
     """
 
     obj = None
