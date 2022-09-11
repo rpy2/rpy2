@@ -186,10 +186,11 @@ def _find(name: str, ns: dict):
     look_for_i = 0
     try:
         obj = ns[obj_path[look_for_i]]
-    except KeyError:
-        raise NameError(
-            f"name '{obj_path[look_for_i]}' is not defined."
-        )
+    except KeyError as e:
+        message = f"name '{obj_path[look_for_i]}' is not defined."
+        if obj_path[look_for_i] == "":
+            message += ' Did you forget to remove trailing comma `,` or included spaces?'
+        raise NameError(message) from e
     look_for_i += 1
     while look_for_i < len(obj_path):
         try:
