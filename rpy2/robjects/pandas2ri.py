@@ -52,7 +52,7 @@ integer_array_types = ('Int8', 'Int16', 'Int32', 'Int64', 'UInt8',
 @py2rpy.register(PandasDataFrame)
 def py2rpy_pandasdataframe(obj):
     od = OrderedDict()
-    for name, values in obj.iteritems():
+    for name, values in obj.items():
         try:
             od[name] = conversion.converter_ctx.get().py2rpy(values)
         except Exception as e:
