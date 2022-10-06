@@ -143,6 +143,7 @@ class TaggedList(list):
     """
 
     __tags: List[Optional[str]]
+    __tags = list()
 
     def __init__(self, seq, tags=None):
         super(TaggedList, self).__init__(seq)
