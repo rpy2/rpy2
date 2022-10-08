@@ -21,6 +21,11 @@ New features
 - The "magic" `%Rpush` accepts an optional argument `-c/--converter` that is
   similar in nature to the argument of the same name in `%R` and `%%R`.
 
+Bugs fixed
+----------
+
+- :class:`rpy2.rlike.container.TaggedList` objects were triggering an error when unpickled (issue #947).
+
 
 Release 3.5.4
 =============
