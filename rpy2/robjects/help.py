@@ -270,6 +270,7 @@ class Page(object):
     def iteritems(self):
         """ iterator through the sections names and content
         in the documentation Page. (deprecated, use items()) """
+        warnings.warn('Use the method items().', DeprecationWarning)
         return self.sections.items()
 
     def to_docstring(
