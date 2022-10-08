@@ -1,4 +1,5 @@
 import pytest
+import pickle
 import rpy2.rlike.container as rlc
 
 
@@ -263,3 +264,13 @@ class TestTaggedList(object):
         tl = rlc.TaggedList.from_items({'a':1, 'b':2, 'c':3})
         assert set(tl.tags) == set(('a', 'b', 'c'))
         assert set(tuple(tl)) == set((1, 2, 3))
+
+    def test_pickle(self):
+        tl = rlc.TaggedList.from_items([1, 2, 3])
+        tl_pickled = pickle.dumps(tl)
+        tl_unpickled = pickle.loads(tl_pickled)
+        assert tuple(tl) == tuple(tl_unpickled)
+        assert tuple(tl.itertags()) == tuple(tl_unpickled.itertags())
+
+        
+        
