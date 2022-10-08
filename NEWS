@@ -1,3 +1,12 @@
+Release 3.5.5
+=============
+
+Bugs fixed
+----------
+
+- :class:`rpy2.rlike.container.TaggedList` objects were triggering an error when unpickled (issue #947).
+
+
 Release 3.5.4
 =============
 
