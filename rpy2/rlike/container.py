@@ -143,7 +143,6 @@ class TaggedList(list):
     """
 
     __tags: List[Optional[str]]
-    __tags = list()
 
     def __init__(self, seq, tags=None):
         super(TaggedList, self).__init__(seq)
@@ -187,6 +186,9 @@ class TaggedList(list):
         restags = self.__tags__ * y.__tags__
         resitems = super(TaggedList, self).__mul__(y)
         return type(self)(tuple(resitems), tags=restags)
+
+    def __reduce__(self):
+        return super(TaggedList, self).__reduce__()
 
     @staticmethod
     def from_items(tagval):
