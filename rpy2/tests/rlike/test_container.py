@@ -271,6 +271,3 @@ class TestTaggedList(object):
         tl_unpickled = pickle.loads(tl_pickled)
         assert tuple(tl) == tuple(tl_unpickled)
         assert tuple(tl.itertags()) == tuple(tl_unpickled.itertags())
-
-        
-        
