@@ -70,7 +70,7 @@ class TestPage(object):
         # TODO: test result more in depth.
         assert len(res) > 0
 
-    def test_iteritems():
+    def test_iteritems(self):
         base_help = rh.Package('base')
         p = base_help.fetch('print')
         res = tuple(pytest.items())
