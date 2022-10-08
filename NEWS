@@ -1,3 +1,50 @@
+Release 3.5.5
+=============
+
+Bugs fixed
+----------
+
+- :class:`rpy2.rlike.container.TaggedList` objects were triggering an error when unpickled (issue #947).
+
+
+Release 3.5.4
+=============
+
+New features
+------------
+
+- :func:`rpy2.rinterface.rternalize` can optionally mirror more accurately in R
+  the function signature defined in Python (issue #905).
+
+Bugs fixed
+----------
+
+- Better handling of timezone in :class:`rpy2.robjects.vectors.POSIXct`
+  (issue #917).
+
+- :mod:`pandas` conversion is now correctly handling R data frames with duplicated
+  column names. They were dropped tbefore that (issue #925).
+
+- :mod:`pandas` conversion is now correctly handling R data frames with nested
+  columns (issue #930).
+
+- Importing :mod:`rpy2.ipython.rmagic` while :mod:`pandas` is not installed resulted
+  in an error.
+
+
+Changes
+-------
+
+- :func:`rpy2.robjects.methods.getclassdef` is now explicitly
+  naming the optional argument with the R package name when calling
+  the underlying R function.
+
+- The `%R` line magic for ipython/jupyter was trying to substitute anything
+  after a dolar (`$`) sign, which caused issue since this character is
+  used to access by name elements in R containers. No substitution
+  is happening anymore (issue #922).
+
+
 Release 3.5.3
 =============
 
@@ -11,6 +58,12 @@ Bugs fixed
   for an R list (issue #890).
 
 - Fixed detection of the R install path on Windows (issues #875 and #885).
+
+- Fixed error with dynamic docstring generation for functions
+  without arguments (issue #903).
+
+- Fixed error with dynamic docstring generation when R functions
+  are missing the section 'Details' (isue #902).
 
 
 Release 3.5.2

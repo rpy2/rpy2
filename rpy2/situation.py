@@ -379,7 +379,7 @@ def iter_info():
     if os.name != 'nt':
         yield make_bold("R's additions to LD_LIBRARY_PATH:")
         if r_home is None:
-            yield('     *** undefined when not R home can be determined')
+            yield '     *** undefined when not R home can be determined'
         else:
             yield r_ld_library_path_from_subprocess(r_home)
 
