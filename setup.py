@@ -206,7 +206,7 @@ if __name__ == '__main__':
 
     extras_require = {
         'test': ['pytest'],
-        'numpy': ['pandas'],
+        'numpy': ['numpy'],
         'pandas': ['numpy', 'pandas'],
         'setup': ['setuptools']
     }
@@ -250,6 +250,7 @@ if __name__ == '__main__':
                        'Programming Language :: Python :: 3.7',
                        'Programming Language :: Python :: 3.8',
                        'Programming Language :: Python :: 3.9',
+                       'Programming Language :: Python :: 3.10',
                        ('License :: OSI Approved :: GNU General '
                         'Public License v2 or later (GPLv2+)'),
                        'Intended Audience :: Developers',
