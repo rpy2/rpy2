@@ -265,7 +265,12 @@ class Page(object):
     def items(self):
         """ iterator through the sections names and content
         in the documentation Page. """
-        return self.sections.items
+        return self.sections.items()
+
+    def iteritems(self):
+        """ iterator through the sections names and content
+        in the documentation Page. (deprecated, use items()) """
+        return self.sections.items()
 
     def to_docstring(
             self,
