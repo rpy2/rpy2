@@ -266,7 +266,7 @@ class TestTaggedList(object):
         assert set(tuple(tl)) == set((1, 2, 3))
 
     def test_pickle(self):
-        tl = rlc.TaggedList.from_items([1, 2, 3])
+        tl = rlc.TaggedList([1, 2, 3])
         tl_pickled = pickle.dumps(tl)
         tl_unpickled = pickle.loads(tl_pickled)
         assert tuple(tl) == tuple(tl_unpickled)
