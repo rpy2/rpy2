@@ -139,6 +139,7 @@ _PANDASTYPE2RPY2 = {
         populate_func=_bool_populate_r_vector
     ),
     None: BoolVector,
+    bool: BoolVector,
     str: functools.partial(
         StrVector.from_iterable,
         populate_func=_str_populate_r_vector
