@@ -11,6 +11,9 @@ Changes
 
 - :meth:`rpy2.robjects.help.Page.iteritems` is deprecated. Use the method `items()` instead.
 
+- Calling :func:`str` on rpy2 objects that are proxies of R objects is now
+  using R's `print()` whenever R's `show()` results in an error (issue #908).
+
 
 Release 3.5.4
 =============
