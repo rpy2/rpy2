@@ -6,6 +6,9 @@ Bugs fixed
 
 - :class:`rpy2.rlike.container.TaggedList` objects were triggering an error when unpickled (issue #947).
 
+- Converting :class:`pandas.Series` of type `"object"` with a fallback
+  to R strings no longer fails with an error (issue #916).
+
 Changes
 -------
 
