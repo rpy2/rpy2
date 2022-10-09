@@ -1,6 +1,7 @@
 import abc
 import os
 import typing
+import warnings
 import weakref
 import rpy2.rinterface
 import rpy2.rinterface_lib.callbacks
@@ -90,6 +91,7 @@ class RObjectMixin(abc.ABC):
     __readlines = rpy2.rinterface.baseenv.find("readLines")
     __unlink = rpy2.rinterface.baseenv.find("unlink")
     __show = _get_exported_value('methods', 'show')
+    __print = _get_exported_value('base', 'print')
 
     __slots = None
 
@@ -109,7 +111,11 @@ class RObjectMixin(abc.ABC):
         with (rpy2.rinterface_lib
               .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
                                        'consolewrite_print', s.append)):
-            self.__show(self)
+            try:
+                self.__show(self)
+            except rpy2.rinterface.embedded.RRuntimeError as rre:
+                warnings.warn(f'Invalid call to "show()" in R: {rre}')
+                self.__print(self)
         s = str.join('', s)
         return s
 
