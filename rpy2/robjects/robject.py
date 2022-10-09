@@ -113,6 +113,12 @@ class RObjectMixin(abc.ABC):
                                        'consolewrite_print', s.append)):
             try:
                 self.__show(self)
+                # There can be situation where an invalid call to R`s
+                # show is made. Possibly some form of signature overriding
+                # that goes through in R through dispatch (although it
+                # should not?). In that case this is an problem upstream
+                # and this try/except is a workaround until it gets fixed.
+                # (issue #908).
             except rpy2.rinterface.embedded.RRuntimeError as rre:
                 warnings.warn(f'Invalid call to "show()" in R: {rre}')
                 self.__print(self)
