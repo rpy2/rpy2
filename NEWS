@@ -6,6 +6,11 @@ Bugs fixed
 
 - :class:`rpy2.rlike.container.TaggedList` objects were triggering an error when unpickled (issue #947).
 
+Changes
+-------
+
+- :meth:`rpy2.robjects.help.Page.iteritems` is deprecated. Use the method `items()` instead.
+
 
 Release 3.5.4
 =============
