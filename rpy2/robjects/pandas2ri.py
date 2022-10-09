@@ -61,7 +61,9 @@ def py2rpy_pandasdataframe(obj):
                           'the column "%s". Fall back to string conversion. '
                           'The error is: %s'
                           % (name, str(e)))
-            od[name] = StrVector(values)
+            od[name] = conversion.converter_ctx.get().py2rpy(
+                values.astype('string')
+            )
 
     return DataFrame(od)
 
