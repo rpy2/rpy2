@@ -1,5 +1,6 @@
 import pytest
 import textwrap
+import types
 import warnings
 from itertools import product
 import rpy2.rinterface_lib.callbacks
@@ -74,6 +75,19 @@ def test_RInterpreterError():
     assert str(rie).startswith(rie.msg_prefix_template % (line, err))
 
 
+@pytest.mark.skipif(IPython is None,
+                    reason='The optional package IPython cannot be imported.')
+@pytest.mark.parametrize(
+    'arg,expected',
+    (('foo', ('foo', 'foo')),
+     ('bar=foo', ('bar', 'foo')),
+     ('bar=baz.foo', ('bar', 'baz.foo'))
+    )
+)
+def test__parse_input_argument(arg, expected):
+    assert expected == rmagic._parse_input_argument(arg) 
+
+    
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
@@ -265,25 +279,35 @@ def test_cell_magic_localconverter(ipython_with_magic, clean_globalenv):
     """)
 
     # Missing converter/object with the specified name.
-    ipython_with_magic.push({'x':x})
+    ipython_with_magic.push({'x': x})
     with pytest.raises(NameError):
         ipython_with_magic.run_cell_magic('R', '-i x -c foo',
                                           snippet)
 
     # Converter/object is not a converter.
-    ipython_with_magic.push({'x':x,
+    ipython_with_magic.push({'x': x,
                              'foo': 123})
     with pytest.raises(TypeError):
         ipython_with_magic.run_cell_magic('R', '-i x -c foo',
                                           snippet)
 
-    ipython_with_magic.push({'x':x,
+    ipython_with_magic.push({'x': x,
                              'foo': foo})
-
     with pytest.raises(NotImplementedError):
         ipython_with_magic.run_cell_magic('R', '-i x', snippet)
 
     ipython_with_magic.run_cell_magic('R', '-i x -c foo',
+                                      snippet)
+
+    # converter in a namespace.
+    ns = types.SimpleNamespace()
+    ipython_with_magic.push({'x': x,
+                             'ns': ns})
+    with pytest.raises(AttributeError):
+        ipython_with_magic.run_cell_magic('R', '-i x -c ns.bar',
+                                          snippet)
+    ns.bar = foo
+    ipython_with_magic.run_cell_magic('R', '-i x -c ns.bar',
                                       snippet)
 
     assert isinstance(globalenv['x'], vectors.IntVector)
@@ -292,7 +316,7 @@ def test_cell_magic_localconverter(ipython_with_magic, clean_globalenv):
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
 def test_rmagic_localscope(ipython_with_magic, clean_globalenv):
-    ipython_with_magic.push({'x':0})
+    ipython_with_magic.push({'x': 0})
     ipython_with_magic.run_line_magic('R', '-i x -o result result <-x+1')
     result = ipython_with_magic.user_ns['result']
     assert result[0] == 1
