@@ -49,6 +49,7 @@ from glob import glob
 from os import stat
 from shutil import rmtree
 import textwrap
+import typing
 
 # numpy and rpy2 imports
 
@@ -167,6 +168,51 @@ def py2rpy_list(obj):
     # a rpy2 objects is returned (issue #866).
     res_rpy = cv.py2rpy(res)
     return res_rpy
+
+
+def _find(name: str, ns: dict):
+    """Find a Python name, which might include dot-separated path to a name.
+
+    Args:
+    - name: a key in dict if no dot ('.') in it, otherwise
+    a sequence of dot-separated namespaces with the name of the
+    object last (e.g., `package.module.name`).
+    Returns:
+    The object wanted. Raises a NameError or an AttributeError if not found.
+    """
+
+    obj = None
+    obj_path = name.split('.')
+    look_for_i = 0
+    try:
+        obj = ns[obj_path[look_for_i]]
+    except KeyError as e:
+        message = f"name '{obj_path[look_for_i]}' is not defined."
+        if obj_path[look_for_i] == "":
+            message += ' Did you forget to remove trailing comma `,` or included spaces?'
+        raise NameError(message) from e
+    look_for_i += 1
+    while look_for_i < len(obj_path):
+        try:
+            obj = getattr(obj, obj_path[look_for_i])
+        except AttributeError as e:
+            raise AttributeError(
+                f"'{'.'.join(obj_path[:look_for_i])}' "
+                f"has no attribute '{obj_path[look_for_i]}'."
+            ) from e
+        look_for_i += 1
+    return obj
+
+
+def _parse_input_argument(arg: str) -> typing.Tuple[str, str]:
+    """Process the input to an R magic commmand (`%R`, `%%R`, `%Rpush`)."""
+    arg_elts = arg.split('=', maxsplit=1)
+    if len(arg_elts) == 1:
+        rhs = arg_elts[0]
+        lhs = rhs
+    else:
+        lhs, rhs = arg_elts
+    return lhs, rhs
 
 
 # TODO: remove ?
@@ -305,13 +351,53 @@ class RMagics(Magics):
         self.Rstdout_cache = []
         return value
 
+    def _import_name_into_r(
+            self, arg: str, env: ri.SexpEnvironment,
+            local_ns: dict
+    ) -> None:
+        lhs, rhs = _parse_input_argument(arg)
+        try:
+            val = _find(rhs, local_ns)
+        except NameError:
+            val = _find(rhs, self.shell.user_ns)
+        env[lhs] = val
+
+    def _find_converter(self, name: str) -> ro.conversion.Converter:
+        if name is None:
+            converter = self.converter
+        else:
+            try:
+                converter = _find(name, local_ns)
+            except NameError:
+                converter = _find(name, self.shell.user_ns)
+
+            if not isinstance(converter, Converter):
+                raise TypeError("'%s' must be a %s object (but it is a %s)."
+                                % (converter, Converter,
+                                   type(converter)))
+        return converter
+
     # @skip_doctest
+    @magic_arguments()
+    @argument(
+        '-c', '--converter',
+        default=None,
+        help=textwrap.dedent("""
+        Name of local converter to use. A converter contains the rules to
+        convert objects back and forth between Python and R. If not
+        specified/None, the defaut converter for the magic\'s module is used
+        (that is rpy2\'s default converter + numpy converter + pandas converter
+        if all three are available)."""))
+    @argument(
+        'inputs',
+        nargs='*',
+        )
     @needs_local_scope
     @line_magic
     def Rpush(self, line, local_ns=None):
         """
-        A line-level magic for R that pushes
-        variables from python to rpy2. The line should be made up
+        A line-level magic that pushes
+        variables from python to R. The line should be made up
         of whitespace separated variable names in the IPython
         namespace::
 
@@ -328,24 +414,16 @@ class RMagics(Magics):
             Out[11]: array([ 6.23333333])
 
         """
+        args = parse_argstring(self.Rpush, line)
+
+        converter = self._find_converter(args.converter)
+
         if local_ns is None:
             local_ns = {}
 
-        inputs = line.split(' ')
-        for input in inputs:
-            try:
-                val = local_ns[input]
-            except KeyError:
-                try:
-                    val = self.shell.user_ns[input]
-                except KeyError:
-                    # reraise the KeyError as a NameError so that it looks like
-                    # the standard python behavior when you use an unnamed
-                    # variable
-                    raise NameError("name '%s' is not defined" % input)
-
-            with localconverter(self.converter):
-                ro.r.assign(input, val)
+        with localconverter(converter):
+            for arg in args.inputs:
+                self._import_name_into_r(arg, ro.globalenv, local_ns)
 
     # @skip_doctest
     @magic_arguments()
@@ -533,10 +611,21 @@ class RMagics(Magics):
     @argument(
         '-i', '--input', action='append',
         help=textwrap.dedent("""
-        Names of input variable from `shell.user_ns` to be assigned to R
-        variables of the same names after using the Converter self.converter.
-        Multiple names can be passed separated only by commas with no
-        whitespace.""")
+        Names of Python objects to be assigned to R
+        objects after using the default converter or
+        one specified through the argument `-c/--converter`.
+        Multiple inputs can be passed separated only by commas with no
+        whitespace.
+
+        Names of Python objects can be either the name of an object
+        in the current notebook/ipython shell, or a path to a name
+        nested in a namespace visible from the current notebook/ipython
+        shell. For example, '-i myvariable' or
+        '-i mypackage.myothervariable' would both work.
+
+        Each input can be either the name of Python object, in which
+        case the same name will be used for the R object, or an
+        expression of the form <r-name>=<python-name>.""")
     )
     @argument(
         '-o', '--output', action='append',
@@ -725,34 +814,12 @@ class RMagics(Magics):
         if local_ns is None:
             local_ns = {}
 
-        if args.converter is None:
-            converter = self.converter
-        else:
-            try:
-                converter = local_ns[args.converter]
-            except KeyError:
-                try:
-                    converter = self.shell.user_ns[args.converter]
-                except KeyError:
-                    raise NameError(
-                        "name '%s' is not defined" % args.converter
-                    )
-            if not isinstance(converter, Converter):
-                raise TypeError("'%s' must be a %s object (but it is a %s)."
-                                % (args.converter, Converter,
-                                   type(localconverter)))
+        converter = self._find_converter(args.converter)
 
         if args.input:
-            for input in ','.join(args.input).split(','):
-                try:
-                    val = local_ns[input]
-                except KeyError:
-                    try:
-                        val = self.shell.user_ns[input]
-                    except KeyError:
-                        raise NameError("name '%s' is not defined" % input)
-                with localconverter(converter) as cv:
-                    ro.r.assign(input, val)
+            with localconverter(converter) as cv:
+                for arg in ','.join(args.input).split(','):
+                    self._import_name_into_r(arg, ro.globalenv, local_ns)
 
         if args.display:
             try:
