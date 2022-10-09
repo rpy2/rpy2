@@ -11,6 +11,8 @@ Changes
 
 - :meth:`rpy2.robjects.help.Page.iteritems` is deprecated. Use the method `items()` instead.
 
+- A warning is now issued when trying to convert a `DataFrame` with duplicate indexes.
+
 
 Release 3.5.4
 =============
