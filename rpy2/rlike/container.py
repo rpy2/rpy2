@@ -187,6 +187,9 @@ class TaggedList(list):
         resitems = super(TaggedList, self).__mul__(y)
         return type(self)(tuple(resitems), tags=restags)
 
+    def __reduce__(self):
+        return super(TaggedList, self).__reduce__()
+
     @staticmethod
     def from_items(tagval):
         res = TaggedList([])

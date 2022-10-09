@@ -64,20 +64,6 @@ def ipython_with_magic():
 
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
-@pytest.fixture(scope='function')
-def set_conversion(ipython_with_magic):
-    if hasattr(rmagic.template_converter, 'activate'):
-        rmagic.template_converter.activate()
-    yield ipython_with_magic
-    
-    # This seems like the safest thing to return to a safe state
-    ipython_with_magic.run_line_magic('Rdevice', 'png')
-    if hasattr(rmagic.template_converter, 'deactivate'):
-        rmagic.template_converter.deactivate()
-
-
-@pytest.mark.skipif(IPython is None,
-                    reason='The optional package IPython cannot be imported.')
 def test_RInterpreterError():
     line = 123
     err = 'Arrh!'
@@ -92,12 +78,11 @@ def test_RInterpreterError():
                     reason='The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_push(ipython_with_magic, clean_globalenv):
-    ipython_with_magic.push({'X':np.arange(5), 'Y':np.array([3,5,4,6,7])})
-    ipython_with_magic.run_line_magic('Rpush', 'X Y')
-    np.testing.assert_almost_equal(np.asarray(r('X')),
-                                   ipython_with_magic.user_ns['X'])
-    np.testing.assert_almost_equal(np.asarray(r('Y')),
-                                   ipython_with_magic.user_ns['Y'])
+    for obj in (np.arange(5), [1,2]):
+        ipython_with_magic.push({'X': obj})
+        ipython_with_magic.run_line_magic('Rpush', 'X')
+        np.testing.assert_almost_equal(np.asarray(r('X')),
+                                       ipython_with_magic.user_ns['X'])
 
 
 @pytest.mark.skipif(IPython is None,

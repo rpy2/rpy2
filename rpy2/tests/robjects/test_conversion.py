@@ -116,7 +116,8 @@ def test_mapperR2Python_s4custom(_set_class_AB):
     sexp_b = rinterface.globalenv['B']( 
         x=rinterface.IntSexpVector([2, ])
     )
-    rs4_map = robjects.conversion.converter.rpy2py_nc_name[rinterface.SexpS4]
+    rs4_map = (robjects.conversion.get_conversion()
+               .rpy2py_nc_name[rinterface.SexpS4])
     with robjects.conversion.NameClassMapContext(
             rs4_map,
             {'A': A}

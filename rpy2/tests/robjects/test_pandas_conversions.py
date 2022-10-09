@@ -40,27 +40,39 @@ class TestPandasConversions(object):
 
     def testActivate(self):
         #FIXME: is the following still making sense ?
-        assert rpyp.py2rpy != robjects.conversion.py2rpy
-        l = len(robjects.conversion.py2rpy.registry)
-        k = set(robjects.conversion.py2rpy.registry.keys())
+        assert rpyp.py2rpy != robjects.conversion.get_conversion().py2rpy
+        l = len(robjects.conversion.converter_ctx.get().py2rpy.registry)
+        k = set(robjects.conversion.converter_ctx.get().py2rpy.registry.keys())
         rpyp.activate()
-        assert len(conversion.py2rpy.registry) > l
+        assert len(conversion.converter_ctx.get().py2rpy.registry) > l
         rpyp.deactivate()
-        assert len(conversion.py2rpy.registry) == l
-        assert set(conversion.py2rpy.registry.keys()) == k
+        assert len(conversion.converter_ctx.get().py2rpy.registry) == l
+        assert set(conversion.converter_ctx.get().py2rpy.registry.keys()) == k
 
     def testActivateTwice(self):
         #FIXME: is the following still making sense ?
-        assert rpyp.py2rpy != robjects.conversion.py2rpy
-        l = len(robjects.conversion.py2rpy.registry)
-        k = set(robjects.conversion.py2rpy.registry.keys())
+        assert rpyp.py2rpy != robjects.conversion.converter_ctx.get().py2rpy
+        l = len(robjects.conversion.converter_ctx.get().py2rpy.registry)
+        k = set(robjects.conversion.converter_ctx.get().py2rpy.registry.keys())
         rpyp.activate()
         rpyp.deactivate()
         rpyp.activate()
-        assert len(conversion.py2rpy.registry) > l
+        assert len(conversion.converter_ctx.get().py2rpy.registry) > l
         rpyp.deactivate()
-        assert len(conversion.py2rpy.registry) == l
-        assert set(conversion.py2rpy.registry.keys()) == k
+        assert len(conversion.converter_ctx.get().py2rpy.registry) == l
+        assert set(conversion.converter_ctx.get().py2rpy.registry.keys()) == k
+
+    @pytest.mark.parametrize(
+        'cls',
+        (robjects.ListVector,
+         rinterface.ListSexpVector)
+    )
+    def test_list(self, cls):
+        rlist = cls(robjects.ListVector({'a': 1, 'b': 'c'}))
+        with localconverter(default_converter + rpyp.converter) as cv:
+            pylist = cv.rpy2py(rlist)
+        assert len(pylist) == 2
+        assert set(pylist.keys()) == set(rlist.names)
 
     def test_dataframe(self):
         # Content for test data frame
@@ -79,7 +91,7 @@ class TestPandasConversions(object):
         pd_df = pandas.core.frame.DataFrame(od)
         # Convert to R
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_df = robjects.conversion.py2rpy(pd_df)
+            rp_df = robjects.conversion.converter_ctx.get().py2rpy(pd_df)
         assert pd_df.shape[0] == rp_df.nrow
         assert pd_df.shape[1] == rp_df.ncol
         # assert tuple(rp_df.rx2('s')) == (b'b', b'c', b'd')
@@ -89,7 +101,7 @@ class TestPandasConversions(object):
         pd_df = pandas.DataFrame({'the one': [1, 2], 'the other': [3, 4]})
         # Convert to R
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_df = robjects.conversion.py2rpy(pd_df)
+            rp_df = robjects.conversion.converter_ctx.get().py2rpy(pd_df)
         assert tuple(rp_df.names) == ('the one', 'the other')
 
     @pytest.mark.parametrize(
@@ -109,7 +121,7 @@ class TestPandasConversions(object):
         Series = pandas.core.series.Series
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_s = robjects.conversion.py2rpy(s)
+            rp_s = robjects.conversion.get_conversion().py2rpy(s)
         assert isinstance(rp_s, rinterface.FloatSexpVector)
 
     @pytest.mark.parametrize('dtype',
@@ -129,7 +141,7 @@ class TestPandasConversions(object):
                    index=['a', 'b', 'c', 'd', 'e'],
                    dtype=dtype)
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_s = robjects.conversion.py2rpy(s)
+            rp_s = robjects.conversion.get_conversion().py2rpy(s)
         assert isinstance(rp_s, rinterface.IntSexpVector)
 
     @pytest.mark.parametrize('dtype',
@@ -138,20 +150,20 @@ class TestPandasConversions(object):
     def test_dataframe_int_nan(self, dtype):
         a = pandas.DataFrame([(numpy.NaN,)], dtype=dtype, columns=['z'])
         with localconverter(default_converter + rpyp.converter) as cv:
-            b = robjects.conversion.py2rpy(a)
+            b = robjects.conversion.get_conversion().py2rpy(a)
         assert b[0][0] is rinterface.na_values.NA_Integer
         with localconverter(default_converter + rpyp.converter) as cv:
-            c = robjects.conversion.rpy2py(b)
+            c = robjects.conversion.get_conversion().rpy2py(b)
 
     @pytest.mark.parametrize('dtype', (pandas.Int32Dtype() if has_pandas else None,
                                        pandas.Int64Dtype() if has_pandas else None))
     def test_series_int_nan(self, dtype):
         a = pandas.Series((numpy.NaN,), dtype=dtype, index=['z'])
         with localconverter(default_converter + rpyp.converter) as _:
-            b = robjects.conversion.py2rpy(a)
+            b = robjects.conversion.converter_ctx.get().py2rpy(a)
         assert b[0] is rinterface.na_values.NA_Integer
         with localconverter(default_converter + rpyp.converter) as _:
-            c = robjects.conversion.rpy2py(b)
+            c = robjects.conversion.converter_ctx.get().rpy2py(b)
 
     @pytest.mark.skipif(not (has_numpy and has_pandas),
                         reason='Packages numpy and pandas must be installed.')
@@ -169,7 +181,7 @@ class TestPandasConversions(object):
         Series = pandas.core.series.Series
         s = Series(data, index=['a', 'b', 'c'], dtype=dtype)
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_s = robjects.conversion.py2rpy(s)
+            rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
         assert isinstance(rp_s, rinterface.StrSexpVector)
 
     def test_series_obj_mixed(self):
@@ -177,32 +189,50 @@ class TestPandasConversions(object):
         s = Series(['x', 1, False], index=['a', 'b', 'c'])
         with localconverter(default_converter + rpyp.converter) as cv:
             with pytest.raises(ValueError):
-                rp_s = robjects.conversion.py2rpy(s)
+                rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
 
         s = Series(['x', 1, None], index=['a', 'b', 'c'])
         with localconverter(default_converter + rpyp.converter) as cv:
             with pytest.raises(ValueError):
-                rp_s = robjects.conversion.py2rpy(s)
+                rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
 
-
-    def test_series_obj_bool(self):
+    @pytest.mark.parametrize(
+        'data',
+        ([True, False, True],
+         [True, False, None])
+    )
+    @pytest.mark.parametrize(
+        'dtype', [bool, pandas.BooleanDtype() if has_pandas else None]
+    )
+    def test_series_obj_bool(self, data, dtype):
         Series = pandas.core.series.Series
-        s = Series([True, False, True], index=['a', 'b', 'c'], dtype='bool')
+        s = Series(data, index=['a', 'b', 'c'], dtype=dtype)
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_s = robjects.conversion.py2rpy(s)
+            rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
         assert isinstance(rp_s, rinterface.BoolSexpVector)
 
-        s = Series([True, False, None], index=['a', 'b', 'c'], dtype='bool')
+
+    @pytest.mark.parametrize(
+        'data',
+        ([1.1, 2.2, 3.3],
+         [1.1, 2.2, None])
+    )
+    @pytest.mark.parametrize(
+        'dtype', [float, pandas.Float64Dtype() if has_pandas else None]
+    )
+    def test_series_obj_float(self, data, dtype):
+        Series = pandas.core.series.Series
+        s = Series(data, index=['a', 'b', 'c'], dtype=dtype)
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_s = robjects.conversion.py2rpy(s)
-        assert isinstance(rp_s, rinterface.BoolSexpVector)
+            rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
+        assert isinstance(rp_s, rinterface.FloatSexpVector)
 
 
     def test_series_obj_allnone(self):
         Series = pandas.core.series.Series
         s = Series([None, None, None], index=['a', 'b', 'c'])
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_s = robjects.conversion.py2rpy(s)
+            rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
         assert isinstance(rp_s, rinterface.BoolSexpVector)
 
 
@@ -211,53 +241,53 @@ class TestPandasConversions(object):
         s = Series(('a', 'b', 'c', 'd', 'e'),
                    index=pandas.Int64Index([0,1,2,3,4]))
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_s = robjects.conversion.py2rpy(s)
+            rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
         # segfault before the fix
         str(rp_s)
         assert isinstance(rp_s, rinterface.StrSexpVector)
 
     def test_object2String(self):
-        series = pandas.Series(["a","b","c","a"], dtype="O")
+        series = pandas.Series(['a', 'b', 'c', 'a'], dtype='O')
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.py2rpy(series)
+            rp_c = robjects.conversion.converter_ctx.get().py2rpy(series)
             assert isinstance(rp_c, rinterface.StrSexpVector)
 
     def test_object2String_with_None(self):
-        series = pandas.Series([None, "a","b","c","a"], dtype="O")
+        series = pandas.Series([None, 'a', 'b', 'c', 'a'], dtype='O')
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.py2rpy(series)
+            rp_c = robjects.conversion.converter_ctx.get().py2rpy(series)
             assert isinstance(rp_c, rinterface.StrSexpVector)
 
     def test_factor2Category(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a'))
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.rpy2py(factor)
+            rp_c = robjects.conversion.converter_ctx.get().rpy2py(factor)
         assert isinstance(rp_c, pandas.Categorical)
 
     def test_factorwithNA2Category(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a', None))
         assert factor[3] is rinterface.na_values.NA_Integer
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.rpy2py(factor)
+            rp_c = robjects.conversion.converter_ctx.get().rpy2py(factor)
         assert isinstance(rp_c, pandas.Categorical)
         assert math.isnan(rp_c[3])
 
     def test_orderedFactor2Category(self):
         factor = robjects.vectors.FactorVector(('a', 'b', 'a'), ordered=True)
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.rpy2py(factor)
+            rp_c = robjects.conversion.converter_ctx.get().rpy2py(factor)
         assert isinstance(rp_c, pandas.Categorical)
 
     def test_category2Factor(self):
         category = pandas.Series(["a","b","c","a"], dtype="category")
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.py2rpy(category)
+            rp_c = robjects.conversion.converter_ctx.get().py2rpy(category)
             assert isinstance(rp_c, robjects.vectors.FactorVector)
 
     def test_categorywithNA2Factor(self):
         category = pandas.Series(['a', 'b', 'c', numpy.nan], dtype='category')
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.py2rpy(category)
+            rp_c = robjects.conversion.converter_ctx.get().py2rpy(category)
             assert isinstance(rp_c, robjects.vectors.FactorVector)
         assert rp_c[3] == rinterface.NA_Integer
 
@@ -266,7 +296,7 @@ class TestPandasConversions(object):
                                                     categories=['a','b','c'],
                                                     ordered=True))
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.py2rpy(category)
+            rp_c = robjects.conversion.converter_ctx.get().py2rpy(category)
             assert isinstance(rp_c, robjects.vectors.FactorVector)
 
     def test_datetime2posixct(self):
@@ -275,7 +305,7 @@ class TestPandasConversions(object):
                               periods=20, freq='ms', tz='UTC')
         )
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.py2rpy(datetime)
+            rp_c = robjects.conversion.converter_ctx.get().py2rpy(datetime)
             assert isinstance(rp_c, robjects.vectors.POSIXct)
             assert int(rp_c[0]) == 1483228800
             assert int(rp_c[1]) == 1483228800
@@ -288,17 +318,16 @@ class TestPandasConversions(object):
         )
         datetime[1] = pandas.NaT
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.py2rpy(datetime)
+            rp_c = robjects.conversion.converter_ctx.get().py2rpy(datetime)
             assert isinstance(rp_c, robjects.vectors.POSIXct)
             assert int(rp_c[0]) == 1483228800
             assert math.isnan(rp_c[1])
-            assert rp_c[0] != rp_c[1]
 
     def test_date2posixct(self):
         today = datetime.now().date()
         date = pandas.Series([today])
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_c = robjects.conversion.py2rpy(date)
+            rp_c = robjects.conversion.converter_ctx.get().py2rpy(date)
             assert isinstance(rp_c, robjects.vectors.FloatSexpVector)
             assert tuple(int(x) for x in rp_c) == (today.toordinal(), )
 
@@ -318,7 +347,7 @@ class TestPandasConversions(object):
 
         # Convert R POSIXct vector to pandas-compatible vector
         with localconverter(default_converter + rpyp.converter) as cv:
-            py_time = robjects.conversion.rpy2py(r_time)
+            py_time = robjects.conversion.converter_ctx.get().rpy2py(r_time)
 
         # Check that the round trip did not introduce changes
         for expected, obtained in zip(dt, py_time):
@@ -328,7 +357,7 @@ class TestPandasConversions(object):
         r_time[1] = rinterface.na_values.NA_Real
         # Convert R POSIXct vector to pandas-compatible vector
         with localconverter(default_converter + rpyp.converter) as cv:
-            py_time = robjects.conversion.rpy2py(r_time)
+            py_time = robjects.conversion.converter_ctx.get().rpy2py(r_time)
 
         assert py_time[1] is pandas.NaT
 
@@ -349,7 +378,7 @@ class TestPandasConversions(object):
 
         # Convert R POSIXct vector to pandas-compatible vector
         with localconverter(default_converter + rpyp.converter):
-            py_dataf = robjects.conversion.rpy2py(r_dataf)
+            py_dataf = robjects.conversion.converter_ctx.get().rpy2py(r_dataf)
         assert pandas.core.dtypes.common.is_datetime64_any_dtype(py_dataf['mydate'])
 
     def test_repr(self):
@@ -362,7 +391,7 @@ class TestPandasConversions(object):
         od = OrderedDict(l)
         pd_df = pandas.core.frame.DataFrame(od)
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_df = robjects.conversion.py2rpy(pd_df)
+            rp_df = robjects.conversion.converter_ctx.get().py2rpy(pd_df)
         s = repr(rp_df)  # used to fail with a TypeError.
         s = s.split('\n')
         repr_str = ('[BoolSex..., IntSexp..., FloatSe..., '
@@ -371,32 +400,108 @@ class TestPandasConversions(object):
 
         # Try again with the conversion still active.
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_df = robjects.conversion.py2rpy(pd_df)
+            rp_df = robjects.conversion.converter_ctx.get().py2rpy(pd_df)
             s = repr(rp_df)  # used to fail with a TypeError.
         s = s.split('\n')
         assert repr_str == s[2].strip()
 
-    def test_ri2pandas(self):
-        rdataf = robjects.r('data.frame(a=1:2, '
-                            '           b=I(c("a", "b")), '
-                            '           c=c("a", "b"))')
+    @pytest.mark.parametrize(
+        'colnames',
+        (('w', 'x', 'y', 'z'),
+         ('w', 'x', 'y', 'x'))
+    )
+    @pytest.mark.parametrize(
+        'r_rownames,py_rownames',
+        (('NULL', ('1', '2')),
+         ('c("a", "b")',('a', 'b')))
+    )
+    def test_ri2pandas(self, r_rownames, py_rownames, colnames):
+        rdataf = robjects.r(
+            f'data.frame({colnames[0]}=1:2, '
+            f'           {colnames[1]}=1:2, '
+            f'           {colnames[2]}=I(c("a", "b")), '
+            f'           {colnames[3]}=factor(c("a", "b")), '
+            f'           row.names={r_rownames}, '
+            '            check.names=FALSE)')
         with localconverter(default_converter + rpyp.converter) as cv:
-            pandas_df = robjects.conversion.rpy2py(rdataf)
+            pandas_df = robjects.conversion.converter_ctx.get().rpy2py(rdataf)
 
         assert isinstance(pandas_df, pandas.DataFrame)
-        assert ('a', 'b', 'c') == tuple(pandas_df.keys())
-        assert pandas_df['a'].dtype in (numpy.dtype('int32'),
+        assert colnames == tuple(pandas_df.keys())
+        assert pandas_df['w'].dtype in (numpy.dtype('int32'),
                                         numpy.dtype('int64'))
-        assert pandas_df['b'].dtype == numpy.dtype('O')
-        assert isinstance(pandas_df['c'].dtype,
-                          pandas.api.types.CategoricalDtype)
+        assert pandas_df['y'].dtype == numpy.dtype('O')
+        if 'z' in colnames:
+            assert isinstance(pandas_df['z'].dtype,
+                              pandas.api.types.CategoricalDtype)
+        assert tuple(pandas_df.index) == py_rownames
 
-    def test_ri2pandas(self):
-        rdataf = robjects.r('data.frame(a=1:2, '
-                            '           row.names=c("a", "b"))')
+    @pytest.mark.parametrize(
+        'rcode,names,values',
+        (
+            ('list(list(x=1, y=3), list(x=2, y=4))',
+             ('x', 'y'), ((1, 2), (3, 4))),
+            ('list(list(x=1), list(x=2, y=4))',
+             ('x', 'y'), ((1, 2), (None, 4)))
+        )
+    )
+    def test__records_to_columns(self, rcode, names, values):
+        rlist = robjects.r(rcode)
+        columns = rpyp._records_to_columns(rlist)
+        assert tuple(columns.keys()) == names
+        for n, v in zip(names, values):
+            assert tuple(columns[n]) == v
+
+    @pytest.mark.parametrize(
+        'rcode,names,values',
+        (
+            ('data.frame('
+             '  a = c("a", "b"),'
+             '  b = c(1, 2)'
+             ')',
+             ('a', 'b'),
+             (["a", "b"], [1, 2])),
+            ('data.frame('
+             '  a = c("a", "b"),'
+             '  b = I(list(list(x=1, y=3), list(x=2, y=4)))'
+             ')',
+             ('a', ('b', 'x'), ('b', 'y')),
+             (["a", "b"], [1, 2], [3, 4]))
+        )
+    )
+    def test__flatten_dataframe(self, rcode, names, values):
+        rdataf = robjects.r(rcode)
+        colnames_lst = []
+        columns = tuple(rpyp._flatten_dataframe(rdataf, colnames_lst))
+        assert tuple(colnames_lst) == names
+
+    @pytest.mark.parametrize(
+        'rcode,names,values',
+        (
+            ('data.frame('
+             '  a = c("a", "b"),'
+             '  b = I(list(list(x=1, y=3), list(x=2, y=4)))'
+             ')',
+             ('a', ('b', 'x'), ('b', 'y')),
+             (["a", "b"], [1, 2], [3, 4])),
+            ('data.frame('
+             '  b = I(list(list(x=1, y=3), list(x=2, y=4)))'
+             ')',
+             (('b', 'x'), ('b', 'y')),
+             ([1, 2], [3, 4])),
+            ('aggregate(gear ~ am, mtcars, '
+             'function(x) c(mean = mean(x), sd = sd(x)), '
+             'simplify=FALSE)',
+             ('am', ('gear', 'mean'), ('gear', 'sd')),
+             ([0.0, 1.0], [3.210526, 4.384615],
+              [0.418854, 0.506370]))
+        )
+    )
+    def test_dataframe_with_list(self, rcode, names, values):
+        rdataf = robjects.r(rcode)
         with localconverter(default_converter + rpyp.converter) as cv:
-            pandas_df = cv.rpy2py(rdataf)
-        assert all(x == y for x, y in zip(rdataf.rownames, pandas_df.index))
+            pandas_df = robjects.conversion.converter_ctx.get().rpy2py(rdataf)
+        assert tuple(pandas_df.columns) == names
 
     def test_ri2pandas_issue207(self):
         d = robjects.DataFrame({'x': 1})

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import sys
 if ((sys.version_info[0] < 3) or
-    (sys.version_info[0] == 3 and sys.version_info[1] < 5)):
-    print('rpy2 is no longer supporting Python < 3.5.'
+    (sys.version_info[0] == 3 and sys.version_info[1] < 7)):
+    print('rpy2 is no longer supporting Python < 3.7.'
           'Consider using an older rpy2 release when using an '
           'older Python release.')
     sys.exit(1)
@@ -14,13 +14,13 @@ import subprocess
 import tempfile
 import warnings
 
+from setuptools import setup, Extension, dist
 from distutils.ccompiler import new_compiler
 from distutils.sysconfig import customize_compiler
 from distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
 
 from rpy2 import situation
 
-from setuptools import setup
 from distutils.command.build import build as du_build
 
 PACKAGE_NAME = 'rpy2'
@@ -110,9 +110,16 @@ def get_r_c_extension_status():
                                     library_dirs=c_ext.library_dirs)
     return status
 
+# TODO: The following line is required because setup.py tries to figure out
+# requirements before setuptools's own machinery to ensure requirements starts,
+# even if the named argument `setup_requires` is added to setup().
+# There should be a better way to do this than side download/install a package
+# at import time. This is limited to Windows.
+dist.Distribution().fetch_build_eggs(["packaging;platform_system=='Windows'"])
 
 cffi_mode = situation.get_cffi_mode()
 c_extension_status = get_r_c_extension_status()
+ext_modules = []
 if cffi_mode == situation.CFFI_MODE.ABI:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
 elif cffi_mode == situation.CFFI_MODE.API:
@@ -120,6 +127,10 @@ elif cffi_mode == situation.CFFI_MODE.API:
         print('API mode requested but %s' % c_extension_status.value)
         sys.exit(1)
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_api']
+    ext_modules = [
+        Extension('rpy2.rinterface_lib._bufferprotocol',
+                  ['rpy2/rinterface_lib/_bufferprotocol.c'])
+    ]
 elif cffi_mode == situation.CFFI_MODE.BOTH:
     if c_extension_status != COMPILATION_STATUS.OK:
         print('API mode requested but %s' % c_extension_status.value)
@@ -131,6 +142,10 @@ elif cffi_mode == situation.CFFI_MODE.ANY:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
     if c_extension_status == COMPILATION_STATUS.OK:
         cffi_modules.append('rpy2/_rinterface_cffi_build.py:ffibuilder_api')
+        ext_modules = [
+            Extension('rpy2.rinterface_lib._bufferprotocol',
+                      ['rpy2/rinterface_lib/_bufferprotocol.c'])
+        ]
 else:
     # This should never happen.
     raise ValueError('Invalid value for cffi_mode')
@@ -191,8 +206,9 @@ if __name__ == '__main__':
 
     extras_require = {
         'test': ['pytest'],
-        'numpy': ['pandas'],
-        'pandas': ['numpy', 'pandas']
+        'numpy': ['numpy'],
+        'pandas': ['numpy', 'pandas'],
+        'setup': ['setuptools']
     }
     extras_require['all'] = list(
         set(x for lst in extras_require.values()
@@ -204,13 +220,19 @@ if __name__ == '__main__':
         description='Python interface to the R language (embedded R)',
         long_description=LONG_DESCRIPTION,
         url='https://rpy2.github.io',
+        project_urls={
+            'Documentation': 'https://rpy2.github.io/doc.html',
+            'Source': 'https://github.com/rpy2/rpy2',
+            'Tracker': 'https://github.com/rpy2/rpy2/issues'
+        },
         license='GPLv2+',
         author='Laurent Gautier',
         author_email='lgautier@gmail.com',
         install_requires=requires,
         extras_require=extras_require,
-        setup_requires=['cffi>=1.10.0'],
+        setup_requires=['cffi>=1.10.0', 'setuptools'],
         cffi_modules=cffi_modules,
+        ext_modules=ext_modules,
         cmdclass = dict(build=build),
         package_dir=pack_dir,
         packages=([PACKAGE_NAME] +
@@ -225,9 +247,10 @@ if __name__ == '__main__':
         ),
         classifiers = ['Programming Language :: Python',
                        'Programming Language :: Python :: 3',
-                       'Programming Language :: Python :: 3.6',
                        'Programming Language :: Python :: 3.7',
                        'Programming Language :: Python :: 3.8',
+                       'Programming Language :: Python :: 3.9',
+                       'Programming Language :: Python :: 3.10',
                        ('License :: OSI Approved :: GNU General '
                         'Public License v2 or later (GPLv2+)'),
                        'Intended Audience :: Developers',
@@ -237,5 +260,8 @@ if __name__ == '__main__':
         package_data={'rpy2': ['rinterface_lib/R_API.h',
                                'rinterface_lib/R_API_eventloop.h',
                                'rinterface_lib/R_API_eventloop.c',
-                               'rinterface_lib/RPY2.h']}
+                               'rinterface_lib/RPY2.h',
+                               'rinterface_lib/_bufferprotocol.c',
+                               'py.typed']},
+        zip_safe=False
     )

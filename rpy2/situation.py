@@ -6,12 +6,15 @@ R version, rpy2 version, etc...).
 
 import argparse
 import enum
+import logging
 import os
 import shlex
 import subprocess
 import sys
 from typing import Optional
 import warnings
+
+logger = logging.getLogger(__name__)
 
 if sys.maxsize > 2**32:
     r_version_folder = 'x64'
@@ -34,38 +37,48 @@ class CFFI_MODE(enum.Enum):
 
 def get_cffi_mode(default=CFFI_MODE.ANY):
     cffi_mode = os.environ.get('RPY2_CFFI_MODE', '')
+    res = default
     for m in (CFFI_MODE.API, CFFI_MODE.ABI,
               CFFI_MODE.BOTH, CFFI_MODE.ANY):
         if cffi_mode.upper() == m.value:
-            return m
-    return default
+            res = m
+    logger.info(f'cffi mode is {m}')
+    return res
 
 
 def assert_python_version():
-    if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 3):
-        raise RuntimeError(
-            'Python >=3.3 is required to run rpy2')
+    if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 7):
+        msg = 'Python >=3.3 is required to run rpy2'
+        logger.error(msg)
+        raise RuntimeError(msg)
 
 
 def r_version_from_subprocess():
+    cmd = ('R', '--version')
+    logger.debug('Looking for R version with: {}'.format(' '.join(cmd)))
     try:
-        tmp = subprocess.check_output(('R', '--version'),
+        tmp = subprocess.check_output(cmd,
                                       stderr=subprocess.STDOUT)
-    except Exception:  # FileNotFoundError, WindowsError, etc
+    except Exception as e:  # FileNotFoundError, WindowsError, etc
+        logger.error(f'Unable to determine the R version: {e}')
         return None
     r_version = tmp.decode('ascii', 'ignore').split(os.linesep)
     if r_version[0].startswith('WARNING'):
         r_version = r_version[1]
     else:
         r_version = r_version[0].strip()
+    logger.info(f'R version found: {r_version}')
     return r_version
 
 
 def r_home_from_subprocess() -> Optional[str]:
     """Return the R home directory from calling 'R RHOME'."""
+    cmd = ('R', 'RHOME')
+    logger.debug('Looking for R home with: {}'.format(' '.join(cmd)))
     try:
-        tmp = subprocess.check_output(('R', 'RHOME'), universal_newlines=True)
-    except Exception:  # FileNotFoundError, WindowsError, etc
+        tmp = subprocess.check_output(cmd, universal_newlines=True)
+    except Exception as e:  # FileNotFoundError, WindowsError, etc
+        logger.error(f'Unable to determine R home: {e}')
         return None
     r_home = tmp.split(os.linesep)
     if r_home[0].startswith('WARNING'):
@@ -78,6 +91,7 @@ def r_home_from_subprocess() -> Optional[str]:
 # TODO: move all Windows all code into an os-specific module ?
 def r_home_from_registry() -> Optional[str]:
     """Return the R home directory from the Windows Registry."""
+    from packaging.version import Version
     try:
         import winreg  # type: ignore
     except ImportError:
@@ -88,10 +102,27 @@ def r_home_from_registry() -> Optional[str]:
     # the for-loop breaks at the first hit.
     for w_hkey in [winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE]:
         try:
-            with winreg.OpenKeyEx(w_hkey,
-                                  'Software\\R-core\\R',
-                                  0, winreg.KEY_QUERY_VALUE) as hkey:
-                r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
+            with winreg.OpenKeyEx(w_hkey, 'Software\\R-core\\R') as hkey:
+
+                # >v4.x.x: grab the highest version installed
+                def get_version(i):
+                    try:
+                        return Version(winreg.EnumKey(hkey, i))
+                    except Exception:
+                        return None
+
+                latest = max(
+                    (v for v in (get_version(i)
+                                 for i in range(winreg.QueryInfoKey(hkey)[0]))
+                     if v is not None)
+                )
+
+                with winreg.OpenKeyEx(hkey, f'{latest}') as subkey:
+                    r_home = winreg.QueryValueEx(subkey, "InstallPath")[0]
+
+                # check for an earlier version
+                if not r_home:
+                    r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
         except Exception:  # FileNotFoundError, WindowsError, OSError, etc.
             pass
         else:
@@ -103,6 +134,7 @@ def r_home_from_registry() -> Optional[str]:
             break
     else:
         # for-loop did not break - RHOME is unknown.
+        logger.error('Unable to determine R home.')
         r_home = None
     return r_home
 
@@ -112,11 +144,14 @@ def r_ld_library_path_from_subprocess(r_home: str) -> str:
     cmd = (os.path.join(r_home, 'bin', 'Rscript'),
            '-e',
            'cat(Sys.getenv("LD_LIBRARY_PATH"))')
+    logger.debug('Looking for LD_LIBRARY_PATH with: {}'.format(' '.join(cmd)))
     try:
         r_lib_path = subprocess.check_output(cmd,
                                              universal_newlines=True,
                                              stderr=subprocess.PIPE)
-    except Exception:  # FileNotFoundError, WindowsError, etc
+        logger.info(f'R library path: {r_lib_path}')
+    except Exception as e:  # FileNotFoundError, WindowsError, etc
+        logger.error(f'Unable to determine R library path: {e}')
         r_lib_path = ''
     res = None
     ld_library_path = os.environ.get('LD_LIBRARY_PATH')
@@ -127,9 +162,11 @@ def r_ld_library_path_from_subprocess(r_home: str) -> str:
                    .rstrip(os.pathsep))
     if res is None:
         res = r_lib_path
+    logger.info(f'LD_LIBRARY_PATH: {res}')
     return res
 
 
+# TODO: Does r_ld_library_path_from_subprocess() supersed this?
 def get_rlib_path(r_home: str, system: str) -> str:
     """Get the path for the R shared library."""
     if system == 'FreeBSD' or system == 'Linux':
@@ -167,6 +204,7 @@ def get_r_home() -> Optional[str]:
         r_home = r_home_from_subprocess()
     if not r_home and os.name == 'nt':
         r_home = r_home_from_registry()
+    logger.info(f'R home found: {r_home}')
     return r_home
 
 
@@ -180,6 +218,7 @@ def get_r_exec(r_home: str) -> str:
         r_exec = os.path.join(r_home, 'bin', 'x64', 'R')
     else:
         r_exec = os.path.join(r_home, 'bin', 'R')
+    logger.info(f'R exec path: {r_exec}')
     return r_exec
 
 
@@ -192,16 +231,20 @@ def _get_r_cmd_config(r_home: str, about: str, allow_empty=False):
     :return: a tuple (lines of output)"""
     r_exec = get_r_exec(r_home)
     cmd = (r_exec, 'CMD', 'config', about)
+    logger.debug('Looking for R CONFIG with: {}'.format(' '.join(cmd)))
     output = subprocess.check_output(
         cmd,
         universal_newlines=True
     ).split(os.linesep)
     # Twist if 'R RHOME' spits out a warning
     if output[0].startswith('WARNING'):
-        warnings.warn('R emitting a warning: %s' % output[0])
+        msg = 'R emitting a warning: {}'.format(output[0])
+        warnings.warn(msg)
+        logger.debug(msg)
         res = output[1:]
     else:
         res = output
+    logger.debug(res)
     return res
 
 
@@ -285,7 +328,7 @@ def iter_info():
 
     yield make_bold('rpy2 version:')
     if has_rpy2:
-        # TODO: the repeated import is needed, without which Python (3.6)
+        # TODO: the repeated import is needed, without which Python
         #   raises an UnboundLocalError (local variable reference before
         #   assignment).
         import rpy2  # noqa: F811
@@ -295,8 +338,6 @@ def iter_info():
 
     yield make_bold('Python version:')
     yield sys.version
-    if not (sys.version_info[0] == 3 and sys.version_info[1] >= 5):
-        yield '*** rpy2 is primarily designed for Python >= 3.5'
 
     yield make_bold("Looking for R's HOME:")
 
@@ -333,7 +374,7 @@ def iter_info():
     if os.name != 'nt':
         yield make_bold("R's additions to LD_LIBRARY_PATH:")
         if r_home is None:
-            yield('     *** undefined when not R home can be determined')
+            yield '     *** undefined when not R home can be determined'
         else:
             yield r_ld_library_path_from_subprocess(r_home)
 
@@ -379,6 +420,13 @@ def iter_info():
             yield ('    Warning: Unable to get R compilation flags.')
 
 
+def set_default_logging():
+    logformatter = logging.Formatter('%(name)s: %(message)s')
+    loghandler = logging.StreamHandler()
+    loghandler.setFormatter(logformatter)
+    logger.addHandler(loghandler)
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
@@ -391,7 +439,16 @@ if __name__ == '__main__':
                         help=('Action to perform. "info" shows all info, '
                               'LD_LIBRARY_PATH returns optionally required '
                               'additions to the environment variable'))
+    parser.add_argument('-v', '--verbose',
+                        choices=('ERROR', 'WARNING', 'INFO', 'DEBUG'),
+                        default='WARNING',
+                        help=('Verbosity level. Options are given by '
+                              'increasing order of verbosity '
+                              '(defaut: %(default)s)'))
     args = parser.parse_args()
+    logger.name = 'rpy2.situation'
+    logger.setLevel(getattr(logging, args.verbose))
+    set_default_logging()
     if args.action == 'info':
         for row in iter_info():
             print(row)

@@ -364,6 +364,7 @@ class SexpEnvironment(Sexp):
             raise TypeError('The key must be a non-empty string.')
         elif not len(key):
             raise ValueError('The key must be a non-empty string.')
+        embedded.assert_isready()
         with memorymanagement.rmemory() as rmemory:
             key_cchar = conversion._str_to_cchar(key)
             symbol = rmemory.protect(
@@ -647,8 +648,12 @@ class SexpVectorAbstract(SupportsSEXP, metaclass=abc.ABCMeta):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
+            if isinstance(value, Sexp):
+                val_cdata = value.__sexp__._cdata
+            else:
+                val_cdata = conversion._python_to_cdata(value)
             self._R_SET_VECTOR_ELT(cdata, i_c,
-                                   value.__sexp__._cdata)
+                                   val_cdata)
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
                 self._R_SET_VECTOR_ELT(cdata, i_c,
@@ -678,10 +683,11 @@ class SexpVector(Sexp, SexpVectorAbstract):
     the general structure for R objects."""
 
     def __init__(self,
-                 obj: typing.Union[_rinterface.SexpCapsule,
+                 obj: typing.Union[SupportsSEXP,
+                                   _rinterface.SexpCapsule,
                                    collections.abc.Sized]):
         if (
-                isinstance(obj, Sexp)
+                isinstance(obj, SupportsSEXP)
                 or
                 isinstance(obj, _rinterface.SexpCapsule)
         ):
@@ -690,11 +696,12 @@ class SexpVector(Sexp, SexpVectorAbstract):
             robj: Sexp = type(self).from_object(obj)
             super().__init__(robj)
         else:
-            raise TypeError('The constructor must be called '
-                            'with an instance of '
-                            'rpy2.rinterface.Sexp '
-                            'or an instance of '
-                            'rpy2.rinterface._rinterface.SexpCapsule')
+            raise TypeError(
+                'The constructor must be called with an instance of '
+                'rpy2.rinterface.Sexp, '
+                'a Python sized object that can be iterated on, '
+                'or less commonly an rpy2.rinterface._rinterface.SexpCapsule.'
+            )
 
 
 def _as_charsxp_cdata(x: typing.Union[CharSexp, str]):

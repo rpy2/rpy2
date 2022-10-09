@@ -1,10 +1,13 @@
 import enum
+import logging
 import os
 import sys
 import typing
 import warnings
 from rpy2.rinterface_lib import openrlib
 from rpy2.rinterface_lib import callbacks
+
+logger = logging.getLogger(__name__)
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import Protocol
@@ -14,6 +17,7 @@ else:
 ffi = openrlib.ffi
 
 _options = ('rpy2', '--quiet', '--no-save')  # type: typing.Tuple[str, ...]
+logger.info('Default options to initialize R: {}'.format(', '.join(_options)))
 _DEFAULT_C_STACK_LIMIT: int = -1
 rpy2_embeddedR_isinitialized = 0x00
 
@@ -151,6 +155,8 @@ def set_initoptions(options: typing.Tuple[str]) -> None:
     global _options
     for x in options:
         assert isinstance(x, str)
+    logger.info('Setting options to initialize R: {}'
+                .format(', '.join(options)))
     _options = tuple(options)
 
 
@@ -244,17 +250,26 @@ def _initr(
 
     with openrlib.rlock:
         if isinitialized():
+            logger.info('R is already initialized. No need to initialize.')
             return None
         elif openrlib.R_HOME is None:
             raise ValueError('openrlib.R_HOME cannot be None.')
         elif openrlib.rlib.R_NilValue != ffi.NULL:
-            warnings.warn(
-                'R was initialized outside of rpy2 (R_NilValue != NULL). '
-                'Trying to use it nevertheless.'
-            )
+            msg = ('R was initialized outside of rpy2 (R_NilValue != NULL). '
+                   'Trying to use it nevertheless.')
+            warnings.warn(msg)
+            logger.warn(msg)
             _setinitialized()
             return None
         os.environ['R_HOME'] = openrlib.R_HOME
+        # TODO: Setting LD_LIBRARY_PATH after the process has started
+        # is too late. Because of this, the line below does not help
+        # address issues where calling R from the command line is working
+        # (as it is a shell script setting environment variables before
+        # start the binary in a child process). Calling C's dlopen with
+        # the path of the shared library could address this but for the
+        # API mode this would require writing a C wrapper to manually
+        # load each each symbol in the C library.
         os.environ['LD_LIBRARY_PATH'] = (
             ':'.join(
                 (openrlib.LD_LIBRARY_PATH,

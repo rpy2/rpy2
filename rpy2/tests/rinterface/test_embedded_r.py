@@ -10,6 +10,7 @@ import signal
 import sys
 import subprocess
 import tempfile
+import textwrap
 import time
 
 
@@ -122,11 +123,19 @@ def test_parse_invalid_string():
     with pytest.raises(TypeError):
         rinterface.parse(3)
 
+@pytest.mark.parametrize(
+    'envir',
+    (None, rinterface.globalenv, rinterface.ListSexpVector([])))
+def test_evalr(envir):
+    res = rinterface.evalr('1 + 2', envir=envir)
+    assert tuple(res) == (3, )
 
-def test_rternalize():
+
+@pytest.mark.parametrize('signature', ((True, ), (False, )))
+def test_rternalize(signature):
     def f(x, y):
         return x[0]+y[0]
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=signature)
     res = rfun(1, 2)
     assert res[0] == 3
 
@@ -134,7 +143,7 @@ def test_rternalize():
 def test_rternalize_return_sexp():
     def f(x, y):
         return rinterface.IntSexpVector([x[0], y[0]])
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=False)
     res = rfun(1, 2)
     assert tuple(res) == (1, 2)
 
@@ -145,11 +154,69 @@ def test_rternalize_namedargs():
             return x[0]+y[0]
         else:
             return z[0]
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=False)
     res = rfun(1, 2)
     assert res[0] == 3
     res = rfun(1, 2, z=8)
     assert res[0] == 8
+
+
+@pytest.mark.parametrize('signature', ((True, ), (False, )))
+def test_rternalize_extraargs(signature):
+    def f():
+        return 1
+    rfun = rinterface.rternalize(f, signature=signature)
+    assert rfun()[0] == 1
+    with pytest.raises(rinterface.embedded.RRuntimeError,
+                       match=r'unused argument \(1\)'):
+        rfun(1)
+
+
+@pytest.mark.parametrize(
+    'args',
+    ((),
+     (1,),
+     (1, 2))
+)
+def test_rternalize_map_ellipsis_args(args):
+    def f(x, *args):
+        return len(args)
+    rfun = rinterface.rternalize(f, signature=True)
+    assert ('x', '...') == tuple(rinterface.baseenv['formals'](rfun).names)
+    assert rfun(0, *args)[0] == len(args)
+
+
+@pytest.mark.parametrize(
+    'kwargs',
+    ({},
+     {'y': 1},
+     {'y': 1, 'z': 2})
+)
+def test_rternalize_map_ellipsis_kwargs(kwargs):
+    def f(x, **kwargs):
+        return len(kwargs)
+    rfun = rinterface.rternalize(f, signature=True)
+    assert ('x', '...') == tuple(rinterface.baseenv['formals'](rfun).names)
+    assert rfun(0, **kwargs)[0] == len(kwargs)
+
+
+def test_rternalize_map_ellipsis_args_kwargs_error():
+    def f(x, *args, y = 2, **kwargs):
+        pass
+    with pytest.raises(ValueError):
+        rfun = rinterface.rternalize(f, signature=True)
+
+
+def test_rternalize_formals():
+    # TODO: update to `def f(a, /, b, c=1, *, d=2, e):`
+    # once 3.7 is dropped from CI
+    def f(a, b, c=1, *, d=2, e):
+        return 1
+    rfun = rinterface.rternalize(f, signature=True)
+    rnames = rinterface.baseenv['names']
+    rformals = rinterface.baseenv['formals']
+    rpaste = rinterface.baseenv['paste']
+    assert list(rnames(rformals(rfun))) == ['a', 'b', 'c', 'd', 'e']
 
 
 def test_external_python():
@@ -170,31 +237,45 @@ def testExternalPythonFromExpression():
     xp = rinterface.baseenv['vector'](xp_name, 3)
 
 
-def testInterruptR():
+@pytest.mark.parametrize(
+    'rcode',
+    ('while(TRUE) {}',
+     """
+     i <- 0;
+     while(TRUE) {
+       i <- i+1;
+       Sys.sleep(0.01);
+     }
+     """)
+)
+def test_interrupt_r(rcode):
+    expected_code = 42  # this is an arbitrary exit code that we check for below
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py',
                                      delete=False) as rpy_code:
         rpy2_path = os.path.dirname(rpy2.__path__[0])
 
-        rpy_code_str = """
+        rpy_code_str = textwrap.dedent("""
         import sys
         sys.path.insert(0, '%s')
         import rpy2.rinterface as ri
+        from rpy2.rinterface_lib import callbacks
+        from rpy2.rinterface_lib import embedded
 
         ri.initr()
         def f(x):
-            pass
-        ri.set_writeconsole_regular(f)
-        rcode = \"\"\"
-        i <- 0;
-        while(TRUE) {
-          i <- i+1;
-          Sys.sleep(0.01);
-        }\"\"\"
-        try:
-            ri.baseenv['eval'](ri.parse(rcode))
-        except Exception as e:
-            sys.exit(0)
-      """ % rpy2_path
+            # This flush is important to make sure we avoid a deadlock.
+            print(x, flush=True)
+        rcode = '''
+        message('executing-rcode')
+        console.flush()
+        %s
+        '''
+        with callbacks.obj_in_module(callbacks, 'consolewrite_print', f):
+            try:
+                ri.baseenv['eval'](ri.parse(rcode))
+            except embedded.RRuntimeError:
+                sys.exit(%d)
+      """) % (rpy2_path, rcode, expected_code)
 
         rpy_code.write(rpy_code_str)
     cmd = (sys.executable, rpy_code.name)
@@ -202,18 +283,34 @@ def testInterruptR():
         creationflags = 0
         if os.name == 'nt':
             creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
-        child_proc = subprocess.Popen(cmd,
-                                      stdout=fnull,
-                                      stderr=fnull,
-                                      creationflags=creationflags)
-        time.sleep(1)  # required for the SIGINT to function
-        # (appears like a bug w/ subprocess)
-        # (the exact sleep time migth be machine dependent :( )
-        sigint = signal.CTRL_C_EVENT if os.name == 'nt' else signal.SIGINT
-        child_proc.send_signal(sigint)
-        time.sleep(1)  # required for the SIGINT to function
-        ret_code = child_proc.poll()
-    assert ret_code is not None  # Interruption failed
+        # This context manager ensures that appropriate cleanup happens for the
+        # process and for stdout.
+        with subprocess.Popen(cmd,
+                              # Since we are reading from stdout, it's important to ensure we work
+                              # well with buffering. We make sure to flush when printing, but a viable
+                              # alternative is starting the Python process as unbuffered using `-u`.
+                              # If we weren't explicitly flushing then buffering could result in a
+                              # deadlock where the parent waits for the message from the child, but the
+                              # child is in an infinite loop that will only terminate if interrupted by
+                              # the parent.
+                              stdout=subprocess.PIPE,
+                              stderr=fnull,
+                              creationflags=creationflags) as child_proc:
+            # We wait for the child process to send a message signalling that
+            # R code is being executed since we want to ensure that we only send
+            # the signal at that point. If we send it while Python is executing,
+            # we would instead get a KeyboardInterrupt.
+            for line in child_proc.stdout:
+                if line == b'executing-rcode\n':
+                    break
+            sigint = signal.CTRL_C_EVENT if os.name == 'nt' else signal.SIGINT
+            child_proc.send_signal(sigint)
+            # Wait for the process to terminate. Timeout ensures we don't wait indefinitely.
+            ret_code = child_proc.wait(timeout=10)
+    # This test checks for a specific exit code to ensure that the above code
+    # block exited correctly. This is important to distinguish our expected
+    # process interruption from other errors the test might encounter.
+    assert ret_code == expected_code
 
 
 # TODO: still needed ?

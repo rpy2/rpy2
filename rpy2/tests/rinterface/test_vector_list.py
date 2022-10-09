@@ -1,4 +1,5 @@
 import pytest
+import operator
 from .. import utils
 import rpy2.rinterface as ri
 
@@ -33,14 +34,19 @@ def test_getitem():
         vec[(2, 3)]
 
 
-def test_setitem():
+@pytest.mark.parametrize(
+    'value_constructor,value_param,equal_func',
+    ((ri.BoolSexpVector, [True, True, False], utils.assert_equal_sequence),
+     (int, 9, operator.eq))
+)
+def test_setitem(value_constructor, value_param, equal_func):
     seq = (ri.FloatSexpVector([1.0]),
            ri.IntSexpVector([2, 3]),
            ri.StrSexpVector(['foo', 'bar']))
     vec = ri.ListSexpVector(seq)
-    vec[1] = ri.BoolSexpVector([True, True, False])
-    utils.assert_equal_sequence(vec[1],
-                                ri.BoolSexpVector([True, True, False]))
+    value = value_constructor(value_param)
+    vec[1] = value
+    equal_func(vec[1], value)
     with pytest.raises(TypeError):
         vec[(2, 3)] = 123
 

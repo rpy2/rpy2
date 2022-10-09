@@ -10,6 +10,23 @@ from rpy2.robjects import conversion
 rpy2.rinterface.initr_simple()
 
 
+def _add_warn_reticulate_hook():
+    msg = """
+    WARNING: The R package "reticulate" only fixed recently
+    an issue that caused a segfault when used with rpy2:
+    https://github.com/rstudio/reticulate/pull/1188
+    Make sure that you use a version of that package that includes
+    the fix.
+    """
+    rpy2.rinterface.evalr(f"""
+    setHook(packageEvent("reticulate", "onLoad"),
+            function(...) cat({repr(msg)}))
+    """)
+
+
+_add_warn_reticulate_hook()
+
+
 class RSlots(object):
     """ Attributes of an R object as a Python mapping.
 
@@ -31,10 +48,10 @@ class RSlots(object):
 
     def __getitem__(self, key: str):
         value = self._robj.do_slot(key)
-        return conversion.rpy2py(value)
+        return conversion.get_conversion().rpy2py(value)
 
     def __setitem__(self, key: str, value):
-        rpy2_value = conversion.py2rpy(value)
+        rpy2_value = conversion.get_conversion().py2rpy(value)
         self._robj.do_slot_assign(key, rpy2_value)
 
     def __len__(self):
@@ -129,7 +146,7 @@ class RObjectMixin(abc.ABC):
         When setting the rclass, the new value will be:
 
         - wrapped in a Python tuple if a string (the R class
-        is a vector of strings, and this is made for convenience)
+          is a vector of strings, and this is made for convenience)
         - wrapped in a StrSexpVector
 
         Note that when setting the class R may make a copy of

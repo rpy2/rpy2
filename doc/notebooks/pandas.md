@@ -103,8 +103,9 @@ with localconverter(ro.default_converter + pandas2ri.converter):
 r_from_pd_df
 ```
 
-The timezone used for conversion is the system's default timezone unless `pandas2ri.default_timezone`
-is specified... or unless the time zone is specified in the original time object:
+The timezone used for conversion is the system's default timezone unless
+`rpy2.robjects.vectors.default_timezone` is specified...
+or unless the time zone is specified in the original time object:
 
 ```python
 pd_tz_df = pd.DataFrame({

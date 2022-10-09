@@ -1,6 +1,7 @@
 import rpy2.robjects as ro
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
+import rpy2.rlike.container as rlc
 from rpy2.rinterface import (Sexp,
                              StrSexpVector, ByteSexpVector,
                              RTYPES)
@@ -47,7 +48,7 @@ def numpy_O_py2rpy(o):
     elif all(isinstance(x, bytes) for x in o):
         res = ByteSexpVector(o)
     else:
-        res = conversion.py2rpy(list(o))
+        res = conversion.get_conversion().py2rpy(list(o))
     return res
 
 
@@ -99,9 +100,10 @@ def numpy2rpy(o):
             raise ValueError('Nothing can be done for this numpy array '
                              'type "%s" at the moment.' % (o.dtype,))
         df_args = []
+        cv = conversion.get_conversion()
         for field_name in o.dtype.names:
             df_args.append((field_name,
-                            conversion.py2rpy(o[field_name])))
+                            cv.py2rpy(o[field_name])))
         res = ro.baseenv["data.frame"].rcall(tuple(df_args))
     # It should be impossible to get here:
     else:
@@ -141,19 +143,32 @@ def nonnumpy2rpy(obj):
 #     res = numpy2ri(obj)
 #     return ro.vectors.rtypeof2rotype[res.typeof](res)
 
+def _factor_to_numpy_string_array(obj):
+    res = numpy.array(
+        tuple(
+            None if x is rinterface.NA_Character
+            else obj.levels[x-1] for x in obj
+        )
+    )
+    return res
+
 
 def rpy2py_data_frame(obj):
-    # R "factor" vectors will not convert well by default
+    # TODO: R "factor" vectors will not convert well by default
     # (will become integers), so we build a temporary list o2
-    # with the factors as strings.
+    # with the factors as strings. This fix might good to have
+    # as a default.
     o2 = list()
     # An added complication is that the conversion defined
     # in this module will make __getitem__ at the robjects
     # level return numpy arrays
     for column in rinterface.ListSexpVector(obj):
         if 'factor' in column.rclass:
-            levels = tuple(column.do_slot("levels"))
-            column = tuple(levels[x-1] for x in column)
+            levels = column.do_slot('levels')
+            column = tuple(
+                None if x is rinterface.NA_Integer
+                else levels[x-1] for x in column
+            )
         o2.append(column)
     names = obj.do_slot('names')
     if names == rinterface.NULL:
@@ -163,9 +178,11 @@ def rpy2py_data_frame(obj):
     return res
 
 
-def rpy2py_list(obj):
+def rpy2py_list(obj: rinterface.ListSexpVector):
     # not a data.frame, yet is it still possible to convert it
-    res = ro.default_converter.rpy2py(obj)
+    if not isinstance(obj, ro.vectors.ListVector):
+        obj = ro.vectors.ListVector(obj)
+    res = rlc.OrdDict(obj.items())
     return res
 
 
@@ -193,6 +210,10 @@ def rpy2py_sexp(obj):
 
 converter._rpy2py_nc_map.update(
     {
+        rinterface.IntSexpVector: conversion.NameClassMap(
+            converter.rpy2py,
+            {'factor': _factor_to_numpy_string_array}
+        ),
         rinterface.ListSexpVector: conversion.NameClassMap(
             rpy2py_list,
             {'data.frame': rpy2py_data_frame}
@@ -213,7 +234,7 @@ def activate():
     if original_converter is not None:
         return
 
-    original_converter = conversion.converter
+    original_converter = conversion.converter_ctx.get()
     new_converter = conversion.Converter('numpy conversion',
                                          template=original_converter)
 
