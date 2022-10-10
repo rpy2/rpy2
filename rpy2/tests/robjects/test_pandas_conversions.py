@@ -191,11 +191,11 @@ class TestPandasConversions(object):
          [True, False, None])
     )
     @pytest.mark.parametrize(
-        'dtype', [bool, pandas.BooleanDtype()]
+        'dtype', [bool, pandas.BooleanDtype() if has_pandas else None]
     )
     @pytest.mark.parametrize(
         'constructor,wrapcheck',
-        [(pandas.core.series.Series, lambda x: x),
+        [(pandas.Series, lambda x: x),
          (pandas.DataFrame, lambda x: x[0])]
     )
     def test_series_obj_bool(self, data, dtype, constructor, wrapcheck):
