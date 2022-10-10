@@ -4,6 +4,7 @@ import rpy2.robjects as robjects
 import rpy2.robjects.help as rh
 rinterface = robjects.rinterface
 
+
 class TestPackage(object):
 
     def test_init(self):
@@ -60,7 +61,21 @@ class TestPage(object):
         d = p.usage()
         assert all(isinstance(x, str) for x in d)
         assert len(d) > 0
+        
+    def test_iteritems(self):
+        base_help = rh.Package('base')
+        p = base_help.fetch('print')
+        with pytest.deprecated_call():
+            res = tuple(p.iteritems())
+        # TODO: test result more in depth.
+        assert len(res) > 0
 
+    def test_iteritems(self):
+        base_help = rh.Package('base')
+        p = base_help.fetch('print')
+        res = tuple(p.items())
+        # TODO: test result more in depth.
+        assert len(res) > 0
 
 @pytest.mark.xfail(
     os.name == 'nt',

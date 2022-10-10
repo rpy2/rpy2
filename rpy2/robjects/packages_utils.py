@@ -123,7 +123,7 @@ def _fix_map_symbols(symbol_mapping,
                 if k in v:
                     symbol_mapping[k] = [k, ]
                 else:
-                    del(symbol_mapping[k])
+                    del symbol_mapping[k]
             warn(msg)
         else:
             raise ValueError('Invalid value for parameter "on_conflict"')

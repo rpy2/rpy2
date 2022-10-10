@@ -3,7 +3,7 @@ name: Sphinx documentation
 on: [push]
 
 env:
-  R-VERSION: "4.0"
+  R-VERSION: "release"
 
 jobs:
   build:

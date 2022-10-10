@@ -42,19 +42,25 @@ def test_formals():
     assert n[1] == 'y'
 
 
-def test_function():
-    r_func = robjects.functions.Function(robjects.r('function(x, y) TRUE'))
+@pytest.mark.parametrize('rcode',
+                         ('function(x, y) TRUE', 'function() TRUE'))
+def test_function(rcode):
+    r_func = robjects.functions.Function(robjects.r(rcode))
     assert isinstance(r_func.__doc__, str)
 
 
-def test_signaturestranslatedfunction():
-    r_func = robjects.r('function(x, y) TRUE')
+@pytest.mark.parametrize('rcode',
+                         ('function(x, y) TRUE', 'function() TRUE'))
+def test_signaturestranslatedfunction(rcode):
+    r_func = robjects.r(rcode)
     stf = robjects.functions.SignatureTranslatedFunction(r_func)
     assert isinstance(r_func.__doc__, str)
 
 
-def test_documentedstfunction():
-    dstf = robjects.functions.DocumentedSTFunction(robjects.baseenv['sum'],
+@pytest.mark.parametrize('name',
+                         ('sum', 'Sys.Date', 'append'))
+def test_documentedstfunction(name):
+    dstf = robjects.functions.DocumentedSTFunction(robjects.baseenv[name],
                                                    packagename='base')
     assert isinstance(dstf.__doc__, str)
 

@@ -4,10 +4,11 @@ between R objects handled by rpy2 and pandas objects."""
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import na_values
-from rpy2.rinterface import (IntSexpVector,
-                             Sexp,
-                             SexpVector,
-                             StrSexpVector)
+from rpy2.rinterface import IntSexpVector
+from rpy2.rinterface import ListSexpVector
+from rpy2.rinterface import SexpVector
+from rpy2.rinterface import StrSexpVector
+
 import datetime
 import functools
 import math
@@ -52,7 +53,7 @@ integer_array_types = ('Int8', 'Int16', 'Int32', 'Int64', 'UInt8',
 @py2rpy.register(PandasDataFrame)
 def py2rpy_pandasdataframe(obj):
     od = OrderedDict()
-    for name, values in obj.iteritems():
+    for name, values in obj.items():
         try:
             od[name] = conversion.converter_ctx.get().py2rpy(values)
         except Exception as e:
@@ -60,7 +61,9 @@ def py2rpy_pandasdataframe(obj):
                           'the column "%s". Fall back to string conversion. '
                           'The error is: %s'
                           % (name, str(e)))
-            od[name] = StrVector(values)
+            od[name] = conversion.converter_ctx.get().py2rpy(
+                values.astype('string')
+            )
 
     return DataFrame(od)
 
@@ -136,6 +139,7 @@ _PANDASTYPE2RPY2 = {
         populate_func=_bool_populate_r_vector
     ),
     None: BoolVector,
+    bool: BoolVector,
     str: functools.partial(
         StrVector.from_iterable,
         populate_func=_str_populate_r_vector
@@ -259,11 +263,77 @@ def rpy2py_posixct(obj):
                               errors='coerce')
 
 
+def _records_to_columns(obj):
+    columns = OrderedDict()
+    obj_ri = ListSexpVector(obj)
+    # First pass to get the column names.
+    for i, record in enumerate(obj_ri):
+        checknames = set()
+        for name in record.names:
+            if name in checknames:
+                raise ValueError(
+                    f'The record {i} has "{name}" duplicated.'
+                )
+            checknames.add(name)
+            if name not in columns:
+                columns[name] = []
+    columnnames = set(columns.keys())
+    # Second pass to fill the columns.
+    for i, record in enumerate(obj_ri):
+        checknames = set()
+        for name, value in zip(record.names, record):
+            checknames.add(name)
+            if hasattr(value, '__len__'):
+                if len(value) != 1:
+                    raise ValueError(
+                        f'The value for "{name}" record {i} is not a scalar. '
+                        f'It has {len(value)} elements.'
+                    )
+                else:
+                    value = value[0]
+            columns[name].append(value)
+        # Set to NA/None missing column values in the record.
+        for name in columnnames-checknames:
+            columns[name].append(None)
+    return columns
+
+
+def _flatten_dataframe(obj, colnames_lst):
+    """Make each element in a list of columns or group of
+    columns iterable.
+
+    This is an helper function to make the "flattening" of columns
+    in an R data frame easier as each item in the top-level iterable
+    can be a column or list or records (themselves each with an
+    arbitrary number of columns).
+
+    Args:
+    - colnames_list: an *empty* list that will be populated with
+    column names.
+    """
+    for i, n in enumerate(obj.colnames):
+        col = obj[i]
+        if isinstance(col, ListSexpVector):
+            _ = _records_to_columns(col)
+            colnames_lst.extend((n, subn) for subn in _.keys())
+            for subcol in _.values():
+                yield subcol
+        else:
+            colnames_lst.append(n)
+            yield col
+
+
 @rpy2py.register(DataFrame)
 def rpy2py_dataframe(obj):
-    items = OrderedDict((k, rpy2py(v) if isinstance(v, Sexp) else v)
-                        for k, v in obj.items())
-    res = PandasDataFrame.from_dict(items)
+    rpy2py = conversion.get_conversion().rpy2py
+    colnames_lst = []
+    od = OrderedDict(
+        (i, rpy2py(col) if isinstance(col, rinterface.SexpVector) else col)
+        for i, col in enumerate(_flatten_dataframe(obj, colnames_lst))
+    )
+
+    res = pandas.DataFrame.from_dict(od)
+    res.columns = tuple('.'.join(_) if isinstance(_, list) else _ for _ in colnames_lst)
     res.index = obj.rownames
     return res
 
