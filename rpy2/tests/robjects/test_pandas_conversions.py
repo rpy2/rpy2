@@ -183,13 +183,15 @@ class TestPandasConversions(object):
             with pytest.raises(ValueError):
                 rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
 
+    @pytest.mark.skipif(not has_pandas,
+                        reason='pandas must be installed.')
     @pytest.mark.parametrize(
         'data',
         ([True, False, True],
          [True, False, None])
     )
     @pytest.mark.parametrize(
-        'dtype', [bool, pandas.BooleanDtype() if has_pandas else None]
+        'dtype', [bool, pandas.BooleanDtype()]
     )
     @pytest.mark.parametrize(
         'constructor,wrapcheck',
