@@ -31,6 +31,7 @@ dependencies = [
     "pytz",
     "tzlocal",
     "packaging;platform_system=='Windows'",
+    "typing-extensions;python_version<3.8"
 ]
 dynamic = ["version"]
 
