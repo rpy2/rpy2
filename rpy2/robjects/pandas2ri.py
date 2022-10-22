@@ -53,7 +53,7 @@ integer_array_types = ('Int8', 'Int16', 'Int32', 'Int64', 'UInt8',
 @py2rpy.register(PandasDataFrame)
 def py2rpy_pandasdataframe(obj):
     od = OrderedDict()
-    for name, values in obj.iteritems():
+    for name, values in obj.items():
         try:
             od[name] = conversion.converter_ctx.get().py2rpy(values)
         except Exception as e:
@@ -61,7 +61,9 @@ def py2rpy_pandasdataframe(obj):
                           'the column "%s". Fall back to string conversion. '
                           'The error is: %s'
                           % (name, str(e)))
-            od[name] = StrVector(values)
+            od[name] = conversion.converter_ctx.get().py2rpy(
+                values.astype('string')
+            )
 
     return DataFrame(od)
 
@@ -137,6 +139,7 @@ _PANDASTYPE2RPY2 = {
         populate_func=_bool_populate_r_vector
     ),
     None: BoolVector,
+    bool: BoolVector,
     str: functools.partial(
         StrVector.from_iterable,
         populate_func=_str_populate_r_vector

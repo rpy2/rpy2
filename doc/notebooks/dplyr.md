@@ -74,7 +74,7 @@ use the decorator `rternalize`.
 # Define a python function, and make
 # it a function R can use through `rternalize`
 from rpy2.rinterface import rternalize
-@rternalize
+@rternalize(signature=False)
 def mean_np(x):
     import statistics
     return statistics.mean(x)

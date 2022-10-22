@@ -177,22 +177,17 @@ class build(du_build):
 
 
 pack_dir = {PACKAGE_NAME: os.path.join(package_prefix, 'rpy2')}
+with open('README.md') as fh:
+    long_description = fh.read()
 
 setup(
     cffi_modules=cffi_modules,
     ext_modules=ext_modules,
-    cmdclass = dict(build=build),
-    ## MOVED TO pyproject.toml BUT maybe better to keep them here for now
-    # packages=([PACKAGE_NAME] +
-    #             ['{pack_name}.{x}'.format(pack_name=PACKAGE_NAME, x=x)
-    #             for x in ('rlike', 'rinterface_lib', 'robjects',
-    #                         'robjects.lib', 'interactive', 'ipython',
-    #                         'tests',
-    #                         'tests.rinterface', 'tests.rlike',
-    #                         'tests.robjects',
-    #                         'tests.ipython',
-    #                         'tests.robjects.lib')]
-    # ),
+    cmdclass=dict(build=build),
+    long_description=long_description, 
+    # List of pacakges moved to project.toml.
+    # TODO: package_data should be be moved to project.toml when setuptools
+    # supports it (see note in project.toml).
     package_data={'rpy2': ['rinterface_lib/R_API.h',
                             'rinterface_lib/R_API_eventloop.h',
                             'rinterface_lib/R_API_eventloop.c',

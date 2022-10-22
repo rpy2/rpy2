@@ -683,10 +683,11 @@ class SexpVector(Sexp, SexpVectorAbstract):
     the general structure for R objects."""
 
     def __init__(self,
-                 obj: typing.Union[_rinterface.SexpCapsule,
+                 obj: typing.Union[SupportsSEXP,
+                                   _rinterface.SexpCapsule,
                                    collections.abc.Sized]):
         if (
-                isinstance(obj, Sexp)
+                isinstance(obj, SupportsSEXP)
                 or
                 isinstance(obj, _rinterface.SexpCapsule)
         ):
@@ -695,11 +696,12 @@ class SexpVector(Sexp, SexpVectorAbstract):
             robj: Sexp = type(self).from_object(obj)
             super().__init__(robj)
         else:
-            raise TypeError('The constructor must be called '
-                            'with an instance of '
-                            'rpy2.rinterface.Sexp '
-                            'or an instance of '
-                            'rpy2.rinterface._rinterface.SexpCapsule')
+            raise TypeError(
+                'The constructor must be called with an instance of '
+                'rpy2.rinterface.Sexp, '
+                'a Python sized object that can be iterated on, '
+                'or less commonly an rpy2.rinterface._rinterface.SexpCapsule.'
+            )
 
 
 def _as_charsxp_cdata(x: typing.Union[CharSexp, str]):
