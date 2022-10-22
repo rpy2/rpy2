@@ -36,10 +36,10 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-test = ["pytest", "IPYTHON", "numpy", "pandas"]
+test = ["pytest", "ipython", "numpy", "pandas"]
 numpy = ["pandas"]
 pandas = ["numpy", "pandas"]
-all = ["pytest", "IPYTHON", "pandas", "numpy"]
+all = ["pytest", "ipython", "pandas", "numpy"]
 
 [project.urls]
 Homepage = "https://rpy2.github.io"
