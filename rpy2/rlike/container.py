@@ -40,10 +40,10 @@ class OrdDict(dict):
         return cp
 
     def __cmp__(self, o):
-        raise(NotImplementedError("Not yet implemented."))
+        return NotImplemented
 
     def __eq__(self, o):
-        raise(NotImplementedError("Not yet implemented."))
+        return NotImplemented
 
     def __getitem__(self, key: str):
         if key is None:
@@ -64,7 +64,7 @@ class OrdDict(dict):
         return len(self.__l)
 
     def __ne__(self, o):
-        raise(NotImplementedError('Not yet implemented.'))
+        return NotImplemented
 
     def __repr__(self) -> str:
         s = ['o{', ]
@@ -74,7 +74,7 @@ class OrdDict(dict):
         return ''.join(s)
 
     def __reversed__(self):
-        raise(NotImplementedError("Not yet implemented."))
+        raise NotImplementedError("Not yet implemented.")
 
     def __setitem__(self, key: Optional[str], value: Any):
         """ Replace the element if the key is known,
