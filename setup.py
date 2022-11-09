@@ -19,20 +19,26 @@ from distutils.ccompiler import new_compiler
 from distutils.sysconfig import customize_compiler
 from distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
 
-from rpy2 import situation
-
 from distutils.command.build import build as du_build
 
-PACKAGE_NAME = 'rpy2'
-pack_version = __import__('rpy2').__version__
+# from rpy2 import situation
+import importlib
 
+# spec = importlib.util.spec_from_file_location('rpy2', './rpy2/__init__.py')
+# rpy2 = importlib.util.module_from_spec(spec)
+# sys.modules['rpy2'] = rpy2
+# spec.loader.exec_module(rpy2)
+
+spec = importlib.util.spec_from_file_location('situation', './rpy2/situation.py')
+situation = importlib.util.module_from_spec(spec)
+sys.modules['situation'] = situation
+spec.loader.exec_module(situation)
+
+
+PACKAGE_NAME = 'rpy2'
 package_prefix='.'
 
 R_MIN_VERSION = (3, 3)
-
-def _format_version(x):
-    return '.'.join(map(str, x))
-
 
 def cmp_version(x, y):
     if (x[0] < y[0]):
@@ -91,6 +97,7 @@ def get_c_extension_status(libraries=['R'], include_dirs=None,
 
 
 def get_r_c_extension_status():
+
     r_home = situation.get_r_home()
     if r_home is None:
         return COMPILATION_STATUS.NO_R
@@ -109,13 +116,6 @@ def get_r_c_extension_status():
                                     include_dirs=c_ext.include_dirs,
                                     library_dirs=c_ext.library_dirs)
     return status
-
-# TODO: The following line is required because setup.py tries to figure out
-# requirements before setuptools's own machinery to ensure requirements starts,
-# even if the named argument `setup_requires` is added to setup().
-# There should be a better way to do this than side download/install a package
-# at import time. This is limited to Windows.
-dist.Distribution().fetch_build_eggs(["packaging;platform_system=='Windows'"])
 
 cffi_mode = situation.get_cffi_mode()
 c_extension_status = get_r_c_extension_status()
@@ -176,92 +176,23 @@ class build(du_build):
               'variable RPY2_CFFI_MODE.')
 
 
-LONG_DESCRIPTION = """
-Python interface to the R language.
+pack_dir = {PACKAGE_NAME: os.path.join(package_prefix, 'rpy2')}
+with open('README.md') as fh:
+    long_description = fh.read()
 
-`rpy2` is running an embedded R, providing access to it from Python 
-using R's own C-API through either:
-
-- a high-level interface making R functions an objects just like Python
-  functions and providing a seamless conversion to numpy and pandas data 
-  structures
-- a low-level interface closer to the C-API
-
-It is also providing features for when working with jupyter notebooks or
-ipython.
-"""
-
-if __name__ == '__main__':
-    pack_dir = {PACKAGE_NAME: os.path.join(package_prefix, 'rpy2')}
-
-    with open(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                'requirements.txt')
-    ) as fh:
-        requires = fh.read().splitlines()
-    if sys.version_info[:2] < (3, 8):
-        requires.append('typing-extensions')
-        print(requires)
-
-    extras_require = {
-        'test': ['pytest'],
-        'numpy': ['numpy'],
-        'pandas': ['numpy', 'pandas'],
-        'setup': ['setuptools']
-    }
-    extras_require['all'] = list(
-        set(x for lst in extras_require.values()
-            for x in lst)
-    )
-    setup(
-        name=PACKAGE_NAME,
-        version=pack_version,
-        description='Python interface to the R language (embedded R)',
-        long_description=LONG_DESCRIPTION,
-        url='https://rpy2.github.io',
-        project_urls={
-            'Documentation': 'https://rpy2.github.io/doc.html',
-            'Source': 'https://github.com/rpy2/rpy2',
-            'Tracker': 'https://github.com/rpy2/rpy2/issues'
-        },
-        license='GPLv2+',
-        author='Laurent Gautier',
-        author_email='lgautier@gmail.com',
-        install_requires=requires,
-        extras_require=extras_require,
-        setup_requires=['cffi>=1.10.0', 'setuptools'],
-        cffi_modules=cffi_modules,
-        ext_modules=ext_modules,
-        cmdclass = dict(build=build),
-        package_dir=pack_dir,
-        packages=([PACKAGE_NAME] +
-                  ['{pack_name}.{x}'.format(pack_name=PACKAGE_NAME, x=x)
-                   for x in ('rlike', 'rinterface_lib', 'robjects',
-                             'robjects.lib', 'interactive', 'ipython',
-                             'tests',
-                             'tests.rinterface', 'tests.rlike',
-                             'tests.robjects',
-                             'tests.ipython',
-                             'tests.robjects.lib')]
-        ),
-        classifiers = ['Programming Language :: Python',
-                       'Programming Language :: Python :: 3',
-                       'Programming Language :: Python :: 3.7',
-                       'Programming Language :: Python :: 3.8',
-                       'Programming Language :: Python :: 3.9',
-                       'Programming Language :: Python :: 3.10',
-                       ('License :: OSI Approved :: GNU General '
-                        'Public License v2 or later (GPLv2+)'),
-                       'Intended Audience :: Developers',
-                       'Intended Audience :: Science/Research',
-                       'Development Status :: 5 - Production/Stable'
-        ],
-        package_data={'rpy2': ['rinterface_lib/R_API.h',
-                               'rinterface_lib/R_API_eventloop.h',
-                               'rinterface_lib/R_API_eventloop.c',
-                               'rinterface_lib/RPY2.h',
-                               'rinterface_lib/_bufferprotocol.c',
-                               'py.typed']},
-        zip_safe=False
-    )
+setup(
+    cffi_modules=cffi_modules,
+    ext_modules=ext_modules,
+    cmdclass=dict(build=build),
+    long_description=long_description, 
+    # List of pacakges moved to project.toml.
+    # TODO: package_data should be be moved to project.toml when setuptools
+    # supports it (see note in project.toml).
+    package_data={'rpy2': ['rinterface_lib/R_API.h',
+                            'rinterface_lib/R_API_eventloop.h',
+                            'rinterface_lib/R_API_eventloop.c',
+                            'rinterface_lib/RPY2.h',
+                            'rinterface_lib/_bufferprotocol.c',
+                            'py.typed']},
+    zip_safe=False
+)

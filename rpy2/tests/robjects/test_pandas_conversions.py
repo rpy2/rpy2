@@ -183,6 +183,8 @@ class TestPandasConversions(object):
             with pytest.raises(ValueError):
                 rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
 
+    @pytest.mark.skipif(not has_pandas,
+                        reason='pandas must be installed.')
     @pytest.mark.parametrize(
         'data',
         ([True, False, True],
@@ -191,12 +193,16 @@ class TestPandasConversions(object):
     @pytest.mark.parametrize(
         'dtype', [bool, pandas.BooleanDtype() if has_pandas else None]
     )
-    def test_series_obj_bool(self, data, dtype):
-        Series = pandas.core.series.Series
-        s = Series(data, index=['a', 'b', 'c'], dtype=dtype)
+    @pytest.mark.parametrize(
+        'constructor,wrapcheck',
+        [(pandas.Series, lambda x: x),
+         (pandas.DataFrame, lambda x: x[0])]
+    )
+    def test_series_obj_bool(self, data, dtype, constructor, wrapcheck):
+        s = constructor(data, index=['a', 'b', 'c'], dtype=dtype)
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
-        assert isinstance(rp_s, rinterface.BoolSexpVector)
+        assert isinstance(wrapcheck(rp_s), rinterface.BoolSexpVector)
 
 
     @pytest.mark.parametrize(

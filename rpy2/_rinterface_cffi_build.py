@@ -3,8 +3,16 @@ import os
 import re
 import sys
 import warnings
-import rpy2.situation
-from rpy2.rinterface_lib import ffi_proxy
+
+import situation  # preloaded in setup.py
+
+# from rpy2.rinterface_lib import ffi_proxy
+import importlib
+spec = importlib.util.spec_from_file_location(
+    'rinterface_lib', './rpy2/rinterface_lib/ffi_proxy.py')
+ffi_proxy = importlib.util.module_from_spec(spec)
+sys.modules['ffi_proxy'] = ffi_proxy
+spec.loader.exec_module(ffi_proxy)
 
 IFDEF_PAT = re.compile('^#ifdef (.+) ?.*$')
 ELSE_PAT = re.compile('^#else ?.*$')
@@ -175,18 +183,18 @@ def createbuilder_api():
     eventloop_h = read_source('R_API_eventloop.h')
     eventloop_c = read_source('R_API_eventloop.c')
     rpy2_h = read_source('RPY2.h')
-    r_home = rpy2.situation.get_r_home()
+    r_home = situation.get_r_home()
     if r_home is None:
         sys.exit('Error: rpy2 in API mode cannot be built without R in '
                  'the PATH or R_HOME defined. Correct this or force '
                  'ABI mode-only by defining the environment variable '
                  'RPY2_CFFI_MODE=ABI')
-    c_ext = rpy2.situation.CExtensionOptions()
+    c_ext = situation.CExtensionOptions()
     c_ext.add_lib(
-        *rpy2.situation.get_r_flags(r_home, '--ldflags')
+        *situation.get_r_flags(r_home, '--ldflags')
     )
     c_ext.add_include(
-        *rpy2.situation.get_r_flags(r_home, '--cppflags')
+        *situation.get_r_flags(r_home, '--cppflags')
     )
     if 'RPY2_RLEN_LONG' in definitions:
         definitions['RPY2_RLEN_LONG'] = True
@@ -245,45 +253,43 @@ def createbuilder_api():
 
 
 # This sort of redundant with setup.py defining cffi_modules,
-# but at least both use rpy2.situation.get_ffi_mode().
-cffi_mode = rpy2.situation.get_cffi_mode()
+# but at least both use situation.get_ffi_mode().
+cffi_mode = situation.get_cffi_mode()
 
-if cffi_mode in (rpy2.situation.CFFI_MODE.ABI,
-                 rpy2.situation.CFFI_MODE.BOTH):
+if cffi_mode in (situation.CFFI_MODE.ABI,
+                 situation.CFFI_MODE.BOTH):
     ffibuilder_abi = createbuilder_abi()
-elif cffi_mode == rpy2.situation.CFFI_MODE.ANY:
+elif cffi_mode == situation.CFFI_MODE.ANY:
     try:
         ffibuilder_abi = createbuilder_abi()
     except Exception as e:
         warnings.warn(str(e))
         ffibuilder_abi = None
 
-if cffi_mode in (rpy2.situation.CFFI_MODE.API,
-                 rpy2.situation.CFFI_MODE.BOTH):
+if cffi_mode in (situation.CFFI_MODE.API,
+                 situation.CFFI_MODE.BOTH):
     ffibuilder_api = createbuilder_api()
-elif cffi_mode == rpy2.situation.CFFI_MODE.ANY:
+elif cffi_mode == situation.CFFI_MODE.ANY:
     try:
         ffibuilder_api = createbuilder_api()
     except Exception as e:
         warnings.warn(str(e))
         ffibuilder_api = None
 
-if __name__ == '__main__':
-
-    if cffi_mode in (rpy2.situation.CFFI_MODE.ABI,
-                     rpy2.situation.CFFI_MODE.BOTH):
-        ffibuilder_abi.compile(verbose=True)
-    elif cffi_mode == rpy2.situation.CFFI_MODE.ANY:
-        try:
-            ffibuilder_api.compile(verbose=True)
-        except Exception as e:
-            warnings.warn(str(e))
-
-    if cffi_mode in (rpy2.situation.CFFI_MODE.API,
-                     rpy2.situation.CFFI_MODE.BOTH):
+if cffi_mode in (situation.CFFI_MODE.ABI,
+                 situation.CFFI_MODE.BOTH):
+    ffibuilder_abi.compile(verbose=True)
+elif cffi_mode == situation.CFFI_MODE.ANY:
+    try:
         ffibuilder_api.compile(verbose=True)
-    elif cffi_mode == rpy2.situation.CFFI_MODE.ANY:
-        try:
-            ffibuilder_api.compile(verbose=True)
-        except Exception as e:
-            warnings.warn(str(e))
+    except Exception as e:
+        warnings.warn(str(e))
+
+if cffi_mode in (situation.CFFI_MODE.API,
+                 situation.CFFI_MODE.BOTH):
+    ffibuilder_api.compile(verbose=True)
+elif cffi_mode == situation.CFFI_MODE.ANY:
+    try:
+        ffibuilder_api.compile(verbose=True)
+    except Exception as e:
+        warnings.warn(str(e))
