@@ -39,6 +39,17 @@ class OrdDict(dict):
         cp = OrdDict(c=tuple(self.items()))
         return cp
 
+    def __reduce__(self):
+        # We need to override the special-cased dict unpickling process in order
+        # to retain the attributes the `__l` attribute.
+        return (
+            self.__class__,  # callable
+            (),  # arguments to constructor
+            {'_OrdDict__l': self.__l},  # state
+            None,  # list items
+            iter(self.items()),  # dict items
+        )
+
     def __cmp__(self, o):
         raise(NotImplementedError("Not yet implemented."))
 
