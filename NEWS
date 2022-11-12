@@ -1,3 +1,13 @@
+Release 3.5.6
+=============
+
+Bugs fixed
+----------
+
+- :class:`rpy2.rlike.container.OrdDict` objects were triggering an
+  error when unpickled (PR #955).
+
+
 Release 3.5.5
 =============
 
