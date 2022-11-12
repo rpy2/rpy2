@@ -17,16 +17,17 @@ class TestOrdDict(object):
         with pytest.raises(TypeError):
             rlc.OrdDict({})
 
-    @pytest.mark.parametrize('methodname,args',
-                             (('__cmp__', [None]),
-                              ('__eq__', [None]),
-                              ('__ne__', [None]),
-                              ('__reversed__', []),
-                              ('sort', [])))
-    def test_notimplemented(self, methodname, args):
+    def test_notimplemented_operators(self):
         nl = rlc.OrdDict()
+        nl2 = rlc.OrdDict()
+        assert nl == nl  # equivalent to `nl is nl`
+        assert nl != nl2  # equivalent to `nl is not nl2`
+        with pytest.raises(TypeError):
+            nl > nl2
         with pytest.raises(NotImplementedError):
-            getattr(nl, methodname)(*args)
+            reversed(nl)
+        with pytest.raises(NotImplementedError):
+            nl.sort()
 
     def test_repr(self):
         x = (('a', 123), ('b', 456), ('c', 789))
