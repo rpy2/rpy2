@@ -7,6 +7,9 @@ Bugs fixed
 - :class:`rpy2.rlike.container.OrdDict` objects were triggering an
   error when unpickled (PR #955).
 
+- Function signature mapping not longer assumes that all default
+  values are R vectors mapped to a `Vector` instance (PR #954).
+
 
 Release 3.5.5
 =============
