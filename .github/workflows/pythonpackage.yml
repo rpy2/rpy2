@@ -45,10 +45,10 @@ jobs:
         path: dist/rpy2-*.tar.gz
   build-wheel-posix:
     name: Build package for Python-${{ matrix.python-version }}, arch-${{ matrix.arch }}.
-   env:
-     default_os: "ubuntu-latest"
-     default_r: "release"
-     CIBW_SKIP: "cp36-* cp37-*"
+    env:
+      default_os: "ubuntu-latest"
+      default_r: "release"
+      CIBW_SKIP: "cp36-* cp37-*"
     runs-on: ${{ matrix.os }}
     continue-on-error: false
     strategy:
