@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         r-version: [release]
-        os: [ubuntu-20.04, macOS-latest, windows-2019]
+        os: [ubuntu-20.04, macOS-11, windows-2019]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
