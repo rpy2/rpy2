@@ -24,18 +24,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-	  - os: ubuntu-latest
-	    python: 39
-	    platform_id: manyliunx2014
+         - os: ubuntu-latest
+            python: 39
+            platform_id: manyliunx2014
             manylinux_image: manylinux2014
             r-version: release
 	  - os: macos-latest
-	    python: 39
-	    platform_id: macosx_x86_64
+            python: 39
+            platform_id: macosx_x86_64
             r-version: release
-	  - os: macos-latest
-	    python: 39
-	    platform_id: macosx_arm64
+          - os: macos-latest
+            python: 39
+            platform_id: macosx_arm64
             r-version: release
     steps:
     - uses: actions/checkout@v3
