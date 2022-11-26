@@ -18,13 +18,15 @@ env:
   default_r: "release"
   default_python: "3.8"
 jobs:
-  deploy:
+  build_package:
+    name: Build package on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         python-version: [3.7, 3.8, 3.9, "3.10"]
+	arch: [aarch64, arm7, s390x, ppc641e
         r-version: [release]
-        os: [ubuntu-latest, macOS-latest, windows-2019]
+        os: [ubuntu-20.04, macOS-latest, windows-2019]
         exclude:
         - python-version: 3.8
           os: windows-2019 
@@ -41,10 +43,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install setuptools build
+        python -m pip install setuptools cibuildwheel
     - name: Build wheel
       run: |
-        python -m build -o dist/ --wheel .
+        python -m cibuildwheel --output wheelhouse .
     - name: Build sdist
       if: (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
       run: |
@@ -63,11 +65,11 @@ jobs:
           name: ${{ steps.getfilename_wheel.outputs.file }}
           path: dist/${{ steps.getfilename_wheel.outputs.file }}
     - name: Create source package for master
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v3
       if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
       with:
-          name: ${{ steps.getfilename_targz.outputs.file }}
-          path: dist/${{ steps.getfilename_targz.outputs.file }}
+          name: Uploading wheel.
+          path: wheelhouse/*.whl
     - name: Publish
       if: github.event_name == 'release'
       uses: pypa/gh-action-pypi-publish@release/v1
