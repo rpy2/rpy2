@@ -75,11 +75,8 @@ def r_home_from_subprocess() -> Optional[str]:
     """Return the R home directory from calling 'R RHOME'."""
     cmd = ('R', 'RHOME')
     logger.debug('Looking for R home with: {}'.format(' '.join(cmd)))
-    try:
-        tmp = subprocess.check_output(cmd, universal_newlines=True)
-    except Exception as e:  # FileNotFoundError, WindowsError, etc
-        logger.error(f'Unable to determine R home: {e}')
-        return None
+    tmp = subprocess.check_output(cmd, universal_newlines=True)
+    # may raise FileNotFoundError, WindowsError, etc
     r_home = tmp.split(os.linesep)
     if r_home[0].startswith('WARNING'):
         res = r_home[1]
@@ -201,9 +198,14 @@ def get_r_home() -> Optional[str]:
     r_home = os.environ.get('R_HOME')
 
     if not r_home:
-        r_home = r_home_from_subprocess()
-    if not r_home and os.name == 'nt':
-        r_home = r_home_from_registry()
+        try:
+            r_home = r_home_from_subprocess()
+        except Exception as e:
+            if os.name == 'nt':
+                r_home = r_home_from_registry()
+            if r_home is None:
+                logger.error(f'Unable to determine R home: {e}')
+
     logger.info(f'R home found: {r_home}')
     return r_home
 
@@ -351,7 +353,10 @@ def iter_info():
         r_user = os.environ.get('R_USER')
         yield '    Environment variable R_USER: %s' % r_user
     else:
-        r_home_default = r_home_from_subprocess()
+        try:
+            r_home_default = r_home_from_subprocess()
+        except Exception as e:
+            logger.error(f'Unable to determine R home: {e}')
         yield '    Calling `R RHOME`: %s' % r_home_default
 
     yield (
