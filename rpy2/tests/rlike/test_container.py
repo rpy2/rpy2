@@ -1,5 +1,7 @@
 import pytest
 import pickle
+from io import BytesIO
+
 import rpy2.rlike.container as rlc
 
 
@@ -15,16 +17,17 @@ class TestOrdDict(object):
         with pytest.raises(TypeError):
             rlc.OrdDict({})
 
-    @pytest.mark.parametrize('methodname,args',
-                             (('__cmp__', [None]),
-                              ('__eq__', [None]),
-                              ('__ne__', [None]),
-                              ('__reversed__', []),
-                              ('sort', [])))
-    def test_notimplemented(self, methodname, args):
+    def test_notimplemented_operators(self):
         nl = rlc.OrdDict()
+        nl2 = rlc.OrdDict()
+        assert nl == nl  # equivalent to `nl is nl`
+        assert nl != nl2  # equivalent to `nl is not nl2`
+        with pytest.raises(TypeError):
+            nl > nl2
         with pytest.raises(NotImplementedError):
-            getattr(nl, methodname)(*args)
+            reversed(nl)
+        with pytest.raises(NotImplementedError):
+            nl.sort()
 
     def test_repr(self):
         x = (('a', 123), ('b', 456), ('c', 789))
@@ -48,7 +51,7 @@ class TestOrdDict(object):
 
     def test_getsetitem(self):
         x = rlc.OrdDict()
-        
+
         x['a'] = 1
         assert len(x) == 1
         assert x['a'] == 1
@@ -68,7 +71,7 @@ class TestOrdDict(object):
         assert x.get('a') == 1
         assert x.get('b') is None
         assert x.get('b', 2) == 2
-        
+
     def test_keys(self):
         x = rlc.OrdDict()
         word = 'abcdef'
@@ -79,7 +82,7 @@ class TestOrdDict(object):
 
     def test_getsetitemwithnone(self):
         x = rlc.OrdDict()
-        
+
         x['a'] = 1
         x[None] = 2
         assert len(x) == 2
@@ -89,7 +92,7 @@ class TestOrdDict(object):
         assert x['b'] == 5
         assert x.index('a') == 0
         assert x.index('b') == 2
-        
+
     def test_reverse(self):
         x = rlc.OrdDict()
         x['a'] = 3
@@ -112,18 +115,28 @@ class TestOrdDict(object):
             assert ki[0] ==  ko[0]
             assert ki[1] == ko[1]
 
+    def test_pickling(self):
+        f = BytesIO()
+        pickle.dump(rlc.OrdDict([('a', 1), ('b', 2)]), f)
+        f.seek(0)
+        od = pickle.load(f)
+        assert od['a'] == 1
+        assert od.index('a') == 0
+        assert od['b'] == 2
+        assert od.index('b') == 1
+
 
 class TestTaggedList(object):
 
     def test__add__(self):
-        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))
         tl = tl + tl
         assert len(tl) == 6
         assert tl.tags == ('a', 'b', 'c', 'a', 'b', 'c')
         assert tuple(tl) == (1,2,3,1,2,3)
 
     def test__delitem__(self):
-        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))
         assert len(tl) == 3
         del tl[1]
         assert len(tl) == 2
@@ -131,14 +144,14 @@ class TestTaggedList(object):
         assert tuple(tl) == (1, 3)
 
     def test__delslice__(self):
-        tl = rlc.TaggedList((1,2,3,4), tags=('a', 'b', 'c', 'd'))        
+        tl = rlc.TaggedList((1,2,3,4), tags=('a', 'b', 'c', 'd'))
         del tl[1:3]
         assert len(tl) == 2
         assert tl.tags == ('a', 'd')
         assert tuple(tl) == (1, 4)
 
     def test__iadd__(self):
-        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))
         tl += tl
         assert len(tl) == 6
         assert tl.tags == ('a', 'b', 'c', 'a', 'b', 'c')
@@ -152,19 +165,19 @@ class TestTaggedList(object):
         assert tuple(tl) == (1,2,1,2,1,2)
 
     def test__init__(self):
-        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))
         with pytest.raises(ValueError):
             rlc.TaggedList((1,2,3), tags = ('b', 'c'))
 
     def test__setslice__(self):
-        tl = rlc.TaggedList((1,2,3,4), tags=('a', 'b', 'c', 'd'))        
+        tl = rlc.TaggedList((1,2,3,4), tags=('a', 'b', 'c', 'd'))
         tl[1:3] = [5, 6]
         assert len(tl) == 4
         assert tl.tags == ('a', 'b', 'c', 'd')
         assert tuple(tl) == (1, 5, 6, 4)
 
     def test_append(self):
-        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))
         assert len(tl) == 3
         tl.append(4, tag='a')
         assert len(tl) == 4
@@ -172,19 +185,19 @@ class TestTaggedList(object):
         assert tl.tags == ('a', 'b', 'c', 'a')
 
     def test_extend(self):
-        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))
         tl.extend([4, 5])
         assert tuple(tl.itertags()) == ('a', 'b', 'c', None, None)
         assert tuple(tl) == (1, 2, 3, 4, 5)
 
     def test_insert(self):
-        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))
         tl.insert(1, 4, tag = 'd')
         assert tuple(tl.itertags()) == ('a', 'd', 'b', 'c')
         assert tuple(tl) == (1, 4, 2, 3)
 
     def test_items(self):
-        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))        
+        tl = rlc.TaggedList((1,2,3), tags=('a', 'b', 'c'))
         assert tuple(tl.items()) == (('a', 1), ('b', 2), ('c', 3))
 
     def test_iterontag(self):
