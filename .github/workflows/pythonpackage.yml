@@ -44,7 +44,7 @@ jobs:
         name: rpy2-sdist
         path: dist/rpy2-*.tar.gz
   build-wheel-posix:
-    name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id}}-${{ matric.manylinux_image }}
+    name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id}}
     env:
       default_os: "ubuntu-latest"
       default_r: "release"
