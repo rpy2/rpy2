@@ -60,7 +60,7 @@ jobs:
             platform_id: manyliunx2014
             manylinux_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_x86_64:r4.2.2
             r-version: release
-	  - os: macos-latest
+          - os: macos-latest
             python: 39
             platform_id: macosx_x86_64
             r-version: release
