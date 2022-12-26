@@ -283,7 +283,7 @@ class CExtensionOptions(object):
 
     def __init__(self):
         self.extra_link_args = []
-        self.extra_compile_args = []
+        self.extra_compile_args = ['-std=c99']
         self.include_dirs = []
         self.libraries = []
         self.library_dirs = []

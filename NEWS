@@ -1,3 +1,14 @@
+Release 3.5.7
+=============
+
+Bugs fixed
+----------
+
+- Building the C-extension could fail when the C compiler is not
+  C99-compatible or requires to be specified C99 compatibility
+  (issue #963).
+
+
 Release 3.5.6
 =============
 
