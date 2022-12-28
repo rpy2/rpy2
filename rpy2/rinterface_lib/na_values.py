@@ -1,4 +1,6 @@
 """NA (Non-Available) values in R."""
+# TODO: Indicate the Python version(s) supported that require
+# `import __future__ import annotations`.
 from __future__ import annotations
 import typing
 if typing.TYPE_CHECKING:

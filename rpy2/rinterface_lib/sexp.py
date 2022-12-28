@@ -497,7 +497,8 @@ def _populate_r_vector(iterable, r_vector, set_elt, cast_value) -> None:
         set_elt(r_vector, i, cast_value(v))
 
 
-class SexpVectorAbstract(SupportsSEXP, metaclass=abc.ABCMeta):
+class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
+                         metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
