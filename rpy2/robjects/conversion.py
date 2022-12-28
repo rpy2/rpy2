@@ -304,15 +304,6 @@ class Converter(object):
         overlay_converter(converter, result_converter)
         return result_converter
 
-    def __enter__(self):
-        self._original_converter = converter_ctx.get()
-        set_conversion(self)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        set_conversion(self._original_converter)
-        return False
-
     def __str__(self):
         res = [str(type(self))]
         for subcv in ('py2rpy', 'rpy2py'):
