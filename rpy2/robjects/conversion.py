@@ -351,8 +351,30 @@ class ConversionContext(object):
 
 localconverter = ConversionContext
 
+
+def _raise_missingconverter(obj):
+    _missingconverter_msg = """
+    Conversion rules for `rpy2.robjects` appear to be missing. Those
+    rules are in a Python contextvars.ContextVar. This could be caused
+    by multithreading code not passing context to the thread.
+    """
+    raise NotImplementedError(_missingconverter_msg)
+
+
+missingconverter = Converter('missing')
+
+missingconverter.rpy2py.register(
+    object,
+    _raise_missingconverter
+)
+
+missingconverter.py2rpy.register(
+    object,
+    _raise_missingconverter
+)
+
 converter_ctx = contextvars.ContextVar('converter',
-                                       default=Converter('empty'))
+                                       default=missingconverter)
 
 
 def _deprecated_converter():
