@@ -97,9 +97,14 @@ def r_home_from_registry() -> Optional[str]:
     # We prefer the user installation (which the user has more control
     # over). Thus, HKEY_CURRENT_USER is the first item in the list and
     # the for-loop breaks at the first hit.
-    for w_hkey in [winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE]:
+    for w_hkey in [
+            winreg.HKEY_CURRENT_USER,  # type: ignore
+            winreg.HKEY_LOCAL_MACHINE  # type: ignore
+    ]:
         try:
-            with winreg.OpenKeyEx(w_hkey, 'Software\\R-core\\R') as hkey:
+            with winreg.OpenKeyEx(  # type:ignore
+                    w_hkey, 'Software\\R-core\\R'
+            ) as hkey:
 
                 # >v4.x.x: grab the highest version installed
                 def get_version(i):
@@ -109,17 +114,28 @@ def r_home_from_registry() -> Optional[str]:
                         return None
 
                 latest = max(
-                    (v for v in (get_version(i)
-                                 for i in range(winreg.QueryInfoKey(hkey)[0]))
-                     if v is not None)
+                    (
+                        v for v in (
+                            get_version(i) for i in range(
+                                winreg.QueryInfoKey(hkey)[0]  # type: ignore
+                            )
+                        )
+                        if v is not None
+                    )
                 )
 
-                with winreg.OpenKeyEx(hkey, f'{latest}') as subkey:
-                    r_home = winreg.QueryValueEx(subkey, "InstallPath")[0]
+                with winreg.OpenKeyEx(  # type: ignore
+                        hkey, f'{latest}'
+                ) as subkey:
+                    r_home = winreg.QueryValueEx(  # type: ignore
+                        subkey, "InstallPath"
+                    )[0]
 
                 # check for an earlier version
                 if not r_home:
-                    r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
+                    r_home = winreg.QueryValueEx(  # type: ignore
+                        hkey, 'InstallPath'
+                    )[0]
         except Exception:  # FileNotFoundError, WindowsError, OSError, etc.
             pass
         else:

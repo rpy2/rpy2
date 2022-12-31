@@ -8,6 +8,19 @@ Bugs fixed
   C99-compatible or requires to be specified C99 compatibility
   (issue #963).
 
+- With the "R magic", converters in a local namespace were inadvertently
+  skipped (the local namespace was not searched).
+
+Changes
+-------
+
+- The default for the :class:`contextvars.ContextVar` holding
+  conversion rules (:obj:`rpy2.robjects.conversion.converter`)
+  is now a dummy converter raising errors about missing
+  conversion rules. This behavior helps with troubleshooting
+  Python code using multithreading without fetching the context
+  (see issue #965).
+
 
 Release 3.5.6
 =============
