@@ -270,11 +270,13 @@ class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
         return False
 
     @property
-    def __sexp__(self) -> _rinterface.SexpCapsule:
+    def __sexp__(self) -> typing.Union['_rinterface.SexpCapsule',
+                                       '_rinterface.UninitializedRCapsule']:
         return self._sexpobject
 
     @__sexp__.setter
-    def __sexp__(self, value: _rinterface.SexpCapsule) -> None:
+    def __sexp__(self, value: typing.Union['_rinterface.SexpCapsule',
+                                           '_rinterface.UninitializedRCapsule']) -> None:
         raise TypeError('The capsule for the R object cannot be modified.')
 
 
@@ -1114,7 +1116,7 @@ def _find_first(nodes, of_type):
 def rternalize(
         function: typing.Optional[typing.Callable] = None, *,
         signature: bool = False
-) -> SexpClosure:
+) -> typing.Union[SexpClosure, functools.partial]:
     """ Make a Python function callable from R.
 
     Takes an arbitrary Python function and wrap it in such a way that

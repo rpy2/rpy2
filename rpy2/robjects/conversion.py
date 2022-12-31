@@ -384,13 +384,13 @@ def _deprecated_converter():
 def _deprecated_py2rpy(
         obj: Any
 ) -> _rinterface_capi.SupportsSEXP:
-    return converter_ctx.get('converter').py2rpy(obj)
+    return converter_ctx.get('converter').py2rpy(obj)  # type: ignore
 
 
 def _deprecated_rpy2py(
         obj: Any
 ) -> _rinterface_capi.SupportsSEXP:
-    return converter_ctx.get('converter').rpy2py(obj)
+    return converter_ctx.get('converter').rpy2py(obj)  # type: ignore
 
 
 def get_conversion():

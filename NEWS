@@ -8,6 +8,9 @@ Bugs fixed
   C99-compatible or requires to be specified C99 compatibility
   (issue #963).
 
+- With the "R magic", converters in a local namespace were inadvertently
+  skipped (the local namespace was not searched).
+
 Changes
 -------
 

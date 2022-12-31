@@ -66,9 +66,9 @@ import warnings
 # Try loading pandas and numpy, emitting a warning if either cannot be
 # loaded.
 try:
-    import numpy  # type: ignore
+    import numpy  # type: ignore[import]
     try:
-        import pandas  # type: ignore
+        import pandas  # type: ignore[import]
     except ImportError as ie:
         pandas = None
         warnings.warn('The Python package `pandas` is strongly '
@@ -78,7 +78,7 @@ try:
                       'but at least we found `numpy`.' % str(ie))
 except ImportError as ie:
     # Give up on numerics
-    numpy = None
+    numpy = None  # type: ignore[assignment]
     pandas = None
     warnings.warn('The Python package `pandas` is strongly '
                   'recommended when using `rpy2.ipython`. '
@@ -362,7 +362,9 @@ class RMagics(Magics):
             val = _find(rhs, self.shell.user_ns)
         env[lhs] = val
 
-    def _find_converter(self, name: str) -> ro.conversion.Converter:
+    def _find_converter(
+            self, name: str, local_ns: dict
+    ) -> ro.conversion.Converter:
         if name is None:
             converter = self.converter
         else:
@@ -416,7 +418,7 @@ class RMagics(Magics):
         """
         args = parse_argstring(self.Rpush, line)
 
-        converter = self._find_converter(args.converter)
+        converter = self._find_converter(args.converter, local_ns)
 
         if local_ns is None:
             local_ns = {}
@@ -814,7 +816,7 @@ class RMagics(Magics):
         if local_ns is None:
             local_ns = {}
 
-        converter = self._find_converter(args.converter)
+        converter = self._find_converter(args.converter, local_ns)
 
         if args.input:
             with localconverter(converter) as cv:
