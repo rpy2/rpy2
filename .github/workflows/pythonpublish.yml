@@ -60,7 +60,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install setuptools cibuildwheel
     - name: Build wheel
-      uses: pypa/cibuildhweel@v2.11.4
+      uses: pypa/cibuildwheel@v2.11.4
       env:
           CIBW_SKIP: cp36-* cp37-*
           CIBW_ARCHS_LINUX: "x86_64 i686"
