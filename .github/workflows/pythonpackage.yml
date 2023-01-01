@@ -44,8 +44,6 @@ jobs:
         name: rpy2-sdist
         path: dist/rpy2-*.tar.gz
   build-wheel-posix:
-  =======
->>>>>>> ab1abed3 (Fix architures for binary image builds.)
     name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id}}
     env:
       default_os: "ubuntu-latest"
@@ -93,6 +91,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install setuptools cibuildwheel
     - name: Build wheel
+      users: pypa/cibuildhweel@v2
       env:
           CIBW_SKIP: cp36-* cp37-*
           CIBW_ARCHS_LINUX: "x86_64 i686"
@@ -100,12 +99,16 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_BUILD_VERBOSITY: 1
+      with:
+        output-dir: wheelhouse
+        config-file: pyproject.toml
       run: |
         python -m cibuildwheel --output wheelhouse .
-    - uses: actions/upload-artifact@v3
+    - name: Upload wheel artifacts
+      uses: actions/upload-artifact@v3
       with:
         name: rpy2-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
-        path: dist/rpy2-*.whl
+        path: wheelhouse/rpy2-*.whl
   test:
     needs: [build-sdist]
     runs-on: ${{ matrix.os }}
