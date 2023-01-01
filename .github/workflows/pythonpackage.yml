@@ -51,6 +51,8 @@ jobs:
       CIBW_SKIP: "cp36-* cp37-*"
     runs-on: ${{ matrix.os }}
     continue-on-error: false
+    permissions:
+      packages: read
     strategy:
       fail-fast: false
       matrix:
@@ -70,8 +72,7 @@ jobs:
             r-version: release
     steps:
     - uses: actions/checkout@v3
-    -
-      name: Log in to the Container registry
+    - name: Log in to the Container registry
       if: matrix.os == 'ubuntu-latest'
       uses: docker/login-action@v2
       with:
