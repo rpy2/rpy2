@@ -60,6 +60,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install setuptools cibuildwheel
     - name: Build wheel
+      users: pypa/cibuildhweel@v2
       env:
           CIBW_SKIP: cp36-* cp37-*
           CIBW_ARCHS_LINUX: "x86_64 i686"
@@ -67,8 +68,9 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_BUILD_VERBOSITY: 1
-      run: |
-        python -m cibuildwheel --output wheelhouse .
+      with:
+        output-dir: wheelhouse
+        config-file: pyproject.toml
     - name: Build sdist
       if: (matrix.r-version == env.default_r && matrix.os == env.default_os)
       run: |
