@@ -91,7 +91,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install setuptools cibuildwheel
     - name: Build wheel
-      users: pypa/cibuildhweel@v2
+      uses: pypa/cibuildhweel@v2.11.4
       env:
           CIBW_SKIP: cp36-* cp37-*
           CIBW_ARCHS_LINUX: "x86_64 i686"
@@ -102,13 +102,11 @@ jobs:
       with:
         output-dir: wheelhouse
         config-file: pyproject.toml
-      run: |
-        python -m cibuildwheel --output wheelhouse .
     - name: Upload wheel artifacts
       uses: actions/upload-artifact@v3
       with:
         name: rpy2-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
-        path: wheelhouse/rpy2-*.whl
+        path: wheelhouse/*.whl
   test:
     needs: [build-sdist]
     runs-on: ${{ matrix.os }}
