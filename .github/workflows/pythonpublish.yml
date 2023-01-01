@@ -20,6 +20,8 @@ jobs:
   build_wheels:
     name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id}}
     runs-on: ${{ matrix.os }}
+    permissions:
+      packages: read
     strategy:
       fail-fast: false
       matrix:
