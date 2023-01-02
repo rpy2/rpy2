@@ -1,0 +1,83 @@
+[build-system]
+requires = [
+    "setuptools >= 61",
+    "wheel",
+    "cffi>=1.10.0",
+    "packaging;platform_system=='Windows'",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rpy2"
+description = "Python interface to the R language (embedded R)"
+readme = "README.md"
+requires-python = ">=3.7"
+license = { text = "GPLv2+" }
+authors = [{ name = "Laurent Gautier", email = "lgautier@gmail.com" }]
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+]
+dependencies = [
+    "cffi>=1.10.0",
+    "jinja2",
+    "pytz",
+    "tzlocal",
+    "packaging;platform_system=='Windows'",
+    "typing-extensions;python_version<'3.8'"
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = ["pytest", "ipython", "numpy", "pandas"]
+numpy = ["pandas"]
+pandas = ["numpy", "pandas"]
+all = ["pytest", "ipython", "pandas", "numpy"]
+
+[project.urls]
+Homepage = "https://rpy2.github.io"
+Documentation = "https://rpy2.github.io/doc.html"
+Source = "https://github.com/rpy2/rpy2"
+Tracker = "https://github.com/rpy2/rpy2/issue"
+
+[tool.setuptools]
+packages = [
+    "rpy2",
+    "rpy2.rlike",
+    'rpy2.rinterface_lib',
+    'rpy2.robjects',
+    'rpy2.robjects.lib',
+    'rpy2.interactive',
+    'rpy2.ipython',
+    'rpy2.tests',
+    'rpy2.tests.rinterface',
+    'rpy2.tests.rlike',
+    'rpy2.tests.robjects',
+    'rpy2.tests.ipython',
+    'rpy2.tests.robjects.lib',
+]
+# zip_safe = false # not supported as of setuptools==62.3.2
+
+[tool.setuptools.dynamic]
+version = { attr = "rpy2.__version__" }
+
+# [tool.setuptools.package_data]
+# rpy2 = [
+#     'rpy2/rinterface_lib/R_API.h',
+#     'rpy2/rinterface_lib/R_API_eventloop.h',
+#     'rpy2/rinterface_lib/R_API_eventloop.c',
+#     'rpy2/rinterface_lib/RPY2.h',
+#     'rpy2/rinterface_lib/_bufferprotocol.c',
+#     'py.typed',
+# ] # not supported as of setuptools==62.3.2
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["rpy2/tests"]

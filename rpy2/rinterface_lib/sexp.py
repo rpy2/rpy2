@@ -103,7 +103,8 @@ class Sexp(SupportsSEXP):
         return super().__repr__() + (' [%s]' % self.typeof)
 
     @property
-    def __sexp__(self) -> '_rinterface.CapsuleBase':
+    def __sexp__(self) -> typing.Union['_rinterface.SexpCapsule',
+                                       '_rinterface.UninitializedRCapsule']:
         """Access to the underlying C pointer to the R object.
 
         When assigning a new SexpCapsule to this attribute, the
@@ -113,7 +114,8 @@ class Sexp(SupportsSEXP):
 
     @__sexp__.setter
     def __sexp__(self,
-                 value: '_rinterface.CapsuleBase') -> None:
+                 value: typing.Union['_rinterface.SexpCapsule',
+                                     '_rinterface.UninitializedRCapsule']) -> None:
         assert isinstance(value, _rinterface.SexpCapsule)
         if value.typeof != self.__sexp__.typeof:
             raise ValueError('New capsule type mismatch: %s' %
@@ -243,11 +245,13 @@ class NULLType(Sexp, metaclass=SingletonABC):
         return False
 
     @property
-    def __sexp__(self) -> _rinterface.CapsuleBase:
+    def __sexp__(self) -> typing.Union['_rinterface.SexpCapsule',
+                                       '_rinterface.UninitializedRCapsule']:
         return self._sexpobject
 
     @__sexp__.setter
-    def __sexp__(self, value) -> None:
+    def __sexp__(self, value: typing.Union['_rinterface.SexpCapsule',
+                                           '_rinterface.UninitializedRCapsule']) -> None:
         raise TypeError('The capsule for the R object cannot be modified.')
 
     @property
@@ -497,7 +501,8 @@ def _populate_r_vector(iterable, r_vector, set_elt, cast_value) -> None:
         set_elt(r_vector, i, cast_value(v))
 
 
-class SexpVectorAbstract(SupportsSEXP, metaclass=abc.ABCMeta):
+class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
+                         metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod

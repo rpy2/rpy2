@@ -29,13 +29,13 @@ jobs:
         - python-version: 3.8
           os: windows-2019 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Set up R ${{ matrix.r-version }}
-      uses: r-lib/actions/setup-r@master
+      uses: r-lib/actions/setup-r@v2
       with:
         r-version: ${{ matrix.r-version }}
     - name: Install dependencies
@@ -70,6 +70,8 @@ jobs:
           path: dist/${{ steps.getfilename_targz.outputs.file }}
     - name: Publish
       if: github.event_name == 'release'
-      uses: pypa/gh-action-pypi-publish@master
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
+        user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
+        packages_dir: dist

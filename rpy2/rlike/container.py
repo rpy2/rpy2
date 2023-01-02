@@ -39,11 +39,22 @@ class OrdDict(dict):
         cp = OrdDict(c=tuple(self.items()))
         return cp
 
+    def __reduce__(self):
+        # We need to override the special-cased dict unpickling process in order
+        # to retain the attributes the `__l` attribute.
+        return (
+            self.__class__,  # callable
+            (),  # arguments to constructor
+            {'_OrdDict__l': self.__l},  # state
+            None,  # list items
+            iter(self.items()),  # dict items
+        )
+
     def __cmp__(self, o):
-        raise(NotImplementedError("Not yet implemented."))
+        return NotImplemented
 
     def __eq__(self, o):
-        raise(NotImplementedError("Not yet implemented."))
+        return NotImplemented
 
     def __getitem__(self, key: str):
         if key is None:
@@ -64,7 +75,7 @@ class OrdDict(dict):
         return len(self.__l)
 
     def __ne__(self, o):
-        raise(NotImplementedError('Not yet implemented.'))
+        return NotImplemented
 
     def __repr__(self) -> str:
         s = ['o{', ]
@@ -74,7 +85,7 @@ class OrdDict(dict):
         return ''.join(s)
 
     def __reversed__(self):
-        raise(NotImplementedError("Not yet implemented."))
+        raise NotImplementedError("Not yet implemented.")
 
     def __setitem__(self, key: Optional[str], value: Any):
         """ Replace the element if the key is known,
