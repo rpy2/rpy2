@@ -97,9 +97,14 @@ def r_home_from_registry() -> Optional[str]:
     # We prefer the user installation (which the user has more control
     # over). Thus, HKEY_CURRENT_USER is the first item in the list and
     # the for-loop breaks at the first hit.
-    for w_hkey in [winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE]:
+    for w_hkey in [
+            winreg.HKEY_CURRENT_USER,  # type: ignore
+            winreg.HKEY_LOCAL_MACHINE  # type: ignore
+    ]:
         try:
-            with winreg.OpenKeyEx(w_hkey, 'Software\\R-core\\R') as hkey:
+            with winreg.OpenKeyEx(  # type:ignore
+                    w_hkey, 'Software\\R-core\\R'
+            ) as hkey:
 
                 # >v4.x.x: grab the highest version installed
                 def get_version(i):
@@ -109,17 +114,28 @@ def r_home_from_registry() -> Optional[str]:
                         return None
 
                 latest = max(
-                    (v for v in (get_version(i)
-                                 for i in range(winreg.QueryInfoKey(hkey)[0]))
-                     if v is not None)
+                    (
+                        v for v in (
+                            get_version(i) for i in range(
+                                winreg.QueryInfoKey(hkey)[0]  # type: ignore
+                            )
+                        )
+                        if v is not None
+                    )
                 )
 
-                with winreg.OpenKeyEx(hkey, f'{latest}') as subkey:
-                    r_home = winreg.QueryValueEx(subkey, "InstallPath")[0]
+                with winreg.OpenKeyEx(  # type: ignore
+                        hkey, f'{latest}'
+                ) as subkey:
+                    r_home = winreg.QueryValueEx(  # type: ignore
+                        subkey, "InstallPath"
+                    )[0]
 
                 # check for an earlier version
                 if not r_home:
-                    r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
+                    r_home = winreg.QueryValueEx(  # type: ignore
+                        hkey, 'InstallPath'
+                    )[0]
         except Exception:  # FileNotFoundError, WindowsError, OSError, etc.
             pass
         else:
@@ -163,13 +179,19 @@ def r_ld_library_path_from_subprocess(r_home: str) -> str:
     return res
 
 
+def get_rlib_rpath(r_home: str) -> str:
+    """Get the path for the R shared library/libraries."""
+    lib_path = os.path.join(r_home, get_r_libnn(r_home))
+    return lib_path
+
+
 # TODO: Does r_ld_library_path_from_subprocess() supersed this?
 def get_rlib_path(r_home: str, system: str) -> str:
     """Get the path for the R shared library."""
     if system == 'FreeBSD' or system == 'Linux':
-        lib_path = os.path.join(r_home, 'lib', 'libR.so')
+        lib_path = os.path.join(r_home, get_r_libnn(r_home), 'libR.so')
     elif system == 'Darwin':
-        lib_path = os.path.join(r_home, 'lib', 'libR.dylib')
+        lib_path = os.path.join(r_home, get_r_libnn(r_home), 'libR.dylib')
     elif system == 'Windows':
         # i386
         os.environ['PATH'] = os.pathsep.join(
@@ -250,6 +272,11 @@ def _get_r_cmd_config(r_home: str, about: str, allow_empty=False):
     return res
 
 
+def get_r_libnn(r_home: str):
+    return _get_r_cmd_config(r_home, 'LIBnn',
+                             allow_empty=False)[0]
+
+
 _R_LIBS = ('LAPACK_LIBS', 'BLAS_LIBS')
 _R_FLAGS = ('--ldflags', '--cppflags')
 
@@ -275,7 +302,18 @@ def get_r_flags(r_home: str, flags: str):
 
 
 def get_r_libs(r_home: str, libs: str):
-    return _get_r_cmd_config(r_home, libs, allow_empty=True)
+    assert libs in _R_LIBS
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-I', action='append')
+    parser.add_argument('-L', action='append')
+    parser.add_argument('-l', action='append')
+
+    res = shlex.split(
+        ' '.join(
+            _get_r_cmd_config(r_home, libs,
+                              allow_empty=False)))
+    return parser.parse_known_args(res)
 
 
 class CExtensionOptions(object):
@@ -423,6 +461,9 @@ def iter_info():
             yield '  %s' % c_ext.extra_link_args
         except subprocess.CalledProcessError:
             yield ('    Warning: Unable to get R compilation flags.')
+
+    yield 'Directory for the R shared library:'
+    yield get_r_libnn(r_home)
 
 
 def set_default_logging():
