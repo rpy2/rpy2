@@ -1,6 +1,14 @@
 Release 3.5.7
 =============
 
+New features
+------------
+
+- :class:`rpy2.robjects.conversion.Converter` objects are now also context
+  managers. This makes the use of :func:`rpy2.robjects.conversion.localconverter`
+  unnecessary as a converter can now be used directly with a Python `with`
+  statement. The documentation was updated accordingly.
+
 Bugs fixed
 ----------
 
