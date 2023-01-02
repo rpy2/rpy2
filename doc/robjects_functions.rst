@@ -233,3 +233,24 @@ on the behavior of function can be found in Section :ref:`rinterface-functions`.
 .. autoclass:: rpy2.robjects.functions.SignatureTranslatedFunction(*args, **kwargs)
    :show-inheritance:
    :members:
+
+
+Automagic Python functions
+--------------------------
+
+Genuine Python functions can also be dynamically created from R functions, complete
+with matching signatures.
+
+.. code-block:: python
+
+   r_func_code = """
+   function(x, y=FALSE, z="abc") {
+     TRUE
+   }
+   """
+   r_func = robjects.r(r_func_code)
+
+   py_func = robjects.functions.wrap_r_function(r_func, 'py_func')
+
+The resulting object :func:`py_func` is a Python function of signature
+`(x, y=False, z='abc')`.

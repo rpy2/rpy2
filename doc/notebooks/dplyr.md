@@ -24,16 +24,19 @@ rpy2.ipython.html.init_printing()
 
 ```python
 from rpy2.robjects.lib.dplyr import DataFrame
+from rpy2.robjects import rl
 ```
 
 With this we have the choice of chaining (D3-style)
 
 ```python
-dataf = (DataFrame(mtcars).
-         filter('gear>3').
-         mutate(powertoweight='hp*36/wt').
-         group_by('gear').
-         summarize(mean_ptw='mean(powertoweight)'))
+dataf = (
+    DataFrame(mtcars)
+    .filter(rl('gear>3'))
+    .mutate(powertoweight=rl('hp*36/wt'))
+    .group_by(rl('gear'))
+    .summarize(mean_ptw=rl('mean(powertoweight)'))
+)
 
 dataf
 ```
@@ -50,16 +53,17 @@ from rpy2.robjects.lib.dplyr import (filter,
 
 if False:
     dataf = (DataFrame(mtcars) >>
-             filter('gear>3') >>
-             mutate(powertoweight='hp*36/wt') >>
-             group_by('gear') >>
-             summarize(mean_ptw='mean(powertoweight)'))
+             filter(rl('gear>3')) >>
+             mutate(powertoweight=rl('hp*36/wt')) >>
+             group_by(rl('gear')) >>
+             summarize(mean_ptw=rl('mean(powertoweight)')))
 
     dataf
 ```
 
-The strings passed to the dplyr function are evaluated as expression,
-just like this is happening when using dplyr in R. This means that
+The function `rl` creates unevaluated R language objects, which
+are then consummed by the `dplyr` function, just like it would be
+happening when using `dplyr` in R itself. This means that
 when writing `mean(powertoweight)` the R function `mean()` is used.
 
 Using a Python function is not too difficult though. We can just
@@ -70,7 +74,7 @@ use the decorator `rternalize`.
 # Define a python function, and make
 # it a function R can use through `rternalize`
 from rpy2.rinterface import rternalize
-@rternalize
+@rternalize(signature=False)
 def mean_np(x):
     import statistics
     return statistics.mean(x)
@@ -82,36 +86,52 @@ globalenv['mean_np'] = mean_np
 
 # Write a dplyr chain of operations,
 # using our Python function `mean_np`
-dataf = (DataFrame(mtcars).
-         filter('gear>3').
-         mutate(powertoweight='hp*36/wt').
-         group_by('gear').
-         summarize(mean_ptw='mean(powertoweight)',
-                   mean_np_ptw='mean_np(powertoweight)'))
+dataf = (
+    DataFrame(mtcars)
+    .filter(rl('gear>3'))
+    .mutate(powertoweight=rl('hp*36/wt'))
+    .group_by(rl('gear'))
+    .summarize(mean_ptw=rl('mean(powertoweight)'),
+               mean_np_ptw=rl('mean_np(powertoweight)'))
+)
 
 dataf
 ```
 
 It is also possible to carry this out without having to
-place the custom function in R's global environment.
+place the custom function in R's global environment, although
+this is not straightforward.
 
 ```python
+# First we delete our Python callback in globalenv to
+# ensure that we are picking up our callback in our
+# specific environment rather than this one.
 del(globalenv['mean_np'])
-```
 
-```python
-from rpy2.robjects.lib.dplyr import StringInEnv
 from rpy2.robjects import Environment
 my_env = Environment()
 my_env['mean_np'] = mean_np
 
-dataf = (DataFrame(mtcars).
-         filter('gear>3').
-         mutate(powertoweight='hp*36/wt').
-         group_by('gear').
-         summarize(mean_ptw='mean(powertoweight)',
-                   mean_np_ptw=StringInEnv('mean_np(powertoweight)',
-                                           my_env)))
+
+# Create an rlang "quosure" object within
+# a given environment. We use the R package
+# rlang used by dplyr.
+from rpy2.robjects.lib.dplyr import rlang
+
+myquo = rlang.quo.rcall(
+    [(None, rl('mean_np(rlang::enexpr(powertoweight))'))],
+    environment=my_env
+)
+
+dataf = (
+    DataFrame(mtcars)
+    .filter(rl('gear>3'))
+    .mutate(powertoweight=rl('hp*36/wt'))
+    .group_by(rl('gear'))
+    .summarize(
+        mean_ptw=rl('mean(powertoweight)'),
+        mean_np_ptw=myquo)
+)
 
 dataf
 ```
@@ -133,11 +153,11 @@ with tempfile.NamedTemporaryFile() as db_fh:
     db = dplyr.src_sqlite(db_fh.name)
     # copy the table to that database
     dataf_db = DataFrame(mtcars).copy_to(db, name="mtcars")
-    res = (dataf_db.
-           filter('gear>3').
-           mutate(powertoweight='hp*36/wt').
-           group_by('gear').
-           summarize(mean_ptw='mean(powertoweight)'))
+    res = (dataf_db
+           .filter(rl('gear>3'))
+           .mutate(powertoweight=rl('hp*36/wt'))
+           .group_by(rl('gear'))
+           .summarize(mean_ptw=rl('mean(powertoweight)')))
     print(res)
 # 
 ```
@@ -172,11 +192,11 @@ on it.
 
 ```python
 with localconverter(default_converter + pandas2ri.converter) as cv:
-    dataf = (DataFrame(pd_mtcars).
-             filter('gear>=3').
-             mutate(powertoweight='hp*36/wt').
-             group_by('gear').
-             summarize(mean_ptw='mean(powertoweight)'))
+    dataf = (DataFrame(pd_mtcars)
+             .filter(rl('gear>=3'))
+             .mutate(powertoweight=rl('hp*36/wt'))
+             .group_by(rl('gear'))
+             .summarize(mean_ptw=rl('mean(powertoweight)')))
 
 dataf
 ```

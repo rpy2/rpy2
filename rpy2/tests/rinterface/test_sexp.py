@@ -156,8 +156,10 @@ def test_rclass_get():
     assert sexp.rclass[0] == 'character'
 
     sexp = rinterface.baseenv.find('matrix')(0)
-    assert len(sexp.rclass) == 1
-    assert sexp.rclass[0] == 'matrix'
+    if rinterface.evalr('R.version$major')[0] >= '4':
+        assert tuple(sexp.rclass) == ('matrix', 'array')
+    else:
+        assert tuple(sexp.rclass) == ('matrix', )
 
     sexp = rinterface.baseenv.find('array')(0)
     assert len(sexp.rclass) == 1
@@ -166,6 +168,14 @@ def test_rclass_get():
     sexp = rinterface.baseenv.find('new.env')()
     assert len(sexp.rclass) == 1
     assert sexp.rclass[0] == 'environment'
+
+
+def test_rclass_get_sym():
+    # issue #749
+    fit = rinterface.evalr("""
+    stats::lm(y ~ x, data=base::data.frame(y=1:10, x=2:11))
+    """)
+    assert tuple(fit[9].rclass) == ('call', )
 
 
 def test_rclass_set():
@@ -261,3 +271,7 @@ def test_charsxp_nchar():
     assert cs.nchar() == 2
     cs = v.get_charsxp(2)
     assert cs.nchar() == 0
+
+
+def test_missingtype():
+    assert not rinterface.MissingArg

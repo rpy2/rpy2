@@ -85,7 +85,7 @@ def test_RS4Type_accessors():
 
 def test_getclassdef():
     robjects.r('library(stats4)')
-    cr = methods.getclassdef('mle', 'stats4')
+    cr = methods.getclassdef('mle', packagename='stats4')
     assert not cr.virtual
 
 

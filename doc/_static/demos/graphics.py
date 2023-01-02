@@ -1,6 +1,6 @@
 
 #-- setup-begin
-from rpy2 import robjects
+import rpy2.robjects as robjects
 from rpy2.robjects import Formula, Environment
 from rpy2.robjects.vectors import IntVector, FloatVector
 from rpy2.robjects.lib import grid
@@ -15,7 +15,6 @@ grdevices = importr('grDevices')
 base = importr('base')
 datasets = importr('datasets')
 
-grid.activate()
 #-- setup-end
 
 ANTIALIAS="subpixel"
@@ -127,15 +126,16 @@ grdevices.png('../../_static/graphics_ggplot2mtcars.png',
 #-- ggplot2mtcars-begin
 gp = ggplot2.ggplot(mtcars)
 
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg') + \
-     ggplot2.geom_point()
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg') +
+      ggplot2.geom_point())
 
 pp.plot()
 #-- ggplot2mtcars-end
 grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2geombin2d.png',
               width = 1000, height = 350, antialias=ANTIALIAS, type="cairo")
+
 grid.newpage()
 grid.viewport(layout=grid.layout(1, 3)).push()
 
@@ -143,10 +143,10 @@ vp = grid.viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
 #-- ggplot2geombin2d-begin
 gp = ggplot2.ggplot(dataf_rnorm)
 
-pp = gp + \
-     ggplot2.aes_string(x='value', y='other_value') + \
-     ggplot2.geom_bin2d() + \
-     ggplot2.ggtitle('geom_bin2d')
+pp = (gp +
+      ggplot2.aes_string(x='value', y='other_value') +
+      ggplot2.geom_bin2d() +
+      ggplot2.ggtitle('geom_bin2d'))
 pp.plot(vp = vp)
 #-- ggplot2geombin2d-end
 
@@ -154,10 +154,10 @@ vp = grid.viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
 #-- ggplot2geomdensity2d-begin
 gp = ggplot2.ggplot(dataf_rnorm)
 
-pp = gp + \
-     ggplot2.aes_string(x='value', y='other_value') + \
-     ggplot2.geom_density2d() + \
-     ggplot2.ggtitle('geom_density2d')
+pp = (gp +
+      ggplot2.aes_string(x='value', y='other_value') +
+      ggplot2.geom_density2d() +
+      ggplot2.ggtitle('geom_density2d'))
 pp.plot(vp = vp)
 #-- ggplot2geomdensity2d-end
 
@@ -165,10 +165,10 @@ vp = grid.viewport(**{'layout.pos.col':3, 'layout.pos.row': 1})
 #-- ggplot2geomhexbin-begin
 gp = ggplot2.ggplot(dataf_rnorm)
 
-pp = gp + \
-     ggplot2.aes_string(x='value', y='other_value') + \
-     ggplot2.geom_hex() + \
-     ggplot2.ggtitle('geom_hex')
+pp = (gp +
+      ggplot2.aes_string(x='value', y='other_value') +
+      ggplot2.geom_hex() +
+      ggplot2.ggtitle('geom_hex'))
 pp.plot(vp = vp)
 #-- ggplot2geomhexbin-end
 
@@ -182,9 +182,9 @@ grdevices.png('../../_static/graphics_ggplot2geomboxplot.png',
 #-- ggplot2geomboxplot-begin
 gp = ggplot2.ggplot(mtcars)
 
-pp = gp + \
-     ggplot2.aes_string(x='factor(cyl)', y='mpg') + \
-     ggplot2.geom_boxplot()
+pp = (gp +
+      ggplot2.aes_string(x='factor(cyl)', y='mpg') +
+      ggplot2.geom_boxplot())
 
 pp.plot()
 #-- ggplot2geomboxplot-end
@@ -194,9 +194,9 @@ grdevices.dev_off()
 #-- ggplot2geomhistogram-begin
 gp = ggplot2.ggplot(mtcars)
 
-pp = gp + \
-     ggplot2.aes_string(x='wt') + \
-     ggplot2.geom_histogram(bins = 30)
+pp = (gp +
+      ggplot2.aes_string(x='wt') +
+      ggplot2.geom_histogram(bins = 30))
 
 #pp.plot()
 #-- ggplot2geomhistogram-end
@@ -213,11 +213,11 @@ params = (('black', 'black'),
 for col_i in range(3):
    vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 1})
    outline_color, fill_color= params[col_i]
-   pp = gp + \
-        ggplot2.aes_string(x='wt') + \
-        ggplot2.geom_histogram(col=outline_color, fill=fill_color,
-                               bins=30) + \
-        ggplot2.ggtitle('col=%s - fill=%s' %params[col_i])
+   pp = (gp +
+         ggplot2.aes_string(x='wt') +
+         ggplot2.geom_histogram(col=outline_color, fill=fill_color,
+                                bins=30) +
+         ggplot2.ggtitle('col=%s - fill=%s' %params[col_i]))
    pp.plot(vp = vp)
 grdevices.dev_off()
 
@@ -227,9 +227,9 @@ grdevices.png('../../_static/graphics_ggplot2geomhistogramfillcyl.png',
 #-- ggplot2geomhistogramfillcyl-begin
 gp = ggplot2.ggplot(mtcars)
 
-pp = gp + \
-     ggplot2.aes_string(x='wt', fill='factor(cyl)') + \
-     ggplot2.geom_histogram(bins=30)
+pp = (gp +
+      ggplot2.aes_string(x='wt', fill='factor(cyl)') +
+      ggplot2.geom_histogram(bins=30))
 
 pp.plot()
 #-- ggplot2geomhistogramfillcyl-end
@@ -241,11 +241,11 @@ grdevices.png('../../_static/graphics_ggplot2geompointdensity2d.png',
 #-- ggplot2geompointdensity2d-begin
 gp = ggplot2.ggplot(dataf_rnorm)
 
-pp = gp + \
-     ggplot2.aes_string(x='value', y='other_value') + \
-     ggplot2.geom_point(alpha = 0.3) + \
-     ggplot2.geom_density2d(ggplot2.aes_string(col = '..level..')) + \
-     ggplot2.ggtitle('point + density')
+pp = (gp +
+      ggplot2.aes_string(x='value', y='other_value') +
+      ggplot2.geom_point(alpha = 0.3) +
+      ggplot2.geom_density2d(ggplot2.aes_string(col = '..level..')) +
+      ggplot2.ggtitle('point + density'))
 pp.plot()
 #-- ggplot2geompointdensity2d-end
 grdevices.dev_off()
@@ -259,16 +259,16 @@ grid.viewport(layout=grid.layout(1, 2)).push()
 gp = ggplot2.ggplot(dataf_rnorm)
 
 vp = grid.viewport(**{'layout.pos.col':1, 'layout.pos.row': 1})
-pp = gp + \
-     ggplot2.aes_string(x='value', col='factor(mean)') + \
-     ggplot2.geom_freqpoly()
+pp = (gp +
+      ggplot2.aes_string(x='value', col='factor(mean)') +
+      ggplot2.geom_freqpoly())
 pp.plot(vp = vp)
 
 vp = grid.viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
 #-- ggplot2geomfreqpolyfillcyl-begin
-pp = gp + \
-     ggplot2.aes_string(x='value', fill='factor(mean)') + \
-     ggplot2.geom_density(alpha = 0.5)
+pp = (gp +
+      ggplot2.aes_string(x='value', fill='factor(mean)') +
+      ggplot2.geom_density(alpha = 0.5))
 #-- ggplot2geomfreqpolyfillcyl-end
 pp.plot(vp = vp)
 
@@ -281,10 +281,10 @@ grdevices.png('../../_static/graphics_ggplot2geompointandrug.png',
 #-- ggplot2geompointandrug-begin
 gp = ggplot2.ggplot(mtcars)
 
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg') + \
-     ggplot2.geom_point() + \
-     ggplot2.geom_rug()
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg') +
+      ggplot2.geom_point() +
+      ggplot2.geom_rug())
 
 pp.plot()
 #-- ggplot2geompointandrug-end
@@ -297,9 +297,9 @@ grdevices.png('../../_static/graphics_ggplot2mtcarscolcyl.png',
 #-- ggplot2mtcarscolcyl-begin
 gp = ggplot2.ggplot(mtcars)
 
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg', col='factor(cyl)') + \
-     ggplot2.geom_point()
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg', col='factor(cyl)') +
+      ggplot2.geom_point())
 
 pp.plot()
 #-- ggplot2mtcarscolcyl-end
@@ -309,10 +309,10 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2_ggplot_1.png',
               width = 936, height = 312, antialias=ANTIALIAS, type="cairo")
 #-- ggplot1-begin
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg') + \
-     ggplot2.geom_point() + \
-     ggplot2.facet_grid(ro.Formula('. ~ cyl'))
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg') +
+      ggplot2.geom_point() +
+      ggplot2.facet_grid(ro.Formula('. ~ cyl')))
 
 
 pp.plot()
@@ -324,10 +324,10 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2aescolsize.png',
               width = 612, height = 612, antialias=ANTIALIAS, type="cairo")
 #-- ggplot2aescolsize-begin
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg', size='factor(carb)',
-                 col='factor(cyl)', shape='factor(gear)') + \
-     ggplot2.geom_point()
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg', size='factor(carb)',
+                         col='factor(cyl)', shape='factor(gear)') +
+      ggplot2.geom_point())
 
 pp.plot()
 #-- ggplot2aescolsize-end
@@ -338,9 +338,9 @@ grdevices.png('../../_static/graphics_ggplot2aescolboxplot.png',
 #-- ggplot2aescolboxplot-begin
 gp = ggplot2.ggplot(mtcars)
 
-pp = gp + \
-     ggplot2.aes_string(x='factor(cyl)', y='mpg', fill='factor(cyl)') + \
-     ggplot2.geom_boxplot()
+pp = (gp +
+      ggplot2.aes_string(x='factor(cyl)', y='mpg', fill='factor(cyl)') +
+      ggplot2.geom_boxplot())
 
 pp.plot()
 #-- ggplot2aescolboxplot-end
@@ -352,10 +352,10 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2_qplot_4.png',
               width = 612, height = 612, antialias=ANTIALIAS, type="cairo")
 #-- qplot4-begin
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg') + \
-     ggplot2.geom_point() + \
-     ggplot2.geom_abline(intercept = 30)
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg') +
+      ggplot2.geom_point() +
+      ggplot2.geom_abline(intercept = 30))
 pp.plot()
 #-- qplot4-end
 grdevices.dev_off()
@@ -363,11 +363,11 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2_qplot_5.png',
               width = 612, height = 612, antialias=ANTIALIAS, type="cairo")
 #-- qplot3addline-begin
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg') + \
-     ggplot2.geom_point() + \
-     ggplot2.geom_abline(intercept = 30) + \
-     ggplot2.geom_abline(intercept = 15)
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg') +
+      ggplot2.geom_point() +
+      ggplot2.geom_abline(intercept = 30) +
+      ggplot2.geom_abline(intercept = 15))
 pp.plot()
 #-- qplot3addline-end
 grdevices.dev_off()
@@ -376,10 +376,10 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2addsmooth.png',
               width = 612, height = 612, antialias=ANTIALIAS, type="cairo")
 #-- ggplot2addsmooth-begin
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg') + \
-     ggplot2.geom_point() + \
-     ggplot2.stat_smooth(method = 'lm')
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg') +
+      ggplot2.geom_point() +
+      ggplot2.stat_smooth(method = 'lm'))
 pp.plot()
 
 #-- ggplot2addsmooth-end
@@ -398,14 +398,14 @@ params = (('lm', 'y ~ x'),
           ('loess', 'y ~ x'))
           
 for col_i in (1,2,3):
-   vp = grid.viewport(**{'layout.pos.col':col_i, 'layout.pos.row': 1})
+   vp = grid.viewport(**{'layout.pos.col': col_i, 'layout.pos.row': 1})
    method, formula = params[col_i-1]
    gp = ggplot2.ggplot(mtcars)
-   pp = gp + \
-        ggplot2.aes_string(x='wt', y='mpg') + \
-        ggplot2.geom_point() + \
-        ggplot2.stat_smooth(method = method, formula=formula) + \
-        ggplot2.ggtitle(method + ' - ' + formula)
+   pp = (gp +
+         ggplot2.aes_string(x='wt', y='mpg') +
+         ggplot2.geom_point() +
+         ggplot2.stat_smooth(method = method, formula=formula) +
+         ggplot2.ggtitle(method + ' - ' + formula))
    pp.plot(vp = vp)
 
 #-- ggplot2addsmoothmethods-end
@@ -416,11 +416,11 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2smoothblue.png',
               width = 612, height = 612, antialias=ANTIALIAS, type="cairo")
 #-- ggplot2smoothblue-begin
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg') + \
-     ggplot2.geom_point() + \
-     ggplot2.stat_smooth(method = 'lm', fill = 'blue',
-                         color = 'red', size = 3)
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg') +
+      ggplot2.geom_point() +
+      ggplot2.stat_smooth(method = 'lm', fill = 'blue',
+                          color = 'red', size = 3))
 pp.plot()
 #-- ggplot2smoothblue-end
 grdevices.dev_off()
@@ -428,11 +428,11 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2smoothbycyl.png',
               width = 612, height = 612, antialias=ANTIALIAS, type="cairo")
 #-- ggplot2smoothbycyl-begin
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg') + \
-     ggplot2.geom_point() + \
-     ggplot2.geom_smooth(ggplot2.aes_string(group = 'cyl'),
-                         method = 'lm')
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg') +
+      ggplot2.geom_point() +
+      ggplot2.geom_smooth(ggplot2.aes_string(group = 'cyl'),
+                          method = 'lm'))
 pp.plot()
 #-- ggplot2smoothbycyl-end
 grdevices.dev_off()
@@ -440,11 +440,11 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2_smoothbycylwithcolours.png',
               width = 612, height = 612, antialias=ANTIALIAS, type="cairo")
 #-- ggplot2smoothbycylwithcolours-begin
-pp = ggplot2.ggplot(mtcars) + \
-     ggplot2.aes_string(x='wt', y='mpg', col='factor(cyl)') + \
-     ggplot2.geom_point() + \
-     ggplot2.geom_smooth(ggplot2.aes_string(group = 'cyl'),
-                         method = 'lm')
+pp = (ggplot2.ggplot(mtcars) +
+      ggplot2.aes_string(x='wt', y='mpg', col='factor(cyl)') +
+      ggplot2.geom_point() +
+      ggplot2.geom_smooth(ggplot2.aes_string(group = 'cyl'),
+                          method = 'lm'))
 pp.plot()
 #-- ggplot2smoothbycylwithcolours-end
 grdevices.dev_off()
@@ -453,13 +453,13 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2smoothbycylfacetcyl.png',
               width = 612, height = 612, antialias=ANTIALIAS, type="cairo")
 #-- ggplot2smoothbycylfacetcyl-begin
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg') + \
-     ggplot2.geom_point() + \
-     ggplot2.facet_grid(ro.Formula('. ~ cyl')) + \
-     ggplot2.geom_smooth(ggplot2.aes_string(group="cyl"),
-                         method = "lm",
-                            data = mtcars)
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg') +
+      ggplot2.geom_point() +
+      ggplot2.facet_grid(ro.Formula('. ~ cyl')) +
+      ggplot2.geom_smooth(ggplot2.aes_string(group="cyl"),
+                          method = "lm",
+                          data = mtcars))
 
 pp.plot()
 #-- ggplot2smoothbycylfacetcyl-end
@@ -469,17 +469,17 @@ grdevices.dev_off()
 grdevices.png('../../_static/graphics_ggplot2histogramfacetcyl.png',
               width = 612, height = 612, antialias=ANTIALIAS, type="cairo")
 #-- ggplot2histogramfacetcyl-begin
-pp = gp + \
-     ggplot2.aes_string(x='wt') + \
-     ggplot2.geom_histogram(binwidth=2) + \
-     ggplot2.facet_grid(ro.Formula('. ~ cyl'))
+pp = (gp +
+      ggplot2.aes_string(x='wt') +
+      ggplot2.geom_histogram(binwidth=2) +
+      ggplot2.facet_grid(ro.Formula('. ~ cyl')))
 
 pp.plot()
 #-- ggplot2histogramfacetcyl-end
 grdevices.dev_off()
 
 grdevices.png('../../_static/graphics_ggplot2perfcolor_both.png',
-              width = 900, height = 412, antialias=ANTIALIAS, type="cairo")
+              width=900, height=412, antialias=ANTIALIAS, type="cairo")
 grid.newpage()
 grid.viewport(layout=grid.layout(1, 2)).push()
 #-- ggplot2perfcolor-begin
@@ -533,8 +533,8 @@ for color in ['green', 'red']:
 #    base.as_Date(df.rx2('Date'))
 
 # what is the range of Perf1 and Perf2? we use this for custom log plot lines
-perfs = df[tuple(df.colnames).index('Perf1')] + \
-        df[tuple(df.colnames).index('Perf2')]
+perfs = (df[tuple(df.colnames).index('Perf1')] +
+         df[tuple(df.colnames).index('Perf2')])
 gflops_range = [ round(math.log10(min(perfs))), 
                  round(math.log10(max(perfs))) ]
 
@@ -565,32 +565,34 @@ df.names[tuple(df.colnames).index('value')] = 'Performance'
 # scale_colour_manual: associate color datasets with actual colors and names
 # geom_point and geom_line: thicker points and lines
 # scale_linetype_manual: associate perf types with linetypes
-for col_i, yscale in enumerate(['log', 'linear']): 
-  vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 1})
-  pp = ggplot2.ggplot(df) + \
-      ggplot2.aes_string(x='variable', y='Performance', color='color', 
-                         shape='PerfType', linetype='PerfType') + \
-      ggplot2.ggtitle('Performance vs. Color') + \
-      ggplot2.theme(**{'legend.key.size' : ro.r.unit(1.4, "lines") } ) + \
-      ggplot2.scale_colour_manual("Color", 
-                                  values=colormap,
-                                  breaks=colormap.names,
-                                  labels=[elt[1] for elt in 
-                                          colormap_labels]) + \
-      ggplot2.geom_point(size=3) + \
-      ggplot2.scale_linetype_manual(values=linemap) + \
-      ggplot2.geom_line(size=1.5)
-
-  # custom y-axis lines: major lines ("breaks") are every 10^n; 9
-  #   minor lines ("minor_breaks") between major lines
-  if (yscale == 'log'):
-    pp = pp + \
-        ggplot2.scale_y_log10(breaks = ro.r("10^(%d:%d)" % (gflops_range[0], 
-                                                            gflops_range[1])),
-                              minor_breaks = 
-                              ro.r("rep(10^(%d:%d), each=9) * rep(1:9, %d)" %
-                                   (gflops_range[0] - 1, gflops_range[1], 
-                                    gflops_range[1] - gflops_range[0])))
+for col_i, yscale in enumerate(['log', 'linear']):
+   vp = grid.viewport(**{'layout.pos.col': col_i+1, 'layout.pos.row': 1})
+   pp = (ggplot2.ggplot(df) +
+         ggplot2.aes_string(x='variable', y='Performance', color='color', 
+                            shape='PerfType', linetype='PerfType') +
+         ggplot2.ggtitle('Performance vs. Color') +
+         ggplot2.theme(**{'legend.key.size' : ro.r.unit(1.4, "lines") } ) +
+         ggplot2.scale_colour_manual("Color", 
+                                     values=colormap,
+                                     breaks=colormap.names,
+                                     labels=[elt[1] for elt in 
+                                             colormap_labels]) +
+         ggplot2.geom_point(size=3) +
+         ggplot2.scale_linetype_manual(values=linemap) +
+         ggplot2.geom_line(size=1.5))
+   
+   # custom y-axis lines: major lines ("breaks") are every 10^n; 9
+   #   minor lines ("minor_breaks") between major lines
+   if (yscale == 'log'):
+      pp = (pp +
+            ggplot2.scale_y_log10(
+               breaks = ro.r("10^(%d:%d)" % (gflops_range[0], 
+                                             gflops_range[1])),
+               minor_breaks = 
+               ro.r("rep(10^(%d:%d), each=9) * rep(1:9, %d)" %
+                    (gflops_range[0] - 1, gflops_range[1], 
+                     gflops_range[1] - gflops_range[0])))
+      )
 
   #pp.plot(vp = vp)
 #-- ggplot2perfcolor-end
@@ -632,11 +634,11 @@ fr = ggplot2.map_data('france')
 # add a column indicating which region names have an "o".
 fr = fr.cbind(has_o = base.grepl('o', fr.rx2("region"),
                                  ignore_case = True))
-p = ggplot2.ggplot(fr) + \
-    ggplot2.geom_polygon(
-       ggplot2.aes_string(x = 'long', y = 'lat',
-                          group = 'group', fill = 'has_o'),
-       col="black")
+p = (ggplot2.ggplot(fr) +
+     ggplot2.geom_polygon(
+        ggplot2.aes_string(x = 'long', y = 'lat',
+                           group = 'group', fill = 'has_o'),
+        col="black"))
 p.plot()
 #-- ggplot2mappolygon-end
 grdevices.dev_off()
@@ -657,32 +659,32 @@ gp = ggplot2.ggplot(diamonds)
 for col_i, trans in enumerate(("identity", "log2", "sqrt")):
    # fetch viewport at position col_i+1 on the first row
    vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 1})
-   pp = gp + \
-       ggplot2.aes_string(x='carat', y='price') + \
-       ggplot2.geom_point(alpha = 0.1, size = 1) + \
-       ggplot2.coord_trans(x = trans, y = trans) + \
-       ggplot2.ggtitle("%s on axis" % trans)   
+   pp = (gp +
+         ggplot2.aes_string(x='carat', y='price') +
+         ggplot2.geom_point(alpha=0.1, size=1) +
+         ggplot2.coord_trans(x=trans, y=trans) +
+         ggplot2.ggtitle("%s on axis" % trans))
    # plot into the viewport
    pp.plot(vp = vp)
 
    # fetch viewport at position col_i+1 on the second row
    vp = grid.viewport(**{'layout.pos.col':col_i+1, 'layout.pos.row': 2})
-   pp = gp + \
-       ggplot2.aes_string(x='%s(carat)' % trans, y='%s(price)' % trans) + \
-       ggplot2.geom_point(alpha = 0.1, size = 1) + \
-       ggplot2.ggtitle("%s(<variable>)" % trans)   
+   pp = (gp +
+         ggplot2.aes_string(x='%s(carat)' % trans, y='%s(price)' % trans) +
+         ggplot2.geom_point(alpha=0.1, size=1) +
+         ggplot2.ggtitle("%s(<variable>)" % trans))
    pp.plot(vp = vp)
 
 #-- ggplot2mtcarscoordtrans-end
 
 #-- ggplot2mtcarscoordtransannot-begin
 vp = grid.viewport(**{'layout.pos.col':2, 'layout.pos.row': 1})
-g = grid.rect(x = grid.unit(0.7, "npc"),
-              y = grid.unit(0.2, "npc"),
-              width = grid.unit(0.1, "npc"),
-              height = grid.unit(0.1, "npc"),
-              gp = grid.gpar(fill = "red"),
-              vp = vp)
+g = grid.rect(x=grid.unit(0.7, "npc"),
+              y=grid.unit(0.2, "npc"),
+              width=grid.unit(0.1, "npc"),
+              height=grid.unit(0.1, "npc"),
+              gp=grid.gpar(fill = "red"),
+              vp=vp)
 g.draw()
 #-- ggplot2mtcarscoordtransannot-end
 
@@ -730,16 +732,16 @@ vp.push()
 tmpenv = data(datasets).fetch("rock")
 rock = tmpenv["rock"]
 
-p = ggplot2.ggplot(rock) + \
-    ggplot2.geom_point(ggplot2.aes_string(x = 'area', y = 'peri'))
+p = (ggplot2.ggplot(rock) +
+     ggplot2.geom_point(ggplot2.aes_string(x = 'area', y = 'peri')))
 p += ggplot2.theme_bw()
 p.plot(vp = vp)
 
 vp = grid.viewport(width = 0.6, height = 0.6, x = 0.37, y=0.69)
 vp.push()
-p = ggplot2.ggplot(rock) + \
-    ggplot2.geom_point(ggplot2.aes_string(x = 'area', y = 'shape')) + \
-    ggplot2.theme(**{'axis.text.x': ggplot2.element_text(angle = 45)})
+p = (ggplot2.ggplot(rock) +
+     ggplot2.geom_point(ggplot2.aes_string(x = 'area', y = 'shape')) +
+     ggplot2.theme(**{'axis.text.x': ggplot2.element_text(angle = 45)}))
 
 p.plot(vp = vp)
 
@@ -751,21 +753,21 @@ grdevices.dev_off()
 
 #---
 
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg') + \
-     ggplot2.geom_density(ggplot2.aes_string(group = 'cyl')) + \
-     ggplot2.geom_point() + \
-     ggplot2.facet_grid(ro.Formula('. ~ cyl'))
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg') +
+      ggplot2.geom_density(ggplot2.aes_string(group = 'cyl')) +
+      ggplot2.geom_point() +
+      ggplot2.facet_grid(ro.Formula('. ~ cyl')))
 
-pp = gp + \
-     ggplot2.aes_string(x='wt', y='mpg') + \
-     ggplot2.facet_grid(ro.Formula('gear ~ cyl')) + \
-     ggplot2.geom_point()
-
-
+pp = (gp +
+      ggplot2.aes_string(x='wt', y='mpg') +
+      ggplot2.facet_grid(ro.Formula('gear ~ cyl')) +
+      ggplot2.geom_point())
 
 
-pp = gp + \
-     ggplot2.aes_string(x='mpg') + \
-     ggplot2.FacetGrid.new(ro.Formula('. ~ cyl')) + \
-     ggplot2.GeomHistogram.new(binwidth = 5)
+
+
+pp = (gp +
+      ggplot2.aes_string(x='mpg') +
+      ggplot2.FacetGrid.new(ro.Formula('. ~ cyl')) +
+      ggplot2.GeomHistogram.new(binwidth = 5))

@@ -7,17 +7,19 @@ that makes it possible."""
 from contextlib import contextmanager
 import logging
 import typing
-from . import openrlib
-from . import ffi_proxy
-from . import conversion
+import os
+from rpy2.rinterface_lib import openrlib
+from rpy2.rinterface_lib import ffi_proxy
+from rpy2.rinterface_lib import conversion
 
 logger = logging.getLogger(__name__)
 
-ffi = openrlib.ffi
+_CCHAR_ENCODING = 'utf-8'
+
 
 # TODO: rename to "replace_in_module"
 @contextmanager
-def obj_in_module(module, name: str, obj):
+def obj_in_module(module, name: str, obj: typing.Any):
     obj_orig = getattr(module, name)
     setattr(module, name, obj)
     try:
@@ -34,8 +36,8 @@ _FLUSHCONSOLE_EXCEPTION_LOG = 'R[flush console]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._consoleflush_def,
-                    ffi)
-def _consoleflush():
+                    openrlib._rinterface_cffi)
+def _consoleflush() -> None:
     try:
         consoleflush()
     except Exception as e:
@@ -52,15 +54,16 @@ def consoleread(prompt: str) -> str:
 
 
 _READCONSOLE_EXCEPTION_LOG = 'R[read into console]: %s'
-_READCONSOLE_INTERNAL_EXCEPTION_LOG = 'Internal rpy2 error with callback: %s'
+_READCONSOLE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error with '
+                                       '_consoleread callback: %s')
 
 
 @ffi_proxy.callback(ffi_proxy._consoleread_def,
-                    ffi)
+                    openrlib._rinterface_cffi)
 def _consoleread(prompt, buf, n: int, addtohistory) -> int:
     success = None
     try:
-        s = conversion._cchar_to_str(prompt)
+        s = conversion._cchar_to_str(prompt, _CCHAR_ENCODING)
         reply = consoleread(s)
     except Exception as e:
         success = 0
@@ -69,16 +72,17 @@ def _consoleread(prompt, buf, n: int, addtohistory) -> int:
         return success
 
     try:
-        # TODO: handle non-ASCII encodings
-        reply_b = reply.encode('ASCII')
+        # TODO: Should the coding be dynamically extracted from
+        # elsewhere ?
+        reply_b = reply.encode('utf-8')
         reply_n = min(n, len(reply_b))
-        ffi.memmove(buf,
-                    reply_b,
-                    reply_n)
-        if reply_n < n:
-            buf[reply_n] = ord(b'\n')
-        for i in range(reply_n+1, n):
-            buf[i] = 0
+        pybuf = bytearray(n)
+        pybuf[:reply_n] = reply_b[:reply_n]
+        pybuf[reply_n] = ord('\n')
+        pybuf[reply_n+1] = 0
+        openrlib.ffi.memmove(buf,
+                             pybuf,
+                             n)
         if reply_n == 0:
             success = 0
         else:
@@ -98,7 +102,7 @@ _RESETCONSOLE_EXCEPTION_LOG = 'R[reset console]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._consolereset_def,
-                    ffi)
+                    openrlib._rinterface_cffi)
 def _consolereset() -> None:
     try:
         consolereset()
@@ -124,9 +128,9 @@ _WRITECONSOLE_EXCEPTION_LOG = 'R[write to console]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._consolewrite_ex_def,
-                    ffi)
-def _consolewrite_ex(buf, n: int, otype) -> None:
-    s = conversion._cchar_to_str_with_maxlen(buf, maxlen=n)
+                    openrlib._rinterface_cffi)
+def _consolewrite_ex(buf, n: int, otype: int) -> None:
+    s = conversion._cchar_to_str_with_maxlen(buf, n, _CCHAR_ENCODING)
     try:
         if otype == 0:
             consolewrite_print(s)
@@ -145,9 +149,9 @@ _SHOWMESSAGE_EXCEPTION_LOG = 'R[show message]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._showmessage_def,
-                    ffi)
+                    openrlib._rinterface_cffi)
 def _showmessage(buf):
-    s = conversion._cchar_to_str(buf)
+    s = conversion._cchar_to_str(buf, _CCHAR_ENCODING)
     try:
         showmessage(s)
     except Exception as e:
@@ -162,7 +166,7 @@ _CHOOSEFILE_EXCEPTION_LOG = 'R[choose file]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._choosefile_def,
-                    ffi)
+                    openrlib._rinterface_cffi)
 def _choosefile(new, buf, n: int) -> int:
     try:
         res = choosefile(new)
@@ -174,18 +178,20 @@ def _choosefile(new, buf, n: int) -> int:
         return 0
 
     res_cdata = conversion._str_to_cchar(res)
-    ffi.memmove(buf, res_cdata, len(res_cdata))
+    openrlib.ffi.memmove(buf, res_cdata, len(res_cdata))
     return len(res_cdata)
 
 
-def showfiles(filenames: typing.Tuple[str],
-              headers: typing.Tuple[str],
-              wtitle: str, pager: str) -> None:
+def showfiles(filenames: typing.Tuple[str, ...],
+              headers: typing.Tuple[str, ...],
+              wtitle: typing.Optional[str],
+              pager: typing.Optional[str]) -> None:
     """R showing files.
 
     :param filenames: A tuple of file names.
     :param headers: A tuple of strings (TODO: check what it is)
     :wtitle: Title of the "window" showing the files.
+    :pager: Pager to use to show the list of files.
     """
     for fn in filenames:
         print('File: %s' % fn)
@@ -201,18 +207,24 @@ _SHOWFILE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error while '
 
 
 @ffi_proxy.callback(ffi_proxy._showfiles_def,
-                    ffi)
+                    openrlib._rinterface_cffi)
 def _showfiles(nfiles: int, files, headers, wtitle, delete, pager) -> int:
     filenames = []
     headers_str = []
     wtitle_str = None
     pager_str = None
     try:
-        wtitle_str = conversion._cchar_to_str(wtitle)
-        pager_str = conversion._cchar_to_str(pager)
+        wtitle_str = conversion._cchar_to_str(wtitle, _CCHAR_ENCODING)
+        pager_str = conversion._cchar_to_str(pager, _CCHAR_ENCODING)
         for i in range(nfiles):
-            filenames.append(conversion._cchar_to_str(files[i]))
-            headers_str.append(conversion._cchar_to_str(headers[i]))
+            filenames.append(
+                conversion._cchar_to_str(files[i],
+                                         _CCHAR_ENCODING)
+            )
+            headers_str.append(
+                conversion._cchar_to_str(headers[i],
+                                         _CCHAR_ENCODING)
+            )
     except Exception as e:
         logger.error(_SHOWFILE_INTERNAL_EXCEPTION_LOG, str(e))
 
@@ -240,7 +252,7 @@ _CLEANUP_EXCEPTION_LOG = 'R[cleanup]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._cleanup_def,
-                    ffi)
+                    openrlib._rinterface_cffi)
 def _cleanup(saveact, status, runlast):
     try:
         cleanup(saveact, status, runlast)
@@ -261,10 +273,25 @@ _PROCESSEVENTS_EXCEPTION_LOG = 'R[processevents]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._processevents_def,
-                    ffi)
+                    openrlib._rinterface_cffi)
 def _processevents() -> None:
     try:
         processevents()
+    except KeyboardInterrupt:
+        # This function is a Python callback. A keyboard interruption is
+        # captured in Python, but R must be notified that an interruption
+        # occured so it can handle it.
+        rlib = openrlib.rlib
+        if os.name == 'nt':
+            # On Windows, the global C-level R variable `UserBreak` is set
+            # to one to notifying R that a `SIGBREAK` has been sent
+            # (see the R source - `src/gnuwin32/embeddedR.c:my_onintr()`).
+            rlib.UserBreak = 1
+        else:
+            # On UNIX-like, R can be notified that a SIGINT has been sent
+            # through the C-level R variable `R_interrupts_pending`
+            # (see the R source - `src/main/main.c:handleInterrupt()`)
+            rlib.R_interrupts_pending = 1
     except Exception as e:
         logger.error(_PROCESSEVENTS_EXCEPTION_LOG, str(e))
 
@@ -272,7 +299,7 @@ def _processevents() -> None:
 def busy(x: int) -> None:
     """R is busy.
 
-    :param x: TODO this is an integer but do not know what it does.
+    :param x: TODO this is an integer but I do not know what it does.
     """
     pass
 
@@ -281,8 +308,8 @@ _BUSY_EXCEPTION_LOG = 'R[busy]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._busy_def,
-                    ffi)
-def _busy(which) -> None:
+                    openrlib._rinterface_cffi)
+def _busy(which: int) -> None:
     try:
         busy(which)
     except Exception as e:
@@ -297,7 +324,7 @@ _CALLBACK_EXCEPTION_LOG = 'R[callback]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._callback_def,
-                    ffi)
+                    openrlib._rinterface_cffi)
 def _callback() -> None:
     try:
         callback()
@@ -318,10 +345,10 @@ _YESNOCANCEL_EXCEPTION_LOG = 'R[yesnocancel]: %s'
 
 
 @ffi_proxy.callback(ffi_proxy._yesnocancel_def,
-                    ffi)
+                    openrlib._rinterface_cffi)
 def _yesnocancel(question):
     try:
-        q = conversion._cchar_to_str(question)
+        q = conversion._cchar_to_str(question, _CCHAR_ENCODING)
         res = yesnocancel(q)
     except Exception as e:
         logger.error(_YESNOCANCEL_EXCEPTION_LOG, str(e))

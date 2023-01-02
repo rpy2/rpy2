@@ -1,0 +1,10 @@
+ipython
+jupyterlab
+multipledispatch
+nbconvert
+notedown
+numpy
+pandas
+pygraphviz
+rpy2
+sphinx

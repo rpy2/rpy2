@@ -83,8 +83,9 @@ def test_installedstpackage_docstring_no_rname():
     stats = robjects.packages.importr('stats',
                                       on_conflict='warn')
     stats.__rname__ = None
-    assert stats.__doc__.startswith('Python representation of an R package.\n'
-                                    '<No information available>')
+    assert stats.__doc__.startswith(
+        'Python representation of an R package.%s'
+        '<No information available>' % os.linesep)
 
 
 class TestImportr(object):
@@ -95,14 +96,18 @@ class TestImportr(object):
         assert isinstance(stats, robjects.packages.Package)
 
     def test_import_stats_with_libloc(self):
-        path = robjects.packages_utils.get_packagepath('stats')
+        path = os.path.dirname(
+            robjects.packages_utils.get_packagepath('stats')
+        )
         stats = robjects.packages.importr('stats', 
                                           on_conflict='warn',
                                           lib_loc = path)
         assert isinstance(stats, robjects.packages.Package)
 
     def test_import_stats_with_libloc_and_suppressmessages(self):
-        path = robjects.packages_utils.get_packagepath('stats')
+        path = os.path.dirname(
+            robjects.packages_utils.get_packagepath('stats')
+        )
         stats = robjects.packages.importr('stats',
                                           lib_loc=path,
                                           on_conflict='warn',
@@ -112,7 +117,7 @@ class TestImportr(object):
     def test_import_stats_with_libloc_with_quote(self):
         path = 'coin"coin'
 
-        with pytest.raises(RRuntimeError), \
+        with pytest.raises(robjects.packages.PackageNotInstalledError), \
              pytest.warns(UserWarning):
             Tmp_File = io.StringIO
             tmp_file = Tmp_File()
@@ -181,7 +186,7 @@ def test_sourcecode():
 
 
 def test_sourcecode_as_namespace():
-    rcode = os.linesep.join(
+    rcode = '\n'.join(
         ('x <- 1+2',
          'f <- function(x) x+1')
     )

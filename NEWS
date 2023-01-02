@@ -1,16 +1,780 @@
+Release 3.5.7
+=============
+
+New features
+------------
+
+- :class:`rpy2.robjects.conversion.Converter` objects are now also context
+  managers. This makes the use of :func:`rpy2.robjects.conversion.localconverter`
+  unnecessary as a converter can now be used directly with a Python `with`
+  statement. The documentation was updated accordingly.
+
+Bugs fixed
+----------
+
+- Building the C-extension could fail when the C compiler is not
+  C99-compatible or requires to be specified C99 compatibility
+  (issue #963).
+
+- With the "R magic", converters in a local namespace were inadvertently
+  skipped (the local namespace was not searched).
+
+Changes
+-------
+
+- The default for the :class:`contextvars.ContextVar` holding
+  conversion rules (:obj:`rpy2.robjects.conversion.converter`)
+  is now a dummy converter raising errors about missing
+  conversion rules. This behavior helps with troubleshooting
+  Python code using multithreading without fetching the context
+  (see issue #965).
+
+
+Release 3.5.6
+=============
+
+Bugs fixed
+----------
+
+- :class:`rpy2.rlike.container.OrdDict` objects were triggering an
+  error when unpickled (PR #955).
+
+- Function signature mapping not longer assumes that all default
+  values are R vectors mapped to a `Vector` instance (PR #954).
+
+
+Release 3.5.5
+=============
+
+New features
+------------
+  
+- For ipython and Jupyter notebooks, R "magics" accepting optional input arguments
+  (`-i` or `--input`) can now be of form `<python-name>` or
+  `<r-name>=<python-name>`. The former is the way is has been working so far:
+  the R object is given the name of the Python object. The latter allows to
+  specify the name under which the input object will be known to R. In addition
+  to that the python name can optionally be a path, that is a name nested in a
+  sequence of namespaces. For example, `-i module.varname`. The magics
+  concerned are `%R`, `%%R`, and `%Rpush` (issues #934 and #935).
+
+- For ipython and Jupyter notebooks, R "magics" accepting an optional conversion
+  argument (`-c/--converter`) now also accepts names that are a path in Python,
+  that is a name nested in a sequence of namespaces. For example,
+  `-c rpy2.robjects.default_converter` (issue #934).
+
+- The "magic" `%Rpush` accepts an optional argument `-c/--converter` that is
+  similar in nature to the argument of the same name in `%R` and `%%R`.
+
+Bugs fixed
+----------
+
+- :class:`rpy2.rlike.container.TaggedList` objects were triggering an error when unpickled (issue #947).
+
+- Converting :class:`pandas.Series` of type `"object"` with a fallback
+  to R strings no longer fails with an error (issue #916).
+
+Changes
+-------
+
+- :meth:`rpy2.robjects.help.Page.iteritems` is deprecated. Use the method `items()` instead.
+
+- Calling :func:`str` on rpy2 objects that are proxies of R objects is now
+  using R's `print()` whenever R's `show()` results in an error (issue #908).
+
+
+Release 3.5.4
+=============
+
+New features
+------------
+
+- :func:`rpy2.rinterface.rternalize` can optionally mirror more accurately in R
+  the function signature defined in Python (issue #905).
+
+Bugs fixed
+----------
+
+- Better handling of timezone in :class:`rpy2.robjects.vectors.POSIXct`
+  (issue #917).
+
+- :mod:`pandas` conversion is now correctly handling R data frames with duplicated
+  column names. They were dropped tbefore that (issue #925).
+
+- :mod:`pandas` conversion is now correctly handling R data frames with nested
+  columns (issue #930).
+
+- Importing :mod:`rpy2.ipython.rmagic` while :mod:`pandas` is not installed resulted
+  in an error.
+
+
+Changes
+-------
+
+- :func:`rpy2.robjects.methods.getclassdef` is now explicitly
+  naming the optional argument with the R package name when calling
+  the underlying R function.
+
+- The `%R` line magic for ipython/jupyter was trying to substitute anything
+  after a dolar (`$`) sign, which caused issue since this character is
+  used to access by name elements in R containers. No substitution
+  is happening anymore (issue #922).
+
+
+Release 3.5.3
+=============
+
+Bugs fixed
+----------
+
+- Pandas converter no longer fails with arrays of `dtype`
+  :class:`pandas.BoolDtype` or :class:`pandas.Float64Dtype`.(issue #880).
+
+- Numpy and pandas conversion could fail an R object is a low-level wrapper
+  for an R list (issue #890).
+
+- Fixed detection of the R install path on Windows (issues #875 and #885).
+
+- Fixed error with dynamic docstring generation for functions
+  without arguments (issue #903).
+
+- Fixed error with dynamic docstring generation when R functions
+  are missing the section 'Details' (isue #902).
+
+
+Release 3.5.2
+=============
+
+New features
+------------
+
+- The string representation for :class:`rpy2.robjects.conversion.Converter`
+  objects lists classes the converter will dispatch on.
+
+Bugs fixed
+----------
+
+- :meth:`rpy2.robjects.vectors.FactorVector.iter_labels` was failing if
+  any element is NA (issue #879).
+
+- The definition of converters was not thread-safe. The fix deprecates
+  the use of :obj:`rpy2.robjects.conversion.converter` and replaces it
+  with :func:`rpy2.robjects.conversion.get_conversion`.
+
+
+Release 3.5.1
+=============
+
+Bugs fixed
+----------
+
+- Fix `__setitem__` on R list when the value is a simple Python object with
+  a default low-level conversion (issue #864).
+
+- The default converter for the rmagic could fail with a
+  :class:`RecursionError` (issue #866).
+
+
+Release 3.5.0
+=============
+
+New features
+------------
+
+- :obj:`rpy2.rinterface.NULL` can be refererenced in code before the embedded
+  R is initialized.
+
+- `LD_LIBRARY_PATH` is obtained from the executable `RScript` and set prior
+  to initializing R at the :mod:`rpy2.rinterface` level (issue #833).
+
+- The package is now fully typed with type hints.
+
+- The :func:`rpy2.rinterface.evalr` accepts the named parameters `envir`
+  and `enclos`, mirroring better the signature of the R function `eval`.
+
+- New function :func:`rpy2.rinterface.evalr_expr` to evaluate R expressions.
+
+- :mod:`rpy2.situation` is now using a module-level (called `logger`) to
+  facilitate troubleshooting. When the module is run as an executable
+  the flag `--verbose` can take the possible values DEBUG, INFO, WARNING, ERROR.
+
+Changes
+-------
+
+- Better customizablity of conversion rules from R objects with `typeof`
+  `INTSXP` (array of integers), `VECSEXP` (R list), and `LGLSXP` (array of
+  booleans) :mod:`pandas`.
+
+- The representation of R integer is no longer using a comma separator
+  for thousands (issue #797).
+
+- Requirement is now Python>=3.7. :mod:`rpy2` is no longer tested with Python 3.6.
+
+- :mod:`rpy2.robject.lib.grid` was refactored to fix the conversion. This
+  fixes issue #804. A classes now have a `classmethod` `r` for the R
+  constructor (the `__init__` is the Python constructor).
+
+- :obj:`rpy2.robjects.vectors.__all__` is removed.
+
+- Cleaner class design by having :class:`rpy2.rinterface.NumpyArrayMixin`
+  removed and replaced by
+  :class:`rpy2.rinterface.SexpVectorWithNumpyInterface`.
+
+- With Python < 3.8 the module :mod:`typing_extensions` is now a requirement.
+
+- Initialization and update steps for
+  :class:`rpy2.robjects.conversion.NameClassMap` were updated to ensure
+  type hints are correct. This probably solved cryptic bugs with conversion
+  system.
+
+- :meth:`rpy2.rinterface.LangSexpVector.from_string` was at the robject level (class method of
+  :class:`rpy2.robjects.language.LangVector`) but is now at the interface level.
+
+- :meth:`rpy2.rinterface.get_evaluation_context` is deprecated. The module
+  level context variable `evaluation_context` should be used instead. The
+  use of the context variable should address issues when using nested
+  :meth:`rpy2.rinterface.local_context`.
+
+- Added recommendation to try :meth:`pandas.DataFrame.infer_objects` when
+  the converion to R data frames fails because of mixed types (issue #794).
+
+- No longer implicit dependency on :mod:`numpy` for memory views. The Python
+  API has an unresolved issue around handling FORTRAN-ordered arrays without
+  going to C-level (https://bugs.python.org/issue34778), and C-extension
+  as added to rpy2 to cut the dependency on numpy for just this (PR #856).
+   
+Bugs fixed
+----------
+
+- R warning about partial argument name matching is now cleared (issue #821).
+
+- Setting a slice for a StrSexpVector where some of the elements are not strings
+  no longer fails.
+
+- Assigning items to an R array of strings using a slice of more than one
+  element was likely to fail.
+
+- The :mod:`rpy2.rinterface`-level conversion of Python integers to R integers is now
+  checking that integers are not larger than what R can handle.
+  
+- Trying to access items in an R environment before R is initialized is no
+  longer ending with a segfault (issue #842).
+
+
+Release 3.4.6
+=============
+
+- Added a class and an alias to map ggplot2's `element_line` (issue #822).
+
+
+Release 3.4.5
+=============
+
+Changes
+-------
+
+- The deprecation warning when using :func:`rpy2.robjects.lib.grid.activate`
+  was missing (indirectly revealed through issue #804).
+
+- The named argument `LINPACK` in :meth:`rpy2.robjects.vectors.Matrix.svd`
+  is no longer present in R.
+
+Bugs fixed
+----------
+
+- SIGPIPE sent to a process running Python+rpy2 could result in a segfault.
+  This was caused by an incorrect setting of R signal handlers (issue #809).
+
+
+Release 3.4.4
+==============
+
+Changes
+-------
+
+- `RRuntimeError` exceptions raised while evaluating R code
+  an R magic (ipython/jupyter) are now propagated (issue #792).
+  
+
+
+Release 3.4.3
+=============
+
+New features
+------------
+
+- :mod:`rpy2.robjects.lib.ggplot2` maps more functions in the
+  R package (issue #767)
+
+- Utility function :func:`rpy2.robjects.lib.ggplot2.dict2rvec`
+  to convert a Python `Dict[str, str]` into an R named vector
+  of strings.
+
+Bugs fixed
+----------
+
+- Calling mod:`rpy2.situation` to report on the environment no longer
+  stops with an uncaught exception when no R home can be determined
+  (issue #774)
+
+- Converting pandas series with the older numpy types could result
+  in an error (issue #781)
+
+- Numpy converter was not properly turing R integer or float arrays
+  into their numpy equivalent (issue #785)
+
+- The HTML representation of R list without named element was
+  incorrect (issue #787)
+
+- Fix for when R is installed in a user home directory on Windows (PR #788)
+
+
+Release 3.4.2
+=============
+
+Bugs fixed
+----------
+
+- Multithreading during the initialization of the embedded R no longer
+  triggers a fatal error (issue #729)
+
+Changes
+-------
+
+- :mod:`pytest` is now an optional package. Optional sets of packages are
+  `numpy`, `pandas`, `test`, and `all` (all optional packages). They
+  can be specified during the installation. For example
+  `pip install rpy2[test]`. (issue #670)
+
+
+Release 3.4.1
+=============
+
+Bugs fixed
+----------
+
+- The file `requirements.txt` was missing from the source distribution
+  on pypi (issue #764).
+
+
+Release 3.4.0
+=============
+
+New Features
+------------
+
+- The mapping of the R C API now includes `Rf_isSymbol()`.
+
+- Singleton class :class:`rpy2.rinterface_lib.sexp.RVersion` to report
+  the R version for the embedded R.
+
+- :func:`rpy2.rinterface.local_context` to create a context manager
+  to evaluate R code within a local environment.
+
+- The `staticmethod` :meth:`rpy2.robjects.vectors.DateVector.isrinstance`
+  will tell whether an R objects is an R `Date` array.
+
+Changes
+-------
+
+- The dynamic generation of docstrings for R man pages
+  is now using R's `Rd2txt`.
+
+- The :func:`rpy2.rinterface_lib._rinterface_capi._findVarInFrame`
+  is replaced by the function
+  :func:`rpy2.rinterface_lib._rinterface_capi._findvar_in_frame`
+  (see fix to issue #710).
+
+- The functions :func:`rpy2.robjects.numpy.activate()` and
+  :func:`rpy2.robjects.pandas.activate()` are deprecated and will
+  be removed in rpy2-3.5.0.
+
+- :func:`rpy2.rinterface_lib.embedded.setinitialized` was renamed to
+  :func:`rpy2.rinterface_lib.embedded._setinitialized` to indicate that
+  one should not use it.
+
+- :meth:`rpy2.robjects.lib.ggplot2.vars` to map the R function
+  `ggplot2::vars` (issue #742).
+
+- Report correctly the class of R matrix objects with R>=4.0: it is
+  now `('matrix', 'array')`. With R<4.0 `('matrix')` is still reported.
+
+- The conversion of R/rpy2 objects to python objects using R class name mapping
+  is extended to more classes. The documentation about conversion covers the topic.
+
+- If `R_NilValue` is not null when the initialization of the embedded R is attempted,
+  it is now assumed that R was initialized through other means (e.g., an other C library in the
+  same process) and the C-level initialization is be skipped.
+
+- The conversion `rpy2py` is now working with any Python object inheriting
+  from `_rinterface_capi.SupportsSEXP`.
+
+Bugs fixed
+----------
+
+- The C function `Rf_findVarInFrame()` in the R API can trigger
+  in an R-level error, and while this is rare, when it does
+  when embedded in Python it creates a segfault. Calls are
+  now wrapped in `R_ToplevelExec()` to limit the propagation
+  of R exceptions. This solved issue #710.
+
+- More complete and correct mapping of R class names in
+  :func:`rpy2.rinterface_lib.sexp.rclass_get`.
+  
+- Initializing the embedded R caused the loss of ability to use Ctrl-C
+  to send SIGINT to a Python process (issue #723)
+
+- :mod:`rpy2.sitation` is now working when the environment variable
+  `R_HOME` is set even though R is not in the `PATH` or in the Windows
+  registry (issue #744).
+
+- Handling an R language objects could result in a segfault when its
+  R class was queried (issue #749).
+
+- The conversion of R string arrays to `numpy` arrays was leaving
+  R's `NA` value as R NA objects. NAs in this type of arrays are now
+  turned to `None` in the resulting `numpy` array (issue #751).
+
+- `rpy2.situation.get_rlib_path()` was returning an environment variable
+  with an invalid separator on Windows (mentioned in issue #754).
+
+- R strings encoded with something else than 'utf-8' could result in
+  errors when trying to convert to Python strings (issue #754).
+
+- Extracting documentation pages for R objects in packages could
+  generate spurious warnings when several "section" tags are present.
+
+- R `Date` arrays/vectors were not wrapped into
+  :class:`rpy2.robjects.vectors.DateVector` objects but left as
+  R arrays of floats (which they are at the C level).
+
+- The HTML representation of short R lists without names could
+  fail with an error.
+
+- The :meth:`__repr__` of `robjects`-level objects was not displaying
+  the rpy2 class the R object is mapped to.
+
+
+Release 3.3.6
+=============
+
+Bugs fixed
+----------
+
+- The unit tests for importing R packages with `lib_loc` were
+  broken (issue #720).
+
+- Trying to create a memoryview for an R array with complex values
+  was failing with an attribute error.
+
+- Fix the constructor of metaclass
+  :class:`rpy2.robjects.methods.RS4Auto_Type`.
+
+- Fix call to end the embedded R in :class:`rpy2.robjects.R.__cleanup__`
+  (issue #734).
+
+
+Release 3.3.5
+=============
+
+Bugs fixed
+----------
+
+- The callback handler to read input to R returned an
+  invalid result, leading to R asking for input
+  without ever acknowledging it received it.
+
+
+Release 3.3.4
+=============
+
+Bugs fixed
+----------
+
+- Creating an R vector object from a Python object implementing
+  the buffer protocol could give incorrect results as C-level
+  incompatibilities could be missed (issue #702).
+
+- :func:`rpy2.robjects.packages.importr` could fail when `lib_loc`
+  was specified (issue #705).
+
+
+Release 3.3.3
+=============
+
+Bugs fixed
+----------
+
+- Fallback for when `str2lang` is missing (R < 3.6)
+
+- Fix segfault with :meth:`PairListSexpVector.__getitem__` when
+  elements of the R pairlist have a `NILSXP` name (issue #700)
+
+
+Release 3.3.2
+=============
+
+Bugs fixed
+----------
+
+- Initial fixes to have rpy2 running in ABI mode on Windows.
+  Few tests are not passing (many in callbacks for R's C API).
+
+- System detection is now checking for FreeBSD.
+
+
+Release 3.3.1
+=============
+
+Bugs fixed
+-----------
+
+- :meth:`rpy2.robjects.conversion.NameClassMap.update` can update
+  the mapping (:class:`dict`) or the default class.
+
+Changes
+-------
+
+- Adding local converters was overwriting the base `NameClassMap`.
+
+
+Release 3.3.0
+=============
+
+New features
+------------
+
+- Trying to import an R package that is not installed will now raise an
+  exception :class:`rpy2.robjects.packages.PackageNotInstalledError`.
+
+- The R C API functions `void SET_FRAME(SEXP x, SEXP v)`,
+  `void SET_ENCLOS(SEXP x, SEXP v)` and `void SET_HASHTAB(SEXP x, SEXP v)`
+  are now accessible through rpy2.
+
+- The module :mod:`rpy2.situation` can now return `LD_LIBRARY_PATH`
+  information about R. For example with
+  `python -m rpy2.situation LD_LIBRARY_PATH`
+
+- :meth:`rpy2.robjects.methods.RS4.extends` lists the class names in the
+  inheritance line.
+  
+- The conversion of R objects to Python allows much more flexibility
+  and better allow the use of independent code converting different classes.
+  This is currently limited to R objects that are lists, environments, or
+  S4 objects. The Sphinx documentation contains an example. While this is
+  still work in progress this should already address concerns
+  at the origin of issue #539 about S4 classes.
+
+- :class:`rpy2.robjects.language.LangVector` to map R language objects at
+  the `robjects` level.
+
+- :class:`rpy2.robjects.vectors.PairlistVector` to map R pairlist objects at
+  the `robjects` level.
+
+- An alternative function to display the output of R cells can be
+  specified using `-d` or `--display` in the magic arguments
+  (in :mod:`rpy2.ipython.rmagic`).
+
+- Python classes representing underlying R objects no longer have to
+  exclusively rely on inheritance from :mod:`rpy2.rinterface` objects`.
+  An abstract class :class:`rpy2.rinterface_lib.sexp.SupportsSEXP` is added
+  to identify objects supporting a `__sexp__` protocol, and that abstract
+  class can also be used with type hints.
+- :func:`rpy2.robjects.functions.wrap_r_functions` can create Python functions
+  with matching signature from R functions
+
+- :func:`rpy2.robjects.functions.wrap_r_functions` can create Python functions
+  with matching signature from R functions.
+
+- New class :class:`rpy2.rinterface_lib._rinterface_capi.UninitializedRCapsule`
+  to allow the instanciation of "placeholder" rpy2 objects before the
+  embedded R is initialized. This facilitate the use of static typing checks
+  such as mypy, mocking for tests that do not involve the execution of R
+  code, and allow cleaner implementations of module-level globals
+  that are R objects.
+
+- New class :class:`rpy2.robjects.vectors.DateVector` to represent R dates.
+
+- :class:`pandas.Series` containing date objects can now be converted to R
+  `Date` vectors.
+
+Changes
+-------
+
+- When calling R C-API's `R_ParseVector` and a error occurs, the
+  exception message now contains the parsing status.
+
+- :mod:`rpy2.rinterface_lib.embedded` has a module-level "constant"
+  `DEFAULT_C_STACK_LIMIT` used when initializing the embedded R.
+
+- When creating a :mod:`rpy2.robjects.vectors.DataFrame` from (name, vector)
+  pairs, the names are no longer transformed to syntactically valid R
+  symbols (issue #660).
+
+- The value `nan` in :mod:`pandas` Series with strings is now converted
+  to R NA (issue #668).
+
+- Initial support for :const:`pandas.NA` (still experimental in pandas
+  at the time of writing, and rpy2 support is limited to arrays of strings).
+
+- :mod:`pandas` series of dtype :class:`pandas.StringDType`, experimental in pandas 1.0,
+  are now supported by the converted (in the pandas-to-R direction) (issue #669)
+
+- Version checking for the mapping of R packages in :mod:`rpy2.robjects.lib` is
+  now more permissive (check that version prefixes are matching).
+
+Bugs fixed
+-----------
+
+- Building ABI only mode could require an API build environment (and fail
+  with an error when not present).
+  
+- SVG output for the R magic were incorrectly bytes objects.
+
+- :meth:`rpy2.rinterface_lib.sexp.StrSexpVector.__getitem__` was returning the string
+  `'NA'` when an R NA value. Not it returns `rpy2.rinterface_lib.na_values.NA_Character`.
+
+
+Release 3.2.7
+=============
+
+Bugs fixed
+----------
+
+- An f-string in `_rinterface_cffi_build.py` prevented installation
+  on Python 3.5 (issue #654).
+
+
+Release 3.2.6
+=============
+
+Bugs fixed
+----------
+
+- The conversion of date/time object with specified timezones
+  was wrong when different than the local time zone (issue #634)
+
+- Iterating over :mod:`rpy2.situation.iter_info()` could result
+  in a error because of a typo in the code.
+
+Changes
+-------
+
+- :mod:`pandas` 1.0.0 breaks the conversion layer. A warning
+  is now emitted whenever trying to use `pandas` >= 1.0.
+
+
+Release 3.2.5
+=============
+
+Bugs fixed
+----------
+
+- Latest release for R package `rlang` broke import through `importr()`.
+  A workaround for :mod:`rpy2.robjects.lib.ggplot2` is to rename the
+  offending R object (issue #631).
+
+Changes
+-------
+
+- f-string requiring Python >= 3.6 removed.
+
+
+Release 3.2.4
+=============
+
+Bugs fixed
+----------
+
+- An incomplete backport of the bug fixed in 3.2.3 broke the ABI mode.
+
+
+Release 3.2.3
+=============
+
+Bugs fixed
+-----------
+
+- Error when parsing strings as R codes could result in a segfault. 
+
+
+Release 3.2.2
+=============
+
+Bugs fixed
+----------
+
+- Python format error when trying to report that the system is not reported
+  on Windows (issue #597).
+
+- The setup script would error on build if R is not installed. It is now
+  printing an error message.
+
+
+Release 3.2.1
+=============
+
+Bugs fixed
+----------
+
+- The wrapper for the R package `dbplyr` could not import the underlying
+  package (refactoring elsewhere was not propagated there).
+
+- Creating R objects called `names` `globalenv` caused the method
+  :meth:`Sexp.names` to fail (issue #587).
+
+- Whenever the pandas conversion was activated :class:`FloatSexpVector` instances
+  with the R class `POSIXct` attached where not corrected mapped back to pandas
+  datetime arrays. (issue #594).
+
+- Fix installation when an installation when a prefix without write access is used
+  (issue #588).
+
+
 Release 3.2.0
 =============
+
+New features
+------------
+
+- rpy2 can built and used with :mod:`cffi`'s ABI or API modes (releases 3.0.x and
+  3.1.x were using the ABI mode exclusively). At the time of writing the default
+  is still the ABI mode but the choice can be controlled through the environment variable
+  `RPY2_CFFI_MODE`. If set, possible values are `ABI` (default if the environment
+  variable is not set), `API`, or `BOTH`. When the latter, both `API` and `ABI`
+  modes are built, and the choice of which one to use can be made at run time.
+
+Changes
+-------
+
+- The "consoleread" callback (reading input to the R console) is now assuming UTF-8
+  (was previously assuming ASCII) and is no longer trying to add a "new line" character
+  at the end of the input.
+
+- Querying an R environment with an invalid key will generate a :class:`TypeError`
+  or a :class:`ValueError` depending on the issue (rather than always :class:`ValueError`
+  before.
 
 Bugs fixed
 ----------
 
 - `setup.py` is now again compatible with Python2 (issue #580).
 
-- Unit tests were failing if numpy is not installed. 
+- Unit tests were failing if numpy is not installed.
+
+- :mod:`rpy2.situation` is no longer breaking when R is not the in path and
+  there is no environment variable `R_HOME`.
+
+- Build script for the cffi interface is now using the environment
+  variable `R_HOME` whenever defined (rather that always infer it from the
+  R in the PATH).
+
+- Converting R strings back to Python was incorrectly using `Latin1` while `UTF-8` was
+  intended (issue #537).
 
 
 Release 3.1.0
-============
+=============
 
 New features
 ------------

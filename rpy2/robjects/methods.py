@@ -1,3 +1,4 @@
+import abc
 from types import SimpleNamespace
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
@@ -11,7 +12,7 @@ getmethod = _get_exported_value('methods', 'getMethod')
 
 require = rinterface.baseenv.find('require')
 require(StrSexpVector(('methods', )),
-        quiet=rinterface.BoolSexpVector((True, )))
+        quietly=rinterface.BoolSexpVector((True, )))
 
 
 class RS4(RObjectMixin, rinterface.SexpS4):
@@ -22,18 +23,26 @@ class RS4(RObjectMixin, rinterface.SexpS4):
         return methods_env['slotNames'](self)
 
     def do_slot(self, name):
-        return conversion.rpy2py(super(RS4, self).do_slot(name))
+        return (conversion.get_conversion()
+                .rpy2py(super(RS4, self).do_slot(name)))
+
+    def extends(self):
+        """Return the R classes this extends.
+
+        This calls the R function methods::extends()."""
+        return methods_env['extends'](self.rclass)
 
     @staticmethod
     def isclass(name):
         """ Return whether the given name is a defined class. """
-        name = conversion.py2rpy(name)
+        name = conversion.get_conversion().py2rpy(name)
         return methods_env['isClass'](name)[0]
 
     def validobject(self, test=False, complete=False):
         """ Return whether the instance is 'valid' for its class. """
-        test = conversion.py2rpy(test)
-        complete = conversion.py2rpy(complete)
+        cv = conversion.get_conversion()
+        test = cv.py2rpy(test)
+        complete = cv.py2rpy(complete)
         return methods_env['validObject'](self, test=test,
                                           complete=complete)[0]
 
@@ -64,15 +73,17 @@ class ClassRepresentation(RS4):
                          "Name of the R class")
 
 
-def getclassdef(cls_name, cls_packagename):
-    cls_def = methods_env['getClassDef'](StrSexpVector((cls_name,)),
-                                         StrSexpVector((cls_packagename, )))
+def getclassdef(cls_name: str, packagename=rinterface.MissingArg):
+    cls_def = methods_env['getClassDef'](
+        StrSexpVector((cls_name,)),
+        package=StrSexpVector((packagename, ))
+    )
     cls_def = ClassRepresentation(cls_def)
     cls_def.__rname__ = cls_name
     return cls_def
 
 
-class RS4_Type(type):
+class RS4_Type(abc.ABCMeta):
 
     def __new__(mcs, name, bases, cls_dict):
 
@@ -102,7 +113,7 @@ class RS4_Type(type):
             r_meth = getmethod(StrSexpVector((rname, )),
                                signature=signature,
                                where=where)
-            r_meth = conversion.rpy2py(r_meth)
+            r_meth = conversion.get_conversion().rpy2py(r_meth)
             if as_property:
                 cls_dict[python_name] = property(r_meth, None, None,
                                                  doc=docstring)
@@ -114,7 +125,7 @@ class RS4_Type(type):
 
 # playground to experiment with more metaclass-level automation
 
-class RS4Auto_Type(type):
+class RS4Auto_Type(abc.ABCMeta):
     """ This type (metaclass) takes an R S4 class
     and create a Python class out of it,
     copying the R documention page into the Python docstring.
@@ -229,7 +240,7 @@ class RS4Auto_Type(type):
                     raise Exception("Duplicated attribute/method name.")
                 cls_dict[meth_name] = meth
 
-        return type.__new__(mcs, name, bases, cls_dict)
+        return abc.ABCMeta.__new__(mcs, name, bases, cls_dict)
 
 
 def set_accessors(cls, cls_name, where, acs):
@@ -247,7 +258,7 @@ def set_accessors(cls, cls_name, where, acs):
         r_meth = getmethod(StrSexpVector((r_name, )),
                            signature=StrSexpVector((cls_name, )),
                            where=where)
-        r_meth = conversion.rpy2py(r_meth)
+        r_meth = conversion.get_conversion().rpy2py(r_meth)
         if as_property:
             setattr(cls, python_name, property(r_meth, None, None))
         else:

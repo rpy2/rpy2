@@ -48,74 +48,13 @@ Installation
 Docker image
 ------------
 
-There is a Docker image available to try rpy2 out
+There are few Docker images available to try rpy2 out
 without even reading about requirements (e.g., R installed
-compiled with the shared library flag). The Docker image
+compiled with the shared library flag). The Docker images
 can also be an easy start for Windows users.
 
-Its name is `rpy2/rpy2`, with currently two possible release tags
-(making the full image names either `rpy2/rpy2:2.9.x` or
-`rpy2/rpy2:devel`).
+More information is available here: https://github.com/rpy2/rpy2-docker
 
-The image was primarily designed to run a jupyter notebook or
-an ipython terminal, as shown in further details below, but
-it can also constitute a base image for custom needs.
-
-.. note::
-
-   If behind a proxy, one will need to pass the relevant
-   environment variables when running a container from the image.
-   Without this the container will not be able to communicate with
-   the internet and perform operations such as downloading and installing
-   additional R packages from CRAN or Python packages from pip.
-
-   .. code-block::bash
-
-      docker run \
-             --env http_proxy=<my http proxy> \
-	     --env https_proxy=<my https proxy> \
-	     --env HTTP_PROXY=<my http proxy> \
-	     --env HTTPS_PROXY=<my https proxy> \
-             <rest of the command line>
-
-
-ipython terminal
-^^^^^^^^^^^^^^^^
-
-.. code-block:: bash
-	  
-   docker run \
-          -it --rm \
-          rpy2/rpy2:2.9.x ipython
-
-
-jupyter notebook
-^^^^^^^^^^^^^^^^
-
-To run the jupyter notebook on port 8888:
-
-.. code-block:: bash
-
-   docker run \
-          --rm -p 8888:8888 \
-          rpy2/rpy2:2.9.x
-
-Once started, point a web browser to `http://localhost:8888`.
-
-.. note::
-
-   If using `docker-machine` (which should be the case when on
-   a Mac or a Windows PC), this will not be `localhost`. The IP
-   address will be given by:
-
-   .. code-block:: bash
-
-      docker-machine ip [name-of-your-docker-machine-vm]
-
-   If usure about the name of your docker-machine VM, check the
-   output of the command `docker-machine ls`.
-
-   
 	   
 Requirements
 ------------
@@ -124,26 +63,22 @@ Currently the development is done on UNIX-like operating systems with the
 following software versions. Those are the recommended
 versions to run rpy2 with.
 
-======== ===================================================================
+======== =====================================================================
 Software Versions
-======== ===================================================================
- Python   3.5+ (compatible with 2.7 and >3.3, but features might be missing)
- R        3.4+
-======== ===================================================================
+======== =====================================================================
+ Python   >=3.7
+ R        >=4.0
+======== =====================================================================
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
 building rpy2 will require the corresponding development headers 
 (check the documentation for more information about builing rpy2). 
 
-rpy2 is almost certainly not working with Python 2.6.
-Older Python versions are even less likely to work.
+.. note::
 
-While Python 3.3 should be working, earlier version of Python 3 are not
-expected to (they might work, they might not - you are on your own).
+   Running `rpy2` on Windows is currently not supported although relative success
+   was recently reported with the lastest in the 3.3.x series. 
 
-Rpy2 is not expected to work at all with an R version < 2.8. The use of the
-latest rpy2 with an R version older than the current release is not
-adviced (and mostly unsupported).
 
 Alternative Python implementations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -180,39 +115,23 @@ the above code results in an error.
 Download
 --------
 
-The following options are, or could be, available for download:
+The following options are available for download:
 
   * Source packages. Released versions are available on Pypi
     (Sourceforge is no longer used).
     Snapshots of the development version can be downloaded from
-    bitbucket
+    github
 
     .. note::
-       The repository on bitbucket has several branches. Make sure to select
-       the one you are interested in.
+       The repository on bitbucket has several release branches
+       starting with `v`.
 
   * Pre-compiled binary packages for
 
-    * Microsoft's Windows - unofficial and unsupported binaries are provided
-      by Christoph Gohlke (http://www.lfd.uci.edu/~gohlke/pythonlibs/); 
-      there is otherwise currently
-      close to no support for this platform
+    * Apple's MacOS X are now also available on pypi
 
-    * Apple's MacOS X (although Fink and Macports are available, there does not
-      seem to be binaries currently available)
+    * Linux distributions are sometimes available. Check with your distribution
 
-    * Linux distributions
-
-`rpy2` has been reported compiling successfully on all 3 platforms, provided
-that development items such as Python headers and a C compiler are installed.
-
-.. note::
-   Choose files from the `rpy2` package, not `rpy`.
-
-.. note::
-   The *pip* or *easy_install* commands can be used,
-   although they currently only provide installation from source
-   (see :ref:`install-easyinstall`).
 
 Linux precompiled binaries
 --------------------------
@@ -232,30 +151,8 @@ Gentoo.
 OS X (MacOS) precompiled binaries
 ---------------------------------
 
-A binary *wheel* for OS X is available on pypi since rpy2-2.9.3 (see `issue #403`_).
+rpy2 is in Macports, Homebrew, and Fink. Binary are now also availabe on pypi.
 
-.. _issue #403: `https://bitbucket.org/rpy2/rpy2/issues/403`
-
-On, OS X rpy2 is in Macports, Homebrew, and Fink.
-
-
-.. index::
-  single: install;win32
-
-Microsoft's Windows precompiled binaries
-----------------------------------------
-
-If available, the executable can be run; this will install the package
-in the default Python installation.
-
-For few releases in the 2.0.x series,
-Microsoft Windows binaries were contributed by Laurent Oget from Predictix.
-
-There is currently no binaries or support for Microsoft Windows
-(because of lack of ressources more than anything else), but
-the collection of Unofficial Windows Binaries for Python Extension Packages
-provided by Christoph Gohlke includes rpy2:
-http://www.lfd.uci.edu/~gohlke/pythonlibs/
 
 .. index::
   single: install;source
@@ -274,11 +171,16 @@ The shell command will then just be:
 
 .. code-block:: bash
 
-   # recommended:
+   # minimal
    pip install rpy2
 
    # or
-   easy_install rpy2
+   # to run tests
+   pip install rpy2[test]
+
+   # or
+   # all dependencies
+   pip install rpy2[all]
 
 
 Upgrading an existing installation is done with:
@@ -288,12 +190,19 @@ Upgrading an existing installation is done with:
 	 # recommended:
    pip install rpy2 --upgrade
 
-   # or
-   easy_install rpy2 --upgrade
 
 Both utilities have a list of options and their respective documentation should
 be checked for details.
 
+.. note::
+
+   Starting with rpy2 3.2.0, rpy2 can built and used with :mod:`cffi`'s ABI or
+   API modes (releases 3.0.x and 3.1.x were using the ABI mode exclusively).
+   At the time of writing the default is still the ABI mode but the choice
+   can be controlled through the environment variable
+   `RPY2_CFFI_MODE`. If set, possible values are `ABI` (default if the environment
+   variable is not set), `API`, or `BOTH`. When the latter, both `API` and `ABI`
+   modes are built, and the choice of which one to use can be made at run time.
 
 .. _install-setup:
 
@@ -306,26 +215,18 @@ To install from a downloaded source archive `<rpy_package>`, do in a shell:
 
   tar -xzf <rpy_package>.tar.gz
   cd <rpy_package>
+
+  
   python setup.py build install
+  # or
+  pip install .
+  # or (to install requirements to test
+  pip install .[test]
+
+  
 
 This will build the package, guessing the R HOME from
-the R executable found in the PATH.
-
-Beside the regular options for :mod:`distutils`-way of building and installing
-Python packages, it is otherwise possible to give explicitly the location for the R HOME:
-
-.. code-block:: bash
-
-   python setup.py build --r-home /opt/packages/R/lib install
-
-
-Other options to build the package are:
-
-.. code-block:: bash
-
-   --r-home-lib # for exotic location of the R shared libraries
-
-   --r-home-modules # for R shared modules
+the R executable found in the `PATH`.
 
 
 Compiling on Linux
@@ -336,54 +237,12 @@ should be butter smooth.
 
 The most frequent errors seem to be because of missing headers.
 
+
 Compiling on OS X
 ^^^^^^^^^^^^^^^^^
 
-*XCode* tools will be required in order to compile rpy2. Please refer to the documentation on the Apple
+*XCode* tools will be required in order to build rpy2 in API mode. Please refer to the documentation on the Apple
 site for more details about what they are and how to install them.
-
-On OS X "Snow Leopard" (10.6.8), it was reported that setting architecture flags was sometimes needed
-
-.. code-block:: bash
-
-   env ARCHFLAGS="-arch i386 -arch x86_64" pip install rpy2
-
-or 
-
-.. code-block:: bash
-
-   env ARCHFLAGS="-arch i386 -arch x86_64" python setup.py build install
-
-Some people have reported trouble with OS X "Lion". Please check the bug tracker if you are in that situation.
-
-
-Using rpy2 with other versions of R or Python
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-.. warning::
-
-   When building rpy2, it is checked that this is against a recommended
-   version of R. Building against a different version is possible, although
-   not supported at all, through the flag *--ignore-check-rversion*
-
-   .. code-block:: bash
-
-      python setup.py build_ext --ignore-check-rversion install
-   
-   Since recently, development R is no longer returning
-   an R version and the check ends with an error
-   "Error: R >= <some version> required (and R told 'development.').".
-   The flag *--ignore-check-rversion* is then required in order to build.
-   
-
-.. note::
-   
-   When compiling R from source, do not forget to specify
-   *--enable-R-shlib* at the *./configure* step.
-
-
-
 
 .. index::
   single: test;whole installation
@@ -396,73 +255,10 @@ the different layers constituting the packages can be tested independently.
 
 .. code-block:: bash
 
-   python -m 'rpy2.tests'
+   pytest --pyargs 'rpy2.tests'
 
-On Python 2.6, this should return that all tests were successful.
-
-
-Whenever more details are needed, one can consider running tests
-for specific parts of the package. For example:
-
-.. code-block:: bash
-
-  python -m rpy2.rinterface.tests.__init__		
-
-  # or
-  
-  python -m rpy2.robjects.tests.__init__
-    
-.. note:: 
-
-   Running the tests in an interactive session appears to trigger spurious exceptions
-   when testing callback functions raising exceptions.
-   If unsure, simply use the former way to test (in a shell).
-
-.. warning::
-
-  For reasons that remain to be elucidated, running the test suites used to leave the Python
-  interpreter in a fragile state, soon crashing after the tests have been run.
-
-  It is not clear whether this is still the case, but is recommended to terminate the 
-  Python process after the tests and start working with a fresh new session.
-
-
-To test the :mod:`rpy2.robjects` high-level interface:
-
-.. code-block:: bash
-
-  python -m 'rpy2.robjects.tests.__init__'
-
-or for a full control of options
-
-.. code-block:: python
-
-  import rpy2.robjects.tests
-  import unittest
-
-  # the verbosity level can be increased if needed
-  tr = unittest.TextTestRunner(verbosity = 1)
-  suite = rpy2.robjects.tests.suite()
-  tr.run(suite)
-
-If interested in the lower-level interface, the tests can be run with:
-
-.. code-block:: bash
-
-  python -m 'rpy2.rinterface.tests.__init__'
-
-or for a full control of options
-
-.. code-block:: python
-
-  import rpy2.rinterface.tests
-  import unittest
-
-  # the verbosity level can be increased if needed
-  tr = unittest.TextTestRunner(verbosity = 1)
-  suite = rpy2.rinterface.tests.suite()
-  tr.run(suite)
-
+The documentation for `pytest` should be consulted to customize how
+tests are run.
 
 Contents
 ========
@@ -487,13 +283,6 @@ Based on the previous one.
 
 High-level interface, with an eye for interactive work. Largely based
 on :mod:`rpy2.robjects`.
-
-:mod:`rpy2.rpy_classic`
------------------------
-
-High-level interface similar to the one in RPy-1.x.
-This is provided for compatibility reasons, as well as to facilitate the migration
-to RPy2.
 
 :mod:`rpy2.rlike`
 -----------------
@@ -528,9 +317,9 @@ any :class:`rpy2.robjects.Function` can be given any
 :class:`rpy2.rinterface.Sexp`. Because of R's functional basis,
 a container-like extension is also present.
 
-The module :mod:`rpy2.rpy_classic` is using delegation, letting us
-demonstrate how to extend :mod:`rpy2.rinterface` with an alternative
-to inheritance.
+However, inheritance is not the only choice. Any custome class implementing
+the interface :class:`rpy2.rinterface.SupportsSEXP` can integrate seamlessly
+and be used with the rest of rpy2.
 
 
 Acknowledgements
@@ -538,18 +327,46 @@ Acknowledgements
 
 Acknowledgements for contributions, support, and early testing go to (alphabetical order):
 
+Philipp A.,
 Alexander Belopolsky,
+Dan Brown,
+Beau Bruce,
+Brad Buran,
+Erik Cederstrand,
 Brad Chapman,
+Evgeny Cherkashin,
+Dav Clark,
 Peter Cock,
+Michaël Defferrard,
 Dirk Eddelbuettel,
+Isuru Fernando,
+Daniel Ge,
+Christoph Gohlke,
+Dale Jung,
 Thomas Kluyver,
+David Koppstein,
+Michał Krassowski,
+Antony Lee,
+Kenneth Lyons,
+Mikolaj Magnuski,
+Gijs Molenaar,
 Walter Moreira, 
 Laurent Oget,
+Pablo Oliveira,
 John Owens,
+Fabian Philips,
+Andrey Portnoy,
 Nicolas Rapin,
+Brad Reisfeld,
+Joon Ro,
+Andy Shapiro,
+Justin Shenk,
 Grzegorz Slodkowicz,
-Nathaniel Smith,
+Joan Smith,
+Nathaniel J. Smith,
+Jeff Tratner,
 Gregory Warnes,
+Liang-Bo Wang,
 as well as
 the JRI author(s),
 the R authors,

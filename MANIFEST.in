@@ -2,8 +2,9 @@ global-include README
 global-exclude *patch* *diff* .hg
 
 include MANIFEST MANIFEST.in
-include NEWS README AUTHORS
+include NEWS README.md AUTHORS
 include gpl-2.0.txt
+include requirements.txt
 
 include _rinterface_cffi_build
 

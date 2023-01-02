@@ -1,16 +1,33 @@
-"""Conversion between Python objects, C objects, and R objects."""
+"""Mapping between Python objects, C objects, and R objects."""
 
 # TODO: rename the module with a prefix _ to indicate that this should
 #   not be used outside of rpy2's own code
 
-from . import openrlib
-from . import _rinterface_capi as _rinterface
+from typing import Callable
+from typing import Dict
+from typing import Optional
+from typing import Type
+from typing import Union
+from rpy2.rinterface_lib import openrlib
+from rpy2.rinterface_lib import _rinterface_capi as _rinterface
 
 ffi = openrlib.ffi
-_R_RPY2_MAP = {}
-_R_RPY2_DEFAULT_MAP = None
 
-_PY_RPY2_MAP = {}
+_R_RPY2_MAP = {}  # type: Dict[int, Type]
+
+
+class DummyMissingRpy2Map(object):
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError('The default object mapper class is no set.')
+
+
+_R_RPY2_DEFAULT_MAP: Type[
+    Union[DummyMissingRpy2Map, '_rinterface.SupportsSEXP']
+] = DummyMissingRpy2Map
+
+# TODO: shouldn't the second type strictly inherit from an rpy2
+# R object ?
+_PY_RPY2_MAP: Dict[Type, Callable] = {}
 
 
 def _cdata_to_rinterface(cdata):
@@ -51,7 +68,12 @@ def _python_to_cdata(obj):
 # TODO: can scalars in R's C API be used ?
 def _int_to_sexp(val: int):
     rlib = openrlib.rlib
-    # TODO: test value is not too large for R's ints
+    # TODO: _rinterface._MAX_INT is determined empirically.
+    if val > _rinterface._MAX_INT:
+        raise ValueError(
+            f'The Python integer {val} is larger than {_rinterface._MAX_INT} ('
+            'R\'s largest possible integer).'
+        )
     s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.INTSXP, 1))
     openrlib.SET_INTEGER_ELT(s, 0, val)
     rlib.Rf_unprotect(1)
@@ -86,39 +108,44 @@ def _complex_to_sexp(val: complex):
     return s
 
 
-# {
-#     'ASCII'
-#     'latin-1': rlib.cetype_t.CE_LATIN1,
-#     'utf-8': rlib.cetype_t.CE_UTF8,
-# }
-_CE_UTF8 = 2
+# Default encoding for converting R string back to Python
+# As defined in R_API.h, possible values are
+#   CE_NATIVE = 0,
+#   CE_UTF8   = 1,
+#   CE_LATIN1 = 2,
+#   CE_BYTES  = 3,
+#   CE_SYMBOL = 5,
+#   CE_ANY    = 99
+
+# Default encoding for converting R strings to Python
+_R_ENC_PY = {None: 'ascii'}
 
 
-def _str_to_cchar(s, encoding: str = 'utf-8'):
-    # TODO: use isStrinb and installTrChar
+def _str_to_cchar(s: str, encoding: str = 'utf-8'):
+    # TODO: use isString and installTrChar
     b = s.encode(encoding)
     return ffi.new('char[]', b)
 
 
-def _cchar_to_str(c, encoding: str = 'utf-8'):
-    # TODO: use isStrinb and installTrChar
+def _cchar_to_str(c, encoding: str) -> str:
+    # TODO: use isString and installTrChar
     s = ffi.string(c).decode(encoding)
     return s
 
 
-def _cchar_to_str_with_maxlen(c, maxlen: int):
-    # TODO: use isStrinb and installTrChar
-    s = ffi.string(c, maxlen).decode('utf-8')
+def _cchar_to_str_with_maxlen(c, maxlen: int, encoding: str) -> str:
+    # TODO: use isString and installTrChar
+    s = ffi.string(c, maxlen).decode(encoding)
     return s
 
 
-def _str_to_charsxp(val: str):
+def _str_to_charsxp(val: Optional[str]):
     rlib = openrlib.rlib
     if val is None:
         s = rlib.R_NaString
     else:
-        cchar = _str_to_cchar(val)
-        s = rlib.Rf_mkCharCE(cchar, _CE_UTF8)
+        cchar = _str_to_cchar(val, encoding='utf-8')
+        s = rlib.Rf_mkCharCE(cchar, openrlib.rlib.CE_UTF8)
     return s
 
 
@@ -138,21 +165,21 @@ def _str_to_symsxp(val: str):
     return s
 
 
-_PY_R_MAP = {}
+_PY_R_MAP = {}  # type: Dict[Type, Union[Callable, None, bool]]
 
 
-# TODO: Do special values such as NAs need to be cast into a SEXP when
+# TODO: Do special values such as NAs need to be mapped into a SEXP when
 #   a scalar ?
 def _get_cdata(obj):
-    cast = _PY_R_MAP.get(type(obj))
-    if cast is False:
+    cls = _PY_R_MAP.get(type(obj))
+    if cls is False:
         cdata = obj
-    elif cast is None:
+    elif cls is None:
         try:
             cdata = obj.__sexp__._cdata
         except AttributeError:
             raise ValueError('Not an rpy2 R object and unable '
-                             'to cast it into one: %s' % repr(obj))
+                             'to map it to one: %s' % repr(obj))
     else:
-        cdata = cast(obj)
+        cdata = cls(obj)
     return cdata

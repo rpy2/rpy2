@@ -1,4 +1,5 @@
 import os
+import typing
 import warnings
 from types import ModuleType
 from warnings import warn
@@ -64,19 +65,19 @@ def _eval_quiet(expr):
 # FIXME: should this be part of the API for rinterface ?
 #        (may be it is already the case and there is code
 #        duplicaton ?)
-def reval(string, envir=_globalenv):
+def reval(string: str,
+          envir: typing.Optional[rinterface.SexpEnvironment] = None):
     """ Evaluate a string as R code
     :param string: R code
     :type string: a :class:`str`
-    :param envir: an environment in which the environment should take
-      place (default: R's global environment)
+    :param envir: Optional environment to evaluate the R code.
     """
     p = rinterface.parse(string)
     res = _reval(p, envir=envir)
     return res
 
 
-def quiet_require(name, lib_loc=None):
+def quiet_require(name: str, lib_loc=None):
     """ Load an R package /quietly/ (suppressing messages to the console). """
     if lib_loc is None:
         lib_loc = "NULL"
@@ -162,12 +163,10 @@ class Package(ModuleType):
     __rname__ = None
     _translation = None
     _rpy2r = None
-    __fill_rpy2r__ = None
-    __update_dict__ = None
     _exported_names = None
     _symbol_r2python = None
-    __version__ = None
-    __rdata__ = None
+    __version__: typing.Optional[str] = None
+    __rdata__: typing.Optional[PackageData] = None
 
     def __init__(self, env, name, translation={},
                  exported_names=None, on_conflict='fail',
@@ -208,7 +207,7 @@ class Package(ModuleType):
     def __update_dict__(self, on_conflict='fail'):
         """ Update the __dict__ according to what is in the R environment """
         for elt in self._rpy2r:
-            del(self.__dict__[elt])
+            del self.__dict__[elt]
         self._rpy2r.clear()
         self.__fill_rpy2r__(on_conflict=on_conflict)
 
@@ -217,7 +216,7 @@ class Package(ModuleType):
 
         - on_conflict: 'fail' or 'warn' (default: 'fail')
         """
-        assert(on_conflict in ('fail', 'warn'))
+        assert on_conflict in ('fail', 'warn')
 
         name = self.__rname__
 
@@ -240,6 +239,7 @@ class Package(ModuleType):
                          exception)
         symbol_mapping.update(resolutions)
         reserved_pynames = set(dir(self))
+        cv = conversion.get_conversion()
         for rpyname, rnames in symbol_mapping.items():
             # last paranoid check
             if len(rnames) > 1:
@@ -259,9 +259,9 @@ class Package(ModuleType):
                 self._exported_names.add(rpyname)
             try:
                 riobj = self._env[rname]
-            except rinterface.RRuntimeError as rre:
+            except rinterface.embedded.RRuntimeError as rre:
                 warn(str(rre))
-            rpyobj = conversion.rpy2py(riobj)
+            rpyobj = cv.rpy2py(riobj)
             if hasattr(rpyobj, '__rname__'):
                 rpyobj.__rname__ = rname
             # TODO: shouldn't the original R name be also in the __dict__ ?
@@ -320,7 +320,7 @@ class InstalledSTPackage(SignatureTranslatedPackage):
             try:
                 doc.append(rhelp.docstring(self.__rname__,
                                            self.__rname__ + '-package',
-                                           sections=['description']))
+                                           sections=['\\description']))
             except rhelp.HelpNotFoundError:
                 doc.append('[R help was not found]')
         return os.linesep.join(doc)
@@ -348,7 +348,7 @@ class InstalledPackage(Package):
             try:
                 doc.append(rhelp.docstring(self.__rname__,
                                            self.__rname__ + '-package',
-                                           sections=['description']))
+                                           sections=['\\description']))
             except rhelp.HelpNotFoundError:
                 doc.append('[R help was not found]')
         return os.linesep.join(doc)
@@ -375,6 +375,11 @@ class LibraryError(ImportError):
     pass
 
 
+class PackageNotInstalledError(LibraryError):
+    """ Error occuring because the R package to import is not installed."""
+    pass
+
+
 class InstalledPackages(object):
     """ R packages installed. """
     def __init__(self, lib_loc=None):
@@ -385,7 +390,7 @@ class InstalledPackages(object):
         self.colnames = self.lib_results.do_slot('dimnames')[1]  # column names
         self.lib_packname_i = self.colnames.index('Package')
 
-    def isinstalled(self, packagename):
+    def isinstalled(self, packagename: str):
         if not isinstance(packagename, rinterface.StrSexpVector):
             rinterface.StrSexpVector((packagename, ))
         else:
@@ -409,7 +414,7 @@ class InstalledPackages(object):
             yield tuple(lib_results[x*nrows+row_i] for x in colrg)
 
 
-def isinstalled(name,
+def isinstalled(name: str,
                 lib_loc=None):
     """
     Find whether an R package is installed
@@ -423,7 +428,7 @@ def isinstalled(name,
     return instapack.isinstalled(name)
 
 
-def importr(name,
+def importr(name: str,
             lib_loc=None,
             robject_translations={},
             signature_translation=True,
@@ -463,25 +468,30 @@ def importr(name,
 
     """
 
-    rname = rinterface.StrSexpVector((name, ))
+    if not isinstalled(name, lib_loc=lib_loc):
+        raise PackageNotInstalledError(
+            'The R package "%s" is not installed.' % name
+        )
 
     if suppress_messages:
         ok = quiet_require(name, lib_loc=lib_loc)
     else:
-        ok = _require(rinterface.StrSexpVector(rname),
+        ok = _require(name,
                       **{'lib.loc': rinterface.StrSexpVector((lib_loc, ))})[0]
     if not ok:
         raise LibraryError("The R package %s could not be imported" % name)
-    if _package_has_namespace(rname,
-                              _system_file(package=rname)):
-        env = _get_namespace(rname)
-        version = _get_namespace_version(rname)[0]
-        exported_names = set(_get_namespace_exports(rname))
+    exported_names: typing.Optional[typing.Set[str]]
+    if _package_has_namespace(name,
+                              _system_file(package=name)):
+        env = _get_namespace(name)
+        version = _get_namespace_version(name)[0]
+        exported_names = set(_get_namespace_exports(name))
     else:
         env = _as_env(rinterface.StrSexpVector(['package:'+name, ]))
         exported_names = None
         version = None
 
+    pack: typing.Union[InstalledSTPackage, InstalledPackage]
     if signature_translation:
         pack = InstalledSTPackage(env, name,
                                   translation=robject_translations,
@@ -524,7 +534,7 @@ def wherefrom(symbol: str,
         env = env.enclos
         if env.rsame(rinterface.emptyenv):
             break
-    return conversion.rpy2py(env)
+    return conversion.get_conversion().rpy2py(env)
 
 
 class ParsedCode(rinterface.ExprSexpVector):

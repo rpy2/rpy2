@@ -3,18 +3,21 @@ import pytest
 import rpy2.rinterface_lib.sexp
 from rpy2 import rinterface
 from rpy2 import robjects
+from rpy2.robjects import conversion
 
 
-def test_mapperR2Python_string():
-    sexp = rinterface.globalenv.find('letters')
-    ob = robjects.default_converter.rpy2py(sexp)
-    assert isinstance(ob, robjects.Vector)
-
-
-def test_mapperR2Python_boolean():
-    sexp = rinterface.globalenv.find('T')
-    ob = robjects.default_converter.rpy2py(sexp)
-    assert isinstance(ob, robjects.Vector)
+@pytest.mark.parametrize(
+    'cls, values, expected_cls',
+    [(rinterface.IntSexpVector, (1, 2), robjects.vectors.IntVector),
+     (rinterface.FloatSexpVector, (1.1, 2.2), robjects.vectors.FloatVector),
+     (rinterface.StrSexpVector, ('ab', 'cd'), robjects.vectors.StrVector),
+     (rinterface.BoolSexpVector, (True, False), robjects.vectors.BoolVector),
+     (rinterface.ByteSexpVector, b'ab', robjects.vectors.ByteVector),
+     (lambda x: rinterface.evalr(x), 'y ~ x', robjects.Formula)])
+def test_sexpvector_to_ro(cls, values, expected_cls):
+    v_ri = cls(values)
+    v_ro = robjects.default_converter.rpy2py(v_ri)
+    assert isinstance(v_ro, expected_cls)
 
 
 def test_mapperR2Python_function():
@@ -29,15 +32,105 @@ def test_mapperR2Python_environment():
                       robjects.Environment)
 
 
-def test_mapperR2Python_s4():
-    robjects.r('setClass("A", representation(x="integer"))')
+def test_mapperR2Python_lang():
+    sexp = rinterface.baseenv['str2lang']('1+2')
+    ob = robjects.default_converter.rpy2py(sexp)
+    assert isinstance(ob, robjects.language.LangVector)
+
+
+def test_mapperR2Python_Date():
+    sexp = rinterface.baseenv.find('as.Date')('2020-01-01')
+    assert isinstance(robjects.default_converter.rpy2py(sexp), 
+                      robjects.vectors.DateVector)
+
+
+def test_NameClassMap():
+    ncm = conversion.NameClassMap(object)
+    classnames = ('A', 'B')
+    assert ncm.find_key(classnames) is None
+    assert ncm.find(classnames) is object
+    ncm['B'] = list
+    assert ncm.find_key(classnames) == 'B'
+    assert ncm.find(classnames) is list
+    ncm['A'] = tuple
+    assert ncm.find_key(classnames) == 'A'
+    assert ncm.find(classnames) is tuple
+
+
+def test_NameClassMapContext():
+    ncm = conversion.NameClassMap(object)
+    assert not len(ncm._map)
+    with conversion.NameClassMapContext(ncm, {}):
+        assert not len(ncm._map)
+    assert not len(ncm._map)
+    
+    with conversion.NameClassMapContext(ncm, {'A': list}):
+        assert set(ncm._map.keys()) == set('A')
+    assert not len(ncm._map)
+    ncm['B'] = tuple
+    with conversion.NameClassMapContext(ncm, {'A': list}):
+        assert set(ncm._map.keys()) == set('AB')
+    assert set(ncm._map.keys()) == set('B')
+    with conversion.NameClassMapContext(ncm, {'B': list}):
+        assert set(ncm._map.keys()) == set('B')
+    assert set(ncm._map.keys()) == set('B')
+    assert ncm['B'] is tuple
+
+
+def test_Converter_rclass_map_context():
+    converter = robjects.default_converter
+
+    class FooEnv(robjects.Environment):
+        pass
+
+    ncm = converter.rpy2py_nc_name[rinterface.SexpEnvironment]
+    with robjects.default_converter.rclass_map_context(
+            rinterface.SexpEnvironment, {'A': FooEnv}
+    ):
+        assert set(ncm._map.keys()) == set('A')
+    assert not len(ncm._map)
+
+
+@pytest.fixture(scope='module')
+def _set_class_AB():
+    robjects.r('A <- methods::setClass("A", representation(x="integer"))')
+    robjects.r('B <- methods::setClass("B", contains="A")')
+    yield
+    robjects.r('methods::removeClass("B")')
+    robjects.r('methods::removeClass("A")')
+
+
+def test_mapperR2Python_s4(_set_class_AB):
     classname = rinterface.StrSexpVector(['A', ])
     one = rinterface.IntSexpVector([1, ])
-    sexp = rinterface.globalenv.find('new')(classname, 
-                                           x=one)
+    sexp = rinterface.globalenv['A'](x=one)
     assert isinstance(robjects.default_converter.rpy2py(sexp), 
                       robjects.RS4)
 
+
+def test_mapperR2Python_s4custom(_set_class_AB):
+    class A(robjects.RS4):
+        pass
+    sexp_a = rinterface.globalenv['A']( 
+        x=rinterface.IntSexpVector([1, ])
+    )
+    sexp_b = rinterface.globalenv['B']( 
+        x=rinterface.IntSexpVector([2, ])
+    )
+    rs4_map = (conversion.get_conversion()
+               .rpy2py_nc_name[rinterface.SexpS4])
+    with conversion.NameClassMapContext(
+            rs4_map,
+            {'A': A}
+    ):
+        assert rs4_map.find_key(('A', )) == 'A'
+        assert isinstance(
+            robjects.default_converter.rpy2py(sexp_a), 
+            A)
+        assert rs4_map.find_key(('B', 'A')) == 'A'
+        assert isinstance(
+            robjects.default_converter.rpy2py(sexp_b), 
+            A)
 
 @pytest.mark.parametrize('value,cls', [
     (1, int),
@@ -86,9 +179,17 @@ def test_mapperpy2rpy_float_array(ctype):
     assert isinstance(rob, robjects.vectors.FloatVector)
     assert rob.typeof == rinterface.RTYPES.REALSXP
 
+
+def test_missingconversion():
+    with conversion.localconverter(conversion.missingconverter) as cv:
+        with pytest.raises(NotImplementedError):
+            cv.py2rpy(1)
+        with pytest.raises(NotImplementedError):
+            cv.rpy2py(robjects.globalenv)
     
 def noconversion():
     robj_res = robjects.baseenv['pi']
     assert isinstance(robj_res, robjects.RObject)
     rint_res = robject.conversion.noconversion(robj_res)
     assert isinstance(rint_res, rpy2.rinterface_lib.sexp.Sexp)
+

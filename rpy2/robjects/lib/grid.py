@@ -7,9 +7,10 @@ system and graphic primitives to built visualizations.
 
 """
 
+import warnings
+import rpy2.rinterface as rinterface
 import rpy2.robjects as robjects
 import rpy2.robjects.conversion as conversion
-from rpy2.rlike.container import OrdDict
 from rpy2.robjects.packages import importr, WeakPackage
 
 NULL = robjects.NULL
@@ -25,6 +26,11 @@ grid = WeakPackage(grid._env,
                    symbol_r2python=grid._symbol_r2python,
                    symbol_resolve=grid._symbol_resolve)
 
+original_converter = None
+converter = conversion.Converter('original grid conversion')
+py2rpy = converter.py2rpy
+rpy2py = converter.rpy2py
+
 grid_env = robjects.baseenv['as.environment']('package:grid')
 
 
@@ -39,75 +45,39 @@ xaxis = grid.grid_xaxis
 yaxis = grid.grid_yaxis
 
 
-class Unit(robjects.RObject):
+class BaseGrid(robjects.RObject):
+
+    @classmethod
+    def r(cls, *args, **kwargs):
+        """ Constructor (as it looks like on the R side)."""
+        res = cls._r_constructor(*args, **kwargs)
+        return cls(res)
+
+
+class Unit(BaseGrid):
     """ Vector of unit values (as in R's grid package) """
-    _unit = grid_env['unit']
-
-    def __init__(self, *args, **kwargs):
-        od = OrdDict()
-        for item in args:
-            od[None] = conversion.py2rpy(item)
-        for k, v in kwargs.items():
-            od[k] = conversion.py2rpy(v)
-        res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
-        self.__sexp__ = res.__sexp__
-
-    @classmethod
-    def unit(cls, *args, **kwargs):
-        """ Constructor (uses the R function grid::unit())"""
-        res = cls._unit(*args, **kwargs)
-        return res
+    _r_constructor = grid_env['unit']
 
 
-unit = Unit.unit
+unit = Unit.r
 
 
-class Gpar(robjects.RObject):
+class Gpar(BaseGrid):
     """ Graphical parameters """
-    _gpar = grid_env['gpar']
+    _r_constructor = grid_env['gpar']
     _get_gpar = grid_env['get.gpar']
-
-    def __init__(self, *args, **kwargs):
-        od = OrdDict()
-        for item in args:
-            od[None] = conversion.py2rpy(item)
-        for k, v in kwargs.items():
-            od[k] = conversion.py2rpy(v)
-        res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
-        self.__sexp__ = res.__sexp__
-
-    @classmethod
-    def gpar(cls, *args, **kwargs):
-        """ Constructor (uses the R function grid::gpar())"""
-        res = cls._gpar(*args, **kwargs)
-        return res
 
     def get(self, names=None):
         return self._get_gpar(names)
 
 
-gpar = Gpar.gpar
+gpar = Gpar.r
 
 
-class Grob(robjects.RObject):
+class Grob(BaseGrid):
     """ Graphical object """
-    _grob = grid_env['grob']
+    _r_constructor = grid_env['grob']
     _draw = grid_env['grid.draw']
-
-    def __init__(self, *args, **kwargs):
-        od = OrdDict()
-        for item in args:
-            od[None] = conversion.py2rpy(item)
-        for k, v in kwargs.items():
-            od[k] = conversion.py2rpy(v)
-        res = self._constructor.rcall(tuple(od.items()), robjects.globalenv)
-        super().__init__(res.__sexp__)
-
-    @classmethod
-    def grob(cls, **kwargs):
-        """ Constructor (uses the R function grid::grob())"""
-        res = cls._grob(**kwargs)
-        return res
 
     def draw(self, recording=True):
         """ Draw a graphical object (calling the R function
@@ -115,42 +85,42 @@ class Grob(robjects.RObject):
         self._draw(self, recording=recording)
 
 
-grob = Grob.grob
+grob = Grob.r
 
 
 class Rect(Grob):
-    _constructor = grid_env['rectGrob']
+    _r_constructor = grid_env['rectGrob']
 
 
-rect = Rect
+rect = Rect.r
 
 
 class Lines(Grob):
-    _constructor = grid_env['linesGrob']
+    _r_constructor = grid_env['linesGrob']
 
 
-lines = Lines
+lines = Lines.r
 
 
 class Circle(Grob):
-    _constructor = grid_env['circleGrob']
+    _r_constructor = grid_env['circleGrob']
 
 
-circle = Circle
+circle = Circle.r
 
 
 class Points(Grob):
-    _constructor = grid_env['pointsGrob']
+    _r_constructor = grid_env['pointsGrob']
 
 
-points = Points
+points = Points.r
 
 
 class Text(Grob):
-    _constructor = grid_env['textGrob']
+    _r_constructor = grid_env['textGrob']
 
 
-text = Text
+text = Text.r
 
 
 class GTree(Grob):
@@ -162,13 +132,13 @@ class GTree(Grob):
     def gtree(cls, **kwargs):
         """ Constructor (uses the R function grid::gTree())"""
         res = cls._gtree(**kwargs)
-        return res
+        return cls(res)
 
     @classmethod
     def grobtree(cls, **kwargs):
         """ Constructor (uses the R function grid::grobTree())"""
         res = cls._grobtree(**kwargs)
-        return res
+        return cls(res)
 
 
 class Axis(GTree):
@@ -183,13 +153,13 @@ class XAxis(Axis):
     def xaxis(cls, **kwargs):
         """ Constructor (uses the R function grid::xaxis())"""
         res = cls._xaxis(**kwargs)
-        return res
+        return cls(res)
 
     @classmethod
     def xaxisgrob(cls, **kwargs):
         """ Constructor (uses the R function grid::xaxisgrob())"""
         res = cls._xaxisgrob(**kwargs)
-        return res
+        return cls(res)
 
 
 class YAxis(Axis):
@@ -200,13 +170,13 @@ class YAxis(Axis):
     def yaxis(cls, **kwargs):
         """ Constructor (uses the R function grid::yaxis())"""
         res = cls._yaxis(**kwargs)
-        return res
+        return cls(res)
 
     @classmethod
     def yaxisgrob(cls, **kwargs):
         """ Constructor (uses the R function grid::yaxisgrob())"""
         res = cls._yaxisgrob(**kwargs)
-        return res
+        return cls(res)
 
 
 class Viewport(robjects.RObject):
@@ -265,8 +235,10 @@ class Viewport(robjects.RObject):
 viewport = Viewport.viewport
 
 _grid_dict = {
+    'gpar': Gpar,
     'grob': Grob,
     'gTree': GTree,
+    'unit': Unit,
     'xaxis': XAxis,
     'yaxis': YAxis,
     'viewport': Viewport
@@ -276,8 +248,10 @@ original_py2rpy = None
 original_rpy2py = None
 
 
+# TODO: remove after v3.5.0
 def grid_rpy2py(robj):
-
+    warnings.warn('This function is deprecated.',
+                  category=DeprecationWarning)
     pyobj = original_rpy2py(robj)
 
     if not isinstance(pyobj, robjects.RS4):
@@ -293,27 +267,56 @@ def grid_rpy2py(robj):
     return pyobj
 
 
-def activate():
-    global original_py2rpy, original_rpy2py
+converter._rpy2py_nc_map.update(
+    {
+        rinterface.FloatSexpVector: conversion.NameClassMap(
+            lambda obj: robjects.default_converter.rpy2py(obj),
+            {'unit': Unit.r}
+        ),
+        rinterface.ListSexpVector: conversion.NameClassMap(
+            lambda obj: robjects.default_converter.rpy2py(obj),
+            {'gpar': Gpar.r,
+             'grob': Grob.r}
+        ),
+    }
+)
 
-    # If module is already activated, there is nothing to do
-    if original_py2rpy:
+
+def activate():
+    warnings.warn('The global conversion available with activate() '
+                  'is deprecated and will be removed in the next '
+                  'major release. Use a local converter.',
+                  category=DeprecationWarning)
+    global original_converter
+    # If module is already activated, there is nothing to do.
+    if original_converter is not None:
         return
 
-    original_py2rpy = conversion.py2rpy
-    original_rpy2py = conversion.rpy2py
+    original_converter = conversion.converter
 
-    conversion.rpy2py = grid_rpy2py
+    new_converter = conversion.Converter('grid conversion',
+                                         template=original_converter)
+
+    for k, v in py2rpy.registry.items():
+        if k is object:
+            continue
+        new_converter.py2rpy.register(k, v)
+
+    for k, v in rpy2py.registry.items():
+        if k is object:
+            continue
+        new_converter.rpy2py.register(k, v)
+
+    conversion.set_conversion(new_converter)
 
 
 def deactivate():
-    global original_py2rpy, original_rpy2py
+    global original_converter
 
     # If module has never been activated or already deactivated,
     # there is nothing to do
-    if not original_py2rpy:
+    if original_converter is None:
         return
 
-    conversion.py2rpy = original_py2rpy
-    conversion.rpy2py = original_rpy2py
-    original_py2rpy = original_rpy2py = None
+    conversion.set_conversion(original_converter)
+    original_converter = None

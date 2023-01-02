@@ -44,27 +44,11 @@ Initialization should only be performed once.
 To avoid unpredictable results when using the embedded R, 
 subsequent calls to :func:`initr` will not have any effect.
 
-The functions :func:`get_initoptions` and :func:`set_initoptions`
+The functions :func:`rpy2.rinterface_lib.embedded.get_initoptions` and
+:func:`rpy2.rinterface_lib.embedded.set_initoptions`
 can be used to modify the options.
 Default parameters for the initialization are otherwise
-in the module variable `initoptions`.
-
-.. warning::
-   
-   Currently the set of default initialization option contains `--vanilla`,
-   which implies that :envvar:`R_LIBS`, whenever set, is ignored.
-   The initialization options will have to be set _before_ the :program:`R`
-   is started.
-
-   This can be achieved very simply by added the following lines before initializing
-   the embedded R, or importing :mod:`rpy2.robjects` as this action performs an initialization.
-
-   .. code-block:: python
-      
-      import rpy2.rinterface
-      rpy2.rinterface.set_initoptions(('rpy2', '--verbose', '--no-save'))
-      
-
+in the module variable `_options`.
 
 .. index::
    single: initialize R_HOME
@@ -108,14 +92,17 @@ R space and Python space
 
 When using the RPy2 package, two realms are co-existing: R and Python.
 
-The :class:`Sexp_Type` objects can be considered as Python envelopes pointing
+:class:`rpy2.rinterface_lib.sexp.Sexp` objects can be considered as Python envelopes pointing
 to data stored and administered in the R space.
 
-R variables are existing within an embedded R workspace, and can be accessed
+R variables exist within an embedded R workspace, and can be accessed
 from Python through their python object representations.
 
-We distinguish two kind of R objects: named objects and anonymous objects. 
-Named objects have an associated symbol in the R workspace.
+We distinguish two kinds of R objects: named objects and anonymous objects. 
+Named objects have an associated symbol in the R workspace (a "variable name")
+while anonymous objects don't, but are protected from garbage collection on the R side
+for as long as they are used on the Python side.
+
 
 Named objects
 ^^^^^^^^^^^^^
@@ -130,7 +117,8 @@ Those two objects could be accessed from Python using their names.
 
    hyp <- function(x, y) sqrt(x^2 + y^2)
 
-Two environments are provided as :class:`rpy2.rinterface.SexpEnvironment`
+By default R starts with two environments: `baseenv` and `globalenv`.
+Both are instances of class :class:`rpy2.rinterface.SexpEnvironment` in rpy2.
 
 .. index::
    single: globalenv
@@ -138,7 +126,7 @@ Two environments are provided as :class:`rpy2.rinterface.SexpEnvironment`
 
 .. rubric:: globalenv
 
-The global environment can be seen as the root (or topmost) environment,
+The global environment (`globalenv`) can be seen as the root (or topmost) environment,
 and is in fact a list, that is a sequence, of environments.
 
 When an R library (package in R's terminology) is loaded,
@@ -153,7 +141,7 @@ The library is said to be attached to the current search path.
 
 .. rubric:: baseenv
 
-The base package has a namespace, that can be accessed as an environment.
+The base package has a namespace (`baseenv`), that can be accessed as an environment.
 
 .. note::
    
@@ -277,8 +265,8 @@ The R code *1 + 2* translates to an expression of length 3:
 *+(1, 2)*, that is a call to the function *+* (or rather the symbol associated
 with the function) with the arguments *1* and *2*. 
  
->>> ri.str_typeint(expression[0][0].typeof)
-'SYMSXP'
+>>> expression[0][0].typeof
+<RTYPES.SYMSXP: 1>
 >>> tuple(expression[0][1])
 (1.0,)
 >>> tuple(expression[0][2])
@@ -294,6 +282,8 @@ with the function) with the arguments *1* and *2*.
 
 .. autofunction:: parse()
 
+.. index::
+   single: rternalize
 
 Calling Python functions from R
 -------------------------------
@@ -343,8 +333,8 @@ The lower-level function :func:`rternalize` will take an arbitray
 Python function and return an :class:`rinterface.SexpClosure` instance,
 that is a object that can be used by R as a function.
 
-
 .. autofunction:: rternalize()
+
 
 Interactive features
 ====================
@@ -386,15 +376,54 @@ as they can be resized and the information they display is refreshed.
 
 However, to do so the R process must be instructed to process
 pending interactive events. This is done by the R console for example,
-but :mod:`rpy2` is designed as a library rather than a threaded R process
+but :mod:`rpy2` is designed as a library rather than as a threaded R process
 running within Python (yet this can be done as shown below).
 
 The way to restore interactivity is to simply call the function
 :func:`rinterface_lib.callbacks.process_revents` at regular intervals.
 
-
 A higher-level interface is available, running the processing of
 R events in a thread (see Section :ref:`interactive-reventloop`).
+
+
+Multithreading
+==============
+
+R is quite not friendly to multithreading, and trying to play with threads at the C
+level can quickly result in an embedded R crashing. Since we are using R's C API
+and Python can do multithreading, getting to such software failure will not be too hard.
+However, multithreading should not be considered impossible, or even very difficult to
+achieve when applying the one guideline below.
+
+:mod:`rpy2` has a lock that can be used as a context manager. Interactions with R
+that a code author knows should never be interrupted by thread switching can simply
+be wrapped in a thread-locked block as follows:
+
+.. code-block:: python
+
+   from rpy2.rinterface_lib import openrlib
+
+   with openrlib.rlock:
+       # (put interactions with R that should not be interrupted by
+       # thread switching here).
+       pass
+
+That lock is already used in a handful of critical low-level accesses to the R
+API in the :mod:`rpy2` code base
+(e.g., when a protection/unprotection stack is used for R objects transiently
+protected from garbage collection, or when the embedded R is initialized) but
+can be safely reused and nested in higher level code.
+
+.. note::
+
+   Web Server Gateway Interfaces (WSGIs) for Python scripts can use multithreading
+   to optimize resources, allowing one process to handle several connections as
+   they are presumably of higher latency than what happens on the server side.
+
+   When using :class:`rpy2` to build services that run R code, attention should be
+   paid to whether threads are used, and if the case the lock mentioned in this
+   section should be used to ensure that coherent results results are computed by R
+   even in the presence of multithreading.
 
 
 Classes
@@ -425,7 +454,7 @@ The class :class:`Sexp` is the base class for all R objects.
       .. doctest::
 
          >>> letters.typeof
-         16
+         <RTYPES.STRSXP: 16>
 
    .. method:: __deepcopy__(self)
 
@@ -662,23 +691,23 @@ Those missing values can also be used with the :mod:`rpy2.robjects` layer
 and more documentation about their usage can be found there
 (see :ref:`robjects-missingvalues`).
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NAIntegerType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NAIntegerType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NARealType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NARealType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NALogicalType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NALogicalType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NACharacterType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NACharacterType()
    :show-inheritance:
    :members:
 
-.. autoclass:: rpy2.rinterface_lib.na_values.NAComplexType()
+.. autoclass:: rpy2.rinterface_lib.sexp.NAComplexType()
    :show-inheritance:
    :members:
 
@@ -1120,7 +1149,7 @@ Let us consider the following simple example:
 
 .. code-block:: python
    
-   ep = rinterface.SexpExtPtr("hohoho")
+   ep = rinterface.SexpExtPtr.from_pyobject('hohoho')
 
 The Python string is now encapsulated into an R external pointer, and visible as such
 by the embedded R process.
@@ -1132,12 +1161,12 @@ can be considered (here still a simple example):
 
    import ctypes
    class Point2D(ctypes.Structure):
-       _fields_ = [("x", ctypes.c_int),
-                   ("y", ctypes.c_int)]
+       _fields_ = [('x', ctypes.c_int),
+                   ('y', ctypes.c_int)]
 
    pt = Point2D()
 
-   ep = rinterface.SexpExtPtr(pt)
+   ep = rinterface.SexpExtPtr.from_pyobject(pt)
 
 
 However, this remains a rather academic exercise unless there exists a way to access the

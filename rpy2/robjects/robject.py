@@ -1,19 +1,42 @@
+import abc
 import os
-import sys
-import tempfile
+import typing
+import warnings
 import weakref
 import rpy2.rinterface
 import rpy2.rinterface_lib.callbacks
 
-from . import conversion
+from rpy2.robjects import conversion
 
-rpy2.rinterface.initr()
+rpy2.rinterface.initr_simple()
+
+
+def _add_warn_reticulate_hook():
+    msg = """
+    WARNING: The R package "reticulate" only fixed recently
+    an issue that caused a segfault when used with rpy2:
+    https://github.com/rstudio/reticulate/pull/1188
+    Make sure that you use a version of that package that includes
+    the fix.
+    """
+    rpy2.rinterface.evalr(f"""
+    setHook(packageEvent("reticulate", "onLoad"),
+            function(...) cat({repr(msg)}))
+    """)
+
+
+_add_warn_reticulate_hook()
 
 
 class RSlots(object):
     """ Attributes of an R object as a Python mapping.
 
-    The parent proxy to the underlying R object is held as a
+    R objects can have attributes (slots) that are identified
+    by a string key (a name) and that can have any R object
+    as the associated value. This class represents a view
+    of those attributes that is a Python mapping.
+
+    The proxy to the underlying "parent" R object is held as a
     weak reference. The attributes are therefore not protected
     from garbage collection unless bound to a Python symbol or
     in an other container.
@@ -24,12 +47,12 @@ class RSlots(object):
     def __init__(self, robj):
         self._robj = weakref.proxy(robj)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str):
         value = self._robj.do_slot(key)
-        return conversion.rpy2py(value)
+        return conversion.get_conversion().rpy2py(value)
 
-    def __setitem__(self, key, value):
-        rpy2_value = conversion.py2rpy(value)
+    def __setitem__(self, key: str, value):
+        rpy2_value = conversion.get_conversion().py2rpy(value)
         self._robj.do_slot_assign(key, rpy2_value)
 
     def __len__(self):
@@ -55,10 +78,10 @@ class RSlots(object):
 _get_exported_value = rpy2.rinterface.baseenv['::']
 
 
-class RObjectMixin(object):
-    """ Class to provide methods common to all RObject instances. """
+class RObjectMixin(abc.ABC):
+    """ Abstract class to provide methods common to all RObject instances. """
 
-    __rname__ = None
+    __rname__: typing.Optional[str] = None
 
     __tempfile = rpy2.rinterface.baseenv.find("tempfile")
     __file = rpy2.rinterface.baseenv.find("file")
@@ -68,6 +91,7 @@ class RObjectMixin(object):
     __readlines = rpy2.rinterface.baseenv.find("readLines")
     __unlink = rpy2.rinterface.baseenv.find("unlink")
     __show = _get_exported_value('methods', 'show')
+    __print = _get_exported_value('base', 'print')
 
     __slots = None
 
@@ -81,23 +105,23 @@ class RObjectMixin(object):
             self.__slots = RSlots(self)
         return self.__slots
 
-    def __repr__(self):
-        try:
-            rclasses = ('R object with classes: {} mapped to:'
-                        .format(tuple(self.rclass)))
-        except Exception:
-            rclasses = 'Unable to fetch R classes.' + os.linesep
-        os.linesep.join((rclasses,
-                         repr(super())))
-        return rclasses
-
     def __str__(self):
         s = []
 
         with (rpy2.rinterface_lib
               .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
                                        'consolewrite_print', s.append)):
-            self.__show(self)
+            try:
+                self.__show(self)
+                # There can be situation where an invalid call to R`s
+                # show is made. Possibly some form of signature overriding
+                # that goes through in R through dispatch (although it
+                # should not?). In that case this is an problem upstream
+                # and this try/except is a workaround until it gets fixed.
+                # (issue #908).
+            except rpy2.rinterface.embedded.RRuntimeError as rre:
+                warnings.warn(f'Invalid call to "show()" in R: {rre}')
+                self.__print(self)
         s = str.join('', s)
         return s
 
@@ -108,6 +132,17 @@ class RObjectMixin(object):
         rds, __dict__ = state
         super().__setstate__(rds)
         self.__dict__.update(__dict__)
+
+    def __repr__(self):
+        res = [super(RObjectMixin, self).__repr__()]
+        try:
+            res.append(
+                'R classes: {}'
+                .format(tuple(self.rclass))
+            )
+        except Exception:
+            res.append('Unable to fetch R classes.')
+        return os.linesep.join(res)
 
     def r_repr(self):
         """ String representation for an object that can be
@@ -123,8 +158,7 @@ class RObjectMixin(object):
         When setting the rclass, the new value will be:
 
         - wrapped in a Python tuple if a string (the R class
-        is a vector of strings, and this is made for convenience)
-
+          is a vector of strings, and this is made for convenience)
         - wrapped in a StrSexpVector
 
         Note that when setting the class R may make a copy of
@@ -132,7 +166,8 @@ class RObjectMixin(object):
         If this must be avoided, and if the number of parent
         classes before and after the change are compatible,
         the class name can be changed in-place by replacing
-        vector elements."""
+        vector elements.
+        """
 
         try:
             res = super(RObjectMixin, self).rclass

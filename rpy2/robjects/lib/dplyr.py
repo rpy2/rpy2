@@ -1,4 +1,3 @@
-from collections import namedtuple
 from rpy2 import robjects
 from rpy2.robjects.packages import (importr,
                                     WeakPackage)
@@ -6,58 +5,34 @@ import warnings
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    dplyr = importr('dplyr', on_conflict="warn")
+    dplyr_ = importr('dplyr', on_conflict="warn")
     lazyeval = importr('lazyeval', on_conflict="warn")
-    rlang = importr('rlang', on_conflict="warn", signature_translation=False)
-    dplyr = WeakPackage(dplyr._env,
-                        dplyr.__rname__,
-                        translation=dplyr._translation,
-                        exported_names=dplyr._exported_names,
+    rlang = importr('rlang', on_conflict='warn',
+                    robject_translations={'.env': '__env'})
+    dplyr = WeakPackage(dplyr_._env,
+                        dplyr_.__rname__,
+                        translation=dplyr_._translation,
+                        exported_names=dplyr_._exported_names,
                         on_conflict="warn",
-                        version=dplyr.__version__,
-                        symbol_r2python=dplyr._symbol_r2python,
-                        symbol_resolve=dplyr._symbol_resolve)
+                        version=dplyr_.__version__,
+                        symbol_r2python=dplyr_._symbol_r2python,
+                        symbol_resolve=dplyr_._symbol_resolve)
 
-TARGET_VERSION = '0.8.3'
-if dplyr.__version__ != TARGET_VERSION:
-    warnings.warn('This was designed againt dplyr version %s but you have %s' %
-                  (TARGET_VERSION, dplyr.__version__))
-
-StringInEnv = namedtuple('StringInEnv', 'string env')
-
-
-def _fix_args_inenv(args, env):
-    """Use R's lazyeval::as_lazy to evaluate each argument in a sequence as
-    code in an environment."""
-    args_inenv = list()
-    for v in args:
-        if isinstance(v, StringInEnv):
-            args_inenv.append(lazyeval.as_lazy(v.string, env=v.env))
-        else:
-            args_inenv.append(lazyeval.as_lazy(v, env=env))
-    return args_inenv
+TARGET_VERSION = '1.0'
+if (
+  (dplyr.__version__ is None)
+  or
+  (not dplyr.__version__.startswith(TARGET_VERSION))
+):
+    warnings.warn(
+        'This was designed againt dplyr versions starting with %s'
+        ' but you have %s' %
+        (TARGET_VERSION, dplyr.__version__))
 
 
-def _fix_kwargs_inenv(kwargs, env):
-    """Use R's lazyeval::as_lazy to evaluate each value in a dict as
-    code in an environment."""
-    kwargs_inenv = dict()
-    for k, v in kwargs.items():
-        if isinstance(v, StringInEnv):
-            kwargs_inenv[k] = lazyeval.as_lazy(v.string, env=v.env)
-        else:
-            kwargs_inenv[k] = lazyeval.as_lazy(v, env=env)
-    return kwargs_inenv
-
-# TODO: _wrap and _pipe have become quite similar (identical ?).
-#       Have only one of the two ?
-
-
-def _wrap(rfunc, cls, env=robjects.globalenv):
+def _wrap(rfunc, cls):
     def func(dataf, *args, **kwargs):
-        args_inenv = _fix_args_inenv(args, env)
-        kwargs_inenv = _fix_kwargs_inenv(kwargs, env)
-        res = rfunc(dataf, *args_inenv, **kwargs_inenv)
+        res = rfunc(dataf, *args, **kwargs)
         if cls is None:
             return type(dataf)(res)
         else:
@@ -83,9 +58,7 @@ def _make_pipe(rfunc, cls, env=robjects.globalenv):
     :param env: A R environment.
     :rtype: A function."""
     def inner(obj, *args, **kwargs):
-        args_inenv = _fix_args_inenv(args, env)
-        kwargs_inenv = _fix_kwargs_inenv(kwargs, env)
-        res = rfunc(obj, *args_inenv, **kwargs_inenv)
+        res = rfunc(obj, *args, **kwargs)
         return cls(res)
     return inner
 
@@ -102,13 +75,65 @@ def _make_pipe2(rfunc, cls, env=robjects.globalenv):
     return inner
 
 
+def _fix_call(func):
+    def inner(self, *args, **kwargs):
+        if len(args) > 0:
+            if len(kwargs) > 0:
+                res = func(self, *args, **kwargs)
+            else:
+                res = func(self, *args)
+        else:
+            if len(kwargs) > 0:
+                res = func(self, **kwargs)
+            else:
+                res = func(self)
+        return res
+    return inner
+
+
+def result_as(func, constructor=None):
+    """Wrap the result using the constructor.
+
+    This decorator is intended for methods. The first arguments
+    passed to func must be 'self'.
+
+    Args:
+    constructor: a constructor to call using the result of func(). If None,
+    the type of self will be used."""
+    def inner(self, *args, **kwargs):
+        if constructor is None:
+            wrap = type(self)
+        else:
+            wrap = constructor
+        res = func(self, *args, **kwargs)
+        return wrap(res)
+    return inner
+
+
 class DataFrame(robjects.DataFrame):
     """DataFrame object extending the object of the same name in
     `rpy2.robjects.vectors` with functionalities defined in the R
     package `dplyr`."""
 
+    @property
+    def is_grouped_df(self) -> bool:
+        """Is the DataFrame in a grouped state"""
+        return dplyr.is_grouped_df(self)[0]
+
     def __rshift__(self, other):
         return other(self)
+
+    @result_as
+    def anti_join(self, *args, **kwargs):
+        """Call the R function `dplyr::anti_join()`."""
+        res = dplyr.anti_join(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def arrange(self, *args, _by_group=False):
+        """Call the R function `dplyr::arrange()`."""
+        res = dplyr.arrange(self, *args, **{'.by_group': _by_group})
+        return res
 
     def copy_to(self, destination, name, **kwargs):
         """
@@ -116,90 +141,261 @@ class DataFrame(robjects.DataFrame):
         - name: table name in the destination database
         """
         res = dplyr.copy_to(destination, self, name=name)
-        return type(self)(res)
+        return guess_wrap_type(res)(res)
 
+    @result_as
     def collapse(self, *args, **kwargs):
         """
         Call the function `collapse` in the R package `dplyr`.
         """
+        return dplyr.collapse(self, *args, **kwargs)
 
-        cls = type(self)
-        return cls(dplyr.collapse(self, *args, **kwargs))
-
+    @result_as
     def collect(self, *args, **kwargs):
         """Call the function `collect` in the R package `dplyr`."""
-        cls = type(self)
-        return cls(dplyr.collect(self, *args, **kwargs))
+        return dplyr.collect(self, *args, **kwargs)
+
+    @result_as
+    def count(self, *args, **kwargs):
+        """Call the function `count` in the R package `dplyr`."""
+        return dplyr.count(self, *args, **kwargs)
+
+    @result_as
+    def distinct(self, *args, _keep_all=False):
+        """Call the R function `dplyr::distinct()`."""
+        res = dplyr.distinct(self, *args, **{'.keep_all': _keep_all})
+        return res
+
+    @result_as
+    def filter(self, *args, _preserve=False):
+        """Call the R function `dplyr::filter()`."""
+        res = dplyr.filter(self, *args, **{'.preserve': _preserve})
+        return res
+
+    def group_by(self, *args, _add=False,
+                 _drop=robjects.rl('group_by_drop_default(.data)')):
+        """Call the R function `dplyr::group_by()`."""
+        res = dplyr.group_by(self, *args,
+                             **{'.add': _add, '.drop': _drop})
+        return GroupedDataFrame(res)
+
+    @result_as
+    def inner_join(self, *args, **kwargs):
+        """Call the R function `dplyr::inner_join()`."""
+        res = dplyr.inner_join(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def left_join(self, *args, **kwargs):
+        """Call the R function `dplyr::left_join()`."""
+        res = dplyr.left_join(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def full_join(self, *args, **kwargs):
+        """Call the R function `dplyr::full_join()`."""
+        res = dplyr.full_join(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def mutate(self, **kwargs):
+        """Call the R function `dplyr::mutate()`."""
+        res = dplyr.mutate(self, **kwargs)
+        return res
+
+    @result_as
+    def mutate_all(self, *args, **kwargs):
+        """Call the R function `dplyr::mutate_all()`."""
+        res = dplyr.mutate_all(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def mutate_at(self, *args, **kwargs):
+        """Call the R function `dplyr::mutate_at()`."""
+        res = dplyr.mutate_at(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def mutate_if(self, *args, **kwargs):
+        """Call the R function `dplyr::mutate_if()`."""
+        res = dplyr.mutate_if(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def right_join(self, *args, **kwargs):
+        """Call the R function `dplyr::right_join()`."""
+        res = dplyr.right_join(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def sample_frac(self, *args):
+        """Call the R function `dplyr::sample_frac()`."""
+        res = dplyr.sample_frac(self, *args)
+        return res
+
+    @result_as
+    def sample_n(self, *args):
+        """Call the R function `dplyr::sample_n()`."""
+        res = dplyr.sample_n(self, *args)
+        return res
+
+    @result_as
+    def select(self, *args):
+        """Call the R function `dplyr::select()`."""
+        res = dplyr.select(self, *args)
+        return res
+
+    @result_as
+    def semi_join(self, *args, **kwargs):
+        """Call the R function `dplyr::semi_join()`."""
+        res = dplyr.semi_join(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def slice(self, *args, **kwargs):
+        """Call the R function `dplyr::slice()`."""
+        res = dplyr.slice(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def slice_head(self, *args, **kwargs):
+        """Call the R function `dplyr::slice_head()`."""
+        res = dplyr.slice_head(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def slice_min(self, *args, **kwargs):
+        """Call the R function `dplyr::slice_min()`."""
+        res = dplyr.slice_min(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def slice_max(self, *args, **kwargs):
+        """Call the R function `dplyr::slice_max()`."""
+        res = dplyr.slice_max(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def slice_sample(self, *args, **kwargs):
+        """Call the R function `dplyr::slice_sample()`."""
+        res = dplyr.slice_sample(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def slice_tail(self, *args, **kwargs):
+        """Call the R function `dplyr::slice_tail()`."""
+        res = dplyr.slice_tail(self, *args, **kwargs)
+        return res
+
+    def summarize(self, *args, **kwargs):
+        """Call the R function `dplyr::summarize()`.
+
+        This can return a GroupedDataFrame or a DataFrame.
+        """
+        res = dplyr.summarize(self, *args, **kwargs)
+        return guess_wrap_type(res)(res)
+
+    summarise = summarize
+
+    def summarize_all(self, *args, **kwargs):
+        """Call the R function `dplyr::summarize_all()`.
+
+        This can return a GroupedDataFrame or a DataFrame.
+        """
+        res = dplyr.summarize_all(self, *args, **kwargs)
+        return guess_wrap_type(res)(res)
+
+    summarise_all = summarize_all
+
+    def summarize_at(self, *args, **kwargs):
+        """Call the R function `dplyr::summarize_at()`.
+
+        This can return a GroupedDataFrame or a DataFrame.
+        """
+        res = dplyr.summarize_at(self, *args, **kwargs)
+        return guess_wrap_type(res)(res)
+
+    summarise_at = summarize_at
+
+    def summarize_if(self, *args, **kwargs):
+        """Call the R function `dplyr::summarize_if()`.
+
+        This can return a GroupedDataFrame or a DataFrame.
+        """
+        res = dplyr.summarize_if(self, *args, **kwargs)
+        return guess_wrap_type(res)(res)
+
+    summarise_if = summarize_if
+
+    @result_as
+    def tally(self, *args, **kwargs):
+        """Call the R function `dplyr::transmute()`."""
+        res = dplyr.tally(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def transmute(self, *args, **kwargs):
+        """Call the R function `dplyr::transmute()`."""
+        res = dplyr.transmute(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def transmute_all(self, *args, **kwargs):
+        """Call the R function `dplyr::transmute_all()`."""
+        res = dplyr.transmute_all(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def transmute_at(self, *args, **kwargs):
+        """Call the R function `dplyr::transmute_at()`."""
+        res = dplyr.transmute_at(self, *args, **kwargs)
+        return res
+
+    @result_as
+    def transmute_if(self, *args, **kwargs):
+        """Call the R function `dplyr::transmute_if()`."""
+        res = dplyr.transmute_if(self, *args, **kwargs)
+        return res
+
+    union = _wrap2(dplyr.union_data_frame, None)
+    intersect = _wrap2(dplyr.intersect_data_frame, None)
+    setdiff = _wrap2(dplyr.setdiff_data_frame, None)
+
+
+def guess_wrap_type(x):
+    if dplyr.is_grouped_df(x)[0]:
+        return GroupedDataFrame
+    else:
+        return DataFrame
 
 
 class GroupedDataFrame(DataFrame):
     """DataFrame grouped by one of several factors."""
-    pass
+
+    def ungroup(self, *args):
+        res = dplyr.ungroup(self, *args)
+        return guess_wrap_type(res)(res)
 
 
-DataFrame.arrange = _wrap(dplyr.arrange_, None)
-DataFrame.distinct = _wrap(dplyr.distinct_, None)
-DataFrame.mutate = _wrap(dplyr.mutate_, None)
-DataFrame.transmute = _wrap(dplyr.transmute_, None)
-DataFrame.filter = _wrap(dplyr.filter_, None)
-DataFrame.select = _wrap(dplyr.select_, None)
-DataFrame.group_by = _wrap(dplyr.group_by_, GroupedDataFrame)
-DataFrame.ungroup = _wrap(dplyr.ungroup, None)
-DataFrame.distinct = _wrap(dplyr.distinct_, None)
-DataFrame.inner_join = _wrap2(dplyr.inner_join, None)
-DataFrame.left_join = _wrap2(dplyr.left_join, None)
-DataFrame.right_join = _wrap2(dplyr.right_join, None)
-DataFrame.full_join = _wrap2(dplyr.full_join, None)
-DataFrame.semi_join = _wrap2(dplyr.semi_join, None)
-DataFrame.anti_join = _wrap2(dplyr.anti_join, None)
-DataFrame.union = _wrap2(dplyr.union, None)
-DataFrame.intersect = _wrap2(dplyr.intersect, None)
-DataFrame.setdiff = _wrap2(dplyr.setdiff, None)
-
-DataFrame.sample_n = _wrap(dplyr.sample_n, None)
-DataFrame.sample_frac = _wrap(dplyr.sample_frac, None)
-DataFrame.slice = _wrap(dplyr.slice_, None)
-
-DataFrame.count = _wrap(dplyr.count_, None)
-DataFrame.tally = _wrap(dplyr.tally, None)
-
-DataFrame.mutate_if = _wrap(dplyr.mutate_if, None)
-DataFrame.mutate_at = _wrap(dplyr.mutate_at, None)
-DataFrame.mutate_all = _wrap(dplyr.mutate_all, None)
-DataFrame.summarize_all = _wrap(dplyr.summarize_all, None)
-DataFrame.summarise_all = _wrap(dplyr.summarize_all, None)
-DataFrame.summarize_at = _wrap(dplyr.summarize_at, None)
-DataFrame.summarise_at = _wrap(dplyr.summarize_at, None)
-DataFrame.summarize_if = _wrap(dplyr.summarize_if, None)
-DataFrame.summarise_if = _wrap(dplyr.summarize_if, None)
-DataFrame.transmute_all = _wrap(dplyr.transmute_all, None)
-DataFrame.transmute_if = _wrap(dplyr.transmute_if, None)
-DataFrame.transmute_at = _wrap(dplyr.transmute_at, None)
-
-GroupedDataFrame.summarize = _wrap(dplyr.summarize_, DataFrame)
-GroupedDataFrame.summarise = GroupedDataFrame.summarize
-GroupedDataFrame.ungroup = _wrap(dplyr.ungroup, DataFrame)
-
-arrange = _make_pipe(dplyr.arrange_, DataFrame)
-count = _make_pipe(dplyr.count_, DataFrame)
-distinct = _make_pipe(dplyr.distinct_, DataFrame)
-mutate = _make_pipe(dplyr.mutate_, DataFrame)
-transmute = _make_pipe(dplyr.transmute_, DataFrame)
-filter = _make_pipe(dplyr.filter_, DataFrame)
-select = _make_pipe(dplyr.select_, DataFrame)
-group_by = _make_pipe(dplyr.group_by_, DataFrame)
-summarize = _make_pipe(dplyr.summarize_, DataFrame)
+arrange = _make_pipe(dplyr.arrange, DataFrame)
+count = _make_pipe(dplyr.count, DataFrame)
+mutate = _make_pipe(dplyr.mutate, DataFrame)
+transmute = _make_pipe(dplyr.transmute, DataFrame)
+filter = result_as(dplyr.filter)
+select = _make_pipe(dplyr.select, DataFrame)
+group_by = _make_pipe(dplyr.group_by, GroupedDataFrame)
+summarize = _make_pipe(dplyr.summarize, guess_wrap_type)
 summarise = summarize
-distinct = _make_pipe(dplyr.distinct_, DataFrame)
+distinct = _make_pipe(dplyr.distinct, DataFrame)
 inner_join = _make_pipe2(dplyr.inner_join, DataFrame)
 left_join = _make_pipe2(dplyr.left_join, DataFrame)
 right_join = _make_pipe2(dplyr.right_join, DataFrame)
 full_join = _make_pipe2(dplyr.full_join, DataFrame)
 semi_join = _make_pipe2(dplyr.semi_join, DataFrame)
 anti_join = _make_pipe2(dplyr.anti_join, DataFrame)
-union = _make_pipe2(dplyr.union, DataFrame)
-intersect = _make_pipe2(dplyr.intersect, DataFrame)
-setdiff = _make_pipe2(dplyr.setdiff, DataFrame)
+union = _make_pipe2(dplyr.union_data_frame, DataFrame)
+intersect = _make_pipe2(dplyr.intersect_data_frame, DataFrame)
+setdiff = _make_pipe2(dplyr.setdiff_data_frame, DataFrame)
 sample_n = _make_pipe(dplyr.sample_n, DataFrame)
 sample_frac = _make_pipe(dplyr.sample_frac, DataFrame)
 slice = _make_pipe(dplyr.slice_, DataFrame)

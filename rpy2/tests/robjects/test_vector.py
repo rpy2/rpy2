@@ -1,6 +1,7 @@
 import pytest
 import rpy2.robjects as robjects
 ri = robjects.rinterface
+import os
 import array
 import time
 import datetime
@@ -342,11 +343,11 @@ def test_list_repr():
                                        ('b', 2),
                                        ('b', 3)))
     s = repr(vec)
-    assert s.startswith("R object with classes: ('list',) ")
+    assert s.startswith('<rpy2.robjects.vectors.ListVector ')
 
     vec2 = robjects.vectors.ListVector((('A', vec),))
     s = repr(vec2)
-    assert s.startswith("R object with classes: ('list',) ")
+    assert s.startswith('<rpy2.robjects.vectors.ListVector ')
 
 
 def test_float_repr():
@@ -389,9 +390,9 @@ def test_repr_nonvectorinlist():
     vec = robjects.ListVector(OrderedDict((('a', 1), 
                                            ('b', robjects.Formula('y ~ x')),
                                            )))
-    s = repr(vec)
-    assert s.startswith("R object with classes: ('list',) "
-                        "mapped to:\n[IntSexpVector, LangSexpVector]")
+    s = repr(vec).split(os.linesep)
+    assert s[1].startswith("R classes: ('list',)")
+    assert s[2].startswith("[IntSexpVector, LangSexpVector]")
 
 
 def test_items():

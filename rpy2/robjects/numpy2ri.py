@@ -1,11 +1,12 @@
 import rpy2.robjects as ro
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
+import rpy2.rlike.container as rlc
 from rpy2.rinterface import (Sexp,
-                             ListSexpVector,
                              StrSexpVector, ByteSexpVector,
                              RTYPES)
-import numpy
+import numpy  # type: ignore
+import warnings
 
 # TODO: move this to rinterface.
 RINT_SIZE = 32
@@ -47,7 +48,7 @@ def numpy_O_py2rpy(o):
     elif all(isinstance(x, bytes) for x in o):
         res = ByteSexpVector(o)
     else:
-        res = conversion.py2rpy(list(o))
+        res = conversion.get_conversion().py2rpy(list(o))
     return res
 
 
@@ -64,10 +65,12 @@ def _numpyarray_to_r(a, func):
 
 def unsignednumpyint_to_rint(intarray):
     """Convert a numpy array of unsigned integers to an R array."""
-    if intarray.nbytes >= (RINT_SIZE / 4):
+    if intarray.itemsize >= (RINT_SIZE / 8):
         raise ValueError(
-            'Cannot convert numpy array of unsigned integers '
-            'with {RINT_SIZE} bits or more.'.format(RINT_SIZE=RINT_SIZE)
+            'Cannot convert numpy array of {numpy_type!s} '
+            '(R integers are signed {RINT_SIZE}-bit integers).'
+            .format(numpy_type=intarray.dtype.type,
+                    RINT_SIZE=RINT_SIZE)
         )
     else:
         res = _numpyarray_to_r(intarray, _kinds['i'])
@@ -97,10 +100,11 @@ def numpy2rpy(o):
             raise ValueError('Nothing can be done for this numpy array '
                              'type "%s" at the moment.' % (o.dtype,))
         df_args = []
+        cv = conversion.get_conversion()
         for field_name in o.dtype.names:
             df_args.append((field_name,
-                            conversion.py2rpy(o[field_name])))
-        res = ro.baseenv["data.frame"].rcall(tuple(df_args), ro.globalenv)
+                            cv.py2rpy(o[field_name])))
+        res = ro.baseenv["data.frame"].rcall(tuple(df_args))
     # It should be impossible to get here:
     else:
         raise ValueError('Unknown numpy array type "%s".' % str(o.dtype))
@@ -139,50 +143,98 @@ def nonnumpy2rpy(obj):
 #     res = numpy2ri(obj)
 #     return ro.vectors.rtypeof2rotype[res.typeof](res)
 
-
-@rpy2py.register(ListSexpVector)
-def rpy2py_list(obj):
-    if 'data.frame' in obj.rclass:
-        # R "factor" vectors will not convert well by default
-        # (will become integers), so we build a temporary list o2
-        # with the factors as strings.
-        o2 = list()
-        # An added complication is that the conversion defined
-        # in this module will make __getitem__ at the robjects
-        # level return numpy arrays
-        for column in rinterface.ListSexpVector(obj):
-            if 'factor' in column.rclass:
-                levels = tuple(column.do_slot("levels"))
-                column = tuple(levels[x-1] for x in column)
-            o2.append(column)
-        names = obj.do_slot('names')
-        if names == rinterface.NULL:
-            res = numpy.rec.fromarrays(o2)
-        else:
-            res = numpy.rec.fromarrays(o2, names=tuple(names))
-    else:
-        # not a data.frame, yet is it still possible to convert it
-        res = ro.default_converter.rpy2py(obj)
+def _factor_to_numpy_string_array(obj):
+    res = numpy.array(
+        tuple(
+            None if x is rinterface.NA_Character
+            else obj.levels[x-1] for x in obj
+        )
+    )
     return res
+
+
+def rpy2py_data_frame(obj):
+    # TODO: R "factor" vectors will not convert well by default
+    # (will become integers), so we build a temporary list o2
+    # with the factors as strings. This fix might good to have
+    # as a default.
+    o2 = list()
+    # An added complication is that the conversion defined
+    # in this module will make __getitem__ at the robjects
+    # level return numpy arrays
+    for column in rinterface.ListSexpVector(obj):
+        if 'factor' in column.rclass:
+            levels = column.do_slot('levels')
+            column = tuple(
+                None if x is rinterface.NA_Integer
+                else levels[x-1] for x in column
+            )
+        o2.append(column)
+    names = obj.do_slot('names')
+    if names == rinterface.NULL:
+        res = numpy.rec.fromarrays(o2)
+    else:
+        res = numpy.rec.fromarrays(o2, names=tuple(names))
+    return res
+
+
+def rpy2py_list(obj: rinterface.ListSexpVector):
+    # not a data.frame, yet is it still possible to convert it
+    if not isinstance(obj, ro.vectors.ListVector):
+        obj = ro.vectors.ListVector(obj)
+    res = rlc.OrdDict(obj.items())
+    return res
+
+
+@rpy2py.register(rinterface.IntSexpVector)
+def rpy2py_intvector(obj):
+    return numpy.array(obj)
+
+
+@rpy2py.register(rinterface.FloatSexpVector)
+def rpy2py_floatvector(obj):
+    return numpy.array(obj)
 
 
 @rpy2py.register(Sexp)
 def rpy2py_sexp(obj):
     if (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
         res = numpy.array(obj)
+        # Special case for R string arrays.
+        if obj.typeof is rinterface.RTYPES.STRSXP:
+            res[res == rinterface.NA_Character] = None
     else:
         res = ro.default_converter.rpy2py(obj)
     return res
 
 
+converter._rpy2py_nc_map.update(
+    {
+        rinterface.IntSexpVector: conversion.NameClassMap(
+            converter.rpy2py,
+            {'factor': _factor_to_numpy_string_array}
+        ),
+        rinterface.ListSexpVector: conversion.NameClassMap(
+            rpy2py_list,
+            {'data.frame': rpy2py_data_frame}
+        )
+    }
+)
+
+
 def activate():
+    warnings.warn('The global conversion available with activate() '
+                  'is deprecated and will be removed in the next major '
+                  'release. Use a local converter.',
+                  category=DeprecationWarning)
+
     global original_converter
 
     # If module is already activated, there is nothing to do
     if original_converter is not None:
         return
 
-    original_converter = conversion.converter
+    original_converter = conversion.converter_ctx.get()
     new_converter = conversion.Converter('numpy conversion',
                                          template=original_converter)
 

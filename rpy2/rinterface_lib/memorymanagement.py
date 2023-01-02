@@ -1,6 +1,7 @@
 """Interface to and utilities for R's memory management."""
 
 import contextlib
+import typing
 from . import openrlib
 
 
@@ -17,7 +18,7 @@ class ProtectionTracker(object):
         self._counter = 0
 
     @property
-    def count(self):
+    def count(self) -> int:
         """Return the count for the protection stack."""
         return self._counter
 
@@ -43,7 +44,7 @@ class ProtectionTracker(object):
 
 
 @contextlib.contextmanager
-def rmemory():
+def rmemory() -> typing.Iterator[ProtectionTracker]:
     pt = ProtectionTracker()
     with openrlib.rlock:
         try:

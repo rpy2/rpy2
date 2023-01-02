@@ -1,23 +1,22 @@
 import pytest
-from rpy2.rinterface_lib.embedded import RRuntimeError
 
-# Try to load R dplyr package, and see if it works
-has_tidyr = None
+from rpy2.robjects import packages
+
 try:
     from rpy2.robjects.lib import tidyr
     has_tidyr = True
-except RRuntimeError:
+    msg = ''
+except packages.PackageNotInstalledError as error:
     has_tidyr = False
+    msg = str(error)
 
 from rpy2 import rinterface
 from rpy2.robjects import vectors
-from rpy2.robjects.packages import (importr,
-                                    data)
-datasets = importr('datasets')
-mtcars = data(datasets).fetch('mtcars')['mtcars']
+datasets = packages.importr('datasets')
+mtcars = packages.data(datasets).fetch('mtcars')['mtcars']
 
 @pytest.mark.skipif(not has_tidyr,
-                    reason='tidyr package not available in R')
+                    reason=msg)
 class TestTidyr(object):
 
     def test_dataframe(self):

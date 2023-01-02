@@ -39,9 +39,18 @@ typedef struct {
 /* include/Rinternals.h */
 typedef int R_len_t;
 
-double R_NaN;		/* IEEE NaN */
-double R_NaReal;	/* NA_REAL: IEEE */
-int    R_NaInt;
+#ifdef RPY2_RLEN_LONG
+typedef ptrdiff_t R_xlen_t;
+#else  /* RPY2_RLEN_LONG */
+typedef int R_xlen_t;
+#endif  /* RPY2_RLEN_LONG */
+
+/* R_ext/Arith.h */
+extern double R_NaN;  /* IEEE NaN */
+extern double R_PosInf;  /* IEEE Inf */
+extern double R_NegInf;  /* IEEE -Inf */
+extern double R_NaReal;	 /* NA_REAL: IEEE */
+extern int    R_NaInt;  /* NA_INTEGER:= INT_MIN currently */
 
 typedef unsigned char Rbyte;
 
@@ -139,11 +148,12 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 
 /* include/Rembedded.h */
 int Rf_initialize_R(int ac, char **av);
-void R_RunExitFinalizers(void);
-void Rf_KillAllDevices(void);
-void R_CleanTempDir(void);
+extern int Rf_initEmbeddedR(int argc, char *argv[]);
+extern void R_RunExitFinalizers(void);
+extern void Rf_KillAllDevices(void);
+extern void R_CleanTempDir(void);
 
-void Rf_endEmbeddedR(int fatal);
+extern void Rf_endEmbeddedR(int fatal);
 
 /* include/R_ext/Memory.h */
 void	R_gc(void);
@@ -240,6 +250,10 @@ SEXP (CLOENV)(SEXP x);
 SEXP Rf_eval(SEXP, SEXP);
 SEXP R_tryEval(SEXP, SEXP, int*);
 
+Rboolean R_ToplevelExec(void (*fun)(void *), void *data);
+SEXP R_tryCatchError(SEXP (*fun)(void *data), void *data,
+		     SEXP (*hndlr)(SEXP cond, void *hdata), void *hdata);
+
 SEXP Rf_findFun(SEXP sym, SEXP env);
 // SEXP Rf_findFun3(SEXP, SEXP, SEXP);
 
@@ -262,27 +276,22 @@ void Rf_unprotect(int n);
 void R_PreserveObject(SEXP s);
 void R_ReleaseObject(SEXP s);
 
-SEXP R_NaString; /* a CHARSXP */
-SEXP R_BlankString;
-SEXP R_BlankScalarString;
+extern SEXP R_NaString; /* a CHARSXP */
+extern SEXP R_BlankString;
+extern SEXP R_BlankScalarString;
 
-SEXP R_GlobalEnv;
+extern SEXP R_GlobalEnv;
 
-SEXP R_EmptyEnv;
+extern SEXP R_EmptyEnv;
 
 Rboolean R_EnvironmentIsLocked(SEXP env);
 
-SEXP R_BaseEnv;
-SEXP R_BaseNamespace;
-SEXP R_BaseNamespaceRegistry;
+extern SEXP R_BaseEnv;
+extern SEXP R_BaseNamespace;
 
-SEXP R_BaseEnv;
-SEXP R_BaseNamespace;
-SEXP R_BaseNamespaceRegistry;
-
-SEXP R_NilValue;
-SEXP R_UnboundValue;
-SEXP R_MissingArg;
+extern SEXP R_NilValue;
+extern SEXP R_UnboundValue;
+extern SEXP R_MissingArg;
 
 Rboolean (Rf_isNull)(SEXP s);
 Rboolean (Rf_isList)(SEXP s);
@@ -323,17 +332,18 @@ SEXP (HASHTAB)(SEXP x);
 int (ENVFLAGS)(SEXP x);
 void (SET_ENVFLAGS)(SEXP x, int v);
 
-/* TODO: Why isn't this working ?
-   void SET_FRAME(SEXP x, SEXP, v);
-   void SET_ENCLOS(SEXP x, SEXP, v);
-   void SET_HASHTAB(SEXP x, SEXP, v);
-*/
+void SET_FRAME(SEXP x, SEXP v);
+void SET_ENCLOS(SEXP x, SEXP v);
+void SET_HASHTAB(SEXP x, SEXP v);
 
 /* include/Rdefines.h */
 
-SEXP R_ClassSymbol;
-SEXP R_NameSymbol;
-SEXP R_DimSymbol;
+extern SEXP R_ClassSymbol;
+extern SEXP R_NameSymbol;
+extern SEXP R_DimSymbol;
+
+/* include/Rinternals.h */
+Rboolean (Rf_isSymbol)(SEXP s);
 
 /* include/R_ext/Parse.h */
 typedef enum {
@@ -346,10 +356,15 @@ typedef enum {
 
 SEXP R_ParseVector(SEXP text, int num, ParseStatus *status, SEXP srcfile);
 
+/* include/Defn.h */
+extern int R_interrupts_pending;
+
 /* include/Rinterface.h */
 extern Rboolean R_Interactive ;
+extern void* R_GlobalContext;
 extern int R_SignalHandlers;
 extern uintptr_t R_CStackLimit;
+extern uintptr_t R_CStackStart;
 
 typedef enum {
     SA_NORESTORE,/* = 0 */
@@ -364,14 +379,14 @@ typedef enum {
 
 #ifdef OSNAME_NT
 char *getDLLVersion(void);
-char *getRUser(void);
-char *get_R_HOME(void);
+extern char *getRUser(void);
+extern char *get_R_HOME(void);
 void setup_term_ui(void);
-int UserBreak;
-Rboolean AllDevicesKilled;
+extern int UserBreak;
+extern Rboolean AllDevicesKilled;
 void editorcleanall(void);
-int GA_initapp(int, char **);
-void GA_appcleanup(void);
+extern int GA_initapp(int, char **);
+extern void GA_appcleanup(void);
 void readconsolecfg(void);
 
 typedef int (*blah1) (const char *, char *, int, int);
@@ -384,7 +399,8 @@ typedef int (*blah5) (const char *);
 typedef void (*blah6) (int);
 typedef void (*blah7) (const char *, int, int);
 typedef enum {RGui, RTerm, LinkDLL} UImode;
-#endif
+#else  /* OSNAME_NT */
+#endif  /* OSNAME_NT */
 
 /* preprocess-define-begin */
 #define R_SIZE_T size_t
@@ -419,28 +435,30 @@ typedef struct
   blah6 Busy;
   UImode CharacterMode;
   blah7 WriteConsoleEx; /* used only if WriteConsole is NULL */
-#endif
+#else  /* OSNAME_NT */
+#endif  /* OSNAME_NT */
 } structRstart;
 
 typedef structRstart *Rstart;
 
-void R_DefParams(Rstart);
-void R_SetParams(Rstart);
+void R_DefParams(Rstart rs);
+void R_SetParams(Rstart rs);
 
-#ifdef OSNAME_NT
-void R_SetWin32(Rstart);
-#endif
-
-void R_SizeFromEnv(Rstart);
-void R_common_command_line(int *, char **, Rstart);
+/*
+void R_SizeFromEnv(Rstart rs);
+void R_common_command_line(int *n, char **argv, Rstart rs);
+*/
 
 void R_set_command_line_arguments(int argc, char **argv);
 
 void setup_Rmainloop(void);
+void run_Rmainloop(void);
+void Rf_mainloop(void);
 
 extern FILE *R_Consolefile;
 extern FILE *R_Outputfile;
 
+#ifdef R_INTERFACE_PTRS
 extern void (*ptr_R_Suicide)(const char *);
 extern void (*ptr_R_ShowMessage)(const char *);
 extern int  (*ptr_R_ReadConsole)(const char *, unsigned char *, int, int);
@@ -466,7 +484,8 @@ extern int  (*ptr_R_EditFiles)(int, const char **,
 extern SEXP (*ptr_do_selectlist)(SEXP, SEXP, SEXP, SEXP);
 extern SEXP (*ptr_do_dataentry)(SEXP, SEXP, SEXP, SEXP);
 extern SEXP (*ptr_do_dataviewer)(SEXP, SEXP, SEXP, SEXP);
-extern void (*ptr_R_ProcessEvents)();
+extern void (*ptr_R_ProcessEvents)(void);
+#endif  /* R_INTERFACE_PTRS */
 
 typedef unsigned int R_NativePrimitiveArgType;
 

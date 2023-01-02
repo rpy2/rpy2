@@ -42,17 +42,17 @@ and provide a more dynamic mapping.
 
 """
 
-
 import rpy2.robjects as robjects
 import rpy2.robjects.constants
 import rpy2.robjects.conversion as conversion
 from rpy2.robjects.packages import importr, WeakPackage
-import copy
+from rpy2.robjects import rl
 import warnings
 
 NULL = robjects.NULL
 
-rlang = importr('rlang', on_conflict='warn')
+rlang = importr('rlang', on_conflict='warn',
+                robject_translations={'.env': '__env'})
 lazyeval = importr('lazyeval', on_conflict='warn')
 base = importr('base', on_conflict='warn')
 ggplot2 = importr('ggplot2', on_conflict='warn')
@@ -65,10 +65,11 @@ ggplot2 = WeakPackage(ggplot2._env,
                       symbol_r2python=ggplot2._symbol_r2python,
                       symbol_resolve=ggplot2._symbol_resolve)
 
-TARGET_VERSION = '3.2.1'
-if ggplot2.__version__ != TARGET_VERSION:
-    warnings.warn('This was designed againt ggplot2 version %s but you '
-                  'have %s' % (TARGET_VERSION, ggplot2.__version__))
+TARGET_VERSION = '3.3.'
+if not ggplot2.__version__.startswith(TARGET_VERSION):
+    warnings.warn(
+        'This was designed againt ggplot2 versions starting with %s but you '
+        'have %s' % (TARGET_VERSION, ggplot2.__version__))
 ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
 
 StrVector = robjects.StrVector
@@ -76,6 +77,9 @@ StrVector = robjects.StrVector
 
 def as_symbol(x):
     return rlang.sym(x)
+
+
+_AES_RLANG = rl('ggplot2::aes()')
 
 
 class GGPlot(robjects.vectors.ListVector):
@@ -90,10 +94,10 @@ class GGPlot(robjects.vectors.ListVector):
     _add = ggplot2._env['%+%']
 
     @classmethod
-    def new(cls, data):
+    def new(cls, data, mapping=_AES_RLANG, **kwargs):
         """ Constructor for the class GGplot. """
-        data = conversion.py2rpy(data)
-        res = cls(cls._constructor(data))
+        data = conversion.get_conversion().py2rpy(data)
+        res = cls(cls._constructor(data, mapping=mapping, **kwargs))
         return res
 
     def plot(self, vp=rpy2.robjects.constants.NULL):
@@ -124,18 +128,37 @@ class Aes(robjects.ListVector):
     _constructor = ggplot2_env['aes']
 
     @classmethod
-    def new(cls, **kwargs):
-        """Constructor for the class Aes."""
-        new_kwargs = copy.copy(kwargs)
-        for k, v in kwargs.items():
-            new_kwargs[k] = rlang.parse_quo(
-                v, env=robjects.baseenv['sys.frame']()
-            )
-        res = cls(cls._constructor(**new_kwargs))
+    def new(cls, *args, **kwargs):
+        res = cls(cls._constructor(*args, **kwargs))
         return res
 
 
 aes = Aes.new
+
+
+class Vars(robjects.ListVector):
+    """ Aesthetics mapping, using expressions rather than string
+    (this is the most common form when using the package in R - it might
+    be easier to use AesString when working in Python using rpy2 -
+    see class AesString in this Python module).
+    """
+    _constructor = ggplot2_env['vars']
+
+    @classmethod
+    def new(cls, *args):
+        """Constructor for the class Vars."""
+        new_args = list()
+        for a in args:
+            new_args.append(
+                rlang.parse_quo(
+                    a, env=robjects.baseenv['sys.frame']()
+                )
+            )
+        res = cls(cls._constructor(*new_args))
+        return res
+
+
+vars = Vars.new
 
 
 class AesString(robjects.ListVector):
@@ -174,10 +197,10 @@ class Layer(robjects.RObject):
             *args, **kwargs):
         """ Constructor for the class Layer. """
         for i, elt in enumerate(args):
-            args[i] = conversion.py2ro(elt)
+            args[i] = conversion.py2rpy(elt)
 
         for k in kwargs:
-            kwargs[k] = conversion.py2ro(kwargs[k])
+            kwargs[k] = conversion.py2rpy(kwargs[k])
 
         res = cls(cls.contructor)(*args, **kwargs)
         return res
@@ -1127,6 +1150,25 @@ class ElementText(Element):
 element_text = ElementText.new
 
 
+class ElementLine(Element):
+
+    _constructor = ggplot2.element_line
+
+    @classmethod
+    def new(cls,  colour=NULL, size=NULL, linetype=NULL, lineend=NULL,
+            color=NULL, arrow=NULL, inherit_blank=False):
+        res = cls(
+            cls._constructor(colour=colour, size=size,
+                             linetype=linetype, lineend=lineend,
+                             color=color, arrow=arrow,
+                             inherit_blank=inherit_blank)
+        )
+        return res
+
+
+element_line = ElementLine.new
+
+
 class ElementRect(Element):
 
     _constructor = ggplot2.element_rect
@@ -1300,8 +1342,35 @@ map_data = ggplot2.map_data
 theme = ggplot2_env['theme']
 
 ggtitle = ggplot2.ggtitle
+xlab = ggplot2.xlab
+ylab = ggplot2.ylab
+guide_axis = ggplot2.guide_axis
+guide_bins = ggplot2.guide_bins
+guide_colorbar = ggplot2.guide_colorbar
+guide_colourbar = guide_colorbar
+guide_colorsteps = ggplot2.guide_colorsteps
+guide_coloursteps = guide_colorsteps
+guide_geom = ggplot2.guide_geom
+guide_legend = ggplot2.guide_legend
+guide_merge = ggplot2.guide_merge
+guide_none = ggplot2.guide_none
+guide_train = ggplot2.guide_train
+guide_transform = ggplot2.guide_transform
 
-original_rpy2py = conversion.rpy2py
+
+def dict2rvec(d):
+    """Convert a python dict[str, str] into an R named vector.
+    """
+    r_x = StrVector(list(d.values()))
+    r_x.names = list(d.keys())
+    return r_x
+
+
+as_labeller = ggplot2.as_labeller
+
+# TODO: This side effect can create a issues that
+# are hard to troubleshoot (import order).
+original_rpy2py = conversion.get_conversion().rpy2py
 
 
 def ggplot2_conversion(robj):

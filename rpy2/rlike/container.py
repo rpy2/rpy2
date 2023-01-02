@@ -1,4 +1,9 @@
 import rpy2.rlike.indexing as rli
+from typing import Any
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Tuple
 
 
 class OrdDict(dict):
@@ -13,7 +18,9 @@ class OrdDict(dict):
 
     """
 
-    def __init__(self, c=[]):
+    __l: List[Tuple[Optional[str], Any]]
+
+    def __init__(self, c: Iterable[Tuple[Optional[str], Any]]=[]):
 
         if isinstance(c, TaggedList) or isinstance(c, OrdDict):
             c = c.items()
@@ -32,13 +39,24 @@ class OrdDict(dict):
         cp = OrdDict(c=tuple(self.items()))
         return cp
 
+    def __reduce__(self):
+        # We need to override the special-cased dict unpickling process in order
+        # to retain the attributes the `__l` attribute.
+        return (
+            self.__class__,  # callable
+            (),  # arguments to constructor
+            {'_OrdDict__l': self.__l},  # state
+            None,  # list items
+            iter(self.items()),  # dict items
+        )
+
     def __cmp__(self, o):
-        raise(NotImplementedError("Not yet implemented."))
+        return NotImplemented
 
     def __eq__(self, o):
-        raise(NotImplementedError("Not yet implemented."))
+        return NotImplemented
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str):
         if key is None:
             raise ValueError("Unnamed items cannot be retrieved by key.")
         i = super(OrdDict, self).__getitem__(key)
@@ -57,9 +75,9 @@ class OrdDict(dict):
         return len(self.__l)
 
     def __ne__(self, o):
-        raise(NotImplementedError('Not yet implemented.'))
+        return NotImplemented
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         s = ['o{', ]
         for k, v in self.items():
             s.append("'%s': %s, " % (str(k), str(v)))
@@ -67,9 +85,9 @@ class OrdDict(dict):
         return ''.join(s)
 
     def __reversed__(self):
-        raise(NotImplementedError("Not yet implemented."))
+        raise NotImplementedError("Not yet implemented.")
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: Optional[str], value: Any):
         """ Replace the element if the key is known,
         and conserve its rank in the list, or append
         it if unknown. """
@@ -85,15 +103,15 @@ class OrdDict(dict):
             self.__l.append((key, value))
             super(OrdDict, self).__setitem__(key, len(self.__l)-1)
 
-    def byindex(self, i):
+    def byindex(self, i: int) -> Any:
         """ Fetch a value by index (rank), rather than by key."""
         return self.__l[i]
 
-    def index(self, k):
+    def index(self, k: str) -> int:
         """ Return the index (rank) for the key 'k' """
         return super(OrdDict, self).__getitem__(k)
 
-    def get(self, k, d=None):
+    def get(self, k: str, d: Any = None):
         """ OD.get(k[,d]) -> OD[k] if k in OD, else d.  d defaults to None """
         try:
             res = self[k]
@@ -135,6 +153,16 @@ class TaggedList(list):
     :param tag: optional sequence of tags
     """
 
+    __tags: List[Optional[str]]
+
+    def __init__(self, seq, tags=None):
+        super(TaggedList, self).__init__(seq)
+        if tags is None:
+            tags = [None, ] * len(seq)
+        if len(tags) != len(seq):
+            raise ValueError("There must be as many tags as seq")
+        self.__tags = list(tags)
+
     def __add__(self, tl):
         try:
             tags = tl.tags
@@ -165,20 +193,20 @@ class TaggedList(list):
         resitems = super(TaggedList, self).__imul__(y)
         return self
 
+    def __mul__(self, y):
+        restags = self.__tags__ * y.__tags__
+        resitems = super(TaggedList, self).__mul__(y)
+        return type(self)(tuple(resitems), tags=restags)
+
+    def __reduce__(self):
+        return super(TaggedList, self).__reduce__()
+
     @staticmethod
     def from_items(tagval):
         res = TaggedList([])
         for k, v in tagval.items():
             res.append(v, tag=k)
         return res
-
-    def __init__(self, seq, tags=None):
-        super(TaggedList, self).__init__(seq)
-        if tags is None:
-            tags = [None, ] * len(seq)
-        if len(tags) != len(seq):
-            raise ValueError("There must be as many tags as seq")
-        self.__tags = list(tags)
 
     def __setslice__(self, i, j, y):
         super(TaggedList, self).__setslice__(i, j, y)

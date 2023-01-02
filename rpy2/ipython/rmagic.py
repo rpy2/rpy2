@@ -49,6 +49,7 @@ from glob import glob
 from os import stat
 from shutil import rmtree
 import textwrap
+import typing
 
 # numpy and rpy2 imports
 
@@ -58,16 +59,16 @@ import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
 from rpy2.robjects.lib import grdevices
 from rpy2.robjects.conversion import (Converter,
-                                      localconverter)
+                                      localconverter,
+                                      get_conversion)
 import warnings
-from rpy2.robjects.conversion import converter as template_converter
 
 # Try loading pandas and numpy, emitting a warning if either cannot be
 # loaded.
 try:
-    import numpy
+    import numpy  # type: ignore[import]
     try:
-        import pandas
+        import pandas  # type: ignore[import]
     except ImportError as ie:
         pandas = None
         warnings.warn('The Python package `pandas` is strongly '
@@ -77,7 +78,8 @@ try:
                       'but at least we found `numpy`.' % str(ie))
 except ImportError as ie:
     # Give up on numerics
-    numpy = None
+    numpy = None  # type: ignore[assignment]
+    pandas = None
     warnings.warn('The Python package `pandas` is strongly '
                   'recommended when using `rpy2.ipython`. '
                   'Unfortunately it could not be loaded, '
@@ -86,24 +88,45 @@ except ImportError as ie:
 
 # IPython imports.
 
-from IPython.core import displaypub
-from IPython.core.magic import (Magics,
+from IPython.core import displaypub  # type: ignore
+from IPython.core.magic import (Magics,   # type: ignore
                                 magics_class,
                                 line_cell_magic,
                                 line_magic,
-                                needs_local_scope)
-from IPython.core.magic_arguments import (argument,
+                                needs_local_scope,
+                                no_var_expand)
+from IPython.core.magic_arguments import (argument,  # type: ignore
                                           argument_group,
                                           magic_arguments,
                                           parse_argstring)
 
+template_converter = get_conversion()
 
-if numpy:
-    from rpy2.robjects import numpy2ri
-    template_converter += numpy2ri.converter
-    if pandas:
-        from rpy2.robjects import pandas2ri
-        template_converter += pandas2ri.converter
+
+def _get_ipython_template_converter(template_converter=template_converter,
+                                    numpy=numpy, pandas=pandas):
+    if numpy:
+        from rpy2.robjects import numpy2ri
+        template_converter += numpy2ri.converter
+        if pandas:
+            from rpy2.robjects import pandas2ri
+            template_converter += pandas2ri.converter
+    return template_converter
+
+
+def _get_converter(template_converter=template_converter):
+    return Converter('ipython conversion',
+                     template=template_converter)
+
+
+ipy_template_converter = _get_ipython_template_converter(template_converter,
+                                                         numpy=numpy,
+                                                         pandas=pandas)
+converter = _get_converter(template_converter=ipy_template_converter)
+
+
+def CELL_DISPLAY_DEFAULT(res, args):
+    return ro.r.show(res)
 
 
 class RInterpreterError(ri.embedded.RRuntimeError):
@@ -126,20 +149,70 @@ class RInterpreterError(ri.embedded.RRuntimeError):
         return s
 
 
-converter = Converter('ipython conversion',
-                      template=template_converter)
-
-
 # The default conversion for lists is currently to make them an R list. That
 # has some advantages, but can be inconvenient (and, it's inconsistent with
 # the way python lists are automatically converted by numpy functions), so
 # for interactive use in the rmagic, we call unlist, which converts lists to
 # vectors **if the list was of uniform (atomic) type**.
-@converter.rpy2py.register(list)
-def rpy2py_list(obj):
+@converter.py2rpy.register(list)
+def py2rpy_list(obj):
     # simplify2array is a utility function, but nice for us
     # TODO: use an early binding of the R function
-    return ro.r.simplify2array(obj)
+    cv = ro.conversion.get_conversion()
+    robj = ri.ListSexpVector(
+            [cv.py2rpy(x) for x in obj]
+        )
+    res = ro.r.simplify2array(robj)
+    # The current default converter for the ipython rmagic
+    # might make `res` a numpy array. We need to ensure that
+    # a rpy2 objects is returned (issue #866).
+    res_rpy = cv.py2rpy(res)
+    return res_rpy
+
+
+def _find(name: str, ns: dict):
+    """Find a Python name, which might include dot-separated path to a name.
+
+    Args:
+    - name: a key in dict if no dot ('.') in it, otherwise
+    a sequence of dot-separated namespaces with the name of the
+    object last (e.g., `package.module.name`).
+    Returns:
+    The object wanted. Raises a NameError or an AttributeError if not found.
+    """
+
+    obj = None
+    obj_path = name.split('.')
+    look_for_i = 0
+    try:
+        obj = ns[obj_path[look_for_i]]
+    except KeyError as e:
+        message = f"name '{obj_path[look_for_i]}' is not defined."
+        if obj_path[look_for_i] == "":
+            message += ' Did you forget to remove trailing comma `,` or included spaces?'
+        raise NameError(message) from e
+    look_for_i += 1
+    while look_for_i < len(obj_path):
+        try:
+            obj = getattr(obj, obj_path[look_for_i])
+        except AttributeError as e:
+            raise AttributeError(
+                f"'{'.'.join(obj_path[:look_for_i])}' "
+                f"has no attribute '{obj_path[look_for_i]}'."
+            ) from e
+        look_for_i += 1
+    return obj
+
+
+def _parse_input_argument(arg: str) -> typing.Tuple[str, str]:
+    """Process the input to an R magic commmand (`%R`, `%%R`, `%Rpush`)."""
+    arg_elts = arg.split('=', maxsplit=1)
+    if len(arg_elts) == 1:
+        rhs = arg_elts[0]
+        lhs = rhs
+    else:
+        lhs, rhs = arg_elts
+    return lhs, rhs
 
 
 # TODO: remove ?
@@ -183,11 +256,8 @@ class RMagics(Magics):
         """
         super(RMagics, self).__init__(shell)
         self.cache_display_data = cache_display_data
-
         self.Rstdout_cache = []
-
         self.converter = converter
-
         self.set_R_plotting_device(device)
 
     def set_R_plotting_device(self, device):
@@ -197,14 +267,11 @@ class RMagics(Magics):
         must be installed. Because Cairo forces "onefile=TRUE",
         it is not posible to include multiple plots per cell.
 
-        Parameters
-        ----------
-
-        device : ['png', 'X11', 'svg']
-            Device to be used for plotting.
-            Currently only "png" and "X11" are supported,
-            with 'png' and 'svg' being most useful in the notebook,
-            and 'X11' allowing interactive plots in the terminal.
+        :param device: ['png', 'X11', 'svg']
+          Device to be used for plotting.
+          Currently only "png" and "X11" are supported,
+          with 'png' and 'svg' being most useful in the notebook,
+          and 'X11' allowing interactive plots in the terminal.
 
         """
         device = device.strip()
@@ -284,13 +351,55 @@ class RMagics(Magics):
         self.Rstdout_cache = []
         return value
 
+    def _import_name_into_r(
+            self, arg: str, env: ri.SexpEnvironment,
+            local_ns: dict
+    ) -> None:
+        lhs, rhs = _parse_input_argument(arg)
+        try:
+            val = _find(rhs, local_ns)
+        except NameError:
+            val = _find(rhs, self.shell.user_ns)
+        env[lhs] = val
+
+    def _find_converter(
+            self, name: str, local_ns: dict
+    ) -> ro.conversion.Converter:
+        if name is None:
+            converter = self.converter
+        else:
+            try:
+                converter = _find(name, local_ns)
+            except NameError:
+                converter = _find(name, self.shell.user_ns)
+
+            if not isinstance(converter, Converter):
+                raise TypeError("'%s' must be a %s object (but it is a %s)."
+                                % (converter, Converter,
+                                   type(converter)))
+        return converter
+
     # @skip_doctest
+    @magic_arguments()
+    @argument(
+        '-c', '--converter',
+        default=None,
+        help=textwrap.dedent("""
+        Name of local converter to use. A converter contains the rules to
+        convert objects back and forth between Python and R. If not
+        specified/None, the defaut converter for the magic\'s module is used
+        (that is rpy2\'s default converter + numpy converter + pandas converter
+        if all three are available)."""))
+    @argument(
+        'inputs',
+        nargs='*',
+        )
     @needs_local_scope
     @line_magic
     def Rpush(self, line, local_ns=None):
         """
-        A line-level magic for R that pushes
-        variables from python to rpy2. The line should be made up
+        A line-level magic that pushes
+        variables from python to R. The line should be made up
         of whitespace separated variable names in the IPython
         namespace::
 
@@ -307,24 +416,16 @@ class RMagics(Magics):
             Out[11]: array([ 6.23333333])
 
         """
+        args = parse_argstring(self.Rpush, line)
+
+        converter = self._find_converter(args.converter, local_ns)
+
         if local_ns is None:
             local_ns = {}
 
-        inputs = line.split(' ')
-        for input in inputs:
-            try:
-                val = local_ns[input]
-            except KeyError:
-                try:
-                    val = self.shell.user_ns[input]
-                except KeyError:
-                    # reraise the KeyError as a NameError so that it looks like
-                    # the standard python behavior when you use an unnamed
-                    # variable
-                    raise NameError("name '%s' is not defined" % input)
-
-            with localconverter(self.converter):
-                ro.r.assign(input, val)
+        with localconverter(converter):
+            for arg in args.inputs:
+                self._import_name_into_r(arg, ro.globalenv, local_ns)
 
     # @skip_doctest
     @magic_arguments()
@@ -487,7 +588,7 @@ class RMagics(Magics):
             # -- empty ones are not published
             if stat(imgfile).st_size >= 1000:
                 with open(imgfile, 'rb') as fh_img:
-                    images.append(fh_img.read())
+                    images.append(fh_img.read().decode())
 
         mimetypes = {'png': 'image/png', 'svg': 'image/svg+xml'}
         mime = mimetypes[self.device]
@@ -512,10 +613,21 @@ class RMagics(Magics):
     @argument(
         '-i', '--input', action='append',
         help=textwrap.dedent("""
-        Names of input variable from `shell.user_ns` to be assigned to R
-        variables of the same names after using the Converter self.converter.
-        Multiple names can be passed separated only by commas with no
-        whitespace.""")
+        Names of Python objects to be assigned to R
+        objects after using the default converter or
+        one specified through the argument `-c/--converter`.
+        Multiple inputs can be passed separated only by commas with no
+        whitespace.
+
+        Names of Python objects can be either the name of an object
+        in the current notebook/ipython shell, or a path to a name
+        nested in a namespace visible from the current notebook/ipython
+        shell. For example, '-i myvariable' or
+        '-i mypackage.myothervariable' would both work.
+
+        Each input can be either the name of Python object, in which
+        case the same name will be used for the R object, or an
+        expression of the form <r-name>=<python-name>.""")
     )
     @argument(
         '-o', '--output', action='append',
@@ -588,11 +700,22 @@ class RMagics(Magics):
         (that is rpy2\'s default converter + numpy converter + pandas converter
         if all three are available)."""))
     @argument(
+        '-d', '--display',
+        default=None,
+        help=textwrap.dedent("""
+        Name of function to use to display the output of an R cell (the last
+        object or function call that does not have a left-hand side
+        assignment). That function will have the signature `(robject, args)`
+        where `robject` is the R objects that is an output of the cell, and
+        `args` a namespace with all parameters passed to the cell.
+        """))
+    @argument(
         'code',
         nargs='*',
         )
     @needs_local_scope
     @line_cell_magic
+    @no_var_expand
     def R(self, line, cell=None, local_ns=None):
         """
         Execute code in R, optionally returning results to the Python runtime.
@@ -693,34 +816,23 @@ class RMagics(Magics):
         if local_ns is None:
             local_ns = {}
 
-        if args.converter is None:
-            converter = self.converter
-        else:
-            try:
-                converter = local_ns[args.converter]
-            except KeyError:
-                try:
-                    converter = self.shell.user_ns[args.converter]
-                except KeyError:
-                    raise NameError(
-                        "name '%s' is not defined" % args.converter
-                    )
-            if not isinstance(converter, Converter):
-                raise TypeError("'%s' must be a %s object (but it is a %s)."
-                                % (args.converter, Converter,
-                                   type(localconverter)))
+        converter = self._find_converter(args.converter, local_ns)
 
         if args.input:
-            for input in ','.join(args.input).split(','):
+            with localconverter(converter) as cv:
+                for arg in ','.join(args.input).split(','):
+                    self._import_name_into_r(arg, ro.globalenv, local_ns)
+
+        if args.display:
+            try:
+                cell_display = local_ns[args.display]
+            except KeyError:
                 try:
-                    val = local_ns[input]
+                    cell_display = self.shell.user_ns[args.display]
                 except KeyError:
-                    try:
-                        val = self.shell.user_ns[input]
-                    except KeyError:
-                        raise NameError("name '%s' is not defined" % input)
-                with localconverter(converter) as cv:
-                    ro.r.assign(input, val)
+                    raise NameError("name '%s' is not defined" % args.display)
+        else:
+            cell_display = CELL_DISPLAY_DEFAULT
 
         tmpd = self.setup_graphics(args)
 
@@ -747,7 +859,7 @@ class RMagics(Magics):
                                                .callbacks,
                                                'consolewrite_print',
                                                self.write_console_regular))
-                        ro.r.show(result)
+                        cell_display(result, args)
                         text_output += self.flush()
 
         except RInterpreterError as e:
@@ -755,28 +867,28 @@ class RMagics(Magics):
             print(e.stdout)
             if not e.stdout.endswith(e.err):
                 print(e.err)
-            if tmpd:
-                rmtree(tmpd)
-            return
+            raise e
         finally:
             if self.device in ['png', 'svg']:
                 ro.r('dev.off()')
+            if text_output:
+                # display_data.append(('RMagic.R', {'text/plain':text_output}))
+                displaypub.publish_display_data(
+                    data={'text/plain': text_output}, source='RMagic.R')
+            # publish the R images
+            if self.device in ['png', 'svg']:
+                display_data, md = self.publish_graphics(
+                    tmpd, args.isolate_svgs
+                )
 
-        if text_output:
-            # display_data.append(('RMagic.R', {'text/plain':text_output}))
-            displaypub.publish_display_data(
-                data={'text/plain': text_output}, source='RMagic.R')
-        # publish the R images
-        if self.device in ['png', 'svg']:
-            display_data, md = self.publish_graphics(tmpd, args.isolate_svgs)
-
-            for tag, disp_d in display_data:
-                displaypub.publish_display_data(data=disp_d, source=tag,
-                                                metadata=md)
+                for tag, disp_d in display_data:
+                    displaypub.publish_display_data(data=disp_d, source=tag,
+                                                    metadata=md)
 
             # kill the temporary directory - currently created only for "svg"
             # and "png" (else it's None)
-            rmtree(tmpd)
+            if tmpd:
+                rmtree(tmpd)
 
         if args.output:
             with localconverter(converter) as cv:
@@ -801,10 +913,10 @@ class RMagics(Magics):
 
 
 __doc__ = __doc__.format(
-                R_DOC=' '*8 + RMagics.R.__doc__,
-                RPUSH_DOC=' '*8 + RMagics.Rpush.__doc__,
-                RPULL_DOC=' '*8 + RMagics.Rpull.__doc__,
-                RGET_DOC=' '*8 + RMagics.Rget.__doc__
+                R_DOC='{0}{1}'.format(' '*8, RMagics.R.__doc__),
+                RPUSH_DOC='{0}{1}'.format(' '*8, RMagics.Rpush.__doc__),
+                RPULL_DOC='{0}{1}'.format(' '*8, RMagics.Rpull.__doc__),
+                RGET_DOC='{0}{1}'.format(' '*8, RMagics.Rget.__doc__)
 )
 
 
