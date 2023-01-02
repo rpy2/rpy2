@@ -200,8 +200,8 @@ def createbuilder_api():
         *situation.get_r_flags(r_home, '--cppflags')
     )
     c_ext.extra_link_args.extend(
-        [f'-Wl,-rpath={situation.get_rlib_rpath(r_home)}',
-         f'-Wl,-rpath-link={situation.get_rlib_rpath(r_home)}']
+        [f'-Wl,-rpath,{situation.get_rlib_rpath(r_home)}',
+         f'-Wl,-rpath-link,{situation.get_rlib_rpath(r_home)}']
     )
     if 'RPY2_RLEN_LONG' in definitions:
         definitions['RPY2_RLEN_LONG'] = True
