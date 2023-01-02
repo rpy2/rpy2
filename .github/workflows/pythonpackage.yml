@@ -96,6 +96,7 @@ jobs:
           CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
+          CIBW_BEFORE_ALL_LINUX: yum install -y libffi
           CIBW_ENVIRONMENT_PASS_LINUX: RPY2_CFFI_MODE
           CIBW_ENVIRONMENT_LINUX: LD_LIBRARY_PATH="$(R RHOME)/$(R CMD config LIBnn):${LD_LIBRARY_PATH}"
           CIBW_BUILD_VERBOSITY: 1
