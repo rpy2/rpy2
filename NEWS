@@ -29,7 +29,8 @@ Changes
   Python code using multithreading without fetching the context
   (see issue #965).
 
-- A warning is now issued when trying to convert a `DataFrame` with duplicate indexes.
+- A warning is now issued when trying to convert a `DataFrame` with
+  duplicate indexes (issue #811).
 
 
 Release 3.5.6
