@@ -179,13 +179,19 @@ def r_ld_library_path_from_subprocess(r_home: str) -> str:
     return res
 
 
+def get_rlib_rpath(r_home: str) -> str:
+    """Get the path for the R shared library/libraries."""
+    lib_path = os.path.join(r_home, get_r_libnn(r_home))
+    return lib_path
+
+
 # TODO: Does r_ld_library_path_from_subprocess() supersed this?
 def get_rlib_path(r_home: str, system: str) -> str:
     """Get the path for the R shared library."""
     if system == 'FreeBSD' or system == 'Linux':
-        lib_path = os.path.join(r_home, 'lib', 'libR.so')
+        lib_path = os.path.join(r_home, get_r_libnn(r_home), 'libR.so')
     elif system == 'Darwin':
-        lib_path = os.path.join(r_home, 'lib', 'libR.dylib')
+        lib_path = os.path.join(r_home, get_r_libnn(r_home), 'libR.dylib')
     elif system == 'Windows':
         # i386
         os.environ['PATH'] = os.pathsep.join(
@@ -266,6 +272,11 @@ def _get_r_cmd_config(r_home: str, about: str, allow_empty=False):
     return res
 
 
+def get_r_libnn(r_home: str):
+    return _get_r_cmd_config(r_home, 'LIBnn',
+                             allow_empty=False)[0]
+
+
 _R_LIBS = ('LAPACK_LIBS', 'BLAS_LIBS')
 _R_FLAGS = ('--ldflags', '--cppflags')
 
@@ -291,7 +302,18 @@ def get_r_flags(r_home: str, flags: str):
 
 
 def get_r_libs(r_home: str, libs: str):
-    return _get_r_cmd_config(r_home, libs, allow_empty=True)
+    assert libs in _R_LIBS
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-I', action='append')
+    parser.add_argument('-L', action='append')
+    parser.add_argument('-l', action='append')
+
+    res = shlex.split(
+        ' '.join(
+            _get_r_cmd_config(r_home, libs,
+                              allow_empty=False)))
+    return parser.parse_known_args(res)
 
 
 class CExtensionOptions(object):
@@ -439,6 +461,9 @@ def iter_info():
             yield '  %s' % c_ext.extra_link_args
         except subprocess.CalledProcessError:
             yield ('    Warning: Unable to get R compilation flags.')
+
+    yield 'Directory for the R shared library:'
+    yield get_r_libnn(r_home)
 
 
 def set_default_logging():
