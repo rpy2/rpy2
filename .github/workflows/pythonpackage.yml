@@ -91,7 +91,7 @@ jobs:
       uses: pypa/cibuildwheel@v2.11.4
       env:
           RPY2_CFFI_MODE: API
-          CIBW_SKIP: cp36-* cp37-*
+          CIBW_SKIP: cp36-* cp37-* pp*
           CIBW_ARCHS_LINUX: "x86_64 i686"
           CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
