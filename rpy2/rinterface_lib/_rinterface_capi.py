@@ -658,7 +658,8 @@ class PARSING_STATUS(enum.Enum):
 
 class RParsingError(Exception):
 
-    def __init__(self, msg: str, status: PARSING_STATUS = None):
+    def __init__(self, msg: str,
+                 status: typing.Optional[PARSING_STATUS] = None):
         full_msg = (
             '{msg} - {status}'
             .format(msg=msg, status=status)

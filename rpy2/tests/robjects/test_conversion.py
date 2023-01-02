@@ -3,6 +3,7 @@ import pytest
 import rpy2.rinterface_lib.sexp
 from rpy2 import rinterface
 from rpy2 import robjects
+from rpy2.robjects import conversion
 
 
 @pytest.mark.parametrize(
@@ -44,7 +45,7 @@ def test_mapperR2Python_Date():
 
 
 def test_NameClassMap():
-    ncm = robjects.conversion.NameClassMap(object)
+    ncm = conversion.NameClassMap(object)
     classnames = ('A', 'B')
     assert ncm.find_key(classnames) is None
     assert ncm.find(classnames) is object
@@ -57,20 +58,20 @@ def test_NameClassMap():
 
 
 def test_NameClassMapContext():
-    ncm = robjects.conversion.NameClassMap(object)
+    ncm = conversion.NameClassMap(object)
     assert not len(ncm._map)
-    with robjects.conversion.NameClassMapContext(ncm, {}):
+    with conversion.NameClassMapContext(ncm, {}):
         assert not len(ncm._map)
     assert not len(ncm._map)
     
-    with robjects.conversion.NameClassMapContext(ncm, {'A': list}):
+    with conversion.NameClassMapContext(ncm, {'A': list}):
         assert set(ncm._map.keys()) == set('A')
     assert not len(ncm._map)
     ncm['B'] = tuple
-    with robjects.conversion.NameClassMapContext(ncm, {'A': list}):
+    with conversion.NameClassMapContext(ncm, {'A': list}):
         assert set(ncm._map.keys()) == set('AB')
     assert set(ncm._map.keys()) == set('B')
-    with robjects.conversion.NameClassMapContext(ncm, {'B': list}):
+    with conversion.NameClassMapContext(ncm, {'B': list}):
         assert set(ncm._map.keys()) == set('B')
     assert set(ncm._map.keys()) == set('B')
     assert ncm['B'] is tuple
@@ -116,9 +117,9 @@ def test_mapperR2Python_s4custom(_set_class_AB):
     sexp_b = rinterface.globalenv['B']( 
         x=rinterface.IntSexpVector([2, ])
     )
-    rs4_map = (robjects.conversion.get_conversion()
+    rs4_map = (conversion.get_conversion()
                .rpy2py_nc_name[rinterface.SexpS4])
-    with robjects.conversion.NameClassMapContext(
+    with conversion.NameClassMapContext(
             rs4_map,
             {'A': A}
     ):
@@ -178,9 +179,17 @@ def test_mapperpy2rpy_float_array(ctype):
     assert isinstance(rob, robjects.vectors.FloatVector)
     assert rob.typeof == rinterface.RTYPES.REALSXP
 
+
+def test_missingconversion():
+    with conversion.localconverter(conversion.missingconverter) as cv:
+        with pytest.raises(NotImplementedError):
+            cv.py2rpy(1)
+        with pytest.raises(NotImplementedError):
+            cv.rpy2py(robjects.globalenv)
     
 def noconversion():
     robj_res = robjects.baseenv['pi']
     assert isinstance(robj_res, robjects.RObject)
     rint_res = robject.conversion.noconversion(robj_res)
     assert isinstance(rint_res, rpy2.rinterface_lib.sexp.Sexp)
+

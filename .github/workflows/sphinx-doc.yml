@@ -11,13 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.8
+        python-version: 3.9
     - name: Set up R
-      uses: r-lib/actions/setup-r@master
+      uses: r-lib/actions/setup-r@v2
       with:
         r-version: ${{ env.R-VERSION }}
     - name: Cache R packages
@@ -38,9 +38,9 @@ jobs:
         sudo apt-get update
         sudo apt-get install pandoc graphviz libgraphviz-dev
         python -m pip install --upgrade pip
-        pip install -r doc/requirements.txt
         pip uninstall -y rpy2
-        python setup.py install
+        pip install -r doc/requirements.txt
+        pip install .
         sudo Rscript ./install_r_packages.r BiocManager dbplyr dplyr ggplot2 hexbin lazyeval RSQLite tidyr viridis
         sudo Rscript -e 'BiocManager::install("Biobase")'
     - name: Build HTML doc

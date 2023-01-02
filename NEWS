@@ -1,3 +1,48 @@
+Release 3.5.7
+=============
+
+New features
+------------
+
+- :class:`rpy2.robjects.conversion.Converter` objects are now also context
+  managers. This makes the use of :func:`rpy2.robjects.conversion.localconverter`
+  unnecessary as a converter can now be used directly with a Python `with`
+  statement. The documentation was updated accordingly.
+
+Bugs fixed
+----------
+
+- Building the C-extension could fail when the C compiler is not
+  C99-compatible or requires to be specified C99 compatibility
+  (issue #963).
+
+- With the "R magic", converters in a local namespace were inadvertently
+  skipped (the local namespace was not searched).
+
+Changes
+-------
+
+- The default for the :class:`contextvars.ContextVar` holding
+  conversion rules (:obj:`rpy2.robjects.conversion.converter`)
+  is now a dummy converter raising errors about missing
+  conversion rules. This behavior helps with troubleshooting
+  Python code using multithreading without fetching the context
+  (see issue #965).
+
+
+Release 3.5.6
+=============
+
+Bugs fixed
+----------
+
+- :class:`rpy2.rlike.container.OrdDict` objects were triggering an
+  error when unpickled (PR #955).
+
+- Function signature mapping not longer assumes that all default
+  values are R vectors mapped to a `Vector` instance (PR #954).
+
+
 Release 3.5.5
 =============
 

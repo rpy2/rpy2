@@ -215,7 +215,7 @@ Local conversion rules
 ^^^^^^^^^^^^^^^^^^^^^^
 
 The conversion rules can be customized globally (See section `Customizing the conversion`)
-or through the use of local converters as context managers.
+or locally in a Python `with` block.
 
 .. note::
 
@@ -246,8 +246,7 @@ default conversion scheme:
 .. code-block:: python
 
    from rpy2.robjects import default_converter
-   from rpy2.robjects.conversion import Converter, localconverter
-   with localconverter(conversion_rules) as cv:
+   with conversion_rules:
        res = base.paste(x, collapse="-")
 
 .. note::
@@ -261,10 +260,9 @@ default conversion scheme:
    .. code-block:: python
 
       from rpy2.robjects import default_converter
-      from rpy2.robjects.conversion import localconverter
 
       def my_function(obj):
-          with localconverter(default_converter) as cv:
+          with default_converter:
               # block of code mixing Python code and calls to R functions
 	      # interacting with the objects returned by R in the Python code
 	      pass

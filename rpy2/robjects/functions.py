@@ -11,6 +11,7 @@ import rpy2.rinterface as rinterface
 import rpy2.rinterface_lib.sexp
 from rpy2.robjects import help
 from rpy2.robjects import conversion
+from rpy2.robjects.vectors import Vector
 
 from rpy2.robjects.packages_utils import (default_symbol_r2python,
                                           default_symbol_resolve,
@@ -339,11 +340,14 @@ def map_signature(
                 r_ellipsis = i
                 warnings.warn('The R ellispsis is not yet well supported.')
             transl_name = rev_prm_transl.get(name)
-            default_orig = default_orig[0]
-            if map_default and not rinterface.MissingArg.rsame(default_orig):
-                default_mapped = map_default(default_orig)
+            if isinstance(default_orig, Vector):
+                default_orig = default_orig[0]
+                if map_default and not rinterface.MissingArg.rsame(default_orig):
+                    default_mapped = map_default(default_orig)
+                else:
+                    default_mapped = inspect.Parameter.empty
             else:
-                default_mapped = inspect.Parameter.empty
+                default_mapped = default_orig
             prm = inspect.Parameter(
                 transl_name if transl_name else name,
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,

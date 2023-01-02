@@ -131,6 +131,22 @@ def test_evalr(envir):
     assert tuple(res) == (3, )
 
 
+def test_rternalize_decorator():
+    @rinterface.rternalize
+    def rfun(x, y):
+        return x[0]+y[0]
+    res = rfun(1, 2)
+    assert res[0] == 3
+
+
+def test_rternalize_decorator_signature():
+    @rinterface.rternalize(signature=True)
+    def rfun(x, y):
+        return x[0]+y[0]
+    res = rfun(1, 2)
+    assert res[0] == 3
+
+
 @pytest.mark.parametrize('signature', ((True, ), (False, )))
 def test_rternalize(signature):
     def f(x, y):

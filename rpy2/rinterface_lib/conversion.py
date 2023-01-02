@@ -27,7 +27,7 @@ _R_RPY2_DEFAULT_MAP: Type[
 
 # TODO: shouldn't the second type strictly inherit from an rpy2
 # R object ?
-_PY_RPY2_MAP = {}  # type: Dict[Type, Callable]
+_PY_RPY2_MAP: Dict[Type, Callable] = {}
 
 
 def _cdata_to_rinterface(cdata):

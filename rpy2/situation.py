@@ -75,11 +75,8 @@ def r_home_from_subprocess() -> Optional[str]:
     """Return the R home directory from calling 'R RHOME'."""
     cmd = ('R', 'RHOME')
     logger.debug('Looking for R home with: {}'.format(' '.join(cmd)))
-    try:
-        tmp = subprocess.check_output(cmd, universal_newlines=True)
-    except Exception as e:  # FileNotFoundError, WindowsError, etc
-        logger.error(f'Unable to determine R home: {e}')
-        return None
+    tmp = subprocess.check_output(cmd, universal_newlines=True)
+    # may raise FileNotFoundError, WindowsError, etc
     r_home = tmp.split(os.linesep)
     if r_home[0].startswith('WARNING'):
         res = r_home[1]
@@ -100,9 +97,14 @@ def r_home_from_registry() -> Optional[str]:
     # We prefer the user installation (which the user has more control
     # over). Thus, HKEY_CURRENT_USER is the first item in the list and
     # the for-loop breaks at the first hit.
-    for w_hkey in [winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE]:
+    for w_hkey in [
+            winreg.HKEY_CURRENT_USER,  # type: ignore
+            winreg.HKEY_LOCAL_MACHINE  # type: ignore
+    ]:
         try:
-            with winreg.OpenKeyEx(w_hkey, 'Software\\R-core\\R') as hkey:
+            with winreg.OpenKeyEx(  # type:ignore
+                    w_hkey, 'Software\\R-core\\R'
+            ) as hkey:
 
                 # >v4.x.x: grab the highest version installed
                 def get_version(i):
@@ -112,17 +114,28 @@ def r_home_from_registry() -> Optional[str]:
                         return None
 
                 latest = max(
-                    (v for v in (get_version(i)
-                                 for i in range(winreg.QueryInfoKey(hkey)[0]))
-                     if v is not None)
+                    (
+                        v for v in (
+                            get_version(i) for i in range(
+                                winreg.QueryInfoKey(hkey)[0]  # type: ignore
+                            )
+                        )
+                        if v is not None
+                    )
                 )
 
-                with winreg.OpenKeyEx(hkey, f'{latest}') as subkey:
-                    r_home = winreg.QueryValueEx(subkey, "InstallPath")[0]
+                with winreg.OpenKeyEx(  # type: ignore
+                        hkey, f'{latest}'
+                ) as subkey:
+                    r_home = winreg.QueryValueEx(  # type: ignore
+                        subkey, "InstallPath"
+                    )[0]
 
                 # check for an earlier version
                 if not r_home:
-                    r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
+                    r_home = winreg.QueryValueEx(  # type: ignore
+                        hkey, 'InstallPath'
+                    )[0]
         except Exception:  # FileNotFoundError, WindowsError, OSError, etc.
             pass
         else:
@@ -201,9 +214,14 @@ def get_r_home() -> Optional[str]:
     r_home = os.environ.get('R_HOME')
 
     if not r_home:
-        r_home = r_home_from_subprocess()
-    if not r_home and os.name == 'nt':
-        r_home = r_home_from_registry()
+        try:
+            r_home = r_home_from_subprocess()
+        except Exception as e:
+            if os.name == 'nt':
+                r_home = r_home_from_registry()
+            if r_home is None:
+                logger.error(f'Unable to determine R home: {e}')
+
     logger.info(f'R home found: {r_home}')
     return r_home
 
@@ -281,7 +299,7 @@ class CExtensionOptions(object):
 
     def __init__(self):
         self.extra_link_args = []
-        self.extra_compile_args = []
+        self.extra_compile_args = ['-std=c99']
         self.include_dirs = []
         self.libraries = []
         self.library_dirs = []
@@ -351,7 +369,10 @@ def iter_info():
         r_user = os.environ.get('R_USER')
         yield '    Environment variable R_USER: %s' % r_user
     else:
-        r_home_default = r_home_from_subprocess()
+        try:
+            r_home_default = r_home_from_subprocess()
+        except Exception as e:
+            logger.error(f'Unable to determine R home: {e}')
         yield '    Calling `R RHOME`: %s' % r_home_default
 
     yield (
