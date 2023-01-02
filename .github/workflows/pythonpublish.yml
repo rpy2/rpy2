@@ -64,6 +64,7 @@ jobs:
     - name: Build wheel
       uses: pypa/cibuildwheel@v2.11.4
       env:
+          RPY2_CFFI_MODE: API
           CIBW_SKIP: cp36-* cp37-*
           CIBW_ARCHS_LINUX: "x86_64 i686"
           CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
