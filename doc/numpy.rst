@@ -109,13 +109,12 @@ of conversion rules to code blocks of interest easier to achieve.
    
    from rpy2.robjects import numpy2ri
    from rpy2.robjects import default_converter
-   from rpy2.robjects.conversion localconverter
 
    # Create a converter that starts with rpy2's default converter
    # to which the numpy conversion rules are added.
    np_cv_rules = default_converter + numpy2ri.converter
 
-   with localconverter(np_cv_rules) as cv:
+   with np_cv_rules:
        # Anything here and until the `with` block is exited
        # will use our numpy converter whenever objects are
        # passed to R or are returned by R while calling
@@ -128,7 +127,7 @@ An example of usage is:
 
    from rpy2.robjects.packages import importr
    stats = importr('base')
-   with localconverter(np_cv_rules) as cv:
+   with np_cv_rules:
        v_np = stats.rlogis(100, location=0, scale=1)
        # `v_np` is a numpy array
 
