@@ -45,10 +45,6 @@ jobs:
         path: dist/rpy2-*.tar.gz
   build-wheel-posix:
     name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id}}
-    env:
-      default_os: "ubuntu-latest"
-      default_r: "release"
-      CIBW_SKIP: "cp36-* cp37-*"
     runs-on: ${{ matrix.os }}
     continue-on-error: false
     permissions:
@@ -100,6 +96,7 @@ jobs:
           CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
+	  CIBW_ENVIRONMENT_PASS_LINUX: RPY2_CFFI_MODE
           CIBW_BUILD_VERBOSITY: 1
       with:
         output-dir: wheelhouse
