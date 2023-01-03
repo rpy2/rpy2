@@ -92,7 +92,7 @@ jobs:
       env:
           RPY2_CFFI_MODE: API
           CIBW_SKIP: cp36-* cp37-* pp*
-          CIBW_ARCHS_LINUX: "x86_64 i686"
+          CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
@@ -102,11 +102,6 @@ jobs:
       with:
         output-dir: wheelhouse
         config-file: pyproject.toml
-    - name: Upload wheel artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: rpy2-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
-        path: wheelhouse/*.whl
   test:
     needs: [build-sdist]
     runs-on: ${{ matrix.os }}
