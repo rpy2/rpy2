@@ -52,6 +52,11 @@ integer_array_types = ('Int8', 'Int16', 'Int32', 'Int64', 'UInt8',
 
 @py2rpy.register(PandasDataFrame)
 def py2rpy_pandasdataframe(obj):
+    if obj.index.duplicated().any():
+        warnings.warn('DataFrame contains duplicated elements in the index, '
+                      'which will lead to loss of the row names in the '
+                      'resulting data.frame')
+
     od = OrderedDict()
     for name, values in obj.items():
         try:
