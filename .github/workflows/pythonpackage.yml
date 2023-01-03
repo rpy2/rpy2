@@ -46,7 +46,6 @@ jobs:
   build-wheel-posix:
     name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id}}
     runs-on: ${{ matrix.os }}
-    continue-on-error: false
     permissions:
       packages: read
     strategy:
@@ -56,7 +55,8 @@ jobs:
           - os: ubuntu-latest
             python: 39
             platform_id: manylinux2014
-            manylinux_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_x86_64:r4.2.2
+            manylinux_x86_64_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_x86_64:r4.2.2
+            manylinux_i686_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_i686:r4.2.2
             r-version: release
           - os: macos-latest
             python: 39
@@ -91,11 +91,11 @@ jobs:
       uses: pypa/cibuildwheel@v2.11.4
       env:
           RPY2_CFFI_MODE: API
-          CIBW_SKIP: cp36-* cp37-* pp*
+          CIBW_SKIP: cp36-* cp37-* pp* *-musllinux_*
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
-          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
-          CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
+          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_x86_64_image }}
+          CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_i686_image }}
           CIBW_ENVIRONMENT_PASS_LINUX: RPY2_CFFI_MODE
           CIBW_ENVIRONMENT_LINUX: LD_LIBRARY_PATH="$(R RHOME)/$(R CMD config LIBnn):${LD_LIBRARY_PATH}"
           CIBW_BUILD_VERBOSITY: 1
