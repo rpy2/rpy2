@@ -88,13 +88,13 @@ jobs:
       if: (matrix.r-version == env.default_r && matrix.os == env.default_os)
       run: |
         echo "::set-output name=file::$(basename -a $(ls dist/*.tar.gz))"
-    - name: Create package for master
-      uses: actions/upload-artifact@v1
+    - name: Upload source package
+      uses: actions/upload-artifact@v3
       if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == env.default_r
       with:
           name: ${{ steps.getfilename_wheel.outputs.file }}
-          path: dist/${{ steps.getfilename_wheel.outputs.file }}
-    - name: Create source package for master
+          path: dist/${{ steps.getfilename_targz.outputs.file }}
+    - name: Upload wheels
       uses: actions/upload-artifact@v3
       if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == env.default_r && matrix.os == env.default_os)
       with:
