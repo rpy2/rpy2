@@ -191,10 +191,16 @@ def createbuilder_api():
                  'RPY2_CFFI_MODE=ABI')
     c_ext = situation.CExtensionOptions()
     c_ext.add_lib(
-        *situation.get_r_flags(r_home, '--ldflags')
+        *(situation.get_r_flags(r_home, '--ldflags'))
+    )
+    c_ext.add_lib(
+        *(situation.get_r_libs(r_home, 'BLAS_LIBS'))
     )
     c_ext.add_include(
         *situation.get_r_flags(r_home, '--cppflags')
+    )
+    c_ext.extra_link_args.append(
+        f'-Wl,-rpath,{situation.get_rlib_rpath(r_home)}'
     )
     if 'RPY2_RLEN_LONG' in definitions:
         definitions['RPY2_RLEN_LONG'] = True
