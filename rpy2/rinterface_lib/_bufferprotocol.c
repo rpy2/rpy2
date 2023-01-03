@@ -44,7 +44,10 @@ static PyMethodDef _BufferProtocolMethods[] =
 static struct PyModuleDef _bufferprotocolmodule = {
   PyModuleDef_HEAD_INIT,
   "_bufferprotocol",
-  NULL, //_bufferprotocol_doc,
+  "Utility module to implement buffer protocol functions missing from Python.\n"
+  "\n"
+  "This provides Python-level wrapper for what is otherwise only accessible\n"
+  "from Python's C-API.", //_bufferprotocol_doc,
   -1,
   _BufferProtocolMethods
 };

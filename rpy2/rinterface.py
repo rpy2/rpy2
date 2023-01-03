@@ -270,11 +270,13 @@ class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
         return False
 
     @property
-    def __sexp__(self) -> _rinterface.SexpCapsule:
+    def __sexp__(self) -> typing.Union['_rinterface.SexpCapsule',
+                                       '_rinterface.UninitializedRCapsule']:
         return self._sexpobject
 
     @__sexp__.setter
-    def __sexp__(self, value) -> None:
+    def __sexp__(self, value: typing.Union['_rinterface.SexpCapsule',
+                                           '_rinterface.UninitializedRCapsule']) -> None:
         raise TypeError('The capsule for the R object cannot be modified.')
 
 
@@ -854,7 +856,10 @@ class SexpClosure(Sexp):
 
 
 class SexpS4(Sexp):
-    """R "S4" object."""
+    """R "S4" object.
+
+    S4 objects as one of the available forms of Object-Oriented Programming
+    in R."""
     pass
 
 
@@ -886,7 +891,7 @@ def make_extptr(obj, tag, protected):
 
 
 class SexpExtPtr(Sexp):
-
+    """R "External Pointer" object."""
     TYPE_TAG = 'Python'
 
     @classmethod
@@ -1111,7 +1116,7 @@ def _find_first(nodes, of_type):
 def rternalize(
         function: typing.Optional[typing.Callable] = None, *,
         signature: bool = False
-) -> SexpClosure:
+) -> typing.Union[SexpClosure, functools.partial]:
     """ Make a Python function callable from R.
 
     Takes an arbitrary Python function and wrap it in such a way that
@@ -1189,7 +1194,9 @@ def rternalize(
     positional-or-keyword are considered to be positional arguments in a
     function call.
 
-    :param function: A Python callable object.
+    :param function: A Python callable object. This is a positional
+    argument with a default value `None` to allow the decorator function
+    without parentheses when optional argument is not wanted.
 
     :return: A wrapped R object that can be use like any other rpy2
     object.
@@ -1208,10 +1215,11 @@ def rternalize(
         """)
         template[0][2][1][2] = rpy_fun
     else:
-        signature = inspect.signature(function)
         has_ellipsis = None
         params_r_sig = []
-        for p_i, (name, param) in enumerate(signature.parameters.items()):
+        for p_i, (name, param) in enumerate(
+                inspect.signature(function).parameters.items()
+        ):
             if (
                     param.kind is inspect.Parameter.VAR_POSITIONAL or
                     param.kind is inspect.Parameter.VAR_KEYWORD
