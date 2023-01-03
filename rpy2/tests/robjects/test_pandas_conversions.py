@@ -114,7 +114,7 @@ class TestPandasConversions(object):
         pd_df = pandas.DataFrame({'x': [1, 2]}, index=index)
         with pytest.warns(warning, match=match) as record:
             with localconverter(default_converter + rpyp.converter) as cv:
-                robjects.conversion.get_converterpy2rpy(pd_df)
+                robjects.conversion.converter_ctx.get().py2rpy(pd_df)
         assert not record.list
 
     def test_series(self):
