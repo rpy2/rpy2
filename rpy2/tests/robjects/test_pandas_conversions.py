@@ -114,14 +114,14 @@ class TestPandasConversions(object):
         pd_df = pandas.DataFrame({'x': [1, 2]}, index=index)
         with pytest.warns(warning, match=match) as record:
             with localconverter(default_converter + rpyp.converter) as cv:
-                robjects.conversion.py2rpy(pd_df)
+                robjects.conversion.get_converterpy2rpy(pd_df)
         assert not record.list
 
     def test_series(self):
         Series = pandas.core.series.Series
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_s = robjects.conversion.get_conversion().py2rpy(s)
+            rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
         assert isinstance(rp_s, rinterface.FloatSexpVector)
 
     @pytest.mark.parametrize('dtype',
