@@ -106,8 +106,8 @@ class TestPandasConversions(object):
 
     @pytest.mark.parametrize(
         'index, warning, match',
-        ((['a', 'a'], None, None),
-         (['a', 'b'], UserWarning, 'DataFrame contains duplicated elements in the index')
+        ((['a', 'a'], UserWarning, 'DataFrame contains duplicated elements in the index'),
+         (['a', 'b'], None, None)
         )
     )
     def test_dataframe_warns_duplicated_index(self, index, warning, match):
