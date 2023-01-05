@@ -92,13 +92,13 @@ jobs:
       uses: actions/upload-artifact@v3
       if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == env.default_r
       with:
-          name: ${{ steps.getfilename_wheel.outputs.file }}
+          name: source-package
           path: dist/${{ steps.getfilename_targz.outputs.file }}
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == env.default_r && matrix.os == env.default_os)
       with:
-          name: Uploading wheel.
+          name: binary-wheels-${{ matrix.platform_id }}
           path: wheelhouse/*.whl
     - name: Publish
       if: github.event_name == 'release'
