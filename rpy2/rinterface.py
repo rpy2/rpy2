@@ -1201,6 +1201,8 @@ def rternalize(
     :return: A wrapped R object that can be use like any other rpy2
     object.
     """
+    if not embedded.isinitialized():
+        raise embedded.RNotReadyError('The embedded R is not yet initialized.')
 
     if function is None:
         return functools.partial(rternalize, signature=signature)
