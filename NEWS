@@ -19,6 +19,10 @@ Bugs fixed
 - With the "R magic", converters in a local namespace were inadvertently
   skipped (the local namespace was not searched).
 
+- Calling :func:`rpy2.rinterface.rternalize` before the embedded R is
+  initialized was ending with a segfault. It is now raising an
+  :class:`rpy2.rinterface_lib/embedded/RNotReady` (issue #971).
+
 Changes
 -------
 
