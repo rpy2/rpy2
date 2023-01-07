@@ -1,4 +1,4 @@
-# ![logo](doc/_static/rpy2_logo_64x64.png) Python -> R bridge
+# Python -> R bridge
 
 [![pypi](https://img.shields.io/pypi/v/rpy2.svg?style=flat-square)](https://pypi.python.org/pypi/rpy2)
 [![Codecov](https://codecov.io/gh/rpy2/rpy2/branch/master/graph/badge.svg)](https://codecov.io/gh/rpy2/rpy2)
