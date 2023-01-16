@@ -502,7 +502,6 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
     # exceptions as logs.
 
     rlib = openrlib.rlib
-
     try:
         rargs = rlib.CDR(rargs)
         cdata = rlib.CAR(rargs)
