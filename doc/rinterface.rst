@@ -348,6 +348,9 @@ can also be triggered indirectly, as some on the R functions will behave
 differently when run interactively compared to when run in the so-called
 *BATCH mode*.
 
+Interactive mode could be disabled by setting environment variable
+`R_INTERACTIVE_MODE` to `False`.
+
 .. note::
 
    However, interactive use may mean the ability to periodically check
