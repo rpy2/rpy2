@@ -349,7 +349,7 @@ differently when run interactively compared to when run in the so-called
 *BATCH mode*.
 
 Interactive mode could be disabled by setting environment variable
-`R_INTERACTIVE_MODE` to `False`.
+`R_DISABLE_INTERACTIVE_MODE` to `1`.
 
 .. note::
 

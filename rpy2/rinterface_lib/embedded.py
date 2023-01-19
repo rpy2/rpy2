@@ -232,12 +232,12 @@ CALLBACK_INIT_PAIRS = (('ptr_R_WriteConsoleEx', '_consolewrite_ex'),
 
 # TODO: can init_once() be used here ?
 def _initr(
-        interactive: bool = None,
+        interactive: typing.Optional[bool] = None,
         _want_setcallbacks: bool = True,
         _c_stack_limit: int = _DEFAULT_C_STACK_LIMIT
 ) -> typing.Optional[int]:
     if interactive is None:
-        interactive = os.environ.get('R_INTERACTIVE_MODE', 'True').lower() in ['true', '1', 't']
+        interactive = not os.environ.get('R_DISABLE_INTERACTIVE_MODE')
 
     rlib = openrlib.rlib
     ffi_proxy = openrlib.ffi_proxy
