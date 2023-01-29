@@ -1,3 +1,15 @@
+Release 3.5.8
+=============
+
+Bugs fixed
+----------
+
+- The numpy converter was not listing R objects of type `CHARSXP` as
+  vectors. This make R `NA_character_` values wrapped in `rpy2` Python
+  objects to be passed as-is (issue #983).
+
+
+
 Release 3.5.7
 =============
 
