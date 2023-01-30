@@ -189,7 +189,15 @@ def get_rlib_rpath(r_home: str) -> str:
 def get_rlib_path(r_home: str, system: str) -> str:
     """Get the path for the R shared library."""
     if system == 'FreeBSD' or system == 'Linux':
-        lib_path = os.path.join(r_home, get_r_libnn(r_home), 'libR.so')
+        for lib in [get_r_libnn(r_home), 'lib']: # Adding eb support 
+            lib_path = os.path.join(r_home, lib, 'libR.so')
+            if not os.path.isfile(lib_path):
+                logger.debug('libR.so is not available at '+lib_path)
+                lib_path = None
+            else:
+                logger.debug('libR.so available at '+lib_path)
+        if lib_path is None: 
+            raise ValueError('libR.so is not available at specified paths')
     elif system == 'Darwin':
         lib_path = os.path.join(r_home, get_r_libnn(r_home), 'libR.dylib')
     elif system == 'Windows':
