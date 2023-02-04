@@ -31,12 +31,14 @@ _kinds = {
     }
 
 
-_vectortypes = (RTYPES.CHARSXP,
-                RTYPES.LGLSXP,
-                RTYPES.INTSXP,
-                RTYPES.REALSXP,
-                RTYPES.CPLXSXP,
-                RTYPES.STRSXP)
+_vectortypes = set(
+    (RTYPES.CHARSXP,
+     RTYPES.LGLSXP,
+     RTYPES.INTSXP,
+     RTYPES.REALSXP,
+     RTYPES.CPLXSXP,
+     RTYPES.STRSXP)
+)
 
 converter = conversion.Converter('original numpy conversion')
 py2rpy = converter.py2rpy
