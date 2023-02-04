@@ -204,9 +204,10 @@ def rpy2py_sexp(obj):
     if (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
         res = numpy.array(obj)
         # Special case for R string arrays.
-        if (obj.typeof is rinterface.RTYPES.CHARSXP
-            or
-            obj.typeof is rinterface.RTYPES.STRSXP
+        if (
+                obj.typeof is rinterface.RTYPES.CHARSXP
+                or
+                obj.typeof is rinterface.RTYPES.STRSXP
         ):
             res[res == rinterface.NA_Character] = None
     else:
