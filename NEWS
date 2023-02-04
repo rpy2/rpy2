@@ -1,3 +1,22 @@
+Release 3.5.8
+=============
+
+New features
+------------
+
+- Default value for the interactivity status of the embedded R
+  as initialization is now a private variable
+  `_DEFAULT_R_INTERACTIVE` in :mod:`rpy2.rinterface_lib.embedded`.
+
+Bugs fixed
+----------
+
+- :func:`rpy2.rinterface.initr_checkenv` (aliased to
+  :func:`rpy2.rinterface.initr`) did not include
+  initialization parameters for `interactive`, `_want_setcallbacks`,
+  and `_c_stack_limit` (issue #976).
+
+
 Release 3.5.7
 =============
 
