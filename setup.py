@@ -64,8 +64,11 @@ class COMPILATION_STATUS(enum.Enum):
 
 def get_c_extension_status(libraries=['R'], include_dirs=None,
                            library_dirs=None):
-    c_code = ('#include <Rinterface.h>\n\n'
-              'int main(int argc, char **argv) { return 0; }')
+    if os.name == 'nt':
+        c_code = ('int main(int argc, char **argv) { return 0; }')
+    else:
+        c_code = ('#include <Rinterface.h>\n\n'
+                  'int main(int argc, char **argv) { return 0; }')
     tmp_dir = tempfile.mkdtemp(prefix='tmp_pw_r_')
     bin_file = os.path.join(tmp_dir, 'test_pw_r')
     src_file = bin_file + '.c'
