@@ -15,6 +15,10 @@ Bugs fixed
   :func:`rpy2.rinterface.initr`) did not include
   initialization parameters for `interactive`, `_want_setcallbacks`,
   and `_c_stack_limit` (issue #976).
+  
+- The numpy converter was not listing R objects of type `CHARSXP` as
+  vectors. This make R `NA_character_` values wrapped in `rpy2` Python
+  objects to be passed as-is (issue #983).
 
 
 Release 3.5.7

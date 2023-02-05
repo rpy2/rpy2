@@ -31,11 +31,14 @@ _kinds = {
     }
 
 
-_vectortypes = (RTYPES.LGLSXP,
-                RTYPES.INTSXP,
-                RTYPES.REALSXP,
-                RTYPES.CPLXSXP,
-                RTYPES.STRSXP)
+_vectortypes = set(
+    (RTYPES.CHARSXP,
+     RTYPES.LGLSXP,
+     RTYPES.INTSXP,
+     RTYPES.REALSXP,
+     RTYPES.CPLXSXP,
+     RTYPES.STRSXP)
+)
 
 converter = conversion.Converter('original numpy conversion')
 py2rpy = converter.py2rpy
@@ -201,7 +204,11 @@ def rpy2py_sexp(obj):
     if (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
         res = numpy.array(obj)
         # Special case for R string arrays.
-        if obj.typeof is rinterface.RTYPES.STRSXP:
+        if (
+                obj.typeof is rinterface.RTYPES.CHARSXP
+                or
+                obj.typeof is rinterface.RTYPES.STRSXP
+        ):
             res[res == rinterface.NA_Character] = None
     else:
         res = ro.default_converter.rpy2py(obj)
