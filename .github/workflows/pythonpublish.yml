@@ -83,7 +83,7 @@ jobs:
         python -m build -o dist/ --sdist .
     - id: getfilename_wheel
       run: |
-        echo "::set-output name=file::$(basename -a $(ls dist/*.whl))"
+        echo "file=$(basename -a $(ls dist/*.whl))" >> $GITHUB_OUTPUT
     - id: getfilename_targz
       if: (matrix.r-version == env.default_r && matrix.os == env.default_os)
       run: |
@@ -93,7 +93,7 @@ jobs:
       if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == env.default_r
       with:
           name: source-package
-          path: dist/${{ steps.getfilename_targz.outputs.file }}
+          path: dist/*.tar.gz
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == env.default_r && matrix.os == env.default_os)

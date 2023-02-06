@@ -31,11 +31,17 @@ _kinds = {
     }
 
 
-_vectortypes = (RTYPES.LGLSXP,
-                RTYPES.INTSXP,
-                RTYPES.REALSXP,
-                RTYPES.CPLXSXP,
-                RTYPES.STRSXP)
+_vectortypes = set(
+    (
+        # TODO: CHARSXP is an fact a scalar.
+        RTYPES.CHARSXP,
+        RTYPES.LGLSXP,
+        RTYPES.INTSXP,
+        RTYPES.REALSXP,
+        RTYPES.CPLXSXP,
+        RTYPES.STRSXP
+    )
+)
 
 converter = conversion.Converter('original numpy conversion')
 py2rpy = converter.py2rpy
@@ -198,7 +204,9 @@ def rpy2py_floatvector(obj):
 
 @rpy2py.register(Sexp)
 def rpy2py_sexp(obj):
-    if (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
+    if obj.typeof is rinterface.RTYPES.CHARSXP:
+        res = None
+    elif (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
         res = numpy.array(obj)
         # Special case for R string arrays.
         if obj.typeof is rinterface.RTYPES.STRSXP:
