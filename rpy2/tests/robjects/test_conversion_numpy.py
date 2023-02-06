@@ -169,12 +169,14 @@ class TestNumpyConversions(object):
         df = robjects.vectors.DataFrame(
             {'a': 1,
              'b': 2,
-             'c': robjects.vectors.FactorVector('e')})
+             'c': robjects.vectors.FactorVector('e'),
+             'd': robjects.vectors.StrVector(['xyz'])})
         rec = conversion.rpy2py(df)
         assert numpy.recarray == type(rec)
         assert rec.a[0] == 1
         assert rec.b[0] == 2
         assert rec.c[0] == 'e'
+        assert rec.d[0] == 'xyz'
 
     @pytest.mark.parametrize(
         'cls',

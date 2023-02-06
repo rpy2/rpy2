@@ -28,3 +28,9 @@ def test_assert_isready():
 def test_assert_environment_geitem():
     with pytest.raises(embedded.RNotReadyError):
         sexp.globalenv['x']
+
+@pytest.mark.skipif(embedded.rpy2_embeddedR_isinitialized,
+                    reason='Can only be tested before R is initialized.')
+def test_assert_rternalize():
+    with pytest.raises(embedded.RNotReadyError):
+        rinterface.rternalize(lambda x: x)

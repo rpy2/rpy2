@@ -1,3 +1,26 @@
+Release 3.5.8
+=============
+
+New features
+------------
+
+- Default value for the interactivity status of the embedded R
+  as initialization is now a private variable
+  `_DEFAULT_R_INTERACTIVE` in :mod:`rpy2.rinterface_lib.embedded`.
+
+Bugs fixed
+----------
+
+- :func:`rpy2.rinterface.initr_checkenv` (aliased to
+  :func:`rpy2.rinterface.initr`) did not include
+  initialization parameters for `interactive`, `_want_setcallbacks`,
+  and `_c_stack_limit` (issue #976).
+  
+- The numpy converter was not listing R objects of type `CHARSXP` as
+  vectors. This make R `NA_character_` values wrapped in `rpy2` Python
+  objects to be passed as-is (issue #983).
+
+
 Release 3.5.7
 =============
 
@@ -19,6 +42,10 @@ Bugs fixed
 - With the "R magic", converters in a local namespace were inadvertently
   skipped (the local namespace was not searched).
 
+- Calling :func:`rpy2.rinterface.rternalize` before the embedded R is
+  initialized was ending with a segfault. It is now raising an
+  :class:`rpy2.rinterface_lib/embedded/RNotReady` (issue #971).
+
 Changes
 -------
 
@@ -28,6 +55,9 @@ Changes
   conversion rules. This behavior helps with troubleshooting
   Python code using multithreading without fetching the context
   (see issue #965).
+
+- A warning is now issued when trying to convert a `DataFrame` with
+  duplicate indexes (issue #811).
 
 
 Release 3.5.6
