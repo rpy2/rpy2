@@ -104,11 +104,21 @@ class TestPandasConversions(object):
             rp_df = robjects.conversion.converter_ctx.get().py2rpy(pd_df)
         assert tuple(rp_df.names) == ('the one', 'the other')
 
+    def test_dataframe_warns_duplicated_index(self):
+        pd_df = pandas.DataFrame({'x': [1, 2]}, index=['a', 'a'])
+        with pytest.warns(
+            UserWarning,
+            match='DataFrame contains duplicated elements in the index'
+        ) as record:
+            with localconverter(default_converter + rpyp.converter) as cv:
+                robjects.conversion.converter_ctx.get().py2rpy(pd_df)
+        assert len(record) == 1
+
     def test_series(self):
         Series = pandas.core.series.Series
         s = Series(numpy.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
         with localconverter(default_converter + rpyp.converter) as cv:
-            rp_s = robjects.conversion.get_conversion().py2rpy(s)
+            rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
         assert isinstance(rp_s, rinterface.FloatSexpVector)
 
     @pytest.mark.parametrize('dtype',

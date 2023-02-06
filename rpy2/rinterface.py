@@ -1002,7 +1002,21 @@ def initr_simple() -> typing.Optional[int]:
         return status
 
 
-def initr_checkenv() -> typing.Optional[int]:
+def initr_checkenv(
+        interactive: typing.Optional[bool] = None,
+        _want_setcallbacks: bool = True,
+        _c_stack_limit: typing.Optional[int] = None
+) -> typing.Optional[int]:
+    """Initialize the embedded R.
+
+    :param interactive: Should R run in interactive or non-interactive mode?
+    if `None` the value in `_DEFAULT_R_INTERACTIVE` will be used.
+    :param _want_setcallbacks: Should custom rpy2 callbacks for R frontends
+    be set?.
+    :param _c_stack_limit: Limit for the C Stack.
+    if `None` the value in `_DEFAULT_C_STACK_LIMIT` will be used.
+    """
+
     # Force the internal initialization flag if there is an environment
     # variable that indicates that R was already initialized in the current
     # process.
@@ -1012,7 +1026,9 @@ def initr_checkenv() -> typing.Optional[int]:
         if embedded.is_r_externally_initialized():
             embedded._setinitialized()
         else:
-            status = embedded._initr()
+            status = embedded._initr(interactive=interactive,
+                                     _want_setcallbacks=_want_setcallbacks,
+                                     _c_stack_limit=_c_stack_limit)
             embedded.set_python_process_info()
         _rinterface._register_external_symbols()
         _post_initr_setup()
@@ -1201,6 +1217,8 @@ def rternalize(
     :return: A wrapped R object that can be use like any other rpy2
     object.
     """
+    if not embedded.isinitialized():
+        raise embedded.RNotReadyError('The embedded R is not yet initialized.')
 
     if function is None:
         return functools.partial(rternalize, signature=signature)
