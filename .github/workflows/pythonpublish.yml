@@ -57,17 +57,16 @@ jobs:
       run: |
         echo "file=$(basename -a $(ls dist/*.tar.gz))" >> $GITHUB_OUTPUT
     - name: Create package for master
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v3
       if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == env.default_r
       with:
-          name: ${{ steps.getfilename_wheel.outputs.file }}
-          path: dist/${{ steps.getfilename_wheel.outputs.file }}
+          name: ${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.r-version }}
+          path: dist/*.whl
     - name: Create source package for master
       uses: actions/upload-artifact@v3
       if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
       with:
-          name: ${{ steps.getfilename_targz.outputs.file }}
-          path: dist/${{ steps.getfilename_targz.outputs.file }}
+          path: dist/*.whl
     - name: Publish
       if: github.event_name == 'release'
       uses: pypa/gh-action-pypi-publish@release/v1
