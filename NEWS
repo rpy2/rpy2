@@ -1,3 +1,13 @@
+Relase 3.5.9
+============
+
+Bugs fixed
+----------
+
+- Building the path to the R shared library was incorrectly
+  using the output of `R CMD config LIBnn` (issue #982).
+ 
+
 Release 3.5.8
 =============
 
