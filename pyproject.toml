@@ -39,6 +39,7 @@ dynamic = ["version"]
 test = ["pytest", "ipython", "numpy", "pandas"]
 numpy = ["pandas"]
 pandas = ["numpy", "pandas"]
+types = ["mypy", "types-pytz", "types-tzlocal"]
 all = ["pytest", "ipython", "pandas", "numpy"]
 
 [project.urls]
