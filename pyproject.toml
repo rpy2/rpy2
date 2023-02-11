@@ -36,7 +36,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-test = ["pytest", "ipython", "numpy", "pandas"]
+test = ["pytest", "ipython", "mypy", "numpy", "pandas"]
 numpy = ["pandas"]
 pandas = ["numpy", "pandas"]
 all = ["pytest", "ipython", "pandas", "numpy"]
