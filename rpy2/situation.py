@@ -189,9 +189,9 @@ def get_rlib_rpath(r_home: str) -> str:
 def get_rlib_path(r_home: str, system: str) -> str:
     """Get the path for the R shared library."""
     if system == 'FreeBSD' or system == 'Linux':
-        lib_path = os.path.join(r_home, get_r_libnn(r_home), 'libR.so')
+        lib_path = os.path.join(r_home, 'lib', 'libR.so')
     elif system == 'Darwin':
-        lib_path = os.path.join(r_home, get_r_libnn(r_home), 'libR.dylib')
+        lib_path = os.path.join(r_home, 'lib', 'libR.dylib')
     elif system == 'Windows':
         # i386
         os.environ['PATH'] = os.pathsep.join(
