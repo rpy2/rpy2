@@ -112,7 +112,7 @@ jobs:
       run: |
         ${{ matrix.ld_libpath }}
         ${{matrix.venv_activate }}
-        pip install .[test]
+        pip install .[types]
         bash -e ./scripts/run_mypy.sh
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
