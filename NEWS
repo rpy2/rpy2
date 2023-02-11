@@ -6,6 +6,12 @@ New features
 
 - Type hints in :mod:`rpy2` as now checked with `mypy`.
 
+Bugs fixed
+----------
+
+- Building the path to the R shared library was incorrectly
+  using the output of `R CMD config LIBnn` (issue #982).
+
 
 Release 3.5.8
 =============
