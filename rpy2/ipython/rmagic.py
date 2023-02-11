@@ -356,27 +356,40 @@ class RMagics(Magics):
             local_ns: dict
     ) -> None:
         lhs, rhs = _parse_input_argument(arg)
+        val = None
         try:
             val = _find(rhs, local_ns)
         except NameError:
-            val = _find(rhs, self.shell.user_ns)
-        env[lhs] = val
+            if self.shell is None:
+                warnings.warn(
+                    f'The shell is None. Unable to look for {rhs}.'
+                )
+            else:
+                val = _find(rhs, self.shell.user_ns)
+        if val is not None:
+            env[lhs] = val
 
     def _find_converter(
             self, name: str, local_ns: dict
     ) -> ro.conversion.Converter:
+        converter = None
         if name is None:
             converter = self.converter
         else:
             try:
                 converter = _find(name, local_ns)
             except NameError:
-                converter = _find(name, self.shell.user_ns)
+                if self.shell is None:
+                    warnings.warn(
+                        f'The shell is None. Unable to look for converter {name}.'
+                    )
+                else:
+                    converter = _find(name, self.shell.user_ns)
 
-            if not isinstance(converter, Converter):
-                raise TypeError("'%s' must be a %s object (but it is a %s)."
-                                % (converter, Converter,
-                                   type(converter)))
+        if not isinstance(converter, Converter):
+            raise TypeError("'%s' must be a %s object (but it is a %s)."
+                            % (converter, Converter,
+                               type(converter)))
         return converter
 
     # @skip_doctest

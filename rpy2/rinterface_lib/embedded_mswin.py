@@ -17,9 +17,9 @@ _DEFAULT_R_INTERACTIVE: bool = True
 
 
 def _initr_win32(
-        interactive: bool = True,
+        interactive: typing.Optional[bool] = None,
         _want_setcallbacks: bool = True,
-        _c_stack_limit: int = _DEFAULT_C_STACK_LIMIT
+        _c_stack_limit: typing.Optional[int] = _DEFAULT_C_STACK_LIMIT
 
 ) -> typing.Optional[int]:
     """Initialize the embedded R.
