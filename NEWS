@@ -4,7 +4,7 @@ Release 3.5.9
 New features
 ------------
 
-- Type hints in :mod:`rpy2` as now checked with `mypy`.
+- Type hints in :mod:`rpy2` are now checked with `mypy`.
 
 Bugs fixed
 ----------
