@@ -203,6 +203,11 @@ def rpy2py_floatvector(obj):
     return numpy.array(obj)
 
 
+@rpy2py.register(rinterface.StrSexpVector)
+def rpy2py_strvector(obj):
+    return numpy.array(obj)
+
+
 @rpy2py.register(Sexp)
 def rpy2py_sexp(obj):
     if obj.typeof is rinterface.RTYPES.CHARSXP:

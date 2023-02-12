@@ -256,6 +256,11 @@ def test_numpy_O_py2rpy(values, expected_cls):
     
 @pytest.mark.skipif(not has_numpy,
                     reason='package numpy cannot be imported')
-def test_rstr_to_py():
-    values = robjects.r('c("abc", NA_character_)')
-    assert tuple(values) == ('abc', None)
+@pytest.mark.parametrize(
+    'rcode,expected_values',
+    (('c(1, 2, 3)', (1, 2, 3)),
+     ('c("ab", "cd", NA_character_)', ('ab', 'cd', None)))
+)
+def test_rpy2py(rcode, expected_values):
+    values = robjects.r(rcode)
+    assert tuple(values) == expected_values
