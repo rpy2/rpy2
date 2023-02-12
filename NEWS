@@ -6,6 +6,9 @@ New features
 
 - Type hints in :mod:`rpy2` are now checked with `mypy`.
 
+- Using `-Wl,-rpath` while building the package is now controlled by the environment
+  variable `RPY2_CFFI_RPATH` and is considered highly experimental (and unsupported).
+
 Bugs fixed
 ----------
 

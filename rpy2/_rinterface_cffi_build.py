@@ -170,7 +170,7 @@ def createbuilder_abi():
     return ffibuilder
 
 
-def createbuilder_api():
+def createbuilder_api(_use_rpath: bool = False):
     ffibuilder = cffi.FFI()
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
@@ -199,9 +199,10 @@ def createbuilder_api():
     c_ext.add_include(
         *situation.get_r_flags(r_home, '--cppflags')
     )
-    c_ext.extra_link_args.append(
-        f'-Wl,-rpath,{situation.get_rlib_rpath(r_home)}'
-    )
+    if _use_rpath:
+        c_ext.extra_link_args.append(
+            f'-Wl,-rpath,{situation.get_rlib_rpath(r_home)}'
+        )
     if 'RPY2_RLEN_LONG' in definitions:
         definitions['RPY2_RLEN_LONG'] = True
 
@@ -277,7 +278,10 @@ if cffi_mode in (situation.CFFI_MODE.API,
     ffibuilder_api = createbuilder_api()
 elif cffi_mode == situation.CFFI_MODE.ANY:
     try:
-        ffibuilder_api = createbuilder_api()
+        if 'RPY2_CFFI_RPATH' in os.environ:
+            warnings.warn('Using RPY2_CFFI_RPATH to set -Wl,-rpath during linking is highly experiemental.')
+        _use_rpath = os.environ.get('RPY2_CFFI_RPATH')
+        ffibuilder_api = createbuilder_api(_use_rpath=_use_rpath)
     except Exception as e:
         warnings.warn(str(e))
         ffibuilder_api = None
