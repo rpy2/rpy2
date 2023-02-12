@@ -12,6 +12,9 @@ Bugs fixed
 - Building the path to the R shared library was incorrectly
   using the output of `R CMD config LIBnn` (issue #982).
 
+- The :mod:`numpy` converter was not turning `NA_character_` into
+  `None` (issue #979).
+
 
 Release 3.5.8
 =============

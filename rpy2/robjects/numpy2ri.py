@@ -168,14 +168,15 @@ def rpy2py_data_frame(obj):
     # An added complication is that the conversion defined
     # in this module will make __getitem__ at the robjects
     # level return numpy arrays
-    for column in rinterface.ListSexpVector(obj):
-        if 'factor' in column.rclass:
-            levels = column.do_slot('levels')
-            column = tuple(
-                None if x is rinterface.NA_Integer
-                else levels[x-1] for x in column
-            )
-        o2.append(column)
+    with conversion.get_conversion() as cv:
+        for column in rinterface.ListSexpVector(obj):
+            if 'factor' in column.rclass:
+                levels = column.do_slot('levels')
+                column = tuple(
+                    None if x is rinterface.NA_Integer
+                    else levels[x-1] for x in column
+                )
+            o2.append(cv.rpy2py(column))
     names = obj.do_slot('names')
     if names == rinterface.NULL:
         res = numpy.rec.fromarrays(o2)

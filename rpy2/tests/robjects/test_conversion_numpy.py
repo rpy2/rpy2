@@ -254,3 +254,8 @@ def test_numpy_O_py2rpy(values, expected_cls):
     assert isinstance(v, expected_cls)
 
     
+@pytest.mark.skipif(not has_numpy,
+                    reason='package numpy cannot be imported')
+def test_rstr_to_py():
+    values = robjects.r('c("abc", NA_character_)')
+    assert tuple(values) == ('abc', None)
