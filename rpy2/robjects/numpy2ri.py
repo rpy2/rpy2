@@ -205,7 +205,7 @@ def rpy2py_floatvector(obj):
 
 @rpy2py.register(rinterface.CharSexp)
 def rpy2py_charvector(obj):
-    if  obj == rinterface.NA_Character:
+    if obj == rinterface.NA_Character:
         return None
     else:
         return obj
