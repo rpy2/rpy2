@@ -203,20 +203,25 @@ def rpy2py_floatvector(obj):
     return numpy.array(obj)
 
 
+@rpy2py.register(rinterface.CharSexp)
+def rpy2py_charvector(obj):
+    if  obj == rinterface.NA_Character:
+        return None
+    else:
+        return obj
+
+
 @rpy2py.register(rinterface.StrSexpVector)
 def rpy2py_strvector(obj):
-    return numpy.array(obj)
+    res = numpy.array(obj)
+    res[res == rinterface.NA_Character] = None
+    return res
 
 
 @rpy2py.register(Sexp)
 def rpy2py_sexp(obj):
-    if obj.typeof is rinterface.RTYPES.CHARSXP:
-        res = None
-    elif (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
+    if (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
         res = numpy.array(obj)
-        # Special case for R string arrays.
-        if obj.typeof is rinterface.RTYPES.STRSXP:
-            res[res == rinterface.NA_Character] = None
     else:
         res = ro.default_converter.rpy2py(obj)
     return res
