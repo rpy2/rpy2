@@ -28,9 +28,12 @@ __is_null = baseenv_ri.find('is.null')
 
 
 def _formals_fixed(func):
-    res = __formals(func)
-    if res is rpy2.rinterface_lib.sexp.NULL:
-        res = __formals(__args(func))
+    if func.typeof is rpy2.rinterface_lib.sexp.RTYPES.SPECIALSXP:
+        res = rpy2.rinterface_lib.sexp.NULL
+    else:
+        res = __formals(func)
+        if res is rpy2.rinterface_lib.sexp.NULL:
+            res = __formals(__args(func))
     return res
 
 

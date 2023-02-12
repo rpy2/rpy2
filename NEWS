@@ -12,6 +12,10 @@ Bugs fixed
 - Building the path to the R shared library was incorrectly
   using the output of `R CMD config LIBnn` (issue #982).
 
+- R started raising warnings when calling `formals` on `SPECIALSXP` R objects.
+  Internal functions :mod:`rpy.robjects.functions` calling `formals` no longer
+  propagate the warnings.
+
 
 Release 3.5.8
 =============
