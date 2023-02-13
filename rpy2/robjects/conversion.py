@@ -324,9 +324,6 @@ class Converter(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         return False
 
-
-
-
     def __str__(self):
         res = [str(type(self))]
         for subcv in ('py2rpy', 'rpy2py'):
