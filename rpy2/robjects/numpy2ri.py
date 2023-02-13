@@ -168,7 +168,7 @@ def rpy2py_data_frame(obj):
     # An added complication is that the conversion defined
     # in this module will make __getitem__ at the robjects
     # level return numpy arrays
-    with conversion.get_conversion() as cv:
+    with conversion.get_conversion().context() as cv:
         for column in rinterface.ListSexpVector(obj):
             if 'factor' in column.rclass:
                 levels = column.do_slot('levels')

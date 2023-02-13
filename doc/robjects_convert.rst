@@ -246,7 +246,7 @@ default conversion scheme:
 .. code-block:: python
 
    from rpy2.robjects import default_converter
-   with conversion_rules:
+   with conversion_rules.context():
        res = base.paste(x, collapse="-")
 
 .. note::
@@ -262,7 +262,7 @@ default conversion scheme:
       from rpy2.robjects import default_converter
 
       def my_function(obj):
-          with default_converter:
+          with default_converter.context():
               # block of code mixing Python code and calls to R functions
 	      # interacting with the objects returned by R in the Python code
 	      pass
