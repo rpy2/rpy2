@@ -78,7 +78,7 @@ r_df
 It can be converted to a pandas data frame using the same converter:
 
 ```python
-with ro.default_converter + pandas2ri.converter:
+with (ro.default_converter + pandas2ri.converter).context():
   pd_from_r_df = ro.conversion.get_conversion().rpy2py(r_df)
 
 pd_from_r_df
@@ -95,7 +95,7 @@ pd_df
 ```
 
 ```python
-with ro.default_converter + pandas2ri.converter:
+with (ro.default_converter + pandas2ri.converter).context():
   r_from_pd_df = ro.conversion.py2rpy(pd_df)
 
 r_from_pd_df
@@ -111,7 +111,7 @@ pd_tz_df = pd.DataFrame({
                                tz='UTC')
     })
     
-with ro.default_converter + pandas2ri.converter:
+with (ro.default_converter + pandas2ri.converter).context():
   r_from_pd_tz_df = ro.conversion.py2rpy(pd_tz_df)
 
 r_from_pd_tz_df
