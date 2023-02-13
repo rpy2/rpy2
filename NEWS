@@ -15,6 +15,18 @@ Bugs fixed
 - R started raising warnings when calling `formals` on `SPECIALSXP` R objects.
   Internal functions :mod:`rpy.robjects.functions` calling `formals` no longer
   propagate the warnings.
+  
+- The :mod:`numpy` converter was not turning `NA_character_` into
+  `None` (issue #979).
+
+Changes
+-------
+
+- :class:`rpy2.robjects.conversion.Converter` objects are no longer functioning context
+  managers. An exception is now raised when trying to use it that way.
+  The feature was introduced with rpy2-3.5.7 but it does not guarantee the locality
+  of a context manager and can result in permanently changed conversion rules.
+  The method :meth:`rpy2.robjects.conversion.Converter.context` should be used instead.
 
 
 Release 3.5.8

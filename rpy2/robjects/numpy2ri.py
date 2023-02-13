@@ -168,14 +168,15 @@ def rpy2py_data_frame(obj):
     # An added complication is that the conversion defined
     # in this module will make __getitem__ at the robjects
     # level return numpy arrays
-    for column in rinterface.ListSexpVector(obj):
-        if 'factor' in column.rclass:
-            levels = column.do_slot('levels')
-            column = tuple(
-                None if x is rinterface.NA_Integer
-                else levels[x-1] for x in column
-            )
-        o2.append(column)
+    with conversion.get_conversion().context() as cv:
+        for column in rinterface.ListSexpVector(obj):
+            if 'factor' in column.rclass:
+                levels = column.do_slot('levels')
+                column = tuple(
+                    None if x is rinterface.NA_Integer
+                    else levels[x-1] for x in column
+                )
+            o2.append(cv.rpy2py(column))
     names = obj.do_slot('names')
     if names == rinterface.NULL:
         res = numpy.rec.fromarrays(o2)
@@ -202,15 +203,25 @@ def rpy2py_floatvector(obj):
     return numpy.array(obj)
 
 
+@rpy2py.register(rinterface.CharSexp)
+def rpy2py_charvector(obj):
+    if obj == rinterface.NA_Character:
+        return None
+    else:
+        return obj
+
+
+@rpy2py.register(rinterface.StrSexpVector)
+def rpy2py_strvector(obj):
+    res = numpy.array(obj)
+    res[res == rinterface.NA_Character] = None
+    return res
+
+
 @rpy2py.register(Sexp)
 def rpy2py_sexp(obj):
-    if obj.typeof is rinterface.RTYPES.CHARSXP:
-        res = None
-    elif (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
+    if (obj.typeof in _vectortypes) and (obj.typeof != RTYPES.VECSXP):
         res = numpy.array(obj)
-        # Special case for R string arrays.
-        if obj.typeof is rinterface.RTYPES.STRSXP:
-            res[res == rinterface.NA_Character] = None
     else:
         res = ro.default_converter.rpy2py(obj)
     return res
