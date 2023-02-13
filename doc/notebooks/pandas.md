@@ -47,7 +47,7 @@ For example, when calling the R function `base::summary`:
 ```python
 base = importr('base')
 
-with (ro.default_converter + pandas2ri.converter).context:
+with (ro.default_converter + pandas2ri.converter).context():
   df_summary = base.summary(pd_df)
 print(df_summary)
 ```
