@@ -35,7 +35,7 @@ pd_df
 R data frame converted from a `pandas` data frame:
 
 ```python
-with ro.default_converter + pandas2ri.converter:
+with (ro.default_converter + pandas2ri.converter).context():
   r_from_pd_df = ro.conversion.get_conversion().py2rpy(pd_df)
 
 r_from_pd_df
@@ -47,7 +47,7 @@ For example, when calling the R function `base::summary`:
 ```python
 base = importr('base')
 
-with ro.default_converter + pandas2ri.converter:
+with (ro.default_converter + pandas2ri.converter).context:
   df_summary = base.summary(pd_df)
 print(df_summary)
 ```
