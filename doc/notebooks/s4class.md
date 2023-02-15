@@ -90,7 +90,7 @@ That function can be be register to a `Converter`:
 
 ```python
 from rpy2.robjects import default_converter
-from rpy2.robjects.conversion import Converter, localconverter
+from rpy2.robjects.conversion import Converter
 
 my_converter = Converter('ExpressionSet-aware converter',
                          template=default_converter)
@@ -105,7 +105,7 @@ instances of our Python class `ExpressionSet`:
 
 ```python
 
-with localconverter(my_converter) as cv:
+with my_converter.context() as cv:
     eset = biobase.ExpressionSet()
     print(type(eset))
 ```
