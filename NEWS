@@ -19,6 +19,10 @@ Bugs fixed
 - The :mod:`numpy` converter was not turning `NA_character_` into
   `None` (issue #979).
 
+- :mod:`rpy2.situation` included an eager `import rpy2` that could cause a version
+   mismatch error with some build/install toolchain (issue #984). The import is now
+   lazy/delayed.
+
 Changes
 -------
 

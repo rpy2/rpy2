@@ -21,12 +21,6 @@ if sys.maxsize > 2**32:
 else:
     r_version_folder = 'i386'
 
-try:
-    import rpy2  # noqa:F401
-    has_rpy2 = True
-except ImportError:
-    has_rpy2 = False
-
 
 class CFFI_MODE(enum.Enum):
     API = 'API'
@@ -367,13 +361,13 @@ def iter_info():
     make_bold = _make_bold_win32 if os.name == 'nt' else _make_bold_unix
 
     yield make_bold('rpy2 version:')
-    if has_rpy2:
+    try:
         # TODO: the repeated import is needed, without which Python
         #   raises an UnboundLocalError (local variable reference before
         #   assignment).
         import rpy2  # noqa: F811
         yield rpy2.__version__
-    else:
+    except ImportError:
         yield 'rpy2 cannot be imported'
 
     yield make_bold('Python version:')
@@ -421,16 +415,17 @@ def iter_info():
         else:
             yield r_ld_library_path_from_subprocess(r_home)
 
-    if has_rpy2:
+    try:
+        import rpy2.rinterface_lib.openrlib
+        rlib_status = 'OK'
+    except ImportError as ie:
         try:
-            import rpy2.rinterface_lib.openrlib
-            rlib_status = 'OK'
-        except ImportError as ie:
+            import rpy2
             rlib_status = '*** Error while loading: %s ***' % str(ie)
-        except OSError as ose:
-            rlib_status = str(ose)
-    else:
-        rlib_status = '*** rpy2 is not installed'
+        except ImportError:
+            rlib_status = '*** rpy2 is not installed'
+    except OSError as ose:
+        rlib_status = str(ose)
 
     yield make_bold("R version:")
     yield '    In the PATH: %s' % r_version_from_subprocess()
