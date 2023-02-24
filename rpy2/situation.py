@@ -470,7 +470,7 @@ def iter_info():
     for cffi_type in ('abi', 'api'):
         rinterface_cffi_spec = importlib.util.find_spec(f'_rinterface_cffi_{cffi_type}')
         yield f'  {cffi_type.upper()}: {"PRESENT" if rinterface_cffi_spec else "ABSENT"}'
-    
+
 
 def set_default_logging():
     logformatter = logging.Formatter('%(name)s: %(message)s')
