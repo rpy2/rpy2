@@ -1,3 +1,12 @@
+Release 3.5.10
+==============
+
+New features
+------------
+
+- :mod:`rpy2.situation` reports cffi interface type information.
+
+
 Release 3.5.9
 =============
 
