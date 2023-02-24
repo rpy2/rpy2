@@ -23,6 +23,9 @@ Bugs fixed
    mismatch error with some build/install toolchain (issue #984). The import is now
    lazy/delayed.
 
+- Installation targets `pandas`, `all`, and `test` now specify `pandas>=1.2.0`
+  (which should limit frequencies of issues like #998).
+
 Changes
 -------
 
