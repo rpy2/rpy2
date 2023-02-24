@@ -21,6 +21,8 @@ if sys.maxsize > 2**32:
 else:
     r_version_folder = 'i386'
 
+ENVVAR_CFFI_TYPE: str = 'RPY2_CFFI_MODE'
+
 
 class CFFI_MODE(enum.Enum):
     API = 'API'
@@ -30,7 +32,7 @@ class CFFI_MODE(enum.Enum):
 
 
 def get_cffi_mode(default=CFFI_MODE.ANY):
-    cffi_mode = os.environ.get('RPY2_CFFI_MODE', '')
+    cffi_mode = os.environ.get(ENVVAR_CFFI_TYPE, '')
     res = default
     for m in (CFFI_MODE.API, CFFI_MODE.ABI,
               CFFI_MODE.BOTH, CFFI_MODE.ANY):
@@ -459,6 +461,15 @@ def iter_info():
 
     yield 'Directory for the R shared library:'
     yield get_r_libnn(r_home)
+
+    yield make_bold('CFFI extension type')
+    yield f'  Environment variable: {ENVVAR_CFFI_TYPE}'
+    yield f'  Value: {get_cffi_mode()}'
+
+    import importlib
+    for cffi_type in ('abi', 'api'):
+        rinterface_cffi_spec = importlib.util.find_spec(f'_rinterface_cffi_{cffi_type}')
+        yield f'  {cffi_type.upper()}: {"PRESENT" if rinterface_cffi_spec else "ABSENT"}'
 
 
 def set_default_logging():
