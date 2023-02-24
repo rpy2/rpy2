@@ -1,3 +1,41 @@
+Release 3.5.9
+=============
+
+New features
+------------
+
+- Type hints in :mod:`rpy2` are now checked with `mypy`.
+
+Bugs fixed
+----------
+
+- Building the path to the R shared library was incorrectly
+  using the output of `R CMD config LIBnn` (issue #982).
+
+- R started raising warnings when calling `formals` on `SPECIALSXP` R objects.
+  Internal functions :mod:`rpy.robjects.functions` calling `formals` no longer
+  propagate the warnings.
+  
+- The :mod:`numpy` converter was not turning `NA_character_` into
+  `None` (issue #979).
+
+- :mod:`rpy2.situation` included an eager `import rpy2` that could cause a version
+   mismatch error with some build/install toolchain (issue #984). The import is now
+   lazy/delayed.
+
+- Installation targets `pandas`, `all`, and `test` now specify `pandas>=1.2.0`
+  (which should limit frequencies of issues like #998).
+
+Changes
+-------
+
+- :class:`rpy2.robjects.conversion.Converter` objects are no longer functioning context
+  managers. An exception is now raised when trying to use it that way.
+  The feature was introduced with rpy2-3.5.7 but it does not guarantee the locality
+  of a context manager and can result in permanently changed conversion rules.
+  The method :meth:`rpy2.robjects.conversion.Converter.context` should be used instead.
+
+
 Release 3.5.8
 =============
 

@@ -92,7 +92,7 @@ jobs:
       uses: actions/upload-artifact@v3
       if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == env.default_r
       with:
-          name: source-package
+          name: source-distribution
           path: dist/*.tar.gz
     - name: Upload wheels
       uses: actions/upload-artifact@v3
@@ -106,4 +106,4 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
-        packages_dir: dist
+        packages_dir: dist/
