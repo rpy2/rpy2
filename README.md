@@ -23,7 +23,7 @@ For example, to be able to run the unit tests:
 pip install rpy2[test]
 ```
 
-To install all dependencies, use:
+To install all optional dependencies (numpy, pandas, ipython), use:
 
 ```bash
 pip install rpy2[all]
