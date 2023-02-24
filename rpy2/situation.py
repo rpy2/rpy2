@@ -21,7 +21,7 @@ if sys.maxsize > 2**32:
 else:
     r_version_folder = 'i386'
 
-ENVVAR_CFFI_TYPE = 'RPY2_CFFI_MODE'
+ENVVAR_CFFI_TYPE: str = 'RPY2_CFFI_MODE'
 
 
 class CFFI_MODE(enum.Enum):
