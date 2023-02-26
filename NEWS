@@ -6,6 +6,16 @@ New features
 
 - :mod:`rpy2.situation` reports cffi interface type information.
 
+Bugs fixed
+----------
+
+- Building the path to the R shared library was incorrectly
+  using the output of `R CMD config LIBnn` (issue #982).
+
+- R started raising warnings when calling `formals` on `BUILTINSXP` R objects.
+  Internal functions in :mod:`rpy.robjects.functions` calling `formals` no
+  longer propagate the warnings.
+
 
 Release 3.5.9
 =============
