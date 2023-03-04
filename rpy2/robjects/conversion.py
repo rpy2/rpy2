@@ -304,13 +304,26 @@ class Converter(object):
         overlay_converter(converter, result_converter)
         return result_converter
 
+    def context(self) -> 'ConversionContext':
+        """
+        Create a Conversion context to use in a `with` statement.
+
+        >>> with conversion_rules.context() as cv:
+        ...     # Do something while using those conversion_rules.
+        >>> # Do something else whith the earlier conversion rules restored.
+
+        The conversion context is a *copy* of the converter object.
+
+        :return: A :class:`ConversionContext`
+        """
+        return ConversionContext(self)
+
     def __enter__(self):
-        self._original_converter = converter_ctx.get()
-        set_conversion(self)
-        return self
+        raise Exception(
+            "Use the converter's method context instead."
+        )
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        set_conversion(self._original_converter)
         return False
 
     def __str__(self):

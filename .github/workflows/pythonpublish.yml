@@ -16,7 +16,7 @@ on:
 env:
   default_os: "ubuntu-latest"
   default_r: "release"
-  default_python: "3.8"
+  default_python: "3.9"
 jobs:
   deploy:
     runs-on: ${{ matrix.os }}
@@ -66,11 +66,12 @@ jobs:
       uses: actions/upload-artifact@v3
       if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
       with:
-          path: dist/*.whl
+          name: source-distribution
+          path: dist/*.tar.gz
     - name: Publish
       if: github.event_name == 'release'
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
-        packages_dir: dist
+        packages_dir: dist/

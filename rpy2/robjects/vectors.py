@@ -1264,7 +1264,7 @@ class DataFrame(ListVector):
         if isinstance(obj, rinterface.ListSexpVector):
             if obj.typeof != rinterface.RTYPES.VECSXP:
                 raise ValueError(
-                    "obj should of typeof RTYPES.VECSXP "
+                    "obj should be of typeof RTYPES.VECSXP "
                     " (and we get %s)" % rinterface.RTYPES(obj.typeof)
                 )
             if (
