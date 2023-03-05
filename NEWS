@@ -6,6 +6,9 @@ New features
 
 - :mod:`rpy2.situation` reports cffi interface type information.
 
+- The ipython/jupyter R magic can now have `jpeg` as a default graphics format
+  for static figures in addition to `png` and `svg`.
+
 Bugs fixed
 ----------
 

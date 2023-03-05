@@ -59,7 +59,7 @@ def ipython_with_magic():
     ip = get_ipython()
     # This is just to get a minimally modified version of the changes
     # working
-    ip.magic('load_ext rpy2.ipython')
+    ip.run_line_magic('load_ext', 'rpy2.ipython')
     return ip
 
 

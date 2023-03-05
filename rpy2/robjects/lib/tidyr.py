@@ -6,7 +6,7 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     tidyr = importr('tidyr', on_conflict="warn")
 
-TARGET_VERSION = '1.1.'
+TARGET_VERSION = '1.2.'
 
 if not tidyr.__version__.startswith(TARGET_VERSION):
     warnings.warn(
