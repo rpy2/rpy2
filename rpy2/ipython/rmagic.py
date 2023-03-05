@@ -88,7 +88,7 @@ except ImportError as ie:
 
 # IPython imports.
 
-import IPython.display
+import IPython.display  # type: ignore
 from IPython.core import displaypub  # type: ignore
 from IPython.core.magic import (Magics,   # type: ignore
                                 magics_class,
