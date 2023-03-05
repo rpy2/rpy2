@@ -31,15 +31,22 @@ def test_call_with_sexp():
     assert s[0] == 6
 
 
-def test_formals():
-    ri_f = robjects.r('function(x, y) TRUE')
+@pytest.mark.parametrize(
+    'rcode,funcnames',
+    (('function(x, y) TRUE', ('x', 'y')),
+     ('.C', None),
+     ('`if`', None))
+)
+def test_formals(rcode, funcnames):
+    ri_f = robjects.r(rcode)
     res = ri_f.formals()
     #FIXME: no need for as.list when paired list are handled
-    res = robjects.r['as.list'](res)
-    assert len(res) == 2
-    n = res.names
-    assert n[0] == 'x'
-    assert n[1] == 'y'
+    if funcnames:
+        res = robjects.r['as.list'](res)
+        assert len(res) == len(funcnames)
+        assert funcnames == tuple(res.names)
+    else:
+        res is None
 
 
 @pytest.mark.parametrize('rcode',
