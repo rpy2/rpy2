@@ -1,3 +1,21 @@
+Release 3.5.11
+==============
+
+Bugs fixed
+----------
+
+- The default converter for R magic was dropping R factors
+  to :mod:`numpy` arrays of integers rather than convert them
+  to pandas :class:`Category` (issue #1010).
+
+Changes
+-------
+
+- The fix for issue #1010 (see above) changes the numpy conversion
+  for R factors. It return an arrays with the level factors rather
+  than the integer codes for the levels.
+
+
 Release 3.5.10
 ==============
 

@@ -227,14 +227,29 @@ def test_Rconverter_numpy(ipython_with_magic, clean_globalenv):
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_pandas, reason='pandas not installed')
-def test_Rconverter_pandas(ipython_with_magic, clean_globalenv):
-    dataf_pd= pd.DataFrame.from_dict(
-    {'x': (1, 2, 3),
-     'y': (2.9, 3.5, 2.1),
-     'z': ('a', 'b', 'c')})
+@pytest.mark.parametrize(
+    'python_obj_code,python_cls_code',
+    (
+        ("""
+        dataf_pd= pd.DataFrame.from_dict(
+        {'x': (1, 2, 3),
+         'y': (2.9, 3.5, 2.1),
+         'z': ('a', 'b', 'c')}
+        """, 'pd.DataFrame'),
+        """
+        pd.Categorical.from_codes(
+          [0, 1, 0],
+          categories=['a', 'b'],
+          ordered=False
+        )""", 'pd.Categorical'
+    )
+)
+def test_Rconverter_pandas(ipython_with_magic, clean_globalenv,
+                           python_obj_code, python_cls_code):
+    py_obj = eval(python_obj_code)
     _test_Rconverter(
         ipython_with_magic, clean_globalenv,
-        dataf_pd, pd.DataFrame
+        py_obj, eval(python_cls_code)
     )
 
 
