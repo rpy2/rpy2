@@ -1,6 +1,12 @@
 Release 3.5.11
 ==============
 
+New features
+------------
+
+- :class:`pandas.Categorical` objects are now converted to R
+  `factor` objects.
+
 Bugs fixed
 ----------
 
@@ -14,6 +20,9 @@ Changes
 - The fix for issue #1010 (see above) changes the numpy conversion
   for R factors. It return an arrays with the level factors rather
   than the integer codes for the levels.
+
+- :func:`rpy2.rojects.pandas2ri.py2rpy_categoryseries` raises a
+  :class:`DeprecationWarning`.
 
 
 Release 3.5.10
