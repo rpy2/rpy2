@@ -18,7 +18,7 @@ Changes
 -------
 
 - The fix for issue #1010 (see above) changes the numpy conversion
-  for R factors. It return an arrays with the level factors rather
+  for R factors. It returns an arrays with the level factors rather
   than the integer codes for the levels.
 
 - :func:`rpy2.rojects.pandas2ri.py2rpy_categoryseries` raises a
