@@ -74,13 +74,13 @@ jobs:
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install numpy
+        python -m pip install .[numpy]
         bash -e ./scripts/run_test_numpy.sh
     - name: Test with pandas
       run: |
         ${{ matrix.ld_libpath }}
         ${{matrix.venv_activate }}
-        python -m pip install pandas
+        python -m pip install .[pandas]
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
       run: |
