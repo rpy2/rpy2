@@ -10,6 +10,9 @@ New features
 Bugs fixed
 ----------
 
+- :mod:`pandas` 2.0 makes API-breaking changes that made
+  conversion fail (issue #1013).
+  
 - The default converter for R magic was dropping R factors
   to :mod:`numpy` arrays of integers rather than convert them
   to pandas :class:`Category` (issue #1010).
