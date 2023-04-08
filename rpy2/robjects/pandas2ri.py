@@ -170,7 +170,13 @@ def py2rpy_pandasseries(obj):
         res = FactorVector(res)
     elif is_datetime64_any_dtype(obj.dtype):
         # time series
-        tzname = obj.dt.tz.zone if obj.dt.tz else ''
+        if obj.dt.tz:
+            if obj.dt.tz is datetime.timezone.utc:
+                tzname = 'UTC'
+            else:
+                tzname = obj.dt.tz.zone
+        else:
+            tzname = ''
         d = [IntVector([x.year for x in obj]),
              IntVector([x.month for x in obj]),
              IntVector([x.day for x in obj]),
