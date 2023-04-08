@@ -1,3 +1,13 @@
+Release 3.5.11
+==============
+
+Bugs fixed
+----------
+
+- :mod:`pandas` 2.0 makes API-breaking changes that made
+  conversion fail (issue #1013).
+
+
 Release 3.5.10
 ==============
 
