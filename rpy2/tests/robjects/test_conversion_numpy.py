@@ -40,11 +40,27 @@ class TestNumpyConversions(object):
         b_r = self.check_homogeneous(b, "logical", "logical")
         assert tuple(l) == tuple(b_r)
 
-    def test_vector_integer(self):
+    def test_vector_integer_py2rpy(self):
         l = [1, 2, 3]
         i = numpy.array(l, dtype="i")
         i_r = self.check_homogeneous(i, "numeric", "integer")
         assert tuple(l) == tuple(i_r)
+
+    def test_vector_integer_rpy2py(self):
+        l = [1, 2, 3]
+        i = rinterface.IntSexpVector(l)
+        with (robjects.default_converter + rpyn.converter).context() as cv:
+            converted = cv.rpy2py(i)
+        assert isinstance(converted, numpy.ndarray)
+        assert tuple(l) == tuple(converted)
+
+    def test_factor_integer_rpy2py(self):
+        l = ['a', 'b', 'a']
+        f = robjects.FactorVector(l)
+        with (robjects.default_converter + rpyn.converter).context() as cv:
+            converted = cv.rpy2py(f)
+        assert isinstance(converted, numpy.ndarray)
+        assert tuple(l) == tuple(converted)
 
     def test_vector_float(self):
         l = [1.0, 2.0, 3.0]
@@ -194,7 +210,7 @@ class TestNumpyConversions(object):
         assert rpy2.rlike.container.OrdDict == type(rec)
         assert rec['a'][0] == 1
         assert rec['b'][0] == 2
-        assert rec['c'][0] == 1  # not 'e'.
+        assert rec['c'][0] == 'e'  # not 1.
 
     def test_atomic_vector_to_numpy(self):
         v = robjects.vectors.IntVector((1,2,3))
