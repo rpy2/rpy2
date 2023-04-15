@@ -36,6 +36,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+test_minimal = ["pytest", "coverage"]
 test = ["pytest", "ipython", "numpy", "pandas>=1.3.5"]
 numpy = []
 pandas = ["numpy", "pandas>=1.3.5"]
