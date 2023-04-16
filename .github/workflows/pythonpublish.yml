@@ -16,6 +16,7 @@ on:
 env:
   default_os: "ubuntu-latest"
   default_r: "release"
+  default_python: "3.10"
 jobs:
   build_wheels:
     name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id}}
@@ -33,11 +34,11 @@ jobs:
             manylinux_i686_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_i686:r4.2.2
             r-version: release
           - os: macos-11
-            python: 39
+            python: 310
             platform_id: macosx_x86_64
             r-version: release
           - os: macos-11
-            python: 39
+            python: 310
             platform_id: macosx_arm64
             r-version: release
     steps:
