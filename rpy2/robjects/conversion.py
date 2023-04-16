@@ -312,6 +312,8 @@ class Converter(object):
         ...     # Do something while using those conversion_rules.
         >>> # Do something else whith the earlier conversion rules restored.
 
+        The conversion context is a *copy* of the converter object.
+
         :return: A :class:`ConversionContext`
         """
         return ConversionContext(self)

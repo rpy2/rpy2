@@ -1,3 +1,55 @@
+Release 3.5.11
+==============
+
+New features
+------------
+
+- :class:`pandas.Categorical` objects are now converted to R
+  `factor` objects.
+
+Bugs fixed
+----------
+
+- :mod:`pandas` 2.0 makes API-breaking changes that made
+  conversion fail (issue #1013).
+  
+- The default converter for R magic was dropping R factors
+  to :mod:`numpy` arrays of integers rather than convert them
+  to pandas :class:`Category` (issue #1010).
+
+Changes
+-------
+
+- The fix for issue #1010 (see above) changes the numpy conversion
+  for R factors. It returns an arrays with the level factors rather
+  than the integer codes for the levels.
+
+- :func:`rpy2.rojects.pandas2ri.py2rpy_categoryseries` raises a
+  :class:`DeprecationWarning`.
+
+
+Release 3.5.10
+==============
+
+New features
+------------
+
+- :mod:`rpy2.situation` reports cffi interface type information.
+
+- The ipython/jupyter R magic can now have `jpeg` as a default graphics format
+  for static figures in addition to `png` and `svg`.
+
+Bugs fixed
+----------
+
+- Building the path to the R shared library was incorrectly
+  using the output of `R CMD config LIBnn` (issue #982).
+
+- R started raising warnings when calling `formals` on `BUILTINSXP` R objects.
+  Internal functions in :mod:`rpy.robjects.functions` calling `formals` no
+  longer propagate the warnings.
+
+
 Release 3.5.9
 =============
 

@@ -4,6 +4,7 @@ import types
 import warnings
 from itertools import product
 import rpy2.rinterface_lib.callbacks
+import rpy2.robjects
 import rpy2.robjects.conversion
 from .. import utils
 
@@ -59,7 +60,7 @@ def ipython_with_magic():
     ip = get_ipython()
     # This is just to get a minimally modified version of the changes
     # working
-    ip.magic('load_ext rpy2.ipython')
+    ip.run_line_magic('load_ext', 'rpy2.ipython')
     return ip
 
 
@@ -227,15 +228,77 @@ def test_Rconverter_numpy(ipython_with_magic, clean_globalenv):
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_pandas, reason='pandas not installed')
-def test_Rconverter_pandas(ipython_with_magic, clean_globalenv):
-    dataf_pd= pd.DataFrame.from_dict(
-    {'x': (1, 2, 3),
-     'y': (2.9, 3.5, 2.1),
-     'z': ('a', 'b', 'c')})
-    _test_Rconverter(
-        ipython_with_magic, clean_globalenv,
-        dataf_pd, pd.DataFrame
+@pytest.mark.parametrize(
+    'python_obj_code,r_cls',
+    (
+        ("""
+pd.DataFrame.from_dict(
+  {
+    'x': (1, 2, 3),
+    'y': (2.9, 3.5, 2.1),
+    'z': ('a', 'b', 'c')
+  }
+)""",
+         ('data.frame', )),
+        ("""
+pd.Categorical.from_codes(
+  [0, 1, 0],
+  categories=['a', 'b'],
+  ordered=False
+)""",
+         ('factor', ))
     )
+)
+def test_converter_pandas_py2rpy(
+        ipython_with_magic, clean_globalenv,
+        python_obj_code, r_cls
+):
+    py_obj = eval(python_obj_code)
+    # If we get to dropping numpy requirement, we might use something
+    # like the following:
+    # assert tuple(buffer(a).buffer_info()) == tuple(buffer(b).buffer_info())
+
+    # store it in the notebook's user namespace
+    ipython_with_magic.user_ns['py_obj'] = py_obj
+
+    # equivalent to:
+    #     %Rpush dataf_np
+    # that is send Python object 'dataf_py' into R's globalenv
+    # as 'dataf_r'. The current conversion rules should make it an
+    # R data frame.
+    ipython_with_magic.run_line_magic('Rpush', 'py_obj')
+
+    assert tuple(rpy2.robjects.r('class(py_obj)')) == r_cls
+
+
+@pytest.mark.skipif(IPython is None,
+                    reason='The optional package IPython cannot be imported.')
+@pytest.mark.skipif(not has_pandas, reason='pandas not installed')
+@pytest.mark.parametrize(
+    'r_obj_code,py_cls',
+    (
+        ("""
+data.frame(
+  x = c(1, 2, 3),
+  y = c(2.9, 3.5, 2.1),
+  z = c('a', 'b', 'c')
+)""", 'pd.DataFrame'),
+        ("""
+factor(c('a', 'b', 'a'),
+       ordered = TRUE)
+""", 'pd.Categorical')
+    )
+)
+def test_converter_pandas_rpy2py(
+        ipython_with_magic, clean_globalenv,
+        r_obj_code, py_cls
+):
+    rpy2.robjects.r(f'r_obj <- {r_obj_code}')
+    # retrieve `dataf_py` from R into `fromr_dataf_py` in the notebook.
+    py_obj = ipython_with_magic.run_line_magic(
+        'Rget', 'r_obj'
+    )
+    assert isinstance(py_obj, eval(py_cls))
 
 
 @pytest.mark.skipif(IPython is None,

@@ -156,9 +156,10 @@ def set_initoptions(options: typing.Tuple[str]) -> None:
     global _options
     for x in options:
         assert isinstance(x, str)
-    logger.info('Setting options to initialize R: {}'
-                .format(', '.join(options)))
-    _options = tuple(options)
+    with openrlib.rlock:
+        logger.info('Setting options to initialize R: {}'
+                    .format(', '.join(options)))
+        _options = tuple(options)
 
 
 def get_initoptions() -> typing.Tuple[str, ...]:

@@ -150,10 +150,11 @@ def nonnumpy2rpy(obj):
 #     return ro.vectors.rtypeof2rotype[res.typeof](res)
 
 def _factor_to_numpy_string_array(obj):
+    levels = obj.do_slot('levels')
     res = numpy.array(
         tuple(
             None if x is rinterface.NA_Character
-            else obj.levels[x-1] for x in obj
+            else levels[x-1] for x in obj
         )
     )
     return res
@@ -193,11 +194,6 @@ def rpy2py_list(obj: rinterface.ListSexpVector):
     return res
 
 
-@rpy2py.register(rinterface.IntSexpVector)
-def rpy2py_intvector(obj):
-    return numpy.array(obj)
-
-
 @rpy2py.register(rinterface.FloatSexpVector)
 def rpy2py_floatvector(obj):
     return numpy.array(obj)
@@ -230,7 +226,7 @@ def rpy2py_sexp(obj):
 converter._rpy2py_nc_map.update(
     {
         rinterface.IntSexpVector: conversion.NameClassMap(
-            converter.rpy2py,
+            numpy.array,
             {'factor': _factor_to_numpy_string_array}
         ),
         rinterface.ListSexpVector: conversion.NameClassMap(

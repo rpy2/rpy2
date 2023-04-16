@@ -42,7 +42,7 @@ python setup.py install
 ```
 
 
-## Non system-R installations
+## Issues loading shared C libraries
 
 Whenever R is in not installed in a system location, the system might not
 know where to find the R shared library.
