@@ -16,13 +16,13 @@ on:
 env:
   default_os: "ubuntu-latest"
   default_r: "release"
-  default_python: "3.9"
+  default_python: "3.10"
 jobs:
   deploy:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10"]
+        python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
         r-version: [release]
         os: [ubuntu-latest, macOS-latest, windows-2019]
         exclude:
