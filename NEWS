@@ -1,3 +1,13 @@
+Release 3.5.12
+==============
+
+Bugs fixed
+----------
+
+- On systems where the default encoding is not utf-8, converting
+  R strings to Python can result in decoding errors (issue #1018).
+
+
 Release 3.5.11
 ==============
 
