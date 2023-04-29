@@ -327,10 +327,12 @@ def _initr(
 
 
 def endr(fatal: int) -> None:
+    logger.debug('Ending embedded R process.')
     global rpy2_embeddedR_isinitialized
     rlib = openrlib.rlib
     with openrlib.rlock:
         if rpy2_embeddedR_isinitialized & RPY_R_Status.ENDED.value:
+            logger.info('Embedded R already ended.')
             return
         rlib.R_dot_Last()
         rlib.R_RunExitFinalizers()
@@ -339,6 +341,7 @@ def endr(fatal: int) -> None:
         rlib.R_gc()
         rlib.Rf_endEmbeddedR(fatal)
         rpy2_embeddedR_isinitialized ^= RPY_R_Status.ENDED.value
+        logger.info('Embedded R ended.')
 
 
 _REFERENCE_TO_R_SESSIONS = 'https://github.com/rstudio/reticulate/issues/98'
