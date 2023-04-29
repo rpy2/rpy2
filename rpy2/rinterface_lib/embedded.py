@@ -307,6 +307,7 @@ def _initr(
         if _c_stack_limit:
             rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
         rlib.R_Interactive = True
+        logger.debug('Calling R setup_Rmainloop.')
         rlib.setup_Rmainloop()
 
         _setinitialized()
@@ -319,6 +320,7 @@ def _initr(
         rlib.R_Consolefile = ffi.NULL
 
         if _want_setcallbacks:
+            logger.debug('Setting functions for R callbacks.')
             for rlib_symbol, callback_symbol in CALLBACK_INIT_PAIRS:
                 _setcallback(rlib, rlib_symbol,
                              callback_funcs, callback_symbol)
