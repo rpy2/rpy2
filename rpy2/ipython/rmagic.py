@@ -382,12 +382,20 @@ class RMagics(Magics):
                 )
             try:
                 # Need the newline in case the last line in code is a comment.
-                value, visible = ro.r("withVisible({%s\n})" % code)
+                r_expr = ri.parse(code)
+                value, visible = ri.evalr_expr_with_visible(
+                    r_expr
+                )
             except (ri.embedded.RRuntimeError, ValueError) as exception:
                 # Otherwise next return seems to have copy of error.
                 warning_or_other_msg = self.flush()
                 raise RInterpreterError(code, str(exception),
                                         warning_or_other_msg)
+            try:
+                ro.r('.Internal(printDeferredWarnings())')
+            except (ri.embedded.RRuntimeError, ValueError) as exception:
+                # TODO: report this in a logger.
+                pass
             text_output = self.flush()
             return text_output, value, visible[0]
 
