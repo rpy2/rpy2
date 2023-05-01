@@ -393,7 +393,7 @@ class RMagics(Magics):
                                         warning_or_other_msg)
             try:
                 ro.r('.Internal(printDeferredWarnings())')
-            except (ri.embedded.RRuntimeError, ValueError) as exception:
+            except (ri.embedded.RRuntimeError, ValueError):
                 # TODO: report this in a logger.
                 pass
             text_output = self.flush()
