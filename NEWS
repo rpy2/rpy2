@@ -1,3 +1,14 @@
+Release 3.5.12
+==============
+
+New features
+------------
+
+- :func:`rpy2.rinterface.evalr_expr_with_visible` to evaluate
+  an expression and return the visibility status of the
+  value returned.
+
+
 Release 3.5.11
 ==============
 
