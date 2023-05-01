@@ -143,6 +143,47 @@ def evalr_expr(
     return res
 
 
+def evalr_expr_with_visible(
+        expr: 'ExprSexpVector',
+        envir: typing.Union[
+            None,
+            'SexpEnvironment'] = None
+) -> sexp.Sexp:
+    """Evaluate an R expression and return value and visibility flag.
+
+    :param expr: An R expression.
+    :param envir: An environment in which the expression will be evaluated.
+
+    :return: An R list with (value, visibility) where visibility is
+    an R boolean.
+    """
+    if envir is None:
+        envir = evaluation_context.get()
+    assert isinstance(envir, SexpEnvironment)
+
+    error_occured = _rinterface.ffi.new('int *', 0)
+    with memorymanagement.rmemory() as rmemory:
+        r_call_nested = rmemory.protect(
+            openrlib.rlib.Rf_lang2(
+                baseenv['eval'].__sexp__._cdata,
+                expr.__sexp__._cdata)
+        )
+        r_call = rmemory.protect(
+            openrlib.rlib.Rf_lang2(
+                baseenv['withVisible'].__sexp__._cdata,
+                r_call_nested)
+        )
+        res = conversion._cdata_to_rinterface(
+            rmemory.protect(
+                openrlib.rlib.R_tryEval(
+                    r_call,
+                    envir.__sexp__._cdata,  # call context.
+                    error_occured)
+            )
+        )
+    return res
+
+
 def evalr(
         source: str,
         maxlines: int = -1,

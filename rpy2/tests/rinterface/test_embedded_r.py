@@ -123,12 +123,28 @@ def test_parse_invalid_string():
     with pytest.raises(TypeError):
         rinterface.parse(3)
 
+
 @pytest.mark.parametrize(
     'envir',
     (None, rinterface.globalenv, rinterface.ListSexpVector([])))
 def test_evalr(envir):
     res = rinterface.evalr('1 + 2', envir=envir)
     assert tuple(res) == (3, )
+
+
+@pytest.mark.parametrize(
+    'envir',
+    (None, rinterface.globalenv)
+)
+@pytest.mark.parametrize(
+    'expr,visibility',
+    (('x <- 1', False), ('1', True))
+)
+def test_evalr_expr_with_visible(envir, expr, visibility):
+    value, vis = rinterface.evalr_expr_with_visible(
+        rinterface.parse(expr),
+        envir=envir)
+    assert vis[0] == visibility
 
 
 def test_rternalize_decorator():
