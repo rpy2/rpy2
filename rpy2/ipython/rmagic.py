@@ -124,6 +124,15 @@ def _get_converter(template_converter=template_converter):
                      template=template_converter)
 
 
+# TODO: Something like this could be part of the rpy2 API.
+def _print_deferred_warnings():
+    try:
+        ro.r('.Internal(printDeferredWarnings())')
+    except (ri.embedded.RRuntimeError, ValueError):
+        # TODO: report this in a logger.
+        pass
+
+
 ipy_template_converter = _get_ipython_template_converter(template_converter,
                                                          numpy=numpy,
                                                          pandas=pandas)
@@ -391,11 +400,8 @@ class RMagics(Magics):
                 warning_or_other_msg = self.flush()
                 raise RInterpreterError(code, str(exception),
                                         warning_or_other_msg)
-            try:
-                ro.r('.Internal(printDeferredWarnings())')
-            except (ri.embedded.RRuntimeError, ValueError):
-                # TODO: report this in a logger.
-                pass
+            finally:
+                _print_deferred_warnings()
             text_output = self.flush()
             return text_output, value, visible[0]
 
