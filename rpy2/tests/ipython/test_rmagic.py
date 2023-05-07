@@ -4,6 +4,7 @@ import types
 import warnings
 from itertools import product
 import rpy2.rinterface_lib.callbacks
+import rpy2.rinterface_lib._rinterface_capi
 import rpy2.robjects
 import rpy2.robjects.conversion
 from .. import utils
@@ -124,11 +125,15 @@ def test_push_localscope(ipython_with_magic, clean_globalenv):
 
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
-def test_run_cell_with_error(ipython_with_magic, clean_globalenv):
+@pytest.mark.parametrize('rcode,exception',
+                         (('"a" + 1', rmagic.RInterpreterError),
+                          ('"a" + ', rpy2.rinterface_lib._rinterface_capi.RParsingError)))
+def test_run_cell_with_error(ipython_with_magic, clean_globalenv,
+                             rcode, exception):
     """Run an R block with an error."""
 
-    with pytest.raises(rmagic.RInterpreterError):
-        ipython_with_magic.run_line_magic('R', '"a" + 1')
+    with pytest.raises(exception):
+        ipython_with_magic.run_line_magic('R', rcode)
 
 
 @pytest.mark.skipif(IPython is None,
