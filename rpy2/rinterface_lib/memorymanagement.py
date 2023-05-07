@@ -14,7 +14,7 @@ class ProtectionTracker(object):
     the C API from Python, or even using Rf_protect() and Rf_unprotect(),
     is strongly discouraged."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._counter = 0
 
     @property
