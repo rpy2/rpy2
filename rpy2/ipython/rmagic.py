@@ -104,7 +104,7 @@ from IPython.core.magic_arguments import (argument,  # type: ignore
 
 template_converter = get_conversion()
 
-DEVICES_STATIC_RASTER: set[str] = {'png', 'jpeg'}
+DEVICES_STATIC_RASTER: typing.Set[str] = {'png', 'jpeg'}
 DEVICES_STATIC = DEVICES_STATIC_RASTER | {'svg'}
 DEVICES_SUPPORTED = DEVICES_STATIC | {'X11'}
 
