@@ -86,20 +86,26 @@ def py2rpy_pandasindex(obj):
         return numpy2ri.numpy2rpy(obj)
 
 
-def py2rpy_categoryseries(obj):
-    for c in obj.cat.categories:
+@py2rpy.register(pandas.Categorical)
+def py2rpy_categorical(obj):
+    for c in obj.categories:
         if not isinstance(c, str):
             raise ValueError('Converting pandas "Category" series to '
                              'R factor is only possible when categories '
                              'are strings.')
     res = IntSexpVector(list(rinterface.NA_Integer if x == -1 else x+1
-                             for x in obj.cat.codes))
-    res.do_slot_assign('levels', StrSexpVector(obj.cat.categories))
-    if obj.cat.ordered:
+                             for x in obj.codes))
+    res.do_slot_assign('levels', StrSexpVector(obj.categories))
+    if obj.ordered:
         res.rclass = StrSexpVector(('ordered', 'factor'))
     else:
         res.rclass = StrSexpVector(('factor',))
     return res
+
+
+def py2rpy_categoryseries(obj):
+    warnings.warn('Use py2rpy_categorical(obj.cat).', DeprecationWarning)
+    return py2rpy_categorical(obj.cat)
 
 
 def _populate_r_vector_with_na(na_value):
@@ -166,11 +172,17 @@ def py2rpy_pandasseries(obj):
                       'to R vector of strings.' % obj.name)
         res = StrVector(obj)
     elif obj.dtype.name == 'category':
-        res = py2rpy_categoryseries(obj)
+        res = py2rpy_categorical(obj.cat)
         res = FactorVector(res)
     elif is_datetime64_any_dtype(obj.dtype):
         # time series
-        tzname = obj.dt.tz.zone if obj.dt.tz else ''
+        if obj.dt.tz:
+            if obj.dt.tz is datetime.timezone.utc:
+                tzname = 'UTC'
+            else:
+                tzname = obj.dt.tz.zone
+        else:
+            tzname = ''
         d = [IntVector([x.year for x in obj]),
              IntVector([x.month for x in obj]),
              IntVector([x.day for x in obj]),

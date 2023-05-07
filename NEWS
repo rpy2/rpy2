@@ -1,3 +1,110 @@
+Release 3.5.12
+==============
+
+New features
+------------
+
+- :func:`rpy2.rinterface.evalr_expr_with_visible` to evaluate
+  an expression and return the visibility status of the
+  value returned.
+
+Bugs fixed
+----------
+
+- "R magic" cells are now show R warnings at the end of the
+  evaluation of an R cell (#issue 226).
+
+
+Release 3.5.11
+==============
+
+New features
+------------
+
+- :class:`pandas.Categorical` objects are now converted to R
+  `factor` objects.
+
+Bugs fixed
+----------
+
+- :mod:`pandas` 2.0 makes API-breaking changes that made
+  conversion fail (issue #1013).
+  
+- The default converter for R magic was dropping R factors
+  to :mod:`numpy` arrays of integers rather than convert them
+  to pandas :class:`Category` (issue #1010).
+
+Changes
+-------
+
+- The fix for issue #1010 (see above) changes the numpy conversion
+  for R factors. It returns an arrays with the level factors rather
+  than the integer codes for the levels.
+
+- :func:`rpy2.rojects.pandas2ri.py2rpy_categoryseries` raises a
+  :class:`DeprecationWarning`.
+
+
+Release 3.5.10
+==============
+
+New features
+------------
+
+- :mod:`rpy2.situation` reports cffi interface type information.
+
+- The ipython/jupyter R magic can now have `jpeg` as a default graphics format
+  for static figures in addition to `png` and `svg`.
+
+Bugs fixed
+----------
+
+- Building the path to the R shared library was incorrectly
+  using the output of `R CMD config LIBnn` (issue #982).
+
+- R started raising warnings when calling `formals` on `BUILTINSXP` R objects.
+  Internal functions in :mod:`rpy.robjects.functions` calling `formals` no
+  longer propagate the warnings.
+
+
+Release 3.5.9
+=============
+
+New features
+------------
+
+- Type hints in :mod:`rpy2` are now checked with `mypy`.
+
+Bugs fixed
+----------
+
+- Building the path to the R shared library was incorrectly
+  using the output of `R CMD config LIBnn` (issue #982).
+
+- R started raising warnings when calling `formals` on `SPECIALSXP` R objects.
+  Internal functions :mod:`rpy.robjects.functions` calling `formals` no longer
+  propagate the warnings.
+  
+- The :mod:`numpy` converter was not turning `NA_character_` into
+  `None` (issue #979).
+
+- :mod:`rpy2.situation` included an eager `import rpy2` that could cause a version
+   mismatch error with some build/install toolchain (issue #984). The import is now
+   lazy/delayed.
+
+- Installation targets `pandas`, `all`, and `test` now specify `pandas>=1.2.0`
+  (which should limit frequencies of issues like #998).
+
+Changes
+-------
+
+- :class:`rpy2.robjects.conversion.Converter` objects are no longer functioning context
+  managers. An exception is now raised when trying to use it that way.
+  The feature was introduced with rpy2-3.5.7 but it does not guarantee the locality
+  of a context manager and can result in permanently changed conversion rules.
+  The method :meth:`rpy2.robjects.conversion.Converter.context` should be used instead.
+
+
 Release 3.5.8
 =============
 

@@ -127,7 +127,7 @@ An example of usage is:
 
    from rpy2.robjects.packages import importr
    stats = importr('base')
-   with np_cv_rules:
+   with np_cv_rules.context():
        v_np = stats.rlogis(100, location=0, scale=1)
        # `v_np` is a numpy array
 

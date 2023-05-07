@@ -9,7 +9,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10"]
+        python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
         r-version: ['release']
         os: [ubuntu-latest, ubuntu-20.04, macOS-latest]
         experimental: [false]
@@ -68,19 +68,19 @@ jobs:
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install pytest codecov pytest-cov
+        python -m pip install .[test_minimal]
         bash -e ./scripts/run_test_min_deps.sh
     - name: Test with numpy
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install numpy
+        python -m pip install .[numpy]
         bash -e ./scripts/run_test_numpy.sh
     - name: Test with pandas
       run: |
         ${{ matrix.ld_libpath }}
         ${{matrix.venv_activate }}
-        python -m pip install pandas
+        python -m pip install .[pandas]
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
       run: |
@@ -108,8 +108,14 @@ jobs:
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
         pytest --cache-clear --cov-append --cov-report=xml --cov-report=term --cov=rpy2.rinterface_lib --cov=rpy2.rinterface --cov=rpy2.rlike --cov=rpy2.robjects rpy2/tests/robjects/lib
+    - name: Check type hints
+      run: |
+        ${{ matrix.ld_libpath }}
+        ${{matrix.venv_activate }}
+        pip install .[types]
+        bash -e ./scripts/run_mypy.sh
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       if: matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.8' && matrix.r-version == 'release'
       env:
         OS: ${{ runner.os }}

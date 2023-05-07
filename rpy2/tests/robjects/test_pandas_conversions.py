@@ -242,7 +242,7 @@ class TestPandasConversions(object):
     def test_series_issue264(self):
         Series = pandas.core.series.Series
         s = Series(('a', 'b', 'c', 'd', 'e'),
-                   index=pandas.Int64Index([0,1,2,3,4]))
+                   index=pandas.Index([0,1,2,3,4], dtype='int64'))
         with localconverter(default_converter + rpyp.converter) as cv:
             rp_s = robjects.conversion.converter_ctx.get().py2rpy(s)
         # segfault before the fix

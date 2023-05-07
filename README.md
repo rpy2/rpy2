@@ -23,7 +23,7 @@ For example, to be able to run the unit tests:
 pip install rpy2[test]
 ```
 
-To install all dependencies, use:
+To install all optional dependencies (numpy, pandas, ipython), use:
 
 ```bash
 pip install rpy2[all]
@@ -42,7 +42,7 @@ python setup.py install
 ```
 
 
-## Non system-R installations
+## Issues loading shared C libraries
 
 Whenever R is in not installed in a system location, the system might not
 know where to find the R shared library.
@@ -55,27 +55,6 @@ before starting Python:
 ```bash
 export LD_LIBRARY_PATH="$(python -m rpy2.situation LD_LIBRARY_PATH)":${LD_LIBRARY_PATH}
 ```
-
-
-## Docker
-
-To try `rpy2` in an `ipython` console:
-
-```bash
-docker run --rm -p 8888:8888 rpy2/jupyter-ubuntu:master-20.04 ipython
-```
-
-To run a jupypter notebook on port 8888:
-
-```bash
-docker run --rm -p 8888:8888 rpy2/jupyter-ubuntu:master-20.04
-```
-
-More information about Docker images can be found in the
-[docker image repository](<https://github.com/rpy2/rpy2-docker>).
-
-Images with jupyter are can be used with
-[mybinder](https://github.com/rpy2/rpy2-mybinder).
 
 
 # Documentation

@@ -139,7 +139,7 @@ def _convert_rpy2py_boolvector(obj):
 
 
 @default_converter.rpy2py.register(rinterface.StrSexpVector)
-def _convert_rpy2py_strvector(obj):    
+def _convert_rpy2py_strvector(obj):
     cls = _vector_matrix_array(obj, vectors.StrVector,
                                vectors.StrMatrix, vectors.StrArray)
     return cls(obj)

@@ -156,9 +156,10 @@ def set_initoptions(options: typing.Tuple[str]) -> None:
     global _options
     for x in options:
         assert isinstance(x, str)
-    logger.info('Setting options to initialize R: {}'
-                .format(', '.join(options)))
-    _options = tuple(options)
+    with openrlib.rlock:
+        logger.info('Setting options to initialize R: {}'
+                    .format(', '.join(options)))
+        _options = tuple(options)
 
 
 def get_initoptions() -> typing.Tuple[str, ...]:
@@ -306,6 +307,7 @@ def _initr(
         if _c_stack_limit:
             rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
         rlib.R_Interactive = True
+        logger.debug('Calling R setup_Rmainloop.')
         rlib.setup_Rmainloop()
 
         _setinitialized()
@@ -318,6 +320,7 @@ def _initr(
         rlib.R_Consolefile = ffi.NULL
 
         if _want_setcallbacks:
+            logger.debug('Setting functions for R callbacks.')
             for rlib_symbol, callback_symbol in CALLBACK_INIT_PAIRS:
                 _setcallback(rlib, rlib_symbol,
                              callback_funcs, callback_symbol)
@@ -326,10 +329,12 @@ def _initr(
 
 
 def endr(fatal: int) -> None:
+    logger.debug('Ending embedded R process.')
     global rpy2_embeddedR_isinitialized
     rlib = openrlib.rlib
     with openrlib.rlock:
         if rpy2_embeddedR_isinitialized & RPY_R_Status.ENDED.value:
+            logger.info('Embedded R already ended.')
             return
         rlib.R_dot_Last()
         rlib.R_RunExitFinalizers()
@@ -338,6 +343,7 @@ def endr(fatal: int) -> None:
         rlib.R_gc()
         rlib.Rf_endEmbeddedR(fatal)
         rpy2_embeddedR_isinitialized ^= RPY_R_Status.ENDED.value
+        logger.info('Embedded R ended.')
 
 
 _REFERENCE_TO_R_SESSIONS = 'https://github.com/rstudio/reticulate/issues/98'
