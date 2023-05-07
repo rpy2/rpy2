@@ -55,6 +55,7 @@ import typing
 
 import rpy2.rinterface as ri
 import rpy2.rinterface_lib.callbacks
+import rpy2.rinterface_lib.openrlib
 import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
 from rpy2.robjects.lib import grdevices
@@ -125,12 +126,29 @@ def _get_converter(template_converter=template_converter):
 
 
 # TODO: Something like this could be part of the rpy2 API.
-def _print_deferred_warnings():
-    try:
-        ro.r('.Internal(printDeferredWarnings())')
-    except (ri.embedded.RRuntimeError, ValueError):
-        # TODO: report this in a logger.
-        pass
+def _print_deferred_warnings() -> None:
+    """Print R warning messages.
+
+    rpy2's default pattern add a prefix per warning lines.
+    This should be revised. In the meantime, we clean it
+    at least for the R magic.
+    """
+
+    with contextlib.ExitStack() as stack:
+        stack.enter_context(
+            rpy2.rinterface_lib.openrlib.rlock
+        )
+        stack.enter_context(
+            rpy2.rinterface_lib.callbacks.obj_in_module(
+                rpy2.rinterface_lib.callbacks,
+                '_WRITECONSOLE_EXCEPTION_LOG',
+                '%s')
+        )
+        try:
+            ro.r('.Internal(printDeferredWarnings())')
+        except (ri.embedded.RRuntimeError, ValueError):
+            # TODO: report this in a logger.
+            pass
 
 
 ipy_template_converter = _get_ipython_template_converter(template_converter,
