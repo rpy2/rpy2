@@ -8,6 +8,10 @@ New features
   an expression and return the visibility status of the
   value returned.
 
+- More events in the intialization and termination of an
+  embedded R logged by :mod:`rpy2.rinterface_lib.embedded.logger`
+  at `INFO` and `DEBUG` levels.
+
 Bugs fixed
 ----------
 
