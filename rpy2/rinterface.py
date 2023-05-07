@@ -173,14 +173,15 @@ def evalr_expr_with_visible(
                 baseenv['withVisible'].__sexp__._cdata,
                 r_call_nested)
         )
-        res = conversion._cdata_to_rinterface(
-            rmemory.protect(
+        r_res = rmemory.protect(
                 openrlib.rlib.R_tryEval(
                     r_call,
                     envir.__sexp__._cdata,  # call context.
                     error_occured)
-            )
         )
+        if error_occured[0]:
+            raise embedded.RRuntimeError(_rinterface._geterrmessage())
+        res = conversion._cdata_to_rinterface(r_res)
     return res
 
 

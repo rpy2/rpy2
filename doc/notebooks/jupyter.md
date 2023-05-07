@@ -8,7 +8,7 @@ from rpy2.robjects.packages import importr
 utils = importr('utils')
 
 dataf = utils.read_csv('https://raw.githubusercontent.com/jakevdp/PythonDataScienceHandbook/'
-                       'master/notebooks/data/california_cities.csv')
+                       'master/notebooks_v1/data/california_cities.csv')
 ```
 
 The objects returned by R's own `read.csv()` function (note that the R function
