@@ -3,6 +3,7 @@
 import contextlib
 import typing
 from . import openrlib
+from _cffi_backend import FFI  # type: ignore
 
 
 # TODO: make it extend ContextManager and delete the function
@@ -22,7 +23,7 @@ class ProtectionTracker(object):
         """Return the count for the protection stack."""
         return self._counter
 
-    def protect(self, cdata):
+    def protect(self, cdata: FFI.CData):
         """Pass-through function that adds the R object to the short-term
         stack of objects protected from garbase collection."""
         cdata = openrlib.rlib.Rf_protect(cdata)
