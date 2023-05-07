@@ -57,27 +57,6 @@ export LD_LIBRARY_PATH="$(python -m rpy2.situation LD_LIBRARY_PATH)":${LD_LIBRAR
 ```
 
 
-## Docker
-
-To try `rpy2` in an `ipython` console:
-
-```bash
-docker run --rm -p 8888:8888 rpy2/jupyter-ubuntu:master-20.04 ipython
-```
-
-To run a jupypter notebook on port 8888:
-
-```bash
-docker run --rm -p 8888:8888 rpy2/jupyter-ubuntu:master-20.04
-```
-
-More information about Docker images can be found in the
-[docker image repository](<https://github.com/rpy2/rpy2-docker>).
-
-Images with jupyter are can be used with
-[mybinder](https://github.com/rpy2/rpy2-mybinder).
-
-
 # Documentation
 
 Documentation is available either in the source tree (`doc/`),
