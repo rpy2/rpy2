@@ -498,11 +498,13 @@ class R(object):
         if invisible is None:
             invisible = self._invisible
         if invisible:
-            res, visible = rinterface.evalr_expr_with_visible(r_expr)
-            if not visible[0]:
+            res, visible = rinterface.evalr_expr_with_visible(
+                r_expr
+            )  # type: ignore
+            if not visible[0]:  # type: ignore
                 res = None
         else:
-            res = self.eval(r_expr)
+            res = rinterface.evalr_expr(r_expr)
         if print_r_warnings is None:
             print_r_warnings = self._print_r_warnings
         if print_r_warnings:
