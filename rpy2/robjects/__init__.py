@@ -498,9 +498,9 @@ class R(object):
         if invisible is None:
             invisible = self._invisible
         if invisible:
-            res, visible = rinterface.evalr_expr_with_visible(
+            res, visible = rinterface.evalr_expr_with_visible(   # type: ignore
                 r_expr
-            )  # type: ignore
+            )
             if not visible[0]:  # type: ignore
                 res = None
         else:

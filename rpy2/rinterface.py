@@ -148,7 +148,7 @@ def evalr_expr_with_visible(
         envir: typing.Union[
             None,
             'SexpEnvironment'] = None
-) -> sexp.Sexp:
+) -> 'ListSexpVector':
     """Evaluate an R expression and return value and visibility flag.
 
     :param expr: An R expression.
@@ -182,6 +182,7 @@ def evalr_expr_with_visible(
         if error_occured[0]:
             raise embedded.RRuntimeError(_rinterface._geterrmessage())
         res = conversion._cdata_to_rinterface(r_res)
+        assert isinstance(res, ListSexpVector)
     return res
 
 
