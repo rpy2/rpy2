@@ -7,13 +7,13 @@ from . import conversion
 
 import rpy2.rlike.container as rlc
 
+import datetime
 import copy
 import itertools
 import math
 import os
 import jinja2  # type: ignore
 import time
-import pytz
 import tzlocal
 from datetime import date, datetime, timedelta, timezone
 from time import struct_time, mktime
@@ -1015,7 +1015,7 @@ class POSIXct(POSIXt, FloatVector):
             # time libraries will assume UTC.
             r_tzone = get_timezone()
         else:
-            r_tzone = pytz.timezone(r_tzone_name)
+            r_tzone = datetime.tz.tzstr(r_tzone_name)
 
         for x in self:
             yield (

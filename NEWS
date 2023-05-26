@@ -1,3 +1,13 @@
+Release 3.5.13
+==============
+
+Changes
+-------
+
+- The dependency on :mod:`pytz`, a deprecated package, was
+  removed.
+
+
 Release 3.5.12
 ==============
 
