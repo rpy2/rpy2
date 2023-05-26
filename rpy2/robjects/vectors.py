@@ -871,7 +871,7 @@ class DateVector(FloatVector):
 
         if isinstance(seq, Sexp):
             init_param = seq
-        elif isinstance(seq[0], date):
+        elif isinstance(seq[0], datetime.date):
             init_param = DateVector.sexp_from_date(seq)
         else:
             raise TypeError(
@@ -993,8 +993,8 @@ class POSIXct(POSIXt, FloatVector):
         if os.name != 'nt' or ts > 0:
             return datetime.fromtimestamp(ts, tz)
         else:
-            dt_utc = (datetime(1970, 1, 1, tzinfo=timezone.utc) +
-                      timedelta(seconds=ts))
+            dt_utc = (datetime.datetime(1970, 1, 1, tzinfo=timezone.utc) +
+                      datetime.timedelta(seconds=ts))
             dt = dt_utc.replace(tzinfo=tz)
             offset = dt.utcoffset()
             if offset is None:
