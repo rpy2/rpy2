@@ -993,7 +993,7 @@ class POSIXct(POSIXt, FloatVector):
         if os.name != 'nt' or ts > 0:
             return datetime.fromtimestamp(ts, tz)
         else:
-            dt_utc = (datetime.datetime(1970, 1, 1, tzinfo=timezone.utc) +
+            dt_utc = (datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc) +
                       datetime.timedelta(seconds=ts))
             dt = dt_utc.replace(tzinfo=tz)
             offset = dt.utcoffset()
