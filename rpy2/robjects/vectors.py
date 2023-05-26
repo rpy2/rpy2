@@ -6,8 +6,8 @@ from rpy2.rinterface_lib import sexp
 from . import conversion
 
 import rpy2.rlike.container as rlc
-
 import datetime
+import dateutils
 import copy
 import itertools
 import math
@@ -1015,7 +1015,7 @@ class POSIXct(POSIXt, FloatVector):
             # time libraries will assume UTC.
             r_tzone = get_timezone()
         else:
-            r_tzone = datetime.tz.tzstr(r_tzone_name)
+            r_tzone = dateutils.tz.tzstr(r_tzone_name)
 
         for x in self:
             yield (

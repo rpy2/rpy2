@@ -5,7 +5,7 @@ Changes
 -------
 
 - The dependency on :mod:`pytz`, a deprecated package, was
-  removed.
+  removed and replaced by a dependency to :mod:`dateutils`.
 
 
 Release 3.5.12

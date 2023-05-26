@@ -28,6 +28,7 @@ classifiers = [
 dependencies = [
     "cffi>=1.10.0",
     "jinja2",
+    "dateutils",
     "tzlocal<5.0",
     "packaging;platform_system=='Windows'",
     "typing-extensions;python_version<'3.8'"

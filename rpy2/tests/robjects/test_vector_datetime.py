@@ -1,4 +1,5 @@
 import datetime
+import dateutils
 import pytest
 
 import time
@@ -59,7 +60,7 @@ def test_POSIXct_from_invalidobject():
 def default_timezone_mocker(request):
     zone = request.param
     if zone:
-        rpy2.robjects.vectors.default_timezone = datetime.tz.tzstr(zone)
+        rpy2.robjects.vectors.default_timezone = dateutils.tz.tzstr(zone)
     yield zone
     rpy2.robjects.vectors.default_timezone = None
 
