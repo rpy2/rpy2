@@ -5,7 +5,9 @@ Changes
 -------
 
 - The dependency on :mod:`pytz`, a deprecated package, was
-  removed and replaced by a dependency to :mod:`dateutils`.
+  removed and replaced by a dependency to :mod:`zoneinfo`.
+  If Python < 3.9 the package :mod:`backports.zoneinfo`
+  is an added dependency.
 
 
 Release 3.5.12
