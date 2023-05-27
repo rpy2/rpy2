@@ -8,7 +8,7 @@ from . import conversion
 import rpy2.rlike.container as rlc
 import datetime
 try:
-    import zoneinfo
+    import zoneinfo  # type: ignore
 except ImportError:
     from backports import zoneinfo  # type: ignore
 import copy
