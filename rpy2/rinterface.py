@@ -8,6 +8,7 @@ import os
 import math
 import platform
 import signal
+import subprocess
 import textwrap
 import threading
 import typing
@@ -1098,6 +1099,33 @@ def _update_R_ENC_PY():
     conversion._R_ENC_PY[openrlib.rlib.CE_NATIVE] = val_native
 
     conversion._R_ENC_PY[openrlib.rlib.CE_ANY] = 'utf-8'
+
+
+def _getrenvvars(
+        baselinevars: typing.Dict[str, str] = os.environ,
+        r_home: typing.Optional[str] = None
+) -> typing.Tuple[typing.Tuple[str, str], ...]:
+    """Get the environment variables defined by the R front-end script."""
+
+    if r_home is None:
+        r_home = os.environ['R_HOME']
+    cmd = (os.path.join(r_home, 'bin', 'Rscript'),
+           '-e',
+           'Sys.getenv()')
+    
+    envvars = subprocess.check_output(cmd,
+                                      universal_newlines=True,
+                                      stderr=subprocess.PIPE)
+
+    res = []
+    for line in envvars.split(os.linesep):
+        try:
+            k, v = line.split()
+        except ValueError:
+            k = None
+        if k and k not in baselinevars:
+            res.append((k, v))
+    return tuple(res)
 
 
 def _post_initr_setup() -> None:
