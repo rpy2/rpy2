@@ -1112,7 +1112,7 @@ def _getrenvvars(
     cmd = (os.path.join(r_home, 'bin', 'Rscript'),
            '-e',
            'Sys.getenv()')
-    
+
     envvars = subprocess.check_output(cmd,
                                       universal_newlines=True,
                                       stderr=subprocess.PIPE)
