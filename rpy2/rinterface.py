@@ -1102,7 +1102,7 @@ def _update_R_ENC_PY():
 
 
 def _getrenvvars(
-        baselinevars: typing.Dict[str, str] = os.environ,
+        baselinevars: typing.MutableMapping[str, str] = os.environ,
         r_home: typing.Optional[str] = None
 ) -> typing.Tuple[typing.Tuple[str, str], ...]:
     """Get the environment variables defined by the R front-end script."""
