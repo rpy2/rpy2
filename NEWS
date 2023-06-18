@@ -17,6 +17,9 @@ Changes
   If Python < 3.9 the package :mod:`backports.zoneinfo`
   is an added dependency.
 
+- The depency on :mod:`tzlocal` does no longer limit it
+  to `<5.0` (issue #1035).
+
 
 Release 3.5.12
 ==============
