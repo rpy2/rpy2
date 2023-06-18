@@ -1,6 +1,14 @@
 Release 3.5.13
 ==============
 
+New features
+------------
+
+- R is setting a number of environment variables in a wrapper script. Those
+  variables were not set by default by rpy2 and this could lead to issues (see issue #1033).
+  The variables are now added to `os.environ`.
+
+
 Changes
 -------
 
