@@ -1126,6 +1126,8 @@ def _getrenvvars(
         baselinevars = os.environ
     if r_home is None:
         r_home = openrlib.R_HOME
+        if r_home is None:
+            raise RuntimeError('Unable to determine R_HOME.')
     cmd = (
         os.path.join(r_home, 'bin', 'Rscript'),
         '-e',
