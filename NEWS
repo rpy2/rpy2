@@ -8,6 +8,9 @@ New features
   variables were not set by default by rpy2 and this could lead to issues (see issue #1033).
   The variables are now added to `os.environ`.
 
+- On systems where the default encoding is not utf-8, converting
+  R strings to Python can result in decoding errors (issue #1018).
+
 Bugs fixed
 ----------
 
@@ -56,8 +59,6 @@ Bugs fixed
 
 - "R magic" cells are now show R warnings at the end of the
   evaluation of an R cell (#issue 226).
-- On systems where the default encoding is not utf-8, converting
-  R strings to Python can result in decoding errors (issue #1018).
 
 Changes
 -------
