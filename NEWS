@@ -8,6 +8,12 @@ New features
   variables were not set by default by rpy2 and this could lead to issues (see issue #1033).
   The variables are now added to `os.environ`.
 
+Bugs fixed
+----------
+
+- `python -m rpy2.situation LD_LIBRARY_PATH` could incorrectly truncate the value
+  for `LD_LIBRARY_PATH` when the variable `LD_LIBRARY_PATH` is already defined.  
+
 Changes
 -------
 

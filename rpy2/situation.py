@@ -159,20 +159,11 @@ def r_ld_library_path_from_subprocess(r_home: str) -> str:
                                              universal_newlines=True,
                                              stderr=subprocess.PIPE)
         logger.info(f'R library path: {r_lib_path}')
-    except Exception as e:  # FileNotFoundError, WindowsError, etc
+    except Exception as e:  # FileNotFoundError, WindowsError, etc.
         logger.error(f'Unable to determine R library path: {e}')
         r_lib_path = ''
-    res = None
-    ld_library_path = os.environ.get('LD_LIBRARY_PATH')
-    if ld_library_path:
-        pos = r_lib_path.find(ld_library_path)
-        if pos != -1:
-            res = (r_lib_path[pos:(pos+len(ld_library_path))]
-                   .rstrip(os.pathsep))
-    if res is None:
-        res = r_lib_path
-    logger.info(f'LD_LIBRARY_PATH: {res}')
-    return res
+    logger.info(f'LD_LIBRARY_PATH: {r_lib_path}')
+    return r_lib_path
 
 
 def get_rlib_rpath(r_home: str) -> str:
@@ -411,7 +402,7 @@ def iter_info():
 
     # not applicable for Windows
     if os.name != 'nt':
-        yield make_bold("R's additions to LD_LIBRARY_PATH:")
+        yield make_bold("R's value for LD_LIBRARY_PATH:")
         if r_home is None:
             yield '     *** undefined when not R home can be determined'
         else:
