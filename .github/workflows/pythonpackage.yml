@@ -19,12 +19,10 @@ jobs:
           - os: windows-latest
             experimental: true
             r-version: 'release'
-            python-version: 3.7
+            python-version: 3.10
             venv_activate: ""
             ld_libpath: ""
         exclude:
-          - os: windows-latest
-            python-version: 3.8
           - os: macOS-latest
             r-version: 'release'
     steps:
