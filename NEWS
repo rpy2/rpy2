@@ -25,6 +25,10 @@ Changes
 - The depency on :mod:`tzlocal` does no longer limit it
   to `<5.0` (issue #1035).
 
+- Remove dependency on :mod:`distutils` in Python's standard library. That package is
+  deprecated and removed in Python 3.12 (see https://peps.python.org/pep-0632/ and
+  issue #1040).
+
 
 Release 3.5.12
 ==============

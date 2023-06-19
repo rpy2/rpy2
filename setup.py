@@ -15,9 +15,9 @@ import tempfile
 import warnings
 
 from setuptools import setup, Extension, dist
-from distutils.ccompiler import new_compiler
-from distutils.sysconfig import customize_compiler
-from distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
+from setuptools._distutils.ccompiler import new_compiler
+from setuptools._distutils.sysconfig import customize_compiler
+from setuptools._distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
 
 from distutils.command.build import build as du_build
 
