@@ -58,12 +58,12 @@ jobs:
             manylinux_x86_64_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_x86_64:r4.2.2
             manylinux_i686_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_i686:r4.2.2
             r-version: release
-          - os: macos-11
-            python: 39
+          - os: macos-12
+            python: 310
             platform_id: macosx_x86_64
             r-version: release
-          - os: macos-11
-            python: 39
+          - os: macos-12
+            python: 310
             platform_id: macosx_arm64
             r-version: release
     steps:
