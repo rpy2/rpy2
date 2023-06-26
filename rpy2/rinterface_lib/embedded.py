@@ -307,6 +307,7 @@ def _initr(
         if _c_stack_limit:
             rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
         rlib.R_Interactive = True
+        logger.debug('Calling R setup_Rmainloop.')
         rlib.setup_Rmainloop()
 
         _setinitialized()
@@ -319,6 +320,7 @@ def _initr(
         rlib.R_Consolefile = ffi.NULL
 
         if _want_setcallbacks:
+            logger.debug('Setting functions for R callbacks.')
             for rlib_symbol, callback_symbol in CALLBACK_INIT_PAIRS:
                 _setcallback(rlib, rlib_symbol,
                              callback_funcs, callback_symbol)
@@ -327,18 +329,27 @@ def _initr(
 
 
 def endr(fatal: int) -> None:
+    logger.debug('Ending embedded R process.')
     global rpy2_embeddedR_isinitialized
     rlib = openrlib.rlib
     with openrlib.rlock:
         if rpy2_embeddedR_isinitialized & RPY_R_Status.ENDED.value:
+            logger.info('Embedded R already ended.')
             return
+        logger.debug('R_do_Last()')
         rlib.R_dot_Last()
+        logger.debug('R_RunExitFinalizers()')
         rlib.R_RunExitFinalizers()
+        logger.debug('Rf_KillAllDevices()')
         rlib.Rf_KillAllDevices()
+        logger.debug('R_CleanTempDir()')
         rlib.R_CleanTempDir()
+        logger.debug('R_gc')
         rlib.R_gc()
+        logger.debug('Rf_endEmbeddedR(fatal)')
         rlib.Rf_endEmbeddedR(fatal)
         rpy2_embeddedR_isinitialized ^= RPY_R_Status.ENDED.value
+        logger.info('Embedded R ended.')
 
 
 _REFERENCE_TO_R_SESSIONS = 'https://github.com/rstudio/reticulate/issues/98'
