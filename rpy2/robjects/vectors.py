@@ -78,7 +78,7 @@ class ExtractDelegator(object):
             else:
                 conv_args[i] = cv.py2rpy(x)
         kwargs = copy.copy(kwargs)
-        for k, v in kwargs.values():
+        for k, v in kwargs.items():
             kwargs[k] = cv.py2rpy(v)
         fun = self._extractfunction
         res = fun(*conv_args, **kwargs)

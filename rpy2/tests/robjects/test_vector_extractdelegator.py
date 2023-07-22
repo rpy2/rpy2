@@ -34,7 +34,7 @@ def test_extract_by_index():
     # R indexing starts at one
     myIndex = robjects.vectors.IntVector(array.array('i', range(1, 11, 2)))
 
-    mySubset = mySeq.rx(myIndex)
+    mySubset = mySeq.rx(myIndex, drop=True)
     for i, si in enumerate(myIndex):
         assert mySeq[si-1] == mySubset[i]
 
