@@ -1,3 +1,12 @@
+Release 3.5.14
+==============
+
+Bugs fixed
+----------
+
+- Fix use of named arguments with `ExtractDelegator` (issue #1048).
+
+
 Release 3.5.13
 ==============
 
