@@ -207,7 +207,7 @@ class Package(ModuleType):
     def __update_dict__(self, on_conflict='fail'):
         """ Update the __dict__ according to what is in the R environment """
         for elt in self._rpy2r:
-            del(self.__dict__[elt])
+            del self.__dict__[elt]
         self._rpy2r.clear()
         self.__fill_rpy2r__(on_conflict=on_conflict)
 
@@ -216,7 +216,7 @@ class Package(ModuleType):
 
         - on_conflict: 'fail' or 'warn' (default: 'fail')
         """
-        assert(on_conflict in ('fail', 'warn'))
+        assert on_conflict in ('fail', 'warn')
 
         name = self.__rname__
 
@@ -239,6 +239,7 @@ class Package(ModuleType):
                          exception)
         symbol_mapping.update(resolutions)
         reserved_pynames = set(dir(self))
+        cv = conversion.get_conversion()
         for rpyname, rnames in symbol_mapping.items():
             # last paranoid check
             if len(rnames) > 1:
@@ -260,7 +261,7 @@ class Package(ModuleType):
                 riobj = self._env[rname]
             except rinterface.embedded.RRuntimeError as rre:
                 warn(str(rre))
-            rpyobj = conversion.rpy2py(riobj)
+            rpyobj = cv.rpy2py(riobj)
             if hasattr(rpyobj, '__rname__'):
                 rpyobj.__rname__ = rname
             # TODO: shouldn't the original R name be also in the __dict__ ?
@@ -533,7 +534,7 @@ def wherefrom(symbol: str,
         env = env.enclos
         if env.rsame(rinterface.emptyenv):
             break
-    return conversion.rpy2py(env)
+    return conversion.get_conversion().rpy2py(env)
 
 
 class ParsedCode(rinterface.ExprSexpVector):

@@ -8,8 +8,10 @@ import warnings
 from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
+import rpy2.rinterface_lib.sexp
 from rpy2.robjects import help
 from rpy2.robjects import conversion
+from rpy2.robjects.vectors import Vector
 
 from rpy2.robjects.packages_utils import (default_symbol_r2python,
                                           default_symbol_resolve,
@@ -26,11 +28,14 @@ __is_null = baseenv_ri.find('is.null')
 
 
 def _formals_fixed(func):
-    tmp = __args(func)
-    if __is_null(tmp)[0]:
-        return rinterface.NULL
+    if func.typeof in (rpy2.rinterface_lib.sexp.RTYPES.SPECIALSXP,
+                       rpy2.rinterface_lib.sexp.RTYPES.BUILTINSXP):
+        res = rpy2.rinterface_lib.sexp.NULL
     else:
-        return __formals(tmp)
+        res = __formals(func)
+        if res is rpy2.rinterface_lib.sexp.NULL:
+            res = __formals(__args(func))
+    return res
 
 
 # docstring_property and DocstringProperty
@@ -106,23 +111,25 @@ class Function(RObjectMixin, rinterface.SexpClosure):
                     'R arguments:', ''])
         if fm is rinterface.NULL:
             doc.append('<No information available>')
-        for key, val in zip(fm.do_slot('names'), fm):
-            if key == '...':
-                val = 'R ellipsis (any number of parameters)'
-            doc.append('%s: %s' % (key, _repr_argval(val)))
+        else:
+            for key, val in zip(fm.do_slot('names'), fm):
+                if key == '...':
+                    val = 'R ellipsis (any number of parameters)'
+                doc.append('%s: %s' % (key, _repr_argval(val)))
         return os.linesep.join(doc)
 
     def __call__(self, *args, **kwargs):
-        new_args = [conversion.py2rpy(a) for a in args]
+        cv = conversion.get_conversion()
+        new_args = [cv.py2rpy(a) for a in args]
         new_kwargs = {}
         for k, v in kwargs.items():
             # TODO: shouldn't this be handled by the conversion itself ?
             if isinstance(v, rinterface.Sexp):
                 new_kwargs[k] = v
             else:
-                new_kwargs[k] = conversion.py2rpy(v)
+                new_kwargs[k] = cv.py2rpy(v)
         res = super(Function, self).__call__(*new_args, **new_kwargs)
-        res = conversion.rpy2py(res)
+        res = cv.rpy2py(res)
         return res
 
     def formals(self):
@@ -130,7 +137,7 @@ class Function(RObjectMixin, rinterface.SexpClosure):
         (as the R function 'formals()' would).
         """
         res = _formals_fixed(self)
-        res = conversion.rpy2py(res)
+        res = conversion.get_conversion().rpy2py(res)
         return res
 
     def rcall(
@@ -219,18 +226,27 @@ class DocumentedSTFunction(SignatureTranslatedFunction):
 
     @docstring_property(__doc__)
     def __doc__(self):
+        package = help.Package(self.__rpackagename__)
+        page = package.fetch(self.__rname__)
+
         doc = ['Wrapper around an R function.',
                '',
                'The docstring below is built from the R documentation.',
                '']
 
-        description = help.docstring(self.__rpackagename__,
-                                     self.__rname__,
-                                     sections=['\\description'])
-        doc.append(description)
+        if r'\description' in page.sections:
+            doc.append(
+                page.to_docstring(
+                    section_names=[r'\description']
+                )
+            )
 
         fm = _formals_fixed(self)
-        names = fm.do_slot('names')
+        if fm is rpy2.rinterface_lib.sexp.NULL:
+            # If still NULL there is no argument.
+            names = tuple()
+        else:
+            names = fm.do_slot('names')
         doc.append(self.__rname__+'(')
         for key, val in self._prm_translate.items():
             if key == '___':
@@ -243,19 +259,19 @@ class DocumentedSTFunction(SignatureTranslatedFunction):
             else:
                 doc.append('    %s = %s,' % (key, description))
         doc.extend((')', ''))
-        package = help.Package(self.__rpackagename__)
-        page = package.fetch(self.__rname__)
+        ####
         doc.append('Args:')
         for item in page.arguments():
             description = ('%s  ' % os.linesep).join(item.value)
             doc.append(' '.join(('  ', item.name, ': ', description)))
             doc.append('')
 
-        doc.append(
-            help.docstring(self.__rpackagename__,
-                           self.__rname__,
-                           sections=['\\details'])
-        )
+        if r'\details' in page.sections:
+            doc.append(
+                page.to_docstring(
+                    section_names=[r'\details']
+                )
+            )
 
         return os.linesep.join(doc)
 
@@ -328,11 +344,14 @@ def map_signature(
                 r_ellipsis = i
                 warnings.warn('The R ellispsis is not yet well supported.')
             transl_name = rev_prm_transl.get(name)
-            default_orig = default_orig[0]
-            if map_default and not rinterface.MissingArg.rsame(default_orig):
-                default_mapped = map_default(default_orig)
+            if isinstance(default_orig, Vector):
+                default_orig = default_orig[0]
+                if map_default and not rinterface.MissingArg.rsame(default_orig):
+                    default_mapped = map_default(default_orig)
+                else:
+                    default_mapped = inspect.Parameter.empty
             else:
-                default_mapped = inspect.Parameter.empty
+                default_mapped = default_orig
             prm = inspect.Parameter(
                 transl_name if transl_name else name,
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,

@@ -2,10 +2,15 @@ import abc
 import atexit
 import contextlib
 import contextvars
+import csv
+import enum
+import functools
+import inspect
 import os
 import math
 import platform
 import signal
+import subprocess
 import textwrap
 import threading
 import typing
@@ -43,6 +48,16 @@ endr = embedded.endr
 
 evaluation_context = contextvars.ContextVar('evaluation_context',
                                             default=globalenv)
+
+
+class _ENVVAR_ACTION(enum.Enum):
+    KEEP_WARN = 0
+    REPLACE_WARN = 1
+    KEEP_NOWARN = 2
+    REPLACE_NOWARN = 3
+
+
+_DEFAULT_ENVVAR_ACTION: _ENVVAR_ACTION = _ENVVAR_ACTION.REPLACE_WARN
 
 
 def get_evaluation_context() -> SexpEnvironment:
@@ -96,8 +111,8 @@ def _sigint_handler(sig, frame):
 def parse(text: str, num: int = -1):
     """Parse a string as R code.
 
-    :param:`text` A string with R code to parse.
-    :param:`num` The maximum number of lines to parse. If -1, no
+    :param text: A string with R code to parse.
+    :param num: The maximum number of lines to parse. If -1, no
       limit is applied.
     """
 
@@ -124,11 +139,11 @@ def evalr_expr(
 ) -> sexp.Sexp:
     """Evaluate an R expression.
 
-    :param:`expr` An R expression.
-    :param:`envir` An optional R environment in which the evaluation
+    :param expr: An R expression.
+    :param envir: An optional R environment in which the evaluation
       will happen. If None, which is the default, the environment in
      the context variable `evaluation_context` is used.
-    :param:`enclos` An enclosure. This is only relevant when envir
+    :param enclos: An enclosure. This is only relevant when envir
       is a list, a pairlist, or a data.frame. It specifies where to
     look for objects not found in envir.
     :return: The R objects resulting from the evaluation of the code"""
@@ -138,6 +153,49 @@ def evalr_expr(
     if enclos is None:
         enclos = MissingArg
     res = baseenv['eval'](expr, envir=envir, enclos=enclos)
+    return res
+
+
+def evalr_expr_with_visible(
+        expr: 'ExprSexpVector',
+        envir: typing.Union[
+            None,
+            'SexpEnvironment'] = None
+) -> 'ListSexpVector':
+    """Evaluate an R expression and return value and visibility flag.
+
+    :param expr: An R expression.
+    :param envir: An environment in which the expression will be evaluated.
+
+    :return: An R list with (value, visibility) where visibility is
+    an R boolean.
+    """
+    if envir is None:
+        envir = evaluation_context.get()
+    assert isinstance(envir, SexpEnvironment)
+
+    error_occured = _rinterface.ffi.new('int *', 0)
+    with memorymanagement.rmemory() as rmemory:
+        r_call_nested = rmemory.protect(
+            openrlib.rlib.Rf_lang2(
+                baseenv['eval'].__sexp__._cdata,
+                expr.__sexp__._cdata)
+        )
+        r_call = rmemory.protect(
+            openrlib.rlib.Rf_lang2(
+                baseenv['withVisible'].__sexp__._cdata,
+                r_call_nested)
+        )
+        r_res = rmemory.protect(
+                openrlib.rlib.R_tryEval(
+                    r_call,
+                    envir.__sexp__._cdata,  # call context.
+                    error_occured)
+        )
+        if error_occured[0]:
+            raise embedded.RRuntimeError(_rinterface._geterrmessage())
+        res = conversion._cdata_to_rinterface(r_res)
+        assert isinstance(res, ListSexpVector)
     return res
 
 
@@ -159,13 +217,13 @@ def evalr(
     Evaluate a string as R just as it would happen when writing
     code in an R terminal.
 
-    :param:`text` A string to be evaluated as R code,
+    :param str text: A string to be evaluated as R code,
     or an R expression.
-    :param:`maxlines` The maximum number of lines to parse. If -1, no
+    :param int maxlines: The maximum number of lines to parse. If -1, no
       limit is applied.
-    :param:`envir` An optional R environment in which the evaluation
+    :param envir: An optional R environment in which the evaluation
       will happen.
-    :param:`enclos` An enclosure. This is only relevant when envir
+    :param enclos: An enclosure. This is only relevant when envir
       is a list, a pairlist, or a data.frame. It specifies where to
     look for objects not found in envir.
     :return: The R objects resulting from the evaluation of the code"""
@@ -178,10 +236,10 @@ def evalr(
 def vector_memoryview(obj: sexp.SexpVector,
                       sizeof_str: str, cast_str: str) -> memoryview:
     """
-    :param:`obj` R vector
-    :param:`sizeof_str` Type in a string to use with ffi.sizeof()
+    :param obj: R vector
+    :param str sizeof_str: Type in a string to use with ffi.sizeof()
         (for example "int")
-    :param:`cast_str` Type in a string to use with memoryview.cast()
+    :param str cast_str: Type in a string to use with memoryview.cast()
         (for example "i")
     """
     b = openrlib.ffi.buffer(
@@ -194,13 +252,21 @@ def vector_memoryview(obj: sexp.SexpVector,
     # mv = memoryview(b).cast(cast_str, shape, order='F')
     # ```
     # but Python does not handle FORTRAN-ordered arrays without having
-    # to write C extensions. We have to use numpy.
-    # TODO: Having numpy a requirement just for this is a problem.
-    # TODO: numpy needed for memoryview
-    #   (as long as https://bugs.python.org/issue34778 is not resolved)
-    import numpy  # type: ignore
-    a = numpy.frombuffer(b, dtype=cast_str).reshape(shape, order='F')
-    mv = memoryview(a)
+    # to write C extensions (see
+    # https://bugs.python.org/issue34778 is not resolved).
+    # Having numpy a requirement just for this is a problem so a
+    # C function to swap the strides in place was written
+    try:
+        import rpy2.rinterface_lib._bufferprotocol as bp   # type: ignore
+        mv = memoryview(b).cast(cast_str, shape)
+        bp.memoryview_swapstrides(mv)
+    except ImportError:
+        import numpy  # type: ignore
+        a = numpy.frombuffer(b, dtype=cast_str).reshape(shape, order='F')
+        # The typed signature for memoryview does not help the static
+        # type checker verify that a numpy.ndarray implement the buffer
+        # protocol. Type checking is ignored to avoid a check error.
+        mv = memoryview(a)  # type: ignore
     return mv
 
 
@@ -260,11 +326,13 @@ class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
         return False
 
     @property
-    def __sexp__(self) -> _rinterface.SexpCapsule:
+    def __sexp__(self) -> typing.Union['_rinterface.SexpCapsule',
+                                       '_rinterface.UninitializedRCapsule']:
         return self._sexpobject
 
     @__sexp__.setter
-    def __sexp__(self, value) -> None:
+    def __sexp__(self, value: typing.Union['_rinterface.SexpCapsule',
+                                           '_rinterface.UninitializedRCapsule']) -> None:
         raise TypeError('The capsule for the R object cannot be modified.')
 
 
@@ -277,7 +345,7 @@ class SexpPromise(Sexp):
     def eval(self, env: typing.Optional[SexpEnvironment] = None) -> sexp.Sexp:
         """"Evalute the R "promise".
 
-        :param:`env` The environment in which to evaluate the
+        :param env: The environment in which to evaluate the
           promise.
         """
         if env is None:
@@ -844,7 +912,10 @@ class SexpClosure(Sexp):
 
 
 class SexpS4(Sexp):
-    """R "S4" object."""
+    """R "S4" object.
+
+    S4 objects as one of the available forms of Object-Oriented Programming
+    in R."""
     pass
 
 
@@ -876,7 +947,7 @@ def make_extptr(obj, tag, protected):
 
 
 class SexpExtPtr(Sexp):
-
+    """R "External Pointer" object."""
     TYPE_TAG = 'Python'
 
     @classmethod
@@ -987,17 +1058,34 @@ def initr_simple() -> typing.Optional[int]:
         return status
 
 
-def initr_checkenv() -> typing.Optional[int]:
+def initr_checkenv(
+        interactive: typing.Optional[bool] = None,
+        _want_setcallbacks: bool = True,
+        _c_stack_limit: typing.Optional[int] = None
+) -> typing.Optional[int]:
+    """Initialize the embedded R.
+
+    :param interactive: Should R run in interactive or non-interactive mode?
+    if `None` the value in `_DEFAULT_R_INTERACTIVE` will be used.
+    :param _want_setcallbacks: Should custom rpy2 callbacks for R frontends
+    be set?.
+    :param _c_stack_limit: Limit for the C Stack.
+    if `None` the value in `_DEFAULT_C_STACK_LIMIT` will be used.
+    """
+
     # Force the internal initialization flag if there is an environment
     # variable that indicates that R was already initialized in the current
     # process.
 
     status = None
     with openrlib.rlock:
+        _setrenvvars(_DEFAULT_ENVVAR_ACTION)
         if embedded.is_r_externally_initialized():
             embedded._setinitialized()
         else:
-            status = embedded._initr()
+            status = embedded._initr(interactive=interactive,
+                                     _want_setcallbacks=_want_setcallbacks,
+                                     _c_stack_limit=_c_stack_limit)
             embedded.set_python_process_info()
         _rinterface._register_external_symbols()
         _post_initr_setup()
@@ -1024,6 +1112,67 @@ def _update_R_ENC_PY():
     conversion._R_ENC_PY[openrlib.rlib.CE_NATIVE] = val_native
 
     conversion._R_ENC_PY[openrlib.rlib.CE_ANY] = 'utf-8'
+
+
+# TODO: This function could be used by situation.py. May be better to
+# place elsewhere.
+def _getrenvvars(
+        baselinevars: typing.Optional[typing.MutableMapping[str, str]] = None,
+        r_home: typing.Optional[str] = None
+) -> typing.Tuple[typing.Tuple[str, str], ...]:
+    """Get the environment variables defined by the R front-end script."""
+
+    if baselinevars is None:
+        baselinevars = os.environ
+    if r_home is None:
+        r_home = openrlib.R_HOME
+        if r_home is None:
+            raise RuntimeError('Unable to determine R_HOME.')
+    cmd = (
+        os.path.join(r_home, 'bin', 'Rscript'),
+        '-e',
+        'x<-Sys.getenv();y<-as.character(x);names(y)<-names(x);'
+        'write.table(y,col.names=FALSE,quote=TRUE,sep=",")'
+    )
+
+    envvars = subprocess.check_output(cmd,
+                                      universal_newlines=True,
+                                      stderr=subprocess.PIPE)
+
+    res = []
+    reader = csv.reader(row for row in envvars.split(os.linesep) if row != '')
+    for k, v in reader:
+        if (
+                (k not in baselinevars)
+                or
+                (baselinevars[k] != v)
+        ):
+            res.append((k, v))
+    return tuple(res)
+
+
+def _setrenvvars(action: _ENVVAR_ACTION):
+    new_envvars = {}
+    for k, v in _getrenvvars():
+        if k in os.environ:
+            if (
+                    action in (_ENVVAR_ACTION.KEEP_WARN, _ENVVAR_ACTION.KEEP_NOWARN)
+            ):
+                if action is _ENVVAR_ACTION.KEEP_WARN:
+                    warnings.warn(
+                        f'Environment variable "{k}" redefined by R but ignored.'
+                    )
+                continue
+            elif (
+                    action in (_ENVVAR_ACTION.REPLACE_WARN, _ENVVAR_ACTION.REPLACE_NOWARN)
+            ):
+                if action is _ENVVAR_ACTION.REPLACE_WARN:
+                    warnings.warn(
+                        f'Environment variable "{k}" redefined by R and overriding '
+                        'existing variable.'
+                    )
+        new_envvars[k] = v
+    os.environ.update(new_envvars)
 
 
 def _post_initr_setup() -> None:
@@ -1089,25 +1238,173 @@ def _post_initr_setup() -> None:
     _update_R_ENC_PY()
 
 
-def rternalize(function: typing.Callable) -> SexpClosure:
+def _find_first(nodes, of_type):
+    for node in nodes:
+        if isinstance(node, of_type):
+            return node
+    raise ValueError(
+        f'No node of type {of_type}'
+    )
+
+
+def rternalize(
+        function: typing.Optional[typing.Callable] = None, *,
+        signature: bool = False
+) -> typing.Union[SexpClosure, functools.partial]:
     """ Make a Python function callable from R.
 
     Takes an arbitrary Python function and wrap it in such a way that
     it can be called from the R side.
 
-    :param function: A Python callable object.
+    This factory can be used as a decorator, and has an optional
+    named argument "signature" that can be True or False (default is
+    False). When True, the R function wrapping the Python one will
+    have a matching signature or a close one, as detailed below.
+
+    The Python ellipsis arguments`*args` and `**kwargs` are
+    translated to the R ellipsis `...`.
+
+    For example:
+
+    .. code-block:: python
+       @rternalize(signature=True)
+       def foo(x, *args, y=2):
+           pass
+
+    will be visible in R with the signature:
+
+    .. code-block:: r
+       function (x, ..., y)
+
+    The only limitation is that whenever `*args` and `**kwargs` are
+    both present in the Python declaration they must be consecutive.
+    For example:
+
+    .. code-block:: python
+       def foo(x, *args, y=2, **kwargs):
+           pass
+
+    is a valid Python declaration. However, it cannot be "rternalized"
+    because the R ellipsis can only appear at most once in the signature
+    of a given function. Trying to apply the decorator `rternalize` would
+    raise an exception.
+
+    The following Python function can be "rternalized":
+
+    .. code-block:: python
+       def foo(x, *args, **kwargs):
+           pass
+
+    It is visible to R with the signature
+
+    .. code-block:: r
+       function (x, ...)
+
+    Python function definitions can allow the optional naming of required
+    arguments. The mapping of signatures between Python and R is then
+    quasi-indentical since R does it for unnamed arguments. The check
+    that all arguments are present is still performed on the Python side.
+
+    Example:
+
+    .. code-block:: python
+       @rternalize(signature=True)
+       def foo(x, *, y, z):
+           print(f'x: {x[0]}, y: {y[0]}, z: {z[0]}')
+           return ri.NULL
+
+    >>> _ = foo(1, 2, 3)
+    x: 1, y: 2, z: 3
+    ValueErro: None
+    >>> _ = foo(1)
+    TypeError: rternalized foo() missing 2 required keyword-only arguments: 'y' and 'z'
+    >>> _ = foo(1, z=2, y=3)
+    x: 1, y: 3, z: 2
+    >>> _ = foo(1, z=2, y=3)
+    x: 1, y: 3, z: 2
+
+    Note that whenever the Python function has an ellipsis (either `*args`
+    or `**kwargs`) earlier parameters in the signature that are
+    positional-or-keyword are considered to be positional arguments in a
+    function call.
+
+    :param function: A Python callable object. This is a positional
+    argument with a default value `None` to allow the decorator function
+    without parentheses when optional argument is not wanted.
+
     :return: A wrapped R object that can be use like any other rpy2
     object.
     """
+    if not embedded.isinitialized():
+        raise embedded.RNotReadyError('The embedded R is not yet initialized.')
+
+    if function is None:
+        return functools.partial(rternalize, signature=signature)
 
     assert callable(function)
     rpy_fun = SexpExtPtr.from_pyobject(function)
-    # TODO: this is a hack. Find a better way.
-    template = parse("""
-      function(...) { .External(".Python", foo, ...);
-    }
-    """)
-    template[0][2][1][2] = rpy_fun
+
+    if not signature:
+        template = parse("""
+        function(...) { .External(".Python", foo, ...);
+        }
+        """)
+        template[0][2][1][2] = rpy_fun
+    else:
+        has_ellipsis = None
+        params_r_sig = []
+        for p_i, (name, param) in enumerate(
+                inspect.signature(function).parameters.items()
+        ):
+            if (
+                    param.kind is inspect.Parameter.VAR_POSITIONAL or
+                    param.kind is inspect.Parameter.VAR_KEYWORD
+            ):
+                if has_ellipsis:
+                    if has_ellipsis != (p_i - 1):
+                        raise ValueError(
+                            'R functions can only have one ellipsis. '
+                            'As consequence your Python function must have *args '
+                            'and **kwargs that are consecutive in function '
+                            'signature.'
+                        )
+                else:
+                    # The ellipsis can only be added once.
+                    has_ellipsis = p_i
+                    params_r_sig.append('...')
+            else:
+                params_r_sig.append(name)
+
+        r_func_args = ', '.join(params_r_sig)
+
+        r_src = f"""
+        function({r_func_args}) {{
+            py_func <- RPY2_FUN_PLACEHOLDER
+            lst_args <- base::as.list(base::match.call()[-1])
+            RPY2_ARGUMENTS <- base::c(
+                base::list(
+                    ".Python",
+                    py_func
+                ),
+                lst_args
+            )
+            res <- base::do.call(
+               base::.External,
+               RPY2_ARGUMENTS
+            );
+
+            res
+        }}
+        """
+        template = parse(r_src)
+
+        function_definition = _find_first(template, of_type=LangSexpVector)
+        function_body = _find_first(function_definition, of_type=LangSexpVector)
+        rpy_fun_node = function_body[1]
+
+        assert str(rpy_fun_node[2]) == 'RPY2_FUN_PLACEHOLDER'
+        rpy_fun_node[2] = rpy_fun
+
     # TODO: use lower-level eval ?
     res = baseenv['eval'](template)
     # TODO: hack to prevent the nested function from having its

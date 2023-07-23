@@ -123,17 +123,51 @@ def test_parse_invalid_string():
     with pytest.raises(TypeError):
         rinterface.parse(3)
 
+
 @pytest.mark.parametrize(
     'envir',
     (None, rinterface.globalenv, rinterface.ListSexpVector([])))
 def test_evalr(envir):
     res = rinterface.evalr('1 + 2', envir=envir)
     assert tuple(res) == (3, )
-    
-def test_rternalize():
+
+
+@pytest.mark.parametrize(
+    'envir',
+    (None, rinterface.globalenv)
+)
+@pytest.mark.parametrize(
+    'expr,visibility',
+    (('x <- 1', False), ('1', True))
+)
+def test_evalr_expr_with_visible(envir, expr, visibility):
+    value, vis = rinterface.evalr_expr_with_visible(
+        rinterface.parse(expr),
+        envir=envir)
+    assert vis[0] == visibility
+
+
+def test_rternalize_decorator():
+    @rinterface.rternalize
+    def rfun(x, y):
+        return x[0]+y[0]
+    res = rfun(1, 2)
+    assert res[0] == 3
+
+
+def test_rternalize_decorator_signature():
+    @rinterface.rternalize(signature=True)
+    def rfun(x, y):
+        return x[0]+y[0]
+    res = rfun(1, 2)
+    assert res[0] == 3
+
+
+@pytest.mark.parametrize('signature', ((True, ), (False, )))
+def test_rternalize(signature):
     def f(x, y):
         return x[0]+y[0]
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=signature)
     res = rfun(1, 2)
     assert res[0] == 3
 
@@ -141,7 +175,7 @@ def test_rternalize():
 def test_rternalize_return_sexp():
     def f(x, y):
         return rinterface.IntSexpVector([x[0], y[0]])
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=False)
     res = rfun(1, 2)
     assert tuple(res) == (1, 2)
 
@@ -152,11 +186,69 @@ def test_rternalize_namedargs():
             return x[0]+y[0]
         else:
             return z[0]
-    rfun = rinterface.rternalize(f)
+    rfun = rinterface.rternalize(f, signature=False)
     res = rfun(1, 2)
     assert res[0] == 3
     res = rfun(1, 2, z=8)
     assert res[0] == 8
+
+
+@pytest.mark.parametrize('signature', ((True, ), (False, )))
+def test_rternalize_extraargs(signature):
+    def f():
+        return 1
+    rfun = rinterface.rternalize(f, signature=signature)
+    assert rfun()[0] == 1
+    with pytest.raises(rinterface.embedded.RRuntimeError,
+                       match=r'unused argument \(1\)'):
+        rfun(1)
+
+
+@pytest.mark.parametrize(
+    'args',
+    ((),
+     (1,),
+     (1, 2))
+)
+def test_rternalize_map_ellipsis_args(args):
+    def f(x, *args):
+        return len(args)
+    rfun = rinterface.rternalize(f, signature=True)
+    assert ('x', '...') == tuple(rinterface.baseenv['formals'](rfun).names)
+    assert rfun(0, *args)[0] == len(args)
+
+
+@pytest.mark.parametrize(
+    'kwargs',
+    ({},
+     {'y': 1},
+     {'y': 1, 'z': 2})
+)
+def test_rternalize_map_ellipsis_kwargs(kwargs):
+    def f(x, **kwargs):
+        return len(kwargs)
+    rfun = rinterface.rternalize(f, signature=True)
+    assert ('x', '...') == tuple(rinterface.baseenv['formals'](rfun).names)
+    assert rfun(0, **kwargs)[0] == len(kwargs)
+
+
+def test_rternalize_map_ellipsis_args_kwargs_error():
+    def f(x, *args, y = 2, **kwargs):
+        pass
+    with pytest.raises(ValueError):
+        rfun = rinterface.rternalize(f, signature=True)
+
+
+def test_rternalize_formals():
+    # TODO: update to `def f(a, /, b, c=1, *, d=2, e):`
+    # once 3.7 is dropped from CI
+    def f(a, b, c=1, *, d=2, e):
+        return 1
+    rfun = rinterface.rternalize(f, signature=True)
+    rnames = rinterface.baseenv['names']
+    rformals = rinterface.baseenv['formals']
+    rpaste = rinterface.baseenv['paste']
+    assert list(rnames(rformals(rfun))) == ['a', 'b', 'c', 'd', 'e']
 
 
 def test_external_python():

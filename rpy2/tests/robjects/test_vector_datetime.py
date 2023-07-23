@@ -1,10 +1,16 @@
 import datetime
+try:
+    import zoneinfo
+except ImportError:
+    from backports import zoneinfo
 import pytest
-import pytz
+
 import time
 from rpy2 import robjects
+import rpy2.robjects.vectors
 
 _dateval_tuple = (1984, 1, 6, 6, 22, 0, 1, 6, 0) 
+_zones_str = (None, 'America/New_York', 'Australia/Sydney')
 
 
 def test_POSIXlt_from_invalidpythontime():
@@ -53,18 +59,39 @@ def test_POSIXct_from_invalidobject():
         robjects.POSIXct(x)
 
 
-def test_POSIXct_from_pythontime():
-    x = [time.struct_time(_dateval_tuple), 
-         time.struct_time(_dateval_tuple)]
-    res = robjects.POSIXct(x)
-    assert len(x) == 2
+@pytest.fixture(scope='module', params=_zones_str)
+def default_timezone_mocker(request):
+    zone_str = request.param
+    if zone_str:
+        rpy2.robjects.vectors.default_timezone = zoneinfo.ZoneInfo(zone_str)
+    yield zone_str
+    rpy2.robjects.vectors.default_timezone = None
 
 
-def testPOSIXct_fromPythonDatetime():
-    x = [datetime.datetime(*_dateval_tuple[:-2]), 
-         datetime.datetime(*_dateval_tuple[:-2])]
+@pytest.mark.parametrize(
+    'x',
+    ([time.struct_time(_dateval_tuple), ] * 2,
+     [datetime.datetime(*_dateval_tuple[:-2]), ] * 2)
+)
+def test_POSIXct_from_python_times(x, default_timezone_mocker):
     res = robjects.POSIXct(x)
-    assert len(x) == 2
+    assert list(res.slots['class']) == ['POSIXct', 'POSIXt']
+    assert len(res) == 2
+    zone = default_timezone_mocker
+    assert res.slots['tzone'][0] == (zone if zone else '')
+
+
+@pytest.mark.parametrize('zone_str',
+                         _zones_str[1:])
+def test_POSIXct_from_python_timezone(zone_str):
+    x = [
+        datetime.datetime(*_dateval_tuple[:-2])
+        .replace(tzinfo=zoneinfo.ZoneInfo(zone_str)),
+    ] * 2
+    res = robjects.POSIXct(x)
+    assert list(res.slots['class']) == ['POSIXct', 'POSIXt']
+    assert len(res) == 2
+    assert res.slots['tzone'][0] == (zone_str if zone_str else '')
 
 
 def testPOSIXct_fromSexp():
@@ -103,10 +130,10 @@ def testPOSIXct_iter_localized_datetime():
     )
 
 
-def test_POSIXct_datetime_from_timestamp():
+def test_POSIXct_datetime_from_timestamp(default_timezone_mocker):
     tzone = robjects.vectors.get_timezone()
     dt = [datetime.datetime(1900, 1, 1),
-          datetime.datetime(1970, 1, 1), 
+          datetime.datetime(1970, 1, 1),
           datetime.datetime(2000, 1, 1)]
     dt = [x.replace(tzinfo=tzone) for x in dt]
     ts = [x.timestamp() for x in dt]

@@ -103,7 +103,8 @@ class Sexp(SupportsSEXP):
         return super().__repr__() + (' [%s]' % self.typeof)
 
     @property
-    def __sexp__(self) -> '_rinterface.CapsuleBase':
+    def __sexp__(self) -> typing.Union['_rinterface.SexpCapsule',
+                                       '_rinterface.UninitializedRCapsule']:
         """Access to the underlying C pointer to the R object.
 
         When assigning a new SexpCapsule to this attribute, the
@@ -113,7 +114,8 @@ class Sexp(SupportsSEXP):
 
     @__sexp__.setter
     def __sexp__(self,
-                 value: '_rinterface.CapsuleBase') -> None:
+                 value: typing.Union['_rinterface.SexpCapsule',
+                                     '_rinterface.UninitializedRCapsule']) -> None:
         assert isinstance(value, _rinterface.SexpCapsule)
         if value.typeof != self.__sexp__.typeof:
             raise ValueError('New capsule type mismatch: %s' %
@@ -216,7 +218,7 @@ class Sexp(SupportsSEXP):
         openrlib.rlib.Rf_namesgets(
             self.__sexp__._cdata, value.__sexp__._cdata)
 
-    @property  # type: ignore
+    @property
     @conversion._cdata_res_to_rinterface
     def names_from_c_attribute(self) -> 'Sexp':
         return openrlib.rlib.Rf_getAttrib(
@@ -243,11 +245,13 @@ class NULLType(Sexp, metaclass=SingletonABC):
         return False
 
     @property
-    def __sexp__(self) -> _rinterface.CapsuleBase:
+    def __sexp__(self) -> typing.Union['_rinterface.SexpCapsule',
+                                       '_rinterface.UninitializedRCapsule']:
         return self._sexpobject
 
     @__sexp__.setter
-    def __sexp__(self, value) -> None:
+    def __sexp__(self, value: typing.Union['_rinterface.SexpCapsule',
+                                           '_rinterface.UninitializedRCapsule']) -> None:
         raise TypeError('The capsule for the R object cannot be modified.')
 
     @property
@@ -442,7 +446,7 @@ class SexpEnvironment(Sexp):
         """Get the parent frame of the environment."""
         return openrlib.rlib.FRAME(self.__sexp__._cdata)
 
-    @property  # type: ignore
+    @property
     @_cdata_res_to_rinterface
     def enclos(self) -> 'typing.Union[NULLType, SexpEnvironment]':
         """Get or set the enclosing environment."""
@@ -497,7 +501,8 @@ def _populate_r_vector(iterable, r_vector, set_elt, cast_value) -> None:
         set_elt(r_vector, i, cast_value(v))
 
 
-class SexpVectorAbstract(SupportsSEXP, metaclass=abc.ABCMeta):
+class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
+                         metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
@@ -648,8 +653,12 @@ class SexpVectorAbstract(SupportsSEXP, metaclass=abc.ABCMeta):
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
+            if isinstance(value, Sexp):
+                val_cdata = value.__sexp__._cdata
+            else:
+                val_cdata = conversion._python_to_cdata(value)
             self._R_SET_VECTOR_ELT(cdata, i_c,
-                                   value.__sexp__._cdata)
+                                   val_cdata)
         elif isinstance(i, slice):
             for i_c, v in zip(range(*i.indices(len(self))), value):
                 self._R_SET_VECTOR_ELT(cdata, i_c,
@@ -679,10 +688,11 @@ class SexpVector(Sexp, SexpVectorAbstract):
     the general structure for R objects."""
 
     def __init__(self,
-                 obj: typing.Union[_rinterface.SexpCapsule,
+                 obj: typing.Union[SupportsSEXP,
+                                   _rinterface.SexpCapsule,
                                    collections.abc.Sized]):
         if (
-                isinstance(obj, Sexp)
+                isinstance(obj, SupportsSEXP)
                 or
                 isinstance(obj, _rinterface.SexpCapsule)
         ):
@@ -691,11 +701,12 @@ class SexpVector(Sexp, SexpVectorAbstract):
             robj: Sexp = type(self).from_object(obj)
             super().__init__(robj)
         else:
-            raise TypeError('The constructor must be called '
-                            'with an instance of '
-                            'rpy2.rinterface.Sexp '
-                            'or an instance of '
-                            'rpy2.rinterface._rinterface.SexpCapsule')
+            raise TypeError(
+                'The constructor must be called with an instance of '
+                'rpy2.rinterface.Sexp, '
+                'a Python sized object that can be iterated on, '
+                'or less commonly an rpy2.rinterface._rinterface.SexpCapsule.'
+            )
 
 
 def _as_charsxp_cdata(x: typing.Union[CharSexp, str]):

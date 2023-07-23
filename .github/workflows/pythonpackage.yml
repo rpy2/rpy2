@@ -9,8 +9,8 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10"]
-        r-version: [4.0, 'release']
+        python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
+        r-version: ['release']
         os: [ubuntu-latest, ubuntu-20.04, macOS-latest]
         experimental: [false]
         venv_activate: ["source pyenv_base/bin/activate"]
@@ -28,13 +28,13 @@ jobs:
           - os: macOS-latest
             r-version: 'release'
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Set up R ${{ matrix.r-version }}
-      uses: r-lib/actions/setup-r@master
+      uses: r-lib/actions/setup-r@v2
       with:
         r-version: ${{ matrix.r-version }}
     - name: Create base virtualenv (non-windows)
@@ -62,25 +62,25 @@ jobs:
     - name: Install package
       run: |
         ${{ matrix.venv_activate }}
-        python setup.py install
+        pip install .
         rm -r build/
     - name: Test with minimal dependencies
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install pytest codecov pytest-cov
+        python -m pip install .[test_minimal]
         bash -e ./scripts/run_test_min_deps.sh
     - name: Test with numpy
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install numpy
+        python -m pip install .[numpy]
         bash -e ./scripts/run_test_numpy.sh
     - name: Test with pandas
       run: |
         ${{ matrix.ld_libpath }}
         ${{matrix.venv_activate }}
-        python -m pip install pandas
+        python -m pip install .[pandas]
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
       run: |
@@ -97,12 +97,25 @@ jobs:
         install.packages(c("ggplot2", "dplyr", "tidyr", "dbplyr", "lazyeval", "rlang"))
       shell: Rscript {0}
     - name: Test with R deps
+      if: matrix.os != 'windows-latest'
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
         bash -e ./scripts/run_test_rdeps.sh
+    - name: Test with R deps (windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        ${{ matrix.ld_libpath }}
+        ${{ matrix.venv_activate }}
+        pytest --cache-clear --cov-append --cov-report=xml --cov-report=term --cov=rpy2.rinterface_lib --cov=rpy2.rinterface --cov=rpy2.rlike --cov=rpy2.robjects rpy2/tests/robjects/lib
+    - name: Check type hints
+      run: |
+        ${{ matrix.ld_libpath }}
+        ${{matrix.venv_activate }}
+        pip install .[types]
+        bash -e ./scripts/run_mypy.sh
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       if: matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.8' && matrix.r-version == 'release'
       env:
         OS: ${{ runner.os }}

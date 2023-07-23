@@ -1,6 +1,7 @@
 import abc
 import os
 import typing
+import warnings
 import weakref
 import rpy2.rinterface
 import rpy2.rinterface_lib.callbacks
@@ -8,6 +9,23 @@ import rpy2.rinterface_lib.callbacks
 from rpy2.robjects import conversion
 
 rpy2.rinterface.initr_simple()
+
+
+def _add_warn_reticulate_hook():
+    msg = """
+    WARNING: The R package "reticulate" only fixed recently
+    an issue that caused a segfault when used with rpy2:
+    https://github.com/rstudio/reticulate/pull/1188
+    Make sure that you use a version of that package that includes
+    the fix.
+    """
+    rpy2.rinterface.evalr(f"""
+    setHook(packageEvent("reticulate", "onLoad"),
+            function(...) cat({repr(msg)}))
+    """)
+
+
+_add_warn_reticulate_hook()
 
 
 class RSlots(object):
@@ -31,10 +49,10 @@ class RSlots(object):
 
     def __getitem__(self, key: str):
         value = self._robj.do_slot(key)
-        return conversion.rpy2py(value)
+        return conversion.get_conversion().rpy2py(value)
 
     def __setitem__(self, key: str, value):
-        rpy2_value = conversion.py2rpy(value)
+        rpy2_value = conversion.get_conversion().py2rpy(value)
         self._robj.do_slot_assign(key, rpy2_value)
 
     def __len__(self):
@@ -73,6 +91,7 @@ class RObjectMixin(abc.ABC):
     __readlines = rpy2.rinterface.baseenv.find("readLines")
     __unlink = rpy2.rinterface.baseenv.find("unlink")
     __show = _get_exported_value('methods', 'show')
+    __print = _get_exported_value('base', 'print')
 
     __slots = None
 
@@ -92,7 +111,17 @@ class RObjectMixin(abc.ABC):
         with (rpy2.rinterface_lib
               .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
                                        'consolewrite_print', s.append)):
-            self.__show(self)
+            try:
+                self.__show(self)
+                # There can be situation where an invalid call to R`s
+                # show is made. Possibly some form of signature overriding
+                # that goes through in R through dispatch (although it
+                # should not?). In that case this is an problem upstream
+                # and this try/except is a workaround until it gets fixed.
+                # (issue #908).
+            except rpy2.rinterface.embedded.RRuntimeError as rre:
+                warnings.warn(f'Invalid call to "show()" in R: {rre}')
+                self.__print(self)
         s = str.join('', s)
         return s
 
@@ -129,7 +158,7 @@ class RObjectMixin(abc.ABC):
         When setting the rclass, the new value will be:
 
         - wrapped in a Python tuple if a string (the R class
-        is a vector of strings, and this is made for convenience)
+          is a vector of strings, and this is made for convenience)
         - wrapped in a StrSexpVector
 
         Note that when setting the class R may make a copy of

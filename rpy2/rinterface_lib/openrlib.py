@@ -1,4 +1,5 @@
 import logging
+import os
 import platform
 import threading
 import typing
@@ -15,17 +16,24 @@ elif cffi_mode == rpy2.situation.CFFI_MODE.ABI:
 else:
     try:
         import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
-    except ImportError:
-        import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
-
+    except ImportError as ie_api:
+        try:
+            import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
+        except ImportError as ie_abi:
+            logger.error(f'Failed to import the API mode with "{ie_api}" '
+                         'and unable to import the ABI mode.')
+            raise ie_abi
 ffi = _rinterface_cffi.ffi
 
 # TODO: Separate the functions in the module from the side-effect of
 # finding R_HOME and opening the shared library.
 R_HOME = rpy2.situation.get_r_home()
-LD_LIBRARY_PATH = (rpy2.situation.r_ld_library_path_from_subprocess(R_HOME)
-                   if R_HOME is not None
-                   else '')
+if os.name != 'nt':
+    # not relevant for Windows? (https://stackoverflow.com/questions/72575015)
+    LD_LIBRARY_PATH = (
+        rpy2.situation.r_ld_library_path_from_subprocess(R_HOME)
+        if R_HOME is not None
+        else '')
 rlock = threading.RLock()
 
 

@@ -1,8 +1,11 @@
 import pytest
 import textwrap
+import types
 import warnings
 from itertools import product
 import rpy2.rinterface_lib.callbacks
+import rpy2.rinterface_lib._rinterface_capi
+import rpy2.robjects
 import rpy2.robjects.conversion
 from .. import utils
 
@@ -58,22 +61,8 @@ def ipython_with_magic():
     ip = get_ipython()
     # This is just to get a minimally modified version of the changes
     # working
-    ip.magic('load_ext rpy2.ipython')
+    ip.run_line_magic('load_ext', 'rpy2.ipython')
     return ip
-
-
-@pytest.mark.skipif(IPython is None,
-                    reason='The optional package IPython cannot be imported.')
-@pytest.fixture(scope='function')
-def set_conversion(ipython_with_magic):
-    if hasattr(rmagic.template_converter, 'activate'):
-        rmagic.template_converter.activate()
-    yield ipython_with_magic
-    
-    # This seems like the safest thing to return to a safe state
-    ipython_with_magic.run_line_magic('Rdevice', 'png')
-    if hasattr(rmagic.template_converter, 'deactivate'):
-        rmagic.template_converter.deactivate()
 
 
 @pytest.mark.skipif(IPython is None,
@@ -90,14 +79,26 @@ def test_RInterpreterError():
 
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
+@pytest.mark.parametrize(
+    'arg,expected',
+    (('foo', ('foo', 'foo')),
+     ('bar=foo', ('bar', 'foo')),
+     ('bar=baz.foo', ('bar', 'baz.foo'))
+    )
+)
+def test__parse_input_argument(arg, expected):
+    assert expected == rmagic._parse_input_argument(arg) 
+
+    
+@pytest.mark.skipif(IPython is None,
+                    reason='The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_push(ipython_with_magic, clean_globalenv):
-    ipython_with_magic.push({'X':np.arange(5), 'Y':np.array([3,5,4,6,7])})
-    ipython_with_magic.run_line_magic('Rpush', 'X Y')
-    np.testing.assert_almost_equal(np.asarray(r('X')),
-                                   ipython_with_magic.user_ns['X'])
-    np.testing.assert_almost_equal(np.asarray(r('Y')),
-                                   ipython_with_magic.user_ns['Y'])
+    for obj in (np.arange(5), [1,2]):
+        ipython_with_magic.push({'X': obj})
+        ipython_with_magic.run_line_magic('Rpush', 'X')
+        np.testing.assert_almost_equal(np.asarray(r('X')),
+                                       ipython_with_magic.user_ns['X'])
 
 
 @pytest.mark.skipif(IPython is None,
@@ -124,11 +125,15 @@ def test_push_localscope(ipython_with_magic, clean_globalenv):
 
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
-def test_run_cell_with_error(ipython_with_magic, clean_globalenv):
+@pytest.mark.parametrize('rcode,exception_expr',
+                         (('"a" + 1', 'rmagic.RInterpreterError'),
+                          ('"a" + ', 'rpy2.rinterface_lib._rinterface_capi.RParsingError')))
+def test_run_cell_with_error(ipython_with_magic, clean_globalenv,
+                             rcode, exception_expr):
     """Run an R block with an error."""
 
-    with pytest.raises(rmagic.RInterpreterError):
-        ipython_with_magic.run_line_magic('R', '"a" + 1')
+    with pytest.raises(eval(exception_expr)):
+        ipython_with_magic.run_line_magic('R', rcode)
 
 
 @pytest.mark.skipif(IPython is None,
@@ -228,15 +233,77 @@ def test_Rconverter_numpy(ipython_with_magic, clean_globalenv):
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_pandas, reason='pandas not installed')
-def test_Rconverter_pandas(ipython_with_magic, clean_globalenv):
-    dataf_pd= pd.DataFrame.from_dict(
-    {'x': (1, 2, 3),
-     'y': (2.9, 3.5, 2.1),
-     'z': ('a', 'b', 'c')})
-    _test_Rconverter(
-        ipython_with_magic, clean_globalenv,
-        dataf_pd, pd.DataFrame
+@pytest.mark.parametrize(
+    'python_obj_code,r_cls',
+    (
+        ("""
+pd.DataFrame.from_dict(
+  {
+    'x': (1, 2, 3),
+    'y': (2.9, 3.5, 2.1),
+    'z': ('a', 'b', 'c')
+  }
+)""",
+         ('data.frame', )),
+        ("""
+pd.Categorical.from_codes(
+  [0, 1, 0],
+  categories=['a', 'b'],
+  ordered=False
+)""",
+         ('factor', ))
     )
+)
+def test_converter_pandas_py2rpy(
+        ipython_with_magic, clean_globalenv,
+        python_obj_code, r_cls
+):
+    py_obj = eval(python_obj_code)
+    # If we get to dropping numpy requirement, we might use something
+    # like the following:
+    # assert tuple(buffer(a).buffer_info()) == tuple(buffer(b).buffer_info())
+
+    # store it in the notebook's user namespace
+    ipython_with_magic.user_ns['py_obj'] = py_obj
+
+    # equivalent to:
+    #     %Rpush dataf_np
+    # that is send Python object 'dataf_py' into R's globalenv
+    # as 'dataf_r'. The current conversion rules should make it an
+    # R data frame.
+    ipython_with_magic.run_line_magic('Rpush', 'py_obj')
+
+    assert tuple(rpy2.robjects.r('class(py_obj)')) == r_cls
+
+
+@pytest.mark.skipif(IPython is None,
+                    reason='The optional package IPython cannot be imported.')
+@pytest.mark.skipif(not has_pandas, reason='pandas not installed')
+@pytest.mark.parametrize(
+    'r_obj_code,py_cls',
+    (
+        ("""
+data.frame(
+  x = c(1, 2, 3),
+  y = c(2.9, 3.5, 2.1),
+  z = c('a', 'b', 'c')
+)""", 'pd.DataFrame'),
+        ("""
+factor(c('a', 'b', 'a'),
+       ordered = TRUE)
+""", 'pd.Categorical')
+    )
+)
+def test_converter_pandas_rpy2py(
+        ipython_with_magic, clean_globalenv,
+        r_obj_code, py_cls
+):
+    rpy2.robjects.r(f'r_obj <- {r_obj_code}')
+    # retrieve `dataf_py` from R into `fromr_dataf_py` in the notebook.
+    py_obj = ipython_with_magic.run_line_magic(
+        'Rget', 'r_obj'
+    )
+    assert isinstance(py_obj, eval(py_cls))
 
 
 @pytest.mark.skipif(IPython is None,
@@ -280,25 +347,35 @@ def test_cell_magic_localconverter(ipython_with_magic, clean_globalenv):
     """)
 
     # Missing converter/object with the specified name.
-    ipython_with_magic.push({'x':x})
+    ipython_with_magic.push({'x': x})
     with pytest.raises(NameError):
         ipython_with_magic.run_cell_magic('R', '-i x -c foo',
                                           snippet)
 
     # Converter/object is not a converter.
-    ipython_with_magic.push({'x':x,
+    ipython_with_magic.push({'x': x,
                              'foo': 123})
     with pytest.raises(TypeError):
         ipython_with_magic.run_cell_magic('R', '-i x -c foo',
                                           snippet)
 
-    ipython_with_magic.push({'x':x,
+    ipython_with_magic.push({'x': x,
                              'foo': foo})
-
     with pytest.raises(NotImplementedError):
         ipython_with_magic.run_cell_magic('R', '-i x', snippet)
 
     ipython_with_magic.run_cell_magic('R', '-i x -c foo',
+                                      snippet)
+
+    # converter in a namespace.
+    ns = types.SimpleNamespace()
+    ipython_with_magic.push({'x': x,
+                             'ns': ns})
+    with pytest.raises(AttributeError):
+        ipython_with_magic.run_cell_magic('R', '-i x -c ns.bar',
+                                          snippet)
+    ns.bar = foo
+    ipython_with_magic.run_cell_magic('R', '-i x -c ns.bar',
                                       snippet)
 
     assert isinstance(globalenv['x'], vectors.IntVector)
@@ -307,7 +384,7 @@ def test_cell_magic_localconverter(ipython_with_magic, clean_globalenv):
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
 def test_rmagic_localscope(ipython_with_magic, clean_globalenv):
-    ipython_with_magic.push({'x':0})
+    ipython_with_magic.push({'x': 0})
     ipython_with_magic.run_line_magic('R', '-i x -o result result <-x+1')
     result = ipython_with_magic.user_ns['result']
     assert result[0] == 1

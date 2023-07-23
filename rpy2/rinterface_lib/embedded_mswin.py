@@ -13,14 +13,30 @@ _DEFAULT_MAX_VSIZE: int = sys.maxsize  # max vector heap size
 _DEFAULT_MAX_NSIZE: int = 50000000  # max language heap size
 _DEFAULT_PPSIZE: int = 50000  # stack size
 _DEFAULT_C_STACK_LIMIT: int = -1
+_DEFAULT_R_INTERACTIVE: bool = True
 
 
 def _initr_win32(
-        interactive: bool = True,
+        interactive: typing.Optional[bool] = None,
         _want_setcallbacks: bool = True,
-        _c_stack_limit: int = _DEFAULT_C_STACK_LIMIT
+        _c_stack_limit: typing.Optional[int] = _DEFAULT_C_STACK_LIMIT
 
 ) -> typing.Optional[int]:
+    """Initialize the embedded R.
+
+    :param interactive: Should R run in interactive or non-interactive mode?
+    if `None` the value in `_DEFAULT_R_INTERACTIVE` will be used.
+    :param _want_setcallbacks: Should custom rpy2 callbacks for R frontends
+    be set?.
+    :param _c_stack_limit: Limit for the C Stack.
+    if `None` the value in `_DEFAULT_C_STACK_LIMIT` will be used.
+    """
+
+    if interactive is None:
+        interactive = _DEFAULT_R_INTERACTIVE
+    if _c_stack_limit is None:
+        _c_stack_limit = _DEFAULT_C_STACK_LIMIT
+
     with openrlib.rlock:
         if embedded.isinitialized():
             return None

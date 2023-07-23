@@ -19,6 +19,7 @@ ffi = openrlib.ffi
 _options = ('rpy2', '--quiet', '--no-save')  # type: typing.Tuple[str, ...]
 logger.info('Default options to initialize R: {}'.format(', '.join(_options)))
 _DEFAULT_C_STACK_LIMIT: int = -1
+_DEFAULT_R_INTERACTIVE: bool = True
 rpy2_embeddedR_isinitialized = 0x00
 
 
@@ -155,9 +156,10 @@ def set_initoptions(options: typing.Tuple[str]) -> None:
     global _options
     for x in options:
         assert isinstance(x, str)
-    logger.info('Setting options to initialize R: {}'
-                .format(', '.join(options)))
-    _options = tuple(options)
+    with openrlib.rlock:
+        logger.info('Setting options to initialize R: {}'
+                    .format(', '.join(options)))
+        _options = tuple(options)
 
 
 def get_initoptions() -> typing.Tuple[str, ...]:
@@ -232,10 +234,24 @@ CALLBACK_INIT_PAIRS = (('ptr_R_WriteConsoleEx', '_consolewrite_ex'),
 
 # TODO: can init_once() be used here ?
 def _initr(
-        interactive: bool = True,
+        interactive: typing.Optional[bool] = None,
         _want_setcallbacks: bool = True,
-        _c_stack_limit: int = _DEFAULT_C_STACK_LIMIT
+        _c_stack_limit: typing.Optional[int] = None
 ) -> typing.Optional[int]:
+    """Initialize the embedded R.
+
+    :param interactive: Should R run in interactive or non-interactive mode?
+    if `None` the value in `_DEFAULT_R_INTERACTIVE` will be used.
+    :param _want_setcallbacks: Should custom rpy2 callbacks for R frontends
+    be set?.
+    :param _c_stack_limit: Limit for the C Stack.
+    if `None` the value in `_DEFAULT_C_STACK_LIMIT` will be used.
+    """
+
+    if interactive is None:
+        interactive = _DEFAULT_R_INTERACTIVE
+    if _c_stack_limit is None:
+        _c_stack_limit = _DEFAULT_C_STACK_LIMIT
 
     rlib = openrlib.rlib
     ffi_proxy = openrlib.ffi_proxy
@@ -262,6 +278,14 @@ def _initr(
             _setinitialized()
             return None
         os.environ['R_HOME'] = openrlib.R_HOME
+        # TODO: Setting LD_LIBRARY_PATH after the process has started
+        # is too late. Because of this, the line below does not help
+        # address issues where calling R from the command line is working
+        # (as it is a shell script setting environment variables before
+        # start the binary in a child process). Calling C's dlopen with
+        # the path of the shared library could address this but for the
+        # API mode this would require writing a C wrapper to manually
+        # load each each symbol in the C library.
         os.environ['LD_LIBRARY_PATH'] = (
             ':'.join(
                 (openrlib.LD_LIBRARY_PATH,
@@ -283,6 +307,7 @@ def _initr(
         if _c_stack_limit:
             rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
         rlib.R_Interactive = True
+        logger.debug('Calling R setup_Rmainloop.')
         rlib.setup_Rmainloop()
 
         _setinitialized()
@@ -295,6 +320,7 @@ def _initr(
         rlib.R_Consolefile = ffi.NULL
 
         if _want_setcallbacks:
+            logger.debug('Setting functions for R callbacks.')
             for rlib_symbol, callback_symbol in CALLBACK_INIT_PAIRS:
                 _setcallback(rlib, rlib_symbol,
                              callback_funcs, callback_symbol)
@@ -303,18 +329,27 @@ def _initr(
 
 
 def endr(fatal: int) -> None:
+    logger.debug('Ending embedded R process.')
     global rpy2_embeddedR_isinitialized
     rlib = openrlib.rlib
     with openrlib.rlock:
         if rpy2_embeddedR_isinitialized & RPY_R_Status.ENDED.value:
+            logger.info('Embedded R already ended.')
             return
+        logger.debug('R_do_Last()')
         rlib.R_dot_Last()
+        logger.debug('R_RunExitFinalizers()')
         rlib.R_RunExitFinalizers()
+        logger.debug('Rf_KillAllDevices()')
         rlib.Rf_KillAllDevices()
+        logger.debug('R_CleanTempDir()')
         rlib.R_CleanTempDir()
+        logger.debug('R_gc')
         rlib.R_gc()
+        logger.debug('Rf_endEmbeddedR(fatal)')
         rlib.Rf_endEmbeddedR(fatal)
         rpy2_embeddedR_isinitialized ^= RPY_R_Status.ENDED.value
+        logger.info('Embedded R ended.')
 
 
 _REFERENCE_TO_R_SESSIONS = 'https://github.com/rstudio/reticulate/issues/98'

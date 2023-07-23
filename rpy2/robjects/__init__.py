@@ -9,10 +9,13 @@ License: GPLv2+
 """
 
 import array
+import contextlib
 import os
 import types
 import typing
 import rpy2.rinterface as rinterface
+import rpy2.rinterface_lib.embedded
+import rpy2.rinterface_lib.openrlib
 import rpy2.rlike.container as rlc
 
 from rpy2.robjects.robject import RObjectMixin, RObject
@@ -66,6 +69,19 @@ NA_Complex = rinterface.NA_Complex
 NULL = rinterface.NULL
 
 
+# TODO: Something like this could be part of the rpy2 API.
+def _print_deferred_warnings() -> None:
+    """Print R warning messages.
+
+    rpy2's default pattern add a prefix per warning lines.
+    This should be revised. In the meantime, we clean it
+    at least for the R magic.
+    """
+
+    with rpy2.rinterface_lib.openrlib.rlock:
+        rinterface.evalr('.Internal(printDeferredWarnings())')
+
+
 def reval(string, envir=_globalenv):
     """ Evaluate a string as R code
     - string: a string
@@ -108,34 +124,38 @@ def _vector_matrix_array(
 
 @default_converter.rpy2py.register(rinterface.IntSexpVector)
 def _convert_rpy2py_intvector(obj):
-    clsmap = conversion.converter.rpy2py_nc_name[rinterface.IntSexpVector]
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[rinterface.IntSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.FloatSexpVector)
 def _convert_rpy2py_floatvector(obj):
-    clsmap = conversion.converter.rpy2py_nc_name[rinterface.FloatSexpVector]
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[rinterface.FloatSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.ComplexSexpVector)
 def _convert_rpy2py_complexvector(obj):
-    clsmap = conversion.converter.rpy2py_nc_name[rinterface.ComplexSexpVector]
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[rinterface.ComplexSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.BoolSexpVector)
 def _convert_rpy2py_boolvector(obj):
-    clsmap = conversion.converter.rpy2py_nc_name[rinterface.BoolSexpVector]
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[rinterface.BoolSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.StrSexpVector)
-def _convert_rpy2py_strvector(obj):    
+def _convert_rpy2py_strvector(obj):
     cls = _vector_matrix_array(obj, vectors.StrVector,
                                vectors.StrMatrix, vectors.StrArray)
     return cls(obj)
@@ -227,14 +247,16 @@ def _rpy2py_sexpenvironment(obj):
 
 @default_converter.rpy2py.register(rinterface.ListSexpVector)
 def _rpy2py_listsexp(obj):
-    clsmap = conversion.converter.rpy2py_nc_name[rinterface.ListSexpVector]
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[rinterface.ListSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(SexpS4)
 def _rpy2py_sexps4(obj):
-    clsmap = conversion.converter.rpy2py_nc_name[SexpS4]
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[SexpS4])
     cls = clsmap.find(methods_env['extends'](obj.rclass))
     return cls(obj)
 
@@ -296,17 +318,19 @@ default_converter.py2rpy.register(int,
 
 @default_converter.py2rpy.register(list)
 def _py2rpy_list(obj):
+    cv = conversion.get_conversion()
     return vectors.ListVector(
         rinterface.ListSexpVector(
-            [conversion.py2rpy(x) for x in obj]
+            [cv.py2rpy(x) for x in obj]
         )
     )
 
 
 @default_converter.py2rpy.register(rlc.TaggedList)
 def _py2rpy_taggedlist(obj):
+    cv = conversion.get_conversion()
     res = vectors.ListVector(
-        rinterface.ListSexpVector([conversion.py2rpy(x) for x in obj])
+        rinterface.ListSexpVector([cv.py2rpy(x) for x in obj])
     )
     res.do_slot_assign('names', rinterface.StrSexpVector(obj.tags))
     return res
@@ -324,7 +348,7 @@ def _function_to_rpy(func):
         res = conversion.py2ro(res)
         return res
     rfunc = rinterface.rternalize(wrap)
-    return conversion.rpy2py(rfunc)
+    return conversion.get_conversion().rpy2py(rfunc)
 
 
 @default_converter.rpy2py.register(object)
@@ -389,7 +413,7 @@ class Formula(RObjectMixin, rinterface.Sexp):
     def getenvironment(self):
         """ Get the environment in which the formula is finding its symbols."""
         res = self.do_slot(".Environment")
-        res = conversion.rpy2py(res)
+        res = conversion.get_conversion().rpy2py(res)
         return res
 
     def setenvironment(self, val):
@@ -409,6 +433,10 @@ class R(object):
     Singleton representing the embedded R running.
     """
     _instance = None
+    # Default for the evaluation
+    _print_r_warnings: bool = True
+    _invisible: bool = True
+
 
     def __new__(cls):
         if cls._instance is None:
@@ -416,7 +444,7 @@ class R(object):
             cls._instance = object.__new__(cls)
         return cls._instance
 
-    def __getattribute__(self, attr):
+    def __getattribute__(self, attr: str) -> object:
         try:
             return super(R, self).__getattribute__(attr)
         except AttributeError as ae:
@@ -427,29 +455,62 @@ class R(object):
         except LookupError:
             raise AttributeError(orig_ae)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> object:
         res = _globalenv.find(item)
-        res = conversion.rpy2py(res)
+        res = conversion.get_conversion().rpy2py(res)
         if hasattr(res, '__rname__'):
             res.__rname__ = item
         return res
 
     # TODO: check that this is properly working
-    def __cleanup__(self):
+    def __cleanup__(self) -> None:
         rinterface.embedded.endr(0)
         del(self)
 
-    def __str__(self):
-        version = self['version']
+    def __str__(self) -> str:
         s = [super(R, self).__str__()]
-        s.extend('%s: %s' % (n, val[0])
-                 for n, val in zip(version.names, version))
+        version = self['version']
+        version_k: typing.Tuple[str, ...] = tuple(version.names)  # type: ignore
+        version_v: typing.Tuple[str, ...] = tuple(
+            x[0] for x in version  # type: ignore
+        )
+        for key, val in zip(version_k, version_v):
+            s.extend('%s: %s' % (key, val))
         return os.linesep.join(s)
 
-    def __call__(self, string):
-        p = rinterface.parse(string)
-        res = self.eval(p)
-        return conversion.rpy2py(res)
+    def __call__(self, string: str,
+                 invisible: typing.Optional[bool] = None,
+                 print_r_warnings: typing.Optional[bool] = None) -> object:
+        """Evaluate a string as R code.
+
+        :param string: A string with R code
+        :param invisible: evaluate the R expression handling R's
+          invisibility flag. When `True` expressions meant to return
+          an "invisible" result (for example, `x <- 1`) will return
+          None. The default is `None`, in which case the attribute
+        _invisible is used.
+        :param print_r_warning: When `True` the R deferred warnings
+          are printed using the R callback function. The default is
+          `None`, in which case the attribute _print_r_warning
+          is used.
+        :return: The value returned by R after rpy2 conversion."""
+        r_expr = rinterface.parse(string)
+        if invisible is None:
+            invisible = self._invisible
+        if invisible:
+            res, visible = rinterface.evalr_expr_with_visible(   # type: ignore
+                r_expr
+            )
+            if not visible[0]:  # type: ignore
+                res = None
+        else:
+            res = rinterface.evalr_expr(r_expr)
+        if print_r_warnings is None:
+            print_r_warnings = self._print_r_warnings
+        if print_r_warnings:
+            _print_deferred_warnings()
+        return (None if res is None
+                else conversion.get_conversion().rpy2py(res))
 
 
 r = R()
@@ -457,6 +518,6 @@ rl = language.LangVector.from_string
 
 conversion.set_conversion(default_converter)
 
-globalenv = conversion.converter.rpy2py(_globalenv)
-baseenv = conversion.converter.rpy2py(rinterface.baseenv)
-emptyenv = conversion.converter.rpy2py(rinterface.emptyenv)
+globalenv = conversion.converter_ctx.get().rpy2py(_globalenv)
+baseenv = conversion.converter_ctx.get().rpy2py(rinterface.baseenv)
+emptyenv = conversion.converter_ctx.get().rpy2py(rinterface.emptyenv)

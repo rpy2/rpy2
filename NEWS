@@ -1,3 +1,379 @@
+Release 3.5.14
+==============
+
+Bugs fixed
+----------
+
+- Fix use of named arguments with `ExtractDelegator` (issue #1048).
+
+
+Release 3.5.13
+==============
+
+New features
+------------
+
+- R is setting a number of environment variables in a wrapper script. Those
+  variables were not set by default by rpy2 and this could lead to issues (see issue #1033).
+  The variables are now added to `os.environ`.
+
+Bugs fixed
+----------
+
+- `python -m rpy2.situation LD_LIBRARY_PATH` could incorrectly truncate the value
+  for `LD_LIBRARY_PATH` when the variable `LD_LIBRARY_PATH` is already defined.  
+
+Changes
+-------
+
+- The dependency on :mod:`pytz`, a deprecated package, was
+  removed and replaced by a dependency to :mod:`zoneinfo`.
+  If Python < 3.9 the package :mod:`backports.zoneinfo`
+  is an added dependency.
+
+- The depency on :mod:`tzlocal` does no longer limit it
+  to `<5.0` (issue #1035).
+
+- Remove dependency on :mod:`distutils` in Python's standard library. That package is
+  deprecated and removed in Python 3.12 (see https://peps.python.org/pep-0632/ and
+  issue #1040).
+
+
+Release 3.5.12
+==============
+
+New features
+------------
+
+- :func:`rpy2.rinterface.evalr_expr_with_visible` to evaluate
+  an expression and return the visibility status of the
+  value returned.
+
+- More events in the intialization and termination of an
+  embedded R logged by :mod:`rpy2.rinterface_lib.embedded.logger`
+  at `INFO` and `DEBUG` levels.
+
+- :meth:`rpy2.robjects.R.__call__` has 2 named arguments "visible" and
+  "print_r_warnings" to handle R "invisible" results and print R warnings
+  at the end of the evaluation. Invisible results happen when doing
+  `rpy2.robjects.r("x <- 1")`. R will return the value of x "invisibly".
+  The default are `invisible is True` and `print_r_warnings is True`.
+
+
+Bugs fixed
+----------
+
+- "R magic" cells are now show R warnings at the end of the
+  evaluation of an R cell (#issue 226).
+
+Changes
+-------
+
+- Evaluating a string as R code using :meth:`rpy2.robjects.R.__call__`
+  (e.g., `rpy2.robjects.r("1+2")`) now shows R warnings at the end
+  of the evaluation by default.
+
+- :meth:`rpy2.robjects.R.__call__` returns the results invisibly by default
+  (see section "New features" for this release).
+
+
+Release 3.5.11
+==============
+
+New features
+------------
+
+- :class:`pandas.Categorical` objects are now converted to R
+  `factor` objects.
+
+Bugs fixed
+----------
+
+- :mod:`pandas` 2.0 makes API-breaking changes that made
+  conversion fail (issue #1013).
+  
+- The default converter for R magic was dropping R factors
+  to :mod:`numpy` arrays of integers rather than convert them
+  to pandas :class:`Category` (issue #1010).
+
+Changes
+-------
+
+- The fix for issue #1010 (see above) changes the numpy conversion
+  for R factors. It returns an arrays with the level factors rather
+  than the integer codes for the levels.
+
+- :func:`rpy2.rojects.pandas2ri.py2rpy_categoryseries` raises a
+  :class:`DeprecationWarning`.
+
+
+Release 3.5.10
+==============
+
+New features
+------------
+
+- :mod:`rpy2.situation` reports cffi interface type information.
+
+- The ipython/jupyter R magic can now have `jpeg` as a default graphics format
+  for static figures in addition to `png` and `svg`.
+
+Bugs fixed
+----------
+
+- Building the path to the R shared library was incorrectly
+  using the output of `R CMD config LIBnn` (issue #982).
+
+- R started raising warnings when calling `formals` on `BUILTINSXP` R objects.
+  Internal functions in :mod:`rpy.robjects.functions` calling `formals` no
+  longer propagate the warnings.
+
+
+Release 3.5.9
+=============
+
+New features
+------------
+
+- Type hints in :mod:`rpy2` are now checked with `mypy`.
+
+Bugs fixed
+----------
+
+- Building the path to the R shared library was incorrectly
+  using the output of `R CMD config LIBnn` (issue #982).
+
+- R started raising warnings when calling `formals` on `SPECIALSXP` R objects.
+  Internal functions :mod:`rpy.robjects.functions` calling `formals` no longer
+  propagate the warnings.
+  
+- The :mod:`numpy` converter was not turning `NA_character_` into
+  `None` (issue #979).
+
+- :mod:`rpy2.situation` included an eager `import rpy2` that could cause a version
+   mismatch error with some build/install toolchain (issue #984). The import is now
+   lazy/delayed.
+
+- Installation targets `pandas`, `all`, and `test` now specify `pandas>=1.2.0`
+  (which should limit frequencies of issues like #998).
+
+Changes
+-------
+
+- :class:`rpy2.robjects.conversion.Converter` objects are no longer functioning context
+  managers. An exception is now raised when trying to use it that way.
+  The feature was introduced with rpy2-3.5.7 but it does not guarantee the locality
+  of a context manager and can result in permanently changed conversion rules.
+  The method :meth:`rpy2.robjects.conversion.Converter.context` should be used instead.
+
+
+Release 3.5.8
+=============
+
+New features
+------------
+
+- Default value for the interactivity status of the embedded R
+  as initialization is now a private variable
+  `_DEFAULT_R_INTERACTIVE` in :mod:`rpy2.rinterface_lib.embedded`.
+
+Bugs fixed
+----------
+
+- :func:`rpy2.rinterface.initr_checkenv` (aliased to
+  :func:`rpy2.rinterface.initr`) did not include
+  initialization parameters for `interactive`, `_want_setcallbacks`,
+  and `_c_stack_limit` (issue #976).
+  
+- The numpy converter was not listing R objects of type `CHARSXP` as
+  vectors. This make R `NA_character_` values wrapped in `rpy2` Python
+  objects to be passed as-is (issue #983).
+
+
+Release 3.5.7
+=============
+
+New features
+------------
+
+- :class:`rpy2.robjects.conversion.Converter` objects are now also context
+  managers. This makes the use of :func:`rpy2.robjects.conversion.localconverter`
+  unnecessary as a converter can now be used directly with a Python `with`
+  statement. The documentation was updated accordingly.
+
+Bugs fixed
+----------
+
+- Building the C-extension could fail when the C compiler is not
+  C99-compatible or requires to be specified C99 compatibility
+  (issue #963).
+
+- With the "R magic", converters in a local namespace were inadvertently
+  skipped (the local namespace was not searched).
+
+- Calling :func:`rpy2.rinterface.rternalize` before the embedded R is
+  initialized was ending with a segfault. It is now raising an
+  :class:`rpy2.rinterface_lib/embedded/RNotReady` (issue #971).
+
+Changes
+-------
+
+- The default for the :class:`contextvars.ContextVar` holding
+  conversion rules (:obj:`rpy2.robjects.conversion.converter`)
+  is now a dummy converter raising errors about missing
+  conversion rules. This behavior helps with troubleshooting
+  Python code using multithreading without fetching the context
+  (see issue #965).
+
+- A warning is now issued when trying to convert a `DataFrame` with
+  duplicate indexes (issue #811).
+
+
+Release 3.5.6
+=============
+
+Bugs fixed
+----------
+
+- :class:`rpy2.rlike.container.OrdDict` objects were triggering an
+  error when unpickled (PR #955).
+
+- Function signature mapping not longer assumes that all default
+  values are R vectors mapped to a `Vector` instance (PR #954).
+
+
+Release 3.5.5
+=============
+
+New features
+------------
+  
+- For ipython and Jupyter notebooks, R "magics" accepting optional input arguments
+  (`-i` or `--input`) can now be of form `<python-name>` or
+  `<r-name>=<python-name>`. The former is the way is has been working so far:
+  the R object is given the name of the Python object. The latter allows to
+  specify the name under which the input object will be known to R. In addition
+  to that the python name can optionally be a path, that is a name nested in a
+  sequence of namespaces. For example, `-i module.varname`. The magics
+  concerned are `%R`, `%%R`, and `%Rpush` (issues #934 and #935).
+
+- For ipython and Jupyter notebooks, R "magics" accepting an optional conversion
+  argument (`-c/--converter`) now also accepts names that are a path in Python,
+  that is a name nested in a sequence of namespaces. For example,
+  `-c rpy2.robjects.default_converter` (issue #934).
+
+- The "magic" `%Rpush` accepts an optional argument `-c/--converter` that is
+  similar in nature to the argument of the same name in `%R` and `%%R`.
+
+Bugs fixed
+----------
+
+- :class:`rpy2.rlike.container.TaggedList` objects were triggering an error when unpickled (issue #947).
+
+- Converting :class:`pandas.Series` of type `"object"` with a fallback
+  to R strings no longer fails with an error (issue #916).
+
+Changes
+-------
+
+- :meth:`rpy2.robjects.help.Page.iteritems` is deprecated. Use the method `items()` instead.
+
+- Calling :func:`str` on rpy2 objects that are proxies of R objects is now
+  using R's `print()` whenever R's `show()` results in an error (issue #908).
+
+
+Release 3.5.4
+=============
+
+New features
+------------
+
+- :func:`rpy2.rinterface.rternalize` can optionally mirror more accurately in R
+  the function signature defined in Python (issue #905).
+
+Bugs fixed
+----------
+
+- Better handling of timezone in :class:`rpy2.robjects.vectors.POSIXct`
+  (issue #917).
+
+- :mod:`pandas` conversion is now correctly handling R data frames with duplicated
+  column names. They were dropped tbefore that (issue #925).
+
+- :mod:`pandas` conversion is now correctly handling R data frames with nested
+  columns (issue #930).
+
+- Importing :mod:`rpy2.ipython.rmagic` while :mod:`pandas` is not installed resulted
+  in an error.
+
+
+Changes
+-------
+
+- :func:`rpy2.robjects.methods.getclassdef` is now explicitly
+  naming the optional argument with the R package name when calling
+  the underlying R function.
+
+- The `%R` line magic for ipython/jupyter was trying to substitute anything
+  after a dolar (`$`) sign, which caused issue since this character is
+  used to access by name elements in R containers. No substitution
+  is happening anymore (issue #922).
+
+
+Release 3.5.3
+=============
+
+Bugs fixed
+----------
+
+- Pandas converter no longer fails with arrays of `dtype`
+  :class:`pandas.BoolDtype` or :class:`pandas.Float64Dtype`.(issue #880).
+
+- Numpy and pandas conversion could fail an R object is a low-level wrapper
+  for an R list (issue #890).
+
+- Fixed detection of the R install path on Windows (issues #875 and #885).
+
+- Fixed error with dynamic docstring generation for functions
+  without arguments (issue #903).
+
+- Fixed error with dynamic docstring generation when R functions
+  are missing the section 'Details' (isue #902).
+
+
+Release 3.5.2
+=============
+
+New features
+------------
+
+- The string representation for :class:`rpy2.robjects.conversion.Converter`
+  objects lists classes the converter will dispatch on.
+
+Bugs fixed
+----------
+
+- :meth:`rpy2.robjects.vectors.FactorVector.iter_labels` was failing if
+  any element is NA (issue #879).
+
+- The definition of converters was not thread-safe. The fix deprecates
+  the use of :obj:`rpy2.robjects.conversion.converter` and replaces it
+  with :func:`rpy2.robjects.conversion.get_conversion`.
+
+
+Release 3.5.1
+=============
+
+Bugs fixed
+----------
+
+- Fix `__setitem__` on R list when the value is a simple Python object with
+  a default low-level conversion (issue #864).
+
+- The default converter for the rmagic could fail with a
+  :class:`RecursionError` (issue #866).
+
+
 Release 3.5.0
 =============
 
@@ -58,10 +434,14 @@ Changes
   use of the context variable should address issues when using nested
   :meth:`rpy2.rinterface.local_context`.
 
-
 - Added recommendation to try :meth:`pandas.DataFrame.infer_objects` when
   the converion to R data frames fails because of mixed types (issue #794).
 
+- No longer implicit dependency on :mod:`numpy` for memory views. The Python
+  API has an unresolved issue around handling FORTRAN-ordered arrays without
+  going to C-level (https://bugs.python.org/issue34778), and C-extension
+  as added to rpy2 to cut the dependency on numpy for just this (PR #856).
+   
 Bugs fixed
 ----------
 

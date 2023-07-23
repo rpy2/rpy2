@@ -31,30 +31,43 @@ def test_call_with_sexp():
     assert s[0] == 6
 
 
-def test_formals():
-    ri_f = robjects.r('function(x, y) TRUE')
+@pytest.mark.parametrize(
+    'rcode,funcnames',
+    (('function(x, y) TRUE', ('x', 'y')),
+     ('.C', None),
+     ('`if`', None))
+)
+def test_formals(rcode, funcnames):
+    ri_f = robjects.r(rcode)
     res = ri_f.formals()
     #FIXME: no need for as.list when paired list are handled
-    res = robjects.r['as.list'](res)
-    assert len(res) == 2
-    n = res.names
-    assert n[0] == 'x'
-    assert n[1] == 'y'
+    if funcnames:
+        res = robjects.r['as.list'](res)
+        assert len(res) == len(funcnames)
+        assert funcnames == tuple(res.names)
+    else:
+        res is None
 
 
-def test_function():
-    r_func = robjects.functions.Function(robjects.r('function(x, y) TRUE'))
+@pytest.mark.parametrize('rcode',
+                         ('function(x, y) TRUE', 'function() TRUE'))
+def test_function(rcode):
+    r_func = robjects.functions.Function(robjects.r(rcode))
     assert isinstance(r_func.__doc__, str)
 
 
-def test_signaturestranslatedfunction():
-    r_func = robjects.r('function(x, y) TRUE')
+@pytest.mark.parametrize('rcode',
+                         ('function(x, y) TRUE', 'function() TRUE'))
+def test_signaturestranslatedfunction(rcode):
+    r_func = robjects.r(rcode)
     stf = robjects.functions.SignatureTranslatedFunction(r_func)
     assert isinstance(r_func.__doc__, str)
 
 
-def test_documentedstfunction():
-    dstf = robjects.functions.DocumentedSTFunction(robjects.baseenv['sum'],
+@pytest.mark.parametrize('name',
+                         ('sum', 'Sys.Date', 'append'))
+def test_documentedstfunction(name):
+    dstf = robjects.functions.DocumentedSTFunction(robjects.baseenv[name],
                                                    packagename='base')
     assert isinstance(dstf.__doc__, str)
 

@@ -2,6 +2,7 @@
 # (Python if ABI, C if API)
 import abc
 import enum
+import inspect
 import logging
 from typing import Tuple
 import typing
@@ -69,7 +70,7 @@ def _release(cdata: FFI.CData) -> None:
     addr = int(ffi.cast('uintptr_t', cdata))
     count = _R_PRESERVED[addr] - 1
     if count == 0:
-        del(_R_PRESERVED[addr])
+        del _R_PRESERVED[addr]
         openrlib.rlib.R_ReleaseObject(cdata)
     else:
         _R_PRESERVED[addr] = count
@@ -164,7 +165,7 @@ class SexpCapsuleWithPassenger(SexpCapsule):
         addr = get_rid(self._cdata)
         _release(self._cdata)
         if addr not in _PY_PASSENGER:
-            del(_PY_PASSENGER[addr])
+            del _PY_PASSENGER[addr]
 
 
 class SupportsSEXP(object, metaclass=abc.ABCMeta):
@@ -501,7 +502,6 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
     # exceptions as logs.
 
     rlib = openrlib.rlib
-
     try:
         rargs = rlib.CDR(rargs)
         cdata = rlib.CAR(rargs)
@@ -512,11 +512,42 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
             return rlib.R_NilValue
         handle = rlib.R_ExternalPtrAddr(cdata)
         func = ffi.from_handle(handle)
-
         pyargs = []
         pykwargs = {}
+        # R and Python function definitions differ. In R all arguments
+        # are optionally named, that is like "positional or keyword" arguments
+        # in Python. "positional or keyword" happens to be default for
+        # arguments without a default *unless* the ellipsis `*args` is used,
+        # in which case all arguments prior to it become positional-only.
+        # We will want to skip naming positional-only arguments although R
+        # might.
+        # TODO: Extraction information by inspecting the signature of the
+        # Python function will be done for each call. This is a performance burden.
+        # Is there a way to do it at "rternalization" time and access the result at
+        # call time?
+        # TODO: An other optimization would be to have a streamlined path for
+        # function that only have POSITIONAL_ONLY parameters (or may be
+        # POSITIONAL_ONLY and/or KEYWORD_ONLY).
+        pyfunc_params_iter = inspect.signature(func).parameters.items()
+        py_posonly = []
+        py_has_ellipsis = False
+        py_positionalorkw = []
+        for paramname, paramval in pyfunc_params_iter:
+            if paramval.kind is inspect.Parameter.POSITIONAL_ONLY:
+                py_posonly.append(paramname)
+            elif (paramval.kind is inspect.Parameter.VAR_POSITIONAL
+                  or
+                  paramval.kind is inspect.Parameter.VAR_KEYWORD):
+                py_has_ellipsis = True
+            elif paramval.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD:
+                py_positionalorkw.append(paramname)
+            else:
+                # KEYWORD_ONLY from now on.
+                break
+        rarg_i = -1
         rargs = rlib.CDR(rargs)
         while rargs != rlib.R_NilValue:
+            rarg_i += 1
             cdata = rlib.CAR(rargs)
             if rlib.Rf_isNull(rlib.TAG(rargs)):
                 # Unnamed argument
@@ -528,7 +559,43 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
                     rlib.R_CHAR(rname),
                     conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(rname)]
                 )
-                pykwargs[name] = conversion._cdata_to_rinterface(cdata)
+                if rarg_i < len(py_posonly):
+                    if py_posonly[rarg_i] == name:
+                        # This is an unnamed argument and names are matching.
+                        pyargs.append(conversion._cdata_to_rinterface(cdata))
+                    else:
+                        # The R call is considering the parameter as a named one
+                        # and the position is not conserved. This is can lead
+                        # to unnoticed issues, and difficult to debug ones when
+                        # they are. It is better to report the issue here.
+                        raise RuntimeError(
+                            'Parameter name mismatch. R call considering the argument '
+                            f'"{py_posonly[rarg_i]}" as a position-independent '
+                            'keyword argument while it is positional-only '
+                            'in the rternalized Python function.'
+                        )
+                elif (
+                        py_has_ellipsis
+                        and
+                        (rarg_i < (len(py_posonly) + len(py_positionalorkw)))
+                ):
+                    if py_positionalorkw[rarg_i - len(py_posonly)] == name:
+                        # This is considered an unnamed argument and names are matching.
+                        pyargs.append(conversion._cdata_to_rinterface(cdata))
+                    else:
+                        # The R call is considering the parameter as a named one
+                        # and the position is not conserved. This is can lead
+                        # to unnoticed issues, and difficult to debug ones when
+                        # they are. It is better to report the issue here.
+                        raise RuntimeError(
+                            'Parameter name mismatch. R call considering the argument '
+                            f'"{py_posonly[rarg_i]}" as a position-independent '
+                            'keyword argument while it is positional-or-keyword '
+                            'followed by an positional ellipsis `*args` in the '
+                            'rternalized Python function.'
+                        )
+                else:
+                    pykwargs[name] = conversion._cdata_to_rinterface(cdata)
             rargs = rlib.CDR(rargs)
 
         res = func(*pyargs, **pykwargs)
@@ -550,7 +617,7 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
         else:
             return conversion._python_to_cdata(res)
     except Exception as e:
-        logger.error('%s: %s' % (type(e), e))
+        logger.error('%s: rternalized %s' % (type(e).__name__, e))
         return rlib.R_NilValue
 
 
@@ -590,7 +657,8 @@ class PARSING_STATUS(enum.Enum):
 
 class RParsingError(Exception):
 
-    def __init__(self, msg: str, status: PARSING_STATUS = None):
+    def __init__(self, msg: str,
+                 status: typing.Optional[PARSING_STATUS] = None):
         full_msg = (
             '{msg} - {status}'
             .format(msg=msg, status=status)

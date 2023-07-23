@@ -73,14 +73,25 @@ Conversion
 
 The high level interface between Python in :mod:`rpy2` uses a conversion system
 each time an R object is represented in Python, and each time a Python objects
-is passed to R (for example as a parameter to an R function).
+is passed to R (for example as a parameter to an R function). Those are the
+conversion rules you'll mostly experience when using the API in :mod:`rpy2.robjects`
+or in the "R magic" used from `ipython` or `jupyter`.
 
-This system is fact designed to manage the conversion between the low level (`rinterface`-level)
+.. note::
+
+   The set of active conversion rules can be customized, including within
+   a context (see `Local conversion rules`_). Functions
+   in the :mod:`rpy2.robjects` will use the active rules, but if
+   wanting the object with currently cactive rules :func:`rpy2.robjects.conversion.get_conversion`
+   must be used to fetch them.
+
+
+This system is designed to manage the conversion between the low level (`rinterface`-level)
 interface and an arbitrary Python-level representation those objects.
 `py2rpy` will indicate a conversion from Python-level to `rinterface`-level,
 and `rpy2py` from `rinterface`-level to Python-level.
 
-If one wanted to turn all Python :class:`tuple`
+If one wanted to turn all Python :class:`tuple` objects
 into R `character` vectors (1D arrays of strings) before passing them to R the custom
 conversion function would make an `rinterface`-level R objects from the Python object.
 An implementation for this `py2rpy` function would look like:
@@ -211,11 +222,14 @@ can be added to a converter with:
    clsmap = myconverter._rpy2py_nc_name[rinterface.ListSexpVector]
    clsmap.update({'lm': Lm})
 
+
+.. _Local conversion rules:
+
 Local conversion rules
 ^^^^^^^^^^^^^^^^^^^^^^
 
 The conversion rules can be customized globally (See section `Customizing the conversion`)
-or through the use of local converters as context managers.
+or locally in a Python `with` block.
 
 .. note::
 
@@ -246,8 +260,7 @@ default conversion scheme:
 .. code-block:: python
 
    from rpy2.robjects import default_converter
-   from rpy2.robjects.conversion import Converter, localconverter
-   with localconverter(conversion_rules) as cv:
+   with conversion_rules.context():
        res = base.paste(x, collapse="-")
 
 .. note::
@@ -261,13 +274,44 @@ default conversion scheme:
    .. code-block:: python
 
       from rpy2.robjects import default_converter
-      from rpy2.robjects.conversion import localconverter
 
       def my_function(obj):
-          with localconverter(default_converter) as cv:
-              # block of code mixing Python code and calls to R functions
-	      # interacting with the objects returned by R in the Python code
+          with default_converter.context():
+              # Block of code mixing Python code and calls to R functions
+	      # interacting with the objects returned by R in the Python code.
+	      # Within this block the conversion rules are the ones of
+	      # `default_converter`.
 	      pass
+
+   Code in the :mod:`rpy2.robjects` will use whatever the active conversion rules are, but
+   there are situations where the set of active conversion rules must be accessed. Whenever
+   the case the conversion rules from the context manager can be named.
+	  
+   .. code-block:: python
+
+      from rpy2.robjects import default_converter
+      from rpy2.robjects.conversion import get_conversion
+
+      def my_function(obj):
+          with default_converter.context() as local_converter:
+	      # `local_converter` is a rpy2.robjects.conversion.Converter
+	      # object.
+	      pass	  
+
+    .. note::
+
+       The converter returned by :meth:`rpy2.robjects.conversion.Converter.context` is
+       a copy of the rules for the context.
+
+       ```python
+        with default_converter.context() as local_converter:
+	    # Conversion objects are not the same.
+	    assert local_converter != default_converter
+	    assert cv.py2rpy.registry != default_converter.py2rpy
+	    assert cv.rpy2py.registry != default_converter.rpy2py
+	    # The convertion rules are identical though.
+	    assert dict(cv.py2rpy.registry) == dict(default_converter.py2rpy.registry)
+	    assert dict(cv.rpy2py.registry) == dict(default_converter.rpy2py.registry)
 
 
 Customizing the conversion

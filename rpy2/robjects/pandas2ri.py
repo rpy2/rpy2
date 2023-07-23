@@ -4,10 +4,11 @@ between R objects handled by rpy2 and pandas objects."""
 import rpy2.robjects.conversion as conversion
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import na_values
-from rpy2.rinterface import (IntSexpVector,
-                             Sexp,
-                             SexpVector,
-                             StrSexpVector)
+from rpy2.rinterface import IntSexpVector
+from rpy2.rinterface import ListSexpVector
+from rpy2.rinterface import SexpVector
+from rpy2.rinterface import StrSexpVector
+
 import datetime
 import functools
 import math
@@ -23,6 +24,7 @@ from rpy2.robjects.vectors import (BoolVector,
                                    DataFrame,
                                    DateVector,
                                    FactorVector,
+                                   FloatVector,
                                    FloatSexpVector,
                                    StrVector,
                                    IntVector,
@@ -50,16 +52,23 @@ integer_array_types = ('Int8', 'Int16', 'Int32', 'Int64', 'UInt8',
 
 @py2rpy.register(PandasDataFrame)
 def py2rpy_pandasdataframe(obj):
+    if obj.index.duplicated().any():
+        warnings.warn('DataFrame contains duplicated elements in the index, '
+                      'which will lead to loss of the row names in the '
+                      'resulting data.frame')
+
     od = OrderedDict()
-    for name, values in obj.iteritems():
+    for name, values in obj.items():
         try:
-            od[name] = conversion.py2rpy(values)
+            od[name] = conversion.converter_ctx.get().py2rpy(values)
         except Exception as e:
             warnings.warn('Error while trying to convert '
                           'the column "%s". Fall back to string conversion. '
                           'The error is: %s'
                           % (name, str(e)))
-            od[name] = StrVector(values)
+            od[name] = conversion.converter_ctx.get().py2rpy(
+                values.astype('string')
+            )
 
     return DataFrame(od)
 
@@ -77,35 +86,48 @@ def py2rpy_pandasindex(obj):
         return numpy2ri.numpy2rpy(obj)
 
 
-def py2rpy_categoryseries(obj):
-    for c in obj.cat.categories:
+@py2rpy.register(pandas.Categorical)
+def py2rpy_categorical(obj):
+    for c in obj.categories:
         if not isinstance(c, str):
             raise ValueError('Converting pandas "Category" series to '
                              'R factor is only possible when categories '
                              'are strings.')
     res = IntSexpVector(list(rinterface.NA_Integer if x == -1 else x+1
-                             for x in obj.cat.codes))
-    res.do_slot_assign('levels', StrSexpVector(obj.cat.categories))
-    if obj.cat.ordered:
+                             for x in obj.codes))
+    res.do_slot_assign('levels', StrSexpVector(obj.categories))
+    if obj.ordered:
         res.rclass = StrSexpVector(('ordered', 'factor'))
     else:
         res.rclass = StrSexpVector(('factor',))
     return res
 
 
-def _str_populate_r_vector(iterable, r_vector,
-                           set_elt,
-                           cast_value):
-    for i, v in enumerate(iterable):
-        if (
-                v is None
-                or
-                v is pandas.NA
-                or
-                (isinstance(v, float) and math.isnan(v))
-        ):
-            v = na_values.NA_Character
-        set_elt(r_vector, i, cast_value(v))
+def py2rpy_categoryseries(obj):
+    warnings.warn('Use py2rpy_categorical(obj.cat).', DeprecationWarning)
+    return py2rpy_categorical(obj.cat)
+
+
+def _populate_r_vector_with_na(na_value):
+    def f(iterable, r_vector,
+          set_elt,
+          cast_value):
+        for i, v in enumerate(iterable):
+            if (
+                    v is None
+                    or
+                    v is pandas.NA
+                    or
+                    (isinstance(v, float) and math.isnan(v))
+            ):
+                v = na_value
+            set_elt(r_vector, i, cast_value(v))
+    return f
+
+
+_str_populate_r_vector = _populate_r_vector_with_na(na_values.NA_Character)
+_bool_populate_r_vector = _populate_r_vector_with_na(na_values.NA_Logical)
+_float_populate_r_vector = _populate_r_vector_with_na(na_values.NA_Real)
 
 
 def _int_populate_r_vector(iterable, r_vector,
@@ -123,11 +145,19 @@ _PANDASTYPE2RPY2 = {
         IntVector.from_iterable,
         populate_func=_int_populate_r_vector
     ),
-    bool: BoolVector,
+    pandas.BooleanDtype: functools.partial(
+        BoolVector.from_iterable,
+        populate_func=_bool_populate_r_vector
+    ),
     None: BoolVector,
+    bool: BoolVector,
     str: functools.partial(
         StrVector.from_iterable,
         populate_func=_str_populate_r_vector
+    ),
+    pandas.Float64Dtype: functools.partial(
+        FloatVector.from_iterable,
+        populate_func=_float_populate_r_vector
     ),
     bytes: (numpy2ri.converter.py2rpy.registry[
         numpy.ndarray
@@ -142,11 +172,17 @@ def py2rpy_pandasseries(obj):
                       'to R vector of strings.' % obj.name)
         res = StrVector(obj)
     elif obj.dtype.name == 'category':
-        res = py2rpy_categoryseries(obj)
+        res = py2rpy_categorical(obj.cat)
         res = FactorVector(res)
     elif is_datetime64_any_dtype(obj.dtype):
         # time series
-        tzname = obj.dt.tz.zone if obj.dt.tz else ''
+        if obj.dt.tz:
+            if obj.dt.tz is datetime.timezone.utc:
+                tzname = 'UTC'
+            else:
+                tzname = obj.dt.tz.zone
+        else:
+            tzname = ''
         d = [IntVector([x.year for x in obj]),
              IntVector([x.month for x in obj]),
              IntVector([x.day for x in obj]),
@@ -157,7 +193,7 @@ def py2rpy_pandasseries(obj):
         # TODO: can the POSIXct be created from the POSIXct constructor ?
         # (is '<M8[ns]' mapping to Python datetime.datetime ?)
         res = POSIXct(res)
-    elif obj.dtype.type == str:
+    elif obj.dtype.type is str:
         res = _PANDASTYPE2RPY2[str](obj)
     elif obj.dtype.name in integer_array_types:
         res = _PANDASTYPE2RPY2[int](obj)
@@ -185,6 +221,8 @@ def py2rpy_pandasseries(obj):
                     (homogeneous_type, type(x)))
         # TODO: Could this be merged with obj.type.name == 'O' case above ?
         res = _PANDASTYPE2RPY2[homogeneous_type](obj)
+    elif type(obj.dtype) in (pandas.Float64Dtype, pandas.BooleanDtype):
+        res = _PANDASTYPE2RPY2[type(obj.dtype)](obj)
     else:
         # converted as a numpy array
         func = numpy2ri.converter.py2rpy.registry[numpy.ndarray]
@@ -202,7 +240,8 @@ def py2rpy_pandasseries(obj):
                            StrVector(tuple(str(x) for x in obj.index)))
     else:
         res.do_slot_assign('dimnames',
-                           SexpVector(conversion.py2rpy(obj.index)))
+                           SexpVector(conversion.converter_ctx
+                                      .get().py2rpy(obj.index)))
     return res
 
 
@@ -226,11 +265,77 @@ def rpy2py_posixct(obj):
                               errors='coerce')
 
 
+def _records_to_columns(obj):
+    columns = OrderedDict()
+    obj_ri = ListSexpVector(obj)
+    # First pass to get the column names.
+    for i, record in enumerate(obj_ri):
+        checknames = set()
+        for name in record.names:
+            if name in checknames:
+                raise ValueError(
+                    f'The record {i} has "{name}" duplicated.'
+                )
+            checknames.add(name)
+            if name not in columns:
+                columns[name] = []
+    columnnames = set(columns.keys())
+    # Second pass to fill the columns.
+    for i, record in enumerate(obj_ri):
+        checknames = set()
+        for name, value in zip(record.names, record):
+            checknames.add(name)
+            if hasattr(value, '__len__'):
+                if len(value) != 1:
+                    raise ValueError(
+                        f'The value for "{name}" record {i} is not a scalar. '
+                        f'It has {len(value)} elements.'
+                    )
+                else:
+                    value = value[0]
+            columns[name].append(value)
+        # Set to NA/None missing column values in the record.
+        for name in columnnames-checknames:
+            columns[name].append(None)
+    return columns
+
+
+def _flatten_dataframe(obj, colnames_lst):
+    """Make each element in a list of columns or group of
+    columns iterable.
+
+    This is an helper function to make the "flattening" of columns
+    in an R data frame easier as each item in the top-level iterable
+    can be a column or list or records (themselves each with an
+    arbitrary number of columns).
+
+    Args:
+    - colnames_list: an *empty* list that will be populated with
+    column names.
+    """
+    for i, n in enumerate(obj.colnames):
+        col = obj[i]
+        if isinstance(col, ListSexpVector):
+            _ = _records_to_columns(col)
+            colnames_lst.extend((n, subn) for subn in _.keys())
+            for subcol in _.values():
+                yield subcol
+        else:
+            colnames_lst.append(n)
+            yield col
+
+
 @rpy2py.register(DataFrame)
 def rpy2py_dataframe(obj):
-    items = OrderedDict((k, rpy2py(v) if isinstance(v, Sexp) else v)
-                        for k, v in obj.items())
-    res = PandasDataFrame.from_dict(items)
+    rpy2py = conversion.get_conversion().rpy2py
+    colnames_lst = []
+    od = OrderedDict(
+        (i, rpy2py(col) if isinstance(col, rinterface.SexpVector) else col)
+        for i, col in enumerate(_flatten_dataframe(obj, colnames_lst))
+    )
+
+    res = pandas.DataFrame.from_dict(od)
+    res.columns = tuple('.'.join(_) if isinstance(_, list) else _ for _ in colnames_lst)
     res.index = obj.rownames
     return res
 
@@ -252,7 +357,7 @@ converter._rpy2py_nc_map.update(
             {'factor': _to_pandas_factor}
         ),
         rinterface.ListSexpVector: conversion.NameClassMap(
-            numpy2ri.rpy2py,
+            numpy2ri.rpy2py_list,
             {'data.frame': lambda obj: rpy2py(DataFrame(obj))}
         )
     }
@@ -271,10 +376,10 @@ def activate():
 
     original_converter = conversion.Converter(
         'snapshot before pandas conversion',
-        template=conversion.converter)
+        template=conversion.get_conversion())
     numpy2ri.activate()
     new_converter = conversion.Converter('snapshot before pandas conversion',
-                                         template=conversion.converter)
+                                         template=conversion.get_conversion())
     numpy2ri.deactivate()
 
     for k, v in py2rpy.registry.items():

@@ -13,63 +13,66 @@ on:
     tags:
      - RELEASE_3_*_*
 
+env:
+  default_os: "ubuntu-latest"
+  default_r: "release"
+  default_python: "3.10"
 jobs:
   deploy:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10"]
+        python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
         r-version: [release]
         os: [ubuntu-latest, macOS-latest, windows-2019]
         exclude:
         - python-version: 3.8
-          os: windows-2019 
+          os: windows-2019
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Set up R ${{ matrix.r-version }}
-      uses: r-lib/actions/setup-r@master
+      uses: r-lib/actions/setup-r@v2
       with:
         r-version: ${{ matrix.r-version }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install setuptools wheel twine
+        python -m pip install setuptools build
     - name: Build wheel
       run: |
-        python setup.py bdist_wheel
+        python -m build -o dist/ --wheel .
     - name: Build sdist
-      if: (matrix.r-version == '4.0' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8')
+      if: (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
       run: |
-        python setup.py sdist
+        python -m build -o dist/ --sdist .
     - id: getfilename_wheel
       run: |
-        echo "::set-output name=file::$(basename -a $(ls dist/*.whl))"
+        echo "file=$(basename -a $(ls dist/*.whl))" >> $GITHUB_OUTPUT
     - id: getfilename_targz
-      if: (matrix.r-version == '4.0' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8')
+      if: (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
       run: |
-        echo "::set-output name=file::$(basename -a $(ls dist/*.tar.gz))"
+        echo "file=$(basename -a $(ls dist/*.tar.gz))" >> $GITHUB_OUTPUT
     - name: Create package for master
-      uses: actions/upload-artifact@v1
-      if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == '4.0'
+      uses: actions/upload-artifact@v3
+      if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == env.default_r
       with:
-          name: ${{ steps.getfilename_wheel.outputs.file }}
-          path: dist/${{ steps.getfilename_wheel.outputs.file }}
+          name: ${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.r-version }}
+          path: dist/*.whl
     - name: Create source package for master
-      uses: actions/upload-artifact@v1
-      if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == '4.0' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8')
+      uses: actions/upload-artifact@v3
+      if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
       with:
-          name: ${{ steps.getfilename_targz.outputs.file }}
-          path: dist/${{ steps.getfilename_targz.outputs.file }}
+          name: source-distribution
+          path: dist/*.tar.gz
     - name: Publish
       if: github.event_name == 'release'
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        echo 'Uploading to pypi'
-        echo $(ls dist/*)
-        # twine upload dist/*
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        packages_dir: dist/

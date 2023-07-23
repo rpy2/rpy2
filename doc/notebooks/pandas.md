@@ -19,8 +19,6 @@ import pandas as pd
 import rpy2.robjects as ro
 from rpy2.robjects.packages import importr 
 from rpy2.robjects import pandas2ri
-
-from rpy2.robjects.conversion import localconverter
 ```
 
 ## From `pandas` to `R`
@@ -37,8 +35,8 @@ pd_df
 R data frame converted from a `pandas` data frame:
 
 ```python
-with localconverter(ro.default_converter + pandas2ri.converter):
-  r_from_pd_df = ro.conversion.py2rpy(pd_df)
+with (ro.default_converter + pandas2ri.converter).context():
+  r_from_pd_df = ro.conversion.get_conversion().py2rpy(pd_df)
 
 r_from_pd_df
 ```
@@ -49,7 +47,7 @@ For example, when calling the R function `base::summary`:
 ```python
 base = importr('base')
 
-with localconverter(ro.default_converter + pandas2ri.converter):
+with (ro.default_converter + pandas2ri.converter).context():
   df_summary = base.summary(pd_df)
 print(df_summary)
 ```
@@ -80,8 +78,8 @@ r_df
 It can be converted to a pandas data frame using the same converter:
 
 ```python
-with localconverter(ro.default_converter + pandas2ri.converter):
-  pd_from_r_df = ro.conversion.rpy2py(r_df)
+with (ro.default_converter + pandas2ri.converter).context():
+  pd_from_r_df = ro.conversion.get_conversion().rpy2py(r_df)
 
 pd_from_r_df
 ```
@@ -97,14 +95,15 @@ pd_df
 ```
 
 ```python
-with localconverter(ro.default_converter + pandas2ri.converter):
+with (ro.default_converter + pandas2ri.converter).context():
   r_from_pd_df = ro.conversion.py2rpy(pd_df)
 
 r_from_pd_df
 ```
 
-The timezone used for conversion is the system's default timezone unless `pandas2ri.default_timezone`
-is specified... or unless the time zone is specified in the original time object:
+The timezone used for conversion is the system's default timezone unless
+`rpy2.robjects.vectors.default_timezone` is specified...
+or unless the time zone is specified in the original time object:
 
 ```python
 pd_tz_df = pd.DataFrame({
@@ -112,7 +111,7 @@ pd_tz_df = pd.DataFrame({
                                tz='UTC')
     })
     
-with localconverter(ro.default_converter + pandas2ri.converter):
+with (ro.default_converter + pandas2ri.converter).context():
   r_from_pd_tz_df = ro.conversion.py2rpy(pd_tz_df)
 
 r_from_pd_tz_df
