@@ -47,8 +47,8 @@ jobs:
       run: |
         if [ ${{ matrix.os }} == 'windows-2019' ]; then
           COMPILER='--config-setting compiler=mingw32'
-	else
-	  COMPILER=''
+        else
+          COMPILER=''
         python -m build -o dist/ --wheel ${OPTIONS} .
     - name: Build sdist
       if: (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
