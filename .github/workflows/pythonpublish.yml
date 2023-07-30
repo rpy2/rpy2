@@ -49,6 +49,7 @@ jobs:
           COMPILER='--config-setting compiler=mingw32'
         else
           COMPILER=''
+        fi
         python -m build -o dist/ --wheel ${OPTIONS} .
     - name: Build sdist
       if: (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
