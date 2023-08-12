@@ -747,11 +747,11 @@ class ListVector(Vector, ListSexpVector):
         html = self._html_template.render(d)
         return html
 
-    @staticmethod
-    def from_length(length):
+    @classmethod
+    def from_length(cls, length):
         """ Create a list of given length """
         res = ListVector._vector(StrSexpVector(("list", )), length)
-        res = conversion.get_conversion().rpy2py(res)
+        res = cls(res)
         return res
 
 
