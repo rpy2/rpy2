@@ -262,6 +262,9 @@ def createbuilder_api():
 # but at least both use situation.get_ffi_mode().
 cffi_mode = situation.get_cffi_mode()
 
+ffibuilder_api = None
+ffibuilder_abi = None
+
 if cffi_mode in (situation.CFFI_MODE.ABI,
                  situation.CFFI_MODE.BOTH):
     ffibuilder_abi = createbuilder_abi()
@@ -282,20 +285,21 @@ elif cffi_mode == situation.CFFI_MODE.ANY:
         warnings.warn(str(e))
         ffibuilder_api = None
 
-if cffi_mode in (situation.CFFI_MODE.ABI,
-                 situation.CFFI_MODE.BOTH):
-    ffibuilder_abi.compile(verbose=True)
-elif cffi_mode == situation.CFFI_MODE.ANY:
-    try:
-        ffibuilder_api.compile(verbose=True)
-    except Exception as e:
-        warnings.warn(str(e))
+if __name__ == '__main__':
+    if cffi_mode in (situation.CFFI_MODE.ABI,
+                     situation.CFFI_MODE.BOTH):
+        ffibuilder_abi.compile(verbose=True)
+    elif cffi_mode == situation.CFFI_MODE.ANY:
+        try:
+            ffibuilder_api.compile(verbose=True)
+        except Exception as e:
+            warnings.warn(str(e))
 
-if cffi_mode in (situation.CFFI_MODE.API,
-                 situation.CFFI_MODE.BOTH):
-    ffibuilder_api.compile(verbose=True)
-elif cffi_mode == situation.CFFI_MODE.ANY:
-    try:
+    if cffi_mode in (situation.CFFI_MODE.API,
+                     situation.CFFI_MODE.BOTH):
         ffibuilder_api.compile(verbose=True)
-    except Exception as e:
-        warnings.warn(str(e))
+    elif cffi_mode == situation.CFFI_MODE.ANY:
+        try:
+            ffibuilder_api.compile(verbose=True)
+        except Exception as e:
+            warnings.warn(str(e))
