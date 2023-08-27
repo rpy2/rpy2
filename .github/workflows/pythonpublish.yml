@@ -49,7 +49,7 @@ jobs:
         python -m pip install setuptools build
     - name: Build wheel
       run: |
-        if [ ${{ matrix.os }} == 'windows-2019' ]; then
+        if [${{ matrix.os }} == 'windows-2019']; then
           COMPILER='--config-setting compiler=mingw32'
         else
           COMPILER=''
