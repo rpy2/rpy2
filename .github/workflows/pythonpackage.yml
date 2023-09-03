@@ -59,6 +59,11 @@ jobs:
         ${{ matrix.venv_activate }}
         python -m pip install flake8
         ./scripts/run_linting.sh
+    - name: Get the situation (windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: |
+        python rpy2/situation.py
     - name: Install package
       run: |
         ${{ matrix.venv_activate }}
