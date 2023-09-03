@@ -718,10 +718,11 @@ class ListVector(Vector, ListSexpVector):
 
         names = list()
         rnames = self.names
+        rnames_null = rinterface.NULL.rsame(rnames)
         if len(self) <= max_items:
             names.extend(
                 rnames
-                if rnames != rinterface.NULL
+                if not rnames_null
                 else ['[no name]'] * len(self)
             )
         else:
@@ -729,7 +730,7 @@ class ListVector(Vector, ListSexpVector):
             for i in range(0, half_items):
                 try:
                     name = (rnames[i]
-                            if rnames != rinterface.NULL else '[no name]')
+                            if not rnames_null else '[no name]')
                 except TypeError:
                     name = '[no name]'
                 names.append(name)
