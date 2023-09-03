@@ -13,6 +13,11 @@ Bugs fixed
 - :meth:`rpy2.robjects.vectors.ListVector.from_length` was incorrectly
   calling the conversion rules before returning the :class:`ListVector`.
 
+Changes
+-------
+
+- `distutils` was still used in a couple of places. The installation process
+   should now be relying only on `setuptools`.
 
 Release 3.5.13
 ==============
