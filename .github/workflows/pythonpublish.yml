@@ -54,7 +54,7 @@ jobs:
         else
           COMPILER=''
         fi
-        python -m build -o dist/ --wheel ${OPTIONS} .
+        python -m build -o dist/ --wheel ${COMPILER} .
     - name: Build sdist
       if: (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
       run: |
