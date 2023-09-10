@@ -48,13 +48,13 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install setuptools build
     - name: Build wheel
+      if: matrix.os != 'windows-2019'
       run: |
-        if [ ${{ matrix.os }} == 'windows-2019' ]; then
-          COMPILER='--config-setting compiler=mingw32'
-        else
-          COMPILER=''
-        fi
-        python -m build -o dist/ --wheel ${COMPILER} .
+        python -m build -o dist/ --wheel .
+    - name: Build wheel - windows
+      if: matrix.os == 'windows-2019'
+      run: |
+        python -m build -o dist/ --wheel --config-setting compiler=mingw32 .
     - name: Build sdist
       if: (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
       run: |
