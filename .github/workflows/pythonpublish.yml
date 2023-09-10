@@ -48,7 +48,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install setuptools build
     - name: Build wheel
-      if: matrix.os != 'windows-2019'
+      if: matrix.os != 'windows-latest'
       run: |
         python -m build -o dist/ --wheel .
     - name: Build wheel - windows
