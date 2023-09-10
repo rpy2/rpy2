@@ -52,7 +52,7 @@ jobs:
       run: |
         python -m build -o dist/ --wheel .
     - name: Build wheel - windows
-      if: matrix.os == 'windows-2019'
+      if: matrix.os == 'windows-latest'
       run: |
         python -m build -o dist/ --wheel --config-setting compiler=mingw32 .
     - name: Build sdist
