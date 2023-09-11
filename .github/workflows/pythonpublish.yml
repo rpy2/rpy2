@@ -19,7 +19,7 @@ env:
   default_python: "3.10"
 jobs:
   deploy:
-    runs-on: ${{ matrix.os }}
+    # runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
