@@ -718,10 +718,11 @@ class ListVector(Vector, ListSexpVector):
 
         names = list()
         rnames = self.names
+        rnames_null = rinterface.NULL.rsame(rnames)
         if len(self) <= max_items:
             names.extend(
                 rnames
-                if rnames != rinterface.NULL
+                if not rnames_null
                 else ['[no name]'] * len(self)
             )
         else:
@@ -729,7 +730,7 @@ class ListVector(Vector, ListSexpVector):
             for i in range(0, half_items):
                 try:
                     name = (rnames[i]
-                            if rnames != rinterface.NULL else '[no name]')
+                            if not rnames_null else '[no name]')
                 except TypeError:
                     name = '[no name]'
                 names.append(name)
@@ -747,11 +748,11 @@ class ListVector(Vector, ListSexpVector):
         html = self._html_template.render(d)
         return html
 
-    @staticmethod
-    def from_length(length):
+    @classmethod
+    def from_length(cls, length):
         """ Create a list of given length """
         res = ListVector._vector(StrSexpVector(("list", )), length)
-        res = conversion.get_conversion().rpy2py(res)
+        res = cls(res)
         return res
 
 
