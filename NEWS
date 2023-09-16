@@ -1,11 +1,33 @@
+Release 3.5.15
+==============
+
+Bugs fixed
+----------
+
+- Fixed notebook representation of R named arrays or vectors when
+  conversion rules might interfere (issue #1047).
+
+
 Release 3.5.14
 ==============
 
 Bugs fixed
 ----------
 
-- Fix use of named arguments with `ExtractDelegator` (issue #1048).
+- Fixed use of named arguments with `ExtractDelegator` (issue #1048).
 
+- `rpy2py` conversion rules in `numpy2ri` could convert R `list` objects into
+  :class:`rpy2.containers.rlike.OrdDict` but there were no `py2rpy` rules
+  to perform the reverse conversion (issue #944).
+
+- :meth:`rpy2.robjects.vectors.ListVector.from_length` was incorrectly
+  calling the conversion rules before returning the :class:`ListVector`.
+
+Changes
+-------
+
+- `distutils` was still used in a couple of places. The installation process
+   should now be relying only on `setuptools`.
 
 Release 3.5.13
 ==============

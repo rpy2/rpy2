@@ -23,6 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       packages: read
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
