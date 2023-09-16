@@ -1,3 +1,66 @@
+Release 3.5.15
+==============
+
+Bugs fixed
+----------
+
+- Fixed notebook representation of R named arrays or vectors when
+  conversion rules might interfere (issue #1047).
+
+
+Release 3.5.14
+==============
+
+Bugs fixed
+----------
+
+- Fixed use of named arguments with `ExtractDelegator` (issue #1048).
+
+- `rpy2py` conversion rules in `numpy2ri` could convert R `list` objects into
+  :class:`rpy2.containers.rlike.OrdDict` but there were no `py2rpy` rules
+  to perform the reverse conversion (issue #944).
+
+- :meth:`rpy2.robjects.vectors.ListVector.from_length` was incorrectly
+  calling the conversion rules before returning the :class:`ListVector`.
+
+Changes
+-------
+
+- `distutils` was still used in a couple of places. The installation process
+   should now be relying only on `setuptools`.
+
+Release 3.5.13
+==============
+
+New features
+------------
+
+- R is setting a number of environment variables in a wrapper script. Those
+  variables were not set by default by rpy2 and this could lead to issues (see issue #1033).
+  The variables are now added to `os.environ`.
+
+Bugs fixed
+----------
+
+- `python -m rpy2.situation LD_LIBRARY_PATH` could incorrectly truncate the value
+  for `LD_LIBRARY_PATH` when the variable `LD_LIBRARY_PATH` is already defined.  
+
+Changes
+-------
+
+- The dependency on :mod:`pytz`, a deprecated package, was
+  removed and replaced by a dependency to :mod:`zoneinfo`.
+  If Python < 3.9 the package :mod:`backports.zoneinfo`
+  is an added dependency.
+
+- The depency on :mod:`tzlocal` does no longer limit it
+  to `<5.0` (issue #1035).
+
+- Remove dependency on :mod:`distutils` in Python's standard library. That package is
+  deprecated and removed in Python 3.12 (see https://peps.python.org/pep-0632/ and
+  issue #1040).
+
+
 Release 3.5.12
 ==============
 
@@ -8,11 +71,32 @@ New features
   an expression and return the visibility status of the
   value returned.
 
+- More events in the intialization and termination of an
+  embedded R logged by :mod:`rpy2.rinterface_lib.embedded.logger`
+  at `INFO` and `DEBUG` levels.
+
+- :meth:`rpy2.robjects.R.__call__` has 2 named arguments "visible" and
+  "print_r_warnings" to handle R "invisible" results and print R warnings
+  at the end of the evaluation. Invisible results happen when doing
+  `rpy2.robjects.r("x <- 1")`. R will return the value of x "invisibly".
+  The default are `invisible is True` and `print_r_warnings is True`.
+
+
 Bugs fixed
 ----------
 
 - "R magic" cells are now show R warnings at the end of the
   evaluation of an R cell (#issue 226).
+
+Changes
+-------
+
+- Evaluating a string as R code using :meth:`rpy2.robjects.R.__call__`
+  (e.g., `rpy2.robjects.r("1+2")`) now shows R warnings at the end
+  of the evaluation by default.
+
+- :meth:`rpy2.robjects.R.__call__` returns the results invisibly by default
+  (see section "New features" for this release).
 
 
 Release 3.5.11

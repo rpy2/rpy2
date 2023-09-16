@@ -218,7 +218,7 @@ class Sexp(SupportsSEXP):
         openrlib.rlib.Rf_namesgets(
             self.__sexp__._cdata, value.__sexp__._cdata)
 
-    @property  # type: ignore
+    @property
     @conversion._cdata_res_to_rinterface
     def names_from_c_attribute(self) -> 'Sexp':
         return openrlib.rlib.Rf_getAttrib(
@@ -446,7 +446,7 @@ class SexpEnvironment(Sexp):
         """Get the parent frame of the environment."""
         return openrlib.rlib.FRAME(self.__sexp__._cdata)
 
-    @property  # type: ignore
+    @property
     @_cdata_res_to_rinterface
     def enclos(self) -> 'typing.Union[NULLType, SexpEnvironment]':
         """Get or set the enclosing environment."""

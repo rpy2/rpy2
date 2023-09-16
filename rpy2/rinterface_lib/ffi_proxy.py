@@ -1,6 +1,7 @@
 import enum
 import logging
 import os
+import types
 import typing
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -39,7 +40,7 @@ class SignatureDefinition(object):
 FFI_MODE: typing.Optional[InterfaceType] = None
 
 
-def get_ffi_mode(_rinterface_cffi) -> InterfaceType:
+def get_ffi_mode(_rinterface_cffi: types.ModuleType) -> InterfaceType:
     global FFI_MODE
     if FFI_MODE is None:
         if hasattr(_rinterface_cffi, 'lib'):
@@ -51,8 +52,10 @@ def get_ffi_mode(_rinterface_cffi) -> InterfaceType:
     return FFI_MODE
 
 
-def callback(definition, _rinterface_cffi):
-    def decorator(func):
+def callback(
+        definition, _rinterface_cffi
+) -> typing.Callable[[typing.Callable], object]:
+    def decorator(func: typing.Callable) -> object:
         if get_ffi_mode(_rinterface_cffi) == InterfaceType.ABI:
             res = _rinterface_cffi.ffi.callback(definition.callback_def)(func)
         elif get_ffi_mode(_rinterface_cffi) == InterfaceType.API:

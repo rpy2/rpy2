@@ -28,10 +28,10 @@ classifiers = [
 dependencies = [
     "cffi>=1.10.0",
     "jinja2",
-    "pytz",
     "tzlocal",
     "packaging;platform_system=='Windows'",
-    "typing-extensions;python_version<'3.8'"
+    "typing-extensions;python_version<'3.8'",
+    "backports.zoneinfo;python_version<'3.9'"
 ]
 dynamic = ["version"]
 
@@ -40,7 +40,7 @@ test_minimal = ["pytest", "coverage", "pytest-cov"]
 test = ["pytest", "ipython", "numpy", "pandas>=1.3.5"]
 numpy = []
 pandas = ["numpy", "pandas>=1.3.5"]
-types = ["mypy", "types-pytz", "types-tzlocal"]
+types = ["mypy", "types-tzlocal"]
 all = ["pytest", "ipython", "pandas>=1.3.5", "numpy"]
 
 [project.urls]

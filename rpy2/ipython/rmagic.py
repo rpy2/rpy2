@@ -51,10 +51,10 @@ from shutil import rmtree
 import textwrap
 import typing
 
-# numpy and rpy2 imports
+import rpy2.rinterface_lib.callbacks
 
 import rpy2.rinterface as ri
-import rpy2.rinterface_lib.callbacks
+
 import rpy2.rinterface_lib.openrlib
 import rpy2.robjects as ro
 import rpy2.robjects.packages as rpacks
@@ -104,7 +104,7 @@ from IPython.core.magic_arguments import (argument,  # type: ignore
 
 template_converter = get_conversion()
 
-DEVICES_STATIC_RASTER = {'png', 'jpeg'}
+DEVICES_STATIC_RASTER: typing.Set[str] = {'png', 'jpeg'}
 DEVICES_STATIC = DEVICES_STATIC_RASTER | {'svg'}
 DEVICES_SUPPORTED = DEVICES_STATIC | {'X11'}
 
@@ -123,32 +123,6 @@ def _get_ipython_template_converter(template_converter=template_converter,
 def _get_converter(template_converter=template_converter):
     return Converter('ipython conversion',
                      template=template_converter)
-
-
-# TODO: Something like this could be part of the rpy2 API.
-def _print_deferred_warnings() -> None:
-    """Print R warning messages.
-
-    rpy2's default pattern add a prefix per warning lines.
-    This should be revised. In the meantime, we clean it
-    at least for the R magic.
-    """
-
-    with contextlib.ExitStack() as stack:
-        stack.enter_context(
-            rpy2.rinterface_lib.openrlib.rlock
-        )
-        stack.enter_context(
-            rpy2.rinterface_lib.callbacks.obj_in_module(
-                rpy2.rinterface_lib.callbacks,
-                '_WRITECONSOLE_EXCEPTION_LOG',
-                '%s')
-        )
-        try:
-            ro.r('.Internal(printDeferredWarnings())')
-        except (ri.embedded.RRuntimeError, ValueError):
-            # TODO: report this in a logger.
-            pass
 
 
 ipy_template_converter = _get_ipython_template_converter(template_converter,
@@ -400,13 +374,27 @@ class RMagics(Magics):
         withVisible is a LISPy R function).
         """
         with contextlib.ExitStack() as stack:
+            obj_in_module = (rpy2.rinterface_lib
+                             .callbacks.obj_in_module)
             if self.cache_display_data:
-                stack.enter(
-                    rpy2.rinterface_lib
-                    .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
-                                             'consolewrite_print',
-                                             self.write_console_regular)
+                stack.enter_context(
+                    obj_in_module(
+                        rpy2.rinterface_lib.callbacks,
+                        'consolewrite_print',
+                        self.write_console_regular
+                    )
                 )
+            stack.enter_context(
+                obj_in_module(rpy2.rinterface_lib.callbacks,
+                              'consolewrite_warnerror',
+                              self.write_console_regular)
+            )
+            stack.enter_context(
+                obj_in_module(
+                    rpy2.rinterface_lib.callbacks,
+                    '_WRITECONSOLE_EXCEPTION_LOG',
+                    '%s')
+            )
             try:
                 # Need the newline in case the last line in code is a comment.
                 r_expr = ri.parse(code)
@@ -419,7 +407,7 @@ class RMagics(Magics):
                 raise RInterpreterError(code, str(exception),
                                         warning_or_other_msg)
             finally:
-                _print_deferred_warnings()
+                ro._print_deferred_warnings()
             text_output = self.flush()
             return text_output, value, visible[0]
 
@@ -956,14 +944,29 @@ class RMagics(Magics):
                 text_output += text_result
                 if visible:
                     with contextlib.ExitStack() as stack:
+                        obj_in_module = (rpy2.rinterface_lib
+                                         .callbacks
+                                         .obj_in_module)
                         if self.cache_display_data:
                             stack.enter_context(
-                                rpy2.rinterface_lib
-                                .callbacks
-                                .obj_in_module(rpy2.rinterface_lib
-                                               .callbacks,
-                                               'consolewrite_print',
-                                               self.write_console_regular))
+                                obj_in_module(rpy2.rinterface_lib
+                                              .callbacks,
+                                              'consolewrite_print',
+                                              self.write_console_regular)
+                            )
+                        stack.enter_context(
+                            obj_in_module(
+                                rpy2.rinterface_lib.callbacks,
+                                'consolewrite_warnerror',
+                                self.write_console_regular
+                            )
+                        )
+                        stack.enter_context(
+                            obj_in_module(
+                                rpy2.rinterface_lib.callbacks,
+                                '_WRITECONSOLE_EXCEPTION_LOG',
+                                '%s')
+                        )
                         cell_display(result, args)
                         text_output += self.flush()
 

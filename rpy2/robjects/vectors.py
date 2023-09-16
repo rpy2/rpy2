@@ -6,16 +6,19 @@ from rpy2.rinterface_lib import sexp
 from . import conversion
 
 import rpy2.rlike.container as rlc
-
+import datetime
+try:
+    import zoneinfo  # type: ignore
+except ImportError:
+    from backports import zoneinfo  # type: ignore
 import copy
 import itertools
 import math
 import os
 import jinja2  # type: ignore
 import time
-import pytz
 import tzlocal
-from datetime import date, datetime, timedelta, timezone
+
 from time import struct_time, mktime
 import typing
 import warnings
@@ -75,7 +78,7 @@ class ExtractDelegator(object):
             else:
                 conv_args[i] = cv.py2rpy(x)
         kwargs = copy.copy(kwargs)
-        for k, v in kwargs.values():
+        for k, v in kwargs.items():
             kwargs[k] = cv.py2rpy(v)
         fun = self._extractfunction
         res = fun(*conv_args, **kwargs)
@@ -715,10 +718,11 @@ class ListVector(Vector, ListSexpVector):
 
         names = list()
         rnames = self.names
+        rnames_null = rinterface.NULL.rsame(rnames)
         if len(self) <= max_items:
             names.extend(
                 rnames
-                if rnames != rinterface.NULL
+                if not rnames_null
                 else ['[no name]'] * len(self)
             )
         else:
@@ -726,7 +730,7 @@ class ListVector(Vector, ListSexpVector):
             for i in range(0, half_items):
                 try:
                     name = (rnames[i]
-                            if rnames != rinterface.NULL else '[no name]')
+                            if not rnames_null else '[no name]')
                 except TypeError:
                     name = '[no name]'
                 names.append(name)
@@ -744,11 +748,11 @@ class ListVector(Vector, ListSexpVector):
         html = self._html_template.render(d)
         return html
 
-    @staticmethod
-    def from_length(length):
+    @classmethod
+    def from_length(cls, length):
         """ Create a list of given length """
         res = ListVector._vector(StrSexpVector(("list", )), length)
-        res = conversion.get_conversion().rpy2py(res)
+        res = cls(res)
         return res
 
 
@@ -871,7 +875,7 @@ class DateVector(FloatVector):
 
         if isinstance(seq, Sexp):
             init_param = seq
-        elif isinstance(seq[0], date):
+        elif isinstance(seq[0], datetime.date):
             init_param = DateVector.sexp_from_date(seq)
         else:
             raise TypeError(
@@ -912,7 +916,7 @@ class POSIXct(POSIXt, FloatVector):
             init_param = seq
         elif isinstance(seq[0], struct_time):
             init_param = POSIXct.sexp_from_struct_time(seq)
-        elif isinstance(seq[0], datetime):
+        elif isinstance(seq[0], datetime.datetime):
             init_param = POSIXct.sexp_from_datetime(seq)
         else:
             raise TypeError(
@@ -943,7 +947,7 @@ class POSIXct(POSIXt, FloatVector):
                 )
 
         if tz_info is None:
-            tz_info = default_timezone.zone if default_timezone else ''
+            tz_info = default_timezone if default_timezone else ''
         # We could use R's as.POSIXct instead of ISOdatetime
         # since as.POSIXct is used by it anyway, but the overall
         # interface for dates and conversion between formats
@@ -951,7 +955,10 @@ class POSIXct(POSIXt, FloatVector):
         # time should look into this.
 
         d = isodatetime_columns(seq)
-        sexp = POSIXct._ISOdatetime(*d, tz=StrSexpVector((tz_info, )))
+        sexp = POSIXct._ISOdatetime(
+            *d,
+            tz=StrSexpVector((str(tz_info), ))
+        )
         return sexp
 
     @staticmethod
@@ -978,7 +985,7 @@ class POSIXct(POSIXt, FloatVector):
                     IntVector([x.second for x in seq])]
 
         def get_tz(elt):
-            return elt.tzinfo.zone if elt.tzinfo else None
+            return elt.tzinfo if elt.tzinfo else None
 
         return POSIXct._sexp_from_seq(seq, get_tz, f)
 
@@ -988,13 +995,13 @@ class POSIXct(POSIXt, FloatVector):
         return obj.rclass[0] == 'POSIXct'
 
     @staticmethod
-    def _datetime_from_timestamp(ts, tz) -> datetime:
+    def _datetime_from_timestamp(ts, tz) -> datetime.datetime:
         """Platform-dependent conversion from timestamp to datetime"""
         if os.name != 'nt' or ts > 0:
-            return datetime.fromtimestamp(ts, tz)
+            return datetime.datetime.fromtimestamp(ts, tz)
         else:
-            dt_utc = (datetime(1970, 1, 1, tzinfo=timezone.utc) +
-                      timedelta(seconds=ts))
+            dt_utc = (datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc) +
+                      datetime.timedelta(seconds=ts))
             dt = dt_utc.replace(tzinfo=tz)
             offset = dt.utcoffset()
             if offset is None:
@@ -1015,8 +1022,7 @@ class POSIXct(POSIXt, FloatVector):
             # time libraries will assume UTC.
             r_tzone = get_timezone()
         else:
-            r_tzone = pytz.timezone(r_tzone_name)
-
+            r_tzone = zoneinfo.ZoneInfo(r_tzone_name)
         for x in self:
             yield (
                 None if math.isnan(x)

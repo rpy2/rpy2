@@ -2,12 +2,15 @@ import abc
 import atexit
 import contextlib
 import contextvars
+import csv
+import enum
 import functools
 import inspect
 import os
 import math
 import platform
 import signal
+import subprocess
 import textwrap
 import threading
 import typing
@@ -45,6 +48,16 @@ endr = embedded.endr
 
 evaluation_context = contextvars.ContextVar('evaluation_context',
                                             default=globalenv)
+
+
+class _ENVVAR_ACTION(enum.Enum):
+    KEEP_WARN = 0
+    REPLACE_WARN = 1
+    KEEP_NOWARN = 2
+    REPLACE_NOWARN = 3
+
+
+_DEFAULT_ENVVAR_ACTION: _ENVVAR_ACTION = _ENVVAR_ACTION.REPLACE_WARN
 
 
 def get_evaluation_context() -> SexpEnvironment:
@@ -148,7 +161,7 @@ def evalr_expr_with_visible(
         envir: typing.Union[
             None,
             'SexpEnvironment'] = None
-) -> sexp.Sexp:
+) -> 'ListSexpVector':
     """Evaluate an R expression and return value and visibility flag.
 
     :param expr: An R expression.
@@ -182,6 +195,7 @@ def evalr_expr_with_visible(
         if error_occured[0]:
             raise embedded.RRuntimeError(_rinterface._geterrmessage())
         res = conversion._cdata_to_rinterface(r_res)
+        assert isinstance(res, ListSexpVector)
     return res
 
 
@@ -1065,6 +1079,7 @@ def initr_checkenv(
 
     status = None
     with openrlib.rlock:
+        _setrenvvars(_DEFAULT_ENVVAR_ACTION)
         if embedded.is_r_externally_initialized():
             embedded._setinitialized()
         else:
@@ -1097,6 +1112,67 @@ def _update_R_ENC_PY():
     conversion._R_ENC_PY[openrlib.rlib.CE_NATIVE] = val_native
 
     conversion._R_ENC_PY[openrlib.rlib.CE_ANY] = 'utf-8'
+
+
+# TODO: This function could be used by situation.py. May be better to
+# place elsewhere.
+def _getrenvvars(
+        baselinevars: typing.Optional[typing.MutableMapping[str, str]] = None,
+        r_home: typing.Optional[str] = None
+) -> typing.Tuple[typing.Tuple[str, str], ...]:
+    """Get the environment variables defined by the R front-end script."""
+
+    if baselinevars is None:
+        baselinevars = os.environ
+    if r_home is None:
+        r_home = openrlib.R_HOME
+        if r_home is None:
+            raise RuntimeError('Unable to determine R_HOME.')
+    cmd = (
+        os.path.join(r_home, 'bin', 'Rscript'),
+        '-e',
+        'x<-Sys.getenv();y<-as.character(x);names(y)<-names(x);'
+        'write.table(y,col.names=FALSE,quote=TRUE,sep=",")'
+    )
+
+    envvars = subprocess.check_output(cmd,
+                                      universal_newlines=True,
+                                      stderr=subprocess.PIPE)
+
+    res = []
+    reader = csv.reader(row for row in envvars.split(os.linesep) if row != '')
+    for k, v in reader:
+        if (
+                (k not in baselinevars)
+                or
+                (baselinevars[k] != v)
+        ):
+            res.append((k, v))
+    return tuple(res)
+
+
+def _setrenvvars(action: _ENVVAR_ACTION):
+    new_envvars = {}
+    for k, v in _getrenvvars():
+        if k in os.environ:
+            if (
+                    action in (_ENVVAR_ACTION.KEEP_WARN, _ENVVAR_ACTION.KEEP_NOWARN)
+            ):
+                if action is _ENVVAR_ACTION.KEEP_WARN:
+                    warnings.warn(
+                        f'Environment variable "{k}" redefined by R but ignored.'
+                    )
+                continue
+            elif (
+                    action in (_ENVVAR_ACTION.REPLACE_WARN, _ENVVAR_ACTION.REPLACE_NOWARN)
+            ):
+                if action is _ENVVAR_ACTION.REPLACE_WARN:
+                    warnings.warn(
+                        f'Environment variable "{k}" redefined by R and overriding '
+                        'existing variable.'
+                    )
+        new_envvars[k] = v
+    os.environ.update(new_envvars)
 
 
 def _post_initr_setup() -> None:
