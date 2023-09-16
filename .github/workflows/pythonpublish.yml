@@ -55,7 +55,7 @@ jobs:
     - name: Build wheel - windows
       if: matrix.os == 'windows-latest'
       run: |
-        python -m build -o dist/ --wheel -C--global-option=--verbose -C--build-option="--compiler=mingw32" .
+        python -m build -o dist/ --wheel -C--global-option=--verbose -C--build-option="build --compiler=mingw32" .
     - name: Build sdist
       if: (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
       run: |
