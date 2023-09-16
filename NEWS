@@ -1,3 +1,13 @@
+Release 3.5.15
+==============
+
+Bugs fixed
+----------
+
+- Fixed notebook representation of R named arrays or vectors when
+  conversion rules might interfere (issue #1047).
+
+
 Release 3.5.14
 ==============
 
