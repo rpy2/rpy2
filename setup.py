@@ -12,6 +12,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import typing
 import warnings
 
 from setuptools import setup, Extension, dist
@@ -19,9 +20,9 @@ from setuptools._distutils.ccompiler import new_compiler
 from setuptools._distutils.sysconfig import customize_compiler
 from setuptools._distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
 
-from distutils.command.build import build as du_build
+import setuptools.command.build
+import setuptools.command.install
 
-# from rpy2 import situation
 import importlib
 
 # spec = importlib.util.spec_from_file_location('rpy2', './rpy2/__init__.py')
@@ -99,9 +100,7 @@ def get_c_extension_status(libraries=['R'], include_dirs=None,
     return status
 
 
-def get_r_c_extension_status():
-
-    r_home = situation.get_r_home()
+def get_r_c_extension_status(r_home: typing.Optional[str]):
     if r_home is None:
         return COMPILATION_STATUS.NO_R
     c_ext = situation.CExtensionOptions()
@@ -120,8 +119,22 @@ def get_r_c_extension_status():
                                     library_dirs=c_ext.library_dirs)
     return status
 
+
+class install(setuptools.command.install.install):
+
+    def run(self):
+        if r_home:
+            print(
+                'LD_LIBRARY_PATH in R: {}'.format(
+                    situation.r_ld_library_path_from_subprocess(r_home)
+                )
+            )
+        super().run()
+
+
+r_home = situation.get_r_home()
 cffi_mode = situation.get_cffi_mode()
-c_extension_status = get_r_c_extension_status()
+c_extension_status = get_r_c_extension_status(r_home)
 ext_modules = []
 if cffi_mode == situation.CFFI_MODE.ABI:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
@@ -154,12 +167,12 @@ else:
     raise ValueError('Invalid value for cffi_mode')
 
 
-class build(du_build):
+class build(setuptools.command.build.build):
 
     def run(self):
         print('cffi mode: %s' % cffi_mode)
 
-        du_build.run(self)
+        super().run()
 
         print('---')
         print(cffi_mode)
