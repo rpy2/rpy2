@@ -1132,7 +1132,7 @@ def _getrenvvars(
         os.path.join(r_home, 'bin', 'Rscript'),
         '-e',
         'x<-Sys.getenv();y<-as.character(x);names(y)<-names(x);'
-        'write.table(y,col.names=FALSE,quote=TRUE,sep=",")'
+        'write.csv(y)'
     )
 
     envvars = subprocess.check_output(cmd,
@@ -1141,6 +1141,8 @@ def _getrenvvars(
 
     res = []
     reader = csv.reader(row for row in envvars.split(os.linesep) if row != '')
+    # Skip column names.
+    next(reader)
     for k, v in reader:
         if (
                 (k not in baselinevars)
