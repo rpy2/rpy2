@@ -10,7 +10,7 @@ TARGET_VERSION = '1.2.'
 
 if not tidyr.__version__.startswith(TARGET_VERSION):
     warnings.warn(
-        'This was designed againt tidyr versions starting with %s '
+        'This was designed against tidyr versions starting with %s '
         'but you have %s' % (TARGET_VERSION, tidyr.__version__))
 
 tidyr = WeakPackage(tidyr._env,

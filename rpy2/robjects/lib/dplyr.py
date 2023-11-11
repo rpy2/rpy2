@@ -25,7 +25,7 @@ if (
   (not dplyr.__version__.startswith(TARGET_VERSION))
 ):
     warnings.warn(
-        'This was designed againt dplyr versions starting with %s'
+        'This was designed against dplyr versions starting with %s'
         ' but you have %s' %
         (TARGET_VERSION, dplyr.__version__))
 
