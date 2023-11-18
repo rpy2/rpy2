@@ -27,6 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        experimental: [false]
         include:
           - os: ubuntu-latest
             python: 39
