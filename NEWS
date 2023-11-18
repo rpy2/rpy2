@@ -9,6 +9,12 @@ Bugs fixed
 
 - Multi-line in environment variables (issue #1066).
 
+Changes
+-------
+
+- Complete drop of support for Python 3.7. It is now removed from
+  the build matrix.
+
 
 Release 3.5.14
 ==============
