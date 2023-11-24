@@ -315,12 +315,11 @@ default conversion scheme:
 	      # object.
 	      pass	  
 
-    .. note::
+    The converter returned by :meth:`rpy2.robjects.conversion.Converter.context` is
+    a copy of the rules for the context.
 
-       The converter returned by :meth:`rpy2.robjects.conversion.Converter.context` is
-       a copy of the rules for the context.
+    .. code-block:: python
 
-       ```python
         with default_converter.context() as local_converter:
 	    # Conversion objects are not the same.
 	    assert local_converter != default_converter
