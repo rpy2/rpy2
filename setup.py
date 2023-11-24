@@ -100,7 +100,8 @@ def get_c_extension_status(libraries=['R'], include_dirs=None,
     return status
 
 
-def get_r_c_extension_status(r_home: typing.Optional[str]):
+def get_r_c_extension_status(r_home: typing.Optional[str],
+                             force_ok: bool = False):
     if r_home is None:
         return COMPILATION_STATUS.NO_R
     c_ext = situation.CExtensionOptions()
@@ -114,9 +115,12 @@ def get_r_c_extension_status(r_home: typing.Optional[str]):
     except subprocess.CalledProcessError as cpe:
         warnings.warn(str(cpe))
         return COMPILATION_STATUS.RFLAGS_ERROR
-    status = get_c_extension_status(libraries=c_ext.libraries,
-                                    include_dirs=c_ext.include_dirs,
-                                    library_dirs=c_ext.library_dirs)
+    if force_ok:
+        status = COMPILATION_STATUS.OK
+    else:
+        status = get_c_extension_status(libraries=c_ext.libraries,
+                                        include_dirs=c_ext.include_dirs,
+                                        library_dirs=c_ext.library_dirs)
     return status
 
 
@@ -134,7 +138,10 @@ class install(setuptools.command.install.install):
 
 r_home = situation.get_r_home()
 cffi_mode = situation.get_cffi_mode()
-c_extension_status = get_r_c_extension_status(r_home)
+c_extension_status = get_r_c_extension_status(
+    r_home,
+    force_ok = os.envir.get('RPY2_API_FORCE') == 'True'
+)
 ext_modules = []
 if cffi_mode == situation.CFFI_MODE.ABI:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
