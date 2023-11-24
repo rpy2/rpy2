@@ -85,6 +85,23 @@ or in the "R magic" used from `ipython` or `jupyter`.
    wanting the object with currently cactive rules :func:`rpy2.robjects.conversion.get_conversion`
    must be used to fetch them.
 
+   Behind the hood, the current active conversion system is set in a
+   :class:`contextvars.ContextVar`. This allows the change of conversion rules to work safely
+   with Python context managers. However, `contextvars` is relatively recent and will not play
+   well with older Python code for multithreading. Whenever the case, the error
+   `Conversion rules for `rpy2.robjects` appear to be missing` is very likely to be encountered
+   when using `rpy2`. A workaround can be to wrap all calls to rpy2 in conversion rules's context.
+   For example, to use the default converter:
+
+   .. code-block:: python
+
+   import rpy2.robjects as ro
+   with ro.default_converter.context():
+       # call to rpy2 here.
+       pass
+
+   Consult the rest of the documentation for more information about conversions.
+   
 
 This system is designed to manage the conversion between the low level (`rinterface`-level)
 interface and an arbitrary Python-level representation those objects.

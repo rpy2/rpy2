@@ -377,8 +377,9 @@ localconverter = ConversionContext
 def _raise_missingconverter(obj):
     _missingconverter_msg = """
     Conversion rules for `rpy2.robjects` appear to be missing. Those
-    rules are in a Python contextvars.ContextVar. This could be caused
+    rules are in a Python `contextvars.ContextVar`. This could be caused
     by multithreading code not passing context to the thread.
+    Check rpy2's documentation about conversions.
     """
     raise NotImplementedError(_missingconverter_msg)
 
