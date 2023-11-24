@@ -16,7 +16,6 @@ on:
 env:
   default_os: "ubuntu-latest"
   default_r: "release"
-  default_python: "3.10"
 jobs:
   build_wheels:
     name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id}}
@@ -32,14 +31,14 @@ jobs:
           - os: ubuntu-latest
             python: 39
             platform_id: manylinux2014
-            manylinux_x86_64_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_x86_64:r4.2.2
-            manylinux_i686_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_i686:r4.2.2
+            manylinux_x86_64_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_x86_64:r4.3.2
+            manylinux_i686_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_i686:r4.3.2
             r-version: release
-          - os: macos-12
+          - os: macos-11
             python: 310
             platform_id: macosx_x86_64
             r-version: release
-          - os: macos-12
+          - os: macos-11
             python: 310
             platform_id: macosx_arm64
             r-version: release
@@ -66,7 +65,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install setuptools build cibuildwheel
     - name: Build wheel
-      uses: pypa/cibuildwheel@v2.11.4
+      uses: pypa/cibuildwheel@v2.16.2
       env:
           RPY2_CFFI_MODE: API
           CIBW_SKIP: cp36-* cp37-* pp* *-musllinux_*
