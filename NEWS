@@ -1,6 +1,13 @@
 Release 3.5.15
 ==============
 
+New features
+------------
+
+- Checking C compiling against the R shared library can be skipped with
+  the environment variable `RPY2_API_FORCE` set to `True`.
+
+
 Bugs fixed
 ----------
 
