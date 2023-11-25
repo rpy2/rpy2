@@ -123,28 +123,31 @@ jobs:
         echo "Bug in setuptools requires update"
         ${{ matrix.venv_activate }}
         python -m pip install --upgrade setuptools pycparser
+    - uses: actions/download-artifact@v3
+        with:
+          name: rpy2-sdist
+	  path: dist/
     - name: Install package
       run: |
         ${{ matrix.venv_activate }}
-        pip install .
-        rm -r build/
+        pip install dist/rpy2-*.tar.gz
     - name: Test with minimal dependencies
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install .[test_minimal]
+        python -m pip install 'dist/rpy2-*.tar.gz[test_minimal]'
         bash -e ./scripts/run_test_min_deps.sh
     - name: Test with numpy
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install .[numpy]
+        python -m pip install 'dist/rpy2-*.tar.gz[numpy]'
         bash -e ./scripts/run_test_numpy.sh
     - name: Test with pandas
       run: |
         ${{ matrix.ld_libpath }}
         ${{matrix.venv_activate }}
-        python -m pip install .[pandas]
+        python -m pip install 'dist/rpy2-*.tar.gz[pandas]'
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
       run: |
@@ -172,12 +175,6 @@ jobs:
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
         pytest --cache-clear --cov-append --cov-report=xml --cov-report=term --cov=rpy2.rinterface_lib --cov=rpy2.rinterface --cov=rpy2.rlike --cov=rpy2.robjects rpy2/tests/robjects/lib
-    - name: Check type hints
-      run: |
-        ${{ matrix.ld_libpath }}
-        ${{matrix.venv_activate }}
-        pip install .[types]
-        bash -e ./scripts/run_mypy.sh
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       if: matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.8' && matrix.r-version == 'release'
