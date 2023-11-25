@@ -126,7 +126,7 @@ jobs:
     - uses: actions/download-artifact@v3
         with:
           name: rpy2-sdist
-	  path: dist/
+          path: dist/
     - name: Install package
       run: |
         ${{ matrix.venv_activate }}
