@@ -18,7 +18,7 @@ jobs:
     - name: Check type hints.
       run: |
         python -m pip install mypy
-	./scripts/run_mypy.sh
+        ./scripts/run_mypy.sh
   build:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
