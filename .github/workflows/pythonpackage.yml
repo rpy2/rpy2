@@ -39,6 +39,10 @@ jobs:
     - name: Build sdist
       run: |
         python -m build -o dist/ --sdist .
+    - uses: actions/upload-artifact@v3
+      with:
+        name: rpy2-sdist
+        path: dist/rpy2-*.tar.gz
   build-wheel-posix:
     runs-on: ${{ matrix.os }}
     continue-on-error: false
@@ -65,6 +69,10 @@ jobs:
     - name: Build wheel
       run: |
         python -m build -o dist/ --wheel .
+    - uses: actions/upload-artifact@v3
+      with:
+        name: rpy2-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        path: dist/rpy2-*.whl
   test:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
