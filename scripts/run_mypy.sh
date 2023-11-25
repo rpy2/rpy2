@@ -1,6 +1,7 @@
 #!/bin/bash
 
-mypy rpy2/rinterface.py \
+mypy --install-types \
+     rpy2/rinterface.py \
      rpy2/rinterface_lib/*.py \
      rpy2/robjects/*.py \
      rpy2/ipython/*.py \
