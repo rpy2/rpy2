@@ -20,7 +20,26 @@ jobs:
         python -m pip install mypy
         pip install requirements.types.txt
         ./scripts/run_mypy.sh
-  build-posix:
+  build-sdist:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Set up R ${{ matrix.r-version }}
+      uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: release
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install setuptools build
+    - name: Build sdist
+      run: |
+        python -m build -o dist/ --sdist .
+  build-wheel-posix:
     runs-on: ${{ matrix.os }}
     continue-on-error: false
     strategy:
@@ -46,29 +65,6 @@ jobs:
     - name: Build wheel
       run: |
         python -m build -o dist/ --wheel .
-    - name: Build sdist
-      if: (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
-      run: |
-        python -m build -o dist/ --sdist .
-    - id: getfilename_wheel
-      run: |
-        echo "file=$(basename -a $(ls dist/*.whl))" >> $GITHUB_OUTPUT
-    - id: getfilename_targz
-      if: (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
-      run: |
-        echo "file=$(basename -a $(ls dist/*.tar.gz))" >> $GITHUB_OUTPUT
-    - name: Create package for master
-      uses: actions/upload-artifact@v3
-      if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == env.default_r
-      with:
-          name: ${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.r-version }}
-          path: dist/*.whl
-    - name: Create source package for master
-      uses: actions/upload-artifact@v3
-      if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == env.default_r && matrix.os == env.default_os && matrix.python-version == env.default_python)
-      with:
-          name: source-distribution
-          path: dist/*.tar.gz  
   test:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
