@@ -18,7 +18,7 @@ jobs:
     - name: Check type hints.
       run: |
         python -m pip install mypy
-        pip install requirements.types.txt
+        pip install -r requirements.types.txt
         ./scripts/run_mypy.sh
   build-sdist:
     runs-on: ubuntu-latest
@@ -74,6 +74,7 @@ jobs:
         name: rpy2-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         path: dist/rpy2-*.whl
   test:
+    needs: [build-sdist]
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     strategy:
