@@ -124,9 +124,9 @@ jobs:
         ${{ matrix.venv_activate }}
         python -m pip install --upgrade setuptools pycparser
     - uses: actions/download-artifact@v3
-        with:
-          name: rpy2-sdist
-          path: dist/
+      with:
+        name: rpy2-sdist
+        path: dist/
     - name: Install package
       run: |
         ${{ matrix.venv_activate }}
