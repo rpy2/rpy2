@@ -15,6 +15,10 @@ jobs:
       run: |
         python -m pip install flake8
         ./scripts/run_linting.sh
+    - name: Check type hints.
+      run: |
+        python -m pip install mypy
+	./scripts/run_mypy.sh
   build:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
