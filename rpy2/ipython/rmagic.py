@@ -49,7 +49,6 @@ from glob import glob
 import os
 from shutil import rmtree
 import textwrap
-import types
 import typing
 
 import rpy2.rinterface_lib.callbacks
@@ -68,10 +67,10 @@ import warnings
 # Try loading pandas and numpy, emitting a warning if either cannot be
 # loaded.
 try:
-    import numpy
+    import numpy  # noqa: F401
     NUMPY_IMPORTED = True
     try:
-        import pandas
+        import pandas  # noqa: F401
         PANDAS_IMPORTED = True
     except ImportError as ie:
         PANDAS_IMPORTED = False
@@ -125,8 +124,8 @@ if NUMPY_IMPORTED:
             template_converter += numpy2ri.converter
             return template_converter
 else:
-        def _get_ipython_template_converter(template_converter=template_converter):
-            return template_converter
+    def _get_ipython_template_converter(template_converter=template_converter):
+        return template_converter
 
 
 def _get_converter(template_converter=template_converter):
