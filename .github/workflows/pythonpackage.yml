@@ -130,7 +130,7 @@ jobs:
     - name: Install package
       run: |
         ${{ matrix.venv_activate }}
-        pip install dist/rpy2-*.tar.gz
+        pip install $(ls -1 dist/rpy2-*.tar.gz | tail -n 1)
     - name: Test with minimal dependencies
       run: |
         ${{ matrix.ld_libpath }}
