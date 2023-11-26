@@ -129,7 +129,7 @@ jobs:
         path: dist/
     - name: Source package path.
       shell: bash
-      run: echo "RPY2_SRC_DIST=dist/$(ls -1 dist/rpy2-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
+      run: echo "RPY2_SRC_DIST=$(ls -1 dist/rpy2-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
     - name: Install package (non-Windows)
       if: matrix.os != 'windows-latest'
       run: |
@@ -139,7 +139,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         ${{ matrix.venv_activate }}
-        RPY2_API_FORCE=True pip install $RPY2_SRC_DIST
+q        RPY2_API_FORCE=True pip install $RPY2_SRC_DIST
     - name: Test with minimal dependencies
       run: |
         ${{ matrix.ld_libpath }}
