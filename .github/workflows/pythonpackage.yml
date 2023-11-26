@@ -137,6 +137,7 @@ jobs:
         pip install $RPY2_SRC_DIST
     - name: Install package (Windows)
       if: matrix.os == 'windows-latest'
+      shell: bash
       run: |
         ${{ matrix.venv_activate }}
         RPY2_API_FORCE=True pip install $RPY2_SRC_DIST
