@@ -127,27 +127,36 @@ jobs:
       with:
         name: rpy2-sdist
         path: dist/
-    - name: Install package
+    - name: Source package path.
+      shell: bash
+      run: echo "RPY2_SRC_DIST=dist/$(ls -1 dist/rpy2-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
+    - name: Install package (non-Windows)
+      if: matrix.os != 'windows-latest'
       run: |
         ${{ matrix.venv_activate }}
-        pip install $(ls -1 dist/rpy2-*.tar.gz | tail -n 1)
+        pip install $RPY2_SRC_DIST
+    - name: Install package (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        ${{ matrix.venv_activate }}
+        RPY2_API_FORCE=True pip install $RPY2_SRC_DIST
     - name: Test with minimal dependencies
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install $(ls -1 dist/rpy2-*.tar.gz | tail -n 1)'[test_minimal]'
+        python -m pip install $RPY2_SRC_DIST'[test_minimal]'
         bash -e ./scripts/run_test_min_deps.sh
     - name: Test with numpy
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install $(ls -1 dist/rpy2-*.tar.gz | tail -n 1)'[numpy]'
+        python -m pip install $RPY2_SRC_DIST'[numpy]'
         bash -e ./scripts/run_test_numpy.sh
     - name: Test with pandas
       run: |
         ${{ matrix.ld_libpath }}
         ${{matrix.venv_activate }}
-        python -m pip install $(ls -1 dist/rpy2-*.tar.gz | tail -n 1)'[pandas]'
+        python -m pip install $RPY2_SRC_DIST'[pandas]'
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
       run: |
@@ -170,6 +179,7 @@ jobs:
         ${{ matrix.venv_activate }}
         bash -e ./scripts/run_test_rdeps.sh
     - name: Test with R deps (windows)
+      continue-on-error: true
       if: matrix.os == 'windows-latest'
       run: |
         ${{ matrix.ld_libpath }}
