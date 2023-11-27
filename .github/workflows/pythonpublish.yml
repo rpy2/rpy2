@@ -12,7 +12,7 @@ on:
       - master
     tags:
      - RELEASE_3_*_*
-  workflow-run:
+  workflow_run:
     workflows: ["Python package"]
     branches: [main]
     types:
