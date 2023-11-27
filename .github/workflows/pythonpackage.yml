@@ -195,21 +195,3 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         env_vars: OS,PYTHON
-  deploy:
-    on:
-      release:
-        types:
-          - released
-        tags:
-         - RELEASE_3_*_*
-    needs: [code-qc, build-sdist, build-wheel-posix, test]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Publish
-      if: github.event_name == 'release'
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
-        packages-dir: dist/
-
