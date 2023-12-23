@@ -240,9 +240,7 @@ def test_rternalize_map_ellipsis_args_kwargs_error():
 
 
 def test_rternalize_formals():
-    # TODO: update to `def f(a, /, b, c=1, *, d=2, e):`
-    # once 3.7 is dropped from CI
-    def f(a, b, c=1, *, d=2, e):
+    def f(a, /, b, c=1, *, d=2, e):
         return 1
     rfun = rinterface.rternalize(f, signature=True)
     rnames = rinterface.baseenv['names']

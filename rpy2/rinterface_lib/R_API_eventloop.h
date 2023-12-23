@@ -1,7 +1,10 @@
 #ifdef CFFI_SOURCE
 
 #else  /* CFFI_SOURCE */
+#ifdef OSNAME_NT
+#else
 # include <sys/select.h> /* for fd_set */
+#endif
 #endif  /* CFFI_SOURCE */
 
 typedef void (*InputHandlerProc)(void *userData);

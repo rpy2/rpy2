@@ -67,20 +67,21 @@ import warnings
 # Try loading pandas and numpy, emitting a warning if either cannot be
 # loaded.
 try:
-    import numpy  # type: ignore[import]
+    import numpy  # noqa: F401
+    NUMPY_IMPORTED = True
     try:
-        import pandas  # type: ignore[import]
+        import pandas  # noqa: F401
+        PANDAS_IMPORTED = True
     except ImportError as ie:
-        pandas = None
+        PANDAS_IMPORTED = False
         warnings.warn('The Python package `pandas` is strongly '
                       'recommended when using `rpy2.ipython`. '
                       'Unfortunately it could not be loaded '
                       '(error: %s), '
                       'but at least we found `numpy`.' % str(ie))
 except ImportError as ie:
-    # Give up on numerics
-    numpy = None  # type: ignore[assignment]
-    pandas = None
+    NUMPY_IMPORTED = False
+    PANDAS_IMPORTED = False
     warnings.warn('The Python package `pandas` is strongly '
                   'recommended when using `rpy2.ipython`. '
                   'Unfortunately it could not be loaded, '
@@ -109,15 +110,22 @@ DEVICES_STATIC = DEVICES_STATIC_RASTER | {'svg'}
 DEVICES_SUPPORTED = DEVICES_STATIC | {'X11'}
 
 
-def _get_ipython_template_converter(template_converter=template_converter,
-                                    numpy=numpy, pandas=pandas):
-    if numpy:
-        from rpy2.robjects import numpy2ri
-        template_converter += numpy2ri.converter
-        if pandas:
+if NUMPY_IMPORTED:
+    if PANDAS_IMPORTED:
+        def _get_ipython_template_converter(template_converter=template_converter):
+            from rpy2.robjects import numpy2ri
+            template_converter += numpy2ri.converter
             from rpy2.robjects import pandas2ri
             template_converter += pandas2ri.converter
-    return template_converter
+            return template_converter
+    else:
+        def _get_ipython_template_converter(template_converter=template_converter):
+            from rpy2.robjects import numpy2ri
+            template_converter += numpy2ri.converter
+            return template_converter
+else:
+    def _get_ipython_template_converter(template_converter=template_converter):
+        return template_converter
 
 
 def _get_converter(template_converter=template_converter):
@@ -125,9 +133,7 @@ def _get_converter(template_converter=template_converter):
                      template=template_converter)
 
 
-ipy_template_converter = _get_ipython_template_converter(template_converter,
-                                                         numpy=numpy,
-                                                         pandas=pandas)
+ipy_template_converter = _get_ipython_template_converter(template_converter)
 converter = _get_converter(template_converter=ipy_template_converter)
 
 

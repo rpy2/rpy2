@@ -7,4 +7,4 @@ mypy rpy2/rinterface.py \
      rpy2/rlike/*.py \
      rpy2/situation.py \
      rpy2/interactive/*.py \
-     --exclude '*_rinterface_cffi_abi.py'
+     --follow-imports=silent
