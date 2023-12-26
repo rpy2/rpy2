@@ -217,7 +217,7 @@ def createbuilder_api():
         extra_compile_args=c_ext.extra_compile_args,
         extra_link_args=c_ext.extra_link_args)
 
-    callback_defns_api = os.linesep.join(
+    callback_defns_api = '\n'.join(
         x.extern_python_def
         for x in [
                 ffi_proxy._capsule_finalizer_def,
