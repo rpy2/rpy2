@@ -263,7 +263,10 @@ def _rpy2py_sexps4(obj):
 
 @default_converter.rpy2py.register(SexpExtPtr)
 def _rpy2py_sexpextptr(obj):
-    return obj
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_name[rinterface.SexpExtPtr])
+    cls = clsmap.find(obj.rclass)
+    return cls(obj)
 
 
 @default_converter.rpy2py.register(object)
@@ -356,8 +359,13 @@ def _(obj):
     return obj
 
 
+class ExternalPointer(RObjectMixin, rinterface.SexpExtPtr):
+    pass
+
+
 default_converter._rpy2py_nc_map.update(
     {
+        rinterface.SexpExtPtr: conversion.NameClassMap(ExternalPointer),
         rinterface.SexpS4: conversion.NameClassMap(RS4),
         rinterface.IntSexpVector: conversion.NameClassMap(
             lambda obj: _vector_matrix_array(
