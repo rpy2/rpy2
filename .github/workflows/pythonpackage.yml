@@ -45,7 +45,6 @@ jobs:
         name: rpy2-sdist
         path: dist/rpy2-*.tar.gz
   build-wheel-posix:
-    name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id}}
     runs-on: ${{ matrix.os }}
     permissions:
       packages: read
