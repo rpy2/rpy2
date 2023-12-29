@@ -71,17 +71,18 @@ jobs:
             r-version: release
     steps:
     - uses: actions/checkout@v3
-    - name: Log in to the Container registry
+    -
+      name: Log in to the Container registry
       if: matrix.os == 'ubuntu-latest'
       uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.9"
+        python-version: '3.9'
     - name: Set up R ${{ matrix.r-version }}
       uses: r-lib/actions/setup-r@v2
       with:
@@ -105,12 +106,12 @@ jobs:
       with:
         output-dir: wheelhouse
         config-file: pyproject.toml
-    - name: Upload wheel builds
+    - name: Upload wheels
       uses: actions/upload-artifact@v3
-      if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == env.default_r
+      if: (github.event_name == 'pull_request' || github.event_name == 'push') && (matrix.r-version == env.default_r && matrix.os == env.default_os)
       with:
-          name: ${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.r-version }}
-          path: dist/*.whl
+          name: binary-wheels-${{ matrix.platform_id }}
+          path: wheelhouse/*.whl
   test:
     needs: [build-sdist]
     runs-on: ${{ matrix.os }}
