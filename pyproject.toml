@@ -26,7 +26,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
 ]
 dependencies = [
-    "cffi>=1.10.0",
+    "cffi>=1.15.1",
     "jinja2",
     "tzlocal",
     "packaging;platform_system=='Windows'",
