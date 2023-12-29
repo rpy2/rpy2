@@ -39,7 +39,8 @@ jobs:
     - name: Build sdist
       run: |
         python -m build -o dist/ --sdist .
-    - uses: actions/upload-artifact@v3
+    - name: Upload source package.
+      uses: actions/upload-artifact@v3
       with:
         name: rpy2-sdist
         path: dist/rpy2-*.tar.gz
@@ -104,6 +105,12 @@ jobs:
       with:
         output-dir: wheelhouse
         config-file: pyproject.toml
+    - name: Upload wheel builds
+      uses: actions/upload-artifact@v3
+      if: (github.event_name == 'pull_request' || github.event_name == 'push') && matrix.r-version == env.default_r
+      with:
+          name: ${{ matrix.python-version }}-${{ matrix.os }}-${{ matrix.r-version }}
+          path: dist/*.whl
   test:
     needs: [build-sdist]
     runs-on: ${{ matrix.os }}
