@@ -48,11 +48,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       packages: read
-    continue-on-error: ${{ matrix.experimental }}
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
-        experimental: [true]
         include:
           - os: ubuntu-latest
             python: 39
