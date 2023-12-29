@@ -1,6 +1,17 @@
 Release 3.5.15
 ==============
 
+New features
+------------
+
+- Checking C compiling against the R shared library can be skipped with
+  the environment variable `RPY2_API_FORCE` set to `True`.
+
+- The rinterface-level class :class:`rpy2.rinterface.SexpExtPtr` now
+  also has an robject-level wrapper :class:`rpy2.robjects.ExternalPointer`,
+  and a representation for class name-based conversion rules.
+
+
 Bugs fixed
 ----------
 
@@ -8,6 +19,12 @@ Bugs fixed
   conversion rules might interfere (issue #1047).
 
 - Multi-line in environment variables (issue #1066).
+
+Changes
+-------
+
+- Complete drop of support for Python 3.7. It is now removed from
+  the build matrix.
 
 
 Release 3.5.14

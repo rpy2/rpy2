@@ -3,13 +3,111 @@ name: Python package
 on: [push, pull_request]
 
 jobs:
-  build:
+  code-qc:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Lint with flake8
+      run: |
+        python -m pip install flake8
+        ./scripts/run_linting.sh
+    - name: Check type hints.
+      run: |
+        python -m pip install mypy
+        pip install -r requirements.types.txt
+        ./scripts/run_mypy.sh
+  build-sdist:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Set up R ${{ matrix.r-version }}
+      uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: release
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install setuptools build
+    - name: Build sdist
+      run: |
+        python -m build -o dist/ --sdist .
+    - uses: actions/upload-artifact@v3
+      with:
+        name: rpy2-sdist
+        path: dist/rpy2-*.tar.gz
+  build-wheel-posix:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: false
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.8, 3.9, "3.10", "3.11"]
+        r-version: [release]
+        os: [ubuntu-latest, macOS-latest]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Set up R ${{ matrix.r-version }}
+      uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: ${{ matrix.r-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install setuptools build
+    - name: Build wheel
+      run: |
+        python -m build -o dist/ --wheel .
+    - uses: actions/upload-artifact@v3
+      with:
+        name: rpy2-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        path: dist/rpy2-*.whl
+  build-wheel-windows:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    matrix:
+      python-version: [3.8, 3.9, "3.10", "3.11"]
+      r-version: [release]
+      os: [windows-latest]
+   steps:
+   -  uses: actions/checkout@v3
+   - name: Set up Python ${{ matrix.python-version }}
+     uses: actions/setup-python@v4
+     with:
+       python-version: ${{ matrix.python-version }}
+   - name: Set up R ${{ matrix.r-version }}
+     uses: r-lib/actions/setup-r@v2
+     with:
+       r-version: ${{ matrix.r-version }}
+   - name: Install dependencies
+     run: |
+       python -m pip install --upgrade pip
+       python -m pip install setuptools build
+   - name: Build wheel (no options)
+     run: |
+       python -m build -o dist/ --wheel .
+   - name: Build wheel - windows
+     run: |
+       python -m build -o dist/ --wheel -C--global-option=--verbose -C--build-option="build --compiler=mingw32" .
+  test:
+    needs: [build-sdist]
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
+        python-version: [3.8, 3.9, "3.10", "3.11"]
         r-version: ['release']
         os: [ubuntu-latest, ubuntu-20.04, macOS-latest]
         experimental: [false]
@@ -19,12 +117,10 @@ jobs:
           - os: windows-latest
             experimental: true
             r-version: 'release'
-            python-version: 3.7
+            python-version: 3.8
             venv_activate: ""
             ld_libpath: ""
         exclude:
-          - os: windows-latest
-            python-version: 3.8
           - os: macOS-latest
             r-version: 'release'
     steps:
@@ -54,11 +150,18 @@ jobs:
         echo "Bug in setuptools requires update"
         ${{ matrix.venv_activate }}
         python -m pip install --upgrade setuptools pycparser
-    - name: Lint with flake8
+    - uses: actions/download-artifact@v3
+      with:
+        name: rpy2-sdist
+        path: dist/
+    - name: Source package path.
+      shell: bash
+      run: echo "RPY2_SRC_DIST=$(ls -1 dist/rpy2-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
+    - name: Install package (non-Windows)
+      if: matrix.os != 'windows-latest'
       run: |
         ${{ matrix.venv_activate }}
-        python -m pip install flake8
-        ./scripts/run_linting.sh
+        pip install $RPY2_SRC_DIST
     - name: Get the situation (windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
@@ -67,27 +170,28 @@ jobs:
         python rpy2/situation.py
         python -m pip uninstall --yes packaging
     - name: Install package
+      # if: matrix.os == 'windows-latest'
+      shell: bash
       run: |
         ${{ matrix.venv_activate }}
-        pip install .
-        rm -r build/
+        RPY2_API_FORCE=True pip install $RPY2_SRC_DIST
     - name: Test with minimal dependencies
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install .[test_minimal]
+        python -m pip install $RPY2_SRC_DIST'[test_minimal]'
         bash -e ./scripts/run_test_min_deps.sh
     - name: Test with numpy
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install .[numpy]
+        python -m pip install $RPY2_SRC_DIST'[numpy]'
         bash -e ./scripts/run_test_numpy.sh
     - name: Test with pandas
       run: |
         ${{ matrix.ld_libpath }}
         ${{matrix.venv_activate }}
-        python -m pip install .[pandas]
+        python -m pip install $RPY2_SRC_DIST'[pandas]'
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
       run: |
@@ -110,17 +214,12 @@ jobs:
         ${{ matrix.venv_activate }}
         bash -e ./scripts/run_test_rdeps.sh
     - name: Test with R deps (windows)
+      continue-on-error: true
       if: matrix.os == 'windows-latest'
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
         pytest --cache-clear --cov-append --cov-report=xml --cov-report=term --cov=rpy2.rinterface_lib --cov=rpy2.rinterface --cov=rpy2.rlike --cov=rpy2.robjects rpy2/tests/robjects/lib
-    - name: Check type hints
-      run: |
-        ${{ matrix.ld_libpath }}
-        ${{matrix.venv_activate }}
-        pip install .[types]
-        bash -e ./scripts/run_mypy.sh
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       if: matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.8' && matrix.r-version == 'release'

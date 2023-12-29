@@ -16,7 +16,7 @@ with warnings.catch_warnings():
 TARGET_VERSION = '2.2.'
 if not dbplyr.__version__.startswith(TARGET_VERSION):
     warnings.warn(
-        'This was designed againt dbplyr versions starting with %s'
+        'This was designed against dbplyr versions starting with %s'
         ' but you have %s' %
         (TARGET_VERSION, dbplyr.__version__))
 
