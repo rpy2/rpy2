@@ -103,10 +103,6 @@ def local_context(
         evaluation_context.reset(token)
 
 
-def _sigint_handler(sig, frame):
-    raise KeyboardInterrupt()
-
-
 @_cdata_res_to_rinterface
 def parse(text: str, num: int = -1):
     """Parse a string as R code.
@@ -1218,7 +1214,7 @@ def _post_initr_setup() -> None:
     warn_about_thread = False
     if threading.current_thread() is threading.main_thread():
         try:
-            signal.signal(signal.SIGINT, _sigint_handler)
+            signal.signal(signal.SIGINT, signal.default_int_handler)
         except ValueError as ve:
             if str(ve) == 'signal only works in main thread':
                 warn_about_thread = True
