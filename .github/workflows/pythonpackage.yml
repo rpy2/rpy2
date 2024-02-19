@@ -79,6 +79,7 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       max-parallel: 4
+      fail-fast: false
       matrix:
         python-version: [3.8, 3.9, "3.10", "3.11"]
         r-version: ['release']
