@@ -93,7 +93,7 @@ jobs:
       if: startsWith(matrix.os, 'macos')
       run: |
         brew install pipx
-        ensurepath pipx
+        pipx ensurepath
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
