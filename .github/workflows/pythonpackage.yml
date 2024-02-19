@@ -90,6 +90,7 @@ jobs:
       with:
         r-version: ${{ matrix.r-version }}
     - name: Install dependencies (macos)
+      if: startsWith(matrix.os, 'macos')
       run: |
         brew install pipx
         ensurepath pipx
