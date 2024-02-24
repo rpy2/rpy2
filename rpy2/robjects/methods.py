@@ -1,5 +1,6 @@
 import abc
 from types import SimpleNamespace
+import warnings
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
@@ -87,10 +88,18 @@ class ClassRepresentation(RS4):
 
 
 def getclassdef(cls_name: str, packagename=rinterface.MissingArg):
+    if packagename is None:
+        package = rinterface.MissingArg
+    else:
+        package = StrSexpVector((packagename, ))
     cls_def = methods_env['getClassDef'](
         StrSexpVector((cls_name,)),
-        package=StrSexpVector((packagename, ))
+        package=package
     )
+    if cls_def is rinterface.NULL:
+        raise ValueError(
+            f'{cls_name} is not a class in the R package {packagename!r}'
+        )
     cls_def = ClassRepresentation(cls_def)
     cls_def.__rname__ = cls_name
     return cls_def
