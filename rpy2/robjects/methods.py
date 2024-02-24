@@ -1,6 +1,5 @@
 import abc
 from types import SimpleNamespace
-import warnings
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
@@ -59,7 +58,7 @@ class ClassRepresentation(RS4):
     def slots(self):
         """Slots (attributes) for the class."""
         return [y[0] for y in self.do_slot('slots')]
-         
+
     @property
     def basenames(self):
         """Parent classes."""
