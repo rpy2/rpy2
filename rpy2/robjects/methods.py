@@ -48,29 +48,42 @@ class RS4(RObjectMixin, rinterface.SexpS4):
 
 
 class ClassRepresentation(RS4):
-    """ Definition of an R S4 class """
-    slots = property(lambda x: [y[0] for y in x.do_slot('slots')],
-                     None, None,
-                     "Slots (attributes) for the class")
+    """Definition of an R S4 class.
 
-    basenames = property(lambda x: [y[0] for y in x.do_slot('contains')],
-                         None, None,
-                         "Parent classes")
+    This can be thought of as the Python "type" (class definition)
+    for an R object with the C-level type S4.
+    """
+
+    @property
+    def slots(self):
+        """Slots (attributes) for the class."""
+        return [y[0] for y in self.do_slot('slots')]
+         
+    @property
+    def basenames(self):
+        """Parent classes."""
+        return [y[0] for y in self.do_slot('contains')]
+
     contains = basenames
 
-    isabstract = property(lambda x: x.do_slot('virtual')[0],
-                          None, None,
-                          "Is the class an abstract class ?")
+    @property
+    def isabstract(self):
+        """Is the class an abstract class ?"""
+        return self.do_slot('virtual')[0]
+
     virtual = isabstract
 
-    packagename = property(lambda x: x.do_slot('package')[0],
-                           None, None,
-                           "R package in which the class is defined")
+    @property
+    def packagename(self):
+        """R package in which the class is defined."""
+        return self.do_slot('package')[0]
+
     package = packagename
 
-    classname = property(lambda x: x.do_slot('className')[0],
-                         None, None,
-                         "Name of the R class")
+    @property
+    def classname(self):
+        """Name of the R class."""
+        return self.do_slot('className')[0],
 
 
 def getclassdef(cls_name: str, packagename=rinterface.MissingArg):
