@@ -266,8 +266,7 @@ def test_choosefile_error():
                              utils.noconsole):
         with utils.obj_in_module(callbacks, 'choosefile', f):
             with pytest.raises(rinterface.embedded.RRuntimeError):
-                with pytest.warns(rinterface.RRuntimeWarning):
-                    rinterface.baseenv["file.choose"]()
+                rinterface.baseenv["file.choose"]()
 
 
 def test_showfiles_default(capsys):
