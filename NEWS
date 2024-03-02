@@ -8,6 +8,13 @@ Changes
   Python default handler (instead of a custom handler raising
   :class:`KeyboardInterrupt`).
 
+Bugs fixed
+----------
+
+- :meth:`rpy2.robjects.methods.getclassdef` was not reporting
+  clearly errors due unspecified package name or missing class
+  definition in within the package namespace specified.
+
 
 Release 3.5.15
 ==============

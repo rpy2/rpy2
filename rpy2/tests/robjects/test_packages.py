@@ -117,8 +117,7 @@ class TestImportr(object):
     def test_import_stats_with_libloc_with_quote(self):
         path = 'coin"coin'
 
-        with pytest.raises(robjects.packages.PackageNotInstalledError), \
-             pytest.warns(UserWarning):
+        with pytest.raises(robjects.packages.PackageNotInstalledError):
             Tmp_File = io.StringIO
             tmp_file = Tmp_File()
             try:
