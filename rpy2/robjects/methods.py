@@ -1,5 +1,6 @@
 import abc
 from types import SimpleNamespace
+import typing
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import StrSexpVector
@@ -86,7 +87,8 @@ class ClassRepresentation(RS4):
         return self.do_slot('className')[0],
 
 
-def getclassdef(cls_name: str, packagename=rinterface.MissingArg):
+def getclassdef(cls_name: str, packagename: typing.Optional[str] = None):
+    package: typing.Union[rinterface._MissingArgType, StrSexpVector]
     if packagename is None:
         package = rinterface.MissingArg
     else:
