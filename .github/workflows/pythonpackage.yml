@@ -51,7 +51,14 @@ jobs:
       matrix:
         python-version: [3.8, 3.9, "3.10", "3.11"]
         r-version: [release]
-        os: [ubuntu-latest, macOS-latest]
+        os: [ubuntu-latest, macOS-latest, macos-14]
+        exclude:
+          - os: macos-14
+            python-version: 3.8
+          - os: macos-14
+            python-version: 3.9
+          - os: macos-14
+            python-version: "3.10"
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -107,6 +114,7 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       max-parallel: 4
+      fail-fast: false
       matrix:
         python-version: [3.8, 3.9, "3.10", "3.11"]
         r-version: ['release']
