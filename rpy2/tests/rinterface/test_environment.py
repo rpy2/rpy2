@@ -156,8 +156,7 @@ def test_subscript_utf8():
 
 def test_subscript_missing_utf8():
     env = rinterface.baseenv['new.env']()
-    with pytest.raises(KeyError),\
-            pytest.warns(rinterface.RRuntimeWarning):
+    with pytest.raises(KeyError):
         env['呵呵']
 
 

@@ -275,7 +275,7 @@ def display_figures_svg(graph_dir, isolate_svgs=True):
     # Cairo creates an SVG file every time R is called
     # -- empty ones are not published
     if os.stat(imgfile).st_size >= 1000:
-        img = IPython.display.SVG(filename=imgfile),
+        img = IPython.display.SVG(filename=imgfile)
         IPython.display.display_svg(
             img,
             metadata={'image/svg+xml': dict(isolated=True)} if isolate_svgs else {}

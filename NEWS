@@ -8,6 +8,16 @@ Changes
   Python default handler (instead of a custom handler raising
   :class:`KeyboardInterrupt`).
 
+Bugs fixed
+----------
+
+- :meth:`rpy2.robjects.methods.getclassdef` was not reporting
+  clearly errors due unspecified package name or missing class
+  definition in within the package namespace specified.
+
+- The display of SVG figures in jupyter notebooks is fixed.
+  the was a typo in the form of a trailing comma.
+
 
 Release 3.5.15
 ==============
