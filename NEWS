@@ -15,6 +15,9 @@ Bugs fixed
   clearly errors due unspecified package name or missing class
   definition in within the package namespace specified.
 
+- The display of SVG figures in jupyter notebooks is fixed.
+  there was a typo in the code.
+
 
 Release 3.5.15
 ==============
