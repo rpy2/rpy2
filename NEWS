@@ -16,7 +16,7 @@ Bugs fixed
   definition in within the package namespace specified.
 
 - The display of SVG figures in jupyter notebooks is fixed.
-  the was a typo in the form of a trailing comma.
+  there was a typo in the code.
 
 
 Release 3.5.15
