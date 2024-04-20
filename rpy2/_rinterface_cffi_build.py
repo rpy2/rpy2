@@ -7,19 +7,27 @@ import warnings
 
 import importlib
 
+
 # TODO: this seems be quite the hack to import modules. Why importlib was
 # ever needed should be checked.
-for _module_name, _module_path in (
-        ('ffi_proxy', os.path.join('rpy2', 'rinterface_lib', 'ffi_proxy.py')),
-        ('situation', os.path.join('rpy2', 'situation.py'))
-):
+def _custom_import(_module_name, _module_path):
     _spec = importlib.util.spec_from_file_location(
         'rinterface_lib', _module_path
     )
     _module = importlib.util.module_from_spec(_spec)
     _spec.loader.exec_module(_module)
-    locals()[_module_name] = _module
     sys.modules[_module_name] = _module
+    return _module
+
+
+ffi_proxy = _custom_import(
+    'ffi_proxy',
+    os.path.join('rpy2', 'rinterface_lib', 'ffi_proxy.py')
+)
+situation = _custom_import(
+    'situation',
+    os.path.join('rpy2', 'situation.py')
+)
 
 IFDEF_PAT = re.compile('^#ifdef (.+) ?.*$')
 ELSE_PAT = re.compile('^#else ?.*$')
