@@ -233,7 +233,7 @@ def vector_memoryview(
         obj: sexp.SexpVector,
         sizeof_str: str,
         cast_str: typing.Literal['i', 'd']
-) -> memoryview:
+) -> memoryview[int] | memoryview[float]:
     """
     :param obj: R vector
     :param str sizeof_str: Type in a string to use with ffi.sizeof()
