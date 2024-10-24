@@ -6,6 +6,7 @@ that makes it possible."""
 
 from contextlib import contextmanager
 import logging
+import sys
 import typing
 import os
 from rpy2.rinterface_lib import openrlib
@@ -14,7 +15,7 @@ from rpy2.rinterface_lib import conversion
 
 logger = logging.getLogger(__name__)
 
-_CCHAR_ENCODING = 'utf-8'
+_CCHAR_ENCODING = sys.getdefaultencoding()
 
 
 # TODO: rename to "replace_in_module"
