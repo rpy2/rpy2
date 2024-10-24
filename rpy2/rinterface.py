@@ -232,7 +232,7 @@ def evalr(
 def vector_memoryview(
         obj: sexp.SexpVector,
         sizeof_str: str,
-        cast_str: typing.Litteral['i', 'd']
+        cast_str: typing.Literal['i', 'd']
 ) -> memoryview:
     """
     :param obj: R vector
