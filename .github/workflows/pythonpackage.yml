@@ -131,7 +131,7 @@ jobs:
         echo "Bug in setuptools requires update"
         ${{ matrix.venv_activate }}
         python -m pip install --upgrade setuptools pycparser
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: rpy2-sdist
         path: dist/
