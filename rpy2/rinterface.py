@@ -233,7 +233,7 @@ def vector_memoryview(
         obj: sexp.SexpVector,
         sizeof_str: str,
         cast_str: typing.Literal['i', 'd']
-) -> memoryview[int] | memoryview[float]:
+) -> memoryview[int]:
     """
     :param obj: R vector
     :param str sizeof_str: Type in a string to use with ffi.sizeof()
@@ -523,7 +523,7 @@ class BoolSexpVector(SexpVectorWithNumpyInterface):
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
 
-    def memoryview(self) -> memoryview:
+    def memoryview(self) -> memoryview[int]:
         return vector_memoryview(self, 'int', 'i')
 
 
@@ -577,7 +577,7 @@ class IntSexpVector(SexpVectorWithNumpyInterface):
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
 
-    def memoryview(self) -> memoryview:
+    def memoryview(self) -> memoryview[int]:
         return vector_memoryview(self, 'int', 'i')
 
 
@@ -623,7 +623,7 @@ class FloatSexpVector(SexpVectorWithNumpyInterface):
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
 
-    def memoryview(self) -> memoryview:
+    def memoryview(self) -> memoryview[int]:
         return vector_memoryview(self, 'double', 'd')
 
 
