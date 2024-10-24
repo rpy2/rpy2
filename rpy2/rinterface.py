@@ -229,8 +229,11 @@ def evalr(
     return res
 
 
-def vector_memoryview(obj: sexp.SexpVector,
-                      sizeof_str: str, cast_str: str) -> memoryview:
+def vector_memoryview(
+        obj: sexp.SexpVector,
+        sizeof_str: str,
+        cast_str: typing.Litteral['i', 'd']
+) -> memoryview:
     """
     :param obj: R vector
     :param str sizeof_str: Type in a string to use with ffi.sizeof()
