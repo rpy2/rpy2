@@ -4,15 +4,30 @@ import re
 import sys
 import warnings
 
-import situation  # preloaded in setup.py
 
-# from rpy2.rinterface_lib import ffi_proxy
 import importlib
-spec = importlib.util.spec_from_file_location(
-    'rinterface_lib', './rpy2/rinterface_lib/ffi_proxy.py')
-ffi_proxy = importlib.util.module_from_spec(spec)
-sys.modules['ffi_proxy'] = ffi_proxy
-spec.loader.exec_module(ffi_proxy)
+
+
+# TODO: this seems be quite the hack to import modules. Why importlib was
+# ever needed should be checked.
+def _custom_import(_module_name, _module_path):
+    _spec = importlib.util.spec_from_file_location(
+        'rinterface_lib', _module_path
+    )
+    _module = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_module)
+    sys.modules[_module_name] = _module
+    return _module
+
+
+ffi_proxy = _custom_import(
+    'ffi_proxy',
+    os.path.join('rpy2', 'rinterface_lib', 'ffi_proxy.py')
+)
+situation = _custom_import(
+    'situation',
+    os.path.join('rpy2', 'situation.py')
+)
 
 IFDEF_PAT = re.compile('^#ifdef (.+) ?.*$')
 ELSE_PAT = re.compile('^#else ?.*$')
@@ -249,9 +264,11 @@ def createbuilder_api():
     ffibuilder.cdef(rpy2_h)
     ffibuilder.cdef(callback_defns_api)
 
+    definitions_cffi_source = definitions.copy()
+    definitions_cffi_source['CFFI_SOURCE'] = True
     cdef_eventloop, _ = c_preprocess(
         iter(eventloop_h.split('\n')),
-        definitions={'CFFI_SOURCE': True},
+        definitions=definitions_cffi_source,
         rownum=1)
     ffibuilder.cdef('\n'.join(cdef_eventloop))
     ffibuilder.cdef('void rpy2_runHandlers(InputHandler *handlers);')
