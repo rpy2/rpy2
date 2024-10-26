@@ -37,11 +37,11 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 test_minimal = ["pytest>=8", "coverage", "pytest-cov"]
-test = ["pytest", "ipython", "numpy>=2.0", "pandas>=1.3.5"]
-numpy = []
-pandas = ["numpy>=2.0", "pandas>=1.3.5"]
+test = ["pytest", "ipython", "numpy", "pandas>=1.3.5"]
+numpy = ["numpy>=2.0"]
+pandas = ["numpy", "pandas>=1.3.5"]
 types = ["mypy", "types-tzlocal"]
-all = ["pytest", "ipython", "pandas>=1.3.5", "numpy>=2.0"]
+all = ["pytest", "ipython", "pandas>=1.3.5", "numpy"]
 
 [project.urls]
 Homepage = "https://rpy2.github.io"
