@@ -1,3 +1,9 @@
+```python
+from functools import partial
+from rpy2.ipython import html
+html.html_rdataframe=partial(html.html_rdataframe, table_class="docutils")
+```
+
 # Data Import
 
 We choose to use an external dataset to demonstrate how R's own data import
