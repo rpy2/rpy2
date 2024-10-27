@@ -673,6 +673,13 @@ class GeomSegment(Geom):
 geom_segment = GeomSegment.new
 
 
+class GeomCurve(Geom):
+    _constructor = ggplot2_env['geom_curve']
+
+
+geom_curve = GeomCurve.new
+
+
 class GeomSmooth(Geom):
     _constructor = ggplot2_env['geom_smooth']
 
