@@ -39,7 +39,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.graphviz',
-    'sphinx.ext.inheritance_diagram'
+    'sphinx.ext.inheritance_diagram',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -343,8 +343,8 @@ epub_exclude_files = ['search.html']
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
-
+intersphinx_mapping = {'python': ('https://docs.python.org/3',
+                                  (None, 'python-inv.txt'))}
 
 inheritance_graph_attrs = dict(rankdir="LR",
                                fontsize=12, ratio='compress')

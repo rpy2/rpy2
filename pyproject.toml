@@ -36,6 +36,14 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+doc = ['ipykernel',
+       'jupytext',
+       'multipledispatch',
+       'nbconvert',
+       'numpy',
+       'pandas',
+       'pygraphviz',
+       'sphinx']
 test_minimal = ["pytest>=8", "coverage", "pytest-cov"]
 test = ["pytest", "ipython", "numpy", "pandas>=1.3.5"]
 numpy = []
