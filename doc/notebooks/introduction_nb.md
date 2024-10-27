@@ -1,5 +1,10 @@
-# Introduction to rpy2
+```python
+from functools import partial
+from rpy2.ipython import html
+html.html_rdataframe=partial(html.html_rdataframe, table_class="docutils")
+```
 
+# Introduction to rpy2
 
 This introduction aims at making a gentle start to rpy2,
 either when coming from R to Python/rpy2, from Python to rpy2/R,
