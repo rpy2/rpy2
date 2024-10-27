@@ -315,6 +315,7 @@ class CharSexp(Sexp):
         finally:
             openrlib.lock.release()
 
+
 class SexpEnvironment(Sexp):
     """Proxy for an R "environment" object.
 
@@ -690,7 +691,7 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
                 self._R_SET_VECTOR_ELT(cdata, i_c,
                                        val_cdata)
             finally:
-                openrlib.lock.release()    
+                openrlib.lock.release()
         elif isinstance(i, slice):
             n_items = len(self)
             for i_c, v in zip(range(*i.indices(n_items)), value):
@@ -699,7 +700,7 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
                     self._R_SET_VECTOR_ELT(cdata, i_c,
                                            v.__sexp__._cdata)
                 finally:
-                    openrlib.lock.release()    
+                    openrlib.lock.release()
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
@@ -991,6 +992,7 @@ def rclass_set(
                                    value_r.__sexp__._cdata)
     finally:
         openrlib.lock.release()
+
 
 def unserialize(state):
     n = len(state)
