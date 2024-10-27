@@ -278,14 +278,15 @@ def _NAMED(robj: FFI.CData) -> int:
 
 
 def _string_getitem(cdata: FFI.CData, i: int) -> typing.Optional[str]:
-    elt = openrlib.rlib.STRING_ELT(cdata, i)
-    if elt == openrlib.rlib.R_NaString:
-        res = None
-    else:
-        res = conversion._cchar_to_str(
-            openrlib.rlib.R_CHAR(elt),
-            conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(elt)]
-        )
+    with openrlib.lock:
+        elt = openrlib.rlib.STRING_ELT(cdata, i)
+        if elt == openrlib.rlib.R_NaString:
+            res = None
+        else:
+            res = conversion._cchar_to_str(
+                openrlib.rlib.R_CHAR(elt),
+                conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(elt)]
+            )
     return res
 
 

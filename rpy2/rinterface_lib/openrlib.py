@@ -34,6 +34,7 @@ if os.name != 'nt':
         rpy2.situation.r_ld_library_path_from_subprocess(R_HOME)
         if R_HOME is not None
         else '')
+lock = threading.Lock()
 rlock = threading.RLock()
 
 
@@ -68,16 +69,7 @@ def _get_symbol_or_fallback(symbol: str, fallback: typing.Any):
     return res
 
 
-def _get_dataptr_fallback(vec):
-    # DATAPTR seems to be the following macro in R < 3.5
-    # but I cannot get it to work (seems to be pointing
-    # to incorrect memory region).
-    # (((SEXPREC_ALIGN *)(x)) + 1)
-    raise NotImplementedError()
-
-
-DATAPTR = _get_symbol_or_fallback('DATAPTR',
-                                  _get_dataptr_fallback)
+DATAPTR = rlib.DATAPTR
 
 
 def _LOGICAL(x):

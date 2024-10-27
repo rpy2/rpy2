@@ -194,8 +194,10 @@ class Sexp(SupportsSEXP):
 
     @conversion._cdata_res_to_rinterface
     def get_attrib(self, name: str) -> 'Sexp':
-        res = openrlib.rlib.Rf_getAttrib(self.__sexp__._cdata,
-                                         conversion._str_to_charsxp(name))
+        with memorymanagement.rmemory() as rmemory:
+            charsxp = rmemory.protect(conversion._str_to_charsxp(name))
+            res = openrlib.rlib.Rf_getAttrib(self.__sexp__._cdata,
+                                             charsxp)
         return res
 
     # TODO: deprecate this (and implement __eq__) ?
@@ -215,15 +217,24 @@ class Sexp(SupportsSEXP):
     def names(self, value) -> None:
         if not isinstance(value, StrSexpVector):
             raise ValueError('The new names should be a StrSexpVector.')
-        openrlib.rlib.Rf_namesgets(
-            self.__sexp__._cdata, value.__sexp__._cdata)
+        try:
+            openrlib.lock.acquire()
+            openrlib.rlib.Rf_namesgets(
+                self.__sexp__._cdata, value.__sexp__._cdata)
+        finally:
+            openrlib.lock.release()
 
     @property
     @conversion._cdata_res_to_rinterface
     def names_from_c_attribute(self) -> 'Sexp':
-        return openrlib.rlib.Rf_getAttrib(
-            self.__sexp__._cdata,
-            openrlib.rlib.R_NameSymbol)
+        try:
+            openrlib.lock.acquire()
+            return openrlib.rlib.Rf_getAttrib(
+                self.__sexp__._cdata,
+                openrlib.rlib.R_NameSymbol
+            )
+        finally:
+            openrlib.lock.release()
 
 
 class NULLType(Sexp, metaclass=SingletonABC):
@@ -284,18 +295,25 @@ class CharSexp(Sexp):
 
     @property
     def encoding(self) -> CETYPE:
-        return CETYPE(
-            openrlib.rlib.Rf_getCharCE(self.__sexp__._cdata)
-        )
+        try:
+            openrlib.lock.acquire()
+            return CETYPE(
+                openrlib.rlib.Rf_getCharCE(self.__sexp__._cdata)
+            )
+        finally:
+            openrlib.lock.release()
 
     def nchar(self, what: NCHAR_TYPE = NCHAR_TYPE.Bytes) -> int:
-        # TODO: nchar_type is not parsed properly by cffi ?
-        return openrlib.rlib.R_nchar(self.__sexp__._cdata,
-                                     what.value,
-                                     openrlib.rlib.FALSE,
-                                     openrlib.rlib.FALSE,
-                                     self._NCHAR_MSG)
-
+        try:
+            openrlib.lock.acquire()
+            # TODO: nchar_type is not parsed properly by cffi ?
+            return openrlib.rlib.R_nchar(self.__sexp__._cdata,
+                                         what.value,
+                                         openrlib.rlib.FALSE,
+                                         openrlib.rlib.FALSE,
+                                         self._NCHAR_MSG)
+        finally:
+            openrlib.lock.release()
 
 class SexpEnvironment(Sexp):
     """Proxy for an R "environment" object.
@@ -632,18 +650,28 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
             i: typing.Union[int, slice]) -> typing.Union[Sexp, VT, typing.Any]:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
-            i_c = _rinterface._python_index_to_c(cdata, i)
-            res = conversion._cdata_to_rinterface(
-                self._R_VECTOR_ELT(cdata, i_c))
+            try:
+                openrlib.lock.acquire()
+                i_c = _rinterface._python_index_to_c(cdata, i)
+                res = conversion._cdata_to_rinterface(
+                    self._R_VECTOR_ELT(cdata, i_c)
+                )
+            finally:
+                openrlib.lock.release()
         elif isinstance(i, slice):
-            res = self.from_iterable(
-                [
-                    self._R_VECTOR_ELT(
-                        cdata, i_c,
-                    ) for i_c in range(*i.indices(len(self)))
-                ],
-                cast_value=lambda x: x
-            )
+            n_items = len(self)
+            try:
+                openrlib.lock.acquire()
+                res = self.from_iterable(
+                    [
+                        self._R_VECTOR_ELT(
+                            cdata, i_c,
+                        ) for i_c in range(*i.indices(n_items))
+                    ],
+                    cast_value=lambda x: x
+                )
+            finally:
+                openrlib.lock.release()
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
@@ -657,18 +685,31 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
                 val_cdata = value.__sexp__._cdata
             else:
                 val_cdata = conversion._python_to_cdata(value)
-            self._R_SET_VECTOR_ELT(cdata, i_c,
-                                   val_cdata)
-        elif isinstance(i, slice):
-            for i_c, v in zip(range(*i.indices(len(self))), value):
+            try:
+                openrlib.lock.acquire()
                 self._R_SET_VECTOR_ELT(cdata, i_c,
-                                       v.__sexp__._cdata)
+                                       val_cdata)
+            finally:
+                openrlib.lock.release()    
+        elif isinstance(i, slice):
+            n_items = len(self)
+            for i_c, v in zip(range(*i.indices(n_items)), value):
+                try:
+                    openrlib.lock.acquire()
+                    self._R_SET_VECTOR_ELT(cdata, i_c,
+                                           v.__sexp__._cdata)
+                finally:
+                    openrlib.lock.release()    
         else:
             raise TypeError(
                 'Indices must be integers or slices, not %s' % type(i))
 
     def __len__(self) -> int:
-        return openrlib.rlib.Rf_xlength(self.__sexp__._cdata)
+        try:
+            openrlib.lock.acquire()
+            return openrlib.rlib.Rf_xlength(self.__sexp__._cdata)
+        finally:
+            openrlib.lock.release()
 
     def __iter__(self) -> typing.Iterator[typing.Union[Sexp, VT, typing.Any]]:
         for i in range(len(self)):
@@ -764,10 +805,14 @@ class StrSexpVector(SexpVector):
                 if not isinstance(value, str):
                     value = str(value)
                 val_cdata = _as_charsxp_cdata(value)
-            self._R_SET_VECTOR_ELT(
-                cdata, i_c,
-                val_cdata
-            )
+            try:
+                openrlib.lock.acquire()
+                self._R_SET_VECTOR_ELT(
+                    cdata, i_c,
+                    val_cdata
+                )
+            finally:
+                openrlib.lock.release()
         elif isinstance(i, slice):
             value_slice: typing.Iterable
             if (
@@ -780,7 +825,8 @@ class StrSexpVector(SexpVector):
                 value_slice = itertools.cycle(value)
             else:
                 value_slice = value
-            for i_c, _ in zip(range(*i.indices(len(self))), value_slice):
+            n_items = len(self)
+            for i_c, _ in zip(range(*i.indices(n_items)), value_slice):
                 if _ is None:
                     v_cdata = openrlib.rlib.R_NaString
                 else:
@@ -789,10 +835,14 @@ class StrSexpVector(SexpVector):
                     else:
                         v = str(_)
                     v_cdata = _as_charsxp_cdata(v)
-                self._R_SET_VECTOR_ELT(
-                    cdata, i_c,
-                    v_cdata
-                )
+                try:
+                    openrlib.lock.acquire()
+                    self._R_SET_VECTOR_ELT(
+                        cdata, i_c,
+                        v_cdata
+                    )
+                finally:
+                    openrlib.lock.release()
         else:
             raise TypeError('Indices must be integers or slices, '
                             'not %s' % type(i))
@@ -800,11 +850,15 @@ class StrSexpVector(SexpVector):
     def get_charsxp(self, i: int) -> CharSexp:
         """Get the R CharSexp objects for the index i."""
         i_c = _rinterface._python_index_to_c(self.__sexp__._cdata, i)
-        return CharSexp(
-            _rinterface.SexpCapsule(
-                openrlib.rlib.STRING_ELT(self.__sexp__._cdata, i_c)
+        try:
+            openrlib.lock.acquire()
+            return CharSexp(
+                _rinterface.SexpCapsule(
+                    openrlib.rlib.STRING_ELT(self.__sexp__._cdata, i_c)
+                )
             )
-        )
+        finally:
+            openrlib.lock.release()
 
 
 class RVersion(metaclass=Singleton):
@@ -930,10 +984,13 @@ def rclass_set(
     else:
         raise TypeError('Value should a str or '
                         'a rpy2.rinterface.sexp.StrSexpVector.')
-    openrlib.rlib.Rf_setAttrib(scaps._cdata,
-                               openrlib.rlib.R_ClassSymbol,
-                               value_r.__sexp__._cdata)
-
+    try:
+        openrlib.lock.acquire()
+        openrlib.rlib.Rf_setAttrib(scaps._cdata,
+                                   openrlib.rlib.R_ClassSymbol,
+                                   value_r.__sexp__._cdata)
+    finally:
+        openrlib.lock.release()
 
 def unserialize(state):
     n = len(state)
