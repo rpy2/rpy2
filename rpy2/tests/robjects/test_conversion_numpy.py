@@ -71,7 +71,7 @@ class TestNumpyConversions(object):
         
     def test_vector_complex(self):
         l = [1j, 2j, 3j]
-        c = numpy.array(l, dtype=numpy.complex_)
+        c = numpy.array(l, dtype=numpy.complex128)
         c_r = self.check_homogeneous(c, "complex", "complex")
         for orig, conv in zip(l, c_r):
             assert abs(orig.real-conv.real) < 0.000001
