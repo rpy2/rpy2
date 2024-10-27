@@ -36,7 +36,8 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-doc = ['jupytext',
+doc = ['ipykernel',
+       'jupytext',
        'multipledispatch',
        'nbconvert',
        'numpy',
