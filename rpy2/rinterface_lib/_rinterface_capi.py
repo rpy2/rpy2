@@ -702,15 +702,19 @@ else:
 
 
 def _parse(cdata: FFI.CData, num, rmemory) -> FFI.CData:
-    status = ffi.new('ParseStatus[1]', None)
+    status = ffi.new('ParseStatus *')
     data = ffi.new_handle((cdata, num, status))
     hdata = ffi.NULL
-    res = rmemory.protect(
-        openrlib.rlib.R_tryCatchError(
-            _parsevector_wrap, data,
-            _handler_wrap, hdata
+    try:
+        openrlib.lock.acquire()
+        res = rmemory.protect(
+            openrlib.rlib.R_tryCatchError(
+                _parsevector_wrap, data,
+                _handler_wrap, hdata
+            )
         )
-    )
+    finally:
+        openrlib.lock.release()
     # TODO: design better handling of possible status:
     # PARSE_NULL,
     # PARSE_OK,
