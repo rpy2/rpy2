@@ -114,7 +114,7 @@ def test_parse_error():
         rinterface.parse("2 + 3 , 1")
 
 
-def test_parse_error_when_evaluting():
+def test_parse_error_when_evaluating():
     with pytest.raises(_rinterface.RParsingError):
         rinterface.parse("list(''=1)")
 

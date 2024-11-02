@@ -116,8 +116,11 @@ def parse(text: str, num: int = -1):
 
     if not isinstance(text, str):
         raise TypeError('text must be a string.')
-    robj = StrSexpVector([text])
     with memorymanagement.rmemory() as rmemory:
+        # The creation of the StrSexpVector is placed under
+        # the rmemory context to benefit from the rlock that
+        # implicitly come with it.
+        robj = StrSexpVector([text])
         res = _rinterface._parse(robj.__sexp__._cdata, num, rmemory)
     return res
 
