@@ -278,14 +278,15 @@ def _NAMED(robj: FFI.CData) -> int:
 
 
 def _string_getitem(cdata: FFI.CData, i: int) -> typing.Optional[str]:
-    elt = openrlib.rlib.STRING_ELT(cdata, i)
-    if elt == openrlib.rlib.R_NaString:
-        res = None
-    else:
-        res = conversion._cchar_to_str(
-            openrlib.rlib.R_CHAR(elt),
-            conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(elt)]
-        )
+    with openrlib.lock:
+        elt = openrlib.rlib.STRING_ELT(cdata, i)
+        if elt == openrlib.rlib.R_NaString:
+            res = None
+        else:
+            res = conversion._cchar_to_str(
+                openrlib.rlib.R_CHAR(elt),
+                conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(elt)]
+            )
     return res
 
 
@@ -686,8 +687,8 @@ def _parsevector_wrap(data: FFI.CData):
 # TODO: is this complete ?
 @ffi_proxy.callback(ffi_proxy._handler_def,
                     openrlib._rinterface_cffi)
-def _handler_wrap(cond, hdata):
-    return openrlib.rlib.R_NilValue
+def _handler_wrap(cond, hdata: FFI.CData):
+    return ffi.NULL  # openrlib.rlib.R_NilValue
 
 
 if FFI_MODE is ffi_proxy.InterfaceType.ABI:
@@ -701,15 +702,19 @@ else:
 
 
 def _parse(cdata: FFI.CData, num, rmemory) -> FFI.CData:
-    status = ffi.new('ParseStatus[1]', None)
+    status = ffi.new('ParseStatus *')
     data = ffi.new_handle((cdata, num, status))
     hdata = ffi.NULL
-    res = rmemory.protect(
-        openrlib.rlib.R_tryCatchError(
-            _parsevector_wrap, data,
-            _handler_wrap, hdata
+    try:
+        openrlib.lock.acquire()
+        res = rmemory.protect(
+            openrlib.rlib.R_tryCatchError(
+                _parsevector_wrap, data,
+                _handler_wrap, hdata
+            )
         )
-    )
+    finally:
+        openrlib.lock.release()
     # TODO: design better handling of possible status:
     # PARSE_NULL,
     # PARSE_OK,
