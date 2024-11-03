@@ -254,6 +254,10 @@ Rboolean R_ToplevelExec(void (*fun)(void *), void *data);
 SEXP R_tryCatchError(SEXP (*fun)(void *data), void *data,
 		     SEXP (*hndlr)(SEXP cond, void *hdata), void *hdata);
 
+SEXP R_UnwindProtect(SEXP (*fun)(void *data), void *data,
+                     void (*clean)(void *data, Rboolean jump), void *cdata,
+                     SEXP cont);
+
 SEXP Rf_findFun(SEXP sym, SEXP env);
 // SEXP Rf_findFun3(SEXP, SEXP, SEXP);
 

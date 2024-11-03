@@ -687,8 +687,8 @@ def _parsevector_wrap(data: FFI.CData):
 # TODO: is this complete ?
 @ffi_proxy.callback(ffi_proxy._handler_def,
                     openrlib._rinterface_cffi)
-def _handler_wrap(cond, hdata):
-    return openrlib.rlib.R_NilValue
+def _handler_wrap(cond, hdata: FFI.CData):
+    return ffi.NULL  # openrlib.rlib.R_NilValue
 
 
 if FFI_MODE is ffi_proxy.InterfaceType.ABI:

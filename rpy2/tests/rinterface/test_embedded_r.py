@@ -114,6 +114,9 @@ def test_parse_error():
         rinterface.parse("2 + 3 , 1")
 
 
+# TODO: This might fail with a segfault when multithreading is involved.
+# The underlying R C code has an unfortunate non-local jump when this parsing
+# error is encountered.
 def test_parse_error_when_evaluating():
     with pytest.raises(_rinterface.RParsingError):
         rinterface.parse("list(''=1)")
