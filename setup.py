@@ -138,10 +138,13 @@ class install(setuptools.command.install.install):
 
 r_home = situation.get_r_home()
 cffi_mode = situation.get_cffi_mode()
-c_extension_status = get_r_c_extension_status(
-    r_home,
-    force_ok = os.environ.get('RPY2_API_FORCE') == 'True'
-)
+try:
+    c_extension_status = get_r_c_extension_status(
+        r_home,
+        force_ok = os.environ.get('RPY2_API_FORCE') == 'True')
+except DistutilsExecError as dee:
+    warning(dee)
+    c_extension_status = COMPILATION_STATUS.COMPILE_ERROR
 ext_modules = []
 if cffi_mode == situation.CFFI_MODE.ABI:
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
@@ -163,12 +166,12 @@ elif cffi_mode == situation.CFFI_MODE.BOTH:
 elif cffi_mode == situation.CFFI_MODE.ANY:
     # default interface
     cffi_modules = ['rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
-    if c_extension_status == COMPILATION_STATUS.OK:
-        cffi_modules.append('rpy2/_rinterface_cffi_build.py:ffibuilder_api')
-        ext_modules = [
-            Extension('rpy2.rinterface_lib._bufferprotocol',
-                      ['rpy2/rinterface_lib/_bufferprotocol.c'])
-        ]
+    cffi_modules.append('rpy2/_rinterface_cffi_build.py:ffibuilder_api')
+    ext_modules = [
+        Extension('rpy2.rinterface_lib._bufferprotocol',
+                  ['rpy2/rinterface_lib/_bufferprotocol.c'],
+                  optional=True)
+    ]
 else:
     # This should never happen.
     raise ValueError('Invalid value for cffi_mode')
