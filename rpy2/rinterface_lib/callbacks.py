@@ -40,7 +40,8 @@ _FLUSHCONSOLE_EXCEPTION_LOG = 'R[flush console]: %s'
                     openrlib._rinterface_cffi)
 def _consoleflush() -> None:
     try:
-        consoleflush()
+        with openrlib.rlock:
+            consoleflush()
     except Exception as e:
         logger.error(_FLUSHCONSOLE_EXCEPTION_LOG, str(e))
 
@@ -65,7 +66,8 @@ def _consoleread(prompt, buf, n: int, addtohistory) -> int:
     success = None
     try:
         s = conversion._cchar_to_str(prompt, _CCHAR_ENCODING)
-        reply = consoleread(s)
+        with openrlib.rlock:
+            reply = consoleread(s)
     except Exception as e:
         success = 0
         logger.error(_READCONSOLE_EXCEPTION_LOG, str(e))
@@ -106,7 +108,8 @@ _RESETCONSOLE_EXCEPTION_LOG = 'R[reset console]: %s'
                     openrlib._rinterface_cffi)
 def _consolereset() -> None:
     try:
-        consolereset()
+        with openrlib.rlock:
+            consolereset()
     except Exception as e:
         logger.error(_RESETCONSOLE_EXCEPTION_LOG, str(e))
 
@@ -133,10 +136,11 @@ _WRITECONSOLE_EXCEPTION_LOG = 'R[write to console]: %s'
 def _consolewrite_ex(buf, n: int, otype: int) -> None:
     s = conversion._cchar_to_str_with_maxlen(buf, n, _CCHAR_ENCODING)
     try:
-        if otype == 0:
-            consolewrite_print(s)
-        else:
-            consolewrite_warnerror(s)
+        with openrlib.rlock:
+            if otype == 0:
+                consolewrite_print(s)
+            else:
+                consolewrite_warnerror(s)
     except Exception as e:
         logger.error(_WRITECONSOLE_EXCEPTION_LOG, str(e))
 
@@ -154,7 +158,8 @@ _SHOWMESSAGE_EXCEPTION_LOG = 'R[show message]: %s'
 def _showmessage(buf):
     s = conversion._cchar_to_str(buf, _CCHAR_ENCODING)
     try:
-        showmessage(s)
+        with openrlib.rlock:
+            showmessage(s)
     except Exception as e:
         logger.error(_SHOWMESSAGE_EXCEPTION_LOG, str(e))
 
@@ -170,7 +175,8 @@ _CHOOSEFILE_EXCEPTION_LOG = 'R[choose file]: %s'
                     openrlib._rinterface_cffi)
 def _choosefile(new, buf, n: int) -> int:
     try:
-        res = choosefile(new)
+        with openrlib.rlock:
+            res = choosefile(new)
     except Exception as e:
         logger.error(_CHOOSEFILE_EXCEPTION_LOG, str(e))
         res = None
@@ -234,10 +240,11 @@ def _showfiles(nfiles: int, files, headers, wtitle, delete, pager) -> int:
     else:
         res = 1
     try:
-        showfiles(tuple(filenames),
-                  tuple(headers_str),
-                  wtitle_str,
-                  pager_str)
+        with openrlib.rlock:
+            showfiles(tuple(filenames),
+                      tuple(headers_str),
+                      wtitle_str,
+                      pager_str)
     except Exception as e:
         res = 1
         logger.error(_SHOWFILE_EXCEPTION_LOG, str(e))
@@ -256,7 +263,8 @@ _CLEANUP_EXCEPTION_LOG = 'R[cleanup]: %s'
                     openrlib._rinterface_cffi)
 def _cleanup(saveact, status, runlast):
     try:
-        cleanup(saveact, status, runlast)
+        with openrlib.rlock:
+            cleanup(saveact, status, runlast)
     except Exception as e:
         logger.error(_CLEANUP_EXCEPTION_LOG, str(e))
 
@@ -277,7 +285,8 @@ _PROCESSEVENTS_EXCEPTION_LOG = 'R[processevents]: %s'
                     openrlib._rinterface_cffi)
 def _processevents() -> None:
     try:
-        processevents()
+        with openrlib.rlock:
+            processevents()
     except KeyboardInterrupt:
         # This function is a Python callback. A keyboard interruption is
         # captured in Python, but R must be notified that an interruption
@@ -312,7 +321,8 @@ _BUSY_EXCEPTION_LOG = 'R[busy]: %s'
                     openrlib._rinterface_cffi)
 def _busy(which: int) -> None:
     try:
-        busy(which)
+        with openrlib.rlock:
+            busy(which)
     except Exception as e:
         logger.error(_BUSY_EXCEPTION_LOG, str(e))
 
@@ -328,7 +338,8 @@ _CALLBACK_EXCEPTION_LOG = 'R[callback]: %s'
                     openrlib._rinterface_cffi)
 def _callback() -> None:
     try:
-        callback()
+        with openrlib.rlock:
+            callback()
     except Exception as e:
         logger.error(_CALLBACK_EXCEPTION_LOG, str(e))
 
@@ -350,7 +361,8 @@ _YESNOCANCEL_EXCEPTION_LOG = 'R[yesnocancel]: %s'
 def _yesnocancel(question):
     try:
         q = conversion._cchar_to_str(question, _CCHAR_ENCODING)
-        res = yesnocancel(q)
+        with openrlib.rlock:
+            res = yesnocancel(q)
     except Exception as e:
         logger.error(_YESNOCANCEL_EXCEPTION_LOG, str(e))
     return res

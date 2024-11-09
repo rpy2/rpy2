@@ -75,18 +75,26 @@ def _int_to_sexp(val: int):
             f'The Python integer {val} is larger than {_rinterface._MAX_INT} ('
             'R\'s largest possible integer).'
         )
-    s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.INTSXP, 1))
-    openrlib.SET_INTEGER_ELT(s, 0, val)
-    rlib.Rf_unprotect(1)
+    try:
+        openrlib.lock.acquire()
+        s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.INTSXP, 1))
+        openrlib.SET_INTEGER_ELT(s, 0, val)
+        rlib.Rf_unprotect(1)
+    finally:
+        openrlib.lock.release()
     return s
 
 
 def _bool_to_sexp(val: bool):
     # TODO: test value is not too large for R's ints
     rlib = openrlib.rlib
-    s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.LGLSXP, 1))
-    openrlib.SET_LOGICAL_ELT(s, 0, int(val))
-    rlib.Rf_unprotect(1)
+    try:
+        openrlib.lock.acquire()
+        s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.LGLSXP, 1))
+        openrlib.SET_LOGICAL_ELT(s, 0, int(val))
+        rlib.Rf_unprotect(1)
+    finally:
+        openrlib.lock.release()
     return s
 
 
@@ -100,12 +108,18 @@ def _float_to_sexp(val: float):
 
 def _complex_to_sexp(val: complex):
     rlib = openrlib.rlib
-    s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.CPLXSXP, 1))
-    openrlib.SET_COMPLEX_ELT(
-        s, 0,
-        val
-    )
-    rlib.Rf_unprotect(1)
+    try:
+        openrlib.lock.acquire()
+        s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.CPLXSXP, 1))
+        try:
+            openrlib.SET_COMPLEX_ELT(
+                s, 0,
+                val
+            )
+        finally:
+            rlib.Rf_unprotect(1)
+    finally:
+        openrlib.lock.release()
     return s
 
 
@@ -142,6 +156,7 @@ def _cchar_to_str_with_maxlen(c, maxlen: int, encoding: str) -> str:
 
 
 def _str_to_charsxp(val: Optional[str]):
+    """This function is not thread safe!"""
     rlib = openrlib.rlib
     if val is None:
         s = rlib.R_NaString
@@ -152,6 +167,7 @@ def _str_to_charsxp(val: Optional[str]):
 
 
 def _str_to_sexp(val: str):
+    """This function is not thread safe!"""
     rlib = openrlib.rlib
     s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.STRSXP, 1))
     charval = _str_to_charsxp(val)
@@ -161,6 +177,7 @@ def _str_to_sexp(val: str):
 
 
 def _str_to_symsxp(val: str):
+    """This function is not thread safe!"""
     rlib = openrlib.rlib
     cchar = _str_to_cchar(val)
     s = rlib.Rf_install(cchar)
