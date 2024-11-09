@@ -88,6 +88,9 @@ New features
   variables were not set by default by rpy2 and this could lead to issues (see issue #1033).
   The variables are now added to `os.environ`.
 
+- On systems where the default encoding is not utf-8, converting
+  R strings to Python can result in decoding errors (issue #1018).
+
 Bugs fixed
 ----------
 
