@@ -30,7 +30,7 @@ import importlib
 # sys.modules['rpy2'] = rpy2
 # spec.loader.exec_module(rpy2)
 
-spec = importlib.util.spec_from_file_location('situation', 'src/rpy2/situation.py')
+spec = importlib.util.spec_from_file_location('situation', 'src/rpy2/situation/__init__.py')
 situation = importlib.util.module_from_spec(spec)
 sys.modules['situation'] = situation
 spec.loader.exec_module(situation)
