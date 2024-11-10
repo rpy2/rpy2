@@ -11,15 +11,28 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
-    - name: Lint with flake8
+    - name: Lint with flake8 rinterface
       run: |
         python -m pip install flake8
-        ./scripts/run_linting.sh
+	cd rpy2-rinterface
+        ./scripts/run_linting_rinterface.sh
+    - name: Lint with flake8 robjects
+      run: |
+        python -m pip install flake8
+	cd rpy2-robjects
+        ./scripts/run_linting_robjects.sh
+    - name: Check type hints rinterface
+      run: |
+        python -m pip install mypy
+        pip install -r requirements.types.txt
+	cd rpy2-rinterface
+        ./scripts/run_mypy_rinterface.sh
     - name: Check type hints.
       run: |
         python -m pip install mypy
         pip install -r requirements.types.txt
-        ./scripts/run_mypy.sh
+	cd rpy2-robjects
+        ./scripts/run_mypy_robjects.sh
   build-sdist:
     runs-on: ubuntu-latest
     steps:
@@ -36,13 +49,20 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install setuptools build
-    - name: Build sdist
+    - name: Build sdist rinterface
       run: |
-        python -m build -o dist/ --sdist .
+        python -m build -o dist/ --sdist rpy2-rinterface
     - uses: actions/upload-artifact@v4
       with:
-        name: rpy2-sdist
-        path: dist/rpy2-*.tar.gz
+        name: rpy2-rinterface-sdist
+        path: dist/rpy2-rinterface-*.tar.gz
+    - name: Build sdist robjects
+      run: |
+        python -m build -o dist/ --sdist rpy2-robjects
+    - uses: actions/upload-artifact@v4
+      with:
+        name: rpy2-robjects-sdist
+        path: dist/rpy2-robjects-*.tar.gz
   build-wheel-posix:
     runs-on: ${{ matrix.os }}
     continue-on-error: false
@@ -71,9 +91,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install setuptools build
-    - name: Build wheel
+    - name: Build wheel rinterface
       run: |
-        python -m build -o dist/ --wheel .
+        python -m build -o dist/ --wheel rpy2-rinterface
+    - name: Build wheel robjects
+      run: |
+        python -m build -o dist/ --wheel rpy2-robjects
     - uses: actions/upload-artifact@v4
       with:
         name: rpy2-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}

@@ -3,10 +3,6 @@
 flake8 \
     --max-line-length 90 \
     rpy2/ipython/ \
-    rpy2/situation.py \
-    rpy2/_rinterface_cffi_build.py \
-    rpy2/rinterface.py \
-    rpy2/rinterface_lib/ \
     rpy2/rlike/functional.py \
     rpy2/rlike/indexing.py \
     rpy2/robjects/c*.py \
