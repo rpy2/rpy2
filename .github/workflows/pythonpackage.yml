@@ -23,12 +23,12 @@ jobs:
         ../scripts/run_linting_robjects.sh
     - name: Check type hints rinterface
       run: |
-        cd rpy2-rinterface/src
+        cd rpy2-rinterface
         pip install '.[types]'
         ../../scripts/run_mypy_rinterface.sh
     - name: Check type hints.
       run: |
-        cd rpy2-robjects/src
+        cd rpy2-robjects
         pip install '.[types]'
         ../../scripts/run_mypy_robjects.sh
   build-sdist:
