@@ -1,6 +1,9 @@
 #!/bin/bash
 
-mypy src/rpy2/rinterface/__init__.py \
-     src/rpy2/rinterface_lib/*.py \
-     src/rpy2/situation/__init__.py \
-     --follow-imports=silent
+MYPYPATH=src mypy \
+	     --namespace-packages \
+	     --explicit-package-bases \
+	     --exclude src/rpy2/rinterface/tests \
+	     --exclude src/rpy2/_rinterface_cffi_build.py \
+	     --exclude setup.py \
+	     .
