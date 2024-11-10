@@ -51,20 +51,20 @@ jobs:
         python -m pip install setuptools build
     - name: Build sdist rinterface
       run: |
-        pwd
-        ls
-        python -m build -o dist/ --sdist rpy2-rinterface
+        cd rpy2-rinterface
+        python -m build -o dist/ --sdist .
     - uses: actions/upload-artifact@v4
       with:
         name: rpy2-rinterface-sdist
-        path: dist/rpy2-rinterface-*.tar.gz
+        path: rpy2-rinterface/dist/rpy2-rinterface-*.tar.gz
     - name: Build sdist robjects
       run: |
-        python -m build -o dist/ --sdist rpy2-robjects
+      cd rpy2-robjects
+        python -m build -o dist/ --sdist .
     - uses: actions/upload-artifact@v4
       with:
         name: rpy2-robjects-sdist
-        path: dist/rpy2-robjects-*.tar.gz
+        path: rpy2-robjects/dist/rpy2-robjects-*.tar.gz
   build-wheel-posix:
     runs-on: ${{ matrix.os }}
     continue-on-error: false
@@ -95,14 +95,20 @@ jobs:
         python -m pip install setuptools build
     - name: Build wheel rinterface
       run: |
-        python -m build -o dist/ --wheel rpy2-rinterface
+        cd rpy2-rinterface
+        python -m build -o dist/ --wheel .
     - name: Build wheel robjects
       run: |
-        python -m build -o dist/ --wheel rpy2-robjects
+        cd rpy2-robjects
+        python -m build -o dist/ --wheel .
     - uses: actions/upload-artifact@v4
       with:
         name: rpy2-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
-        path: dist/rpy2-*.whl
+        path: rpy2-rinterface/dist/rpy2-*.whl
+    - uses: actions/upload-artifact@v4
+      with:
+        name: rpy2-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        path: rpy2-robjects/dist/rpy2-*.whl
   test:
     needs: [build-sdist]
     runs-on: ${{ matrix.os }}
