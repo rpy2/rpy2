@@ -160,7 +160,7 @@ jobs:
       shell: bash
       run: |
         echo "RPY2_RINTERFACE_SRC_DIST=$(ls -1 dist/rpy2-rinterface-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
-	echo "RPY2_ROBJECTS_SRC_DIST=$(ls -1 dist/rpy2-robjects-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
+        echo "RPY2_ROBJECTS_SRC_DIST=$(ls -1 dist/rpy2-robjects-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
     - name: Install package (non-Windows)
       if: matrix.os != 'windows-latest'
       run: |
