@@ -24,13 +24,14 @@ jobs:
     - name: Check type hints rinterface
       run: |
         cd rpy2-rinterface
-        ls
-        pip install -v '.[types]'
+        python -m pip install -U pip
+        python -m pip install -v '.[types]'
         ../../scripts/run_mypy_rinterface.sh
     - name: Check type hints.
       run: |
         cd rpy2-robjects
-        pip install '.[types]'
+	python -m pip install -U pip
+        python -m pip install '.[types]'
         ../../scripts/run_mypy_robjects.sh
   build-sdist:
     runs-on: ubuntu-latest
