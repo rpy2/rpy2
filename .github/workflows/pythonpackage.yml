@@ -24,6 +24,7 @@ jobs:
     - name: Check type hints rinterface
       run: |
         cd rpy2-rinterface
+        ls
         pip install -v '.[types]'
         ../../scripts/run_mypy_rinterface.sh
     - name: Check type hints.
