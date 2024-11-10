@@ -59,7 +59,7 @@ jobs:
         path: rpy2-rinterface/dist/rpy2-rinterface-*.tar.gz
     - name: Build sdist robjects
       run: |
-      cd rpy2-robjects
+        cd rpy2-robjects
         python -m build -o dist/ --sdist .
     - uses: actions/upload-artifact@v4
       with:
