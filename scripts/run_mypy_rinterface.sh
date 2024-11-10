@@ -5,5 +5,6 @@ MYPYPATH=src mypy \
 	     --explicit-package-bases \
 	     --exclude src/rpy2/rinterface/tests \
 	     --exclude src/rpy2/_rinterface_cffi_build.py \
+	     --exclude build \
 	     --exclude setup.py \
 	     .
