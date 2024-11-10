@@ -15,7 +15,7 @@ jobs:
       run: |
         python -m pip install flake8
         cd rpy2-rinterface
-        ./scripts/run_linting_rinterface.sh
+        ../scripts/run_linting_rinterface.sh
     - name: Lint with flake8 robjects
       run: |
         python -m pip install flake8
@@ -26,13 +26,13 @@ jobs:
         python -m pip install mypy
         pip install -r requirements.types.txt
         cd rpy2-rinterface
-        ./scripts/run_mypy_rinterface.sh
+        ../scripts/run_mypy_rinterface.sh
     - name: Check type hints.
       run: |
         python -m pip install mypy
         pip install -r requirements.types.txt
         cd rpy2-robjects
-        ./scripts/run_mypy_robjects.sh
+        ../scripts/run_mypy_robjects.sh
   build-sdist:
     runs-on: ubuntu-latest
     steps:
