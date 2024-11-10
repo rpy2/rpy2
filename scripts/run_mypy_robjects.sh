@@ -1,7 +1,7 @@
 #!/bin/bash
 
-mypy rpy2/robjects/*.py \
-     rpy2/ipython/*.py \
-     rpy2/rlike/*.py \
-     rpy2/interactive/*.py \
+mypy src/rpy2/robjects/*.py \
+     src/rpy2/ipython/*.py \
+     src/rpy2/rlike/*.py \
+     src/rpy2/interactive/*.py \
      --follow-imports=silent
