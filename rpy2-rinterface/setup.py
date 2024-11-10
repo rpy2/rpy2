@@ -200,13 +200,10 @@ class build(setuptools.command.build.build):
 
 
 pack_dir = {PACKAGE_NAME: os.path.join(package_prefix, 'rpy2')}
-with open('README.md') as fh:
-    long_description = fh.read()
 
 setup(
     cffi_modules=cffi_modules,
     ext_modules=ext_modules,
     cmdclass=dict(build=build),
-    long_description=long_description,    
     zip_safe=False
 )
