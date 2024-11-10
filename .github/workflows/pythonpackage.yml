@@ -30,7 +30,7 @@ jobs:
     - name: Check type hints.
       run: |
         cd rpy2-robjects
-	python -m pip install -U pip
+        python -m pip install -U pip
         python -m pip install '.[types]'
         ../../scripts/run_mypy_robjects.sh
   build-sdist:
