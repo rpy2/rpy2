@@ -40,8 +40,8 @@ from rpy2.rinterface import (Sexp,
 from rpy2.robjects.functions import Function
 from rpy2.robjects.functions import SignatureTranslatedFunction
 
-from rpy2.robects.version import __version_vector__
-from rpy2.robects.version import __version__
+from rpy2.robjects.version import __version_vector__
+from rpy2.robjects.version import __version__
 
 _globalenv = rinterface.globalenv
 _reval = rinterface.baseenv['eval']
