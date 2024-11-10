@@ -158,18 +158,20 @@ jobs:
         path: dist/
     - name: Source package path.
       shell: bash
-      run: echo "RPY2_SRC_DIST=$(ls -1 dist/rpy2-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
+      run: |
+        echo "RPY2_RINTERFACE_SRC_DIST=$(ls -1 dist/rpy2-rinterface-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
+	echo "RPY2_ROBJECTS_SRC_DIST=$(ls -1 dist/rpy2-robjects-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
     - name: Install package (non-Windows)
       if: matrix.os != 'windows-latest'
       run: |
         ${{ matrix.venv_activate }}
-        pip install $RPY2_SRC_DIST
+        pip install $RPY2_RINTERFACE_SRC_DIST $RPY_ROBJECTS_SRC_DIST
     - name: Install package (Windows)
       if: matrix.os == 'windows-latest'
       shell: bash
       run: |
         ${{ matrix.venv_activate }}
-        RPY2_API_FORCE=True pip install $RPY2_SRC_DIST
+        RPY2_API_FORCE=True pip install $RPY2_RINTERFACE_SRC_DIST $RPY_ROBJECTS_SRC_DIST
     - name: Test with minimal dependencies
       run: |
         ${{ matrix.ld_libpath }}
