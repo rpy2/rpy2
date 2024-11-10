@@ -14,24 +14,24 @@ jobs:
     - name: Lint with flake8 rinterface
       run: |
         python -m pip install flake8
-	cd rpy2-rinterface
+        cd rpy2-rinterface
         ./scripts/run_linting_rinterface.sh
     - name: Lint with flake8 robjects
       run: |
         python -m pip install flake8
-	cd rpy2-robjects
+        cd rpy2-robjects
         ./scripts/run_linting_robjects.sh
     - name: Check type hints rinterface
       run: |
         python -m pip install mypy
         pip install -r requirements.types.txt
-	cd rpy2-rinterface
+        cd rpy2-rinterface
         ./scripts/run_mypy_rinterface.sh
     - name: Check type hints.
       run: |
         python -m pip install mypy
         pip install -r requirements.types.txt
-	cd rpy2-robjects
+        cd rpy2-robjects
         ./scripts/run_mypy_robjects.sh
   build-sdist:
     runs-on: ubuntu-latest
