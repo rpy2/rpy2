@@ -1,5 +1,11 @@
 #!/bin/bash
 
+pwd
+
+ls
+
+ls src/rpy2
+
 flake8 \
     --max-line-length 90 \
     src/rpy2/ipython/ \
