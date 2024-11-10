@@ -154,7 +154,7 @@ jobs:
         python -m pip install --upgrade setuptools pycparser
     - uses: actions/download-artifact@v4.1.7
       with:
-        name: rpy2-sdist
+        pattern: rpy2-*-sdist
         path: dist/
     - name: Source package path.
       shell: bash
