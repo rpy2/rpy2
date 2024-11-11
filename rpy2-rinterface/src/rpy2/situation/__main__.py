@@ -4,6 +4,7 @@ from rpy2.situation import get_r_home
 from rpy2.situation import iter_info
 from rpy2.situation import r_ld_library_path_from_subprocess
 from rpy2.situation import set_default_logging
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -37,4 +38,5 @@ if __name__ == '__main__':
         if not r_home:
             print('R cannot be found in the PATH and RHOME cannot be found.')
             sys.exit(1)
-        print(r_ld_library_path_from_subprocess(r_home))
+        else:
+            print(r_ld_library_path_from_subprocess(r_home))
