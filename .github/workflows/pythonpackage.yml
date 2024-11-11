@@ -51,7 +51,8 @@ jobs:
       run: |
         cd rpy2-rinterface
         python -m build -o dist/ --sdist .
-    - uses: actions/upload-artifact@v4
+    - name: Upload sdist rinterface
+      uses: actions/upload-artifact@v4
       with:
         name: rpy2-rinterface-sdist
         path: rpy2-rinterface/dist/rpy2_rinterface-*.tar.gz
@@ -59,7 +60,8 @@ jobs:
       run: |
         cd rpy2-robjects
         python -m build -o dist/ --sdist .
-    - uses: actions/upload-artifact@v4
+    - name: Upload sdist robjects
+      uses: actions/upload-artifact@v4
       with:
         name: rpy2-robjects-sdist
         path: rpy2-robjects/dist/rpy2_robjects-*.tar.gz
@@ -101,11 +103,11 @@ jobs:
         python -m build -o dist/ --wheel .
     - uses: actions/upload-artifact@v4
       with:
-        name: rpy2-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        name: rpy2-rinterace-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         path: rpy2-rinterface/dist/rpy2_rinterface-*.whl
     - uses: actions/upload-artifact@v4
       with:
-        name: rpy2-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        name: rpy2-robjects-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         path: rpy2-robjects/dist/rpy2_robjects-*.whl
   test:
     needs: [build-sdist]
