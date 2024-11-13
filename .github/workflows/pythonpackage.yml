@@ -26,11 +26,11 @@ jobs:
         cd rpy2-rinterface
         python -m pip install '.[types]'
         ../scripts/run_mypy_rinterface.sh
-    - name: Check type hints.
+    - name: Check type hints
       run: |
         cd rpy2-rinterface
         python -m pip install .
-	cd ..
+        cd ..
         cd rpy2-robjects
         python -m pip install '.[types]'
         ../scripts/run_mypy_robjects.sh
