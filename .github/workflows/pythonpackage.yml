@@ -106,11 +106,11 @@ jobs:
         python -m build -o dist/ --wheel .
     - uses: actions/upload-artifact@v4
       with:
-        name: rpy2-rinterace-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        name: rpy2-rinterface
         path: rpy2-rinterface/dist/rpy2_rinterface-*.whl
     - uses: actions/upload-artifact@v4
       with:
-        name: rpy2-robjects-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        name: rpy2-robjects
         path: rpy2-robjects/dist/rpy2_robjects-*.whl
   test:
     needs: [build-sdist]
@@ -180,8 +180,8 @@ jobs:
       if: matrix.os != 'windows-latest'
       run: |
         ${{ matrix.venv_activate }}
-	pwd
-	ls
+        pwd
+        ls
         pip install $RPY2_RINTERFACE_SRC_DIST
         pip install --pre $RPY_ROBJECTS_SRC_DIST
     - name: Install package (Windows)
