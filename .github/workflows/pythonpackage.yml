@@ -26,7 +26,7 @@ jobs:
         cd rpy2-rinterface
         python -m pip install '.[types]'
         ../scripts/run_mypy_rinterface.sh
-    - name: Check type hints
+    - name: Check type hints robjects
       run: |
         cd rpy2-rinterface
         python -m pip install .
@@ -165,8 +165,12 @@ jobs:
         python -m pip install --upgrade setuptools pycparser
     - uses: actions/download-artifact@v4.1.7
       with:
-        pattern: rpy2_*-*
-        path: dist/
+        pattern: rpy2_rinterface-*
+        path: rpy2-robjects/dist/
+    - uses: actions/download-artifact@v4.1.7
+      with:
+        pattern: rpy2_robjects-*
+        path: rpy2-rinterface/dist/
     - name: Source package path.
       shell: bash
       run: |
