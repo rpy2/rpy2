@@ -180,6 +180,8 @@ jobs:
       if: matrix.os != 'windows-latest'
       run: |
         ${{ matrix.venv_activate }}
+	pwd
+	ls
         pip install $RPY2_RINTERFACE_SRC_DIST
         pip install --pre $RPY_ROBJECTS_SRC_DIST
     - name: Install package (Windows)
