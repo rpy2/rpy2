@@ -32,7 +32,7 @@ jobs:
         python -m pip install .
         cd ..
         cd rpy2-robjects
-        python -m pip install '.[types]'
+        python -m pip install --pre '.[types]'
         ../scripts/run_mypy_robjects.sh
   build-sdist:
     runs-on: ubuntu-latest
