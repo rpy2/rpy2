@@ -113,7 +113,7 @@ jobs:
         name: rpy2-robjects-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         path: rpy2-robjects/dist/rpy2_robjects-*.whl
   test:
-    needs: [build-sdist]
+    needs: [build-wheel-posix]
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     strategy:
