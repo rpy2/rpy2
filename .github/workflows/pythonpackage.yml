@@ -176,8 +176,10 @@ jobs:
       run: |
         ls rpy2-rinterface/dist/
         ls rpy2-robjects/dist/
-        echo "RPY2_RINTERFACE_SRC_DIST=$(ls -1 rpy2-rinterface/dist/rpy2_rinterface-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
-        echo "RPY2_ROBJECTS_SRC_DIST=$(ls -1 rpy2-robjects/dist/rpy2_robjects-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
+        unzip -l rpy2-rinterface/dist/rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        unzip rpy2-rinterface/dist/rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        ls
+        ls rpy2-rinterface/dist/
     - name: Install package (non-Windows)
       if: matrix.os != 'windows-latest'
       run: |
