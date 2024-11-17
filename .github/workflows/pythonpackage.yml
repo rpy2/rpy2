@@ -176,7 +176,7 @@ jobs:
       run: |
         ls rpy2-rinterface/dist/
         ls rpy2-robjects/dist/
-        unzip -l rpy2-rinterface/dist/rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        ls rpy2-rinterface/dist/rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         unzip rpy2-rinterface/dist/rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         ls
         ls rpy2-rinterface/dist/
