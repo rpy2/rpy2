@@ -171,46 +171,44 @@ jobs:
       with:
         pattern: rpy2-robjects-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         path: rpy2-robjects/dist/
-    - name: Source package path.
+    - name: Built package path.
       shell: bash
       run: |
-        echo "RPY2_RINTERFACE_SRC_DIST=$(ls -1 rpy2-rinterface/dist/rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}/*.whl | tail -n 1)" >> $GITHUB_ENV
-        echo "RPY2_ROBJECTS_SRC_DIST=$(ls -1 rpy2-robjects/dist/rpy2-robjects-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}/*.whl | tail -n 1)" >> $GITHUB_ENV
+        echo "RPY2_RINTERFACE_WHL_DIST=$(ls -1 rpy2-rinterface/dist/rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}/*.whl | tail -n 1)" >> $GITHUB_ENV
+        echo "RPY2_ROBJECTS_WHL_DIST=$(ls -1 rpy2-robjects/dist/rpy2-robjects-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}/*.whl | tail -n 1)" >> $GITHUB_ENV
     - name: Install package (non-Windows)
       if: matrix.os != 'windows-latest'
       run: |
         ${{ matrix.venv_activate }}
-        pwd
-        ls
-        pip install $RPY2_RINTERFACE_SRC_DIST
-        pip install --pre $RPY_ROBJECTS_SRC_DIST
+        pip install $RPY2_RINTERFACE_WHL_DIST
+        pip install --pre $RPY2_ROBJECTS_WHL_DIST
     - name: Install package (Windows)
       if: matrix.os == 'windows-latest'
       shell: bash
       run: |
         ${{ matrix.venv_activate }}
-        RPY2_API_FORCE=True pip install $RPY2_RINTERFACE_SRC_DIST
-        pip install --pre $RPY_ROBJECTS_SRC_DIST
+        RPY2_API_FORCE=True pip install $RPY2_RINTERFACE_WHL_DIST
+        pip install --pre $RPY_ROBJECTS_WHL_DIST
     - name: Test with minimal dependencies
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install $RPY2_SRC_DIST'[test_minimal]'
-        pip install --pre $RPY_ROBJECTS_SRC_DIST'[test_minimal]'
+        python -m pip install $RPY2_WHL_DIST'[test_minimal]'
+        pip install --pre $RPY_ROBJECTS_WHL_DIST'[test_minimal]'
         bash -e ./scripts/run_test_min_deps.sh
     - name: Test with numpy
       run: |
         ${{ matrix.ld_libpath }}
         ${{ matrix.venv_activate }}
-        python -m pip install $RPY2_SRC_DIST'[numpy]'
-        pip install --pre $RPY_ROBJECTS_SRC_DIST'[numpy]'
+        python -m pip install $RPY2_WHL_DIST'[numpy]'
+        pip install --pre $RPY_ROBJECTS_WHL_DIST'[numpy]'
         bash -e ./scripts/run_test_numpy.sh
     - name: Test with pandas
       run: |
         ${{ matrix.ld_libpath }}
         ${{matrix.venv_activate }}
-        python -m pip install $RPY2_SRC_DIST'[pandas]'
-        pip install --pre $RPY_ROBJECTS_SRC_DIST'[pandas]'
+        python -m pip install $RPY2_WHL_DIST'[pandas]'
+        pip install --pre $RPY_ROBJECTS_WHL_DIST'[pandas]'
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
       run: |
