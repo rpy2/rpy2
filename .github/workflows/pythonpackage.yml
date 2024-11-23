@@ -71,7 +71,6 @@ jobs:
 
 
   build-wheel-posix:
-    uses: ./.github/workflows/wheel-build-test.yml 
     runs-on: ${{ matrix.os }}
     continue-on-error: false
     strategy:
@@ -97,6 +96,8 @@ jobs:
             python-version: 3.10
             venv_activate: ""
             ld_libpath: ""
+    steps:
+      - uses: ./.github/workflows/wheel-build-test.yml 
      with:
        os: ${{ matrix.os }}
        python-version: ${{ matrix.python-version }}
