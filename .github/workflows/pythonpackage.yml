@@ -69,8 +69,6 @@ jobs:
         name: rpy2-robjects-sdist
         path: rpy2-robjects/dist/rpy2_robjects-*.tar.gz
   build-wheel-posix:
-    runs-on: ${{ matrix.os }}
-    continue-on-error: false
     strategy:
       fail-fast: false
       matrix:
@@ -95,6 +93,7 @@ jobs:
             venv_activate: ""
             ld_libpath: ""
     uses: ./.github/workflows/wheel-build-test.yml
+    runs-on: ${{ matrix.os }}
     with:
       os: ${{ matrix.os }}
       python-version: ${{ matrix.python-version }}
