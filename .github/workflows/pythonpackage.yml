@@ -95,8 +95,8 @@ jobs:
             venv_activate: ""
             ld_libpath: ""
     steps:
-      - uses: ./.github/workflows/wheel-build-test.yml 
-     with:
-       os: ${{ matrix.os }}
-       python-version: ${{ matrix.python-version }}
-       r-version: ${{ matrix.r-version }} 
+      - uses: ./.github/workflows/wheel-build-test.yml
+        with:
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+          r-version: ${{ matrix.r-version }}
