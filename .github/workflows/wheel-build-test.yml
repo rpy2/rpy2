@@ -1,0 +1,164 @@
+name: Build, install, and test wheels.
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        required: true
+        type: string
+      r-version:
+        required: true
+        type: string
+      os:
+        required: true
+        type: string
+
+jobs:
+  build-wheel-posix:
+    continue-on-error: false
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ input.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ input.python-version }}
+    - name: Set up R ${{ input.r-version }}
+      uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: ${{ input.r-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install setuptools build
+    - name: Build wheel rinterface
+      run: |
+        cd rpy2-rinterface
+        python -m build -o dist/ --wheel .
+    - name: Build wheel robjects
+      run: |
+        cd rpy2-robjects
+        python -m build -o dist/ --wheel .
+    - uses: actions/upload-artifact@v4
+      with:
+        name: rpy2-rinterface-${{ input.os }}-py${{ input.python-version }}-r${{ input.r-version }}
+        path: rpy2-rinterface/dist/rpy2_rinterface-*.whl
+    - uses: actions/upload-artifact@v4
+      with:
+        name: rpy2-robjects-${{ input.os }}-py${{ input.python-version }}-r${{input.r-version }}
+        path: rpy2-robjects/dist/rpy2_robjects-*.whl
+
+  test:
+    needs: [build-wheel-posix]
+    continue-on-error: ${{ input.experimental }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ input.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ input.python-version }}
+    - name: Set up R ${{ input.r-version }}
+      uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: ${{ input.r-version }}
+    - name: Create base virtualenv (non-windows)
+      if: input.os != 'windows-latest'
+      run: |
+        python -m venv pyenv_base
+        ${{ input.venv_activate }}
+        python -m  pip install -U pip wheel
+    - name: Create base virtualenv (windows)
+      if: input.os == 'windows-latest'
+      shell: cmd
+      run: |
+        python -m pip install -U pip wheel
+    - name: Install extra dependencies
+      if: input.os == 'windows-latest' && input.python-version == '3.8'
+      run: |
+        echo "Bug in setuptools requires update"
+        ${{ input.venv_activate }}
+        python -m pip install --upgrade setuptools pycparser
+    - uses: actions/download-artifact@v4.1.7
+      with:
+        pattern: rpy2-rinterface-${{ input.os }}-py${{ input.python-version }}-r${{ input.r-version }}
+        path: rpy2-rinterface/dist/
+    - uses: actions/download-artifact@v4.1.7
+      with:
+        pattern: rpy2-robjects-${{ input.os }}-py${{ input.python-version }}-r${{ input.r-version }}
+        path: rpy2-robjects/dist/
+    - name: Built package path.
+      shell: bash
+      run: |
+        ls rpy2-rinterface/dist/rpy2-rinterface-${{ input.os }}-py${{ input.python-version }}-r${{ input.r-version }}/*.whl
+        ls rpy2-rinterface/dist/
+        echo "RPY2_RINTERFACE_WHL_DIST=$(ls -1 rpy2-rinterface/dist/rpy2-rinterface-${{ input.os }}-py${{ input.python-version }}-r${{ input.r-version }}/*.whl | tail -n 1)" >> $GITHUB_ENV
+        echo "RPY2_ROBJECTS_WHL_DIST=$(ls -1 rpy2-robjects/dist/rpy2-robjects-${{ input.os }}-py${{ input.python-version }}-r${{ input.r-version }}/*.whl | tail -n 1)" >> $GITHUB_ENV
+    - name: Install package (non-Windows)
+      if: input.os != 'windows-latest'
+      run: |
+        ${{ input.venv_activate }}
+        pip install $RPY2_RINTERFACE_WHL_DIST
+        pip install --pre $RPY2_ROBJECTS_WHL_DIST
+    - name: Install package (Windows)
+      if: input.os == 'windows-latest'
+      shell: bash
+      run: |
+        ${{ input.venv_activate }}
+        RPY2_API_FORCE=True pip install $RPY2_RINTERFACE_WHL_DIST
+        pip install --pre $RPY_ROBJECTS_WHL_DIST
+    - name: Test with minimal dependencies
+      run: |
+        ${{ input.ld_libpath }}
+        ${{ input.venv_activate }}
+        python -m pip install $RPY2_RINTERFACE_WHL_DIST'[test_minimal]'
+        pip install --pre $RPY_ROBJECTS_WHL_DIST'[test_minimal]'
+        bash -e ./scripts/run_test_min_deps.sh
+    - name: Test with numpy
+      run: |
+        ${{ input.ld_libpath }}
+        ${{ input.venv_activate }}
+        python -m pip install $RPY2_RINTERFACE_WHL_DIST'[numpy]'
+        pip install --pre $RPY_ROBJECTS_WHL_DIST'[numpy]'
+        bash -e ./scripts/run_test_numpy.sh
+    - name: Test with pandas
+      run: |
+        ${{ input.ld_libpath }}
+        ${{ input.venv_activate }}
+        python -m pip install $RPY2_RINTERFACE_WHL_DIST'[pandas]'
+        pip install --pre $RPY_ROBJECTS_WHL_DIST'[pandas]'
+        bash -e ./scripts/run_test_pandas.sh
+    - name: Test with ipython
+      run: |
+        ${{ input.ld_libpath }}
+        ${{ input.venv_activate }}
+        python -m pip install ipython
+        bash -e ./scripts/run_test_pandas.sh
+    - name: Set RSPM
+      if: startsWith(input.os, 'ubuntu')
+      run: |
+        echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
+    - name: Install R dependencies
+      run: |
+        install.packages(c("ggplot2", "dplyr", "tidyr", "dbplyr", "lazyeval", "rlang"))
+      shell: Rscript {0}
+    - name: Test with R deps
+      if: input.os != 'windows-latest'
+      run: |
+        ${{ input.ld_libpath }}
+        ${{ input.venv_activate }}
+        bash -e ./scripts/run_test_rdeps.sh
+    - name: Test with R deps (windows)
+      continue-on-error: true
+      if: input.os == 'windows-latest'
+      run: |
+        ${{ input.ld_libpath }}
+        ${{ input.venv_activate }}
+        pytest --cache-clear --cov-append --cov-report=xml --cov-report=term --cov=rpy2.rinterface_lib --cov=rpy2.rinterface --cov=rpy2.rlike --cov=rpy2.robjects rpy2/tests/robjects/lib
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4.6.0
+      if: input.os == 'ubuntu-22.04' && input.python-version == '3.8' && input.r-version == 'release'
+      env:
+        OS: ${{ runner.os }}
+        PYTHON: ${{ input.python-version }}
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        env_vars: OS,PYTHON
