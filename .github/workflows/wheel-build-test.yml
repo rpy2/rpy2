@@ -97,23 +97,23 @@ jobs:
       run: |
         ${{ inputs.venv_activate }}
         RPY2_API_FORCE=True pip install $RPY2_RINTERFACE_WHL_DIST
-        pip install --pre $RPY_ROBJECTS_WHL_DIST
+        pip install --pre $RPY2_ROBJECTS_WHL_DIST
     - name: Test with minimal dependencies
       run: |
         ${{ inputs.venv_activate }}
-        python -m pip install --pre $RPY_ROBJECTS_WHL_DIST'[test_minimal]'
+        python -m pip install --pre $RPY2_ROBJECTS_WHL_DIST'[test_minimal]'
         export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         bash -e ./scripts/run_test_min_deps.sh
     - name: Test with numpy
       run: |
         ${{ inputs.venv_activate }}
-        python -m pip install --pre $RPY_ROBJECTS_WHL_DIST'[numpy]'
+        python -m pip install --pre $RPY2_ROBJECTS_WHL_DIST'[numpy]'
         export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         bash -e ./scripts/run_test_numpy.sh
     - name: Test with pandas
       run: |
         ${{ inputs.venv_activate }}
-        python -m pip install --pre $RPY_ROBJECTS_WHL_DIST'[pandas]'
+        python -m pip install --pre $RPY2_ROBJECTS_WHL_DIST'[pandas]'
         export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
