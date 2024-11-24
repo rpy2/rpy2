@@ -17,7 +17,7 @@ pytest \
     --cov-report=xml \
     --cov-report=term \
     --cov=rpy2.rinterface_lib.embedded \
-    ./rpy2-rinterface/src/rpy2/rinterface/tests/rinterface/test_noinitialization.py
+    ./rpy2-rinterface/src/rpy2/rinterface/tests/test_noinitialization.py
 
 pytest \
     --cov-append \
