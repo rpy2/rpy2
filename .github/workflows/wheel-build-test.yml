@@ -57,6 +57,7 @@ jobs:
         name: rpy2-robjects-${{ inputs.os }}-py${{ inputs.python-version }}-r${{inputs.r-version }}
         path: rpy2-robjects/dist/rpy2_robjects-*.whl
   test:
+    needs: build-wheel-posix
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ inputs.experimental }}
     steps:
