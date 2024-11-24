@@ -15,7 +15,7 @@ on:
 
 jobs:
   build-wheel-posix:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ inputs.os }}
     continue-on-error: false
     steps:
     - uses: actions/checkout@v3
