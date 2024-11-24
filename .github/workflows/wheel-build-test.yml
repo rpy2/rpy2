@@ -31,7 +31,7 @@ jobs:
         python-version: ${{ inputs.python-version }}
     - name: workaround for macos
       # see https://github.com/r-lib/actions/issues/948 .
-      if: startsWith(inputs.os, 'macos)
+      if: startsWith(inputs.os, 'macos')
       run: |
            brew uninstall pkg-config@0.29.2
     - name: Set up R ${{ inputs.r-version }}
