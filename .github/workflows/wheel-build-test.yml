@@ -50,7 +50,6 @@ jobs:
 
   test:
     runs-on: ${{ matrix.os }}
-    needs: [build-wheel-posix]
     continue-on-error: ${{ inputs.experimental }}
     steps:
     - uses: actions/checkout@v3
