@@ -1,7 +1,7 @@
 import array
 import pytest
+import rpy2.rinterface as rinterface
 import rpy2.robjects as robjects
-rinterface = robjects.rinterface
 
 # TODO: what is this ?
 # def tearDow(self):
