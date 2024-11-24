@@ -14,7 +14,7 @@ on:
         type: string
       experimental:
         required: true
-	type: boolean
+        type: boolean
       ld_libpath:
         required: true
         type: string
