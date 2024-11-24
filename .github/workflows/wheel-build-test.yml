@@ -56,20 +56,6 @@ jobs:
       with:
         name: rpy2-robjects-${{ inputs.os }}-py${{ inputs.python-version }}-r${{inputs.r-version }}
         path: rpy2-robjects/dist/rpy2_robjects-*.whl
-  test:
-    needs: build-wheel-posix
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ inputs.experimental }}
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ inputs.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ inputs.python-version }}
-    - name: Set up R ${{ inputs.r-version }}
-      uses: r-lib/actions/setup-r@v2
-      with:
-        r-version: ${{ inputs.r-version }}
     - name: Create base virtualenv (non-windows)
       if: inputs.os != 'windows-latest'
       run: |
