@@ -9,8 +9,6 @@ ls src/rpy2
 flake8 \
     --max-line-length 90 \
     src/rpy2/ipython/ \
-    src/rpy2/rlike/functional.py \
-    src/rpy2/rlike/indexing.py \
     src/rpy2/robjects/c*.py \
     src/rpy2/robjects/environments.py \
     src/rpy2/robjects/functions.py \
