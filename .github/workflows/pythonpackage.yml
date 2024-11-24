@@ -93,5 +93,4 @@ jobs:
             venv_activate: ""
             ld_libpath: ""
     runs-on: ${{ matrix.os }}
-    run: |
-      echo "${{ matrix.os}}"
+    uses: ./.github/workflows/wheel-build-test.yml
