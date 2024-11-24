@@ -75,7 +75,6 @@ jobs:
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
         r-version: [release]
         os: [ubuntu-latest, macOS-latest, macos-14]
-        ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"]
         venv_activate: ["source pyenv_base/bin/activate"]
         experimental: [false]
         exclude:
@@ -83,20 +82,10 @@ jobs:
             python-version: 3.9
           - os: macos-14
             python-version: "3.10"
-          - os: macOS-latest
-            r-version: 'release'
-        include:
-          - os: windows-latest
-            experimental: true
-            r-version: 'release'
-            python-version: 3.10
-            venv_activate: ""
-            ld_libpath: ""
     uses: ./.github/workflows/wheel-build-test.yml
     with:
       os: ${{ matrix.os }}
       python-version: ${{ matrix.python-version }}
       r-version: ${{ matrix.r-version }}
       experimental: ${{ matrix.experimental }}
-      ld_libpath: ${{ matrix.ld_libpath }}
       venv_activate: ${{ matrix.venv_activate }}
