@@ -97,3 +97,6 @@ jobs:
       os: ${{ matrix.os }}
       python-version: ${{ matrix.python-version }}
       r-version: ${{ matrix.r-version }}
+      experimental: ${{ matrix.experimental }}
+      ld_libpath: ${{ matrix.ld_libpath }}
+      venv_activate: ${{ matrix.venv_activate }}
