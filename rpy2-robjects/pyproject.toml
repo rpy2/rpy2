@@ -76,12 +76,10 @@ namespaces = true
 #[tool.setuptools]
 #packages = [
 #    "rpy2",
-#    "rpy2.rlike",
 #    'rpy2.robjects',
 #    'rpy2.robjects.lib',
 #    'rpy2.interactive',
     #'rpy2.tests',
-    #'rpy2.tests.rlike',
     #'rpy2.tests.robjects',
     #'rpy2.tests.robjects.lib'
 #]
