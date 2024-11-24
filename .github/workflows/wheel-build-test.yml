@@ -12,6 +12,15 @@ on:
       os:
         required: true
         type: string
+      experimental:
+        required: true
+	type: boolean
+      ld_libpath:
+        required: true
+        type: string
+      venv_activate:
+        required: true
+        type: string
 
 jobs:
   build-wheel-posix:
