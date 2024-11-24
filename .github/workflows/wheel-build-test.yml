@@ -15,6 +15,7 @@ on:
 
 jobs:
   build-wheel-posix:
+    runs-on: ${{ matrix.os }}
     continue-on-error: false
     steps:
     - uses: actions/checkout@v3
@@ -48,6 +49,7 @@ jobs:
         path: rpy2-robjects/dist/rpy2_robjects-*.whl
 
   test:
+    runs-on: ${{ matrix.os }}
     needs: [build-wheel-posix]
     continue-on-error: ${{ inputs.experimental }}
     steps:
