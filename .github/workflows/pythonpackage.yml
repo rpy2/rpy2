@@ -74,7 +74,7 @@ jobs:
       matrix:
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
         r-version: [release]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-14]
         venv_activate: ["source pyenv_base/bin/activate"]
         experimental: [false]
         exclude:
