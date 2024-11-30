@@ -41,7 +41,7 @@ jobs:
     - name: Build wheel rinterface
       run: |
         cd rpy2-rinterface
-        python -m build -o dist/ --wheel .
+        python -m build -C--global-option=--verbose -C--build-option="build --compiler=mingw32 --force" -o dist/ --wheel .
     - name: Build wheel robjects
       run: |
         cd rpy2-robjects
