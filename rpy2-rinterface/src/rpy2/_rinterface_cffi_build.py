@@ -9,7 +9,7 @@ import situation  # preloaded in setup.py
 # from rpy2.rinterface_lib import ffi_proxy
 import importlib
 spec = importlib.util.spec_from_file_location(
-    'rinterface_lib', './rpy2/rinterface_lib/ffi_proxy.py')
+    'rinterface_lib', 'src/rpy2/rinterface_lib/ffi_proxy.py')
 ffi_proxy = importlib.util.module_from_spec(spec)
 sys.modules['ffi_proxy'] = ffi_proxy
 spec.loader.exec_module(ffi_proxy)
@@ -212,7 +212,7 @@ def createbuilder_api():
         library_dirs=c_ext.library_dirs,
         # If we were using the R headers, we would use
         # include_dirs=c_ext.include_dirs.
-        include_dirs=['rpy2/rinterface_lib/'],
+        include_dirs=['src/rpy2/rinterface_lib/'],
         define_macros=list(definitions.items()),
         extra_compile_args=c_ext.extra_compile_args,
         extra_link_args=c_ext.extra_link_args)

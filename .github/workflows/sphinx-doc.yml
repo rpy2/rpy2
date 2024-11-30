@@ -38,7 +38,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install pandoc graphviz libgraphviz-dev
         python -m pip install --upgrade pip
-        pip install '.[doc]'
+        pip install 'rpy2-rinterface/[doc]'
+        pip install 'rpy2-robjects/[doc]'
         sudo Rscript ./install_r_packages.r BiocManager dbplyr dplyr ggplot2 hexbin lazyeval RSQLite tidyr viridis
         sudo Rscript -e 'BiocManager::install("Biobase")'
     - name: Build HTML doc

@@ -4,7 +4,7 @@ import rpy2.rinterface_lib.callbacks
 import rpy2.rinterface_lib.embedded
 import rpy2.rlike.container as rlc
 from rpy2 import robjects
-from .. import utils
+from rpy2.rinterface.tests import utils
 
 
 def _just_pass(s):

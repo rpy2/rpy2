@@ -9,7 +9,8 @@ The project's webpage is here: https://rpy2.github.io/
 
 # Installation
 
-`pip` should work out of the box:
+Released versions can be installed from a package repository (default
+being pypi) using pip:
 
 ```bash
 pip install rpy2
@@ -20,13 +21,28 @@ specific functionalities not otherwise required to use the rest of rpy2.
 
 For example, to be able to run the unit tests:
 ```bash
-pip install rpy2[test]
+pip install 'rpy2[test]'
 ```
 
 To install all optional dependencies (numpy, pandas, ipython), use:
 
 ```bash
-pip install rpy2[all]
+pip install 'rpy2[all]'
+```
+
+## Installation for rpy2 developers
+
+If a developer, the package can be installed from its source tree
+with:
+
+```bash
+pip install .
+```
+
+Optional dependencies can be specified similarly. For example:
+
+```bash
+pip install '.[all]'
 ```
 
 The package is known to compile on Linux, MacOSX

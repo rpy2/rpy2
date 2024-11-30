@@ -11,15 +11,29 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
-    - name: Lint with flake8
+    - name: Lint with flake8 rinterface
       run: |
         python -m pip install flake8
-        ./scripts/run_linting.sh
-    - name: Check type hints.
+        cd rpy2-rinterface
+        ../scripts/run_linting_rinterface.sh
+    - name: Lint with flake8 robjects
       run: |
-        python -m pip install mypy
-        pip install -r requirements.types.txt
-        ./scripts/run_mypy.sh
+        python -m pip install flake8
+        cd rpy2-robjects
+        ../scripts/run_linting_robjects.sh
+    - name: Check type hints rinterface
+      run: |
+        cd rpy2-rinterface
+        python -m pip install '.[types]'
+        ../scripts/run_mypy_rinterface.sh
+    - name: Check type hints robjects
+      run: |
+        cd rpy2-rinterface
+        python -m pip install .
+        cd ..
+        cd rpy2-robjects
+        python -m pip install --pre '.[types]'
+        ../scripts/run_mypy_robjects.sh
   build-sdist:
     runs-on: ubuntu-latest
     steps:
@@ -36,168 +50,42 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install setuptools build
-    - name: Build sdist
+    - name: Build sdist rinterface
       run: |
+        cd rpy2-rinterface
         python -m build -o dist/ --sdist .
-    - uses: actions/upload-artifact@v4
+    - name: Upload sdist rinterface
+      uses: actions/upload-artifact@v4
       with:
-        name: rpy2-sdist
-        path: dist/rpy2-*.tar.gz
+        name: rpy2-rinterface-sdist
+        path: rpy2-rinterface/dist/rpy2_rinterface-*.tar.gz
+    - name: Build sdist robjects
+      run: |
+        cd rpy2-robjects
+        python -m build -o dist/ --sdist .
+    - name: Upload sdist robjects
+      uses: actions/upload-artifact@v4
+      with:
+        name: rpy2-robjects-sdist
+        path: rpy2-robjects/dist/rpy2_robjects-*.tar.gz
   build-wheel-posix:
-    runs-on: ${{ matrix.os }}
-    continue-on-error: false
     strategy:
       fail-fast: false
       matrix:
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
         r-version: [release]
-        os: [ubuntu-latest, macOS-latest, macos-14]
+        os: [ubuntu-latest, macos-14]
+        venv_activate: ["source pyenv_base/bin/activate"]
+        experimental: [false]
         exclude:
           - os: macos-14
             python-version: 3.9
           - os: macos-14
             python-version: "3.10"
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Set up R ${{ matrix.r-version }}
-      uses: r-lib/actions/setup-r@v2
-      with:
-        r-version: ${{ matrix.r-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install setuptools build
-    - name: Build wheel
-      run: |
-        python -m build -o dist/ --wheel .
-    - uses: actions/upload-artifact@v4
-      with:
-        name: rpy2-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
-        path: dist/rpy2-*.whl
-  test:
-    needs: [build-sdist]
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
-    strategy:
-      max-parallel: 4
-      fail-fast: false
-      matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
-        r-version: ['release']
-        os: [ubuntu-latest, ubuntu-22.04, macOS-latest]
-        experimental: [false]
-        venv_activate: ["source pyenv_base/bin/activate"]
-        ld_libpath: ["export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}"]
-        include:
-          - os: windows-latest
-            experimental: true
-            r-version: 'release'
-            python-version: 3.10
-            venv_activate: ""
-            ld_libpath: ""
-        exclude:
-          - os: macOS-latest
-            r-version: 'release'
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Set up R ${{ matrix.r-version }}
-      uses: r-lib/actions/setup-r@v2
-      with:
-        r-version: ${{ matrix.r-version }}
-    - name: Create base virtualenv (non-windows)
-      if: matrix.os != 'windows-latest'
-      run: |
-        python -m venv pyenv_base
-        ${{ matrix.venv_activate }}
-        python -m  pip install -U pip wheel
-    - name: Create base virtualenv (windows)
-      if: matrix.os == 'windows-latest'
-      shell: cmd
-      run: |
-        python -m pip install -U pip wheel
-    - name: Install extra dependencies
-      if: matrix.os == 'windows-latest' && matrix.python-version == '3.8'
-      run: |
-        echo "Bug in setuptools requires update"
-        ${{ matrix.venv_activate }}
-        python -m pip install --upgrade setuptools pycparser
-    - uses: actions/download-artifact@v4.1.7
-      with:
-        name: rpy2-sdist
-        path: dist/
-    - name: Source package path.
-      shell: bash
-      run: echo "RPY2_SRC_DIST=$(ls -1 dist/rpy2-*.tar.gz | tail -n 1)" >> $GITHUB_ENV
-    - name: Install package (non-Windows)
-      if: matrix.os != 'windows-latest'
-      run: |
-        ${{ matrix.venv_activate }}
-        pip install $RPY2_SRC_DIST
-    - name: Install package (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: bash
-      run: |
-        ${{ matrix.venv_activate }}
-        RPY2_API_FORCE=True pip install $RPY2_SRC_DIST
-    - name: Test with minimal dependencies
-      run: |
-        ${{ matrix.ld_libpath }}
-        ${{ matrix.venv_activate }}
-        python -m pip install $RPY2_SRC_DIST'[test_minimal]'
-        bash -e ./scripts/run_test_min_deps.sh
-    - name: Test with numpy
-      run: |
-        ${{ matrix.ld_libpath }}
-        ${{ matrix.venv_activate }}
-        python -m pip install $RPY2_SRC_DIST'[numpy]'
-        bash -e ./scripts/run_test_numpy.sh
-    - name: Test with pandas
-      run: |
-        ${{ matrix.ld_libpath }}
-        ${{matrix.venv_activate }}
-        python -m pip install $RPY2_SRC_DIST'[pandas]'
-        bash -e ./scripts/run_test_pandas.sh
-    - name: Test with ipython
-      run: |
-        ${{ matrix.ld_libpath }}
-        ${{matrix.venv_activate }}
-        python -m pip install ipython
-        bash -e ./scripts/run_test_pandas.sh
-    - name: Set RSPM
-      if: startsWith(matrix.os, 'ubuntu')
-      run: |
-        echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
-    - name: Install R dependencies
-      run: |
-        install.packages(c("ggplot2", "dplyr", "tidyr", "dbplyr", "lazyeval", "rlang"))
-      shell: Rscript {0}
-    - name: Test with R deps
-      if: matrix.os != 'windows-latest'
-      run: |
-        ${{ matrix.ld_libpath }}
-        ${{ matrix.venv_activate }}
-        bash -e ./scripts/run_test_rdeps.sh
-    - name: Test with R deps (windows)
-      continue-on-error: true
-      if: matrix.os == 'windows-latest'
-      run: |
-        ${{ matrix.ld_libpath }}
-        ${{ matrix.venv_activate }}
-        pytest --cache-clear --cov-append --cov-report=xml --cov-report=term --cov=rpy2.rinterface_lib --cov=rpy2.rinterface --cov=rpy2.rlike --cov=rpy2.robjects rpy2/tests/robjects/lib
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4.6.0
-      if: matrix.os == 'ubuntu-22.04' && matrix.python-version == '3.8' && matrix.r-version == 'release'
-      env:
-        OS: ${{ runner.os }}
-        PYTHON: ${{ matrix.python-version }}
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        env_vars: OS,PYTHON
+    uses: ./.github/workflows/wheel-build-test.yml
+    with:
+      os: ${{ matrix.os }}
+      python-version: ${{ matrix.python-version }}
+      r-version: ${{ matrix.r-version }}
+      experimental: ${{ matrix.experimental }}
+      venv_activate: ${{ matrix.venv_activate }}

@@ -1,6 +1,6 @@
 import pytest
+import rpy2.rinterface as ri
 import rpy2.robjects as robjects
-ri = robjects.rinterface
 import os
 import array
 import time

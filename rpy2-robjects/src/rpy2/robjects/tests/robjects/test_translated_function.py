@@ -1,7 +1,7 @@
 import pytest
 
+import rpy2.rinterface as rinterface
 import rpy2.robjects as robjects
-rinterface = robjects.rinterface
 import array
 
 identical = rinterface.baseenv['identical']
