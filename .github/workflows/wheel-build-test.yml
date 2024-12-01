@@ -41,11 +41,9 @@ jobs:
     - name: Build wheel rinterface (Windows)
       if: inputs.os == 'windows-latest'
       run: |
-        R CMD config --all
-        gcc --version
         cd rpy2-rinterface
         set RPY2_API_FORCE=True
-        python -m build --global-option build_ext --global-option --compiler=mingw32 -o dist/ --wheel .      
+        python -m build --compiler=mingw32 -o dist/ --wheel .      
     - name: Build wheel rinterface (non-Windows)
       if: inputs.os != 'windows-latest'
       run: |
