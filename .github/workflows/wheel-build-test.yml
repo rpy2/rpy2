@@ -38,10 +38,19 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install setuptools build
-    - name: Build wheel rinterface
+    - name: Build wheel rinterface (Windows)
+      if: inputs.os == 'windows-latest'
+      run: |
+        echo $env:path;
+        Get-Command link | Select-Object *
+        cd rpy2-rinterface;
+        "RPY2_API_FORCE=True" >> $env.GITHUB_ENV;
+        python -m build -C--global-option=--verbose -C--build-option="build --compiler=mingw32 --force" -o dist/ --wheel .      
+    - name: Build wheel rinterface (non-Windows)
+      if: inputs.os != 'windows-latest'
       run: |
         cd rpy2-rinterface
-        python -m build -o dist/ --wheel .
+        python -m build -o dist/ --wheel .      
     - name: Build wheel robjects
       run: |
         cd rpy2-robjects
