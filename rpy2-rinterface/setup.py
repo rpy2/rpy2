@@ -22,9 +22,8 @@ from setuptools._distutils.sysconfig import customize_compiler
 from setuptools._distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
 
 import setuptools.command.build
+import setuptools.command.build_ext
 import setuptools.command.install
-
-from setuptools.command.build_ext import build_ext
 
 link_args = ['-static-libgcc',
              '-static-libstdc++',
@@ -32,7 +31,7 @@ link_args = ['-static-libgcc',
              '-lwinpthread',
              '-Wl,--no-whole-archive']
 
-class Build(build_ext):
+class build_ext(setuptools.command.build_ext):
     def build_extensions(self):
         if self.compiler.compiler_type == 'mingw32':
             for e in self.extensions:
@@ -217,9 +216,8 @@ class build(setuptools.command.build.build):
 pack_dir = {PACKAGE_NAME: os.path.join(package_prefix, 'rpy2')}
 
 setup(
-    cmdclass={'build_ext': Build},
     cffi_modules=cffi_modules,
     ext_modules=ext_modules,
-    cmdclass=dict(build=build),
+    cmdclass=dict(build=build, build_ext=build_ext),
     zip_safe=False
 )
