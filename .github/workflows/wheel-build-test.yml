@@ -42,7 +42,7 @@ jobs:
       if: inputs.os == 'windows-latest'
       run: |
         echo $env:path;
-	Get-Command link
+	Get-Command link | Select-Object *
         cd rpy2-rinterface;
         "RPY2_API_FORCE=True" >> $env.GITHUB_ENV;
         python -m build -C--global-option=--verbose -C--build-option="build --compiler=mingw32 --force" -o dist/ --wheel .      
