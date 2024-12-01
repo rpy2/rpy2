@@ -41,6 +41,7 @@ jobs:
     - name: Build wheel rinterface (Windows)
       if: inputs.os == 'windows-latest'
       run: |
+        R CMD config --all
         gcc --version
         cd rpy2-rinterface
         set RPY2_API_FORCE=True
