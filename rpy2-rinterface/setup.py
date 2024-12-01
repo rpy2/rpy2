@@ -77,7 +77,7 @@ def get_c_extension_status(libraries=['R'], include_dirs=None,
         fh.write(c_code)
 
     compiler = new_compiler()
-    # customize_compiler(compiler)
+    customize_compiler(compiler)
     try:
         compiler.link_executable(
             compiler.compile([src_file], output_dir=tmp_dir,
