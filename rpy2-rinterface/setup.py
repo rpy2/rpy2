@@ -8,6 +8,7 @@ if ((sys.version_info[0] < 3) or
     sys.exit(1)
 
 import enum
+import importlib
 import os
 import shutil
 import subprocess
@@ -23,7 +24,21 @@ from setuptools._distutils.errors import CCompilerError, DistutilsExecError, Dis
 import setuptools.command.build
 import setuptools.command.install
 
-import importlib
+from setuptools.command.build_ext import build_ext
+
+link_args = ['-static-libgcc',
+             '-static-libstdc++',
+             '-Wl,-Bstatic,--whole-archive',
+             '-lwinpthread',
+             '-Wl,--no-whole-archive']
+
+class Build(build_ext):
+    def build_extensions(self):
+        if self.compiler.compiler_type == 'mingw32':
+            for e in self.extensions:
+                e.extra_link_args = link_args
+        super(Build, self).build_extensions()
+
 
 # spec = importlib.util.spec_from_file_location('rpy2', './rpy2/__init__.py')
 # rpy2 = importlib.util.module_from_spec(spec)
@@ -202,6 +217,7 @@ class build(setuptools.command.build.build):
 pack_dir = {PACKAGE_NAME: os.path.join(package_prefix, 'rpy2')}
 
 setup(
+    cmdclass={'build_ext': Build},
     cffi_modules=cffi_modules,
     ext_modules=ext_modules,
     cmdclass=dict(build=build),
