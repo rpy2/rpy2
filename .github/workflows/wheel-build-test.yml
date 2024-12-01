@@ -41,6 +41,7 @@ jobs:
     - name: Build wheel rinterface (Windows)
       if: inputs.os == 'windows-latest'
       run: |
+        echo %PATH%
         cd rpy2-rinterface
         set RPY2_API_FORCE=True
         python -m build -C--global-option=--verbose -C--build-option="build --compiler=mingw32 --force" -o dist/ --wheel .      
