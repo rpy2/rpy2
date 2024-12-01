@@ -31,12 +31,13 @@ link_args = ['-static-libgcc',
              '-lwinpthread',
              '-Wl,--no-whole-archive']
 
-class build_ext(setuptools.command.build_ext):
+
+class build_ext(setuptools.command.build_ext.build_ext):
     def build_extensions(self):
         if self.compiler.compiler_type == 'mingw32':
             for e in self.extensions:
                 e.extra_link_args = link_args
-        super(Build, self).build_extensions()
+        super().build_extensions()
 
 
 # spec = importlib.util.spec_from_file_location('rpy2', './rpy2/__init__.py')
@@ -218,6 +219,6 @@ pack_dir = {PACKAGE_NAME: os.path.join(package_prefix, 'rpy2')}
 setup(
     cffi_modules=cffi_modules,
     ext_modules=ext_modules,
-    cmdclass=dict(build=build, build_ext=build_ext),
+    cmdclass={'build': build, 'build_ext': build_ext},
     zip_safe=False
 )
