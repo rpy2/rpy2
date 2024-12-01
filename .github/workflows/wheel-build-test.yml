@@ -43,7 +43,7 @@ jobs:
       run: |
         echo $env:path;
         cd rpy2-rinterface;
-        $env.RPY2_API_FORCE = True;
+        "RPY2_API_FORCE=True" >> $env.GITHUB_ENV;
         python -m build -C--global-option=--verbose -C--build-option="build --compiler=mingw32 --force" -o dist/ --wheel .      
     - name: Build wheel rinterface (non-Windows)
       if: inputs.os != 'windows-latest'
