@@ -1,3 +1,17 @@
+Release 3.6.0
+=============
+
+Changes
+-------
+
+- `rpy2` is now a namespace package, with `rpy2-rinterface`
+  (low-level interface close to R's C API) and `rpy2-robjects`
+  (possible more-Pythonic high-level interface using the low-level
+  interface) 2 packages on pypi installing into that namespace.
+  The package `rpy2` remains on pypi as essentially a metapackage
+  depending on `rpy2-rinterface` and `rpy2-robjects`.
+
+
 Release 3.5.17
 ==============
 
