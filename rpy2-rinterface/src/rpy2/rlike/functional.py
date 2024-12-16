@@ -3,6 +3,7 @@
 # TODO: delete after release 1.7.0 this is deprecated.
 import warnings
 
+
 def tapply(seq, tag, fun):
     """ Apply the function `fun` to the items in `seq`,
     grouped by the tags defined in `tag`.
