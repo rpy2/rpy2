@@ -143,13 +143,13 @@ def nonnumpy2rpy(obj):
         return original_converter.py2rpy(obj)
 
 
+# TODO: deprecate.
 @py2rpy.register(rlc.OrdDict)
 def orddict_py2rpy(obj):
     rlist = ro.vectors.ListVector.from_length(len(obj))
     rlist.names = ro.vectors.StrVector(tuple(obj.keys()))
     with conversion.get_conversion().context() as cv:
-        # TODO: OrdDict.values() is broken. Use .items() for now.
-        for i, (k, v) in enumerate(obj.items()):
+        for i, v in enumerate(obj.values()):
             rlist[i] = cv.py2rpy(v)
     return rlist
 

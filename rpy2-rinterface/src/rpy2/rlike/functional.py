@@ -1,3 +1,9 @@
+"""This module is deprecated."""
+
+# TODO: delete after release 1.7.0 this is deprecated.
+import warnings
+
+
 def tapply(seq, tag, fun):
     """ Apply the function `fun` to the items in `seq`,
     grouped by the tags defined in `tag`.
@@ -7,6 +13,10 @@ def tapply(seq, tag, fun):
     :param fun: function
     :rtype: list
     """
+    warnings.warn(
+        'tapply() is deprecated.',
+        DeprecationWarning
+    )
 
     if len(seq) != len(tag):
         raise ValueError("seq and tag should have the same length.")
@@ -25,6 +35,11 @@ def tapply(seq, tag, fun):
 def listify(fun):
     """ Decorator to make a function apply
     to each item in a sequence, and return a list. """
+    warnings.warn(
+        'listify() is deprecated.',
+        DeprecationWarning
+    )
+
     def f(seq):
         res = [fun(x) for x in seq]
         return res
@@ -34,6 +49,11 @@ def listify(fun):
 def iterify(fun):
     """ Decorator to make a function apply
     to each item in a sequence, and return an iterator. """
+    warnings.warn(
+        'iterify() is deprecated.',
+        DeprecationWarning
+    )
+
     def f(seq):
         for x in seq:
             yield fun(x)
