@@ -183,7 +183,7 @@ class NamedList:
         if tags:
             warnings.warn(
                 'The named argument "tags" when constructing '
-                'a NamedList is deprecated. Use "names" instead.'.
+                'a NamedList is deprecated. Use "names" instead.',
                 DeprecationWarning
             )
             if names:
@@ -200,8 +200,8 @@ class NamedList:
             raise ValueError("There must be as many names as seq")
 
     def __add__(self, tl: 'NamedList'):
-        res = NamedList(itertools.chain(self, tl),
-                        names=itertools.chain(self.names, tl.names))
+        res = NamedList(itertools.chain(self.values(), tl.values()),
+                        names=itertools.chain(self.names(), tl.names()))
         return res
 
     def __delitem__(self, y):
@@ -212,7 +212,7 @@ class NamedList:
         self.__list.__delslice__(i, j)
         self.__names.__delslice__(i, j)
 
-    def __iadd__(self, y):
+    def __iadd__(self, y: 'NamedList'):
         self.__list.__iadd__(y)
         if isinstance(y, TaggedList):
             self.__names.__iadd__(y.names)
@@ -226,7 +226,7 @@ class NamedList:
         return self
 
     def __len__(self) -> int:
-        return self(self.__list)
+        return len(self.__list)
 
     def __mul__(self, y):
         names = self.__names__ * y.__names__
@@ -246,9 +246,22 @@ class NamedList:
             res.append(v, name=v)
         return res
 
-    def __setslice__(self, i, j, y: 'NamedList'):
-        self.__list.__setslice__(i, j, y.values())
-        self.__names.__setslice(i, j, y.names())
+    def __setitem__(self, i, y: 'NamedList'):
+        if isinstance(i, slice):
+            if len(y) != ((i.stop-i.start) // i.step):
+                raise ValueError('Length mistmatch between slice and values.')
+            for idx, name, value in zip(
+                    range(i.start, i.stop, i.step if i.step else 1),
+                    y.names(),
+                    y.values()
+            ):
+                self.__list[idx] = name
+                self.__names[idx] = value                
+        else:
+            if len(y) != 1:
+                raise ValueError('New item must be a NamedList of length 1.')
+            self.__list[i] = next(y.values())
+            self.__names[i] = next(y.names())
 
     def append(self, obj, name=None, tag=None):
         """ Append an object to the list
