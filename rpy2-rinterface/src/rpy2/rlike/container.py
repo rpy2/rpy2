@@ -182,7 +182,8 @@ class NamedList:
         if tags:
             warnings.warn(
                 'The named argument "tags" when constructing '
-                'a NamedList is deprecated. Use "names" instead.'
+                'a NamedList is deprecated. Use "names" instead.'.
+                DeprecationWarning
             )
             if names:
                 raise ValueError(
@@ -192,14 +193,14 @@ class NamedList:
             names = tags
         self.__list = list(seq)
         if names is None:
-            tags = [None, ] * len(self)
-        self.__names = list(tags)
+            names = [None, ] * len(self)
+        self.__names = list(names)
         if len(self.__names) != len(self):
             raise ValueError("There must be as many names as seq")
 
     def __add__(self, tl: 'NamedList'):
         res = NamedList(itertools.chain(self, tl),
-                        tags=itertools.chain(self.names, tl.names))
+                        names=itertools.chain(self.names, tl.names))
         return res
 
     def __delitem__(self, y):
@@ -213,7 +214,7 @@ class NamedList:
     def __iadd__(self, y):
         self.__list.__iadd__(y)
         if isinstance(y, TaggedList):
-            self.__names.__iadd__(y.tags)
+            self.__names.__iadd__(y.names)
         else:
             self.__names.__iadd__([None, ] * len(y))
         return self
@@ -223,10 +224,13 @@ class NamedList:
         resitems = self.__list.__imul__(y)
         return self
 
+    def __len__(self) -> int:
+        return self(self.__list)
+
     def __mul__(self, y):
-        restags = self.__names__ * y.__names__
-        resitems = self.__list.__mul__(y)
-        return type(self)(tuple(resitems), tags=restags)
+        names = self.__names__ * y.__names__
+        values = self.__list.__mul__(y)
+        return type(self)(values, names=names)
 
     def __reduce__(self):
         return self.__list.__reduce__()
@@ -253,7 +257,8 @@ class NamedList:
         if tag:
             warnings.warn(
                 'The named argument "tag" when appending to '
-                'a NamedList is deprecated. Use "name" instead.'
+                'a NamedList is deprecated. Use "name" instead.',
+                DeprecationWarning
             )
             if name:
                 raise ValueError(
@@ -263,31 +268,46 @@ class NamedList:
         self.__list.append(obj)
         self.__names.append(tag)
 
-    def extend(self, namedlist: NamedList):
+    def extend(self, lst: Union[NamedList, list]):
         """ Extend the named list.
 
-        :param namedlist: A NamedList
+        :param lst: A NamedList or list
         """
 
-        if isinstance(namedlist, TaggedList):
-            itertags = namedlist.names()
+        if isinstance(lst, TaggedList):
+            iternames = lst.names()
+            itervalues = lst.values()
         else:
-            itertags = [None, ] * len(namedlist)
+            iternames = [None, ] * len(lst)
+            itervalues = iter(lst)
 
-        for name, value in namedlist.items():
-            self.__list.append(obj)
-            self.__names.append(tag)
+        for name, value in zip(iternames, itervalues):
+            self.__list.append(value)
+            self.__names.append(name)
 
-    def insert(self, index, obj, tag=None):
+    def insert(self, index, obj, name=None, tag=None):
         """
         Insert an object in the list
 
         :param index: integer
         :param obj: object
+        :param name: object
         :param tag: object
         """
+        if tag:
+            warnings.warn(
+                'The named argument "tag" is deprecated. '
+                'Use "name" instead.'.
+                DeprecationWarning
+            )
+            if name:
+                raise ValueError(
+                    '"tag" is deprecated. Only use the named argument '
+                    '"name".'
+                )
+            name = tag
         self.__list.insert(index, obj)
-        self.__names.insert(index, tag)
+        self.__names.insert(index, name)
 
     def iterontag(self, tag):
         """
@@ -309,8 +329,8 @@ class NamedList:
     def items(self) -> Iterator[Tuple[Any, Any]]:
         """
         Return an iterator over (name, value) pairs. """
-        for tag, item in zip(self.__names, self.__list):
-            yield (tag, item)
+        for name, value in zip(self.__names, self.__list):
+            yield (name, value)
 
     def names(self) -> Iterator[Any]:
         for n in self.__names:
@@ -412,7 +432,7 @@ class NamedList:
 
         :param i: int (index)
 
-        :param t: object (tag)
+        :param n: object (name)
         """
         self.__names[i] = n
 
