@@ -201,7 +201,7 @@ class NamedList:
 
     def __add__(self, tl: 'NamedList'):
         res = NamedList(itertools.chain(self.values(), tl.values()),
-                        names=itertools.chain(self.names(), tl.names()))
+                        names=itertools.chain(self.iternames(), tl.iternames()))
         return res
 
     def __delitem__(self, y):
@@ -212,11 +212,12 @@ class NamedList:
         self.__list.__delslice__(i, j)
         self.__names.__delslice__(i, j)
 
-    def __iadd__(self, y: 'NamedList'):
-        self.__list.__iadd__(y)
-        if isinstance(y, TaggedList):
-            self.__names.__iadd__(y.names)
+    def __iadd__(self, y: 'Union[NamedList, list]'):
+        if isinstance(y, NamedList):
+            self.__list.__iadd__(tuple(y.values()))
+            self.__names.__iadd__(tuple(y.iternames()))
         else:
+            self.__list.__iadd__(y)
             self.__names.__iadd__([None, ] * len(y))
         return self
 
@@ -246,22 +247,41 @@ class NamedList:
             res.append(v, name=v)
         return res
 
-    def __setitem__(self, i, y: 'NamedList'):
+    def __getitem__(self, i: Union[int, slice]):
         if isinstance(i, slice):
-            if len(y) != ((i.stop-i.start) // i.step):
+            return super(self).__init__(self.__list[i],
+                                        self.__names[i])
+        else:
+            return self.__list[i]
+            
+    def __setitem__(self, i: Union[int, slice],
+                    y: 'Union[NamedList, list]'):
+        if isinstance(i, slice):
+            step = i.step if i.step else 1
+            if len(y) != ((i.stop-i.start) // step):
                 raise ValueError('Length mistmatch between slice and values.')
-            for idx, name, value in zip(
-                    range(i.start, i.stop, i.step if i.step else 1),
-                    y.names(),
+            if isinstance(y, NamedList):
+                iter_i_name_value = zip(
+                    range(i.start, i.stop, step),
+                    y.iternames(),
                     y.values()
-            ):
+                )
+            elif isinstance(y, list):
+                iter_i_name_value = zip(
+                    range(i.start, i.stop, step),
+                    y,
+                    self.__names[i]
+                )                
+            else:
+                raise ValueError('y must be a NamedList or a list.')
+            for idx, name, value in iter_i_name_value:
                 self.__list[idx] = name
                 self.__names[idx] = value                
         else:
             if len(y) != 1:
                 raise ValueError('New item must be a NamedList of length 1.')
             self.__list[i] = next(y.values())
-            self.__names[i] = next(y.names())
+            self.__names[i] = next(y.iternames())
 
     def append(self, obj, name=None, tag=None):
         """ Append an object to the list
@@ -282,17 +302,17 @@ class NamedList:
         self.__list.append(obj)
         self.__names.append(tag)
 
-    def extend(self, lst: Union[NamedList, list]):
+    def extend(self, lst: 'Union[NamedList, list]'):
         """ Extend the named list.
 
         :param lst: A NamedList or list
         """
 
-        if isinstance(lst, TaggedList):
-            iternames = lst.names()
+        if isinstance(lst, NamedList):
+            iternames = lst.iternames()
             itervalues = lst.values()
         else:
-            iternames = [None, ] * len(lst)
+            iternames = itertools.repeat(None, len(lst))
             itervalues = iter(lst)
 
         for name, value in zip(iternames, itervalues):
@@ -311,7 +331,7 @@ class NamedList:
         if tag:
             warnings.warn(
                 'The named argument "tag" is deprecated. '
-                'Use "name" instead.'.
+                'Use "name" instead.',
                 DeprecationWarning
             )
             if name:
@@ -346,13 +366,16 @@ class NamedList:
         for name, value in zip(self.__names, self.__list):
             yield (name, value)
 
-    def names(self) -> Iterator[Any]:
+    def iternames(self) -> Iterator[Any]:
         for n in self.__names:
             yield n
 
     def values(self) -> Iterator[Any]:
         for v in self.__list:
             yield v
+
+    def __iter__(self):
+        return self.values()
 
     def itertags(self) -> Iterator[Any]:
         """
@@ -362,7 +385,7 @@ class NamedList:
         """
         warnings.warn(
             'The method itertags() is deprecated. '
-            'Use names() instead.',
+            'Use iternames() instead.',
             DeprecationWarning
         )
         for tag in self.__names:
@@ -415,9 +438,9 @@ class NamedList:
 
     def __set_names(self, names):
         if len(names) == len(self.__names):
-            self.__names = tuple(names)
+            self.__names = list(names)
         else:
-            raise ValueError('The new list of names should have the '
+            raise ValueError('The new sequence of names should have the '
                              'same length as the old one.')
 
     names = property(__get_names, __set_names)
@@ -433,22 +456,33 @@ class NamedList:
     def __set_tags(self, names):
         warnings.warn(
             'The attribute .tags is deprecated. '
-            'Use .names instead.',
+            'Use .setname() instead.',
             DeprecationWarning       
         )
         self.names = names
 
     tags = property(__get_tags, __set_tags)
 
-    def setname(self, i: int, n: Any):
+    def setname(self, i: Union[int, slice], n: Any):
         """
         Set name 'n' for item at index 'i'.
 
-        :param i: int (index)
+        :param i: int or slice.
 
-        :param n: object (name)
+        :param n: object (name(s))
         """
-        self.__names[i] = n
+        if isinstance(i, slice):
+            if len(n) != ((i.stop-i.start) // i.step):
+                raise ValueError('Length mistmatch between slice and values.')
+            for idx, (name, value) in enumerate(
+                    zip(
+                        range(i.start, i.stop, i.step if i.step else 1),
+                        n
+                    )
+            ):
+                self.__names[idx] = value
+        else:
+            self.__names[i] = n
 
     def settag(self, i, t):
         warnings.warn(
@@ -461,7 +495,7 @@ class NamedList:
 
 class TaggedList(NamedList):
 
-    def __init__(*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         warnings.warn('The class name "TaggedList" is deprecated. '
                       'use "NamedList" instead.', DeprecationWarning)
-        super().__init__(*args, **kwargs)
+        super().__init__(self, *args, **kwargs)
