@@ -278,10 +278,11 @@ class NamedList:
                 self.__list[idx] = name
                 self.__names[idx] = value                
         else:
-            if len(y) != 1:
-                raise ValueError('New item must be a NamedList of length 1.')
-            self.__list[i] = next(y.values())
-            self.__names[i] = next(y.iternames())
+            if isinstance(y, NamedList):
+                self.__list[i] = next(y.values())
+                self.__names[i] = next(y.iternames())
+            else:
+                self.__list[i] = y
 
     def append(self, obj, name=None, tag=None):
         """ Append an object to the list
