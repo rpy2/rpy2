@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rpy2"
 description = "Meta-package for the low-level and high-level rpy2 interfaces to R."
-version = "3.6.0.dev0"
+version = "3.6.0.dev1"
 readme = "README.md"
 requires-python = ">=3.7"
 license = { text = "GPLv2+" }
