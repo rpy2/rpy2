@@ -15,12 +15,9 @@ on:
       experimental:
         required: true
         type: boolean
-      venv_activate:
-        required: true
-        type: string
 
 jobs:
-  build-wheel-posix:
+  build-wheel:
     runs-on: ${{ inputs.os }}
     continue-on-error: false
     steps:
@@ -34,11 +31,32 @@ jobs:
       with:
         r-version: ${{ inputs.r-version }}
         use-public-rspm: true
+    - name: Set env commands (POSIX)
+      if: "!startsWith(inputs.os, 'windows')"
+      run: |
+        echo "VENV_ACTIVATE=source pyenv_base/bin/activate" >> $GITHUB_ENV
+        echo "R_LIBRARY=export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+    - name: Set virtualenv activation command (Windows)
+      if: startsWith(inputs.os, 'windows')
+      shell: bash
+      run: |
+        echo "VENV_ACTIVATE=pyenv_base\Scripts\activate" >> $GITHUB_ENV
+        echo "R_LIBRARY=''" >> $GITHUB_ENV
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install setuptools build
-    - name: Build wheel rinterface
+    - name: Build wheel rinterface (Windows)
+      shell: bash
+      if: startsWith(inputs.os, 'windows')
+      run: |
+        cd rpy2-rinterface
+        echo '[build]' > setup.cfg
+        echo 'compiler = mingw32' >> setup.cfg
+        export RPY2_API_FORCE=True
+        python -m build -C--global-option=--verbose -o dist/ --wheel .
+    - name: Build wheel rinterface (non-Windows)
+      if: "!startsWith(inputs.os, 'windows')"
       run: |
         cd rpy2-rinterface
         python -m build -o dist/ --wheel .
@@ -54,22 +72,16 @@ jobs:
       with:
         name: rpy2-robjects-${{ inputs.os }}-py${{ inputs.python-version }}-r${{inputs.r-version }}
         path: rpy2-robjects/dist/rpy2_robjects-*.whl
-    - name: Create base virtualenv (non-windows)
-      if: inputs.os != 'windows-latest'
+    - name: Create base virtualenv 
       run: |
         python -m venv pyenv_base
-        ${{ inputs.venv_activate }}
+        ${{ env.VENV_ACTIVATE }}
         python -m  pip install -U pip wheel
-    - name: Create base virtualenv (windows)
-      if: inputs.os == 'windows-latest'
-      shell: cmd
-      run: |
-        python -m pip install -U pip wheel
     - name: Install extra dependencies
-      if: inputs.os == 'windows-latest' && inputs.python-version == '3.8'
+      if: startsWith(inputs.os, 'windows') && inputs.python-version == '3.8'
       run: |
         echo "Bug in setuptools requires update"
-        ${{ inputs.venv_activate }}
+        ${{ env.VENV_ACTIVATE }}
         python -m pip install --upgrade setuptools pycparser
     - uses: actions/download-artifact@v4.1.7
       with:
@@ -86,47 +98,41 @@ jobs:
         ls rpy2-rinterface/dist/
         echo "RPY2_RINTERFACE_WHL_DIST=$(ls -1 rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-r${{ inputs.r-version }}/*.whl | tail -n 1)" >> $GITHUB_ENV
         echo "RPY2_ROBJECTS_WHL_DIST=$(ls -1 rpy2-robjects/dist/rpy2-robjects-${{ inputs.os }}-py${{ inputs.python-version }}-r${{ inputs.r-version }}/*.whl | tail -n 1)" >> $GITHUB_ENV
-    - name: Install package (non-Windows)
-      if: inputs.os != 'windows-latest'
+    - name: Install package
       run: |
-        ${{ inputs.venv_activate }}
-        pip install $RPY2_RINTERFACE_WHL_DIST
-        pip install --pre $RPY2_ROBJECTS_WHL_DIST
-    - name: Install package (Windows)
-      if: inputs.os == 'windows-latest'
-      shell: bash
-      run: |
-        ${{ inputs.venv_activate }}
-        RPY2_API_FORCE=True pip install $RPY2_RINTERFACE_WHL_DIST
-        pip install --pre $RPY2_ROBJECTS_WHL_DIST
+        ${{ env.VENV_ACTIVATE }}
+        pip install ${{ env.RPY2_RINTERFACE_WHL_DIST }}
+        pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}
     - name: Test with minimal dependencies
+      if: "!startsWith(inputs.os, 'windows')"
       run: |
         ${{ inputs.venv_activate }}
         echo "With requirements for rpy2-rinterface."
+        ${{ env.VENV_ACTIVATE }}
 	if python3 -m pip install --force $(python scripts/extract_dependency.py rpy2/pyproject.toml rpy2-rinterface); then
-          export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH};
+          ${{ env.R_LIBRARY }}
           bash -e ./scripts/run_test_min_deps.sh;
 	fi
         echo "With dev for rpy2-rinterface."
         python3 -m pip install --pre $RPY2_ROBJECTS_WHL_DIST'[test_minimal]'
-        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
+        ${{ env.R_LIBRARY }}
         bash -e ./scripts/run_test_min_deps.sh
     - name: Test with numpy
       run: |
-        ${{ inputs.venv_activate }}
-        python -m pip install --pre $RPY2_ROBJECTS_WHL_DIST'[numpy]'
-        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
+        ${{ env.VENV_ACTIVATE }}
+        python -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[numpy]'
+        ${{ env.R_LIBRARY }}
         bash -e ./scripts/run_test_numpy.sh
     - name: Test with pandas
       run: |
-        ${{ inputs.venv_activate }}
-        python -m pip install --pre $RPY2_ROBJECTS_WHL_DIST'[pandas]'
-        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
+        ${{ env.VENV_ACTIVATE }}
+        python -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[pandas]'
+        ${{ env.R_LIBRARY }}
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
       run: |
-        ${{ inputs.venv_activate }}
-        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
+        ${{ env.VENV_ACTIVATE }}
+        ${{ env.R_LIBRARY }}
         python -m pip install ipython
         bash -e ./scripts/run_test_pandas.sh
     - name: Set RSPM
@@ -134,21 +140,16 @@ jobs:
       run: |
         echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
     - name: Install R dependencies
+      if: "!startsWith(inputs.os, 'windows')"
       run: |
         install.packages(c("ggplot2", "dplyr", "tidyr", "dbplyr", "lazyeval", "rlang"))
       shell: Rscript {0}
     - name: Test with R deps
-      if: inputs.os != 'windows-latest'
+      if: "!startsWith(inputs.os, 'windows')"
       run: |
-        ${{ inputs.venv_activate }}
-        export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
+        ${{ env.VENV_ACTIVATE }}
+        ${{ env.R_LIBRARY }}
         bash -e ./scripts/run_test_rdeps.sh
-    - name: Test with R deps (windows)
-      continue-on-error: true
-      if: inputs.os == 'windows-latest'
-      run: |
-        ${{ inputs.venv_activate }}
-        pytest --cache-clear --cov-append --cov-report=xml --cov-report=term --cov=rpy2.rinterface_lib --cov=rpy2.rinterface --cov=rpy2.rlike --cov=rpy2.robjects rpy2/tests/robjects/lib
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4.6.0
       if: inputs.os == 'ubuntu-22.04' && inputs.python-version == '3.8' && inputs.r-version == 'release'

@@ -1148,16 +1148,21 @@ def _getrenvvars(
     cmd = (
         os.path.join(r_home, 'bin', 'Rscript'),
         '-e',
-        'x<-Sys.getenv();y<-as.character(x);names(y)<-names(x);'
-        'write.csv(y)'
+        ';'.join(
+            (
+                'x <- Sys.getenv()',
+                'y <- as.character(x)',
+                'names(y) <- names(x)',
+                'write.csv(y)'
+            )
+        )
     )
 
     envvars = subprocess.check_output(cmd,
                                       universal_newlines=True,
                                       stderr=subprocess.PIPE)
-
     res = []
-    reader = csv.reader(row for row in envvars.split(os.linesep) if row != '')
+    reader = csv.reader(row for row in envvars.split('\n') if row != '')
     # Skip column names.
     next(reader)
     for k, v in reader:
