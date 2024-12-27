@@ -47,15 +47,13 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install setuptools build
     - name: Build wheel rinterface (Windows)
+      shell: bash
       if: startsWith(inputs.os, 'windows')
       run: |
-        echo $env:path;
-        Get-Command link | Select-Object *
-        cd rpy2-rinterface;
-        echo '[build]' > setup.cfg;
-        echo 'compiler = mingw32' >> setup.cfg;
-        cat setup.cfg;
-        $env:RPY2_API_FORCE = True;
+        cd rpy2-rinterface
+        echo '[build]' > setup.cfg
+        echo 'compiler = mingw32' >> setup.cfg
+        export RPY2_API_FORCE=True
         python -m build -C--global-option=--verbose -o dist/ --wheel .
     - name: Build wheel rinterface (non-Windows)
       if: "!startsWith(inputs.os, 'windows')"
