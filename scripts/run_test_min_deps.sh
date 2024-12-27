@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 pytest \
     --cov-report=xml \
@@ -26,16 +27,6 @@ pytest \
     --cov=rpy2.rinterface_lib.embedded \
     ./rpy2-rinterface/src/rpy2/rinterface/tests/test_endr.py
 
-for testname in test_threading__initr test_threading_initr_simple; do
-  pytest \
-      --cov-append \
-      --cov-report=xml \
-      --cov-report=term \
-      --cov=rpy2.rinterface_lib.embedded \
-      ./rpy2-rinterface/src/rpy2/rinterface/tests/test_threading.py -k "${testname}"
-done
-
-# Added in case the loop above is not updated and is missing tests
 pytest \
     --cov-append \
     --cov-report=xml \

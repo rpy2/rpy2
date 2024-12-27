@@ -68,14 +68,13 @@ jobs:
       with:
         name: rpy2-robjects-sdist
         path: rpy2-robjects/dist/rpy2_robjects-*.tar.gz
-  build-wheel-posix:
+  build-wheel:
     strategy:
       fail-fast: false
       matrix:
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
         r-version: [release]
-        os: [ubuntu-latest, macos-14]
-        venv_activate: ["source pyenv_base/bin/activate"]
+        os: ["windows-latest", ubuntu-latest, macos-14]
         experimental: [false]
         exclude:
           - os: macos-14
@@ -88,4 +87,3 @@ jobs:
       python-version: ${{ matrix.python-version }}
       r-version: ${{ matrix.r-version }}
       experimental: ${{ matrix.experimental }}
-      venv_activate: ${{ matrix.venv_activate }}
