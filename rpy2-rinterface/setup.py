@@ -153,8 +153,6 @@ class install(setuptools.command.install.install):
 
 r_home = situation.get_r_home()
 cffi_mode = situation.get_cffi_mode()
-import sys
-print(os.environ.get('RPY2_API_FORCE'), file=sys.stderr)
 c_extension_status = get_r_c_extension_status(
     r_home,
     force_ok=os.environ.get('RPY2_API_FORCE') == 'True'
