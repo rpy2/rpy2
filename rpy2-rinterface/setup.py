@@ -155,7 +155,7 @@ r_home = situation.get_r_home()
 cffi_mode = situation.get_cffi_mode()
 c_extension_status = get_r_c_extension_status(
     r_home,
-    force_ok=True  # os.environ.get('RPY2_API_FORCE') == 'True'
+    force_ok=os.environ.get('RPY2_API_FORCE') == 'True'
 )
 ext_modules = []
 if cffi_mode == situation.CFFI_MODE.ABI:

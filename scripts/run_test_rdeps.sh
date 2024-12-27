@@ -2,6 +2,7 @@
 set -x
 
 pytest \
+    --cache-clear \
     --cov-append \
     --cov-report=xml \
     --cov-report=term \

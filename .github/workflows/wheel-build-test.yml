@@ -55,7 +55,7 @@ jobs:
         echo '[build]' > setup.cfg;
         echo 'compiler = mingw32' >> setup.cfg;
         cat setup.cfg;
-        "RPY2_API_FORCE=True" >> $env.GITHUB_ENV;
+        $env:RPY2_API_FORCE = True;
         python -m build -C--global-option=--verbose -o dist/ --wheel .
     - name: Build wheel rinterface (non-Windows)
       if: "!startsWith(inputs.os, 'windows')"
