@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 pytest \
     --cache-clear \
@@ -10,6 +11,4 @@ pytest \
     --cov=rpy2.rlike \
     --cov=rpy2.robjects \
     --cov=rpy2.robjects.lib \
-    rpy2-rinterface/src/rpy2/rinterface/tests \
     rpy2-robjects/src/rpy2/robjects/tests
-

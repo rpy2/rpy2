@@ -382,16 +382,18 @@ typedef enum {
 
 
 #ifdef OSNAME_NT
-char *getDLLVersion(void);
+extern char *getDLLVersion(void);
 extern char *getRUser(void);
 extern char *get_R_HOME(void);
-void setup_term_ui(void);
-extern int UserBreak;
+extern void freeRUser(char *);
+extern void free_R_HOME(char *);
+extern void setup_term_ui(void);
+extern int UserBreak;  /* LibExtern */
 extern Rboolean AllDevicesKilled;
-void editorcleanall(void);
-extern int GA_initapp(int, char **);
-extern void GA_appcleanup(void);
-void readconsolecfg(void);
+/* extern void editorcleanall(void); */
+/* extern int GA_initapp(int, char **); */
+/* extern void GA_appcleanup(void); */
+extern void readconsolecfg(void);
 
 typedef int (*blah1) (const char *, char *, int, int);
 typedef void (*blah2) (const char *, int);

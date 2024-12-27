@@ -8,6 +8,7 @@ if ((sys.version_info[0] < 3) or
     sys.exit(1)
 
 import enum
+import importlib
 import os
 import shutil
 import subprocess
@@ -21,9 +22,23 @@ from setuptools._distutils.sysconfig import customize_compiler
 from setuptools._distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
 
 import setuptools.command.build
+import setuptools.command.build_ext
 import setuptools.command.install
 
-import importlib
+link_args = ['-static-libgcc',
+             '-static-libstdc++',
+             '-Wl,-Bstatic,--whole-archive',
+             '-lwinpthread',
+             '-Wl,--no-whole-archive']
+
+
+class build_ext(setuptools.command.build_ext.build_ext):
+    def build_extensions(self):
+        if self.compiler.compiler_type == 'mingw32':
+            for e in self.extensions:
+                e.extra_link_args = link_args
+        super().build_extensions()
+
 
 # spec = importlib.util.spec_from_file_location('rpy2', './rpy2/__init__.py')
 # rpy2 = importlib.util.module_from_spec(spec)
@@ -140,7 +155,7 @@ r_home = situation.get_r_home()
 cffi_mode = situation.get_cffi_mode()
 c_extension_status = get_r_c_extension_status(
     r_home,
-    force_ok = os.environ.get('RPY2_API_FORCE') == 'True'
+    force_ok=os.environ.get('RPY2_API_FORCE') == 'True'
 )
 ext_modules = []
 if cffi_mode == situation.CFFI_MODE.ABI:
@@ -204,6 +219,6 @@ pack_dir = {PACKAGE_NAME: os.path.join(package_prefix, 'rpy2')}
 setup(
     cffi_modules=cffi_modules,
     ext_modules=ext_modules,
-    cmdclass=dict(build=build),
+    cmdclass={'build': build, 'build_ext': build_ext},
     zip_safe=False
 )

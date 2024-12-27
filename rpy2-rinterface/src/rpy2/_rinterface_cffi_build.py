@@ -172,6 +172,9 @@ def createbuilder_abi():
 
 def createbuilder_api():
     ffibuilder = cffi.FFI()
+
+    # Definition of variables to be used for conditional C/header
+    # definitions.
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
@@ -179,10 +182,20 @@ def createbuilder_api():
     if not os.name == 'nt':
         definitions['R_INTERFACE_PTRS'] = True
 
-    r_h = read_source('R_API.h')
-    eventloop_h = read_source('R_API_eventloop.h')
-    eventloop_c = read_source('R_API_eventloop.c')
+    # C source to be compiled.
+    if os.name == 'nt':
+        source = '\n'.join(
+            ('# include "R_API.h"',
+             '')
+        )
+    else:
+        eventloop_h = read_source('R_API_eventloop.h')
+        eventloop_c = read_source('R_API_eventloop.c')
+        source = eventloop_c
     rpy2_h = read_source('RPY2.h')
+    source += rpy2_h
+
+    # Get various compiling flags from R itself.
     r_home = situation.get_r_home()
     if r_home is None:
         sys.exit('Error: rpy2 in API mode cannot be built without R in '
@@ -202,12 +215,13 @@ def createbuilder_api():
     c_ext.extra_link_args.append(
         f'-Wl,-rpath,{situation.get_rlib_rpath(r_home)}'
     )
+    # TODO: What is this about?
     if 'RPY2_RLEN_LONG' in definitions:
         definitions['RPY2_RLEN_LONG'] = True
 
     ffibuilder.set_source(
         '_rinterface_cffi_api',
-        eventloop_c + rpy2_h,
+        source,
         libraries=c_ext.libraries,
         library_dirs=c_ext.library_dirs,
         # If we were using the R headers, we would use
@@ -217,6 +231,8 @@ def createbuilder_api():
         extra_compile_args=c_ext.extra_compile_args,
         extra_link_args=c_ext.extra_link_args)
 
+    # TODO: The list of callbacks should be created in the module
+    # ffi_proxy.
     callback_defns_api = '\n'.join(
         x.extern_python_def
         for x in [
@@ -240,21 +256,26 @@ def createbuilder_api():
                 ffi_proxy._exec_findvar_in_frame_def
         ])
 
+    # Subset of R headers we expose through cffi.
+    r_h = read_source('R_API.h')
+
     cdef_r, _ = c_preprocess(
         iter(r_h.split('\n')),
         definitions=definitions,
         rownum=1)
-    ffibuilder.cdef('\n'.join(cdef_r))
 
+    ffibuilder.cdef('\n'.join(cdef_r))
     ffibuilder.cdef(rpy2_h)
     ffibuilder.cdef(callback_defns_api)
 
-    cdef_eventloop, _ = c_preprocess(
-        iter(eventloop_h.split('\n')),
-        definitions={'CFFI_SOURCE': True},
-        rownum=1)
-    ffibuilder.cdef('\n'.join(cdef_eventloop))
-    ffibuilder.cdef('void rpy2_runHandlers(InputHandler *handlers);')
+    # Add eventloop definitions (only available on POSIX).
+    if os.name != 'nt':
+        cdef_eventloop, _ = c_preprocess(
+            iter(eventloop_h.split('\n')),
+            definitions={'CFFI_SOURCE': True},
+            rownum=1)
+        ffibuilder.cdef('\n'.join(cdef_eventloop))
+        ffibuilder.cdef('void rpy2_runHandlers(InputHandler *handlers);')
     return ffibuilder
 
 
