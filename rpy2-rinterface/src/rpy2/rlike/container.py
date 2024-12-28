@@ -250,7 +250,7 @@ class NamedList:
     def __getitem__(self, i: Union[int, slice]):
         if isinstance(i, slice):
             return super(NamedList, self).__init__(self.__list[i],
-                                                   self.__names[i])
+                                                   names=self.__names[i])
         else:
             return self.__list[i]
             
