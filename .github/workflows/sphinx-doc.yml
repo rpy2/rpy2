@@ -38,9 +38,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install pandoc graphviz libgraphviz-dev
         python -m pip install --upgrade pip
-        pip uninstall -y rpy2
-        pip install -r doc/requirements.txt
-        pip install .
+        pip install 'rpy2-rinterface/[doc]'
+        pip install 'rpy2-robjects/[doc]'
         sudo Rscript ./install_r_packages.r BiocManager dbplyr dplyr ggplot2 hexbin lazyeval RSQLite tidyr viridis
         sudo Rscript -e 'BiocManager::install("Biobase")'
     - name: Build HTML doc
@@ -51,7 +50,7 @@ jobs:
         make notebooks
         make html
     - name: Archive documentation
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: html-doc
         path: doc/_build/html

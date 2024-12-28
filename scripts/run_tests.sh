@@ -11,19 +11,20 @@ pytest \
     --cov=rpy2.rlike \
     --cov=rpy2.ipython \
     --cov=rpy2.robjects \
-    rpy2/tests
+    rpy2-rinterface/src/rpy2/rinterface/tests \
+    rpy2-robjects/src/rpy2/robjects/tests
 
 pytest \
     --cov-append \
     --cov-report=xml \
     --cov=rpy2.rinterface_lib.embedded \
-    rpy2/tests/rinterface/test_noinitialization.py
+    rpy2-rinterface/src/rpy2/tests/rinterface/test_noinitialization.py
 
 pytest \
     --cov-append \
     --cov-report=xml \
     --cov=rpy2.rinterface_lib.embedded \
-    rpy2/tests/rinterface/test_endr.py
+    rpy2-rinterface/src/rpy2/tests/rinterface/test_endr.py
 
 pip install numpy
 pytest \
@@ -34,7 +35,8 @@ pytest \
     --cov=rpy2.rlike \
     --cov=rpy2.ipython \
     --cov=rpy2.robjects \
-    rpy2/tests
+    rpy2-rinterface/src/rpy2/rinterface/tests \
+    rpy2-robjects/src/rpy2/robjects/tests
 
 pip install pandas
 
@@ -46,7 +48,8 @@ pytest \
     --cov=rpy2.rlike \
     --cov=rpy2.ipython \
     --cov=rpy2.robjects \
-    rpy2/tests
+    rpy2-rinterface/src/rpy2/rinterface/tests \
+    rpy2-robjects/src/rpy2/robjects/tests
 
 sudo Rscript ./install_r_packages.r ggplot2 dplyr tidyr dbplyr lazyeval rlang
 
@@ -59,4 +62,4 @@ pytest \
     --cov=rpy2.rlike \
     --cov=rpy2.robjects \
     --cov=rpy2.robjects.lib \
-    rpy2/tests/robjects/lib
+    rpy2-robjects/src/rpy2/robjects/tests/robjects/lib

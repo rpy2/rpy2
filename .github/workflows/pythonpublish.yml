@@ -27,13 +27,13 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: rpy2-sdist
         path: dist/
     - name: Publish
       if: github.event_name == 'release'
-      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@release/v1.10
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}

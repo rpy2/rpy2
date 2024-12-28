@@ -1,4 +1,0 @@
-packaging
-pandas-stubs
-types-Pygments
-types-tzlocal
