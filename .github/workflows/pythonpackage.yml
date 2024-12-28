@@ -178,3 +178,7 @@ jobs:
           - os: macos-14
             python-version: "3.10"
     uses: ./.github/workflows/test.yml
+    with:
+      os: ${{ matrix.os }}
+      python-version: ${{ matrix.python-version }}
+      r-version: ${{ matrix.r-version }}
