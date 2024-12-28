@@ -68,6 +68,15 @@ jobs:
       with:
         name: rpy2-robjects-sdist
         path: rpy2-robjects/dist/rpy2_robjects-*.tar.gz
+    - name: Build sdist rpy2
+      run: |
+        cd rpy2
+        python -m build -o dist/ --sdist .
+    - name: Upload sdist rpy2
+      uses: actions/upload-artifact@v4
+      with:
+        name: rpy2-sdist
+        path: rpy2/dist/rpy2-*.tar.gz
   build-wheel:
     strategy:
       fail-fast: false
