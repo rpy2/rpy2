@@ -39,15 +39,15 @@ dynamic = ["version"]
 doc = ['pygraphviz',
        'sphinx']
 test_minimal = ["pytest>=8", "coverage", "pytest-cov"]
-test = ["rpy2-rinterface[test]>=3.6.0.dev0",
-        "rpy2-robjects[test]>=3.6.0.dev0"]
-numpy = ["rpy2-rinterface[numpy]>=3.6.0.dev0",
-         "rpy2-robjects[numpy]>=3.6.0.dev0"]
-pandas = ["rpy2-rinterface[numpy]>=3.6.0.dev0",
-          "rpy2-robjects[numpy]>=3.6.0.dev0"]
+test = ["rpy2-rinterface[test]",
+        "rpy2-robjects[test]"]
+numpy = ["rpy2-rinterface[numpy]",
+         "rpy2-robjects[numpy]"]
+pandas = ["rpy2-rinterface[numpy]",
+          "rpy2-robjects[numpy]"]
 types = ["mypy", "types-tzlocal"]
-all = ["rpy2-rinterface[all]>=3.6.0.dev0",
-       "rpy2-robjects[all]>=3.6.0.dev0"]
+all = ["rpy2-rinterface[all]",
+       "rpy2-robjects[all]"]
 
 [project.urls]
 Homepage = "https://rpy2.github.io"
