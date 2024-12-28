@@ -99,7 +99,7 @@ jobs:
       r-version: ${{ matrix.r-version }}
       experimental: ${{ matrix.experimental }}
   build-wheel-target-python:
-    if: ${{ github.event.pull_request.draft || (github.ref != 'refs/heads/master') }}
+    if: ${{ github.event.pull_request.draft && (github.ref != 'refs/heads/master') }}
     needs: dummy
     strategy:
       fail-fast: false
