@@ -70,6 +70,7 @@ jobs:
         path: rpy2-robjects/dist/rpy2_robjects-*.tar.gz
     - name: Build sdist rpy2
       run: |
+        mkdir -p src/rpy2
         python -m build -o dist/ --sdist .
     - name: Upload sdist rpy2
       uses: actions/upload-artifact@v4
