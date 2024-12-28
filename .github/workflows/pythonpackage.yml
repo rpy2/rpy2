@@ -95,7 +95,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["${{ env.python-target }}"]
+        python-version: ["${{ needs.compute.outputs.python-target }}"]
         r-version: [release]
         os: ["windows-latest", ubuntu-latest, macos-14]
         experimental: [false]
