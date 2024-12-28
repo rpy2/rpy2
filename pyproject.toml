@@ -9,6 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rpy2"
+version = "3.6.0.dev1"
 description = "Python interface to the R language (embedded R)"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -33,7 +34,6 @@ dependencies = [
     "typing-extensions;python_version<'3.8'",
     "backports.zoneinfo;python_version<'3.9'"
 ]
-dynamic = ["version"]
 
 [project.optional-dependencies]
 doc = ['pygraphviz',
@@ -59,9 +59,6 @@ Tracker = "https://github.com/rpy2/rpy2/issue"
 where = ["src"]
 include = ["rpy2.*"]
 namespaces = true
-
-[tool.setuptools.dynamic]
-version = { attr = "rpy2.__version__" }
 
 [tool.pytest.ini_options]
 minversion = "6.0"
