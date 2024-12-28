@@ -166,6 +166,7 @@ jobs:
         name: ${{ matrix.package-name }}-${{ matrix.os }}-r${{ matrix.r-version }}
         path: ${{ matrix.package-dir }}/dist/*.whl
   test:
+    needs: [build-abi-wheel, build-noabi-wheel]
     strategy:
       fail-fast: false
       matrix:
