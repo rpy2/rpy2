@@ -27,9 +27,8 @@ classifiers = [
     "Intended Audience :: Science/Research",
 ]
 dependencies = [
-    "cffi>=1.15.1",
-    "jinja2",
-    "tzlocal",
+    "rpy2-rinterface>=3.6.0.dev0",
+    "rpy2-robjects>=3.6.0.dev0",
     "packaging;platform_system=='Windows'",
     "typing-extensions;python_version<'3.8'",
     "backports.zoneinfo;python_version<'3.9'"
@@ -37,25 +36,18 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-doc = ['ipykernel',
-       'jupytext',
-       'multipledispatch',
-       'nbconvert',
-       'numpy',
-       'pandas',
-       'pygraphviz',
+doc = ['pygraphviz',
        'sphinx']
 test_minimal = ["pytest>=8", "coverage", "pytest-cov"]
-test = ["pytest", "ipython",
-        "numpy>=1.26;python_version >= '3.9'", "numpy<1.26;python_version < '3.9'",
-        "pandas>=1.3.5;python_version >= '3.10'", "pandas;python_version < '3.10'"]
-numpy = ["numpy>=1.26;python_version >= '3.9'", "numpy<1.26;python_version < '3.9'"]
-pandas = ["numpy>=1.26;python_version >= '3.9'", "numpy<1.26;python_version < '3.9'",
-          "pandas>=1.3.5; python_version >= '3.10'", "pandas;python_version < '3.10'"]
+test = ["rpy2-rinterface[test]>=3.6.0.dev0",
+        "rpy2-robjects[test]>=3.6.0.dev0"]
+numpy = ["rpy2-rinterface[numpy]>=3.6.0.dev0",
+         "rpy2-robjects[numpy]>=3.6.0.dev0"]
+pandas = ["rpy2-rinterface[numpy]>=3.6.0.dev0",
+          "rpy2-robjects[numpy]>=3.6.0.dev0"]
 types = ["mypy", "types-tzlocal"]
-all = ["pytest", "ipython",
-       "numpy>=1.26;python_version >= '3.9'", "numpy<1.26;python_version < '3.9'",
-       "pandas>=1.3.5; python_version >= '3.10'", "pandas;python_version < '3.10'"]
+all = ["rpy2-rinterface[all]>=3.6.0.dev0",
+       "rpy2-robjects[all]>=3.6.0.dev0"]
 
 [project.urls]
 Homepage = "https://rpy2.github.io"
@@ -63,36 +55,13 @@ Documentation = "https://rpy2.github.io/doc.html"
 Source = "https://github.com/rpy2/rpy2"
 Tracker = "https://github.com/rpy2/rpy2/issue"
 
-[tool.setuptools]
-packages = [
-    "rpy2",
-    "rpy2.rlike",
-    'rpy2.rinterface_lib',
-    'rpy2.robjects',
-    'rpy2.robjects.lib',
-    'rpy2.interactive',
-    'rpy2.ipython',
-    'rpy2.tests',
-    'rpy2.tests.rinterface',
-    'rpy2.tests.rlike',
-    'rpy2.tests.robjects',
-    'rpy2.tests.ipython',
-    'rpy2.tests.robjects.lib',
-]
-# zip_safe = false # not supported as of setuptools==62.3.2
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["rpy2.*"]
+namespaces = true
 
 [tool.setuptools.dynamic]
 version = { attr = "rpy2.__version__" }
-
-# [tool.setuptools.package_data]
-# rpy2 = [
-#     'rpy2/rinterface_lib/R_API.h',
-#     'rpy2/rinterface_lib/R_API_eventloop.h',
-#     'rpy2/rinterface_lib/R_API_eventloop.c',
-#     'rpy2/rinterface_lib/RPY2.h',
-#     'rpy2/rinterface_lib/_bufferprotocol.c',
-#     'py.typed',
-# ] # not supported as of setuptools==62.3.2
 
 [tool.pytest.ini_options]
 minversion = "6.0"
