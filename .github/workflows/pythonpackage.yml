@@ -5,6 +5,14 @@ env:
   python-target: "3.10"
 
 jobs:
+  dummy:
+    runs-on: ubuntu-latest
+    outputs:
+      python-target: ${{ env.python-target }}
+    steps:
+      - name: dummy
+        run: |
+          echo "python-target=${{ env.python-target }}" >> $GITHUB_OUTPUT
   code-qc:
     runs-on: ubuntu-latest
     steps:
@@ -92,10 +100,11 @@ jobs:
       experimental: ${{ matrix.experimental }}
   build-wheel-target-python:
     if: ${{ github.event.pull_request.draft || (github.ref != 'refs/heads/master') }}
+    needs: dummy
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["${{ needs.compute.outputs.python-target }}"]
+        python-version: ["${{ needs.dummy.outputs.python-target }}"]
         r-version: [release]
         os: ["windows-latest", ubuntu-latest, macos-14]
         experimental: [false]
