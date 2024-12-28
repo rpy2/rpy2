@@ -71,7 +71,7 @@ jobs:
         name: rpy2-robjects-sdist
         path: rpy2-robjects/dist/rpy2_robjects-*.tar.gz
   build-wheel-full-matrix:
-    if: "!github.event.pull_request.draft"
+    if: ${{ "!github.event.pull_request.draft" || github.ref == 'refs/heads/master' }}
     strategy:
       fail-fast: false
       matrix:
@@ -91,7 +91,7 @@ jobs:
       r-version: ${{ matrix.r-version }}
       experimental: ${{ matrix.experimental }}
   build-wheel-target-python:
-    if: github.event.pull_request.draft || github.ref != 'refs/heads/master'
+    if: ${{ github.event.pull_request.draft || github.ref != 'refs/heads/master' }}
     strategy:
       fail-fast: false
       matrix:
