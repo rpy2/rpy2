@@ -76,22 +76,105 @@ jobs:
       with:
         name: rpy2-sdist
         path: dist/rpy2-*.tar.gz
-  build-wheel:
+  build-abi-wheel:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
         r-version: [release]
         os: ["windows-latest", ubuntu-latest, macos-14]
-        experimental: [false]
         exclude:
           - os: macos-14
             python-version: 3.9
           - os: macos-14
             python-version: "3.10"
-    uses: ./.github/workflows/wheel-build-test.yml
-    with:
-      os: ${{ matrix.os }}
-      python-version: ${{ matrix.python-version }}
-      r-version: ${{ matrix.r-version }}
-      experimental: ${{ matrix.experimental }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Set up R ${{ matrix.r-version }}
+      uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: ${{ matrix.r-version }}
+        use-public-rspm: true
+    - name: Set env commands (POSIX)
+      if: "!startsWith(matrix.os, 'windows')"
+      run: |
+        echo "VENV_ACTIVATE=source pyenv_base/bin/activate" >> $GITHUB_ENV
+        echo "R_LIBRARY=export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+    - name: Set virtualenv activation command (Windows)
+      if: startsWith(matrix.os, 'windows')
+      shell: bash
+      run: |
+        echo "VENV_ACTIVATE=pyenv_base\Scripts\activate" >> $GITHUB_ENV
+        echo "R_LIBRARY=''" >> $GITHUB_ENV
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install setuptools build
+    - name: Build wheel rinterface (Windows)
+      shell: bash
+      if: startsWith(matrix.os, 'windows')
+      run: |
+        cd rpy2-rinterface
+        echo '[build]' > setup.cfg
+        echo 'compiler = mingw32' >> setup.cfg
+        export RPY2_API_FORCE=True
+        python -m build -C--global-option=--verbose -o dist/ --wheel .
+    - name: Build wheel rinterface (non-Windows)
+      if: "!startsWith(matrix.os, 'windows')"
+      run: |
+        cd rpy2-rinterface
+        python -m build -o dist/ --wheel .
+    - uses: actions/upload-artifact@v4
+      with:
+        name: rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        path: rpy2-rinterface/dist/rpy2_rinterface-*.whl
+  build-noabi-wheel:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+        r-version: [release]
+        os: ["windows-latest", ubuntu-latest, macos-14]
+        include:
+          - package-dir: "."
+            package-name: "rpy2"
+          - package-dir: "rpy2-robjects"
+            package-name: "rpy2-robjects"
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Set up R ${{ matrix.r-version }}
+      uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: ${{ matrix.r-version }}
+        use-public-rspm: true
+    - name: Build wheel robjects
+      run: |
+        cd "${{ matrix.package-dir }}"
+        python -m build -o dist/ --wheel .
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.package-name }}-${{ matrix.os }}-r${{ matrix.r-version }}
+        path: ${{ matrix.package-dir }}/dist/*.whl
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
+        r-version: [release]
+        os: ["windows-latest", ubuntu-latest, macos-14]
+        exclude:
+          - os: macos-14
+            python-version: 3.9
+          - os: macos-14
+            python-version: "3.10"
+    uses: ./.github/workflows/test.yml
