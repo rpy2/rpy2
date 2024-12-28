@@ -159,13 +159,15 @@ c_extension_status = get_r_c_extension_status(
 )
 ext_modules = []
 
+_CFFI_BUILD_PATH='src/rpy2/rinterface_lib/_rinterface_cffi_build.py'
+
 if cffi_mode == situation.CFFI_MODE.ABI:
-    cffi_modules = ['src/rpy2/rinterface_lib/_rinterface_cffi_build.py:ffibuilder_abi']
+    cffi_modules = [f'{_CFFI_BUILD_PATH}:ffibuilder_abi']
 elif cffi_mode == situation.CFFI_MODE.API:
     if c_extension_status != COMPILATION_STATUS.OK:
         print('API mode requested but %s' % c_extension_status.value)
         sys.exit(1)
-    cffi_modules = ['src/rpy2/rinterface_lib/_rinterface_cffi_build.py:ffibuilder_api']
+    cffi_modules = [f'{_CFFI_BUILD_PATH}:ffibuilder_api']
     ext_modules = [
         Extension('rpy2.rinterface_lib._bufferprotocol',
                   ['src/rpy2/rinterface_lib/_bufferprotocol.c'])
@@ -174,13 +176,13 @@ elif cffi_mode == situation.CFFI_MODE.BOTH:
     if c_extension_status != COMPILATION_STATUS.OK:
         print('API mode requested but %s' % c_extension_status.value)
         sys.exit(1)
-    cffi_modules = ['src/rpy2/rinterface_lib/_rinterface_cffi_build.py:ffibuilder_abi',
-                    'src/rpy2/rinterface_lib/_rinterface_cffi_build.py:ffibuilder_api']
+    cffi_modules = [f'{_CFFI_BUILD_PATH}:ffibuilder_abi',
+                    f'{_CFFI_BUILD_PATH}:ffibuilder_api']
 elif cffi_mode == situation.CFFI_MODE.ANY:
     # default interface
-    cffi_modules = ['src/rpy2/_rinterface_cffi_build.py:ffibuilder_abi']
+    cffi_modules = [f'{_CFFI_BUILD_PATH}:ffibuilder_abi']
     if c_extension_status == COMPILATION_STATUS.OK:
-        cffi_modules.append('src/rpy2/rinterface_lib/_rinterface_cffi_build.py:ffibuilder_api')
+        cffi_modules.append(f'{_CFFI_BUILD_PATH}:ffibuilder_api')
         ext_modules = [
             Extension('rpy2.rinterface_lib._bufferprotocol',
                       ['src/rpy2/rinterface_lib/_bufferprotocol.c'])
