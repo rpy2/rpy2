@@ -28,7 +28,10 @@ class OrdDict(dict):
 
     __l: List[Tuple[Optional[str], Any]]
 
-    def __init__(self, c: Iterable[Tuple[Optional[str], Any]]=[]):
+    def __init__(
+            self,
+            c: Iterable[Union[Tuple[Optional[str], Any], 'NamedItem']]=[]
+    ):
         warnings.warn(
             'rpy2.rinterface.rlike.container.OrdDict is being deprecated. '
             'Use NamedList instead.',
@@ -44,8 +47,11 @@ class OrdDict(dict):
         super(OrdDict, self).__init__()
         self.__l = []
 
-        for k, v in c:
-            self[k] = v
+        for kv in c:
+            if isinstance(kv, NamedItem):
+                self.__l[kv.name] = kv.value
+            else:
+                self[kv[0]] = kv[1]
 
     def __copy__(self):
         cp = OrdDict(c=tuple(self.items()))
@@ -161,6 +167,7 @@ class OrdDict(dict):
         """ """
         return tuple([x[1] for x in self.__l])
 
+
 class NamedItem:
     """A named item (in a NamedList."""
 
@@ -175,8 +182,11 @@ class NamedItem:
     def value(self):
         return self.__namevalue[1]
 
-    def __eq__(self, y: 'NamedItem'):
-        return (self.name == y.name) and (self.value == y.value)
+    def __eq__(self, y) -> bool:
+        if isinstance(y, NamedItem):
+            return (self.name == y.name) and (self.value == y.value)
+        else:
+            return self == y
 
 
 class NamedList:
@@ -220,33 +230,29 @@ class NamedList:
 
     def __add__(self, tl: 'NamedList'):
         res = NamedList(itertools.chain(self.values(), tl.values()),
-                        names=itertools.chain(self.iternames(), tl.iternames()))
+                        names=itertools.chain(self.names(), tl.names()))
         return res
 
     def __delitem__(self, i: int):
         self.__list.__delitem__(i)
         self.__names.__delitem__(i)
 
-    def __delslice__(self, i: int, j: int):
-        self.__list.__delslice__(i, j)
-        self.__names.__delslice__(i, j)
-
     def __iadd__(self, y: 'NamedList'):
         self.__list.__iadd__(tuple(y.values()))
-        self.__names.__iadd__(tuple(y.iternames()))
+        self.__names.__iadd__(tuple(y.names()))
         return self
 
-    def __imul__(self, y: 'NamedList'):
-        restags = self.__names.__imul__(y)
-        resitems = self.__list.__imul__(y)
+    def __imul__(self, i: int):
+        self.__names.__imul__(i)
+        self.__list.__imul__(i)
         return self
 
     def __len__(self) -> int:
         return len(self.__list)
 
-    def __mul__(self, y: 'NamedList') -> 'NamedList':
-        names = self.__names__.__mul__(y.__names__)
-        values = self.__list.__mul__(y)
+    def __mul__(self, i: int) -> 'NamedList':
+        names = self.__names.__mul__(i)
+        values = self.__list.__mul__(i)
         return type(self)(values, names=names)
 
     @classmethod
@@ -276,12 +282,12 @@ class NamedList:
                     y: 'Union[NamedList, NamedItem]'):
         if isinstance(i, slice):
             step = i.step if i.step else 1
-            if len(y) != ((i.stop-i.start) // step):
-                raise ValueError('Length mistmatch between slice and values.')
             if isinstance(y, NamedList):
+                if len(y) != ((i.stop-i.start) // step):
+                    raise ValueError('Length mistmatch between slice and values.')
                 iter_i_name_value = zip(
                     range(i.start, i.stop, step),
-                    y.iternames(),
+                    y.names(),
                     y.values()
                 )
             else:
@@ -316,7 +322,7 @@ class NamedList:
             self.__list.append(y.value)
             self.__names.append(y.name)
         else:
-            raise warnings.warn(
+            warnings.warn(
                 'Appending non NamedItem object is deprecated.',
                 DeprecationWarning
             )
@@ -329,7 +335,7 @@ class NamedList:
         :param lst: A NamedList
         """
 
-        self.__names.extend(lst.iternames())
+        self.__names.extend(lst.names())
         self.__list.extend(lst.values())
 
     def insert(self, index: int, obj: 'Union[NamedItem, Any]', tag=None):
@@ -353,7 +359,7 @@ class NamedList:
             self.__list.insert(index, obj.value)
             self.__names.insert(index, obj.name)
         else:
-            raise warnings.warn(
+            warnings.warn(
                 'Inserting non NamedItem object is deprecated.',
                 DeprecationWarning
             )
@@ -383,7 +389,7 @@ class NamedList:
         for name, value in zip(self.__names, self.__list):
             yield NamedItem(name, value)
 
-    def iternames(self) -> Iterator[Any]:
+    def names(self) -> Iterator[Any]:
         for n in self.__names:
             yield n
 
@@ -402,7 +408,7 @@ class NamedList:
         """
         warnings.warn(
             'The method itertags() is deprecated. '
-            'Use iternames() instead.',
+            'Use names() instead.',
             DeprecationWarning
         )
         for tag in self.__names:
@@ -453,17 +459,12 @@ class NamedList:
         self.__names = [self.__names[i] for i in o]
         self.__list = [self.__list[i] for i in o]
 
-    def __get_names(self):
-        return tuple(self.__names)
-
-    def __set_names(self, names):
+    def setnames(self, names):
         if len(names) == len(self.__names):
             self.__names = list(names)
         else:
             raise ValueError('The new sequence of names should have the '
                              'same length as the old one.')
-
-    names = property(__get_names, __set_names)
 
     def __get_tags(self):
         warnings.warn(
