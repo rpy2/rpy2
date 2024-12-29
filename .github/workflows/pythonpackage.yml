@@ -85,6 +85,7 @@ jobs:
         r-version: [release]
         os: ["windows-latest"]
     steps:
+    - uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -160,7 +161,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build wheel
-      uses: pypa/cibuildwheel@v2.16.2
+      uses: pypa/cibuildwheel@v2.22
       env:
           RPY2_CFFI_MODE: API
           CIBW_SKIP: cp36-* cp37-* cp38-macosx_arm64 pp* *-musllinux_*
