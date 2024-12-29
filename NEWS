@@ -11,6 +11,14 @@ Changes
   The package `rpy2` remains on pypi as essentially a metapackage
   depending on `rpy2-rinterface` and `rpy2-robjects`.
 
+- :mod:`rpy2.rlike.functional` is deprecated. The functions it
+  provides proved of little use and can implemented in one line.
+  It will be removed with :mod:`rpy2` 1.7.
+
+- :class:`rpy2.rlike.collections.OrdDict` is deprecated.
+  :class:`rpy2.rlike.collections.NamedList` is enough to have
+  a Python data structure to represent R lists or paired lists.
+
 
 Release 3.5.17
 ==============
