@@ -12,8 +12,8 @@ import tempfile
 def test_init_from_taggedlist():
     letters = robjects.r.letters        
     numbers = robjects.r('1:26')
-    df = robjects.DataFrame(rlc.TaggedList((letters, numbers),
-                                           tags = ('letters', 'numbers')))
+    df = robjects.DataFrame(rlc.NamedList((letters, numbers),
+                                          names=('letters', 'numbers')))
 
     assert df.rclass[0] == 'data.frame'
 
@@ -60,8 +60,8 @@ def test_init_stringsasfactors():
 def test_dim():
     letters = robjects.r.letters        
     numbers = robjects.r('1:26')
-    df = robjects.DataFrame(rlc.TaggedList((letters, numbers),
-                                           tags = ('letters', 'numbers')))
+    df = robjects.DataFrame(rlc.NamedList((letters, numbers),
+                                           names=('letters', 'numbers')))
     assert df.nrow == 26
     assert df.ncol == 2
 

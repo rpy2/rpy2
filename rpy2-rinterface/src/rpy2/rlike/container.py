@@ -261,7 +261,7 @@ class NamedList:
             namesvalues: Iterable[Union[NamedItem, Tuple[Any, Any]]]
     ) -> 'NamedList':
         """Create a NamedList from an iterable of NamedItem objects or (name, value) tuples."""
-        if isinstance(namesvalues, dict):
+        if isinstance(namesvalues, dict) or isinstance(namesvalues, NamedList):
             namesvalues = tuple(namesvalues.items())
         iter_names = (obj.name if isinstance(obj, NamedItem)
                       else obj[0]
@@ -300,7 +300,7 @@ class NamedList:
                 self.__list[i] = y.value
                 self.__names[i] = y.name
             else:
-                raise ValueError('i must a NamedItem.')
+                raise ValueError('y must a NamedItem.')
         else:
             raise ValueError('i must be a slice or an int.')
 
