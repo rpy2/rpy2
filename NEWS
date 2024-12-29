@@ -13,7 +13,7 @@ Changes
 
 - :mod:`rpy2.rlike.functional` is deprecated. The functions it
   provides proved of little use and can implemented in one line.
-  It will be removed with :mod:`rpy2` 1.7.
+  It will be removed with :mod:`rpy2` 3.7.
 
 - :class:`rpy2.rlike.collections.OrdDict` is deprecated.
   :class:`rpy2.rlike.collections.NamedList` is enough to have
