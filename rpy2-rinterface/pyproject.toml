@@ -22,6 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
@@ -53,6 +54,9 @@ Documentation = "https://rpy2.github.io/doc.html"
 Source = "https://github.com/rpy2/rpy2"
 Tracker = "https://github.com/rpy2/rpy2/issue"
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["rpy2.*"]
@@ -64,15 +68,18 @@ namespaces = true
 version = { attr = "rpy2.rinterface_lib.__version__" }
 
 [tool.setuptools.package-data]
-rpy2 = [
-     'rpy2/rinterface_lib/R_API.h',
-     'rpy2/rinterface_lib/R_API_eventloop.h',
-     'rpy2/rinterface_lib/R_API_eventloop.c',
-     'rpy2/rinterface_lib/RPY2.h',
-     'rpy2/rinterface_lib/_bufferprotocol.c',
-     'rpy2/rinterface_lib/py.typed',
-     'rpy2/rinterface/py.typed',
-     'rpy2/situation/py.typed'
+"rpy2.rinterface_lib" = [
+     'R_API.h',
+     'R_API_eventloop.h',
+     'R_API_eventloop.c',
+     'RPY2.h',
+     '_bufferprotocol.c',
+     'py.typed']
+"rpy2.rinterface" = [
+     'py.typed'
+]
+"rpy2.situation" = [
+     'py.typed'
 ]
 
 [tool.pytest.ini_options]

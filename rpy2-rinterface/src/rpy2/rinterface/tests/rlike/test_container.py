@@ -165,15 +165,21 @@ class TestNamedList(object):
         assert tuple(tl) == (1,2,1,2,1,2)
 
     def test__init__(self):
-        tl = rlc.NamedList((1,2,3), names=('a', 'b', 'c'))
+        names = ('a', 'b', 'c')
+        tl = rlc.NamedList((1,2,3), names=names)
+        assert tl.names == names
         with pytest.raises(ValueError):
             rlc.NamedList((1,2,3), names = ('b', 'c'))
 
+    def test__init__nonames(self):
+        tl = rlc.NamedList((1,2,3))
+        assert tl.names == (None, None, None)
+
     def test__setslice__(self):
         tl = rlc.NamedList((1,2,3,4), names=('a', 'b', 'c', 'd'))
-        tl[1:3] = [5, 6]
+        tl[1:3] = rlc.NamedList([5, 6])
         assert len(tl) == 4
-        assert tl.names == ('a', 'b', 'c', 'd')
+        assert tl.names == ('a', None, None, 'd')
         assert tuple(tl) == (1, 5, 6, 4)
 
     def test_append(self):
@@ -186,7 +192,7 @@ class TestNamedList(object):
 
     def test_extend(self):
         tl = rlc.NamedList((1,2,3), names=('a', 'b', 'c'))
-        tl.extend([4, 5])
+        tl.extend(rlc.NamedList([4, 5]))
         assert tuple(tl.iternames()) == ('a', 'b', 'c', None, None)
         assert tuple(tl) == (1, 2, 3, 4, 5)
 
@@ -198,7 +204,9 @@ class TestNamedList(object):
 
     def test_items(self):
         tl = rlc.NamedList((1,2,3), names=('a', 'b', 'c'))
-        assert tuple(tl.items()) == (('a', 1), ('b', 2), ('c', 3))
+        assert tuple(tl.items()) == (rlc.NamedItem('a', 1),
+                                     rlc.NamedItem('b', 2),
+                                     rlc.NamedItem('c', 3))
 
     def test_iterontag(self):
         tl = rlc.NamedList((1,2,3), names=('a', 'b', 'a'))
@@ -269,8 +277,11 @@ class TestNamedList(object):
         assert tl.names == ('a', 'z', 'c')
 
     def test_from_items(self):
-        od = rlc.OrdDict( (('a', 1), ('b', 2), ('c', 3)) )
-        tl = rlc.NamedList.from_items(od)
+        tl = rlc.NamedList.from_items(
+            (
+                ('a', 1), ('b', 2), ('c', 3)
+            )
+        )
         assert tl.names == ('a', 'b', 'c')
         assert tuple(tl) == (1, 2, 3)
 

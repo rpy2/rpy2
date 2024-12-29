@@ -134,7 +134,6 @@ def create_cdef(definitions, header_filename):
     with open(
             os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
-                'rinterface_lib',
                 header_filename)
     ) as fh:
         cdef, _ = c_preprocess(fh, definitions=definitions, rownum=0)
@@ -145,7 +144,6 @@ def read_source(src_filename):
     with open(
             os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
-                'rinterface_lib',
                 src_filename)
     ) as fh:
         cdef = fh.read()
