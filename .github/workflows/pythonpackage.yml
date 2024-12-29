@@ -185,13 +185,12 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: LD_LIBRARY_PATH="$(R RHOME)/$(R CMD config LIBnn):${LD_LIBRARY_PATH}"
           CIBW_BUILD_VERBOSITY: 1
       with:
-        output-dir: wheelhouse
-        config-file: pyproject.toml
-    - name: Upload wheels
-      uses: actions/upload-artifact@v3
+        output-dir: rpy2-rinterface/wheelhouse
+        config-file: rpy2-rinterface/pyproject.toml
+    - uses: actions/upload-artifact@v4
       with:
-          name: binary-wheels-${{ matrix.platform_id }}
-          path: wheelhouse/*.whl
+        name: rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        path: rpy2-rinterface/wheelhouse/rpy2_rinterface-*.whl
   build-noabi-wheel:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -225,7 +224,7 @@ jobs:
         name: ${{ matrix.package.name }}-${{ matrix.os }}-r${{ matrix.r-version }}
         path: ${{ matrix.package.dir }}/dist/*.whl
   test:
-    needs: [build-abi-wheel, build-noabi-wheel]
+    needs: [build-abi-wheel-posix, build-abi-wheel-windows, build-noabi-wheel]
     strategy:
       fail-fast: false
       matrix:
