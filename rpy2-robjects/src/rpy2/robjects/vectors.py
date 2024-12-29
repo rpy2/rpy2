@@ -107,13 +107,13 @@ class ExtractDelegator(object):
             args[-1] = cv.py2rpy(value)
             args[0] = self._parent
             res = fun(*args)
-        elif (type(item) is dict) or (type(item) is rlc.TaggedList):
-            args = rlc.TaggedList.from_items(item)
-            for i, (k, v) in enumerate(args.items()):
-                args[i] = cv.py2rpy(v)
+        elif (type(item) is dict) or (type(item) is rlc.NamedList):
+            args = rlc.NamedList.from_items(item)
+            for i, nameditem in enumerate(args.items()):
+                args[i] = rlc.NamedItem(nameditem.name, cv.py2rpy(nameditem.value))
             args.append(cv.py2rpy(value), tag=None)
             args.insert(0, self._parent, tag=None)
-            res = fun.rcall(tuple(args.items()),
+            res = fun.rcall(tuple((nitem.name, nitem.value) for nitem in args.items()),
                             globalenv_ri)
         else:
             args = [self._parent,
@@ -1289,9 +1289,9 @@ class DataFrame(ListVector):
                     "the R object must be a list or inherit from "
                     "the R class 'data.frame'."
                 )
-        elif isinstance(obj, rlc.TaggedList):
+        elif isinstance(obj, rlc.NamedList):
             cv = conversion.get_conversion()
-            kv = [(k, cv.py2rpy(v)) for k, v in obj.items()]
+            kv = [(nitem.name, cv.py2rpy(nitem.value)) for nitem in obj.items()]
         else:
             cv = conversion.get_conversion()
             try:

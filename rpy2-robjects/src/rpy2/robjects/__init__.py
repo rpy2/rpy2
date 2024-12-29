@@ -13,6 +13,7 @@ import contextlib
 import os
 import types
 import typing
+import warnings
 import rpy2.rinterface as rinterface
 import rpy2.rinterface_lib.embedded
 import rpy2.rinterface_lib.openrlib
@@ -333,11 +334,23 @@ def _py2rpy_list(obj):
 
 @default_converter.py2rpy.register(rlc.TaggedList)
 def _py2rpy_taggedlist(obj):
+    warnings.warn('TaggedList is deprecated. Use NamedList.',
+                  DeprecationWarning)
     cv = conversion.get_conversion()
     res = vectors.ListVector(
         rinterface.ListSexpVector([cv.py2rpy(x) for x in obj])
     )
     res.do_slot_assign('names', rinterface.StrSexpVector(obj.tags))
+    return res
+
+
+@default_converter.py2rpy.register(rlc.NamedList)
+def _py2rpy_namedlist(obj):
+    cv = conversion.get_conversion()
+    res = vectors.ListVector(
+        rinterface.ListSexpVector([cv.py2rpy(x) for x in obj])
+    )
+    res.do_slot_assign('names', rinterface.StrSexpVector(tuple(obj.names())))
     return res
 
 

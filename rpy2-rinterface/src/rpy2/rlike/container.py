@@ -1,27 +1,42 @@
+"""Containers with R-like behaviors."""
+
 import rpy2.rlike.indexing as rli
+import itertools
 from typing import Any
 from typing import Iterable
+from typing import Iterator
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import Union
+import warnings
 
 
 class OrdDict(dict):
-    """ Implements the Ordered Dict API defined in PEP 372.
-    When `odict` becomes part of collections, this class
-    should inherit from it rather than from `dict`.
+    """ Ordered dictionary.
 
-    This class differs a little from the Ordered Dict
-    proposed in PEP 372 by the fact that:
+    Warning: This class is being deprecated. Use
+    NamedList instead.
+
+    This is a dict since Python 3.8 `dict` conserve insertion
+    order.
+
+    This class differs a little from ordered dicts:
     not all elements have to be named. None as a key value means
     an absence of name for the element.
-
     """
 
     __l: List[Tuple[Optional[str], Any]]
 
-    def __init__(self, c: Iterable[Tuple[Optional[str], Any]]=[]):
-
+    def __init__(
+            self,
+            c: Iterable[Union[Tuple[Optional[str], Any], 'NamedItem']]=[]
+    ):
+        warnings.warn(
+            'rpy2.rinterface.rlike.container.OrdDict is being deprecated. '
+            'Use NamedList instead.',
+            DeprecationWarning
+        )
         if isinstance(c, TaggedList) or isinstance(c, OrdDict):
             c = c.items()
         elif isinstance(c, dict):
@@ -32,8 +47,11 @@ class OrdDict(dict):
         super(OrdDict, self).__init__()
         self.__l = []
 
-        for k, v in c:
-            self[k] = v
+        for kv in c:
+            if isinstance(kv, NamedItem):
+                self.__l[kv.name] = kv.value
+            else:
+                self[kv[0]] = kv[1]
 
     def __copy__(self):
         cp = OrdDict(c=tuple(self.items()))
@@ -145,97 +163,185 @@ class OrdDict(dict):
     def sort(self, cmp=None, key=None, reverse=False):
         raise NotImplementedError("Not yet implemented.")
 
+    def values(self):
+        """ """
+        return tuple([x[1] for x in self.__l])
 
-class TaggedList(list):
-    """ A list for which each item has a 'tag'.
 
-    :param l: list
-    :param tag: optional sequence of tags
+class NamedItem:
+    """A named item (in a NamedList."""
+
+    def __init__(self, name, value):
+        self.__namevalue = (name, value)
+
+    @property
+    def name(self):
+        return self.__namevalue[0]
+
+    @property
+    def value(self):
+        return self.__namevalue[1]
+
+    def __eq__(self, y) -> bool:
+        if isinstance(y, NamedItem):
+            return (self.name == y.name) and (self.value == y.value)
+        else:
+            return self == y
+
+
+class NamedList:
+    """ A mutable sequence for which each item might have a 'name'.
+
+    This is intended to mimic R's lists or pairlists.
+    This structure is like a Python list to which optional
+    names for each element in the list is added.
+
+    This cannot be an ordered dictionnary because the keys (names)
+    are not necessarily unique.
+
+    :param seq: an iterable.
+    :param names: optional sequence of names
+    :param tags: [deprecated] optional sequence of names 
     """
 
-    __tags: List[Optional[str]]
+    __list: List
+    __names: List[Optional[str]]
 
-    def __init__(self, seq, tags=None):
-        super(TaggedList, self).__init__(seq)
-        if tags is None:
-            tags = [None, ] * len(seq)
-        if len(tags) != len(seq):
-            raise ValueError("There must be as many tags as seq")
-        self.__tags = list(tags)
+    def __init__(self, seq: Iterable,
+                 names: Optional[Iterable] = None,
+                 tags: Optional[Iterable] = None):
+        if tags:
+            warnings.warn(
+                'The named argument "tags" when constructing '
+                'a NamedList is deprecated. Use "names" instead.',
+                DeprecationWarning
+            )
+            if names:
+                raise ValueError(
+                    '"tags" is deprecated. Only use the named argument '
+                    '"names".'
+                )
+            names = tags
+        self.__list = list(seq)
+        if names is None:
+            names = [None, ] * len(self)
+        else:
+            names = list(names)
+        self.__names = names
+        if len(self.__names) != len(self):
+            raise ValueError("There must be as many names as seq")
 
-    def __add__(self, tl):
-        try:
-            tags = tl.tags
-        except AttributeError:
-            raise ValueError('Can only concatenate TaggedLists.')
-        res = TaggedList(list(self) + list(tl),
-                         tags=self.tags + tags)
+    def __add__(self, tl: 'NamedList'):
+        res = NamedList(itertools.chain(self.values(), tl.values()),
+                        names=itertools.chain(self.names(), tl.names()))
         return res
 
-    def __delitem__(self, y):
-        super(TaggedList, self).__delitem__(y)
-        self.__tags.__delitem__(y)
+    def __delitem__(self, i: int):
+        self.__list.__delitem__(i)
+        self.__names.__delitem__(i)
 
-    def __delslice__(self, i, j):
-        super(TaggedList, self).__delslice__(i, j)
-        self.__tags.__delslice__(i, j)
-
-    def __iadd__(self, y):
-        super(TaggedList, self).__iadd__(y)
-        if isinstance(y, TaggedList):
-            self.__tags.__iadd__(y.tags)
-        else:
-            self.__tags.__iadd__([None, ] * len(y))
+    def __iadd__(self, y: 'NamedList'):
+        self.__list.__iadd__(tuple(y.values()))
+        self.__names.__iadd__(tuple(y.names()))
         return self
 
-    def __imul__(self, y):
-        restags = self.__tags.__imul__(y)
-        resitems = super(TaggedList, self).__imul__(y)
+    def __imul__(self, i: int):
+        self.__names.__imul__(i)
+        self.__list.__imul__(i)
         return self
 
-    def __mul__(self, y):
-        restags = self.__tags__ * y.__tags__
-        resitems = super(TaggedList, self).__mul__(y)
-        return type(self)(tuple(resitems), tags=restags)
+    def __len__(self) -> int:
+        return len(self.__list)
 
-    def __reduce__(self):
-        return super(TaggedList, self).__reduce__()
+    def __mul__(self, i: int) -> 'NamedList':
+        names = self.__names.__mul__(i)
+        values = self.__list.__mul__(i)
+        return type(self)(values, names=names)
 
-    @staticmethod
-    def from_items(tagval):
-        res = TaggedList([])
-        for k, v in tagval.items():
-            res.append(v, tag=k)
-        return res
+    @classmethod
+    def from_items(
+            cls,
+            namesvalues: Iterable[Union[NamedItem, Tuple[Any, Any]]]
+    ) -> 'NamedList':
+        """Create a NamedList from an iterable of NamedItem objects or (name, value) tuples."""
+        if isinstance(namesvalues, dict) or isinstance(namesvalues, NamedList):
+            namesvalues = tuple(namesvalues.items())
+        iter_names = (obj.name if isinstance(obj, NamedItem)
+                      else obj[0]
+                      for obj in namesvalues)
+        iter_values = (obj.value if isinstance(obj, NamedItem)
+                       else obj[1]
+                       for obj in namesvalues)        
+        return cls(iter_values, names=iter_names)
 
-    def __setslice__(self, i, j, y):
-        super(TaggedList, self).__setslice__(i, j, y)
-        # TODO: handle TaggedList ?
-        # self.__tags.__setslice__(i, j, [None, ])
-
-    def append(self, obj, tag=None):
-        """ Append an object to the list
-        :param obj: object
-        :param tag: object
-        """
-        super(TaggedList, self).append(obj)
-        self.__tags.append(tag)
-
-    def extend(self, iterable):
-        """ Extend the list with an iterable object.
-
-        :param iterable: iterable object
-        """
-
-        if isinstance(iterable, TaggedList):
-            itertags = iterable.itertags()
+    def __getitem__(self, i: Union[int, slice]):
+        if isinstance(i, slice):
+            return type(self)(self.__list[i],
+                              names=self.__names[i])
         else:
-            itertags = [None, ] * len(iterable)
+            return self.__list[i]
+            
+    def __setitem__(self, i: Union[int, slice],
+                    y: 'Union[NamedList, NamedItem]'):
+        if isinstance(i, slice):
+            step = i.step if i.step else 1
+            if isinstance(y, NamedList):
+                if len(y) != ((i.stop-i.start) // step):
+                    raise ValueError('Length mistmatch between slice and values.')
+                iter_i_name_value = zip(
+                    range(i.start, i.stop, step),
+                    y.names(),
+                    y.values()
+                )
+            else:
+                raise ValueError('y must be a NamedList when i is a slice.')
+            for idx, name, value in iter_i_name_value:
+                self.__list[idx] = value
+                self.__names[idx] = name                
+        elif isinstance(i, int):
+            if isinstance(y, NamedItem):
+                self.__list[i] = y.value
+                self.__names[i] = y.name
+            else:
+                raise ValueError('y must a NamedItem.')
+        else:
+            raise ValueError('i must be a slice or an int.')
 
-        for tag, item in zip(itertags, iterable):
-            self.append(item, tag=tag)
+    def append(self, y: Union[NamedItem, Any], tag=None):
+        """ Append a NamedItems to the list
+        :param y: NamedItem, or any object.
+        :param tag: A tag/name (deprecated).
+        """
+        if tag:
+            warnings.warn(
+                'The named argument "tag" is deprecated. Use a NamedItem.',
+                DeprecationWarning
+            )
+            if isinstance(y, NamedItem):
+                raise ValueError('Do not use tag if already appending a NamedItem.')
+            self.__list.append(y)
+            self.__names.append(tag)
+        elif isinstance(y, NamedItem):
+            self.__list.append(y.value)
+            self.__names.append(y.name)
+        else:
+            warnings.warn(
+                'Appending non NamedItem object is deprecated.',
+                DeprecationWarning
+            )
+            self.__list.append(y)
+            self.__names.append(tag)
 
-    def insert(self, index, obj, tag=None):
+    def extend(self, lst: 'NamedList'):
+        """ Extend the named list.
+
+        :param lst: A NamedList
+        """
+
+        self.__names.extend(lst.names())
+        self.__list.extend(lst.values())
+
+    def insert(self, index: int, obj: 'Union[NamedItem, Any]', tag=None):
         """
         Insert an object in the list
 
@@ -243,8 +349,25 @@ class TaggedList(list):
         :param obj: object
         :param tag: object
         """
-        super(TaggedList, self).insert(index, obj)
-        self.__tags.insert(index, tag)
+        if tag:
+            warnings.warn(
+                'The named argument "tag" is deprecated. Use a NamedItem.',
+                DeprecationWarning
+            )
+            if isinstance(obj, NamedItem):
+                raise ValueError('Do not use tag if already inserting a NamedItem.')
+            self.__list.insert(index, obj)
+            self.__names.insert(index, tag)
+        elif isinstance(obj, NamedItem):
+            self.__list.insert(index, obj.value)
+            self.__names.insert(index, obj.name)
+        else:
+            warnings.warn(
+                'Inserting non NamedItem object is deprecated.',
+                DeprecationWarning
+            )
+            self.__list.insert(index, obj)
+            self.__names.insert(index, tag)
 
     def iterontag(self, tag):
         """
@@ -252,28 +375,49 @@ class TaggedList(list):
 
         :param tag: object
         """
-
+        warnings.warn(
+            'The method iterontag is deprecated. '
+            'Use items() and filter on the names.',
+            DeprecationWarning
+        )
         i = 0
-        for onetag in self.__tags:
+        for onetag in self.__names:
             if tag == onetag:
                 yield self[i]
             i += 1
 
-    def items(self):
-        """ OD.items() -> an iterator over the (key, value) items of D """
-        for tag, item in zip(self.__tags, self):
-            yield (tag, item)
+    def items(self) -> Iterator[NamedItem]:
+        """
+        Return an iterator over (name, value) pairs. """
+        for name, value in zip(self.__names, self.__list):
+            yield NamedItem(name, value)
 
-    def itertags(self):
+    def names(self) -> Iterator[Any]:
+        for n in self.__names:
+            yield n
+
+    def values(self) -> Iterator[Any]:
+        for v in self.__list:
+            yield v
+
+    def __iter__(self):
+        return self.values()
+
+    def itertags(self) -> Iterator[Any]:
         """
         iterate on tags.
 
         :rtype: iterator
         """
-        for tag in self.__tags:
+        warnings.warn(
+            'The method itertags() is deprecated. '
+            'Use names() instead.',
+            DeprecationWarning
+        )
+        for tag in self.__names:
             yield tag
 
-    def pop(self, index=None):
+    def pop(self, index: Optional[int] = None):
         """
         Pop the item at a given index out of the list
 
@@ -283,20 +427,20 @@ class TaggedList(list):
         if index is None:
             index = len(self) - 1
 
-        res = super(TaggedList, self).pop(index)
-        self.__tags.pop(index)
+        res = self.__list.pop(index)
+        self.__names.pop(index)
         return res
 
     def remove(self, value):
         """
-        Remove a given value from the list.
+        Remove the first item with a given value from the list.
 
         :param value: object
 
         """
         found = False
         for i in range(len(self)):
-            if self[i] == value:
+            if self.__list[i] == value:
                 found = True
                 break
         if found:
@@ -304,35 +448,78 @@ class TaggedList(list):
 
     def reverse(self):
         """ Reverse the order of the elements in the list. """
-        super(TaggedList, self).reverse()
-        self.__tags.reverse()
+        self.__list.reverse()
+        self.__names.reverse()
 
-    def sort(self, reverse=False):
+    def sort(self, reverse=False, usenames=False):
         """
-        Sort in place
+        Sort in place.
         """
-        o = rli.order(self, reverse=reverse)
-        super(TaggedList, self).sort(reverse=reverse)
-        self.__tags = [self.__tags[i] for i in o]
+        if usenames:
+            o = rli.order(self.__names, reverse=reverse)
+        else:
+            o = rli.order(self.__list, reverse=reverse)
+        self.__names = [self.__names[i] for i in o]
+        self.__list = [self.__list[i] for i in o]
+
+    def setnames(self, names):
+        if len(names) == len(self.__names):
+            self.__names = list(names)
+        else:
+            raise ValueError('The new sequence of names should have the '
+                             'same length as the old one.')
 
     def __get_tags(self):
-        return tuple(self.__tags)
+        warnings.warn(
+            'The attribute .tags is deprecated. '
+            'Use .names instead.',
+            DeprecationWarning
+        )
+        return self.names
 
-    def __set_tags(self, tags):
-        if len(tags) == len(self.__tags):
-            self.__tags = tuple(tags)
-        else:
-            raise ValueError('The new list of tags should have the '
-                             'same length as the old one.')
+    def __set_tags(self, names):
+        warnings.warn(
+            'The attribute .tags is deprecated. '
+            'Use .setname() instead.',
+            DeprecationWarning       
+        )
+        self.names = names
 
     tags = property(__get_tags, __set_tags)
 
+    def setname(self, i: Union[int, slice], n: Any):
+        """
+        Set name 'n' for item at index 'i'.
+
+        :param i: int or slice.
+
+        :param n: object (name(s))
+        """
+        if isinstance(i, slice):
+            if len(n) != ((i.stop-i.start) // i.step):
+                raise ValueError('Length mistmatch between slice and values.')
+            for idx, (name, value) in enumerate(
+                    zip(
+                        range(i.start, i.stop, i.step if i.step else 1),
+                        n
+                    )
+            ):
+                self.__names[idx] = value
+        else:
+            self.__names[i] = n
+
     def settag(self, i, t):
-        """
-        Set tag 't' for item 'i'.
+        warnings.warn(
+            'The method settag() is deprecated. '
+            'Use setname() instead.',
+            DeprecationWarning       
+        )
+        self.setname(i, t)
 
-        :param i: integer (index)
 
-        :param t: object (tag)
-        """
-        self.__tags[i] = t
+class TaggedList(NamedList):
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn('The class name "TaggedList" is deprecated. '
+                      'use "NamedList" instead.', DeprecationWarning)
+        super().__init__(self, *args, **kwargs)

@@ -129,9 +129,9 @@ class LibraryPanel(gtk.VBox):
 
     def loadAction(self, widget, data=None):
         # Get the selection in the gtk.TreeView
-	selection = self._treeView.get_selection()
-	# Get the selection iter
-	model, selection_iter = selection.get_selected()
+        selection = self._treeView.get_selection()
+        # Get the selection iter
+        model, selection_iter = selection.get_selected()
         if selection_iter:
             packName = self._table.get_value(selection_iter, 
                                             self.PACKAGE_I)
@@ -222,9 +222,9 @@ class VignetteExplorer(gtk.VBox):
 
     def viewAction(self, widget, data=None):
         # Get the selection in the gtk.TreeView
-	selection = self._treeView.get_selection()
-	# Get the selection iter
-	model, selection_iter = selection.get_selected()
+        selection = self._treeView.get_selection()
+        # Get the selection iter
+        model, selection_iter = selection.get_selected()
         if selection_iter:
             packName = self._table.get_value(selection_iter, 
                                              self.PACKAGE_I)
@@ -588,7 +588,7 @@ class ConsolePanel(gtk.VBox):
                     res = res.rx2("value")
                 else:
                     res = None
-            except robjects.rinterface.RRuntimeError, rre:
+            except robjects.rinterface.RRuntimeError as rre:
                 res = str(rre)
 
         if res is not None:
