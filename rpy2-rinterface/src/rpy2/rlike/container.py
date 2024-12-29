@@ -196,6 +196,9 @@ class NamedList:
     This structure is like a Python list to which optional
     names for each element in the list is added.
 
+    This cannot be an ordered dictionnary because the keys (names)
+    are not necessarily unique.
+
     :param seq: an iterable.
     :param names: optional sequence of names
     :param tags: [deprecated] optional sequence of names 
