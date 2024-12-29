@@ -84,7 +84,7 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         ${{ env.R_LIBRARY }}
         python -m pip install ipython
-        bash -e ./scripts/run_test_pandas.sh
+        bash -e ./scripts/run_test_ipython.sh
     - name: Set RSPM
       if: startsWith(inputs.os, 'ubuntu')
       run: |
