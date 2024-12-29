@@ -132,7 +132,7 @@ class TestNamedList(object):
         tl = rlc.NamedList((1,2,3), names=('a', 'b', 'c'))
         tl = tl + tl
         assert len(tl) == 6
-        assert tl.names == ('a', 'b', 'c', 'a', 'b', 'c')
+        assert tuple(tl.names()) == ('a', 'b', 'c', 'a', 'b', 'c')
         assert tuple(tl) == (1,2,3,1,2,3)
 
     def test__delitem__(self):
@@ -140,46 +140,46 @@ class TestNamedList(object):
         assert len(tl) == 3
         del tl[1]
         assert len(tl) == 2
-        assert tl.names == ('a', 'c')
+        assert tuple(tl.names()) == ('a', 'c')
         assert tuple(tl) == (1, 3)
 
     def test__delslice__(self):
         tl = rlc.NamedList((1,2,3,4), names=('a', 'b', 'c', 'd'))
         del tl[1:3]
         assert len(tl) == 2
-        assert tl.names == ('a', 'd')
+        assert tuple(tl.names()) == ('a', 'd')
         assert tuple(tl) == (1, 4)
 
     def test__iadd__(self):
         tl = rlc.NamedList((1,2,3), names=('a', 'b', 'c'))
         tl += tl
         assert len(tl) == 6
-        assert tl.names == ('a', 'b', 'c', 'a', 'b', 'c')
+        assert tuple(tl.names()) == ('a', 'b', 'c', 'a', 'b', 'c')
         assert tuple(tl) == (1,2,3,1,2,3)
 
     def test__imul__(self):
         tl = rlc.NamedList((1,2), names=('a', 'b'))
         tl *= 3
         assert len(tl) == 6
-        assert tl.names == ('a', 'b', 'a', 'b', 'a', 'b')
+        assert tuple(tl.names()) == ('a', 'b', 'a', 'b', 'a', 'b')
         assert tuple(tl) == (1,2,1,2,1,2)
 
     def test__init__(self):
         names = ('a', 'b', 'c')
         tl = rlc.NamedList((1,2,3), names=names)
-        assert tl.names == names
+        assert tuple(tl.names()) == names
         with pytest.raises(ValueError):
             rlc.NamedList((1,2,3), names = ('b', 'c'))
 
     def test__init__nonames(self):
         tl = rlc.NamedList((1,2,3))
-        assert tl.names == (None, None, None)
+        assert tuple(tl.names()) == (None, None, None)
 
     def test__setslice__(self):
         tl = rlc.NamedList((1,2,3,4), names=('a', 'b', 'c', 'd'))
         tl[1:3] = rlc.NamedList([5, 6])
         assert len(tl) == 4
-        assert tl.names == ('a', None, None, 'd')
+        assert tuple(tl.names()) == ('a', None, None, 'd')
         assert tuple(tl) == (1, 5, 6, 4)
 
     def test_append(self):
@@ -188,18 +188,18 @@ class TestNamedList(object):
         tl.append(4, tag='a')
         assert len(tl) == 4
         assert tl[3] == 4
-        assert tl.names == ('a', 'b', 'c', 'a')
+        assert tuple(tl.names()) == ('a', 'b', 'c', 'a')
 
     def test_extend(self):
         tl = rlc.NamedList((1,2,3), names=('a', 'b', 'c'))
         tl.extend(rlc.NamedList([4, 5]))
-        assert tuple(tl.iternames()) == ('a', 'b', 'c', None, None)
+        assert tuple(tl.names()) == ('a', 'b', 'c', None, None)
         assert tuple(tl) == (1, 2, 3, 4, 5)
 
     def test_insert(self):
         tl = rlc.NamedList((1,2,3), names=('a', 'b', 'c'))
         tl.insert(1, 4, tag = 'd')
-        assert tuple(tl.iternames()) == ('a', 'd', 'b', 'c')
+        assert tuple(tl.names()) == ('a', 'd', 'b', 'c')
         assert tuple(tl) == (1, 4, 2, 3)
 
     def test_items(self):
@@ -212,9 +212,9 @@ class TestNamedList(object):
         tl = rlc.NamedList((1,2,3), names=('a', 'b', 'a'))
         assert tuple(tl.iterontag('a')) == (1, 3)
 
-    def test_iternames(self):
+    def test_names(self):
         tl = rlc.NamedList((1,2,3), names=('a', 'b', 'c'))
-        assert tuple(tl.iternames()) == ('a', 'b', 'c')
+        assert tuple(tl.names()) == ('a', 'b', 'c')
 
     def test_pop(self):
         tl = rlc.NamedList((1,2,3), names=('a', 'b', 'c'))
@@ -222,20 +222,20 @@ class TestNamedList(object):
         elt = tl.pop()
         assert elt == 3
         assert len(tl) == 2
-        assert tl.names == ('a', 'b')
+        assert tuple(tl.names()) == ('a', 'b')
         assert tuple(tl) == (1, 2)
 
         elt = tl.pop(0)
         assert elt == 1
         assert len(tl) == 1
-        assert tl.names == ('b', )
+        assert tuple(tl.names()) == ('b', )
 
     def test_remove(self):
         tl = rlc.NamedList((1,2,3), names=('a', 'b', 'c'))
         assert len(tl) == 3
         tl.remove(2)
         assert len(tl) == 2
-        assert tl.names == ('a', 'c')
+        assert tuple(tl.names()) == ('a', 'c')
         assert tuple(tl) == (1, 3)
 
     def test_reverse(self):
@@ -244,7 +244,7 @@ class TestNamedList(object):
         tl = rlc.NamedList(tv, names = tn)
         tl.reverse()
         assert len(tl) == 3
-        assert tl.names == ('c', 'b', 'a')
+        assert tuple(tl.names()) == ('c', 'b', 'a')
         assert tuple(tl) == (3, 2, 1)
 
     def test_sort(self):
@@ -253,28 +253,15 @@ class TestNamedList(object):
         tl = rlc.NamedList(tv, names = tn)
         tl.sort()
 
-        assert tl.names == ('a', 'b', 'c')
+        assert tuple(tl.names()) == ('a', 'b', 'c')
         assert tuple(tl) == (1, 2, 3)
-
-    def test_names(self):
-        tn = ['a', 'b', 'c']
-        tv = [1,2,3]
-        tl = rlc.NamedList(tv, names = tn)
-        names = tl.names
-        assert isinstance(names, tuple) is True
-        assert names == ('a', 'b', 'c')
-
-        tn = ['d', 'e', 'f']
-        tl.names = tn
-        assert isinstance(names, tuple) is True
-        assert tl.names == tuple(tn)
 
     def test_setname(self):
         tn = ['a', 'b', 'c']
         tv = [1,2,3]
         tl = rlc.NamedList(tv, names = tn)
         tl.setname(1, 'z')
-        assert tl.names == ('a', 'z', 'c')
+        assert tuple(tl.names()) == ('a', 'z', 'c')
 
     def test_from_items(self):
         tl = rlc.NamedList.from_items(
@@ -282,11 +269,11 @@ class TestNamedList(object):
                 ('a', 1), ('b', 2), ('c', 3)
             )
         )
-        assert tl.names == ('a', 'b', 'c')
+        assert tuple(tl.names()) == ('a', 'b', 'c')
         assert tuple(tl) == (1, 2, 3)
 
         tl = rlc.NamedList.from_items({'a':1, 'b':2, 'c':3})
-        assert set(tl.names) == set(('a', 'b', 'c'))
+        assert set(tl.names()) == set(('a', 'b', 'c'))
         assert set(tuple(tl)) == set((1, 2, 3))
 
     def test_pickle(self):
@@ -294,4 +281,4 @@ class TestNamedList(object):
         tl_pickled = pickle.dumps(tl)
         tl_unpickled = pickle.loads(tl_pickled)
         assert tuple(tl) == tuple(tl_unpickled)
-        assert tuple(tl.iternames()) == tuple(tl_unpickled.iternames())
+        assert tuple(tl.names()) == tuple(tl_unpickled.names())
