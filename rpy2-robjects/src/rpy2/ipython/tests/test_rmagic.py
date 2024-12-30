@@ -7,7 +7,7 @@ import rpy2.rinterface_lib.callbacks
 import rpy2.rinterface_lib._rinterface_capi
 import rpy2.robjects
 import rpy2.robjects.conversion
-from .. import utils
+from rpy2.rinterface.tests import utils
 
 # Currently numpy is a testing requirement, but rpy2 should work without numpy
 try:
