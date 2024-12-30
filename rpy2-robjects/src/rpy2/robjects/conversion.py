@@ -278,6 +278,7 @@ class Converter(object):
     py2rpy = property(lambda self: self._py2rpy)
     rpy2py = property(lambda self: self._rpy2py)
     rpy2py_nc_map = property(lambda self: self._rpy2py_nc_map)
+
     @property
     def rpy2py_nc_name(self):
         warnings.warn(
