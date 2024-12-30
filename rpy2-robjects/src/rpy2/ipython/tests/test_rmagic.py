@@ -7,20 +7,20 @@ import rpy2.rinterface_lib.callbacks
 import rpy2.rinterface_lib._rinterface_capi
 import rpy2.robjects
 import rpy2.robjects.conversion
-from .. import utils
+from rpy2.rinterface.tests import utils
 
 # Currently numpy is a testing requirement, but rpy2 should work without numpy
 try:
     import numpy as np
     has_numpy = True
     import rpy2.robjects.numpy2ri
-except:
+except ImportError:
     has_numpy = False
 try:
     import pandas as pd
     has_pandas = True
     import rpy2.robjects.pandas2ri
-except:
+except ImportError:
     has_pandas = False
 
 try:
@@ -28,7 +28,7 @@ try:
 except ModuleNotFoundError as no_ipython:
     warnings.warn(str(no_ipython))
     IPython = None
-    
+
 if IPython is None:
     rmagic = None
     get_ipython = None
@@ -37,12 +37,13 @@ else:
     from IPython.testing.globalipapp import get_ipython
 
 from io import StringIO
-np_string_type = 'U'
 
 # from IPython.core.getipython import get_ipython
 from rpy2 import rinterface
 from rpy2.robjects import r, vectors, globalenv
 import rpy2.robjects.packages as rpacks
+
+np_string_type = 'U'
 
 
 @pytest.mark.skipif(IPython is None,
@@ -81,20 +82,21 @@ def test_RInterpreterError():
                     reason='The optional package IPython cannot be imported.')
 @pytest.mark.parametrize(
     'arg,expected',
-    (('foo', ('foo', 'foo')),
-     ('bar=foo', ('bar', 'foo')),
-     ('bar=baz.foo', ('bar', 'baz.foo'))
+    (
+        ('foo', ('foo', 'foo')),
+        ('bar=foo', ('bar', 'foo')),
+        ('bar=baz.foo', ('bar', 'baz.foo'))
     )
 )
 def test__parse_input_argument(arg, expected):
-    assert expected == rmagic._parse_input_argument(arg) 
+    assert expected == rmagic._parse_input_argument(arg)
 
-    
+
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_push(ipython_with_magic, clean_globalenv):
-    for obj in (np.arange(5), [1,2]):
+    for obj in (np.arange(5), [1, 2]):
         ipython_with_magic.push({'X': obj})
         ipython_with_magic.run_line_magic('Rpush', 'X')
         np.testing.assert_almost_equal(np.asarray(r('X')),
@@ -125,9 +127,11 @@ def test_push_localscope(ipython_with_magic, clean_globalenv):
 
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
-@pytest.mark.parametrize('rcode,exception_expr',
-                         (('"a" + 1', 'rmagic.RInterpreterError'),
-                          ('"a" + ', 'rpy2.rinterface_lib._rinterface_capi.RParsingError')))
+@pytest.mark.parametrize(
+    'rcode,exception_expr',
+    (('"a" + 1', 'rmagic.RInterpreterError'),
+     ('"a" + ', 'rpy2.rinterface_lib._rinterface_capi.RParsingError'))
+)
 def test_run_cell_with_error(ipython_with_magic, clean_globalenv,
                              rcode, exception_expr):
     """Run an R block with an error."""
@@ -142,14 +146,16 @@ def test_run_cell_with_error(ipython_with_magic, clean_globalenv,
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_push_dataframe(ipython_with_magic, clean_globalenv):
     df = pd.DataFrame([{'a': 1, 'b': 'bar'}, {'a': 5, 'b': 'foo', 'c': 20}])
-    ipython_with_magic.push({'df':df})
+    ipython_with_magic.push({'df': df})
     ipython_with_magic.run_line_magic('Rpush', 'df')
 
     # This is converted to factors, which are currently converted back to Python
     # as integers, so for now we test its representation in R.
     sio = StringIO()
-    with utils.obj_in_module(rpy2.rinterface_lib.callbacks,
-                             'consolewrite_print', sio.write):
+    with utils.obj_in_module(
+            rpy2.rinterface_lib.callbacks,
+            'consolewrite_print', sio.write
+    ):
         r('print(df$b[1])')
         assert '[1] "bar"' in sio.getvalue()
 
@@ -168,11 +174,11 @@ def test_pull(ipython_with_magic, clean_globalenv):
     np.testing.assert_almost_equal(np.asarray(r('Z')),
                                    ipython_with_magic.user_ns['Z'])
     np.testing.assert_almost_equal(ipython_with_magic.user_ns['Z'],
-                                   np.arange(11,21))
+                                   np.arange(11, 21))
 
 
 def _test_Rconverter(ipython_with_magic, clean_globalenv,
-                    dataf_py, cls):
+                     dataf_py, cls):
     # If we get to dropping numpy requirement, we might use something
     # like the following:
     # assert tuple(buffer(a).buffer_info()) == tuple(buffer(b).buffer_info())
@@ -198,8 +204,9 @@ def _test_Rconverter(ipython_with_magic, clean_globalenv,
 
     assert isinstance(fromr_dataf_py, cls)
     assert len(dataf_py) == len(fromr_dataf_py)
+    assert len(dataf_py) == len(fromr_dataf_py_again)
 
-    # retrieve `dataf_py` from R into `fromr_dataf_py` in the notebook. 
+    # retrieve `dataf_py` from R into `fromr_dataf_py` in the notebook.
     ipython_with_magic.run_cell_magic('R',
                                       '-o dataf_py',
                                       'dataf_py')
@@ -218,7 +225,7 @@ def test_Rconverter_numpy(ipython_with_magic, clean_globalenv):
     # assert tuple(buffer(a).buffer_info()) == tuple(buffer(b).buffer_info())
 
     # numpy recarray (numpy's version of a data frame)
-    dataf_np= np.array(
+    dataf_np = np.array(
         [(1, 2.9, 'a'), (2, 3.5, 'b'), (3, 2.1, 'c')],
         dtype=[('x', '<i4'),
                ('y', '<f8'),
@@ -310,7 +317,8 @@ def test_converter_pandas_rpy2py(
                     reason='The optional package IPython cannot be imported.')
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 def test_cell_magic(ipython_with_magic, clean_globalenv):
-    ipython_with_magic.push({'x': np.arange(5), 'y': np.array([3,5,4,6,7])})
+    ipython_with_magic.push({'x': np.arange(5),
+                             'y': np.array([3, 5, 4, 6, 7])})
     # For now, print statements are commented out because they print
     # erroneous ERRORs when running via rpy2.tests
     snippet = textwrap.dedent("""
@@ -324,14 +332,17 @@ def test_cell_magic(ipython_with_magic, clean_globalenv):
     ipython_with_magic.run_cell_magic('R', '-i x,y -o r,xc -w 150 -u mm a=lm(y~x)',
                                       snippet)
     np.testing.assert_almost_equal(ipython_with_magic.user_ns['xc'], [3.2, 0.9])
-    np.testing.assert_almost_equal(ipython_with_magic.user_ns['r'], np.array([-0.2,  0.9, -1. ,  0.1,  0.2]))
+    np.testing.assert_almost_equal(
+        ipython_with_magic.user_ns['r'], np.array([-0.2, 0.9, -1., 0.1, 0.2])
+    )
 
 
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')
 def test_cell_magic_localconverter(ipython_with_magic, clean_globalenv):
-    x = (1,2,3)
+    x = (1, 2, 3)
     from rpy2.rinterface import IntSexpVector
+
     def tuple_str(tpl):
         res = IntSexpVector(tpl)
         return res
@@ -413,15 +424,15 @@ def test_rmagic_localscope(ipython_with_magic, clean_globalenv):
 def test_png_plotting_args(ipython_with_magic, clean_globalenv):
     '''Exercise the PNG plotting machinery'''
 
-    ipython_with_magic.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
+    ipython_with_magic.push({'x': np.arange(5), 'y': np.array([3, 5, 4, 6, 7])})
 
     cell = '''
     plot(x, y, pch=23, bg='orange', cex=2)
     '''
 
-    png_px_args = [' '.join(('--input=x,y --units=px',w,h,p)) for
-                   w, h, p in product(['--width=400 ',''],
-                                      ['--height=400',''],
+    png_px_args = [' '.join(('--input=x,y --units=px', w, h, p)) for
+                   w, h, p in product(['--width=400 ', ''],
+                                      ['--height=400', ''],
                                       ['-p=10', ''])]
 
     for line in png_px_args:
@@ -439,6 +450,7 @@ def test_display_args(ipython_with_magic, clean_globalenv):
     '''
 
     res = []
+
     def display(x, a):
         res.append(x)
 
@@ -464,15 +476,16 @@ def test_svg_plotting_args(ipython_with_magic, clean_globalenv):
     '''Exercise the plotting machinery
 
     To pass SVG tests, we need Cairo installed in R.'''
-    ipython_with_magic.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
+    ipython_with_magic.push({'x': np.arange(5),
+                             'y': np.array([3, 5, 4, 6, 7])})
 
     cell = textwrap.dedent("""
     plot(x, y, pch=23, bg='orange', cex=2)
     """)
 
-    basic_args = [' '.join((w,h,p)) for w, h, p in product(['--width=6 ',''],
-                                                           ['--height=6',''],
-                                                           ['-p=10', ''])]
+    basic_args = [' '.join((w, h, p)) for w, h, p in product(['--width=6 ', ''],
+                                                             ['--height=6', ''],
+                                                             ['-p=10', ''])]
 
     for line in basic_args:
         ipython_with_magic.run_line_magic('Rdevice', 'svg')
@@ -489,7 +502,8 @@ def test_svg_plotting_args(ipython_with_magic, clean_globalenv):
 @pytest.mark.skipif(not has_numpy, reason='numpy not installed')
 @pytest.mark.skip(reason='Test for X11 skipped.')
 def test_plotting_X11(ipython_with_magic, clean_globalenv):
-    ipython_with_magic.push({'x':np.arange(5), 'y':np.array([3,5,4,6,7])})
+    ipython_with_magic.push({'x': np.arange(5),
+                             'y': np.array([3, 5, 4, 6, 7])})
 
     cell = textwrap.dedent("""
     plot(x, y, pch=23, bg='orange', cex=2)

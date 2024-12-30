@@ -72,7 +72,7 @@ def test_extract_silent_index_error():
 def test_replace():
     vec = robjects.vectors.IntVector(range(1, 6))
     i = array.array('i', [1, 3])
-    vec.rx[rlc.TaggedList((i, ))] = 20
+    vec.rx[rlc.NamedList((i, ))] = 20
     assert vec[0] == 20
     assert vec[1] == 2
     assert vec[2] == 20
@@ -80,7 +80,7 @@ def test_replace():
 
     vec = robjects.vectors.IntVector(range(1, 6))
     i = array.array('i', [1, 5])
-    vec.rx[rlc.TaggedList((i, ))] = 50
+    vec.rx[rlc.NamedList((i, ))] = 50
     assert vec[0] == 50
     assert vec[1] == 2
     assert vec[2] == 3

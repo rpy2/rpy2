@@ -18,8 +18,10 @@ if IPython is None:
                                  html_ridentifiedobject=None)
 else:
     from rpy2.ipython import html
-    
+
+
 base = importr('base')
+
 
 @pytest.mark.skipif(IPython is None,
                     reason='The optional package IPython cannot be imported.')

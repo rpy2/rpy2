@@ -146,9 +146,9 @@ def test_py2ro_mappedtype(value, cls):
     assert isinstance(rob, cls)
                     
 
-def test_mapperPy2R_taggedlist():
-    py = robjects.rlc.TaggedList(('a', 'b'),
-                                 tags=('foo', 'bar'))
+def test_mapperPy2R_namedlist():
+    py = robjects.rlc.NamedList(('a', 'b'),
+                                names=('foo', 'bar'))
     robj = robjects.default_converter.py2rpy(py)
     assert isinstance(robj, robjects.Vector)
     assert len(robj) == 2

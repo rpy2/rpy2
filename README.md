@@ -33,30 +33,29 @@ pip install 'rpy2[all]'
 
 ## Installation for rpy2 developers
 
-If a developer, the package can be installed from its source tree
-with:
+If a developer, the package can be installed from its source tree.
+`rpy2` is a namespace package with its consituting parts in different
+"sub-packages".
+
+To install from the source tree, just enter:
 
 ```bash
-pip install .
+pip install ./rpy2-rinterface/ ./rpy2-robjects/ .
 ```
 
-Optional dependencies can be specified similarly. For example:
+Various optional dependencies can be specified through dependency groups.
+For example:
 
 ```bash
-pip install '.[all]'
+pip install ./rpy2-rinterface'[all]' ./rpy2-robjects'[all]' '.[all]'
 ```
 
-The package is known to compile on Linux, MacOSX
-(provided that developper tools are installed, and you are ready
-figure out how by yourself). The situation is currently a little
-more complicated on Windows. Check the issue tracker.
-
-In case you find yourself with this source without any idea
-of what it takes to compile anything on your platform, try first
-
-```bash
-python setup.py install
-```
+`rpy2-rinterface` contains the binding to R's C API. Building from
+source require a compilation toolchain / developper tools installed,
+and you will have to figure out how to have them installed on your
+system by yourself. The CI pipeline builds binary wheels for Linux,
+MacOS, and Windows. Watching how things are set up there is pretty
+much all documentation from the package maintainers on the matter.
 
 
 ## Issues loading shared C libraries
@@ -87,7 +86,7 @@ test the package from the source tree, either to check and installation
 on your system or before submitting a pull request, do:
 
 ```bash
-pytest tests/
+pytest rpy2-rinterface/ rpy2-robjects/
 ```
 
 For code coverage, do:
@@ -97,7 +96,7 @@ pytest --cov=rpy2.rinterface_lib \
        --cov=rpy2.rinterface \
        --cov=rpy2.ipython \
        --cov=rpy2.robject \
-       tests
+       rpy2-rinterface/ rpy2-robjects/
 ```
 
 For more options, such as how to run specify tests, please refer to the `pytest`

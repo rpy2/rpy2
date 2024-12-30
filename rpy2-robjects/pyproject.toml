@@ -88,4 +88,4 @@ namespaces = true
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-testpaths = ["rpy2/robjects/tests"]
+testpaths = ["rpy2/robjects/tests", "rpy2/ipython/tests"]
