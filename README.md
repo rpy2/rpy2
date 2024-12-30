@@ -1,6 +1,7 @@
 # Python -> R bridge
 
 [![pypi](https://img.shields.io/pypi/v/rpy2.svg?style=flat-square)](https://pypi.python.org/pypi/rpy2)
+![PyPI Downloads](https://static.pepy.tech/badge/rpy2)
 [![Codecov](https://codecov.io/gh/rpy2/rpy2/branch/master/graph/badge.svg)](https://codecov.io/gh/rpy2/rpy2)
 [![GH Actions](https://github.com/rpy2/rpy2/workflows/Python%20package/badge.svg)](https://github.com/rpy2/rpy2/actions?query=workflow%3A%22Python+package%22)
 
@@ -9,7 +10,8 @@ The project's webpage is here: https://rpy2.github.io/
 
 # Installation
 
-`pip` should work out of the box:
+Released versions can be installed from a package repository (default
+being pypi) using pip:
 
 ```bash
 pip install rpy2
@@ -20,26 +22,40 @@ specific functionalities not otherwise required to use the rest of rpy2.
 
 For example, to be able to run the unit tests:
 ```bash
-pip install rpy2[test]
+pip install 'rpy2[test]'
 ```
 
 To install all optional dependencies (numpy, pandas, ipython), use:
 
 ```bash
-pip install rpy2[all]
+pip install 'rpy2[all]'
 ```
 
-The package is known to compile on Linux, MacOSX
-(provided that developper tools are installed, and you are ready
-figure out how by yourself). The situation is currently a little
-more complicated on Windows. Check the issue tracker.
+## Installation for rpy2 developers
 
-In case you find yourself with this source without any idea
-of what it takes to compile anything on your platform, try first
+If a developer, the package can be installed from its source tree.
+`rpy2` is a namespace package with its consituting parts in different
+"sub-packages".
+
+To install from the source tree, just enter:
 
 ```bash
-python setup.py install
+pip install ./rpy2-rinterface/ ./rpy2-robjects/ .
 ```
+
+Various optional dependencies can be specified through dependency groups.
+For example:
+
+```bash
+pip install ./rpy2-rinterface'[all]' ./rpy2-robjects'[all]' '.[all]'
+```
+
+`rpy2-rinterface` contains the binding to R's C API. Building from
+source require a compilation toolchain / developper tools installed,
+and you will have to figure out how to have them installed on your
+system by yourself. The CI pipeline builds binary wheels for Linux,
+MacOS, and Windows. Watching how things are set up there is pretty
+much all documentation from the package maintainers on the matter.
 
 
 ## Issues loading shared C libraries
@@ -70,7 +86,7 @@ test the package from the source tree, either to check and installation
 on your system or before submitting a pull request, do:
 
 ```bash
-pytest tests/
+pytest rpy2-rinterface/ rpy2-robjects/
 ```
 
 For code coverage, do:
@@ -80,7 +96,7 @@ pytest --cov=rpy2.rinterface_lib \
        --cov=rpy2.rinterface \
        --cov=rpy2.ipython \
        --cov=rpy2.robject \
-       tests
+       rpy2-rinterface/ rpy2-robjects/
 ```
 
 For more options, such as how to run specify tests, please refer to the `pytest`
