@@ -87,7 +87,7 @@ test the package from the source tree, either to check and installation
 on your system or before submitting a pull request, do:
 
 ```bash
-pytest tests/
+pytest rpy2-rinterface/ rpy2-robjects/
 ```
 
 For code coverage, do:
@@ -97,7 +97,7 @@ pytest --cov=rpy2.rinterface_lib \
        --cov=rpy2.rinterface \
        --cov=rpy2.ipython \
        --cov=rpy2.robject \
-       tests
+       rpy2-rinterface/ rpy2-robjects/
 ```
 
 For more options, such as how to run specify tests, please refer to the `pytest`
