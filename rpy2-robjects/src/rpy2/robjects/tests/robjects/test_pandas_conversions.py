@@ -1,6 +1,7 @@
 import math
 from collections import OrderedDict
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -383,6 +384,16 @@ class TestPandasConversions(object):
         with localconverter(default_converter + rpyp.converter):
             py_dataf = robjects.conversion.converter_ctx.get().rpy2py(r_dataf)
         assert pandas.core.dtypes.common.is_datetime64_any_dtype(py_dataf['mydate'])
+
+    def test_no_zone_issue1079(self):
+        # ZoneInfo object can be missing the attribute `zone`.
+        tz = ZoneInfo("UTC")        
+        record_for_prediction = pandas.DataFrame(
+            [[datetime.now(tz),1]],columns =
+            ["date","number"])
+        
+        with (robjects.default_converter + rpyp.converter).context() as cv:
+            to_predict = cv.py2rpy(record_for_prediction )
 
     def test_repr(self):
         # this should go to testVector, with other tests for repr()
