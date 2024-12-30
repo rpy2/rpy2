@@ -1,7 +1,10 @@
 import math
 from collections import OrderedDict
 from datetime import datetime
-from zoneinfo import ZoneInfo
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
 
 import pytest
 
