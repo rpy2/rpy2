@@ -19,6 +19,13 @@ Changes
   :class:`rpy2.rlike.collections.NamedList` is enough to have
   a Python data structure to represent R lists or paired lists.
 
+New features
+------------
+
+- On systems where the default encoding is not utf-8, converting
+  R strings to Python can result in decoding errors (issue #1018).
+
+
 
 Release 3.5.17
 ==============
@@ -109,9 +116,6 @@ New features
 - R is setting a number of environment variables in a wrapper script. Those
   variables were not set by default by rpy2 and this could lead to issues (see issue #1033).
   The variables are now added to `os.environ`.
-
-- On systems where the default encoding is not utf-8, converting
-  R strings to Python can result in decoding errors (issue #1018).
 
 Bugs fixed
 ----------
