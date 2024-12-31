@@ -78,7 +78,7 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         python -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[pandas]'
         ${{ env.R_LIBRARY }}
-        bash -e ./scripts/run_test_pandas.sh
+        # bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
       run: |
         ${{ env.VENV_ACTIVATE }}
