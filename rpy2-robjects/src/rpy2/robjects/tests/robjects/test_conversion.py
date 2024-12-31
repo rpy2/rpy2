@@ -83,7 +83,7 @@ def test_Converter_rclass_map_context():
     class FooEnv(robjects.Environment):
         pass
 
-    ncm = converter.rpy2py_nc_name[rinterface.SexpEnvironment]
+    ncm = converter.rpy2py_nc_map[rinterface.SexpEnvironment]
     with robjects.default_converter.rclass_map_context(
             rinterface.SexpEnvironment, {'A': FooEnv}
     ):
@@ -118,7 +118,7 @@ def test_mapperR2Python_s4custom(_set_class_AB):
         x=rinterface.IntSexpVector([2, ])
     )
     rs4_map = (conversion.get_conversion()
-               .rpy2py_nc_name[rinterface.SexpS4])
+               .rpy2py_nc_map[rinterface.SexpS4])
     with conversion.NameClassMapContext(
             rs4_map,
             {'A': A}

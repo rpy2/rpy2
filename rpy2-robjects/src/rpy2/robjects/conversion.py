@@ -282,7 +282,7 @@ class Converter(object):
     @property
     def rpy2py_nc_name(self):
         warnings.warn(
-            'rpy2py_nv_name is deprecated. Use rpy2py_nc_map.',
+            'rpy2py_nc_name is deprecated. Use rpy2py_nc_map.',
             DeprecationWarning
         )
         return self.rpy2py_nc_map

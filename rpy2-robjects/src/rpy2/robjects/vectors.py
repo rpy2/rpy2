@@ -340,7 +340,7 @@ class Vector(RObjectMixin):
         res = _sample(self, IntVector((n,)),
                       replace=BoolVector((replace, )),
                       prob=probabilities)
-        res = conversion.rpy2py(res)
+        res = conversion.get_conversion().rpy2py(res)
         return res
 
     def repr_format_elt(self, elt, max_width=12):
@@ -420,7 +420,7 @@ class StrVector(Vector, StrSexpVector):
         """
 
         res = self._factorconstructor(self)
-        return conversion.rpy2py(res)
+        return conversion.get_conversion().rpy2py(res)
 
 
 class IntVector(Vector, IntSexpVector):
@@ -450,7 +450,7 @@ class IntVector(Vector, IntSexpVector):
         if nbins is None:
             nbins = max(1, max(self))
         res = self._tabulate(self)
-        return conversion.rpy2py(res)
+        return conversion.get_conversion().rpy2py(res)
 
 
 class BoolVector(Vector, BoolSexpVector):
@@ -579,7 +579,7 @@ class FactorVector(IntVector):
 
     def __levels_get(self):
         res = self._levels(self)
-        return conversion.rpy2py(res)
+        return conversion.get_conversion().rpy2py(res)
 
     def __levels_set(self, value):
         res = self._levels_set(self,
@@ -1410,26 +1410,26 @@ class DataFrame(ListVector):
 
     def cbind(self, *args, **kwargs):
         """ bind objects as supplementary columns """
-        new_args = [self, ] + [conversion.rpy2py(x) for x in args]
+        new_args = [self, ] + [conversion.get_conversion().rpy2py(x) for x in args]
         new_kwargs = dict(
-            [(k, conversion.rpy2py(v)) for k, v in kwargs.items()]
+            [(k, conversion.get_conversion().rpy2py(v)) for k, v in kwargs.items()]
         )
         res = self._cbind(*new_args, **new_kwargs)
         return conversion.get_conversion().rpy2py(res)
 
     def rbind(self, *args, **kwargs):
         """ bind objects as supplementary rows """
-        new_args = [conversion.rpy2py(x) for x in args]
+        new_args = [conversion.get_conversion().rpy2py(x) for x in args]
         new_kwargs = dict(
-            [(k, conversion.rpy2py(v)) for k, v in kwargs.items()]
+            [(k, conversion.get_conversion().rpy2py(v)) for k, v in kwargs.items()]
         )
         res = self._rbind(self, *new_args, **new_kwargs)
-        return conversion.rpy2py(res)
+        return conversion.get_conversion().rpy2py(res)
 
     def head(self, *args, **kwargs):
         """ Call the R generic 'head()'. """
         res = utils_ri['head'](self, *args, **kwargs)
-        return conversion.rpy2py(res)
+        return conversion.get_conversion().rpy2py(res)
 
     @classmethod
     def from_csvfile(cls, path, header=True, sep=',',
