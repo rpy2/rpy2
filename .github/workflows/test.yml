@@ -87,7 +87,7 @@ jobs:
         echo "-->"
         python -c 'import rpy2.robjects.ipython.rmagic'
         echo "-->"
-        python -c 'import rpy2.robjects.ipython'
+        python -c 'import rpy2.robjects'
         echo "-->"
         bash -e ./scripts/run_test_ipython.sh
     - name: Set RSPM
