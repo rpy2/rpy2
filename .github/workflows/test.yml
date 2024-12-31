@@ -13,7 +13,7 @@ on:
         required: true
         type: string
 jobs:
-  build-wheel:
+  test:
     runs-on: ${{ inputs.os }}
     continue-on-error: false
     steps:
@@ -27,6 +27,18 @@ jobs:
       with:
         r-version: ${{ inputs.r-version }}
         use-public-rspm: true
+    - name: Set virtualenv activation command (Windows)
+      if: startsWith(inputs.os, 'windows')
+      shell: bash
+      run: |
+        echo "VENV_ACTIVATE=pyenv_base\Scripts\activate" >> $GITHUB_ENV
+        echo "R_LIBRARY=''" >> $GITHUB_ENV
+        echo "R_HOME=$(R RHOME)" >> $GITHUB_ENV
+    - name: Set env commands (POSIX)
+      if: "!startsWith(inputs.os, 'windows')"
+      run: |
+        echo "VENV_ACTIVATE=source pyenv_base/bin/activate" >> $GITHUB_ENV
+        echo "R_LIBRARY=export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}" >> $GITHUB_ENV
     - name: Create base virtualenv 
       run: |
         python -m venv pyenv_base
@@ -83,8 +95,8 @@ jobs:
       if: "!startsWith(inputs.os, 'windows')"
       run: |
         ${{ env.VENV_ACTIVATE }}
+        python -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[test]'
         ${{ env.R_LIBRARY }}
-        python -m pip install ipython
         bash -e ./scripts/run_test_ipython.sh
     - name: Set RSPM
       if: startsWith(inputs.os, 'ubuntu')
