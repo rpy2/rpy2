@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 set -x
 
@@ -12,4 +11,4 @@ pytest \
     --cov=rpy2.rlike \
     --cov=rpy2.ipython \
     --cov=rpy2.robjects \
-    ./rpy2-robjects/src/rpy2/ipython/tests
+    ./rpy2-robjects/src/rpy2/ipython
