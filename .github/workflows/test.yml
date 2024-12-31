@@ -65,6 +65,7 @@ jobs:
         pip install ${{ env.RPY2_RINTERFACE_WHL_DIST }}
         pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}
     - name: Test with minimal dependencies
+      shell: bash
       run: |
         ${{ env.VENV_ACTIVATE }}
         echo "With requirements for rpy2-rinterface."
