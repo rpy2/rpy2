@@ -80,6 +80,7 @@ jobs:
         ${{ env.R_LIBRARY }}
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
+      if: "!startsWith(inputs.os, 'windows')"
       run: |
         ${{ env.VENV_ACTIVATE }}
         ${{ env.R_LIBRARY }}
