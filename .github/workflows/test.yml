@@ -35,7 +35,7 @@ jobs:
         echo "R_LIBRARY=''" >> $GITHUB_ENV
         echo "R_HOME=$(R RHOME)" >> $GITHUB_ENV
     - name: Set env commands (POSIX)
-      if: "!startsWith(matrix.os, 'windows')"
+      if: "!startsWith(inputs.os, 'windows')"
       run: |
         echo "VENV_ACTIVATE=source pyenv_base/bin/activate" >> $GITHUB_ENV
         echo "R_LIBRARY=export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}" >> $GITHUB_ENV
