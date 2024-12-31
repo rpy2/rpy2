@@ -28,7 +28,7 @@ jobs:
         r-version: ${{ inputs.r-version }}
         use-public-rspm: true
     - name: Set virtualenv activation command (Windows)
-      if: startsWith(matrix.os, 'windows')
+      if: startsWith(input.os, 'windows')
       shell: bash
       run: |
         echo "VENV_ACTIVATE=pyenv_base\Scripts\activate" >> $GITHUB_ENV
