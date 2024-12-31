@@ -31,7 +31,7 @@ jobs:
       if: startsWith(inputs.os, 'windows')
       shell: bash
       run: |
-        echo "VENV_ACTIVATE=pyenv_base\Scripts\activate" >> $GITHUB_ENV
+        echo "VENV_ACTIVATE=pyenv_base/Scripts/activate" >> $GITHUB_ENV
         echo "R_LIBRARY=''" >> $GITHUB_ENV
     - name: Create base virtualenv 
       run: |
