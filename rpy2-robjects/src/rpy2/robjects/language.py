@@ -52,7 +52,7 @@ def eval(
         res = ri.evalr(x, envir=envir, enclos=enclos)
     else:
         res = ri.evalr_expr(x, envir=envir, enclos=enclos)
-    return conversion.get_evaluation_context().rpy2py(res)
+    return conversion.get_conversion().rpy2py(res)
 
 
 LangVector_VT = typing.TypeVar('LangVector_VT', bound='LangVector')
