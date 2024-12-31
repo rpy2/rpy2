@@ -84,11 +84,11 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         ${{ env.R_LIBRARY }}
         python -m pip install ipython
-	echo "-->"
-	python -c 'import rpy2.robjects.ipython.rmagic'
-	echo "-->"
+        echo "-->"
+        python -c 'import rpy2.robjects.ipython.rmagic'
+        echo "-->"
         python -c 'import rpy2.robjects.ipython'
-	echo "-->"
+        echo "-->"
         bash -e ./scripts/run_test_ipython.sh
     - name: Set RSPM
       if: startsWith(inputs.os, 'ubuntu')
