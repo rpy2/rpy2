@@ -33,7 +33,7 @@ jobs:
       run: |
         echo "VENV_ACTIVATE=pyenv_base\Scripts\activate" >> $GITHUB_ENV
         echo "R_LIBRARY=''" >> $GITHUB_ENV
-	echo "R_HOME=$(R RHOME)" >> $GITHUB_ENV
+        echo "R_HOME=$(R RHOME)" >> $GITHUB_ENV
     - name: Create base virtualenv 
       run: |
         python -m venv pyenv_base
