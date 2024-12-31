@@ -9,7 +9,7 @@ from rpy2.rinterface_lib import callbacks
 if os.name == 'nt':
     import rpy2.rinterface_lib.embedded_mswin as embedded_mswin
 from typing import Protocol
-    
+
 logger = logging.getLogger(__name__)
 
 ffi = openrlib.ffi
@@ -232,7 +232,7 @@ CALLBACK_INIT_PAIRS = (('ptr_R_WriteConsoleEx', '_consolewrite_ex'),
 
 # TODO: can init_once() be used here ?
 if os.name == 'nt':
-    embedded._initr = embedded_mswin._initr_win32
+    _initr = embedded_mswin._initr_win32
 else:
     def _initr(
             interactive: typing.Optional[bool] = None,
