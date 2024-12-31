@@ -83,12 +83,10 @@ jobs:
     - name: Test with ipython
       run: |
         ${{ env.VENV_ACTIVATE }}
-	${{ env.R_LIBRARY }}
+        ${{ env.R_LIBRARY }}
         echo "-->"
         python -c 'import rpy2.robjects'
         python -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[all]'
-        echo "-->"
-        python -c 'import rpy2.robjects'
         echo "-->"
         python -c 'import rpy2.robjects'
         echo "-->"
