@@ -6,7 +6,6 @@ from rpy2.rinterface import (Sexp,
                              StrSexpVector, ByteSexpVector,
                              RTYPES)
 import numpy  # type: ignore
-import warnings
 
 # TODO: move this to rinterface.
 RINT_SIZE = 32
@@ -266,6 +265,7 @@ context check the docstring for rpy2.robjects.conversion.Converter.context.
 
 def activate():
     raise DeprecationWarning(_DEPRECATION_MSG)
+
 
 def deactivate():
     raise DeprecationWarning(_DEPRECATION_MSG)

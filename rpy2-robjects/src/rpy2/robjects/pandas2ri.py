@@ -377,5 +377,6 @@ context check the docstring for rpy2.robjects.conversion.Converter.context.
 def activate():
     raise DeprecationWarning(_DEPRECATION_MSG)
 
+
 def deactivate():
     raise DeprecationWarning(_DEPRECATION_MSG)
