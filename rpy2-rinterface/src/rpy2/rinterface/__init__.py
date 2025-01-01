@@ -13,6 +13,7 @@ import math
 import platform
 import signal
 import subprocess
+import sys
 import textwrap
 import threading
 import typing
@@ -310,7 +311,7 @@ class SexpSymbol(sexp.Sexp):
         return conversion._cchar_to_str(
             openrlib._STRING_VALUE(
                 self._sexpobject._cdata
-            ), 'utf-8'
+            ), sys.getdefaultencoding()
         )
 
 
