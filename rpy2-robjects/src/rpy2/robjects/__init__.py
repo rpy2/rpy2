@@ -128,7 +128,7 @@ def _vector_matrix_array(
 @default_converter.rpy2py.register(rinterface.IntSexpVector)
 def _convert_rpy2py_intvector(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[rinterface.IntSexpVector])
+              .rpy2py_nc_map[rinterface.IntSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
@@ -136,7 +136,7 @@ def _convert_rpy2py_intvector(obj):
 @default_converter.rpy2py.register(rinterface.FloatSexpVector)
 def _convert_rpy2py_floatvector(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[rinterface.FloatSexpVector])
+              .rpy2py_nc_map[rinterface.FloatSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
@@ -144,7 +144,7 @@ def _convert_rpy2py_floatvector(obj):
 @default_converter.rpy2py.register(rinterface.ComplexSexpVector)
 def _convert_rpy2py_complexvector(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[rinterface.ComplexSexpVector])
+              .rpy2py_nc_map[rinterface.ComplexSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
@@ -152,7 +152,7 @@ def _convert_rpy2py_complexvector(obj):
 @default_converter.rpy2py.register(rinterface.BoolSexpVector)
 def _convert_rpy2py_boolvector(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[rinterface.BoolSexpVector])
+              .rpy2py_nc_map[rinterface.BoolSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
@@ -251,7 +251,7 @@ def _rpy2py_sexpenvironment(obj):
 @default_converter.rpy2py.register(rinterface.ListSexpVector)
 def _rpy2py_listsexp(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[rinterface.ListSexpVector])
+              .rpy2py_nc_map[rinterface.ListSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
@@ -259,7 +259,7 @@ def _rpy2py_listsexp(obj):
 @default_converter.rpy2py.register(SexpS4)
 def _rpy2py_sexps4(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[SexpS4])
+              .rpy2py_nc_map[SexpS4])
     cls = clsmap.find(methods_env['extends'](obj.rclass))
     return cls(obj)
 
@@ -267,7 +267,7 @@ def _rpy2py_sexps4(obj):
 @default_converter.rpy2py.register(SexpExtPtr)
 def _rpy2py_sexpextptr(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[rinterface.SexpExtPtr])
+              .rpy2py_nc_map[rinterface.SexpExtPtr])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 

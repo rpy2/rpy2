@@ -179,8 +179,12 @@ def py2rpy_pandasseries(obj):
         if obj.dt.tz:
             if obj.dt.tz is datetime.timezone.utc:
                 tzname = 'UTC'
-            else:
+            elif hasattr(obj.dt.tz, 'zone'):
                 tzname = obj.dt.tz.zone
+            elif hasattr(obj.dt.tz, 'key'):
+                tzname = obj.dt.tz.key
+            else:
+                warnings.warn('Unable to get time zone from ZoneInfo object.')
         else:
             tzname = ''
         d = [IntVector([x.year for x in obj]),

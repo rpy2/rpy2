@@ -1,6 +1,14 @@
 Release 3.6.0
 =============
 
+New features
+------------
+
+- On systems where the default encoding is not utf-8, converting
+  R strings to Python can result in decoding errors. The default
+  encoding is now the system's encoding (rather than assume utf-8).
+  This may provide a fix to issue #1018.
+
 Changes
 -------
 
@@ -19,12 +27,11 @@ Changes
   :class:`rpy2.rlike.collections.NamedList` is enough to have
   a Python data structure to represent R lists or paired lists.
 
-New features
-------------
+Bugs fixed
+----------
 
-- On systems where the default encoding is not utf-8, converting
-  R strings to Python can result in decoding errors (issue #1018).
-
+- Fix case of `zoneinfo.ZoneInfo` object missing the attribute `zone`.
+  The attribute `key` is used instead. This fixes issue #1079.
 
 
 Release 3.5.17

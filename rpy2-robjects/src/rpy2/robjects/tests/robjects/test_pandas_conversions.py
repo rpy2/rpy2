@@ -1,6 +1,10 @@
 import math
 from collections import OrderedDict
 from datetime import datetime
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
 
 import pytest
 
@@ -38,30 +42,6 @@ from rpy2.robjects.conversion import localconverter
 @pytest.mark.skipif(not has_pandas, reason='Package pandas is not installed.')
 class TestPandasConversions(object):
 
-    def testActivate(self):
-        #FIXME: is the following still making sense ?
-        assert rpyp.py2rpy != robjects.conversion.get_conversion().py2rpy
-        l = len(robjects.conversion.converter_ctx.get().py2rpy.registry)
-        k = set(robjects.conversion.converter_ctx.get().py2rpy.registry.keys())
-        rpyp.activate()
-        assert len(conversion.converter_ctx.get().py2rpy.registry) > l
-        rpyp.deactivate()
-        assert len(conversion.converter_ctx.get().py2rpy.registry) == l
-        assert set(conversion.converter_ctx.get().py2rpy.registry.keys()) == k
-
-    def testActivateTwice(self):
-        #FIXME: is the following still making sense ?
-        assert rpyp.py2rpy != robjects.conversion.converter_ctx.get().py2rpy
-        l = len(robjects.conversion.converter_ctx.get().py2rpy.registry)
-        k = set(robjects.conversion.converter_ctx.get().py2rpy.registry.keys())
-        rpyp.activate()
-        rpyp.deactivate()
-        rpyp.activate()
-        assert len(conversion.converter_ctx.get().py2rpy.registry) > l
-        rpyp.deactivate()
-        assert len(conversion.converter_ctx.get().py2rpy.registry) == l
-        assert set(conversion.converter_ctx.get().py2rpy.registry.keys()) == k
-
     @pytest.mark.parametrize(
         'cls',
         (robjects.ListVector,
@@ -72,7 +52,7 @@ class TestPandasConversions(object):
         with localconverter(default_converter + rpyp.converter) as cv:
             pylist = cv.rpy2py(rlist)
         assert len(pylist) == 2
-        assert set(pylist.keys()) == set(rlist.names)
+        assert set(pylist.names()) == set(rlist.names)
 
     def test_dataframe(self):
         # Content for test data frame
@@ -130,8 +110,8 @@ class TestPandasConversions(object):
                               numpy.int64 if has_pandas else None,
                               numpy.uint8 if has_pandas else None,
                               numpy.uint16 if has_pandas else None,
-                              pandas.Int32Dtype if has_pandas else None,
-                              pandas.Int64Dtype if has_pandas else None))
+                              pandas.Int32Dtype() if has_pandas else None,
+                              pandas.Int64Dtype() if has_pandas else None))
     def test_series_int(self, dtype):
         Series = pandas.core.series.Series
         s = Series(range(5),
@@ -383,6 +363,16 @@ class TestPandasConversions(object):
         with localconverter(default_converter + rpyp.converter):
             py_dataf = robjects.conversion.converter_ctx.get().rpy2py(r_dataf)
         assert pandas.core.dtypes.common.is_datetime64_any_dtype(py_dataf['mydate'])
+
+    def test_no_zone_issue1079(self):
+        # ZoneInfo object can be missing the attribute `zone`.
+        tz = ZoneInfo("UTC")        
+        record_for_prediction = pandas.DataFrame(
+            [[datetime.now(tz),1]],columns =
+            ["date","number"])
+        
+        with (robjects.default_converter + rpyp.converter).context() as cv:
+            to_predict = cv.py2rpy(record_for_prediction )
 
     def test_repr(self):
         # this should go to testVector, with other tests for repr()

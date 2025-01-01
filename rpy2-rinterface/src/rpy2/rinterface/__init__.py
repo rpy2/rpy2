@@ -41,10 +41,6 @@ from rpy2.rinterface_lib.sexp import emptyenv
 from rpy2.rinterface_lib.sexp import baseenv
 from rpy2.rinterface_lib.sexp import globalenv
 
-if os.name == 'nt':
-    import rpy2.rinterface_lib.embedded_mswin as embedded_mswin
-    embedded._initr = embedded_mswin._initr_win32
-
 R_NilValue = openrlib.rlib.R_NilValue
 
 endr = embedded.endr

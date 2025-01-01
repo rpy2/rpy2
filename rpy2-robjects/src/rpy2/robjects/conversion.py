@@ -263,6 +263,9 @@ class Converter(object):
     Converter objects can be added, the result being
     a Converter objects combining the translation rules from the
     different converters.
+
+    A context with the conversion rules can be created with the method
+    `.context()`. See the docstring for that method for more information.
     """
     _name: str
     _rpy2py_nc_map: typing.Dict[
@@ -275,8 +278,14 @@ class Converter(object):
     py2rpy = property(lambda self: self._py2rpy)
     rpy2py = property(lambda self: self._rpy2py)
     rpy2py_nc_map = property(lambda self: self._rpy2py_nc_map)
-    # TODO: rpy2py_nc_name should be deprecated.
-    rpy2py_nc_name = rpy2py_nc_map
+
+    @property
+    def rpy2py_nc_name(self):
+        warnings.warn(
+            'rpy2py_nc_name is deprecated. Use rpy2py_nc_map.',
+            DeprecationWarning
+        )
+        return self.rpy2py_nc_map
     lineage = property(lambda self: self._lineage)
 
     def __init__(self, name: str,
@@ -312,7 +321,22 @@ class Converter(object):
         ...     # Do something while using those conversion_rules.
         >>> # Do something else whith the earlier conversion rules restored.
 
-        The conversion context is a *copy* of the converter object.
+        The conversion context is a *copy* of the set of conversion rules.
+        Any modification to those rules will be local to it.
+
+        Whenever the use of a context started by a `with` statement and
+        within the code block it defines through indentation is inconvenient,
+        a context can be enter manually with:
+
+        >>> mycontext = conversion_rules.context()
+        >>> mycontext.__enter__()
+
+        All subsequent calls are under those conversion rules,
+        unless another conversion context is entered.
+        The price of that convenience is that the context will have to be
+        exited manually (with `mycontext.__exit__()`). Whenever
+        manually-entered are nested, exiting them in matching order is
+        under the complete responsibility of the user.
 
         :return: A :class:`ConversionContext`
         """
