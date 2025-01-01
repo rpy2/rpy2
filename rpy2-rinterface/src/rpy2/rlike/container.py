@@ -224,11 +224,11 @@ class NamedList:
             names = tags
         self.__list = list(seq)
         if names is None:
-            names = [None, ] * len(self)
+            names = [None, ] * len(self.__list)
         else:
             names = list(names)
         self.__names = names
-        if len(self.__names) != len(self):
+        if len(self.__names) != len(self.__list):
             raise ValueError("There must be as many names as seq")
 
     def __add__(self, tl: 'NamedList'):
@@ -266,6 +266,9 @@ class NamedList:
         """Create a NamedList from an iterable of NamedItem objects or (name, value) tuples."""
         if isinstance(namesvalues, dict) or isinstance(namesvalues, NamedList):
             namesvalues = tuple(namesvalues.items())
+        else:
+            namesvalues = tuple(namesvalues)
+
         iter_names = (obj.name if isinstance(obj, NamedItem)
                       else obj[0]
                       for obj in namesvalues)
@@ -395,6 +398,11 @@ class NamedList:
     def names(self) -> Iterator[Any]:
         for n in self.__names:
             yield n
+
+    def getbyname(self, name):
+        """Get the first value with a matching name."""
+        idx = self.__names.index(name)
+        return self.__list[idx]
 
     def values(self) -> Iterator[Any]:
         for v in self.__list:
