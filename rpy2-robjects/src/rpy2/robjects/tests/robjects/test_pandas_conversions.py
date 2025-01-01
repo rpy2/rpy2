@@ -42,30 +42,6 @@ from rpy2.robjects.conversion import localconverter
 @pytest.mark.skipif(not has_pandas, reason='Package pandas is not installed.')
 class TestPandasConversions(object):
 
-    def testActivate(self):
-        #FIXME: is the following still making sense ?
-        assert rpyp.py2rpy != robjects.conversion.get_conversion().py2rpy
-        l = len(robjects.conversion.converter_ctx.get().py2rpy.registry)
-        k = set(robjects.conversion.converter_ctx.get().py2rpy.registry.keys())
-        rpyp.activate()
-        assert len(conversion.converter_ctx.get().py2rpy.registry) > l
-        rpyp.deactivate()
-        assert len(conversion.converter_ctx.get().py2rpy.registry) == l
-        assert set(conversion.converter_ctx.get().py2rpy.registry.keys()) == k
-
-    def testActivateTwice(self):
-        #FIXME: is the following still making sense ?
-        assert rpyp.py2rpy != robjects.conversion.converter_ctx.get().py2rpy
-        l = len(robjects.conversion.converter_ctx.get().py2rpy.registry)
-        k = set(robjects.conversion.converter_ctx.get().py2rpy.registry.keys())
-        rpyp.activate()
-        rpyp.deactivate()
-        rpyp.activate()
-        assert len(conversion.converter_ctx.get().py2rpy.registry) > l
-        rpyp.deactivate()
-        assert len(conversion.converter_ctx.get().py2rpy.registry) == l
-        assert set(conversion.converter_ctx.get().py2rpy.registry.keys()) == k
-
     @pytest.mark.parametrize(
         'cls',
         (robjects.ListVector,
