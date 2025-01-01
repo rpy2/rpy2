@@ -140,7 +140,7 @@ jobs:
       matrix:
         python-version: ["3.10"]
         r-version: [release]
-        os: ["windows-latest"]  # ["windows-latest", ubuntu-latest, macos-14]
+        os: ["windows-latest", ubuntu-latest, macos-14]
         package: [{dir: ".", name: "rpy2"}, {dir: "rpy2-robjects", name: "rpy2-robjects"}]
     steps:
     - uses: actions/checkout@v3

@@ -154,6 +154,16 @@ def orddict_py2rpy(obj):
     return rlist
 
 
+@py2rpy.register(rlc.NamedList)
+def namedlist_py2rpy(obj: rlc.NamedList):
+    rlist = ro.vectors.ListVector.from_length(len(obj))
+    rlist.names = ro.vectors.StrVector(tuple(obj.names()))
+    with conversion.get_conversion().context() as cv:
+        for i, v in enumerate(obj.values()):
+            rlist[i] = cv.py2rpy(v)
+    return rlist
+
+
 # TODO: delete ?
 # @py2ro.register(numpy.ndarray)
 # def numpy2ro(obj):
@@ -201,7 +211,7 @@ def rpy2py_list(obj: rinterface.ListSexpVector):
     # not a data.frame, yet is it still possible to convert it
     if not isinstance(obj, ro.vectors.ListVector):
         obj = ro.vectors.ListVector(obj)
-    res = rlc.OrdDict(obj.items())
+    res = rlc.NamedList.from_items(obj.items())
     return res
 
 

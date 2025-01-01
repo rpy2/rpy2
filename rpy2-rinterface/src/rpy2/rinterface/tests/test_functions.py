@@ -101,10 +101,11 @@ def test_call_s4_setClass():
 
 
 def test_call_OrdDict():
-    ad = rlc.OrdDict((('a', rinterface.IntSexpVector([2, ])),
-                      ('b', rinterface.IntSexpVector([1, ])),
-                      (None, rinterface.IntSexpVector([5, ])),
-                      ('c', rinterface.IntSexpVector([0, ]))))
+    with pytest.deprecated_call():
+        ad = rlc.OrdDict((('a', rinterface.IntSexpVector([2, ])),
+                          ('b', rinterface.IntSexpVector([1, ])),
+                          (None, rinterface.IntSexpVector([5, ])),
+                          ('c', rinterface.IntSexpVector([0, ]))))
 
     mylist = rinterface.baseenv['list'].rcall(tuple(ad.items()),
                                               rinterface.globalenv)
@@ -116,7 +117,8 @@ def test_call_OrdDict():
 
 
 def test_call_OrdDictEnv():
-    ad = rlc.OrdDict(((None, rinterface.parse('sum(x)')), ))
+    with pytest.deprecated_call():
+        ad = rlc.OrdDict(((None, rinterface.parse('sum(x)')), ))
     env_a = rinterface.baseenv['new.env']()
     env_a['x'] = rinterface.IntSexpVector([1, 2, 3])
     sum_a = rinterface.baseenv['eval'].rcall(tuple(ad.items()), env_a)

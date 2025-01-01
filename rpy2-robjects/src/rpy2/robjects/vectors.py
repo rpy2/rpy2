@@ -43,10 +43,10 @@ default_timezone = None
 
 
 class ExtractDelegator(object):
-    """ Delegate the R 'extraction' ("[") and 'replacement' ("[<-")
+    """ Delegate to R the 'extraction' ("[") and 'replacement' ("[<-")
     of items in a vector
-    or vector-like object. This can help making syntactic
-    niceties possible."""
+    or vector-like object.
+    """
 
     _extractfunction = rinterface.baseenv['[']
     _replacefunction = rinterface.baseenv['[<-']
@@ -56,7 +56,8 @@ class ExtractDelegator(object):
 
     def __call__(self, *args, **kwargs):
         """ Subset the "R-way.", using R's "[" function.
-           In a nutshell, R indexing differs from Python indexing on:
+
+        R indexing differs from Python indexing on:
 
            - indexing can be done with integers or strings (that are 'names')
 
@@ -93,7 +94,7 @@ class ExtractDelegator(object):
         """ Assign a given value to a given index position in the vector.
         The index position can either be:
         - an int: x[1] = y
-        - a tuple of ints: x[1, 2, 3] = y
+        - a tuple of ints: x[IntVector([1, 2, 3])] = y
         - an item-able object (such as a dict): x[{'i': 1}] = y
         """
         fun = self._replacefunction
@@ -111,8 +112,8 @@ class ExtractDelegator(object):
             args = rlc.NamedList.from_items(item)
             for i, nameditem in enumerate(args.items()):
                 args[i] = rlc.NamedItem(nameditem.name, cv.py2rpy(nameditem.value))
-            args.append(cv.py2rpy(value), tag=None)
-            args.insert(0, self._parent, tag=None)
+            args.append(rlc.NamedItem(None, cv.py2rpy(value)))
+            args.insert(0, rlc.NamedItem(None, self._parent), tag=None)
             res = fun.rcall(tuple((nitem.name, nitem.value) for nitem in args.items()),
                             globalenv_ri)
         else:
