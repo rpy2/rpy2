@@ -207,10 +207,10 @@ class TestNumpyConversions(object):
         )
         with (robjects.default_converter + rpyn.converter).context() as cv:
             rec = cv.rpy2py(df)
-        assert rpy2.rlike.container.OrdDict == type(rec)
-        assert rec['a'][0] == 1
-        assert rec['b'][0] == 2
-        assert rec['c'][0] == 'e'  # not 1.
+        assert isinstance(rec, rpy2.rlike.container.NamedList)
+        assert rec.getbyname('a') == 1
+        assert rec.getbyname('b') == 2
+        assert rec.getbyname('c') == 'e'  # not 1.
 
     def test_atomic_vector_to_numpy(self):
         v = robjects.vectors.IntVector((1,2,3))

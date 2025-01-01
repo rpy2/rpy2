@@ -47,7 +47,7 @@ def eval(
     The R objects resulting from the evaluation."""
 
     if envir is None:
-        envir = ri.get_evaluation_context()
+        envir = ri.evaluation_context.get()
     if isinstance(x, str):
         res = ri.evalr(x, envir=envir, enclos=enclos)
     else:

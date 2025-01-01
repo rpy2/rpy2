@@ -52,7 +52,7 @@ class TestPandasConversions(object):
         with localconverter(default_converter + rpyp.converter) as cv:
             pylist = cv.rpy2py(rlist)
         assert len(pylist) == 2
-        assert set(pylist.keys()) == set(rlist.names)
+        assert set(pylist.names()) == set(rlist.names)
 
     def test_dataframe(self):
         # Content for test data frame
@@ -110,8 +110,8 @@ class TestPandasConversions(object):
                               numpy.int64 if has_pandas else None,
                               numpy.uint8 if has_pandas else None,
                               numpy.uint16 if has_pandas else None,
-                              pandas.Int32Dtype if has_pandas else None,
-                              pandas.Int64Dtype if has_pandas else None))
+                              pandas.Int32Dtype() if has_pandas else None,
+                              pandas.Int64Dtype() if has_pandas else None))
     def test_series_int(self, dtype):
         Series = pandas.core.series.Series
         s = Series(range(5),
