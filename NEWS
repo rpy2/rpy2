@@ -27,6 +27,14 @@ Changes
   :class:`rpy2.rlike.collections.NamedList` is enough to have
   a Python data structure to represent R lists or paired lists.
 
+- The long-deprecated functions
+  :func:`rpy2.robjects.robjects.numpy2ri.activate`,
+  :func:`rpy2.robjects.robjects.numpy2ri.deactivate`,
+  :func:`rpy2.robjects.robjects.pandas2ri.activate`,
+  and :func:`rpy2.robjects.robjects.pandas2ri.deactivate` are no
+  longer functional. Calling them will raise an exception pointing
+  to documentation.
+ 
 Bugs fixed
 ----------
 

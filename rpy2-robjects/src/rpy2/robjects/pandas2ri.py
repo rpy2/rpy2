@@ -368,44 +368,15 @@ converter._rpy2py_nc_map.update(
 )
 
 
+_DEPRECATION_MSG = """
+The activate and deactivate are deprecated. To set a conversion
+context check the docstring for rpy2.robjects.conversion.Converter.context.
+"""
+
+
 def activate():
-    warnings.warn('The global conversion available with activate() '
-                  'is deprecated and will be removed in the next '
-                  'major release. Use a local converter.',
-                  category=DeprecationWarning)
-    global original_converter
-    # If module is already activated, there is nothing to do.
-    if original_converter is not None:
-        return
-
-    original_converter = conversion.Converter(
-        'snapshot before pandas conversion',
-        template=conversion.get_conversion())
-    numpy2ri.activate()
-    new_converter = conversion.Converter('snapshot before pandas conversion',
-                                         template=conversion.get_conversion())
-    numpy2ri.deactivate()
-
-    for k, v in py2rpy.registry.items():
-        if k is object:
-            continue
-        new_converter.py2rpy.register(k, v)
-
-    for k, v in rpy2py.registry.items():
-        if k is object:
-            continue
-        new_converter.rpy2py.register(k, v)
-
-    conversion.set_conversion(new_converter)
+    raise DeprecationWarning(_DEPRECATION_MSG)
 
 
 def deactivate():
-    global original_converter
-
-    # If module has never been activated or already deactivated,
-    # there is nothing to do
-    if original_converter is None:
-        return
-
-    conversion.set_conversion(original_converter)
-    original_converter = None
+    raise DeprecationWarning(_DEPRECATION_MSG)
