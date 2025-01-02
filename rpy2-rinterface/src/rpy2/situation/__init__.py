@@ -356,12 +356,12 @@ def iter_info():
     yield make_bold('rpy2 version:')
     try:
         # TODO: the repeated import is needed, without which Python
-        #   raises an UnboundLocalError (local variable reference before
+        #   raises an UnboundLocalError (local variable referenced before
         #   assignment).
         import rpy2.rinterface  # noqa: F811
-        yield rpy2.rinterface_lib.__version__
+        yield f'rpy2.rinterface: {rpy2.rinterface_lib.__version__}'
     except ImportError:
-        yield 'rpy2 cannot be imported'
+        yield 'rpy2.rinterface cannot be imported'
 
     yield make_bold('Python version:')
     yield sys.version
