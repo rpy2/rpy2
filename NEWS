@@ -34,6 +34,9 @@ Changes
   and :func:`rpy2.robjects.robjects.pandas2ri.deactivate` are no
   longer functional. Calling them will raise an exception pointing
   to documentation.
+
+- The wrapper for ggplot2 is now targeting the R package `ggplot2`
+  version 3.5.
  
 Bugs fixed
 ----------

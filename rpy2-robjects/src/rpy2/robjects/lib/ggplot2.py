@@ -65,7 +65,7 @@ ggplot2 = WeakPackage(ggplot2._env,
                       symbol_r2python=ggplot2._symbol_r2python,
                       symbol_resolve=ggplot2._symbol_resolve)
 
-TARGET_VERSION = '3.3.'
+TARGET_VERSION = '3.5.'
 if not ggplot2.__version__.startswith(TARGET_VERSION):
     warnings.warn(
         'This was designed against ggplot2 versions starting with %s but you '
@@ -169,7 +169,8 @@ class Vars(robjects.ListVector):
                     a, env=robjects.baseenv['sys.frame']()
                 )
             )
-        res = cls(cls._constructor(*new_args))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(*new_args))
         return res
 
 
@@ -1163,10 +1164,11 @@ class ElementText(Element):
     def new(cls, family='', face='plain', colour='black', size=10,
             hjust=0.5, vjust=0.5, angle=0, lineheight=1.1,
             color=NULL):
-        res = cls(cls._constructor(family=family, face=face,
-                                   colour=colour, size=size,
-                                   hjust=hjust, vjust=vjust,
-                                   angle=angle, lineheight=lineheight))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(family=family, face=face,
+                                       colour=colour, size=size,
+                                       hjust=hjust, vjust=vjust,
+                                       angle=angle, lineheight=lineheight))
         return res
 
 
@@ -1178,14 +1180,26 @@ class ElementLine(Element):
     _constructor = ggplot2.element_line
 
     @classmethod
-    def new(cls,  colour=NULL, size=NULL, linetype=NULL, lineend=NULL,
+    def new(cls,  colour=NULL,
+            size=NULL, linewidth=NULL,
+            linetype=NULL, lineend=NULL,
             color=NULL, arrow=NULL, inherit_blank=False):
-        res = cls(
-            cls._constructor(colour=colour, size=size,
-                             linetype=linetype, lineend=lineend,
-                             color=color, arrow=arrow,
-                             inherit_blank=inherit_blank)
-        )
+        if size is not NULL:
+            res = cls(
+                cls._constructor(colour=colour,
+                                 size=size, linewidth=linewidth,
+                                 linetype=linetype, lineend=lineend,
+                                 color=color, arrow=arrow,
+                                 inherit_blank=inherit_blank)
+            )
+        else:
+            res = cls(
+                cls._constructor(colour=colour,
+                                 linewidth=linewidth,
+                                 linetype=linetype, lineend=lineend,
+                                 color=color, arrow=arrow,
+                                 inherit_blank=inherit_blank)
+            )
         return res
 
 
@@ -1197,11 +1211,19 @@ class ElementRect(Element):
     _constructor = ggplot2.element_rect
 
     @classmethod
-    def new(cls, fill=NULL, colour=NULL, size=NULL,
+    def new(cls, fill=NULL, colour=NULL,
+            size=NULL, linewidth=NULL,
             linetype=NULL, color=NULL):
-        res = cls(cls._constructor(fill=fill, colour=colour,
-                                   size=size, linetype=linetype,
-                                   color=color))
+        if size is not NULL:
+            res = cls(cls._constructor(fill=fill, colour=colour,
+                                       size=size, linewidth=linewidth,
+                                       linetype=linetype,
+                                       color=color))
+        else:
+            res = cls(cls._constructor(fill=fill, colour=colour,
+                                       linewidth=linewidth,
+                                       linetype=linetype,
+                                       color=color))
         return res
 
 
@@ -1229,7 +1251,8 @@ class ElementBlank(Theme):
 
     @classmethod
     def new(cls):
-        res = cls(cls._constructor())
+        with robjects.default_converter.context():
+            res = cls(cls._constructor())
         return res
 
 
@@ -1244,7 +1267,8 @@ class ThemeGrey(Theme):
 
     @classmethod
     def new(cls, base_size=12):
-        res = cls(cls._constructor(base_size=base_size))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size))
         return res
 
 
@@ -1256,8 +1280,9 @@ class ThemeClassic(Theme):
 
     @classmethod
     def new(cls, base_size=12, base_family=''):
-        res = cls(cls._constructor(base_size=base_size,
-                                   base_family=base_family))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size,
+                                       base_family=base_family))
         return res
 
 
@@ -1269,8 +1294,9 @@ class ThemeDark(Theme):
 
     @classmethod
     def new(cls, base_size=12, base_family=''):
-        res = cls(cls._constructor(base_size=base_size,
-                                   base_family=base_family))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size,
+                                       base_family=base_family))
         return res
 
 
@@ -1282,8 +1308,9 @@ class ThemeLight(Theme):
 
     @classmethod
     def new(cls, base_size=12, base_family=''):
-        res = cls(cls._constructor(base_size=base_size,
-                                   base_family=base_family))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size,
+                                       base_family=base_family))
         return res
 
 
@@ -1295,7 +1322,8 @@ class ThemeBW(Theme):
 
     @classmethod
     def new(cls, base_size=12):
-        res = cls(cls._constructor(base_size=base_size))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size))
         return res
 
 
@@ -1307,7 +1335,8 @@ class ThemeGray(Theme):
 
     @classmethod
     def new(cls, base_size=12):
-        res = cls(cls._constructor(base_size=base_size))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size))
         return res
 
 
@@ -1320,8 +1349,9 @@ class ThemeMinimal(Theme):
 
     @classmethod
     def new(cls, base_size=12, base_family=''):
-        res = cls(cls._constructor(base_size=base_size,
-                                   base_family=base_family))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size,
+                                       base_family=base_family))
         return res
 
 
@@ -1333,8 +1363,9 @@ class ThemeLinedraw(Theme):
 
     @classmethod
     def new(cls, base_size=12, base_family=""):
-        res = cls(cls._constructor(base_size=base_size,
-                                   base_family=base_family))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size,
+                                       base_family=base_family))
         return res
 
 
@@ -1346,8 +1377,9 @@ class ThemeVoid(Theme):
 
     @classmethod
     def new(cls, base_size=12, base_family=''):
-        res = cls(cls._constructor(base_size=base_size,
-                                   base_family=base_family))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size,
+                                       base_family=base_family))
         return res
 
 
