@@ -654,53 +654,66 @@ class ListVector(Vector, ListSexpVector):
                 dict,
                 rinterface.ListSexpVector,
                 rlc.NamedList,
-                typing.Iterable[typing.Tuple[str, typing.Any]]]
+                typing.Iterable[
+                    typing.Union[
+                        typing.Any,
+                        typing.Tuple[str, typing.Any]
+                    ]
+                ]
+            ]
     ):
         if isinstance(nlist, rinterface.ListSexpVector):
             if nlist.typeof != rinterface.RTYPES.VECSXP:
                 raise ValueError("nlist should have "
                                  "nlist.typeof == rinterface.RTYPES.VECSXP")
             super().__init__(nlist)
-        elif isinstance(nlist, dict):
-            cv = conversion.get_conversion()
-            kv = tuple((k, cv.py2rpy(v)) for k, v in nlist.items())
-            df = baseenv_ri.find("list").rcall(kv, globalenv_ri)
-            super().__init__(df)
-        elif isinstance(nlist, rlc.NamedList):
-            cv = conversion.get_conversion()
-            kv = tuple((nitem.name, cv.py2rpy(nitem.value))
-                       for nitem in nlist.items())
-            df = baseenv_ri.find("list").rcall(kv, globalenv_ri)
-            super().__init__(df)
-        elif hasattr(nlist, "__iter__"):
-            if not callable(nlist.__iter__):
-                raise ValueError('nlist should have a /method/ __iter__ '
-                                 '(not an attribute)')
-            cv = conversion.get_conversion()
-            kv = []
-            for elt in nlist:
-                if (
-                        isinstance(elt, str)
-                        or
-                        not hasattr(elt, '__len__')
-                        or
-                        not hasattr(elt, '__iter__')
-                ):
-                    kv.append((None, elt))
-                elif len(elt) == 2:
-                    kv.append(elt)
-                else:
-                    raise ValueError(
-                        'When an iterable, each element must be atomic '
-                        'or a sequence of length 2 (a name and a value).'
-                    )
-            kv = tuple(kv)
-            df = baseenv_ri.find("list").rcall(kv, globalenv_ri)
-            super().__init__(df)
         else:
-            raise ValueError('nlist can only be either an iter-able or an '
-                             'instance of rpy2.rinterface.ListSexpVector, '
-                             'of R type VECSXP, or a Python dict.')
+            if isinstance(nlist, dict):
+                cv = conversion.get_conversion()
+                kv = tuple((k, cv.py2rpy(v)) for k, v in nlist.items())
+            elif isinstance(nlist, rlc.NamedList):
+                cv = conversion.get_conversion()
+                kv = tuple((nitem.name, cv.py2rpy(nitem.value))
+                           for nitem in nlist.items())
+            elif hasattr(nlist, "__iter__"):
+                if not callable(nlist.__iter__):
+                    raise ValueError('nlist should have a /method/ __iter__ '
+                                     '(not an attribute)')
+                cv = conversion.get_conversion()
+                # use _kv to store temp list to keep the type checker happy.
+                _kv: typing.List[
+                    typing.Tuple[typing.Optional[str], typing.Any]
+                ] = []
+                for elt in nlist:
+                    if (
+                            isinstance(elt, str)
+                            or
+                            not hasattr(elt, '__len__')
+                            or
+                            not hasattr(elt, '__iter__')
+                    ):
+                        _kv.append((None, elt))
+                    elif (
+                            isinstance(elt, tuple)
+                            and
+                            len(elt) == 2
+                            and
+                            isinstance(elt[0], str)
+                    ):
+                        _kv.append(elt)
+                    else:
+                        raise ValueError(
+                            'When an iterable, each element must be atomic '
+                            'or a sequence of length 2 (a name and a value).'
+                        )
+                kv = tuple(_kv)
+                del(kv)
+            else:
+                raise ValueError('nlist can only be either an iter-able or an '
+                                 'instance of rpy2.rinterface.ListSexpVector, '
+                                 'of R type VECSXP, or a Python dict.')
+            df = baseenv_ri.find("list").rcall(kv, globalenv_ri)
+            super().__init__(df)
         self._add_rops()
 
     def _iter_repr(self, max_items=9):
