@@ -120,16 +120,31 @@ ggplot = GGPlot.new
 
 
 class Aes(robjects.ListVector):
-    """ Aesthetics mapping, using expressions rather than string
-    (this is the most common form when using the package in R - it might
-    be easier to use AesString when working in Python using rpy2 -
-    see class AesString in this Python module).
+    """ Aesthetics mapping, using expressions rather than string.
+
+    This associates dimensions in the data sets (columns in the DataFrame),
+    possibly with a transformation applied on-the-fly (e.g., "log(value)",
+    or "cost / benefits") to graphical "dimensions" in a chosen graphical
+    representation (e.g., x-axis, color of points, size, etc...).
+
+    Note that the mapping of graphical representation (x, color, etc.)
+    are to R language objects, not Python strings! :mod:`robjects`
+    contains a convenience shortcut to create unevaluated R objects
+    For example:
+
+    >>> from rpy2.robjects import rl
+    >>> aes(x=rl('x+1'), y=rl('1/(y+0.0001)'))
+
+    Not all graphical representations have all dimensions. Refer to the
+    documentation of ggplot2, online tutorials, or Hadley's book for
+    more details.
     """
     _constructor = ggplot2_env['aes']
 
     @classmethod
     def new(cls, *args, **kwargs):
-        res = cls(cls._constructor(*args, **kwargs))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(*args, **kwargs))
         return res
 
 
