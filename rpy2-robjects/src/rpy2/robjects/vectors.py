@@ -679,11 +679,12 @@ class ListVector(Vector, ListSexpVector):
             cv = conversion.get_conversion()
             kv = []
             for elt in nlist:
-                if (isinstance(elt, str)
-                    or
-                    not hasattr(elt, '__len__')
-                    or
-                    not hasattr(elt, '__iter__')
+                if (
+                        isinstance(elt, str)
+                        or
+                        not hasattr(elt, '__len__')
+                        or
+                        not hasattr(elt, '__iter__')
                 ):
                     kv.append((None, elt))
                 elif len(elt) == 2:
