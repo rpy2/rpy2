@@ -180,7 +180,8 @@ class AesString(robjects.ListVector):
     @classmethod
     def new(cls, **kwargs):
         """Constructor for the class AesString."""
-        res = cls(cls._constructor(**kwargs))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(**kwargs))
         return res
 
 

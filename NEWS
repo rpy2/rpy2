@@ -41,6 +41,10 @@ Bugs fixed
 - Fix case of `zoneinfo.ZoneInfo` object missing the attribute `zone`.
   The attribute `key` is used instead. This fixes issue #1079.
 
+- The constructor for :class:`rpy2.robjects.lib.ggplot2` did not
+  play well with conversion rules in :mod:`rpy2.robjects.pandas2ri`.
+  The default conversion rules are now forced (issue #1116).
+
 
 Release 3.5.17
 ==============
