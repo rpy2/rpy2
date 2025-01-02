@@ -707,7 +707,7 @@ class ListVector(Vector, ListSexpVector):
                             'or a sequence of length 2 (a name and a value).'
                         )
                 kv = tuple(_kv)
-                del(kv)
+                del _kv
             else:
                 raise ValueError('nlist can only be either an iter-able or an '
                                  'instance of rpy2.rinterface.ListSexpVector, '
