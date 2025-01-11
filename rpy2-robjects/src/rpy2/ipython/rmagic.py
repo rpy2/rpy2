@@ -32,6 +32,9 @@ To enable the magics below, execute `%load_ext rpy2.ipython`.
 
 {RGET_DOC}
 
+`%Rdevice`
+
+{RDEVICE_DOC}
 """
 
 # -----------------------------------------------------------------------------
@@ -61,8 +64,17 @@ import rpy2.rinterface_lib.openrlib
 import rpy2.robjects as ro
 import rpy2.robjects.conversion
 import rpy2.robjects.packages as rpacks
-from rpy2.robjects.lib import grdevices
 import warnings
+
+# IPython imports.
+
+import IPython.display  # type: ignore
+import IPython.core.displaypub  # type: ignore
+import IPython.core.magic  # type: ignore
+from IPython.core.magic_arguments import (argument,  # type: ignore
+                                          argument_group,
+                                          magic_arguments,
+                                          parse_argstring)
 
 # Try loading pandas and numpy, emitting a warning if either cannot be
 # loaded.
@@ -86,17 +98,6 @@ except ImportError as ie:
                   'Unfortunately it could not be loaded, '
                   'as we did not manage to load `numpy` '
                   'in the first place (error: %s).' % str(ie))
-
-# IPython imports.
-
-import IPython.display  # type: ignore
-import IPython.core.displaypub  # type: ignore
-import IPython.core.magic  # type: ignore
-from IPython.core.magic_arguments import (argument,  # type: ignore
-                                          argument_group,
-                                          magic_arguments,
-                                          parse_argstring)
-
 
 if NUMPY_IMPORTED:
     if PANDAS_IMPORTED:
@@ -133,10 +134,12 @@ class GraphicsDevice(abc.ABC):
 
     def __init__(self, package, name,
                  extension,
+                 mimetype,
                  params=None):
         self.package = package
         self.name = name
         self.extension = extension
+        self.mimetype = mimetype
 
     @abc.abstractclassmethod
     def new_device(self):
@@ -194,7 +197,7 @@ class GraphicsDeviceRaster(FileDeviceMixin, GraphicsDevice):
 
         # TODO: create a function for x if x else MissingArg.
         self.get_rfunc()(
-            f'{tmpd_fix_slashes}/Rplots%%03d.{self.extension}',
+            f'{tmpd_fix_slashes}/Rplots%03d.{self.extension}',
             width=width if width else ri.MissingArg,
             height=height if height else ri.MissingArg,
             pointsize=pointsize if pointsize else ri.MissingArg,
@@ -234,7 +237,7 @@ class GraphicsDeviceSVG(FileDeviceMixin, GraphicsDevice):
     _options_new_device = {'width', 'height', 'pointsize', 'bg',
                            'units', 'res'}
     _options_display = {'isolate_svgs'}
-    
+
     def new_device(
             self,
             width=None,
@@ -272,12 +275,15 @@ class GraphicsDeviceSVG(FileDeviceMixin, GraphicsDevice):
 
         for imgfile in filename_seq:
             if os.stat(imgfile).st_size >= 1000:
-                img = self.display(imgfile, isolated=isolated)
+                img = self.display_filename(imgfile, isolate_svgs=isolated)
                 _sync_console()
                 yield img
 
 
 class GraphicsDeviceWindow(GraphicsDevice):
+
+    _options_new_device = {}
+    _options_display = {}
 
     def new_device(self):
         # Open a new deivce, except if the current one is already a
@@ -289,16 +295,36 @@ class GraphicsDeviceWindow(GraphicsDevice):
 graphics_devices: typing.Dict[
     str, typing.Union[GraphicsDevice, typing.Tuple[str, ...]]
 ] = {
-    'grDevices::png': GraphicsDeviceRaster('grDevices', 'png', 'png'),
-    'grDevices::jpeg': GraphicsDeviceRaster('grDevices', 'jpeg', 'jpeg'),
-    'grDevices::bmp': GraphicsDeviceRaster('grDevices', 'bmp', 'bmp'),
-    'grDevices::svg': GraphicsDeviceSVG('grDevices', 'svg', 'svg'),
-    'grDevices::X11': GraphicsDeviceWindow('grDevices', 'X11', None),
-    'grDevices::quartz': GraphicsDeviceWindow('grDevices', 'quartz', None),
-    'Cairo::CairoPNG': GraphicsDeviceRaster('Cairo', 'CairoPNG', 'png'),
-    'Cairo::CairoSVG': GraphicsDeviceSVG('Cairo', 'CairoSVG', 'svg'),
-    'Cairo::CairoX11': GraphicsDeviceWindow('Cairo', 'CairoX11', None),
-    'svglite::svglite': GraphicsDeviceSVG('svglite', 'svglite', 'svg'),
+    'grDevices::png': GraphicsDeviceRaster(
+        'grDevices', 'png', 'png', 'image/png'
+    ),
+    'grDevices::jpeg': GraphicsDeviceRaster(
+        'grDevices', 'jpeg', 'jpeg', 'image/jpeg'
+    ),
+    'grDevices::bmp': GraphicsDeviceRaster(
+        'grDevices', 'bmp', 'bmp', 'image/bmp'
+    ),
+    'grDevices::svg': GraphicsDeviceSVG(
+        'grDevices', 'svg', 'svg', 'image/svg+xml'
+    ),
+    'grDevices::X11': GraphicsDeviceWindow(
+        'grDevices', 'X11', None, None
+    ),
+    'grDevices::quartz': GraphicsDeviceWindow(
+        'grDevices', 'quartz', None, None
+    ),
+    'Cairo::CairoPNG': GraphicsDeviceRaster(
+        'Cairo', 'CairoPNG', 'png', 'image/png'
+    ),
+    'Cairo::CairoSVG': GraphicsDeviceSVG(
+        'Cairo', 'CairoSVG', 'svg', 'image/svg+xml'
+    ),
+    'Cairo::CairoX11': GraphicsDeviceWindow(
+        'Cairo', 'CairoX11', None, None
+    ),
+    'svglite::svglite': GraphicsDeviceSVG(
+        'svglite', 'svglite', 'svg', 'image/svg+xml'
+    ),
     'jpeg': ('grDevices::png', ),
     'png': ('Cairo::CairoPNG', 'grDevices::png'),
     'svg': ('svglite::svglite', 'Cairo::CairoSVG', 'grDevices::svg'),
@@ -314,7 +340,7 @@ def get_valid_device(
                 str,
                 typing.Union[GraphicsDevice, typing.Tuple[str, ...]]
             ]
-        ]= None
+        ] = None
 ) -> str:
     if devices_dict is None:
         devices_dict = graphics_devices
@@ -856,15 +882,15 @@ class RMagics(IPython.core.magic.Magics):
     def publish_graphics(self, graph_dir, isolate_svgs=True):
         """Wrap graphic file data for presentation in IPython.
 
-        This method is deprecated. Use `display_figures` or
-        'display_figures_svg` instead.
+        This method is deprecated. Use method `display_filename`
+        for the attribute `graphics_device`.
 
         graph_dir : str
             Probably provided by some tmpdir call
         isolate_svgs : bool
             Enable SVG namespace isolation in metadata"""
 
-        warnings.warn('Use method fetch_figures.', DeprecationWarning)
+        warnings.warn('Use attribute\'s method graphics_device.display_filename()', DeprecationWarning)
         # read in all the saved image files
         images = []
         display_data = []
@@ -872,25 +898,23 @@ class RMagics(IPython.core.magic.Magics):
         # Default empty metadata dictionary.
         md = {}
 
-        if self.device == 'png':
-            for imgfile in sorted(glob('%s/Rplots*png' % graph_dir)):
-                if os.stat(imgfile).st_size >= 1000:
-                    with open(imgfile, 'rb') as fh_img:
-                        images.append(fh_img.read())
+        if isinstance(self.graphics_device, GraphicsDeviceRaster):
+            for imgfile in self.graphics_device.iter_displayed_path(graph_dir):
+                with open(imgfile, 'rb') as fh_img:
+                    images.append(fh_img.read())
         else:
             # as onefile=TRUE, there is only one .svg file
-            imgfile = "%s/Rplot.svg" % graph_dir
-            # Cairo creates an SVG file every time R is called
-            # -- empty ones are not published
-            if os.stat(imgfile).st_size >= 1000:
+            for imgfile in self.graphics_device.iter_displayed_path(graph_dir):
                 with open(imgfile, 'rb') as fh_img:
                     images.append(fh_img.read().decode())
 
-        mimetypes = {'png': 'image/png', 'svg': 'image/svg+xml'}
-        mime = mimetypes[self.device]
-
-        # By default, isolate SVG images in the Notebook to avoid garbling.
-        if images and self.device == "svg" and isolate_svgs:
+        
+        # Isolate SVG images in the Notebook to avoid garbling.
+        if (
+                images
+                and isinstance(self.graphics_device, GraphicsDeviceSVG)
+                and isolate_svgs
+        ):
             md = {'image/svg+xml': dict(isolated=True)}
 
         # Flush text streams before sending figures, helps a little with
@@ -900,7 +924,9 @@ class RMagics(IPython.core.magic.Magics):
             # not a real solution).
             sys.stdout.flush()
             sys.stderr.flush()
-            display_data.append(('RMagic.R', {mime: image}))
+            display_data.append(
+                ('RMagic.R', {self.graphics_device.mimetype: image})
+            )
 
         return display_data, md
 
@@ -1091,7 +1117,6 @@ class RMagics(IPython.core.magic.Magics):
         * A trailing ';' will also result in no return value as the last
           value in the line is an empty string.
         """
-
         args = parse_argstring(self.R, line)
 
         # arguments 'code' in line are prepended to
@@ -1186,12 +1211,14 @@ class RMagics(IPython.core.magic.Magics):
                 print(e.err)
             raise e
         finally:
-            if self.device in DEVICES_STATIC:
-                ro.r('dev.off()')
+            if isinstance(self.graphics_device, FileDeviceMixin):
+                try:
+                    ro.r('grDevices::dev.off()')
+                except Exception as e:
+                    warnings.warn(e)
             if text_output:
                 # display_data.append(('RMagic.R', {'text/plain':text_output}))
                 IPython.core.displaypub.publish_display_data(
-                    source='RMagic.R',
                     data={'text/plain': text_output})
             # publish figures generated by R.
             for _ in self.graphics_device.iter_displayed_path(tmpd):
@@ -1226,10 +1253,11 @@ class RMagics(IPython.core.magic.Magics):
 
 
 __doc__ = __doc__.format(
-                R_DOC='{0}{1}'.format(' '*8, RMagics.R.__doc__),
-                RPUSH_DOC='{0}{1}'.format(' '*8, RMagics.Rpush.__doc__),
-                RPULL_DOC='{0}{1}'.format(' '*8, RMagics.Rpull.__doc__),
-                RGET_DOC='{0}{1}'.format(' '*8, RMagics.Rget.__doc__)
+    R_DOC='{0}{1}'.format(' '*8, RMagics.R.__doc__),
+    RPUSH_DOC='{0}{1}'.format(' '*8, RMagics.Rpush.__doc__),
+    RPULL_DOC='{0}{1}'.format(' '*8, RMagics.Rpull.__doc__),
+    RGET_DOC='{0}{1}'.format(' '*8, RMagics.Rget.__doc__),
+    RDEVICE_DOC='{0}{1}'.format(' '*8, RMagics.Rdevice.__doc__)
 )
 
 

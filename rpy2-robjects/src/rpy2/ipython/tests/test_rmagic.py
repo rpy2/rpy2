@@ -40,7 +40,7 @@ np_string_type = 'U'
                    'foo': ('png', )}),
         ('foo',
          {'png': rmagic.graphics_devices['grDevices::png'],
-          'dummy': rmagic.GraphicsDeviceRaster('dummy', 'dummy', 'txt'),
+          'dummy': rmagic.GraphicsDeviceRaster('dummy', 'dummy', 'txt', None),
           'foo': ('dummy', 'png')})
     ]
 )
@@ -55,7 +55,7 @@ def test_get_valid_device(name, devices_dict):
         ('foo', {},
          KeyError),
         ('dummy', {
-            'dummy': rmagic.GraphicsDeviceRaster('dummy', 'dummy', 'txt'),      
+            'dummy': rmagic.GraphicsDeviceRaster('dummy', 'dummy', 'txt', None),
         }, rpacks.LibraryError),
     ]
 )
