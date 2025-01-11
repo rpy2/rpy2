@@ -59,7 +59,7 @@ Changes
   `robjects.pandas2ri.converter`. If `pandas` cannot be imported
   it falls back to `robjects.default_converter` + `robjects.numpy2ri.converter`.
   If `numpy` cannot be imported it falls back to  `robjects.default_converter`.
-  
+
 Bugs fixed
 ----------
 

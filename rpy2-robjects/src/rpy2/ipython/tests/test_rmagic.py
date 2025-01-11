@@ -37,7 +37,7 @@ np_string_type = 'U'
     [
         ('png', {'png': rmagic.graphics_devices['grDevices::png']}),
         ('foo', {'png': rmagic.graphics_devices['grDevices::png'],
-                   'foo': ('png', )}),
+                 'foo': ('png', )}),
         ('foo',
          {'png': rmagic.graphics_devices['grDevices::png'],
           'dummy': rmagic.GraphicsDeviceRaster('dummy', 'dummy', 'txt', None),
@@ -45,7 +45,8 @@ np_string_type = 'U'
     ]
 )
 def test_get_valid_device(name, devices_dict):
-    device = rmagic.get_valid_device(name, devices_dict=devices_dict)
+    device = rmagic.get_valid_device(name,
+                                     devices_dict=devices_dict)
     assert isinstance(device, rmagic.GraphicsDevice)
 
 
@@ -55,13 +56,15 @@ def test_get_valid_device(name, devices_dict):
         ('foo', {},
          KeyError),
         ('dummy', {
-            'dummy': rmagic.GraphicsDeviceRaster('dummy', 'dummy', 'txt', None),
+            'dummy': rmagic.GraphicsDeviceRaster(
+                'dummy', 'dummy', 'txt', None
+            ),
         }, rpacks.LibraryError),
     ]
 )
 def test_get_valid_device_invalid(name, devices_dict, error):
     with pytest.raises(error):
-        device = rmagic.get_valid_device(name, devices_dict=devices_dict)
+        rmagic.get_valid_device(name, devices_dict=devices_dict)
 
 
 @pytest.mark.skipif(IPython is None,
@@ -167,12 +170,13 @@ def test_run_cell_with_error(ipython_with_magic, clean_globalenv,
                     reason='pandas is not available in python')
 @pytest.mark.skipif(not rmagic.NUMPY_IMPORTED, reason='numpy not installed')
 def test_push_dataframe(ipython_with_magic, clean_globalenv):
-    df = rmagic.pandas.DataFrame([{'a': 1, 'b': 'bar'}, {'a': 5, 'b': 'foo', 'c': 20}])
+    df = rmagic.pandas.DataFrame([{'a': 1, 'b': 'bar'},
+                                  {'a': 5, 'b': 'foo', 'c': 20}])
     ipython_with_magic.push({'df': df})
     ipython_with_magic.run_line_magic('Rpush', 'df')
 
-    # This is converted to factors, which are currently converted back to Python
-    # as integers, so for now we test its representation in R.
+    # This is converted to factors, which are currently converted back to
+    # Python as integers, so for now we test its representation in R.
     sio = StringIO()
     with utils.obj_in_module(
             rpy2.rinterface_lib.callbacks,
@@ -352,11 +356,17 @@ def test_cell_magic(ipython_with_magic, clean_globalenv):
     r = resid(a)
     xc = coef(a)
     """)
-    ipython_with_magic.run_cell_magic('R', '-i x,y -o r,xc -w 150 -u mm a=lm(y~x)',
-                                      snippet)
-    rmagic.numpy.testing.assert_almost_equal(ipython_with_magic.user_ns['xc'], [3.2, 0.9])
+    ipython_with_magic.run_cell_magic(
+        'R',
+        '-i x,y -o r,xc -w 150 -u mm a=lm(y~x)',
+        snippet)
     rmagic.numpy.testing.assert_almost_equal(
-        ipython_with_magic.user_ns['r'], rmagic.numpy.array([-0.2, 0.9, -1., 0.1, 0.2])
+        ipython_with_magic.user_ns['xc'],
+        [3.2, 0.9]
+    )
+    rmagic.numpy.testing.assert_almost_equal(
+        ipython_with_magic.user_ns['r'],
+        rmagic.numpy.array([-0.2, 0.9, -1., 0.1, 0.2])
     )
 
 
@@ -507,9 +517,12 @@ def test_svg_plotting_args(ipython_with_magic, clean_globalenv):
     plot(x, y, pch=23, bg='orange', cex=2)
     """)
 
-    basic_args = [' '.join((w, h, p)) for w, h, p in product(['--width=6 ', ''],
-                                                             ['--height=6', ''],
-                                                             ['-p=10', ''])]
+    basic_args = [
+        ' '.join((w, h, p))
+        for w, h, p in product(['--width=6 ', ''],
+                               ['--height=6', ''],
+                               ['-p=10', ''])
+    ]
 
     for line in basic_args:
         ipython_with_magic.run_line_magic('Rdevice', 'svg')

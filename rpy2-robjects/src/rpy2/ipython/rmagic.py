@@ -890,7 +890,10 @@ class RMagics(IPython.core.magic.Magics):
         isolate_svgs : bool
             Enable SVG namespace isolation in metadata"""
 
-        warnings.warn('Use attribute\'s method graphics_device.display_filename()', DeprecationWarning)
+        warnings.warn(
+            'Use attribute\'s method graphics_device.display_filename()',
+            DeprecationWarning
+        )
         # read in all the saved image files
         images = []
         display_data = []
@@ -908,7 +911,6 @@ class RMagics(IPython.core.magic.Magics):
                 with open(imgfile, 'rb') as fh_img:
                     images.append(fh_img.read().decode())
 
-        
         # Isolate SVG images in the Notebook to avoid garbling.
         if (
                 images
