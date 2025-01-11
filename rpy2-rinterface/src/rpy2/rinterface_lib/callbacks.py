@@ -8,6 +8,7 @@ from contextlib import contextmanager
 import logging
 import sys
 import typing
+import warnings
 import os
 from rpy2.rinterface_lib import openrlib
 from rpy2.rinterface_lib import ffi_proxy
@@ -21,6 +22,20 @@ _CCHAR_ENCODING = sys.getdefaultencoding()
 # TODO: rename to "replace_in_module"
 @contextmanager
 def obj_in_module(module, name: str, obj: typing.Any):
+    warnings.warn(
+        '"obj_in_module" was renamed to "replace_in_module".',
+        DeprecationWarning
+    )
+    obj_orig = getattr(module, name)
+    setattr(module, name, obj)
+    try:
+        yield
+    finally:
+        setattr(module, name, obj_orig)
+
+
+@contextmanager
+def replace_in_module(module, name: str, obj: typing.Any):
     obj_orig = getattr(module, name)
     setattr(module, name, obj)
     try:

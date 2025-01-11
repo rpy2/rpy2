@@ -9,6 +9,16 @@ New features
   encoding is now the system's encoding (rather than assume utf-8).
   This may provide a fix to issue #1018.
 
+- Noteboook "R magic" features for ipython/jupyter support more
+  graphical devices to render R graphics in notebooks. Registered
+  devices are in :obj:`rpy2.ipython.rmags.graphics_devices`. This
+  allows the specification of fallbacks when the preferred device is
+  not available because of a missing R package. For SVG graphics,
+  it will first try to use the R package `svglite` to produce
+  lighter-weight SVG representations that are better when notebooks
+  may include many figures and figure with large number of visual
+  elements.
+
 Changes
 -------
 
@@ -41,6 +51,15 @@ Changes
 - The wrapper for dplyr is now targeting the R package `dplyr`
   version 1.1.
 
+# TODO: the conversion of Python lists is tweaked. Resolve this.
+- The default converter for the ipython/jupyter magics depended on
+  what was the default converter at the time of module import. To
+  simplify it, the defautl converter is now fixed to
+  `robjects.default_converter` + `robjects.numpy2ri.converter` +
+  `robjects.pandas2ri.converter`. If `pandas` cannot be imported
+  it falls back to `robjects.default_converter` + `robjects.numpy2ri.converter`.
+  If `numpy` cannot be imported it falls back to  `robjects.default_converter`.
+  
 Bugs fixed
 ----------
 
