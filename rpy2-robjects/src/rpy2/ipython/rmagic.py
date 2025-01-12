@@ -99,6 +99,7 @@ except ImportError as ie:
                   'as we did not manage to load `numpy` '
                   'in the first place (error: %s).' % str(ie))
 
+_CONVERTER_SEQ: typing.Tuple[rpy2.robjects.conversion.Converter, ...]
 if NUMPY_IMPORTED:
     if PANDAS_IMPORTED:
         from rpy2.robjects import pandas2ri
@@ -119,18 +120,21 @@ def _sync_console():
     sys.stderr.flush()
 
 
-class FileDeviceMixin(abc.ABC):
+class FileDevice(abc.ABC):
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def display_filename(self, filename: str):
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def iter_displayed_path(self, path):
         pass
 
 
 class GraphicsDevice(abc.ABC):
+
+    _options_new_device: typing.Set[str]
+    _options_display: typing.Set[str]
 
     def __init__(self, package, name,
                  extension,
@@ -141,7 +145,7 @@ class GraphicsDevice(abc.ABC):
         self.extension = extension
         self.mimetype = mimetype
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def new_device(self):
         pass
 
@@ -173,11 +177,11 @@ class GraphicsDevice(abc.ABC):
         )
 
 
-class GraphicsDeviceRaster(FileDeviceMixin, GraphicsDevice):
+class GraphicsDeviceRaster(FileDevice, GraphicsDevice):
 
     _options_new_device = {'width', 'height', 'pointsize', 'bg',
                            'units', 'res'}
-    _options_display = {}
+    _options_display = set()
 
     def new_device(
             self,
@@ -232,7 +236,7 @@ class GraphicsDeviceRaster(FileDeviceMixin, GraphicsDevice):
         )
 
 
-class GraphicsDeviceSVG(FileDeviceMixin, GraphicsDevice):
+class GraphicsDeviceSVG(FileDevice, GraphicsDevice):
 
     _options_new_device = {'width', 'height', 'pointsize', 'bg',
                            'units', 'res'}
@@ -282,8 +286,8 @@ class GraphicsDeviceSVG(FileDeviceMixin, GraphicsDevice):
 
 class GraphicsDeviceWindow(GraphicsDevice):
 
-    _options_new_device = {}
-    _options_display = {}
+    _options_new_device = set()
+    _options_display = set()
 
     def new_device(self):
         # Open a new deivce, except if the current one is already a
@@ -341,7 +345,8 @@ def get_valid_device(
                 typing.Union[GraphicsDevice, typing.Tuple[str, ...]]
             ]
         ] = None
-) -> str:
+) -> GraphicsDevice:
+    single_device: typing.Union[None, GraphicsDevice, typing.Tuple[str, ...]]
     if devices_dict is None:
         devices_dict = graphics_devices
     device = devices_dict.get(name)
@@ -378,6 +383,9 @@ def get_valid_device(
     if single_device is None:
         # TODO: add pointer to documentation.
         raise KeyError(f'Device "{name}" not registered.')
+    elif isinstance(single_device, tuple):
+        # Keep type-checking happy. We will (should) never end up here.
+        raise RuntimeError('This should never happen.')
     return single_device
 
 
@@ -1213,7 +1221,7 @@ class RMagics(IPython.core.magic.Magics):
                 print(e.err)
             raise e
         finally:
-            if isinstance(self.graphics_device, FileDeviceMixin):
+            if isinstance(self.graphics_device, FileDevice):
                 try:
                     ro.r('grDevices::dev.off()')
                 except Exception as e:
