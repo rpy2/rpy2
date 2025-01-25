@@ -186,11 +186,11 @@ class GraphicsDevice(abc.ABC):
                 f'{f"{self.package}::" if self.package else ""}{self.name} ',
                 f'(extension: {self.extension})',
                 'Options and default values:',
-                  '\n'.join(
-                      f'  {k}: {getattr(self._options_new_device, k)}'
-                      for k in self._options_new_device.__class__.__dict__.keys()
-                      if not k.startswith('_')
-                  )
+                '\n'.join(
+                    f'  {k}: {getattr(self._options_new_device, k)}'
+                    for k in self._options_new_device.__class__.__dict__.keys()
+                    if not k.startswith('_')
+                )
             )
         )
 
@@ -500,32 +500,6 @@ class Options:
                 res = 72
         return res
 
-    @staticmethod
-    def value_from_args(argval: str,
-                        user_ns: typing.Mapping[str, typing.Any],
-                        cast: typing.Callable = None) -> typing.Any:
-        """Get an option value from an arg string in a magic.
-
-        This method extract option values from argument strings.
-
-        Examples with different argval:
-        'user_ns[foo]': value mapped to key "foo" in user_ns.
-        'foo': the string "foo"
-        '3': the string "3"
-        """
-        m = re.match('user_ns\[([a-zA-z0-0\._)\]', argval)
-        if m:
-            if cast:
-                raise ValueError(
-                    'Values from the user namespace cannot have a cast '
-                    'function.'
-                )
-            res = m.groups()[0]
-        elif cast:
-            res = cast(argval)
-        else:
-            res = argval
-        return res
 
 default = Options(
     functools.reduce(lambda x, y: x+y, _CONVERTER_SEQ),
