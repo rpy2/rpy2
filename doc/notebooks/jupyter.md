@@ -156,11 +156,13 @@ p = (gp.ggplot(dataf) +
 image_png(p)
 ```
 
+# R "magics"
+
 So far we have shown that using `ggplot2` can be done from Python as if it
 was just an other Python library for visualization, but R can also be used
 in cells.
 
-First the so-called "R magic" extension should be loaded.
+First the so-called "R magic" extensions should be loaded.
 
 ```python
 %load_ext rpy2.ipython
@@ -205,3 +207,98 @@ p <- ggplot(dataf) +
      theme_light(base_size=16)
 print(p)
 ```
+
+## Options.
+
+The R "magics" use a number of configurable options that control
+aspects of the interaction between Python and R, or between ipython / jupyter
+and R. Some of the options can specified through arguments to "magics",
+but it is also possible to configure the default value for some of them
+when an argument to a "magic" does not specify otherwise. The easiest
+way to list these default-configurable options can be achieved
+with a "magic":
+
+```python
+%Roptions show
+```
+
+Changing these defaults requires to modify components of the attribute
+:attr:`rpy2.ipython.rmagic.RMagic.options`. Here is an example showing
+how to changing the default of R figures rendered in the notebook to "svg".
+
+```python
+import IPython
+ipy = IPython.get_ipython()
+ipy.magics_manager.registry['RMagics'].options.graphics_device_name = 'svg'
+```
+
+Another example is how to change conversion rules, that can be
+an expensive operation depending object sizes and rules, to a no-op:
+no convertion rules to keep all rpy2 objects as proxy wrappers
+to R objects for example, no conversion of Python objects to R:
+
+```python
+import rpy2.robjects
+import IPython
+ipy = IPython.get_ipython()
+
+noop_conv = rpy2.robjects.conversion.Converter('No-Op')
+noop_conv.rpy2py.register(rpy2.robjects.RObject,
+                          rpy2.robjects._rpy2py_robject)
+
+ipy.magics_manager.registry['RMagics'].options.converter = noop_conv
+```
+
+Modifying this come with risks though, or afterthoughts.
+There are some checks in place, but
+it is impossible to make it impossible, or even very hard, to make
+the new default behavior broken. To address this the
+"magic" about options has a command to try restore the options to
+"factory settings". Here again, there is no guarantee since a driven
+(or unlucky) user may break this mechanism if modifying it the module.
+
+```python
+%Roptions refresh
+```
+
+## Graphics devices
+
+Graphics devices can be specified precisely as a function in an R namespace.
+For example, "grDevices:png". It is also possible to specify a graphical
+device as a sequence of specific graphics devices to try in order (and
+pick the first one that appear to be functioning. This is the case when
+the graphics device option is set to "svg". The R package `svglite` is
+recommended, that is the first in the sequence, but there is a following
+sequence of other SVG devices to be tried as alternatives.
+
+To demonstrate this, let's set the graphics devices to "svg":
+
+```python
+import IPython
+ipy = IPython.get_ipython()
+ipy.magics_manager.registry['RMagics'].options.graphics_device_name = 'svg'
+```
+
+The output of the following magic depends on the R
+packages installed on your system. If the R package `svglite` is installed
+its device will be used. Otherwise alternatives will be tried.
+
+```python
+%Roptions show
+```
+
+The current graphics device (the first valid one that can be obtained
+from R given a name) has itself options that can be specified. Options
+may depend on the specific graphics device.
+
+**note: this is prefixed with an underscore to indicate that the API is
+subject to changes.**
+
+```python
+(
+    ipy.magics_manager.registry['RMagics'].graphics_device
+    ._options_display
+    .width
+) = 10
+```
+

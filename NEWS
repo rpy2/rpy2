@@ -19,6 +19,11 @@ New features
   may include many figures and figure with large number of visual
   elements.
 
+- Experimental minimalist set of optional conversion rules to
+  convert Python :class:`list` objects to R vectors when all elements
+  are of atomic type: :obj:`rpy2.robjects.flatlist_converter`. Those
+  rules have been in used for the ipython/jupyter default converter.
+
 Changes
 -------
 
@@ -69,6 +74,9 @@ Bugs fixed
 - The constructor for :class:`rpy2.robjects.lib.ggplot2` did not
   play well with conversion rules in :mod:`rpy2.robjects.pandas2ri`.
   The default conversion rules are now forced (issue #1116).
+
+- The documentation for the notebook "magic" `Rdevice` was not
+  displayed in the module-level docstring for :mod:`rpy2.ipython.rmagic`.
 
 
 Release 3.5.17

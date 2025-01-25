@@ -104,13 +104,15 @@ if NUMPY_IMPORTED:
     if PANDAS_IMPORTED:
         from rpy2.robjects import pandas2ri
         from rpy2.robjects import numpy2ri
-        _CONVERTER_SEQ = (ro.default_converter, numpy2ri.converter,
-                          pandas2ri.converter)
+        _CONVERTER_SEQ = (ro.default_converter, ro.flatlist_converter,
+                          numpy2ri.converter, pandas2ri.converter)
     else:
         from rpy2.robjects import numpy2ri
-        _CONVERTER_SEQ = (ro.default_converter, numpy2ri.converter)
+        _CONVERTER_SEQ = (
+            ro.default_converter, ro.flatlist_converter, numpy2ri.converter,
+        )
 else:
-    _CONVERTER_SEQ = (ro.default_converter, )
+    _CONVERTER_SEQ = (ro.default_converter, ro.flatlist_converter, )
 
 
 def _sync_console():
@@ -127,14 +129,20 @@ class FileDevice(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def iter_displayed_path(self, path):
+    def iter_displayed_path(self, path) -> typing.Iterable[str]:
         pass
 
 
 class GraphicsDevice(abc.ABC):
 
-    _options_new_device: typing.Set[str]
-    _options_display: typing.Set[str]
+    class _OptionsNewDevice(abc.ABC):
+        pass
+
+    class _OptionsDisplay(abc.ABC):
+        pass
+
+    _options_new_device: '_OptionsNewDevice'
+    _options_display: '_OptionsDisplay'
 
     def __init__(self, package, name,
                  extension,
@@ -144,15 +152,17 @@ class GraphicsDevice(abc.ABC):
         self.name = name
         self.extension = extension
         self.mimetype = mimetype
+        self._options_new_device = self._OptionsNewDevice()
+        self._options_display = self._OptionsDisplay()
 
     @abc.abstractmethod
     def new_device(self):
         pass
 
-    def get_rfunc(self):
+    def get_rfunc(self) -> ro.Function:
         """Get the R function attached with the device."""
         if self.package is None:
-            ns_env = ro.Globalenv
+            ns_env = ro.globalenv
         else:
             try:
                 ns_env = ro.baseenv['loadNamespace'](self.package)
@@ -169,19 +179,34 @@ class GraphicsDevice(abc.ABC):
             )
         return rfunc
 
-    def __repr__(self):
-        return (
-            f'{super().__repr__()}: '
-            f'{f"{self.package}::" if self.package else ""}{self.name} '
-            f'(extension: {self.extension})'
+    def __str__(self):
+        return '\n'.join(
+            (
+                f'{super().__repr__()}: ',
+                f'{f"{self.package}::" if self.package else ""}{self.name} ',
+                f'(extension: {self.extension})',
+                'Options and default values:',
+                  '\n'.join(
+                      f'  {k}: {getattr(self._options_new_device, k)}'
+                      for k in self._options_new_device.__class__.__dict__.keys()
+                      if not k.startswith('_')
+                  )
+            )
         )
 
 
 class GraphicsDeviceRaster(FileDevice, GraphicsDevice):
 
-    _options_new_device = {'width', 'height', 'pointsize', 'bg',
-                           'units', 'res'}
-    _options_display = set()
+    class _OptionsNewDevice(GraphicsDevice._OptionsNewDevice):
+        width: typing.Optional[float] = None
+        height: typing.Optional[float] = None
+        pointsize: typing.Optional[float] = None
+        bg: typing.Optional[str] = None
+        units: typing.Optional[str] = None
+        res: typing.Optional[str] = None
+
+    class _OptionsDisplay(GraphicsDevice._OptionsDisplay):
+        pass
 
     def new_device(
             self,
@@ -193,9 +218,20 @@ class GraphicsDeviceRaster(FileDevice, GraphicsDevice):
             res=None
     ):
 
-        if (units is not None and units != 'px') and res is None:
-            res = 72
+        if width:
+            width = self._options_new_device.width
+        if height:
+            height = self._options_new_device.height
+        if pointsize:
+            pointsize = self._options_new_device.pointsize
+        if bg:
+            bg = self._options_new_device.bg
+        if units:
+            units = self._options_new_device.units
+        if res:
+            units = self._options_new_device.res
 
+        res = Options._fix_graphics_resolution(units, res)
         tmpd = tempfile.mkdtemp()
         tmpd_fix_slashes = tmpd.replace('\\', '/')
 
@@ -228,19 +264,19 @@ class GraphicsDeviceRaster(FileDevice, GraphicsDevice):
                 _sync_console()
                 yield img
 
-    def __repr__(self):
-        return (
-            f'{super().__repr__()}: '
-            f'{f"{self.package}::" if self.package else ""}{self.name} '
-            f'(extension: {self.extension})'
-        )
-
 
 class GraphicsDeviceSVG(FileDevice, GraphicsDevice):
 
-    _options_new_device = {'width', 'height', 'pointsize', 'bg',
-                           'units', 'res'}
-    _options_display = {'isolate_svgs'}
+    class _OptionsNewDevice(GraphicsDevice._OptionsNewDevice):
+        width: typing.Optional[float]
+        height: typing.Optional[float]
+        pointsize: typing.Optional[float]
+        bg: typing.Optional[str]
+        units: typing.Optional[str]
+        res: typing.Optional[str]
+
+    class _OptionsDisplay(GraphicsDevice._OptionsDisplay):
+        isolate_svgs: bool = True
 
     def new_device(
             self,
@@ -251,8 +287,22 @@ class GraphicsDeviceSVG(FileDevice, GraphicsDevice):
             units=None,
             res=None
     ):
+        if width:
+            width = self._options_new_device.width
+        if height:
+            height = self._options_new_device.height
+        if pointsize:
+            pointsize = self._options_new_device.pointsize
+        if bg:
+            bg = self._options_new_device.bg
+        if units:
+            units = self._options_new_device.units
+        if res:
+            units = self._options_new_device.res
+
         tmpd = tempfile.mkdtemp()
         tmpd_fix_slashes = tmpd.replace('\\', '/')
+
         self.get_rfunc()(
             f'{tmpd_fix_slashes}/Rplot.{self.extension}',
             width=width if width else ri.MissingArg,
@@ -286,8 +336,11 @@ class GraphicsDeviceSVG(FileDevice, GraphicsDevice):
 
 class GraphicsDeviceWindow(GraphicsDevice):
 
-    _options_new_device = set()
-    _options_display = set()
+    class _OptionsNewDevice(GraphicsDevice._OptionsNewDevice):
+        pass
+
+    class _OptionsDisplay(GraphicsDevice._OptionsDisplay):
+        pass
 
     def new_device(self):
         # Open a new deivce, except if the current one is already a
@@ -345,11 +398,12 @@ def get_valid_device(
                 typing.Union[GraphicsDevice, typing.Tuple[str, ...]]
             ]
         ] = None
-) -> GraphicsDevice:
+) -> typing.Tuple[str, GraphicsDevice]:
     single_device: typing.Union[None, GraphicsDevice, typing.Tuple[str, ...]]
     if devices_dict is None:
         devices_dict = graphics_devices
-    device = devices_dict.get(name)
+    device_name = name
+    device = devices_dict.get(device_name)
     if device is None:
         single_device = device
     elif isinstance(device, GraphicsDevice):
@@ -386,7 +440,7 @@ def get_valid_device(
     elif isinstance(single_device, tuple):
         # Keep type-checking happy. We will (should) never end up here.
         raise RuntimeError('This should never happen.')
-    return single_device
+    return (device_name, single_device)
 
 
 # TODO: Those constants are deprecated.
@@ -397,21 +451,81 @@ DEVICES_SUPPORTED = DEVICES_STATIC | {'X11'}
 
 class Options:
 
-    converter: rpy2.robjects.conversion.Converter
-    graphics_device_name: str
+    _converter: rpy2.robjects.conversion.Converter
+    _graphics_device_name: str
 
-    def __init__(self, converter, graphics_device_name):
+    def __init__(
+            self,
+            converter: rpy2.robjects.conversion.Converter,
+            graphics_device_name: str
+    ):
+        assert isinstance(converter, rpy2.robjects.conversion.Converter)
         self.converter = converter
+        assert isinstance(graphics_device_name, str)
         self.graphics_device_name = graphics_device_name
 
-    def get_valid_device(self):
+    def __str__(self) -> str:
+        try:
+            device_name, device = self.get_valid_device()
+        except KeyError:
+            device_name = '*** No graphics device registered under that name.'
+        except ri.embedded.RRuntimeError:
+            device_name = '*** Unable to find an R device that can be imported/loaded.'
+        return '\n'.join(
+            (super().__str__(),
+             '  - graphics device',
+             f'      requested: {self.graphics_device_name}',
+             f'      found: {device_name}',
+             textwrap.indent(f'{device!s}', "        "),
+             '  - converter',
+             f'{textwrap.indent(str(self.converter), "    ")}')
+        )
+
+    @property
+    def converter(self):
+        return self._converter
+
+    @converter.setter
+    def converter(self, value: rpy2.robjects.conversion.Converter):
+        assert isinstance(value, rpy2.robjects.conversion.Converter)
+        self._converter = value
+
+    def get_valid_device(self) -> typing.Tuple[str, GraphicsDevice]:
         return get_valid_device(self.graphics_device_name)
 
-    def fix_graphics_resolution(self, args):
-        if getattr(args, 'units') is not None:
-            if args.units != "px" and getattr(args, 'res') is None:
-                args.res = 72
+    @staticmethod
+    def _fix_graphics_resolution(units, res):
+        if units is not None:
+            if units != "px" and res is None:
+                res = 72
+        return res
 
+    @staticmethod
+    def value_from_args(argval: str,
+                        user_ns: typing.Mapping[str, typing.Any],
+                        cast: typing.Callable = None) -> typing.Any:
+        """Get an option value from an arg string in a magic.
+
+        This method extract option values from argument strings.
+
+        Examples with different argval:
+        'user_ns[foo]': value mapped to key "foo" in user_ns.
+        'foo': the string "foo"
+        '3': the string "3"
+        """
+        m = re.match('user_ns\[([a-zA-z0-0\._)\]', argval)
+        if m:
+            if cast:
+                raise ValueError(
+                    'Values from the user namespace cannot have a cast '
+                    'function.'
+                )
+            res = m.groups()[0]
+        elif cast:
+            res = cast(argval)
+        else:
+            res = argval
+        return res
 
 default = Options(
     functools.reduce(lambda x, y: x+y, _CONVERTER_SEQ),
@@ -444,40 +558,6 @@ class RInterpreterError(ri.embedded.RRuntimeError):
         if self.stdout and (self.stdout != self.err):
             s += self.rstdout_template.format(stdout=self.stdout)
         return s
-
-
-# TODO: resolve to minimize differences with default + numpy converter.
-# The default conversion for lists is currently to make them an R list. That
-# has some advantages, but can be inconvenient (and, it's inconsistent with
-# the way python lists are automatically converted by numpy functions), so
-# for interactive use in the rmagic, we call unlist, which converts lists to
-# vectors **if the list was of uniform (atomic) type**.
-@default.converter.py2rpy.register(list)
-def py2rpy_list(obj):
-    # simplify2array is a utility function, but nice for us
-    # TODO: use an early binding of the R function
-    cv = rpy2.robjects.conversion.get_conversion()
-    robj = ri.ListSexpVector(
-            [cv.py2rpy(x) for x in obj]
-        )
-    res = ro.r.simplify2array(robj)
-    # The current default converter for the ipython rmagic
-    # might make `res` a numpy array. We need to ensure that
-    # a rpy2 objects is returned (issue #866).
-    res_rpy = cv.py2rpy(res)
-    return res_rpy
-
-
-# TODO: remove ?
-# # The R magic is opiniated about what the R vectors should become.
-# @converter.ri2ro.register(ri.SexpVector)
-# def _(obj):
-#     if 'data.frame' in obj.rclass:
-#         # request to turn it to a pandas DataFrame
-#         res = converter.rpy2py(obj)
-#     else:
-#         res = ro.sexpvector_to_ro(obj)
-#     return res
 
 
 def _find(name: str, ns: dict):
@@ -554,10 +634,7 @@ def display_figures(graph_dir, format='png'):
             img = IPython.display.Image(filename=imgfile)
             IPython.display.display(img,
                                     metadata={})
-            # TODO: Synchronization in the console (though it's a bandaid,
-            # not a real solution).
-            sys.stdout.flush()
-            sys.stderr.flush()
+            _sync_console()
             yield img
 
 
@@ -583,10 +660,7 @@ def display_figures_svg(graph_dir, isolate_svgs=True):
             metadata=({'image/svg+xml': dict(isolated=True)}
                       if isolate_svgs else {})
         )
-        # TODO: Synchronization in the console (though it's a bandaid, not a
-        # real solution).
-        sys.stdout.flush()
-        sys.stderr.flush()
+        _sync_console()
         yield img
 
 
@@ -594,8 +668,12 @@ def display_figures_svg(graph_dir, isolate_svgs=True):
 class RMagics(IPython.core.magic.Magics):
     """A set of ipython/jupyter "magic"s useful for interactive work with R."""
 
-    def __init__(self, shell, converter=None,
-                 cache_display_data=False, device_name='png'):
+    _graphics_device: None
+
+    def __init__(self, shell,
+                 converter=None,
+                 cache_display_data=False,
+                 device_name=None):
         f"""
         Parameters
         ----------
@@ -612,7 +690,8 @@ class RMagics(IPython.core.magic.Magics):
             cached in the variable 'display_cache'.
 
         device_name : One of {set(graphics_devices)}.
-            The default R graphical device used for plotting.
+            The default R graphical device used for plotting. If `None`,
+            `rmagic.default.graphics_device_name` is used.
 
             All devices produce figure integrated in the notebook except 'X11'.
             It is an interactive window using the windowing/desktop system
@@ -623,12 +702,11 @@ class RMagics(IPython.core.magic.Magics):
         self.Rstdout_cache = []
         if converter is None:
             converter = default.converter
-        self.converter = converter
-        if device_name is None:
-            device = get_valid_device(default.graphics_device_name)
-        else:
-            device = get_valid_device(device_name)
-        self.graphics_device = device
+        self.options = Options(
+            converter,
+            device_name if device_name else default.graphics_device_name
+        )
+        self._graphics_device = None
 
     @property
     def device(self):
@@ -639,12 +717,39 @@ class RMagics(IPython.core.magic.Magics):
         )
         return self.graphics_device
 
+    @property
+    def graphics_device(self):
+        if self._graphics_device is None:
+            self._graphics_device = get_valid_device(
+                self.options.graphics_device_name
+            )[1]
+        return self._graphics_device
+
     @IPython.core.magic.line_magic
     def Rdevice(self, line):
         """
         Change the plotting device R uses to one of {}.
         """.format(set(graphics_devices.keys()))
-        self.graphics_device = get_valid_device(line.strip())
+        self.options.graphics_device_name = line
+        self._graphics_device = None
+
+    @magic_arguments()
+    @argument(
+        'action',
+        choices=('show', 'refresh'),
+        help=textwrap.dedent("""
+        Show options for magics, or refresh them to current
+        rpy2.ipython.rmagic.default.
+        """))
+    @IPython.core.magic.line_magic
+    def Roptions(self, line):
+        args = parse_argstring(self.Roptions, line)
+        if args.action == 'show':
+            print('Default settings for R magics.')
+            print('------------------------------')
+            print(self.options)
+        elif args.action == 'refresh':
+            self.options = Options(default.converter, default.graphics_device_name)
 
     def eval(self, code):
         """Parse and evaluate a line of R code.
@@ -736,7 +841,7 @@ class RMagics(IPython.core.magic.Magics):
     ) -> rpy2.robjects.conversion.Converter:
         converter = None
         if name is None:
-            converter = self.converter
+            converter = self.options.converter
         else:
             try:
                 converter = _find(name, local_ns)
@@ -844,7 +949,7 @@ class RMagics(IPython.core.magic.Magics):
         """
         args = parse_argstring(self.Rpull, line)
         outputs = args.outputs
-        with self.converter.context():
+        with self.options.converter.context():
             for output in outputs:
                 robj = ri.globalenv.find(output)
                 self.shell.push({output: robj})
@@ -883,7 +988,7 @@ class RMagics(IPython.core.magic.Magics):
         output = args.output
         # get the R object with the given name, starting from globalenv
         # in the search path
-        with self.converter.context():
+        with self.options.converter.context():
             res = ro.globalenv.find(output[0])
         return res
 
@@ -940,7 +1045,6 @@ class RMagics(IPython.core.magic.Magics):
 
         return display_data, md
 
-    # @skip_doctest
     @magic_arguments()
     @argument(
         '-i', '--input', action='append',
@@ -1020,8 +1124,17 @@ class RMagics(IPython.core.magic.Magics):
         '--type', type=str,
         choices=['cairo', 'cairo-png', 'Xlib', 'quartz'],
         help=textwrap.dedent("""
+        Deprecated. Use '--graphics-device'.
+
         Type device used to generate the figure.
         """))
+    @argument(
+        '--graphics-device', type=str,
+        choices=tuple(graphics_devices.keys()),
+        help=textwrap.dedent("""
+        R graphics device used to render graphics.
+        """)
+    )
     @argument(
         '-c', '--converter',
         default=None,
@@ -1129,6 +1242,10 @@ class RMagics(IPython.core.magic.Magics):
         """
         args = parse_argstring(self.R, line)
 
+        # TODO: I am sure about why those rules to modify graphical options were
+        # were. I am leaving them for now but moved them to a static method.
+        args.res = default._fix_graphics_resolution(args.units, args.res)
+
         # arguments 'code' in line are prepended to
         # the cell lines
 
@@ -1165,10 +1282,15 @@ class RMagics(IPython.core.magic.Magics):
         else:
             cell_display = CELL_DISPLAY_DEFAULT
 
-        tmpd = self.device.new_device(
+        if args.graphics_device:
+            device = get_valid_device(args.graphics_device)[1]
+        else:
+            device = self.graphics_device
+
+        tmpd = device.new_device(
             **{
                 k: v for k, v in args.__dict__.items()
-                if k in self.device._options_new_device
+                if k in device._options_new_device.__dict__
             }
         )
 
@@ -1267,7 +1389,8 @@ __doc__ = __doc__.format(
     RPUSH_DOC='{0}{1}'.format(' '*8, RMagics.Rpush.__doc__),
     RPULL_DOC='{0}{1}'.format(' '*8, RMagics.Rpull.__doc__),
     RGET_DOC='{0}{1}'.format(' '*8, RMagics.Rget.__doc__),
-    RDEVICE_DOC='{0}{1}'.format(' '*8, RMagics.Rdevice.__doc__)
+    RDEVICE_DOC='{0}{1}'.format(' '*8, RMagics.Rdevice.__doc__),
+    ROPTIONS_DOC='{0}{1}'.format(' '*8, RMagics.Roptions.__doc__)
 )
 
 

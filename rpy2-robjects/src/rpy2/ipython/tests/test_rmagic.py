@@ -45,8 +45,8 @@ np_string_type = 'U'
     ]
 )
 def test_get_valid_device(name, devices_dict):
-    device = rmagic.get_valid_device(name,
-                                     devices_dict=devices_dict)
+    name, device = rmagic.get_valid_device(name,
+                                           devices_dict=devices_dict)
     assert isinstance(device, rmagic.GraphicsDevice)
 
 

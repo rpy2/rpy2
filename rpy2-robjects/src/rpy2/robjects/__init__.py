@@ -374,6 +374,28 @@ def _(obj):
     return obj
 
 
+flatlist_converter = conversion.Converter('Converter to flatten/simplify lists')
+
+# The default conversion for lists is currently to make them an R list. That
+# has some advantages, but can be inconvenient (and, it's inconsistent with
+# the way python lists are automatically converted by numpy functions), so
+# for interactive use in the rmagic, we call unlist, which converts lists to
+# vectors **if the list was of uniform (atomic) type**.
+@flatlist_converter.py2rpy.register(list)
+def flatlist_py2rpy_list(obj):
+    # simplify2array is a utility function, but nice for us
+    # TODO: use an early binding of the R function
+    cv = conversion.get_conversion()
+    robj = rinterface.ListSexpVector(
+            [cv.py2rpy(x) for x in obj]
+        )
+    res = baseenv['simplify2array'](robj)
+    # We need to ensure that a rpy2 objects is returned
+    # This was issue #866 when this code in ipython-specific converter.
+    res_rpy = cv.py2rpy(res)
+    return res_rpy
+
+
 class ExternalPointer(RObjectMixin, rinterface.SexpExtPtr):
     pass
 
