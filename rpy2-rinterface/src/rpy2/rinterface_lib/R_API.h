@@ -31,9 +31,12 @@ const unsigned int FREESXP    = 31;
 const unsigned int FUNSXP     = 99;
 
 /* include/R_exts/Complex.h */
-typedef struct {
+typedef union {
+    struct {
     double r;
     double i;
+    };
+    double _Complex private_data_c;
 } Rcomplex;
 
 /* include/Rinternals.h */
