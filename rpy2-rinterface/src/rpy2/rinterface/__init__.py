@@ -659,10 +659,10 @@ class ComplexSexpVector(SexpVector):
     @staticmethod
     def _CAST_IN(x):
         if isinstance(x, complex):
-            res = { "r": x.real, "i": x.imag }
+            res = {'r': x.real, 'i': x.imag}
         else:
             try:
-                res = { "r": x.r, "i": x.i }
+                res = {'r': x.r, 'i': x.i}
             except AttributeError:
                 raise TypeError(
                     'Unable to turn value into an R complex number.'
@@ -1230,7 +1230,7 @@ def _post_initr_setup() -> None:
     na_values.NA_Complex = sexp.NAComplexType(
         _rinterface.ffi.new(
             'Rcomplex *',
-            { "r": openrlib.rlib.R_NaReal, "i": openrlib.rlib.R_NaReal })
+            {'r': openrlib.rlib.R_NaReal, 'i': openrlib.rlib.R_NaReal})
     )
     NA_Complex = na_values.NA_Complex
 
