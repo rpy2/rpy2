@@ -1,3 +1,9 @@
+# ifdef R_LEGACY_RCOMPLEX
+  # include "Rcomplex_legacy.h"
+# else
+  # include "Rcomplex.h"
+# endif
+
 # include "R_API.h"
 # include "R_API_eventloop.h"
 

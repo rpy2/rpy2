@@ -155,12 +155,14 @@ def createbuilder_abi():
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
+    definitions["R_LEGACY_RCOMPLEX"] = True
     r_h = read_source('R_API.h')
+    r_complex = read_source('Rcomplex_legacy.h')
     # TODO: is R_INTERFACE_PTRS defined for all non-Windows systems?
     if not os.name == 'nt':
         definitions['R_INTERFACE_PTRS'] = True
     cdef_r, _ = c_preprocess(
-        iter(r_h.split('\n')),
+        iter(r_complex.split('\n') + r_h.split('\n')),
         definitions=definitions,
         rownum=1)
     ffibuilder.set_source('_rinterface_cffi_abi', None)
@@ -182,10 +184,14 @@ def createbuilder_api():
 
     # C source to be compiled.
     if os.name == 'nt':
-        source = '\n'.join(
-            ('# include "R_API.h"',
-             '')
-        )
+        source = '''
+        #ifdef R_LEGACY_RCOMPLEX
+            #include "Rcomplex_legacy.h"
+        #else
+            #include "Rcomplex.h"
+        #endif
+        #include "R_API.h"
+        '''
     else:
         eventloop_h = read_source('R_API_eventloop.h')
         eventloop_c = read_source('R_API_eventloop.c')
@@ -256,9 +262,10 @@ def createbuilder_api():
 
     # Subset of R headers we expose through cffi.
     r_h = read_source('R_API.h')
+    r_complex = read_source('Rcomplex.h')
 
     cdef_r, _ = c_preprocess(
-        iter(r_h.split('\n')),
+        iter(r_complex.split('\n') + r_h.split('\n')),
         definitions=definitions,
         rownum=1)
 
