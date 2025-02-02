@@ -187,9 +187,16 @@ def createbuilder_api():
     if not os.name == 'nt':
         definitions['R_INTERFACE_PTRS'] = True
 
-    eventloop_h = read_source('R_API_eventloop.h')
-    eventloop_c = read_source('R_API_eventloop.c')
-    source = eventloop_c
+    # C source to be compiled.
+    if os.name == 'nt':
+        source = '\n'.join(
+            ('# include "R_API.h"',
+              '')
+        )
+    else:
+        eventloop_h = read_source('R_API_eventloop.h')
+        eventloop_c = read_source('R_API_eventloop.c')
+        source = eventloop_c
     rpy2_h = read_source('RPY2.h')
     source += rpy2_h
 
