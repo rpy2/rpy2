@@ -30,6 +30,22 @@ const unsigned int FREESXP    = 31;
 
 const unsigned int FUNSXP     = 99;
 
+/* include/R_exts/Complex.h */
+#ifdef RPY2_COMPLEX_LEGACY
+typedef struct {
+    double r;
+    double i;
+} Rcomplex;
+#else
+typedef union {
+    struct {
+    double r;
+    double i;
+    };
+    double _Complex private_data_c;
+} Rcomplex;
+#endif
+
 /* include/Rinternals.h */
 typedef int R_len_t;
 

@@ -129,6 +129,11 @@ def define_osname(definitions):
         definitions['OSNAME_NT'] = True
 
 
+def define_complex(definitions, cffi_mode):
+    if cffi_mode == 'ABI':
+        definitions['RPY2_COMPLEX_LEGACY'] = True
+
+
 def create_cdef(definitions, header_filename):
     cdef = []
     with open(
@@ -155,14 +160,13 @@ def createbuilder_abi():
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
-    definitions["R_LEGACY_RCOMPLEX"] = True
+    define_complex(definitions, cffi_mode='ABI')
     r_h = read_source('R_API.h')
-    r_complex = read_source('Rcomplex_legacy.h')
     # TODO: is R_INTERFACE_PTRS defined for all non-Windows systems?
     if not os.name == 'nt':
         definitions['R_INTERFACE_PTRS'] = True
     cdef_r, _ = c_preprocess(
-        iter(r_complex.split('\n') + r_h.split('\n')),
+        iter(r_h.split('\n')),
         definitions=definitions,
         rownum=1)
     ffibuilder.set_source('_rinterface_cffi_abi', None)
@@ -178,6 +182,7 @@ def createbuilder_api():
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
+    define_complex(definitions, cffi_mode='API')
     # TODO: is R_INTERFACE_PTRS defined for all non-Windows systems?
     if not os.name == 'nt':
         definitions['R_INTERFACE_PTRS'] = True
@@ -262,10 +267,9 @@ def createbuilder_api():
 
     # Subset of R headers we expose through cffi.
     r_h = read_source('R_API.h')
-    r_complex = read_source('Rcomplex.h')
 
     cdef_r, _ = c_preprocess(
-        iter(r_complex.split('\n') + r_h.split('\n')),
+        iter(r_h.split('\n')),
         definitions=definitions,
         rownum=1)
 
