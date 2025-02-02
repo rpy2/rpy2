@@ -191,7 +191,7 @@ def createbuilder_api():
     if os.name == 'nt':
         source = '\n'.join(
             ('# include "R_API.h"',
-              '')
+             '')
         )
     else:
         eventloop_h = read_source('R_API_eventloop.h')
