@@ -222,7 +222,7 @@ class Page(object):
                             Item(arg_name, arg_desc)
                         )
                         arg_name = None
-                        arg_desc = None
+                        arg_desc = []
 
             if arg_name is not None:
                 res.append(
