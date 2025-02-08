@@ -1085,7 +1085,7 @@ class Array(Vector):
 
     def __dim_get(self):
         # TODO: Low-level operation that should go rinterface?
-        res = rinterface.NULL
+        dim = rinterface.NULL
         with rpy2.rinterface_lib.memorymanagement.rmemory() as rmemory:
             try:
                 rpy2.rinterface_lib.openrlib.lock.acquire()
