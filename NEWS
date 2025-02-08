@@ -41,6 +41,12 @@ Changes
 - The wrapper for dplyr is now targeting the R package `dplyr`
   version 1.1.
 
+- The definition of `Rcomplex` from R's C-API was updated to match
+  the definition in recent R release (>= 4.3) when rpy2 is in "API mode".
+  This does not work with the "ABI mode" though, and the legacy
+  definition of `Rcomplex` is still used with it.
+
+
 Bugs fixed
 ----------
 
