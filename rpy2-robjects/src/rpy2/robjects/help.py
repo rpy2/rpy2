@@ -204,7 +204,7 @@ class Page(object):
             return res
         else:
             arg_name = None
-            arg_desc = None
+            arg_desc = []
             section_rows = _Rd2txt(section_doc)
             if len(section_rows) < 3:
                 return res
@@ -213,7 +213,7 @@ class Page(object):
                     m = p_newarg.match(row)
                     if m:
                         arg_name = m.groups()[0]
-                        arg_desc = [m.groups()[1]]
+                        arg_desc.append(m.groups()[1])
                 else:
                     if p_desc.match(row):
                         arg_desc.append(row.strip())
