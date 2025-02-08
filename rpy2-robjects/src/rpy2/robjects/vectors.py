@@ -2,6 +2,9 @@ import abc
 import collections.abc
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
+import rpy2.rinterface_lib.conversion
+import rpy2.rinterface_lib.memorymanagement
+import rpy2.rinterface_lib.openrlib
 from rpy2.rinterface_lib import sexp
 from . import conversion
 
@@ -12,8 +15,10 @@ try:
 except ImportError:
     from backports import zoneinfo  # type: ignore
 import copy
+import functools
 import itertools
 import math
+import operator
 import os
 import jinja2  # type: ignore
 import time
@@ -1076,21 +1081,59 @@ class Array(Vector):
     """ An R array """
     _dimnames_get = baseenv_ri['dimnames']
     _dimnames_set = baseenv_ri['dimnames<-']
-    _dim_get = baseenv_ri['dim']
-    _dim_set = baseenv_ri['dim<-']
     _isarray = baseenv_ri['is.array']
 
     def __dim_get(self):
-        res = self._dim_get(self)
-        res = conversion.get_conversion().rpy2py(res)
-        return res
+        # TODO: Low-level operation that should go rinterface?
+        dim = rinterface.NULL
+        with rpy2.rinterface_lib.memorymanagement.rmemory() as rmemory:
+            try:
+                rpy2.rinterface_lib.openrlib.lock.acquire()
+                rmemory.protect(self.__sexp__._cdata)
+                dim_cdata = rmemory.protect(
+                    rpy2.rinterface_lib.openrlib.rlib.Rf_getAttrib(
+                        self.__sexp__._cdata,
+                        rpy2.rinterface_lib.openrlib.rlib.R_DimSymbol
+                    )
+                )
+                dim = (rpy2.rinterface_lib.conversion
+                       ._cdata_to_rinterface(dim_cdata))
+            finally:
+                rpy2.rinterface_lib.openrlib.lock.release()
+        return conversion.get_conversion().rpy2py(dim)
 
     def __dim_set(self, value):
-        # TODO: R will create a copy of the object upon assignment
-        #   of a new dimension attribute.
-        raise NotImplementedError("Not yet implemented")
         value = conversion.get_conversion().py2rpy(value)
-        self._dim_set(self, value)
+        # TODO: perform checks because rinterface-level call
+        # may otherwise end in segfault.
+        if not (
+                isinstance(value, rinterface.NULLType)
+                or
+                isinstance(value, rinterface.IntSexpVector)
+        ):
+            raise TypeError(
+                'Value must be an R NULL, or an R vector of integers.'
+                )
+        if (
+                isinstance(value, rinterface.IntSexpVector)
+                and
+                not isinstance(self.dim, rinterface.NULLType)
+        ):
+            if functools.reduce(operator.mul, value) != len(self):
+                raise ValueError('New dim does not match length of array.')
+        # TODO: Low-level operation that should go rinterface?
+        with rpy2.rinterface_lib.memorymanagement.rmemory() as rmemory:
+            try:
+                rpy2.rinterface_lib.openrlib.lock.acquire()
+                rmemory.protect(self.__sexp__._cdata)
+                rmemory.protect(value.__sexp__._cdata)
+                rpy2.rinterface_lib.openrlib.rlib.Rf_setAttrib(
+                    self.__sexp__._cdata,
+                    rpy2.rinterface_lib.openrlib.rlib.R_DimSymbol,
+                    value.__sexp__._cdata
+                )
+            finally:
+                rpy2.rinterface_lib.openrlib.lock.release()
 
     dim = property(__dim_get, __dim_set, None,
                    "Get or set the dimension of the array.")

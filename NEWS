@@ -9,6 +9,25 @@ New features
   encoding is now the system's encoding (rather than assume utf-8).
   This may provide a fix to issue #1018.
 
+- Noteboook "R magic" features for ipython/jupyter support more
+  graphical devices to render R graphics in notebooks. Registered
+  devices are in :obj:`rpy2.ipython.rmags.graphics_devices`. This
+  allows the specification of fallbacks when the preferred device is
+  not available because of a missing R package. For SVG graphics,
+  it will first try to use the R package `svglite` to produce
+  lighter-weight SVG representations that are better when notebooks
+  may include many figures and figure with large number of visual
+  elements.
+
+- Experimental minimalist set of optional conversion rules to
+  convert Python :class:`list` objects to R vectors when all elements
+  are of atomic type: :obj:`rpy2.robjects.flatlist_converter`. Those
+  rules have been in used for the ipython/jupyter default converter.
+
+- The setter :attr:`rpy2.robjects.vectors.Array.dim` is now implemented,
+  allowing to change the dimension of an R array in place
+  (fixes issue #1145). 
+
 Changes
 -------
 
@@ -40,7 +59,14 @@ Changes
 
 - The wrapper for dplyr is now targeting the R package `dplyr`
   version 1.1.
-
+- The default converter for the ipython/jupyter magics depended on
+  what is the default converter at the time of module import. To
+  simplify this, the default converter is now fixed to
+  `robjects.default_converter` + `robjects.flatlist_converter` +
+  `robjects.numpy2ri.converter` + `robjects.pandas2ri.converter`.
+  If `pandas` cannot be imported
+  it falls back to `robjects.default_converter` + `robjects.numpy2ri.converter`.
+  If `numpy` cannot be imported it falls back to  `robjects.default_converter`.
 - The definition of `Rcomplex` from R's C-API was updated to match
   the definition in recent R release (>= 4.3) when rpy2 is in "API mode".
   This does not work with the "ABI mode" though, and the legacy
@@ -56,6 +82,9 @@ Bugs fixed
 - The constructor for :class:`rpy2.robjects.lib.ggplot2` did not
   play well with conversion rules in :mod:`rpy2.robjects.pandas2ri`.
   The default conversion rules are now forced (issue #1116).
+
+- The documentation for the notebook "magic" `Rdevice` was not
+  displayed in the module-level docstring for :mod:`rpy2.ipython.rmagic`.
 
 
 Release 3.5.17
