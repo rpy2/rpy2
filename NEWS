@@ -9,6 +9,10 @@ New features
   encoding is now the system's encoding (rather than assume utf-8).
   This may provide a fix to issue #1018.
 
+- The setter :attr:`rpy2.robjects.vectors.Array.dim` is now implemented,
+  allowing to change the dimension of an R array in place
+  (fixes issue #1145). 
+
 Changes
 -------
 

@@ -1076,21 +1076,55 @@ class Array(Vector):
     """ An R array """
     _dimnames_get = baseenv_ri['dimnames']
     _dimnames_set = baseenv_ri['dimnames<-']
-    _dim_get = baseenv_ri['dim']
-    _dim_set = baseenv_ri['dim<-']
     _isarray = baseenv_ri['is.array']
 
     def __dim_get(self):
-        res = self._dim_get(self)
-        res = conversion.get_conversion().rpy2py(res)
-        return res
+        # TODO: Low-level operation that should go rinterface?
+        res = rinterface.NULL
+        with rinterface.memorymanagement.rmemory() as rmemory:
+            try:
+                rinterface.openrlib.lock.acquire()
+                rmemory.protect(self.__sexp__._cdata)
+                res = rinterface.openrlib.rlib.Rf_getAttrib(
+                    self.__sexp__._cdata,
+                    rinterface.openrlib.rlib.R_DimSymbol
+                )
+            finally:
+                rinterface.openrlib.lock.release()
+        return conversion.get_conversion().rpy2py(res)
 
     def __dim_set(self, value):
-        # TODO: R will create a copy of the object upon assignment
-        #   of a new dimension attribute.
-        raise NotImplementedError("Not yet implemented")
         value = conversion.get_conversion().py2rpy(value)
-        self._dim_set(self, value)
+        # TODO: perform checks because rinterface-level call
+        # may otherwise end in segfault.
+        if not (
+                isinstance(value, rinterface.NULLType)
+                or
+                isinstance(value, rinterface.IntSexpVector)
+        ):
+            raise TypeError(
+                'Value must be an R NULL, or an R vector of integers.'
+                )
+        if (
+                isinstance(value, rinterface.IntSexpVector)
+                and
+                not isinstance(self.dim, rinterface.NULLType)
+        ):
+            if itertools.accumulate(self.dim, operator.mul) != len(self):
+                raise ValueError('New dim does not match length of array.')
+        # TODO: Low-level operation that should go rinterface?
+        with rinterface.memorymanagement.rmemory() as rmemory:
+            try:
+                rinterface.openrlib.lock.acquire()
+                rmemory.protect(self.__sexp__._cdata)
+                rmemory.protect(value.__sexp__._cdata)
+                rinterface.openrlib.rlib.Rf_setAttrib(
+                    self.__sexp__._cdata,
+                    rinterface.openrlib.rlib.R_DimSymbol,
+                    value.__sexp__._cdata
+                )
+            finally:
+                rinterface.openrlib.lock.release()
 
     dim = property(__dim_get, __dim_set, None,
                    "Get or set the dimension of the array.")

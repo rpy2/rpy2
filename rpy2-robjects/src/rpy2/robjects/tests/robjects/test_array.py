@@ -33,6 +33,36 @@ def test_dim():
     assert d[1] == 3
 
 
+def test_dim_set():
+    m = robjects.r.matrix(1, nrow=5, ncol=3)
+    a = robjects.vectors.FloatArray(m)
+    a.dim = robjects.vectors.IntVector([5, 3])
+    assert len(a.dim) == 2
+    assert a.dim[0] == 3
+    assert a.dim[1] == 5
+
+
+def test_dim_set_null():
+    m = robjects.r.matrix(1, nrow=5, ncol=3)
+    a = robjects.vectors.FloatArray(m)
+    a.dim = robjects.NULL
+    assert a.dim == robjects.NULL
+
+
+def test_dim_set_invalid():
+    m = robjects.r.matrix(1, nrow=5, ncol=3)
+    a = robjects.vectors.FloatArray(m)
+    with pytest.raises(TypeError):
+        a.dim = [5, 3]
+
+
+def test_dim_set_invalid2():
+    m = robjects.r.matrix(1, nrow=5, ncol=3)
+    a = robjects.vectors.FloatArray(m)
+    with pytest.raises(ValueError):
+        a.dim = [5, 5]
+
+
 def test_names_get():
     dimnames = robjects.r.list(robjects.StrVector(['a', 'b', 'c']),
                                robjects.StrVector(['d', 'e']))
