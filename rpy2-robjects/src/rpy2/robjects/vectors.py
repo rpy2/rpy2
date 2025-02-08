@@ -14,6 +14,7 @@ except ImportError:
 import copy
 import itertools
 import math
+import operator
 import os
 import jinja2  # type: ignore
 import time
