@@ -2,6 +2,9 @@ import abc
 import collections.abc
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
+import rpy2.rinterface_lib.conversion
+import rpy2.rinterface_lib.memorymanagement
+import rpy2.rinterface_lib.openrlib
 from rpy2.rinterface_lib import sexp
 from . import conversion
 
@@ -12,6 +15,7 @@ try:
 except ImportError:
     from backports import zoneinfo  # type: ignore
 import copy
+import functools
 import itertools
 import math
 import operator
@@ -1082,17 +1086,21 @@ class Array(Vector):
     def __dim_get(self):
         # TODO: Low-level operation that should go rinterface?
         res = rinterface.NULL
-        with rinterface.memorymanagement.rmemory() as rmemory:
+        with rpy2.rinterface_lib.memorymanagement.rmemory() as rmemory:
             try:
-                rinterface.openrlib.lock.acquire()
+                rpy2.rinterface_lib.openrlib.lock.acquire()
                 rmemory.protect(self.__sexp__._cdata)
-                res = rinterface.openrlib.rlib.Rf_getAttrib(
-                    self.__sexp__._cdata,
-                    rinterface.openrlib.rlib.R_DimSymbol
+                dim_cdata = rmemory.protect(
+                    rpy2.rinterface_lib.openrlib.rlib.Rf_getAttrib(
+                        self.__sexp__._cdata,
+                        rpy2.rinterface_lib.openrlib.rlib.R_DimSymbol
+                    )
                 )
+                dim = (rpy2.rinterface_lib.conversion
+                       ._cdata_to_rinterface(dim_cdata))
             finally:
-                rinterface.openrlib.lock.release()
-        return conversion.get_conversion().rpy2py(res)
+                rpy2.rinterface_lib.openrlib.lock.release()
+        return conversion.get_conversion().rpy2py(dim)
 
     def __dim_set(self, value):
         value = conversion.get_conversion().py2rpy(value)
@@ -1111,21 +1119,21 @@ class Array(Vector):
                 and
                 not isinstance(self.dim, rinterface.NULLType)
         ):
-            if itertools.accumulate(self.dim, operator.mul) != len(self):
+            if functools.reduce(operator.mul, value) != len(self):
                 raise ValueError('New dim does not match length of array.')
         # TODO: Low-level operation that should go rinterface?
-        with rinterface.memorymanagement.rmemory() as rmemory:
+        with rpy2.rinterface_lib.memorymanagement.rmemory() as rmemory:
             try:
-                rinterface.openrlib.lock.acquire()
+                rpy2.rinterface_lib.openrlib.lock.acquire()
                 rmemory.protect(self.__sexp__._cdata)
                 rmemory.protect(value.__sexp__._cdata)
-                rinterface.openrlib.rlib.Rf_setAttrib(
+                rpy2.rinterface_lib.openrlib.rlib.Rf_setAttrib(
                     self.__sexp__._cdata,
-                    rinterface.openrlib.rlib.R_DimSymbol,
+                    rpy2.rinterface_lib.openrlib.rlib.R_DimSymbol,
                     value.__sexp__._cdata
                 )
             finally:
-                rinterface.openrlib.lock.release()
+                rpy2.rinterface_lib.openrlib.lock.release()
 
     dim = property(__dim_get, __dim_set, None,
                    "Get or set the dimension of the array.")
