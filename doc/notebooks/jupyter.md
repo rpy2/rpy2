@@ -249,13 +249,14 @@ noop_conv.rpy2py.register(rpy2.robjects.RObject,
 ipy.magics_manager.registry['RMagics'].options.converter = noop_conv
 ```
 
-Modifying this come with risks though, or afterthoughts.
-There are some checks in place, but
-it is impossible to make it impossible, or even very hard, to make
-the new default behavior broken. To address this the
-"magic" about options has a command to try restore the options to
-"factory settings". Here again, there is no guarantee since a driven
-(or unlucky) user may break this mechanism if modifying it the module.
+Modifying this come with risks though, or afterthoughts about changes made.
+While there are some checks in place, the new default options set this way
+may break the R "magics".
+To address this, options can be restore to
+"factory settings". Here again, there is no guarantee that this can work no
+matter what. A driven
+(or unlucky) user may break this mechanism if modifying it in the module.
+Restarting kernel will be needed in that case.
 
 ```python
 %Roptions refresh
@@ -264,12 +265,14 @@ the new default behavior broken. To address this the
 ## Graphics devices
 
 Graphics devices can be specified precisely as a function in an R namespace.
-For example, "grDevices:png". It is also possible to specify a graphical
-device as a sequence of specific graphics devices to try in order (and
-pick the first one that appear to be functioning. This is the case when
+For example, "grDevices:png". It is also possible to specify a generic graphical
+device name that is a sequence of graphics devices to try. The first one in that
+sequence that appears to be functioning is then selected.
+
+For example, this is the case when
 the graphics device option is set to "svg". The R package `svglite` is
-recommended, that is the first in the sequence, but there is a following
-sequence of other SVG devices to be tried as alternatives.
+the first to try in the sequence. If R fails to load that package there
+are other  SVG devices to try try as alternatives.
 
 To demonstrate this, let's set the graphics devices to "svg":
 
@@ -287,12 +290,16 @@ its device will be used. Otherwise alternatives will be tried.
 %Roptions show
 ```
 
-The current graphics device (the first valid one that can be obtained
-from R given a name) has itself options that can be specified. Options
-may depend on the specific graphics device.
+### Options for graphics device
+
+Graphics devices, selected from a generic names when the case (see above),
+may havee options. These options can be specific to each graphics device.
 
 **note: this is prefixed with an underscore to indicate that the API is
 subject to changes.**
+
+Options to display graphics are under `_options_display`. For example,
+to change the default width:
 
 ```python
 (
