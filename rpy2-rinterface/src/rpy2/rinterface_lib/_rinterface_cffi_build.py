@@ -129,6 +129,11 @@ def define_osname(definitions):
         definitions['OSNAME_NT'] = True
 
 
+def define_complex(definitions, cffi_mode):
+    if cffi_mode == 'ABI':
+        definitions['RPY2_COMPLEX_LEGACY'] = True
+
+
 def create_cdef(definitions, header_filename):
     cdef = []
     with open(
@@ -155,6 +160,7 @@ def createbuilder_abi():
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
+    define_complex(definitions, cffi_mode='ABI')
     r_h = read_source('R_API.h')
     # TODO: is R_INTERFACE_PTRS defined for all non-Windows systems?
     if not os.name == 'nt':
@@ -176,6 +182,7 @@ def createbuilder_api():
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
+    define_complex(definitions, cffi_mode='API')
     # TODO: is R_INTERFACE_PTRS defined for all non-Windows systems?
     if not os.name == 'nt':
         definitions['R_INTERFACE_PTRS'] = True
