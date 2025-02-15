@@ -70,6 +70,7 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         pip install ${{ env.RPY2_RINTERFACE_WHL_DIST }}
         pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}
+	python -m rpy2.situation
     - name: Test with minimal dependencies
       run: |
         ${{ env.VENV_ACTIVATE }}
