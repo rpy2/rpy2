@@ -19,9 +19,11 @@ else:
         import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
         cffi_mode = rpy2.situation.CFFI_MODE.API
     except ImportError as ie_api:
+        logger.warn(f'Error importing in API mode: {ie_api.message}')
         try:
             import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
             cffi_mode = rpy2.situation.CFFI_MODE.ABI
+            logger.warn(f'Trying to import in ABI mode.')
         except ImportError as ie_abi:
             logger.error(f'Failed to import the API mode with "{ie_api}" '
                          'and unable to import the ABI mode.')

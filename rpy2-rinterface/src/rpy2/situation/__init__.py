@@ -456,15 +456,17 @@ def iter_info():
     yield make_bold('CFFI extension type')
     import importlib.util
     for cffi_type in ('abi', 'api'):
-        rinterface_cffi_spec = importlib.util.find_spec(f'_rinterface_cffi_{cffi_type}')
-        yield f'  {cffi_type.upper()}: {"PRESENT" if rinterface_cffi_spec else "ABSENT"}'
+        rinterface_cffi_spec = importlib.util.find_spec(
+            f'_rinterface_cffi_{cffi_type}'
+        )
+        yield (f'  {cffi_type.upper()}: '
+               f'{"PRESENT" if rinterface_cffi_spec else "ABSENT"}')
     yield f'  Environment variable: {ENVVAR_CFFI_TYPE}={get_cffi_mode().value}'
     try:
         import rpy2.rinterface_lib.openrlib
         yield f'  Loaded: {rpy2.rinterface_lib.openrlib.cffi_mode}'
     except ImportError:
         yield '  Loaded: **Error importing rpy2.rinterface_lib.openrlib**'
-
 
 def set_default_logging():
     logformatter = logging.Formatter('%(name)s: %(message)s')
