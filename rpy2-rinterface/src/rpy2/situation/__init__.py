@@ -463,7 +463,8 @@ def iter_info():
         import rpy2.rinterface_lib.openrlib
         yield f'  Loaded: {rpy2.rinterface_lib.openrlib.cffi_mode}'
     except ImportError:
-        yield f'  Loaded: **Error importing rpy2.rinterface_lib.openrlib**'
+        yield '  Loaded: **Error importing rpy2.rinterface_lib.openrlib**'
+
 
 def set_default_logging():
     logformatter = logging.Formatter('%(name)s: %(message)s')
