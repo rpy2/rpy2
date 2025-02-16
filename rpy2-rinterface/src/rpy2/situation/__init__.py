@@ -353,7 +353,23 @@ def iter_info():
 
     make_bold = _make_bold_win32 if os.name == 'nt' else _make_bold_unix
 
+    yield make_bold('CFFI extension type')
+    import importlib.util
+    for cffi_type in ('abi', 'api'):
+        rinterface_cffi_spec = importlib.util.find_spec(
+            f'_rinterface_cffi_{cffi_type}'
+        )
+        yield (f'  {cffi_type.upper()}: '
+               f'{"PRESENT" if rinterface_cffi_spec else "ABSENT"}')
+    yield f'  Environment variable: {ENVVAR_CFFI_TYPE}={get_cffi_mode().value}'
+    try:
+        import rpy2.rinterface_lib.openrlib
+        yield f'  Loaded: {rpy2.rinterface_lib.openrlib.cffi_mode}'
+    except ImportError:
+        yield '  Loaded: **Error importing rpy2.rinterface_lib.openrlib**'
+
     yield make_bold('rpy2 version:')
+
     try:
         # TODO: the repeated import is needed, without which Python
         #   raises an UnboundLocalError (local variable referenced before
@@ -452,21 +468,6 @@ def iter_info():
 
     yield '  Directory for the R shared library:'
     yield f'    {get_r_libnn(r_home)}'
-
-    yield make_bold('CFFI extension type')
-    import importlib.util
-    for cffi_type in ('abi', 'api'):
-        rinterface_cffi_spec = importlib.util.find_spec(
-            f'_rinterface_cffi_{cffi_type}'
-        )
-        yield (f'  {cffi_type.upper()}: '
-               f'{"PRESENT" if rinterface_cffi_spec else "ABSENT"}')
-    yield f'  Environment variable: {ENVVAR_CFFI_TYPE}={get_cffi_mode().value}'
-    try:
-        import rpy2.rinterface_lib.openrlib
-        yield f'  Loaded: {rpy2.rinterface_lib.openrlib.cffi_mode}'
-    except ImportError:
-        yield '  Loaded: **Error importing rpy2.rinterface_lib.openrlib**'
 
 
 def set_default_logging():
