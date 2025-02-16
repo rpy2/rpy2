@@ -54,11 +54,11 @@ def _build_rstart(rhome, interactive, setcallbacks):
             embedded._setcallback(rstart, rstart_symbol,
                                   callback_funcs, callback_symbol)
 
-    rstart.vsize = ffi.cast('size_t', _DEFAULT_VSIZE)
-    rstart.nsize = ffi.cast('size_t', _DEFAULT_NSIZE)
-    rstart.max_vsize = ffi.cast('size_t', _DEFAULT_MAX_VSIZE)
-    rstart.max_nsize = ffi.cast('size_t', _DEFAULT_MAX_NSIZE)
-    rstart.ppsize = ffi.cast('size_t', _DEFAULT_PPSIZE)
+    # rstart.vsize = ffi.cast('size_t', _DEFAULT_VSIZE)
+    # rstart.nsize = ffi.cast('size_t', _DEFAULT_NSIZE)
+    # rstart.max_vsize = ffi.cast('size_t', _DEFAULT_MAX_VSIZE)
+    # rstart.max_nsize = ffi.cast('size_t', _DEFAULT_MAX_NSIZE)
+    # rstart.ppsize = ffi.cast('size_t', _DEFAULT_PPSIZE)
     return rstart
 
 
