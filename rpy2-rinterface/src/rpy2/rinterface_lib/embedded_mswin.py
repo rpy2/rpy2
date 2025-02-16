@@ -40,7 +40,8 @@ def _build_start(rhome, interactive):
     # definition is needed.
     print(f'rhome: {rhome}')
     rstart.rhome = rhome
-    global userhome = openrlib.rlib.getRUser()
+    global userhome
+    userhome = openrlib.rlib.getRUser()
     rstart.home = userhome
     rstart.CharacterMode = openrlib.rlib.LinkDLL
     if False and _want_setcallbacks:
@@ -95,7 +96,8 @@ def _initr_win32(
         status = openrlib.rlib.Rf_initialize_R(n_options_c, options_c)
         embedded._setinitialized()
 
-        global rhome = openrlib.rlib.get_R_HOME()
+        global rhome
+        rhome = openrlib.rlib.get_R_HOME()
         rstart = _build_rstart(rhome, interactive)
 
         openrlib.rlib.R_SetParams(rstart)
