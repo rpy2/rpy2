@@ -332,12 +332,13 @@ def build_rcall(rfunction,
 
 def _evaluated_promise(function):
     def _(*args, **kwargs):
-        robj = function(*args, **kwargs)
-        if _TYPEOF(robj) == openrlib.rlib.PROMSXP:
-            robj = openrlib.rlib.Rf_eval(
-                robj,
-                openrlib.rlib.R_GlobalEnv)
-        return robj
+        with memorymanagement.rmemory() as rmemory:
+            robj = rmemory.protect(function(*args, **kwargs))
+            if _TYPEOF(robj) == openrlib.rlib.PROMSXP:
+                robj = openrlib.rlib.Rf_eval(
+                    robj,
+                    openrlib.rlib.R_GlobalEnv)
+            return robj
     return _
 
 
