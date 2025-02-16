@@ -15,7 +15,7 @@ R_HOME = rpy2.situation.get_r_home()
 
 if os.name == 'nt':
     for libpath in rpy2.situation.get_r_flags(R_HOME, '--ldflags')[0].L:
-        os.add_dll_directory(libpath)
+        os.add_dll_directory(libpath)  # type: attr-defined
 else:
     # not relevant for Windows? (https://stackoverflow.com/questions/72575015)
     LD_LIBRARY_PATH = (
