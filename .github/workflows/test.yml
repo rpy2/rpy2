@@ -70,6 +70,7 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         pip install ${{ env.RPY2_RINTERFACE_WHL_DIST }}
         pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}
+        python -m rpy2.situation
     - name: Test with minimal dependencies
       run: |
         ${{ env.VENV_ACTIVATE }}
@@ -79,6 +80,7 @@ jobs:
         python3 -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}'[test_minimal]'
         ${{ env.R_LIBRARY }}
         python -c 'import _rinterface_cffi_api'
+        python -c 'from rpy2.rinterface_lib import openrlib; print(openrlib.cffi_mode)'
         bash -e ./scripts/run_test_min_deps.sh
     - name: Test with numpy
       run: |
