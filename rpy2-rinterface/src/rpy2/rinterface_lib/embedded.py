@@ -4,6 +4,7 @@ import os
 import sys
 import typing
 import warnings
+import rpy2.situation
 from rpy2.rinterface_lib import openrlib
 from rpy2.rinterface_lib import callbacks
 if os.name == 'nt':
@@ -209,7 +210,14 @@ class RRuntimeError(Exception):
 def _setcallback(rlib, rlib_symbol: str,
                  callbacks,
                  callback_symbol: typing.Optional[str]) -> None:
-    """Set R callbacks."""
+    """Set R callbacks.
+
+    :param rlib: Namespace
+    :param rlib_symbol: Symbol (name) in the namespace in which to place
+      the new callback function
+    :param callbacks: Namespace in which to find the callback function.
+    :param callbacks_symbol: Symbol (name) of the new callback function.
+    """
     if callback_symbol is None:
         new_callback = ffi.NULL
     else:
@@ -255,12 +263,7 @@ else:
             _c_stack_limit = _DEFAULT_C_STACK_LIMIT
 
         rlib = openrlib.rlib
-        ffi_proxy = openrlib.ffi_proxy
-        if (
-                ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
-                ==
-                ffi_proxy.InterfaceType.ABI
-        ):
+        if openrlib.cffi_mode is rpy2.situation.CFFI_MODE.ABI:
             callback_funcs = callbacks
         else:
             callback_funcs = rlib

@@ -1,5 +1,6 @@
 import sys
 import typing
+import rpy2.situation
 from rpy2.rinterface_lib import embedded
 from rpy2.rinterface_lib import callbacks
 from rpy2.rinterface_lib import openrlib
@@ -14,6 +15,18 @@ _DEFAULT_MAX_NSIZE: int = 50000000  # max language heap size
 _DEFAULT_PPSIZE: int = 50000  # stack size
 _DEFAULT_C_STACK_LIMIT: int = -1
 _DEFAULT_R_INTERACTIVE: bool = True
+
+CALLBACK_INIT_PAIRS = (('WriteConsoleEx', '_consolewrite_ex'),
+                       ('WriteConsole', None),
+                       ('ShowMessage', '_showmessage'),
+                       ('ReadConsole', '_consoleread'),
+                       ('FlushConsole', '_consoleflush'),
+                       ('ResetConsole', '_consolereset'),
+                       ('ChooseFile', '_choosefile'),
+                       ('ShowFiles', '_showfiles'),
+                       ('CleanUp', '_cleanup'),
+                       ('ProcessEvents', '_processevents'),
+                       ('Busy', '_busy'))
 
 
 def _initr_win32(
@@ -55,12 +68,14 @@ def _initr_win32(
         rstart.home = openrlib.rlib.getRUser()
         rstart.CharacterMode = openrlib.rlib.LinkDLL
         if _want_setcallbacks:
-            rstart.ReadConsole = callbacks._consoleread
-            rstart.WriteConsoleEx = callbacks._consolewrite_ex
-            rstart.CallBack = callbacks._callback
-            rstart.ShowMessage = callbacks._showmessage
-            rstart.YesNoCancel = callbacks._yesnocancel
-            rstart.Busy = callbacks._busy
+            if openrlib.cffi_mode is rpy2.situation.CFFI_MODE.ABI:
+                callback_funcs = callbacks
+            else:
+                callback_funcs = openrlib.rlib
+
+            for rstart_symbol, callback_symbol in CALLBACK_INIT_PAIRS:
+                embedded._setcallback(rstart, rstart_symbol,
+                                      callback_funcs, callback_symbol)
 
         rstart.R_Quiet = True
         rstart.R_Interactive = interactive
