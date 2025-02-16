@@ -1,10 +1,10 @@
 import rpy2.rinterface as rinterface
 from rpy2.rinterface import bufferprotocol
 
-# rinterface.initr()
+rinterface.initr()
 
 
-def _test_getrank():
+def test_getrank():
     v = rinterface.IntSexpVector([1, 2, 3])
     assert bufferprotocol.getrank(v.__sexp__._cdata) == 1
 
@@ -12,7 +12,7 @@ def _test_getrank():
     assert bufferprotocol.getrank(m.__sexp__._cdata) == 2
 
 
-def _test_getshape():
+def test_getshape():
     v = rinterface.IntSexpVector([1, 2, 3])
     assert bufferprotocol.getshape(v.__sexp__._cdata, 1) == (3, )
 
@@ -20,7 +20,7 @@ def _test_getshape():
     assert bufferprotocol.getshape(m.__sexp__._cdata, 2) == (2, 3)
 
 
-def _test_getstrides():
+def test_getstrides():
     v = rinterface.IntSexpVector([1, 2, 3])
     assert bufferprotocol.getstrides(v.__sexp__._cdata, [3], 8) == (8, )
 
