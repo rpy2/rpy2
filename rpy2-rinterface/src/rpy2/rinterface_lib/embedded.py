@@ -23,6 +23,8 @@ rpy2_embeddedR_isinitialized = 0x00
 
 
 class Is_RStart(Protocol):
+    """Type-checking helper."""
+
     @property
     def rhome(self): ...
 

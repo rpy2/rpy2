@@ -23,7 +23,7 @@ CALLBACK_INIT_PAIRS = (('WriteConsoleEx', '_consolewrite_ex'),
                        ('Busy', '_busy'))
 
 
-def _build_start(rhome, interactive):
+def _build_rstart(rhome, interactive):
     rstart = ffi.new('Rstart')
     embedded.rstart = start
 
