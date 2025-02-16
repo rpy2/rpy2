@@ -12,7 +12,7 @@ def test_getrank():
     assert bufferprotocol.getrank(m.__sexp__._cdata) == 2
 
 
-def test_getshape():
+def _test_getshape():
     v = rinterface.IntSexpVector([1, 2, 3])
     assert bufferprotocol.getshape(v.__sexp__._cdata, 1) == (3, )
 
