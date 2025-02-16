@@ -624,6 +624,9 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
 
 
 def _register_external_symbols() -> None:
+    global python_cchar
+    global python_callback
+    global externalmethods
     python_cchar = ffi.new('char []', b'.Python')
     ffi_proxy = openrlib.ffi_proxy
     if (
