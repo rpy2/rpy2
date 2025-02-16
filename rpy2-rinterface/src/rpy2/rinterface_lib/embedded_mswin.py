@@ -61,7 +61,7 @@ def _initr_win32(
         rstart.rhome = rhome
         rstart.home = openrlib.rlib.getRUser()
         rstart.CharacterMode = openrlib.rlib.LinkDLL
-        if _want_setcallbacks:
+        if False and _want_setcallbacks:
             if openrlib.cffi_mode is rpy2.situation.CFFI_MODE.ABI:
                 callback_funcs = callbacks
             else:
