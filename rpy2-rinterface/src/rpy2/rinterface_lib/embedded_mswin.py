@@ -23,9 +23,9 @@ CALLBACK_INIT_PAIRS = (('WriteConsoleEx', '_consolewrite_ex'),
                        ('Busy', '_busy'))
 
 
-def _build_rstart(rhome, interactive):
+def _build_rstart(rhome, interactive, setcallbacks):
     rstart = ffi.new('Rstart')
-    embedded.rstart = start
+    embedded.rstart = rstart
 
     openrlib.rlib.R_DefParams(rstart)
     rstart.R_Quiet = True
@@ -33,7 +33,7 @@ def _build_rstart(rhome, interactive):
     # TODO: Force verbose for now.
     rstart.R_Verbose = 1
     rstart.LoadSiteFile = 1
-    rstart.LoadInitFile = 1    
+    rstart.LoadInitFile = 1
     rstart.RestoreAction = openrlib.rlib.SA_RESTORE
     rstart.SaveAction = openrlib.rlib.SA_NOSAVE
     # TODO: rhome is "global" to avoid gc. A cleanup / consolidation of "R HOME"
@@ -44,7 +44,7 @@ def _build_rstart(rhome, interactive):
     userhome = openrlib.rlib.getRUser()
     rstart.home = userhome
     rstart.CharacterMode = openrlib.rlib.LinkDLL
-    if False and _want_setcallbacks:
+    if False and setcallbacks:
         if openrlib.cffi_mode is rpy2.situation.CFFI_MODE.ABI:
             callback_funcs = callbacks
         else:
@@ -53,8 +53,6 @@ def _build_rstart(rhome, interactive):
         for rstart_symbol, callback_symbol in CALLBACK_INIT_PAIRS:
             embedded._setcallback(rstart, rstart_symbol,
                                   callback_funcs, callback_symbol)
-
-
 
     rstart.vsize = ffi.cast('size_t', _DEFAULT_VSIZE)
     rstart.nsize = ffi.cast('size_t', _DEFAULT_NSIZE)
@@ -98,7 +96,7 @@ def _initr_win32(
 
         global rhome
         rhome = openrlib.rlib.get_R_HOME()
-        rstart = _build_rstart(rhome, interactive)
+        rstart = _build_rstart(rhome, interactive, _want_setcallbacks)
 
         openrlib.rlib.R_SetParams(rstart)
 
