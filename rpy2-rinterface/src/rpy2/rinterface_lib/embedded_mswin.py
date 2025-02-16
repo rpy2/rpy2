@@ -20,12 +20,6 @@ CALLBACK_INIT_PAIRS = (('WriteConsoleEx', '_consolewrite_ex'),
                        ('WriteConsole', None),
                        ('ShowMessage', '_showmessage'),
                        ('ReadConsole', '_consoleread'),
-                       ('FlushConsole', '_consoleflush'),
-                       ('ResetConsole', '_consolereset'),
-                       ('ChooseFile', '_choosefile'),
-                       ('ShowFiles', '_showfiles'),
-                       ('CleanUp', '_cleanup'),
-                       ('ProcessEvents', '_processevents'),
                        ('Busy', '_busy'))
 
 
