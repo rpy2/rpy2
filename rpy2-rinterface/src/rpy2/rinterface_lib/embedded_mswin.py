@@ -22,26 +22,28 @@ CALLBACK_INIT_PAIRS = (('WriteConsoleEx', '_consolewrite_ex'),
                        ('ReadConsole', '_consoleread'),
                        ('Busy', '_busy'))
 
+__cffi_protected = {}
 
 def _build_rstart(rhome, interactive, setcallbacks):
     rstart = ffi.new('Rstart')
     embedded.rstart = rstart
+    __cffi_protected['rstart'] = rstart
 
     openrlib.rlib.R_DefParams(rstart)
     rstart.R_Quiet = True
     rstart.R_Interactive = interactive
     # TODO: Force verbose for now.
-    rstart.R_Verbose = 1
-    rstart.LoadSiteFile = 1
-    rstart.LoadInitFile = 1
+    rstart.R_Verbose = True
+    rstart.LoadSiteFile = True
+    rstart.LoadInitFile = True
     rstart.RestoreAction = openrlib.rlib.SA_RESTORE
     rstart.SaveAction = openrlib.rlib.SA_NOSAVE
     # TODO: rhome is "global" to avoid gc. A cleanup / consolidation of "R HOME"
     # definition is needed.
     print(f'rhome: {rhome}')
     rstart.rhome = rhome
-    global userhome
-    userhome = openrlib.rlib.getRUser()
+    userhome = ffi.new("char[]", ffi.string(openrlib.rlib.getRUser()))
+    __cffi_protected['userhome'] = userhome
     rstart.home = userhome
     rstart.CharacterMode = 1  # openrlib.rlib.LinkDLL
     if False and setcallbacks:
@@ -94,8 +96,8 @@ def _initr_win32(
         status = openrlib.rlib.Rf_initialize_R(n_options_c, options_c)
         embedded._setinitialized()
 
-        global rhome
         rhome = openrlib.rlib.get_R_HOME()
+        __cffi_protected['rhome'] = rhome
         rstart = _build_rstart(rhome, interactive, _want_setcallbacks)
 
         openrlib.rlib.R_SetParams(rstart)
