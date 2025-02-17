@@ -43,7 +43,7 @@ def _build_rstart(rhome, interactive, setcallbacks):
     global userhome
     userhome = openrlib.rlib.getRUser()
     rstart.home = userhome
-    rstart.CharacterMode = openrlib.rlib.LinkDLL
+    rstart.CharacterMode = 1  # openrlib.rlib.LinkDLL
     if False and setcallbacks:
         if openrlib.cffi_mode is rpy2.situation.CFFI_MODE.ABI:
             callback_funcs = callbacks
