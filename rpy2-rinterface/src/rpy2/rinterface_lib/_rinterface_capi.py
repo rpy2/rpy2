@@ -332,12 +332,13 @@ def build_rcall(rfunction,
 
 def _evaluated_promise(function):
     def _(*args, **kwargs):
-        robj = function(*args, **kwargs)
-        if _TYPEOF(robj) == openrlib.rlib.PROMSXP:
-            robj = openrlib.rlib.Rf_eval(
-                robj,
-                openrlib.rlib.R_GlobalEnv)
-        return robj
+        with memorymanagement.rmemory() as rmemory:
+            robj = rmemory.protect(function(*args, **kwargs))
+            if _TYPEOF(robj) == openrlib.rlib.PROMSXP:
+                robj = openrlib.rlib.Rf_eval(
+                    robj,
+                    openrlib.rlib.R_GlobalEnv)
+            return robj
     return _
 
 
@@ -623,6 +624,9 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
 
 
 def _register_external_symbols() -> None:
+    global python_cchar
+    global python_callback
+    global externalmethods
     python_cchar = ffi.new('char []', b'.Python')
     ffi_proxy = openrlib.ffi_proxy
     if (

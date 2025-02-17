@@ -1101,7 +1101,7 @@ def initr_checkenv(
                                      _want_setcallbacks=_want_setcallbacks,
                                      _c_stack_limit=_c_stack_limit)
             embedded.set_python_process_info()
-        _rinterface._register_external_symbols()
+        # _rinterface._register_external_symbols()
         _post_initr_setup()
     return status
 
