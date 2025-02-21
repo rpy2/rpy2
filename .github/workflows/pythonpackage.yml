@@ -80,22 +80,17 @@ jobs:
       with:
         name: rpy2-sdist
         path: dist/rpy2-*.tar.gz
-  build-abi-wheel:
+  build-abi-wheel-windows:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
         r-version: [release]
-        os: ["windows-latest", ubuntu-latest, macos-14]
-        exclude:
-          - os: macos-14
-            python-version: 3.9
-          - os: macos-14
-            python-version: "3.10"
+        os: ["windows-latest"]
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
@@ -137,6 +132,57 @@ jobs:
       with:
         name: rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         path: rpy2-rinterface/dist/rpy2_rinterface-*.whl
+  build-abi-wheel-posix:
+    runs-on: ${{ matrix.os }}
+    permissions:
+      packages: read
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: 39
+            platform_id: manylinux2014
+            manylinux_x86_64_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_x86_64:r4.3.2
+            manylinux_i686_image: ghcr.io/rpy2/rpy2-docker/manylinux2014_i686:r4.3.2
+            r-version: release
+          - os: macos-13
+            python: 310
+            platform_id: macosx_x86_64
+            r-version: release
+          - os: macos-14
+            python: 310
+            platform_id: macosx_arm64
+            r-version: release
+    steps:
+    - uses: actions/checkout@v3
+    - name: Log in to the Container registry
+      if: matrix.os == 'ubuntu-latest'
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build wheel
+      uses: pypa/cibuildwheel@v2.22
+      env:
+          RPY2_CFFI_MODE: API
+          CIBW_SKIP: cp36-* cp37-* cp38-macosx_arm64 pp* *-musllinux_*
+          CIBW_ARCHS_LINUX: "x86_64 aarch64"
+          CIBW_ARCHS_MACOS: "arm64"
+          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_x86_64_image }}
+          CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_i686_image }}
+          CIBW_ENVIRONMENT_PASS_LINUX: RPY2_CFFI_MODE
+          CIBW_ENVIRONMENT_LINUX: LD_LIBRARY_PATH="$(R RHOME)/$(R CMD config LIBnn):${LD_LIBRARY_PATH}"
+          CIBW_BUILD_VERBOSITY: 1
+      with:
+        output-dir: rpy2-rinterface/wheelhouse
+        config-file: rpy2-rinterface/pyproject.toml
+    - uses: actions/upload-artifact@v4
+      with:
+        name: rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
+        path: rpy2-rinterface/wheelhouse/rpy2_rinterface-*.whl
   build-noabi-wheel:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -170,7 +216,7 @@ jobs:
         name: ${{ matrix.package.name }}-${{ matrix.os }}-r${{ matrix.r-version }}
         path: ${{ matrix.package.dir }}/dist/*.whl
   test:
-    needs: [build-abi-wheel, build-noabi-wheel]
+    needs: [build-abi-wheel-posix, build-abi-wheel-windows, build-noabi-wheel]
     strategy:
       fail-fast: false
       matrix:
