@@ -2,19 +2,7 @@
 set -e
 set -x
 
-
-pytest \
-    --verbose
-    ./rpy2-rinterface/src/rpy2/rinterface/tests/test_openrlib.py
-
-pytest \
-    --verbose
-    ./rpy2-rinterface/src/rpy2/rinterface/tests/test_embedded_r.py
-
-pytest \
-    --verbose
-    ./rpy2-rinterface/src/rpy2/rinterface/tests/test_sexp.py
-
+python doc/_static/demos/example01.py
 
 pytest \
     --verbose
