@@ -2,6 +2,20 @@
 set -e
 set -x
 
+
+pytest \
+    --verbose
+    ./rpy2-rinterface/src/rpy2/rinterface/tests/test_openrlib.py
+
+pytest \
+    --verbose
+    ./rpy2-rinterface/src/rpy2/rinterface/tests/test_embedded_r.py
+
+pytest \
+    --verbose
+    ./rpy2-rinterface/src/rpy2/rinterface/tests/test_sexp.py
+
+
 pytest \
     --verbose
     --cov-report=xml \
