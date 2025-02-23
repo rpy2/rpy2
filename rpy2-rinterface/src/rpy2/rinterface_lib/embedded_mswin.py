@@ -32,6 +32,7 @@ def _build_rstart(rhome, interactive, setcallbacks):
 
     openrlib.rlib.R_DefParams(rstart)
     rstart.R_Quiet = True
+    rstart.R_Slave = False
     rstart.R_Interactive = interactive
     # TODO: Force verbose for now.
     rstart.R_Verbose = True
@@ -39,7 +40,7 @@ def _build_rstart(rhome, interactive, setcallbacks):
     rstart.LoadInitFile = True
     rstart.RestoreAction = openrlib.rlib.SA_RESTORE
     rstart.SaveAction = openrlib.rlib.SA_NOSAVE
-    # TODO: rhome is "global" to avoid gc. A cleanup / consolidation of "R HOME"
+    # TODO: A cleanup / consolidation of "R HOME"
     # definition is needed.
     print(f'rhome: {rhome}')
     rstart.rhome = rhome
@@ -67,7 +68,7 @@ def _build_rstart(rhome, interactive, setcallbacks):
 
 def _initr_win32(
         interactive: typing.Optional[bool] = None,
-        _want_setcallbacks: bool = True,
+        _want_setcallbacks: bool = False,
         _c_stack_limit: typing.Optional[int] = _DEFAULT_C_STACK_LIMIT
 
 ) -> typing.Optional[int]:
@@ -106,5 +107,6 @@ def _initr_win32(
         # TODO: still needed ?
         openrlib.rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
         openrlib.rlib.setup_Rmainloop()
+        
 
         return status
