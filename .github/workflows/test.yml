@@ -81,9 +81,9 @@ jobs:
         ${{ env.R_LIBRARY }}
         echo 'initr()'
         python -c 'import rpy2.rinterface as ri; ri.initr()'
-	echo 'print pi'
+        echo 'print pi'
         python -c 'import rpy2.rinterface as ri; ri.initr(); print(ri.basenv["pi"])'
-	echo 'print rep'
+        echo 'print rep'
         python -c 'import rpy2.rinterface as ri; ri.initr(); print(ri.basenv["rep"](1, 2))'
         bash -e ./scripts/run_test_min_deps.sh
     - name: Test with numpy
