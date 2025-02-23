@@ -3,6 +3,7 @@ set -e
 set -x
 
 pytest \
+    --verbose
     --cov-report=xml \
     --cov-report=term \
     --cov=rpy2.rinterface_lib \
