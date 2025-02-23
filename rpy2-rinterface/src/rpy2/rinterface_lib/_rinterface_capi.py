@@ -15,9 +15,9 @@ from rpy2.rinterface_lib import memorymanagement
 
 from _cffi_backend import FFI  # type: ignore
 
-
 logger = logging.getLogger(__name__)
-
+# Preserve cdata allocated by cffi from garbage collection.
+__cffi_protected = {}
 ffi = openrlib.ffi
 
 # TODO: How can I reliably get MAX_INT from limits.h ?
@@ -332,12 +332,13 @@ def build_rcall(rfunction,
 
 def _evaluated_promise(function):
     def _(*args, **kwargs):
-        robj = function(*args, **kwargs)
-        if _TYPEOF(robj) == openrlib.rlib.PROMSXP:
-            robj = openrlib.rlib.Rf_eval(
-                robj,
-                openrlib.rlib.R_GlobalEnv)
-        return robj
+        with memorymanagement.rmemory() as rmemory:
+            robj = rmemory.protect(function(*args, **kwargs))
+            if _TYPEOF(robj) == openrlib.rlib.PROMSXP:
+                robj = openrlib.rlib.Rf_eval(
+                    robj,
+                    openrlib.rlib.R_GlobalEnv)
+            return robj
     return _
 
 
@@ -639,6 +640,10 @@ def _register_external_symbols() -> None:
           python_callback,
           -1],
          [ffi.NULL, ffi.NULL, 0]])
+    # Protect elements from garbage collection.
+    __cffi_protected['python_R_ExternalMethodDef'] = (python_cchar,
+                                                      python_callback,
+                                                      externalmethods)
     openrlib.rlib.R_registerRoutines(
         openrlib.rlib.R_getEmbeddingDllInfo(),
         ffi.NULL,
