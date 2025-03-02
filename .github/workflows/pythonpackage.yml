@@ -115,6 +115,11 @@ jobs:
       run: |
         echo "VENV_ACTIVATE=pyenv_base\Scripts\activate" >> $GITHUB_ENV
         echo "R_LIBRARY=''" >> $GITHUB_ENV
+    - name: Patch GHA issue with macos - Missing C library
+      if: startsWith(matrix.os, 'macos') && (matrix.python-version == "3.13")
+      shell: bash
+      run: |
+        brew install libdeflate
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
