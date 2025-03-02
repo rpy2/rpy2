@@ -28,7 +28,6 @@ _POLLEDEVENTS_EXCEPTION_LOG = (
 )
 
 
-
 # TODO: rename to "replace_in_module"
 @contextmanager
 def obj_in_module(module, name: str, obj: typing.Any):
