@@ -53,13 +53,16 @@ def get_ffi_mode(_rinterface_cffi: types.ModuleType) -> InterfaceType:
 
 
 def callback(
-        definition, _rinterface_cffi
+        definition, _rinterface_cffi,
+        error=None, onerror=None
 ) -> typing.Callable[[typing.Callable], object]:
     def decorator(func: typing.Callable) -> object:
         if get_ffi_mode(_rinterface_cffi) == InterfaceType.ABI:
             res = _rinterface_cffi.ffi.callback(definition.callback_def)(func)
         elif get_ffi_mode(_rinterface_cffi) == InterfaceType.API:
-            res = _rinterface_cffi.ffi.def_extern()(func)
+            res = _rinterface_cffi.ffi.def_extern(
+                error=error, onerror=onerror
+            )(func)
         else:
             raise RuntimeError('The cffi mode is neither ABI or API.')
         return res
@@ -107,6 +110,10 @@ _showfiles_def: SignatureDefinition = SignatureDefinition(
      'const char *'))
 _processevents_def: SignatureDefinition = SignatureDefinition(
     '_processevents', 'void', ('void', ))
+
+# _polled_events_def: SignatureDefinition = SignatureDefinition(
+#     '_polled_events', 'void', ('void', ))
+
 _busy_def: SignatureDefinition = SignatureDefinition(
     '_busy', 'void', ('int', ))
 _callback_def: SignatureDefinition = SignatureDefinition(
