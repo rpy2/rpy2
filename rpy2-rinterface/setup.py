@@ -80,9 +80,6 @@ class COMPILATION_STATUS(enum.Enum):
 
 def get_c_extension_status(libraries=['R'], include_dirs=None,
                            library_dirs=None):
-    # Assume OK to debug CI pipeline on macos.
-    if True:
-        return COMPILATION_STATUS.OK
     if os.name == 'nt':
         c_code = ('int main(int argc, char **argv) { return 0; }')
     else:
