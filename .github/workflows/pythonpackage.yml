@@ -104,7 +104,8 @@ jobs:
       with:
         r-version: ${{ matrix.r-version }}
         use-public-rspm: true
-    - name: Print R config
+    - name: Print R config (POSIX-only)
+      if: "!startsWith(matrix.os, 'windows')"
       run: R CMD config --all
     - name: Set env commands (POSIX)
       if: "!startsWith(matrix.os, 'windows')"
