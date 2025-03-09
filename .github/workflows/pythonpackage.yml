@@ -107,7 +107,7 @@ jobs:
     - name: Print R config
       run: R CMD config --all
     - name: macos fix for lib deflate
-      if: "!startsWith(matrix.os, 'macos')"
+      if: startsWith(matrix.os, 'macos')
       run: |
         curl -LO https://mac.r-project.org/bin/darwin20/arm64/libdeflate-1.23-darwin.20-arm64.tar.xz
         tar xz libdeflate-1.23-darwin.20-arm64.tar.xz -C /
