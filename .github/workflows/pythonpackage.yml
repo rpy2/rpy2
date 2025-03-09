@@ -106,11 +106,6 @@ jobs:
         use-public-rspm: true
     - name: Print R config
       run: R CMD config --all
-    - name: macos fix for lib deflate
-      if: startsWith(matrix.os, 'macos')
-      run: |
-        curl -LO https://mac.r-project.org/bin/darwin20/arm64/libdeflate-1.23-darwin.20-arm64.tar.xz
-        tar xz libdeflate-1.23-darwin.20-arm64.tar.xz -C /
     - name: Set env commands (POSIX)
       if: "!startsWith(matrix.os, 'windows')"
       run: |
@@ -126,7 +121,8 @@ jobs:
       if: startsWith(matrix.os, 'macos') && contains(fromJson('["3.8", "3.9", "3.12", "3.13"]'), matrix.python-version)
       shell: bash
       run: |
-        brew install libdeflate
+        curl -LO https://mac.r-project.org/bin/darwin20/arm64/libdeflate-1.23-darwin.20-arm64.tar.xz
+        tar xz libdeflate-1.23-darwin.20-arm64.tar.xz -C /
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
