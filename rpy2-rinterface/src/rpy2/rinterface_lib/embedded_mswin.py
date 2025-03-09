@@ -18,6 +18,7 @@ _DEFAULT_R_INTERACTIVE: bool = True
 
 def _build_rstart(rhome, interactive, setcallbacks):
     rstart = ffi.new('Rstart')
+    openrlib.rlib.R_DefParams(rstart)
     rstart.rhome = rhome
     rstart.home = openrlib.rlib.getRUser()
     rstart.CharacterMode = openrlib.rlib.LinkDLL
