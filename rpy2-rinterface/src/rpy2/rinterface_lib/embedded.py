@@ -209,7 +209,14 @@ class RRuntimeError(Exception):
 def _setcallback(rlib, rlib_symbol: str,
                  callbacks,
                  callback_symbol: typing.Optional[str]) -> None:
-    """Set R callbacks."""
+    """Set R callbacks.
+
+    :param rlib: Namespace
+    :param rlib_symbol: Symbol (name) in the namespace in which to place
+      the new callback function
+    :param callbacks: Namespace in which to find the callback function.
+    :param callbacks_symbol: Symbol (name) of the new callback function.
+"""
     if callback_symbol is None:
         new_callback = ffi.NULL
     else:
