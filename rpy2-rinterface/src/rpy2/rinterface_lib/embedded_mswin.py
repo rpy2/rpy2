@@ -77,7 +77,7 @@ def _initr_win32(
 
         rhome = openrlib.rlib.get_R_HOME()
         embedded.rstart = _build_rstart(rhome, interactive, _want_setcallbacks)
-        openrlib.rlib.R_SetParams(rstart)
+        openrlib.rlib.R_SetParams(embedded.rstart)
 
         # TODO: still needed ?
         openrlib.rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
