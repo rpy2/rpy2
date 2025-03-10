@@ -52,13 +52,25 @@ def get_ffi_mode(_rinterface_cffi: types.ModuleType) -> InterfaceType:
     return FFI_MODE
 
 
+def _callback_wrapper_ABI(func, error, onerror):
+    def outer_func(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            onerror(exc_type, exc_value, exc_traceback)
+    return outer_func
+
+
 def callback(
         definition, _rinterface_cffi,
         error=None, onerror=None
 ) -> typing.Callable[[typing.Callable], object]:
     def decorator(func: typing.Callable) -> object:
         if get_ffi_mode(_rinterface_cffi) == InterfaceType.ABI:
-            res = _rinterface_cffi.ffi.callback(definition.callback_def)(func)
+            res = _rinterface_cffi.ffi.callback(definition.callback_def)(
+                _callback_wrapper_ABI(func)
+            )
         elif get_ffi_mode(_rinterface_cffi) == InterfaceType.API:
             res = _rinterface_cffi.ffi.def_extern(
                 error=error, onerror=onerror
