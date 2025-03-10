@@ -62,7 +62,7 @@ def _callback_wrapper_ABI(func, onerror):
     def outer_func(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except Exception:
+        except Exception as err:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             onerror(exc_type, exc_value, exc_traceback)
     return outer_func

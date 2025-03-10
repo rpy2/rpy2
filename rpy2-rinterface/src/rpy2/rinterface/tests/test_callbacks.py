@@ -8,6 +8,7 @@ import tempfile
 import sys
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import callbacks
+from rpy2.rinterface_lib import ffi_proxy
 from rpy2.rinterface_lib import openrlib
 
 rinterface.initr()
@@ -45,6 +46,12 @@ def test_set_consolewrite_print():
         assert '[1] "3"\n' == ''.join(buf)
 
 
+@pytest.mark.xfail(
+    condition=(ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
+               ==
+               openrlib.InterfaceType.ABI),
+    reason='Exceptions from callbacks are propagated back when in ABI mode.'
+)
 def test_consolewrite_print_error(caplog):
 
     msg = "Doesn't work."
