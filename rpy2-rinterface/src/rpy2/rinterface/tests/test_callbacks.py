@@ -46,12 +46,6 @@ def test_set_consolewrite_print():
         assert '[1] "3"\n' == ''.join(buf)
 
 
-@pytest.mark.xfail(
-    condition=(ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
-               ==
-               ffi_proxy.InterfaceType.ABI),
-    reason='Exceptions from callbacks are propagated back when in ABI mode.'
-)
 def test_consolewrite_print_error(caplog):
 
     msg = "Doesn't work."
@@ -183,7 +177,13 @@ def test_consoleread_empty():
     assert msg.rstrip() == ''
 
 
-def test_console_read_with_error(caplog):
+@pytest.mark.skipif(
+    condition=(ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
+               ==
+               ffi_proxy.InterfaceType.ABI),
+    reason='Exceptions from callbacks propagated back when in API mode.'
+)
+def test_console_read_with_error_api(caplog):
 
     msg = "Doesn't work."
 
@@ -198,6 +198,39 @@ def test_console_read_with_error(caplog):
         buf = openrlib.ffi.new('char [%i]' % n)
         with pytest.raises(RuntimeError):
             res = callbacks._consoleread(prompt, buf, n, 0)
+
+
+@pytest.mark.skipif(
+    condition=(ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
+               ==
+               ffi_proxy.InterfaceType.API),
+    reason='Exceptions from callbacks not propagated back when in ABI mode.'
+)
+def test_console_read_with_error_abi(caplog):
+
+    msg = "Doesn't work."
+
+    def f(prompt):
+        raise RuntimeError(msg)
+
+    with utils.obj_in_module(callbacks, 'consoleread', f),\
+            caplog.at_level(logging.ERROR, logger='callbacks.logger'):
+        code = rinterface.StrSexpVector(["3", ])
+        caplog.clear()
+        rinterface.baseenv["print"](code)
+        assert len(caplog.record_tuples) > 0
+        for x in caplog.record_tuples:
+            assert x[0] == 'rpy2.rinterface_lib.callbacks'
+            assert x[1] == logging.ERROR
+            assert x[2].startswith(
+                callbacks
+                ._READCONSOLE_EXCEPTION_LOG
+                .format(
+                    exception=RuntimeError,
+                    exc_value=msg,
+                    traceback=''
+                )
+            )
 
 
 def test_showmessage_default(capsys):
