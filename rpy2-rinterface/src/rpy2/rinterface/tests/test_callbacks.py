@@ -49,7 +49,7 @@ def test_set_consolewrite_print():
 @pytest.mark.xfail(
     condition=(ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
                ==
-               openrlib.InterfaceType.ABI),
+               ffi_proxy.InterfaceType.ABI),
     reason='Exceptions from callbacks are propagated back when in ABI mode.'
 )
 def test_consolewrite_print_error(caplog):
