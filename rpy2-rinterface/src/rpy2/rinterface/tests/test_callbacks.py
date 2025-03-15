@@ -217,7 +217,10 @@ def test_console_read_with_error_abi(caplog):
             caplog.at_level(logging.ERROR, logger='callbacks.logger'):
         code = rinterface.StrSexpVector(["3", ])
         caplog.clear()
-        rinterface.baseenv["print"](code)
+        prompt = openrlib.ffi.new('char []', b'foo')
+        n = 1000
+        buf = openrlib.ffi.new('char [%i]' % n)
+        res = callbacks._consoleread(prompt, buf, n, 0)
         assert len(caplog.record_tuples) > 0
         for x in caplog.record_tuples:
             assert x[0] == 'rpy2.rinterface_lib.callbacks'
@@ -231,6 +234,7 @@ def test_console_read_with_error_abi(caplog):
                     traceback=''
                 )
             )
+        assert res == 0
 
 
 def test_showmessage_default(capsys):
