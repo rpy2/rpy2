@@ -227,18 +227,19 @@ def _setcallback(rlib, rlib_symbol: str,
     setattr(rlib, rlib_symbol, new_callback)
 
 
-CALLBACK_INIT_PAIRS = (('ptr_R_WriteConsoleEx', '_consolewrite_ex'),
-                       ('ptr_R_WriteConsole', None),
-                       ('ptr_R_ShowMessage', '_showmessage'),
-                       ('ptr_R_ReadConsole', '_consoleread'),
-                       ('ptr_R_FlushConsole', '_consoleflush'),
-                       ('ptr_R_ResetConsole', '_consolereset'),
-                       ('ptr_R_ChooseFile', '_choosefile'),
-                       ('ptr_R_ShowFiles', '_showfiles'),
-                       ('ptr_R_CleanUp', '_cleanup'),
-                       ('ptr_R_ProcessEvents', '_processevents'),
-                       ('ptr_R_Busy', '_busy'))
-
+CALLBACK_INIT_PAIRS = (
+    ('ptr_R_WriteConsoleEx', '_consolewrite_ex'),
+    ('ptr_R_WriteConsole', None),
+    ('ptr_R_ShowMessage', '_showmessage'),
+    ('ptr_R_ReadConsole', '_consoleread'),
+    ('ptr_R_FlushConsole', '_consoleflush'),
+    ('ptr_R_ResetConsole', '_consolereset'),
+    ('ptr_R_ChooseFile', '_choosefile'),
+    ('ptr_R_ShowFiles', '_showfiles'),
+    ('ptr_R_CleanUp', '_cleanup'),
+    ('ptr_R_ProcessEvents', '_processevents'),
+    ('ptr_R_Busy', '_busy'),
+)
 
 # TODO: can init_once() be used here ?
 if os.name == 'nt':

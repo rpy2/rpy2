@@ -17,6 +17,15 @@ from rpy2.rinterface_lib import conversion
 logger = logging.getLogger(__name__)
 
 _CCHAR_ENCODING = sys.getdefaultencoding()
+_READCONSOLE_EXCEPTION_LOG = (
+    'R callback read-console: {exception} {exc_value} {traceback}'
+)
+_WRITECONSOLE_EXCEPTION_LOG = (
+    'R callback write-console: {exception} {exc_value} {traceback}'
+)
+_POLLEDEVENTS_EXCEPTION_LOG = (
+    'R callback polled-events: {exception} {exc_value} {traceback}'
+)
 
 
 # TODO: rename to "replace_in_module"
@@ -42,6 +51,18 @@ def replace_in_module(module, name: str, obj: typing.Any):
         yield
     finally:
         setattr(module, name, obj_orig)
+
+
+def handler_callback_error(log_template):
+    def func(exception, exc_value, traceback):
+        logger.error(
+            log_template.format(
+                exception=exception,
+                exc_value=exc_value,
+                traceback=traceback
+            )
+        )
+    return func
 
 
 def consoleflush():
@@ -70,45 +91,31 @@ def consoleread(prompt: str) -> str:
     return input(prompt)
 
 
-_READCONSOLE_EXCEPTION_LOG = 'R[read into console]: %s'
-_READCONSOLE_INTERNAL_EXCEPTION_LOG = ('Internal rpy2 error with '
-                                       '_consoleread callback: %s')
-
-
 @ffi_proxy.callback(ffi_proxy._consoleread_def,
-                    openrlib._rinterface_cffi)
+                    openrlib._rinterface_cffi,
+                    error=0,
+                    onerror=handler_callback_error(_READCONSOLE_EXCEPTION_LOG))
 def _consoleread(prompt, buf, n: int, addtohistory) -> int:
     success = None
-    try:
-        s = conversion._cchar_to_str(prompt, _CCHAR_ENCODING)
-        with openrlib.rlock:
-            reply = consoleread(s)
-    except Exception as e:
-        success = 0
-        logger.error(_READCONSOLE_EXCEPTION_LOG, str(e))
-    if success == 0:
-        return success
+    s = conversion._cchar_to_str(prompt, _CCHAR_ENCODING)
+    with openrlib.rlock:
+        reply = consoleread(s)
 
-    try:
-        # TODO: Should the coding be dynamically extracted from
-        # elsewhere ?
-        reply_b = reply.encode('utf-8')
-        reply_n = min(n, len(reply_b))
-        pybuf = bytearray(n)
-        pybuf[:reply_n] = reply_b[:reply_n]
-        pybuf[reply_n] = ord('\n')
-        pybuf[reply_n+1] = 0
-        openrlib.ffi.memmove(buf,
-                             pybuf,
-                             n)
-        if reply_n == 0:
-            success = 0
-        else:
-            success = 1
-    except Exception as e:
+    # TODO: Should the coding be dynamically extracted from
+    # elsewhere ?
+    reply_b = reply.encode('utf-8')
+    reply_n = min(n, len(reply_b))
+    pybuf = bytearray(n)
+    pybuf[:reply_n] = reply_b[:reply_n]
+    pybuf[reply_n] = ord('\n')
+    pybuf[reply_n+1] = 0
+    openrlib.ffi.memmove(buf,
+                         pybuf,
+                         n)
+    if reply_n == 0:
         success = 0
-        logger.error(_READCONSOLE_INTERNAL_EXCEPTION_LOG,
-                     str(e))
+    else:
+        success = 1
     return success
 
 
@@ -140,24 +147,26 @@ def consolewrite_print(s: str) -> None:
 
 def consolewrite_warnerror(s: str) -> None:
     # TODO: use an rpy2/R-specific warning instead of UserWarning.
-    logger.warning(_WRITECONSOLE_EXCEPTION_LOG, s)
-
-
-_WRITECONSOLE_EXCEPTION_LOG = 'R[write to console]: %s'
+    logger.warning(
+        _WRITECONSOLE_EXCEPTION_LOG.format(
+            exception=s,
+            exc_value='',
+            traceback=''
+        )
+    )
 
 
 @ffi_proxy.callback(ffi_proxy._consolewrite_ex_def,
-                    openrlib._rinterface_cffi)
+                    openrlib._rinterface_cffi,
+                    error=None,
+                    onerror=handler_callback_error(_WRITECONSOLE_EXCEPTION_LOG))
 def _consolewrite_ex(buf, n: int, otype: int) -> None:
     s = conversion._cchar_to_str_with_maxlen(buf, n, _CCHAR_ENCODING)
-    try:
-        with openrlib.rlock:
-            if otype == 0:
-                consolewrite_print(s)
-            else:
-                consolewrite_warnerror(s)
-    except Exception as e:
-        logger.error(_WRITECONSOLE_EXCEPTION_LOG, str(e))
+    with openrlib.rlock:
+        if otype == 0:
+            consolewrite_print(s)
+        else:
+            consolewrite_warnerror(s)
 
 
 def showmessage(s: str) -> None:
