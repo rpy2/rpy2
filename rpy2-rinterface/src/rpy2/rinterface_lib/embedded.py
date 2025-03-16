@@ -236,7 +236,6 @@ CALLBACK_INIT_PAIRS = (
     ('ptr_R_CleanUp', '_cleanup'),
     ('ptr_R_ProcessEvents', '_processevents'),
     ('ptr_R_Busy', '_busy'),
-    # ('R_PolledEvents', None)
 )
 
 # TODO: can init_once() be used here ?

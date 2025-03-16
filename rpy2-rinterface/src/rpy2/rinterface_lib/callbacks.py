@@ -390,15 +390,3 @@ def _yesnocancel(question):
     except Exception as e:
         logger.error(_YESNOCANCEL_EXCEPTION_LOG, str(e))
     return res
-
-
-# def polled_events():
-#     pass
-
-# TODO: complete callback for polled events.
-# @ffi_proxy.callback(ffi_proxy._polled_events_def,
-#                     openrlib._rinterface_cffi,
-#                     error=None,
-#                     onerror=handler_callback_error(_POLLEDEVENTS_EXCEPTION_LOG))
-# def _polled_events():
-#     polled_events()

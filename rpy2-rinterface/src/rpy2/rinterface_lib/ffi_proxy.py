@@ -128,10 +128,6 @@ _showfiles_def: SignatureDefinition = SignatureDefinition(
      'const char *'))
 _processevents_def: SignatureDefinition = SignatureDefinition(
     '_processevents', 'void', ('void', ))
-
-# _polled_events_def: SignatureDefinition = SignatureDefinition(
-#     '_polled_events', 'void', ('void', ))
-
 _busy_def: SignatureDefinition = SignatureDefinition(
     '_busy', 'void', ('int', ))
 _callback_def: SignatureDefinition = SignatureDefinition(
