@@ -7,6 +7,7 @@ import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
 
 logger = logging.getLogger(__name__)
+
 cffi_mode_request = rpy2.situation.get_cffi_mode()
 
 # TODO: Separate the functions in the module from the side-effect of
@@ -32,10 +33,13 @@ if cffi_mode_request == rpy2.situation.CFFI_MODE.API:
 elif cffi_mode_request == rpy2.situation.CFFI_MODE.ABI:
     import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
     cffi_mode = rpy2.situation.CFFI_MODE.ABI
-else:
+elif cffi_mode_request == rpy2.situation.CFFI_MODE.ANY:
     try:
-        import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
-        cffi_mode = rpy2.situation.CFFI_MODE.API
+        if os.name == 'nt':
+            raise ImportError('On Windows, cffi mode "ANY" is only "ABI".')
+        else:
+            import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
+            cffi_mode = rpy2.situation.CFFI_MODE.API
     except ImportError as ie_api:
         logger.warn(
             f'Error importing in API mode: {repr(ie_api)}'
@@ -48,6 +52,10 @@ else:
             logger.error(f'Failed to import the API mode with "{ie_api}" '
                          'and unable to import the ABI mode.')
             raise ie_abi
+else:
+    raise ImportError(
+        f'cffi mode requested invalid: {cffi_mode_request}'
+    )
 ffi = _rinterface_cffi.ffi
 
 lock = threading.Lock()
