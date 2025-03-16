@@ -13,12 +13,19 @@ cffi_mode_request = rpy2.situation.get_cffi_mode()
 # TODO: Separate the functions in the module from the side-effect of
 # finding R_HOME and opening the shared library.
 R_HOME = rpy2.situation.get_r_home()
-if os.name != 'nt':
-    # not relevant for Windows? (https://stackoverflow.com/questions/72575015)
+
+if os.name == 'nt':
+    if R_HOME is not None:
+        for libpath in rpy2.situation.get_r_flags(R_HOME, '--ldflags')[0].L:
+            os.add_dll_directory(libpath)  # type: ignore[attr-defined]
+    else:
+        logging.warn('R_HOME is None.')
+else:
     LD_LIBRARY_PATH = (
         rpy2.situation.r_ld_library_path_from_subprocess(R_HOME)
         if R_HOME is not None
-        else '')
+        else ''
+    )
 
 if cffi_mode_request == rpy2.situation.CFFI_MODE.API:
     import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
