@@ -20,6 +20,8 @@ CALLBACK_INIT_PAIRS = (('WriteConsoleEx', '_consolewrite_ex'),
                        ('WriteConsole', None),
                        ('ShowMessage', '_showmessage'),
                        ('ReadConsole', '_consoleread'),
+                       ('YesNoCancel', '_yesnocancel'),
+                       ('CallBack', '_callback'),
                        ('Busy', '_busy'))
 
 __cffi_protected = {}
@@ -49,7 +51,7 @@ def _build_rstart(rhome, interactive, setcallbacks):
     rstart.RestoreAction = openrlib.rlib.SA_RESTORE
     rstart.SaveAction = openrlib.rlib.SA_NOSAVE
     rstart.CharacterMode = openrlib.rlib.LinkDLL  # 1?
-    if False and setcallbacks:
+    if setcallbacks:
         if openrlib.cffi_mode is rpy2.situation.CFFI_MODE.ABI:
             callback_funcs = callbacks
         else:
