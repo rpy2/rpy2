@@ -7,6 +7,7 @@ import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
 
 logger = logging.getLogger(__name__)
+
 cffi_mode_request = rpy2.situation.get_cffi_mode()
 
 # TODO: Separate the functions in the module from the side-effect of
