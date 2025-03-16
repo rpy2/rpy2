@@ -16,6 +16,33 @@ _DEFAULT_C_STACK_LIMIT: int = -1
 _DEFAULT_R_INTERACTIVE: bool = True
 
 
+def _build_rstart(rhome, interactive, setcallbacks):
+    rstart = ffi.new('Rstart')
+    openrlib.rlib.R_DefParams(rstart)
+    rstart.rhome = rhome
+    rstart.home = openrlib.rlib.getRUser()
+    rstart.CharacterMode = openrlib.rlib.LinkDLL
+    if setcallbacks:
+        rstart.ReadConsole = callbacks._consoleread
+        rstart.WriteConsoleEx = callbacks._consolewrite_ex
+        rstart.CallBack = callbacks._callback
+        rstart.ShowMessage = callbacks._showmessage
+        rstart.YesNoCancel = callbacks._yesnocancel
+        rstart.Busy = callbacks._busy
+
+    rstart.R_Quiet = True
+    rstart.R_Interactive = interactive
+    rstart.RestoreAction = openrlib.rlib.SA_RESTORE
+    rstart.SaveAction = openrlib.rlib.SA_NOSAVE
+
+    rstart.vsize = ffi.cast('size_t', _DEFAULT_VSIZE)
+    rstart.nsize = ffi.cast('size_t', _DEFAULT_NSIZE)
+    rstart.max_vsize = ffi.cast('size_t', _DEFAULT_MAX_VSIZE)
+    rstart.max_nsize = ffi.cast('size_t', _DEFAULT_MAX_NSIZE)
+    rstart.ppsize = ffi.cast('size_t', _DEFAULT_PPSIZE)
+    return rstart
+
+
 def _initr_win32(
         interactive: typing.Optional[bool] = None,
         _want_setcallbacks: bool = True,
@@ -48,32 +75,9 @@ def _initr_win32(
         status = openrlib.rlib.Rf_initEmbeddedR(n_options_c, options_c)
         embedded._setinitialized()
 
-        embedded.rstart = ffi.new('Rstart')
-        rstart = embedded.rstart
         rhome = openrlib.rlib.get_R_HOME()
-        rstart.rhome = rhome
-        rstart.home = openrlib.rlib.getRUser()
-        rstart.CharacterMode = openrlib.rlib.LinkDLL
-        if _want_setcallbacks:
-            rstart.ReadConsole = callbacks._consoleread
-            rstart.WriteConsoleEx = callbacks._consolewrite_ex
-            rstart.CallBack = callbacks._callback
-            rstart.ShowMessage = callbacks._showmessage
-            rstart.YesNoCancel = callbacks._yesnocancel
-            rstart.Busy = callbacks._busy
-
-        rstart.R_Quiet = True
-        rstart.R_Interactive = interactive
-        rstart.RestoreAction = openrlib.rlib.SA_RESTORE
-        rstart.SaveAction = openrlib.rlib.SA_NOSAVE
-
-        rstart.vsize = ffi.cast('size_t', _DEFAULT_VSIZE)
-        rstart.nsize = ffi.cast('size_t', _DEFAULT_NSIZE)
-        rstart.max_vsize = ffi.cast('size_t', _DEFAULT_MAX_VSIZE)
-        rstart.max_nsize = ffi.cast('size_t', _DEFAULT_MAX_NSIZE)
-        rstart.ppsize = ffi.cast('size_t', _DEFAULT_PPSIZE)
-
-        openrlib.rlib.R_SetParams(rstart)
+        embedded.rstart = _build_rstart(rhome, interactive, _want_setcallbacks)
+        openrlib.rlib.R_SetParams(embedded.rstart)
 
         # TODO: still needed ?
         openrlib.rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)

@@ -253,6 +253,7 @@ def createbuilder_api():
                 ffi_proxy._cleanup_def,
                 ffi_proxy._showfiles_def,
                 ffi_proxy._processevents_def,
+                # ffi_proxy._polled_events_def,
                 ffi_proxy._busy_def,
                 ffi_proxy._callback_def,
                 ffi_proxy._yesnocancel_def,
