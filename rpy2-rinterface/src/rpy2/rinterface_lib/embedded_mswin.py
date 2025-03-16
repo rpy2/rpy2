@@ -94,8 +94,9 @@ def _initr_win32(
 
         options_c = [ffi.new('char[]', o.encode('utf-8'))
                      for o in embedded._options]
-        status = openrlib.rlib.Rf_initialize_R(len(options_c),
-                                               ffi.new('char *[]', options_c))
+        status = openrlib.rlib.Rf_initEmbeddedR(n_options_c, options_c)
+        # status = openrlib.rlib.Rf_initialize_R(len(options_c),
+        #                                        ffi.new('char *[]', options_c))
         embedded._setinitialized()
 
         rhome = openrlib.rlib.get_R_HOME()
@@ -105,6 +106,7 @@ def _initr_win32(
 
         # TODO: still needed ?
         openrlib.rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
-        openrlib.rlib.setup_Rmainloop()
+        # Restore if using Rf_initialize_R ?
+        # openrlib.rlib.setup_Rmainloop()
 
         return status
