@@ -94,7 +94,7 @@ def _initr_win32(
 
         options_c = [ffi.new('char[]', o.encode('utf-8'))
                      for o in embedded._options]
-        status = openrlib.rlib.Rf_initEmbeddedR(n_options_c, options_c)
+        status = openrlib.rlib.Rf_initEmbeddedR(len(options_c), options_c)
         # status = openrlib.rlib.Rf_initialize_R(len(options_c),
         #                                        ffi.new('char *[]', options_c))
         embedded._setinitialized()
