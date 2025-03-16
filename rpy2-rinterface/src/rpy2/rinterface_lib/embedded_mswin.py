@@ -105,6 +105,5 @@ def _initr_win32(
         # TODO: still needed ?
         openrlib.rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
         openrlib.rlib.setup_Rmainloop()
-        
 
         return status
