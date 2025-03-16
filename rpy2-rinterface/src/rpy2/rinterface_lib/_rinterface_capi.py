@@ -651,6 +651,10 @@ def _register_external_symbols() -> None:
         ffi.NULL,
         externalmethods
     )
+    # Protect elements from garbage collection.
+    __cffi_protected['python_R_ExternalMethodDef'] = (python_cchar,
+                                                      python_callback,
+                                                      externalmethods)
 
 
 class PARSING_STATUS(enum.Enum):

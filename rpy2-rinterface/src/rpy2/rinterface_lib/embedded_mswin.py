@@ -27,6 +27,7 @@ __cffi_protected = {}
 
 def _build_rstart(rhome, interactive, setcallbacks):
     rstart = ffi.new('Rstart')
+    # TODO: Where should rstart be protected?
     embedded.rstart = rstart
     __cffi_protected['rstart'] = rstart
     openrlib.rlib.R_DefParams(rstart)
@@ -37,6 +38,7 @@ def _build_rstart(rhome, interactive, setcallbacks):
     userhome = ffi.new("char[]", ffi.string(openrlib.rlib.getRUser()))
     __cffi_protected['userhome'] = userhome
     rstart.home = userhome
+
     rstart.R_Quiet = True
     rstart.R_Slave = False
     rstart.R_Interactive = interactive
