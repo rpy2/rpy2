@@ -29,8 +29,14 @@ def _build_rstart(rhome, interactive, setcallbacks):
     rstart = ffi.new('Rstart')
     embedded.rstart = rstart
     __cffi_protected['rstart'] = rstart
-
     openrlib.rlib.R_DefParams(rstart)
+    # TODO: A cleanup / consolidation of "R HOME"
+    # definition is needed.
+    print(f'rhome: {rhome}')
+    rstart.rhome = rhome
+    userhome = ffi.new("char[]", ffi.string(openrlib.rlib.getRUser()))
+    __cffi_protected['userhome'] = userhome
+    rstart.home = userhome
     rstart.R_Quiet = True
     rstart.R_Slave = False
     rstart.R_Interactive = interactive
@@ -40,14 +46,7 @@ def _build_rstart(rhome, interactive, setcallbacks):
     rstart.LoadInitFile = True
     rstart.RestoreAction = openrlib.rlib.SA_RESTORE
     rstart.SaveAction = openrlib.rlib.SA_NOSAVE
-    # TODO: A cleanup / consolidation of "R HOME"
-    # definition is needed.
-    print(f'rhome: {rhome}')
-    rstart.rhome = rhome
-    userhome = ffi.new("char[]", ffi.string(openrlib.rlib.getRUser()))
-    __cffi_protected['userhome'] = userhome
-    rstart.home = userhome
-    rstart.CharacterMode = 1  # openrlib.rlib.LinkDLL
+    rstart.CharacterMode = openrlib.rlib.LinkDLL  # 1?
     if False and setcallbacks:
         if openrlib.cffi_mode is rpy2.situation.CFFI_MODE.ABI:
             callback_funcs = callbacks
@@ -57,33 +56,6 @@ def _build_rstart(rhome, interactive, setcallbacks):
         for rstart_symbol, callback_symbol in CALLBACK_INIT_PAIRS:
             embedded._setcallback(rstart, rstart_symbol,
                                   callback_funcs, callback_symbol)
-
-    rstart.vsize = ffi.cast('size_t', _DEFAULT_VSIZE)
-    rstart.nsize = ffi.cast('size_t', _DEFAULT_NSIZE)
-    rstart.max_vsize = ffi.cast('size_t', _DEFAULT_MAX_VSIZE)
-    rstart.max_nsize = ffi.cast('size_t', _DEFAULT_MAX_NSIZE)
-    rstart.ppsize = ffi.cast('size_t', _DEFAULT_PPSIZE)
-    return rstart
-
-
-def _build_rstart(rhome, interactive, setcallbacks):
-    rstart = ffi.new('Rstart')
-    openrlib.rlib.R_DefParams(rstart)
-    rstart.rhome = rhome
-    rstart.home = openrlib.rlib.getRUser()
-    rstart.CharacterMode = openrlib.rlib.LinkDLL
-    if setcallbacks:
-        rstart.ReadConsole = callbacks._consoleread
-        rstart.WriteConsoleEx = callbacks._consolewrite_ex
-        rstart.CallBack = callbacks._callback
-        rstart.ShowMessage = callbacks._showmessage
-        rstart.YesNoCancel = callbacks._yesnocancel
-        rstart.Busy = callbacks._busy
-
-    rstart.R_Quiet = True
-    rstart.R_Interactive = interactive
-    rstart.RestoreAction = openrlib.rlib.SA_RESTORE
-    rstart.SaveAction = openrlib.rlib.SA_NOSAVE
 
     rstart.vsize = ffi.cast('size_t', _DEFAULT_VSIZE)
     rstart.nsize = ffi.cast('size_t', _DEFAULT_NSIZE)
