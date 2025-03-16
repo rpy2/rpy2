@@ -21,7 +21,6 @@ if os.name == 'nt':
     else:
         logging.warn('R_HOME is None.')
 else:
-    # not relevant for Windows? (https://stackoverflow.com/questions/72575015)
     LD_LIBRARY_PATH = (
         rpy2.situation.r_ld_library_path_from_subprocess(R_HOME)
         if R_HOME is not None
