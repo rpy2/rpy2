@@ -15,12 +15,17 @@ _DEFAULT_PPSIZE: int = 50000  # stack size
 _DEFAULT_C_STACK_LIMIT: int = -1
 _DEFAULT_R_INTERACTIVE: bool = True
 
+__cffi_protected = {}
+
 
 def _build_rstart(rhome, interactive, setcallbacks):
     rstart = ffi.new('Rstart')
+    __cffi_protected['rstart'] = rstart
     openrlib.rlib.R_DefParams(rstart)
     rstart.rhome = rhome
-    rstart.home = openrlib.rlib.getRUser()
+    userhome = ffi.new("char[]", ffi.string(openrlib.rlib.getRUser()))
+    __cffi_protected['userhome'] = userhome
+    rstart.home = userhome
     rstart.CharacterMode = openrlib.rlib.LinkDLL
     if setcallbacks:
         rstart.ReadConsole = callbacks._consoleread
@@ -76,6 +81,7 @@ def _initr_win32(
         embedded._setinitialized()
 
         rhome = openrlib.rlib.get_R_HOME()
+        __cffi_protected['rhome'] = rhome
         embedded.rstart = _build_rstart(rhome, interactive, _want_setcallbacks)
         openrlib.rlib.R_SetParams(embedded.rstart)
 

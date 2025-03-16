@@ -17,7 +17,8 @@ from _cffi_backend import FFI  # type: ignore
 
 
 logger = logging.getLogger(__name__)
-
+# Preserve cdata allocated by cffi from garbage collection.
+__cffi_protected = {}
 ffi = openrlib.ffi
 
 # TODO: How can I reliably get MAX_INT from limits.h ?
@@ -646,6 +647,10 @@ def _register_external_symbols() -> None:
         ffi.NULL,
         externalmethods
     )
+    # Protect elements from garbage collection.
+    __cffi_protected['python_R_ExternalMethodDef'] = (python_cchar,
+                                                      python_callback,
+                                                      externalmethods)
 
 
 class PARSING_STATUS(enum.Enum):
