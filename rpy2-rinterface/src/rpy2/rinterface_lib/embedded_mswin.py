@@ -37,7 +37,7 @@ def _build_rstart(rhome, interactive, setcallbacks):
     rstart.CharacterMode = openrlib.rlib.LinkDLL
     if setcallbacks:
         for rstart_name, callback_name in CALLBACK_INIT_PAIRS:
-            if not callback_name is None:
+            if callback_name is not None:
                 setattr(rstart, rstart_name,
                         getattr(callbacks, callback_name))
 
