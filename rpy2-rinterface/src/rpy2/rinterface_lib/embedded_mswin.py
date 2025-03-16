@@ -15,6 +15,14 @@ _DEFAULT_PPSIZE: int = 50000  # stack size
 _DEFAULT_C_STACK_LIMIT: int = -1
 _DEFAULT_R_INTERACTIVE: bool = True
 
+CALLBACK_INIT_PAIRS = (('WriteConsoleEx', '_consolewrite_ex'),
+                       ('WriteConsole', None),
+                       ('ShowMessage', '_showmessage'),
+                       ('ReadConsole', '_consoleread'),
+                       ('YesNoCancel', '_yesnocancel'),
+                       ('CallBack', '_callback'),
+                       ('Busy', '_busy'))
+
 __cffi_protected = {}
 
 
@@ -28,12 +36,10 @@ def _build_rstart(rhome, interactive, setcallbacks):
     rstart.home = userhome
     rstart.CharacterMode = openrlib.rlib.LinkDLL
     if setcallbacks:
-        rstart.ReadConsole = callbacks._consoleread
-        rstart.WriteConsoleEx = callbacks._consolewrite_ex
-        rstart.CallBack = callbacks._callback
-        rstart.ShowMessage = callbacks._showmessage
-        rstart.YesNoCancel = callbacks._yesnocancel
-        rstart.Busy = callbacks._busy
+        for rstart_name, callback_name in CALLBACK_INIT_PAIRS:
+            if callback_name is not None:
+                setattr(rstart, rstart_name,
+                        getattr(callbacks, callback_name))
 
     rstart.R_Quiet = True
     rstart.R_Interactive = interactive
