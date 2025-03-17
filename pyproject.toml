@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rpy2"
-version = "3.6.0.dev2"
+version = "3.6.0a1"
 description = "Python interface to the R language (embedded R)"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -28,8 +28,8 @@ classifiers = [
     "Intended Audience :: Science/Research",
 ]
 dependencies = [
-    "rpy2-rinterface>=3.6.0.dev1",
-    "rpy2-robjects>=3.6.0.dev1",
+    "rpy2-rinterface>=3.6.0a1",
+    "rpy2-robjects>=3.6.0a1",
     "packaging;platform_system=='Windows'",
     "typing-extensions;python_version<'3.8'",
     "backports.zoneinfo;python_version<'3.9'"
