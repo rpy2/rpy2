@@ -307,6 +307,9 @@ def _has_slot(cdata: FFI.CData, name_b) -> bool:
 def build_rcall(rfunction,
                 args=[],
                 kwargs=[]):
+    """Build an R call.
+
+    The call can be evaluated later."""
     rlib = openrlib.rlib
     with memorymanagement.rmemory() as rmemory:
         rcall = rmemory.protect(

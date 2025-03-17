@@ -22,6 +22,8 @@ rpy2_embeddedR_isinitialized = 0x00
 
 
 class Is_RStart(Protocol):
+    """Type-checking helper."""
+
     @property
     def rhome(self): ...
 
@@ -263,15 +265,12 @@ else:
             _c_stack_limit = _DEFAULT_C_STACK_LIMIT
 
         rlib = openrlib.rlib
-        ffi_proxy = openrlib.ffi_proxy
-        if (
-                ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
-                ==
-                ffi_proxy.InterfaceType.ABI
-        ):
+        if openrlib.cffi_mode is rpy2.situation.CFFI_MODE.ABI:
             callback_funcs = callbacks
-        else:
+        elif openrlib.cffi_mode is rpy2.situation.CFFI_MODE.API:
             callback_funcs = rlib
+        else:
+            raise ValueError(f'Invalid cffi mode: {openrlib.cffi_mode}')
 
         with openrlib.rlock:
             if isinitialized():
