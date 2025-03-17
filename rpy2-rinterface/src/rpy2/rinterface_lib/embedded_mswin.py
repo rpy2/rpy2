@@ -71,7 +71,7 @@ def _build_rstart(rhome, interactive, setcallbacks):
 
 def _initr_win32(
         interactive: typing.Optional[bool] = None,
-        _want_setcallbacks: bool = False,
+        _want_setcallbacks: bool = True,
         _c_stack_limit: typing.Optional[int] = _DEFAULT_C_STACK_LIMIT
 
 ) -> typing.Optional[int]:
