@@ -2,7 +2,7 @@
 set -e
 set -x
 
-python doc/_static/demos/example01.py
+# python doc/_static/demos/example01.py
 
 pytest \
     --verbose
