@@ -640,10 +640,7 @@ def _register_external_symbols() -> None:
           python_callback,
           -1],
          [ffi.NULL, ffi.NULL, 0]])
-    # Protect elements from garbage collection.
-    __cffi_protected['python_R_ExternalMethodDef'] = (python_cchar,
-                                                      python_callback,
-                                                      externalmethods)
+
     openrlib.rlib.R_registerRoutines(
         openrlib.rlib.R_getEmbeddingDllInfo(),
         ffi.NULL,
