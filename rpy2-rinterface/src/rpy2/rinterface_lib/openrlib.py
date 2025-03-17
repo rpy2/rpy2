@@ -56,6 +56,7 @@ else:
     raise ImportError(
         f'cffi mode requested invalid: {cffi_mode_request}'
     )
+
 ffi = _rinterface_cffi.ffi
 
 lock = threading.Lock()

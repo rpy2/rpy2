@@ -1,5 +1,6 @@
 import sys
 import typing
+import rpy2.situation
 from rpy2.rinterface_lib import embedded
 from rpy2.rinterface_lib import callbacks
 from rpy2.rinterface_lib import openrlib
@@ -28,23 +29,37 @@ __cffi_protected = {}
 
 def _build_rstart(rhome, interactive, setcallbacks):
     rstart = ffi.new('Rstart')
+    # TODO: Where should rstart be protected?
+    embedded.rstart = rstart
     __cffi_protected['rstart'] = rstart
     openrlib.rlib.R_DefParams(rstart)
+    # TODO: A cleanup / consolidation of "R HOME"
+    # definition is needed.
+    print(f'rhome: {rhome}')
     rstart.rhome = rhome
     userhome = ffi.new("char[]", ffi.string(openrlib.rlib.getRUser()))
     __cffi_protected['userhome'] = userhome
     rstart.home = userhome
-    rstart.CharacterMode = openrlib.rlib.LinkDLL
-    if setcallbacks:
-        for rstart_name, callback_name in CALLBACK_INIT_PAIRS:
-            if callback_name is not None:
-                setattr(rstart, rstart_name,
-                        getattr(callbacks, callback_name))
 
     rstart.R_Quiet = True
+    rstart.R_Slave = False
     rstart.R_Interactive = interactive
+    # TODO: Force verbose for now.
+    rstart.R_Verbose = True
+    rstart.LoadSiteFile = True
+    rstart.LoadInitFile = True
     rstart.RestoreAction = openrlib.rlib.SA_RESTORE
     rstart.SaveAction = openrlib.rlib.SA_NOSAVE
+    rstart.CharacterMode = openrlib.rlib.LinkDLL  # 1?
+    if setcallbacks:
+        if openrlib.cffi_mode is rpy2.situation.CFFI_MODE.ABI:
+            callback_funcs = callbacks
+        else:
+            callback_funcs = openrlib.rlib
+
+        for rstart_symbol, callback_symbol in CALLBACK_INIT_PAIRS:
+            embedded._setcallback(rstart, rstart_symbol,
+                                  callback_funcs, callback_symbol)
 
     rstart.vsize = ffi.cast('size_t', _DEFAULT_VSIZE)
     rstart.nsize = ffi.cast('size_t', _DEFAULT_NSIZE)
@@ -79,11 +94,12 @@ def _initr_win32(
         if embedded.isinitialized():
             return None
 
-        options_c = [ffi.new('char[]', o.encode('ASCII'))
+        options_c = [ffi.new('char[]', o.encode('utf-8'))
                      for o in embedded._options]
-        n_options = len(options_c)
-        n_options_c = ffi.cast('int', n_options)
-        status = openrlib.rlib.Rf_initEmbeddedR(n_options_c, options_c)
+        status = openrlib.rlib.Rf_initEmbeddedR(len(options_c),
+                                                ffi.new('char *[]', options_c))
+        # status = openrlib.rlib.Rf_initialize_R(len(options_c),
+        #                                        ffi.new('char *[]', options_c))
         embedded._setinitialized()
 
         rhome = openrlib.rlib.get_R_HOME()
@@ -93,5 +109,7 @@ def _initr_win32(
 
         # TODO: still needed ?
         openrlib.rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
+        # Restore if using Rf_initialize_R ?
+        # openrlib.rlib.setup_Rmainloop()
 
         return status

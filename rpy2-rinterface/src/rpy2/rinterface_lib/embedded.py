@@ -4,6 +4,7 @@ import os
 import sys
 import typing
 import warnings
+import rpy2.situation
 from rpy2.rinterface_lib import openrlib
 from rpy2.rinterface_lib import callbacks
 if os.name == 'nt':
@@ -22,6 +23,8 @@ rpy2_embeddedR_isinitialized = 0x00
 
 
 class Is_RStart(Protocol):
+    """Type-checking helper."""
+
     @property
     def rhome(self): ...
 
@@ -216,7 +219,7 @@ def _setcallback(rlib, rlib_symbol: str,
       the new callback function
     :param callbacks: Namespace in which to find the callback function.
     :param callbacks_symbol: Symbol (name) of the new callback function.
-"""
+    """
     if callback_symbol is None:
         new_callback = ffi.NULL
     else:
@@ -263,12 +266,7 @@ else:
             _c_stack_limit = _DEFAULT_C_STACK_LIMIT
 
         rlib = openrlib.rlib
-        ffi_proxy = openrlib.ffi_proxy
-        if (
-                ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
-                ==
-                ffi_proxy.InterfaceType.ABI
-        ):
+        if openrlib.cffi_mode is rpy2.situation.CFFI_MODE.ABI:
             callback_funcs = callbacks
         else:
             callback_funcs = rlib
