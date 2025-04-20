@@ -73,10 +73,12 @@ jobs:
       if: startsWith(inputs.os, 'windows')
       shell: bash
       run: |
+        ${{ env.VENV_ACTIVATE }}
         echo "R_LIBRARY=''" >> $GITHUB_ENV
     - name: Set R_LIBRARY (POSIX)
       if: "!startsWith(inputs.os, 'windows')"
       run: |
+        ${{ env.VENV_ACTIVATE }}
         echo "R_LIBRARY=export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}" >> $GITHUB_ENV
     - name: Test with minimal dependencies
       run: |
