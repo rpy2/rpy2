@@ -32,13 +32,11 @@ jobs:
       shell: bash
       run: |
         echo "VENV_ACTIVATE=pyenv_base\Scripts\activate" >> $GITHUB_ENV
-        echo "R_LIBRARY=''" >> $GITHUB_ENV
         echo "R_HOME=$(R RHOME)" >> $GITHUB_ENV
-    - name: Set env commands (POSIX)
+    - name: Set virtualenv activation command (POSIX)
       if: "!startsWith(inputs.os, 'windows')"
       run: |
         echo "VENV_ACTIVATE=source pyenv_base/bin/activate" >> $GITHUB_ENV
-        echo "R_LIBRARY=export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}" >> $GITHUB_ENV
     - name: Create base virtualenv 
       run: |
         python -m venv pyenv_base
@@ -71,6 +69,15 @@ jobs:
         pip install ${{ env.RPY2_RINTERFACE_WHL_DIST }}
         pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}
         python -m rpy2.situation
+    - name: Set R_LIBRARY (Windows)
+      if: startsWith(inputs.os, 'windows')
+      shell: bash
+      run: |
+        echo "R_LIBRARY=''" >> $GITHUB_ENV
+    - name: Set R_LIBRARY (POSIX)
+      if: "!startsWith(inputs.os, 'windows')"
+      run: |
+        echo "R_LIBRARY=export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}" >> $GITHUB_ENV
     - name: Test with minimal dependencies
       run: |
         ${{ env.VENV_ACTIVATE }}
