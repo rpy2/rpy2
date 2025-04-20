@@ -11,4 +11,4 @@ pytest \
     --cov=rpy2.rlike \
     --cov=rpy2.robjects \
     --cov=rpy2.robjects.lib \
-    rpy2-robjects/src/rpy2/robjects/tests
+    rpy2-robjects/src/rpy2/robjects/tests/lib/
