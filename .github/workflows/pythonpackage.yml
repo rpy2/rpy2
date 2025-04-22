@@ -80,13 +80,13 @@ jobs:
       with:
         name: rpy2-sdist
         path: dist/rpy2-*.tar.gz
-  build-abi-wheel:
+  build-api-wheel:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         python-version: [3.9, "3.10", "3.11", "3.12", "3.13"]
-        r-version: [release]
+        r-version: ["4.3", release]
         os: ["windows-latest", ubuntu-latest, macos-14, macos-15]
         exclude:
           - os: macos-14
