@@ -87,7 +87,7 @@ jobs:
       run: |
         ${{ env.VENV_ACTIVATE }}
         echo "With requirements for rpy2-rinterface."
-        python3 -m pip install --pre ${{ env.RPY2_RINTERFACE_WHL_DIST }}'[test_minimal]'
+        python3 -m pip install --pre ${{ env.RPY2_RINTERFACE_WHL_DIST }}'[test]'
         echo "With dev for rpy2-rinterface."
         python3 -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}'[test_minimal]'
         ${{ env.R_LIBRARY }}
