@@ -44,12 +44,6 @@ jobs:
         python -m venv pyenv_base
         ${{ env.VENV_ACTIVATE }}
         python -m  pip install -U pip wheel
-    - name: Install extra dependencies
-      if: startsWith(inputs.os, 'windows') && inputs.python-version == '3.8'
-      run: |
-        echo "Bug in setuptools requires update"
-        ${{ env.VENV_ACTIVATE }}
-        python -m pip install --upgrade setuptools pycparser
     - uses: actions/download-artifact@v4.1.7
       with:
         pattern: rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-r${{ inputs.r-version }}
@@ -115,7 +109,7 @@ jobs:
         bash -e ./scripts/run_test_rdeps.sh
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4.6.0
-      if: inputs.os == 'ubuntu-22.04' && inputs.python-version == '3.8' && inputs.r-version == 'release'
+      if: inputs.os == 'ubuntu-22.04' && inputs.python-version == '3.10' && inputs.r-version == 'release'
       env:
         OS: ${{ runner.os }}
         PYTHON: ${{ inputs.python-version }}
