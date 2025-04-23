@@ -183,7 +183,7 @@ jobs:
         python -m build -o dist/ --wheel .
     - uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.package.name }}-${{ matrix.os }}-r${{ matrix.r-version }}
+        name: ${{ matrix.package.name }}-${{ matrix.os }}-py${{ matrix.python-version }}
         path: ${{ matrix.package.dir }}/dist/*.whl
   test:
     needs: [build-api-wheel, build-noabi-wheel]
