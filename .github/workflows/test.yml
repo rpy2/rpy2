@@ -50,7 +50,7 @@ jobs:
         path: rpy2-rinterface/dist/
     - uses: actions/download-artifact@v4.1.7
       with:
-        pattern: rpy2-robjects-${{ inputs.os }}-py${{ inputs.python-version }}
+        pattern: rpy2-robjects-${{ inputs.os }}
         path: rpy2-robjects/dist/
     - name: Built package path.
       shell: bash
@@ -58,7 +58,7 @@ jobs:
         ls rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-r${{ inputs.r-version }}/*.whl
         ls rpy2-rinterface/dist/
         echo "RPY2_RINTERFACE_WHL_DIST=$(ls -1 rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-r${{ inputs.r-version }}/*.whl | tail -n 1)" >> $GITHUB_ENV
-        echo "RPY2_ROBJECTS_WHL_DIST=$(ls -1 rpy2-robjects/dist/rpy2-robjects-${{ inputs.os }}-py${{ inputs.python-version }}/*.whl | tail -n 1)" >> $GITHUB_ENV
+        echo "RPY2_ROBJECTS_WHL_DIST=$(ls -1 rpy2-robjects/dist/rpy2-robjects-${{ inputs.os }}/*.whl | tail -n 1)" >> $GITHUB_ENV
     - name: Install package
       run: |
         ${{ env.VENV_ACTIVATE }}
