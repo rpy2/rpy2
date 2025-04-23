@@ -11,13 +11,12 @@ build-backend = "setuptools.build_meta"
 name = "rpy2-rinterface"
 description = "Low-level interface from Python to the R."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = { text = "GPLv2+" }
 authors = [{ name = "Laurent Gautier", email = "lgautier@gmail.com" }]
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -30,8 +29,6 @@ classifiers = [
 dependencies = [
     "cffi>=1.15.1",
     "packaging;platform_system=='Windows'",
-    "typing-extensions;python_version<'3.8'",
-    "backports.zoneinfo;python_version<'3.9'"
 ]
 dynamic = ["version"]
 
