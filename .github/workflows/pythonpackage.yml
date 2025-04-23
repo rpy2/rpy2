@@ -86,7 +86,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
-        r-version: [release]
+        r-version: ["4.4", release]
         os: ["windows-latest", ubuntu-latest, macos-14, macos-15]
         exclude:
           - os: macos-14
@@ -183,7 +183,7 @@ jobs:
         python -m build -o dist/ --wheel .
     - uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.package.name }}-${{ matrix.os }}-r${{ matrix.r-version }}
+        name: ${{ matrix.package.name }}-${{ matrix.os }}
         path: ${{ matrix.package.dir }}/dist/*.whl
   test:
     needs: [build-abi-wheel, build-noabi-wheel]
@@ -191,7 +191,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
-        r-version: [release]
+        r-version: ["4.4", release]
         os: ["windows-latest", ubuntu-latest, macos-14]
         exclude:
           - os: macos-14
