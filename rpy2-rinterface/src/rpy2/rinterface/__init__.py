@@ -1178,7 +1178,8 @@ def _setrenvvars(action: _ENVVAR_ACTION):
                 if action is _ENVVAR_ACTION.REPLACE_WARN:
                     if v == os.environ[k]:
                         warnings.warn(
-                            f'Environment variable "{k}" also defined by R and with the same value.'
+                            f'Environment variable "{k}" also defined by R and '
+                            'with the same value.'
                         )
                     else:
                         warnings.warn(
