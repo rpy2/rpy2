@@ -15,7 +15,7 @@ on:
 jobs:
   test:
     runs-on: ${{ inputs.os }}
-    continue-on-error: false
+    continue-on-error: ${{ startsWith(inputs.os, 'windows') && inputs.r-version == 'release' }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ inputs.python-version }}

@@ -30,7 +30,6 @@ classifiers = [
 dependencies = [
     "cffi>=1.15.1",
     "packaging;platform_system=='Windows'",
-    "typing-extensions;python_version<'3.8'",
     "backports.zoneinfo;python_version<'3.9'"
 ]
 dynamic = ["version"]

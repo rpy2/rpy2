@@ -32,7 +32,6 @@ dependencies = [
     "rpy2-rinterface>=3.6.0.dev1",
     "rpy2-robjects>=3.6.0.dev1",
     "packaging;platform_system=='Windows'",
-    "typing-extensions;python_version<'3.8'",
     "backports.zoneinfo;python_version<'3.9'"
 ]
 
