@@ -13,7 +13,7 @@ with warnings.catch_warnings():
                          version=dbplyr.__version__,
                          symbol_r2python=dbplyr._symbol_r2python,
                          symbol_resolve=dbplyr._symbol_resolve)
-TARGET_VERSION = '2.2.'
+TARGET_VERSION = '2.5.'
 if not dbplyr.__version__.startswith(TARGET_VERSION):
     warnings.warn(
         'This was designed against dbplyr versions starting with %s'
