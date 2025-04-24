@@ -1062,17 +1062,7 @@ NA_Real = None
 NA_Complex = None
 
 
-def initr_simple() -> typing.Optional[int]:
-    """Initialize R's embedded C library."""
-    with openrlib.rlock:
-        status = embedded._initr()
-        atexit.register(endr, 0)
-        _rinterface._register_external_symbols()
-        _post_initr_setup()
-        return status
-
-
-def initr_checkenv(
+def initr(
         interactive: typing.Optional[bool] = None,
         _want_setcallbacks: bool = True,
         _c_stack_limit: typing.Optional[int] = None
@@ -1101,12 +1091,10 @@ def initr_checkenv(
                                      _want_setcallbacks=_want_setcallbacks,
                                      _c_stack_limit=_c_stack_limit)
             embedded.set_python_process_info()
+        atexit.register(endr, 0)
         _rinterface._register_external_symbols()
         _post_initr_setup()
     return status
-
-
-initr = initr_checkenv
 
 
 def _update_R_ENC_PY():
@@ -1188,10 +1176,15 @@ def _setrenvvars(action: _ENVVAR_ACTION):
                     action in (_ENVVAR_ACTION.REPLACE_WARN, _ENVVAR_ACTION.REPLACE_NOWARN)
             ):
                 if action is _ENVVAR_ACTION.REPLACE_WARN:
-                    warnings.warn(
-                        f'Environment variable "{k}" redefined by R and overriding '
-                        'existing variable.'
-                    )
+                    if v == os.environ[k]:
+                        warnings.warn(
+                            f'Environment variable "{k}" also defined by R and with the same value.'
+                        )
+                    else:
+                        warnings.warn(
+                            f'Environment variable "{k}" redefined by R and overriding '
+                            f'existing variable. Current: "{os.environ[k]}", R: "{v}"'
+                        )
         new_envvars[k] = v
     os.environ.update(new_envvars)
 
