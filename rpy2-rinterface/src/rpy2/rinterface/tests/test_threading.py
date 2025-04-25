@@ -20,7 +20,7 @@ class ThreadWithExceptions(Thread):
                     reason='Can only be tested before R is initialized.')
 @pytest.mark.skipif(os.name == 'nt',
                     reason='Crashes Python on Windows.')
-def notest_threading__initr():
+def test_threading__initr():
     thread = ThreadWithExceptions(target=rpy2.rinterface_lib.embedded._initr)
     thread.start()
     thread.join()
