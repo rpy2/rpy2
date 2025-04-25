@@ -71,6 +71,8 @@ Changes
   the definition in recent R release (>= 4.3) when rpy2 is in "API mode".
   This does not work with the "ABI mode" though, and the legacy
   definition of `Rcomplex` is still used with it.
+- :func:`rpy2.rinterface.initr_simple` is no longer part of the API. Use
+  :func:`rpy2.rinterface.initr` can provide the same functionality.
 
 
 Bugs fixed
