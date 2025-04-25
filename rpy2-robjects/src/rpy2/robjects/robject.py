@@ -8,7 +8,7 @@ import rpy2.rinterface_lib.callbacks
 
 from rpy2.robjects import conversion
 
-rpy2.rinterface.initr_simple()
+rpy2.rinterface.initr()
 
 
 def _add_warn_reticulate_hook():
