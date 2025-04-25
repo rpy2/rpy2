@@ -295,12 +295,6 @@ else:
             # the path of the shared library could address this but for the
             # API mode this would require writing a C wrapper to manually
             # load each each symbol in the C library.
-            os.environ['LD_LIBRARY_PATH'] = (
-                ':'.join(
-                    (openrlib.LD_LIBRARY_PATH,
-                     os.environ.get('LD_LIBRARY_PATH', ''))
-                    )
-            )
             options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
             n_options = len(options_c)
             n_options_c = ffi.cast('int', n_options)
