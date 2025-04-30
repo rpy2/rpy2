@@ -27,14 +27,37 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
-    - uses: actions/download-artifact@v4.1.7
+    - name: Download rpy2-rinterface (sdist).
+      uses: actions/upload-artifact@v4
+      with:
+        name: rpy2-rinterface-sdist
+        path: rpy2-rinterface/dist/rpy2_rinterface-*.tar.gz
+    - name: Download rpy2-rinterface (wheel).
+      uses: actions/download-artifact@v4.1.7
+      with:
+        pattern: rpy2-rinterface-*-py*-rrelease
+        path: rpy2-rinterface/dist/
+    - name: Download rpy2-rinterface (wheel)
+      uses: actions/download-artifact@v4.1.7
+      with:
+        pattern: rpy2-robjects-*
+        path: rpy2-robjects/dist/
+    - name: rpy2 (sdist)
+      uses: actions/download-artifact@v4.1.7
       with:
         name: rpy2-sdist
-        path: dist/
-    - name: Publish
+        path: dist/rpy2-*.tar.gz
+    - name: Publish rinterface
       if: github.event_name == 'release'
-      uses: pypa/gh-action-pypi-publish@release/v1.10
+      uses: pypa/gh-action-pypi-publish@release/v1.12
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
-        packages-dir: dist/
+        packages-dir: rpy2-rinterface-dist/
+    - name: Publish robjects
+      if: github.event_name == 'release'
+      uses: pypa/gh-action-pypi-publish@release/v1.12
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        packages-dir: rpy2-robjects-dist/
