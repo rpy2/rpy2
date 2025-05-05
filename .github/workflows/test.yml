@@ -77,7 +77,6 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         echo "R_LIBRARY=export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}" >> $GITHUB_ENV
     - name: Test with minimal dependencies
-      shell: bash
       run: |
         ${{ env.VENV_ACTIVATE }}
         echo "With requirements for rpy2-rinterface."
@@ -89,21 +88,18 @@ jobs:
         python3 -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}'[test_minimal]'
         bash -e ./scripts/run_test_robjects_min_deps.sh
     - name: Test with numpy
-      shell: bash
       run: |
         ${{ env.VENV_ACTIVATE }}
         python -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[numpy]'
         ${{ env.R_LIBRARY }}
         bash -e ./scripts/run_test_numpy.sh
     - name: Test with pandas
-      shell: bash
       run: |
         ${{ env.VENV_ACTIVATE }}
         python -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[pandas]'
         ${{ env.R_LIBRARY }}
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
-      shell: bash
       run: |
         ${{ env.VENV_ACTIVATE }}
         python -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[test]'
