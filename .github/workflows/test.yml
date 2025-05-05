@@ -31,14 +31,15 @@ jobs:
       if: startsWith(inputs.os, 'windows')
       shell: bash
       run: |
-        echo "VENV_ACTIVATE=pyenv_base/Scripts/activate" >> $GITHUB_ENV
+        echo "VENV_ACTIVATE=pyenv_base\Scripts\activate" >> $GITHUB_ENV
+        echo "R_LIBRARY=''" >> $GITHUB_ENV
         echo "R_HOME=$(R RHOME)" >> $GITHUB_ENV
     - name: Set virtualenv activation command (POSIX)
       if: "!startsWith(inputs.os, 'windows')"
       run: |
         echo "VENV_ACTIVATE=source pyenv_base/bin/activate" >> $GITHUB_ENV
+        echo "R_LIBRARY=export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH)" >> $GITHUB_ENV
     - name: Create base virtualenv
-      shell: bash
       run: |
         python -m venv pyenv_base
         ${{ env.VENV_ACTIVATE }}
