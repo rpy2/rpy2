@@ -29,7 +29,6 @@ jobs:
         use-public-rspm: true
     - name: Set virtualenv activation command (Windows)
       if: startsWith(inputs.os, 'windows')
-      shell: bash
       run: |
         echo "VENV_ACTIVATE=pyenv_base\Scripts\activate" >> $GITHUB_ENV
         echo "R_LIBRARY=''" >> $GITHUB_ENV
@@ -67,7 +66,6 @@ jobs:
         python -m rpy2.situation
     - name: Set R_LIBRARY (Windows)
       if: startsWith(inputs.os, 'windows')
-      shell: bash
       run: |
         ${{ env.VENV_ACTIVATE }}
         echo "R_LIBRARY=''" >> $GITHUB_ENV
