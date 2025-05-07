@@ -262,6 +262,7 @@ def _setcallback(rlib, rlib_symbol: str,
         new_callback = getattr(callbacks, callback_symbol)
     setattr(rlib, rlib_symbol, new_callback)
 
+
 _CallbackInit = collections.namedtuple(
     '_CallbackInit',
     ('c_name_posix', 'c_name_nt', 'py_name')
