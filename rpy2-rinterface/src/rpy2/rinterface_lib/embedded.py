@@ -7,8 +7,6 @@ import typing
 import warnings
 from rpy2.rinterface_lib import openrlib
 from rpy2.rinterface_lib import callbacks
-if os.name == 'nt':
-    import rpy2.rinterface_lib.embedded_mswin as embedded_mswin
 from typing import Protocol
 
 logger = logging.getLogger(__name__)
@@ -264,7 +262,10 @@ def _setcallback(rlib, rlib_symbol: str,
         new_callback = getattr(callbacks, callback_symbol)
     setattr(rlib, rlib_symbol, new_callback)
 
-_CallbackInit = collections.namedtuple('_CallbackInit', ('c_name_posix', 'c_name_nt', 'py_name'))
+_CallbackInit = collections.namedtuple(
+    '_CallbackInit',
+    ('c_name_posix', 'c_name_nt', 'py_name')
+)
 
 CALLBACK_INIT_PAIRS: typing.Tuple[_CallbackInit, ...] = (
     _CallbackInit('ptr_R_WriteConsoleEx', 'WriteConsoleEx', '_consolewrite_ex'),
@@ -281,6 +282,7 @@ CALLBACK_INIT_PAIRS: typing.Tuple[_CallbackInit, ...] = (
     _CallbackInit(None, 'CallBack', '_callback'),
     _CallbackInit('ptr_R_Busy', 'Busy', '_busy'),
 )
+
 
 def _initr(
         interactive: typing.Optional[bool] = None,
