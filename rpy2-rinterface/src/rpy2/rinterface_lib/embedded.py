@@ -339,12 +339,12 @@ def _initr(
 
         if os.name == 'nt':
             status = openrlib.rlib.Rf_initEmbeddedR(n_options_c, options_c)
-            embedded._setinitialized()
+            _setinitialized()
 
             rhome = openrlib.rlib.get_R_HOME()
             __cffi_protected['rhome'] = rhome
-            embedded.rstart = _build_rstart(rhome, interactive, _want_setcallbacks)
-            openrlib.rlib.R_SetParams(embedded.rstart)
+            rstart = _build_rstart(rhome, interactive, _want_setcallbacks)
+            openrlib.rlib.R_SetParams(rstart)
 
             # TODO: still needed ?
             openrlib.rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
