@@ -159,19 +159,22 @@ def _convert_rpy2py_boolvector(obj):
 
 @default_converter.rpy2py.register(rinterface.StrSexpVector)
 def _convert_rpy2py_strvector(obj):
-    cls = _vector_matrix_array(obj, vectors.StrVector,
-                               vectors.StrMatrix, vectors.StrArray)
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_map[rinterface.StrSexpVector])
+    cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.ByteSexpVector)
 def _convert_rpy2py_bytevector(obj):
-    cls = _vector_matrix_array(obj, vectors.ByteVector,
-                               vectors.ByteMatrix, vectors.ByteArray)
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_map[rinterface.ByteSexpVector])
+    cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 default_converter.rpy2py.register(rinterface.PairlistSexpVector, PairlistVector)
+
 
 @default_converter.rpy2py.register(rinterface.LangSexpVector)
 def _convert_rpy2py_langvector(obj):
