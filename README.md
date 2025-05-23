@@ -1,9 +1,11 @@
 # Python -> R bridge
 
 [![pypi](https://img.shields.io/pypi/v/rpy2.svg?style=flat-square)](https://pypi.python.org/pypi/rpy2)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/rpy2)
 [![Codecov](https://codecov.io/gh/rpy2/rpy2/branch/master/graph/badge.svg)](https://codecov.io/gh/rpy2/rpy2)
 [![GH Actions](https://github.com/rpy2/rpy2/workflows/Python%20package/badge.svg)](https://github.com/rpy2/rpy2/actions?query=workflow%3A%22Python+package%22)
+
+![PyPI - Downloads](https://img.shields.io/pypi/dm/rpy2?style=flat&label=pypi)
+![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/rpy2?label=conda-forge)
 
 The project's webpage is here: https://rpy2.github.io/
 
