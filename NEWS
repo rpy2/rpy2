@@ -1,3 +1,13 @@
+Release 3.6.1
+=============
+
+Bugs fixed
+----------
+
+- Clear warnings for deprecation of `rpy2.rinterface_lib.callbacks.obj_in_module`
+  (issue #1181).
+
+
 Release 3.6.0
 =============
 
