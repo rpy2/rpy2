@@ -109,8 +109,8 @@ class RObjectMixin(abc.ABC):
         s = []
 
         with (rpy2.rinterface_lib
-              .callbacks.obj_in_module(rpy2.rinterface_lib.callbacks,
-                                       'consolewrite_print', s.append)):
+              .callbacks.replace_in_module(rpy2.rinterface_lib.callbacks,
+                                           'consolewrite_print', s.append)):
             try:
                 self.__show(self)
                 # There can be situation where an invalid call to R`s

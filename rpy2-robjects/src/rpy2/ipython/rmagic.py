@@ -1284,25 +1284,25 @@ class RMagics(IPython.core.magic.Magics):
                 text_output += text_result
                 if visible:
                     with contextlib.ExitStack() as stack:
-                        obj_in_module = (rpy2.rinterface_lib
-                                         .callbacks
-                                         .obj_in_module)
+                        replace_in_module = (rpy2.rinterface_lib
+                                             .callbacks
+                                             .replace_in_module)
                         if self.cache_display_data:
                             stack.enter_context(
-                                obj_in_module(rpy2.rinterface_lib
-                                              .callbacks,
-                                              'consolewrite_print',
-                                              self.write_console_regular)
+                                replace_in_module(rpy2.rinterface_lib
+                                                  .callbacks,
+                                                  'consolewrite_print',
+                                                  self.write_console_regular)
                             )
                         stack.enter_context(
-                            obj_in_module(
+                            replace_in_module(
                                 rpy2.rinterface_lib.callbacks,
                                 'consolewrite_warnerror',
                                 self.write_console_regular
                             )
                         )
                         stack.enter_context(
-                            obj_in_module(
+                            replace_in_module(
                                 rpy2.rinterface_lib.callbacks,
                                 '_WRITECONSOLE_EXCEPTION_LOG',
                                 '%s')
