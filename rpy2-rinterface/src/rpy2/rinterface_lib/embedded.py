@@ -270,7 +270,7 @@ _CallbackInit = collections.namedtuple(
 
 CALLBACK_INIT_PAIRS: typing.Tuple[_CallbackInit, ...] = (
     _CallbackInit('ptr_R_WriteConsoleEx', 'WriteConsoleEx', '_consolewrite_ex'),
-    _CallbackInit('ptr_R_WriteConsole', 'WriteConsole', None),
+    _CallbackInit('ptr_R_WriteConsole', 'WriteConsole', '_consolewrite'),
     _CallbackInit('ptr_R_ShowMessage', 'ShowMessage', '_showmessage'),
     _CallbackInit('ptr_R_ReadConsole', 'ReadConsole', '_consoleread'),
     _CallbackInit('ptr_R_FlushConsole', None, '_consoleflush'),
