@@ -169,6 +169,16 @@ def _consolewrite_ex(buf, n: int, otype: int) -> None:
             consolewrite_warnerror(s)
 
 
+@ffi_proxy.callback(ffi_proxy._consolewrite_def,
+                    openrlib._rinterface_cffi,
+                    error=None,
+                    onerror=handler_callback_error(_WRITECONSOLE_EXCEPTION_LOG))
+def _consolewrite(buf, n: int) -> None:
+    s = conversion._cchar_to_str_with_maxlen(buf, n, encoding='utf-8')
+    with openrlib.rlock:
+        consolewrite_print(s)
+
+
 def showmessage(s: str) -> None:
     print('R wants to show a message')
     print(s)
