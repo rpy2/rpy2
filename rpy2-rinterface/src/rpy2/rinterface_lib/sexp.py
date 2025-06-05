@@ -528,11 +528,6 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
     def _R_TYPE(self):
         pass
 
-    @property
-    @abc.abstractmethod
-    def _R_SIZEOF_ELT(self):
-        pass
-
     @staticmethod
     @abc.abstractmethod
     def _CAST_IN(o):
@@ -723,6 +718,67 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
         raise ValueError("'%s' is not in R vector" % item)
 
 
+class SexpVectorCCompatibleAbstract(
+        SexpVectorAbstract,
+        metaclass=abc.ABCMeta
+):
+
+    @property
+    @abc.abstractmethod
+    def _R_SIZEOF_ELT(self):
+        pass
+
+    @classmethod
+    def _raise_incompatible_C_size(cls, mview):
+        msg = (
+            'Incompatible C type sizes. '
+            'The R array type is "{r_type}" with {r_size} byte{r_size_pl} '
+            'per item '
+            'while the Python array type is "{py_type}" with {py_size} '
+            'byte{py_size_pl} per item.'
+            .format(r_type=cls._R_TYPE,
+                    r_size=cls._R_SIZEOF_ELT,
+                    r_size_pl='s' if cls._R_SIZEOF_ELT > 1 else '',
+                    py_type=mview.format,
+                    py_size=mview.itemsize,
+                    py_size_pl='s' if mview.itemsize > 1 else '')
+        )
+        raise ValueError(msg)
+
+    @classmethod
+    def _check_C_compatible(cls, mview):
+        return mview.itemsize == cls._R_SIZEOF_ELT
+
+    @classmethod
+    @_cdata_res_to_rinterface
+    def from_memoryview(cls, mview: memoryview) -> VT:
+        """Create an R vector/array from a memoryview.
+
+        The memoryview must be contiguous, and the C representation
+        for the vector must be compatible between R and Python. If
+        not the case, a :class:`ValueError` exception with will be
+        raised."""
+        if not embedded.isready():
+            raise embedded.RNotReadyError('Embedded R is not ready to use.')
+        if not mview.contiguous:
+            raise ValueError('The memory view must be contiguous.')
+        if not cls._check_C_compatible(mview):
+            cls._raise_incompatible_C_size(mview)
+
+        r_vector = None
+        n = len(mview)
+        with memorymanagement.rmemory() as rmemory:
+            r_vector = rmemory.protect(
+                openrlib.rlib.Rf_allocVector(
+                    cls._R_TYPE, n)
+            )
+            dest_ptr = cls._R_GET_PTR(r_vector)
+            src_ptr = _rinterface.ffi.from_buffer(mview)
+            nbytes = n * mview.itemsize
+            _rinterface.ffi.memmove(dest_ptr, src_ptr, nbytes)
+        return r_vector
+
+
 class SexpVector(Sexp, SexpVectorAbstract):
     """Base abstract class for R vector objects.
 
@@ -762,11 +818,10 @@ class StrSexpVector(SexpVector):
     """R vector of strings."""
 
     _R_TYPE = openrlib.rlib.STRSXP
-    _R_GET_PTR = openrlib._STRING_PTR
-    _R_SIZEOF_ELT = None
-    _R_VECTOR_ELT = openrlib.rlib.STRING_ELT
-    _R_SET_VECTOR_ELT = openrlib.rlib.SET_STRING_ELT
-    _CAST_IN = _as_charsxp_cdata
+    _R_GET_PTR = staticmethod(openrlib._STRING_PTR)
+    _R_VECTOR_ELT = staticmethod(openrlib.rlib.STRING_ELT)
+    _R_SET_VECTOR_ELT = staticmethod(openrlib.rlib.SET_STRING_ELT)
+    _CAST_IN = staticmethod(_as_charsxp_cdata)
 
     def __getitem__(
             self,

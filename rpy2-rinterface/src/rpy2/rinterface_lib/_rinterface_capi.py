@@ -423,7 +423,7 @@ def _remove(name: FFI.CData, env: FFI.CData, inherits) -> FFI.CData:
     return res
 
 
-def _geterrmessage() -> str:
+def _geterrmessage() -> typing.Optional[str]:
     rlib = openrlib.rlib
     # TODO: use isString and installTrChar
     with memorymanagement.rmemory() as rmemory:
