@@ -218,17 +218,17 @@ class GraphicsDeviceRaster(FileDevice, GraphicsDevice):
             res=None
     ):
 
-        if width:
+        if width is None:
             width = self._options_new_device.width
-        if height:
+        if height is None:
             height = self._options_new_device.height
-        if pointsize:
+        if pointsize is None:
             pointsize = self._options_new_device.pointsize
-        if bg:
+        if bg is None:
             bg = self._options_new_device.bg
-        if units:
+        if units is None:
             units = self._options_new_device.units
-        if res:
+        if res is None:
             units = self._options_new_device.res
 
         res = Options._fix_graphics_resolution(units, res)
@@ -287,17 +287,17 @@ class GraphicsDeviceSVG(FileDevice, GraphicsDevice):
             units=None,
             res=None
     ):
-        if width:
+        if width is None:
             width = self._options_new_device.width
-        if height:
+        if height is None:
             height = self._options_new_device.height
-        if pointsize:
+        if pointsize is None:
             pointsize = self._options_new_device.pointsize
-        if bg:
+        if bg is None:
             bg = self._options_new_device.bg
-        if units:
+        if units is None:
             units = self._options_new_device.units
-        if res:
+        if res is None:
             units = self._options_new_device.res
 
         tmpd = tempfile.mkdtemp()
