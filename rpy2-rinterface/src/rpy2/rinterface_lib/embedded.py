@@ -156,7 +156,7 @@ def _build_rstart(rhome, interactive, setcallbacks):
     rstart.CharacterMode = openrlib.rlib.LinkDLL
     if setcallbacks:
         for cb in CALLBACK_INIT_PAIRS:
-            if cb.c_name_nt:
+            if cb.c_name_nt and cb.py_name:
                 setattr(rstart, cb.c_name_nt,
                         getattr(callbacks, cb.py_name))
 
