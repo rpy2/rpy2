@@ -7,6 +7,8 @@ Bugs fixed
 - Clear warnings for deprecation of `rpy2.rinterface_lib.callbacks.obj_in_module`
   (issue #1181).
 
+- Fix callback setup during initialization on Windows (issue #1183).
+
 
 Release 3.6.0
 =============
