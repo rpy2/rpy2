@@ -796,13 +796,17 @@ class PairlistSexpVector(SexpVector):
 
 class ExprSexpVector(SexpVector):
     _R_TYPE = openrlib.rlib.EXPRSXP
+
     @staticmethod
     def _R_GET_PTR(obj):
         raise NotImplementedError()
+
     @staticmethod
     def _CAST_IN(obj):
         raise NotImplementedError()
+
     _R_VECTOR_ELT = staticmethod(openrlib.rlib.VECTOR_ELT)
+
     @staticmethod
     def _R_SET_VECTOR_ELT(obj, idx, value):
         raise NotImplementedError()
@@ -834,6 +838,7 @@ class LangSexpVector(SexpVector):
     To create from a (Python) string containing R code
     use the classmethod `from_string`."""
     _R_TYPE = openrlib.rlib.LANGSXP
+
     @staticmethod
     def _R_GET_PTR(obj):
         raise NotImplementedError()
