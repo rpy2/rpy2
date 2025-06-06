@@ -9,6 +9,9 @@ Bugs fixed
 
 - Fix callback setup during initialization on Windows (issue #1183).
 
+- In the R magic, setting options such as width, height, point size, etc. was broken
+  in the new updated system to manage graphical devices.
+
 
 Release 3.6.0
 =============
