@@ -200,9 +200,13 @@ def SET_COMPLEX_ELT(vec, i: int, value: complex):
     COMPLEX(vec)[i].i = value.imag
 
 
-# TODO: still useful or is it in the C API ?
+# TODO: still useful or is it in the C API?
 def _VECTOR_ELT(robj, i):
     return ffi.cast('SEXP *', DATAPTR(robj))[i]
+
+
+def _PAIRLIST_PTR(robj):
+    return ffi.cast('SEXP *', DATAPTR(robj))
 
 
 def _STRING_PTR(robj):

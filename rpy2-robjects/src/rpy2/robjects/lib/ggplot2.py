@@ -66,10 +66,19 @@ ggplot2 = WeakPackage(ggplot2._env,
                       symbol_resolve=ggplot2._symbol_resolve)
 
 TARGET_VERSION = '3.5.'
-if not ggplot2.__version__.startswith(TARGET_VERSION):
+if ggplot2.__version__ is None:
     warnings.warn(
-        'This was designed against ggplot2 versions starting with %s but you '
-        'have %s' % (TARGET_VERSION, ggplot2.__version__))
+        'This was designed against ggplot2 versions starting '
+        f'with {TARGET_VERSION} but version extraction for '
+        'the R package is not working.'
+    )
+elif ggplot2.__version__.startswith(TARGET_VERSION):
+    warnings.warn(
+        'This was designed against ggplot2 versions starting '
+        f'with {TARGET_VERSION} but you '
+        f'have {ggplot2.__version__}.'
+    )
+
 ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
 
 StrVector = robjects.StrVector

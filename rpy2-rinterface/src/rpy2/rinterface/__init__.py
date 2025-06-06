@@ -40,6 +40,7 @@ from rpy2.rinterface_lib.sexp import unserialize  # noqa: F401
 from rpy2.rinterface_lib.sexp import emptyenv
 from rpy2.rinterface_lib.sexp import baseenv
 from rpy2.rinterface_lib.sexp import globalenv
+from rpy2.rinterface_lib.sexp import SexpVectorCCompatibleAbstract
 
 R_NilValue = openrlib.rlib.R_NilValue
 
@@ -367,7 +368,7 @@ class SexpPromise(Sexp):
         return openrlib.rlib.Rf_eval(self.__sexp__._cdata, env)
 
 
-class SexpVectorWithNumpyInterface(SexpVector):
+class SexpVectorWithNumpyInterface(SexpVectorCCompatibleAbstract, SexpVector):
     """Numpy-specific API for accessing the content of a numpy array.
 
     This interface implements version 3 of Numpy's `__array_interface__`
@@ -491,7 +492,7 @@ class BoolSexpVector(SexpVectorWithNumpyInterface):
     _R_TYPE = openrlib.rlib.LGLSXP
     _R_SIZEOF_ELT = _rinterface.ffi.sizeof('Rboolean')
     _NP_TYPESTR = '|i'
-    _R_VECTOR_ELT = openrlib.LOGICAL_ELT
+    _R_VECTOR_ELT = staticmethod(openrlib.LOGICAL_ELT)
     _R_SET_VECTOR_ELT = openrlib.SET_LOGICAL_ELT
     _R_GET_PTR = staticmethod(openrlib.LOGICAL)
 
@@ -552,8 +553,8 @@ def nullable_int(v):
 class IntSexpVector(SexpVectorWithNumpyInterface):
 
     _R_TYPE = openrlib.rlib.INTSXP
-    _R_SET_VECTOR_ELT = openrlib.SET_INTEGER_ELT
-    _R_VECTOR_ELT = openrlib.INTEGER_ELT
+    _R_SET_VECTOR_ELT = staticmethod(openrlib.SET_INTEGER_ELT)
+    _R_VECTOR_ELT = staticmethod(openrlib.INTEGER_ELT)
     _R_SIZEOF_ELT = _rinterface.ffi.sizeof('int')
     _NP_TYPESTR = '|i'
 
@@ -599,8 +600,8 @@ class IntSexpVector(SexpVectorWithNumpyInterface):
 class FloatSexpVector(SexpVectorWithNumpyInterface):
 
     _R_TYPE = openrlib.rlib.REALSXP
-    _R_VECTOR_ELT = openrlib.REAL_ELT
-    _R_SET_VECTOR_ELT = openrlib.SET_REAL_ELT
+    _R_VECTOR_ELT = staticmethod(openrlib.REAL_ELT)
+    _R_SET_VECTOR_ELT = staticmethod(openrlib.SET_REAL_ELT)
     _R_SIZEOF_ELT = _rinterface.ffi.sizeof('double')
     _NP_TYPESTR = '|d'
 
@@ -642,7 +643,7 @@ class FloatSexpVector(SexpVectorWithNumpyInterface):
         return vector_memoryview(self, 'double', 'd')
 
 
-class ComplexSexpVector(SexpVector):
+class ComplexSexpVector(SexpVectorCCompatibleAbstract, SexpVector):
 
     _R_TYPE = openrlib.rlib.CPLXSXP
     _R_GET_PTR = staticmethod(openrlib.COMPLEX)
@@ -709,8 +710,7 @@ class ListSexpVector(SexpVector):
     """
     _R_TYPE = openrlib.rlib.VECSXP
     _R_GET_PTR = staticmethod(openrlib._VECTOR_PTR)
-    _R_SIZEOF_ELT = None
-    _R_VECTOR_ELT = openrlib.rlib.VECTOR_ELT
+    _R_VECTOR_ELT = staticmethod(openrlib.rlib.VECTOR_ELT)
     _R_SET_VECTOR_ELT = openrlib.rlib.SET_VECTOR_ELT
     _CAST_IN = staticmethod(conversion._get_cdata)
 
@@ -723,10 +723,16 @@ class PairlistSexpVector(SexpVector):
     list of (name, value) pairs.
     """
     _R_TYPE = openrlib.rlib.LISTSXP
-    _R_GET_PTR = None
-    _R_SIZEOF_ELT = None
-    _R_VECTOR_ELT = None
-    _R_SET_VECTOR_ELT = None
+    _R_GET_PTR = staticmethod(openrlib._PAIRLIST_PTR)
+
+    @staticmethod
+    def _R_VECTOR_ELT(obj, idx):
+        raise TypeError('R pairlists cannot be accessed by index.')
+
+    @staticmethod
+    def _R_SET_VECTOR_ELT(obj, idx, value):
+        raise TypeError('R pairlist elements cannot be replaced by index.')
+
     _CAST_IN = staticmethod(conversion._get_cdata)
 
     def __getitem__(self, i: Union[int, slice]) -> Sexp:
@@ -790,11 +796,20 @@ class PairlistSexpVector(SexpVector):
 
 class ExprSexpVector(SexpVector):
     _R_TYPE = openrlib.rlib.EXPRSXP
-    _R_GET_PTR = None
-    _CAST_IN = None
-    _R_SIZEOF_ELT = None
-    _R_VECTOR_ELT = openrlib.rlib.VECTOR_ELT
-    _R_SET_VECTOR_ELT = None
+
+    @staticmethod
+    def _R_GET_PTR(obj):
+        raise NotImplementedError()
+
+    @staticmethod
+    def _CAST_IN(obj):
+        raise NotImplementedError()
+
+    _R_VECTOR_ELT = staticmethod(openrlib.rlib.VECTOR_ELT)
+
+    @staticmethod
+    def _R_SET_VECTOR_ELT(obj, idx, value):
+        raise NotImplementedError()
 
 
 _str2lang = None
@@ -823,11 +838,22 @@ class LangSexpVector(SexpVector):
     To create from a (Python) string containing R code
     use the classmethod `from_string`."""
     _R_TYPE = openrlib.rlib.LANGSXP
-    _R_GET_PTR = None
-    _CAST_IN = None
-    _R_SIZEOF_ELT = None
-    _R_VECTOR_ELT = None
-    _R_SET_VECTOR_ELT = None
+
+    @staticmethod
+    def _R_GET_PTR(obj):
+        raise NotImplementedError()
+
+    @staticmethod
+    def _CAST_IN(obj):
+        raise NotImplementedError()
+
+    @staticmethod
+    def _R_VECTOR_ELT(obj, idx):
+        raise NotImplementedError()
+
+    @staticmethod
+    def _R_SET_VECTOR_ELT(obj, idx, value):
+        raise NotImplementedError()
 
     @_cdata_res_to_rinterface
     def __getitem__(self, i: int):
