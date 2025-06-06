@@ -528,11 +528,6 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
     def _R_TYPE(self):
         pass
 
-    @property
-    @abc.abstractmethod
-    def _R_SIZEOF_ELT(self):
-        pass
-
     @staticmethod
     @abc.abstractmethod
     def _CAST_IN(o):
@@ -596,7 +591,10 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
 
     @classmethod
     def _check_C_compatible(cls, mview):
-        return mview.itemsize == cls._R_SIZEOF_ELT
+        if hasattr('_R_SIZEOF_ELT', cls):
+            if mview.itemsize == cls._R_SIZEOF_ELT:
+                return True
+        return False
 
     @classmethod
     @_cdata_res_to_rinterface
@@ -723,6 +721,34 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
         raise ValueError("'%s' is not in R vector" % item)
 
 
+class SexpVectorCCompatibleAbstract(
+        SexpVectorAbstract,
+        metaclass=abc.ABCMeta
+):
+
+    @property
+    @abc.abstractmethod
+    def _R_SIZEOF_ELT(self):
+        pass
+
+    @classmethod
+    def _raise_incompatible_C_size(cls, mview):
+        msg = (
+            'Incompatible C type sizes. '
+            'The R array type is "{r_type}" with {r_size} byte{r_size_pl} '
+            'per item '
+            'while the Python array type is "{py_type}" with {py_size} '
+            'byte{py_size_pl} per item.'
+            .format(r_type=cls._R_TYPE,
+                    r_size=cls._R_SIZEOF_ELT,
+                    r_size_pl='s' if cls._R_SIZEOF_ELT > 1 else '',
+                    py_type=mview.format,
+                    py_size=mview.itemsize,
+                    py_size_pl='s' if mview.itemsize > 1 else '')
+        )
+        raise ValueError(msg)
+
+
 class SexpVector(Sexp, SexpVectorAbstract):
     """Base abstract class for R vector objects.
 
@@ -762,11 +788,10 @@ class StrSexpVector(SexpVector):
     """R vector of strings."""
 
     _R_TYPE = openrlib.rlib.STRSXP
-    _R_GET_PTR = openrlib._STRING_PTR
-    _R_SIZEOF_ELT = None
-    _R_VECTOR_ELT = openrlib.rlib.STRING_ELT
-    _R_SET_VECTOR_ELT = openrlib.rlib.SET_STRING_ELT
-    _CAST_IN = _as_charsxp_cdata
+    _R_GET_PTR = staticmethod(openrlib._STRING_PTR)
+    _R_VECTOR_ELT = staticmethod(openrlib.rlib.STRING_ELT)
+    _R_SET_VECTOR_ELT = staticmethod(openrlib.rlib.SET_STRING_ELT)
+    _CAST_IN = staticmethod(_as_charsxp_cdata)
 
     def __getitem__(
             self,
