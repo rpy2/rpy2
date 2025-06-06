@@ -14,10 +14,17 @@ with warnings.catch_warnings():
                          symbol_r2python=dbplyr._symbol_r2python,
                          symbol_resolve=dbplyr._symbol_resolve)
 TARGET_VERSION = '2.5.'
-if dbplyr and not dbplyr.__version__.startswith(TARGET_VERSION):
+if dbplyr.__version__ is None:
     warnings.warn(
-        'This was designed against dbplyr versions starting with %s'
-        ' but you have %s' %
-        (TARGET_VERSION, dbplyr.__version__))
+        'This was designed against dbplyr versions starting '
+        f'with {TARGET_VERSION} but version extraction for '
+        'the R package is not working.'
+    )
+elif not dbplyr.__version__.startswith(TARGET_VERSION):
+    warnings.warn(
+        'This was designed against dbplyr versions starting '
+        f'with {TARGET_VERSION} '
+        'but you have {dbplyr.__version__}.'
+    )
 
 sql = dbplyr.sql
