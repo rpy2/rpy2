@@ -66,7 +66,7 @@ ggplot2 = WeakPackage(ggplot2._env,
                       symbol_resolve=ggplot2._symbol_resolve)
 
 TARGET_VERSION = '3.5.'
-if not ggplot2.__version__.startswith(TARGET_VERSION):
+if ggplot2 and not ggplot2.__version__.startswith(TARGET_VERSION):
     warnings.warn(
         'This was designed against ggplot2 versions starting with %s but you '
         'have %s' % (TARGET_VERSION, ggplot2.__version__))
