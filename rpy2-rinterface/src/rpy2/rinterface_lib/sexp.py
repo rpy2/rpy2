@@ -591,7 +591,10 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
 
     @classmethod
     def _check_C_compatible(cls, mview):
-        return mview.itemsize == cls._R_SIZEOF_ELT
+        if hasattr('_R_SIZEOF_ELT', cls):
+            if mview.itemsize == cls._R_SIZEOF_ELT:
+                return True
+        return False
 
     @classmethod
     @_cdata_res_to_rinterface
@@ -744,10 +747,6 @@ class SexpVectorCCompatibleAbstract(
                     py_size_pl='s' if mview.itemsize > 1 else '')
         )
         raise ValueError(msg)
-
-    @classmethod
-    def _check_C_compatible(cls, mview):
-        return mview.itemsize == cls._R_SIZEOF_ELT
 
 
 class SexpVector(Sexp, SexpVectorAbstract):
