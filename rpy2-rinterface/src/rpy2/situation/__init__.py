@@ -26,6 +26,7 @@ ENVVAR_CFFI_TYPE: str = 'RPY2_CFFI_MODE'
 ENCODING_LOCALE = locale.getpreferredencoding()
 ENCODING_SYS = sys.getdefaultencoding()
 
+
 class CFFI_MODE(enum.Enum):
     API = 'API'
     ABI = 'ABI'
