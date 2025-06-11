@@ -29,7 +29,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
 ]
 dependencies = [
-    "rpy2-rinterface>=3.6.1",
+    "rpy2-rinterface>=3.6.2",
     "rpy2-robjects>=3.6.1",
     "packaging;platform_system=='Windows'",
     "backports.zoneinfo;python_version<'3.9'"
