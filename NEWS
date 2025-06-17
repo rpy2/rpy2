@@ -1,3 +1,13 @@
+Release 3.6.2
+=============
+
+Bugs fixed
+----------
+
+- :meth:`rpy2.rinterface.initr` was not skipping all initialization steps when the
+  embedded R is already initialized by :mod:`rpy2` (contributed to issue #1190).
+
+
 Release 3.6.1
 =============
 
