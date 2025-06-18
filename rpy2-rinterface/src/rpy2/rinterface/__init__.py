@@ -1199,19 +1199,19 @@ def _setrenvvars(action: _ENVVAR_ACTION):
         if k in os.environ:
             if action in (_ENVVAR_ACTION.KEEP_WARN, _ENVVAR_ACTION.KEEP_NOWARN):
                 if action is _ENVVAR_ACTION.KEEP_WARN:
-                    warnings.warn(
+                    logger.info(
                         f'Environment variable "{k}" redefined by R but ignored.'
                     )
                 continue
             elif action in (_ENVVAR_ACTION.REPLACE_WARN, _ENVVAR_ACTION.REPLACE_NOWARN):
                 if action is _ENVVAR_ACTION.REPLACE_WARN:
                     if v == os.environ[k]:
-                        warnings.warn(
+                        logger.info(
                             f'Environment variable "{k}" also defined by R and '
                             'with the same value.'
                         )
                     else:
-                        warnings.warn(
+                        logger.info(
                             f'Environment variable "{k}" redefined by R and overriding '
                             f'existing variable. Current: "{os.environ[k]}", R: "{v}"'
                         )
