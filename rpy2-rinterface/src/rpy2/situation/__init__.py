@@ -135,10 +135,6 @@ def r_home_from_registry() -> Optional[str]:
         except Exception:  # FileNotFoundError, WindowsError, OSError, etc.
             pass
         else:
-            # We have a path RHOME
-            if sys.version_info[0] == 2:
-                # Python 2 path compatibility
-                r_home = r_home.encode(sys.getfilesystemencoding())
             # Break the loop, because we have a hit.
             break
     else:
