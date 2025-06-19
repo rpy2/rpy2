@@ -16,7 +16,16 @@ R_HOME = rpy2.situation.get_r_home()
 
 if os.name == 'nt':
     if R_HOME is not None:
-        for libpath in rpy2.situation.get_r_flags(R_HOME, '--ldflags')[0].L:
+        try:
+            for libpath in rpy2.situation.get_r_flags(R_HOME, '--ldflags')[0].L:
+                os.add_dll_directory(libpath)  # type: ignore[attr-defined]
+        except rpy2.situation.subprocess.CalledProcessError:
+            if platform.machine().lower() == "arm64":
+                libpath = os.path.join(rhome, "bin", "R.dll")
+            elif sys.maxsize > 2**32:
+                libpath = os.path.join(rhome, "bin", "x64", "R.dll")
+            else:
+                libpath = os.path.join(rhome, "bin", "i386", "R.dll")
             os.add_dll_directory(libpath)  # type: ignore[attr-defined]
     else:
         logging.warn('R_HOME is None.')
