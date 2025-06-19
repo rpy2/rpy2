@@ -1,3 +1,19 @@
+Release 3.6.2
+=============
+
+Bugs fixed
+----------
+
+- :meth:`rpy2.rinterface.initr` was not skipping all initialization steps when the
+  embedded R is already initialized by :mod:`rpy2` (contributed to issue #1190).
+
+Changes
+-------
+
+- Warnings about R-related environment variables after initialization are downgraded
+  to `INFO`-level and emitted by :obj:`rpy2.rinterface.logger` (solves issue #1190).
+
+
 Release 3.6.1
 =============
 
