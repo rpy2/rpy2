@@ -13,6 +13,9 @@ Changes
 - Warnings about R-related environment variables after initialization are downgraded
   to `INFO`-level and emitted by :obj:`rpy2.rinterface.logger` (solves issue #1190).
 
+- On Windows, the determination of where `R.dll` is located now has a fallback if `make` and `bash`
+  are not installed (issue #1188).
+
 
 Release 3.6.1
 =============
