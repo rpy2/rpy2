@@ -1,6 +1,7 @@
 import logging
 import os
 import platform
+import sys
 import threading
 import typing
 import rpy2.situation
@@ -21,11 +22,11 @@ if os.name == 'nt':
                 os.add_dll_directory(libpath)  # type: ignore[attr-defined]
         except rpy2.situation.subprocess.CalledProcessError:
             if platform.machine().lower() == "arm64":
-                libpath = os.path.join(rhome, "bin", "R.dll")
+                libpath = os.path.join(R_HOME, "bin", "R.dll")
             elif sys.maxsize > 2**32:
-                libpath = os.path.join(rhome, "bin", "x64", "R.dll")
+                libpath = os.path.join(R_HOME, "bin", "x64", "R.dll")
             else:
-                libpath = os.path.join(rhome, "bin", "i386", "R.dll")
+                libpath = os.path.join(R_HOME, "bin", "i386", "R.dll")
             os.add_dll_directory(libpath)  # type: ignore[attr-defined]
     else:
         logging.warn('R_HOME is None.')
