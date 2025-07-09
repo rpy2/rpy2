@@ -8,6 +8,7 @@ import csv
 import enum
 import functools
 import inspect
+import logging
 import os
 import math
 import platform
@@ -41,6 +42,8 @@ from rpy2.rinterface_lib.sexp import emptyenv
 from rpy2.rinterface_lib.sexp import baseenv
 from rpy2.rinterface_lib.sexp import globalenv
 from rpy2.rinterface_lib.sexp import SexpVectorCCompatibleAbstract
+
+logger = logging.getLogger(__name__)
 
 R_NilValue = openrlib.rlib.R_NilValue
 
@@ -1109,6 +1112,11 @@ def initr(
 
     status = None
     with openrlib.rlock:
+
+        if embedded.isinitialized():
+            logger.info('R is already initialized. No need to initialize.')
+            return None
+
         _setrenvvars(_DEFAULT_ENVVAR_ACTION)
         if embedded.is_r_externally_initialized():
             embedded._setinitialized()
@@ -1149,7 +1157,6 @@ def _getrenvvars(
         r_home: typing.Optional[str] = None
 ) -> typing.Tuple[typing.Tuple[str, str], ...]:
     """Get the environment variables defined by the R front-end script."""
-
     if baselinevars is None:
         baselinevars = os.environ
     if r_home is None:
@@ -1190,25 +1197,21 @@ def _setrenvvars(action: _ENVVAR_ACTION):
     new_envvars = {}
     for k, v in _getrenvvars():
         if k in os.environ:
-            if (
-                    action in (_ENVVAR_ACTION.KEEP_WARN, _ENVVAR_ACTION.KEEP_NOWARN)
-            ):
+            if action in (_ENVVAR_ACTION.KEEP_WARN, _ENVVAR_ACTION.KEEP_NOWARN):
                 if action is _ENVVAR_ACTION.KEEP_WARN:
-                    warnings.warn(
+                    logger.info(
                         f'Environment variable "{k}" redefined by R but ignored.'
                     )
                 continue
-            elif (
-                    action in (_ENVVAR_ACTION.REPLACE_WARN, _ENVVAR_ACTION.REPLACE_NOWARN)
-            ):
+            elif action in (_ENVVAR_ACTION.REPLACE_WARN, _ENVVAR_ACTION.REPLACE_NOWARN):
                 if action is _ENVVAR_ACTION.REPLACE_WARN:
                     if v == os.environ[k]:
-                        warnings.warn(
+                        logger.info(
                             f'Environment variable "{k}" also defined by R and '
                             'with the same value.'
                         )
                     else:
-                        warnings.warn(
+                        logger.info(
                             f'Environment variable "{k}" redefined by R and overriding '
                             f'existing variable. Current: "{os.environ[k]}", R: "{v}"'
                         )
