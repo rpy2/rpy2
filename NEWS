@@ -4,6 +4,8 @@ Release 3.6.2
 Bugs fixed
 ----------
 
+- Ensure `sys.getdefaultencoding()` used when fetching information about the R
+  installation through `R CMD config` (issue #1063).
 - :meth:`rpy2.rinterface.initr` was not skipping all initialization steps when the
   embedded R is already initialized by :mod:`rpy2` (contributed to issue #1190).
 
