@@ -1171,19 +1171,22 @@ def _getrenvvars(
                 'x <- Sys.getenv()',
                 'y <- as.character(x)',
                 'names(y) <- names(x)',
-                'write.csv(y)'
+                'write.table(y, sep = ",", col.names = FALSE)'
             )
         )
     )
-
     envvars = subprocess.check_output(cmd,
                                       universal_newlines=True,
                                       stderr=subprocess.PIPE)
     res = []
     reader = csv.reader(row for row in envvars.split('\n') if row != '')
-    # Skip column names.
-    next(reader)
-    for k, v in reader:
+    for row in reader:
+        try:
+            k, v = row
+        except ValueError:
+            continue
+        if not k.isidentifier():
+            continue
         if (
                 (k not in baselinevars)
                 or
@@ -1196,6 +1199,8 @@ def _getrenvvars(
 def _setrenvvars(action: _ENVVAR_ACTION):
     new_envvars = {}
     for k, v in _getrenvvars():
+        if not k:
+            continue
         if k in os.environ:
             if action in (_ENVVAR_ACTION.KEEP_WARN, _ENVVAR_ACTION.KEEP_NOWARN):
                 if action is _ENVVAR_ACTION.KEEP_WARN:
