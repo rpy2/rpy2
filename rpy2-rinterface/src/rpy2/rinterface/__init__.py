@@ -62,6 +62,10 @@ class _ENVVAR_ACTION(enum.Enum):
 
 _DEFAULT_ENVVAR_ACTION: _ENVVAR_ACTION = _ENVVAR_ACTION.REPLACE_WARN
 
+# String to identify R output in a terminal, and allow to skip any possible warning
+# or information that would also be printed.
+ROUTPUT_START_TAG = '--> rpy2-routput-start-tag <--'
+
 
 def get_evaluation_context() -> SexpEnvironment:
     """Get the frame (environment) in which R code is currently evaluated."""
@@ -1171,7 +1175,8 @@ def _getrenvvars(
                 'x <- Sys.getenv()',
                 'y <- as.character(x)',
                 'names(y) <- names(x)',
-                'write.csv(y)'
+                f'cat("{ROUTPUT_START_TAG}")',
+                'write.csv(y, row.names=FALSE)'
             )
         )
     )
@@ -1179,10 +1184,12 @@ def _getrenvvars(
     envvars = subprocess.check_output(cmd,
                                       universal_newlines=True,
                                       stderr=subprocess.PIPE)
+    envvars_iter = iter(envvars.split('\n'))
+    for row in envvars_iter:
+        if row == ROUTPUT_START_TAG:
+            break
     res = []
-    reader = csv.reader(row for row in envvars.split('\n') if row != '')
-    # Skip column names.
-    next(reader)
+    reader = csv.reader(envvars_iter)
     for k, v in reader:
         if (
                 (k not in baselinevars)
