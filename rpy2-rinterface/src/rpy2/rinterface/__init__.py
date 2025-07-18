@@ -64,7 +64,7 @@ _DEFAULT_ENVVAR_ACTION: _ENVVAR_ACTION = _ENVVAR_ACTION.REPLACE_WARN
 
 # String to identify R output in a terminal, and allow to skip any possible warning
 # or information that would also be printed.
-ROUTPUT_START_TAG = '--> rpy2-routput-start-tag <--'
+ROUTPUT_START_TAG = '--> rpy2-routput-start-tag <--\n'
 
 
 def get_evaluation_context() -> SexpEnvironment:
