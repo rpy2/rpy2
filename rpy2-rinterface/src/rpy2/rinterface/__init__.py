@@ -15,6 +15,7 @@ import platform
 import signal
 import subprocess
 import sys
+import tempfile
 import textwrap
 import threading
 import typing
@@ -61,10 +62,6 @@ class _ENVVAR_ACTION(enum.Enum):
 
 
 _DEFAULT_ENVVAR_ACTION: _ENVVAR_ACTION = _ENVVAR_ACTION.REPLACE_WARN
-
-# String to identify R output in a terminal, and allow to skip any possible warning
-# or information that would also be printed.
-ROUTPUT_START_TAG = '--> rpy2-routput-start-tag <--\n'
 
 
 def get_evaluation_context() -> SexpEnvironment:
@@ -1167,36 +1164,40 @@ def _getrenvvars(
         r_home = openrlib.R_HOME
         if r_home is None:
             raise RuntimeError('Unable to determine R_HOME.')
-    cmd = (
-        os.path.join(r_home, 'bin', 'Rscript'),
+
+
+    # Use a temporary file to write the environment variables. Windows
+    # has a file locking system that requires a slightly more complicated
+    # implementation than it would otherwise be on other OSes.
+    tmp_fh = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv')
+    try:
+        cmd = (
+            os.path.join(r_home, 'bin', 'Rscript'),
         '-e',
-        ';'.join(
-            (
-                'x <- Sys.getenv()',
-                'y <- as.character(x)',
-                'names(y) <- names(x)',
-                f'cat("{ROUTPUT_START_TAG}")',
-                'write.csv(y, row.names=FALSE)'
+            ';'.join(
+                (
+                    'x <- Sys.getenv()',
+                    'y <- as.character(x)',
+                    'names(y) <- names(x)',
+                    f'write.csv(y, "{tmp_fh.name}", row.names=FALSE)'
+                )
             )
         )
-    )
 
-    envvars = subprocess.check_output(cmd,
-                                      universal_newlines=True,
-                                      stderr=subprocess.PIPE)
-    envvars_iter = iter(envvars.split('\n'))
-    for row in envvars_iter:
-        if row == ROUTPUT_START_TAG:
-            break
-    res = []
-    reader = csv.reader(envvars_iter)
-    for k, v in reader:
-        if (
-                (k not in baselinevars)
-                or
-                (baselinevars[k] != v)
-        ):
-            res.append((k, v))
+        envvars = subprocess.check_output(cmd,
+                                          universal_newlines=True)
+        res = []
+        with open(fh.name, mode='r') as _:
+            reader = csv.reader(_)
+            for k, v in reader:
+                if (
+                        (k not in baselinevars)
+                        or
+                        (baselinevars[k] != v)
+                ):
+                    res.append((k, v))
+    finally:
+        os.remove(fh.name)
     return tuple(res)
 
 
