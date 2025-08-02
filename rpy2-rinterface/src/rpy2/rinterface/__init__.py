@@ -1186,7 +1186,7 @@ def _getrenvvars(
         res = []
         with open(temp_fh.name, mode='r') as _:
             reader = csv.reader(_)
-            assert tuple(reader.next()) == ('key', 'val')
+            assert tuple(next(reader)) == ('key', 'val')
             for row in reader:
                 if len(row) != 2:
                     raise ValueError(
