@@ -1187,7 +1187,12 @@ def _getrenvvars(
         res = []
         with open(temp_fh.name, mode='r') as _:
             reader = csv.reader(_)
-            for k, v in reader:
+            for row in reader:
+                if len(row) != 2:
+                    raise ValueError(
+                        f'Invalid environment variable row: {row}'
+                    )
+                k, v = row
                 if (
                         (k not in baselinevars)
                         or
