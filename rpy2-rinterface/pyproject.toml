@@ -13,7 +13,7 @@ name = "rpy2-rinterface"
 description = "Low-level interface from Python to the R."
 readme = "README.md"
 requires-python = ">=3.8"
-license = "GNU General Public License v2.0 or later"
+license = "GPL-2.0-or-later"
 authors = [{ name = "Laurent Gautier", email = "lgautier@gmail.com" }]
 classifiers = [
     "Programming Language :: Python",
