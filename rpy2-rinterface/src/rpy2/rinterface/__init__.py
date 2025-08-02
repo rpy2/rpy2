@@ -1172,7 +1172,7 @@ def _getrenvvars(
     r_cmd_output = None
     try:
         if os.name == 'nt':
-            temp_name = temp_fh.name.replace(r'\', r'\\')
+            temp_name = temp_fh.name.replace('\\', '/')
         else:
             temp_name = temp_fh.name
         cmd = (
