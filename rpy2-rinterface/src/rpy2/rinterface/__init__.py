@@ -1187,7 +1187,7 @@ def _getrenvvars(
         envvars = subprocess.check_output(cmd,
                                           universal_newlines=True)
         res = []
-        with open(fh.name, mode='r') as _:
+        with open(temp_fh.name, mode='r') as _:
             reader = csv.reader(_)
             for k, v in reader:
                 if (
