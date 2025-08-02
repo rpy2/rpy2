@@ -1165,31 +1165,34 @@ def _getrenvvars(
         if r_home is None:
             raise RuntimeError('Unable to determine R_HOME.')
 
-
     # Use a temporary file to write the environment variables. Windows
     # has a file locking system that requires a slightly more complicated
     # implementation than it would otherwise be on other OSes.
-    tmp_fh = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv')
+    temp_fh = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv')
     try:
         cmd = (
             os.path.join(r_home, 'bin', 'Rscript'),
-        '-e',
+            '-e',
             ';'.join(
                 (
                     'x <- Sys.getenv()',
                     'y <- as.character(x)',
                     'names(y) <- names(x)',
-                    f'write.csv(y, "{tmp_fh.name}", row.names=FALSE)'
+                    f'write.csv(y, "{temp_fh.name}", row.names=FALSE)'
                 )
             )
         )
 
-        envvars = subprocess.check_output(cmd,
-                                          universal_newlines=True)
+        subprocess.run(cmd)
         res = []
-        with open(fh.name, mode='r') as _:
+        with open(temp_fh.name, mode='r') as _:
             reader = csv.reader(_)
-            for k, v in reader:
+            for row in reader:
+                if len(row) != 2:
+                    raise ValueError(
+                        f'Invalid environment variable row: {row}'
+                    )
+                k, v = row
                 if (
                         (k not in baselinevars)
                         or
@@ -1197,7 +1200,7 @@ def _getrenvvars(
                 ):
                     res.append((k, v))
     finally:
-        os.remove(fh.name)
+        os.remove(temp_fh.name)
     return tuple(res)
 
 
