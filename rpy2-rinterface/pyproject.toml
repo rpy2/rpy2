@@ -1,6 +1,7 @@
 [build-system]
 requires = [
-    "setuptools >= 77",
+    "setuptools >= 75;python_version=='3.8'",
+    "setuptools >= 77;python_version>'3.8'",
     "wheel",
     "cffi>=1.15.0",
     "packaging;platform_system=='Windows'",
