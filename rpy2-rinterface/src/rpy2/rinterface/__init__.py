@@ -1169,7 +1169,12 @@ def _getrenvvars(
     # has a file locking system that requires a slightly more complicated
     # implementation than it would otherwise be on other OSes.
     temp_fh = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv')
+    r_cmd_output = None
     try:
+        if os.name == 'nt':
+            temp_name = temp_fh.name.replace(r'\', r'\\')
+        else:
+            temp_name = temp_fh.name
         cmd = (
             os.path.join(r_home, 'bin', 'Rscript'),
             '-e',
@@ -1177,11 +1182,10 @@ def _getrenvvars(
                 (
                     'x <- Sys.getenv()',
                     'dataf <- data.frame(key=names(x), val=as.character(x))',
-                    f'write.csv(dataf, file="{temp_fh.name}", row.names=FALSE)'
+                    f'write.csv(dataf, file="{temp_name}", row.names=FALSE)'
                 )
             )
         )
-
         subprocess.run(cmd)
         res = []
         with open(temp_fh.name, mode='r') as _:
