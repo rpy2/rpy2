@@ -15,6 +15,7 @@ import platform
 import signal
 import subprocess
 import sys
+import tempfile
 import textwrap
 import threading
 import typing
@@ -1163,33 +1164,47 @@ def _getrenvvars(
         r_home = openrlib.R_HOME
         if r_home is None:
             raise RuntimeError('Unable to determine R_HOME.')
-    cmd = (
-        os.path.join(r_home, 'bin', 'Rscript'),
-        '-e',
-        ';'.join(
-            (
-                'x <- Sys.getenv()',
-                'y <- as.character(x)',
-                'names(y) <- names(x)',
-                'write.csv(y)'
+
+    # Use a temporary file to write the environment variables. Windows
+    # has a file locking system that requires a slightly more complicated
+    # implementation than it would otherwise be on other OSes.
+    temp_fh = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv')
+    temp_fh.close()
+    try:
+        if os.name == 'nt':
+            temp_name = temp_fh.name.replace('\\', '/')
+        else:
+            temp_name = temp_fh.name
+        cmd = (
+            os.path.join(r_home, 'bin', 'Rscript'),
+            '-e',
+            ';'.join(
+                (
+                    'x <- Sys.getenv()',
+                    'dataf <- data.frame(key=names(x), val=as.character(x))',
+                    f'write.csv(dataf, file="{temp_name}", row.names=FALSE)'
+                )
             )
         )
-    )
-
-    envvars = subprocess.check_output(cmd,
-                                      universal_newlines=True,
-                                      stderr=subprocess.PIPE)
-    res = []
-    reader = csv.reader(row for row in envvars.split('\n') if row != '')
-    # Skip column names.
-    next(reader)
-    for k, v in reader:
-        if (
-                (k not in baselinevars)
-                or
-                (baselinevars[k] != v)
-        ):
-            res.append((k, v))
+        subprocess.run(cmd)
+        res = []
+        with open(temp_fh.name, mode='r') as _:
+            reader = csv.reader(_)
+            assert tuple(next(reader)) == ('key', 'val')
+            for row in reader:
+                if len(row) != 2:
+                    raise ValueError(
+                        f'Invalid environment variable row: {row}'
+                    )
+                k, v = row
+                if (
+                        (k not in baselinevars)
+                        or
+                        (baselinevars[k] != v)
+                ):
+                    res.append((k, v))
+    finally:
+        os.remove(temp_fh.name)
     return tuple(res)
 
 

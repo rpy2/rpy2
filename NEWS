@@ -7,6 +7,9 @@ Bugs fixed
 - :meth:`rpy2.rinterface.initr` was not skipping all initialization steps when the
   embedded R is already initialized by :mod:`rpy2` (contributed to issue #1190).
 
+- More robust extraction of R-specific environment variables when running R on the
+  command line has outputs to the terminal (issue #1195).
+
 Changes
 -------
 
