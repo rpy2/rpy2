@@ -1176,9 +1176,8 @@ def _getrenvvars(
             ';'.join(
                 (
                     'x <- Sys.getenv()',
-                    'y <- as.character(x)',
-                    'names(y) <- names(x)',
-                    f'write.csv(y, "{temp_fh.name}", col.names=FALSE)'
+                    'dataf <- data.frame(key=as.character(x), val=names(s))',
+                    f'write.csv(dataf, "{temp_fh.name}", row.names=TRUE)'
                 )
             )
         )
@@ -1187,6 +1186,7 @@ def _getrenvvars(
         res = []
         with open(temp_fh.name, mode='r') as _:
             reader = csv.reader(_)
+            assert tuple(reader.next()) == ('key', 'val')
             for row in reader:
                 if len(row) != 2:
                     raise ValueError(
