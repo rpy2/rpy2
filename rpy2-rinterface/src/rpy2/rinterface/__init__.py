@@ -1176,8 +1176,8 @@ def _getrenvvars(
             ';'.join(
                 (
                     'x <- Sys.getenv()',
-                    'dataf <- data.frame(key=as.character(x), val=names(x))',
-                    f'write.csv(dataf, file="{temp_fh.name}", row.names=TRUE)'
+                    'dataf <- data.frame(key=names(x), val=as.character(x))',
+                    f'write.csv(dataf, file="{temp_fh.name}", row.names=FALSE)'
                 )
             )
         )
