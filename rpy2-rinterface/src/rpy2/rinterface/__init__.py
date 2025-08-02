@@ -1197,7 +1197,7 @@ def _getrenvvars(
                 ):
                     res.append((k, v))
     finally:
-        os.remove(fh.name)
+        os.remove(temp_fh.name)
     return tuple(res)
 
 
