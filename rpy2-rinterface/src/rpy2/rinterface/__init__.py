@@ -1169,6 +1169,7 @@ def _getrenvvars(
     # has a file locking system that requires a slightly more complicated
     # implementation than it would otherwise be on other OSes.
     temp_fh = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv')
+    temp_fh.close()
     try:
         if os.name == 'nt':
             temp_name = temp_fh.name.replace('\\', '/')
