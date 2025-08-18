@@ -64,9 +64,12 @@ class _ENVVAR_ACTION(enum.Enum):
 
 _DEFAULT_ENVVAR_ACTION: _ENVVAR_ACTION = _ENVVAR_ACTION.REPLACE_WARN
 
+# Map environment variables to an action. If no specific map
+# for a requested environment map, the default is used.
 _ENVVAR_ACTION_MAP = collections.defaultdict(
     lambda: _DEFAULT_ENVVAR_ACTION,
-    {'R_SESSION_TMPDIR': _ENVVAR_ACTION.KEEP_NOWARN}
+    {'R_SESSION_TMPDIR': _ENVVAR_ACTION.KEEP_NOWARN,
+     'R_LIBS_USER': _ENVVAR_ACTION.KEEP_NOWARN}
 )
 
 
