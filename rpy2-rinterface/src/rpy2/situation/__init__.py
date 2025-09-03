@@ -461,9 +461,17 @@ def iter_info():
             yield '    %s' % c_ext.extra_link_args
         except subprocess.CalledProcessError:
             yield ('    Warning: Unable to get R compilation flags.')
+            if os.name == 'nt':
+                yield (
+                    '    On Windows "make" and "sh" (in the R dev tools) '
+                    'are needed.'
+                )
 
     yield '  Directory for the R shared library:'
-    yield f'    {get_r_libnn(r_home)}'
+    try:
+        yield f'    {get_r_libnn(r_home)}'
+    except subprocess.CalledProcessError:
+        yield ('    Warning: Unable to get path for R shared library.')
 
 
 def set_default_logging():
