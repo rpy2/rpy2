@@ -12,7 +12,7 @@ jobs:
       with:
         python-version: "3.10"
     - name: Install uv
-      user: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v6
     - name: Lint with flake8 rinterface
       run: |
         uv pip install flake8
