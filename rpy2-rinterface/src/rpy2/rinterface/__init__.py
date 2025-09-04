@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import abc
 import atexit
+import collections
 import contextlib
 import contextvars
 import csv
@@ -15,6 +16,7 @@ import platform
 import signal
 import subprocess
 import sys
+import tempfile
 import textwrap
 import threading
 import typing
@@ -61,6 +63,14 @@ class _ENVVAR_ACTION(enum.Enum):
 
 
 _DEFAULT_ENVVAR_ACTION: _ENVVAR_ACTION = _ENVVAR_ACTION.REPLACE_WARN
+
+# Map environment variables to an action. If no specific map
+# for a requested environment map, the default is used.
+_ENVVAR_ACTION_MAP = collections.defaultdict(
+    lambda: _DEFAULT_ENVVAR_ACTION,
+    {'R_SESSION_TMPDIR': _ENVVAR_ACTION.KEEP_NOWARN,
+     'R_LIBS_USER': _ENVVAR_ACTION.KEEP_NOWARN}
+)
 
 
 def get_evaluation_context() -> SexpEnvironment:
@@ -1117,7 +1127,7 @@ def initr(
             logger.info('R is already initialized. No need to initialize.')
             return None
 
-        _setrenvvars(_DEFAULT_ENVVAR_ACTION)
+        _setrenvvars(_ENVVAR_ACTION_MAP)
         if embedded.is_r_externally_initialized():
             embedded._setinitialized()
         else:
@@ -1163,40 +1173,55 @@ def _getrenvvars(
         r_home = openrlib.R_HOME
         if r_home is None:
             raise RuntimeError('Unable to determine R_HOME.')
-    cmd = (
-        os.path.join(r_home, 'bin', 'Rscript'),
-        '-e',
-        ';'.join(
-            (
-                'x <- Sys.getenv()',
-                'y <- as.character(x)',
-                'names(y) <- names(x)',
-                'write.csv(y)'
+
+    # Use a temporary file to write the environment variables. Windows
+    # has a file locking system that requires a slightly more complicated
+    # implementation than it would otherwise be on other OSes.
+    temp_fh = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv')
+    temp_fh.close()
+    try:
+        if os.name == 'nt':
+            temp_name = temp_fh.name.replace('\\', '/')
+        else:
+            temp_name = temp_fh.name
+        cmd = (
+            os.path.join(r_home, 'bin', 'Rscript'),
+            '-e',
+            ';'.join(
+                (
+                    'x <- Sys.getenv()',
+                    'dataf <- data.frame(key=names(x), val=as.character(x))',
+                    f'write.csv(dataf, file="{temp_name}", row.names=FALSE)'
+                )
             )
         )
-    )
-
-    envvars = subprocess.check_output(cmd,
-                                      universal_newlines=True,
-                                      stderr=subprocess.PIPE)
-    res = []
-    reader = csv.reader(row for row in envvars.split('\n') if row != '')
-    # Skip column names.
-    next(reader)
-    for k, v in reader:
-        if (
-                (k not in baselinevars)
-                or
-                (baselinevars[k] != v)
-        ):
-            res.append((k, v))
+        subprocess.run(cmd)
+        res = []
+        with open(temp_fh.name, mode='r') as _:
+            reader = csv.reader(_)
+            assert tuple(next(reader)) == ('key', 'val')
+            for row in reader:
+                if len(row) != 2:
+                    raise ValueError(
+                        f'Invalid environment variable row: {row}'
+                    )
+                k, v = row
+                if (
+                        (k not in baselinevars)
+                        or
+                        (baselinevars[k] != v)
+                ):
+                    res.append((k, v))
+    finally:
+        os.remove(temp_fh.name)
     return tuple(res)
 
 
-def _setrenvvars(action: _ENVVAR_ACTION):
+def _setrenvvars(action_map: typing.Dict[str, _ENVVAR_ACTION]):
     new_envvars = {}
     for k, v in _getrenvvars():
         if k in os.environ:
+            action = action_map[k]
             if action in (_ENVVAR_ACTION.KEEP_WARN, _ENVVAR_ACTION.KEEP_NOWARN):
                 if action is _ENVVAR_ACTION.KEEP_WARN:
                     logger.info(

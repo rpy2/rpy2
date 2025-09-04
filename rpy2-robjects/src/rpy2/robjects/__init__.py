@@ -248,7 +248,10 @@ def _rpy2py_sexpclosure(obj):
 
 @default_converter.rpy2py.register(SexpEnvironment)
 def _rpy2py_sexpenvironment(obj):
-    return Environment(obj)
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_map[rinterface.SexpEnvironment])
+    cls = clsmap.find(obj.rclass)
+    return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.ListSexpVector)

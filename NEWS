@@ -1,3 +1,14 @@
+Release 3.6.3
+=============
+
+Bugs fixed
+----------
+
+- Environment variables checks could report irrelevant or incorrect mismatches (issue #1201). This is fixed for `R_SESSION_TMPDIR` and `R_LIBS_USER`.
+
+- R environments where missing the additional dispatching map for R classes.
+
+
 Release 3.6.2
 =============
 
@@ -8,6 +19,9 @@ Bugs fixed
   installation through `R CMD config` (issue #1063).
 - :meth:`rpy2.rinterface.initr` was not skipping all initialization steps when the
   embedded R is already initialized by :mod:`rpy2` (contributed to issue #1190).
+
+- More robust extraction of R-specific environment variables when running R on the
+  command line has outputs to the terminal (issue #1195).
 
 Changes
 -------
