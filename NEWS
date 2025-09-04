@@ -8,6 +8,9 @@ Bugs fixed
 
 - R environments where missing the additional dispatching map for R classes.
 
+- Ensure `sys.getdefaultencoding()` used when fetching information about the R
+  installation through `R CMD config` (issue #1063).
+
 
 Release 3.6.2
 =============
