@@ -6,6 +6,11 @@ Bugs fixed
 
 - Environment variables checks could report irrelevant or incorrect mismatches (issue #1201). This is fixed for `R_SESSION_TMPDIR` and `R_LIBS_USER`.
 
+- R environments where missing the additional dispatching map for R classes.
+
+- Ensure `sys.getdefaultencoding()` used when fetching information about the R
+  installation through `R CMD config` (issue #1063).
+
 
 Release 3.6.2
 =============
