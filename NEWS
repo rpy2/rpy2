@@ -1,3 +1,13 @@
+Release 3.6.4
+=============
+
+Bugs fixed
+----------
+
+- In the Jupyter/IPython extension, options for raster graphical devices
+  were not handling resolution (`res`) options correctly.
+
+
 Release 3.6.3
 =============
 
