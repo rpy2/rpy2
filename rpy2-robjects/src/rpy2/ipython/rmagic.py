@@ -642,7 +642,7 @@ def display_figures_svg(graph_dir, isolate_svgs=True):
 class RMagics(IPython.core.magic.Magics):
     """A set of ipython/jupyter "magic"s useful for interactive work with R."""
 
-    _graphics_device: None
+    _graphics_device: typing.Optional[GraphicsDevice] = None
 
     def __init__(self, shell,
                  converter=None,
