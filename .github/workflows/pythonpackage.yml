@@ -19,6 +19,7 @@ jobs:
            source rpy2-env/bin/activate	   
     - name: Lint with flake8 rinterface
       run: |
+        source rpy2-env/bin/activate	   
         uv pip install flake8
         cd rpy2-rinterface
         ../scripts/run_linting_rinterface.sh
