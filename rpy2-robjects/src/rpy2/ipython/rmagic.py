@@ -229,7 +229,7 @@ class GraphicsDeviceRaster(FileDevice, GraphicsDevice):
         if units is None:
             units = self._options_new_device.units
         if res is None:
-            units = self._options_new_device.res
+            res = self._options_new_device.res
 
         res = Options._fix_graphics_resolution(units, res)
         tmpd = tempfile.mkdtemp()
@@ -298,7 +298,7 @@ class GraphicsDeviceSVG(FileDevice, GraphicsDevice):
         if units is None:
             units = self._options_new_device.units
         if res is None:
-            units = self._options_new_device.res
+            res = self._options_new_device.res
 
         tmpd = tempfile.mkdtemp()
         tmpd_fix_slashes = tmpd.replace('\\', '/')
