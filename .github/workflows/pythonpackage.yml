@@ -123,7 +123,6 @@ jobs:
     - name: Create venv
       run: |
            uv venv --no-project --no-config --no-managed-python rpy2-env
-           source rpy2-env/bin/activate
     - name: Print R config (POSIX-only)
       if: "!startsWith(matrix.os, 'windows')"
       run: R CMD config --all
