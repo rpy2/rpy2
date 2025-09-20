@@ -99,11 +99,10 @@ class GGPlot(robjects.vectors.ListVector):
     """
 
     _constructor = ggplot2._env['ggplot']
-    _rprint = (
-        ggplot2._env.get('print.ggplot')
-        if ggplot2._env.get('print.ggplot')
-        else base._env['print']
-    )
+    try:
+        _rprint = ggplot2._env['print.ggplot']
+    except KeyError:
+        _rprint = base._env['print']
     _add = ggplot2._env['%+%']
 
     @classmethod
