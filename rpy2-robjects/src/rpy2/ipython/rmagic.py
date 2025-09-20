@@ -1264,7 +1264,7 @@ class RMagics(IPython.core.magic.Magics):
         tmpd = device.new_device(
             **{
                 k: v for k, v in args.__dict__.items()
-                if k in device._options_new_device.__dict__
+                if hasattr(device._options_new_device, k)
             }
         )
 
