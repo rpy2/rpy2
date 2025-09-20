@@ -199,7 +199,6 @@ jobs:
     - name: Create venv
       run: |
            uv venv --no-project --no-config --no-managed-python rpy2-env
-           source rpy2-env/bin/activate
     - name: Install dependencies
       run: |
         source rpy2-env/bin/activate
