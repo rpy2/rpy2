@@ -28,13 +28,13 @@ jobs:
     - name: Lint with flake8 rinterface
       run: |
         ${{ env.VENV_ACTIVATE }}
-        uv pip install flake8
+        uv pip  flake8
         cd rpy2-rinterface
         ../scripts/run_linting_rinterface.sh
     - name: Lint with flake8 robjects
       run: |
         ${{ env.VENV_ACTIVATE }}
-        uv pip install flake8
+        uv pip  flake8
         cd rpy2-robjects
         ../scripts/run_linting_robjects.sh
     - name: Set up R ${{ matrix.r-version }}
@@ -45,7 +45,7 @@ jobs:
       run: |
         ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
-        uv pip install '.[types]'
+        uv pip  '.[types]'
         ../scripts/run_mypy_rinterface.sh
     - name: Check type hints robjects
       run: |
@@ -168,13 +168,13 @@ jobs:
         done
     - name: Install dependencies
       run: |
-        source rpy2-env/bin/activate
+        ${{ env.VENV_ACTIVATE }}
         uv pip install setuptools build
     - name: Build wheel rinterface (Windows)
       shell: bash
       if: startsWith(matrix.os, 'windows')
       run: |
-        source rpy2-env/bin/activae
+        ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
         echo '[build]' > setup.cfg
         echo 'compiler = mingw32' >> setup.cfg
@@ -183,7 +183,7 @@ jobs:
     - name: Build wheel rinterface (non-Windows)
       if: "!startsWith(matrix.os, 'windows')"
       run: |
-        source rpy2-env/bin/activate
+        ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
         python -m build -o dist/ --wheel .
     - uses: actions/upload-artifact@v4
@@ -215,14 +215,22 @@ jobs:
     - name: Create venv
       run: |
            uv venv --no-project --no-config --no-managed-python rpy2-env
-           source rpy2-env/bin/activate
+    - name: Set activate venv commands (POSIX)
+      if: "!startsWith(matrix.os, 'windows')"
+      run: |
+        echo "VENV_ACTIVATE=source rpy2-env/bin/activate" >> $GITHUB_ENV
+    - name: Set activate venv command (Windows)
+      if: startsWith(matrix.os, 'windows')
+      shell: bash
+      run: |
+        echo "VENV_ACTIVATE=rpy2-env\Scripts\activate" >> $GITHUB_ENV
     - name: Install dependencies
       run: |
-        source rpy2-env/bin/activate
+        ${{ env.VENV_ACTIVATE }}
         uv pip install setuptools build
     - name: Build wheel
       run: |
-        source rpy2-env/bin/activate
+        ${{ env.VENV_ACTIVATE }}
         cd "${{ matrix.package.dir }}"
         python -m build -o dist/ --wheel .
     - uses: actions/upload-artifact@v4
