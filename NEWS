@@ -7,6 +7,14 @@ Bugs fixed
 - In the Jupyter/IPython extension, options for raster graphical devices
   were not handling resolution (`res`) options correctly.
 
+Changes
+-------
+
+- The R library `ggplot2` had a lot of internal changes with its recent
+  release 4.0.0. This broke :mod:`rpy2.robjects.lib.ggplot2`. Changes
+  are made to support both 4.0.0 and previous versions. Only >= 4.0.0
+  will be supported in the future (rpy2 3.7.0).
+
 
 Release 3.6.3
 =============

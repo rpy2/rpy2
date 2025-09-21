@@ -91,7 +91,14 @@ def as_symbol(x):
 _AES_RLANG = rl('ggplot2::aes()')
 
 
-class GGPlot(robjects.vectors.ListVector):
+class GGPlot(
+        # TODO: Objects created by ggplot() are no longer
+        # R lists with ggplot2-4.0.0.
+        # Code handling earlier ggplot2 version should be deleted
+        # when support moves to ggplot2>=4.0.0.
+        robjects.methods.RS4 if ggplot2.__version__ > '4.'
+        else robjects.vectors.ListVector
+):
     """ A Grammar of Graphics Plot.
 
     GGPlot instances can be added to one an other in order to construct
@@ -99,6 +106,9 @@ class GGPlot(robjects.vectors.ListVector):
     """
 
     _constructor = ggplot2._env['ggplot']
+    # TODO: print.ggplot no longer exists with ggplot2-4.0.0.
+    # Code handling earlier ggplot2 version should be deleted
+    # when support moves to ggplot2>=4.0.0.
     try:
         _rprint = ggplot2._env['print.ggplot']
     except KeyError:
