@@ -1167,7 +1167,14 @@ guide_colourbar = ggplot2.guide_colourbar
 guide_legend = ggplot2.guide_legend
 
 
-class Options(robjects.ListVector):
+class Options(
+        # TODO: Objects created by ggplot() are no longer
+        # R lists with ggplot2-4.0.0.
+        # Code handling earlier ggplot2 version should be deleted
+        # when support moves to ggplot2>=4.0.0.
+        robjects.methods.RS4 if ggplot2.__version__ > '4.'
+        else robjects.vectors.ListVector
+):
 
     def __repr__(self):
         s = '<instance of %s : %i>' % (type(self), id(self))
