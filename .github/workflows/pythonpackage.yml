@@ -16,16 +16,24 @@ jobs:
     - name: Create venv
       run: |
            uv venv --no-project --no-config --no-managed-python rpy2-env
-           source rpy2-env/bin/activate
+    - name: Set activate venv commands (POSIX)
+      if: "!startsWith(matrix.os, 'windows')"
+      run: |
+        echo "VENV_ACTIVATE=source rpy2-env/bin/activate" >> $GITHUB_ENV
+    - name: Set activate venv command (Windows)
+      if: startsWith(matrix.os, 'windows')
+      shell: bash
+      run: |
+        echo "VENV_ACTIVATE=rpy2-env\Scripts\activate" >> $GITHUB_ENV
     - name: Lint with flake8 rinterface
       run: |
-        source rpy2-env/bin/activate
+        ${{ env.VENV_ACTIVATE }}
         uv pip install flake8
         cd rpy2-rinterface
         ../scripts/run_linting_rinterface.sh
     - name: Lint with flake8 robjects
       run: |
-        source rpy2-env/bin/activate
+        ${{ env.VENV_ACTIVATE }}
         uv pip install flake8
         cd rpy2-robjects
         ../scripts/run_linting_robjects.sh
@@ -35,13 +43,13 @@ jobs:
         r-version: release
     - name: Check type hints rinterface
       run: |
-        source rpy2-env/bin/activate
+        ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
         uv pip install '.[types]'
         ../scripts/run_mypy_rinterface.sh
     - name: Check type hints robjects
       run: |
-        source rpy2-env/bin/activate
+        ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
         uv pip install .
         cd ..
@@ -65,14 +73,22 @@ jobs:
     - name: Create venv
       run: |
            uv venv --no-project --no-config --no-managed-python rpy2-env
-           source rpy2-env/bin/activate
+    - name: Set activate venv commands (POSIX)
+      if: "!startsWith(matrix.os, 'windows')"
+      run: |
+        echo "VENV_ACTIVATE=source rpy2-env/bin/activate" >> $GITHUB_ENV
+    - name: Set activate venv command (Windows)
+      if: startsWith(matrix.os, 'windows')
+      shell: bash
+      run: |
+        echo "VENV_ACTIVATE=rpy2-env\Scripts\activate" >> $GITHUB_ENV
     - name: Install dependencies
       run: |
-        source rpy2-env/bin/activate
+        ${{ env.VENV_ACTIVATE }}
         uv pip install setuptools build
     - name: Build sdist rinterface
       run: |
-        source rpy2-env/bin/activate
+        ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
         python -m build -o dist/ --sdist .
     - name: Upload sdist rinterface
@@ -82,7 +98,7 @@ jobs:
         path: rpy2-rinterface/dist/rpy2_rinterface-*.tar.gz
     - name: Build sdist robjects
       run: |
-        source rpy2-env/bin/activate
+        ${{ env.VENV_ACTIVATE }}
         cd rpy2-robjects
         python -m build -o dist/ --sdist .
     - name: Upload sdist robjects
@@ -92,7 +108,7 @@ jobs:
         path: rpy2-robjects/dist/rpy2_robjects-*.tar.gz
     - name: Build sdist rpy2
       run: |
-        source rpy2-env/bin/activate
+        ${{ env.VENV_ACTIVATE }}
         python -m build -o dist/ --sdist .
     - name: Upload sdist rpy2
       uses: actions/upload-artifact@v4
