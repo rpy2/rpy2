@@ -28,13 +28,13 @@ jobs:
     - name: Lint with flake8 rinterface
       run: |
         ${{ env.VENV_ACTIVATE }}
-        uv pip  flake8
+        uv pip install flake8
         cd rpy2-rinterface
         ../scripts/run_linting_rinterface.sh
     - name: Lint with flake8 robjects
       run: |
         ${{ env.VENV_ACTIVATE }}
-        uv pip  flake8
+        uv pip install flake8
         cd rpy2-robjects
         ../scripts/run_linting_robjects.sh
     - name: Set up R ${{ matrix.r-version }}
@@ -45,7 +45,7 @@ jobs:
       run: |
         ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
-        uv pip  '.[types]'
+        uv pip install '.[types]'
         ../scripts/run_mypy_rinterface.sh
     - name: Check type hints robjects
       run: |
