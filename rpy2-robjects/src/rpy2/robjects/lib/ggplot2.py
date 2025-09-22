@@ -97,19 +97,16 @@ _AES_RLANG = rl('ggplot2::aes()')
 # when support moves to ggplot2>=4.0.0.
 if ggplot2.__version__ > '4.':
 
-
     class _GGPlot_transition4(robjects.methods.RS4):
         """Temporary helper class for typing.
 
         This will only be used during transition to ggplot2-4.0."""
         pass
 
-
     class Options(robjects.methods.RS4):
         def __repr__(self):
             s = '<instance of %s : %i>' % (type(self), id(self))
             return s
-
 
     class _Labs_transition4(robjects.vectors.ListVector):
         """Temporary helper class for typing.
@@ -117,13 +114,10 @@ if ggplot2.__version__ > '4.':
         This will only be used during transition to ggplot2-4.0."""
         pass
 
-
     class Theme(robjects.methods.RS4):
         pass
 
-
 else:
-
 
     class _GGPlot_transition4(robjects.vectors.ListVector):
         """Temporary helper class for typing.
@@ -131,19 +125,16 @@ else:
         This will only be used during transition to ggplot2-4.0."""
         pass
 
-
     class Options(robjects.vectors.ListVector):
         def __repr__(self):
             s = '<instance of %s : %i>' % (type(self), id(self))
             return s
-
 
     class _Labs_transition4(Options):
         """Temporary helper class for typing.
 
         This will only be used during transition to ggplot2-4.0."""
         pass
-
 
     class Theme(Options):
         pass
