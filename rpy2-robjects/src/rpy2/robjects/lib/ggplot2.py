@@ -110,7 +110,7 @@ class GGPlot(
     # Code handling earlier ggplot2 version should be deleted
     # when support moves to ggplot2>=4.0.0.
     _rprint = (base._env['print'] if ggplot2.__version__ > '4.'
-              else ggplot2._env['print.ggplot'])
+               else ggplot2._env['print.ggplot'])
     _add = (ggplot2._env['+'] if ggplot2.__version__ > '4.'
             else ggplot2._env['%+%'])
 
@@ -1264,7 +1264,7 @@ class Labs(
         # Code handling earlier ggplot2 version should be deleted
         # when support moves to ggplot2>=4.0.0.
         robjects.vectors.ListVector if ggplot2.__version__ > '4.'
-        else 
+        else
         Options
 ):
     _constructor = ggplot2.labs
@@ -1284,7 +1284,7 @@ class Theme(
         # Code handling earlier ggplot2 version should be deleted
         # when support moves to ggplot2>=4.0.0.
         robjects.methods.RS4 if ggplot2.__version__ > '4.'
-        else 
+        else
         Options
 ):
     pass
