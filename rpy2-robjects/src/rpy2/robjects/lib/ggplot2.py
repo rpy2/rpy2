@@ -109,11 +109,10 @@ class GGPlot(
     # TODO: print.ggplot no longer exists with ggplot2-4.0.0.
     # Code handling earlier ggplot2 version should be deleted
     # when support moves to ggplot2>=4.0.0.
-    try:
-        _rprint = ggplot2._env['print.ggplot']
-    except KeyError:
-        _rprint = base._env['print']
-    _add = ggplot2._env['%+%']
+    _rprint = (base._env['print'] if ggplot2.__version__ > '4.'
+              else ggplot2._env['print.ggplot'])
+    _add = (ggplot2._env['+'] if ggplot2.__version__ > '4.'
+            else ggplot2._env['%+%'])
 
     @classmethod
     def new(cls, data, mapping=_AES_RLANG, **kwargs):
@@ -1259,7 +1258,15 @@ class ElementRect(Element):
 element_rect = ElementRect.new
 
 
-class Labs(Options):
+class Labs(
+        # TODO: Objects created by ggplot() are no longer
+        # R lists with ggplot2-4.0.0.
+        # Code handling earlier ggplot2 version should be deleted
+        # when support moves to ggplot2>=4.0.0.
+        robjects.vectors.ListVector if ggplot2.__version__ > '4.'
+        else 
+        Options
+):
     _constructor = ggplot2.labs
 
     @classmethod
@@ -1271,7 +1278,15 @@ class Labs(Options):
 labs = Labs.new
 
 
-class Theme(Options):
+class Theme(
+        # TODO: Objects created by ggplot() are no longer
+        # R lists with ggplot2-4.0.0.
+        # Code handling earlier ggplot2 version should be deleted
+        # when support moves to ggplot2>=4.0.0.
+        robjects.methods.RS4 if ggplot2.__version__ > '4.'
+        else 
+        Options
+):
     pass
 
 
