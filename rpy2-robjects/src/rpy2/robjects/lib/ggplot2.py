@@ -95,8 +95,13 @@ _AES_RLANG = rl('ggplot2::aes()')
 # R lists with ggplot2-4.0.0.
 # Code handling earlier ggplot2 version should be deleted
 # when support moves to ggplot2>=4.0.0.
-if ggplot2.__version__ > '4.':
-
+if ggplot2.__version__ is None or ggplot2.__version__ > '4.':
+    if ggplot2.__version__ is None:
+        warnings.warn(
+            'The version of the R package ggplot2 cannot be determined. '
+            'Assuming that this is a version compatible with 4.0.'
+    )
+   
     class _GGPlot_transition4(robjects.methods.RS4):
         """Temporary helper class for typing.
 
@@ -119,24 +124,24 @@ if ggplot2.__version__ > '4.':
 
 else:
 
-    class _GGPlot_transition4(robjects.vectors.ListVector):
+    class _GGPlot_transition4(robjects.vectors.ListVector):  # type: ignore[no-redef]
         """Temporary helper class for typing.
 
         This will only be used during transition to ggplot2-4.0."""
         pass
 
-    class Options(robjects.vectors.ListVector):
+    class Options(robjects.vectors.ListVector):  # type: ignore[no-redef]
         def __repr__(self):
             s = '<instance of %s : %i>' % (type(self), id(self))
             return s
 
-    class _Labs_transition4(Options):
+    class _Labs_transition4(Options):  # type: ignore[no-redef]
         """Temporary helper class for typing.
 
         This will only be used during transition to ggplot2-4.0."""
         pass
 
-    class Theme(Options):
+    class Theme(Options):  # type: ignore[no-redef]
         pass
 
 
@@ -158,6 +163,7 @@ class GGPlot(_GGPlot_transition4):
                     ggplot2.__version__ > '4.'
                     and
                     tuple(
+                        _ for _ in
                         robjects.r(
                             'as.character(R.Version()[c("major", "minor")])'
                         )
