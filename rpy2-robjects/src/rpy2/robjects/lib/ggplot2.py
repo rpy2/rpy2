@@ -100,8 +100,8 @@ if ggplot2.__version__ is None or ggplot2.__version__ > '4.':
         warnings.warn(
             'The version of the R package ggplot2 cannot be determined. '
             'Assuming that this is a version compatible with 4.0.'
-    )
-   
+        )
+
     class _GGPlot_transition4(robjects.methods.RS4):
         """Temporary helper class for typing.
 
