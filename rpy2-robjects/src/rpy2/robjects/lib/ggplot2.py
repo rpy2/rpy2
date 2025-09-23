@@ -163,9 +163,10 @@ class GGPlot(_GGPlot_transition4):
                     ggplot2.__version__ > '4.'
                     and
                     tuple(
-                        _ for _ in
-                        robjects.r(
-                            'as.character(R.Version()[c("major", "minor")])'
+                        robjects.vectors.StrVector(
+                            robjects.r(
+                                'as.character(R.Version()[c("major", "minor")])'
+                            )
                         )
                     ) >= ('4', '5')
             )
