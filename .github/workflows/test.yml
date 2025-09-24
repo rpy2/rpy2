@@ -16,7 +16,8 @@ jobs:
   test:
     runs-on: ${{ inputs.os }}
     defaults:
-      shell: bash
+      run:
+        shell: bash
     continue-on-error: ${{ startsWith(inputs.os, 'windows') && inputs.r-version == 'release' }}
     steps:
     - uses: actions/checkout@v3
