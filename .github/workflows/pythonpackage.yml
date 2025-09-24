@@ -117,6 +117,9 @@ jobs:
         path: dist/rpy2-*.tar.gz
   build-api-wheel:
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -149,13 +152,11 @@ jobs:
         echo "R_LIBRARY=export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}" >> $GITHUB_ENV
     - name: Set virtualenv activation command (Windows)
       if: startsWith(matrix.os, 'windows')
-      shell: bash
       run: |
         echo "VENV_ACTIVATE=rpy2-env\Scripts\activate" >> $GITHUB_ENV
         echo "R_LIBRARY=''" >> $GITHUB_ENV
     - name: Patch GHA issue with macos - Missing C library
       if: startsWith(matrix.os, 'macos')
-      shell: bash
       run: |
         LIB_ARCHIVES=(\
           libdeflate-1.23-darwin.20-arm64.tar.xz \
@@ -171,7 +172,6 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         uv pip install setuptools build
     - name: Build wheel rinterface (Windows)
-      shell: bash
       if: startsWith(matrix.os, 'windows')
       run: |
         ${{ env.VENV_ACTIVATE }}
@@ -192,6 +192,9 @@ jobs:
         path: rpy2-rinterface/dist/rpy2_rinterface-*.whl
   build-noabi-wheel:
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -221,7 +224,6 @@ jobs:
         echo "VENV_ACTIVATE=source rpy2-env/bin/activate" >> $GITHUB_ENV
     - name: Set activate venv command (Windows)
       if: startsWith(matrix.os, 'windows')
-      shell: bash
       run: |
         echo "VENV_ACTIVATE=rpy2-env\Scripts\activate" >> $GITHUB_ENV
     - name: Install dependencies
