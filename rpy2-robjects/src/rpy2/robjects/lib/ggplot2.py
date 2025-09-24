@@ -91,7 +91,61 @@ def as_symbol(x):
 _AES_RLANG = rl('ggplot2::aes()')
 
 
-class GGPlot(robjects.vectors.ListVector):
+# TODO: Objects created by ggplot() are no longer
+# R lists with ggplot2-4.0.0.
+# Code handling earlier ggplot2 version should be deleted
+# when support moves to ggplot2>=4.0.0.
+if ggplot2.__version__ is None or ggplot2.__version__ > '4.':
+    if ggplot2.__version__ is None:
+        warnings.warn(
+            'The version of the R package ggplot2 cannot be determined. '
+            'Assuming that this is a version compatible with 4.0.'
+        )
+
+    class _GGPlot_transition4(robjects.methods.RS4):
+        """Temporary helper class for typing.
+
+        This will only be used during transition to ggplot2-4.0."""
+        pass
+
+    class Options(robjects.methods.RS4):
+        def __repr__(self):
+            s = '<instance of %s : %i>' % (type(self), id(self))
+            return s
+
+    class _Labs_transition4(robjects.vectors.ListVector):
+        """Temporary helper class for typing.
+
+        This will only be used during transition to ggplot2-4.0."""
+        pass
+
+    class Theme(robjects.methods.RS4):
+        pass
+
+else:
+
+    class _GGPlot_transition4(robjects.vectors.ListVector):  # type: ignore[no-redef]
+        """Temporary helper class for typing.
+
+        This will only be used during transition to ggplot2-4.0."""
+        pass
+
+    class Options(robjects.vectors.ListVector):  # type: ignore[no-redef]
+        def __repr__(self):
+            s = '<instance of %s : %i>' % (type(self), id(self))
+            return s
+
+    class _Labs_transition4(Options):  # type: ignore[no-redef]
+        """Temporary helper class for typing.
+
+        This will only be used during transition to ggplot2-4.0."""
+        pass
+
+    class Theme(Options):  # type: ignore[no-redef]
+        pass
+
+
+class GGPlot(_GGPlot_transition4):
     """ A Grammar of Graphics Plot.
 
     GGPlot instances can be added to one an other in order to construct
@@ -99,8 +153,24 @@ class GGPlot(robjects.vectors.ListVector):
     """
 
     _constructor = ggplot2._env['ggplot']
-    _rprint = ggplot2._env['print.ggplot']
-    _add = ggplot2._env['%+%']
+    # TODO: print.ggplot no longer exists with ggplot2-4.0.0.
+    # Code handling earlier ggplot2 version should be deleted
+    # when support moves to ggplot2>=4.0.0.
+    _rprint = (base._env['print'] if ggplot2.__version__ > '4.'
+               else ggplot2._env['print.ggplot'])
+    _add = (ggplot2._env['+']
+            if (
+                    ggplot2.__version__ > '4.'
+                    and
+                    tuple(
+                        robjects.vectors.StrVector(
+                            robjects.r(
+                                'as.character(R.Version()[c("major", "minor")])'
+                            )
+                        )
+                    ) >= ('4', '5')
+            )
+            else ggplot2._env['%+%'])
 
     @classmethod
     def new(cls, data, mapping=_AES_RLANG, **kwargs):
@@ -1154,13 +1224,6 @@ guide_colourbar = ggplot2.guide_colourbar
 guide_legend = ggplot2.guide_legend
 
 
-class Options(robjects.ListVector):
-
-    def __repr__(self):
-        s = '<instance of %s : %i>' % (type(self), id(self))
-        return s
-
-
 class Element(Options):
     pass
 
@@ -1239,7 +1302,7 @@ class ElementRect(Element):
 element_rect = ElementRect.new
 
 
-class Labs(Options):
+class Labs(_Labs_transition4):
     _constructor = ggplot2.labs
 
     @classmethod
@@ -1249,10 +1312,6 @@ class Labs(Options):
 
 
 labs = Labs.new
-
-
-class Theme(Options):
-    pass
 
 
 class ElementBlank(Theme):
