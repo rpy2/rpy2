@@ -229,7 +229,7 @@ class GraphicsDeviceRaster(FileDevice, GraphicsDevice):
         if units is None:
             units = self._options_new_device.units
         if res is None:
-            units = self._options_new_device.res
+            res = self._options_new_device.res
 
         res = Options._fix_graphics_resolution(units, res)
         tmpd = tempfile.mkdtemp()
@@ -298,7 +298,7 @@ class GraphicsDeviceSVG(FileDevice, GraphicsDevice):
         if units is None:
             units = self._options_new_device.units
         if res is None:
-            units = self._options_new_device.res
+            res = self._options_new_device.res
 
         tmpd = tempfile.mkdtemp()
         tmpd_fix_slashes = tmpd.replace('\\', '/')
@@ -642,7 +642,7 @@ def display_figures_svg(graph_dir, isolate_svgs=True):
 class RMagics(IPython.core.magic.Magics):
     """A set of ipython/jupyter "magic"s useful for interactive work with R."""
 
-    _graphics_device: None
+    _graphics_device: typing.Optional[GraphicsDevice] = None
 
     def __init__(self, shell,
                  converter=None,
@@ -1264,7 +1264,7 @@ class RMagics(IPython.core.magic.Magics):
         tmpd = device.new_device(
             **{
                 k: v for k, v in args.__dict__.items()
-                if k in device._options_new_device.__dict__
+                if hasattr(device._options_new_device, k)
             }
         )
 
