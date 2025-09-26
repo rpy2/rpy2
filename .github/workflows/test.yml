@@ -15,6 +15,9 @@ on:
 jobs:
   test:
     runs-on: ${{ inputs.os }}
+    defaults:
+      run:
+        shell: bash
     continue-on-error: ${{ startsWith(inputs.os, 'windows') && inputs.r-version == 'release' }}
     steps:
     - uses: actions/checkout@v3
@@ -29,7 +32,6 @@ jobs:
         use-public-rspm: true
     - name: Set virtualenv activation command (Windows)
       if: startsWith(inputs.os, 'windows')
-      shell: bash
       run: |
         echo "VENV_ACTIVATE=pyenv_base/Scripts/activate" >> $GITHUB_ENV
         echo "R_LIBRARY=''" >> $GITHUB_ENV
@@ -53,7 +55,6 @@ jobs:
         pattern: rpy2-robjects-${{ inputs.os }}
         path: rpy2-robjects/dist/
     - name: Built package path.
-      shell: bash
       run: |
         ls rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-r${{ inputs.r-version }}/*.whl
         ls rpy2-rinterface/dist/
