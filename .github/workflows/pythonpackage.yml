@@ -81,7 +81,7 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       shell: bash
       run: |
-        echo "VENV_ACTIVATE=rpy2-env\Scripts\activate" >> $GITHUB_ENV
+        echo "VENV_ACTIVATE=rpy2-env/Scripts/activate" >> $GITHUB_ENV
     - name: Install dependencies
       run: |
         ${{ env.VENV_ACTIVATE }}
@@ -153,7 +153,7 @@ jobs:
     - name: Set virtualenv activation command (Windows)
       if: startsWith(matrix.os, 'windows')
       run: |
-        echo "VENV_ACTIVATE=rpy2-env\Scripts\activate" >> $GITHUB_ENV
+        echo "VENV_ACTIVATE=rpy2-env/Scripts/activate" >> $GITHUB_ENV
         echo "R_LIBRARY=''" >> $GITHUB_ENV
     - name: Patch GHA issue with macos - Missing C library
       if: startsWith(matrix.os, 'macos')
@@ -225,7 +225,7 @@ jobs:
     - name: Set activate venv command (Windows)
       if: startsWith(matrix.os, 'windows')
       run: |
-        echo "VENV_ACTIVATE=rpy2-env\Scripts\activate" >> $GITHUB_ENV
+        echo "VENV_ACTIVATE=rpy2-env/Scripts/activate" >> $GITHUB_ENV
     - name: Install dependencies
       run: |
         ${{ env.VENV_ACTIVATE }}
