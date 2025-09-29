@@ -176,7 +176,7 @@ jobs:
         cd rpy2-rinterface
         echo '[build]' > setup.cfg
         echo 'compiler = mingw32' >> setup.cfg
-        export RPY2_API_FORCE=True
+        set RPY2_API_FORCE=True
         python -m build -C--global-option=--verbose -o dist/ --wheel .
     - name: Build wheel rinterface (non-Windows)
       if: "!startsWith(matrix.os, 'windows')"
