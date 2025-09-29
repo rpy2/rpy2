@@ -45,7 +45,7 @@ jobs:
       run: |
         python -m venv pyenv_base
         ${{ env.VENV_ACTIVATE }}
-        python -m  pip install -U pip wheel
+        uv pip install wheel
     - uses: actions/download-artifact@v4.1.7
       with:
         pattern: rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-r${{ inputs.r-version }}
@@ -63,8 +63,8 @@ jobs:
     - name: Install package
       run: |
         ${{ env.VENV_ACTIVATE }}
-        pip install ${{ env.RPY2_RINTERFACE_WHL_DIST }}
-        pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}
+        uv pip install ${{ env.RPY2_RINTERFACE_WHL_DIST }}
+        up pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}
         python -m rpy2.situation
     - name: Set R_LIBRARY (Windows)
       if: startsWith(inputs.os, 'windows')
@@ -80,29 +80,29 @@ jobs:
       run: |
         ${{ env.VENV_ACTIVATE }}
         echo "With requirements for rpy2-rinterface."
-        python3 -m pip install --pre ${{ env.RPY2_RINTERFACE_WHL_DIST }}'[test]'
+        uv pip pip install --pre ${{ env.RPY2_RINTERFACE_WHL_DIST }}'[test]'
         ${{ env.R_LIBRARY }}
         python -c 'from rpy2.rinterface_lib import openrlib; print(openrlib.cffi_mode)'
         bash -e ./scripts/run_test_rinterface_min_deps.sh
         echo "With dev for rpy2-robjects."
-        python3 -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}'[test_minimal]'
+        uv pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}'[test_minimal]'
         bash -e ./scripts/run_test_robjects_min_deps.sh
     - name: Test with numpy
       run: |
         ${{ env.VENV_ACTIVATE }}
-        python -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[numpy]'
+        uv pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[numpy]'
         ${{ env.R_LIBRARY }}
         bash -e ./scripts/run_test_numpy.sh
     - name: Test with pandas
       run: |
         ${{ env.VENV_ACTIVATE }}
-        python -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[pandas]'
+        uv pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[pandas]'
         ${{ env.R_LIBRARY }}
         bash -e ./scripts/run_test_pandas.sh
     - name: Test with ipython
       run: |
         ${{ env.VENV_ACTIVATE }}
-        python -m pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[test]'
+        uv pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST}}'[test]'
         ${{ env.R_LIBRARY }}
         bash -e ./scripts/run_test_ipython.sh
     - name: Set RSPM
