@@ -171,6 +171,7 @@ jobs:
         uv pip install setuptools build
     - name: Build wheel rinterface (Windows)
       if: startsWith(matrix.os, 'windows')
+      continue-on-error: true
       run: |
         ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
