@@ -43,7 +43,7 @@ jobs:
         echo "R_LIBRARY=export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH)" >> $GITHUB_ENV
     - name: Create base virtualenv
       run: |
-        python -m venv pyenv_base
+        uv venv --no-project --no-config --no-managed-python pyenv_base
         ${{ env.VENV_ACTIVATE }}
         uv pip install wheel
     - uses: actions/download-artifact@v4.1.7
