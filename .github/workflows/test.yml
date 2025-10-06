@@ -66,7 +66,7 @@ jobs:
       run: |
         ${{ env.VENV_ACTIVATE }}
         uv pip install ${{ env.RPY2_RINTERFACE_WHL_DIST }}
-        up pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}
+        uv pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}
         python -m rpy2.situation
     - name: Set R_LIBRARY (Windows)
       if: startsWith(inputs.os, 'windows')
