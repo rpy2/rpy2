@@ -82,7 +82,7 @@ jobs:
       run: |
         ${{ env.VENV_ACTIVATE }}
         echo "With requirements for rpy2-rinterface."
-        uv pip pip install --pre ${{ env.RPY2_RINTERFACE_WHL_DIST }}'[test]'
+        uv pip install --pre ${{ env.RPY2_RINTERFACE_WHL_DIST }}'[test]'
         ${{ env.R_LIBRARY }}
         python -c 'from rpy2.rinterface_lib import openrlib; print(openrlib.cffi_mode)'
         bash -e ./scripts/run_test_rinterface_min_deps.sh
