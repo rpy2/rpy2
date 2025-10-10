@@ -218,18 +218,18 @@ class GraphicsDeviceRaster(FileDevice, GraphicsDevice):
             res=None
     ):
 
-        if width:
+        if width is None:
             width = self._options_new_device.width
-        if height:
+        if height is None:
             height = self._options_new_device.height
-        if pointsize:
+        if pointsize is None:
             pointsize = self._options_new_device.pointsize
-        if bg:
+        if bg is None:
             bg = self._options_new_device.bg
-        if units:
+        if units is None:
             units = self._options_new_device.units
-        if res:
-            units = self._options_new_device.res
+        if res is None:
+            res = self._options_new_device.res
 
         res = Options._fix_graphics_resolution(units, res)
         tmpd = tempfile.mkdtemp()
@@ -287,18 +287,18 @@ class GraphicsDeviceSVG(FileDevice, GraphicsDevice):
             units=None,
             res=None
     ):
-        if width:
+        if width is None:
             width = self._options_new_device.width
-        if height:
+        if height is None:
             height = self._options_new_device.height
-        if pointsize:
+        if pointsize is None:
             pointsize = self._options_new_device.pointsize
-        if bg:
+        if bg is None:
             bg = self._options_new_device.bg
-        if units:
+        if units is None:
             units = self._options_new_device.units
-        if res:
-            units = self._options_new_device.res
+        if res is None:
+            res = self._options_new_device.res
 
         tmpd = tempfile.mkdtemp()
         tmpd_fix_slashes = tmpd.replace('\\', '/')
@@ -642,7 +642,7 @@ def display_figures_svg(graph_dir, isolate_svgs=True):
 class RMagics(IPython.core.magic.Magics):
     """A set of ipython/jupyter "magic"s useful for interactive work with R."""
 
-    _graphics_device: None
+    _graphics_device: typing.Optional[GraphicsDevice] = None
 
     def __init__(self, shell,
                  converter=None,
@@ -1264,7 +1264,7 @@ class RMagics(IPython.core.magic.Magics):
         tmpd = device.new_device(
             **{
                 k: v for k, v in args.__dict__.items()
-                if k in device._options_new_device.__dict__
+                if hasattr(device._options_new_device, k)
             }
         )
 
@@ -1284,25 +1284,25 @@ class RMagics(IPython.core.magic.Magics):
                 text_output += text_result
                 if visible:
                     with contextlib.ExitStack() as stack:
-                        obj_in_module = (rpy2.rinterface_lib
-                                         .callbacks
-                                         .obj_in_module)
+                        replace_in_module = (rpy2.rinterface_lib
+                                             .callbacks
+                                             .replace_in_module)
                         if self.cache_display_data:
                             stack.enter_context(
-                                obj_in_module(rpy2.rinterface_lib
-                                              .callbacks,
-                                              'consolewrite_print',
-                                              self.write_console_regular)
+                                replace_in_module(rpy2.rinterface_lib
+                                                  .callbacks,
+                                                  'consolewrite_print',
+                                                  self.write_console_regular)
                             )
                         stack.enter_context(
-                            obj_in_module(
+                            replace_in_module(
                                 rpy2.rinterface_lib.callbacks,
                                 'consolewrite_warnerror',
                                 self.write_console_regular
                             )
                         )
                         stack.enter_context(
-                            obj_in_module(
+                            replace_in_module(
                                 rpy2.rinterface_lib.callbacks,
                                 '_WRITECONSOLE_EXCEPTION_LOG',
                                 '%s')

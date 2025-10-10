@@ -14,17 +14,29 @@ It is assumed here that the rpy2 package has been properly installed.
 This will be the case if working out of one of the Docker containers available,
 of if the instructions were followed (see :ref:`install-installation`).
 
-`rpy2` is like any other python package binding to a C library. Its top
-level can be imported, and the version obtained. 
+`rpy2` is a namespace package (see PEP 420). It is composed of two subpackages: `rpy2.rinterface` (low-level with C-extensions
+to access R's C API) and `rpy2.robjects` (higher level and more pythonic interface).
+
+The `rpy2` version can be obtained from the installed package metadata:
 
 .. code-block:: python
 
-   import rpy2
-   print(rpy2.__version__)
+   import importlib
+   print(importlib.metadata.metadata('rpy2')['version'])
+
+For the subpackages, an attribute `__version__` is available in addition to the metadata.
+
+.. code-block:: python
+
+    import rpy2.rinterface
+    print(f'rinterface: {rpy2.rinterface.__version__}')
+
+    import rpy2.robjects
+    print(f'robjects: {rpy2.robjects.__version__}')
 
 .. note::
 
-   The rpy2 version is rather important when reporting an issue with rpy2,
+   Versions are rather important when reporting an issue with rpy2,
    or in your own code if trying to assess whether rpy2 is matching the
    expected version.
 

@@ -1,6 +1,7 @@
 import logging
 import os
 import platform
+import sys
 import threading
 import typing
 import rpy2.situation
@@ -16,7 +17,16 @@ R_HOME = rpy2.situation.get_r_home()
 
 if os.name == 'nt':
     if R_HOME is not None:
-        for libpath in rpy2.situation.get_r_flags(R_HOME, '--ldflags')[0].L:
+        try:
+            for libpath in rpy2.situation.get_r_flags(R_HOME, '--ldflags')[0].L:
+                os.add_dll_directory(libpath)  # type: ignore[attr-defined]
+        except rpy2.situation.subprocess.CalledProcessError:
+            if platform.machine().lower() == "arm64":
+                libpath = os.path.join(R_HOME, "bin", "R.dll")
+            elif sys.maxsize > 2**32:
+                libpath = os.path.join(R_HOME, "bin", "x64", "R.dll")
+            else:
+                libpath = os.path.join(R_HOME, "bin", "i386", "R.dll")
             os.add_dll_directory(libpath)  # type: ignore[attr-defined]
     else:
         logging.warn('R_HOME is None.')
@@ -41,13 +51,13 @@ elif cffi_mode_request == rpy2.situation.CFFI_MODE.ANY:
             import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
             cffi_mode = rpy2.situation.CFFI_MODE.API
     except ImportError as ie_api:
-        logger.warn(
+        logger.warning(
             f'Error importing in API mode: {repr(ie_api)}'
         )
         try:
             import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
             cffi_mode = rpy2.situation.CFFI_MODE.ABI
-            logger.warn('Trying to import in ABI mode.')
+            logger.warning('Trying to import in ABI mode.')
         except ImportError as ie_abi:
             logger.error(f'Failed to import the API mode with "{ie_api}" '
                          'and unable to import the ABI mode.')
@@ -200,9 +210,13 @@ def SET_COMPLEX_ELT(vec, i: int, value: complex):
     COMPLEX(vec)[i].i = value.imag
 
 
-# TODO: still useful or is it in the C API ?
+# TODO: still useful or is it in the C API?
 def _VECTOR_ELT(robj, i):
     return ffi.cast('SEXP *', DATAPTR(robj))[i]
+
+
+def _PAIRLIST_PTR(robj):
+    return ffi.cast('SEXP *', DATAPTR(robj))
 
 
 def _STRING_PTR(robj):

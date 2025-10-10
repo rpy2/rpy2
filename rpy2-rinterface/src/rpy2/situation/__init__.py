@@ -6,6 +6,7 @@ R version, rpy2 version, etc...).
 
 import argparse
 import enum
+import locale
 import logging
 import os
 import shlex
@@ -22,6 +23,8 @@ else:
     r_version_folder = 'i386'
 
 ENVVAR_CFFI_TYPE: str = 'RPY2_CFFI_MODE'
+ENCODING_LOCALE = locale.getpreferredencoding()
+ENCODING_SYS = sys.getdefaultencoding()
 
 
 class CFFI_MODE(enum.Enum):
@@ -58,7 +61,7 @@ def r_version_from_subprocess():
     except Exception as e:  # FileNotFoundError, WindowsError, etc
         logger.error(f'Unable to determine the R version: {e}')
         return None
-    r_version = tmp.decode('ascii', 'ignore').split(os.linesep)
+    r_version = tmp.decode(ENCODING_LOCALE, 'ignore').split(os.linesep)
     if r_version[0].startswith('WARNING'):
         r_version = r_version[1]
     else:
@@ -135,10 +138,6 @@ def r_home_from_registry() -> Optional[str]:
         except Exception:  # FileNotFoundError, WindowsError, OSError, etc.
             pass
         else:
-            # We have a path RHOME
-            if sys.version_info[0] == 2:
-                # Python 2 path compatibility
-                r_home = r_home.encode(sys.getfilesystemencoding())
             # Break the loop, because we have a hit.
             break
     else:
@@ -246,15 +245,16 @@ def _get_r_cmd_config(r_home: str, about: str, allow_empty=False):
     output = subprocess.check_output(
         cmd,
         universal_newlines=True
-    ).split(os.linesep)
+    )
+    output_lst = output.encode(ENCODING_LOCALE).decode(ENCODING_SYS).split(os.linesep)
     # Twist if 'R RHOME' spits out a warning
-    if output[0].startswith('WARNING'):
-        msg = 'R emitting a warning: {}'.format(output[0])
+    if output_lst[0].startswith('WARNING'):
+        msg = 'R emitting a warning: {}'.format(output_lst[0])
         warnings.warn(msg)
         logger.debug(msg)
-        res = output[1:]
+        res = output_lst[1:]
     else:
-        res = output
+        res = output_lst
     logger.debug(res)
     return res
 
@@ -465,9 +465,17 @@ def iter_info():
             yield '    %s' % c_ext.extra_link_args
         except subprocess.CalledProcessError:
             yield ('    Warning: Unable to get R compilation flags.')
+            if os.name == 'nt':
+                yield (
+                    '    On Windows "make" and "sh" (in the R dev tools) '
+                    'are needed.'
+                )
 
     yield '  Directory for the R shared library:'
-    yield f'    {get_r_libnn(r_home)}'
+    try:
+        yield f'    {get_r_libnn(r_home)}'
+    except subprocess.CalledProcessError:
+        yield ('    Warning: Unable to get path for R shared library.')
 
 
 def set_default_logging():

@@ -1,9 +1,11 @@
 # Python -> R bridge
 
 [![pypi](https://img.shields.io/pypi/v/rpy2.svg?style=flat-square)](https://pypi.python.org/pypi/rpy2)
-![PyPI Downloads](https://static.pepy.tech/badge/rpy2)
 [![Codecov](https://codecov.io/gh/rpy2/rpy2/branch/master/graph/badge.svg)](https://codecov.io/gh/rpy2/rpy2)
 [![GH Actions](https://github.com/rpy2/rpy2/workflows/Python%20package/badge.svg)](https://github.com/rpy2/rpy2/actions?query=workflow%3A%22Python+package%22)
+
+![PyPI - Downloads](https://img.shields.io/pypi/dm/rpy2?style=flat&label=pypi)
+![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/rpy2?label=conda-forge)
 
 The project's webpage is here: https://rpy2.github.io/
 
@@ -15,6 +17,9 @@ being pypi) using pip:
 
 ```bash
 pip install rpy2
+
+## or
+# uv pip install rpy2
 ```
 
 The package has optional depencies providing
@@ -23,12 +28,18 @@ specific functionalities not otherwise required to use the rest of rpy2.
 For example, to be able to run the unit tests:
 ```bash
 pip install 'rpy2[test]'
+
+## or
+# uv pip install 'rpy2[test]'
 ```
 
 To install all optional dependencies (numpy, pandas, ipython), use:
 
 ```bash
 pip install 'rpy2[all]'
+
+## or
+# uv pip install 'rpy2[all]'
 ```
 
 ## Installation for rpy2 developers
@@ -41,6 +52,9 @@ To install from the source tree, just enter:
 
 ```bash
 pip install ./rpy2-rinterface/ ./rpy2-robjects/ .
+
+## or
+# uv pip install ./rpy2-rinterface ./rpy2-robject/ .
 ```
 
 Various optional dependencies can be specified through dependency groups.
@@ -48,6 +62,9 @@ For example:
 
 ```bash
 pip install ./rpy2-rinterface'[all]' ./rpy2-robjects'[all]' '.[all]'
+
+## or
+# uv pip install ./rpy2-rinterface'[all]' ./rpy2-robjects'[all]' '.[all]'
 ```
 
 `rpy2-rinterface` contains the binding to R's C API. Building from
@@ -108,3 +125,4 @@ documentation.
 RPy2 can be used under the terms of the GNU
 General Public License Version 2 or later (see the file
 gpl-2.0.txt). This is the very same license R itself is released under.
+

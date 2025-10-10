@@ -9,11 +9,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rpy2"
-version = "3.6.0.dev2"
+version = "3.6.4"
 description = "Python interface to the R language (embedded R)"
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "GPLv2+" }
+license = "GPL-2.0-or-later"
+license-files = ["LICENSE"]
 authors = [{ name = "Laurent Gautier", email = "lgautier@gmail.com" }]
 classifiers = [
     "Programming Language :: Python",
@@ -22,13 +23,13 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
+    "Programming Language :: Python :: 3.13",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
 ]
 dependencies = [
-    "rpy2-rinterface>=3.6.0.dev1",
-    "rpy2-robjects>=3.6.0.dev1",
+    "rpy2-rinterface>=3.6.3",
+    "rpy2-robjects>=3.6.3",
     "packaging;platform_system=='Windows'",
 ]
 

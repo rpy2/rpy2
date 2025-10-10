@@ -26,7 +26,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
 ]
 dependencies = [
-    "rpy2-rinterface>=3.6.0.dev0",
+    "rpy2-rinterface>=3.6.0",
     "jinja2",
     "tzlocal",
     "packaging;platform_system=='Windows'",
