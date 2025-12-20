@@ -154,6 +154,9 @@ typedef union {
 const char* R_CHAR(SEXP x);
 
 /* include/R_ext/Boolean.h */
+/* TODO: R-4.5.2 adds a base type for the enum:
+ * typedef enum :int { FALSE = 0, TRUE } Rboolean;
+ */
 typedef enum { FALSE = 0, TRUE } Rboolean;
 
 /* include/Rembedded.h */
@@ -273,7 +276,6 @@ SEXP Rf_findFun(SEXP sym, SEXP env);
 
 SEXP Rf_findVar(SEXP sym, SEXP env);
 SEXP Rf_findVarInFrame(SEXP env, SEXP sym);
-SEXP Rf_findVarInFrame3(SEXP, SEXP, Rboolean);
 
 R_xlen_t Rf_xlength(SEXP);
 
@@ -342,13 +344,9 @@ SEXP (PRINTNAME)(SEXP x);
 
 SEXP (FRAME)(SEXP x);
 SEXP (ENCLOS)(SEXP x);
-SEXP (HASHTAB)(SEXP x);
-int (ENVFLAGS)(SEXP x);
-void (SET_ENVFLAGS)(SEXP x, int v);
 
 void SET_FRAME(SEXP x, SEXP v);
 void SET_ENCLOS(SEXP x, SEXP v);
-void SET_HASHTAB(SEXP x, SEXP v);
 
 /* include/Rdefines.h */
 

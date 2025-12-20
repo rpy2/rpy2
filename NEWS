@@ -1,3 +1,17 @@
+Release 3.6.5
+=============
+
+rpy2-rinterface
+---------------
+
+Changes
+^^^^^^^
+
+- :meth:`rpy2.rinterface_lib.sexp.frame` and
+  :meth:`rpy2.rinterface_lib.sexp.nchar` are deprecated since formally checked
+  as not visible with R CMD check with R-4.5.2.
+
+
 Release 3.6.4
 =============
 

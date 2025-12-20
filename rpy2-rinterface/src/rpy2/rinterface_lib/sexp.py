@@ -304,6 +304,10 @@ class CharSexp(Sexp):
             openrlib.lock.release()
 
     def nchar(self, what: NCHAR_TYPE = NCHAR_TYPE.Bytes) -> int:
+        warnings.warn(
+            'nchar() is deprecated since R_nchar hidden from the API '
+            'with R-4.5.2.'
+        )
         try:
             openrlib.lock.acquire()
             # TODO: nchar_type is not parsed properly by cffi ?
@@ -463,6 +467,10 @@ class SexpEnvironment(Sexp):
     @_cdata_res_to_rinterface
     def frame(self) -> 'typing.Union[NULLType, SexpEnvironment]':
         """Get the parent frame of the environment."""
+        warnings.warn(
+            'frame() is deprecated since FRAME is hidden the the API '
+            'with R-4.5.2.'
+        )
         return openrlib.rlib.FRAME(self.__sexp__._cdata)
 
     @property
