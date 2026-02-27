@@ -21,15 +21,30 @@ if os.name == 'nt':
             for libpath in rpy2.situation.get_r_flags(R_HOME, '--ldflags')[0].L:
                 os.add_dll_directory(libpath)  # type: ignore[attr-defined]
         except rpy2.situation.subprocess.CalledProcessError:
+            # R CMD config is unavailable (Rtools not installed).
+            # Build candidate directory paths for the R DLL.
+            # R >= 4.2 on Windows merged bin/x64 into bin/, so check both.
             if platform.machine().lower() == "arm64":
-                libpath = os.path.join(R_HOME, "bin", "R.dll")
+                candidate_dirs = [
+                    os.path.join(R_HOME, "bin", "arm64"),
+                    os.path.join(R_HOME, "bin"),
+                ]
             elif sys.maxsize > 2**32:
-                libpath = os.path.join(R_HOME, "bin", "x64", "R.dll")
+                candidate_dirs = [
+                    os.path.join(R_HOME, "bin", "x64"),
+                    os.path.join(R_HOME, "bin"),
+                ]
             else:
-                libpath = os.path.join(R_HOME, "bin", "i386", "R.dll")
-            os.add_dll_directory(libpath)  # type: ignore[attr-defined]
+                candidate_dirs = [
+                    os.path.join(R_HOME, "bin", "i386"),
+                    os.path.join(R_HOME, "bin"),
+                ]
+            for libpath in candidate_dirs:
+                if os.path.isdir(libpath):
+                    os.add_dll_directory(libpath)  # type: ignore[attr-defined]
+                    break
     else:
-        logging.warn('R_HOME is None.')
+        logging.warning('R_HOME is None.')
 else:
     LD_LIBRARY_PATH = (
         rpy2.situation.r_ld_library_path_from_subprocess(R_HOME)
