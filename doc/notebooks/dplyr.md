@@ -155,7 +155,7 @@ from rpy2.robjects.lib.dplyr import dplyr
 
 # Import R packages to connect to dababases, and to SQLite.
 dbi = importr('DBI')
-rsqlite = import('RSQLite')
+rsqlite = importr('RSQLite')
 dbcon = dbi.dbConnect(rsqlite.SQLite(), ":memory:")
 
 # copy the table to that database
