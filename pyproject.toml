@@ -43,8 +43,7 @@ test = ["rpy2-rinterface[test]",
         "rpy2-robjects[test]"]
 numpy = ["rpy2-rinterface[numpy]",
          "rpy2-robjects[numpy]"]
-pandas = ["rpy2-rinterface[numpy]",
-          "rpy2-robjects[numpy]"]
+pandas = ["rpy2-robjects[pandas]"]
 types = ["mypy", "types-tzlocal"]
 all = ["rpy2-rinterface[all]",
        "rpy2-robjects[all]"]
