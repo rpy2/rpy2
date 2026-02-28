@@ -41,7 +41,7 @@ def get_cffi_mode(default=CFFI_MODE.ANY):
               CFFI_MODE.BOTH, CFFI_MODE.ANY):
         if cffi_mode.upper() == m.value:
             res = m
-    logger.info(f'cffi mode is {m}')
+    logger.info(f'cffi mode is {res}')
     return res
 
 
