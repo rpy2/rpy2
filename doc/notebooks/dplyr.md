@@ -169,7 +169,7 @@ res = (
 print(res)
 
 # Close the connection to clean up.
-DBI.dbDisconnect(dbcon)
+dbi.dbDisconnect(dbcon)
 ```
 
 Since we are manipulating R objects, anything available to R is also available
