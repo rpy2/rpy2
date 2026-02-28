@@ -41,13 +41,13 @@ def get_cffi_mode(default=CFFI_MODE.ANY):
               CFFI_MODE.BOTH, CFFI_MODE.ANY):
         if cffi_mode.upper() == m.value:
             res = m
-    logger.info(f'cffi mode is {m}')
+    logger.info(f'cffi mode is {res}')
     return res
 
 
 def assert_python_version():
     if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 7):
-        msg = 'Python >=3.3 is required to run rpy2'
+        msg = 'Python >=3.7 is required to run rpy2'
         logger.error(msg)
         raise RuntimeError(msg)
 
