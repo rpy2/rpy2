@@ -15,10 +15,10 @@ on:
       experimental:
         required: true
         type: boolean
+        default: false
 jobs:
   test:
     runs-on: ${{ inputs.os }}
-    continue-on-error: ${{ inputs.experimental }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ inputs.python-version }}
@@ -81,6 +81,7 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         echo "R_LIBRARY=export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}" >> $GITHUB_ENV
     - name: Test with minimal dependencies
+      continue-on-error: ${{ inputs.experimental }}
       run: |
         ${{ env.VENV_ACTIVATE }}
         echo "With requirements for rpy2-rinterface."
