@@ -67,8 +67,6 @@ def test_get_valid_device_invalid(name, devices_dict, error):
         rmagic.get_valid_device(name, devices_dict=devices_dict)
 
 
-@pytest.mark.skipif(IPython is None,
-                    reason='The optional package IPython cannot be imported.')
 @pytest.fixture(scope='module')
 def clean_globalenv():
     yield
