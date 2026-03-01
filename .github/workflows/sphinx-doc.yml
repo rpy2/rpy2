@@ -54,6 +54,7 @@ jobs:
       run: |
         echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
     - name: Install R/Bioconductor dependencies
+      run: |
         sudo Rscript ./install_r_packages.r BiocManager
         sudo Rscript -e 'BiocManager::install("Biobase")'
     - name: Build HTML doc
