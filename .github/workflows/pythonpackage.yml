@@ -245,24 +245,57 @@ jobs:
         r-version: ["4.4", release]
         os: ["windows-latest", ubuntu-latest, macos-15]
         include:
+          # Windows, R-4.4
           - python-version: "3.8"
             os: "windows-latest"
+            r-version: "4.4"
+            experimental: true
+          - python-version: "3.9"
+            os: "windows-latest"
+            r-version: "4.4"
+            experimental: true
+          - python-version: "3.10"
+            os: "windows-latest"
+            r-version: "4.4"
+            experimental: true
+          - python-version: "3.11"
+            os: "windows-latest"
+            r-version: "4.4"
+            experimental: true
+          - python-version: "3.12"
+            os: "windows-latest"
+            r-version: "4.4"
+            experimental: true
+          - python-version: "3.13"
+            os: "windows-latest"
+            r-version: "4.4"
+            experimental: true
+          # Windows, R-release
+          - python-version: "3.8"
+            os: "windows-latest"
+            r-version: "release"
             experimental: false
           - python-version: "3.9"
             os: "windows-latest"
+            r-version: "release"
             experimental: false
           - python-version: "3.10"
             os: "windows-latest"
+            r-version: "release"
             experimental: false
           - python-version: "3.11"
             os: "windows-latest"
+            r-version: "release"
             experimental: false
           - python-version: "3.12"
             os: "windows-latest"
+            r-version: "release"
             experimental: false
           - python-version: "3.13"
             os: "windows-latest"
+            r-version: "release"
             experimental: false
+          # Linux/Ubuntu
           - python-version: "3.8"
             os: "ubuntu-latest"
             experimental: false
@@ -281,6 +314,7 @@ jobs:
           - python-version: "3.13"
             os: "ubuntu-latest"
             experimental: false
+          # MacOS-15
           - python-version: "3.8"
             os: "macos-15"
             experimental: false
@@ -299,9 +333,9 @@ jobs:
           - python-version: "3.13"
             os: "macos-15"
             experimental: false
-    continue-on-error: ${{ matrix.experimental }}
     uses: ./.github/workflows/test.yml
     with:
       os: ${{ matrix.os }}
       python-version: ${{ matrix.python-version }}
       r-version: ${{ matrix.r-version }}
+      experimental: ${{ matrix.experimental }}

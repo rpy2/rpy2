@@ -12,10 +12,13 @@ on:
       os:
         required: true
         type: string
+      experimental:
+        required: true
+        type: boolean
 jobs:
   test:
     runs-on: ${{ inputs.os }}
-    continue-on-error: ${{ startsWith(inputs.os, 'windows') && inputs.r-version == 'release' }}
+    continue-on-error: continue-on-error: ${{ inputs.experimental }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ inputs.python-version }}
