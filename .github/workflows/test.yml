@@ -54,7 +54,8 @@ jobs:
       with:
         pattern: rpy2-robjects-${{ inputs.os }}
         path: rpy2-robjects/dist/
-    - name: Built package path.
+    - name: Path to package build.
+      shell: bash
       run: |
         ls rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-r${{ inputs.r-version }}/*.whl
         ls rpy2-rinterface/dist/
