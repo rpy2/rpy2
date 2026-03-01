@@ -29,10 +29,6 @@ jobs:
         key: ${{ runner.os }}-R${{ env.R-VERSION }}-build-${{ env.cache-name }}
         restore-keys: |
           ${{ runner.os }}-${{ env.R_VERSION }}-build-
-    - name: Set RSPM
-      if: startsWith(matrix.os, 'ubuntu')
-      run: |
-        echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -40,7 +36,26 @@ jobs:
         python -m pip install --upgrade pip
         pip install 'rpy2-rinterface/[doc]'
         pip install 'rpy2-robjects/[doc]'
-        sudo Rscript ./install_r_packages.r BiocManager dbplyr dplyr ggplot2 hexbin lazyeval RSQLite tidyr viridis
+    - name: Install R dependencies
+      uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        cache-version: 2
+        packages: |
+          any::dbplyr
+          any::dplyr
+          any::ggplot2
+          any::hexbin
+          any::lazyeval
+          any::RSQLite
+          any::tidyr
+          any::viridis
+    - name: Set RSPM
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
+    - name: Install R/Bioconductor dependencies
+      run: |
+        sudo Rscript ./install_r_packages.r BiocManager
         sudo Rscript -e 'BiocManager::install("Biobase")'
     - name: Build HTML doc
       run: |
