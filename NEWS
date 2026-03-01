@@ -1,3 +1,13 @@
+Release 3.6.5
+=============
+
+Bugs fixed
+----------
+
+- R >= 4.2 builds for Windows changed the path to the DLLs this should
+  be fixed with PR #1220 (issue #1215).
+
+
 Release 3.6.4
 =============
 
