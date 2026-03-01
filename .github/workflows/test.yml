@@ -18,7 +18,7 @@ on:
 jobs:
   test:
     runs-on: ${{ inputs.os }}
-    continue-on-error: continue-on-error: ${{ inputs.experimental }}
+    continue-on-error: ${{ inputs.experimental }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ inputs.python-version }}
