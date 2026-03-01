@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import sys
 if ((sys.version_info[0] < 3) or
-    (sys.version_info[0] == 3 and sys.version_info[1] < 8)):
-    print('rpy2 is no longer supporting Python < 3.8.'
+    (sys.version_info[0] == 3 and sys.version_info[1] < 9)):
+    print('rpy2 is no longer supporting Python < 3.9.'
           'Consider using an older rpy2 release when using an '
           'older Python release.')
     sys.exit(1)

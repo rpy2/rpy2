@@ -120,7 +120,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
+        python-version: [3.9, "3.10", "3.11", "3.12", "3.13"]
         r-version: ["4.4", release]
         os: ["windows-latest", ubuntu-latest, macos-15]
     steps:
@@ -241,15 +241,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
-        r-version: ["4.4", release]
+        python-version: [3.9, "3.10", "3.11", "3.12", "3.13"]
         os: ["windows-latest", ubuntu-latest, macos-15]
         include:
           # Windows, R-4.4
-          - python-version: "3.8"
-            os: "windows-latest"
-            r-version: "4.4"
-            experimental: true
           - python-version: "3.9"
             os: "windows-latest"
             r-version: "4.4"
@@ -271,10 +266,6 @@ jobs:
             r-version: "4.4"
             experimental: true
           # Windows, R-release
-          - python-version: "3.8"
-            os: "windows-latest"
-            r-version: "release"
-            experimental: false
           - python-version: "3.9"
             os: "windows-latest"
             r-version: "release"
@@ -296,9 +287,6 @@ jobs:
             r-version: "release"
             experimental: false
           # Linux/Ubuntu
-          - python-version: "3.8"
-            os: "ubuntu-latest"
-            experimental: false
           - python-version: "3.9"
             os: "ubuntu-latest"
             experimental: false
@@ -315,9 +303,6 @@ jobs:
             os: "ubuntu-latest"
             experimental: false
           # MacOS-15
-          - python-version: "3.8"
-            os: "macos-15"
-            experimental: false
           - python-version: "3.9"
             os: "macos-15"
             experimental: false
