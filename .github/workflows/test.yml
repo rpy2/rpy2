@@ -115,9 +115,16 @@ jobs:
       run: |
         echo "RSPM=\"https://packagemanager.rstudio.com/cran/__linux__/$(lsb_release -sc)/latest\"" >> $GITHUB_ENV
     - name: Install R dependencies
-      run: |
-        install.packages(c("ggplot2", "dplyr", "tidyr", "dbplyr", "lazyeval", "rlang"))
-      shell: Rscript {0}
+      uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        cache-version: 2
+        packages: |
+          any::ggplot2
+          any::dplyr
+          any::tidyr
+          any::dbplyr
+          any::lazyeval
+          any::rlang
     - name: Test with R deps
       if: "!startsWith(inputs.os, 'windows')"
       run: |
