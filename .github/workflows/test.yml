@@ -12,10 +12,13 @@ on:
       os:
         required: true
         type: string
+      experimental:
+        required: true
+        type: boolean
 jobs:
   test:
     runs-on: ${{ inputs.os }}
-    continue-on-error: ${{ startsWith(inputs.os, 'windows') && inputs.r-version == 'release' }}
+    continue-on-error: ${{ inputs.experimental }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ inputs.python-version }}
@@ -54,7 +57,8 @@ jobs:
       with:
         pattern: rpy2-robjects-${{ inputs.os }}
         path: rpy2-robjects/dist/
-    - name: Built package path.
+    - name: Path to package build.
+      shell: bash
       run: |
         ls rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-r${{ inputs.r-version }}/*.whl
         ls rpy2-rinterface/dist/

@@ -13,15 +13,16 @@ rpy2.rinterface.initr()
 
 def _add_warn_reticulate_hook():
     msg = """
-    WARNING: The R package "reticulate" only fixed recently
-    an issue that caused a segfault when used with rpy2:
+    WARNING: Using old versions of R package "reticulate"
+    within rpy2 leads to segfaults, see
     https://github.com/rstudio/reticulate/pull/1188
-    Make sure that you use a version of that package that includes
-    the fix.
+    Do consider upgrading to reticulate >= 1.25 (May 2022).
     """
     rpy2.rinterface.evalr(f"""
-    setHook(packageEvent("reticulate", "onLoad"),
-            function(...) cat({repr(msg)}))
+    setHook(
+        packageEvent("reticulate", "onLoad"),
+        function(...) if (packageVersion("reticulate") < "1.25") cat({repr(msg)})
+    )
     """)
 
 

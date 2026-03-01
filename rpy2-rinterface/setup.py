@@ -82,6 +82,15 @@ def get_c_extension_status(libraries=['R'], include_dirs=None,
                            library_dirs=None):
     if os.name == 'nt':
         c_code = ('int main(int argc, char **argv) { return 0; }')
+        # On Windows the pre-build phase (get_requires_for_build_wheel) runs
+        # with the system default compiler (MSVC) even when the actual build
+        # uses MinGW.  Flags from "R CMD config --ldflags" are MinGW-style
+        # (e.g. -lm, -lR pointing to bin/x64) and are not valid for MSVC.
+        # Only verify that a C compiler is available; the actual R linkage
+        # will be exercised during the real MinGW build.
+        libraries = []
+        library_dirs = []
+        include_dirs = []
     else:
         c_code = ('#include <Rinterface.h>\n\n'
                   'int main(int argc, char **argv) { return 0; }')
