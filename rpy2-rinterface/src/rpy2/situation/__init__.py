@@ -179,12 +179,15 @@ def get_rlib_path(r_home: str, system: str) -> str:
     elif system == 'Darwin':
         lib_path = os.path.join(r_home, 'lib', 'libR.dylib')
     elif system == 'Windows':
-        # i386
+        # R >= 4.2 on Windows dropped bin/x64; R.dll lives in bin/ directly.
+        # Try the architecture-specific subdirectory first for R <= 4.1 compat.
+        arch_dir = os.path.join(r_home, 'bin', r_version_folder)
+        bin_dir = os.path.join(r_home, 'bin')
+        libpath_dir = arch_dir if os.path.isdir(arch_dir) else bin_dir
         os.environ['PATH'] = os.pathsep.join(
-            (os.environ['PATH'],
-             os.path.join(r_home, 'bin', r_version_folder))
+            (os.environ['PATH'], libpath_dir)
         )
-        lib_path = os.path.join(r_home, 'bin', r_version_folder, 'R.dll')
+        lib_path = os.path.join(libpath_dir, 'R.dll')
     else:
         raise ValueError(
             'The system {system} is currently not supported.'
@@ -224,8 +227,17 @@ def get_r_exec(r_home: str) -> str:
     :param: R HOME directory
     :return: Path to the R executable/binary"""
 
-    if sys.platform == 'win32' and '64 bit' in sys.version:
-        r_exec = os.path.join(r_home, 'bin', 'x64', 'R')
+    if sys.platform == 'win32':
+        # R >= 4.2 on Windows dropped the bin/x64 subdirectory.
+        # Try the architecture-specific path first for R <= 4.1 compat.
+        if sys.maxsize > 2**32:
+            r_exec_arch = os.path.join(r_home, 'bin', 'x64', 'R')
+            if os.path.exists(r_exec_arch):
+                r_exec = r_exec_arch
+            else:
+                r_exec = os.path.join(r_home, 'bin', 'R')
+        else:
+            r_exec = os.path.join(r_home, 'bin', 'R')
     else:
         r_exec = os.path.join(r_home, 'bin', 'R')
     logger.info(f'R exec path: {r_exec}')
