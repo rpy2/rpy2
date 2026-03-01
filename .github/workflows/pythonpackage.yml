@@ -259,7 +259,7 @@ jobs:
             experimental: false
           - python-version: "3.12"
             os: "windows-latest"
-           experimental: false
+            experimental: false
           - python-version: "3.13"
             os: "windows-latest"
             experimental: false
