@@ -25,6 +25,7 @@ def _add_warn_reticulate_hook():
     )
     """)
 
+
 _add_warn_reticulate_hook()
 
 
