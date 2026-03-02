@@ -7,6 +7,11 @@ Bugs fixed
 - R >= 4.2 builds for Windows changed the path to the DLLs this should
   be fixed with PR #1220 (issue #1215).
 
+Changes
+-------
+
+- Support for Python 3.8 is dropped. Rpy2 requires Python >= 3.9.
+
 
 Release 3.6.4
 =============

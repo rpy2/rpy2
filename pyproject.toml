@@ -12,14 +12,13 @@ name = "rpy2"
 version = "3.6.5"
 description = "Python interface to the R language (embedded R)"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = "GPL-2.0-or-later"
 license-files = ["LICENSE"]
 authors = [{ name = "Laurent Gautier", email = "lgautier@gmail.com" }]
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -32,7 +31,6 @@ dependencies = [
     "rpy2-rinterface>=3.6.4",
     "rpy2-robjects>=3.6.3",
     "packaging;platform_system=='Windows'",
-    "backports.zoneinfo;python_version<'3.9'"
 ]
 
 [project.optional-dependencies]
