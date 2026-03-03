@@ -227,17 +227,17 @@ def get_r_exec(r_home: str) -> str:
     :param: R HOME directory
     :return: Path to the R executable/binary"""
 
-    if sys.platform == 'win32':
+    if os.name == 'nt':
         # R >= 4.2 on Windows dropped the bin/x64 subdirectory.
         # Try the architecture-specific path first for R <= 4.1 compat.
         if sys.maxsize > 2**32:
-            r_exec_arch = os.path.join(r_home, 'bin', 'x64', 'R')
+            r_exec_arch = os.path.join(r_home, 'bin', 'x64', 'R.exe')
             if os.path.exists(r_exec_arch):
                 r_exec = r_exec_arch
             else:
-                r_exec = os.path.join(r_home, 'bin', 'R')
+                r_exec = os.path.join(r_home, 'bin', 'R.exe')
         else:
-            r_exec = os.path.join(r_home, 'bin', 'R')
+            r_exec = os.path.join(r_home, 'bin', 'R.exe')
     else:
         r_exec = os.path.join(r_home, 'bin', 'R')
     logger.info(f'R exec path: {r_exec}')
