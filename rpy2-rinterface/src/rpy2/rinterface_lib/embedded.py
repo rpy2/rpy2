@@ -157,8 +157,15 @@ def _build_rstart(rhome, interactive, setcallbacks):
     if setcallbacks:
         for cb in CALLBACK_INIT_PAIRS:
             if cb.c_name_nt and cb.py_name:
-                setattr(rstart, cb.c_name_nt,
-                        getattr(callbacks, cb.py_name))
+                try:
+                    setattr(rstart, cb.c_name_nt,
+                            getattr(callbacks, cb.py_name))
+                except TypeError as error:
+                    if sys.version_info >= (3, 11):
+                        error.add_note(
+                            f'NT: {cb.c_name_nt} - Python: {cb.py_name}'
+                        )
+                    raise
 
     rstart.R_Quiet = True
     rstart.R_Interactive = interactive
