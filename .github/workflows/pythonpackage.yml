@@ -287,6 +287,11 @@ jobs:
             os: "windows-latest"
             r-version: "release"
             experimental: false
+          - python-version: "3.13"
+            os: "windows-latest"
+            r-version: "release"
+            experimental: false
+            cffi_mode: "API"
           # Linux/Ubuntu
           - python-version: "3.9"
             os: "ubuntu-latest"
