@@ -61,7 +61,7 @@ def r_version_from_subprocess():
     except Exception as e:  # FileNotFoundError, WindowsError, etc
         logger.error(f'Unable to determine the R version: {e}')
         return None
-    r_version = tmp.decode(ENCODING_LOCALE, 'ignore').split(os.linesep)
+    r_version = tmp.decode(ENCODING_LOCALE, 'ignore').splitlines()
     if r_version[0].startswith('WARNING'):
         r_version = r_version[1]
     else:
@@ -76,7 +76,7 @@ def r_home_from_subprocess() -> Optional[str]:
     logger.debug('Looking for R home with: {}'.format(' '.join(cmd)))
     tmp = subprocess.check_output(cmd, universal_newlines=True)
     # may raise FileNotFoundError, WindowsError, etc
-    r_home = tmp.split(os.linesep)
+    r_home = tmp.splitlines()
     if r_home[0].startswith('WARNING'):
         res = r_home[1]
     else:
@@ -258,7 +258,7 @@ def _get_r_cmd_config(r_home: str, about: str, allow_empty=False):
         cmd,
         universal_newlines=True
     )
-    output_lst = output.encode(ENCODING_LOCALE).decode(ENCODING_SYS).split(os.linesep)
+    output_lst = output.encode(ENCODING_LOCALE).decode(ENCODING_SYS).splitlines()
     # Twist if 'R RHOME' spits out a warning
     if output_lst[0].startswith('WARNING'):
         msg = 'R emitting a warning: {}'.format(output_lst[0])
