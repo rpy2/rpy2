@@ -244,6 +244,7 @@ jobs:
         python-version: [3.9, "3.10", "3.11", "3.12", "3.13"]
         os: ["windows-latest", ubuntu-latest, macos-15]
         r-version: ["4.4", "release"]
+        cffi_mode:
         include:
           # Windows, R-4.4
           - python-version: "3.9"
@@ -330,3 +331,4 @@ jobs:
       python-version: ${{ matrix.python-version }}
       r-version: ${{ matrix.r-version }}
       experimental: ${{ matrix.experimental }}
+      cffi_mode: ${{ matrix.cffi_mode }}
