@@ -244,7 +244,7 @@ jobs:
         python-version: [3.9, "3.10", "3.11", "3.12", "3.13"]
         os: ["windows-latest", ubuntu-latest, macos-15]
         r-version: ["4.4", "release"]
-        cffi_mode:
+        cffi_mode: "ANY"
         include:
           # Windows, R-4.4
           - python-version: "3.9"
