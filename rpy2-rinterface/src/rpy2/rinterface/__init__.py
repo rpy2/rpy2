@@ -1145,6 +1145,7 @@ def _update_R_ENC_PY():
     conversion._R_ENC_PY[openrlib.rlib.CE_UTF8] = 'utf-8'
 
     l10n_info = tuple(baseenv['l10n_info']())
+
     if platform.system() == 'Windows':
         val_latin1 = 'cp{:d}'.format(l10n_info[3][0])
     else:
@@ -1155,8 +1156,8 @@ def _update_R_ENC_PY():
         val_native = conversion._R_ENC_PY[openrlib.rlib.CE_UTF8]
     else:
         val_native = val_latin1
-    conversion._R_ENC_PY[openrlib.rlib.CE_NATIVE] = val_native
 
+    conversion._R_ENC_PY[openrlib.rlib.CE_NATIVE] = val_native
     conversion._R_ENC_PY[openrlib.rlib.CE_ANY] = 'utf-8'
 
 
