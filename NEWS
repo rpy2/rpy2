@@ -12,6 +12,9 @@ Changes
 
 - Support for Python 3.8 is dropped. Rpy2 requires Python >= 3.9.
 
+- Environment variables `RPY2_CFFI_MODE` with valid now raise a `ValueError`
+  instead of silently using the default value.
+
 
 Release 3.6.4
 =============
