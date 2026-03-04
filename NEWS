@@ -7,6 +7,10 @@ Bugs fixed
 - R >= 4.2 builds for Windows changed the path to the DLLs this should
   be fixed with PR #1220 (issue #1215).
 
+- API mode on Windows should be functional. To use it the environment
+  variable `RPY2_CFFI_MODE` must be set to `API`.
+
+
 Changes
 -------
 

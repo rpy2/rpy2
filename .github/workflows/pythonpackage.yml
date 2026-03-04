@@ -276,7 +276,17 @@ jobs:
             os: "windows-latest"
             r-version: "release"
             experimental: false
+            cffi_mode: "API"
           - python-version: "3.11"
+            os: "windows-latest"
+            r-version: "release"
+            experimental: false
+          - python-version: "3.11"
+            os: "windows-latest"
+            r-version: "release"
+            experimental: false
+            cffi_mode: "API"
+          - python-version: "3.12"
             os: "windows-latest"
             r-version: "release"
             experimental: false
@@ -284,6 +294,7 @@ jobs:
             os: "windows-latest"
             r-version: "release"
             experimental: false
+            cffi_mode: "API"
           - python-version: "3.13"
             os: "windows-latest"
             r-version: "release"
