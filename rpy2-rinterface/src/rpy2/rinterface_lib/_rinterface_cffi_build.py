@@ -211,9 +211,15 @@ def createbuilder_api():
     c_ext.add_lib(
         *(situation.get_r_flags(r_home, '--ldflags'))
     )
-    c_ext.add_lib(
-        *(situation.get_r_libs(r_home, 'BLAS_LIBS'))
-    )
+    # On Windows, R.dll already embeds the necessary BLAS routines via
+    # Rblas.dll, which it loads at runtime.  Linking BLAS_LIBS separately
+    # is not needed and may introduce MinGW-specific libraries (e.g.
+    # -lgfortran, -lm, -lquadmath) that are not available as MSVC-style
+    # import libraries, causing link errors in some build configurations.
+    if os.name != 'nt':
+        c_ext.add_lib(
+            *(situation.get_r_libs(r_home, 'BLAS_LIBS'))
+        )
     c_ext.add_include(
         *situation.get_r_flags(r_home, '--cppflags')
     )

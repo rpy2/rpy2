@@ -17,6 +17,10 @@ on:
         required: false
         type: boolean
         default: false
+      cffi_mode:
+        required: false
+        type: string
+        default: "ANY"
 jobs:
   test:
     runs-on: ${{ inputs.os }}
@@ -65,6 +69,10 @@ jobs:
         ls rpy2-rinterface/dist/
         echo "RPY2_RINTERFACE_WHL_DIST=$(ls -1 rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-r${{ inputs.r-version }}/*.whl | tail -n 1)" >> $GITHUB_ENV
         echo "RPY2_ROBJECTS_WHL_DIST=$(ls -1 rpy2-robjects/dist/rpy2-robjects-${{ inputs.os }}/*.whl | tail -n 1)" >> $GITHUB_ENV
+    - name: cffi mode
+      shell: bash
+      run: |
+        echo "RPY2_CFFI_MODE=${{ inputs.cffi_mode }}" >> $GITHUB_ENV
     - name: Install package
       run: |
         ${{ env.VENV_ACTIVATE }}
@@ -127,7 +135,6 @@ jobs:
           any::lazyeval
           any::rlang
     - name: Test with R deps
-      if: "!startsWith(inputs.os, 'windows')"
       run: |
         ${{ env.VENV_ACTIVATE }}
         ${{ env.R_LIBRARY }}

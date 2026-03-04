@@ -36,11 +36,19 @@ class CFFI_MODE(enum.Enum):
 
 def get_cffi_mode(default=CFFI_MODE.ANY):
     cffi_mode = os.environ.get(ENVVAR_CFFI_TYPE, '')
-    res = default
-    for m in (CFFI_MODE.API, CFFI_MODE.ABI,
-              CFFI_MODE.BOTH, CFFI_MODE.ANY):
-        if cffi_mode.upper() == m.value:
-            res = m
+    res = None
+    if cffi_mode:
+        for m in (CFFI_MODE.API, CFFI_MODE.ABI,
+                  CFFI_MODE.BOTH, CFFI_MODE.ANY):
+            if cffi_mode.upper() == m.value:
+                res = m
+                break
+    else:
+        res = default
+    if res is None:
+        raise ValueError(
+            f'Invalid cffi mode: {cffi_mode}'
+        )
     logger.info(f'cffi mode is {res}')
     return res
 
@@ -61,7 +69,7 @@ def r_version_from_subprocess():
     except Exception as e:  # FileNotFoundError, WindowsError, etc
         logger.error(f'Unable to determine the R version: {e}')
         return None
-    r_version = tmp.decode(ENCODING_LOCALE, 'ignore').split(os.linesep)
+    r_version = tmp.decode(ENCODING_LOCALE, 'ignore').splitlines()
     if r_version[0].startswith('WARNING'):
         r_version = r_version[1]
     else:
@@ -76,7 +84,7 @@ def r_home_from_subprocess() -> Optional[str]:
     logger.debug('Looking for R home with: {}'.format(' '.join(cmd)))
     tmp = subprocess.check_output(cmd, universal_newlines=True)
     # may raise FileNotFoundError, WindowsError, etc
-    r_home = tmp.split(os.linesep)
+    r_home = tmp.splitlines()
     if r_home[0].startswith('WARNING'):
         res = r_home[1]
     else:
@@ -227,17 +235,17 @@ def get_r_exec(r_home: str) -> str:
     :param: R HOME directory
     :return: Path to the R executable/binary"""
 
-    if sys.platform == 'win32':
+    if os.name == 'nt':
         # R >= 4.2 on Windows dropped the bin/x64 subdirectory.
         # Try the architecture-specific path first for R <= 4.1 compat.
         if sys.maxsize > 2**32:
-            r_exec_arch = os.path.join(r_home, 'bin', 'x64', 'R')
+            r_exec_arch = os.path.join(r_home, 'bin', 'x64', 'R.exe')
             if os.path.exists(r_exec_arch):
                 r_exec = r_exec_arch
             else:
-                r_exec = os.path.join(r_home, 'bin', 'R')
+                r_exec = os.path.join(r_home, 'bin', 'R.exe')
         else:
-            r_exec = os.path.join(r_home, 'bin', 'R')
+            r_exec = os.path.join(r_home, 'bin', 'R.exe')
     else:
         r_exec = os.path.join(r_home, 'bin', 'R')
     logger.info(f'R exec path: {r_exec}')
@@ -258,7 +266,7 @@ def _get_r_cmd_config(r_home: str, about: str, allow_empty=False):
         cmd,
         universal_newlines=True
     )
-    output_lst = output.encode(ENCODING_LOCALE).decode(ENCODING_SYS).split(os.linesep)
+    output_lst = output.encode(ENCODING_LOCALE).decode(ENCODING_SYS).splitlines()
     # Twist if 'R RHOME' spits out a warning
     if output_lst[0].startswith('WARNING'):
         msg = 'R emitting a warning: {}'.format(output_lst[0])

@@ -244,6 +244,7 @@ jobs:
         python-version: [3.9, "3.10", "3.11", "3.12", "3.13"]
         os: ["windows-latest", ubuntu-latest, macos-15]
         r-version: ["4.4", "release"]
+        cffi_mode: ["ANY"]
         include:
           # Windows, R-4.4
           - python-version: "3.9"
@@ -275,7 +276,17 @@ jobs:
             os: "windows-latest"
             r-version: "release"
             experimental: false
+            cffi_mode: "API"
           - python-version: "3.11"
+            os: "windows-latest"
+            r-version: "release"
+            experimental: false
+          - python-version: "3.11"
+            os: "windows-latest"
+            r-version: "release"
+            experimental: false
+            cffi_mode: "API"
+          - python-version: "3.12"
             os: "windows-latest"
             r-version: "release"
             experimental: false
@@ -283,10 +294,16 @@ jobs:
             os: "windows-latest"
             r-version: "release"
             experimental: false
+            cffi_mode: "API"
           - python-version: "3.13"
             os: "windows-latest"
             r-version: "release"
             experimental: false
+          - python-version: "3.13"
+            os: "windows-latest"
+            r-version: "release"
+            experimental: false
+            cffi_mode: "API"
           # Linux/Ubuntu
           - python-version: "3.9"
             os: "ubuntu-latest"
@@ -325,3 +342,4 @@ jobs:
       python-version: ${{ matrix.python-version }}
       r-version: ${{ matrix.r-version }}
       experimental: ${{ matrix.experimental }}
+      cffi_mode: ${{ matrix.cffi_mode }}
