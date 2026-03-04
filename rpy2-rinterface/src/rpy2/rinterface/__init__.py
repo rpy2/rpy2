@@ -1151,7 +1151,7 @@ def _update_R_ENC_PY():
         val_latin1 = 'latin1'
     conversion._R_ENC_PY[openrlib.rlib.CE_LATIN1] = val_latin1
 
-    if l10n_info[0][1]:
+    if l10n_info[0][0]:
         val_native = conversion._R_ENC_PY[openrlib.rlib.CE_UTF8]
     else:
         val_native = val_latin1

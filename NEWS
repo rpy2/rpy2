@@ -10,6 +10,11 @@ Bugs fixed
 - API mode on Windows should be functional. To use it the environment
   variable `RPY2_CFFI_MODE` must be set to `API`.
 
+- The experimental (non-API) function
+  :func:`rpy2.rinterface._update_R_ENC_PY`to update string encoding
+  preferences with R's own string encoding preferences was incorrect
+  (issue #1229 / PR #1230).
+
 
 Changes
 -------
