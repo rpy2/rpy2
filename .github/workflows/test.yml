@@ -135,7 +135,6 @@ jobs:
           any::lazyeval
           any::rlang
     - name: Test with R deps
-      if: "!startsWith(inputs.os, 'windows')"
       run: |
         ${{ env.VENV_ACTIVATE }}
         ${{ env.R_LIBRARY }}
