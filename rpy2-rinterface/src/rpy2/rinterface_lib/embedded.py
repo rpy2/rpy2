@@ -145,7 +145,7 @@ class Is_RStart(Protocol):
 rstart: Is_RStart = None  # type: ignore
 
 
-def _build_rstart(rhome, interactive, setcallbacks):
+def _build_rstart(rhome, interactive, setcallbacks, callback_funcs):
     rstart = ffi.new('Rstart')
     __cffi_protected['rstart'] = rstart
     openrlib.rlib.R_DefParams(rstart)
@@ -159,7 +159,7 @@ def _build_rstart(rhome, interactive, setcallbacks):
             if cb.c_name_nt and cb.py_name:
                 try:
                     setattr(rstart, cb.c_name_nt,
-                            getattr(callbacks, cb.py_name))
+                            getattr(callback_funcs, cb.py_name))
                 except TypeError as error:
                     if sys.version_info >= (3, 11):
                         error.add_note(
@@ -353,7 +353,7 @@ def _initr(
 
             rhome = openrlib.rlib.get_R_HOME()
             __cffi_protected['rhome'] = rhome
-            rstart = _build_rstart(rhome, interactive, _want_setcallbacks)
+            rstart = _build_rstart(rhome, interactive, _want_setcallbacks, callback_funcs)
             openrlib.rlib.R_SetParams(rstart)
 
             # TODO: still needed ?
