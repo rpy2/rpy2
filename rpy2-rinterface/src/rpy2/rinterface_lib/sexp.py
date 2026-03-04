@@ -271,7 +271,9 @@ class NULLType(Sexp, metaclass=SingletonABC):
 
 
 class CETYPE(enum.Enum):
-    """Character encodings for R string."""
+    """Character encodings for R strings.
+
+    This enum wraps character encoding declarations in R's C API."""
     CE_NATIVE = openrlib.rlib.CE_NATIVE
     CE_UTF8 = openrlib.rlib.CE_UTF8
     CE_LATIN1 = openrlib.rlib.CE_LATIN1

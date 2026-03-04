@@ -124,7 +124,9 @@ def _complex_to_sexp(val: complex):
 
 
 # Default encoding for converting R string back to Python
-# As defined in R_API.h, possible values are
+# as defined in R_API.h. The Python Enum
+# rinterface_lib.sexp.CETYPE lists the values.
+# Otherwise the C definitions are:
 #   CE_NATIVE = 0,
 #   CE_UTF8   = 1,
 #   CE_LATIN1 = 2,
