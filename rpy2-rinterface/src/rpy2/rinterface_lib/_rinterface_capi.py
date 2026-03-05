@@ -284,9 +284,9 @@ def _string_getitem(cdata: FFI.CData, i: int) -> typing.Optional[str]:
         if elt == openrlib.rlib.R_NaString:
             res = None
         else:
-            res = conversion._cchar_to_str(
-                openrlib.rlib.R_CHAR(elt),
-                conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(elt)]
+            res = conversion._rchar_to_str(
+                elt,
+                conversion._R_ENC_PY
             )
     return res
 
@@ -557,9 +557,9 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
             else:
                 # Named arguments
                 rname = rlib.PRINTNAME(rlib.TAG(rargs))
-                name = conversion._cchar_to_str(
-                    rlib.R_CHAR(rname),
-                    conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(rname)]
+                name = conversion._rchar_to_str(
+                    rname,
+                    conversion._R_ENC_PY
                 )
                 if rarg_i < len(py_posonly):
                     if py_posonly[rarg_i] == name:

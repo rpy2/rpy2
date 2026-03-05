@@ -4,10 +4,9 @@ Release 3.6.6
 Bugs fixed
 ----------
 
-- The experimental (non-API) function
-  :func:`rpy2.rinterface._update_R_ENC_PY`to update string encoding
-  preferences with R's own string encoding preferences was incorrect
-  (issue #1229 / PR #1230).
+- Better handling of string encoding across R and Python (in large
+  part the experimental & non-API function :func:`rpy2.rinterface._update_R_ENC_PY`)
+  was incorrect (issue #1229 / PR #1230).
 
 
 Release 3.6.5

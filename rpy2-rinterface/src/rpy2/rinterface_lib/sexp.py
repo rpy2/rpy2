@@ -976,10 +976,9 @@ def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
                     symb = rlib.CAR(scaps._cdata)
                     if openrlib.rlib.Rf_isSymbol(symb):
                         symb_rstr = openrlib.rlib.PRINTNAME(symb)
-                        symb_str = conversion._cchar_to_str(
-                            openrlib.rlib.R_CHAR(symb_rstr),
-                            conversion._R_ENC_PY[openrlib.rlib
-                                                 .Rf_getCharCE(symb_rstr)]
+                        symb_str = conversion._rchar_to_str(
+                            symb_rstr,
+                            conversion._R_ENC_PY
                         )
                         if symb_str in ('if', 'while', 'for', '=',
                                         '<-', '(', '{'):

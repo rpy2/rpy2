@@ -322,10 +322,11 @@ class SexpSymbol(sexp.Sexp):
                 'or an instance of rpy2.rinterface._rinterface.SexpCapsule')
 
     def __str__(self) -> str:
-        return conversion._cchar_to_str(
-            openrlib._STRING_VALUE(
+        return conversion._rchar_to_str(
+            openrlib.rlib.Rf_asChar(
                 self._sexpobject._cdata
-            ), sys.getdefaultencoding()
+            ),
+            conversion._R_ENC_PY
         )
 
 
@@ -1141,24 +1142,40 @@ def initr(
     return status
 
 
-def _update_R_ENC_PY():
-    conversion._R_ENC_PY[openrlib.rlib.CE_UTF8] = 'utf-8'
+# TODO: This should be rewritten, and probably be deleted. The parts
+# about R encoding evolved organically as the R internals were evolving,
+# some of it was misunderstood while rpy2 was playing catch-up.
+def _l10n_info():
+    # Obtain localization information from the embedded R.
+    _ = baseenv['l10n_info']()
+    l10n_info = {k: v[0] if len(v) == 1 else v for k, v in zip(_.names, _)}
 
-    l10n_info = tuple(baseenv['l10n_info']())
+    res = {}
+    for enc_name, enc_pyname in (
+            ('UTF-8', 'utf-8'),
+            ('Latin-1', 'latin-1')
+    ):
+        enc_info = l10n_info.get(enc_name)
+        if enc_info is True:
+            res[openrlib.rlib.CE_UTF8] = enc_pyname
+        elif enc_info is False:
+            pass
+        elif enc_info is None:
+            raise embedded.RRuntimeError(
+                f"R's l10n_info() does not have an {enc_name} item."
+            )
+        else:
+            raise embedded.RRuntimeError(
+                f'R does not return a boolean for l10n_info()$`{enc_name}`.'
+            )
 
     if platform.system() == 'Windows':
-        val_latin1 = 'cp{:d}'.format(l10n_info[3][0])
+        for info_name in ('codepage', 'system.codepage'):
+            res[info_name] = 'cp{:d}'.format(l10n_info.get(info_name))
     else:
-        val_latin1 = 'latin1'
-    conversion._R_ENC_PY[openrlib.rlib.CE_LATIN1] = val_latin1
-
-    if l10n_info[1][0]:
-        val_native = conversion._R_ENC_PY[openrlib.rlib.CE_UTF8]
-    else:
-        val_native = val_latin1
-
-    conversion._R_ENC_PY[openrlib.rlib.CE_NATIVE] = val_native
-    conversion._R_ENC_PY[openrlib.rlib.CE_ANY] = 'utf-8'
+        info_name = 'codeset'
+        res[info_name] = l10n_info.get(info_name)
+    return res
 
 
 # TODO: This function could be used by situation.py. May be better to
@@ -1305,7 +1322,7 @@ def _post_initr_setup() -> None:
             )
         )
 
-    _update_R_ENC_PY()
+    _l10n_info()
 
 
 def _find_first(nodes, of_type):

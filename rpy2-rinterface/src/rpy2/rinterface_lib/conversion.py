@@ -135,8 +135,13 @@ def _complex_to_sexp(val: complex):
 #   CE_ANY    = 99
 
 # Default encoding for converting R strings to Python
-_R_ENC_PY = {None: 'ascii',
-             'native.enc': sys.getdefaultencoding()}
+# TODO: Shouldn't type definition of _R_ENC_PY be
+# dict[CETYPE, str] (or a class wrapper if optimization
+# benefits from having a mapping int -> str.
+_R_ENC_PY = 'utf-8'
+
+#'{None: 'ascii',
+#             'native.enc': sys.getdefaultencoding()}
 
 
 def _str_to_cchar(s: str, encoding: str = 'utf-8'):
@@ -155,6 +160,18 @@ def _cchar_to_str_with_maxlen(c, maxlen: int, encoding: str) -> str:
     # TODO: use isString and installTrChar
     s = ffi.string(c, maxlen).decode(encoding)
     return s
+
+
+def _rchar_to_str(rchar, encoding: str) -> str:
+    if _R_ENC_PY == 'utf-8':
+        cchar = openrlib.rlib.Rf_translateCharUTF8(
+            rchar
+        )
+    else:
+        raise ValueError(
+            f'Unsupported encoding {encoding}.'
+        )
+    return ffi.string(cchar).decode(encoding)
 
 
 def _str_to_charsxp(val: Optional[str]):
