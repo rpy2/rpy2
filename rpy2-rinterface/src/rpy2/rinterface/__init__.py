@@ -15,7 +15,6 @@ import math
 import platform
 import signal
 import subprocess
-import sys
 import tempfile
 import textwrap
 import threading
@@ -313,7 +312,10 @@ class SexpSymbol(sexp.Sexp):
         elif isinstance(obj, str):
             name_cdata = _rinterface.ffi.new('char []', obj.encode(conversion._R_ENC_PY))
             sexp = _rinterface.SexpCapsule(
-                openrlib.rlib.Rf_install(name_cdata))
+                openrlib.rlib.Rf_installChar(
+                    conversion._str_to_charsxp(name_cdata)
+                )
+            )
             super().__init__(sexp)
         else:
             raise TypeError(
