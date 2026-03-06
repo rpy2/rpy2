@@ -803,11 +803,11 @@ class StrSexpVector(SexpVector):
         res: typing.Union['StrSexpVector', str, 'NACharacterType']
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            res = (
+            item = _rinterface._string_getitem(cdata, i_c)
+            if item is None:
                 res = na_values.NA_Character  # type: ignore
-                if res is None
-                else _rinterface._string_getitem(cdata, i_c)
-            )    
+            else:
+                res = item
         elif isinstance(i, slice):
             res = self.from_iterable(
                 [_rinterface._string_getitem(cdata, i_c)

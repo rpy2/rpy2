@@ -324,7 +324,12 @@ def build_rcall(rfunction,
                 _assert_valid_slotname(key)
                 rlib.SET_TAG(
                     item,
-                    rlib.Rf_installChar(conversion._str_to_charsxp(key))
+                    #rlib.Rf_installChar(
+                    #    conversion._str_to_charsxp(key)
+                    #)
+                    rlib.Rf_install(
+                        conversion._str_to_cchar(key)
+                    )
                 )
             cdata = rmemory.protect(conversion._get_cdata(val))
             rlib.SETCAR(item, cdata)

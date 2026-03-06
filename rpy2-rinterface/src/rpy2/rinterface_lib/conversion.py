@@ -160,6 +160,9 @@ def _cchar_to_str_with_maxlen(c, maxlen: int, encoding: str) -> str:
 
 def _rchar_to_str(rchar, encoding: str) -> str:
     if _R_ENC_PY == 'utf-8':
+        # WARNING: cchar is allocated from an R temporary
+        # buffer. We coppy it quasi-immediately to create
+        # the Python str returned.
         cchar = openrlib.rlib.Rf_translateCharUTF8(
             rchar
         )
