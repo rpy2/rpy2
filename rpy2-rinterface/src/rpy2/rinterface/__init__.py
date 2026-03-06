@@ -15,6 +15,7 @@ import math
 import platform
 import signal
 import subprocess
+import sys
 import tempfile
 import textwrap
 import threading
@@ -321,11 +322,13 @@ class SexpSymbol(sexp.Sexp):
                 'or an instance of rpy2.rinterface._rinterface.SexpCapsule')
 
     def __str__(self) -> str:
-        return conversion._rchar_to_str(
-            openrlib.rlib.Rf_asChar(
-                self._sexpobject._cdata
+        return conversion._cchar_to_str(
+            openrlib.rlib.Rf_translateCharUTF8(
+                openrlib.rlib.PRINTNAME(
+                    self._sexpobject._cdata
+                )
             ),
-            conversion._R_ENC_PY
+            'utf-8'
         )
 
 
