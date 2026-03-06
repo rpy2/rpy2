@@ -170,14 +170,14 @@ def _rchar_to_str(rchar, encoding: str) -> str:
     return ffi.string(cchar).decode(encoding)
 
 
-def _str_to_charsxp(val: Optional[str]):
+def _str_to_charsxp(val: Optional[str], r_enc: int = openrlib.rlib.CE_UTF8):
     """This function is not thread safe!"""
     rlib = openrlib.rlib
     if val is None:
         s = rlib.R_NaString
     else:
         cchar = _str_to_cchar(val, encoding='utf-8')
-        s = rlib.Rf_mkCharCE(cchar, openrlib.rlib.CE_UTF8)
+        s = rlib.Rf_mkCharCE(cchar, r_enc)
     return s
 
 

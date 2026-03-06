@@ -310,7 +310,7 @@ class SexpSymbol(sexp.Sexp):
         if isinstance(obj, Sexp) or isinstance(obj, _rinterface.CapsuleBase):
             super().__init__(obj)
         elif isinstance(obj, str):
-            name_cdata = _rinterface.ffi.new('char []', obj.encode('utf-8'))
+            name_cdata = _rinterface.ffi.new('char []', obj.encode(conversion._R_ENC_PY))
             sexp = _rinterface.SexpCapsule(
                 openrlib.rlib.Rf_install(name_cdata))
             super().__init__(sexp)

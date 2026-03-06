@@ -314,20 +314,21 @@ def build_rcall(rfunction,
         )
         _SET_TYPEOF(rcall, rlib.LANGSXP)
         rlib.SETCAR(rcall, rfunction)
-        item = rlib.CDR(rcall)
+        item = rmemory.protect(rlib.CDR(rcall))
         for val in args:
             cdata = rmemory.protect(conversion._get_cdata(val))
             rlib.SETCAR(item, cdata)
-            item = rlib.CDR(item)
+            item = rmemory.protect(rlib.CDR(item))
         for key, val in kwargs:
             if key is not None:
                 _assert_valid_slotname(key)
                 rlib.SET_TAG(
                     item,
-                    rlib.Rf_install(conversion._str_to_cchar(key)))
+                    rlib.Rf_installChar(conversion._str_to_charsxp(key))
+                )
             cdata = rmemory.protect(conversion._get_cdata(val))
             rlib.SETCAR(item, cdata)
-            item = rlib.CDR(item)
+            item = rmemory.protect(rlib.CDR(item))
     return rcall
 
 
