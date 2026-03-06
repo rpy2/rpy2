@@ -44,7 +44,7 @@ jobs:
         echo "VENV_ACTIVATE=pyenv_base/Scripts/activate" >> $GITHUB_ENV
         echo "R_LIBRARY=''" >> $GITHUB_ENV
         echo "R_HOME=$(R RHOME)" >> $GITHUB_ENV
-        echo "PYTHONUTF8=1" >> $GITHUB_ENV
+        echo "LC_ALL=.UTF-8" >> $GITHUB_ENV
     - name: Set virtualenv activation command (POSIX)
       if: "!startsWith(inputs.os, 'windows')"
       run: |
