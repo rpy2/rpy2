@@ -15,7 +15,6 @@ import math
 import platform
 import signal
 import subprocess
-import sys
 import tempfile
 import textwrap
 import threading

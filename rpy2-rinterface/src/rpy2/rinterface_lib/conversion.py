@@ -3,7 +3,6 @@
 # TODO: rename the module with a prefix _ to indicate that this should
 #   not be used outside of rpy2's own code
 
-import sys
 from typing import Callable
 from typing import Dict
 from typing import Optional
@@ -139,9 +138,6 @@ def _complex_to_sexp(val: complex):
 # dict[CETYPE, str] (or a class wrapper if optimization
 # benefits from having a mapping int -> str.
 _R_ENC_PY = 'utf-8'
-
-#'{None: 'ascii',
-#             'native.enc': sys.getdefaultencoding()}
 
 
 def _str_to_cchar(s: str, encoding: str = 'utf-8'):

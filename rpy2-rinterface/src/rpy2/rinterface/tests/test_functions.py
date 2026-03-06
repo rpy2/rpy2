@@ -48,9 +48,9 @@ def test_string_argument():
 
 def test_utf8_argument_name():
     c = rinterface.globalenv.find('c')
-    d = dict([(u'哈哈', 1)])
+    d = dict([('中文', 1)])
     res = c(**d)
-    assert u'哈哈' == res.do_slot('names')[0]
+    assert '中文' == res.do_slot('names')[0]
 
 
 def test_emptystringparams():

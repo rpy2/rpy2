@@ -148,16 +148,16 @@ def test_subscript():
 
 def test_subscript_utf8():
     env = rinterface.baseenv['new.env']()
-    env['呵呵'] = rinterface.IntSexpVector((1,))
+    env['中文'] = rinterface.IntSexpVector((1,))
     assert len(env) == 1
-    assert len(env['呵呵']) == 1
-    assert env['呵呵'][0] == 1
+    assert len(env['中文']) == 1
+    assert env['中文'][0] == 1
 
 
 def test_subscript_missing_utf8():
     env = rinterface.baseenv['new.env']()
     with pytest.raises(KeyError):
-        env['呵呵']
+        env['中文']
 
 
 def test_length():
