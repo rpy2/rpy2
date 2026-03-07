@@ -133,7 +133,7 @@ def _complex_to_sexp(val: complex):
 #   CE_BYTES  = 3,
 #   CE_SYMBOL = 5,
 #   CE_ANY    = 99
-# TODO: make _ENC_R_TYPE an explicit type definition as soon as Python >= 3.12 
+# TODO: make _ENC_R_TYPE an explicit type definition as soon as Python >= 3.12.
 _ENC_R_TYPE = Literal[0, 1, 2, 3, 5, 99]
 
 # Default encoding for converting strings between R and Python.
