@@ -5,6 +5,7 @@
 
 from typing import Callable
 from typing import Dict
+from typing import Literal
 from typing import Optional
 from typing import Type
 from typing import Union
@@ -132,15 +133,15 @@ def _complex_to_sexp(val: complex):
 #   CE_BYTES  = 3,
 #   CE_SYMBOL = 5,
 #   CE_ANY    = 99
+# TODO: make _ENC_R_TYPE an explicit type definition as soon as Python >= 3.12 
+_ENC_R_TYPE = Literal[0, 1, 2, 3, 5, 99]
 
-# Default encoding for converting R strings to Python
-# TODO: Shouldn't type definition of _R_ENC_PY be
-# dict[CETYPE, str] (or a class wrapper if optimization
-# benefits from having a mapping int -> str.
-_R_ENC_PY = 'utf-8'
+# Default encoding for converting strings between R and Python.
+_ENC_PY: str = 'utf-8'
+_ENC_R: _ENC_R_TYPE = openrlib.rlib.CE_UTF8
 
 
-def _str_to_cchar(s: str, encoding: str = 'utf-8'):
+def _str_to_cchar(s: str, encoding: str):
     # TODO: use isString and installTrChar
     b = s.encode(encoding)
     return ffi.new('char[]', b)
@@ -158,47 +159,95 @@ def _cchar_to_str_with_maxlen(c, maxlen: int, encoding: str) -> str:
     return s
 
 
+def _utf8_rchar_to_str(rchar) -> str:
+    # WARNING: cchar is allocated from an R-managed
+    # memory allocation system. We copy it quasi-immediately
+    # to create the Python str returned but it is unclear whether
+    # the memory is ever freed.
+    cchar = openrlib.rlib.Rf_translateCharUTF8(rchar)
+    return ffi.string(cchar).decode('utf-8')
+
+
+# TODO: rename to `_charsxp_to_str` for consistency with `_str_to_charsxp`.
 def _rchar_to_str(rchar, encoding: str) -> str:
-    if _R_ENC_PY == 'utf-8':
-        # WARNING: cchar is allocated from an R temporary
-        # buffer. We coppy it quasi-immediately to create
-        # the Python str returned.
-        cchar = openrlib.rlib.Rf_translateCharUTF8(
-            rchar
-        )
-    else:
-        raise ValueError(
-            f'Unsupported encoding {encoding}.'
-        )
+    """Convert a R string scalar to a Python string.
+
+    This function is not thread safe!
+    :param:rchar: a cffi pointer to a C-level `CHARSXP`.
+    :param:encoding: This is used to create the Python string from the `char *`
+    returned by R's `Rf_translateChar`.
+    :return: A Python string."""
+    # WARNING: cchar is allocated from an R-managed
+    # memory allocation system. We copy it quasi-immediately
+    # to create the Python str returned but it is unclear whether
+    # the memory is ever freed.
+    if encoding == 'utf-8':
+        return _utf8_rchar_to_str(rchar)
+    cchar = openrlib.rlib.Rf_translateChar(rchar)
     return ffi.string(cchar).decode(encoding)
 
 
-def _str_to_charsxp(val: Optional[str], r_enc: int = openrlib.rlib.CE_UTF8):
-    """This function is not thread safe!"""
-    rlib = openrlib.rlib
+def _utf8_str_to_charsxp(val: Optional[str]):
+    """Convert a Python string to an R string scalar.
+
+    This function is not thread safe!"""
     if val is None:
-        s = rlib.R_NaString
+        s = openrlib.rlib.R_NaString
     else:
-        cchar = _str_to_cchar(val, encoding='utf-8')
-        s = rlib.Rf_mkCharCE(cchar, r_enc)
+        cchar = _str_to_cchar(val, 'utf-8')
+        s = openrlib.rlib.Rf_mkCharCE(cchar, openrlib.rlib.CE_UTF8)
     return s
 
 
-def _str_to_sexp(val: str):
-    """This function is not thread safe!"""
-    rlib = openrlib.rlib
-    s = rlib.Rf_protect(rlib.Rf_allocVector(rlib.STRSXP, 1))
-    charval = _str_to_charsxp(val)
-    rlib.SET_STRING_ELT(s, 0, charval)
-    rlib.Rf_unprotect(1)
+def _str_to_charsxp(
+        val: Optional[str],
+        py_encoding: Optional[str] = None,
+        r_encoding: Optional[_ENC_R_TYPE] = None
+):
+    """Convert a Python string to a R string scalar.
+
+    This function is not thread safe!
+    :param:val: A Python string or a None. If the latter, an R `R_NaString` is returned.
+    :param:py_encoding: This is used to create the `char *` from the Python string. The
+    value for this parameter must be compatible with the value for parameter `r_encoding`.
+    :param:r_encoding: This is used to create the R string scalar from the `char *`. The
+    value for this parameter must be compatible with the value for parameter `r_encoding`.
+    :return: A cffi pointer to a C-level `CHARSXP`."""
+
+    if val is None:
+        s = openrlib.rlib.R_NaString
+    else:
+        if py_encoding is None:
+            py_encoding = _ENC_PY
+        if r_encoding is None:
+            r_encoding = _ENC_R
+        cchar = _str_to_cchar(val, py_encoding)
+        s = openrlib.rlib.Rf_mkCharCE(cchar, r_encoding)
     return s
 
 
-def _str_to_symsxp(val: str):
+def _str_to_sexp(
+        obj: str,
+        py_encoding: Optional[str] = None,
+        r_encoding: Optional[_ENC_R_TYPE] = None
+):
     """This function is not thread safe!"""
-    rlib = openrlib.rlib
-    cchar = _str_to_cchar(val)
-    s = rlib.Rf_install(cchar)
+    if py_encoding is None:
+        py_encoding = _ENC_PY
+    if r_encoding is None:
+        r_encoding = _ENC_R
+    return openrlib.rlib.Rf_ScalarString(
+        openrlib.rlib.Rf_mkCharCE(
+            _str_to_cchar(obj, py_encoding),
+            r_encoding
+        )
+    )
+
+
+def _str_to_symsxp(obj: str, encoding: str):
+    """This function is not thread safe!"""
+    cchar = _str_to_cchar(obj, encoding)
+    s = openrlib.rlib.Rf_install(cchar)
     return s
 
 
