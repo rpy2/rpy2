@@ -328,6 +328,9 @@ cetype_t Rf_getCharCE(SEXP);
 SEXP Rf_mkCharCE(const char *, cetype_t);
 SEXP Rf_mkCharLenCE(const char *, int n, cetype_t encoding);
 
+const char * Rf_translateChar(SEXP);
+const char * Rf_translateCharUTF8(SEXP);
+
 typedef enum {
   Bytes = 0,
   Chars = 1,
