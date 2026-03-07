@@ -27,7 +27,7 @@ def silent_consolewrite():
 def ensure_utf8():
     if platform.system() == 'Windows':
         l10n = rinterface._l10n_info()
-        current_locale = baseenv['Sys.getlocale']('LC_CTYPE')
+        current_locale = rinterface.baseenv['Sys.getlocale']('LC_CTYPE')
         restore_locale = rinterface._ensure_utf8_locale(l10n)
     else:
         restore_locale = False
