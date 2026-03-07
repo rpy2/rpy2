@@ -1,4 +1,5 @@
 # coding: utf-8
+import platform
 import pytest
 import rpy2.rinterface as rinterface
 import rpy2.rlike.container as rlc
@@ -20,6 +21,20 @@ def silent_consolewrite():
         yield
     finally:
         setattr(module, name, backup_func)
+
+
+@pytest.fixture(scope='function')
+def ensure_utf8():
+    if platform.system() == 'Windows':
+        l10n = rinterface._l10n_info()
+        current_locale = baseenv['Sys.getlocale']('LC_CTYPE')
+        restore_locale = rinterface._ensure_utf8_locale(l10n)
+    else:
+        restore_locale = False
+    yield
+    if restore_locale:
+        # Restore the encoding
+        baseenv['Sys.setlocale']('LC_CTYPE', current_locale)
 
 
 def test_new():
@@ -46,7 +61,7 @@ def test_string_argument():
     assert res[0] == 3
 
 
-def test_utf8_argument_name():
+def test_utf8_argument_name(ensure_utf8):
     c = rinterface.globalenv.find('c')
     d = dict([('中文', 1), ('a', 2)])
     res = c(**d)

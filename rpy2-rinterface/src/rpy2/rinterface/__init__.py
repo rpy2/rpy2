@@ -1181,6 +1181,14 @@ def _l10n_info():
     return res
 
 
+def _ensure_utf8_locale(l10n):
+    if 'utf-8' not in l10n.values():
+        baseenv['Sys.setlocale']('LC_CTYPE', '.UTF-8')
+        return True
+    else:
+        return False
+
+
 # TODO: This function could be used by situation.py. May be better to
 # place elsewhere.
 def _getrenvvars(
