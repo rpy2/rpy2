@@ -34,7 +34,7 @@ def ensure_utf8():
     yield
     if restore_locale:
         # Restore the encoding
-        baseenv['Sys.setlocale']('LC_CTYPE', current_locale)
+        rinterface.baseenv['Sys.setlocale']('LC_CTYPE', current_locale)
 
 
 def test_new():
