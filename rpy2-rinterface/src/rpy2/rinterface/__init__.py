@@ -1145,10 +1145,9 @@ def initr(
     return status
 
 
-# TODO: This should be rewritten, and probably be deleted. The parts
-# about R encoding evolved organically as the R internals were evolving,
-# some of it was misunderstood while rpy2 was playing catch-up.
+# TODO: rewrite?
 def _l10n_info():
+    """Get locale and string encoding capabilities from R."""
     # Obtain localization information from the embedded R.
     _ = baseenv['l10n_info']()
     l10n_info = {k: v[0] if len(v) == 1 else v for k, v in zip(_.names, _)}
@@ -1182,6 +1181,7 @@ def _l10n_info():
 
 
 def _ensure_utf8_locale(l10n):
+    """Ensure that the utf-8 can be used as a locale."""
     if 'utf-8' not in l10n.values():
         baseenv['Sys.setlocale']('LC_CTYPE', '.UTF-8')
         return True

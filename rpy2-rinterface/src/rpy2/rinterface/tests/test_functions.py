@@ -24,8 +24,9 @@ def silent_consolewrite():
 
 
 @pytest.fixture(scope='function')
-def ensure_utf8():
-    if platform.system() == 'Windows':
+def locale(request):
+    force_utf8 = request.param
+    if force_utf8:
         l10n = rinterface._l10n_info()
         current_locale = rinterface.baseenv['Sys.getlocale']('LC_CTYPE')
         restore_locale = rinterface._ensure_utf8_locale(l10n)
@@ -61,7 +62,12 @@ def test_string_argument():
     assert res[0] == 3
 
 
-def test_utf8_argument_name(ensure_utf8):
+@pytest.mark.parametrize(
+    'locale',
+    (True, False),
+    indirect=True
+)
+def test_utf8_argument_name(locale):
     c = rinterface.globalenv.find('c')
     d = dict([('中文', 1), ('a', 2)])
     res = c(**d)

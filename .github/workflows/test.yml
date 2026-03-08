@@ -98,7 +98,7 @@ jobs:
         ${{ env.R_LIBRARY }}
         python -c 'from rpy2.rinterface_lib import openrlib; print(openrlib.cffi_mode)'
         echo 'Encoding info:'
-        python -c 'import rpy2.rinterface as ri; ri.initr(); print(ri.conversion._R_ENC_PY)'
+        python -c 'import rpy2.rinterface as ri; ri.initr(); print(ri._l10n_info())'
         bash -e ./scripts/run_test_rinterface_min_deps.sh
         echo "With dev for rpy2-robjects."
         uv pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}'[test_minimal]'
