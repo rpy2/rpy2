@@ -123,9 +123,8 @@ class ExtractDelegator(object):
                             globalenv_ri)
         else:
             args = [self._parent,
-                    cv.py2rpy(item),
-                    cv.py2rpy(value)]
-            res = fun(*args)
+                    cv.py2rpy(item)]
+            res = fun(*args, value = cv.py2rpy(value))
         # TODO: check refcount and copying
         self._parent.__sexp__ = res.__sexp__
 

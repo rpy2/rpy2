@@ -1,3 +1,14 @@
+Release 3.6.6
+=============
+
+Bugs fixed
+----------
+
+- The method `rpy2` for vectors, an R-managed equivalent to `__setitem__`,
+  was failing when trying to assign values to R `list` objects, and therefore
+  `data.frame` since R lists (issue #1232).
+
+
 Release 3.6.5
 =============
 
