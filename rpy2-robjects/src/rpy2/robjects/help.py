@@ -343,7 +343,6 @@ class Package(object):
 
     def __del__(self):
         self._dbcon.close()
-        super().__del__()
 
     def fetch(self, alias: str) -> Page:
         """ Fetch the documentation page associated with a given alias.
