@@ -120,7 +120,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.9, "3.10", "3.11", "3.12", "3.13"]
+        python-version: [3.9, "3.10", "3.11", "3.12", "3.13", "3.14"]
         r-version: ["4.4", release]
         os: ["windows-latest", ubuntu-latest, macos-15]
     steps:
@@ -241,7 +241,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.9, "3.10", "3.11", "3.12", "3.13"]
+        python-version: [3.9, "3.10", "3.11", "3.12", "3.13", "3.14"]
         os: ["windows-latest", ubuntu-latest, macos-15]
         r-version: ["4.4", "release"]
         cffi_mode: ["ANY"]
@@ -304,6 +304,11 @@ jobs:
             r-version: "release"
             experimental: false
             cffi_mode: "API"
+          - python-version: "3.14"
+            os: "windows-latest"
+            r-version: "release"
+            experimental: false
+            cffi_mode: "API"
           # Linux/Ubuntu
           - python-version: "3.9"
             os: "ubuntu-latest"
@@ -320,6 +325,9 @@ jobs:
           - python-version: "3.13"
             os: "ubuntu-latest"
             experimental: false
+          - python-version: "3.14"
+            os: "ubuntu-latest"
+            experimental: false
           # MacOS-15
           - python-version: "3.9"
             os: "macos-15"
@@ -334,6 +342,9 @@ jobs:
             os: "macos-15"
             experimental: false
           - python-version: "3.13"
+            os: "macos-15"
+            experimental: false
+          - python-version: "3.14"
             os: "macos-15"
             experimental: false
     uses: ./.github/workflows/test.yml
