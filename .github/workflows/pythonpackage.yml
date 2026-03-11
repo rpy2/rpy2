@@ -154,7 +154,7 @@ jobs:
         echo "VENV_ACTIVATE=rpy2-env/Scripts/activate" >> $GITHUB_ENV
         echo "R_LIBRARY=''" >> $GITHUB_ENV
     - name: Patch GHA issue with macos - Missing C library
-      if: startsWith(matrix.os, 'macos') & (matrix.r-version == "4.4")
+      if: startsWith(matrix.os, 'macos') && (matrix.r-version == "4.4")
       run: |
         LIB_ARCHIVES=(\
           libdeflate-1.23-darwin.20-arm64.tar.xz \
