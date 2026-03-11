@@ -2,9 +2,11 @@
 import platform
 import pytest
 import rpy2.rinterface as rinterface
+import rpy2.rinterface_lib
 import rpy2.rlike.container as rlc
 
 rinterface.initr()
+L10N = rinterface._l10n_info()
 
 
 def _noconsole(x):
@@ -24,18 +26,12 @@ def silent_consolewrite():
 
 
 @pytest.fixture(scope='function')
-def locale(request):
-    force_utf8 = request.param
-    if force_utf8:
-        l10n = rinterface._l10n_info()
-        current_locale = rinterface.baseenv['Sys.getlocale']('LC_CTYPE')
-        restore_locale = rinterface._ensure_utf8_locale(l10n)
-    else:
-        restore_locale = False
+def syslocale_utf8():
+    current_locale = rinterface.baseenv['Sys.getlocale']('LC_CTYPE')
+    restore_locale = rinterface._ensure_utf8_locale(L10N)
     yield
-    if restore_locale:
-        # Restore the encoding
-        rinterface.baseenv['Sys.setlocale']('LC_CTYPE', current_locale)
+    # Restore the system locale.
+    rinterface.baseenv['Sys.setlocale']('LC_CTYPE', current_locale)
 
 
 def test_new():
@@ -62,12 +58,9 @@ def test_string_argument():
     assert res[0] == 3
 
 
-@pytest.mark.parametrize(
-    'locale',
-    (True, False),
-    indirect=True
-)
-def test_utf8_argument_name(locale):
+@pytest.mark.skipif(not L10N['MBCS'],
+                    reason='R is not able to handle multi-byte character sequences.')
+def test_utf8_syslocale(syslocale_utf8):
     c = rinterface.globalenv.find('c')
     d = dict([('中文', 1), ('a', 2)])
     res = c(**d)

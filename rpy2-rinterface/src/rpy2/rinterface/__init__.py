@@ -1153,36 +1153,36 @@ def _l10n_info():
     l10n_info = {k: v[0] if len(v) == 1 else v for k, v in zip(_.names, _)}
 
     res = {}
-    for enc_name, enc_pyname in (
-            ('UTF-8', 'utf-8'),
-            ('Latin-1', 'latin-1')
-    ):
-        enc_info = l10n_info.get(enc_name)
-        if enc_info is True:
-            res[openrlib.rlib.CE_UTF8] = enc_pyname
-        elif enc_info is False:
-            pass
-        elif enc_info is None:
-            raise embedded.RRuntimeError(
-                f"R's l10n_info() does not have an {enc_name} item."
+    attributes = [('MBCS', bool), ('UTF-8', bool), ('Latin-1', bool)]
+    if platform.system() == 'Windows':
+        attributes.extend(
+            (
+                ('codepage', str),
+                ('system.codepage', str)
             )
+        )
+    else:
+        attributes.append(('codeset', str))
+
+    for name, cls in attributes:
+        enc_info = l10n_info.get(name)
+        if enc_info is None:
+            raise embedded.RRuntimeError(
+                f"R's l10n_info() does not have an {name} item."
+            )
+        elif isinstance(enc_info, cls):
+            res[name] = enc_info
         else:
             raise embedded.RRuntimeError(
                 f'R does not return a boolean for l10n_info()$`{enc_name}`.'
             )
 
-    if platform.system() == 'Windows':
-        for info_name in ('codepage', 'system.codepage'):
-            res[info_name] = 'cp{:d}'.format(l10n_info.get(info_name))
-    else:
-        info_name = 'codeset'
-        res[info_name] = l10n_info.get(info_name)
     return res
 
 
 def _ensure_utf8_locale(l10n):
     """Ensure that the utf-8 can be used as a locale."""
-    if 'utf-8' not in l10n.values():
+    if l10n['MBCS'] and not l10n['UTF-8']:
         baseenv['Sys.setlocale']('LC_CTYPE', '.UTF-8')
         return True
     else:
