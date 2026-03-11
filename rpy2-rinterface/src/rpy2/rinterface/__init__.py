@@ -1174,7 +1174,7 @@ def _l10n_info():
             res[name] = enc_info
         else:
             raise embedded.RRuntimeError(
-                f'R does not return a boolean for l10n_info()$`{enc_name}`.'
+                f'R does not return a boolean for l10n_info()$`{name}`.'
             )
 
     return res
