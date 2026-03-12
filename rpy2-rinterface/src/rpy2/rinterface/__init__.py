@@ -1157,8 +1157,8 @@ def _l10n_info():
     if platform.system() == 'Windows':
         attributes.extend(
             (
-                ('codepage', str),
-                ('system.codepage', str)
+                ('codepage', int),
+                ('system.codepage', int)
             )
         )
     else:
@@ -1174,7 +1174,7 @@ def _l10n_info():
             res[name] = enc_info
         else:
             raise embedded.RRuntimeError(
-                f'R does not return a boolean for l10n_info()$`{name}`.'
+                f'R does not return a {repr(cls)} for l10n_info()$`{name}`.'
             )
 
     return res
