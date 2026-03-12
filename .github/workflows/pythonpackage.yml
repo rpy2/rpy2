@@ -182,7 +182,7 @@ jobs:
         set RPY2_API_FORCE=True
         python -m build -C--global-option=--verbose -o dist/ --wheel .
     - name: Build wheel rinterface (non-Windows)
-      if: ${{ success() && "!startsWith(matrix.os, 'windows')" }}
+      if: ${{ success() && !startsWith(matrix.os, 'windows') }}
       run: |
         ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
