@@ -4,6 +4,10 @@ Release 3.6.6
 Bugs fixed
 ----------
 
+- The method `rpy2` for vectors, an R-managed equivalent to `__setitem__`,
+  was failing when trying to assign values to R `list` objects, and therefore
+  `data.frame` since R lists (issue #1232).
+
 - Better handling of string encoding across R and Python. In large
   part, the experimental & non-API function :func:`rpy2.rinterface._update_R_ENC_PY`)
   was incorrect (issue #1229 / PR #1230). That function no longer exists. Encoding
