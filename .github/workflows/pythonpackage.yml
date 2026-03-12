@@ -167,6 +167,7 @@ jobs:
             sudo tar xJf "${name}" -C /
         done
     - name: Install dependencies
+      if: ${{ success() }}
       run: |
         ${{ env.VENV_ACTIVATE }}
         uv pip install setuptools build
@@ -181,12 +182,13 @@ jobs:
         set RPY2_API_FORCE=True
         python -m build -C--global-option=--verbose -o dist/ --wheel .
     - name: Build wheel rinterface (non-Windows)
-      if: "!startsWith(matrix.os, 'windows')"
+      if: ${{ success() && "!startsWith(matrix.os, 'windows')" }}
       run: |
         ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
         python -m build -o dist/ --wheel .
     - uses: actions/upload-artifact@v4
+      if: ${{ success() }}
       with:
         name: rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         path: rpy2-rinterface/dist/rpy2_rinterface-*.whl
