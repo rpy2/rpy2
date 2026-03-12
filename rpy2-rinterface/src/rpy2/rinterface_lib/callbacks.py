@@ -208,7 +208,7 @@ def _choosefile(new, buf, n: int) -> int:
     if res is None:
         return 0
 
-    res_cdata = conversion._str_to_cchar(res)
+    res_cdata = conversion._str_to_cchar(res, conversion._ENC_PY)
     openrlib.ffi.memmove(buf, res_cdata, len(res_cdata))
     return len(res_cdata)
 

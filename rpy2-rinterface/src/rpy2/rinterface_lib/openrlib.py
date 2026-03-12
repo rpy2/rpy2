@@ -243,4 +243,6 @@ def _VECTOR_PTR(robj):
 
 
 def _STRING_VALUE(robj):
-    return rlib.R_CHAR(rlib.Rf_asChar(robj))
+    return rlib.R_CHAR(
+        rlib.Rf_asChar(robj)
+    )

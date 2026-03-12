@@ -284,9 +284,9 @@ def _string_getitem(cdata: FFI.CData, i: int) -> typing.Optional[str]:
         if elt == openrlib.rlib.R_NaString:
             res = None
         else:
-            res = conversion._cchar_to_str(
-                openrlib.rlib.R_CHAR(elt),
-                conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(elt)]
+            res = conversion._rchar_to_str(
+                elt,
+                conversion._ENC_PY
             )
     return res
 
@@ -314,20 +314,23 @@ def build_rcall(rfunction,
         )
         _SET_TYPEOF(rcall, rlib.LANGSXP)
         rlib.SETCAR(rcall, rfunction)
-        item = rlib.CDR(rcall)
+        item = rmemory.protect(rlib.CDR(rcall))
         for val in args:
             cdata = rmemory.protect(conversion._get_cdata(val))
             rlib.SETCAR(item, cdata)
-            item = rlib.CDR(item)
+            item = rmemory.protect(rlib.CDR(item))
         for key, val in kwargs:
             if key is not None:
                 _assert_valid_slotname(key)
                 rlib.SET_TAG(
                     item,
-                    rlib.Rf_install(conversion._str_to_cchar(key)))
+                    rlib.Rf_installChar(
+                        conversion._str_to_charsxp(key)
+                    )
+                )
             cdata = rmemory.protect(conversion._get_cdata(val))
             rlib.SETCAR(item, cdata)
-            item = rlib.CDR(item)
+            item = rmemory.protect(rlib.CDR(item))
     return rcall
 
 
@@ -412,9 +415,11 @@ def _remove(name: FFI.CData, env: FFI.CData, inherits) -> FFI.CData:
     rlib = openrlib.rlib
     with memorymanagement.rmemory() as rmemory:
         internal = rmemory.protect(
-            rlib.Rf_install(conversion._str_to_cchar('.Internal')))
+            conversion._str_to_symsxp('.Internal', conversion._ENC_PY)
+        )
         remove = rmemory.protect(
-            rlib.Rf_install(conversion._str_to_cchar('remove')))
+            conversion._str_to_symsxp('remove', conversion._ENC_PY)
+        )
         args = rmemory.protect(rlib.Rf_lang4(remove, name,
                                              env, inherits))
         call = rmemory.protect(rlib.Rf_lang2(internal, args))
@@ -428,8 +433,7 @@ def _geterrmessage() -> typing.Optional[str]:
     # TODO: use isString and installTrChar
     with memorymanagement.rmemory() as rmemory:
         symbol = rmemory.protect(
-            rlib.Rf_install(
-                conversion._str_to_cchar('geterrmessage'))
+            conversion._str_to_symsxp('geterrmessage', conversion._ENC_PY)
         )
         geterrmessage = _findvar(
             symbol,
@@ -452,7 +456,7 @@ def serialize(cdata: FFI.CData, cdata_env: FFI.CData) -> FFI.CData:
 
     with memorymanagement.rmemory() as rmemory:
         sym_serialize = rmemory.protect(
-            rlib.Rf_install(conversion._str_to_cchar('serialize'))
+            conversion._str_to_symsxp('serialize', conversion._ENC_PY)
         )
         func_serialize = rmemory.protect(
             _findfun(sym_serialize, rlib.R_BaseEnv))
@@ -478,8 +482,7 @@ def unserialize(cdata: FFI.CData, cdata_env: FFI.CData) -> FFI.CData:
 
     with memorymanagement.rmemory() as rmemory:
         sym_unserialize = rmemory.protect(
-            rlib.Rf_install(
-                conversion._str_to_cchar('unserialize'))
+            conversion._str_to_symsxp('unserialize', conversion._ENC_PY)
         )
         func_unserialize = rmemory.protect(_findfun(sym_unserialize,
                                                     rlib.R_BaseEnv))
@@ -557,9 +560,9 @@ def _evaluate_in_r(rargs: FFI.CData) -> FFI.CData:
             else:
                 # Named arguments
                 rname = rlib.PRINTNAME(rlib.TAG(rargs))
-                name = conversion._cchar_to_str(
-                    rlib.R_CHAR(rname),
-                    conversion._R_ENC_PY[openrlib.rlib.Rf_getCharCE(rname)]
+                name = conversion._rchar_to_str(
+                    rname,
+                    conversion._ENC_PY
                 )
                 if rarg_i < len(py_posonly):
                     if py_posonly[rarg_i] == name:

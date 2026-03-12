@@ -174,9 +174,10 @@ class Sexp(SupportsSEXP):
     @conversion._cdata_res_to_rinterface
     def do_slot(self, name: str) -> None:
         _rinterface._assert_valid_slotname(name)
-        cchar = conversion._str_to_cchar(name)
         with memorymanagement.rmemory() as rmemory:
-            name_r = rmemory.protect(openrlib.rlib.Rf_install(cchar))
+            name_r = rmemory.protect(
+                conversion._str_to_symsxp(name, conversion._ENC_PY)
+            )
             if not _rinterface._has_slot(self.__sexp__._cdata, name_r):
                 raise LookupError(name)
             res = openrlib.rlib.R_do_slot(self.__sexp__._cdata, name_r)
@@ -184,9 +185,10 @@ class Sexp(SupportsSEXP):
 
     def do_slot_assign(self, name: str, value) -> None:
         _rinterface._assert_valid_slotname(name)
-        cchar = conversion._str_to_cchar(name)
         with memorymanagement.rmemory() as rmemory:
-            name_r = rmemory.protect(openrlib.rlib.Rf_install(cchar))
+            name_r = rmemory.protect(
+                conversion._str_to_symsxp(name, conversion._ENC_PY)
+            )
             cdata = rmemory.protect(conversion._get_cdata(value))
             openrlib.rlib.R_do_slot_assign(self.__sexp__._cdata,
                                            name_r,
@@ -195,7 +197,11 @@ class Sexp(SupportsSEXP):
     @conversion._cdata_res_to_rinterface
     def get_attrib(self, name: str) -> 'Sexp':
         with memorymanagement.rmemory() as rmemory:
-            charsxp = rmemory.protect(conversion._str_to_charsxp(name))
+            charsxp = rmemory.protect(
+                conversion._str_to_charsxp(name,
+                                           conversion._ENC_PY,
+                                           conversion._ENC_R)
+            )
             res = openrlib.rlib.Rf_getAttrib(self.__sexp__._cdata,
                                              charsxp)
         return res
@@ -270,8 +276,10 @@ class NULLType(Sexp, metaclass=SingletonABC):
         return self._sexpobject.rid
 
 
-class CETYPE(enum.Enum):
-    """Character encodings for R string."""
+class CETYPE(enum.IntEnum):
+    """Character encodings for R strings.
+
+    This enum wraps character encoding declarations in R's C API."""
     CE_NATIVE = openrlib.rlib.CE_NATIVE
     CE_UTF8 = openrlib.rlib.CE_UTF8
     CE_LATIN1 = openrlib.rlib.CE_LATIN1
@@ -351,9 +359,8 @@ class SexpEnvironment(Sexp):
         elif not len(key):
             raise ValueError('The key must be a non-empty string.')
         with memorymanagement.rmemory() as rmemory:
-            key_cchar = conversion._str_to_cchar(key, 'utf-8')
             symbol = rmemory.protect(
-                openrlib.rlib.Rf_install(key_cchar)
+                conversion._str_to_symsxp(key, conversion._ENC_PY)
             )
             if wantfun:
                 # One would expect this to be like
@@ -389,9 +396,8 @@ class SexpEnvironment(Sexp):
             raise ValueError('The key must be a non-empty string.')
         embedded.assert_isready()
         with memorymanagement.rmemory() as rmemory:
-            key_cchar = conversion._str_to_cchar(key)
             symbol = rmemory.protect(
-                openrlib.rlib.Rf_install(key_cchar)
+                conversion._str_to_symsxp(key, conversion._ENC_PY)
             )
             res = rmemory.protect(
                 _rinterface.findvar_in_frame_wrap(
@@ -416,9 +422,8 @@ class SexpEnvironment(Sexp):
                              'empty environments.')
         # TODO: call to Rf_duplicate needed ?
         with memorymanagement.rmemory() as rmemory:
-            key_cchar = conversion._str_to_cchar(key)
             symbol = rmemory.protect(
-                openrlib.rlib.Rf_install(key_cchar)
+                conversion._str_to_symsxp(key, conversion._ENC_PY)
             )
             cdata = rmemory.protect(conversion._get_cdata(value))
             cdata_copy = rmemory.protect(
@@ -453,7 +458,13 @@ class SexpEnvironment(Sexp):
 
         with memorymanagement.rmemory() as rmemory:
             key_cdata = rmemory.protect(
-                openrlib.rlib.Rf_mkString(conversion._str_to_cchar(key))
+                # TODO: is there a wrapper for this in "conversion"?
+                openrlib.rlib.Rf_ScalarString(
+                    openrlib.rlib.Rf_mkCharCE(
+                        conversion._str_to_cchar(key, conversion._ENC_PY),
+                        conversion._ENC_R
+                    )
+                )
             )
             _rinterface._remove(key_cdata,
                                 self.__sexp__._cdata,
@@ -781,7 +792,9 @@ def _as_charsxp_cdata(x: typing.Union[CharSexp, str]):
     if isinstance(x, CharSexp):
         return x.__sexp__._cdata
     else:
-        return conversion._str_to_charsxp(x)
+        return conversion._str_to_charsxp(x,
+                                          conversion._ENC_PY,
+                                          conversion._ENC_R)
 
 
 class StrSexpVector(SexpVector):
@@ -801,11 +814,11 @@ class StrSexpVector(SexpVector):
         res: typing.Union['StrSexpVector', str, 'NACharacterType']
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
-            _ = _rinterface._string_getitem(cdata, i_c)
-            if _ is None:
+            item = _rinterface._string_getitem(cdata, i_c)
+            if item is None:
                 res = na_values.NA_Character  # type: ignore
             else:
-                res = _
+                res = item
         elif isinstance(i, slice):
             res = self.from_iterable(
                 [_rinterface._string_getitem(cdata, i_c)
@@ -974,10 +987,9 @@ def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
                     symb = rlib.CAR(scaps._cdata)
                     if openrlib.rlib.Rf_isSymbol(symb):
                         symb_rstr = openrlib.rlib.PRINTNAME(symb)
-                        symb_str = conversion._cchar_to_str(
-                            openrlib.rlib.R_CHAR(symb_rstr),
-                            conversion._R_ENC_PY[openrlib.rlib
-                                                 .Rf_getCharCE(symb_rstr)]
+                        symb_str = conversion._rchar_to_str(
+                            symb_rstr,
+                            conversion._ENC_PY
                         )
                         if symb_str in ('if', 'while', 'for', '=',
                                         '<-', '(', '{'):

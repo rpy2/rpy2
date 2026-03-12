@@ -15,7 +15,6 @@ import math
 import platform
 import signal
 import subprocess
-import sys
 import tempfile
 import textwrap
 import threading
@@ -311,9 +310,11 @@ class SexpSymbol(sexp.Sexp):
         if isinstance(obj, Sexp) or isinstance(obj, _rinterface.CapsuleBase):
             super().__init__(obj)
         elif isinstance(obj, str):
-            name_cdata = _rinterface.ffi.new('char []', obj.encode('utf-8'))
             sexp = _rinterface.SexpCapsule(
-                openrlib.rlib.Rf_install(name_cdata))
+                openrlib.rlib.Rf_installChar(
+                    conversion._str_to_charsxp(obj)
+                )
+            )
             super().__init__(sexp)
         else:
             raise TypeError(
@@ -323,9 +324,12 @@ class SexpSymbol(sexp.Sexp):
 
     def __str__(self) -> str:
         return conversion._cchar_to_str(
-            openrlib._STRING_VALUE(
-                self._sexpobject._cdata
-            ), sys.getdefaultencoding()
+            openrlib.rlib.Rf_translateCharUTF8(
+                openrlib.rlib.PRINTNAME(
+                    self._sexpobject._cdata
+                )
+            ),
+            'utf-8'
         )
 
 
@@ -1141,23 +1145,48 @@ def initr(
     return status
 
 
-def _update_R_ENC_PY():
-    conversion._R_ENC_PY[openrlib.rlib.CE_UTF8] = 'utf-8'
+# TODO: rewrite?
+def _l10n_info():
+    """Get locale and string encoding capabilities from R."""
+    # Obtain localization information from the embedded R.
+    _ = baseenv['l10n_info']()
+    l10n_info = {k: v[0] if len(v) == 1 else v for k, v in zip(_.names, _)}
 
-    l10n_info = tuple(baseenv['l10n_info']())
+    res = {}
+    attributes = [('MBCS', bool), ('UTF-8', bool), ('Latin-1', bool)]
     if platform.system() == 'Windows':
-        val_latin1 = 'cp{:d}'.format(l10n_info[3][0])
+        attributes.extend(
+            (
+                ('codepage', int),
+                ('system.codepage', int)
+            )
+        )
     else:
-        val_latin1 = 'latin1'
-    conversion._R_ENC_PY[openrlib.rlib.CE_LATIN1] = val_latin1
+        attributes.append(('codeset', str))
 
-    if l10n_info[1]:
-        val_native = conversion._R_ENC_PY[openrlib.rlib.CE_UTF8]
+    for name, cls in attributes:
+        enc_info = l10n_info.get(name)
+        if enc_info is None:
+            raise embedded.RRuntimeError(
+                f"R's l10n_info() does not have an {name} item."
+            )
+        elif isinstance(enc_info, cls):
+            res[name] = enc_info
+        else:
+            raise embedded.RRuntimeError(
+                f'R does not return a {repr(cls)} for l10n_info()$`{name}`.'
+            )
+
+    return res
+
+
+def _ensure_utf8_locale(l10n):
+    """Ensure that the utf-8 can be used as a locale."""
+    if l10n['MBCS'] and not l10n['UTF-8']:
+        baseenv['Sys.setlocale']('LC_CTYPE', '.UTF-8')
+        return True
     else:
-        val_native = val_latin1
-    conversion._R_ENC_PY[openrlib.rlib.CE_NATIVE] = val_native
-
-    conversion._R_ENC_PY[openrlib.rlib.CE_ANY] = 'utf-8'
+        return False
 
 
 # TODO: This function could be used by situation.py. May be better to
@@ -1304,7 +1333,7 @@ def _post_initr_setup() -> None:
             )
         )
 
-    _update_R_ENC_PY()
+    _l10n_info()
 
 
 def _find_first(nodes, of_type):
