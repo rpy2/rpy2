@@ -123,6 +123,9 @@ jobs:
         python-version: [3.9, "3.10", "3.11", "3.12", "3.13"]
         r-version: ["4.4", release]
         os: ["windows-latest", ubuntu-latest, macos-15]
+        exclude:
+          - os: "macos-15"
+            r-version: "4.4"
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -153,21 +156,7 @@ jobs:
       run: |
         echo "VENV_ACTIVATE=rpy2-env/Scripts/activate" >> $GITHUB_ENV
         echo "R_LIBRARY=''" >> $GITHUB_ENV
-    - name: Patch GHA issue with macos - Missing C library
-      if: startsWith(matrix.os, 'macos') && matrix.r-version == '4.4'
-      continue-on-error: true
-      run: |
-        LIB_ARCHIVES=(\
-          libdeflate-1.23-darwin.23-arm64.tar.xz \
-          zstd-1.5.5-darwin.23-arm64.tar.xz \
-        )
-        for name in "${LIB_ARCHIVES[@]}"
-        do
-            curl -LO https://mac.r-project.org/bin/darwin23/arm64/"${name}"
-            sudo tar xJf "${name}" -C /
-        done
     - name: Install dependencies
-      if: ${{ success() }}
       run: |
         ${{ env.VENV_ACTIVATE }}
         uv pip install setuptools build
@@ -182,13 +171,12 @@ jobs:
         set RPY2_API_FORCE=True
         python -m build -C--global-option=--verbose -o dist/ --wheel .
     - name: Build wheel rinterface (non-Windows)
-      if: ${{ success() && !startsWith(matrix.os, 'windows') }}
+      if: "!startsWith(matrix.os, 'windows')"
       run: |
         ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
         python -m build -o dist/ --wheel .
     - uses: actions/upload-artifact@v4
-      if: ${{ success() }}
       with:
         name: rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         path: rpy2-rinterface/dist/rpy2_rinterface-*.whl
