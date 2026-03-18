@@ -342,6 +342,7 @@ jobs:
             experimental: false
           - python-version: "3.14"
             os: "macos-15"
+            r-version: "release"
             experimental: false
     uses: ./.github/workflows/test.yml
     with:
