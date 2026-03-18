@@ -44,17 +44,6 @@ unfortunately means there is not enough left in common to ensure compatibility.
 Installation
 ============
 
-
-Docker image
-------------
-
-There are few Docker images available to try rpy2 out
-without even reading about requirements (e.g., R installed
-compiled with the shared library flag). The Docker images
-can also be an easy start for Windows users.
-
-More information is available here: https://github.com/rpy2/rpy2-docker
-
 	   
 Requirements
 ------------
@@ -66,19 +55,13 @@ versions to run rpy2 with.
 ======== =====================================================================
 Software Versions
 ======== =====================================================================
- Python   >=3.8
- R        >=4.0
+ Python   >=3.9
+ R        >=4.4 (4.5 recommended) 
 ======== =====================================================================
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
 building rpy2 will require the corresponding development headers 
 (check the documentation for more information about builing rpy2). 
-
-.. note::
-
-   Running `rpy2` on Windows is currently not supported although relative success
-   was recently reported with the lastest in the 3.3.x series. 
-
 
 Alternative Python implementations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
