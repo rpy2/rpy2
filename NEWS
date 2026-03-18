@@ -15,6 +15,13 @@ Bugs fixed
   :attr:`rpy2.rinterface_lib.conversion._ENC_R`, with a default to UTF-8. Changing
   those values is untested.
 
+Changes
+-------
+
+- On Windows, when `RPY2_CFFI_MODE` is not specified or set to `ANY` will now
+  try to first use the API mode, and only fallback to ABI mode if an `ImportErrror`
+  is raised, as is the case on Linux and MacOS.
+
 
 Release 3.6.5
 =============

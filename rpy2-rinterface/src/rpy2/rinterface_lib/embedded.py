@@ -336,10 +336,7 @@ def _initr(
             return None
 
         # TODO: Setting LD_LIBRARY_PATH after the process has started
-        # is too late. Because of this, the line below does not help
-        # address issues where calling R from the command line is working
-        # (as it is a shell script setting environment variables before
-        # start the binary in a child process). Calling C's dlopen with
+        # is too late. Calling C's dlopen with
         # the path of the shared library could address this but for the
         # API mode this would require writing a C wrapper to manually
         # load each each symbol in the C library.
