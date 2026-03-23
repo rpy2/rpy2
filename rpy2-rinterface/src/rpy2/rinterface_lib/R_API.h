@@ -199,6 +199,7 @@ SEXP (ATTRIB)(SEXP x);
 
 SEXP Rf_asChar(SEXP sexp);
 
+SEXP Rf_allocLang(int n);
 SEXP Rf_allocList(int n);
 SEXP Rf_allocVector(SEXPTYPE sexp_t, R_xlen_t n);
 SEXP Rf_elt(SEXP, int);
@@ -223,8 +224,6 @@ SEXP Rf_ScalarLogical(int n);
 SEXP Rf_ScalarRaw(Rbyte b);
 SEXP Rf_ScalarReal(double f);
 SEXP Rf_ScalarString(SEXP s);
-
-void *(STDVEC_DATAPTR)(SEXP x);
 
 /* Integer.*/
 int (INTEGER_ELT)(SEXP x, R_xlen_t i);
@@ -251,11 +250,10 @@ Rbyte (RAW_ELT)(SEXP x, R_xlen_t i);
 
 SEXP (STRING_ELT)(SEXP x, R_xlen_t i);
 void SET_STRING_ELT(SEXP x, R_xlen_t i, SEXP v);
+const SEXP* STRING_PTR_RO(SEXP source);
 
 SEXP (VECTOR_ELT)(SEXP x, R_xlen_t i);
 SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
-
-SEXP (CLOENV)(SEXP x);
 
 SEXP Rf_eval(SEXP, SEXP);
 SEXP R_tryEval(SEXP, SEXP, int*);
@@ -337,21 +335,11 @@ typedef enum {
   Width = 2
 } nchar_type;
 
-int R_nchar(SEXP string, nchar_type type_,
-            Rboolean allowNA, Rboolean keepNA,
-            const char* msg_name);
-
 SEXP (PRINTNAME)(SEXP x);
 
-SEXP (FRAME)(SEXP x);
-SEXP (ENCLOS)(SEXP x);
-SEXP (HASHTAB)(SEXP x);
-int (ENVFLAGS)(SEXP x);
-void (SET_ENVFLAGS)(SEXP x, int v);
-
-void SET_FRAME(SEXP x, SEXP v);
-void SET_ENCLOS(SEXP x, SEXP v);
-void SET_HASHTAB(SEXP x, SEXP v);
+/* Added in R-4.5.0 */
+SEXP R_ParentEnv(SEXP env);
+SEXP R_ClosureEnv(SEXP env);
 
 /* include/Rdefines.h */
 

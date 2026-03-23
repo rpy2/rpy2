@@ -41,11 +41,10 @@ class Environment(RObjectMixin, sexp.SexpEnvironment):
 
     @enclos.setter
     def enclos(self, value: sexp.SexpEnvironment) -> None:
-        # TODO: I can't figure out why mypy is throwing an error
-        # here. There scope of this assignment is rather limited
-        # (the setter in the parent class SexpEnvironment has the same
-        # signature).
-        super().enclos = value  # type: ignore
+        raise RuntimeError(
+            'Changing the enclosing environment disappeared from the '
+            'API with R-4.6.0.'
+        )
 
     @property
     def frame(self) -> sexp.SexpEnvironment:

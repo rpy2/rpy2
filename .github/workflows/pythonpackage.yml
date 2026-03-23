@@ -234,29 +234,21 @@ jobs:
       matrix:
         python-version: [3.9, "3.10", "3.11", "3.12", "3.13", "3.14"]
         os: ["windows-latest", ubuntu-latest, macos-15]
-        r-version: ["4.4", "release"]
+        r-version: ["release", "devel"]
         cffi_mode: ["ANY"]
         include:
-          # Windows, R-4.4
-          - python-version: "3.9"
-            os: "windows-latest"
-            r-version: "4.4"
-            experimental: true
-          - python-version: "3.10"
-            os: "windows-latest"
-            r-version: "4.4"
-            experimental: true
-          - python-version: "3.11"
-            os: "windows-latest"
-            r-version: "4.4"
-            experimental: true
+          # Windows
           - python-version: "3.12"
             os: "windows-latest"
-            r-version: "4.4"
+            r-version: "devel"
             experimental: true
           - python-version: "3.13"
             os: "windows-latest"
-            r-version: "4.4"
+            r-version: "devel"
+            experimental: true
+          - python-version: "3.14"
+            os: "windows-latest"
+            r-version: "devel"
             experimental: true
           # Windows, R-release
           - python-version: "3.9"
@@ -267,7 +259,7 @@ jobs:
             os: "windows-latest"
             r-version: "release"
             experimental: false
-            cffi_mode: "API"
+            cffi_mode: "ABI"
           - python-version: "3.11"
             os: "windows-latest"
             r-version: "release"
@@ -276,7 +268,7 @@ jobs:
             os: "windows-latest"
             r-version: "release"
             experimental: false
-            cffi_mode: "API"
+            cffi_mode: "ABI"
           - python-version: "3.12"
             os: "windows-latest"
             r-version: "release"
@@ -285,7 +277,7 @@ jobs:
             os: "windows-latest"
             r-version: "release"
             experimental: false
-            cffi_mode: "API"
+            cffi_mode: "ABI"
           - python-version: "3.13"
             os: "windows-latest"
             r-version: "release"

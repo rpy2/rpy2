@@ -231,10 +231,6 @@ def _PAIRLIST_PTR(robj):
     return ffi.cast('SEXP *', DATAPTR(robj))
 
 
-def _STRING_PTR(robj):
-    return ffi.cast('SEXP *', DATAPTR(robj))
-
-
 def _VECTOR_PTR(robj):
     return ffi.cast('SEXP *', DATAPTR(robj))
 
