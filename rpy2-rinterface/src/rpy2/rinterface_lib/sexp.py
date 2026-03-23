@@ -495,7 +495,7 @@ class SexpEnvironment(Sexp):
         # TODO: remove when dropping support for R < 4.6.0
         warnings.warn(
             'Changing the enclosing environment disappeared from the '
-            'API with R-4.6.0. It will be removed from rpy2.'
+            'API with R-4.6.0. It will be removed from rpy2.',
             DeprecationWarning
         )
         if (
