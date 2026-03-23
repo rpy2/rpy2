@@ -335,10 +335,6 @@ typedef enum {
   Width = 2
 } nchar_type;
 
-int R_nchar(SEXP string, nchar_type type_,
-            Rboolean allowNA, Rboolean keepNA,
-            const char* msg_name);
-
 SEXP (PRINTNAME)(SEXP x);
 
 /* Added in R-4.5.0 */
