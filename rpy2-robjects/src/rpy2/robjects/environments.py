@@ -41,27 +41,10 @@ class Environment(RObjectMixin, sexp.SexpEnvironment):
 
     @enclos.setter
     def enclos(self, value: sexp.SexpEnvironment) -> None:
-        # TODO: remove when dropping support for R < 4.6.0
-        warnings.warn(
+        raise RuntimeError(
             'Changing the enclosing environment disappeared from the '
-            'API with R-4.6.0. It will be removed from rpy2.',
-            DeprecationWarning
+            'API with R-4.6.0.'
         )
-
-        if (
-                int(RVersion()['major']),
-                int(RVersion()['minor'].split('.')[0])
-        ) >= (4, 5):
-            raise RuntimeError(
-                'Changing the enclosing environment disappeared from the '
-                'API with R-4.6.0.'
-            )
-
-        # TODO: I can't figure out why mypy is throwing an error
-        # here. There scope of this assignment is rather limited
-        # (the setter in the parent class SexpEnvironment has the same
-        # signature).
-        super().enclos = value  # type: ignore
 
     @property
     def frame(self) -> sexp.SexpEnvironment:
