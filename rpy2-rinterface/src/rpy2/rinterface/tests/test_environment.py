@@ -215,8 +215,8 @@ def test_enclos_get():
         int(rinterface.sexp.RVersion()['major']),
         int(rinterface.sexp.RVersion()['minor'].split('.')[0])
     ) >= (4, 5),
-    'Changing the enclosing environment disappeared from the '
-    'API with R-4.6.0.'
+    reason=('Changing the enclosing environment disappeared from the '
+            'API with R-4.6.0.')
 )
 def test_enclos_baseenv_set():
     env = rinterface.baseenv["new.env"]()
@@ -232,8 +232,8 @@ def test_enclos_baseenv_set():
         int(rinterface.sexp.RVersion()['major']),
         int(rinterface.sexp.RVersion()['minor'].split('.')[0])
     ) >= (4, 5),
-    'Changing the enclosing environment disappeared from the '
-    'API with R-4.6.0.'
+    reason=('Changing the enclosing environment disappeared from the '
+            'API with R-4.6.0.')
 )
 def test_enclos_baseenv_set_invalid():
     with pytest.raises(AssertionError):
