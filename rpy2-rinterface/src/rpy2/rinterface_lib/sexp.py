@@ -806,7 +806,7 @@ class StrSexpVector(SexpVector):
     """R vector of strings."""
 
     _R_TYPE = openrlib.rlib.STRSXP
-    _R_GET_PTR = staticmethod(openrlib._STRING_PTR)
+    _R_GET_PTR = staticmethod(openrlib.rlib.STRING_PTR_RO)
     _R_VECTOR_ELT = staticmethod(openrlib.rlib.STRING_ELT)
     _R_SET_VECTOR_ELT = staticmethod(openrlib.rlib.SET_STRING_ELT)
     _CAST_IN = staticmethod(_as_charsxp_cdata)

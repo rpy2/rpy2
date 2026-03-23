@@ -199,6 +199,7 @@ SEXP (ATTRIB)(SEXP x);
 
 SEXP Rf_asChar(SEXP sexp);
 
+SEXP Rf_allocLang(int n);
 SEXP Rf_allocList(int n);
 SEXP Rf_allocVector(SEXPTYPE sexp_t, R_xlen_t n);
 SEXP Rf_elt(SEXP, int);
@@ -249,11 +250,10 @@ Rbyte (RAW_ELT)(SEXP x, R_xlen_t i);
 
 SEXP (STRING_ELT)(SEXP x, R_xlen_t i);
 void SET_STRING_ELT(SEXP x, R_xlen_t i, SEXP v);
+const SEXP* STRING_PTR_RO(SEXP source);
 
 SEXP (VECTOR_ELT)(SEXP x, R_xlen_t i);
 SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
-
-SEXP (CLOENV)(SEXP x);
 
 SEXP Rf_eval(SEXP, SEXP);
 SEXP R_tryEval(SEXP, SEXP, int*);
@@ -339,6 +339,7 @@ SEXP (PRINTNAME)(SEXP x);
 
 /* Added in R-4.5.0 */
 SEXP R_ParentEnv(SEXP env);
+SEXP R_ClosureEnv(SEXP env);
 
 /* include/Rdefines.h */
 

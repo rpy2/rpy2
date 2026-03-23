@@ -965,7 +965,7 @@ class SexpClosure(Sexp):
     @_cdata_res_to_rinterface
     def closureenv(self) -> SexpEnvironment:
         """Closure of the R function."""
-        return openrlib.rlib.CLOENV(self.__sexp__._cdata)
+        return openrlib.rlib.R_ClosureEnv(self.__sexp__._cdata)
 
 
 class SexpS4(Sexp):

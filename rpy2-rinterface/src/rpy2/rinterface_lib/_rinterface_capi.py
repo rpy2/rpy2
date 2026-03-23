@@ -270,10 +270,6 @@ def _TYPEOF(robj: FFI.CData) -> int:
     return robj.sxpinfo.type
 
 
-def _SET_TYPEOF(robj: FFI.CData, v: int):
-    robj.sxpinfo.type = v
-
-
 def _NAMED(robj: FFI.CData) -> int:
     return robj.sxpinfo.named
 
@@ -310,9 +306,8 @@ def build_rcall(rfunction,
     rlib = openrlib.rlib
     with memorymanagement.rmemory() as rmemory:
         rcall = rmemory.protect(
-            rlib.Rf_allocList(len(args)+len(kwargs)+1)
+            rlib.Rf_allocLang(len(args)+len(kwargs)+1)
         )
-        _SET_TYPEOF(rcall, rlib.LANGSXP)
         rlib.SETCAR(rcall, rfunction)
         item = rmemory.protect(rlib.CDR(rcall))
         for val in args:
