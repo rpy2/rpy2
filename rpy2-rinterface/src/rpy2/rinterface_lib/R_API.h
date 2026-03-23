@@ -224,8 +224,6 @@ SEXP Rf_ScalarRaw(Rbyte b);
 SEXP Rf_ScalarReal(double f);
 SEXP Rf_ScalarString(SEXP s);
 
-void *(STDVEC_DATAPTR)(SEXP x);
-
 /* Integer.*/
 int (INTEGER_ELT)(SEXP x, R_xlen_t i);
 void SET_INTEGER_ELT(SEXP x, R_xlen_t i, int v);
@@ -343,20 +341,8 @@ int R_nchar(SEXP string, nchar_type type_,
 
 SEXP (PRINTNAME)(SEXP x);
 
-SEXP (FRAME)(SEXP x);
-
-/* TODO: ENCLOS and R_ParentEnv should be definitions */
-/* conditional on R versions. */
-SEXP (ENCLOS)(SEXP x);
 /* Added in R-4.5.0 */
 SEXP R_ParentEnv(SEXP env);
-SEXP (HASHTAB)(SEXP x);
-int (ENVFLAGS)(SEXP x);
-void (SET_ENVFLAGS)(SEXP x, int v);
-
-void SET_FRAME(SEXP x, SEXP v);
-void SET_ENCLOS(SEXP x, SEXP v);
-void SET_HASHTAB(SEXP x, SEXP v);
 
 /* include/Rdefines.h */
 

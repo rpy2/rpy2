@@ -56,7 +56,7 @@ versions to run rpy2 with.
 Software Versions
 ======== =====================================================================
  Python   >=3.9
- R        >=4.4 (4.5 recommended) 
+ R        >=4.5 
 ======== =====================================================================
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;

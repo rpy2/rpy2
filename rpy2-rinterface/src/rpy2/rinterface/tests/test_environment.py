@@ -67,14 +67,6 @@ def test_setitem_baseenv_invalid():
         rinterface.baseenv['pi'] = 42
 
 
-def test_frame():
-    env = rinterface.baseenv["new.env"]()
-    f = env.frame()
-    # Outside of an R call stack a frame will be NULL,
-    # or so I understand.
-    assert f is rinterface.NULL
-
-
 def test_find_invalid_notstring():
     with pytest.raises(TypeError):
         rinterface.globalenv.find(None)

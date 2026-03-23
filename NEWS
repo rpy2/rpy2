@@ -4,6 +4,9 @@ Release 3.6.7
 Changes
 -------
 
+- R >= 4.5.0 is *required*. API symbols vanished in R-4.6.0. Working out
+  backward compatibility would require too much effort.
+
 - The setters for :attr:`rpy2.rinterface_lib.sexp.SexpEnvironment.enclos` and
 :attr:`rpy2.robjects.environment.Environment.enclos` are deprecated, and
 will error with R >= 4.6. R-4.6.0 hides C functions that were visible even
