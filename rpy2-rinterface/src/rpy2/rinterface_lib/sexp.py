@@ -299,7 +299,6 @@ class CharSexp(Sexp):
     """R's internal (C API-level) scalar for strings."""
 
     _R_TYPE = openrlib.rlib.CHARSXP
-    _NCHAR_MSG = openrlib.ffi.new('char []', b'rpy2.rinterface.CharSexp.nchar')
 
     @property
     def encoding(self) -> CETYPE:
@@ -312,16 +311,10 @@ class CharSexp(Sexp):
             openrlib.lock.release()
 
     def nchar(self, what: NCHAR_TYPE = NCHAR_TYPE.Bytes) -> int:
-        try:
-            openrlib.lock.acquire()
-            # TODO: nchar_type is not parsed properly by cffi ?
-            return openrlib.rlib.R_nchar(self.__sexp__._cdata,
-                                         what.value,
-                                         openrlib.rlib.FALSE,
-                                         openrlib.rlib.FALSE,
-                                         self._NCHAR_MSG)
-        finally:
-            openrlib.lock.release()
+        raise RuntimeError(
+            'Changing the enclosing environment disappeared from the '
+            'API with R-4.6.0.'
+        )
 
 
 class SexpEnvironment(Sexp):
