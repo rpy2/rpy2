@@ -1,3 +1,16 @@
+Release 3.6.7
+=============
+
+Changes
+-------
+
+- The setters for :attr:`rpy2.rinterface_lib.sexp.SexpEnvironment.enclos` and
+:attr:`rpy2.robjects.environment.Environment.enclos` are deprecated, and
+will error with R >= 4.6. R-4.6.0 hides C functions that were visible even
+though not officially part of the API. Updating rpy2 to 3.6.7 is required
+to use R-4.6.0.
+
+
 Release 3.6.6
 =============
 

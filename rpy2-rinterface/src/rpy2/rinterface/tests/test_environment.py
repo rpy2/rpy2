@@ -218,6 +218,14 @@ def test_enclos_get():
     assert isinstance(env.enclos, rinterface.SexpEnvironment)
 
 
+@pytest.mark.skipif(
+    (
+        int(rinterface.sexp.RVersion()['major']),
+        int(rinterface.sexp.RVersion()['minor'].split('.')[0])
+    ) >= (4, 5),
+    'Changing the enclosing environment disappeared from the '
+    'API with R-4.6.0.'
+)
 def test_enclos_baseenv_set():
     env = rinterface.baseenv["new.env"]()
     orig_enclosing_env = rinterface.baseenv.enclos
@@ -227,6 +235,14 @@ def test_enclos_baseenv_set():
     assert enclosing_env != env.enclos
 
 
+@pytest.mark.skipif(
+    (
+        int(rinterface.sexp.RVersion()['major']),
+        int(rinterface.sexp.RVersion()['minor'].split('.')[0])
+    ) >= (4, 5),
+    'Changing the enclosing environment disappeared from the '
+    'API with R-4.6.0.'
+)
 def test_enclos_baseenv_set_invalid():
     with pytest.raises(AssertionError):
         rinterface.baseenv.enclos = 123

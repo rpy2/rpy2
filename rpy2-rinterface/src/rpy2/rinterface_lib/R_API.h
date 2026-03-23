@@ -344,7 +344,12 @@ int R_nchar(SEXP string, nchar_type type_,
 SEXP (PRINTNAME)(SEXP x);
 
 SEXP (FRAME)(SEXP x);
+
+/* TODO: ENCLOS and R_ParentEnv should be definitions */
+/* conditional on R versions. */
 SEXP (ENCLOS)(SEXP x);
+/* Added in R-4.5.0 */
+SEXP R_ParentEnv(SEXP env);
 SEXP (HASHTAB)(SEXP x);
 int (ENVFLAGS)(SEXP x);
 void (SET_ENVFLAGS)(SEXP x, int v);

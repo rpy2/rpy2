@@ -480,11 +480,35 @@ class SexpEnvironment(Sexp):
     @_cdata_res_to_rinterface
     def enclos(self) -> 'typing.Union[NULLType, SexpEnvironment]':
         """Get or set the enclosing environment."""
-        return openrlib.rlib.ENCLOS(self.__sexp__._cdata)
+        # TODO: not the most efficient. The choice of C-API should
+        # be made once.
+        if (
+                int(RVersion()['major']),
+                int(RVersion()['minor'].split('.')[0])
+        ) >= (4, 5):
+            return openrlib.rlib.R_ParentEnv(self.__sexp__._cdata)
+        else:
+            return openrlib.rlib.ENCLOS(self.__sexp__._cdata)
 
     @enclos.setter
     def enclos(self, value: 'SexpEnvironment') -> None:
+        # TODO: remove when dropping support for R < 4.6.0
+        warnings.warn(
+            'Changing the enclosing environment disappeared from the '
+            'API with R-4.6.0. It will be removed from rpy2.'
+            DeprecationWarning
+        )
+        if (
+                int(RVersion()['major']),
+                int(RVersion()['minor'].split('.')[0])
+        ) >= (4, 5):
+            raise RuntimeError(
+                'Changing the enclosing environment disappeared from the '
+                'API with R-4.6.0.'
+            )
+
         assert isinstance(value, SexpEnvironment)
+        # SEXP env = openrlib.rlib.R_NewEnv(parent, FALSE, 0);
         openrlib.rlib.SET_ENCLOS(self.__sexp__._cdata,
                                  value.__sexp__._cdata)
 
