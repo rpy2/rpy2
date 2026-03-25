@@ -269,9 +269,8 @@ SEXP R_UnwindProtect(SEXP (*fun)(void *data), void *data,
 SEXP Rf_findFun(SEXP sym, SEXP env);
 // SEXP Rf_findFun3(SEXP, SEXP, SEXP);
 
-SEXP Rf_findVar(SEXP sym, SEXP env);
-SEXP Rf_findVarInFrame(SEXP env, SEXP sym);
-SEXP Rf_findVarInFrame3(SEXP, SEXP, Rboolean);
+Rboolean R_existsVarInFrame(SEXP env, SEXP name);
+SEXP R_getVar(SEXP sym, SEXP env, Rboolean inherits);
 
 R_xlen_t Rf_xlength(SEXP);
 

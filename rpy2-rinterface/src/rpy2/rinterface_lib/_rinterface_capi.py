@@ -176,10 +176,12 @@ class SupportsSEXP(object, metaclass=abc.ABCMeta):
         pass
 
 
+# TODO: deprecate.
 def _findvar(symbol, r_environment):
-    rlib = openrlib.rlib
-    return rlib.Rf_findVar(symbol,
-                           r_environment)
+    raise RuntimeError(
+        """This function is deprectated. Use "_getvar" instead.
+        Mind that the order of arguments changed.
+        """)
 
 
 def _findfun(symbol, r_environment):
@@ -188,30 +190,39 @@ def _findfun(symbol, r_environment):
                            r_environment)
 
 
-@ffi_proxy.callback(ffi_proxy._exec_findvar_in_frame_def,
+@ffi_proxy.callback(ffi_proxy._exec_getvar_def,
                     openrlib._rinterface_cffi)
-def _exec_findvar_in_frame(cdata):
+def _exec_getvar(cdata):
     cdata_struct = openrlib.ffi.cast('struct RPY2_sym_env_data *', cdata)
-    res = openrlib.rlib.Rf_findVarInFrame(
+    res = openrlib.rlib.R_getVar(
+        cdata_struct.symbol,
         cdata_struct.environment,
-        cdata_struct.symbol
+        cdata_struct.inherits
     )
     cdata_struct.data = res
     return
 
 
 def findvar_in_frame(rho, symbol):
-    """Safer wrapper around Rf_findVarInFrame()
+    raise RuntimeError(
+        """This function is deprectated. Use "getvar" instead.
+        Mind that the order of arguments changed.
+        """)
 
-    Run the function Rf_findVarInFrame() in R's C-API through
+
+def _getvar(symbol, rho, inherits):
+    """Safer wrapper around Rf_getVar()
+
+    Run the function R_getVar() in R's C-API through
     R_ToplevelExec().
 
     Note: All arguments, and the object returned, are C-level
     R objects.
 
     Args:
-    - rho: An R environment.
     - symbol: An R symbol (as returned by Rf_install())
+    - rho: An R environment.
+    - inherits: A Rboolean
     Returns:
     The object found.
     """
@@ -221,23 +232,62 @@ def findvar_in_frame(rho, symbol):
     # accessing the matching object in the environment.
     exec_data = ffi.new(
         'struct RPY2_sym_env_data *',
-        [symbol, rho, openrlib.rlib.R_NilValue]
+        [symbol, rho, inherits, openrlib.rlib.R_NilValue]
     )
     _ = openrlib.rlib.R_ToplevelExec(
-        openrlib.rlib._exec_findvar_in_frame,
+        openrlib.rlib._exec_getvar,
         exec_data
     )
     if _ != openrlib.rlib.TRUE:
         raise embedded.RRuntimeError(
-            'R C-API Rf_findVarInFrame()'
+            'R C-API Rf_getVar()'
         )
     return exec_data.data
 
 
+def getvar(symbol, rho, inherits):
+    """Safer wrapper around R_getVar()
+
+    Note: All arguments, and the object returned, are C-level
+    R objects.
+
+    Args:
+    - symbol: An R symbol (as returned by Rf_install())
+    - rho: An R environment.
+    - inherits: A Rboolean
+    Returns:
+    The object found.
+    """
+    res = None
+    emptyenv_rid = get_rid(openrlib.rlib.R_EmptyEnv)
+    with memorymanagement.rmemory() as rmemory:
+        while get_rid(rho) != emptyenv_rid:
+            if (
+                    openrlib.rlib.R_existsVarInFrame(
+                        rho,
+                        symbol
+                    ) == openrlib.rlib.TRUE
+            ):
+                res = rmemory.protect(
+                    _getvar_wrap(
+                        symbol, rho,
+                        inherits
+                    )
+                )
+                break
+            if inherits == openrlib.rlib.FALSE:
+                break
+            rho = rmemory.protect(openrlib.rlib.R_ParentEnv(rho))
+        if res is None:
+            raise KeyError("R symbol '%s' not found" % symbol)
+        else:
+            return res
+
+
 if FFI_MODE is ffi_proxy.InterfaceType.ABI:
-    findvar_in_frame_wrap = openrlib.rlib.Rf_findVarInFrame
+    _getvar_wrap = openrlib.rlib.R_getVar
 elif FFI_MODE is ffi_proxy.InterfaceType.API:
-    findvar_in_frame_wrap = findvar_in_frame
+    _getvar_wrap = _getvar
 else:
     raise ImportError('cffi mode unknown: %s' % FFI_MODE)
 
@@ -430,10 +480,16 @@ def _geterrmessage() -> typing.Optional[str]:
         symbol = rmemory.protect(
             conversion._str_to_symsxp('geterrmessage', conversion._ENC_PY)
         )
-        geterrmessage = _findvar(
-            symbol,
-            rlib.R_GlobalEnv)
-        call_r = rlib.Rf_lang1(geterrmessage)
+        geterrmessage = rmemory.protect(
+            getvar(
+                symbol,
+                rlib.R_GlobalEnv,
+                rlib.TRUE
+            )
+        )
+        call_r = rmemory.protect(
+            rlib.Rf_lang1(geterrmessage)
+        )
         res = rmemory.protect(
             rlib.Rf_eval(call_r, rlib.R_GlobalEnv)
         )
