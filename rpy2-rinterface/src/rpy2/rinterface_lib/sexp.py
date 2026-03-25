@@ -429,8 +429,11 @@ class SexpEnvironment(Sexp):
     def __len__(self) -> int:
         with memorymanagement.rmemory() as rmemory:
             symbols = rmemory.protect(
-                openrlib.rlib.R_lsInternal(self.__sexp__._cdata,
-                                           openrlib.rlib.TRUE)
+                openrlib.rlib.R_lsInternal3(
+                    self.__sexp__._cdata,
+                    openrlib.rlib.TRUE,
+                    openrlib.rlib.FALSE  # sort.
+                )
             )
             n = openrlib.rlib.Rf_xlength(symbols)
         return n
@@ -497,8 +500,11 @@ class SexpEnvironment(Sexp):
         """Generator over the keys (symbols) in the environment."""
         with memorymanagement.rmemory() as rmemory:
             symbols = rmemory.protect(
-                openrlib.rlib.R_lsInternal(self.__sexp__._cdata,
-                                           openrlib.rlib.TRUE)
+                openrlib.rlib.R_lsInternal3(
+                    self.__sexp__._cdata,
+                    openrlib.rlib.TRUE,
+                    openrlib.rlib.FALSE  # sort.
+                )
             )
             n = openrlib.rlib.Rf_xlength(symbols)
             res = []

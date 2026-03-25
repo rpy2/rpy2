@@ -275,7 +275,7 @@ SEXP Rf_findVarInFrame3(SEXP, SEXP, Rboolean);
 
 R_xlen_t Rf_xlength(SEXP);
 
-SEXP R_lsInternal(SEXP, Rboolean);
+SEXP R_lsInternal3(SEXP, Rboolean, Rboolean);
 
 SEXP Rf_duplicate(SEXP s);
 
