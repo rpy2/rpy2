@@ -267,7 +267,7 @@ def createbuilder_api():
                 ffi_proxy._yesnocancel_def,
                 ffi_proxy._parsevector_wrap_def,
                 ffi_proxy._handler_def,
-                ffi_proxy._exec_findvar_in_frame_def
+                ffi_proxy._exec_getvar_def
         ])
 
     # Subset of R headers we expose through cffi.

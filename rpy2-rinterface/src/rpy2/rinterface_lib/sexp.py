@@ -10,7 +10,6 @@ from rpy2.rinterface_lib import embedded
 from rpy2.rinterface_lib import memorymanagement
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
-from rpy2.rinterface_lib._rinterface_capi import _evaluated_promise
 from rpy2.rinterface_lib._rinterface_capi import SupportsSEXP
 from rpy2.rinterface_lib import conversion
 from rpy2.rinterface_lib.conversion import _cdata_res_to_rinterface
@@ -334,7 +333,6 @@ class SexpEnvironment(Sexp):
     """
 
     @_cdata_res_to_rinterface
-    @_evaluated_promise
     def find(self,
              key: str,
              wantfun: bool = False) -> Sexp:
@@ -360,47 +358,69 @@ class SexpEnvironment(Sexp):
                 #   res = _rinterface._findfun(symbol, self.__sexp__._cdata)
                 # but R's findfun will segfault if the symbol is not in
                 # the environment. :/
+                res = None
                 rho = self
                 while rho.rid != emptyenv.rid:
-                    res = rmemory.protect(
-                        _rinterface.findvar_in_frame_wrap(
-                            rho.__sexp__._cdata, symbol
+                    if (
+                            openrlib.rlib.R_existsVarInFrame(
+                                rho.__sexp__._cdata,
+                                symbol
+                            ) == openrlib.rlib.TRUE
+                    ):
+                        res = rmemory.protect(
+                            _rinterface._getvar_wrap(
+                                symbol, rho.__sexp__._cdata,
+                                openrlib.rlib.FALSE  # inherits.
+                            )
                         )
-                    )
-                    if _rinterface._TYPEOF(res) in (openrlib.rlib.CLOSXP,
-                                                    openrlib.rlib.BUILTINSXP):
-                        break
-                    # TODO: move check of R_UnboundValue to _rinterface ?
-                    res = openrlib.rlib.R_UnboundValue
+                        if (
+                                _rinterface._TYPEOF(res) in (
+                                    openrlib.rlib.CLOSXP,
+                                    openrlib.rlib.BUILTINSXP
+                                )
+                        ):
+                            break
+                        else:
+                            res = None
                     rho = rho.enclos
+                if res is None:
+                    raise KeyError("'%s' not found" % key)
             else:
-                res = _rinterface._findvar(symbol, self.__sexp__._cdata)
-        # TODO: move check of R_UnboundValue to _rinterface ?
-        if res == openrlib.rlib.R_UnboundValue:
-            raise KeyError("'%s' not found" % key)
+                try:
+                    res = _rinterface.getvar(
+                                symbol,
+                                self.__sexp__._cdata,
+                                openrlib.rlib.TRUE  # inherits.
+                    )
+                except KeyError:
+                    # R's R_getVar() triggers an R error when the key cannot
+                    # be found.
+                    raise KeyError("'%s' not found" % key)
         return res
 
     @_cdata_res_to_rinterface
-    @_evaluated_promise
     def __getitem__(self, key: str) -> typing.Any:
         if not isinstance(key, str):
             raise TypeError('The key must be a non-empty string.')
         elif not len(key):
             raise ValueError('The key must be a non-empty string.')
         embedded.assert_isready()
+
         with memorymanagement.rmemory() as rmemory:
             symbol = rmemory.protect(
                 conversion._str_to_symsxp(key, conversion._ENC_PY)
             )
-            res = rmemory.protect(
-                _rinterface.findvar_in_frame_wrap(
-                    self.__sexp__._cdata, symbol
+            try:
+                res = rmemory.protect(
+                    _rinterface.getvar(
+                        symbol,
+                        self.__sexp__._cdata,
+                        openrlib.rlib.FALSE
+                    )
                 )
-            )
-
-        # TODO: move check of R_UnboundValue to _rinterface
-        if res == openrlib.rlib.R_UnboundValue:
-            raise KeyError("'%s' not found" % key)
+            except KeyError:
+                # TODO: move check of R_UnboundValue to _rinterface
+                raise KeyError("'%s' not found" % key)
         return res
 
     def __setitem__(self, key: str, value) -> None:
@@ -429,8 +449,11 @@ class SexpEnvironment(Sexp):
     def __len__(self) -> int:
         with memorymanagement.rmemory() as rmemory:
             symbols = rmemory.protect(
-                openrlib.rlib.R_lsInternal(self.__sexp__._cdata,
-                                           openrlib.rlib.TRUE)
+                openrlib.rlib.R_lsInternal3(
+                    self.__sexp__._cdata,
+                    openrlib.rlib.TRUE,
+                    openrlib.rlib.FALSE  # sort.
+                )
             )
             n = openrlib.rlib.Rf_xlength(symbols)
         return n
@@ -478,13 +501,7 @@ class SexpEnvironment(Sexp):
         """Get or set the enclosing environment."""
         # TODO: not the most efficient. The choice of C-API should
         # be made once.
-        if (
-                int(RVersion()['major']),
-                int(RVersion()['minor'].split('.')[0])
-        ) >= (4, 5):
-            return openrlib.rlib.R_ParentEnv(self.__sexp__._cdata)
-        else:
-            return openrlib.rlib.ENCLOS(self.__sexp__._cdata)
+        return openrlib.rlib.R_ParentEnv(self.__sexp__._cdata)
 
     @enclos.setter
     def enclos(self, value: 'SexpEnvironment') -> None:
@@ -497,8 +514,11 @@ class SexpEnvironment(Sexp):
         """Generator over the keys (symbols) in the environment."""
         with memorymanagement.rmemory() as rmemory:
             symbols = rmemory.protect(
-                openrlib.rlib.R_lsInternal(self.__sexp__._cdata,
-                                           openrlib.rlib.TRUE)
+                openrlib.rlib.R_lsInternal3(
+                    self.__sexp__._cdata,
+                    openrlib.rlib.TRUE,
+                    openrlib.rlib.FALSE  # sort.
+                )
             )
             n = openrlib.rlib.Rf_xlength(symbols)
             res = []

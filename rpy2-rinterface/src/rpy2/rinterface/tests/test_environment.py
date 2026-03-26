@@ -118,9 +118,8 @@ def test_find_functiononly():
     hist = rinterface.globalenv.find('hist', wantfun=False)
     assert rinterface.RTYPES.CLOSXP == hist.typeof
     rinterface.globalenv['hist'] = rinterface.StrSexpVector(['foo', ])
-
-    with pytest.raises(KeyError):
-        rinterface.globalenv.find('hist', wantfun=True)
+    hist = rinterface.globalenv.find('hist', wantfun=True)
+    assert rinterface.RTYPES.CLOSXP == hist.typeof
 
 
 # TODO: isn't this already tested elsewhere ?

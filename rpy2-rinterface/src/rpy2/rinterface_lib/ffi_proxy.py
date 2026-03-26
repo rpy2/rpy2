@@ -144,6 +144,6 @@ _handler_def: SignatureDefinition = SignatureDefinition(
     '_handler_wrap',
     'SEXP', ('SEXP cond', 'void *hdata'))
 
-_exec_findvar_in_frame_def: SignatureDefinition = SignatureDefinition(
-    '_exec_findvar_in_frame',
+_exec_getvar_def: SignatureDefinition = SignatureDefinition(
+    '_exec_getvar',
     'void', ('void *data', ))
