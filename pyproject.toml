@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "rpy2-rinterface>=3.6.6",
-    "rpy2-robjects>=3.6.4",
+    "rpy2-robjects>=3.6.5",
     "packaging;platform_system=='Windows'",
 ]
 
