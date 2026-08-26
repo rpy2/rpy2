@@ -143,7 +143,7 @@ class VectorOperationsDelegator(object):
     Delegate operations such as __getitem__, __add__, etc...
     to the corresponding R function.
     This permits a convenient coexistence between
-    operators on Python sequence object with their R conterparts.
+    operators on Python sequence object with their R counterparts.
     """
 
     def __init__(self, parent):
@@ -619,7 +619,7 @@ class PairlistVector(Vector, PairlistSexpVector):
 
 
 class ListVector(Vector, ListSexpVector):
-    """ R list (vector of arbitray elements)
+    """ R list (vector of arbitrary elements)
 
     ListVector(iterable) -> ListVector.
 

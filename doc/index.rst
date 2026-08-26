@@ -45,7 +45,7 @@ Documentation for rpy2
       :maxdepth: 3
 
       high-level
-   
+
    R is often used in a read-eval-print loop (REPL), where interactivity is important.
    Utilities are available in :mod:`rpy2.interactive`.
 
@@ -64,7 +64,7 @@ Documentation for rpy2
 
    A lower-level interface, closer to R's C-level API, is available. It can be used
    when performance optimization is needed, or when extensions to the high-level
-   interface are developped.
+   interface are developed.
 
    .. toctree::
       :maxdepth: 3
@@ -90,5 +90,3 @@ Documentation for rpy2
       :maxdepth: 2
 
       appendix
-
-

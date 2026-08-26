@@ -293,7 +293,7 @@ def default_py2ri(o):
     """ Convert an arbitrary Python object to a
     :class:`rpy2.rinterface.Sexp` object.
     Creates an R object with the content of the Python object,
-    wich means data copying.
+    which means data copying.
     :param o: object
     :rtype: :class:`rpy2.rinterface.Sexp` (and subclasses)
     """

@@ -32,7 +32,7 @@ the dot (*.*).
 In an attempt to address this, during the import of the package a
 translation of the R symbols is attempted, with dots becoming underscores.
 This is not unlike what could be found in :mod:`rpy`, but with distinctive
-differences: 
+differences:
 
 - The translation is performed once, when the package is imported,
   and the results cached. The caching allows us to perform the check below.
@@ -50,20 +50,20 @@ differences:
 
 - Thanks to the namespace encapsulation,
   translation is restricted to one package, limiting the risk
-  of masking when compared to rpy translating relatively blindly and 
+  of masking when compared to rpy translating relatively blindly and
   retrieving the first match
 
 
 .. _robjects-packages-evildot:
 
-.. note:: 
+.. note::
 
    There has been (sometimes vocal) concerns over the seemingly unnecessary
    trouble with not translating blindly '.' into '_' for all R symbols in
    packages, as rpy was doing it.
 
-   Fortunately the R development team is providing 
-   a real-life example in R's standard library 
+   Fortunately the R development team is providing
+   a real-life example in R's standard library
    (the /recommended packages/) to demonstrate the point a final time: the
    R package `tools` contains a function `package.dependencies`
    and a function `package_dependencies`, with different behaviour,
@@ -81,7 +81,7 @@ differences:
 The translation of '.' into '_' is clearly not sufficient, as
 R symbols can use a lot more characters illegal in Python symbols.
 Those more exotic symbols can be accessed through :attr:`__dict__`.
-   
+
 Example:
 
 >>> utils.__dict__['?']
@@ -162,7 +162,7 @@ Using a `snippet on stackoverflow`_:
 
 .. note::
 
-   If concerned about computer security, you'll want to think about 
+   If concerned about computer security, you'll want to think about
    the origin of the code and to which level you trust the origin
    to be what it really is.
 
@@ -179,7 +179,7 @@ Python has utilities to read data from URLs.
 
    stringr_c = SignatureTranslatedAnonymousPackage(string, "stringr_c")
 
-The object `stringr_c` encapsulates the funtions defined in the R file
+The object `stringr_c` encapsulates the functions defined in the R file
 into something like what the rpy2 `importr` is returning.
 
 >>> type(stringr_c)
@@ -187,7 +187,7 @@ rpy2.robjects.packages.SignatureTranslatedAnonymousPackage
 >>> stringr_c._rpy2r.keys()
 ['str_join', 'str_c']
 
-Unlike the R code first shown, this is not writing anything into the 
+Unlike the R code first shown, this is not writing anything into the
 the R global environment.
 
 >>> from rpy2.robjects import globalenv
@@ -195,7 +195,7 @@ the R global environment.
 ()
 
 
-   
+
 R namespaces
 ^^^^^^^^^^^^
 
@@ -213,7 +213,7 @@ that will predictably create potential problems as the number
 of packages used is increasing.
 
 Since Python does not generally have the same requirement by default,
-:func:`importr` exposes all objects in an namespace, 
+:func:`importr` exposes all objects in an namespace,
 no matter they are exported or not.
 
 
@@ -229,7 +229,7 @@ Finding where an R symbol is coming from
 
 Knowing which object is effectively considered when a given symbol
 is resolved can be of much importance in R, as the number of packages
-attached grows and the use of the namespace accessors "::" and ":::" 
+attached grows and the use of the namespace accessors "::" and ":::"
 is not so frequent.
 
 The function :func:`wherefrom` offers a way to find it:
@@ -249,7 +249,7 @@ The function :func:`wherefrom` offers a way to find it:
 Installing/removing R packages
 ------------------------------
 
-R is shipped with a set of *recommended packages* 
+R is shipped with a set of *recommended packages*
 (the equivalent of a standard library), but there is a large
 (and growing) number of other packages available.
 
@@ -286,9 +286,8 @@ The next step is to simply call R's function to install from a repository.
    The global option that sets the default repository will remain until the R
    process ends (or the default is changed).
 
-   Calling :func:`install_packages` without first choosing a mirror will require the user 
+   Calling :func:`install_packages` without first choosing a mirror will require the user
    to interactively choose a mirror.
- 
+
    Control on mostly anything is possible; the R documentation should be consulted
    for more information.
-

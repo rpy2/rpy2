@@ -3,7 +3,7 @@
 =================================
 
 This class is currently a singleton, with
-its one representation instanciated when the
+its one representation instantiated when the
 module is loaded:
 
 >>> robjects.r
@@ -36,14 +36,14 @@ R functions:
 
 This approach has limitation as:
 
-* The actual Python attributes for the object masks the R elements 
+* The actual Python attributes for the object masks the R elements
 
 * '.' (dot) is syntactically valid in names for R objects, but not for
     python objects.
 
 Behind the scene, the steps for getting an attribute of `r` are
 rather straightforward:
- 
+
   1. Check if the attribute is defined as such in the python definition for
      `r`
 

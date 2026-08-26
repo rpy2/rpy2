@@ -47,7 +47,7 @@ if __name__ == '__main__':
                         choices=('fork', 'spawn'),
                         default='spawn',
                         help=('Type of worker process. You probably want '
-                              '"spwan"'))
+                              '"spawn"'))
     parser.add_argument('--nproc',
                         default=3,
                         type=int,

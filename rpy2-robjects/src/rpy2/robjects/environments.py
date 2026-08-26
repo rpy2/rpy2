@@ -10,7 +10,7 @@ _new_env = rinterface.baseenv["new.env"]
 
 
 class Environment(RObjectMixin, sexp.SexpEnvironment):
-    """ An R environement, implementing Python's mapping interface. """
+    """ An R environment, implementing Python's mapping interface. """
 
     def __init__(self, o: typing.Optional[sexp.SexpEnvironment] = None):
         if o is None:
