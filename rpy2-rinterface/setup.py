@@ -49,7 +49,6 @@ situation = importlib.util.module_from_spec(spec)
 sys.modules['situation'] = situation
 spec.loader.exec_module(situation)
 
-
 PACKAGE_NAME = 'rpy2'
 package_prefix='src'
 
