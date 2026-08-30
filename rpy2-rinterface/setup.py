@@ -19,7 +19,6 @@ import warnings
 from setuptools import dist, Extension, find_namespace_packages, setup
 from setuptools._distutils.ccompiler import new_compiler
 from setuptools._distutils.sysconfig import customize_compiler
-from setuptools._distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
 
 import setuptools.command.build
 import setuptools.command.build_ext
@@ -50,7 +49,6 @@ situation = importlib.util.module_from_spec(spec)
 sys.modules['situation'] = situation
 spec.loader.exec_module(situation)
 
-
 PACKAGE_NAME = 'rpy2'
 package_prefix='src'
 
@@ -65,6 +63,34 @@ def cmp_version(x, y):
         if len(x) == 1 or len(y) == 1:
             return 0
         return cmp_version(x[1:], y[1:])
+
+
+def _distutils_error_classes(name):
+    """Collect a distutils error class from every module copy exposing it.
+
+    setuptools' distutils hack can expose the distutils error classes
+    through two distinct module objects (e.g.
+    ``distutils.compilers.C.errors`` vs
+    ``setuptools._distutils.compilers.C.errors``). The compiler may raise an
+    instance from one copy while a single import resolves to the other, so
+    we gather the class from both locations and match against all of them.
+    """
+    classes = []
+    for module_name in ('distutils.errors', 'setuptools._distutils.errors'):
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            continue
+        klass = getattr(module, name, None)
+        if klass is not None:
+            classes.append(klass)
+    return tuple(classes)
+
+
+_COMPILE_ERRORS = _distutils_error_classes('CCompilerError')
+_NO_COMPILER_ERRORS = _distutils_error_classes('DistutilsExecError')
+_PLATFORM_ERRORS = _distutils_error_classes('DistutilsPlatformError')
+_TOOLCHAIN_ERRORS = _COMPILE_ERRORS + _NO_COMPILER_ERRORS + _PLATFORM_ERRORS
 
 
 class COMPILATION_STATUS(enum.Enum):
@@ -109,15 +135,19 @@ def get_c_extension_status(libraries=['R'], include_dirs=None,
             bin_file,
             libraries=libraries,
             library_dirs=library_dirs)
-    except CCompilerError as cce:
-        status = COMPILATION_STATUS.COMPILE_ERROR
-        print(cce)
-    except DistutilsExecError as dee:
-        status = COMPILATION_STATUS.NO_COMPILER
-        print(dee)
-    except DistutilsPlatformError as dpe:
-        status = COMPILATION_STATUS.PLATFORM_ERROR
-        print(dpe)
+    except _TOOLCHAIN_ERRORS as e:
+        # A recognized toolchain failure: the target system is missing the
+        # R headers, a usable compiler, or a supported platform. In ANY mode
+        # this lets the build fall back to ABI. Any *other* exception is
+        # treated as a real bug in the build process and left to propagate,
+        # so we still notice when the build itself is broken.
+        if isinstance(e, _NO_COMPILER_ERRORS):
+            status = COMPILATION_STATUS.NO_COMPILER
+        elif isinstance(e, _PLATFORM_ERRORS):
+            status = COMPILATION_STATUS.PLATFORM_ERROR
+        else:
+            status = COMPILATION_STATUS.COMPILE_ERROR
+        print(e)
     else:
         status = COMPILATION_STATUS.OK
     shutil.rmtree(tmp_dir)
