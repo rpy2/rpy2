@@ -15,7 +15,7 @@ ffi = openrlib.ffi
 
 # Container for module-level C objects needing to be protected from garbage
 # collection on the Python side.
-__cffi_protected = {}
+__cffi_protected: typing.Dict[str, typing.Any] = {}
 
 _options = ('rpy2', '--quiet', '--no-save')  # type: typing.Tuple[str, ...]
 logger.info('Default options to initialize R: {}'.format(', '.join(_options)))
