@@ -1,3 +1,13 @@
+Release 3.6.8
+=============
+
+Bugs fixed
+----------
+
+- Better management of build errors for :mod:`rpy2.rinterface`
+  across combinations of Python, setuptools, distutils versions.
+
+
 Release 3.6.7
 =============
 
