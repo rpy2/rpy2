@@ -13,7 +13,7 @@ graphical devices (using C). This feature was used to implement
 drivers to SVG or Cairo, for example (Cairo support made it later to the R
 codebase).
 
-Rpy2 is exposing the creation of custome graphical devies to Python
+Rpy2 is exposing the creation of custom graphical devices to Python
 programmer, without the need for C.
 
 To demonstrate how to implement a graphical, we consider the following
@@ -30,7 +30,7 @@ Such a device would be implemented as follows:
    from collections import Counter
 
    class BeancounterDevice(rdevice.GraphicalDevice):
-       """ Graphical devive for R that counts the
+       """ Graphical device for R that counts the
        number of times primitives are called."""
 
        def __init__(self):

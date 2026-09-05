@@ -28,9 +28,9 @@ Creating vectors can be achieved either from R or from Python.
 When the vectors are created from R, one should not worry much
 as they will be exposed as they should by :mod:`rpy2.robjects`.
 
-When one wants to create a vector from Python, either the 
+When one wants to create a vector from Python, either the
 class :class:`Vector` or the convenience classes
-:class:`IntVector`, :class:`FloatVector`, :class:`BoolVector`, 
+:class:`IntVector`, :class:`FloatVector`, :class:`BoolVector`,
 :class:`StrVector` can be used.
 
 .. autoclass:: rpy2.robjects.vectors.BoolVector(obj)
@@ -109,7 +109,7 @@ Levels: a b c
 
 Since a :class:`FactorVector` is an :class:`IntVector` with attached
 metadata (the levels), getting items Python-style was not changed from
-what happens when gettings items from a :class:`IntVector`.
+what happens when getting items from a :class:`IntVector`.
 A consequence to that is that information about the
 levels is then lost.
 
@@ -166,7 +166,7 @@ it for a vector (and indexing starts at zero).
 (1, 2, 3, 4, 5)
 >>> x.names = robjects.StrVector('abcde')
 >>> print(x)
-a b c d e 
+a b c d e
 1 2 3 4 5
 >>> x[0]
 1
@@ -186,9 +186,9 @@ In short, R-style extracting has the following characteristics:
 
 * indexing starts at one (while Python indexing starts at zero).
 
-* the argument to subset on can be a vector of 
+* the argument to subset on can be a vector of
 
-  - integers (negative integers meaning exlusion of the elements)
+  - integers (negative integers meaning exclusion of the elements)
 
   - booleans
 
@@ -211,7 +211,7 @@ R can extract several elements at once:
 
 When a boolean extract vector is of smaller length than the vector,
 is expanded as necessary (this is know in R as the `recycling rule`):
- 
+
 >>> print(x.rx(True))
 1:5
 >>> b = robjects.BoolVector((False, True))
@@ -232,7 +232,7 @@ That last example could also be written:
 >>> print(x.rx(i))
 [1] 2 4 5
 
-This extraction system is quite expressive, as it allows a very simple writting of 
+This extraction system is quite expressive, as it allows a very simple writing of
 very common tasks in data analysis such as reordering and random sampling.
 
 >>> from rpy2.robjects.packages import importr
@@ -271,7 +271,7 @@ integer(0)
    or on name while `$` can only extract on name).
 
    In R, the 3 ways to extract one element out of a list are:
-   
+
    .. code-block:: r
 
       > l <- list(a = 1:3, b = 4:6)
@@ -281,14 +281,14 @@ integer(0)
       [1] 1 2 3
       > l$a
       [1] 1 2 3
-      
+
    With rpy2, it is looking like:
 
    .. code-block:: python
 
       >>> elt = l.rx2(1) # This is the R `[[`, so one-offset indexing
       >>> elt = l.rx2('a')
-    
+
 
 Assigning items
 ---------------
@@ -427,7 +427,7 @@ for vector-like objects.
 2:11
 
 .. note::
-   In Python, using the operator ``+`` on two sequences 
+   In Python, using the operator ``+`` on two sequences
    concatenates them and this behavior has been conserved:
 
    >>> print(x + 1)
@@ -490,8 +490,8 @@ one must remember that this is just a vector with dimension attributes
 
 .. note::
 
-   In *R*, matrices are column-major ordered, although the constructor 
-   :func:`matrix` accepts a boolean argument *byrow* that, when true, 
+   In *R*, matrices are column-major ordered, although the constructor
+   :func:`matrix` accepts a boolean argument *byrow* that, when true,
    will build the matrix *as if* row-major ordered.
 
 Computing on matrices
@@ -507,7 +507,7 @@ Regular operators work element-wise on the underlying vector.
 
 For more on operators, see :ref:`robjects-operationsdelegator`.
 
-Matrix multiplication is available as :meth:`Matrix.dot`, 
+Matrix multiplication is available as :meth:`Matrix.dot`,
 transposition as :meth:`Matrix.transpose`. Common
 operations such as cross-product, eigen values computation
 , and singular value decomposition are also available through
@@ -586,7 +586,7 @@ is an R vector, which implies one type for all elements
 in one given column, and which allows for possibly different types across
 different columns.
 
-If we consider for example tre data about pharmacokinetics of theophylline in
+If we consider for example the data about pharmacokinetics of theophylline in
 different subjects, the data table could look like this:
 
 ======= ====== ==== ==== ====
@@ -605,7 +605,7 @@ is given by other column. In the example above, the grouping of
 measures by subject is given by the column *Subject*.
 
 
-In :mod:`rpy2.robjects`, 
+In :mod:`rpy2.robjects`,
 :class:`DataFrame` represents the `R` class `data.frame`.
 
 Creating objects
@@ -620,7 +620,7 @@ Creating a :class:`DataFrame` can be done by:
 * Read data from a file using the instance method :meth:`from_csvfile`
 
 The :class:`DataFrame` constructor accepts either an
-:class:`rinterface.SexpVector` 
+:class:`rinterface.SexpVector`
 (with :attr:`typeof` equal to *VECSXP*, that is, an R `list`)
 or any Python object implementing the method :meth:`items`
 (for example :class:`dict` or :class:`rpy2.rlike.container.OrdDict`).
@@ -636,7 +636,7 @@ from the order in which they are declared):
 >>> d = {'a': robjects.IntVector((1,2,3)), 'b': robjects.IntVector((4,5,6))}
 >>> dataf = robject.DataFrame(d)
 
-To create a :class:`DataFrame` and be certain of the clumn order order,
+To create a :class:`DataFrame` and be certain of the column order order,
 an ordered dictionary can be used:
 
 >>> import rpy2.rlike.container as rlc
@@ -655,7 +655,7 @@ function `data.frame()`.
    When creating a :class:`DataFrame`, vectors of strings are automatically
    converted by R into instances of class :class:`Factor`. This behavior
    can be prevented by wrapping the call into the R base function I.
-   
+
    .. code-block:: python
 
       from rpy2.robjects.vectors import DataFrame, StrVector
@@ -664,9 +664,9 @@ function `data.frame()`.
       dataf = DataFrame({'string': base.I(StrVector('abbab')),
                          'factor': StrVector('abbab')})
 
-   Here the :class:`DataFrame` `dataf` now has two columns, one as 
+   Here the :class:`DataFrame` `dataf` now has two columns, one as
    a :class:`Factor`, the other one as a :class:`StrVector`
- 
+
    >>> dataf.rx2('string')
    <StrVector - Python:0x95fe5ec / R:0x9646ea0>
    >>> dataf.rx2('factor')

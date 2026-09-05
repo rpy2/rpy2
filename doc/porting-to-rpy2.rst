@@ -17,8 +17,8 @@ completely the rpy interface.
 Faithful example
 ^^^^^^^^^^^^^^^^
 
-In years, Tim Church's *Old faithful* example seems to have reached an 
-almost iconic status for many :mod:`rpy` users. 
+In years, Tim Church's *Old faithful* example seems to have reached an
+almost iconic status for many :mod:`rpy` users.
 That example is the obvious text for a Rosetta stone and we provide
 its translation into :mod:`rpy2.robjects` for rpy2-2.1.0. This example
 is based on John A. Schroeder's translation for rpy2-2.0.8 (that is
@@ -87,7 +87,7 @@ Histogram
    stats = importr('stats')
    grdevices.png('faithful_histogram.png', width = 733, height = 550)
    ed = faithful_data.rx2("eruptions")
-   graphics.hist(ed, r_base.seq(1.6, 5.2, 0.2), 
+   graphics.hist(ed, r_base.seq(1.6, 5.2, 0.2),
                  prob = True, col = "lightblue",
                  main = "Old Faithful eruptions", xlab = "Eruption duration (seconds)")
    graphics.lines(stats.density(ed,bw=0.1), col = "orange")
@@ -119,19 +119,19 @@ Alternatively, the ggplot2 package can be used to make the plots:
 
    stats = importr('stats')
 
-   params = {'do.points' : False, 
-             'verticals' : 1, 
+   params = {'do.points' : False,
+             'verticals' : 1,
              'main' : "Empirical cumulative distribution function of " + \
                        "Old Faithful eruptions longer than 3 seconds"}
    graphics.plot(stats.ecdf(long_ed), **params)
    x = r_base.seq(3, 5.4, 0.01)
-   graphics.lines(x, stats.pnorm(x, mean = r_base.mean(long_ed), 
+   graphics.lines(x, stats.pnorm(x, mean = r_base.mean(long_ed),
                                  sd = r_base.sqrt(stats.var(long_ed))),
                   lty = 3, lwd = 2, col = "salmon")
    grdevices.dev_off()
 
 .. code-block:: python
-    
+
    grdevices.png('faithful_qq.png', width = 733, height = 550)
    graphics.par(pty="s")
    stats.qqnorm(long_ed,col="blue")
@@ -151,7 +151,7 @@ Camelcase
 ^^^^^^^^^
 
 The camelCase naming disappeared from variables and methods, as it seemed
-to be mostly absent from such obejcts in the standard library
+to be mostly absent from such objects in the standard library
 (although nothing specific appears about that in :pep:`8`).
 
 Practically, this means that the following name changes occurred:
@@ -211,7 +211,7 @@ name space as a Python-friendly object
 >>> base.letters[0]
 'a'
 
-Whenever possible, this steps performs a safe 
+Whenever possible, this steps performs a safe
 conversion of '.' in R variable names into '_' for the Python variable
 name.
 
@@ -237,4 +237,3 @@ Graphics
 The combined use of namespaces for R packages (see above),
 and of custom representation of few specific R libraries is making
 the generation of graphics (even) easier (see Section :ref:`graphics`).
-

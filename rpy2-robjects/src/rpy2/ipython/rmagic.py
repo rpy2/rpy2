@@ -842,7 +842,7 @@ class RMagics(IPython.core.magic.Magics):
         help=textwrap.dedent("""
         Name of local converter to use. A converter contains the rules to
         convert objects back and forth between Python and R. If not
-        specified/None, the defaut converter for the magic\'s module is used
+        specified/None, the default converter for the magic\'s module is used
         (that is rpy2\'s default converter + numpy converter + pandas converter
         if all three are available)."""))
     @argument(
@@ -1115,7 +1115,7 @@ class RMagics(IPython.core.magic.Magics):
         help=textwrap.dedent("""
         Name of local converter to use. A converter contains the rules to
         convert objects back and forth between Python and R. If not
-        specified/None, the defaut converter for the magic\'s module is used
+        specified/None, the default converter for the magic\'s module is used
         (that is rpy2\'s default converter + numpy converter + pandas converter
         if all three are available)."""))
     @argument(

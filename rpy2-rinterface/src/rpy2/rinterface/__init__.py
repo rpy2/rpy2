@@ -375,7 +375,7 @@ class SexpPromise(Sexp):
 
     @_cdata_res_to_rinterface
     def eval(self, env: typing.Optional[SexpEnvironment] = None) -> sexp.Sexp:
-        """"Evalute the R "promise".
+        """"Evaluate the R "promise".
 
         :param env: The environment in which to evaluate the
           promise.

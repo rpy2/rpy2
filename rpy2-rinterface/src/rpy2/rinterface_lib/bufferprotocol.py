@@ -50,7 +50,7 @@ def getstrides(cdata, shape: typing.Tuple[int, ...],
     for an R array.
 
     The shape (see method `getshape`) and itemsize must be specified.
-    Incorrect values are potentially unsage and result in a segfault.
+    Incorrect values are potentially unsafe and result in a segfault.
 
     :param cdata: C data from cffi.
     :param shape: The shape of the array.

@@ -52,7 +52,7 @@ effort on them.
 
 ## Using `ggplot2`
 
-Among R visulization pacakges, `ggplot2` has emerged as something Python users
+Among R visualization packages, `ggplot2` has emerged as something Python users
 wished so much they had that various projects to try port it to Python
 are regularly started.
 
@@ -234,7 +234,7 @@ ipy.magics_manager.registry['RMagics'].options.graphics_device_name = 'svg'
 
 Another example is how to change conversion rules, that can be
 an expensive operation depending object sizes and rules, to a no-op:
-no convertion rules to keep all rpy2 objects as proxy wrappers
+no conversion rules to keep all rpy2 objects as proxy wrappers
 to R objects for example, no conversion of Python objects to R:
 
 ```python
@@ -293,7 +293,7 @@ its device will be used. Otherwise alternatives will be tried.
 ### Options for graphics device
 
 Graphics devices, selected from a generic names when the case (see above),
-may havee options. These options can be specific to each graphics device.
+may have options. These options can be specific to each graphics device.
 
 **note: this is prefixed with an underscore to indicate that the API is
 subject to changes.**
@@ -308,4 +308,3 @@ to change the default width:
     .width
 ) = 10
 ```
-

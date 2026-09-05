@@ -68,7 +68,7 @@ if False:
 ```
 
 The function `rl` creates unevaluated R language objects, which
-are then consummed by the `dplyr` function, just like it would be
+are then consumed by the `dplyr` function, just like it would be
 happening when using `dplyr` in R itself. This means that
 when writing `mean(powertoweight)` the R function `mean()` is used.
 
@@ -183,7 +183,7 @@ The conversion rules in rpy2 make the above easily applicable to pandas data fra
 completing the "lexical loan" of the dplyr vocabulary from R.
 
 
-```python 
+```python
 from rpy2.robjects import pandas2ri
 from rpy2.robjects import default_converter
 

@@ -319,7 +319,7 @@ class Converter(object):
 
         >>> with conversion_rules.context() as cv:
         ...     # Do something while using those conversion_rules.
-        >>> # Do something else whith the earlier conversion rules restored.
+        >>> # Do something else with the earlier conversion rules restored.
 
         The conversion context is a *copy* of the set of conversion rules.
         Any modification to those rules will be local to it.

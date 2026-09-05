@@ -82,7 +82,7 @@ Since we did modify an actual R dataset for the session, we should restore it:
 >>> ostatus_npnc[0, 0] = 50
 
 As we see, :meth:`numpy.asarray`: provides a way to build a *view* on the underlying
-R array, without making a copy. This will be of particular appeal to developpers whishing
+R array, without making a copy. This will be of particular appeal to developers whishing
 to mix :mod:`rpy2` and :mod:`numpy` code, with the :mod:`rpy2` objects or the :mod:`numpy` view passed to
 functions, or for interactive users much more familiar with the :mod:`numpy` syntax.
 
@@ -91,7 +91,7 @@ functions, or for interactive users much more familiar with the :mod:`numpy` syn
 
    The current interface is relying on the *__array_struct__* defined
    in numpy.
-   
+
    Python buffers, as defined in :pep:`3118`, is the way to the future,
    and rpy2 is already offering them... although as a (poorly documented)
    experimental feature.
@@ -106,7 +106,7 @@ use of a local converter is recommended: it makes limiting the use
 of conversion rules to code blocks of interest easier to achieve.
 
 .. code-block:: python
-   
+
    from rpy2.robjects import numpy2ri
    from rpy2.robjects import default_converter
 
@@ -153,7 +153,7 @@ An example of usage is:
 Low-level interface
 -------------------
 
-The :class:`rpy2.rinterface.SexpVector` objects are made to 
+The :class:`rpy2.rinterface.SexpVector` objects are made to
 behave like arrays, as defined in the Python package :mod:`numpy`.
 
 The functions :func:`numpy.array` and :func:`numpy.asarray` can
@@ -175,4 +175,3 @@ be used to construct `numpy` arrays:
 >>> rx[2]
 42
 >>>
-

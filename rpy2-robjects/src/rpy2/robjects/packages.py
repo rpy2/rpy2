@@ -279,7 +279,7 @@ STF = SignatureTranslatedFunction
 class SignatureTranslatedPackage(Package):
     """ R package in which the R functions had their signatures
     'translated' (that this the named parameters were made to
-    to conform Python's rules for vaiable names)."""
+    to conform Python's rules for variable names)."""
     def __fill_rpy2r__(self, on_conflict='fail'):
         (super(SignatureTranslatedPackage, self)
          .__fill_rpy2r__(on_conflict=on_conflict))
@@ -371,12 +371,12 @@ class WeakPackage(Package):
 
 
 class LibraryError(ImportError):
-    """ Error occuring when importing an R library """
+    """ Error occurring when importing an R library """
     pass
 
 
 class PackageNotInstalledError(LibraryError):
-    """ Error occuring because the R package to import is not installed."""
+    """ Error occurring because the R package to import is not installed."""
     pass
 
 
@@ -450,7 +450,7 @@ def importr(name: str,
     - signature_translation: (True or False)
 
     - suppress_message: Suppress messages R usually writes on the console
-      (defaut: True)
+      (default: True)
 
     - on_conflict: 'fail' or 'warn' (default: 'fail')
 
