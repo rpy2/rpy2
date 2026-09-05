@@ -18,14 +18,14 @@ from _cffi_backend import FFI  # type: ignore
 
 logger = logging.getLogger(__name__)
 # Preserve cdata allocated by cffi from garbage collection.
-__cffi_protected = {}
+__cffi_protected: typing.Dict[str, typing.Any] = {}
 ffi = openrlib.ffi
 
 # TODO: How can I reliably get MAX_INT from limits.h ?
 _MAX_INT: int = 2**32-1
 
 _R_PRESERVED = dict()  # type: typing.Dict[int, int]
-_PY_PASSENGER = dict()
+_PY_PASSENGER: typing.Dict[int, typing.Any] = dict()
 
 FFI_MODE = ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
 
