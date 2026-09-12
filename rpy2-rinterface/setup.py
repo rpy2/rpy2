@@ -52,7 +52,7 @@ spec.loader.exec_module(situation)
 PACKAGE_NAME = 'rpy2'
 package_prefix='src'
 
-R_MIN_VERSION = (3, 5)
+R_MIN_VERSION = (4, 5)
 
 def cmp_version(x, y):
     if (x[0] < y[0]):
