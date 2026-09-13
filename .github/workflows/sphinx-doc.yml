@@ -36,6 +36,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install 'rpy2-rinterface/[doc]'
         pip install 'rpy2-robjects/[doc]'
+        python -m ipykernel install --user --name rpy2-doc-kernel --display-name "rpy2-doc-kernel"
     - name: Install R dependencies
       uses: r-lib/actions/setup-r-dependencies@v2
       with:
@@ -62,7 +63,7 @@ jobs:
         export LD_LIBRARY_PATH=$(python -m rpy2.situation LD_LIBRARY_PATH):${LD_LIBRARY_PATH}
         python -m rpy2.situation
         cd doc
-        make notebooks
+        make notebooks JUPYTER_KERNEL=rpy2-doc-kernel
         make html
     - name: Archive documentation
       uses: actions/upload-artifact@v4
