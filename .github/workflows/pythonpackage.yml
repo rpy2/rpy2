@@ -121,11 +121,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.9, "3.10", "3.11", "3.12", "3.13", "3.14"]
-        r-version: ["4.4", release]
+        r-version: ["4.5", release]
         os: ["windows-latest", ubuntu-latest, macos-15]
-        exclude:
-          - os: "macos-15"
-            r-version: "4.4"
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
