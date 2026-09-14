@@ -40,8 +40,8 @@ This is done with the function :meth:`initr`.
 
 >>> rinterface.initr()
 
-Initialization should only be performed once. 
-To avoid unpredictable results when using the embedded R, 
+Initialization should only be performed once.
+To avoid unpredictable results when using the embedded R,
 subsequent calls to :func:`initr` will not have any effect.
 
 The functions :func:`rpy2.rinterface_lib.embedded.get_initoptions` and
@@ -58,7 +58,7 @@ in the module variable `_options`.
    If calling :func:`initr` returns an error stating that
    :envvar:`R_HOME` is not defined, you should either have the :program:`R` executable in
    your path (:envvar:`PATH` on unix-alikes, or :envvar:`Path` on Microsoft Windows) or
-   have the environment variable :envvar:`R_HOME` defined. 
+   have the environment variable :envvar:`R_HOME` defined.
 
    Should the initialization fail, a mismatch between the version of the R
    rpy2 was compiled against and the R rpy2 is run with should be investigated.
@@ -79,7 +79,7 @@ carefully, if at all.
 
 .. note::
 
-   When writing a GUI for R, a developper may want to either prevent a user
+   When writing a GUI for R, a developer may want to either prevent a user
    to call :program:`R` `quit()`, or ensure that specific code is executed
    before terminating R (for example a confirmation dialog window
    "do you really want to terminate ?").
@@ -98,7 +98,7 @@ to data stored and administered in the R space.
 R variables exist within an embedded R workspace, and can be accessed
 from Python through their python object representations.
 
-We distinguish two kinds of R objects: named objects and anonymous objects. 
+We distinguish two kinds of R objects: named objects and anonymous objects.
 Named objects have an associated symbol in the R workspace (a "variable name")
 while anonymous objects don't, but are protected from garbage collection on the R side
 for as long as they are used on the Python side.
@@ -144,9 +144,9 @@ The library is said to be attached to the current search path.
 The base package has a namespace (`baseenv`), that can be accessed as an environment.
 
 .. note::
-   
+
    Depending on what is in `globalenv` and on the attached packages, base
-   objects can be masked when starting the search from `globalenv`. 
+   objects can be masked when starting the search from `globalenv`.
    Use `baseenv`
    when you want to be sure to access a function you know to be
    in the base namespace.
@@ -164,8 +164,8 @@ For example:
 
 >>> x = rinterface.IntVector((1,2,3))
 
-creates a fully usable R vector, but it does not have an associtated
-R symbol (it is in memory, but cannot be called by name fomr R). It is 
+creates a fully usable R vector, but it does not have an associated
+R symbol (it is in memory, but cannot be called by name from R). It is
 also protected from garbage collection until, until
 `x` is deleted and the Python garbage collector destroys `x`.
 
@@ -187,8 +187,8 @@ but copies of objects are nevertheless frequent. This can remain unnoticed
 by a user until large objects are in use or a large number of modification
 of objects are performed, in which case performance issues may appear.
 An infamous example is when the column names for a matrix are changed,
-bringing a system to its knees when the matrix is very large, 
-as the whole matrix ends up being copied. 
+bringing a system to its knees when the matrix is very large,
+as the whole matrix ends up being copied.
 
 On the contrary, Python is using pointer objects passed around
 through function calls, and since :mod:`rpy2`, is a Python-to-R interface
@@ -208,7 +208,7 @@ With R, renaming a column is like:
    colnames(m)[i] <- "foo"
 
 With :mod:`rpy2.rinterface`:
-   
+
 .. code-block:: python
 
    # import and initialize
@@ -235,7 +235,7 @@ Now we can check that the column names
 And rename the third column (remembering that R vectors are 1-indexed
 while Python sequences are 0-indexed).
 
->>> i = 3-1   
+>>> i = 3-1
 >>> rename_col_i(m, i, ri.StrSexpVector(("foo", )))
 >>> tuple(m.do_slot("dimnames")[1])
 ('a', 'b', 'foo', 'd', 'e')
@@ -263,8 +263,8 @@ The resulting expression is a nested list of R statements.
 
 The R code *1 + 2* translates to an expression of length 3:
 *+(1, 2)*, that is a call to the function *+* (or rather the symbol associated
-with the function) with the arguments *1* and *2*. 
- 
+with the function) with the arguments *1* and *2*.
+
 >>> expression[0][0].typeof
 <RTYPES.SYMSXP: 1>
 >>> tuple(expression[0][1])
@@ -294,12 +294,12 @@ This means that the use of callback functions as passed as parameters
 is not seldom,
 and this also means that the Python programmer has to either
 be able write R code for functions as arguments, or have a way
-to pass Python functions to R as genuine R functions. 
+to pass Python functions to R as genuine R functions.
 That last option is becoming possible, in other words one can
 write a Python function and expose it to R in such a way that
 the embedded R engine can use as a regular R function.
 
-As an example, let's consider the R function 
+As an example, let's consider the R function
 *optim()* that looks for optimal parameters for a given cost function.
 The cost function should be passed in the call to *optim()* as it will be
 repeatedly called as the parameter space is explored, and only Python
@@ -323,13 +323,13 @@ coding skills are necessary as the code below demonstrates it.
    # starting parameters
    start_params = FloatVector((-1.2, 1))
 
-   # call R's optim() with our cost funtion
+   # call R's optim() with our cost function
    res = stats.optim(start_params, cost_f)
 
 For convenience, the code example uses the higher-level interface
 robjects whenever possible.
 
-The lower-level function :func:`rternalize` will take an arbitray
+The lower-level function :func:`rternalize` will take an arbitrary
 Python function and return an :class:`rinterface.SexpClosure` instance,
 that is a object that can be used by R as a function.
 
@@ -339,7 +339,7 @@ that is a object that can be used by R as a function.
 Interactive features
 ====================
 
-The embedded R started from :mod:`rpy2` is interactive by default, which 
+The embedded R started from :mod:`rpy2` is interactive by default, which
 means that a number of interactive features present when working
 in an interactive R console will be available for use.
 
@@ -352,7 +352,7 @@ differently when run interactively compared to when run in the so-called
 
    However, interactive use may mean the ability to periodically check
    and process events. This is for example the case with interactive
-   graphics devices or with the HTML-based help system 
+   graphics devices or with the HTML-based help system
    (see :ref:`rinterface-interactive-processevents`).
 
 
@@ -444,7 +444,7 @@ The class :class:`Sexp` is the base class for all R objects.
    .. attribute:: named
 
       :program:`R` does not count references for its object. This method
-      returns the `NAMED` value (an integer). 
+      returns the `NAMED` value (an integer).
       See the R-extensions manual for further details.
 
    .. attribute:: typeof
@@ -467,7 +467,7 @@ The class :class:`Sexp` is the base class for all R objects.
 
       R objects can be given attributes. In R, the function
       *attr* lets one access an object's attribute; it is
-      called :meth:`do_slot` in the C interface to R. 
+      called :meth:`do_slot` in the C interface to R.
 
       :param name: string
       :rtype: instance of :class:`Sexp`
@@ -481,7 +481,7 @@ The class :class:`Sexp` is the base class for all R objects.
 
    .. method:: do_slot_assign(name, value)
 
-      Assign value to the slot with the given name, creating the slot whenver
+      Assign value to the slot with the given name, creating the slot whenever
       not already existing.
 
       :param name: string
@@ -546,10 +546,10 @@ To use again the constant *pi*:
 
 The letters of the (western) alphabet are:
 
->>> letters = rinterface.globalenv.find('letters') 
+>>> letters = rinterface.globalenv.find('letters')
 >>> len(letters)
 26
->>> LETTERS = rinterface.globalenv.find('LETTERS') 
+>>> LETTERS = rinterface.globalenv.find('LETTERS')
 
 
 R types
@@ -563,7 +563,7 @@ some of them.
 .. inheritance-diagram:: rpy2.rinterface.SexpVector rpy2.rinterface.IntSexpVector rpy2.rinterface.FloatSexpVector rpy2.rinterface.ByteSexpVector rpy2.rinterface.ComplexSexpVector rpy2.rinterface.StrSexpVector rpy2.rinterface.ListSexpVector rpy2.rinterface.PairlistSexpVector rpy2.rinterface.ExprSexpVector rpy2.rinterface.LangSexpVector rpy2.rinterface.BoolSexpVector
    :parts: 1
    :caption: C-level R array objects
-	   
+
 .. index::
    pair: rinterface;indexing
 
@@ -572,14 +572,14 @@ Indexing
 
 The indexing is working like it would on regular `Python`
 tuples or lists.
-The indexing starts at 0 (zero), which differs from :program:`R`, 
+The indexing starts at 0 (zero), which differs from :program:`R`,
 where indexing start at 1 (one).
 
 .. note::
-   
+
    The *__getitem__* operator *[*
    is returning a Python scalar. Casting
-   an *SexpVector* into a list is only a matter 
+   an *SexpVector* into a list is only a matter
    of either iterating through it, or simply calling
    the constructor :func:`list`.
 
@@ -603,7 +603,7 @@ called `names`), and can be accessed as such:
 >>> [x for x in options_names]
 
 .. note::
-   
+
    Elements in a name vector do not have to be unique. A Python
    counterpart is provided as :class:`rpy2.rlike.container.TaggedList`.
 
@@ -627,9 +627,9 @@ through the slot named `dimnames`.
 .. _missing_values:
 
 .. note::
-   
+
    R also has the notion of missing parameters in function calls.
-   This is a separate concept, and more information about are given in 
+   This is a separate concept, and more information about are given in
    Section :ref:`rinterface-functions`.
 
 In R missing the symbol *NA* represents a missing value.
@@ -644,9 +644,9 @@ The type of NA is logical (boolean), and one can specify a different
 type with the symbols
 *NA_character_*, *NA_integer_*, *NA_real_*, and *NA_complex_*.
 
-In :mod:`rpy2.rinterface_lib.na_values`, the symbols can be accessed by through 
-:data:`NACharacter`, 
-:data:`NAInteger`, 
+In :mod:`rpy2.rinterface_lib.na_values`, the symbols can be accessed by through
+:data:`NACharacter`,
+:data:`NAInteger`,
 :data:`NAReal`.
 
 Those are singleton instance from respective *NA<something>Type* classes.
@@ -664,17 +664,17 @@ NA_integer_
 
 *NA* values can have operators implemented, but the results will then
 be missing values.
- 
+
 >>> rinterface.NA_Integer + 1
 NA_integer_
 >>> rinterface.NA_Integer * 10
 NA_integer_
 
 .. warning::
-   
+
    Python functions relying on C-level implementations might not be following
    the same rule for *NAs*.
-   
+
    >>> x = rinterface.IntSexpVector((1, rinterface.NA_Integer, 2))
    >>> sum(x)
    3
@@ -798,12 +798,12 @@ Removing an element can be done like one would do it for a Python :class:`dict`:
 0
 
 .. note::
-   
+
    Not all R environment are hash tables, and this may
    influence performances when doing repeated lookups.
 
 .. note::
-   
+
    A copy of the R object is made in the R space.
 
 :meth:`__iter__`
@@ -819,9 +819,9 @@ that contains R's base objects:
 
 
 .. warning::
-   
+
    In the current implementation the content of the environment
-   is evaluated only once, when the iterator is created. Adding 
+   is evaluated only once, when the iterator is created. Adding
    or removing elements to the environment will not update the iterator
    (this is a problem, that will be solved in the near future).
 
@@ -899,14 +899,14 @@ same way than `Python` object in modules are accessed.
 This is unfortunately not possible in a completely
 robust way: the dot character `.`
 can be used for symbol names in R (like pretty much any character), and
-this can make an exact correspondance between :program:`R` and `Python` names 
+this can make an exact correspondence between :program:`R` and `Python` names
 rather difficult.
 :mod:`rpy` uses transformation functions that translates `'.'` to `'_'` and back,
-but this can lead to complications since `'_'` can also be used for R symbols 
+but this can lead to complications since `'_'` can also be used for R symbols
 (although this is the approach taken for the high-level interface, see
 Section :ref:`robjects-packages`).
 
-There is a way to provide explict access to object in R packages, since
+There is a way to provide explicit access to object in R packages, since
 loaded packages can be considered as environments. To make it convenient
 to use, one can consider making a function such as the one below:
 
@@ -916,7 +916,7 @@ to use, one can consider making a function such as the one below:
        """ import an R package and return its environment """
        as_environment = rinterface.baseenv['as.environment']
        require = rinterface.baseenv['require']
-       require(rinterface.StrSexpVector(packname), 
+       require(rinterface.StrSexpVector(packname),
                quiet = rinterface.BoolSexpVector((True, )))
        packname = rinterface.StrSexpVector(('package:' + str(packname)))
        pack_env = as_environment(packname)
@@ -926,7 +926,7 @@ to use, one can consider making a function such as the one below:
 >>> class_env['knn']
 
 
-For example, we can reimplement in `Python` the :program:`R` function 
+For example, we can reimplement in `Python` the :program:`R` function
 returning the search path (`search`).
 
 .. code-block:: python
@@ -964,7 +964,7 @@ from.
                    retry = False
                else:
                    retry = True
-       return env       
+       return env
 
 
 >>> wherefrom('plot').do_slot('name')[0]
@@ -973,7 +973,7 @@ from.
 'package:utils'
 
 .. note::
-   
+
    Unfortunately this does not generalize to all cases: the base
    package does not have a name.
 
@@ -1002,7 +1002,7 @@ environment). That enclosing environment can be thought of as
 a context to the function.
 
 .. note::
-   
+
    Technically, the class :class:`SexpClosure` corresponds to the R
    types CLOSXP, BUILTINSXP, and SPECIALSXP, with only the first one
    (CLOSXP) being a closure.
@@ -1019,7 +1019,7 @@ Named arguments to an R function can be specified just the way
 they would be with any other regular Python function.
 
 >>> rnorm = rinterface.globalenv.find('rnorm')
->>> rnorm(rinterface.IntSexpVector([1, ]), 
+>>> rnorm(rinterface.IntSexpVector([1, ]),
           mean = rinterface.IntSexpVector([2, ]))[0]
 0.32796768001636134
 
@@ -1028,7 +1028,7 @@ to:
 
 * use the special syntax `**kwargs` on a dictionary with the named parameters
 
-* use the method :meth:`rcall`.  
+* use the method :meth:`rcall`.
 
 
 .. Index::
@@ -1036,7 +1036,7 @@ to:
 
 .. rubric:: Order for named parameters
 
-One point where function calls in R can differ from the ones in 
+One point where function calls in R can differ from the ones in
 Python is that
 all parameters in R are passed in the order they are in the call
 (no matter whether the parameter is named or not),
@@ -1074,7 +1074,7 @@ package *graphics*.
 
 .. rubric:: Missing parameters
 
-In R function calls can contain explicitely missing parameters.
+In R function calls can contain explicitly missing parameters.
 
 .. code-block:: rconsole
 
@@ -1123,7 +1123,7 @@ Object-Oriented programming in R exists in several flavours, and one
 of those is called `S4`.
 It has its own type at R's C-API level, and because of that specificity
 we defined a class. Beside that, the class does not provide much specific
-features (see the pydoc for the class below). 
+features (see the pydoc for the class below).
 
 An instance's attributes can be accessed through the parent
 class :class:`Sexp` method
@@ -1148,7 +1148,7 @@ to implement pointers in R.
 Let us consider the following simple example:
 
 .. code-block:: python
-   
+
    ep = rinterface.SexpExtPtr.from_pyobject('hohoho')
 
 The Python string is now encapsulated into an R external pointer, and visible as such
@@ -1181,7 +1181,7 @@ However, the rpy2 interface allows more than that since a programmer is able to 
 a Python function accessible to R has is was a function of its own. It is possible
 to define arbitrary Python data structures as well as functions or methods to operate
 on them, pass the data structure to R as an external pointer, and expose the functions
-and methods to R. 
+and methods to R.
 
 .. autoclass:: rpy2.rinterface.SexpExtPtr(obj)
    :show-inheritance:
@@ -1238,7 +1238,7 @@ Vector types
 ^^^^^^^^^^^^
 
 :const:`CPLXSXP`
-  Complex 
+  Complex
 
 :const:`INTSXP`
   Integer.
@@ -1294,4 +1294,3 @@ Types one should not meet
 
 :const:`PROMSXP`
   Promise.
-

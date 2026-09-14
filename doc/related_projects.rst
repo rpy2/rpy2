@@ -53,22 +53,22 @@ Other interactive environments
 
 * bpython: curse-based enhancement to the Python console
 
-* emacs: the Emacs text editor can be used to host a python session, 
+* emacs: the Emacs text editor can be used to host a python session,
   or an ipython session
 
 
-Embeddeding an R console
+Embedding an R console
 ------------------------
 
 Python can be used to develop full-fledged applications, including applications with
-a graphical user interface. 
+a graphical user interface.
 
-:mod:`rpy2` can be used to provide an R console embedded in such applications, 
+:mod:`rpy2` can be used to provide an R console embedded in such applications,
 or build an alternative R GUI.
 
 When offering an R console, the developer(s) may want to retain control on the
 the way interaction with R is handled, at the level of the console and for the
-base R functions targetting interactivity (see Section  :ref:`rinterface-callbacks`).
+base R functions targeting interactivity (see Section  :ref:`rinterface-callbacks`).
 
 The `RPyGTK project <http://code.google.com/p/rpygtk/>`_ demonstrates how
 :mod:`rpy2` can be used to implement a full-blown GUI for R using python.
@@ -85,14 +85,13 @@ tied to numpy structures. A custom interfacing with rpy2 is mentioned, but it ap
 the rest of the project.
 
 
-R-like data strucutures
+R-like data structures
 =======================
 
-R's data frames are extremely convient when manipulating data.
+R's data frames are extremely convenient when manipulating data.
 In :mod:`rpy2` the original R `data.frame` is represented by
 :class:`rpy2.robjects.vectors.DataFrame`, but the
 `pydataframe <http://code.google.com/p/pydataframe/>`_ project
 has a pure Python implementation of them (with a compatibility
 layer with :mod:`rpy2` providing a seamless transition
 whenever needed.
-

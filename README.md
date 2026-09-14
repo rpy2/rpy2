@@ -22,7 +22,7 @@ pip install rpy2
 # uv pip install rpy2
 ```
 
-The package has optional depencies providing
+The package has optional dependencies providing
 specific functionalities not otherwise required to use the rest of rpy2.
 
 For example, to be able to run the unit tests:
@@ -45,7 +45,7 @@ pip install 'rpy2[all]'
 ## Installation for rpy2 developers
 
 If a developer, the package can be installed from its source tree.
-`rpy2` is a namespace package with its consituting parts in different
+`rpy2` is a namespace package with its constitution parts in different
 "sub-packages".
 
 To install from the source tree, just enter:
@@ -68,7 +68,7 @@ pip install ./rpy2-rinterface'[all]' ./rpy2-robjects'[all]' '.[all]'
 ```
 
 `rpy2-rinterface` contains the binding to R's C API. Building from
-source require a compilation toolchain / developper tools installed,
+source require a compilation toolchain / developer tools installed,
 and you will have to figure out how to have them installed on your
 system by yourself. The CI pipeline builds binary wheels for Linux,
 MacOS, and Windows. Watching how things are set up there is pretty
@@ -125,4 +125,3 @@ documentation.
 RPy2 can be used under the terms of the GNU
 General Public License Version 2 or later (see the file
 gpl-2.0.txt). This is the very same license R itself is released under.
-

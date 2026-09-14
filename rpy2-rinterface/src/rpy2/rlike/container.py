@@ -41,7 +41,7 @@ class OrdDict(dict):
             c = c.items()
         elif isinstance(c, dict):
             # FIXME: allow instance from OrdDict ?
-            raise TypeError('A regular dictionnary does not ' +
+            raise TypeError('A regular dictionary does not ' +
                             'conserve the order of its keys.')
 
         super(OrdDict, self).__init__()
@@ -196,12 +196,12 @@ class NamedList:
     This structure is like a Python list to which optional
     names for each element in the list is added.
 
-    This cannot be an ordered dictionnary because the keys (names)
+    This cannot be an ordered dictionary because the keys (names)
     are not necessarily unique.
 
     :param seq: an iterable.
     :param names: optional sequence of names
-    :param tags: [deprecated] optional sequence of names 
+    :param tags: [deprecated] optional sequence of names
     """
 
     __list: List
@@ -274,7 +274,7 @@ class NamedList:
                       for obj in namesvalues)
         iter_values = (obj.value if isinstance(obj, NamedItem)
                        else obj[1]
-                       for obj in namesvalues)        
+                       for obj in namesvalues)
         return cls(iter_values, names=iter_names)
 
     def __getitem__(self, i: Union[int, slice]):
@@ -283,14 +283,14 @@ class NamedList:
                               names=self.__names[i])
         else:
             return self.__list[i]
-            
+
     def __setitem__(self, i: Union[int, slice],
                     y: 'Union[NamedList, NamedItem]'):
         if isinstance(i, slice):
             step = i.step if i.step else 1
             if isinstance(y, NamedList):
                 if len(y) != ((i.stop-i.start) // step):
-                    raise ValueError('Length mistmatch between slice and values.')
+                    raise ValueError('Length mismatch between slice and values.')
                 iter_i_name_value = zip(
                     range(i.start, i.stop, step),
                     y.names(),
@@ -300,7 +300,7 @@ class NamedList:
                 raise ValueError('y must be a NamedList when i is a slice.')
             for idx, name, value in iter_i_name_value:
                 self.__list[idx] = value
-                self.__names[idx] = name                
+                self.__names[idx] = name
         elif isinstance(i, int):
             if isinstance(y, NamedItem):
                 self.__list[i] = y.value
@@ -489,7 +489,7 @@ class NamedList:
         warnings.warn(
             'The attribute .tags is deprecated. '
             'Use .setname() instead.',
-            DeprecationWarning       
+            DeprecationWarning
         )
         self.names = names
 
@@ -505,7 +505,7 @@ class NamedList:
         """
         if isinstance(i, slice):
             if len(n) != ((i.stop-i.start) // i.step):
-                raise ValueError('Length mistmatch between slice and values.')
+                raise ValueError('Length mismatch between slice and values.')
             for idx, (name, value) in enumerate(
                     zip(
                         range(i.start, i.stop, i.step if i.step else 1),
@@ -520,7 +520,7 @@ class NamedList:
         warnings.warn(
             'The method settag() is deprecated. '
             'Use setname() instead.',
-            DeprecationWarning       
+            DeprecationWarning
         )
         self.setname(i, t)
 

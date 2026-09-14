@@ -10,7 +10,7 @@ The first of all environments is called the Global Environment,
 that can also be referred to as the R workspace.
 
 An R environment in RPy2 can be seen as a kind of Python
-dictionnary.
+dictionary.
 
 Assigning a value to a symbol in an environment has been
 made as simple as assigning a value to a key in a Python
@@ -44,12 +44,12 @@ An environment is also iter-able, returning all the symbols
 >>> [x for x in env]
 <a long list returned>
 
-.. note:: 
+.. note::
 
    Although there is a natural link between environment
    and R packages, one should consider using the convenience wrapper
    dedicated to model R packages (see :ref:`robjects-packages`).
-   
+
 .. autoclass:: rpy2.robjects.Environment(o=None)
    :show-inheritance:
    :members:
@@ -57,7 +57,7 @@ An environment is also iter-able, returning all the symbols
 Environments as (temporary) local contexts
 ------------------------------------------
 
-Environments are like nested boxes, each with an arbritrary number of
+Environments are like nested boxes, each with an arbitrary number of
 symbols (the objects names) bound to objects (the actual code or data
 associated with the symbol). The topmost environment is `globalenv`
 (`.GlobalEnv` in R).
@@ -74,7 +74,7 @@ To illustrate this, we have an R code that adds one to
 a value `y` it has to find somewhere in its evaluation context.
 
 >>> res = robjects.r('y + 1')
-RRuntimeError: Error in (function (expr, envir = parent.frame(), enclos = if (is.list(envir) ||  : 
+RRuntimeError: Error in (function (expr, envir = parent.frame(), enclos = if (is.list(envir) ||  :
   object 'y' not found
 
 Evaluating that code when no `y` can be found results in an
@@ -116,7 +116,7 @@ temporarily set evaluation contexts.
 
 
 The result is::
-  
+
 
   In local context a:
   [1] 3

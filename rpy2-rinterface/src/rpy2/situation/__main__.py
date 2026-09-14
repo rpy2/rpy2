@@ -25,7 +25,7 @@ if __name__ == '__main__':
                         default='WARNING',
                         help=('Verbosity level. Options are given by '
                               'increasing order of verbosity '
-                              '(defaut: %(default)s)'))
+                              '(default: %(default)s)'))
     args = parser.parse_args()
     logger.name = 'rpy2.situation'
     logger.setLevel(getattr(logging, args.verbose))

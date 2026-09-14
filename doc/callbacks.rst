@@ -4,7 +4,7 @@
 Callbacks
 *********
 
-The R C-API allows front-end developpers to customize R's interactive behavior
+The R C-API allows front-end developers to customize R's interactive behavior
 to their needs using callbacks, and :mod:`rpy2` is making those callbacks
 accessible with the ability to implement them in pure Python. In other words,
 :mod:`rpy2` makes it possible to implement a completely an R front-end such
@@ -37,9 +37,9 @@ Any Python function with the same signature can be used instead. For example:
    def  my_consoleread(prompt: str) -> str:
        custom_prompt = f'R is asking this: {promp}'
        return input(custom_prompt)
- 
+
    rpy2.rinterface_lib.callbacks.consoleread = my_consoleread
-   
+
 
 Write console
 -------------
@@ -136,12 +136,12 @@ Clean up
 
 When asked to terminate, through either its terminal console
 win32 or quartz GUI front-end, *R* will perform a cleanup operation
-at the begining of which whether the user wants to save the workspace
+at the beginning of which whether the user wants to save the workspace
 or not.
 
 What is happening during that cleaning step can be specified through
 a callback function that will take three parameters *saveact*, *status*,
-and *runlast*, return of 1 (save the workspace), 
+and *runlast*, return of 1 (save the workspace),
 0 (do not save the workspace), and None (cancel the exit/cleanup, raising
 an :class:`RRuntimeError`).
 

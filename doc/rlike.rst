@@ -20,7 +20,7 @@ context, that is without an embedded R running.
 Containers
 ==========
 
-The module contains data collection-type data structures. 
+The module contains data collection-type data structures.
 :class:`OrdDict` and :class:`TaggedList` are structures
 with which contained items/elements can be tagged.
 
@@ -36,11 +36,11 @@ OrdDict
 --------
 
 The :class:`OrdDict` proposes an implementation of what is
-sometimes referred to in Python as an ordered dictionnary, with a
+sometimes referred to in Python as an ordered dictionary, with a
 particularity: a key ``None`` means that, although an item has a rank
 and can be retrieved from that rank, it has no "name".
 
-In the hope of simplifying its usage, the API for an ordered dictionnary
+In the hope of simplifying its usage, the API for an ordered dictionary
 in :pep:`372` was implemented. An example of usage is:
 
 >>> x = (('a', 123), ('b', 456), ('c', 789))
@@ -146,7 +146,7 @@ Much of the R-style indexing can be achieved with Python's list comprehension:
 In `R`, negative indexes mean that values should be excluded. Again,
 list comprehension can be used (although this is not the most efficient way):
 
->>> l = ('a', 'b', 'c') 
+>>> l = ('a', 'b', 'c')
 >>> l_i = (-1, -2)
 >>> [x for i, x in enumerate(l) if -i not in l_i]
 ['a']

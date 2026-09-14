@@ -7,7 +7,7 @@ Graphics
 Introduction
 ============
 
-This section shows how to make R graphics from rpy2, 
+This section shows how to make R graphics from rpy2,
 using some of the different graphics systems available to R users.
 
 The purpose of this section is to get users going, and be able to figure out
@@ -20,7 +20,7 @@ Graphical devices
 -----------------
 
 With `R`, all graphics are plotted into a so-called graphical device.
-Graphical devices can be interactive, like for example `X11`, 
+Graphical devices can be interactive, like for example `X11`,
 or non-interactive, like `png` or `pdf`. Non-interactive devices
 appear to be files. It is possible to create custom graphical devices
 from Python/rpy2, but this an advanced topic (see :ref:`graphicaldevices-custom`).
@@ -43,7 +43,7 @@ grDevices*. Example with the R functions *png* and *dev.off*:
    grdevices = importr('grDevices')
 
    grdevices.png(file="path/to/file.png", width=512, height=512)
-   # plotting code here   
+   # plotting code here
    grdevices.dev_off()
 
 
@@ -52,7 +52,7 @@ can be used to access an object known to belong to that R packages, e.g.:
 
 >>> palette = grdevices.palette()
 >>> print(palette)
-[1] "black"   "red"     "green3"  "blue"    "cyan"    "magenta" "yellow" 
+[1] "black"   "red"     "green3"  "blue"    "cyan"    "magenta" "yellow"
 [8] "gray"
 
 
@@ -125,7 +125,7 @@ color-coding.
 .. image:: _static/graphics_lattice_xyplot_2.png
    :scale: 50
 
-An alternative to color-coding is to have 
+An alternative to color-coding is to have
 points is different *panels*. In lattice,
 this done by specifying it in the formula.
 
@@ -151,7 +151,7 @@ Box plot
 Other plots
 -----------
 
-The R package lattice contains a number of other plots, which unfortunately cannot all be detailled here.
+The R package lattice contains a number of other plots, which unfortunately cannot all be detailed here.
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- wireframe1-begin
@@ -186,7 +186,7 @@ to build plots. Obviously, the *R* package *ggplot2* is expected to be installed
 used from *rpy2*.
 
 .. _ggplot2 website: http://had.co.nz/ggplot2/
- 
+
 The package is using the *grid* lower-level plotting infrastructure, that can be accessed
 through the module :mod:`rpy2.robjects.lib.grid`. Whenever separate plots on the same device,
 or arbitrary graphical elements overlaid, or significant plot customization, or editing,
@@ -217,7 +217,7 @@ Plot
 .. image:: _static/graphics_ggplot2mtcars.png
    :scale: 50
 
-Aesthethics mapping
+Aesthetics mapping
 ^^^^^^^^^^^^^^^^^^^
 
 An important concept for the grammar of graphics is the
@@ -232,7 +232,7 @@ the constructor for the :class:`AesString`).
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2mtcarscolcyl-begin
    :end-before: #-- ggplot2mtcarscolcyl-end
-   
+
 .. image:: _static/graphics_ggplot2mtcarscolcyl.png
    :scale: 50
 
@@ -242,7 +242,7 @@ also be mapped to a variable:
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2aescolsize-begin
    :end-before: #-- ggplot2aescolsize-end
-   
+
 .. image:: _static/graphics_ggplot2aescolsize.png
    :scale: 50
 
@@ -260,14 +260,14 @@ an histogram:
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2geomhistogram-begin
    :end-before: #-- ggplot2geomhistogram-end
-   
+
 .. image:: _static/graphics_ggplot2geomhistogram.png
    :scale: 50
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2geomhistogramfillcyl-begin
    :end-before: #-- ggplot2geomhistogramfillcyl-end
-   
+
 .. image:: _static/graphics_ggplot2geomhistogramfillcyl.png
    :scale: 50
 
@@ -280,7 +280,7 @@ can be in better.
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2geomfreqpolyfillcyl-begin
    :end-before: #-- ggplot2geomfreqpolyfillcyl-end
-   
+
 .. image:: _static/graphics_ggplot2geomfreqpolyfillcyl.png
    :scale: 50
 
@@ -317,7 +317,7 @@ Box plot:
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2geomboxplot-begin
    :end-before: #-- ggplot2geomboxplot-end
-   
+
 .. image:: _static/graphics_ggplot2geomboxplot.png
    :scale: 50
 
@@ -329,7 +329,7 @@ on location and spread.
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2aescolboxplot-begin
    :end-before: #-- ggplot2aescolboxplot-end
-   
+
 .. image:: _static/graphics_ggplot2aescolboxplot.png
    :scale: 50
 
@@ -341,7 +341,7 @@ Models fitted to the data are also easy to add to a plot:
    :start-after: #-- ggplot2addsmooth-begin
    :end-before: #-- ggplot2addsmooth-end
 
-   
+
 .. image:: _static/graphics_ggplot2addsmooth.png
    :scale: 50
 
@@ -359,7 +359,7 @@ The constructor for :class:`GeomSmooth` also accepts a parameter
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2smoothbycyl-begin
    :end-before: #-- ggplot2smoothbycyl-end
-   
+
 .. image:: _static/graphics_ggplot2smoothbycyl.png
    :scale: 50
 
@@ -372,7 +372,7 @@ only a matter of specifying it in the :class:`AesString` mapping.
    :start-after: #-- ggplot2smoothbycylwithcolours-begin
    :end-before: #-- ggplot2smoothbycylwithcolours-end
 
-   
+
 .. image:: _static/graphics_ggplot2_smoothbycylwithcolours.png
    :scale: 50
 
@@ -387,7 +387,7 @@ can be added to the axis of a regular scatterplot:
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2geompointandrug-begin
    :end-before: #-- ggplot2geompointandrug-end
-   
+
 .. image:: _static/graphics_ggplot2geompointandrug.png
    :scale: 50
 
@@ -396,7 +396,7 @@ can be added to the axis of a regular scatterplot:
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2geompointdensity2d-begin
    :end-before: #-- ggplot2geompointdensity2d-end
-   
+
 .. image:: _static/graphics_ggplot2geompointdensity2d.png
    :scale: 50
 
@@ -407,7 +407,7 @@ example below:
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2mappolygon-begin
    :end-before: #-- ggplot2mappolygon-end
-   
+
 .. image:: _static/graphics_ggplot2map_polygon.png
    :scale: 50
 
@@ -429,9 +429,9 @@ A common transformation is the log-transform of the coordinates.
    :scale: 50
 
 
-.. note:: 
+.. note::
 
-   The red square is an example of adding graphical 
+   The red square is an example of adding graphical
    elements to a ggplot2 figure.
 
    .. literalinclude:: _static/demos/graphics.py
@@ -443,20 +443,20 @@ Facets
 ^^^^^^
 
 Splitting the data into panels, in a similar fashion to what we did
-with *lattice*, is now a matter of adding *facets*. 
+with *lattice*, is now a matter of adding *facets*.
 A central concept to *ggplot2* is that plot are made of added
 graphical elements, and adding specifications such as "I want my data
 to be split in panel" is then a matter of adding that information
 to an existing plot.
 
-For example, splitting the plots on the data in column *cyl* 
+For example, splitting the plots on the data in column *cyl*
 is still simply done by adding a :class:`FacetGrid`.
 
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- ggplot2smoothbycylfacetcyl-begin
    :end-before: #-- ggplot2smoothbycylfacetcyl-end
 
-   
+
 .. image:: _static/graphics_ggplot2smoothbycylfacetcyl.png
    :scale: 50
 
@@ -468,7 +468,7 @@ used the grammar of graphics) are still specified the usual way.
    :start-after: #-- ggplot2histogramfacetcyl-begin
    :end-before: #-- ggplot2histogramfacetcyl-end
 
-   
+
 .. image:: _static/graphics_ggplot2histogramfacetcyl.png
    :scale: 50
 
@@ -476,7 +476,7 @@ used the grammar of graphics) are still specified the usual way.
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- qplot4-begin
    :end-before: #-- qplot4-end
-   
+
 .. image:: _static/graphics_ggplot2_qplot_4.png
    :scale: 50
 
@@ -485,7 +485,7 @@ used the grammar of graphics) are still specified the usual way.
    :start-after: #-- qplot3addline-begin
    :end-before: #-- qplot3addline-end
 
-   
+
 .. image:: _static/graphics_ggplot2_qplot_5.png
    :scale: 50
 
@@ -495,7 +495,7 @@ used the grammar of graphics) are still specified the usual way.
    :start-after: #-- ggplot2smoothblue-begin
    :end-before: #-- ggplot2smoothblue-end
 
-   
+
 .. image:: _static/graphics_ggplot2smoothblue.png
    :scale: 50
 
@@ -504,7 +504,7 @@ used the grammar of graphics) are still specified the usual way.
    :start-after: #-- ggplot2smoothblue-begin
    :end-before: #-- ggplot2smoothblue-end
 
-   
+
 .. image:: _static/graphics_ggplot2smoothblue.png
    :scale: 50
 
@@ -532,7 +532,7 @@ wrapper code a very minimal effort in many cases:
    `stat_quantile`. The Python callable mapping the R constructor
    is then the class method :meth:`new`. The complete implementation
    for `stat_quantile` is then:
-   
+
    .. code-block:: python
 
       from rpy2.robjects.packages import importr
@@ -569,7 +569,7 @@ Package *grid*
 ==============
 
 The *grid* package is the underlying plotting environment for *lattice*
-and *ggplot2* figures. In few words, it consists in pushing and poping systems
+and *ggplot2* figures. In few words, it consists in pushing and popping systems
 of coordinates (*viewports*) into a stack, and plotting graphical elements into them.
 The system can be thought of as a scene graph, with each *viewport* a node in
 the graph.
@@ -598,7 +598,7 @@ Example:
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- grid-begin
    :end-before: #-- grid-end
-   
+
 .. image:: _static/graphics_grid.png
    :scale: 50
 
@@ -609,7 +609,7 @@ Custom ggplot2 layout with grid
 .. literalinclude:: _static/demos/graphics.py
    :start-after: #-- gridwithggplot2-begin
    :end-before: #-- gridwithggplot2-end
-   
+
 .. image:: _static/graphics_ggplot2withgrid.png
    :scale: 50
 
@@ -640,6 +640,3 @@ Class diagram
 
 .. inheritance-diagram:: rpy2.robjects.lib.grid
    :parts: 1
-
-
-

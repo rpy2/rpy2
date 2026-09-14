@@ -81,7 +81,7 @@ def c_preprocess(csource, definitions={}, rownum=0):
 
     Args:
     - csource: iterator C source code
-    - definitions: a mapping (e.g., set or dict contaning
+    - definitions: a mapping (e.g., set or dict containing
       which "names" are defined)
 
     Returns:

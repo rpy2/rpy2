@@ -3,7 +3,7 @@
 Memory management and garbage collection
 ----------------------------------------
 
-The tracking of an R object (:c:type:`SEXP` in R's C-API) 
+The tracking of an R object (:c:type:`SEXP` in R's C-API)
 differs from Python as it does not involve reference counting.
 It is using at attribute NAMED (more on this below),
 and only considers for collection objects that are not preserved by
@@ -71,12 +71,12 @@ garbage collection can is also available.
    Binding the rpy2 object to a new Python symbol will not increase the count
    (because Python knows that the two objects are the same, and R has not been
    involved in that):
-   
+
    >>> y = x
    >>> [elt[1] for elt in ri.protected_rids() if elt[0]==x.rid]
    [1]
 
-   On the other hand, explictly wrapping again the R object through an rpy2
+   On the other hand, explicitly wrapping again the R object through an rpy2
    constructor will increase the count by one:
 
    >>> z = ri.IntSexpVector(x)
@@ -97,7 +97,7 @@ garbage collection can is also available.
 To achieve this, and keep close to the pass-by-reference approach in Python,
 the :c:type:`SexpObject` for a given R object is not part of a Python object
 representing it. The Python object only holds a reference to it,
-and each time a Python object pointing to a given R object 
+and each time a Python object pointing to a given R object
 (identified by its :c:type:`SEXP`) is created the rpy counter for it is
 incremented.
 
@@ -107,11 +107,11 @@ object to which a :c:type:`SexpObject` pointer is appended.
 .. code-block:: c
 
    typedef struct {
-       PyObject_HEAD 
+       PyObject_HEAD
        SexpObject *sObj;
    } PySexpObject;
 
-   
+
 The tracking of the capsule itself is what protects the
 object from garbage collection on either the R or the Python side.
 
@@ -141,11 +141,11 @@ At the C level, the `struct` :c:type:`SexpObject` is defined as:
 
 - a possible future reference count on the R side
   (currently unused)
-  
+
 - a pointer to the R :c:type:`SEXPREC`
 
 .. code-block:: c
-		
+
    typedef struct {
        Py_ssize_t pycount;
        int rcount;
@@ -166,12 +166,12 @@ it without writing any C code:
    pycapsule_getname=ctypes.pythonapi.PyCapsule_GetName
    pycapsule_getname.argtypes = [ctypes.py_object,]
    pycapsule_getname.restype=ctypes.c_char_p
-   
+
    # Python C API: return whether a Python objects is a valid capsule object
    pycapsule_isvalid=ctypes.pythonapi.PyCapsule_IsValid
    pycapsule_isvalid.argtypes=[ctypes.py_object, ctypes.c_char_p]
    pycapsule_isvalid.restype=ctypes.c_bool
-   
+
    # Python C API: return the C pointer
    pycapsule_getpointer=ctypes.pythonapi.PyCapsule_GetPointer
    pycapsule_getpointer.argtypes=[ctypes.py_object, ctypes.c_char_p]
@@ -193,17 +193,17 @@ it without writing any C code:
        return ctypes.cast(void_p, ctypes.POINTER(SexpObject).contents.sexp
 
 .. code-block:: python
-		
+
    from rpy2.rinterface import globalenv
    # Pointer to SEXPREC for the R Global Environment
    sexp=get_sexp(globalenv)
-      
+
 Changing the `SEXP` in :c:type:`SexpObject` this way is not advised because
 of the risk to confuse the object tracking in rpy2, and ultimately create a segfault.
 (I have not thought too long about this. May be the object tracking is more robust
 than it think. Just be warned.)
-   
-   
+
+
 R's NAMED
 ^^^^^^^^^
 
@@ -235,7 +235,6 @@ to a variable *mine* in the R globalenv namespace:
 >>> ri.globalenv["mine"].named
 2
 
-The *named* is 2 to indicate to :program:`R` that *mine* should be 
+The *named* is 2 to indicate to :program:`R` that *mine* should be
 copied if a modification of any sort is performed on the object. That copy
 will be local to the scope of the modification within R.
-

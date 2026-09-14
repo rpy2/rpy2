@@ -179,7 +179,7 @@ class SupportsSEXP(object, metaclass=abc.ABCMeta):
 # TODO: deprecate.
 def _findvar(symbol, r_environment):
     raise RuntimeError(
-        """This function is deprectated. Use "_getvar" instead.
+        """This function is deprecated. Use "_getvar" instead.
         Mind that the order of arguments changed.
         """)
 
@@ -205,7 +205,7 @@ def _exec_getvar(cdata):
 
 def findvar_in_frame(rho, symbol):
     raise RuntimeError(
-        """This function is deprectated. Use "getvar" instead.
+        """This function is deprecated. Use "getvar" instead.
         Mind that the order of arguments changed.
         """)
 

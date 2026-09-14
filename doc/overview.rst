@@ -44,7 +44,7 @@ unfortunately means there is not enough left in common to ensure compatibility.
 Installation
 ============
 
-	   
+
 Requirements
 ------------
 
@@ -56,12 +56,12 @@ versions to run rpy2 with.
 Software Versions
 ======== =====================================================================
  Python   >=3.9
- R        >=4.5 
+ R        >=4.5
 ======== =====================================================================
 
 Running Rpy2 will require compiled libraries for R, Python, and readline;
-building rpy2 will require the corresponding development headers 
-(check the documentation for more information about builing rpy2). 
+building rpy2 will require the corresponding development headers
+(check the documentation for more information about building rpy2).
 
 Alternative Python implementations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -123,7 +123,7 @@ Linux distribution have packaging systems, and rpy2 is present
 in a number of them, either as a pre-compiled package or a source
 package compiled on-the-fly.
 
-.. note:: 
+.. note::
 
    Those versions will often be older than the latest rpy2 release.
 
@@ -134,7 +134,7 @@ Gentoo.
 OS X (MacOS) precompiled binaries
 ---------------------------------
 
-rpy2 is in Macports, Homebrew, and Fink. Binary are now also availabe on pypi.
+rpy2 is in Macports, Homebrew, and Fink. Binary are now also available on pypi.
 
 
 .. index::
@@ -199,14 +199,14 @@ To install from a downloaded source archive `<rpy_package>`, do in a shell:
   tar -xzf <rpy_package>.tar.gz
   cd <rpy_package>
 
-  
+
   python setup.py build install
   # or
   pip install .
   # or (to install requirements to test
   pip install .[test]
 
-  
+
 
 This will build the package, guessing the R HOME from
 the R executable found in the `PATH`.
@@ -233,7 +233,7 @@ site for more details about what they are and how to install them.
 Test an installation
 --------------------
 
-An installation can be tested for functionalities, and whenever necessary 
+An installation can be tested for functionalities, and whenever necessary
 the different layers constituting the packages can be tested independently.
 
 .. code-block:: bash
@@ -300,7 +300,7 @@ any :class:`rpy2.robjects.Function` can be given any
 :class:`rpy2.rinterface.Sexp`. Because of R's functional basis,
 a container-like extension is also present.
 
-However, inheritance is not the only choice. Any custome class implementing
+However, inheritance is not the only choice. Any custom class implementing
 the interface :class:`rpy2.rinterface.SupportsSEXP` can integrate seamlessly
 and be used with the rest of rpy2.
 
@@ -333,7 +333,7 @@ Antony Lee,
 Kenneth Lyons,
 Mikolaj Magnuski,
 Gijs Molenaar,
-Walter Moreira, 
+Walter Moreira,
 Laurent Oget,
 Pablo Oliveira,
 John Owens,

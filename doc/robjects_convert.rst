@@ -101,7 +101,7 @@ or in the "R magic" used from `ipython` or `jupyter`.
        pass
 
    Consult the rest of the documentation for more information about conversions.
-   
+
 
 This system is designed to manage the conversion between the low level (`rinterface`-level)
 interface and an arbitrary Python-level representation those objects.
@@ -112,12 +112,12 @@ If one wanted to turn all Python :class:`tuple` objects
 into R `character` vectors (1D arrays of strings) before passing them to R the custom
 conversion function would make an `rinterface`-level R objects from the Python object.
 An implementation for this `py2rpy` function would look like:
- 
+
 .. code-block:: python
 
    from rpy2.rinterface import StrSexpVector
 
-   
+
    def tuple_str(tpl):
        res = StrSexpVector(tpl)
        return res
@@ -152,7 +152,7 @@ the class of the object to convert from. In our example, the Python class is :cl
 Our conversion function defined above can be registered in a converter as follows:
 
 .. code-block:: python
-   
+
    from rpy2.robjects.conversion import Converter
    seq_converter = Converter('sequence converter')
    seq_converter.py2rpy.register(tuple, tuple_str)
@@ -180,7 +180,7 @@ converter that adds the rule above to the default conversion rules in rpy2
 will look like:
 
 .. code-block:: python
-		
+
    from rpy2.robjects import default_converter
    conversion_rules = default_converter + seq_converter
 
@@ -195,15 +195,15 @@ defined in R's C-API), but class definitions in R often sit outside
 of structure types found at the C level. They are just a mere attribute of the R object
 that contains a list class names. For example, an R `data.frame` is a `VECSXP` at
 C-level (that is an R `list`), but it has an attribute `"class"` that contains `"data.frame"`.
-   
+
 .. note::
 
    Nothing would prevent someone to set the `"class"` attribute to `"data.frame"` to an R
    object of different type at C-level. For example, it is perfectly possible to write
    the following in R, and create an invalid data frame:
-   
+
    .. code-block:: r
-		   
+
       > x <- c(1, 2, 3)
       > str(x)
       int [1:3] 1 2 3
@@ -214,7 +214,7 @@ C-level (that is an R `list`), but it has an attribute `"class"` that contains `
       Warning message:
         In format.data.frame(x, trim = TRUE, drop0trailing = TRUE, ...) :
         corrupt data frame: columns will be truncated or padded with NAs
- 
+
 To allow a dispatch based name-specified classes in R, the rpy2 conversion system
 uses a secondary mechanism (the primary mechanism is the single dispatch-based one
 presented above).
@@ -226,7 +226,7 @@ a :class:`dict` where keys are :mod:`rpy2.rinterface` classes to wrap C-level R 
 values are instances of :class:`rpy2.robjects.conversion.NameClassMap`.
 
 For example, a conversion rule for R objects of class "lm" that are R lists at
-the C level (this is a real exemple - R's linear model fit objects are just that)
+the C level (this is a real example - R's linear model fit objects are just that)
 can be added to a converter with:
 
 .. code-block:: python
@@ -256,7 +256,7 @@ or locally in a Python `with` block.
    calling R functions to the next R functions) or errors (conversion cannot be guaranteed to
    be without loss, as concepts present in either language are not always able to survive
    a round trip).
-   
+
 As an example, we show how to write an alternative to rpy2 not knowing what to do with
 Python tuples.
 
@@ -303,7 +303,7 @@ default conversion scheme:
    Code in the :mod:`rpy2.robjects` will use whatever the active conversion rules are, but
    there are situations where the set of active conversion rules must be accessed. Whenever
    the case the conversion rules from the context manager can be named.
-	  
+
    .. code-block:: python
 
       from rpy2.robjects import default_converter
@@ -313,7 +313,7 @@ default conversion scheme:
           with default_converter.context() as local_converter:
 	      # `local_converter` is a rpy2.robjects.conversion.Converter
 	      # object.
-	      pass	  
+	      pass
 
     The converter returned by :meth:`rpy2.robjects.conversion.Converter.context` is
     a copy of the rules for the context.
@@ -325,7 +325,7 @@ default conversion scheme:
 	    assert local_converter != default_converter
 	    assert cv.py2rpy.registry != default_converter.py2rpy
 	    assert cv.rpy2py.registry != default_converter.rpy2py
-	    # The convertion rules are identical though.
+	    # The conversion rules are identical though.
 	    assert dict(cv.py2rpy.registry) == dict(default_converter.py2rpy.registry)
 	    assert dict(cv.rpy2py.registry) == dict(default_converter.rpy2py.registry)
 
@@ -341,7 +341,7 @@ of writing a new function `rpy2py` that handles this, as shown below:
 
    import rpy2.robjects as robjects
    from rpy2.rinterface import SexpVector
-   
+
    @robjects.conversion.rpy2py.register(SexpVector)
    def my_rpy2py(obj):
        if len(obj) == 1:
@@ -394,7 +394,7 @@ exercise for the reader.
    the first
    matching Python-defined class. For example, the R/S4 class `lmerMod` has a parent class
    `merMod` (defined in R S4). Let run the following example after the previous one.
-   
+
    .. code-block:: python
 
       class MER(robjects.RS4):
@@ -414,4 +414,4 @@ exercise for the reader.
           res4 = robjects.r('lmer(Reaction ~ Days + (Days | Subject), sleepstudy)')
 
    `res3` will be a `MER` instance: there is no mapping for the R/S4 class `lmerMod` but there
-   is a mapping for its R/S4 parent `merMod`. `res4` will be an `LMER` instance. 
+   is a mapping for its R/S4 parent `merMod`. `res4` will be an `LMER` instance.

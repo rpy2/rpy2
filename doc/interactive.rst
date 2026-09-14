@@ -50,7 +50,7 @@ Should one wish to stop processing the events:
 The processing can be resumed, stopped again, and this repeated *ad libitum*.
 
 The frequency with which the processing of R events is performed can be roughly
-controlled. The thread is put to sleep for an arbitray duration between
+controlled. The thread is put to sleep for an arbitrary duration between
 each processing of R events.
 
 >>> process_revents.EventProcessor.interval
@@ -71,10 +71,10 @@ active and will be taken into account at the next sleep cycle.
 Utilities for interactive work
 ==============================
 
-.. note:: 
+.. note::
 
    This module contains a number of experimental features, some of
-   them no longer necessary since the "R magic" extension for ipython. 
+   them no longer necessary since the "R magic" extension for ipython.
    They are becoming deprecated, and will removed from the code base
    in future versions.
 
@@ -93,7 +93,7 @@ help strings or function signatures have made those valuable tools.
 The package :mod:`rpy2.interactive` aims at interactive users, but can be used
 in non-interactive code as well. It is trading flexibility
 or performances for ease-of-use.
- 
+
 >>> import rpy2.interactive as r
 >>> import rpy2.interactive.packages # this can take few seconds
 >>> v = r.IntVector((1,2,3))
@@ -138,7 +138,7 @@ R Packages can be:
 
 - available in R repositories (public or private)
 
-- installed 
+- installed
 
 - attached (loaded)
 
@@ -153,7 +153,7 @@ We start with the loading of R packages since this is a very common
 operation in R, and since R is typically distributed
 with *recommended* packages one can immediately start playing with.
 
-Loading installed R packages can be done through the function :func:`importr`. 
+Loading installed R packages can be done through the function :func:`importr`.
 
 >>> import rpy2.interactive as r
 >>> import rpy2.interactive.packages # this can take few seconds
@@ -188,7 +188,7 @@ a graphical example:
 .. code-block:: python
 
    r.packages.graphics.coplot(r.Formula('Time ~ conc | Wt'),
-                              r.packages.datasets.Theoph) 
+                              r.packages.datasets.Theoph)
 
 
 
@@ -226,10 +226,10 @@ package per row (there are many packages in the default CRAN repository).
       bioc_rooturl = "http://www.bioconductor.org/packages"
       bioc_version = "2.7"
       bioc_sections = ("bioc", "data/annotation", "data/experiment", "extra")
-   
-      repos = r.vectors.StrVector(["/".join((bioc_rooturl, bioc_version, x)) for x in bioc_sections])   
 
-      m_bioc = rlib.utils.available_packages(contriburl = r.packages.utils.contrib_url(repos))   
+      repos = r.vectors.StrVector(["/".join((bioc_rooturl, bioc_version, x)) for x in bioc_sections])
+
+      m_bioc = rlib.utils.available_packages(contriburl = r.packages.utils.contrib_url(repos))
 
 
 
@@ -251,5 +251,3 @@ Installing packages
 
 Once a package is installed it is available for future use without having
 the need to install it again (unless a different version of R is used).
-
-

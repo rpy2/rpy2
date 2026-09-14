@@ -13,17 +13,17 @@ Unlike `Python` docstrings, where the documentation string
 can be found in the special attribute :attr:`__doc__`,
 the R documentation lives outside objects in documentation pages.
 Each documentation page is associated at minimum one `alias`, aliases often
-corresponding to the name of an R object defined in a package 
-(function, dataset, etc...). 
+corresponding to the name of an R object defined in a package
+(function, dataset, etc...).
 
-For example, querying documentation for the R function `sum` 
+For example, querying documentation for the R function `sum`
 becomes a matter of finding which documentation page has the alias `sum`,
 and retrieve that page.
 
 Querying on aliases
 -------------------
 
-When working with R, a frequent use case for using the documention
+When working with R, a frequent use case for using the documentation
 is to query on an alias (a function name, a dataset, or a class name)
 and retrieve the associated documentation.
 
@@ -32,7 +32,7 @@ is associated with only one page within the same package, it is well
 possible to have several packages defining a documentation page for the
 same alias.
 
-With rpy2's interface to the help system, an easy way to retrive
+With rpy2's interface to the help system, an easy way to retrieve
 pages associated with an alias is to
 use the function :func:`pages`, which returns a :class:`tuple`
 of :class:`Page` instances.
@@ -88,15 +88,12 @@ ils', 'value', 'section', 'references', 'seealso')
         directly or via the  Summary  group generic.
         For this to work properly, the arguments   should be
         unnamed, and dispatch is on the first argument.
- 
-        If  na.rm  is  FALSE  an  NA 
+
+        If  na.rm  is  FALSE  an  NA
         value in any of the arguments will cause
         a value of  NA  to be returned, otherwise
         NA  values are ignored.
- 
+
         Logical true values are regarded as one, false values as zero.
         For historical reasons,  NULL  is accepted and treated as if it
         were  integer(0) .
- 
-
-

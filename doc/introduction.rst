@@ -41,14 +41,14 @@ For the subpackages, an attribute `__version__` is available in addition to the 
    expected version.
 
    A utility module is included to report what rpy2's environment.
-   
+
    .. code-block:: bash
 
       python -m rpy2.situation
 
    If unable to run python from the command line, or unsure about about to do
    it, the same information can be obtained from a Python terminal (or notebook).
-   
+
    .. code-block:: python
 
       import rpy2.situation
@@ -71,7 +71,7 @@ R embedded in the current Python process:
 
    import rpy2.robjects as robjects
 
-   
+
 R packages
 ==========
 
@@ -105,7 +105,7 @@ and is exposing all R objects in that package as Python objects.
    will not be necessary in most of the cases, but when they do the
    documentation for :ref:`robjects-packages` should be consulted.
 
-   
+
 Installing packages
 -------------------
 
@@ -119,7 +119,7 @@ designed to meet all reasonable needs for a task or a project.
    but this subsection
    can be skipped if difficulties such as an absence of internet connection,
    an uncooperative proxy (or proxy maintainer),
-   or insufficient write priviledges to install
+   or insufficient write privileges to install
    the package are met.
 
 Downloading and installing R packages is usually performed by fetching
@@ -136,10 +136,10 @@ with:
 
    # import rpy2's package module
    import rpy2.robjects.packages as rpackages
-   
+
    # import R's utility package
    utils = rpackages.importr('utils')
-   
+
    # select a mirror for R packages
    utils.chooseCRANmirror(ind=1) # select the first mirror in the list
 
@@ -152,7 +152,7 @@ We are now ready to install packages using R's own function `install.package`:
 
    # R vector of strings
    from rpy2.robjects.vectors import StrVector
-   
+
    # Selectively install what needs to be install.
    # We are fancy, just because we can.
    names_to_install = [x for x in packnames if not rpackages.isinstalled(x)]
@@ -182,7 +182,7 @@ better integrated with Python, and easier to use.
 Getting R objects
 -----------------
 
-      
+
 The :meth:`__getitem__` method of :data:`rpy2.robjects.r`,
 gets the R object associated with a given symbol, just
 as typing that symbol name in the R console would do it
@@ -205,14 +205,14 @@ With :mod:`rpy2`:
 
    Under the hood, the variable `pi` is gotten by default from the
    R *base* package, unless an other variable with the name `pi` was
-   created in R's `.globalEnv`. 
-   
+   created in R's `.globalEnv`.
+
    Whenever one wishes to be specific about where the symbol
    should be looked for (which should be most of the time),
    it possible to wrap R packages in Python namespace objects
    (see :ref:`robjects-packages`).
-   
-   For more details on environments, see Section 
+
+   For more details on environments, see Section
    :ref:`robjects-environments`.
 
    Also, note that *pi* is not a scalar but a vector of length 1
@@ -247,7 +247,7 @@ With :mod:`rpy2`:
    The result is an R vector. The Section
    :ref:`introduction-vectors` below will provide explanation
    for the following behavior:
-   
+
    >>> piplus2 = robjects.r('pi') + 2
    >>> piplus2.r_repr()
    c(3.14159265358979, 2)
@@ -258,12 +258,12 @@ With :mod:`rpy2`:
 
 More complex strings are R expressions of arbitrary complexity,
 or even sequences of expressions (snippets of R code).
-Their evaluation is performed in what is known to R users as the 
+Their evaluation is performed in what is known to R users as the
 `Global Environment`, that is the place one starts at when in
 the R console. Whenever the `R` code creates variables, those
 variables are "located" in that `Global Environment` by default.
 
-For example, the string below returns the value 18.85. 
+For example, the string below returns the value 18.85.
 
 .. code-block:: r
 
@@ -273,7 +273,7 @@ For example, the string below returns the value 18.85.
                if (verbose) {
                    cat("I am calling f().\n")
                }
-               2 * pi * r 
+               2 * pi * r
            }
 	   # call the function `f` with argument value 3
            f(3)
@@ -289,7 +289,7 @@ it can be accessed with the `__getitem__` mechanism outlined above:
 
 >>> r_f = robjects.globalenv['f']
 >>> print(r_f.r_repr())
-function (r, verbose = FALSE) 
+function (r, verbose = FALSE)
 {
     if (verbose) {
         cat("I am calling f().\n")
@@ -297,7 +297,7 @@ function (r, verbose = FALSE)
     2 * pi * r
 }
 
-.. note:: 
+.. note::
 
    As shown earlier, an alternative way to get the function
    is to get it from the :class:`R` singleton
@@ -427,7 +427,7 @@ Help on a topic within a given package, or currently loaded packages
 ---------------------------------------------------------------------
 
 >>> from rpy2.robjects.packages import importr
->>> utils = importr("utils") 
+>>> utils = importr("utils")
 >>> help_doc = utils.help("help")
 >>> help_doc[0]
 '/where/R/is/installed/library/utils/help/help'
@@ -439,7 +439,7 @@ on the topic:
 [...long output...]
 
 .. warning::
-   
+
    The help message so produced is not a string returned to the console
    but is directly printed by R to the standard output. The call to
    :func:`str` only returns an empty string, and the reason for this is
@@ -524,7 +524,7 @@ The setup specific to ggplot2 is:
    :start-after: #-- ggplot2smoothbycylwithcolours-begin
    :end-before: #-- ggplot2smoothbycylwithcolours-end
 
-   
+
 .. image:: _static/graphics_ggplot2_smoothbycylwithcolours.png
    :scale: 50
 
@@ -591,36 +591,36 @@ function is returning in order to know how to extract information.
 When taking the results from the code above, one could go like:
 
 >>> print(lm_D9.rclass)
-[1] "lm" 
+[1] "lm"
 
 Here the resulting object is a list structure, as either inspecting
 the data structure or reading the R man pages for `lm` would tell us.
 Checking its element names is then trivial:
 
 >>> print(lm_D9.names)
- [1] "coefficients"  "residuals"     "effects"       "rank"         
- [5] "fitted.values" "assign"        "qr"            "df.residual"  
- [9] "contrasts"     "xlevels"       "call"          "terms"        
-[13] "model" 
+ [1] "coefficients"  "residuals"     "effects"       "rank"
+ [5] "fitted.values" "assign"        "qr"            "df.residual"
+ [9] "contrasts"     "xlevels"       "call"          "terms"
+[13] "model"
 
 And so is extracting a particular element:
 
 >>> print(lm_D9.rx2('coefficients'))
-(Intercept)    groupTrt 
-      5.032      -0.371 
+(Intercept)    groupTrt
+      5.032      -0.371
 
-or 
+or
 
 >>> print(lm_D9.rx('coefficients'))
 $coefficients
-(Intercept)    groupTrt 
-      5.032      -0.371 
+(Intercept)    groupTrt
+      5.032      -0.371
 
 More about extracting elements from vectors is available
 at :ref:`robjects-extracting`.
 
 
-   
+
 Principal component analysis
 ----------------------------
 
@@ -661,7 +661,7 @@ However, the same example can be made a little tidier
    m = base.matrix(stats.rnorm(100), ncol = 5)
    pca = stats.princomp(m)
    graphics.plot(pca, main = "Eigen values")
-   stats.biplot(pca, main = "biplot") 
+   stats.biplot(pca, main = "biplot")
 
 
 
@@ -676,7 +676,7 @@ Creating an R vector or matrix, and filling its cells using Python code
 
    base = importr('base')
 
-   # create a numerical matrix of size 100x10 filled with NAs 
+   # create a numerical matrix of size 100x10 filled with NAs
    m = base.matrix(NA_Real, nrow=100, ncol=10)
 
    # fill the matrix
@@ -692,4 +692,3 @@ One more example
 ----------------
 
 .. literalinclude:: _static/demos/example01.py
-

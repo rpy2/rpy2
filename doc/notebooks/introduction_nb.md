@@ -67,7 +67,7 @@ if not have_tutorial_packages:
     if len(packnames_to_install) > 0:
         utils.install_packages(StrVector(packnames_to_install))
 ```
-	   
+
 The code above can be part of the Python you distribute if you are relying
 on packages not distributed with
 R by default.
@@ -113,7 +113,7 @@ pi[0]
 <p>
    Under the hood, the variable `pi` is gotten by default from the
    R *base* package, unless an other variable with the name `pi` was
-   created in R's `.globalEnv`. 
+   created in R's `.globalEnv`.
 </p>
 <p>
    Whenever one wishes to be specific about where the symbol
@@ -122,7 +122,7 @@ pi[0]
    (see Section `robjects-packages`).
 </p>
 <p>
-   For more details on environments, see Section 
+   For more details on environments, see Section
    `robjects-environments`.
 </p>
 <p>
@@ -166,7 +166,7 @@ pi0plus2 = robjects.r('pi')[0] + 2
 print(pi0plus2)
 ```
 
-The evaluation is performed in what is known to R users as the 
+The evaluation is performed in what is known to R users as the
 `Global Environment`, that is the place one starts at when starting
 the R console. Whenever the `R` code creates variables, those
 variables are "located" in that `Global Environment` by default.
@@ -180,15 +180,15 @@ robjects.r('''
         if (verbose) {
             cat("I am calling f().\n")
         }
-        2 * pi * r 
+        2 * pi * r
         }
         f(3)
 ''')
 ```
 
-The expression above returns the value 18.85, 
-but first creates an R function `f`. 
-That function `f` is present in the R `Global Environement`, and can
+The expression above returns the value 18.85,
+but first creates an R function `f`.
+That function `f` is present in the R `Global Environment`, and can
 be accessed with the `__getitem__` mechanism outlined above:
 
 ```python
@@ -330,7 +330,7 @@ Help on a topic within a given package, or currently loaded packages
 ---------------------------------------------------------------------
 
 >>> from rpy2.robjects.packages import importr
->>> utils = importr("utils") 
+>>> utils = importr("utils")
 >>> help_doc = utils.help("help")
 >>> help_doc[0]
 '/where/R/is/installed/library/utils/help/help'
@@ -427,7 +427,7 @@ The setup specific to ggplot2 is:
    :start-after: #-- ggplot2smoothbycylwithcolours-begin
    :end-before: #-- ggplot2smoothbycylwithcolours-end
 
-   
+
 .. image:: _static/graphics_ggplot2_smoothbycylwithcolours.png
    :scale: 50
 
@@ -494,36 +494,36 @@ function is returning in order to know how to extract information.
 When taking the results from the code above, one could go like:
 
 >>> print(lm_D9.rclass)
-[1] "lm" 
+[1] "lm"
 
 Here the resulting object is a list structure, as either inspecting
 the data structure or reading the R man pages for `lm` would tell us.
 Checking its element names is then trivial:
 
 >>> print(lm_D9.names)
- [1] "coefficients"  "residuals"     "effects"       "rank"         
- [5] "fitted.values" "assign"        "qr"            "df.residual"  
- [9] "contrasts"     "xlevels"       "call"          "terms"        
-[13] "model" 
+ [1] "coefficients"  "residuals"     "effects"       "rank"
+ [5] "fitted.values" "assign"        "qr"            "df.residual"
+ [9] "contrasts"     "xlevels"       "call"          "terms"
+[13] "model"
 
 And so is extracting a particular element:
 
 >>> print(lm_D9.rx2('coefficients'))
-(Intercept)    groupTrt 
-      5.032      -0.371 
+(Intercept)    groupTrt
+      5.032      -0.371
 
-or 
+or
 
 >>> print(lm_D9.rx('coefficients'))
 $coefficients
-(Intercept)    groupTrt 
-      5.032      -0.371 
+(Intercept)    groupTrt
+      5.032      -0.371
 
 More about extracting elements from vectors is available
 at :ref:`robjects-extracting`.
 
 
-   
+
 Principal component analysis
 ----------------------------
 
@@ -564,7 +564,7 @@ However, the same example can be made a little tidier
    m = base.matrix(stats.rnorm(100), ncol = 5)
    pca = stats.princomp(m)
    graphics.plot(pca, main = "Eigen values")
-   stats.biplot(pca, main = "biplot") 
+   stats.biplot(pca, main = "biplot")
 
 
 
@@ -579,7 +579,7 @@ Creating an R vector or matrix, and filling its cells using Python code
 
    base = importr('base')
 
-   # create a numerical matrix of size 100x10 filled with NAs 
+   # create a numerical matrix of size 100x10 filled with NAs
    m = base.matrix(NA_Real, nrow=100, ncol=10)
 
    # fill the matrix
@@ -595,4 +595,3 @@ One more example
 ----------------
 
 .. literalinclude:: _static/demos/example01.py
-

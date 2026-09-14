@@ -1,4 +1,4 @@
-""" Utilities for using ggplot2 witn ipython / jupyter. """
+""" Utilities for using ggplot2 with ipython / jupyter. """
 
 from rpy2 import robjects
 from rpy2.robjects.lib import ggplot2, grdevices

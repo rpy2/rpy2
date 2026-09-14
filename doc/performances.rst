@@ -47,9 +47,9 @@ Low-level interface
 
 The high-level layer :mod:`rpy2.robjects` brings a lot of convenience, such a class
 mappings and interfaces, but obviously with a cost in term of performances. This cost is
-believe to be neglibible for common use cases (calling calling complex R code in libraries
+believe to be negligible for common use cases (calling calling complex R code in libraries
 with no Python alternative or with comparable level of maturity), but compute-intensive
-programms traversing the Python-to-R bridge way and back a very large number of time will
+programs traversing the Python-to-R bridge way and back a very large number of time will
 notice it.
 
 The :mod:`rpy2.rinterface` low-level layer gets the programmer closer to R's C-level
@@ -63,8 +63,8 @@ mode can be then used.
 
    General speed improvement strategies for Python will apply. For example :mod:`cython`
    can compile to C Python-like code with type declarations or pypy can be used as
-   an alternative implemenation of Python.
-   
+   an alternative implementation of Python.
+
    When the compute-intensive shuttling across Python and R is mainly about Python accessing
    data in R data structures, a memoryview (available as
    :meth:`rpy2.rinterface.BoolSexpVector.memoryview`,
@@ -73,7 +73,7 @@ mode can be then used.
    region in the embedded R where data for an array is stored. The numpy array interface
    as :attr:`rpy2.rinterface.NumpyArrayInterface.__array_interface__` for the same
    vector objects.
-  
+
 
 A naive benchmark
 =================
@@ -120,29 +120,29 @@ code runs.
 
 
 =============== ============================================= ==========
-Function        Sequence                                      Speedup   
+Function        Sequence                                      Speedup
 =============== ============================================= ==========
-builtin python  array.array                                   3.40      
-builtin python  FloatSexpVector                               0.02      
-builtin python  FloatSexpVector-memoryview-array              3.55      
-builtin python  FloatVector                                   0.02      
-builtin python  list                                          5.62      
-builtin python  numpy.array                                   0.10      
-pure python     array.array                                   0.90      
-pure python     FloatSexpVector                               0.02      
-pure python     FloatSexpVector-memoryview-array              0.83      
-pure python     FloatVector                                   0.02      
-pure python     list                                          0.91      
-pure python     numpy.array                                   0.09      
-R builtin       R builtin                                     8.78      
-R compiled      R compiled                                    0.81      
-R               R                                             1.00      
-reduce python   array.array                                   0.30      
-reduce python   FloatSexpVector                               0.02      
-reduce python   FloatSexpVector-memoryview-array              0.29      
-reduce python   FloatVector                                   0.02      
-reduce python   list                                          0.27      
-reduce python   numpy.array                                   0.09      
+builtin python  array.array                                   3.40
+builtin python  FloatSexpVector                               0.02
+builtin python  FloatSexpVector-memoryview-array              3.55
+builtin python  FloatVector                                   0.02
+builtin python  list                                          5.62
+builtin python  numpy.array                                   0.10
+pure python     array.array                                   0.90
+pure python     FloatSexpVector                               0.02
+pure python     FloatSexpVector-memoryview-array              0.83
+pure python     FloatVector                                   0.02
+pure python     list                                          0.91
+pure python     numpy.array                                   0.09
+R builtin       R builtin                                     8.78
+R compiled      R compiled                                    0.81
+R               R                                             1.00
+reduce python   array.array                                   0.30
+reduce python   FloatSexpVector                               0.02
+reduce python   FloatSexpVector-memoryview-array              0.29
+reduce python   FloatVector                                   0.02
+reduce python   list                                          0.27
+reduce python   numpy.array                                   0.09
 =============== ============================================= ==========
 
 The object one iterates through matters much for the speed, and
@@ -170,5 +170,3 @@ fair to note that python and R have a builtin function *sum*,
 calling C-compiled code. This is just a synthetic example to illustrate
 a point about data in memory regions and code to access that data, not
 intended to represent a general assessment of expected performances.
-
-
