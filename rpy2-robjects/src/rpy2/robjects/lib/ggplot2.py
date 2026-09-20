@@ -1307,7 +1307,8 @@ class Labs(_Labs_transition4):
 
     @classmethod
     def new(cls, **kwargs):
-        res = cls(cls._constructor(**kwargs))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(**kwargs))
         return res
 
 
