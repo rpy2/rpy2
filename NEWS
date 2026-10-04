@@ -1,3 +1,27 @@
+Release 3.7.0
+=============
+
+Changes
+-------
+
+- Python >= 3.10 is now required. This means that support for Python 3.9
+  is dropped.
+
+- The optional dependency on pandas now requires pandas >= 2.0 (and tests
+  with latest `pandas` release).
+
+
+Release 3.6.9
+=============
+
+Bugs fixed
+----------
+
+- :meth:`rpy2.robjects.lib.ggplot2.labs`
+  (:class:`rpy2.robjects.lib.ggplot2.Labs`) created invalid instances
+  when in the context of a custom (non-default) converter.
+
+
 Release 3.6.8
 =============
 

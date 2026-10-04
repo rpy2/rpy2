@@ -9,10 +9,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rpy2"
-version = "3.6.9"
+version = "3.7.0"
 description = "Python interface to the R language (embedded R)"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "GPL-2.0-or-later"
 license-files = ["LICENSE"]
 authors = [{ name = "Laurent Gautier", email = "lgautier@gmail.com" }]
