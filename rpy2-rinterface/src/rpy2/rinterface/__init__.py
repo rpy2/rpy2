@@ -20,7 +20,6 @@ import textwrap
 import threading
 import typing
 import warnings
-from typing import Union
 from rpy2.rinterface_lib import openrlib
 import rpy2.rinterface_lib._rinterface_capi as _rinterface
 import rpy2.rinterface_lib.embedded as embedded
@@ -134,16 +133,16 @@ def parse(text: str, num: int = -1):
 
 def evalr_expr(
         expr: 'ExprSexpVector',
-        envir: typing.Union[
-            None,
-            'SexpEnvironment', 'NULLType',
-            'ListSexpVector', 'PairlistSexpVector', int,
-            '_MissingArgType'] = None,
-        enclos: typing.Union[
-            None,
-            'ListSexpVector', 'PairlistSexpVector',
-            'NULLType',
-            '_MissingArgType'] = None
+        envir: (
+            None |
+            'SexpEnvironment' | 'NULLType' |
+            'ListSexpVector' | 'PairlistSexpVector' | int |
+            '_MissingArgType') = None,
+        enclos: (
+            None |
+            'ListSexpVector' | 'PairlistSexpVector' |
+            'NULLType' |
+            '_MissingArgType') = None
 ) -> sexp.Sexp:
     """Evaluate an R expression.
 
@@ -166,9 +165,9 @@ def evalr_expr(
 
 def evalr_expr_with_visible(
         expr: 'ExprSexpVector',
-        envir: typing.Union[
-            None,
-            'SexpEnvironment'] = None
+        envir: (
+            None |
+            'SexpEnvironment') = None
 ) -> 'ListSexpVector':
     """Evaluate an R expression and return value and visibility flag.
 
@@ -210,15 +209,15 @@ def evalr_expr_with_visible(
 def evalr(
         source: str,
         maxlines: int = -1,
-        envir: typing.Union[
-            None,
-            'SexpEnvironment', 'NULLType',
-            'ListSexpVector', 'PairlistSexpVector', int,
-            '_MissingArgType'] = None,
-        enclos: typing.Union[
-            None,
-            'ListSexpVector', 'PairlistSexpVector',
-            'NULLType', '_MissingArgType'] = None
+        envir: (
+            None |
+            'SexpEnvironment' | 'NULLType' |
+            'ListSexpVector' | 'PairlistSexpVector' | int |
+            '_MissingArgType') = None,
+        enclos: (
+            None |
+            'ListSexpVector' | 'PairlistSexpVector' |
+            'NULLType' | '_MissingArgType') = None
 ) -> sexp.Sexp:
     """Evaluate a string as R code.
 
@@ -261,7 +260,7 @@ def vector_memoryview(
         obj: sexp.SexpVector,
         sizeof_str: str,
         cast_str: typing.Literal['i', 'd']
-) -> typing.Union[memoryview[int], memoryview[float]]:
+) -> (memoryview[int] | memoryview[float]):
     """
     :param obj: R vector
     :param str sizeof_str: Type in a string to use with ffi.sizeof()
@@ -302,10 +301,10 @@ class SexpSymbol(sexp.Sexp):
 
     def __init__(
             self,
-            obj: Union[Sexp,
-                       _rinterface.SexpCapsule,
-                       _rinterface.UninitializedRCapsule,
-                       str]
+            obj: (Sexp |
+                  _rinterface.SexpCapsule |
+                  _rinterface.UninitializedRCapsule |
+                  str)
     ):
         if isinstance(obj, Sexp) or isinstance(obj, _rinterface.CapsuleBase):
             super().__init__(obj)
@@ -358,13 +357,14 @@ class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
         return False
 
     @property
-    def __sexp__(self) -> typing.Union['_rinterface.SexpCapsule',
-                                       '_rinterface.UninitializedRCapsule']:
+    def __sexp__(self) -> ('_rinterface.SexpCapsule' |
+                           '_rinterface.UninitializedRCapsule'):
         return self._sexpobject
 
     @__sexp__.setter
-    def __sexp__(self, value: typing.Union['_rinterface.SexpCapsule',
-                                           '_rinterface.UninitializedRCapsule']) -> None:
+    def __sexp__(self, value: ('_rinterface.SexpCapsule' |
+                               '_rinterface.UninitializedRCapsule')
+    ) -> None:
         raise TypeError('The capsule for the R object cannot be modified.')
 
 
@@ -467,7 +467,7 @@ class ByteSexpVector(SexpVectorWithNumpyInterface):
         openrlib.RAW(x)[i] = val
 
     def __getitem__(self,
-                    i: Union[int, slice]) -> Union[int, 'ByteSexpVector']:
+                    i: int | slice) -> (int | 'ByteSexpVector'):
 
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
@@ -485,7 +485,7 @@ class ByteSexpVector(SexpVectorWithNumpyInterface):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: Union[int, slice], value) -> None:
+    def __setitem__(self, i: int | slice, value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -520,12 +520,14 @@ class BoolSexpVector(SexpVectorWithNumpyInterface):
         else:
             return bool(x)
 
-    def __getitem__(self, i: Union[int, slice]) -> Union[bool,
-                                                         'sexp.NALogicalType',
-                                                         'BoolSexpVector']:
-        res: Union[bool,
-                   'sexp.NALogicalType',
-                   'BoolSexpVector']
+    def __getitem__(self, i: int | slice) -> (
+            bool |
+            'sexp.NALogicalType' |
+            'BoolSexpVector'
+    ):
+        res: (bool |
+              'sexp.NALogicalType' |
+              'BoolSexpVector')
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -542,7 +544,7 @@ class BoolSexpVector(SexpVectorWithNumpyInterface):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: Union[int, slice], value) -> None:
+    def __setitem__(self, i: int | slice, value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -578,7 +580,7 @@ class IntSexpVector(SexpVectorWithNumpyInterface):
     _R_GET_PTR = staticmethod(openrlib.INTEGER)
     _CAST_IN = staticmethod(nullable_int)
 
-    def __getitem__(self, i: Union[int, slice]) -> Union[int, 'IntSexpVector']:
+    def __getitem__(self, i: int | slice) -> int | 'IntSexpVector':
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -596,7 +598,7 @@ class IntSexpVector(SexpVectorWithNumpyInterface):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: Union[int, slice], value) -> None:
+    def __setitem__(self, i: int | slice, value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -626,8 +628,8 @@ class FloatSexpVector(SexpVectorWithNumpyInterface):
     _R_GET_PTR = staticmethod(openrlib.REAL)
 
     def __getitem__(
-            self, i: Union[int, slice]
-    ) -> Union[float, 'FloatSexpVector']:
+            self, i: int | slice
+    ) -> float | 'FloatSexpVector':
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -642,7 +644,7 @@ class FloatSexpVector(SexpVectorWithNumpyInterface):
                             type(i))
         return res
 
-    def __setitem__(self, i: Union[int, slice], value) -> None:
+    def __setitem__(self, i: int | slice, value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -688,8 +690,8 @@ class ComplexSexpVector(SexpVectorCCompatibleAbstract, SexpVector):
         return res
 
     def __getitem__(
-            self, i: Union[int, slice]
-    ) -> Union[complex, 'ComplexSexpVector']:
+            self, i: int | slice
+    ) -> complex | 'ComplexSexpVector':
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -705,7 +707,7 @@ class ComplexSexpVector(SexpVectorCCompatibleAbstract, SexpVector):
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: Union[int, slice], value) -> None:
+    def __setitem__(self, i: int | slice, value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -752,7 +754,7 @@ class PairlistSexpVector(SexpVector):
 
     _CAST_IN = staticmethod(conversion._get_cdata)
 
-    def __getitem__(self, i: Union[int, slice]) -> Sexp:
+    def __getitem__(self, i: int | slice) -> Sexp:
         cdata = self.__sexp__._cdata
         rlib = openrlib.rlib
         if isinstance(i, int):
@@ -880,7 +882,7 @@ class LangSexpVector(SexpVector):
             openrlib.rlib.Rf_nthcdr(cdata, i_c)
         )
 
-    def __setitem__(self, i: typing.Union[int, slice],
+    def __setitem__(self, i: int | slice,
                     value: sexp.SupportsSEXP) -> None:
         if isinstance(i, slice):
             raise NotImplementedError(
@@ -1348,7 +1350,7 @@ def _find_first(nodes, of_type):
 def rternalize(
         function: typing.Optional[typing.Callable] = None, *,
         signature: bool = False
-) -> typing.Union[SexpClosure, functools.partial]:
+) -> SexpClosure | functools.partial:
     """ Make a Python function callable from R.
 
     Takes an arbitrary Python function and wrap it in such a way that

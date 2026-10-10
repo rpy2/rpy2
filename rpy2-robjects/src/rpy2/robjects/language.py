@@ -16,16 +16,18 @@ _parse = ri.parse
 
 
 def eval(
-        x: typing.Union[str, ri.ExprSexpVector],
-        envir: typing.Union[
-            None,
-            ri.SexpEnvironment, ri.NULLType,
-            ri.ListSexpVector, ri.PairlistSexpVector, int,
-            ri._MissingArgType] = None,
-        enclos: typing.Union[
-            None,
-            ri.ListSexpVector, ri.PairlistSexpVector,
-            ri.NULLType, ri._MissingArgType] = None
+        x: str | ri.ExprSexpVector,
+        envir: (
+            None |
+            ri.SexpEnvironment | ri.NULLType |
+            ri.ListSexpVector | ri.PairlistSexpVector | int |
+            ri._MissingArgType
+        ) = None,
+        enclos: (
+            None |
+            ri.ListSexpVector | ri.PairlistSexpVector |
+            ri.NULLType | ri._MissingArgType
+        ) = None
 ) -> RObject:
     """ Evaluate R code. If the input object is an R expression it
     evaluates it directly, if it is a string it parses it before

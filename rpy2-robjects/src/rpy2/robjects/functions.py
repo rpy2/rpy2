@@ -3,7 +3,6 @@ import os
 import re
 import textwrap
 import typing
-from typing import Union
 import warnings
 from collections import OrderedDict
 from rpy2.robjects.robject import RObjectMixin
@@ -155,7 +154,7 @@ class SignatureTranslatedFunction(Function):
     """ Python representation of an R function, where
     the names in named argument are translated to valid
     argument names in Python. """
-    _prm_translate: Union[OrderedDict, dict] = {}
+    _prm_translate: (OrderedDict | dict) = {}
 
     def __init__(self, sexp: rinterface.SexpClosure,
                  init_prm_translate=None,

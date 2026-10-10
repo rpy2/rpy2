@@ -58,24 +58,28 @@ class NameClassMap(object):
     be a `DataFrame`.
     """
 
-    _default: typing.Union[
-        typing.Any,
+    _default: (
+        typing.Any
+        |
         typing.Callable[[typing.Any], typing.Any]
-    ]
+    )
     _map: typing.Dict[
         str,
-        typing.Union[
-            typing.Any,
+        (
+            typing.Any
+            |
             typing.Callable[[typing.Any], typing.Any]
-        ]
+        )
     ]
 
     default = property(lambda self: self._default)
 
     def __init__(self,
-                 defaultcls: typing.Union[
-                     typing.Type,
-                     typing.Callable[[typing.Any], typing.Any]] = object,
+                 defaultcls: (
+                     typing.Type
+                     |
+                     typing.Callable[[typing.Any], typing.Any]
+                 ) = object,
                  namemap: typing.Optional[dict] = None):
         if namemap is None:
             namemap = {}
@@ -90,15 +94,16 @@ class NameClassMap(object):
 
     def __getitem__(
             self, key: str
-    ) -> typing.Union[typing.Type,
-                      typing.Callable[[typing.Any], typing.Any]]:
+    ) -> (typing.Type | typing.Callable[[typing.Any], typing.Any]):
         return self._map[key]
 
     def __setitem__(self, key: str,
-                    value: typing.Union[
-                        typing.Type[typing.Any],
+                    value: (
+                        typing.Type[typing.Any]
+                        |
                         typing.Callable[[typing.Any], typing.Any]
-                    ]):
+                    )
+    ):
         self._map[key] = value
 
     def copy(self) -> 'NameClassMap':
@@ -108,10 +113,11 @@ class NameClassMap(object):
     def update(self,
                mapping: typing.Dict[
                    str,
-                   typing.Union[
-                       typing.Any,
+                   (
+                       typing.Any
+                       |
                        typing.Callable[[typing.Any], typing.Any]
-                   ]
+                   )
                ],
                default: typing.Optional[typing.Type] = None):
         self._map.update(mapping)
@@ -135,7 +141,7 @@ class NameClassMap(object):
 
     def find(
             self, keys: typing.Iterable[str]
-    ) -> typing.Union[typing.Type, typing.Callable[[typing.Any], typing.Any]]:
+    ) -> (typing.Type | typing.Callable[[typing.Any], typing.Any]):
         """Find the first mapping in a sequence of names (keys).
 
         Returns the default class (specified when creating the

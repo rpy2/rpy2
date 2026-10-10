@@ -8,7 +8,6 @@ from typing import Dict
 from typing import Literal
 from typing import Optional
 from typing import Type
-from typing import Union
 from rpy2.rinterface_lib import openrlib
 from rpy2.rinterface_lib import _rinterface_capi as _rinterface
 
@@ -23,7 +22,7 @@ class DummyMissingRpy2Map(object):
 
 
 _R_RPY2_DEFAULT_MAP: Type[
-    Union[DummyMissingRpy2Map, '_rinterface.SupportsSEXP']
+    DummyMissingRpy2Map | '_rinterface.SupportsSEXP'
 ] = DummyMissingRpy2Map
 
 # TODO: shouldn't the second type strictly inherit from an rpy2
@@ -251,7 +250,7 @@ def _str_to_symsxp(obj: str, encoding: str):
     return s
 
 
-_PY_R_MAP = {}  # type: Dict[Type, Union[Callable, None, bool]]
+_PY_R_MAP = {}  # type: Dict[Type, Callable | None, bool]
 
 
 # TODO: Do special values such as NAs need to be mapped into a SEXP when

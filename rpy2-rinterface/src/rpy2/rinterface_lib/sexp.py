@@ -84,9 +84,10 @@ class Sexp(SupportsSEXP):
     __slots__ = ('_sexpobject', )
 
     def __init__(self,
-                 sexp: typing.Union[SupportsSEXP,
-                                    '_rinterface.SexpCapsule',
-                                    '_rinterface.UninitializedRCapsule']):
+                 sexp: (SupportsSEXP |
+                        '_rinterface.SexpCapsule' |
+                        '_rinterface.UninitializedRCapsule')
+    ):
         if isinstance(sexp, SupportsSEXP):
             self._sexpobject = sexp.__sexp__
         elif isinstance(sexp, _rinterface.CapsuleBase):
@@ -102,8 +103,10 @@ class Sexp(SupportsSEXP):
         return super().__repr__() + (' [%s]' % self.typeof)
 
     @property
-    def __sexp__(self) -> typing.Union['_rinterface.SexpCapsule',
-                                       '_rinterface.UninitializedRCapsule']:
+    def __sexp__(self) -> (
+            '_rinterface.SexpCapsule' |
+            '_rinterface.UninitializedRCapsule'
+    ):
         """Access to the underlying C pointer to the R object.
 
         When assigning a new SexpCapsule to this attribute, the
@@ -112,9 +115,13 @@ class Sexp(SupportsSEXP):
         return self._sexpobject
 
     @__sexp__.setter
-    def __sexp__(self,
-                 value: typing.Union['_rinterface.SexpCapsule',
-                                     '_rinterface.UninitializedRCapsule']) -> None:
+    def __sexp__(
+            self,
+            value: (
+                '_rinterface.SexpCapsule',
+                '_rinterface.UninitializedRCapsule'
+            )
+    )-> None:
         assert isinstance(value, _rinterface.SexpCapsule)
         if value.typeof != self.__sexp__.typeof:
             raise ValueError('New capsule type mismatch: %s' %
@@ -150,7 +157,7 @@ class Sexp(SupportsSEXP):
 
     @rclass.setter
     def rclass(self,
-               value: 'typing.Union[StrSexpVector, str]'):
+               value: 'StrSexpVector' | str):
         rclass_set(self.__sexp__, value)
 
     @property
@@ -167,7 +174,7 @@ class Sexp(SupportsSEXP):
         return _rinterface._NAMED(self.__sexp__._cdata)
 
     @conversion._cdata_res_to_rinterface
-    def list_attrs(self) -> 'typing.Union[StrSexpVector, str]':
+    def list_attrs(self) -> 'StrSexpVector' | str:
         return _rinterface._list_attrs(self.__sexp__._cdata)
 
     @conversion._cdata_res_to_rinterface
@@ -261,13 +268,17 @@ class NULLType(Sexp, metaclass=SingletonABC):
         return False
 
     @property
-    def __sexp__(self) -> typing.Union['_rinterface.SexpCapsule',
-                                       '_rinterface.UninitializedRCapsule']:
+    def __sexp__(self) -> (
+            '_rinterface.SexpCapsule' |
+            '_rinterface.UninitializedRCapsule'
+    ):
         return self._sexpobject
 
     @__sexp__.setter
-    def __sexp__(self, value: typing.Union['_rinterface.SexpCapsule',
-                                           '_rinterface.UninitializedRCapsule']) -> None:
+    def __sexp__(self,
+                 value: ('_rinterface.SexpCapsule' |
+                         '_rinterface.UninitializedRCapsule')
+    ) -> None:
         raise TypeError('The capsule for the R object cannot be modified.')
 
     @property
@@ -488,7 +499,7 @@ class SexpEnvironment(Sexp):
                                     openrlib.rlib.FALSE))
 
     @_cdata_res_to_rinterface
-    def frame(self) -> 'typing.Union[NULLType, SexpEnvironment]':
+    def frame(self) -> 'NULLType' | 'SexpEnvironment':
         """Get the parent frame of the environment."""
         raise RuntimeError(
                 'Changing the enclosing environment disappeared from the '
@@ -497,7 +508,7 @@ class SexpEnvironment(Sexp):
 
     @property
     @_cdata_res_to_rinterface
-    def enclos(self) -> 'typing.Union[NULLType, SexpEnvironment]':
+    def enclos(self) -> 'NULLType' | 'SexpEnvironment':
         """Get or set the enclosing environment."""
         # TODO: not the most efficient. The choice of C-API should
         # be made once.
@@ -682,7 +693,8 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
 
     def __getitem__(
             self,
-            i: typing.Union[int, slice]) -> typing.Union[Sexp, VT, typing.Any]:
+            i: int | slice
+    ) -> Sexp | VT | typing.Any:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             try:
@@ -712,7 +724,7 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
                 'Indices must be integers or slices, not %s' % type(i))
         return res
 
-    def __setitem__(self, i: typing.Union[int, slice], value) -> None:
+    def __setitem__(self, i: int | slice, value) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -746,7 +758,7 @@ class SexpVectorAbstract(SupportsSEXP, typing.Generic[VT],
         finally:
             openrlib.lock.release()
 
-    def __iter__(self) -> typing.Iterator[typing.Union[Sexp, VT, typing.Any]]:
+    def __iter__(self) -> typing.Iterator[Sexp | VT | typing.Any]:
         for i in range(len(self)):
             yield self[i]
 
@@ -791,10 +803,12 @@ class SexpVector(Sexp, SexpVectorAbstract):
     R vector objects are, at the C level, essentially C arrays wrapped in
     the general structure for R objects."""
 
-    def __init__(self,
-                 obj: typing.Union[SupportsSEXP,
-                                   _rinterface.SexpCapsule,
-                                   collections.abc.Sized]):
+    def __init__(
+            self,
+            obj: (SupportsSEXP |
+                  _rinterface.SexpCapsule |
+                  collections.abc.Sized)
+    ):
         if (
                 isinstance(obj, SupportsSEXP)
                 or
@@ -813,7 +827,7 @@ class SexpVector(Sexp, SexpVectorAbstract):
             )
 
 
-def _as_charsxp_cdata(x: typing.Union[CharSexp, str]):
+def _as_charsxp_cdata(x: CharSexp | str):
     if isinstance(x, CharSexp):
         return x.__sexp__._cdata
     else:
@@ -833,10 +847,10 @@ class StrSexpVector(SexpVector):
 
     def __getitem__(
             self,
-            i: typing.Union[int, slice]
-    ) -> typing.Union['StrSexpVector', str, 'NACharacterType']:
+            i: int | slice
+    ) -> 'StrSexpVector' | str | 'NACharacterType':
         cdata = self.__sexp__._cdata
-        res: typing.Union['StrSexpVector', str, 'NACharacterType']
+        res: 'StrSexpVector' | str | 'NACharacterType'
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
             item = _rinterface._string_getitem(cdata, i_c)
@@ -856,9 +870,11 @@ class StrSexpVector(SexpVector):
 
     def __setitem__(
             self,
-            i: typing.Union[int, slice],
-            value: typing.Union[str, typing.Sequence[typing.Optional[str]],
-                                'StrSexpVector', 'NACharacterType']
+            i: int | slice,
+            value: (
+                str | typing.Sequence[typing.Optional[str]] |
+                'StrSexpVector' | 'NACharacterType'
+            )
     ) -> None:
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
@@ -1033,7 +1049,7 @@ def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
 
 def rclass_set(
         scaps: _rinterface.CapsuleBase,
-        value: 'typing.Union[StrSexpVector, str]'
+        value: 'StrSexpVector' | str
 ) -> None:
     """ Set the R class.
 

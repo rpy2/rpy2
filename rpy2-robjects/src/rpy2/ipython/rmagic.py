@@ -350,7 +350,7 @@ class GraphicsDeviceWindow(GraphicsDevice):
 
 
 graphics_devices: typing.Dict[
-    str, typing.Union[GraphicsDevice, typing.Tuple[str, ...]]
+    str, (GraphicsDevice | typing.Tuple[str, ...])
 ] = {
     'grDevices::png': GraphicsDeviceRaster(
         'grDevices', 'png', 'png', 'image/png'
@@ -395,11 +395,11 @@ def get_valid_device(
         devices_dict: typing.Optional[
             typing.Dict[
                 str,
-                typing.Union[GraphicsDevice, typing.Tuple[str, ...]]
+                GraphicsDevice | typing.Tuple[str, ...]
             ]
         ] = None
 ) -> typing.Tuple[str, GraphicsDevice]:
-    single_device: typing.Union[None, GraphicsDevice, typing.Tuple[str, ...]]
+    single_device: None | GraphicsDevice | typing.Tuple[str, ...]
     if devices_dict is None:
         devices_dict = graphics_devices
     device_name = name

@@ -654,17 +654,17 @@ class ListVector(Vector, ListSexpVector):
 
     def __init__(
             self,
-            nlist: typing.Union[
-                dict,
-                rinterface.ListSexpVector,
-                rlc.NamedList,
+            nlist: (
+                dict |
+                rinterface.ListSexpVector |
+                rlc.NamedList |
                 typing.Iterable[
-                    typing.Union[
-                        typing.Any,
+                    (
+                        typing.Any |
                         typing.Tuple[str, typing.Any]
-                    ]
+                    )
                 ]
-            ]
+            )
     ):
         if isinstance(nlist, rinterface.ListSexpVector):
             if nlist.typeof != rinterface.RTYPES.VECSXP:
