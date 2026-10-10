@@ -1,3 +1,14 @@
+Release 3.6.9
+=============
+
+Bugs fixed
+----------
+
+- :meth:`rpy2.robjects.lib.ggplot2.labs`
+  (:class:`rpy2.robjects.lib.ggplot2.Labs`) created invalid instances
+  when in the context of a custom (non-default) converter.
+
+
 Release 3.6.8
 =============
 
