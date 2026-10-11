@@ -491,7 +491,7 @@ def importr(name: str,
         exported_names = None
         version = None
 
-    pack: typing.Union[InstalledSTPackage, InstalledPackage]
+    pack: InstalledSTPackage | InstalledPackage
     if signature_translation:
         pack = InstalledSTPackage(env, name,
                                   translation=robject_translations,

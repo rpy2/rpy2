@@ -112,8 +112,9 @@ AT = typing.TypeVar('AT')
 def _vector_matrix_array(
         obj, vector_cls: typing.Type[VT],
         matrix_cls: typing.Type[MT],
-        array_cls: typing.Type[AT]) -> typing.Union[
-            typing.Type[VT], typing.Type[MT], typing.Type[AT]]:
+        array_cls: typing.Type[AT]) -> (
+            typing.Type[VT] | typing.Type[MT] | typing.Type[AT]
+    ):
     # Should it be promoted to array or matrix ?
     try:
         dim = obj.do_slot("dim")

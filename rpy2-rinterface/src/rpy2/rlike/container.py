@@ -8,7 +8,6 @@ from typing import Iterator
 from typing import List
 from typing import Optional
 from typing import Tuple
-from typing import Union
 import warnings
 
 
@@ -30,7 +29,7 @@ class OrdDict(dict):
 
     def __init__(
             self,
-            c: Iterable[Union[Tuple[Optional[str], Any], 'NamedItem']]=[]
+            c: Iterable[Tuple[Optional[str], Any] | 'NamedItem'] = []
     ):
         warnings.warn(
             'rpy2.rinterface.rlike.container.OrdDict is being deprecated. '
@@ -261,7 +260,7 @@ class NamedList:
     @classmethod
     def from_items(
             cls,
-            namesvalues: Iterable[Union[NamedItem, Tuple[Any, Any]]]
+            namesvalues: Iterable[NamedItem | Tuple[Any, Any]]
     ) -> 'NamedList':
         """Create a NamedList from an iterable of NamedItem objects or (name, value) tuples."""
         if isinstance(namesvalues, dict) or isinstance(namesvalues, NamedList):
@@ -277,15 +276,15 @@ class NamedList:
                        for obj in namesvalues)        
         return cls(iter_values, names=iter_names)
 
-    def __getitem__(self, i: Union[int, slice]):
+    def __getitem__(self, i: int | slice):
         if isinstance(i, slice):
             return type(self)(self.__list[i],
                               names=self.__names[i])
         else:
             return self.__list[i]
             
-    def __setitem__(self, i: Union[int, slice],
-                    y: 'Union[NamedList, NamedItem]'):
+    def __setitem__(self, i: int | slice,
+                    y: 'NamedList' | 'NamedItem'):
         if isinstance(i, slice):
             step = i.step if i.step else 1
             if isinstance(y, NamedList):
@@ -310,7 +309,7 @@ class NamedList:
         else:
             raise ValueError('i must be a slice or an int.')
 
-    def append(self, y: Union[NamedItem, Any], tag=None):
+    def append(self, y: NamedItem | Any, tag=None):
         """ Append a NamedItems to the list
         :param y: NamedItem, or any object.
         :param tag: A tag/name (deprecated).
@@ -344,7 +343,7 @@ class NamedList:
         self.__names.extend(lst.names())
         self.__list.extend(lst.values())
 
-    def insert(self, index: int, obj: 'Union[NamedItem, Any]', tag=None):
+    def insert(self, index: int, obj: 'NamedItem' | Any, tag=None):
         """
         Insert an object in the list
 
@@ -495,7 +494,7 @@ class NamedList:
 
     tags = property(__get_tags, __set_tags)
 
-    def setname(self, i: Union[int, slice], n: Any):
+    def setname(self, i: int | slice, n: Any):
         """
         Set name 'n' for item at index 'i'.
 

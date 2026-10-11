@@ -36,7 +36,7 @@ class Environment(RObjectMixin, sexp.SexpEnvironment):
         super(Environment, self).__setitem__(item, robj)
 
     @property
-    def enclos(self) -> typing.Union[sexp.SexpEnvironment, sexp.NULLType]:
+    def enclos(self) -> sexp.SexpEnvironment | sexp.NULLType:
         return conversion.get_conversion().rpy2py(super().enclos)
 
     @enclos.setter
