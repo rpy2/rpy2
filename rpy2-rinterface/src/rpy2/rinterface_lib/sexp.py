@@ -83,10 +83,11 @@ class Sexp(SupportsSEXP):
 
     __slots__ = ('_sexpobject', )
 
-    def __init__(self,
-                 sexp: (SupportsSEXP |
-                        '_rinterface.SexpCapsule' |
-                        '_rinterface.UninitializedRCapsule')
+    def __init__(
+            self,
+            sexp: (SupportsSEXP |
+                   '_rinterface.SexpCapsule' |
+                   '_rinterface.UninitializedRCapsule')
     ):
         if isinstance(sexp, SupportsSEXP):
             self._sexpobject = sexp.__sexp__
@@ -121,7 +122,7 @@ class Sexp(SupportsSEXP):
                 '_rinterface.SexpCapsule',
                 '_rinterface.UninitializedRCapsule'
             )
-    )-> None:
+    ) -> None:
         assert isinstance(value, _rinterface.SexpCapsule)
         if value.typeof != self.__sexp__.typeof:
             raise ValueError('New capsule type mismatch: %s' %
@@ -275,9 +276,10 @@ class NULLType(Sexp, metaclass=SingletonABC):
         return self._sexpobject
 
     @__sexp__.setter
-    def __sexp__(self,
-                 value: ('_rinterface.SexpCapsule' |
-                         '_rinterface.UninitializedRCapsule')
+    def __sexp__(
+            self,
+            value: ('_rinterface.SexpCapsule' |
+                    '_rinterface.UninitializedRCapsule')
     ) -> None:
         raise TypeError('The capsule for the R object cannot be modified.')
 

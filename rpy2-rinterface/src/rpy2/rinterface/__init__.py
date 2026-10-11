@@ -362,8 +362,10 @@ class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
         return self._sexpobject
 
     @__sexp__.setter
-    def __sexp__(self, value: ('_rinterface.SexpCapsule' |
-                               '_rinterface.UninitializedRCapsule')
+    def __sexp__(
+            self,
+            value: ('_rinterface.SexpCapsule' |
+                    '_rinterface.UninitializedRCapsule')
     ) -> None:
         raise TypeError('The capsule for the R object cannot be modified.')
 
