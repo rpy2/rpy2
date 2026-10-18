@@ -158,7 +158,7 @@ class Sexp(SupportsSEXP):
 
     @rclass.setter
     def rclass(self,
-               value: 'StrSexpVector' | str):
+               value: 'StrSexpVector | str'):
         rclass_set(self.__sexp__, value)
 
     @property
@@ -175,7 +175,7 @@ class Sexp(SupportsSEXP):
         return _rinterface._NAMED(self.__sexp__._cdata)
 
     @conversion._cdata_res_to_rinterface
-    def list_attrs(self) -> 'StrSexpVector' | str:
+    def list_attrs(self) -> 'StrSexpVector | str':
         return _rinterface._list_attrs(self.__sexp__._cdata)
 
     @conversion._cdata_res_to_rinterface
@@ -278,8 +278,8 @@ class NULLType(Sexp, metaclass=SingletonABC):
     @__sexp__.setter
     def __sexp__(
             self,
-            value: ('_rinterface.SexpCapsule' |
-                    '_rinterface.UninitializedRCapsule')
+            value: (_rinterface.SexpCapsule |
+                    _rinterface.UninitializedRCapsule)
     ) -> None:
         raise TypeError('The capsule for the R object cannot be modified.')
 
@@ -501,7 +501,7 @@ class SexpEnvironment(Sexp):
                                     openrlib.rlib.FALSE))
 
     @_cdata_res_to_rinterface
-    def frame(self) -> 'NULLType' | 'SexpEnvironment':
+    def frame(self) -> NULLType | SexpEnvironment:
         """Get the parent frame of the environment."""
         raise RuntimeError(
                 'Changing the enclosing environment disappeared from the '
@@ -510,7 +510,7 @@ class SexpEnvironment(Sexp):
 
     @property
     @_cdata_res_to_rinterface
-    def enclos(self) -> 'NULLType' | 'SexpEnvironment':
+    def enclos(self) -> NULLType | SexpEnvironment:
         """Get or set the enclosing environment."""
         # TODO: not the most efficient. The choice of C-API should
         # be made once.
@@ -850,9 +850,9 @@ class StrSexpVector(SexpVector):
     def __getitem__(
             self,
             i: int | slice
-    ) -> 'StrSexpVector' | str | 'NACharacterType':
+    ) -> 'StrSexpVector | str | NACharacterType':
         cdata = self.__sexp__._cdata
-        res: 'StrSexpVector' | str | 'NACharacterType'
+        res: 'StrSexpVector | str | NACharacterType'
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
             item = _rinterface._string_getitem(cdata, i_c)
@@ -874,8 +874,8 @@ class StrSexpVector(SexpVector):
             self,
             i: int | slice,
             value: (
-                str | typing.Sequence[typing.Optional[str]] |
-                'StrSexpVector' | 'NACharacterType'
+                'typing.Sequence[typing.Optional[str]]' |
+                'StrSexpVector | str | NACharacterType'
             )
     ) -> None:
         cdata = self.__sexp__._cdata

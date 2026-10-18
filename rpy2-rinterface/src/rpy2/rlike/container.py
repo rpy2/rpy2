@@ -11,6 +11,27 @@ from typing import Tuple
 import warnings
 
 
+class NamedItem:
+    """A named item (in a NamedList."""
+
+    def __init__(self, name, value):
+        self.__namevalue = (name, value)
+
+    @property
+    def name(self):
+        return self.__namevalue[0]
+
+    @property
+    def value(self):
+        return self.__namevalue[1]
+
+    def __eq__(self, y) -> bool:
+        if isinstance(y, NamedItem):
+            return (self.name == y.name) and (self.value == y.value)
+        else:
+            return self == y
+
+
 class OrdDict(dict):
     """ Ordered dictionary.
 
@@ -29,7 +50,7 @@ class OrdDict(dict):
 
     def __init__(
             self,
-            c: Iterable[Tuple[Optional[str], Any] | 'NamedItem'] = []
+            c: Iterable[Tuple[Optional[str], Any] | NamedItem] = []
     ):
         warnings.warn(
             'rpy2.rinterface.rlike.container.OrdDict is being deprecated. '
@@ -165,27 +186,6 @@ class OrdDict(dict):
     def values(self):
         """ """
         return tuple([x[1] for x in self.__l])
-
-
-class NamedItem:
-    """A named item (in a NamedList."""
-
-    def __init__(self, name, value):
-        self.__namevalue = (name, value)
-
-    @property
-    def name(self):
-        return self.__namevalue[0]
-
-    @property
-    def value(self):
-        return self.__namevalue[1]
-
-    def __eq__(self, y) -> bool:
-        if isinstance(y, NamedItem):
-            return (self.name == y.name) and (self.value == y.value)
-        else:
-            return self == y
 
 
 class NamedList:

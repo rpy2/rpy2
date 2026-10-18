@@ -130,19 +130,61 @@ def parse(text: str, num: int = -1):
         res = _rinterface._parse(robj.__sexp__._cdata, num, rmemory)
     return res
 
+class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
+    """Missing argument in a call to an R function.
+
+    When evaluating a function, arguments that are not specified
+    can take a default value when named, otherwise they will
+    take a special value that indicates that they are missing."""
+
+    def __init__(self):
+        if embedded.isready():
+            tmp = sexp.Sexp(
+                _rinterface.UnmanagedSexpCapsule(
+                    openrlib.rlib.R_MissingArg
+                )
+            )
+        else:
+            tmp = sexp.Sexp(
+                _rinterface.UninitializedRCapsule(RTYPES.SYMSXP.value)
+            )
+        super().__init__(tmp)
+
+    def __bool__(self) -> bool:
+        """This is always False."""
+        return False
+
+    @property
+    def __sexp__(self) -> (_rinterface.SexpCapsule |
+                           _rinterface.UninitializedRCapsule):
+        return self._sexpobject
+
+    @__sexp__.setter
+    def __sexp__(
+            self,
+            value: (_rinterface.SexpCapsule |
+                    _rinterface.UninitializedRCapsule)
+    ) -> None:
+        raise TypeError('The capsule for the R object cannot be modified.')
+
+
+MissingArg = _MissingArgType()
+
 
 def evalr_expr(
-        expr: 'ExprSexpVector',
+        expr: ExprSexpVector,
         envir: (
             None |
-            'SexpEnvironment' | 'NULLType' |
-            'ListSexpVector' | 'PairlistSexpVector' | int |
-            '_MissingArgType') = None,
+            SexpEnvironment | NULLType |
+            ListSexpVector | PairlistSexpVector | int |
+            _MissingArgType
+        ) = None,
         enclos: (
             None |
-            'ListSexpVector' | 'PairlistSexpVector' |
-            'NULLType' |
-            '_MissingArgType') = None
+            ListSexpVector | PairlistSexpVector |
+            NULLType |
+            _MissingArgType
+        ) = None
 ) -> sexp.Sexp:
     """Evaluate an R expression.
 
@@ -164,11 +206,11 @@ def evalr_expr(
 
 
 def evalr_expr_with_visible(
-        expr: 'ExprSexpVector',
+        expr: ExprSexpVector,
         envir: (
             None |
-            'SexpEnvironment') = None
-) -> 'ListSexpVector':
+            SexpEnvironment) = None
+) -> ListSexpVector:
     """Evaluate an R expression and return value and visibility flag.
 
     :param expr: An R expression.
@@ -211,13 +253,15 @@ def evalr(
         maxlines: int = -1,
         envir: (
             None |
-            'SexpEnvironment' | 'NULLType' |
-            'ListSexpVector' | 'PairlistSexpVector' | int |
-            '_MissingArgType') = None,
+            SexpEnvironment | NULLType |
+            ListSexpVector | PairlistSexpVector | int |
+            _MissingArgType
+        ) = None,
         enclos: (
             None |
-            'ListSexpVector' | 'PairlistSexpVector' |
-            'NULLType' | '_MissingArgType') = None
+            ListSexpVector | PairlistSexpVector |
+            NULLType | _MissingArgType
+        ) = None
 ) -> sexp.Sexp:
     """Evaluate a string as R code.
 
@@ -332,47 +376,6 @@ class SexpSymbol(sexp.Sexp):
         )
 
 
-class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
-    """Missing argument in a call to an R function.
-
-    When evaluating a function, arguments that are not specified
-    can take a default value when named, otherwise they will
-    take a special value that indicates that they are missing."""
-
-    def __init__(self):
-        if embedded.isready():
-            tmp = sexp.Sexp(
-                _rinterface.UnmanagedSexpCapsule(
-                    openrlib.rlib.R_MissingArg
-                )
-            )
-        else:
-            tmp = sexp.Sexp(
-                _rinterface.UninitializedRCapsule(RTYPES.SYMSXP.value)
-            )
-        super().__init__(tmp)
-
-    def __bool__(self) -> bool:
-        """This is always False."""
-        return False
-
-    @property
-    def __sexp__(self) -> ('_rinterface.SexpCapsule' |
-                           '_rinterface.UninitializedRCapsule'):
-        return self._sexpobject
-
-    @__sexp__.setter
-    def __sexp__(
-            self,
-            value: ('_rinterface.SexpCapsule' |
-                    '_rinterface.UninitializedRCapsule')
-    ) -> None:
-        raise TypeError('The capsule for the R object cannot be modified.')
-
-
-MissingArg = _MissingArgType()
-
-
 class SexpPromise(Sexp):
 
     @_cdata_res_to_rinterface
@@ -468,8 +471,10 @@ class ByteSexpVector(SexpVectorWithNumpyInterface):
     def _R_SET_VECTOR_ELT(x, i: int, val) -> None:
         openrlib.RAW(x)[i] = val
 
-    def __getitem__(self,
-                    i: int | slice) -> (int | 'ByteSexpVector'):
+    def __getitem__(
+            self,
+            i: int | slice
+    ) -> 'int | ByteSexpVector':
 
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
@@ -582,7 +587,7 @@ class IntSexpVector(SexpVectorWithNumpyInterface):
     _R_GET_PTR = staticmethod(openrlib.INTEGER)
     _CAST_IN = staticmethod(nullable_int)
 
-    def __getitem__(self, i: int | slice) -> int | 'IntSexpVector':
+    def __getitem__(self, i: int | slice) -> 'int | IntSexpVector':
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -631,7 +636,7 @@ class FloatSexpVector(SexpVectorWithNumpyInterface):
 
     def __getitem__(
             self, i: int | slice
-    ) -> float | 'FloatSexpVector':
+    ) -> 'float | FloatSexpVector':
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -693,7 +698,7 @@ class ComplexSexpVector(SexpVectorCCompatibleAbstract, SexpVector):
 
     def __getitem__(
             self, i: int | slice
-    ) -> complex | 'ComplexSexpVector':
+    ) -> 'complex | ComplexSexpVector':
         cdata = self.__sexp__._cdata
         if isinstance(i, int):
             i_c = _rinterface._python_index_to_c(cdata, i)
@@ -1100,7 +1105,6 @@ class RRuntimeWarning(RuntimeWarning):
     pass
 
 
-MissingArg = _MissingArgType()
 NA_Character = None
 NA_Integer = None
 NA_Logical = None
