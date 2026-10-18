@@ -119,7 +119,7 @@ class Sexp(SupportsSEXP):
     def __sexp__(
             self,
             value: (
-                '_rinterface.SexpCapsule',
+                '_rinterface.SexpCapsule' |
                 '_rinterface.UninitializedRCapsule'
             )
     ) -> None:
