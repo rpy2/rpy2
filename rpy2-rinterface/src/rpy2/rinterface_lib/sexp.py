@@ -105,8 +105,7 @@ class Sexp(SupportsSEXP):
 
     @property
     def __sexp__(self) -> (
-            '_rinterface.SexpCapsule' |
-            '_rinterface.UninitializedRCapsule'
+            '_rinterface.SexpCapsule | _rinterface.UninitializedRCapsule'
     ):
         """Access to the underlying C pointer to the R object.
 
