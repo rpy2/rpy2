@@ -130,46 +130,6 @@ def parse(text: str, num: int = -1):
         res = _rinterface._parse(robj.__sexp__._cdata, num, rmemory)
     return res
 
-class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
-    """Missing argument in a call to an R function.
-
-    When evaluating a function, arguments that are not specified
-    can take a default value when named, otherwise they will
-    take a special value that indicates that they are missing."""
-
-    def __init__(self):
-        if embedded.isready():
-            tmp = sexp.Sexp(
-                _rinterface.UnmanagedSexpCapsule(
-                    openrlib.rlib.R_MissingArg
-                )
-            )
-        else:
-            tmp = sexp.Sexp(
-                _rinterface.UninitializedRCapsule(RTYPES.SYMSXP.value)
-            )
-        super().__init__(tmp)
-
-    def __bool__(self) -> bool:
-        """This is always False."""
-        return False
-
-    @property
-    def __sexp__(self) -> (_rinterface.SexpCapsule |
-                           _rinterface.UninitializedRCapsule):
-        return self._sexpobject
-
-    @__sexp__.setter
-    def __sexp__(
-            self,
-            value: (_rinterface.SexpCapsule |
-                    _rinterface.UninitializedRCapsule)
-    ) -> None:
-        raise TypeError('The capsule for the R object cannot be modified.')
-
-
-MissingArg = _MissingArgType()
-
 
 def evalr_expr(
         expr: ExprSexpVector,
@@ -374,6 +334,47 @@ class SexpSymbol(sexp.Sexp):
             ),
             'utf-8'
         )
+
+
+class _MissingArgType(SexpSymbol, metaclass=sexp.SingletonABC):
+    """Missing argument in a call to an R function.
+
+    When evaluating a function, arguments that are not specified
+    can take a default value when named, otherwise they will
+    take a special value that indicates that they are missing."""
+
+    def __init__(self):
+        if embedded.isready():
+            tmp = sexp.Sexp(
+                _rinterface.UnmanagedSexpCapsule(
+                    openrlib.rlib.R_MissingArg
+                )
+            )
+        else:
+            tmp = sexp.Sexp(
+                _rinterface.UninitializedRCapsule(RTYPES.SYMSXP.value)
+            )
+        super().__init__(tmp)
+
+    def __bool__(self) -> bool:
+        """This is always False."""
+        return False
+
+    @property
+    def __sexp__(self) -> (_rinterface.SexpCapsule |
+                           _rinterface.UninitializedRCapsule):
+        return self._sexpobject
+
+    @__sexp__.setter
+    def __sexp__(
+            self,
+            value: (_rinterface.SexpCapsule |
+                    _rinterface.UninitializedRCapsule)
+    ) -> None:
+        raise TypeError('The capsule for the R object cannot be modified.')
+
+
+MissingArg = _MissingArgType()
 
 
 class SexpPromise(Sexp):
