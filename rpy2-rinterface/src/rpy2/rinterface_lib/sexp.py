@@ -501,7 +501,7 @@ class SexpEnvironment(Sexp):
                                     openrlib.rlib.FALSE))
 
     @_cdata_res_to_rinterface
-    def frame(self) -> NULLType | SexpEnvironment:
+    def frame(self) -> 'NULLType | SexpEnvironment':
         """Get the parent frame of the environment."""
         raise RuntimeError(
                 'Changing the enclosing environment disappeared from the '

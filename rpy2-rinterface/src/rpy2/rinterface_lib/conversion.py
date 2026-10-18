@@ -22,7 +22,7 @@ class DummyMissingRpy2Map(object):
 
 
 _R_RPY2_DEFAULT_MAP: Type[
-    DummyMissingRpy2Map | _rinterface.SupportsSEXP
+    'DummyMissingRpy2Map | _rinterface.SupportsSEXP'
 ] = DummyMissingRpy2Map
 
 # TODO: shouldn't the second type strictly inherit from an rpy2
