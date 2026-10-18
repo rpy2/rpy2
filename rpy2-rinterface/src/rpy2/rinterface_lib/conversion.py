@@ -6,7 +6,6 @@
 from typing import Callable
 from typing import Dict
 from typing import Literal
-from typing import Optional
 from typing import Type
 from rpy2.rinterface_lib import openrlib
 from rpy2.rinterface_lib import _rinterface_capi as _rinterface
@@ -186,7 +185,7 @@ def _rchar_to_str(rchar, encoding: str) -> str:
     return ffi.string(cchar).decode(encoding)
 
 
-def _utf8_str_to_charsxp(val: Optional[str]):
+def _utf8_str_to_charsxp(val: str | None):
     """Convert a Python string to an R string scalar.
 
     This function is not thread safe!"""
@@ -199,9 +198,9 @@ def _utf8_str_to_charsxp(val: Optional[str]):
 
 
 def _str_to_charsxp(
-        val: Optional[str],
-        py_encoding: Optional[str] = None,
-        r_encoding: Optional[_ENC_R_TYPE] = None
+        val: str | None,
+        py_encoding: str | None = None,
+        r_encoding: _ENC_R_TYPE | None = None
 ):
     """Convert a Python string to a R string scalar.
 
@@ -227,8 +226,8 @@ def _str_to_charsxp(
 
 def _str_to_sexp(
         obj: str,
-        py_encoding: Optional[str] = None,
-        r_encoding: Optional[_ENC_R_TYPE] = None
+        py_encoding: str | None = None,
+        r_encoding: _ENC_R_TYPE | None = None
 ):
     """This function is not thread safe!"""
     if py_encoding is None:

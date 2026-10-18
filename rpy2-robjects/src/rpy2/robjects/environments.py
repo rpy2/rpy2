@@ -12,7 +12,7 @@ _new_env = rinterface.baseenv["new.env"]
 class Environment(RObjectMixin, sexp.SexpEnvironment):
     """ An R environement, implementing Python's mapping interface. """
 
-    def __init__(self, o: typing.Optional[sexp.SexpEnvironment] = None):
+    def __init__(self, o: sexp.SexpEnvironment | None = None):
         if o is None:
             o = _new_env(hash=rinterface.BoolSexpVector([True, ]))
         super(sexp.SexpEnvironment, self).__init__(o)
@@ -132,7 +132,7 @@ class Environment(RObjectMixin, sexp.SexpEnvironment):
 
 @contextlib.contextmanager
 def local_context(
-        env: typing.Optional[sexp.SexpEnvironment] = None,
+        env: sexp.SexpEnvironment | None = None,
         use_rlock: bool = True
 ) -> typing.Iterator[Environment]:
     """Local context for the evaluation of R code.

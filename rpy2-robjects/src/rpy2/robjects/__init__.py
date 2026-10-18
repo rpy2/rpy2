@@ -530,8 +530,8 @@ class R(object):
         return os.linesep.join(s)
 
     def __call__(self, string: str,
-                 invisible: typing.Optional[bool] = None,
-                 print_r_warnings: typing.Optional[bool] = None) -> object:
+                 invisible: bool | None = None,
+                 print_r_warnings: bool | None = None) -> object:
         """Evaluate a string as R code.
 
         :param string: A string with R code

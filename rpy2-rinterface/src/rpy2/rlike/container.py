@@ -6,7 +6,6 @@ from typing import Any
 from typing import Iterable
 from typing import Iterator
 from typing import List
-from typing import Optional
 from typing import Tuple
 import warnings
 
@@ -46,11 +45,11 @@ class OrdDict(dict):
     an absence of name for the element.
     """
 
-    __l: List[Tuple[Optional[str], Any]]
+    __l: List[Tuple[str | None, Any]]
 
     def __init__(
             self,
-            c: Iterable[Tuple[Optional[str], Any] | NamedItem] = []
+            c: Iterable[Tuple[str | None, Any] | NamedItem] = []
     ):
         warnings.warn(
             'rpy2.rinterface.rlike.container.OrdDict is being deprecated. '
@@ -125,7 +124,7 @@ class OrdDict(dict):
     def __reversed__(self):
         raise NotImplementedError("Not yet implemented.")
 
-    def __setitem__(self, key: Optional[str], value: Any):
+    def __setitem__(self, key: str | None, value: Any):
         """ Replace the element if the key is known,
         and conserve its rank in the list, or append
         it if unknown. """
@@ -204,11 +203,11 @@ class NamedList:
     """
 
     __list: List
-    __names: List[Optional[str]]
+    __names: List[str | None]
 
     def __init__(self, seq: Iterable,
-                 names: Optional[Iterable] = None,
-                 tags: Optional[Iterable] = None):
+                 names: Iterable | None = None,
+                 tags: Iterable | None = None):
         if tags:
             warnings.warn(
                 'The named argument "tags" when constructing '
@@ -424,7 +423,7 @@ class NamedList:
         for tag in self.__names:
             yield tag
 
-    def pop(self, index: Optional[int] = None):
+    def pop(self, index: int | None = None):
         """
         Pop the item at a given index out of the list
 

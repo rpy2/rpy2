@@ -510,7 +510,7 @@ class SexpEnvironment(Sexp):
 
     @property
     @_cdata_res_to_rinterface
-    def enclos(self) -> NULLType | SexpEnvironment:
+    def enclos(self) -> 'NULLType | SexpEnvironment':
         """Get or set the enclosing environment."""
         # TODO: not the most efficient. The choice of C-API should
         # be made once.
@@ -874,7 +874,7 @@ class StrSexpVector(SexpVector):
             self,
             i: int | slice,
             value: (
-                'typing.Sequence[typing.Optional[str]]' |
+                'typing.Sequence[str | None]' |
                 'StrSexpVector | str | NACharacterType'
             )
     ) -> None:

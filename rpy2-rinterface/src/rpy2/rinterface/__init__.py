@@ -81,7 +81,7 @@ def get_evaluation_context() -> SexpEnvironment:
 
 @contextlib.contextmanager
 def local_context(
-        env: typing.Optional[SexpEnvironment] = None,
+        env: SexpEnvironment | None = None,
         use_rlock: bool = True
 ) -> typing.Iterator[SexpEnvironment]:
     """Local context for the evaluation of R code.
@@ -380,7 +380,7 @@ MissingArg = _MissingArgType()
 class SexpPromise(Sexp):
 
     @_cdata_res_to_rinterface
-    def eval(self, env: typing.Optional[SexpEnvironment] = None) -> sexp.Sexp:
+    def eval(self, env: SexpEnvironment | None = None) -> sexp.Sexp:
         """"Evalute the R "promise".
 
         :param env: The environment in which to evaluate the
@@ -942,7 +942,7 @@ class SexpClosure(Sexp):
 
     @_cdata_res_to_rinterface
     def rcall(self, keyvals,
-              environment: typing.Optional[SexpEnvironment] = None):
+              environment: SexpEnvironment | None = None):
         """Call/evaluate an R function.
 
         Args:
@@ -1115,10 +1115,10 @@ NA_Complex = None
 
 
 def initr(
-        interactive: typing.Optional[bool] = None,
+        interactive: bool | None = None,
         _want_setcallbacks: bool = True,
-        _c_stack_limit: typing.Optional[int] = None
-) -> typing.Optional[int]:
+        _c_stack_limit: int | None = None
+) -> int | None:
     """Initialize the embedded R.
 
     :param interactive: Should R run in interactive or non-interactive mode?
@@ -1201,8 +1201,8 @@ def _ensure_utf8_locale(l10n):
 # TODO: This function could be used by situation.py. May be better to
 # place elsewhere.
 def _getrenvvars(
-        baselinevars: typing.Optional[typing.MutableMapping[str, str]] = None,
-        r_home: typing.Optional[str] = None
+        baselinevars: typing.MutableMapping[str, str] | None = None,
+        r_home: str | None = None
 ) -> typing.Tuple[typing.Tuple[str, str], ...]:
     """Get the environment variables defined by the R front-end script."""
     if baselinevars is None:
@@ -1355,7 +1355,7 @@ def _find_first(nodes, of_type):
 
 
 def rternalize(
-        function: typing.Optional[typing.Callable] = None, *,
+        function: typing.Callable | None = None, *,
         signature: bool = False
 ) -> SexpClosure | functools.partial:
     """ Make a Python function callable from R.

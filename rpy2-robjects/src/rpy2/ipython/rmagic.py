@@ -198,12 +198,12 @@ class GraphicsDevice(abc.ABC):
 class GraphicsDeviceRaster(FileDevice, GraphicsDevice):
 
     class _OptionsNewDevice(GraphicsDevice._OptionsNewDevice):
-        width: typing.Optional[float] = None
-        height: typing.Optional[float] = None
-        pointsize: typing.Optional[float] = None
-        bg: typing.Optional[str] = None
-        units: typing.Optional[str] = None
-        res: typing.Optional[str] = None
+        width: float | None = None
+        height: float | None = None
+        pointsize: float | None = None
+        bg: str | None = None
+        units: str | None = None
+        res: str | None = None
 
     class _OptionsDisplay(GraphicsDevice._OptionsDisplay):
         pass
@@ -268,12 +268,12 @@ class GraphicsDeviceRaster(FileDevice, GraphicsDevice):
 class GraphicsDeviceSVG(FileDevice, GraphicsDevice):
 
     class _OptionsNewDevice(GraphicsDevice._OptionsNewDevice):
-        width: typing.Optional[float]
-        height: typing.Optional[float]
-        pointsize: typing.Optional[float]
-        bg: typing.Optional[str]
-        units: typing.Optional[str]
-        res: typing.Optional[str]
+        width: float | None
+        height: float | None
+        pointsize: float | None
+        bg: str | None
+        units: str | None
+        res: str | None
 
     class _OptionsDisplay(GraphicsDevice._OptionsDisplay):
         isolate_svgs: bool = True
@@ -392,12 +392,11 @@ graphics_devices: typing.Dict[
 
 def get_valid_device(
         name: str,
-        devices_dict: typing.Optional[
+        devices_dict: (
             typing.Dict[
                 str,
                 GraphicsDevice | typing.Tuple[str, ...]
-            ]
-        ] = None
+            ] | None = None
 ) -> typing.Tuple[str, GraphicsDevice]:
     single_device: None | GraphicsDevice | typing.Tuple[str, ...]
     if devices_dict is None:
@@ -642,7 +641,7 @@ def display_figures_svg(graph_dir, isolate_svgs=True):
 class RMagics(IPython.core.magic.Magics):
     """A set of ipython/jupyter "magic"s useful for interactive work with R."""
 
-    _graphics_device: typing.Optional[GraphicsDevice] = None
+    _graphics_device: GraphicsDevice | None = None
 
     def __init__(self, shell,
                  converter=None,
