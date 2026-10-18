@@ -97,12 +97,12 @@ class NameClassMap(object):
     ) -> (typing.Type | typing.Callable[[typing.Any], typing.Any]):
         return self._map[key]
 
-    def __setitem__(self, key: str,
-                    value: (
-                        typing.Type[typing.Any]
-                        |
-                        typing.Callable[[typing.Any], typing.Any]
-                    )
+    def __setitem__(
+            self, key: str,
+            value: (
+                typing.Type[typing.Any] |
+                typing.Callable[[typing.Any], typing.Any]
+            )
     ):
         self._map[key] = value
 
@@ -110,16 +110,17 @@ class NameClassMap(object):
         return NameClassMap(defaultcls=self._default,
                             namemap=self._map.copy())
 
-    def update(self,
-               mapping: typing.Dict[
-                   str,
-                   (
-                       typing.Any
-                       |
-                       typing.Callable[[typing.Any], typing.Any]
-                   )
-               ],
-               default: typing.Optional[typing.Type] = None):
+    def update(
+            self,
+            mapping: typing.Dict[
+                str,
+                (
+                    typing.Any |
+                    typing.Callable[[typing.Any], typing.Any]
+                )
+            ],
+            default: typing.Optional[typing.Type] = None
+    ):
         self._map.update(mapping)
         if default:
             self._default = default

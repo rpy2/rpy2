@@ -9,7 +9,6 @@ License: GPLv2+
 """
 
 import array
-import contextlib
 import os
 import types
 import typing
