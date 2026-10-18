@@ -392,11 +392,10 @@ graphics_devices: typing.Dict[
 
 def get_valid_device(
         name: str,
-        devices_dict: (
-            typing.Dict[
-                str,
-                GraphicsDevice | typing.Tuple[str, ...]
-            ] | None = None
+        devices_dict: typing.Dict[
+            str,
+            GraphicsDevice | typing.Tuple[str, ...]
+        ] | None = None
 ) -> typing.Tuple[str, GraphicsDevice]:
     single_device: None | GraphicsDevice | typing.Tuple[str, ...]
     if devices_dict is None:

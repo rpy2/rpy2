@@ -86,8 +86,8 @@ class Sexp(SupportsSEXP):
     def __init__(
             self,
             sexp: (SupportsSEXP |
-                   '_rinterface.SexpCapsule' |
-                   '_rinterface.UninitializedRCapsule')
+                   _rinterface.SexpCapsule |
+                   _rinterface.UninitializedRCapsule)
     ):
         if isinstance(sexp, SupportsSEXP):
             self._sexpobject = sexp.__sexp__
