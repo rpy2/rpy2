@@ -5,6 +5,8 @@ try:
     from zoneinfo import ZoneInfo
 except ImportError:
     from backports.zoneinfo import ZoneInfo
+import math
+import packaging.version
 
 import pytest
 
@@ -35,10 +37,25 @@ except:
 
 if has_pandas:
     import rpy2.robjects.pandas2ri as rpyp
+    try:
+        _pandas_version = packaging.version.Version(pandas.__version__)
+    except:
+        _pandas_version = None
+    finally:
+        if _pandas_version:
+            if _pandas_version < packaging.version.Version('3'):
+                _pandas_string_dtype = numpy.dtype('O')
+            else:
+                _pandas_string_dtype = pandas.StringDtype(na_value=math.nan)
+        else:
+            warnings.warn('Unexpected pandas version format.')
+            # We assume that this is in future and pandas.StringDtype is used.
+            _pandas_string_dtype = pandas.StringDtype(na_value=math.nan)
 
 from rpy2.robjects import default_converter
 from rpy2.robjects.conversion import localconverter
-    
+
+
 @pytest.mark.skipif(not has_pandas, reason='Package pandas is not installed.')
 class TestPandasConversions(object):
 
@@ -423,7 +440,7 @@ class TestPandasConversions(object):
         assert colnames == tuple(pandas_df.keys())
         assert pandas_df['w'].dtype in (numpy.dtype('int32'),
                                         numpy.dtype('int64'))
-        assert pandas_df['y'].dtype == numpy.dtype('O')
+        assert pandas_df['y'].dtype == _pandas_string_dtype
         if 'z' in colnames:
             assert isinstance(pandas_df['z'].dtype,
                               pandas.api.types.CategoricalDtype)

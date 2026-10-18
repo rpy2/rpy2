@@ -1,3 +1,16 @@
+Release 3.7.0
+=============
+
+Changes
+-------
+
+- Python >= 3.10 is now required. This means that support for Python 3.9
+  is dropped.
+
+- The optional dependency on pandas now requires pandas >= 2.0 (and tests
+  with latest `pandas` release).
+
+
 Release 3.6.9
 =============
 
