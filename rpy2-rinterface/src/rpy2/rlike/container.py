@@ -342,7 +342,7 @@ class NamedList:
         self.__names.extend(lst.names())
         self.__list.extend(lst.values())
 
-    def insert(self, index: int, obj: 'NamedItem' | Any, tag=None):
+    def insert(self, index: int, obj: 'NamedItem | Any', tag=None):
         """
         Insert an object in the list
 
