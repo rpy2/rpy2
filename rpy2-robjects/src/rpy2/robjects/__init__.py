@@ -9,7 +9,6 @@ License: GPLv2+
 """
 
 import array
-import contextlib
 import os
 import types
 import typing
@@ -112,8 +111,9 @@ AT = typing.TypeVar('AT')
 def _vector_matrix_array(
         obj, vector_cls: typing.Type[VT],
         matrix_cls: typing.Type[MT],
-        array_cls: typing.Type[AT]) -> typing.Union[
-            typing.Type[VT], typing.Type[MT], typing.Type[AT]]:
+        array_cls: typing.Type[AT]) -> (
+            typing.Type[VT] | typing.Type[MT] | typing.Type[AT]
+    ):
     # Should it be promoted to array or matrix ?
     try:
         dim = obj.do_slot("dim")
@@ -530,8 +530,8 @@ class R(object):
         return os.linesep.join(s)
 
     def __call__(self, string: str,
-                 invisible: typing.Optional[bool] = None,
-                 print_r_warnings: typing.Optional[bool] = None) -> object:
+                 invisible: bool | None = None,
+                 print_r_warnings: bool | None = None) -> object:
         """Evaluate a string as R code.
 
         :param string: A string with R code

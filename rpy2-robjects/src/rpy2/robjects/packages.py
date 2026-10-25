@@ -66,7 +66,7 @@ def _eval_quiet(expr):
 #        (may be it is already the case and there is code
 #        duplicaton ?)
 def reval(string: str,
-          envir: typing.Optional[rinterface.SexpEnvironment] = None):
+          envir: rinterface.SexpEnvironment | None = None):
     """ Evaluate a string as R code
     :param string: R code
     :type string: a :class:`str`
@@ -165,8 +165,8 @@ class Package(ModuleType):
     _rpy2r = None
     _exported_names = None
     _symbol_r2python = None
-    __version__: typing.Optional[str] = None
-    __rdata__: typing.Optional[PackageData] = None
+    __version__: str | None = None
+    __rdata__: PackageData | None = None
 
     def __init__(self, env, name, translation={},
                  exported_names=None, on_conflict='fail',
@@ -480,7 +480,7 @@ def importr(name: str,
                       **{'lib.loc': rinterface.StrSexpVector((lib_loc, ))})[0]
     if not ok:
         raise LibraryError("The R package %s could not be imported" % name)
-    exported_names: typing.Optional[typing.Set[str]]
+    exported_names: typing.Set[str] | None
     if _package_has_namespace(name,
                               _system_file(package=name)):
         env = _get_namespace(name)
@@ -491,7 +491,7 @@ def importr(name: str,
         exported_names = None
         version = None
 
-    pack: typing.Union[InstalledSTPackage, InstalledPackage]
+    pack: InstalledSTPackage | InstalledPackage
     if signature_translation:
         pack = InstalledSTPackage(env, name,
                                   translation=robject_translations,

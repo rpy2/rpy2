@@ -10,7 +10,6 @@ import contextvars
 from functools import singledispatch
 import os
 from typing import Any
-from typing import Optional
 import typing
 import warnings
 from rpy2.rinterface_lib import _rinterface_capi
@@ -58,25 +57,29 @@ class NameClassMap(object):
     be a `DataFrame`.
     """
 
-    _default: typing.Union[
-        typing.Any,
+    _default: (
+        typing.Any
+        |
         typing.Callable[[typing.Any], typing.Any]
-    ]
+    )
     _map: typing.Dict[
         str,
-        typing.Union[
-            typing.Any,
+        (
+            typing.Any
+            |
             typing.Callable[[typing.Any], typing.Any]
-        ]
+        )
     ]
 
     default = property(lambda self: self._default)
 
     def __init__(self,
-                 defaultcls: typing.Union[
-                     typing.Type,
-                     typing.Callable[[typing.Any], typing.Any]] = object,
-                 namemap: typing.Optional[dict] = None):
+                 defaultcls: (
+                     typing.Type
+                     |
+                     typing.Callable[[typing.Any], typing.Any]
+                 ) = object,
+                 namemap: dict | None = None):
         if namemap is None:
             namemap = {}
         self._default = defaultcls
@@ -90,35 +93,38 @@ class NameClassMap(object):
 
     def __getitem__(
             self, key: str
-    ) -> typing.Union[typing.Type,
-                      typing.Callable[[typing.Any], typing.Any]]:
+    ) -> (typing.Type | typing.Callable[[typing.Any], typing.Any]):
         return self._map[key]
 
-    def __setitem__(self, key: str,
-                    value: typing.Union[
-                        typing.Type[typing.Any],
-                        typing.Callable[[typing.Any], typing.Any]
-                    ]):
+    def __setitem__(
+            self, key: str,
+            value: (
+                typing.Type[typing.Any] |
+                typing.Callable[[typing.Any], typing.Any]
+            )
+    ):
         self._map[key] = value
 
     def copy(self) -> 'NameClassMap':
         return NameClassMap(defaultcls=self._default,
                             namemap=self._map.copy())
 
-    def update(self,
-               mapping: typing.Dict[
-                   str,
-                   typing.Union[
-                       typing.Any,
-                       typing.Callable[[typing.Any], typing.Any]
-                   ]
-               ],
-               default: typing.Optional[typing.Type] = None):
+    def update(
+            self,
+            mapping: typing.Dict[
+                str,
+                (
+                    typing.Any |
+                    typing.Callable[[typing.Any], typing.Any]
+                )
+            ],
+            default: typing.Type | None = None
+    ):
         self._map.update(mapping)
         if default:
             self._default = default
 
-    def find_key(self, keys: typing.Iterable[str]) -> typing.Optional[str]:
+    def find_key(self, keys: typing.Iterable[str]) -> str | None:
         """
         Find the first mapping key in a sequence of names (keys).
 
@@ -135,7 +141,7 @@ class NameClassMap(object):
 
     def find(
             self, keys: typing.Iterable[str]
-    ) -> typing.Union[typing.Type, typing.Callable[[typing.Any], typing.Any]]:
+    ) -> (typing.Type | typing.Callable[[typing.Any], typing.Any]):
         """Find the first mapping in a sequence of names (keys).
 
         Returns the default class (specified when creating the
@@ -155,7 +161,7 @@ class NameClassMapContext(object):
                  d: dict):
         self._nameclassmap = nameclassmap
         self._d = d
-        self._keep: typing.List[typing.Tuple[str, bool, Optional[str]]] = []
+        self._keep: typing.List[typing.Tuple[str, bool, str | None]] = []
 
     def __enter__(self):
         nameclassmap = self._nameclassmap
@@ -289,7 +295,7 @@ class Converter(object):
     lineage = property(lambda self: self._lineage)
 
     def __init__(self, name: str,
-                 template: typing.Optional['Converter'] = None):
+                 template: 'Converter | None' = None):
         (py2rpy, rpy2py) = Converter.make_dispatch_functions()
         self._name = name
         self._py2rpy = py2rpy

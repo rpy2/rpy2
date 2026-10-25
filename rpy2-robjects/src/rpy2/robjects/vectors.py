@@ -327,7 +327,7 @@ class Vector(RObjectMixin):
             yield (k, v)
 
     def sample(self: collections.abc.Sized, n: int, replace: bool = False,
-               probabilities: typing.Optional[collections.abc.Sized] = None):
+               probabilities: collections.abc.Sized | None = None):
         """ Draw a random sample of size n from the vector.
 
         If 'replace' is True, the sampling is done with replacement.
@@ -654,17 +654,17 @@ class ListVector(Vector, ListSexpVector):
 
     def __init__(
             self,
-            nlist: typing.Union[
-                dict,
-                rinterface.ListSexpVector,
-                rlc.NamedList,
+            nlist: (
+                dict |
+                rinterface.ListSexpVector |
+                rlc.NamedList |
                 typing.Iterable[
-                    typing.Union[
-                        typing.Any,
+                    (
+                        typing.Any |
                         typing.Tuple[str, typing.Any]
-                    ]
+                    )
                 ]
-            ]
+            )
     ):
         if isinstance(nlist, rinterface.ListSexpVector):
             if nlist.typeof != rinterface.RTYPES.VECSXP:
@@ -686,7 +686,7 @@ class ListVector(Vector, ListSexpVector):
                 cv = conversion.get_conversion()
                 # use _kv to store temp list to keep the type checker happy.
                 _kv: typing.List[
-                    typing.Tuple[typing.Optional[str], typing.Any]
+                    typing.Tuple[str | None, typing.Any]
                 ] = []
                 for elt in nlist:
                     if (

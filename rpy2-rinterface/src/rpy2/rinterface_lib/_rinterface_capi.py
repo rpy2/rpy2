@@ -324,7 +324,7 @@ def _NAMED(robj: FFI.CData) -> int:
     return robj.sxpinfo.named
 
 
-def _string_getitem(cdata: FFI.CData, i: int) -> typing.Optional[str]:
+def _string_getitem(cdata: FFI.CData, i: int) -> str | None:
     with openrlib.lock:
         elt = openrlib.rlib.STRING_ELT(cdata, i)
         if elt == openrlib.rlib.R_NaString:
@@ -473,7 +473,7 @@ def _remove(name: FFI.CData, env: FFI.CData, inherits) -> FFI.CData:
     return res
 
 
-def _geterrmessage() -> typing.Optional[str]:
+def _geterrmessage() -> str | None:
     rlib = openrlib.rlib
     # TODO: use isString and installTrChar
     with memorymanagement.rmemory() as rmemory:
@@ -718,7 +718,7 @@ class PARSING_STATUS(enum.Enum):
 class RParsingError(Exception):
 
     def __init__(self, msg: str,
-                 status: typing.Optional[PARSING_STATUS] = None):
+                 status: PARSING_STATUS | None = None):
         full_msg = (
             '{msg} - {status}'
             .format(msg=msg, status=status)

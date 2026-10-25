@@ -6,10 +6,29 @@ from typing import Any
 from typing import Iterable
 from typing import Iterator
 from typing import List
-from typing import Optional
 from typing import Tuple
-from typing import Union
 import warnings
+
+
+class NamedItem:
+    """A named item (in a NamedList."""
+
+    def __init__(self, name, value):
+        self.__namevalue = (name, value)
+
+    @property
+    def name(self):
+        return self.__namevalue[0]
+
+    @property
+    def value(self):
+        return self.__namevalue[1]
+
+    def __eq__(self, y) -> bool:
+        if isinstance(y, NamedItem):
+            return (self.name == y.name) and (self.value == y.value)
+        else:
+            return self == y
 
 
 class OrdDict(dict):
@@ -26,11 +45,11 @@ class OrdDict(dict):
     an absence of name for the element.
     """
 
-    __l: List[Tuple[Optional[str], Any]]
+    __l: List[Tuple[str | None, Any]]
 
     def __init__(
             self,
-            c: Iterable[Union[Tuple[Optional[str], Any], 'NamedItem']]=[]
+            c: Iterable[Tuple[str | None, Any] | NamedItem] = []
     ):
         warnings.warn(
             'rpy2.rinterface.rlike.container.OrdDict is being deprecated. '
@@ -105,7 +124,7 @@ class OrdDict(dict):
     def __reversed__(self):
         raise NotImplementedError("Not yet implemented.")
 
-    def __setitem__(self, key: Optional[str], value: Any):
+    def __setitem__(self, key: str | None, value: Any):
         """ Replace the element if the key is known,
         and conserve its rank in the list, or append
         it if unknown. """
@@ -168,27 +187,6 @@ class OrdDict(dict):
         return tuple([x[1] for x in self.__l])
 
 
-class NamedItem:
-    """A named item (in a NamedList."""
-
-    def __init__(self, name, value):
-        self.__namevalue = (name, value)
-
-    @property
-    def name(self):
-        return self.__namevalue[0]
-
-    @property
-    def value(self):
-        return self.__namevalue[1]
-
-    def __eq__(self, y) -> bool:
-        if isinstance(y, NamedItem):
-            return (self.name == y.name) and (self.value == y.value)
-        else:
-            return self == y
-
-
 class NamedList:
     """ A mutable sequence for which each item might have a 'name'.
 
@@ -205,11 +203,11 @@ class NamedList:
     """
 
     __list: List
-    __names: List[Optional[str]]
+    __names: List[str | None]
 
     def __init__(self, seq: Iterable,
-                 names: Optional[Iterable] = None,
-                 tags: Optional[Iterable] = None):
+                 names: Iterable | None = None,
+                 tags: Iterable | None = None):
         if tags:
             warnings.warn(
                 'The named argument "tags" when constructing '
@@ -261,7 +259,7 @@ class NamedList:
     @classmethod
     def from_items(
             cls,
-            namesvalues: Iterable[Union[NamedItem, Tuple[Any, Any]]]
+            namesvalues: Iterable[NamedItem | Tuple[Any, Any]]
     ) -> 'NamedList':
         """Create a NamedList from an iterable of NamedItem objects or (name, value) tuples."""
         if isinstance(namesvalues, dict) or isinstance(namesvalues, NamedList):
@@ -277,15 +275,15 @@ class NamedList:
                        for obj in namesvalues)        
         return cls(iter_values, names=iter_names)
 
-    def __getitem__(self, i: Union[int, slice]):
+    def __getitem__(self, i: int | slice):
         if isinstance(i, slice):
             return type(self)(self.__list[i],
                               names=self.__names[i])
         else:
             return self.__list[i]
             
-    def __setitem__(self, i: Union[int, slice],
-                    y: 'Union[NamedList, NamedItem]'):
+    def __setitem__(self, i: int | slice,
+                    y: 'NamedList | NamedItem'):
         if isinstance(i, slice):
             step = i.step if i.step else 1
             if isinstance(y, NamedList):
@@ -310,7 +308,7 @@ class NamedList:
         else:
             raise ValueError('i must be a slice or an int.')
 
-    def append(self, y: Union[NamedItem, Any], tag=None):
+    def append(self, y: NamedItem | Any, tag=None):
         """ Append a NamedItems to the list
         :param y: NamedItem, or any object.
         :param tag: A tag/name (deprecated).
@@ -344,7 +342,7 @@ class NamedList:
         self.__names.extend(lst.names())
         self.__list.extend(lst.values())
 
-    def insert(self, index: int, obj: 'Union[NamedItem, Any]', tag=None):
+    def insert(self, index: int, obj: 'NamedItem | Any', tag=None):
         """
         Insert an object in the list
 
@@ -425,7 +423,7 @@ class NamedList:
         for tag in self.__names:
             yield tag
 
-    def pop(self, index: Optional[int] = None):
+    def pop(self, index: int | None = None):
         """
         Pop the item at a given index out of the list
 
@@ -495,7 +493,7 @@ class NamedList:
 
     tags = property(__get_tags, __set_tags)
 
-    def setname(self, i: Union[int, slice], n: Any):
+    def setname(self, i: int | slice, n: Any):
         """
         Set name 'n' for item at index 'i'.
 
