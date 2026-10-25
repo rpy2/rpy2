@@ -283,7 +283,7 @@ class NamedList:
             return self.__list[i]
             
     def __setitem__(self, i: int | slice,
-                    y: 'NamedList' | 'NamedItem'):
+                    y: 'NamedList | NamedItem'):
         if isinstance(i, slice):
             step = i.step if i.step else 1
             if isinstance(y, NamedList):
