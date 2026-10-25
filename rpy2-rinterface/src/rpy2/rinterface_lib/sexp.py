@@ -268,8 +268,7 @@ class NULLType(Sexp, metaclass=SingletonABC):
 
     @property
     def __sexp__(self) -> (
-            '_rinterface.SexpCapsule' |
-            '_rinterface.UninitializedRCapsule'
+            _rinterface.SexpCapsule | _rinterface.UninitializedRCapsule
     ):
         return self._sexpobject
 
