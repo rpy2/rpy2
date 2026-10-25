@@ -871,8 +871,8 @@ class StrSexpVector(SexpVector):
             self,
             i: int | slice,
             value: (
-                'typing.Sequence[str | None]' |
-                'StrSexpVector | str | NACharacterType'
+                'typing.Sequence[str | None] | StrSexpVector'
+                ' | str | NACharacterType'
             )
     ) -> None:
         cdata = self.__sexp__._cdata
@@ -1048,7 +1048,7 @@ def rclass_get(scaps: _rinterface.CapsuleBase) -> StrSexpVector:
 
 def rclass_set(
         scaps: _rinterface.CapsuleBase,
-        value: 'StrSexpVector' | str
+        value: StrSexpVector | str
 ) -> None:
     """ Set the R class.
 
