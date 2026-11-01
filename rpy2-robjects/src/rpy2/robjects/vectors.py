@@ -2,6 +2,9 @@ import abc
 import collections.abc
 from rpy2.robjects.robject import RObjectMixin
 import rpy2.rinterface as rinterface
+import rpy2.rinterface_lib.conversion
+import rpy2.rinterface_lib.memorymanagement
+import rpy2.rinterface_lib.openrlib
 from rpy2.rinterface_lib import sexp
 from . import conversion
 
@@ -12,8 +15,10 @@ try:
 except ImportError:
     from backports import zoneinfo  # type: ignore
 import copy
+import functools
 import itertools
 import math
+import operator
 import os
 import jinja2  # type: ignore
 import time
@@ -43,10 +48,10 @@ default_timezone = None
 
 
 class ExtractDelegator(object):
-    """ Delegate the R 'extraction' ("[") and 'replacement' ("[<-")
+    """ Delegate to R the 'extraction' ("[") and 'replacement' ("[<-")
     of items in a vector
-    or vector-like object. This can help making syntactic
-    niceties possible."""
+    or vector-like object.
+    """
 
     _extractfunction = rinterface.baseenv['[']
     _replacefunction = rinterface.baseenv['[<-']
@@ -56,7 +61,8 @@ class ExtractDelegator(object):
 
     def __call__(self, *args, **kwargs):
         """ Subset the "R-way.", using R's "[" function.
-           In a nutshell, R indexing differs from Python indexing on:
+
+        R indexing differs from Python indexing on:
 
            - indexing can be done with integers or strings (that are 'names')
 
@@ -93,7 +99,7 @@ class ExtractDelegator(object):
         """ Assign a given value to a given index position in the vector.
         The index position can either be:
         - an int: x[1] = y
-        - a tuple of ints: x[1, 2, 3] = y
+        - a tuple of ints: x[IntVector([1, 2, 3])] = y
         - an item-able object (such as a dict): x[{'i': 1}] = y
         """
         fun = self._replacefunction
@@ -111,15 +117,14 @@ class ExtractDelegator(object):
             args = rlc.NamedList.from_items(item)
             for i, nameditem in enumerate(args.items()):
                 args[i] = rlc.NamedItem(nameditem.name, cv.py2rpy(nameditem.value))
-            args.append(cv.py2rpy(value), tag=None)
-            args.insert(0, self._parent, tag=None)
+            args.append(rlc.NamedItem(None, cv.py2rpy(value)))
+            args.insert(0, rlc.NamedItem(None, self._parent), tag=None)
             res = fun.rcall(tuple((nitem.name, nitem.value) for nitem in args.items()),
                             globalenv_ri)
         else:
             args = [self._parent,
-                    cv.py2rpy(item),
-                    cv.py2rpy(value)]
-            res = fun(*args)
+                    cv.py2rpy(item)]
+            res = fun(*args, value=cv.py2rpy(value))
         # TODO: check refcount and copying
         self._parent.__sexp__ = res.__sexp__
 
@@ -322,7 +327,7 @@ class Vector(RObjectMixin):
             yield (k, v)
 
     def sample(self: collections.abc.Sized, n: int, replace: bool = False,
-               probabilities: typing.Optional[collections.abc.Sized] = None):
+               probabilities: collections.abc.Sized | None = None):
         """ Draw a random sample of size n from the vector.
 
         If 'replace' is True, the sampling is done with replacement.
@@ -340,7 +345,7 @@ class Vector(RObjectMixin):
         res = _sample(self, IntVector((n,)),
                       replace=BoolVector((replace, )),
                       prob=probabilities)
-        res = conversion.rpy2py(res)
+        res = conversion.get_conversion().rpy2py(res)
         return res
 
     def repr_format_elt(self, elt, max_width=12):
@@ -420,7 +425,7 @@ class StrVector(Vector, StrSexpVector):
         """
 
         res = self._factorconstructor(self)
-        return conversion.rpy2py(res)
+        return conversion.get_conversion().rpy2py(res)
 
 
 class IntVector(Vector, IntSexpVector):
@@ -450,7 +455,7 @@ class IntVector(Vector, IntSexpVector):
         if nbins is None:
             nbins = max(1, max(self))
         res = self._tabulate(self)
-        return conversion.rpy2py(res)
+        return conversion.get_conversion().rpy2py(res)
 
 
 class BoolVector(Vector, BoolSexpVector):
@@ -579,7 +584,7 @@ class FactorVector(IntVector):
 
     def __levels_get(self):
         res = self._levels(self)
-        return conversion.rpy2py(res)
+        return conversion.get_conversion().rpy2py(res)
 
     def __levels_set(self, value):
         res = self._levels_set(self,
@@ -647,31 +652,72 @@ class ListVector(Vector, ListSexpVector):
         </table>
         """)
 
-    def __init__(self, tlist):
-        if isinstance(tlist, rinterface.ListSexpVector):
-            if tlist.typeof != rinterface.RTYPES.VECSXP:
-                raise ValueError("tlist should have "
-                                 "tlist.typeof == rinterface.RTYPES.VECSXP")
-            super().__init__(tlist)
-        elif hasattr(tlist, 'items') and callable(tlist.items):
-            cv = conversion.get_conversion()
-            kv = [(k, cv.py2rpy(v)) for k, v in tlist.items()]
-            kv = tuple(kv)
-            df = baseenv_ri.find("list").rcall(kv, globalenv_ri)
-            super().__init__(df)
-        elif hasattr(tlist, "__iter__"):
-            if not callable(tlist.__iter__):
-                raise ValueError('tlist should have a /method/ __iter__ '
-                                 '(not an attribute)')
-            cv = conversion.get_conversion()
-            kv = [(str(k), cv.py2rpy(v)) for k, v in tlist]
-            kv = tuple(kv)
-            df = baseenv_ri.find("list").rcall(kv, globalenv_ri)
-            super().__init__(df)
+    def __init__(
+            self,
+            nlist: (
+                dict |
+                rinterface.ListSexpVector |
+                rlc.NamedList |
+                typing.Iterable[
+                    (
+                        typing.Any |
+                        typing.Tuple[str, typing.Any]
+                    )
+                ]
+            )
+    ):
+        if isinstance(nlist, rinterface.ListSexpVector):
+            if nlist.typeof != rinterface.RTYPES.VECSXP:
+                raise ValueError("nlist should have "
+                                 "nlist.typeof == rinterface.RTYPES.VECSXP")
+            super().__init__(nlist)
         else:
-            raise ValueError('tlist can only be either an iter-able or an '
-                             'instance of rpy2.rinterface.ListSexpVector, '
-                             'of R type VECSXP, or a Python dict.')
+            if isinstance(nlist, dict):
+                cv = conversion.get_conversion()
+                kv = tuple((k, cv.py2rpy(v)) for k, v in nlist.items())
+            elif isinstance(nlist, rlc.NamedList):
+                cv = conversion.get_conversion()
+                kv = tuple((nitem.name, cv.py2rpy(nitem.value))
+                           for nitem in nlist.items())
+            elif hasattr(nlist, "__iter__"):
+                if not callable(nlist.__iter__):
+                    raise ValueError('nlist should have a /method/ __iter__ '
+                                     '(not an attribute)')
+                cv = conversion.get_conversion()
+                # use _kv to store temp list to keep the type checker happy.
+                _kv: typing.List[
+                    typing.Tuple[str | None, typing.Any]
+                ] = []
+                for elt in nlist:
+                    if (
+                            isinstance(elt, str)
+                            or
+                            not hasattr(elt, '__len__')
+                            or
+                            not hasattr(elt, '__iter__')
+                    ):
+                        _kv.append((None, elt))
+                    elif (
+                            isinstance(elt, tuple)
+                            and
+                            len(elt) == 2
+                            and
+                            isinstance(elt[0], str)
+                    ):
+                        _kv.append(elt)
+                    else:
+                        raise ValueError(
+                            'When an iterable, each element must be atomic '
+                            'or a sequence of length 2 (a name and a value).'
+                        )
+                kv = tuple(_kv)
+                del _kv
+            else:
+                raise ValueError('nlist can only be either an iter-able or an '
+                                 'instance of rpy2.rinterface.ListSexpVector, '
+                                 'of R type VECSXP, or a Python dict.')
+            df = baseenv_ri.find("list").rcall(kv, globalenv_ri)
+            super().__init__(df)
         self._add_rops()
 
     def _iter_repr(self, max_items=9):
@@ -1034,21 +1080,59 @@ class Array(Vector):
     """ An R array """
     _dimnames_get = baseenv_ri['dimnames']
     _dimnames_set = baseenv_ri['dimnames<-']
-    _dim_get = baseenv_ri['dim']
-    _dim_set = baseenv_ri['dim<-']
     _isarray = baseenv_ri['is.array']
 
     def __dim_get(self):
-        res = self._dim_get(self)
-        res = conversion.get_conversion().rpy2py(res)
-        return res
+        # TODO: Low-level operation that should go rinterface?
+        dim = rinterface.NULL
+        with rpy2.rinterface_lib.memorymanagement.rmemory() as rmemory:
+            try:
+                rpy2.rinterface_lib.openrlib.lock.acquire()
+                rmemory.protect(self.__sexp__._cdata)
+                dim_cdata = rmemory.protect(
+                    rpy2.rinterface_lib.openrlib.rlib.Rf_getAttrib(
+                        self.__sexp__._cdata,
+                        rpy2.rinterface_lib.openrlib.rlib.R_DimSymbol
+                    )
+                )
+                dim = (rpy2.rinterface_lib.conversion
+                       ._cdata_to_rinterface(dim_cdata))
+            finally:
+                rpy2.rinterface_lib.openrlib.lock.release()
+        return conversion.get_conversion().rpy2py(dim)
 
     def __dim_set(self, value):
-        # TODO: R will create a copy of the object upon assignment
-        #   of a new dimension attribute.
-        raise NotImplementedError("Not yet implemented")
         value = conversion.get_conversion().py2rpy(value)
-        self._dim_set(self, value)
+        # TODO: perform checks because rinterface-level call
+        # may otherwise end in segfault.
+        if not (
+                isinstance(value, rinterface.NULLType)
+                or
+                isinstance(value, rinterface.IntSexpVector)
+        ):
+            raise TypeError(
+                'Value must be an R NULL, or an R vector of integers.'
+                )
+        if (
+                isinstance(value, rinterface.IntSexpVector)
+                and
+                not isinstance(self.dim, rinterface.NULLType)
+        ):
+            if functools.reduce(operator.mul, value) != len(self):
+                raise ValueError('New dim does not match length of array.')
+        # TODO: Low-level operation that should go rinterface?
+        with rpy2.rinterface_lib.memorymanagement.rmemory() as rmemory:
+            try:
+                rpy2.rinterface_lib.openrlib.lock.acquire()
+                rmemory.protect(self.__sexp__._cdata)
+                rmemory.protect(value.__sexp__._cdata)
+                rpy2.rinterface_lib.openrlib.rlib.Rf_setAttrib(
+                    self.__sexp__._cdata,
+                    rpy2.rinterface_lib.openrlib.rlib.R_DimSymbol,
+                    value.__sexp__._cdata
+                )
+            finally:
+                rpy2.rinterface_lib.openrlib.lock.release()
 
     dim = property(__dim_get, __dim_set, None,
                    "Get or set the dimension of the array.")
@@ -1410,26 +1494,26 @@ class DataFrame(ListVector):
 
     def cbind(self, *args, **kwargs):
         """ bind objects as supplementary columns """
-        new_args = [self, ] + [conversion.rpy2py(x) for x in args]
+        new_args = [self, ] + [conversion.get_conversion().rpy2py(x) for x in args]
         new_kwargs = dict(
-            [(k, conversion.rpy2py(v)) for k, v in kwargs.items()]
+            [(k, conversion.get_conversion().rpy2py(v)) for k, v in kwargs.items()]
         )
         res = self._cbind(*new_args, **new_kwargs)
         return conversion.get_conversion().rpy2py(res)
 
     def rbind(self, *args, **kwargs):
         """ bind objects as supplementary rows """
-        new_args = [conversion.rpy2py(x) for x in args]
+        new_args = [conversion.get_conversion().rpy2py(x) for x in args]
         new_kwargs = dict(
-            [(k, conversion.rpy2py(v)) for k, v in kwargs.items()]
+            [(k, conversion.get_conversion().rpy2py(v)) for k, v in kwargs.items()]
         )
         res = self._rbind(self, *new_args, **new_kwargs)
-        return conversion.rpy2py(res)
+        return conversion.get_conversion().rpy2py(res)
 
     def head(self, *args, **kwargs):
         """ Call the R generic 'head()'. """
         res = utils_ri['head'](self, *args, **kwargs)
-        return conversion.rpy2py(res)
+        return conversion.get_conversion().rpy2py(res)
 
     @classmethod
     def from_csvfile(cls, path, header=True, sep=',',

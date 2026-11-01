@@ -6,6 +6,7 @@ R version, rpy2 version, etc...).
 
 import argparse
 import enum
+import locale
 import logging
 import os
 import shlex
@@ -22,6 +23,8 @@ else:
     r_version_folder = 'i386'
 
 ENVVAR_CFFI_TYPE: str = 'RPY2_CFFI_MODE'
+ENCODING_LOCALE = locale.getpreferredencoding()
+ENCODING_SYS = sys.getdefaultencoding()
 
 
 class CFFI_MODE(enum.Enum):
@@ -33,18 +36,26 @@ class CFFI_MODE(enum.Enum):
 
 def get_cffi_mode(default=CFFI_MODE.ANY):
     cffi_mode = os.environ.get(ENVVAR_CFFI_TYPE, '')
-    res = default
-    for m in (CFFI_MODE.API, CFFI_MODE.ABI,
-              CFFI_MODE.BOTH, CFFI_MODE.ANY):
-        if cffi_mode.upper() == m.value:
-            res = m
-    logger.info(f'cffi mode is {m}')
+    res = None
+    if cffi_mode:
+        for m in (CFFI_MODE.API, CFFI_MODE.ABI,
+                  CFFI_MODE.BOTH, CFFI_MODE.ANY):
+            if cffi_mode.upper() == m.value:
+                res = m
+                break
+    else:
+        res = default
+    if res is None:
+        raise ValueError(
+            f'Invalid cffi mode: {cffi_mode}'
+        )
+    logger.info(f'cffi mode is {res}')
     return res
 
 
 def assert_python_version():
-    if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 7):
-        msg = 'Python >=3.3 is required to run rpy2'
+    if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 10):
+        msg = 'Python >=3.10 is required to run rpy2'
         logger.error(msg)
         raise RuntimeError(msg)
 
@@ -58,7 +69,7 @@ def r_version_from_subprocess():
     except Exception as e:  # FileNotFoundError, WindowsError, etc
         logger.error(f'Unable to determine the R version: {e}')
         return None
-    r_version = tmp.decode('ascii', 'ignore').split(os.linesep)
+    r_version = tmp.decode(ENCODING_LOCALE, 'ignore').splitlines()
     if r_version[0].startswith('WARNING'):
         r_version = r_version[1]
     else:
@@ -73,7 +84,7 @@ def r_home_from_subprocess() -> Optional[str]:
     logger.debug('Looking for R home with: {}'.format(' '.join(cmd)))
     tmp = subprocess.check_output(cmd, universal_newlines=True)
     # may raise FileNotFoundError, WindowsError, etc
-    r_home = tmp.split(os.linesep)
+    r_home = tmp.splitlines()
     if r_home[0].startswith('WARNING'):
         res = r_home[1]
     else:
@@ -135,10 +146,6 @@ def r_home_from_registry() -> Optional[str]:
         except Exception:  # FileNotFoundError, WindowsError, OSError, etc.
             pass
         else:
-            # We have a path RHOME
-            if sys.version_info[0] == 2:
-                # Python 2 path compatibility
-                r_home = r_home.encode(sys.getfilesystemencoding())
             # Break the loop, because we have a hit.
             break
     else:
@@ -180,12 +187,15 @@ def get_rlib_path(r_home: str, system: str) -> str:
     elif system == 'Darwin':
         lib_path = os.path.join(r_home, 'lib', 'libR.dylib')
     elif system == 'Windows':
-        # i386
+        # R >= 4.2 on Windows dropped bin/x64; R.dll lives in bin/ directly.
+        # Try the architecture-specific subdirectory first for R <= 4.1 compat.
+        arch_dir = os.path.join(r_home, 'bin', r_version_folder)
+        bin_dir = os.path.join(r_home, 'bin')
+        libpath_dir = arch_dir if os.path.isdir(arch_dir) else bin_dir
         os.environ['PATH'] = os.pathsep.join(
-            (os.environ['PATH'],
-             os.path.join(r_home, 'bin', r_version_folder))
+            (os.environ['PATH'], libpath_dir)
         )
-        lib_path = os.path.join(r_home, 'bin', r_version_folder, 'R.dll')
+        lib_path = os.path.join(libpath_dir, 'R.dll')
     else:
         raise ValueError(
             'The system {system} is currently not supported.'
@@ -225,8 +235,17 @@ def get_r_exec(r_home: str) -> str:
     :param: R HOME directory
     :return: Path to the R executable/binary"""
 
-    if sys.platform == 'win32' and '64 bit' in sys.version:
-        r_exec = os.path.join(r_home, 'bin', 'x64', 'R')
+    if os.name == 'nt':
+        # R >= 4.2 on Windows dropped the bin/x64 subdirectory.
+        # Try the architecture-specific path first for R <= 4.1 compat.
+        if sys.maxsize > 2**32:
+            r_exec_arch = os.path.join(r_home, 'bin', 'x64', 'R.exe')
+            if os.path.exists(r_exec_arch):
+                r_exec = r_exec_arch
+            else:
+                r_exec = os.path.join(r_home, 'bin', 'R.exe')
+        else:
+            r_exec = os.path.join(r_home, 'bin', 'R.exe')
     else:
         r_exec = os.path.join(r_home, 'bin', 'R')
     logger.info(f'R exec path: {r_exec}')
@@ -246,15 +265,16 @@ def _get_r_cmd_config(r_home: str, about: str, allow_empty=False):
     output = subprocess.check_output(
         cmd,
         universal_newlines=True
-    ).split(os.linesep)
+    )
+    output_lst = output.encode(ENCODING_LOCALE).decode(ENCODING_SYS).splitlines()
     # Twist if 'R RHOME' spits out a warning
-    if output[0].startswith('WARNING'):
-        msg = 'R emitting a warning: {}'.format(output[0])
+    if output_lst[0].startswith('WARNING'):
+        msg = 'R emitting a warning: {}'.format(output_lst[0])
         warnings.warn(msg)
         logger.debug(msg)
-        res = output[1:]
+        res = output_lst[1:]
     else:
-        res = output
+        res = output_lst
     logger.debug(res)
     return res
 
@@ -353,15 +373,31 @@ def iter_info():
 
     make_bold = _make_bold_win32 if os.name == 'nt' else _make_bold_unix
 
+    yield make_bold('CFFI extension type')
+    import importlib.util
+    for cffi_type in ('abi', 'api'):
+        rinterface_cffi_spec = importlib.util.find_spec(
+            f'_rinterface_cffi_{cffi_type}'
+        )
+        yield (f'  {cffi_type.upper()}: '
+               f'{"PRESENT" if rinterface_cffi_spec else "ABSENT"}')
+    yield f'  Environment variable: {ENVVAR_CFFI_TYPE}={get_cffi_mode().value}'
+    try:
+        import rpy2.rinterface_lib.openrlib
+        yield f'  Loaded: {rpy2.rinterface_lib.openrlib.cffi_mode}'
+    except ImportError:
+        yield '  Loaded: **Error importing rpy2.rinterface_lib.openrlib**'
+
     yield make_bold('rpy2 version:')
+
     try:
         # TODO: the repeated import is needed, without which Python
-        #   raises an UnboundLocalError (local variable reference before
+        #   raises an UnboundLocalError (local variable referenced before
         #   assignment).
         import rpy2.rinterface  # noqa: F811
-        yield rpy2.rinterface_lib.__version__
+        yield f'rpy2.rinterface: {rpy2.rinterface_lib.__version__}'
     except ImportError:
-        yield 'rpy2 cannot be imported'
+        yield 'rpy2.rinterface cannot be imported'
 
     yield make_bold('Python version:')
     yield sys.version
@@ -369,23 +405,23 @@ def iter_info():
     yield make_bold("Looking for R's HOME:")
 
     r_home = os.environ.get('R_HOME')
-    yield '    Environment variable R_HOME: %s' % r_home
+    yield f'  Environment variable R_HOME: {r_home}'
 
     r_home_default = None
     if os.name == 'nt':
         r_home_default = r_home_from_registry()
-        yield '    InstallPath in the registry: %s' % r_home_default
+        yield f'  InstallPath in the registry: {r_home_default}'
         r_user = os.environ.get('R_USER')
-        yield '    Environment variable R_USER: %s' % r_user
+        yield f'  Environment variable R_USER: {r_user}'
     else:
         try:
             r_home_default = r_home_from_subprocess()
         except Exception as e:
             logger.error(f'Unable to determine R home: {e}')
-        yield '    Calling `R RHOME`: %s' % r_home_default
+        yield f'  Calling `R RHOME`: {r_home_default}'
 
     yield (
-        '    Environment variable R_LIBS_USER: %s'
+        '  Environment variable R_LIBS_USER: %s'
         % os.environ.get('R_LIBS_USER')
     )
 
@@ -404,9 +440,9 @@ def iter_info():
     if os.name != 'nt':
         yield make_bold("R's value for LD_LIBRARY_PATH:")
         if r_home is None:
-            yield '     *** undefined when not R home can be determined'
+            yield '  *** undefined when not R home can be determined'
         else:
-            yield r_ld_library_path_from_subprocess(r_home)
+            yield f'  {r_ld_library_path_from_subprocess(r_home)}'
 
     try:
         import rpy2.rinterface_lib.openrlib
@@ -421,12 +457,12 @@ def iter_info():
         rlib_status = str(ose)
 
     yield make_bold("R version:")
-    yield '    In the PATH: %s' % r_version_from_subprocess()
-    yield '    Loading R library from rpy2: %s' % rlib_status
+    yield '  In the PATH: %s' % r_version_from_subprocess()
+    yield '  Loading R library from rpy2: %s' % rlib_status
 
     r_libs = os.environ.get('R_LIBS')
     yield make_bold('Additional directories to load R packages from:')
-    yield r_libs
+    yield f'  {r_libs}'
 
     yield make_bold('C extension compilation:')
     c_ext = CExtensionOptions()
@@ -438,29 +474,28 @@ def iter_info():
             c_ext.add_lib(*get_r_flags(r_home, '--ldflags'))
             c_ext.add_include(*get_r_flags(r_home, '--cppflags'))
             yield '  include:'
-            yield '  %s' % c_ext.include_dirs
+            yield '    %s' % c_ext.include_dirs
             yield '  libraries:'
-            yield '  %s' % c_ext.libraries
+            yield '    %s' % c_ext.libraries
             yield '  library_dirs:'
-            yield '  %s' % c_ext.library_dirs
+            yield '    %s' % c_ext.library_dirs
             yield '  extra_compile_args:'
-            yield '  %s' % c_ext.extra_compile_args
+            yield '    %s' % c_ext.extra_compile_args
             yield '  extra_link_args:'
-            yield '  %s' % c_ext.extra_link_args
+            yield '    %s' % c_ext.extra_link_args
         except subprocess.CalledProcessError:
             yield ('    Warning: Unable to get R compilation flags.')
+            if os.name == 'nt':
+                yield (
+                    '    On Windows "make" and "sh" (in the R dev tools) '
+                    'are needed.'
+                )
 
-    yield 'Directory for the R shared library:'
-    yield get_r_libnn(r_home)
-
-    yield make_bold('CFFI extension type')
-    yield f'  Environment variable: {ENVVAR_CFFI_TYPE}'
-    yield f'  Value: {get_cffi_mode()}'
-
-    import importlib
-    for cffi_type in ('abi', 'api'):
-        rinterface_cffi_spec = importlib.util.find_spec(f'_rinterface_cffi_{cffi_type}')
-        yield f'  {cffi_type.upper()}: {"PRESENT" if rinterface_cffi_spec else "ABSENT"}'
+    yield '  Directory for the R shared library:'
+    try:
+        yield f'    {get_r_libnn(r_home)}'
+    except subprocess.CalledProcessError:
+        yield ('    Warning: Unable to get path for R shared library.')
 
 
 def set_default_logging():

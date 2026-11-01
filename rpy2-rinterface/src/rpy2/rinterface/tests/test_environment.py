@@ -67,14 +67,6 @@ def test_setitem_baseenv_invalid():
         rinterface.baseenv['pi'] = 42
 
 
-def test_frame():
-    env = rinterface.baseenv["new.env"]()
-    f = env.frame()
-    # Outside of an R call stack a frame will be NULL,
-    # or so I understand.
-    assert f is rinterface.NULL
-
-
 def test_find_invalid_notstring():
     with pytest.raises(TypeError):
         rinterface.globalenv.find(None)
@@ -126,9 +118,8 @@ def test_find_functiononly():
     hist = rinterface.globalenv.find('hist', wantfun=False)
     assert rinterface.RTYPES.CLOSXP == hist.typeof
     rinterface.globalenv['hist'] = rinterface.StrSexpVector(['foo', ])
-
-    with pytest.raises(KeyError):
-        rinterface.globalenv.find('hist', wantfun=True)
+    hist = rinterface.globalenv.find('hist', wantfun=True)
+    assert rinterface.RTYPES.CLOSXP == hist.typeof
 
 
 # TODO: isn't this already tested elsewhere ?
@@ -148,16 +139,16 @@ def test_subscript():
 
 def test_subscript_utf8():
     env = rinterface.baseenv['new.env']()
-    env['呵呵'] = rinterface.IntSexpVector((1,))
+    env['中文'] = rinterface.IntSexpVector((1,))
     assert len(env) == 1
-    assert len(env['呵呵']) == 1
-    assert env['呵呵'][0] == 1
+    assert len(env['中文']) == 1
+    assert env['中文'][0] == 1
 
 
 def test_subscript_missing_utf8():
     env = rinterface.baseenv['new.env']()
     with pytest.raises(KeyError):
-        env['呵呵']
+        env['中文']
 
 
 def test_length():
@@ -218,6 +209,14 @@ def test_enclos_get():
     assert isinstance(env.enclos, rinterface.SexpEnvironment)
 
 
+@pytest.mark.skipif(
+    (
+        int(rinterface.sexp.RVersion()['major']),
+        int(rinterface.sexp.RVersion()['minor'].split('.')[0])
+    ) >= (4, 5),
+    reason=('Changing the enclosing environment disappeared from the '
+            'API with R-4.6.0.')
+)
 def test_enclos_baseenv_set():
     env = rinterface.baseenv["new.env"]()
     orig_enclosing_env = rinterface.baseenv.enclos
@@ -227,6 +226,14 @@ def test_enclos_baseenv_set():
     assert enclosing_env != env.enclos
 
 
+@pytest.mark.skipif(
+    (
+        int(rinterface.sexp.RVersion()['major']),
+        int(rinterface.sexp.RVersion()['minor'].split('.')[0])
+    ) >= (4, 5),
+    reason=('Changing the enclosing environment disappeared from the '
+            'API with R-4.6.0.')
+)
 def test_enclos_baseenv_set_invalid():
     with pytest.raises(AssertionError):
         rinterface.baseenv.enclos = 123

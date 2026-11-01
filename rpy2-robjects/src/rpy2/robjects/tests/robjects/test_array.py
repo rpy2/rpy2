@@ -27,10 +27,37 @@ def test_init():
 def test_dim():
     m = robjects.r.matrix(1, nrow=5, ncol=3)
     a = robjects.vectors.FloatArray(m)
-    d = a.dim
-    assert len(d) == 2
-    assert d[0] == 5
-    assert d[1] == 3
+    assert len(a.dim) == 2
+    assert tuple(a.dim) == (5, 3)
+
+
+def test_dim_set():
+    m = robjects.r.matrix(1, nrow=5, ncol=3)
+    a = robjects.vectors.FloatArray(m)
+    a.dim = robjects.vectors.IntVector([3, 5])
+    assert len(a.dim) == 2
+    assert tuple(a.dim) == (3, 5)
+
+
+def test_dim_set_null():
+    m = robjects.r.matrix(1, nrow=5, ncol=3)
+    a = robjects.vectors.FloatArray(m)
+    a.dim = robjects.NULL
+    assert a.dim == robjects.NULL
+
+
+def test_dim_set_invalid():
+    m = robjects.r.matrix(1, nrow=5, ncol=3)
+    a = robjects.vectors.FloatArray(m)
+    with pytest.raises(TypeError):
+        a.dim = [5, 3]
+
+
+def test_dim_set_invalid2():
+    m = robjects.r.matrix(1, nrow=5, ncol=3)
+    a = robjects.vectors.FloatArray(m)
+    with pytest.raises(ValueError):
+        a.dim = robjects.vectors.IntVector([5, 5])
 
 
 def test_names_get():

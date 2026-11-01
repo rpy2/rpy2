@@ -6,7 +6,6 @@ from rpy2.rinterface import (Sexp,
                              StrSexpVector, ByteSexpVector,
                              RTYPES)
 import numpy  # type: ignore
-import warnings
 
 # TODO: move this to rinterface.
 RINT_SIZE = 32
@@ -154,6 +153,16 @@ def orddict_py2rpy(obj):
     return rlist
 
 
+@py2rpy.register(rlc.NamedList)
+def namedlist_py2rpy(obj: rlc.NamedList):
+    rlist = ro.vectors.ListVector.from_length(len(obj))
+    rlist.names = ro.vectors.StrVector(tuple(obj.names()))
+    with conversion.get_conversion().context() as cv:
+        for i, v in enumerate(obj.values()):
+            rlist[i] = cv.py2rpy(v)
+    return rlist
+
+
 # TODO: delete ?
 # @py2ro.register(numpy.ndarray)
 # def numpy2ro(obj):
@@ -201,7 +210,7 @@ def rpy2py_list(obj: rinterface.ListSexpVector):
     # not a data.frame, yet is it still possible to convert it
     if not isinstance(obj, ro.vectors.ListVector):
         obj = ro.vectors.ListVector(obj)
-    res = rlc.OrdDict(obj.items())
+    res = rlc.NamedList.from_items(obj.items())
     return res
 
 
@@ -248,41 +257,15 @@ converter._rpy2py_nc_map.update(
 )
 
 
+_DEPRECATION_MSG = """
+The activate and deactivate are deprecated. To set a conversion
+context check the docstring for rpy2.robjects.conversion.Converter.context.
+"""
+
+
 def activate():
-    warnings.warn('The global conversion available with activate() '
-                  'is deprecated and will be removed in the next major '
-                  'release. Use a local converter.',
-                  category=DeprecationWarning)
-
-    global original_converter
-
-    # If module is already activated, there is nothing to do
-    if original_converter is not None:
-        return
-
-    original_converter = conversion.converter_ctx.get()
-    new_converter = conversion.Converter('numpy conversion',
-                                         template=original_converter)
-
-    for k, v in py2rpy.registry.items():
-        if k is object:
-            continue
-        new_converter.py2rpy.register(k, v)
-
-    for k, v in rpy2py.registry.items():
-        if k is object:
-            continue
-        new_converter.rpy2py.register(k, v)
-
-    conversion.set_conversion(new_converter)
+    raise DeprecationWarning(_DEPRECATION_MSG)
 
 
 def deactivate():
-    global original_converter
-    # If module has never been activated or already deactivated,
-    # there is nothing to do
-    if original_converter is None:
-        return
-
-    conversion.set_conversion(original_converter)
-    original_converter = None
+    raise DeprecationWarning(_DEPRECATION_MSG)

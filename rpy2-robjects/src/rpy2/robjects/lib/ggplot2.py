@@ -65,11 +65,20 @@ ggplot2 = WeakPackage(ggplot2._env,
                       symbol_r2python=ggplot2._symbol_r2python,
                       symbol_resolve=ggplot2._symbol_resolve)
 
-TARGET_VERSION = '3.3.'
-if not ggplot2.__version__.startswith(TARGET_VERSION):
+TARGET_VERSION = '3.5.'
+if ggplot2.__version__ is None:
     warnings.warn(
-        'This was designed against ggplot2 versions starting with %s but you '
-        'have %s' % (TARGET_VERSION, ggplot2.__version__))
+        'This was designed against ggplot2 versions starting '
+        f'with {TARGET_VERSION} but version extraction for '
+        'the R package is not working.'
+    )
+elif ggplot2.__version__.startswith(TARGET_VERSION):
+    warnings.warn(
+        'This was designed against ggplot2 versions starting '
+        f'with {TARGET_VERSION} but you '
+        f'have {ggplot2.__version__}.'
+    )
+
 ggplot2_env = robjects.baseenv['as.environment']('package:ggplot2')
 
 StrVector = robjects.StrVector
@@ -82,7 +91,61 @@ def as_symbol(x):
 _AES_RLANG = rl('ggplot2::aes()')
 
 
-class GGPlot(robjects.vectors.ListVector):
+# TODO: Objects created by ggplot() are no longer
+# R lists with ggplot2-4.0.0.
+# Code handling earlier ggplot2 version should be deleted
+# when support moves to ggplot2>=4.0.0.
+if ggplot2.__version__ is None or ggplot2.__version__ > '4.':
+    if ggplot2.__version__ is None:
+        warnings.warn(
+            'The version of the R package ggplot2 cannot be determined. '
+            'Assuming that this is a version compatible with 4.0.'
+        )
+
+    class _GGPlot_transition4(robjects.methods.RS4):
+        """Temporary helper class for typing.
+
+        This will only be used during transition to ggplot2-4.0."""
+        pass
+
+    class Options(robjects.methods.RS4):
+        def __repr__(self):
+            s = '<instance of %s : %i>' % (type(self), id(self))
+            return s
+
+    class _Labs_transition4(robjects.vectors.ListVector):
+        """Temporary helper class for typing.
+
+        This will only be used during transition to ggplot2-4.0."""
+        pass
+
+    class Theme(robjects.methods.RS4):
+        pass
+
+else:
+
+    class _GGPlot_transition4(robjects.vectors.ListVector):  # type: ignore[no-redef]
+        """Temporary helper class for typing.
+
+        This will only be used during transition to ggplot2-4.0."""
+        pass
+
+    class Options(robjects.vectors.ListVector):  # type: ignore[no-redef]
+        def __repr__(self):
+            s = '<instance of %s : %i>' % (type(self), id(self))
+            return s
+
+    class _Labs_transition4(Options):  # type: ignore[no-redef]
+        """Temporary helper class for typing.
+
+        This will only be used during transition to ggplot2-4.0."""
+        pass
+
+    class Theme(Options):  # type: ignore[no-redef]
+        pass
+
+
+class GGPlot(_GGPlot_transition4):
     """ A Grammar of Graphics Plot.
 
     GGPlot instances can be added to one an other in order to construct
@@ -90,8 +153,24 @@ class GGPlot(robjects.vectors.ListVector):
     """
 
     _constructor = ggplot2._env['ggplot']
-    _rprint = ggplot2._env['print.ggplot']
-    _add = ggplot2._env['%+%']
+    # TODO: print.ggplot no longer exists with ggplot2-4.0.0.
+    # Code handling earlier ggplot2 version should be deleted
+    # when support moves to ggplot2>=4.0.0.
+    _rprint = (base._env['print'] if ggplot2.__version__ > '4.'
+               else ggplot2._env['print.ggplot'])
+    _add = (ggplot2._env['+']
+            if (
+                    ggplot2.__version__ > '4.'
+                    and
+                    tuple(
+                        robjects.vectors.StrVector(
+                            robjects.r(
+                                'as.character(R.Version()[c("major", "minor")])'
+                            )
+                        )
+                    ) >= ('4', '5')
+            )
+            else ggplot2._env['%+%'])
 
     @classmethod
     def new(cls, data, mapping=_AES_RLANG, **kwargs):
@@ -120,16 +199,31 @@ ggplot = GGPlot.new
 
 
 class Aes(robjects.ListVector):
-    """ Aesthetics mapping, using expressions rather than string
-    (this is the most common form when using the package in R - it might
-    be easier to use AesString when working in Python using rpy2 -
-    see class AesString in this Python module).
+    """ Aesthetics mapping, using expressions rather than string.
+
+    This associates dimensions in the data sets (columns in the DataFrame),
+    possibly with a transformation applied on-the-fly (e.g., "log(value)",
+    or "cost / benefits") to graphical "dimensions" in a chosen graphical
+    representation (e.g., x-axis, color of points, size, etc...).
+
+    Note that the mapping of graphical representation (x, color, etc.)
+    are to R language objects, not Python strings! :mod:`robjects`
+    contains a convenience shortcut to create unevaluated R objects
+    For example:
+
+    >>> from rpy2.robjects import rl
+    >>> aes(x=rl('x+1'), y=rl('1/(y+0.0001)'))
+
+    Not all graphical representations have all dimensions. Refer to the
+    documentation of ggplot2, online tutorials, or Hadley's book for
+    more details.
     """
     _constructor = ggplot2_env['aes']
 
     @classmethod
     def new(cls, *args, **kwargs):
-        res = cls(cls._constructor(*args, **kwargs))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(*args, **kwargs))
         return res
 
 
@@ -154,7 +248,8 @@ class Vars(robjects.ListVector):
                     a, env=robjects.baseenv['sys.frame']()
                 )
             )
-        res = cls(cls._constructor(*new_args))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(*new_args))
         return res
 
 
@@ -180,7 +275,8 @@ class AesString(robjects.ListVector):
     @classmethod
     def new(cls, **kwargs):
         """Constructor for the class AesString."""
-        res = cls(cls._constructor(**kwargs))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(**kwargs))
         return res
 
 
@@ -1128,13 +1224,6 @@ guide_colourbar = ggplot2.guide_colourbar
 guide_legend = ggplot2.guide_legend
 
 
-class Options(robjects.ListVector):
-
-    def __repr__(self):
-        s = '<instance of %s : %i>' % (type(self), id(self))
-        return s
-
-
 class Element(Options):
     pass
 
@@ -1147,10 +1236,11 @@ class ElementText(Element):
     def new(cls, family='', face='plain', colour='black', size=10,
             hjust=0.5, vjust=0.5, angle=0, lineheight=1.1,
             color=NULL):
-        res = cls(cls._constructor(family=family, face=face,
-                                   colour=colour, size=size,
-                                   hjust=hjust, vjust=vjust,
-                                   angle=angle, lineheight=lineheight))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(family=family, face=face,
+                                       colour=colour, size=size,
+                                       hjust=hjust, vjust=vjust,
+                                       angle=angle, lineheight=lineheight))
         return res
 
 
@@ -1162,14 +1252,26 @@ class ElementLine(Element):
     _constructor = ggplot2.element_line
 
     @classmethod
-    def new(cls,  colour=NULL, size=NULL, linetype=NULL, lineend=NULL,
+    def new(cls,  colour=NULL,
+            size=NULL, linewidth=NULL,
+            linetype=NULL, lineend=NULL,
             color=NULL, arrow=NULL, inherit_blank=False):
-        res = cls(
-            cls._constructor(colour=colour, size=size,
-                             linetype=linetype, lineend=lineend,
-                             color=color, arrow=arrow,
-                             inherit_blank=inherit_blank)
-        )
+        if size is not NULL:
+            res = cls(
+                cls._constructor(colour=colour,
+                                 size=size, linewidth=linewidth,
+                                 linetype=linetype, lineend=lineend,
+                                 color=color, arrow=arrow,
+                                 inherit_blank=inherit_blank)
+            )
+        else:
+            res = cls(
+                cls._constructor(colour=colour,
+                                 linewidth=linewidth,
+                                 linetype=linetype, lineend=lineend,
+                                 color=color, arrow=arrow,
+                                 inherit_blank=inherit_blank)
+            )
         return res
 
 
@@ -1181,31 +1283,36 @@ class ElementRect(Element):
     _constructor = ggplot2.element_rect
 
     @classmethod
-    def new(cls, fill=NULL, colour=NULL, size=NULL,
+    def new(cls, fill=NULL, colour=NULL,
+            size=NULL, linewidth=NULL,
             linetype=NULL, color=NULL):
-        res = cls(cls._constructor(fill=fill, colour=colour,
-                                   size=size, linetype=linetype,
-                                   color=color))
+        if size is not NULL:
+            res = cls(cls._constructor(fill=fill, colour=colour,
+                                       size=size, linewidth=linewidth,
+                                       linetype=linetype,
+                                       color=color))
+        else:
+            res = cls(cls._constructor(fill=fill, colour=colour,
+                                       linewidth=linewidth,
+                                       linetype=linetype,
+                                       color=color))
         return res
 
 
 element_rect = ElementRect.new
 
 
-class Labs(Options):
+class Labs(_Labs_transition4):
     _constructor = ggplot2.labs
 
     @classmethod
     def new(cls, **kwargs):
-        res = cls(cls._constructor(**kwargs))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(**kwargs))
         return res
 
 
 labs = Labs.new
-
-
-class Theme(Options):
-    pass
 
 
 class ElementBlank(Theme):
@@ -1213,7 +1320,8 @@ class ElementBlank(Theme):
 
     @classmethod
     def new(cls):
-        res = cls(cls._constructor())
+        with robjects.default_converter.context():
+            res = cls(cls._constructor())
         return res
 
 
@@ -1228,7 +1336,8 @@ class ThemeGrey(Theme):
 
     @classmethod
     def new(cls, base_size=12):
-        res = cls(cls._constructor(base_size=base_size))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size))
         return res
 
 
@@ -1240,8 +1349,9 @@ class ThemeClassic(Theme):
 
     @classmethod
     def new(cls, base_size=12, base_family=''):
-        res = cls(cls._constructor(base_size=base_size,
-                                   base_family=base_family))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size,
+                                       base_family=base_family))
         return res
 
 
@@ -1253,8 +1363,9 @@ class ThemeDark(Theme):
 
     @classmethod
     def new(cls, base_size=12, base_family=''):
-        res = cls(cls._constructor(base_size=base_size,
-                                   base_family=base_family))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size,
+                                       base_family=base_family))
         return res
 
 
@@ -1266,8 +1377,9 @@ class ThemeLight(Theme):
 
     @classmethod
     def new(cls, base_size=12, base_family=''):
-        res = cls(cls._constructor(base_size=base_size,
-                                   base_family=base_family))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size,
+                                       base_family=base_family))
         return res
 
 
@@ -1279,7 +1391,8 @@ class ThemeBW(Theme):
 
     @classmethod
     def new(cls, base_size=12):
-        res = cls(cls._constructor(base_size=base_size))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size))
         return res
 
 
@@ -1291,7 +1404,8 @@ class ThemeGray(Theme):
 
     @classmethod
     def new(cls, base_size=12):
-        res = cls(cls._constructor(base_size=base_size))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size))
         return res
 
 
@@ -1304,8 +1418,9 @@ class ThemeMinimal(Theme):
 
     @classmethod
     def new(cls, base_size=12, base_family=''):
-        res = cls(cls._constructor(base_size=base_size,
-                                   base_family=base_family))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size,
+                                       base_family=base_family))
         return res
 
 
@@ -1317,8 +1432,9 @@ class ThemeLinedraw(Theme):
 
     @classmethod
     def new(cls, base_size=12, base_family=""):
-        res = cls(cls._constructor(base_size=base_size,
-                                   base_family=base_family))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size,
+                                       base_family=base_family))
         return res
 
 
@@ -1330,8 +1446,9 @@ class ThemeVoid(Theme):
 
     @classmethod
     def new(cls, base_size=12, base_family=''):
-        res = cls(cls._constructor(base_size=base_size,
-                                   base_family=base_family))
+        with robjects.default_converter.context():
+            res = cls(cls._constructor(base_size=base_size,
+                                       base_family=base_family))
         return res
 
 

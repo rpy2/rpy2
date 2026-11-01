@@ -3,5 +3,6 @@
 struct RPY2_sym_env_data {
   SEXP symbol;
   SEXP environment;
+  Rboolean inherits;
   SEXP data;
 };

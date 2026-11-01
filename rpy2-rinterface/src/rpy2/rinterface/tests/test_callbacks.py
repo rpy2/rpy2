@@ -8,6 +8,7 @@ import tempfile
 import sys
 import rpy2.rinterface as rinterface
 from rpy2.rinterface_lib import callbacks
+from rpy2.rinterface_lib import ffi_proxy
 from rpy2.rinterface_lib import openrlib
 
 rinterface.initr()
@@ -50,7 +51,7 @@ def test_consolewrite_print_error(caplog):
     msg = "Doesn't work."
 
     def f(x):
-        raise Exception(msg)
+        raise RuntimeError(msg)
 
     with utils.obj_in_module(callbacks, 'consolewrite_print', f),\
             caplog.at_level(logging.ERROR, logger='callbacks.logger'):
@@ -59,10 +60,17 @@ def test_consolewrite_print_error(caplog):
         rinterface.baseenv["print"](code)
         assert len(caplog.record_tuples) > 0
         for x in caplog.record_tuples:
-            assert x == ('rpy2.rinterface_lib.callbacks',
-                         logging.ERROR,
-                         (callbacks
-                          ._WRITECONSOLE_EXCEPTION_LOG % msg))
+            assert x[0] == 'rpy2.rinterface_lib.callbacks'
+            assert x[1] == logging.ERROR
+            assert x[2].startswith(
+                callbacks
+                ._WRITECONSOLE_EXCEPTION_LOG
+                .format(
+                    exception=RuntimeError,
+                    exc_value=msg,
+                    traceback=''
+                )
+            )
 
 
 def testSetResetConsole():
@@ -169,12 +177,18 @@ def test_consoleread_empty():
     assert msg.rstrip() == ''
 
 
-def test_console_read_with_error(caplog):
+@pytest.mark.skipif(
+    condition=(ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
+               ==
+               ffi_proxy.InterfaceType.ABI),
+    reason='Exceptions from callbacks propagated back when in API mode.'
+)
+def test_console_read_with_error_api(caplog):
 
     msg = "Doesn't work."
 
     def f(prompt):
-        raise Exception(msg)
+        raise RuntimeError(msg)
 
     with utils.obj_in_module(callbacks, 'consoleread', f),\
             caplog.at_level(logging.ERROR, logger='callbacks.logger'):
@@ -182,14 +196,45 @@ def test_console_read_with_error(caplog):
         prompt = openrlib.ffi.new('char []', b'foo')
         n = 1000
         buf = openrlib.ffi.new('char [%i]' % n)
+        with pytest.raises(RuntimeError):
+            res = callbacks._consoleread(prompt, buf, n, 0)
+
+
+@pytest.mark.skipif(
+    condition=(ffi_proxy.get_ffi_mode(openrlib._rinterface_cffi)
+               ==
+               ffi_proxy.InterfaceType.API),
+    reason='Exceptions from callbacks not propagated back when in ABI mode.'
+)
+def test_console_read_with_error_abi(caplog):
+
+    msg = "Doesn't work."
+
+    def f(prompt):
+        raise RuntimeError(msg)
+
+    with utils.obj_in_module(callbacks, 'consoleread', f),\
+            caplog.at_level(logging.ERROR, logger='callbacks.logger'):
+        code = rinterface.StrSexpVector(["3", ])
+        caplog.clear()
+        prompt = openrlib.ffi.new('char []', b'foo')
+        n = 1000
+        buf = openrlib.ffi.new('char [%i]' % n)
         res = callbacks._consoleread(prompt, buf, n, 0)
-        assert res == 0
         assert len(caplog.record_tuples) > 0
         for x in caplog.record_tuples:
-            assert x == ('rpy2.rinterface_lib.callbacks',
-                         logging.ERROR,
-                         (callbacks
-                          ._READCONSOLE_EXCEPTION_LOG % msg))
+            assert x[0] == 'rpy2.rinterface_lib.callbacks'
+            assert x[1] == logging.ERROR
+            assert x[2].startswith(
+                callbacks
+                ._READCONSOLE_EXCEPTION_LOG
+                .format(
+                    exception=RuntimeError,
+                    exc_value=msg,
+                    traceback=''
+                )
+            )
+        assert res == 0
 
 
 def test_showmessage_default(capsys):

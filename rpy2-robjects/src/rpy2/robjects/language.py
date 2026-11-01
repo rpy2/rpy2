@@ -16,16 +16,18 @@ _parse = ri.parse
 
 
 def eval(
-        x: typing.Union[str, ri.ExprSexpVector],
-        envir: typing.Union[
-            None,
-            ri.SexpEnvironment, ri.NULLType,
-            ri.ListSexpVector, ri.PairlistSexpVector, int,
-            ri._MissingArgType] = None,
-        enclos: typing.Union[
-            None,
-            ri.ListSexpVector, ri.PairlistSexpVector,
-            ri.NULLType, ri._MissingArgType] = None
+        x: str | ri.ExprSexpVector,
+        envir: (
+            None |
+            ri.SexpEnvironment | ri.NULLType |
+            ri.ListSexpVector | ri.PairlistSexpVector | int |
+            ri._MissingArgType
+        ) = None,
+        enclos: (
+            None |
+            ri.ListSexpVector | ri.PairlistSexpVector |
+            ri.NULLType | ri._MissingArgType
+        ) = None
 ) -> RObject:
     """ Evaluate R code. If the input object is an R expression it
     evaluates it directly, if it is a string it parses it before
@@ -47,12 +49,12 @@ def eval(
     The R objects resulting from the evaluation."""
 
     if envir is None:
-        envir = ri.get_evaluation_context()
+        envir = ri.evaluation_context.get()
     if isinstance(x, str):
         res = ri.evalr(x, envir=envir, enclos=enclos)
     else:
         res = ri.evalr_expr(x, envir=envir, enclos=enclos)
-    return conversion.rpy2py(res)
+    return conversion.get_conversion().rpy2py(res)
 
 
 LangVector_VT = typing.TypeVar('LangVector_VT', bound='LangVector')

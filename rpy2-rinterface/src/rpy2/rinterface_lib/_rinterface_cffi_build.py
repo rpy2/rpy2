@@ -129,6 +129,11 @@ def define_osname(definitions):
         definitions['OSNAME_NT'] = True
 
 
+def define_complex(definitions, cffi_mode):
+    if cffi_mode == 'ABI':
+        definitions['RPY2_COMPLEX_LEGACY'] = True
+
+
 def create_cdef(definitions, header_filename):
     cdef = []
     with open(
@@ -155,6 +160,7 @@ def createbuilder_abi():
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
+    define_complex(definitions, cffi_mode='ABI')
     r_h = read_source('R_API.h')
     # TODO: is R_INTERFACE_PTRS defined for all non-Windows systems?
     if not os.name == 'nt':
@@ -176,6 +182,7 @@ def createbuilder_api():
     definitions = {}
     define_rlen_kind(ffibuilder, definitions)
     define_osname(definitions)
+    define_complex(definitions, cffi_mode='API')
     # TODO: is R_INTERFACE_PTRS defined for all non-Windows systems?
     if not os.name == 'nt':
         definitions['R_INTERFACE_PTRS'] = True
@@ -204,15 +211,23 @@ def createbuilder_api():
     c_ext.add_lib(
         *(situation.get_r_flags(r_home, '--ldflags'))
     )
-    c_ext.add_lib(
-        *(situation.get_r_libs(r_home, 'BLAS_LIBS'))
-    )
+    # On Windows, R.dll already embeds the necessary BLAS routines via
+    # Rblas.dll, which it loads at runtime.  Linking BLAS_LIBS separately
+    # is not needed and may introduce MinGW-specific libraries (e.g.
+    # -lgfortran, -lm, -lquadmath) that are not available as MSVC-style
+    # import libraries, causing link errors in some build configurations.
+    if os.name != 'nt':
+        c_ext.add_lib(
+            *(situation.get_r_libs(r_home, 'BLAS_LIBS'))
+        )
     c_ext.add_include(
         *situation.get_r_flags(r_home, '--cppflags')
     )
-    c_ext.extra_link_args.append(
-        f'-Wl,-rpath,{situation.get_rlib_rpath(r_home)}'
-    )
+    # -Wl,-rpath is a POSIX/ELF linker concept not applicable on Windows.
+    if os.name != 'nt':
+        c_ext.extra_link_args.append(
+            f'-Wl,-rpath,{situation.get_rlib_rpath(r_home)}'
+        )
     # TODO: What is this about?
     if 'RPY2_RLEN_LONG' in definitions:
         definitions['RPY2_RLEN_LONG'] = True
@@ -246,12 +261,13 @@ def createbuilder_api():
                 ffi_proxy._cleanup_def,
                 ffi_proxy._showfiles_def,
                 ffi_proxy._processevents_def,
+                # ffi_proxy._polled_events_def,
                 ffi_proxy._busy_def,
                 ffi_proxy._callback_def,
                 ffi_proxy._yesnocancel_def,
                 ffi_proxy._parsevector_wrap_def,
                 ffi_proxy._handler_def,
-                ffi_proxy._exec_findvar_in_frame_def
+                ffi_proxy._exec_getvar_def
         ])
 
     # Subset of R headers we expose through cffi.

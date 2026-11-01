@@ -8,7 +8,8 @@ def test_tapply_sumbystring():
     expected = {'a': 1+3+6,
                 'b': 2+5,
                 'c': 4}
-    res = rlf.tapply(seq, tags, sum)
+    with pytest.deprecated_call():
+        res = rlf.tapply(seq, tags, sum)
     for k, v in res:
         assert expected[k] == v
 
@@ -18,7 +19,8 @@ def test_tapply_sumbystring():
 def test_simplefunction(subject_fun):
     def f(x):
         return x ** 2
-    f_iter = subject_fun(f)
+    with pytest.deprecated_call():
+        f_iter = subject_fun(f)
 
     seq = (1, 2, 3)
     res = f_iter(seq)

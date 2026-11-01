@@ -62,10 +62,13 @@ rpy2demo_graphics:
 
 rpy2demo_all: rpy2demo_graphics rpy2demo_benchmark
 
+# Kernel name resolved on the runner (see sphinx-doc.yml).
+JUPYTER_KERNEL ?= python3
+
 # rule to build ipython notebooks from markdown
 notebooks/%.ipynb : notebooks/%.md
 	jupytext \
-                 --set-kernel python3 \
+                 --set-kernel $(JUPYTER_KERNEL) \
                  --to ipynb \
                  -o $@ \
                  --execute $<

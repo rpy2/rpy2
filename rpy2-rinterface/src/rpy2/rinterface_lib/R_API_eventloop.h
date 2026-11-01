@@ -28,8 +28,6 @@ typedef struct _InputHandler {
   
 } InputHandler;
 
-extern InputHandler *initStdinHandler(void);
-
 extern InputHandler *addInputHandler(InputHandler *handlers,
 				     int fd, InputHandlerProc handler,
 				     int activity);

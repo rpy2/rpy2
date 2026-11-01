@@ -9,7 +9,6 @@ License: GPLv2+
 """
 
 import array
-import contextlib
 import os
 import types
 import typing
@@ -112,8 +111,9 @@ AT = typing.TypeVar('AT')
 def _vector_matrix_array(
         obj, vector_cls: typing.Type[VT],
         matrix_cls: typing.Type[MT],
-        array_cls: typing.Type[AT]) -> typing.Union[
-            typing.Type[VT], typing.Type[MT], typing.Type[AT]]:
+        array_cls: typing.Type[AT]) -> (
+            typing.Type[VT] | typing.Type[MT] | typing.Type[AT]
+    ):
     # Should it be promoted to array or matrix ?
     try:
         dim = obj.do_slot("dim")
@@ -128,7 +128,7 @@ def _vector_matrix_array(
 @default_converter.rpy2py.register(rinterface.IntSexpVector)
 def _convert_rpy2py_intvector(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[rinterface.IntSexpVector])
+              .rpy2py_nc_map[rinterface.IntSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
@@ -136,7 +136,7 @@ def _convert_rpy2py_intvector(obj):
 @default_converter.rpy2py.register(rinterface.FloatSexpVector)
 def _convert_rpy2py_floatvector(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[rinterface.FloatSexpVector])
+              .rpy2py_nc_map[rinterface.FloatSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
@@ -144,7 +144,7 @@ def _convert_rpy2py_floatvector(obj):
 @default_converter.rpy2py.register(rinterface.ComplexSexpVector)
 def _convert_rpy2py_complexvector(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[rinterface.ComplexSexpVector])
+              .rpy2py_nc_map[rinterface.ComplexSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
@@ -152,26 +152,29 @@ def _convert_rpy2py_complexvector(obj):
 @default_converter.rpy2py.register(rinterface.BoolSexpVector)
 def _convert_rpy2py_boolvector(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[rinterface.BoolSexpVector])
+              .rpy2py_nc_map[rinterface.BoolSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.StrSexpVector)
 def _convert_rpy2py_strvector(obj):
-    cls = _vector_matrix_array(obj, vectors.StrVector,
-                               vectors.StrMatrix, vectors.StrArray)
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_map[rinterface.StrSexpVector])
+    cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.ByteSexpVector)
 def _convert_rpy2py_bytevector(obj):
-    cls = _vector_matrix_array(obj, vectors.ByteVector,
-                               vectors.ByteMatrix, vectors.ByteArray)
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_map[rinterface.ByteSexpVector])
+    cls = clsmap.find(obj.rclass)
     return cls(obj)
 
 
 default_converter.rpy2py.register(rinterface.PairlistSexpVector, PairlistVector)
+
 
 @default_converter.rpy2py.register(rinterface.LangSexpVector)
 def _convert_rpy2py_langvector(obj):
@@ -245,13 +248,16 @@ def _rpy2py_sexpclosure(obj):
 
 @default_converter.rpy2py.register(SexpEnvironment)
 def _rpy2py_sexpenvironment(obj):
-    return Environment(obj)
+    clsmap = (conversion.converter_ctx.get()
+              .rpy2py_nc_map[rinterface.SexpEnvironment])
+    cls = clsmap.find(obj.rclass)
+    return cls(obj)
 
 
 @default_converter.rpy2py.register(rinterface.ListSexpVector)
 def _rpy2py_listsexp(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[rinterface.ListSexpVector])
+              .rpy2py_nc_map[rinterface.ListSexpVector])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
@@ -259,7 +265,7 @@ def _rpy2py_listsexp(obj):
 @default_converter.rpy2py.register(SexpS4)
 def _rpy2py_sexps4(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[SexpS4])
+              .rpy2py_nc_map[SexpS4])
     cls = clsmap.find(methods_env['extends'](obj.rclass))
     return cls(obj)
 
@@ -267,7 +273,7 @@ def _rpy2py_sexps4(obj):
 @default_converter.rpy2py.register(SexpExtPtr)
 def _rpy2py_sexpextptr(obj):
     clsmap = (conversion.converter_ctx.get()
-              .rpy2py_nc_name[rinterface.SexpExtPtr])
+              .rpy2py_nc_map[rinterface.SexpExtPtr])
     cls = clsmap.find(obj.rclass)
     return cls(obj)
 
@@ -374,6 +380,28 @@ def _(obj):
     return obj
 
 
+flatlist_converter = conversion.Converter('Converter to flatten/simplify lists')
+
+# The default conversion for lists is currently to make them an R list. That
+# has some advantages, but can be inconvenient (and, it's inconsistent with
+# the way python lists are automatically converted by numpy functions), so
+# for interactive use in the rmagic, we call unlist, which converts lists to
+# vectors **if the list was of uniform (atomic) type**.
+@flatlist_converter.py2rpy.register(list)
+def flatlist_py2rpy_list(obj):
+    # simplify2array is a utility function, but nice for us
+    # TODO: use an early binding of the R function
+    cv = conversion.get_conversion()
+    robj = rinterface.ListSexpVector(
+            [cv.py2rpy(x) for x in obj]
+        )
+    res = baseenv['simplify2array'](robj)
+    # We need to ensure that a rpy2 objects is returned
+    # This was issue #866 when this code in ipython-specific converter.
+    res_rpy = cv.py2rpy(res)
+    return res_rpy
+
+
 class ExternalPointer(RObjectMixin, rinterface.SexpExtPtr):
     pass
 
@@ -463,7 +491,7 @@ class R(object):
 
     def __new__(cls):
         if cls._instance is None:
-            rinterface.initr_simple()
+            rinterface.initr()
             cls._instance = object.__new__(cls)
         return cls._instance
 
@@ -502,8 +530,8 @@ class R(object):
         return os.linesep.join(s)
 
     def __call__(self, string: str,
-                 invisible: typing.Optional[bool] = None,
-                 print_r_warnings: typing.Optional[bool] = None) -> object:
+                 invisible: bool | None = None,
+                 print_r_warnings: bool | None = None) -> object:
         """Evaluate a string as R code.
 
         :param string: A string with R code

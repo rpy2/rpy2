@@ -1,3 +1,4 @@
+import collections
 import enum
 import logging
 import os
@@ -6,20 +7,28 @@ import typing
 import warnings
 from rpy2.rinterface_lib import openrlib
 from rpy2.rinterface_lib import callbacks
+from typing import Protocol
 
 logger = logging.getLogger(__name__)
 
-if sys.version_info[:2] < (3, 8):
-    from typing_extensions import Protocol
-else:
-    from typing import Protocol
-
 ffi = openrlib.ffi
+
+# Container for module-level C objects needing to be protected from garbage
+# collection on the Python side.
+__cffi_protected: typing.Dict[str, typing.Any] = {}
 
 _options = ('rpy2', '--quiet', '--no-save')  # type: typing.Tuple[str, ...]
 logger.info('Default options to initialize R: {}'.format(', '.join(_options)))
+
+# These constants are default values from R sources
+_DEFAULT_VSIZE: int = 67108864  # vector heap size
+_DEFAULT_NSIZE: int = 350000  # language heap size
+_DEFAULT_MAX_VSIZE: int = sys.maxsize  # max vector heap size
+_DEFAULT_MAX_NSIZE: int = 50000000  # max language heap size
+_DEFAULT_PPSIZE: int = 50000  # stack size
 _DEFAULT_C_STACK_LIMIT: int = -1
 _DEFAULT_R_INTERACTIVE: bool = True
+
 rpy2_embeddedR_isinitialized = 0x00
 
 
@@ -136,6 +145,41 @@ class Is_RStart(Protocol):
 rstart: Is_RStart = None  # type: ignore
 
 
+def _build_rstart(rhome, interactive, setcallbacks, callback_funcs):
+    rstart = ffi.new('Rstart')
+    __cffi_protected['rstart'] = rstart
+    openrlib.rlib.R_DefParams(rstart)
+    rstart.rhome = rhome
+    userhome = ffi.new("char[]", ffi.string(openrlib.rlib.getRUser()))
+    __cffi_protected['userhome'] = userhome
+    rstart.home = userhome
+    rstart.CharacterMode = openrlib.rlib.LinkDLL
+    if setcallbacks:
+        for cb in CALLBACK_INIT_PAIRS:
+            if cb.c_name_nt and cb.py_name:
+                try:
+                    setattr(rstart, cb.c_name_nt,
+                            getattr(callback_funcs, cb.py_name))
+                except TypeError as error:
+                    if sys.version_info >= (3, 11):
+                        error.add_note(
+                            f'NT: {cb.c_name_nt} - Python: {cb.py_name}'
+                        )
+                    raise
+
+    rstart.R_Quiet = True
+    rstart.R_Interactive = interactive
+    rstart.RestoreAction = openrlib.rlib.SA_RESTORE
+    rstart.SaveAction = openrlib.rlib.SA_NOSAVE
+
+    rstart.vsize = ffi.cast('size_t', _DEFAULT_VSIZE)
+    rstart.nsize = ffi.cast('size_t', _DEFAULT_NSIZE)
+    rstart.max_vsize = ffi.cast('size_t', _DEFAULT_MAX_VSIZE)
+    rstart.max_nsize = ffi.cast('size_t', _DEFAULT_MAX_NSIZE)
+    rstart.ppsize = ffi.cast('size_t', _DEFAULT_PPSIZE)
+    return rstart
+
+
 # TODO: move initialization-related code to _rinterface ?
 class RPY_R_Status(enum.Enum):
     """Possible status for the embedded R."""
@@ -211,7 +255,14 @@ class RRuntimeError(Exception):
 def _setcallback(rlib, rlib_symbol: str,
                  callbacks,
                  callback_symbol: typing.Optional[str]) -> None:
-    """Set R callbacks."""
+    """Set R callbacks.
+
+    :param rlib: Namespace
+    :param rlib_symbol: Symbol (name) in the namespace in which to place
+      the new callback function
+    :param callbacks: Namespace in which to find the callback function.
+    :param callbacks_symbol: Symbol (name) of the new callback function.
+"""
     if callback_symbol is None:
         new_callback = ffi.NULL
     else:
@@ -219,20 +270,28 @@ def _setcallback(rlib, rlib_symbol: str,
     setattr(rlib, rlib_symbol, new_callback)
 
 
-CALLBACK_INIT_PAIRS = (('ptr_R_WriteConsoleEx', '_consolewrite_ex'),
-                       ('ptr_R_WriteConsole', None),
-                       ('ptr_R_ShowMessage', '_showmessage'),
-                       ('ptr_R_ReadConsole', '_consoleread'),
-                       ('ptr_R_FlushConsole', '_consoleflush'),
-                       ('ptr_R_ResetConsole', '_consolereset'),
-                       ('ptr_R_ChooseFile', '_choosefile'),
-                       ('ptr_R_ShowFiles', '_showfiles'),
-                       ('ptr_R_CleanUp', '_cleanup'),
-                       ('ptr_R_ProcessEvents', '_processevents'),
-                       ('ptr_R_Busy', '_busy'))
+_CallbackInit = collections.namedtuple(
+    '_CallbackInit',
+    ('c_name_posix', 'c_name_nt', 'py_name')
+)
+
+CALLBACK_INIT_PAIRS: typing.Tuple[_CallbackInit, ...] = (
+    _CallbackInit('ptr_R_WriteConsoleEx', 'WriteConsoleEx', '_consolewrite_ex'),
+    _CallbackInit('ptr_R_WriteConsole', 'WriteConsole', None),
+    _CallbackInit('ptr_R_ShowMessage', 'ShowMessage', '_showmessage'),
+    _CallbackInit('ptr_R_ReadConsole', 'ReadConsole', '_consoleread'),
+    _CallbackInit('ptr_R_FlushConsole', None, '_consoleflush'),
+    _CallbackInit('ptr_R_ResetConsole', None, '_consolereset'),
+    _CallbackInit('ptr_R_ChooseFile', None, '_choosefile'),
+    _CallbackInit('ptr_R_ShowFiles', None, '_showfiles'),
+    _CallbackInit('ptr_R_CleanUp', None, '_cleanup'),
+    _CallbackInit('ptr_R_ProcessEvents', None, '_processevents'),
+    _CallbackInit(None, 'YesNoCancel', '_yesnocancel'),
+    _CallbackInit(None, 'CallBack', '_callback'),
+    _CallbackInit('ptr_R_Busy', 'Busy', '_busy'),
+)
 
 
-# TODO: can init_once() be used here ?
 def _initr(
         interactive: typing.Optional[bool] = None,
         _want_setcallbacks: bool = True,
@@ -268,8 +327,6 @@ def _initr(
         if isinitialized():
             logger.info('R is already initialized. No need to initialize.')
             return None
-        elif openrlib.R_HOME is None:
-            raise ValueError('openrlib.R_HOME cannot be None.')
         elif openrlib.rlib.R_NilValue != ffi.NULL:
             msg = ('R was initialized outside of rpy2 (R_NilValue != NULL). '
                    'Trying to use it nevertheless.')
@@ -277,55 +334,64 @@ def _initr(
             logger.warn(msg)
             _setinitialized()
             return None
-        os.environ['R_HOME'] = openrlib.R_HOME
+
         # TODO: Setting LD_LIBRARY_PATH after the process has started
-        # is too late. Because of this, the line below does not help
-        # address issues where calling R from the command line is working
-        # (as it is a shell script setting environment variables before
-        # start the binary in a child process). Calling C's dlopen with
+        # is too late. Calling C's dlopen with
         # the path of the shared library could address this but for the
         # API mode this would require writing a C wrapper to manually
         # load each each symbol in the C library.
-        os.environ['LD_LIBRARY_PATH'] = (
-            ':'.join(
-                (openrlib.LD_LIBRARY_PATH,
-                 os.environ.get('LD_LIBRARY_PATH', ''))
-                )
-        )
         options_c = [ffi.new('char[]', o.encode('ASCII')) for o in _options]
         n_options = len(options_c)
         n_options_c = ffi.cast('int', n_options)
 
-        # TODO: Conditional in C code
-        rlib.R_SignalHandlers = 0
+        if os.name == 'nt':
+            status = openrlib.rlib.Rf_initEmbeddedR(n_options_c, options_c)
+            _setinitialized()
 
-        # Instead of calling Rf_initEmbeddedR which breaks threaded context
-        # perform the initialization manually to set R_CStackLimit before
-        # calling setup_Rmainloop(), see:
-        # https://github.com/rpy2/rpy2/issues/729
-        rlib.Rf_initialize_R(n_options_c, options_c)
-        if _c_stack_limit:
-            rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
-        rlib.R_Interactive = True
-        logger.debug('Calling R setup_Rmainloop.')
-        rlib.setup_Rmainloop()
+            rhome = openrlib.rlib.get_R_HOME()
+            __cffi_protected['rhome'] = rhome
+            rstart = _build_rstart(rhome, interactive, _want_setcallbacks, callback_funcs)
+            openrlib.rlib.R_SetParams(rstart)
 
-        _setinitialized()
+            # TODO: still needed ?
+            openrlib.rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
+        else:
+            if openrlib.R_HOME is None:
+                raise ValueError('openrlib.R_HOME cannot be None.')
+            else:
+                os.environ['R_HOME'] = openrlib.R_HOME
 
-        rlib.R_Interactive = interactive
+            # TODO: Conditional in C code
+            rlib.R_SignalHandlers = 0
 
-        # TODO: Conditional definition in C code
-        #   (Aqua, TERM, and TERM not "dumb")
-        rlib.R_Outputfile = ffi.NULL
-        rlib.R_Consolefile = ffi.NULL
+            # Instead of calling Rf_initEmbeddedR which breaks threaded context
+            # perform the initialization manually to set R_CStackLimit before
+            # calling setup_Rmainloop(), see:
+            # https://github.com/rpy2/rpy2/issues/729
+            rlib.Rf_initialize_R(n_options_c, options_c)
+            if _c_stack_limit:
+                rlib.R_CStackLimit = ffi.cast('uintptr_t', _c_stack_limit)
+            rlib.R_Interactive = True
+            logger.debug('Calling R setup_Rmainloop.')
+            rlib.setup_Rmainloop()
 
-        if _want_setcallbacks:
-            logger.debug('Setting functions for R callbacks.')
-            for rlib_symbol, callback_symbol in CALLBACK_INIT_PAIRS:
-                _setcallback(rlib, rlib_symbol,
-                             callback_funcs, callback_symbol)
+            _setinitialized()
 
-    return 1
+            rlib.R_Interactive = interactive
+
+            # TODO: Conditional definition in C code
+            #   (Aqua, TERM, and TERM not "dumb")
+            rlib.R_Outputfile = ffi.NULL
+            rlib.R_Consolefile = ffi.NULL
+
+            if _want_setcallbacks:
+                logger.debug('Setting functions for R callbacks.')
+                for cb in CALLBACK_INIT_PAIRS:
+                    if cb.c_name_posix:
+                        _setcallback(rlib, cb.c_name_posix,
+                                     callback_funcs, cb.py_name)
+            status = 1
+    return status
 
 
 def endr(fatal: int) -> None:

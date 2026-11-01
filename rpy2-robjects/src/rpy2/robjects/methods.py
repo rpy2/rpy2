@@ -88,7 +88,7 @@ class ClassRepresentation(RS4):
 
 
 def getclassdef(cls_name: str, packagename: typing.Optional[str] = None):
-    package: typing.Union[rinterface._MissingArgType, StrSexpVector]
+    package: rinterface._MissingArgType | StrSexpVector
     if packagename is None:
         package = rinterface.MissingArg
     else:

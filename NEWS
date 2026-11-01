@@ -1,5 +1,205 @@
+Release 3.7.0
+=============
+
+Changes
+-------
+
+- Python >= 3.10 is now required. This means that support for Python 3.9
+  is dropped.
+
+- The optional dependency on pandas now requires pandas >= 2.0 (and tests
+  with latest `pandas` release).
+
+
+Release 3.6.9
+=============
+
+Bugs fixed
+----------
+
+- :meth:`rpy2.robjects.lib.ggplot2.labs`
+  (:class:`rpy2.robjects.lib.ggplot2.Labs`) created invalid instances
+  when in the context of a custom (non-default) converter.
+
+
+Release 3.6.8
+=============
+
+Bugs fixed
+----------
+
+- Better management of build errors for :mod:`rpy2.rinterface`
+  across combinations of Python, setuptools, distutils versions.
+
+
+Release 3.6.7
+=============
+
+Changes
+-------
+
+- R >= 4.5.0 is *required*. API symbols vanished in R-4.6.0. Working out
+  backward compatibility would require too much effort.
+
+- The setters for :attr:`rpy2.rinterface_lib.sexp.SexpEnvironment.enclos` and
+:attr:`rpy2.robjects.environment.Environment.enclos` are deprecated, and
+will error. R-4.6.0 hides C functions that were visible even
+though not officially part of the API. Updating rpy2 to 3.6.7 is required
+to use R-4.6.0.
+
+- The getters for :attr:`rpy2.rinterface_lib.sexp.SexpEnvironment.frame` and
+:attr:`rpy2.robjects.environment.Environment.enclos`, and method
+:meth:`rpy2.rinterface_lib.sexp.CharSxp.nchar`
+are deprecated. Using them will raise an `RuntimeError`. R-4.6.0 hides C functions that were visible even
+though not officially part of the API. Updating rpy2 to 3.6.7 is required
+to use R-4.6.0.
+
+
+Release 3.6.6
+=============
+
+Bugs fixed
+----------
+
+- The method `rpy2` for vectors, an R-managed equivalent to `__setitem__`,
+  was failing when trying to assign values to R `list` objects, and therefore
+  `data.frame` since R lists (issue #1232).
+
+- Better handling of string encoding across R and Python. In large
+  part, the experimental & non-API function :func:`rpy2.rinterface._update_R_ENC_PY`)
+  was incorrect (issue #1229 / PR #1230). That function no longer exists. Encoding
+  preferences are stored in :attr:`rpy2.rinterface_lib.conversion._ENC_PY` and
+  :attr:`rpy2.rinterface_lib.conversion._ENC_R`, with a default to UTF-8. Changing
+  those values is untested.
+
+Changes
+-------
+
+- On Windows, when `RPY2_CFFI_MODE` is not specified or set to `ANY` will now
+  try to first use the API mode, and only fallback to ABI mode if an `ImportErrror`
+  is raised, as is the case on Linux and MacOS.
+
+
+Release 3.6.5
+=============
+
+Bugs fixed
+----------
+
+- R >= 4.2 builds for Windows changed the path to the DLLs this should
+  be fixed with PR #1220 (issue #1215).
+
+- API mode on Windows should be functional. To use it the environment
+  variable `RPY2_CFFI_MODE` must be set to `API`.
+
+
+Changes
+-------
+
+- Support for Python 3.8 is dropped. Rpy2 requires Python >= 3.9.
+
+- Environment variable `RPY2_CFFI_MODE` with an invalid value now raises
+  a `ValueError` instead of silently using the default value.
+
+
+Release 3.6.4
+=============
+
+Bugs fixed
+----------
+
+- In the Jupyter/IPython extension, options for raster graphical devices
+  were not handling resolution (`res`) options correctly.
+
+Changes
+-------
+
+- The R library `ggplot2` had a lot of internal changes with its recent
+  release 4.0.0. This broke :mod:`rpy2.robjects.lib.ggplot2`. Changes
+  are made to support both 4.0.0 and previous versions. Only >= 4.0.0
+  will be supported in the future (rpy2 3.7.0).
+
+
+Release 3.6.3
+=============
+
+Bugs fixed
+----------
+
+- Environment variables checks could report irrelevant or incorrect mismatches (issue #1201). This is fixed for `R_SESSION_TMPDIR` and `R_LIBS_USER`.
+
+- R environments where missing the additional dispatching map for R classes.
+
+- Ensure `sys.getdefaultencoding()` used when fetching information about the R
+  installation through `R CMD config` (issue #1063).
+
+
+Release 3.6.2
+=============
+
+Bugs fixed
+----------
+
+- :meth:`rpy2.rinterface.initr` was not skipping all initialization steps when the
+  embedded R is already initialized by :mod:`rpy2` (contributed to issue #1190).
+
+- More robust extraction of R-specific environment variables when running R on the
+  command line has outputs to the terminal (issue #1195).
+
+Changes
+-------
+
+- Warnings about R-related environment variables after initialization are downgraded
+  to `INFO`-level and emitted by :obj:`rpy2.rinterface.logger` (solves issue #1190).
+
+- On Windows, the determination of where `R.dll` is located now has a fallback if `make` and `bash`
+  are not installed (issue #1188).
+
+
+Release 3.6.1
+=============
+
+Bugs fixed
+----------
+
+- Clear warnings for deprecation of `rpy2.rinterface_lib.callbacks.obj_in_module`
+  (issue #1181).
+
+- Fix callback setup during initialization on Windows (issue #1183).
+
+- In the R magic, setting options such as width, height, point size, etc. was broken
+  in the new updated system to manage graphical devices.
+
+
 Release 3.6.0
 =============
+
+New features
+------------
+
+- On systems where the default encoding is not utf-8, converting
+  R strings to Python can result in decoding errors. The default
+  encoding is now the system's encoding (rather than assume utf-8).
+  This may provide a fix to issue #1018.
+
+- Noteboook "R magic" features for ipython/jupyter support more
+  graphical devices to render R graphics in notebooks. Registered
+  devices are in :obj:`rpy2.ipython.rmags.graphics_devices`. This
+  allows the specification of fallbacks when the preferred device is
+  not available because of a missing R package. For SVG graphics,
+  it will first try to use the R package `svglite` to produce
+  lighter-weight SVG representations that are better when notebooks
+  may include many figures and figure with large number of visual
+  elements.
+
+- Experimental minimalist set of optional conversion rules to
+  convert Python :class:`list` objects to R vectors when all elements
+  are of atomic type: :obj:`rpy2.robjects.flatlist_converter`. Those
+  rules have been in used for the ipython/jupyter default converter.
+
+- The setter :attr:`rpy2.robjects.vectors.Array.dim` is now implemented,
+  allowing to change the dimension of an R array in place
+  (fixes issue #1145). 
 
 Changes
 -------
@@ -18,6 +218,48 @@ Changes
 - :class:`rpy2.rlike.collections.OrdDict` is deprecated.
   :class:`rpy2.rlike.collections.NamedList` is enough to have
   a Python data structure to represent R lists or paired lists.
+
+- The long-deprecated functions
+  :func:`rpy2.robjects.robjects.numpy2ri.activate`,
+  :func:`rpy2.robjects.robjects.numpy2ri.deactivate`,
+  :func:`rpy2.robjects.robjects.pandas2ri.activate`,
+  and :func:`rpy2.robjects.robjects.pandas2ri.deactivate` are no
+  longer functional. Calling them will raise an exception pointing
+  to documentation.
+
+- The wrapper for ggplot2 is now targeting the R package `ggplot2`
+  version 3.5.
+
+- The wrapper for dplyr is now targeting the R package `dplyr`
+  version 1.1.
+- The default converter for the ipython/jupyter magics depended on
+  what is the default converter at the time of module import. To
+  simplify this, the default converter is now fixed to
+  `robjects.default_converter` + `robjects.flatlist_converter` +
+  `robjects.numpy2ri.converter` + `robjects.pandas2ri.converter`.
+  If `pandas` cannot be imported
+  it falls back to `robjects.default_converter` + `robjects.numpy2ri.converter`.
+  If `numpy` cannot be imported it falls back to  `robjects.default_converter`.
+- The definition of `Rcomplex` from R's C-API was updated to match
+  the definition in recent R release (>= 4.3) when rpy2 is in "API mode".
+  This does not work with the "ABI mode" though, and the legacy
+  definition of `Rcomplex` is still used with it.
+- :func:`rpy2.rinterface.initr_simple` is no longer part of the API. Use
+  :func:`rpy2.rinterface.initr` can provide the same functionality.
+
+
+Bugs fixed
+----------
+
+- Fix case of `zoneinfo.ZoneInfo` object missing the attribute `zone`.
+  The attribute `key` is used instead. This fixes issue #1079.
+
+- The constructor for :class:`rpy2.robjects.lib.ggplot2` did not
+  play well with conversion rules in :mod:`rpy2.robjects.pandas2ri`.
+  The default conversion rules are now forced (issue #1116).
+
+- The documentation for the notebook "magic" `Rdevice` was not
+  displayed in the module-level docstring for :mod:`rpy2.ipython.rmagic`.
 
 
 Release 3.5.17

@@ -18,7 +18,7 @@ with warnings.catch_warnings():
                         symbol_r2python=dplyr_._symbol_r2python,
                         symbol_resolve=dplyr_._symbol_resolve)
 
-TARGET_VERSION = '1.0'
+TARGET_VERSION = '1.1.'
 if (
   (dplyr.__version__ is None)
   or

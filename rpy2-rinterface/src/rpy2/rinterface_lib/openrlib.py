@@ -1,38 +1,85 @@
 import logging
 import os
 import platform
+import sys
 import threading
 import typing
 import rpy2.situation
 from rpy2.rinterface_lib import ffi_proxy
 
 logger = logging.getLogger(__name__)
-cffi_mode = rpy2.situation.get_cffi_mode()
-if cffi_mode == rpy2.situation.CFFI_MODE.API:
-    import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
-elif cffi_mode == rpy2.situation.CFFI_MODE.ABI:
-    import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
-else:
-    try:
-        import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
-    except ImportError as ie_api:
-        try:
-            import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
-        except ImportError as ie_abi:
-            logger.error(f'Failed to import the API mode with "{ie_api}" '
-                         'and unable to import the ABI mode.')
-            raise ie_abi
-ffi = _rinterface_cffi.ffi
+
+cffi_mode_request = rpy2.situation.get_cffi_mode()
 
 # TODO: Separate the functions in the module from the side-effect of
 # finding R_HOME and opening the shared library.
 R_HOME = rpy2.situation.get_r_home()
-if os.name != 'nt':
-    # not relevant for Windows? (https://stackoverflow.com/questions/72575015)
+
+if os.name == 'nt':
+    if R_HOME is not None:
+        try:
+            for libpath in rpy2.situation.get_r_flags(R_HOME, '--ldflags')[0].L:
+                os.add_dll_directory(libpath)  # type: ignore[attr-defined]
+        except rpy2.situation.subprocess.CalledProcessError:
+            # R CMD config is unavailable (Rtools not installed).
+            # Build candidate directory paths for the R DLL.
+            # R >= 4.2 on Windows merged bin/x64 into bin/, so check both.
+            if platform.machine().lower() == "arm64":
+                candidate_dirs = [
+                    os.path.join(R_HOME, "bin", "arm64"),
+                    os.path.join(R_HOME, "bin"),
+                ]
+            elif sys.maxsize > 2**32:
+                candidate_dirs = [
+                    os.path.join(R_HOME, "bin", "x64"),
+                    os.path.join(R_HOME, "bin"),
+                ]
+            else:
+                candidate_dirs = [
+                    os.path.join(R_HOME, "bin", "i386"),
+                    os.path.join(R_HOME, "bin"),
+                ]
+            for libpath in candidate_dirs:
+                if os.path.isdir(libpath):
+                    os.add_dll_directory(libpath)  # type: ignore[attr-defined]
+                    break
+    else:
+        logging.warning('R_HOME is None.')
+else:
     LD_LIBRARY_PATH = (
         rpy2.situation.r_ld_library_path_from_subprocess(R_HOME)
         if R_HOME is not None
-        else '')
+        else ''
+    )
+
+if cffi_mode_request == rpy2.situation.CFFI_MODE.API:
+    import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
+    cffi_mode = rpy2.situation.CFFI_MODE.API
+elif cffi_mode_request == rpy2.situation.CFFI_MODE.ABI:
+    import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
+    cffi_mode = rpy2.situation.CFFI_MODE.ABI
+elif cffi_mode_request == rpy2.situation.CFFI_MODE.ANY:
+    try:
+        import _rinterface_cffi_api as _rinterface_cffi  # type: ignore
+        cffi_mode = rpy2.situation.CFFI_MODE.API
+    except ImportError as ie_api:
+        logger.warning(
+            f'Error importing in API mode: {repr(ie_api)}'
+        )
+        try:
+            import _rinterface_cffi_abi as _rinterface_cffi  # type: ignore
+            cffi_mode = rpy2.situation.CFFI_MODE.ABI
+            logger.warning('Trying to import in ABI mode.')
+        except ImportError as ie_abi:
+            logger.error(f'Failed to import the API mode with "{ie_api}" '
+                         'and unable to import the ABI mode.')
+            raise ie_abi
+else:
+    raise ImportError(
+        f'cffi mode requested invalid: {cffi_mode_request}'
+    )
+ffi = _rinterface_cffi.ffi
+
 lock = threading.Lock()
 rlock = threading.RLock()
 
@@ -175,12 +222,12 @@ def SET_COMPLEX_ELT(vec, i: int, value: complex):
     COMPLEX(vec)[i].i = value.imag
 
 
-# TODO: still useful or is it in the C API ?
+# TODO: still useful or is it in the C API?
 def _VECTOR_ELT(robj, i):
     return ffi.cast('SEXP *', DATAPTR(robj))[i]
 
 
-def _STRING_PTR(robj):
+def _PAIRLIST_PTR(robj):
     return ffi.cast('SEXP *', DATAPTR(robj))
 
 
@@ -189,4 +236,6 @@ def _VECTOR_PTR(robj):
 
 
 def _STRING_VALUE(robj):
-    return rlib.R_CHAR(rlib.Rf_asChar(robj))
+    return rlib.R_CHAR(
+        rlib.Rf_asChar(robj)
+    )

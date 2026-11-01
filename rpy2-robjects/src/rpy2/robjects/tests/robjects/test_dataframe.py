@@ -34,16 +34,22 @@ def test_init_from_RObject():
 
 
 def test_init_from_OrdDict():
-    od = rlc.OrdDict(c=(('a', robjects.IntVector((1,2))),
-                        ('b', robjects.StrVector(('c', 'd')))
-                        ))
+    with pytest.deprecated_call():
+        od = rlc.OrdDict(
+            c=(
+                ('a', robjects.IntVector((1,2))),
+                ('b', robjects.StrVector(('c', 'd')))
+            )
+        )
     dataf = robjects.DataFrame(od)
     assert dataf.rx2('a')[0] == 1
 
 
 def test_init_from_dict():
-    od = {'a': robjects.IntVector((1,2)),
-          'b': robjects.StrVector(('c', 'd'))}
+    od = {
+        'a': robjects.IntVector((1,2)),
+        'b': robjects.StrVector(('c', 'd'))
+    }
     dataf = robjects.DataFrame(od)
     assert dataf.rx2('a')[0] == 1
 

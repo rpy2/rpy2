@@ -152,20 +152,24 @@ the original implementation of `dplyr`, it *just works*.
 
 ```python
 from rpy2.robjects.lib.dplyr import dplyr
-# in-memory SQLite database broken in dplyr's src_sqlite
-# db = dplyr.src_sqlite(":memory:")
-import tempfile
-with tempfile.NamedTemporaryFile() as db_fh:
-    db = dplyr.src_sqlite(db_fh.name)
-    # copy the table to that database
-    dataf_db = DataFrame(mtcars).copy_to(db, name="mtcars")
-    res = (dataf_db
-           .filter(rl('gear>3'))
-           .mutate(powertoweight=rl('hp*36/wt'))
-           .group_by(rl('gear'))
-           .summarize(mean_ptw=rl('mean(powertoweight)')))
-    print(res)
-# 
+
+# Import R packages to connect to dababases, and to SQLite.
+dbi = importr('DBI')
+rsqlite = importr('RSQLite')
+dbcon = dbi.dbConnect(rsqlite.SQLite(), ":memory:")
+
+# copy the table to that database
+dataf_db = DataFrame(mtcars).copy_to(dbcon, name="mtcars")
+res = (
+    dataf_db
+    .filter(rl('gear>3'))
+    .mutate(powertoweight=rl('hp*36/wt'))
+    .group_by(rl('gear'))
+    .summarize(mean_ptw=rl('mean(powertoweight)')))
+print(res)
+
+# Close the connection to clean up.
+dbi.dbDisconnect(dbcon)
 ```
 
 Since we are manipulating R objects, anything available to R is also available

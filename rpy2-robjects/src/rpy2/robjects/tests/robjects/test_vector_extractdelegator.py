@@ -69,40 +69,39 @@ def test_extract_silent_index_error():
         assert all(x == rpy2.robjects.NA_Integer for x in res)
 
 
-def test_replace():
-    vec = robjects.vectors.IntVector(range(1, 6))
-    i = array.array('i', [1, 3])
-    vec.rx[rlc.NamedList((i, ))] = 20
-    assert vec[0] == 20
-    assert vec[1] == 2
-    assert vec[2] == 20
-    assert vec[3] == 4
+@pytest.mark.parametrize(
+    'r_string,idx,value,expected',
+    (
+        ('1:5', rlc.NamedList((array.array('i', [1, 3]), )),
+         20, (20, 2, 20, 4, 5)),
+        ('1:5', rlc.NamedList((array.array('i', [1, 5]), )),
+         50, (50, 2, 3, 4, 50)),
+        ('1:5', 1, 70, (70, 2, 3, 4, 5)),
+        ('1:5', robjects.vectors.IntVector((1, 3)),
+         70, (70, 2, 70, 4, 5))
+    )
+)
+def test_replace_vec(r_string, idx, value, expected):
+    vec = robjects.r(r_string)
+    vec.rx[idx] = value
+    assert tuple(vec) == expected
 
-    vec = robjects.vectors.IntVector(range(1, 6))
-    i = array.array('i', [1, 5])
-    vec.rx[rlc.NamedList((i, ))] = 50
-    assert vec[0] == 50
-    assert vec[1] == 2
-    assert vec[2] == 3
-    assert vec[3] == 4
-    assert vec[4] == 50
 
-    vec = robjects.vectors.IntVector(range(1, 6))
-    vec.rx[1] = 70
-    assert tuple(vec[0:5]) == (70, 2, 3, 4, 5)
+@pytest.mark.parametrize(
+    'r_string,idx,value,expected',
+    (
+        ('matrix(1:10, ncol=2)', (1, 1), 9,
+         (9, 2, 3, 4, 5, 6, 7, 8, 9, 10)),
+        ('matrix(1:10, ncol=2)',
+         (2, robjects.vectors.IntVector((1,2))), 9,
+         (1, 9, 3, 4, 5, 6, 9, 8, 9, 10))
+    )
+)
+def test_replace_matrix(r_string, idx, value, expected):
 
-    vec = robjects.vectors.IntVector(range(1, 6))
-    vec.rx[robjects.vectors.IntVector((1, 3))] = 70    
-    assert tuple(vec[0:5]) == (70, 2, 70, 4, 5)
-
-    m = robjects.r('matrix(1:10, ncol=2)')
-    m.rx[1, 1] = 9
-    assert m[0] == 9
-
-    m = robjects.r('matrix(1:10, ncol=2)')
-    m.rx[2, robjects.vectors.IntVector((1,2))] = 9
-    assert m[1] == 9
-    assert m[6] == 9
+    vec = robjects.r(r_string)
+    vec.rx.__setitem__(idx, value)
+    assert tuple(vec) == expected
 
 
 def test_extract_recycling_rule():

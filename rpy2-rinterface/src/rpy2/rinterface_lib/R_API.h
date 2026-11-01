@@ -31,10 +31,20 @@ const unsigned int FREESXP    = 31;
 const unsigned int FUNSXP     = 99;
 
 /* include/R_exts/Complex.h */
+#ifdef RPY2_COMPLEX_LEGACY
 typedef struct {
     double r;
     double i;
 } Rcomplex;
+#else
+typedef union {
+    struct {
+    double r;
+    double i;
+    };
+    double _Complex private_data_c;
+} Rcomplex;
+#endif
 
 /* include/Rinternals.h */
 typedef int R_len_t;
@@ -189,6 +199,7 @@ SEXP (ATTRIB)(SEXP x);
 
 SEXP Rf_asChar(SEXP sexp);
 
+SEXP Rf_allocLang(int n);
 SEXP Rf_allocList(int n);
 SEXP Rf_allocVector(SEXPTYPE sexp_t, R_xlen_t n);
 SEXP Rf_elt(SEXP, int);
@@ -213,8 +224,6 @@ SEXP Rf_ScalarLogical(int n);
 SEXP Rf_ScalarRaw(Rbyte b);
 SEXP Rf_ScalarReal(double f);
 SEXP Rf_ScalarString(SEXP s);
-
-void *(STDVEC_DATAPTR)(SEXP x);
 
 /* Integer.*/
 int (INTEGER_ELT)(SEXP x, R_xlen_t i);
@@ -241,11 +250,10 @@ Rbyte (RAW_ELT)(SEXP x, R_xlen_t i);
 
 SEXP (STRING_ELT)(SEXP x, R_xlen_t i);
 void SET_STRING_ELT(SEXP x, R_xlen_t i, SEXP v);
+const SEXP* STRING_PTR_RO(SEXP source);
 
 SEXP (VECTOR_ELT)(SEXP x, R_xlen_t i);
 SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
-
-SEXP (CLOENV)(SEXP x);
 
 SEXP Rf_eval(SEXP, SEXP);
 SEXP R_tryEval(SEXP, SEXP, int*);
@@ -261,13 +269,12 @@ SEXP R_UnwindProtect(SEXP (*fun)(void *data), void *data,
 SEXP Rf_findFun(SEXP sym, SEXP env);
 // SEXP Rf_findFun3(SEXP, SEXP, SEXP);
 
-SEXP Rf_findVar(SEXP sym, SEXP env);
-SEXP Rf_findVarInFrame(SEXP env, SEXP sym);
-SEXP Rf_findVarInFrame3(SEXP, SEXP, Rboolean);
+Rboolean R_existsVarInFrame(SEXP env, SEXP name);
+SEXP R_getVar(SEXP sym, SEXP env, Rboolean inherits);
 
 R_xlen_t Rf_xlength(SEXP);
 
-SEXP R_lsInternal(SEXP, Rboolean);
+SEXP R_lsInternal3(SEXP, Rboolean, Rboolean);
 
 SEXP Rf_duplicate(SEXP s);
 
@@ -318,27 +325,20 @@ cetype_t Rf_getCharCE(SEXP);
 SEXP Rf_mkCharCE(const char *, cetype_t);
 SEXP Rf_mkCharLenCE(const char *, int n, cetype_t encoding);
 
+const char * Rf_translateChar(SEXP);
+const char * Rf_translateCharUTF8(SEXP);
+
 typedef enum {
   Bytes = 0,
   Chars = 1,
   Width = 2
 } nchar_type;
 
-int R_nchar(SEXP string, nchar_type type_,
-            Rboolean allowNA, Rboolean keepNA,
-            const char* msg_name);
-
 SEXP (PRINTNAME)(SEXP x);
 
-SEXP (FRAME)(SEXP x);
-SEXP (ENCLOS)(SEXP x);
-SEXP (HASHTAB)(SEXP x);
-int (ENVFLAGS)(SEXP x);
-void (SET_ENVFLAGS)(SEXP x, int v);
-
-void SET_FRAME(SEXP x, SEXP v);
-void SET_ENCLOS(SEXP x, SEXP v);
-void SET_HASHTAB(SEXP x, SEXP v);
+/* Added in R-4.5.0 */
+SEXP R_ParentEnv(SEXP env);
+SEXP R_ClosureEnv(SEXP env);
 
 /* include/Rdefines.h */
 
