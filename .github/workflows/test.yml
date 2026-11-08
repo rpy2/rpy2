@@ -56,19 +56,19 @@ jobs:
         uv pip install wheel
     - uses: actions/download-artifact@v8
       with:
-        pattern: rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-rrelease
+        name: rpy2_rinterface-*-${{ inputs.os }}-py${{ inputs.python-version }}-rrelease
         path: rpy2-rinterface/dist/
     - uses: actions/download-artifact@v8
       with:
-        pattern: rpy2-robjects-${{ inputs.os }}
+        name: rpy2-robjects-${{ inputs.os }}
         path: rpy2-robjects/dist/
     - name: Path to package build.
       shell: bash
       run: |
         ls rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-rrelease/*.whl
         ls rpy2-rinterface/dist/
-        echo "RPY2_RINTERFACE_WHL_DIST=$(ls -1 rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-rrelease/*.whl | tail -n 1)" >> $GITHUB_ENV
-        echo "RPY2_ROBJECTS_WHL_DIST=$(ls -1 rpy2-robjects/dist/rpy2-robjects-${{ inputs.os }}/*.whl | tail -n 1)" >> $GITHUB_ENV
+        #echo "RPY2_RINTERFACE_WHL_DIST=$(ls -1 rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-rrelease/*.whl | tail -n 1)" >> $GITHUB_ENV
+        #echo "RPY2_ROBJECTS_WHL_DIST=$(ls -1 rpy2-robjects/dist/rpy2-robjects-${{ inputs.os }}/*.whl | tail -n 1)" >> $GITHUB_ENV
     - name: cffi mode
       shell: bash
       run: |
@@ -76,9 +76,11 @@ jobs:
     - name: Install package
       run: |
         ${{ env.VENV_ACTIVATE }}
-        uv pip install ${{ env.RPY2_RINTERFACE_WHL_DIST }}
+        # uv pip install ${{ env.RPY2_RINTERFACE_WHL_DIST }}
+        uv pip install rpy2_rinterface*.whl
         python -m rpy2.situation
-        uv pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}
+        # uv pip install --pre ${{ env.RPY2_ROBJECTS_WHL_DIST }}
+        uv pip install rpy2_robjects*.whl
     - name: Set R_LIBRARY (Windows)
       if: startsWith(inputs.os, 'windows')
       shell: bash
