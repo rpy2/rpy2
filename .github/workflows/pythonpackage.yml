@@ -92,7 +92,7 @@ jobs:
         cd rpy2-rinterface
         python -m build -o dist/ --sdist .
     - name: Upload sdist rinterface
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: rpy2-rinterface-sdist
         path: rpy2-rinterface/dist/rpy2_rinterface-*.tar.gz
@@ -103,7 +103,7 @@ jobs:
         cd rpy2-robjects
         python -m build -o dist/ --sdist .
     - name: Upload sdist robjects
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: rpy2-robjects-sdist
         path: rpy2-robjects/dist/rpy2_robjects-*.tar.gz
@@ -113,7 +113,7 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         python -m build -o dist/ --sdist .
     - name: Upload sdist rpy2
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: rpy2-sdist
         path: dist/rpy2-*.tar.gz
@@ -176,7 +176,7 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
         python -m build -o dist/ --wheel .
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         path: rpy2-rinterface/dist/rpy2_rinterface-*.whl
@@ -224,7 +224,7 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         cd "${{ matrix.package.dir }}"
         python -m build -o dist/ --wheel .
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: ${{ matrix.package.name }}-${{ matrix.os }}
         path: ${{ matrix.package.dir }}/dist/*.whl
