@@ -56,7 +56,7 @@ jobs:
         uv pip install wheel
     - uses: actions/download-artifact@v8
       with:
-        name: rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-rrelease
+        pattern: rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-rrelease
         path: rpy2-rinterface/dist/
     - uses: actions/download-artifact@v8
       with:
