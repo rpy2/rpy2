@@ -25,9 +25,9 @@ jobs:
   test:
     runs-on: ${{ inputs.os }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - name: Set up Python ${{ inputs.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ inputs.python-version }}
     - name: Set up R ${{ inputs.r-version }}
@@ -36,7 +36,7 @@ jobs:
         r-version: ${{ inputs.r-version }}
         use-public-rspm: true
     - name: Install uv
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v10.3.3
     - name: Set virtualenv activation command (Windows)
       if: startsWith(inputs.os, 'windows')
       shell: bash
@@ -54,11 +54,11 @@ jobs:
         uv venv --no-project --no-config --no-managed-python pyenv_base
         ${{ env.VENV_ACTIVATE }}
         uv pip install wheel
-    - uses: actions/download-artifact@v4.1.7
+    - uses: actions/download-artifact@v8
       with:
         pattern: rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-rrelease
         path: rpy2-rinterface/dist/
-    - uses: actions/download-artifact@v4.1.7
+    - uses: actions/download-artifact@v8
       with:
         pattern: rpy2-robjects-${{ inputs.os }}
         path: rpy2-robjects/dist/

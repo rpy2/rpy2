@@ -25,26 +25,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
-        python-version: "3.10"
+        python-version: "3.14"
     - name: Download rpy2-rinterface (sdist).
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v8
       with:
         name: rpy2-rinterface-sdist
         path: rpy2-rinterface/dist/rpy2_rinterface-*.tar.gz
     - name: Download rpy2-rinterface (wheel).
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v8
       with:
         pattern: rpy2-rinterface-*-py*-rrelease
         path: rpy2-rinterface/dist/
     - name: Download rpy2-rinterface (wheel)
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v8
       with:
         pattern: rpy2-robjects-*
         path: rpy2-robjects/dist/
     - name: rpy2 (sdist)
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v8
       with:
         name: rpy2-sdist
         path: dist/rpy2-*.tar.gz
