@@ -233,7 +233,7 @@ jobs:
         os: ["windows-latest", ubuntu-latest, macos-15]
         r-version: ["release", "devel"]
         cffi_mode: ["ANY"]
-experimental: false
+        experimental: false
         include:
           # Windows
           - python-version: "3.12"
