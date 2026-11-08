@@ -59,7 +59,7 @@ jobs:
   build-sdist:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v7
       with:
@@ -127,7 +127,7 @@ jobs:
         r-version: ["4.5", release]
         os: ["windows-latest", ubuntu-latest, macos-15]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v7
       with:
@@ -191,7 +191,7 @@ jobs:
         os: ["windows-latest", ubuntu-latest, macos-15]
         package: [{dir: ".", name: "rpy2"}, {dir: "rpy2-robjects", name: "rpy2-robjects"}]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v7
       with:
