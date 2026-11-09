@@ -60,7 +60,7 @@ jobs:
         path: rpy2-rinterface/dist/
     - uses: actions/download-artifact@v8
       with:
-        name: rpy2-robjects-${{ inputs.os }}
+        pattern: rpy2-robjects-${{ inputs.os }}
         path: rpy2-robjects/dist/
     - name: Path to package build.
       shell: bash
