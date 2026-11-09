@@ -65,8 +65,8 @@ jobs:
     - name: Path to package build.
       shell: bash
       run: |
-        ls rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-rrelease/*.whl
         ls rpy2-rinterface/dist/
+        ls rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-rrelease/*.whl
         echo "RPY2_RINTERFACE_WHL_DIST=$(ls -1 rpy2-rinterface/dist/rpy2-rinterface-${{ inputs.os }}-py${{ inputs.python-version }}-rrelease/*.whl | tail -n 1)" >> $GITHUB_ENV
         echo "RPY2_ROBJECTS_WHL_DIST=$(ls -1 rpy2-robjects/dist/rpy2-robjects-${{ inputs.os }}/*.whl | tail -n 1)" >> $GITHUB_ENV
     - name: cffi mode
