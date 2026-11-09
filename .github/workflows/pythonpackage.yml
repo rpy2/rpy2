@@ -96,7 +96,6 @@ jobs:
       with:
         name: rpy2-rinterface-sdist
         path: rpy2-rinterface/dist/rpy2_rinterface-*.tar.gz
-        archive: false
     - name: Build sdist robjects
       run: |
         ${{ env.VENV_ACTIVATE }}
@@ -107,7 +106,6 @@ jobs:
       with:
         name: rpy2-robjects-sdist
         path: rpy2-robjects/dist/rpy2_robjects-*.tar.gz
-        archive: false
     - name: Build sdist rpy2
       run: |
         ${{ env.VENV_ACTIVATE }}
@@ -117,7 +115,6 @@ jobs:
       with:
         name: rpy2-sdist
         path: dist/rpy2-*.tar.gz
-        archive: false
   build-api-wheel:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -180,7 +177,6 @@ jobs:
       with:
         name: rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         path: rpy2-rinterface/dist/rpy2_rinterface-*.whl
-        archive: false
   build-noabi-wheel:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -228,7 +224,6 @@ jobs:
       with:
         name: ${{ matrix.package.name }}-${{ matrix.os }}
         path: ${{ matrix.package.dir }}/dist/*.whl
-        archive: false
   test:
     needs: [build-api-wheel, build-noabi-wheel]
     strategy:
