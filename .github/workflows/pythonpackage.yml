@@ -6,13 +6,13 @@ jobs:
   code-qc:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: "3.14"
     - name: Install uv
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v10.3.3
     - name: Create venv
       run: |
            uv venv --no-project --no-config --no-managed-python rpy2-env
@@ -59,9 +59,9 @@ jobs:
   build-sdist:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: "3.14"
     - name: Set up R ${{ matrix.r-version }}
@@ -69,7 +69,7 @@ jobs:
       with:
         r-version: release
     - name: Install uv
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v10.3.3
     - name: Create venv
       run: |
            uv venv --no-project --no-config --no-managed-python rpy2-env
@@ -92,7 +92,7 @@ jobs:
         cd rpy2-rinterface
         python -m build -o dist/ --sdist .
     - name: Upload sdist rinterface
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: rpy2-rinterface-sdist
         path: rpy2-rinterface/dist/rpy2_rinterface-*.tar.gz
@@ -102,7 +102,7 @@ jobs:
         cd rpy2-robjects
         python -m build -o dist/ --sdist .
     - name: Upload sdist robjects
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: rpy2-robjects-sdist
         path: rpy2-robjects/dist/rpy2_robjects-*.tar.gz
@@ -111,7 +111,7 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         python -m build -o dist/ --sdist .
     - name: Upload sdist rpy2
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: rpy2-sdist
         path: dist/rpy2-*.tar.gz
@@ -124,9 +124,9 @@ jobs:
         r-version: ["4.5", release]
         os: ["windows-latest", ubuntu-latest, macos-15]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
     - name: Set up R ${{ matrix.r-version }}
@@ -135,7 +135,7 @@ jobs:
         r-version: ${{ matrix.r-version }}
         use-public-rspm: true
     - name: Install uv
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v10.3.3
     - name: Create venv
       run: |
            uv venv --no-project --no-config --no-managed-python rpy2-env
@@ -173,7 +173,7 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         cd rpy2-rinterface
         python -m build -o dist/ --wheel .
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: rpy2-rinterface-${{ matrix.os }}-py${{ matrix.python-version }}-r${{ matrix.r-version }}
         path: rpy2-rinterface/dist/rpy2_rinterface-*.whl
@@ -187,9 +187,9 @@ jobs:
         os: ["windows-latest", ubuntu-latest, macos-15]
         package: [{dir: ".", name: "rpy2"}, {dir: "rpy2-robjects", name: "rpy2-robjects"}]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
     - name: Set up R ${{ matrix.r-version }}
@@ -198,7 +198,7 @@ jobs:
         r-version: ${{ matrix.r-version }}
         use-public-rspm: true
     - name: Install uv
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v10.3.3
     - name: Create venv
       run: |
            uv venv --no-project --no-config --no-managed-python rpy2-env
@@ -220,7 +220,7 @@ jobs:
         ${{ env.VENV_ACTIVATE }}
         cd "${{ matrix.package.dir }}"
         python -m build -o dist/ --wheel .
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: ${{ matrix.package.name }}-${{ matrix.os }}
         path: ${{ matrix.package.dir }}/dist/*.whl
@@ -233,6 +233,7 @@ jobs:
         os: ["windows-latest", ubuntu-latest, macos-15]
         r-version: ["release", "devel"]
         cffi_mode: ["ANY"]
+        experimental: [true, false]
         include:
           # Windows
           - python-version: "3.12"
