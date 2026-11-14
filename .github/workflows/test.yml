@@ -67,7 +67,7 @@ jobs:
       run: |
         ls rpy2-rinterface/dist/
         echo "RPY2_RINTERFACE_WHL_DIST=$(ls -1 rpy2-rinterface/dist/rpy2_rinterface-*.whl | tail -n 1)" >> $GITHUB_ENV
-	ls rpy2-robjects/dist/
+        ls rpy2-robjects/dist/
         echo "RPY2_ROBJECTS_WHL_DIST=$(ls -1 rpy2-robjects/dist/rpy2_robjects-*.whl | tail -n 1)" >> $GITHUB_ENV
     - name: cffi mode
       shell: bash
